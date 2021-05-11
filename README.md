@@ -1,2 +1,2 @@
 # GeoVista
-Cartographic rendering and mesh analysis with PyVista
+Cartographic rendering and mesh analytics with PyVista
