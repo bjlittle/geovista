@@ -1,0 +1,25 @@
+name: geovista-dev
+
+channels:
+  - conda-forge
+
+dependencies:
+
+# setup dependencies
+  - setuptools>=40.8.0
+
+# core dependencies
+  - cartopy
+  - click
+  - cmocean
+  - colorcet
+  - pykdtree
+  - pyvista
+  - pyvistaqt
+
+# test dependencies
+  - black=21.5b0
+  - flake8
+  - flake8-import-order
+  - pre-commit
+  - pytest
