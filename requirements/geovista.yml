@@ -6,20 +6,22 @@ channels:
 dependencies:
 
 # setup dependencies
-  - setuptools>=40.8.0
+  - setuptools >=45
+  - setuptools-scm >=6.0
 
 # core dependencies
   - cartopy
-  - click
-  - cmocean
-  - colorcet
   - pykdtree
   - pyvista
   - pyvistaqt
 
-# test dependencies
-  - black=21.5b0
-  - flake8
-  - flake8-import-order
+# cmap dependencies
+  - cmocean
+  - colorcet
+
+# dev dependencies
+  - pip
   - pre-commit
-  - pytest
+
+# test dependencies
+  - pytest >=6.0

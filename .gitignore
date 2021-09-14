@@ -1,3 +1,13 @@
+# setuptools-scm
+_version.py
+
+# Editors and IDEs
+*~
+\#*
+\.\#*
+*.swp
+.idea/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
