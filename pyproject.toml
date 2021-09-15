@@ -2,7 +2,7 @@
 # Defined by PEP 518
 requires = [
     "setuptools>=45",
-    "setuptools_scm[toml]>=6.0",
+    "setuptools_scm[toml]>=6.2",
     "wheel"
 ]
 # Defined by PEP 517
