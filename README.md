@@ -1,5 +1,5 @@
 # GeoVista
-Cartographic rendering and mesh analytics with PyVista
+Cartographic rendering and mesh analytics powered by PyVista
 
 
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/geovista?color=orange&label=conda-forge&logo=conda-forge&logoColor=white)](https://anaconda.org/conda-forge/geovista)
