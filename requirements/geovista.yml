@@ -10,7 +10,7 @@ dependencies:
   - setuptools-scm >=6.2
 
 # core dependencies
-  - cartopy
+  - cartopy >=0.20
   - pykdtree
   - pyvista
   - pyvistaqt
