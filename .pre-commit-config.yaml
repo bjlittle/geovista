@@ -37,7 +37,7 @@ repos:
     hooks:
     -   id: flake8
         types: [file, python]
-        args: [--config=./.flake8]
+        args: [--config=./setup.cfg]
 
 -   repo: https://github.com/PyCQA/isort
     rev: 5.9.3
@@ -46,3 +46,8 @@ repos:
         types: [file, python]
         args: [--filter-files]
 
+-   repo: https://github.com/aio-libs/sort-all
+    rev: v1.1.0
+    hooks:
+    -   id: sort-all
+        types: [file, python]

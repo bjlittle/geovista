@@ -1,0 +1,6 @@
+# Top level files.
+include LICENSE
+
+recursive-include geovista *.txt
+
+global-exclude *.pyc
