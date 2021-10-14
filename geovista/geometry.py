@@ -8,7 +8,7 @@ import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
 
 from .common import set_jupyter_backend
-from .logger import get_logger
+from .logging import get_logger
 
 __all__ = [
     "add_coastlines",
@@ -19,6 +19,8 @@ __all__ = [
     "to_xyz",
 ]
 
+# Configure the logger.
+logger = get_logger(__name__)
 
 #
 # TODO: support richer default management
@@ -29,9 +31,6 @@ COASTLINE_RESOLUTION: str = "110m"
 
 #: Default to an S2 unit sphere for 3D plotting.
 RADIUS: float = 1.0
-
-# Configure the logger.
-logger = get_logger(__name__)
 
 
 def add_coastlines(

@@ -14,13 +14,11 @@ __all__ = [
     "reload_registry",
 ]
 
-
 #: Base URL for GeoVista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/main/data/"
 
 #: The number of retry attempts to download a resource.
 RETRY_ATTEMPTS: int = 0
-
 
 #: Cache manager for GeoVista resources.
 CACHE: pooch.Pooch = pooch.create(

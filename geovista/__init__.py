@@ -4,7 +4,7 @@ from pathlib import Path
 from appdirs import user_cache_dir
 
 from ._version import version as __version__  # noqa: F401
-from .logger import get_logger
+from .logging import get_logger
 
 # Configure the top-level logger.
 logger = get_logger(__name__)

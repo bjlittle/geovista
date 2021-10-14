@@ -4,16 +4,20 @@ A package for provisioning logging infra-structure.
 """
 
 import logging
+import threading
 from typing import Optional, Union
 
 __all__ = ["DATEFMT", "FMT", "Formatter", "get_logger"]
-
 
 #: The default ``datefmt`` string of the logger formatter.
 DATEFMT: str = "%d-%m-%Y %H:%M:%S"
 
 #: The default ``fmt`` string of the logger formatter.
 FMT: str = "%(asctime)s %(name)s %(levelname)s - %(message)s"
+
+# Critical region lock to protect against race conditions
+# when adding a handler to a logger.
+_LOCK = threading.Lock()
 
 
 class Formatter(logging.Formatter):
@@ -83,7 +87,8 @@ def get_logger(name: str, level: Optional[Union[int, str]] = None) -> logging.Lo
 
     The root logger, if specified, will be configured with a
     :class:`logging.StreamHandler` and a custom :class:`Formatter`, as will the
-    top-level ``geovista`` logger.
+    top-level ``geovista`` logger. Therefore, typically all child loggers in the
+    logging hierarchy will be handled by the top-level ``geovista`` logger.
 
     Parameters
     ----------
@@ -105,7 +110,7 @@ def get_logger(name: str, level: Optional[Union[int, str]] = None) -> logging.Lo
     # Determine if this is the root logger.
     root = name is None or name == "root"
 
-    # This is a convenience, and as a use case is more obvious.
+    # This is a convenience, and makes the use case more obvious.
     if name == "root":
         name = None
 
@@ -115,20 +120,34 @@ def get_logger(name: str, level: Optional[Union[int, str]] = None) -> logging.Lo
     if level is None:
         level = "WARNING" if root else "NOTSET" if top else "INFO"
 
-    # Create the named logger.
+    # Create the named logger. If it already exists, logging
+    # takes care logger management, and will return the existing
+    # logger.
     logger = logging.getLogger(name)
+
+    # Set the logger level, which is different to the effective level.
     logger.setLevel(level)
+
     if not root:
         # Children propagate to the top-level logger.
         logger.propagate = not top
 
     # Create and add the handler, if required.
     if root or top:
-        # Create a logging handler.
-        handler = logging.StreamHandler()
-        # Set the custom formatter.
-        handler.setFormatter(Formatter())
-        # Add the handler to the logger.
-        logger.addHandler(handler)
+        with _LOCK:
+            # Give the handler a specific name.
+            handler_name = f"{'root' if root else __package__}_handler"
+            logger_handler_names = [handler.get_name() for handler in logger.handlers]
+
+            # Ensure that we only ever add our handler to the logger once.
+            if handler_name not in logger_handler_names:
+                # Create a logging handler.
+                handler = logging.StreamHandler()
+                # Set the handler name.
+                handler.set_name(handler_name)
+                # Set the handler custom formatter.
+                handler.setFormatter(Formatter())
+                # Add the handler to the logger.
+                logger.addHandler(handler)
 
     return logger
