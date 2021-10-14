@@ -105,6 +105,10 @@ def get_logger(name: str, level: Optional[Union[int, str]] = None) -> logging.Lo
     # Determine if this is the root logger.
     root = name is None or name == "root"
 
+    # This is a convenience, and as a use case is more obvious.
+    if name == "root":
+        name = None
+
     # Determine if this is the top-level logger.
     top = name == __package__
 
