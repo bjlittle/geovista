@@ -64,9 +64,9 @@ class Formatter(logging.Formatter):
         """
         result = super().format(record)
         if "cls" in record.__dict__:
-            extra = "[%(cls)s.%(funcName)s]"
+            extra = "[caller:%(cls)s.%(funcName)s]"
         else:
-            extra = "[%(funcName)s]"
+            extra = "[caller:%(funcName)s]"
         result = f"{result} {extra % record.__dict__}"
         return result
 
