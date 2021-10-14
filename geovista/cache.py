@@ -27,7 +27,7 @@ CACHE: pooch.Pooch = pooch.create(
 CACHE.load_registry(open_text(__package__, "registry.txt"))
 
 
-def fetch_coastlines(resolution: str = "110m") -> pv.UnstructuredGrid:
+def fetch_coastlines(resolution: str = "110m") -> pv.PolyData:
     """
     .. versionadded:: 0.1.0
 
@@ -44,8 +44,8 @@ def fetch_coastlines(resolution: str = "110m") -> pv.UnstructuredGrid:
 
     Returns
     -------
-    UnstructuredGrid
-        The coastlines unstructured mesh.
+    PolyData
+        The coastlines mesh.
 
     """
     fname = CACHE.fetch(f"natural_earth/physical/ne_coastlines_{resolution}.vtk")

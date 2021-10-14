@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Optional
+from typing import List, Optional
 
 import cartopy.io.shapereader as shp
 import numpy as np
@@ -12,9 +12,9 @@ from .logger import get_logger
 
 __all__ = [
     "add_coastlines",
-    "combine_coastlines",
-    "fetch_coastline_geometries",
-    "get_coastlines",
+    "coastline_geometries",
+    "coastline_mesh",
+    "coastlines",
     "to_xy0",
     "to_xyz",
 ]
@@ -86,118 +86,169 @@ def add_coastlines(
     return plotter
 
 
-def combine_coastlines(
-    resolution: Optional[str] = COASTLINE_RESOLUTION,
-    merge_points: Optional[bool] = True,
-) -> pv.UnstructuredGrid:
-    """
-    .. versionadded:: 0.1.0
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    UnstructuredGrid
-
-    """
-    blocks = fetch_coastline_geometries(resolution=resolution)
-    mesh = blocks.combine(merge_points=merge_points)
-    mesh.field_data["radius"] = blocks.field_data["radius"]
-
-    return mesh
-
-
 @lru_cache
-def fetch_coastline_geometries(
-    resolution: Optional[str] = COASTLINE_RESOLUTION, geocentric: Optional[bool] = True
-) -> pv.MultiBlock:
+def coastline_geometries(
+    resolution: Optional[str] = COASTLINE_RESOLUTION,
+) -> List[ArrayLike]:
     """
     .. versionadded:: 0.1.0
 
-    Fetch the Natural Earth coastline shapefile geometries for the required
+    Fetch the Natural Earth shapefile coastline geometries for the required
     resolution.
 
-    If the geometries are not already available in the Cartopy cache, then they
-    will downloaded.
+    If the geometries are not already available within the cartopy cache, then
+    they will be downloaded.
 
-    The geometries will be then transformed for use with a 2D planar projection
-    or a 3D spherical mesh.
+    The 2D longitude (φ) and latitude (λ) xy coastline geometries will be
+    unpacked as 3D xy0 coordinates i.e., φλ0.
 
     Parameters
     ----------
     resolution : str, default="110m"
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m`` or ``10m``.
-    geocentric : bool, default=True
-        Convert the coastline longitude (φ) and latitude (λ) geometries to
-        geocentric xyz coordinates. Otherwise, xy0 (i.e., φλ0) coordinates.
 
     Returns
     -------
-    pyvista.MultiBlock
-        A :class:~pyvista.MultiBlock` containing one or more
-        :class:`~pyvista.PolyData` coastline geometries.
+    List[ArrayLike]
+        A list containing one or more coastline xy0 geometries.
 
     """
-    # TODO: address "fudge-factor" zorder to ensure coastlines overlay the mesh
-    radius = RADIUS + RADIUS / 1e4
-
+    lines, multi_lines = [], []
     category, name = "physical", "coastline"
 
     # load in the shapefiles
     fname = shp.natural_earth(resolution=resolution, category=category, name=name)
     reader = shp.Reader(fname)
-    blocks = pv.MultiBlock()
-    geoms = []
 
-    def to_pyvista_blocks(geometries):
+    def unpack(geometries):
         for geometry in geometries:
             if isinstance(geometry, MultiLineString):
-                geoms.extend(list(geometry.geoms))
+                multi_lines.extend(list(geometry.geoms))
             else:
                 xy = np.array(geometry.coords[:], dtype=np.float32)
-
-                if geocentric:
-                    # calculate 3d xyz coordinates
-                    xr = np.radians(xy[:, 0]).reshape(-1, 1)
-                    yr = np.radians(90 - xy[:, 1]).reshape(-1, 1)
-
-                    x = radius * np.sin(yr) * np.cos(xr)
-                    y = radius * np.sin(yr) * np.sin(xr)
-                    z = radius * np.cos(yr)
-                else:
-                    # otherwise, calculate xy0 coordinates
-                    x = xy[:, 0].reshape(-1, 1)
-                    y = xy[:, 1].reshape(-1, 1)
-                    z = np.zeros_like(x)
-
+                x = xy[:, 0].reshape(-1, 1)
+                y = xy[:, 1].reshape(-1, 1)
+                z = np.zeros_like(x)
                 xyz = np.hstack((x, y, z))
-                poly = pv.lines_from_points(xyz, close=False)
-                blocks.append(poly)
-                logger.debug(f"coastline block {blocks.n_blocks}")
+                lines.append(xyz)
 
-    to_pyvista_blocks(reader.geometries())
-    if geoms:
-        to_pyvista_blocks(geoms)
+    unpack(reader.geometries())
+    if multi_lines:
+        unpack(multi_lines)
 
-    blocks.field_data["radius"] = np.array([radius if geocentric else 0])
+    logger.debug(f"loaded {len(lines)} geometries")
 
-    return blocks
+    return lines
 
 
 @lru_cache
-def get_coastlines(
+def coastline_mesh(
+    resolution: Optional[str] = COASTLINE_RESOLUTION,
+    radius: Optional[float] = None,
+    geocentric: Optional[bool] = True,
+) -> pv.PolyData:
+    """
+    .. versionadded:: 0.1.0
+
+    Create a mesh of coastline geometries at the specified resolution.
+
+    Parameters
+    ----------
+    resolution : str, default="110m"
+        The resolution of the Natural Earth coastlines, which may be either
+        ``110m``, ``50m``, or ``10m``.
+    radius : float, default=1.0
+        The radius of the sphere, when geocentric. Defaults to the S2 unit
+        sphere.
+    geocentric : bool, default=True
+        Specify whether the coastlines are xyz geocentric coordinates.
+        Otherwise, longitude (φ) and latitude (λ) xy0 coordinates (i.e., φλ0).
+
+    Returns
+    -------
+    PolyData
+        A mesh of the coastlines.
+
+    """
+    # TODO: address "fudge-factor" zlevel
+    if radius is None:
+        radius = RADIUS + RADIUS / 1e4
+
+    geoms = coastline_geometries(resolution=resolution)
+    npoints_per_geom = [geom.shape[0] for geom in geoms]
+    ngeoms = len(geoms)
+    geoms = np.concatenate(geoms)
+    nlines = geoms.shape[0] - ngeoms
+
+    # determine whether to calculate xyz geocentric coordinates
+    if geocentric:
+        xr = np.radians(geoms[:, 0]).reshape(-1, 1)
+        yr = np.radians(90 - geoms[:, 1]).reshape(-1, 1)
+        x = radius * np.sin(yr) * np.cos(xr)
+        y = radius * np.sin(yr) * np.sin(xr)
+        z = radius * np.cos(yr)
+        geoms = np.hstack([x, y, z])
+        logger.debug(f"geometries converted from xy0 to xyz, radius={radius}")
+
+    logger.debug(f"coastlines geometry shape={geoms.shape}")
+
+    # convert geometries to a vtk line mesh
+    mesh = pv.PolyData()
+    mesh.points = geoms
+    lines = np.full((nlines, 3), 2, dtype=int)
+    pstart, lstart = 0, 0
+
+    logger.debug(f"ngeoms={ngeoms}, nlines={nlines}")
+
+    for npoints in npoints_per_geom:
+        pend = pstart + npoints
+        lend = lstart + npoints - 1
+        lines[lstart:lend, 1] = np.arange(pstart, pend - 1, dtype=int)
+        lines[lstart:lend, 2] = np.arange(pstart + 1, pend, dtype=int)
+        pstart, lstart = pend, lend
+
+    mesh.lines = lines
+    mesh.field_data["radius"] = np.array([radius if geocentric else 0])
+
+    return mesh
+
+
+@lru_cache
+def coastlines(
     resolution: Optional[str] = COASTLINE_RESOLUTION,
     geocentric: Optional[bool] = True,
-) -> pv.UnstructuredGrid:
-    """ """
+) -> pv.PolyData:
+    """
+    .. versionadded:: 0.1.0
+
+    Create or fetch the cached mesh of the coastlines.
+
+    Parameters
+    ----------
+    resolution : str, default="110m"
+        The resolution of the Natural Earth coastlines, which may be either
+        ``110m``, ``50m``, or ``10m``.
+    geocentric : bool, default=True
+        Specify whether the coastlines are xyz geocentric coordinates.
+        Otherwise, longitude (φ) and latitude (λ) xy0 coordinates (i.e., φλ0).
+
+    Returns
+    -------
+    PolyData
+        A mesh of the coastlines.
+
+    """
     from .cache import fetch_coastlines
 
-    mesh = fetch_coastlines(resolution=resolution)
-    if not geocentric:
-        radius = float(mesh.field_data["radius"])
-        mesh.points = to_xy0(mesh.points, radius=radius)
+    try:
+        mesh = fetch_coastlines(resolution=resolution)
+
+        if not geocentric:
+            radius = float(mesh.field_data["radius"])
+            mesh.points = to_xy0(mesh.points, radius=radius)
+    except ValueError:
+        mesh = coastline_mesh(resolution=resolution, geocentric=geocentric)
 
     return mesh
 

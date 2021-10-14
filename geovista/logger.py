@@ -6,14 +6,14 @@ Infrastructure to support logging.
 import logging
 from typing import Optional, Union
 
-__all__ = ["Formatter", "ROOT_DATEFMT", "ROOT_FMT", "get_logger"]
+__all__ = ["DATEFMT", "FMT", "Formatter", "get_logger"]
 
 
-#: The ``datefmt`` string of the root logger formatter.
-ROOT_DATEFMT: str = "%d-%m-%Y %H:%M:%S"
+#: The default ``datefmt`` string of the logger formatter.
+DATEFMT: str = "%d-%m-%Y %H:%M:%S"
 
-#: The ``fmt`` string of the root logger formatter.
-ROOT_FMT: str = "%(asctime)s %(name)s %(levelname)s - %(message)s"
+#: The default ``fmt`` string of the logger formatter.
+FMT: str = "%(asctime)s %(name)s %(levelname)s - %(message)s"
 
 
 class Formatter(logging.Formatter):
@@ -35,16 +35,16 @@ class Formatter(logging.Formatter):
         ----------
         fmt : str, optional
             The format string of the :class:`logging.Formatter`.
-            Defaults to :data:`ROOT_FMT`.
+            Defaults to :data:`FMT`.
         datefmt : str, optional
             The date format string of the :class:`logging.Formatter`.
-            Defaults to :data:`ROOT_DATEFMT`.
+            Defaults to :data:`DATEFMT`.
 
         """
         if fmt is None:
-            fmt = ROOT_FMT
+            fmt = FMT
         if datefmt is None:
-            datefmt = ROOT_DATEFMT
+            datefmt = DATEFMT
         super().__init__(fmt=fmt, datefmt=datefmt, style="%")
 
     def format(self, record: logging.LogRecord) -> str:
@@ -71,27 +71,30 @@ class Formatter(logging.Formatter):
         return result
 
 
-def get_logger(
-    name: str, level: Optional[Union[int, str]] = None, root: bool = False
-) -> logging.Logger:
+def get_logger(name: str, level: Optional[Union[int, str]] = None) -> logging.Logger:
     """
     .. versionadded:: 0.1.0
 
-    Create a :class:`logging.Logger`, with a :class:`logging.StreamHandler`
-    and a custom :class:`Formatter` for root loggers.
+    Create and configure a :class:`logging.Logger`.
+
+    Child loggers will simply propagate their messages to the singleton root
+    logger in the logging hierarchy, or the first parent logger with a handler
+    configured.
+
+    The root logger, if specified, will be configured with a
+    :class:`logging.StreamHandler` and a custom :class:`Formatter`, as will the
+    top-level ``geovista`` logger.
 
     Parameters
     ----------
     name : str
         The name of the logger. Typically this is the module filename
-        (``__name__``) that owns the logger.
+        (``__name__``) that owns the logger. Note that, the singleton root
+        logger is selected with a ``name`` of ``None`` or ``root``.
     level : int or str, optional
-        The threshold level of the logger. If the logger is a ``root`` logger,
-        then defaults to ``NOTSET``, otherwise ``INFO``.
-    root : bool, default=False
-        Specify whether this is a root logger with a stream handler and
-        formatter, or a child logger that will propagate its message to
-        the first parent root logger in the logging hierarchy.
+        The threshold level of the logger. Defaults to ``WARNING`` for the
+        ``root`` logger, ``NOTSET`` for the top-level logger, ``INFO``
+        otherwise.
 
     Returns
     -------
@@ -99,19 +102,27 @@ def get_logger(
         A configured :class:`logging.Logger`.
 
     """
+    # Determine if this is the root logger.
+    root = name is None or name == "root"
+
+    # Determine if this is the top-level logger.
+    top = name == __package__
+
     if level is None:
-        level = "NOTSET" if root else "INFO"
+        level = "WARNING" if root else "NOTSET" if top else "INFO"
 
     # Create the named logger.
     logger = logging.getLogger(name)
     logger.setLevel(level)
-    # Children propagate to the first parent root logger.
-    logger.propagate = not root
+    if not root:
+        # Children propagate to the top-level logger.
+        logger.propagate = not top
 
-    # Create and add the handler to the root logger, if required.
-    if root:
+    # Create and add the handler, if required.
+    if root or top:
         # Create a logging handler.
         handler = logging.StreamHandler()
+        # Set the custom formatter.
         handler.setFormatter(Formatter())
         # Add the handler to the logger.
         logger.addHandler(handler)

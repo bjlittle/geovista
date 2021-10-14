@@ -6,8 +6,8 @@ from appdirs import user_cache_dir
 from ._version import version as __version__  # noqa: F401
 from .logger import get_logger
 
-# Configure the logger as the root logger.
-logger = get_logger(__name__, root=True)
+# Configure the top-level logger.
+logger = get_logger(__name__)
 
 # https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 _cache_dir = Path(environ.get("XDG_CACHE_HOME", user_cache_dir())) / __package__
