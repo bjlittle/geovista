@@ -1,5 +1,5 @@
 """
-Infrastructure to support logging.
+A package for provisioning logging infra-structure.
 
 """
 
@@ -35,10 +35,10 @@ class Formatter(logging.Formatter):
         ----------
         fmt : str, optional
             The format string of the :class:`logging.Formatter`.
-            Defaults to :data:`FMT`.
+            If ``None``, defaults to :data:`FMT`.
         datefmt : str, optional
             The date format string of the :class:`logging.Formatter`.
-            Defaults to :data:`DATEFMT`.
+            If ``None``, defaults to :data:`DATEFMT`.
 
         """
         if fmt is None:
@@ -92,8 +92,8 @@ def get_logger(name: str, level: Optional[Union[int, str]] = None) -> logging.Lo
         (``__name__``) that owns the logger. Note that, the singleton root
         logger is selected with a ``name`` of ``None`` or ``root``.
     level : int or str, optional
-        The threshold level of the logger. Defaults to ``WARNING`` for the
-        ``root`` logger, ``NOTSET`` for the top-level logger, ``INFO``
+        The threshold level of the logger. If ``None``, defaults to ``WARNING``
+        for the ``root`` logger, ``NOTSET`` for the top-level logger, ``INFO``
         otherwise.
 
     Returns

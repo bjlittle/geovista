@@ -1,5 +1,5 @@
 """
-A package for provisioning common geovista infrastructure.
+A package for provisioning common geovista infra-structure.
 
 """
 from typing import Optional
@@ -8,9 +8,7 @@ import pyvista as pv
 
 from .logger import get_logger
 
-__all__ = [
-    "set_jupyter_backend",
-]
+__all__ = ["set_jupyter_backend"]
 
 # configure the logger
 logger = get_logger(__name__)
@@ -53,9 +51,10 @@ def set_jupyter_backend(backend: Optional[str] = None) -> bool:
 
     Parameters
     ----------
-    backend : str or None, default=None
-        The pyvista plotting backend. For further details see :func:`pyvista.set_jupyter_backend`.
-        If ``None``, default to :data:`JUPYTER_BACKEND`.
+    backend : str, optional
+        The pyvista plotting backend. For further details see
+        :func:`pyvista.set_jupyter_backend`. If ``None``, defaults to
+        :data:`JUPYTER_BACKEND`.
 
     Returns
     -------

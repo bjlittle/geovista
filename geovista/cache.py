@@ -6,7 +6,13 @@ import pyvista as pv
 
 from . import config
 
-__all__ = ["BASE_URL", "CACHE", "RETRY_ATTEMPTS", "fetch_coastlines", "reload_registry"]
+__all__ = [
+    "BASE_URL",
+    "CACHE",
+    "RETRY_ATTEMPTS",
+    "fetch_coastlines",
+    "reload_registry",
+]
 
 
 #: Base URL for GeoVista resources.
@@ -62,8 +68,8 @@ def reload_registry(fname: Optional[str] = None) -> None:
     Parameters
     ----------
     fname : str, optional
-        The filename of the registry to be loaded. Defaults to the ``registry.txt``
-        resource packaged with geovista.
+        The filename of the registry to be loaded. If ``None``, defaults to
+        the ``registry.txt`` resource file packaged with geovista.
 
     """
     if fname is None:
