@@ -83,12 +83,12 @@ def get_logger(name: str, level: Optional[Union[int, str]] = None) -> logging.Lo
 
     Child loggers will simply propagate their messages to the singleton root
     logger in the logging hierarchy, or the first parent logger with a handler
-    configured.
+    configured. Typically, this will be the top-level ``geovista`` logger.
 
-    The root logger, if specified, will be configured with a
+    The root logger, if specified by ``name``, will be configured with a
     :class:`logging.StreamHandler` and a custom :class:`Formatter`, as will the
-    top-level ``geovista`` logger. Therefore, typically all child loggers in the
-    logging hierarchy will be handled by the top-level ``geovista`` logger.
+    top-level ``geovista`` logger. No other loggers will be configured with a
+    handler.
 
     Parameters
     ----------
