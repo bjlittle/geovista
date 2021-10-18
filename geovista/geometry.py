@@ -8,7 +8,7 @@ import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
 
 from .common import set_jupyter_backend
-from .logging import get_logger
+from .log import get_logger
 
 __all__ = [
     "add_coastlines",

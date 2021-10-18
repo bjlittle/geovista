@@ -4,7 +4,8 @@ from pathlib import Path
 from appdirs import user_cache_dir
 
 from ._version import version as __version__  # noqa: F401
-from .logging import get_logger
+from .geometry import add_coastlines, coastline_mesh, coastlines  # noqa: F401
+from .log import get_logger
 
 # Configure the top-level logger.
 logger = get_logger(__name__)

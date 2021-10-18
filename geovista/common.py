@@ -6,7 +6,7 @@ from typing import Optional
 
 import pyvista as pv
 
-from .logging import get_logger
+from .log import get_logger
 
 __all__ = ["set_jupyter_backend"]
 
