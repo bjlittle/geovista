@@ -23,10 +23,12 @@ _LOCK = threading.Lock()
 
 class Formatter(logging.Formatter):
     """
-    .. versionadded:: 0.1.0
-
     A :class:`logging.Formatter` that always appends the class name,
     if available, and the function name to a logging message.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
 
@@ -80,8 +82,6 @@ def get_logger(
     name: Union[str, None], level: Optional[Union[int, str]] = None
 ) -> logging.Logger:
     """
-    .. versionadded:: 0.1.0
-
     Create and configure a :class:`logging.Logger`.
 
     Child loggers will simply propagate their messages to the first parent
@@ -109,6 +109,10 @@ def get_logger(
     -------
     logging.Logger
         A configured :class:`logging.Logger`.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
     # Determine if this is the root logger.

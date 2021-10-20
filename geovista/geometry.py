@@ -7,16 +7,14 @@ from numpy.typing import ArrayLike
 import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
 
-from .common import set_jupyter_backend
+from .common import set_jupyter_backend, to_xy0
 from .log import get_logger
 
 __all__ = [
     "add_coastlines",
     "coastline_geometries",
     "coastline_mesh",
-    "coastlines",
-    "to_xy0",
-    "to_xyz",
+    "get_coastlines",
 ]
 
 # Configure the logger.
@@ -29,9 +27,6 @@ logger = get_logger(__name__)
 #: Default coastline resolution.
 COASTLINE_RESOLUTION: str = "110m"
 
-#: Default to an S2 unit sphere for 3D plotting.
-RADIUS: float = 1.0
-
 
 def add_coastlines(
     resolution: Optional[str] = COASTLINE_RESOLUTION,
@@ -40,8 +35,6 @@ def add_coastlines(
     **kwargs,
 ) -> pv.Plotter:
     """
-    .. versionadded:: 0.1.0
-
     Add the specified Natural Earth coastline geometries to a PyVista plotter
     for rendering.
 
@@ -58,7 +51,7 @@ def add_coastlines(
         The :class:`~pyvista.Plotter` which renders the scene.
         If ``None``, a new :class:`~pyvista.Plotter` will be created.
     **kwargs : dict, optional
-        Additional `kwargs` to be passed to PyVista when creating a coastline
+        Additional `kwargs` to be passed to PyVista when creating a coastlines
         :class:`~pyvista.PolyData`.
 
     Returns
@@ -66,21 +59,22 @@ def add_coastlines(
     Plotter
         The provided `plotter` or a new :class:`~pyvista.Plotter`.
 
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
     """
     notebook = set_jupyter_backend()
 
     if plotter is None:
         plotter = pv.Plotter(notebook=notebook)
 
-    # geocentric = projection is None
-    # coastlines = get_coastlines(resolution, geocentric=geocentric)
-
-    # if projection is not None:
-    #     vtk_projection = vtkPolyDataTransformFilter(projection)
-    #     coastlines = [vtk_projection.transform(coastline) for coastline in coastlines]
     #
-    # for coastline in coastlines:
-    #     plotter.add_mesh(coastline, pickable=False, **kwargs)
+    # TODO: support planar projections
+    #
+
+    mesh = get_coastlines(resolution=resolution)
+    plotter.add_mesh(mesh, pickable=False, **kwargs)
 
     return plotter
 
@@ -90,8 +84,6 @@ def coastline_geometries(
     resolution: Optional[str] = COASTLINE_RESOLUTION,
 ) -> List[ArrayLike]:
     """
-    .. versionadded:: 0.1.0
-
     Fetch the Natural Earth shapefile coastline geometries for the required
     resolution.
 
@@ -111,6 +103,10 @@ def coastline_geometries(
     -------
     List[ArrayLike]
         A list containing one or more coastline xy0 geometries.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
     lines, multi_lines = [], []
@@ -148,8 +144,6 @@ def coastline_mesh(
     geocentric: Optional[bool] = True,
 ) -> pv.PolyData:
     """
-    .. versionadded:: 0.1.0
-
     Create a mesh of coastline geometries at the specified resolution.
 
     Parameters
@@ -169,10 +163,14 @@ def coastline_mesh(
     PolyData
         A mesh of the coastlines.
 
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
     """
     # TODO: address "fudge-factor" zlevel
     if radius is None:
-        radius = RADIUS + RADIUS / 1e4
+        radius = 1.0 + 1.0 / 1e4
 
     geoms = coastline_geometries(resolution=resolution)
     npoints_per_geom = [geom.shape[0] for geom in geoms]
@@ -214,13 +212,11 @@ def coastline_mesh(
 
 
 @lru_cache
-def coastlines(
+def get_coastlines(
     resolution: Optional[str] = COASTLINE_RESOLUTION,
     geocentric: Optional[bool] = True,
 ) -> pv.PolyData:
     """
-    .. versionadded:: 0.1.0
-
     Create or fetch the cached mesh of the coastlines.
 
     Parameters
@@ -237,6 +233,10 @@ def coastlines(
     PolyData
         A mesh of the coastlines.
 
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
     """
     from .cache import fetch_coastlines
 
@@ -250,90 +250,3 @@ def coastlines(
         mesh = coastline_mesh(resolution=resolution, geocentric=geocentric)
 
     return mesh
-
-
-def to_xy0(
-    xyz: ArrayLike, radius: Optional[float] = RADIUS, stacked: Optional[bool] = True
-) -> ArrayLike:
-    """
-    .. versionadded:: 0.1.0
-
-    Convert geocentric xyz coordinates to longitude (φ) and latitude (λ)
-    xy0 (i.e., φλ0) coordinates.
-
-    Parameters
-    ----------
-    xyz : ArrayLike
-        A sequence of one or more (x, y, z) values to be converted to
-        longitude and latitude coordinates.
-    radius : bool, default=1.0
-        The radius of the sphere. Defaults to an S2 unit sphere.
-    stacked : bool, default=True
-        Specify whether the resultant xy0 coordinates have shape (N, 3).
-        Otherwise, they will have shape (3, N).
-
-    Returns
-    -------
-    ArrayLike
-        The longitude and latitude xy0 coordinates, in degrees.
-
-    """
-    xyz = np.asanyarray(xyz)
-    lons = np.degrees(np.arctan2(xyz[:, 1], xyz[:, 0]))
-    lats = np.degrees(np.arcsin(xyz[:, 2] / radius))
-    z = np.zeros_like(lons)
-    data = [lons, lats, z]
-
-    if stacked:
-        result = np.vstack(data).T
-    else:
-        result = np.array(data)
-
-    return result
-
-
-def to_xyz(
-    longitudes: ArrayLike,
-    latitudes: ArrayLike,
-    radius: Optional[float] = RADIUS,
-    stacked: Optional[bool] = True,
-) -> ArrayLike:
-    """
-    .. versionadded:: 0.1.0
-
-    Convert longitudes (φ) and latitudes (λ) to geocentric xyz coordinates.
-
-    Parameters
-    ----------
-    longitudes : ArrayLike
-        The longitude values (degrees) to be converted.
-    latitudes : ArrayLike
-        The latitude values (degrees) to be converted.
-    radius : float, default=1.0
-        The radius of the sphere. Defaults to an S2 unit sphere.
-    stacked : bool, default=True
-        Specify whether the resultant xyz coordinates have shape (N, 3).
-        Otherwise, they will have shape (3, N).
-
-    Returns
-    -------
-    ArrayLike
-        The geocentric xyz coordinates.
-
-    """
-    longitudes = np.ravel(longitudes)
-    latitudes = np.ravel(latitudes)
-
-    x_rad = np.radians(longitudes)
-    y_rad = np.radians(90.0 - latitudes)
-    x = radius * np.sin(y_rad) * np.cos(x_rad)
-    y = radius * np.sin(y_rad) * np.sin(x_rad)
-    z = radius * np.cos(y_rad)
-    xyz = [x, y, z]
-
-    if stacked:
-        xyz = np.vstack(xyz).T
-    else:
-        xyz = np.array(xyz)
-
-    return xyz
