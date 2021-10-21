@@ -25,4 +25,4 @@ verbose = "False"
 
 
 [tool.setuptools_scm]
-write_to = "geovista/_version.py"
+write_to = "lib/geovista/_version.py"

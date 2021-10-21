@@ -4,7 +4,7 @@
 files: |
     (?x)(
         setup\.py|
-        geovista\/.+\.py
+        lib\/geovista\/.+\.py
     )
 minimum_pre_commit_version: 1.21.0
 
