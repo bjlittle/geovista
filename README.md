@@ -1,8 +1,7 @@
 <h1 align="center">
   GeoVista
+  <br>
 </h1>
-
-<br>
 
 <h4 align="center">
   Cartographic rendering and mesh analytics powered by PyVista
