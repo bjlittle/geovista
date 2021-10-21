@@ -17,7 +17,7 @@ logger = get_logger(__name__)
 #: Geodesic ellipse for manifold creation. See :func:`pyproj.get_ellps_map`.
 MANIFOLD_ELLIPSE: str = "WGS84"
 
-#: Number of equally spaced geodesic points between of including endpoint/s.
+#: Number of equally spaced geodesic points between/including endpoint/s.
 MANIFOLD_NPTS: int = 50
 
 
