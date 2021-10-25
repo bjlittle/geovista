@@ -65,6 +65,12 @@ PANEL_BBOX_BY_IDX: Dict[int, Tuple[Corners, Corners]] = {
 #: The number of cubed sphere panels.
 N_PANELS: int = len(PANEL_IDX_BY_NAME)
 
+#: Preference for an operation to be cell/face focused.
+PREFERENCE_CELL: str = "cell"
+
+#: Preference for an operation to be point/node focused.
+PREFERENCE_POINT: str = "point"
+
 
 def npoints(
     start_lon: float,
@@ -426,6 +432,7 @@ class BBox:
         surface: pv.PolyData,
         tolerance: Optional[float] = BBOX_TOLERANCE,
         outside: Optional[bool] = False,
+        preference: str = PREFERENCE_CELL,
     ) -> pv.UnstructuredGrid:
         """
         Extract the region of the ``surface`` contained within the
@@ -446,6 +453,10 @@ class BBox:
             By default, select those points of the ``surface`` that are inside
             the bounded-box. Otherwise, select those points that are outside
             the bounded-box.
+        preference : str, default="cell"
+            Extract the bounded ``surface`` region based on ``cell`` centers.
+            Otherwise, base the extraction on any ``point`` or node of a
+            ``surface`` face being enclosed by the bounded-box.
 
         Returns
         -------
@@ -459,10 +470,29 @@ class BBox:
         .. versionadded:: 0.1.0
 
         """
+        if preference is None:
+            preference = PREFERENCE_CELL
+
+        if preference not in [PREFERENCE_POINT, PREFERENCE_CELL]:
+            emsg = (
+                f"Preference must be either '{PREFERENCE_POINT}' or "
+                f"'{PREFERENCE_CELL}', got '{preference}'."
+            )
+            raise ValueError(emsg)
+
+        if preference == PREFERENCE_CELL:
+            original = surface
+            surface = surface.cell_centers()
+
         selected = surface.select_enclosed_points(
             self.mesh, tolerance=tolerance, inside_out=outside
         )
-        mesh = selected.threshold(0.5, scalars="SelectedPoints", preference="cell")
+
+        if preference == PREFERENCE_CELL:
+            mesh = original.extract_cells(selected["SelectedPoints"].view(bool))
+        else:
+            mesh = selected.threshold(0.5, scalars="SelectedPoints", preference="cell")
+
         return mesh
 
     def enclosed_cells(
@@ -470,6 +500,7 @@ class BBox:
         surface: pv.PolyData,
         tolerance: Optional[float] = BBOX_TOLERANCE,
         outside: Optional[bool] = False,
+        preference: str = PREFERENCE_CELL,
     ) -> ArrayLike:
         """
         Identify the cells of the ``surface`` contained within the
@@ -490,6 +521,10 @@ class BBox:
             By default, select those points of the ``surface`` that are inside
             the bounded-box. Otherwise, select those points that are outside
             the bounded-box.
+        preference : str, default="cell"
+            Extract the bounded ``surface`` region based on ``cell`` centers.
+            Otherwise, base the extraction on any ``point`` or node of a
+            ``surface`` face being enclosed by the bounded-box.
 
         Returns
         -------
@@ -504,6 +539,19 @@ class BBox:
         .. versionadded:: 0.1.0
 
         """
+        if preference is None:
+            preference = PREFERENCE_CELL
+
+        if preference not in [PREFERENCE_POINT, PREFERENCE_CELL]:
+            emsg = (
+                f"Preference must be either '{PREFERENCE_POINT}' or "
+                f"'{PREFERENCE_CELL}', got '{preference}'."
+            )
+            raise ValueError(emsg)
+
+        if preference == PREFERENCE_CELL:
+            surface = surface.cell_centers()
+
         selected = surface.select_enclosed_points(
             self.mesh, tolerance=tolerance, inside_out=outside
         )
