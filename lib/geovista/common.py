@@ -221,7 +221,7 @@ def wrap(
     longitudes: ArrayLike, base: float = -180.0, period: Optional[float] = 360.0
 ) -> ArrayLike:
     """
-    Transform the longitude values to be within the closed range interval
+    Transform the longitude values to be within the closed interval
     [base, base + period].
 
     Parameters

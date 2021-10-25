@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -9,10 +9,13 @@ import pyvista as pv
 from .common import to_xyz, wrap
 from .log import get_logger
 
-__all__ = ["BBox", "points", "points_by_idx"]
+__all__ = ["BBox", "npoints", "npoints_by_idx", "panel", "wedge"]
 
 # Configure the logger.
 logger = get_logger(__name__)
+
+# type aliases
+Corners = Tuple[float, float, float, float]
 
 #: Default geodesic ellipse. See :func:`pyproj.get_ellps_map`.
 ELLIPSE: str = "WGS84"
@@ -26,8 +29,53 @@ BBOX_C: int = 512
 #: The bounding-box tolerance on intersection.
 BBOX_TOLERANCE: int = 0
 
+#: Lookup table for cubed sphere panel index by panel name.
+PANEL_IDX_BY_NAME: Dict[str, int] = dict(
+    africa=0,
+    asia=1,
+    pacific=2,
+    americas=3,
+    polar=4,
+    antarctic=5,
+)
 
-def points(
+#: Lookup table for cubed sphere panel name by panel index.
+PANEL_NAME_BY_IDX: Dict[int, str] = {
+    0: "africa",
+    1: "asia",
+    2: "pacific",
+    3: "americas",
+    4: "polar",
+    5: "antarctic",
+}
+
+#: Latitude (degrees) of a cubed sphere panel corner.
+PANEL_CORNER: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
+
+#: Cubed sphere panel bounded-box longitudes and latitudes.
+PANEL_BBOX_BY_IDX: Dict[int, Tuple[Corners, Corners]] = {
+    0: ((-45, 45, 45, -45), (PANEL_CORNER, PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER)),
+    1: ((45, 135, 135, 45), (PANEL_CORNER, PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER)),
+    2: (
+        (135, -135, -135, 135),
+        (PANEL_CORNER, PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER),
+    ),
+    3: (
+        (-135, -45, -45, -135),
+        (PANEL_CORNER, PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER),
+    ),
+    4: ((-45, 45, 135, -135), (PANEL_CORNER, PANEL_CORNER, PANEL_CORNER, PANEL_CORNER)),
+    5: (
+        (-45, 45, 135, -135),
+        (-PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER),
+    ),
+}
+
+#: The number of cubed sphere panels.
+N_PANELS: int = len(PANEL_IDX_BY_NAME)
+
+
+def npoints(
     start_lon: float,
     start_lat: float,
     end_lon: float,
@@ -68,7 +116,7 @@ def points(
     return glons, glats
 
 
-def points_by_idx(
+def npoints_by_idx(
     lons: ArrayLike,
     lats: ArrayLike,
     start_idx: int,
@@ -93,7 +141,7 @@ def points_by_idx(
     start_lonlat = lons[start_idx], lats[start_idx]
     end_lonlat = lons[end_idx], lats[end_idx]
 
-    result = points(
+    result = npoints(
         *start_lonlat,
         *end_lonlat,
         npts=npts,
@@ -269,7 +317,7 @@ class BBox:
                 row = slice(None)
             if column is None:
                 column = slice(None)
-            glons, glats = points_by_idx(
+            glons, glats = npoints_by_idx(
                 self._bbox_lons,
                 self._bbox_lats,
                 idx1,
@@ -472,6 +520,42 @@ class BBox:
         return cells
 
 
+def panel(
+    name: Union[int, str],
+    ellps: Optional[str] = ELLIPSE,
+    radius: Optional[float] = 1.0,
+    c: Optional[int] = BBOX_C,
+    triangulate: Optional[bool] = False,
+) -> BBox:
+    """
+    TBD
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if isinstance(name, str):
+        if name.lower() not in PANEL_IDX_BY_NAME.keys():
+            ordered = sorted(PANEL_IDX_BY_NAME.keys())
+            names = ", ".join(f"'{key}'" for key in ordered[:-1])
+            names = f"{names} or '{ordered[-1]}'"
+            emsg = f"Panel name must be either {names}, got '{name}'."
+            raise ValueError(emsg)
+        idx = PANEL_IDX_BY_NAME[name]
+    else:
+        idx = name
+        if idx not in range(N_PANELS):
+            emsg = (
+                f"Panel index must be in the closed interval "
+                f"[0, {N_PANELS-1}], got '{idx}'."
+            )
+            raise ValueError(emsg)
+
+    lons, lats = PANEL_BBOX_BY_IDX[idx]
+    return BBox(lons, lats, ellps=ellps, radius=radius, c=c, triangulate=triangulate)
+
+
 def wedge(
     lon1: float,
     lon2: float,
@@ -490,7 +574,10 @@ def wedge(
     """
     delta = abs(lon1 - lon2)
     if 0 < delta >= 180:
-        emsg = "A geodesic wedge must have a longitude range of (0, 180), got {delta}."
+        emsg = (
+            "A geodesic wedge must have a longitude difference in the "
+            f"open interval (0, 180), got '{delta}'."
+        )
         raise ValueError(emsg)
     lons = (lon1, lon2, lon2, lon1)
     lats = (90, 90, -90, -90)
