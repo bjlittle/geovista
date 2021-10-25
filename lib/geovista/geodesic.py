@@ -455,7 +455,7 @@ class BBox:
             the bounded-box.
         preference : str, default="cell"
             Extract the bounded ``surface`` region based on ``cell`` centers.
-            Otherwise, base the extraction on any ``point`` or node of a
+            Otherwise, base the extraction on any ``point`` (node) of a
             ``surface`` face being enclosed by the bounded-box.
 
         Returns
@@ -523,7 +523,7 @@ class BBox:
             the bounded-box.
         preference : str, default="cell"
             Extract the bounded ``surface`` region based on ``cell`` centers.
-            Otherwise, base the extraction on any ``point`` or node of a
+            Otherwise, base the extraction on any ``point`` (node) of a
             ``surface`` face being enclosed by the bounded-box.
 
         Returns
