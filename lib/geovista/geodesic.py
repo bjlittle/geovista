@@ -9,7 +9,7 @@ import pyvista as pv
 from .common import to_xyz, wrap
 from .log import get_logger
 
-__all__ = ["BBox", "geodesic", "geodesic_by_idx"]
+__all__ = ["BBox", "points", "points_by_idx"]
 
 # Configure the logger.
 logger = get_logger(__name__)
@@ -27,7 +27,7 @@ BBOX_C: int = 512
 BBOX_TOLERANCE: int = 0
 
 
-def geodesic(
+def points(
     start_lon: float,
     start_lat: float,
     end_lon: float,
@@ -68,7 +68,7 @@ def geodesic(
     return glons, glats
 
 
-def geodesic_by_idx(
+def points_by_idx(
     lons: ArrayLike,
     lats: ArrayLike,
     start_idx: int,
@@ -93,7 +93,7 @@ def geodesic_by_idx(
     start_lonlat = lons[start_idx], lats[start_idx]
     end_lonlat = lons[end_idx], lats[end_idx]
 
-    result = geodesic(
+    result = points(
         *start_lonlat,
         *end_lonlat,
         npts=npts,
@@ -269,7 +269,7 @@ class BBox:
                 row = slice(None)
             if column is None:
                 column = slice(None)
-            glons, glats = geodesic_by_idx(
+            glons, glats = points_by_idx(
                 self._bbox_lons,
                 self._bbox_lats,
                 idx1,
