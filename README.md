@@ -4,7 +4,7 @@
 </h1>
 
 <h4 align="center">
-  Cartographic rendering and mesh analytics powered by PyVista
+  Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
 </h4>
 
 <p align="center">
