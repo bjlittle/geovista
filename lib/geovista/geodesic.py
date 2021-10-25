@@ -199,6 +199,25 @@ class BBox:
 
         self._generate_mesh()
 
+    def _face_edge_idxs(self) -> ArrayLike:
+        """
+        TBD
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        edge = np.concatenate(
+            [
+                self._idx_map[0],
+                self._idx_map[1:, -1],
+                self._idx_map[-1, -2::-1],
+                self._idx_map[-2:0:-1, 0],
+            ]
+        )
+        return edge
+
     def _generate_face(self) -> None:
         """
         TBD
@@ -272,6 +291,10 @@ class BBox:
         faces = np.vstack([inner_faces, outer_faces])
         bbox_faces = np.hstack([faces_N, faces])
 
+        # convert bbox lons/lats to ndarray (internal convenience i.e., boundary)
+        self._bbox_lons = np.asanyarray(self._bbox_lons)
+        self._bbox_lats = np.asanyarray(self._bbox_lats)
+
         # generate the face points
         inner_xyz = to_xyz(self._bbox_lons, self._bbox_lats, radius=self._inner_radius)
         outer_xyz = to_xyz(self._bbox_lons, self._bbox_lats, radius=self._outer_radius)
@@ -304,20 +327,33 @@ class BBox:
         """
         skirt_n_faces = 4 * self.c
         faces_N = np.broadcast_to(np.array([4], dtype=np.int8), (skirt_n_faces, 1))
-        faces_c1 = np.concatenate(
-            [
-                self._idx_map[0],
-                self._idx_map[1:, -1],
-                self._idx_map[-1, -2::-1],
-                self._idx_map[-2:0:-1, 0],
-            ]
-        ).reshape(-1, 1)
+        faces_c1 = self._face_edge_idxs().reshape(-1, 1)
         faces_c2 = np.roll(faces_c1, -1)
         faces_c3 = faces_c2 + self._n_points
         faces_c4 = np.roll(faces_c3, 1)
         faces = np.hstack([faces_N, faces_c1, faces_c2, faces_c3, faces_c4])
         logger.debug(f"skirt_n_faces: {skirt_n_faces}")
         return faces
+
+    def boundary(self, radius: Optional[float] = None):
+        """
+        TBD
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        # TODO: address "fudge-factor" zlevel
+        if radius is None:
+            radius = 1.0 + 1.0 / 1e4
+
+        edge_idxs = self._face_edge_idxs()
+        edge_lons = self._bbox_lons[edge_idxs]
+        edge_lats = self._bbox_lats[edge_idxs]
+        edge_xyz = to_xyz(edge_lons, edge_lats, radius=radius)
+        edge = pv.lines_from_points(edge_xyz, close=True)
+        return edge
 
     def enclosed(
         self,
@@ -359,7 +395,6 @@ class BBox:
         """
         selected = surface.select_enclosed_points(self.mesh, tolerance=tolerance, inside_out=outside)
         mesh = selected.threshold(0.5, scalars="SelectedPoints", preference="cell")
-
         return mesh
 
     def enclosed_cells(
@@ -403,5 +438,4 @@ class BBox:
         """
         selected = surface.select_enclosed_points(self.mesh, tolerance=tolerance, inside_out=outside)
         cells = selected["SelectedPoints"].view(bool)
-
         return cells
