@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -200,6 +200,14 @@ class BBox:
         self._generate_mesh()
 
     def _generate_face(self) -> None:
+        """
+        TBD
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
         # corner indices
         c1_idx, c2_idx, c3_idx, c4_idx = range(4)
 
@@ -241,6 +249,14 @@ class BBox:
             bbox_update(row[0], row[-1], row=row_idx)
 
     def _generate_mesh(self) -> None:
+        """
+        TBD
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
         self._generate_face()
         skirt_faces = self._generate_skirt()
 
@@ -278,6 +294,14 @@ class BBox:
             )
 
     def _generate_skirt(self) -> ArrayLike:
+        """
+        TBD
+
+        Notes
+        -----
+        .. verseionadded:: 0.1.0
+
+        """
         skirt_n_faces = 4 * self.c
         faces_N = np.broadcast_to(np.array([4], dtype=np.int8), (skirt_n_faces, 1))
         faces_c1 = np.concatenate(
@@ -297,31 +321,87 @@ class BBox:
 
     def enclosed(
         self,
-        surface: Union[List[pv.PolyData], pv.PolyData],
+        surface: pv.PolyData,
         tolerance: Optional[float] = BBOX_TOLERANCE,
-        invert: Optional[bool] = False,
-    ) -> Union[pv.UnstructuredGrid, Tuple[pv.UnstructuredGrid]]:
+        outside: Optional[bool] = False,
+    ) -> pv.UnstructuredGrid:
         """
-        TBD
+        Extract the region of the ``surface`` contained within the
+        bounded-box as a mesh.
+
+        Note that, any ``surface`` points that are on the edge of the
+        bounded-box will be deemed to be inside, and so will the cells
+        associated with those ``surface`` points.
+
+        Parameters
+        ----------
+        surface : PolyData
+            The :class:`~pyvista.PolyData` mesh to be checked for containment.
+        tolerance : float, default=0
+            The tolerance on the intersection operation with the ``surface``,
+            expressed as a fraction of the diagonal of the bounding box.
+        outside : bool, default=False
+            By default, select those points of the ``surface`` that are inside
+            the bounded-box. Otherwise, select those points that are outside
+            the bounded-box.
+
+        Returns
+        -------
+        UnstructuredGrid
+            The :class:`~pyvista.UnstructuredGrid` representing those parts of
+            the provided ``surface`` enclosed by the bounded-box. This behaviour
+            may be inverted with the ``outside`` parameter.
 
         Notes
         -----
         .. versionadded:: 0.1.0
 
         """
-        if not isinstance(surface, Iterable):
-            surface = [surface]
+        selected = surface.select_enclosed_points(self.mesh, tolerance=tolerance, inside_out=outside)
+        mesh = selected.threshold(0.5, scalars="SelectedPoints", preference="cell")
 
-        inside, surfaces = [], surface
+        return mesh
 
-        for surface in surfaces:
-            result = surface.select_enclosed_points(
-                self.mesh, tolerance=tolerance, inside_out=invert
-            )
-            inside.append(
-                result.threshold(0.5, scalars="SelectedPoints", preference="cell")
-            )
+    def enclosed_cells(
+        self,
+        surface: pv.PolyData,
+        tolerance: Optional[float] = BBOX_TOLERANCE,
+        outside: Optional[bool] = False,
+    ) -> ArrayLike:
+        """
+        Identify the cells of the ``surface`` contained within the
+        bounded-box.
 
-        result = tuple(inside) if len(inside) > 1 else inside[0]
+        Note that, any ``surface`` points that are on the edge of the
+        bounded-box will be deemed to be inside, and so will the cells
+        associated with those ``surface`` points.
 
-        return result
+        Parameters
+        ----------
+        surface : PolyData
+            The :class:`~pyvista.PolyData` mesh to be checked for containment.
+        tolerance : float, default=0
+            The tolerance on the intersection operation with the ``surface``,
+            expressed as a fraction of the diagonal of the bounding box.
+        outside : bool, default=False
+            By default, select those points of the ``surface`` that are inside
+            the bounded-box. Otherwise, select those points that are outside
+            the bounded-box.
+
+        Returns
+        -------
+        ArrayLike
+            A boolean array, with the same shape as the ``surface.cell_data``,
+            indicating those cells that are inside (``True``) and those that
+            are outside (``False``). This behaviour may be inverted with the
+            ``outside`` parameter.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        selected = surface.select_enclosed_points(self.mesh, tolerance=tolerance, inside_out=outside)
+        cells = selected["SelectedPoints"].view(bool)
+
+        return cells
