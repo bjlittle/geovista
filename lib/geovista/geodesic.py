@@ -21,7 +21,7 @@ ELLIPSE: str = "WGS84"
 GEODESIC_NPTS: int = 64
 
 #: The bounding-box face geometry will contain ``BBOX_C**2`` cells.
-BBOX_C: int = 256
+BBOX_C: int = 512
 
 #: The bounding-box tolerance on intersection.
 BBOX_TOLERANCE: int = 0
@@ -116,7 +116,7 @@ class BBox:
 
     """
 
-    RADIUS_RATIO = 1e-1
+    RADIUS_RATIO = 3e-2
 
     def __init__(
         self,
@@ -301,6 +301,14 @@ class BBox:
         tolerance: Optional[float] = BBOX_TOLERANCE,
         invert: Optional[bool] = False,
     ) -> Union[pv.UnstructuredGrid, Tuple[pv.UnstructuredGrid]]:
+        """
+        TBD
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
         if not isinstance(surface, Iterable):
             surface = [surface]
 
@@ -313,5 +321,7 @@ class BBox:
             inside.append(
                 result.threshold(0.5, scalars="SelectedPoints", preference="cell")
             )
+
         result = tuple(inside) if len(inside) > 1 else inside[0]
+
         return result
