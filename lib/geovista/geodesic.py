@@ -69,8 +69,8 @@ def geodesic(
 
 
 def geodesic_by_idx(
-    longitudes: ArrayLike,
-    latitudes: ArrayLike,
+    lons: ArrayLike,
+    lats: ArrayLike,
     start_idx: int,
     end_idx: int,
     npts: Optional[int] = GEODESIC_NPTS,
@@ -90,8 +90,8 @@ def geodesic_by_idx(
     if geod is None:
         geod = pyproj.Geod(ellps=ELLIPSE)
 
-    start_lonlat = longitudes[start_idx], latitudes[start_idx]
-    end_lonlat = longitudes[end_idx], latitudes[end_idx]
+    start_lonlat = lons[start_idx], lats[start_idx]
+    end_lonlat = lons[end_idx], lats[end_idx]
 
     result = geodesic(
         *start_lonlat,
@@ -120,8 +120,8 @@ class BBox:
 
     def __init__(
         self,
-        longitudes: ArrayLike,
-        latitudes: ArrayLike,
+        lons: ArrayLike,
+        lats: ArrayLike,
         ellps: Optional[str] = ELLIPSE,
         radius: Optional[float] = 1.0,
         c: Optional[int] = BBOX_C,
@@ -135,13 +135,13 @@ class BBox:
         .. versionadded:: 0.1.0
 
         """
-        if not isinstance(longitudes, Iterable):
-            longitudes = [longitudes]
-        if not isinstance(latitudes, Iterable):
-            latitudes = [latitudes]
+        if not isinstance(lons, Iterable):
+            lons = [lons]
+        if not isinstance(lats, Iterable):
+            lats = [lats]
 
-        lons = np.asanyarray(longitudes)
-        lats = np.asanyarray(latitudes)
+        lons = np.asanyarray(lons)
+        lats = np.asanyarray(lats)
         n_lons, n_lats = lons.size, lats.size
 
         if n_lons != n_lats:
@@ -170,8 +170,8 @@ class BBox:
         if np.isclose(lons[0], lons[-1]) and np.isclose(lats[0], lats[-1]):
             lons, lats = lons[-1], lats[-1]
 
-        self.longitudes = lons
-        self.latitudes = lats
+        self.lons = lons
+        self.lats = lats
         self.ellps = ellps
         self.radius = radius
         self.c = c
@@ -208,8 +208,8 @@ class BBox:
             if all(map(lambda x: x[0] == x[1], zip(lhs, rhs))) and np.isclose(
                 self.radius, other.radius
             ):
-                if np.allclose(self.longitudes, other.longitudes):
-                    result = np.allclose(self.latitudes, other.latitudes)
+                if np.allclose(self.lons, other.lons):
+                    result = np.allclose(self.lats, other.lats)
         return result
 
     def __ne__(self, other) -> bool:
@@ -283,7 +283,7 @@ class BBox:
             bbox_extend(glons, glats)
 
         # register bbox edge indices, and points
-        bbox_extend(self.longitudes, self.latitudes)
+        bbox_extend(self.lons, self.lats)
         bbox_update(c1_idx, c2_idx, row=0)
         bbox_update(c4_idx, c3_idx, row=-1)
         bbox_update(c1_idx, c4_idx, column=0)
@@ -470,3 +470,28 @@ class BBox:
         )
         cells = selected["SelectedPoints"].view(bool)
         return cells
+
+
+def wedge(
+    lon1: float,
+    lon2: float,
+    ellps: Optional[str] = ELLIPSE,
+    radius: Optional[float] = 1.0,
+    c: Optional[int] = BBOX_C,
+    triangulate: Optional[bool] = False,
+) -> BBox:
+    """
+    TBD
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    delta = abs(lon1 - lon2)
+    if 0 < delta >= 180:
+        emsg = "A geodesic wedge must have a longitude range of (0, 180), got {delta}."
+        raise ValueError(emsg)
+    lons = (lon1, lon2, lon2, lon1)
+    lats = (90, 90, -90, -90)
+    return BBox(lons, lats, ellps=ellps, radius=radius, c=c, triangulate=triangulate)
