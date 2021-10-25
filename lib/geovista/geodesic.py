@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -9,19 +9,22 @@ import pyvista as pv
 from .common import to_xyz, wrap
 from .log import get_logger
 
-__all__ = ["bbox", "geodesic", "geodesic_by_idx"]
+__all__ = ["BBox", "geodesic", "geodesic_by_idx"]
 
 # Configure the logger.
 logger = get_logger(__name__)
 
-#: Geodesic ellipse for manifold creation. See :func:`pyproj.get_ellps_map`.
-MANIFOLD_ELLIPSE: str = "WGS84"
+#: Default geodesic ellipse. See :func:`pyproj.get_ellps_map`.
+ELLIPSE: str = "WGS84"
 
 #: Number of equally spaced geodesic points between/including endpoint/s.
-MANIFOLD_NPTS: int = 64
+GEODESIC_NPTS: int = 64
 
-#: The bounding-box geometry will contain ``MANIFOLD_C**2`` faces.
-MANIFOLD_C: int = 128
+#: The bounding-box face geometry will contain ``BBOX_C**2`` cells.
+BBOX_C: int = 256
+
+#: The bounding-box tolerance on intersection.
+BBOX_TOLERANCE: int = 0
 
 
 def geodesic(
@@ -29,7 +32,7 @@ def geodesic(
     start_lat: float,
     end_lon: float,
     end_lat: float,
-    npts: Optional[int] = MANIFOLD_NPTS,
+    npts: Optional[int] = GEODESIC_NPTS,
     radians: Optional[bool] = False,
     include_start: Optional[bool] = False,
     include_end: Optional[bool] = False,
@@ -44,7 +47,7 @@ def geodesic(
 
     """
     if geod is None:
-        geod = pyproj.Geod(ellps=MANIFOLD_ELLIPSE)
+        geod = pyproj.Geod(ellps=ELLIPSE)
 
     initial_idx = 0 if include_start else 1
     terminus_idx = 0 if include_end else 1
@@ -70,12 +73,12 @@ def geodesic_by_idx(
     latitudes: ArrayLike,
     start_idx: int,
     end_idx: int,
-    npts: Optional[int] = MANIFOLD_NPTS,
+    npts: Optional[int] = GEODESIC_NPTS,
     radians: Optional[bool] = False,
     include_start: Optional[bool] = False,
     include_end: Optional[bool] = False,
     geod: Optional[pyproj.Geod] = None,
-) -> Tuple[List[float], List[float]]:
+) -> Tuple[Tuple[float], Tuple[float]]:
     """
     TBD
 
@@ -85,7 +88,7 @@ def geodesic_by_idx(
 
     """
     if geod is None:
-        geod = pyproj.Geod(ellps=MANIFOLD_ELLIPSE)
+        geod = pyproj.Geod(ellps=ELLIPSE)
 
     start_lonlat = longitudes[start_idx], latitudes[start_idx]
     end_lonlat = longitudes[end_idx], latitudes[end_idx]
@@ -103,14 +106,7 @@ def geodesic_by_idx(
     return result
 
 
-def bbox(
-    longitudes: ArrayLike,
-    latitudes: ArrayLike,
-    ellps: Optional[str] = MANIFOLD_ELLIPSE,
-    radius: Optional[float] = 1.1,
-    c: Optional[int] = MANIFOLD_C,
-    triangulate: Optional[bool] = False,
-) -> pv.PolyData:
+class BBox:
     """
     TBD
 
@@ -119,100 +115,203 @@ def bbox(
     .. versionadded:: 0.1.0
 
     """
-    if not isinstance(longitudes, Iterable):
-        longitudes = [longitudes]
-    if not isinstance(latitudes, Iterable):
-        latitudes = [latitudes]
 
-    lons = np.asanyarray(longitudes)
-    lats = np.asanyarray(latitudes)
-    n_lons, n_lats = lons.size, lats.size
+    RADIUS_RATIO = 1e-1
 
-    if n_lons != n_lats:
-        emsg = (
-            f"Require the same number of longitudes ({n_lons}) and "
-            f"latitudes ({n_lats})."
+    def __init__(
+        self,
+        longitudes: ArrayLike,
+        latitudes: ArrayLike,
+        ellps: Optional[str] = ELLIPSE,
+        radius: Optional[float] = 1.0,
+        c: Optional[int] = BBOX_C,
+        triangulate: Optional[bool] = False,
+    ):
+        """
+        TBD
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        if not isinstance(longitudes, Iterable):
+            longitudes = [longitudes]
+        if not isinstance(latitudes, Iterable):
+            latitudes = [latitudes]
+
+        lons = np.asanyarray(longitudes)
+        lats = np.asanyarray(latitudes)
+        n_lons, n_lats = lons.size, lats.size
+
+        if n_lons != n_lats:
+            emsg = (
+                f"Require the same number of longitudes ({n_lons}) and "
+                f"latitudes ({n_lats})."
+            )
+            raise ValueError(emsg)
+
+        if n_lons < 4:
+            emsg = (
+                "Require a bounded-box geometry containing at least 4 longitude/latitude "
+                f"values to create the bounded-box manifold, only got {n_lons}."
+            )
+            raise ValueError(emsg)
+
+        if n_lons > 5:
+            emsg = (
+                "Require a bounded-box geometry containing 4 (open) or 5 (closed) "
+                "longitude/latitude values to create the bounded-box manifold, "
+                f"got {n_lons}."
+            )
+            raise ValueError(emsg)
+
+        # ensure the specified bbox geometry is open
+        if np.isclose(lons[0], lons[-1]) and np.isclose(lats[0], lats[-1]):
+            lons, lats = lons[-1], lats[-1]
+
+        self.longitudes = lons
+        self.latitudes = lats
+        self.ellps = ellps
+        self.radius = radius
+        self.c = c
+        self.triangulate = triangulate
+
+        # initialise
+        self._idx_map = np.empty((self.c + 1, self.c + 1), dtype=int)
+        self._bbox_lons, self._bbox_lats = [], []
+        self._bbox_count = 0
+        self._geod = pyproj.Geod(ellps=ellps)
+        self._npts = self.c - 1
+        self._n_faces = self.c * self.c
+        self._n_points = (self.c + 1) * (self.c + 1)
+
+        offset = self.radius * self.RADIUS_RATIO
+        self._inner_radius = self.radius - offset
+        self._outer_radius = self.radius + offset
+
+        logger.debug(f"c: {self.c}")
+        logger.debug(f"n_faces: {self._n_faces}")
+        logger.debug(f"idx_map: {self._idx_map.shape}")
+        logger.debug(
+            f"radii: {self.radius}, {self._inner_radius}, {self._outer_radius}"
         )
-        raise ValueError(emsg)
 
-    if n_lons < 4:
-        emsg = (
-            "Require a bounded-box geometry containing at least 4 longitude/latitude "
-            f"values to create the bounded-box manifold, only got {n_lons}."
+        self._generate_mesh()
+
+    def _generate_face(self) -> None:
+        # corner indices
+        c1_idx, c2_idx, c3_idx, c4_idx = range(4)
+
+        def bbox_extend(lons: Tuple[float], lats: Tuple[float]) -> None:
+            assert len(lons) == len(lats)
+            self._bbox_lons.extend(lons)
+            self._bbox_lats.extend(lats)
+            self._bbox_count += len(lons)
+
+        def bbox_update(idx1, idx2, row=None, column=None) -> None:
+            assert row is not None or column is not None
+            if row is None:
+                row = slice(None)
+            if column is None:
+                column = slice(None)
+            glons, glats = geodesic_by_idx(
+                self._bbox_lons,
+                self._bbox_lats,
+                idx1,
+                idx2,
+                npts=self._npts,
+                geod=self._geod,
+            )
+            self._idx_map[row, column] = (
+                [idx1] + list(np.arange(self._npts) + self._bbox_count) + [idx2]
+            )
+            bbox_extend(glons, glats)
+
+        # register bbox edge indices, and points
+        bbox_extend(self.longitudes, self.latitudes)
+        bbox_update(c1_idx, c2_idx, row=0)
+        bbox_update(c4_idx, c3_idx, row=-1)
+        bbox_update(c1_idx, c4_idx, column=0)
+        bbox_update(c2_idx, c3_idx, column=-1)
+
+        # register bbox inner indices and points
+        for row_idx in range(1, self.c):
+            row = self._idx_map[row_idx]
+            bbox_update(row[0], row[-1], row=row_idx)
+
+    def _generate_mesh(self) -> None:
+        self._generate_face()
+        skirt_faces = self._generate_skirt()
+
+        # generate the face indices
+        bbox_n_faces = self._n_faces * 2
+        faces_N = np.broadcast_to(np.array([4], dtype=np.int8), (bbox_n_faces, 1))
+        faces_c1 = np.ravel(self._idx_map[: self.c, : self.c]).reshape(-1, 1)
+        faces_c2 = np.ravel(self._idx_map[: self.c, 1:]).reshape(-1, 1)
+        faces_c3 = np.ravel(self._idx_map[1:, 1:]).reshape(-1, 1)
+        faces_c4 = np.ravel(self._idx_map[1:, : self.c]).reshape(-1, 1)
+        inner_faces = np.hstack([faces_c1, faces_c2, faces_c3, faces_c4])
+        outer_faces = inner_faces + self._n_points
+        faces = np.vstack([inner_faces, outer_faces])
+        bbox_faces = np.hstack([faces_N, faces])
+
+        # generate the face points
+        inner_xyz = to_xyz(self._bbox_lons, self._bbox_lats, radius=self._inner_radius)
+        outer_xyz = to_xyz(self._bbox_lons, self._bbox_lats, radius=self._outer_radius)
+        bbox_xyz = np.vstack([inner_xyz, outer_xyz])
+
+        # include the bbox skirt
+        bbox_faces = np.vstack([bbox_faces, skirt_faces])
+        bbox_n_faces += skirt_faces.shape[0]
+
+        # create the mesh
+        self.mesh = pv.PolyData(bbox_xyz, faces=bbox_faces, n_faces=bbox_n_faces)
+        logger.debug(
+            f"bbox: n_faces={self.mesh.n_faces}, n_points={self.mesh.n_points}"
         )
-        raise ValueError(emsg)
 
-    if n_lons > 5:
-        emsg = (
-            "Require a bounded-box geometry containing 4 (open) or 5 (closed) "
-            "longitude/latitude values to create the bounded-box manifold, "
-            f"got {n_lons}."
-        )
-        raise ValueError(emsg)
+        if self.triangulate:
+            self.mesh = self.mesh.triangulate()
+            logger.debug(
+                f"bbox: n_faces={self.mesh.n_faces}, n_points={self.mesh.n_points} (tri)"
+            )
 
-    # ensure the specified bbox geometry is open
-    if np.isclose(lons[0], lons[-1]) and np.isclose(lats[0], lats[-1]):
-        lons, lats = lons[-1], lats[-1]
+    def _generate_skirt(self) -> ArrayLike:
+        skirt_n_faces = 4 * self.c
+        faces_N = np.broadcast_to(np.array([4], dtype=np.int8), (skirt_n_faces, 1))
+        faces_c1 = np.concatenate(
+            [
+                self._idx_map[0],
+                self._idx_map[1:, -1],
+                self._idx_map[-1, -2::-1],
+                self._idx_map[-2:0:-1, 0],
+            ]
+        ).reshape(-1, 1)
+        faces_c2 = np.roll(faces_c1, -1)
+        faces_c3 = faces_c2 + self._n_points
+        faces_c4 = np.roll(faces_c3, 1)
+        faces = np.hstack([faces_N, faces_c1, faces_c2, faces_c3, faces_c4])
+        logger.debug(f"skirt_n_faces: {skirt_n_faces}")
+        return faces
 
-    # initialise
-    idx_map = np.empty((c + 1, c + 1), dtype=int)
-    bbox_lons, bbox_lats = [], []
-    bbox_count = 0
-    geod = pyproj.Geod(ellps=ellps)
-    npts = c - 1
-    n_faces = c * c
-    logger.debug(f"c: {c}")
-    logger.debug(f"n_faces: {n_faces}")
-    logger.debug(f"idx_map: {idx_map.shape}")
+    def enclosed(
+        self,
+        surface: Union[List[pv.PolyData], pv.PolyData],
+        tolerance: Optional[float] = BBOX_TOLERANCE,
+        invert: Optional[bool] = False,
+    ) -> Union[pv.UnstructuredGrid, Tuple[pv.UnstructuredGrid]]:
+        if not isinstance(surface, Iterable):
+            surface = [surface]
 
-    # corner indices
-    c1_idx, c2_idx, c3_idx, c4_idx = range(4)
+        inside, surfaces = [], surface
 
-    def bbox_extend(lons: List[float], lats: List[float]) -> int:
-        assert len(lons) == len(lats)
-        bbox_lons.extend(lons)
-        bbox_lats.extend(lats)
-        return bbox_count + len(lons)
-
-    def bbox_update(idx1, idx2, row=None, column=None) -> int:
-        assert row is not None or column is not None
-        if row is None:
-            row = slice(None)
-        if column is None:
-            column = slice(None)
-        glons, glats = geodesic_by_idx(
-            bbox_lons, bbox_lats, idx1, idx2, npts=npts, geod=geod
-        )
-        idx_map[row, column] = [idx1] + list(np.arange(npts) + bbox_count) + [idx2]
-        return bbox_extend(glons, glats)
-
-    # register bbox edge indices, and points
-    bbox_count = bbox_extend(lons, lats)
-    bbox_count = bbox_update(c1_idx, c2_idx, row=0)
-    bbox_count = bbox_update(c4_idx, c3_idx, row=-1)
-    bbox_count = bbox_update(c1_idx, c4_idx, column=0)
-    bbox_count = bbox_update(c2_idx, c3_idx, column=-1)
-
-    # register bbox inner indices and points
-    for row_idx in range(1, c):
-        row = idx_map[row_idx]
-        bbox_count = bbox_update(row[0], row[-1], row=row_idx)
-
-    # generate the faces indices
-    N_faces = np.broadcast_to(np.array([4], dtype=np.int8), (n_faces, 1))
-    faces_c1 = np.ravel(idx_map[:c, :c]).reshape(-1, 1)
-    faces_c2 = np.ravel(idx_map[:c, 1:]).reshape(-1, 1)
-    faces_c3 = np.ravel(idx_map[1:, 1:]).reshape(-1, 1)
-    faces_c4 = np.ravel(idx_map[1:, :c]).reshape(-1, 1)
-    faces = np.hstack([N_faces, faces_c1, faces_c2, faces_c3, faces_c4])
-
-    # generate the mesh
-    xyz = to_xyz(bbox_lons, bbox_lats, radius=radius)
-    pdata = pv.PolyData(xyz, faces=faces, n_faces=n_faces)
-    logger.debug(f"bbox: n_faces={pdata.n_faces}, n_points={pdata.n_points}")
-
-    if triangulate:
-        pdata = pdata.triangulate()
-        logger.debug(f"bbox: n_faces={pdata.n_faces}, n_points={pdata.n_points} (tri)")
-
-    return pdata
+        for surface in surfaces:
+            result = surface.select_enclosed_points(
+                self.mesh, tolerance=tolerance, inside_out=invert
+            )
+            inside.append(
+                result.threshold(0.5, scalars="SelectedPoints", preference="cell")
+            )
+        result = tuple(inside) if len(inside) > 1 else inside[0]
+        return result
