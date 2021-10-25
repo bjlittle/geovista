@@ -199,6 +199,25 @@ class BBox:
 
         self._generate_mesh()
 
+    def __eq__(self, other) -> bool:
+        result = NotImplemented
+        if isinstance(other, BBox):
+            result = False
+            lhs = (self.ellps, self.c, self.triangulate)
+            rhs = (other.ellps, other.c, other.triangulate)
+            if all(map(lambda x: x[0] == x[1], zip(lhs, rhs))) and np.isclose(
+                self.radius, other.radius
+            ):
+                if np.allclose(self.longitudes, other.longitudes):
+                    result = np.allclose(self.latitudes, other.latitudes)
+        return result
+
+    def __ne__(self, other) -> bool:
+        result = self == other
+        if result is not NotImplemented:
+            result = not result
+        return result
+
     def _face_edge_idxs(self) -> ArrayLike:
         """
         TBD
@@ -393,7 +412,9 @@ class BBox:
         .. versionadded:: 0.1.0
 
         """
-        selected = surface.select_enclosed_points(self.mesh, tolerance=tolerance, inside_out=outside)
+        selected = surface.select_enclosed_points(
+            self.mesh, tolerance=tolerance, inside_out=outside
+        )
         mesh = selected.threshold(0.5, scalars="SelectedPoints", preference="cell")
         return mesh
 
@@ -436,6 +457,8 @@ class BBox:
         .. versionadded:: 0.1.0
 
         """
-        selected = surface.select_enclosed_points(self.mesh, tolerance=tolerance, inside_out=outside)
+        selected = surface.select_enclosed_points(
+            self.mesh, tolerance=tolerance, inside_out=outside
+        )
         cells = selected["SelectedPoints"].view(bool)
         return cells
