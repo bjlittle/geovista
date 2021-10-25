@@ -50,25 +50,16 @@ PANEL_NAME_BY_IDX: Dict[int, str] = {
 }
 
 #: Latitude (degrees) of a cubed sphere panel corner.
-PANEL_CORNER: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
+CORNER: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
 
 #: Cubed sphere panel bounded-box longitudes and latitudes.
 PANEL_BBOX_BY_IDX: Dict[int, Tuple[Corners, Corners]] = {
-    0: ((-45, 45, 45, -45), (PANEL_CORNER, PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER)),
-    1: ((45, 135, 135, 45), (PANEL_CORNER, PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER)),
-    2: (
-        (135, -135, -135, 135),
-        (PANEL_CORNER, PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER),
-    ),
-    3: (
-        (-135, -45, -45, -135),
-        (PANEL_CORNER, PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER),
-    ),
-    4: ((-45, 45, 135, -135), (PANEL_CORNER, PANEL_CORNER, PANEL_CORNER, PANEL_CORNER)),
-    5: (
-        (-45, 45, 135, -135),
-        (-PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER, -PANEL_CORNER),
-    ),
+    0: ((-45, 45, 45, -45), (CORNER, CORNER, -CORNER, -CORNER)),
+    1: ((45, 135, 135, 45), (CORNER, CORNER, -CORNER, -CORNER)),
+    2: ((135, -135, -135, 135), (CORNER, CORNER, -CORNER, -CORNER)),
+    3: ((-135, -45, -45, -135), (CORNER, CORNER, -CORNER, -CORNER)),
+    4: ((-45, 45, 135, -135), (CORNER, CORNER, CORNER, CORNER)),
+    5: ((-45, 45, 135, -135), (-CORNER, -CORNER, -CORNER, -CORNER)),
 }
 
 #: The number of cubed sphere panels.
