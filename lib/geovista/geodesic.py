@@ -218,6 +218,14 @@ class BBox:
             result = not result
         return result
 
+    def __repr__(self) -> str:
+        params = (
+            f"ellps={self.ellps}, c={self.c}, n_points={self.mesh.n_points}, "
+            f"n_cells={self.mesh.n_cells}"
+        )
+        result = f"{__package__}.{self.__class__.__name__}<{params}>"
+        return result
+
     def _face_edge_idxs(self) -> ArrayLike:
         """
         TBD
