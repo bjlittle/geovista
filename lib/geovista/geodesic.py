@@ -10,7 +10,7 @@ import pyvista as pv
 from .common import to_xyz, wrap
 from .log import get_logger
 
-__all__ = ["BBox", "npoints", "npoints_by_idx", "panel", "wedge"]
+__all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
 
 # Configure the logger.
 logger = get_logger(__name__)
@@ -51,16 +51,16 @@ PANEL_NAME_BY_IDX: Dict[int, str] = {
 }
 
 #: Latitude (degrees) of a cubed sphere panel corner.
-CORNER: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
+CSC: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
 
 #: Cubed sphere panel bounded-box longitudes and latitudes.
 PANEL_BBOX_BY_IDX: Dict[int, Tuple[Corners, Corners]] = {
-    0: ((-45, 45, 45, -45), (CORNER, CORNER, -CORNER, -CORNER)),
-    1: ((45, 135, 135, 45), (CORNER, CORNER, -CORNER, -CORNER)),
-    2: ((135, -135, -135, 135), (CORNER, CORNER, -CORNER, -CORNER)),
-    3: ((-135, -45, -45, -135), (CORNER, CORNER, -CORNER, -CORNER)),
-    4: ((-45, 45, 135, -135), (CORNER, CORNER, CORNER, CORNER)),
-    5: ((-45, 45, 135, -135), (-CORNER, -CORNER, -CORNER, -CORNER)),
+    0: ((-45, 45, 45, -45), (CSC, CSC, -CSC, -CSC)),
+    1: ((45, 135, 135, 45), (CSC, CSC, -CSC, -CSC)),
+    2: ((135, -135, -135, 135), (CSC, CSC, -CSC, -CSC)),
+    3: ((-135, -45, -45, -135), (CSC, CSC, -CSC, -CSC)),
+    4: ((-45, 45, 135, -135), (CSC, CSC, CSC, CSC)),
+    5: ((-45, 45, 135, -135), (-CSC, -CSC, -CSC, -CSC)),
 }
 
 #: The number of cubed sphere panels.
@@ -77,85 +77,6 @@ PREFERENCE_POINT: str = "point"
 
 #: Enumeration of supported preferences.
 PREFERENCES: Tuple[str] = (PREFERENCE_CELL, PREFERENCE_CENTER, PREFERENCE_POINT)
-
-
-def npoints(
-    start_lon: float,
-    start_lat: float,
-    end_lon: float,
-    end_lat: float,
-    npts: Optional[int] = GEODESIC_NPTS,
-    radians: Optional[bool] = False,
-    include_start: Optional[bool] = False,
-    include_end: Optional[bool] = False,
-    geod: Optional[pyproj.Geod] = None,
-) -> Tuple[Tuple[float], Tuple[float]]:
-    """
-    TBD
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    if geod is None:
-        geod = pyproj.Geod(ellps=ELLIPSE)
-
-    initial_idx = 0 if include_start else 1
-    terminus_idx = 0 if include_end else 1
-
-    glonlats = geod.npts(
-        start_lon,
-        start_lat,
-        end_lon,
-        end_lat,
-        npts,
-        radians=radians,
-        initial_idx=initial_idx,
-        terminus_idx=terminus_idx,
-    )
-    glons, glats = zip(*glonlats)
-    glons = tuple(wrap(glons))
-
-    return glons, glats
-
-
-def npoints_by_idx(
-    lons: ArrayLike,
-    lats: ArrayLike,
-    start_idx: int,
-    end_idx: int,
-    npts: Optional[int] = GEODESIC_NPTS,
-    radians: Optional[bool] = False,
-    include_start: Optional[bool] = False,
-    include_end: Optional[bool] = False,
-    geod: Optional[pyproj.Geod] = None,
-) -> Tuple[Tuple[float], Tuple[float]]:
-    """
-    TBD
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    if geod is None:
-        geod = pyproj.Geod(ellps=ELLIPSE)
-
-    start_lonlat = lons[start_idx], lats[start_idx]
-    end_lonlat = lons[end_idx], lats[end_idx]
-
-    result = npoints(
-        *start_lonlat,
-        *end_lonlat,
-        npts=npts,
-        radians=radians,
-        include_start=include_start,
-        include_end=include_end,
-        geod=geod,
-    )
-
-    return result
 
 
 class BBox:
@@ -206,7 +127,7 @@ class BBox:
         if n_lons < 4:
             emsg = (
                 "Require a bounded-box geometry containing at least 4 longitude/latitude "
-                f"values to create the bounded-box manifold, only got {n_lons}."
+                f"values to create the bounded-box manifold, got '{n_lons}'."
             )
             raise ValueError(emsg)
 
@@ -580,6 +501,148 @@ class BBox:
             )
 
         return region
+
+
+def line(
+    lons: ArrayLike,
+    lats: ArrayLike,
+    npts: Optional[int] = GEODESIC_NPTS,
+    ellps: Optional[str] = ELLIPSE,
+    radius: Optional[float] = None,
+    close: Optional[bool] = False,
+) -> pv.PolyData:
+    """
+    TBD
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    # TODO: address "fudge-factor" zlevel
+    if radius is None:
+        radius = 1.0 + 1.0 / 1e4
+
+    if not isinstance(lons, Iterable):
+        lons = [lons]
+    if not isinstance(lats, Iterable):
+        lats = [lats]
+
+    lons = np.asanyarray(lons)
+    lats = np.asanyarray(lats)
+    n_lons, n_lats = lons.size, lats.size
+
+    if n_lons != n_lats:
+        emsg = (
+            f"Require the same number of longitudes ({n_lons}) and "
+            f"latitudes ({n_lats})."
+        )
+        raise ValueError(emsg)
+
+    if n_lons < 2:
+        emsg = (
+            "Require a line geometry containing at least 2 longitude/latitude "
+            f"values, got '{n_lons}'."
+        )
+        raise ValueError(emsg)
+
+    # ensure the specified line geometry is open
+    if np.isclose(lons[0], lons[-1]) and np.isclose(lats[0], lats[-1]):
+        lons, lats = lons[-1], lats[-1]
+
+    line_lons, line_lats = [], []
+    geod = pyproj.Geod(ellps=ellps)
+
+    for idx in range(n_lons - 1):
+        glons, glats = npoints_by_idx(
+            lons, lats, idx, idx + 1, npts=npts, include_end=True, geod=geod
+        )
+        line_lons.append(glons)
+        line_lats.append(glats)
+
+    xyz = to_xyz(line_lons, line_lats, radius=radius)
+    line = pv.lines_from_points(xyz, close=close)
+
+    return line
+
+
+def npoints(
+    start_lon: float,
+    start_lat: float,
+    end_lon: float,
+    end_lat: float,
+    npts: Optional[int] = GEODESIC_NPTS,
+    radians: Optional[bool] = False,
+    include_start: Optional[bool] = False,
+    include_end: Optional[bool] = False,
+    geod: Optional[pyproj.Geod] = None,
+) -> Tuple[Tuple[float], Tuple[float]]:
+    """
+    TBD
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if geod is None:
+        geod = pyproj.Geod(ellps=ELLIPSE)
+
+    initial_idx = 0 if include_start else 1
+    terminus_idx = 0 if include_end else 1
+
+    glonlats = geod.npts(
+        start_lon,
+        start_lat,
+        end_lon,
+        end_lat,
+        npts,
+        radians=radians,
+        initial_idx=initial_idx,
+        terminus_idx=terminus_idx,
+    )
+    glons, glats = zip(*glonlats)
+    glons = tuple(wrap(glons))
+
+    return glons, glats
+
+
+def npoints_by_idx(
+    lons: ArrayLike,
+    lats: ArrayLike,
+    start_idx: int,
+    end_idx: int,
+    npts: Optional[int] = GEODESIC_NPTS,
+    radians: Optional[bool] = False,
+    include_start: Optional[bool] = False,
+    include_end: Optional[bool] = False,
+    geod: Optional[pyproj.Geod] = None,
+) -> Tuple[Tuple[float], Tuple[float]]:
+    """
+    TBD
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if geod is None:
+        geod = pyproj.Geod(ellps=ELLIPSE)
+
+    start_lonlat = lons[start_idx], lats[start_idx]
+    end_lonlat = lons[end_idx], lats[end_idx]
+
+    result = npoints(
+        *start_lonlat,
+        *end_lonlat,
+        npts=npts,
+        radians=radians,
+        include_start=include_start,
+        include_end=include_end,
+        geod=geod,
+    )
+
+    return result
 
 
 def panel(
