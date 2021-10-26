@@ -35,5 +35,7 @@
   <a href="https://github.com/bjlittle/geovista/graphs/contributors">
     <img src="https://img.shields.io/github/contributors/bjlittle/geovista"
          alt="Contributors">
+  <img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
+       alt="wip">
   </a>
 </p>
