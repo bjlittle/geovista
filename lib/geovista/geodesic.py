@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from datetime import datetime
 from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
@@ -24,7 +25,7 @@ ELLIPSE: str = "WGS84"
 GEODESIC_NPTS: int = 64
 
 #: The bounding-box face geometry will contain ``BBOX_C**2`` cells.
-BBOX_C: int = 512
+BBOX_C: int = 256
 
 #: The bounding-box tolerance on intersection.
 BBOX_TOLERANCE: int = 0
@@ -65,11 +66,17 @@ PANEL_BBOX_BY_IDX: Dict[int, Tuple[Corners, Corners]] = {
 #: The number of cubed sphere panels.
 N_PANELS: int = len(PANEL_IDX_BY_NAME)
 
-#: Preference for an operation to be cell/face focused.
+#: Preference for an operation to focus on all cell vertices.
 PREFERENCE_CELL: str = "cell"
 
-#: Preference for an operation to be point/node focused.
+#: Preference for an operation to focus on the cell center.
+PREFERENCE_CENTER: str = "center"
+
+#: Preference for an operation to focus on any cell vertex.
 PREFERENCE_POINT: str = "point"
+
+#: Enumeration of supported preferences.
+PREFERENCES: Tuple[str] = (PREFERENCE_CELL, PREFERENCE_CENTER, PREFERENCE_POINT)
 
 
 def npoints(
@@ -161,7 +168,7 @@ class BBox:
 
     """
 
-    RADIUS_RATIO = 3e-2
+    RADIUS_RATIO = 1e-1
 
     def __init__(
         self,
@@ -230,16 +237,18 @@ class BBox:
         self._npts = self.c - 1
         self._n_faces = self.c * self.c
         self._n_points = (self.c + 1) * (self.c + 1)
+        self._extra = dict(cls=self.__class__.__name__)
 
         offset = self.radius * self.RADIUS_RATIO
         self._inner_radius = self.radius - offset
         self._outer_radius = self.radius + offset
 
-        logger.debug(f"c: {self.c}")
-        logger.debug(f"n_faces: {self._n_faces}")
-        logger.debug(f"idx_map: {self._idx_map.shape}")
+        logger.debug(f"c: {self.c}", extra=self._extra)
+        logger.debug(f"n_faces: {self._n_faces}", extra=self._extra)
+        logger.debug(f"idx_map: {self._idx_map.shape}", extra=self._extra)
         logger.debug(
-            f"radii: {self.radius}, {self._inner_radius}, {self._outer_radius}"
+            f"radii: {self.radius}, {self._inner_radius}, {self._outer_radius}",
+            extra=self._extra,
         )
 
         self._generate_mesh()
@@ -379,13 +388,15 @@ class BBox:
         # create the mesh
         self.mesh = pv.PolyData(bbox_xyz, faces=bbox_faces, n_faces=bbox_n_faces)
         logger.debug(
-            f"bbox: n_faces={self.mesh.n_faces}, n_points={self.mesh.n_points}"
+            f"bbox: n_faces={self.mesh.n_faces}, n_points={self.mesh.n_points}",
+            extra=self._extra,
         )
 
         if self.triangulate:
             self.mesh = self.mesh.triangulate()
             logger.debug(
-                f"bbox: n_faces={self.mesh.n_faces}, n_points={self.mesh.n_points} (tri)"
+                f"bbox: n_faces={self.mesh.n_faces}, n_points={self.mesh.n_points} (tri)",
+                extra=self._extra,
             )
 
     def _generate_skirt(self) -> ArrayLike:
@@ -404,7 +415,7 @@ class BBox:
         faces_c3 = faces_c2 + self._n_points
         faces_c4 = np.roll(faces_c3, 1)
         faces = np.hstack([faces_N, faces_c1, faces_c2, faces_c3, faces_c4])
-        logger.debug(f"skirt_n_faces: {skirt_n_faces}")
+        logger.debug(f"skirt_n_faces: {skirt_n_faces}", extra=self._extra)
         return faces
 
     def boundary(self, radius: Optional[float] = None):
@@ -432,15 +443,15 @@ class BBox:
         surface: pv.PolyData,
         tolerance: Optional[float] = BBOX_TOLERANCE,
         outside: Optional[bool] = False,
-        preference: str = PREFERENCE_CELL,
+        preference: str = PREFERENCE_CENTER,
     ) -> pv.UnstructuredGrid:
         """
-        Extract the region of the ``surface`` contained within the
-        bounded-box as a mesh.
+        Extract the mesh region of the ``surface`` contained within the
+        bounded-box.
 
         Note that, any ``surface`` points that are on the edge of the
         bounded-box will be deemed to be inside, and so will the cells
-        associated with those ``surface`` points.
+        associated with those ``surface`` points. See ``preference``.
 
         Parameters
         ----------
@@ -454,9 +465,13 @@ class BBox:
             the bounded-box. Otherwise, select those points that are outside
             the bounded-box.
         preference : str, default="cell"
-            Extract the bounded ``surface`` region based on ``cell`` centers.
-            Otherwise, base the extraction on any ``point`` (node) of a
-            ``surface`` face being enclosed by the bounded-box.
+            Criteria for defining whether a face of a ``surface`` mesh is
+            deemed to be enclosed by the bounded-box. A ``preference`` of
+            ``cell`` requires all points defining the face to be in or on the
+            bounded-box. A ``preference`` of ``center`` requires that only the
+            face cell center is in or on the bounded-box. A ``preference`` of
+            ``point`` requires at least one point that defines the face to be
+            in or on the bounded-box.
 
         Returns
         -------
@@ -473,90 +488,98 @@ class BBox:
         if preference is None:
             preference = PREFERENCE_CELL
 
-        if preference not in [PREFERENCE_POINT, PREFERENCE_CELL]:
-            emsg = (
-                f"Preference must be either '{PREFERENCE_POINT}' or "
-                f"'{PREFERENCE_CELL}', got '{preference}'."
-            )
+        if preference.lower() not in PREFERENCES:
+            ordered = sorted(PREFERENCES)
+            valid = ", ".join(f"'{kind}'" for kind in ordered[:-1])
+            valid = f"{valid} or '{ordered[-1]}'"
+            emsg = f"Preference must be either {valid}, got '{preference}'."
             raise ValueError(emsg)
 
+        preference = preference.lower()
+        check_cells = False
+        logger.debug(f"preference: '{preference}'", extra=self._extra)
+        logger.debug(
+            f"surface: n_cells {surface.n_cells}, n_points {surface.n_points}",
+            extra=self._extra,
+        )
+
         if preference == PREFERENCE_CELL:
+            preference = PREFERENCE_POINT
+            check_cells = True
+
+        if preference == PREFERENCE_CENTER:
             original = surface
             surface = surface.cell_centers()
-
-        selected = surface.select_enclosed_points(
-            self.mesh, tolerance=tolerance, inside_out=outside
-        )
-
-        if preference == PREFERENCE_CELL:
-            mesh = original.extract_cells(selected["SelectedPoints"].view(bool))
-        else:
-            mesh = selected.threshold(0.5, scalars="SelectedPoints", preference="cell")
-
-        return mesh
-
-    def enclosed_cells(
-        self,
-        surface: pv.PolyData,
-        tolerance: Optional[float] = BBOX_TOLERANCE,
-        outside: Optional[bool] = False,
-        preference: str = PREFERENCE_CELL,
-    ) -> ArrayLike:
-        """
-        Identify the cells of the ``surface`` contained within the
-        bounded-box.
-
-        Note that, any ``surface`` points that are on the edge of the
-        bounded-box will be deemed to be inside, and so will the cells
-        associated with those ``surface`` points.
-
-        Parameters
-        ----------
-        surface : PolyData
-            The :class:`~pyvista.PolyData` mesh to be checked for containment.
-        tolerance : float, default=0
-            The tolerance on the intersection operation with the ``surface``,
-            expressed as a fraction of the diagonal of the bounding box.
-        outside : bool, default=False
-            By default, select those points of the ``surface`` that are inside
-            the bounded-box. Otherwise, select those points that are outside
-            the bounded-box.
-        preference : str, default="cell"
-            Extract the bounded ``surface`` region based on ``cell`` centers.
-            Otherwise, base the extraction on any ``point`` (node) of a
-            ``surface`` face being enclosed by the bounded-box.
-
-        Returns
-        -------
-        ArrayLike
-            A boolean array, with the same shape as the ``surface.cell_data``,
-            indicating those cells that are inside (``True``) and those that
-            are outside (``False``). This behaviour may be inverted with the
-            ``outside`` parameter.
-
-        Notes
-        -----
-        .. versionadded:: 0.1.0
-
-        """
-        if preference is None:
-            preference = PREFERENCE_CELL
-
-        if preference not in [PREFERENCE_POINT, PREFERENCE_CELL]:
-            emsg = (
-                f"Preference must be either '{PREFERENCE_POINT}' or "
-                f"'{PREFERENCE_CELL}', got '{preference}'."
+            logger.debug(
+                f"calculated {surface.n_cells} cell centers", extra=self._extra
             )
-            raise ValueError(emsg)
 
-        if preference == PREFERENCE_CELL:
-            surface = surface.cell_centers()
-
+        # filter the surface with the bbox mesh
+        start = datetime.now()
         selected = surface.select_enclosed_points(
-            self.mesh, tolerance=tolerance, inside_out=outside
+            self.mesh, tolerance=tolerance, inside_out=outside, check_surface=False
         )
-        cells = selected["SelectedPoints"].view(bool)
-        return cells
+        end = datetime.now()
+
+        logger.debug(
+            f"selected enclosed points in {(end-start).total_seconds()}s",
+            extra=self._extra,
+        )
+
+        # sample the surface with the enclosed cells to extract the bbox region
+        if preference == PREFERENCE_CENTER:
+            region = original.extract_cells(selected["SelectedPoints"].view(bool))
+        else:
+            region = selected.threshold(
+                0.5, scalars="SelectedPoints", preference="cell"
+            )
+
+        logger.debug(
+            f"region: n_cells {region.n_cells}, n_points {region.n_points}",
+            extra=self._extra,
+        )
+
+        # if required, perform cell vertex enclosure checks on the bbox region
+        if check_cells and region.n_cells and region.n_points:
+            enclosed = []
+            npts_per_cell = region.cells[0]
+            cells = region.cells.reshape(-1, npts_per_cell + 1)
+
+            # only support cells with the same type e.g., all quads, or all
+            # triangles etc, but never a mixture.
+            if np.diff(cells[:, 0]).sum() != 0:
+                emsg = (
+                    "Cannot extract surface enclosed by the bounded-box when "
+                    "the surface has mixed face types and 'preference' is "
+                    "'cell'. Try 'center' or 'point' instead."
+                )
+                raise ValueError(emsg)
+
+            for idx in range(1, npts_per_cell + 1):
+                points = pv.PolyData(region.points[cells[:, idx]])
+                start = datetime.now()
+                selected = points.select_enclosed_points(
+                    self.mesh,
+                    tolerance=tolerance,
+                    inside_out=outside,
+                    check_surface=False,
+                )
+                end = datetime.now()
+                enclosed.append(selected["SelectedPoints"].view(bool).reshape(-1, 1))
+                logger.debug(
+                    f"cell idx {idx}: selected {np.sum(selected['SelectedPoints'])} from "
+                    f"{points.n_cells} points [{(end-start).total_seconds()}]",
+                    extra=self._extra,
+                )
+
+            enclosed = np.all(np.hstack(enclosed), axis=-1)
+            region = region.extract_cells(enclosed)
+            logger.debug(
+                f"region: n_cells {region.n_cells}, n_points {region.n_points}",
+                extra=self._extra,
+            )
+
+        return region
 
 
 def panel(
@@ -577,9 +600,9 @@ def panel(
     if isinstance(name, str):
         if name.lower() not in PANEL_IDX_BY_NAME.keys():
             ordered = sorted(PANEL_IDX_BY_NAME.keys())
-            names = ", ".join(f"'{key}'" for key in ordered[:-1])
-            names = f"{names} or '{ordered[-1]}'"
-            emsg = f"Panel name must be either {names}, got '{name}'."
+            valid = ", ".join(f"'{kind}'" for kind in ordered[:-1])
+            valid = f"{valid} or '{ordered[-1]}'"
+            emsg = f"Panel name must be either {valid}, got '{name}'."
             raise ValueError(emsg)
         idx = PANEL_IDX_BY_NAME[name]
     else:
