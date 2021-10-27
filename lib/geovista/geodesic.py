@@ -555,10 +555,21 @@ def line(
 
     for idx in range(n_lons - 1):
         glons, glats = npoints_by_idx(
-            lons, lats, idx, idx + 1, npts=npts, include_end=True, geod=geod
+            lons,
+            lats,
+            idx,
+            idx + 1,
+            npts=npts,
+            include_start=True,
+            include_end=False,
+            geod=geod,
         )
-        line_lons.append(glons)
-        line_lats.append(glats)
+        line_lons.extend(glons)
+        line_lats.extend(glats)
+
+    # finally, include the end-point
+    line_lons.append(lons[-1])
+    line_lats.append(lats[-1])
 
     xyz = to_xyz(line_lons, line_lats, radius=radius)
     line = pv.lines_from_points(xyz, close=close)
