@@ -667,7 +667,7 @@ def panel(
             valid = f"{valid} or '{ordered[-1]}'"
             emsg = f"Panel name must be either {valid}, got '{name}'."
             raise ValueError(emsg)
-        idx = PANEL_IDX_BY_NAME[name]
+        idx = PANEL_IDX_BY_NAME[name.lower()]
     else:
         idx = name
         if idx not in range(N_PANELS):
