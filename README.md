@@ -1,5 +1,7 @@
 <h1 align="center">
-  GeoVista
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista/main/branding/logo/primary/geovistalogo.svg"
+       alt="GeoVista"
+       width="200">
   <br>
 </h1>
 
