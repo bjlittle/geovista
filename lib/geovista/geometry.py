@@ -3,7 +3,6 @@ from typing import List, Optional
 
 import cartopy.io.shapereader as shp
 import numpy as np
-from numpy.typing import ArrayLike
 import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
 
@@ -40,7 +39,7 @@ def add_coastlines(
 
     Parameters
     ----------
-    resolution : str, default="110m"
+    resolution : str, default=COASTLINE_RESOLUTION
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m`` or ``10m``.
     projection : str or None, default=None
@@ -82,7 +81,7 @@ def add_coastlines(
 @lru_cache
 def coastline_geometries(
     resolution: Optional[str] = COASTLINE_RESOLUTION,
-) -> List[ArrayLike]:
+) -> List[np.ndarray]:
     """
     Fetch the Natural Earth shapefile coastline geometries for the required
     resolution.
@@ -95,13 +94,13 @@ def coastline_geometries(
 
     Parameters
     ----------
-    resolution : str, default="110m"
+    resolution : str, default=COASTLINE_RESOLUTION
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m`` or ``10m``.
 
     Returns
     -------
-    List[ArrayLike]
+    List[np.ndarray]
         A list containing one or more coastline xy0 geometries.
 
     Notes
@@ -148,7 +147,7 @@ def coastline_mesh(
 
     Parameters
     ----------
-    resolution : str, default="110m"
+    resolution : str, default=COASTLINE_RESOLUTION
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m``, or ``10m``.
     radius : float, default=1.0
@@ -221,7 +220,7 @@ def get_coastlines(
 
     Parameters
     ----------
-    resolution : str, default="110m"
+    resolution : str, default=COASTLINE_RESOLUTION
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m``, or ``10m``.
     geocentric : bool, default=True

@@ -3,16 +3,17 @@ A package for provisioning common geovista infra-structure.
 
 """
 from collections.abc import Iterable
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 import numpy.ma as ma
-from numpy.typing import ArrayLike
+import numpy.typing as npt
 import pyvista as pv
 
 from .log import get_logger
 
 __all__ = [
+    "calculate_radius",
     "nan_mask",
     "set_jupyter_backend",
     "to_xy0",
@@ -45,6 +46,7 @@ def active_kernel() -> bool:
 
     """
     result = True
+
     try:
         from IPython import get_ipython
 
@@ -53,10 +55,60 @@ def active_kernel() -> bool:
         ip.kernel
     except (AttributeError, ModuleNotFoundError):
         result = False
+
     return result
 
 
-def nan_mask(data: ArrayLike) -> ArrayLike:
+def calculate_radius(
+    mesh: pv.PolyData, origin: Optional[Tuple[float, float, float]] = None
+) -> float:
+    """
+    Determine the radius of the provided mesh.
+
+    Note that, assumes that the mesh is a spheroid and has not been warped.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The surface that requires its radius to be calculated, relative to
+        the ``origin``.
+    origin : float, default=(0, 0, 0)
+        The (x, y, z) cartesian center of the spheroid mesh.
+
+    Returns
+    -------
+    float
+        The radius of the provided mesh.
+
+    Notes
+    -----
+    .. versionadded: 0.1.0
+
+    """
+    xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
+    xdiff, ydiff, zdiff = (xmax - xmin), (ymax - ymin), (zmax - zmin)
+
+    if np.isclose(xdiff, 0) or np.isclose(ydiff, 0) or np.isclose(zdiff, 0):
+        emsg = (
+            "Cannot calculate radius of a surface that does not appear to be "
+            "spherical."
+        )
+        raise ValueError(emsg)
+
+    if origin is None:
+        origin = (0, 0, 0)
+
+    ox, oy, oz = origin
+
+    # sample a representative mesh point
+    mx, my, mz = mesh.points[0]
+
+    radius = np.sqrt((mx - ox) ** 2 + (my - oy) ** 2 + (mz - oz) ** 2)
+
+    return radius
+
+
+def nan_mask(data: npt.ArrayLike) -> np.ndarray:
     """
     Replaces any masked array values with NaNs.
 
@@ -70,7 +122,7 @@ def nan_mask(data: ArrayLike) -> ArrayLike:
 
     Returns
     -------
-    ArrayLike
+    ndarray
         The `data` with masked values replaced with NaNs.
 
     Notes
@@ -86,7 +138,9 @@ def nan_mask(data: ArrayLike) -> ArrayLike:
             )
             logger.debug(dmsg)
             data = ma.asanyarray(data, dtype=float)
+
         data = data.filled(np.nan)
+
     return data
 
 
@@ -127,8 +181,8 @@ def set_jupyter_backend(backend: Optional[str] = None) -> bool:
 
 
 def to_xy0(
-    xyz: ArrayLike, radius: Optional[float] = 1.0, stacked: Optional[bool] = True
-) -> ArrayLike:
+    xyz: npt.ArrayLike, radius: Optional[float] = 1.0, stacked: Optional[bool] = True
+) -> np.ndarray:
     """
     Convert geocentric xyz coordinates to longitude (φ) and latitude (λ)
     xy0 (i.e., φλ0) coordinates.
@@ -146,7 +200,7 @@ def to_xy0(
 
     Returns
     -------
-    ArrayLike
+    ndarray
         The longitude and latitude xy0 coordinates, in degrees.
 
     Notes
@@ -169,11 +223,11 @@ def to_xy0(
 
 
 def to_xyz(
-    longitudes: ArrayLike,
-    latitudes: ArrayLike,
+    longitudes: npt.ArrayLike,
+    latitudes: npt.ArrayLike,
     radius: Optional[float] = 1.0,
     stacked: Optional[bool] = True,
-) -> ArrayLike:
+) -> np.ndarray:
     """
     Convert longitudes (φ) and latitudes (λ) to geocentric xyz coordinates.
 
@@ -191,7 +245,7 @@ def to_xyz(
 
     Returns
     -------
-    ArrayLike
+    ndarray
         The geocentric xyz coordinates.
 
     Notes
@@ -218,8 +272,8 @@ def to_xyz(
 
 
 def wrap(
-    longitudes: ArrayLike, base: float = -180.0, period: Optional[float] = 360.0
-) -> ArrayLike:
+    longitudes: npt.ArrayLike, base: float = -180.0, period: Optional[float] = 360.0
+) -> np.ndarray:
     """
     Transform the longitude values to be within the closed interval
     [base, base + period].
@@ -229,14 +283,14 @@ def wrap(
     longitudes : ArrayLike
         One or more longitude values (degrees) to be wrapped.
     base : float, default=-180.0
-        The start limit of the closed interval.
+        The start limit (degrees) of the closed interval.
     period : float, default=360.0
-        The end limit of the closed interval expressed as a length from the
-        `base`.
+        The end limit (degrees) of the closed interval expressed as a length
+        from the `base`.
 
     Returns
     -------
-    ArrayLike
+    ndarray
         The transformed longitude values.
 
     Notes
@@ -244,8 +298,13 @@ def wrap(
     .. versionadded:: 0.1.0
 
     """
+    #
+    # TODO: support radians
+    #
     if not isinstance(longitudes, Iterable):
         longitudes = [longitudes]
+
     longitudes = np.asanyarray(longitudes)
     result = ((longitudes.astype(np.float64) - base + period * 2) % period) + base
+
     return result
