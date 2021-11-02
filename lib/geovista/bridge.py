@@ -59,10 +59,15 @@ class Transform:
         pdata = cls.from_mesh(cube.mesh, cidxs=cidxs)
 
         if location:
+            name = cube.name()
+            units = cube.units
+            pdata.field_data["Name"] = np.array([name])
+            pdata.field_data["Units"] = np.array([str(units)])
+
             if cube.location == "face":
-                pdata.cell_data[cube.location] = nan_mask(cube.data)
+                pdata.cell_data[name] = nan_mask(cube.data)
             elif cube.location == "node":
-                pdata.point_data[cube.location] = nan_mask(cube.data)
+                pdata.point_data[name] = nan_mask(cube.data)
             else:
                 emsg = f"Unstructured '{cube.location}' location data not supported."
                 raise ValueError(emsg)

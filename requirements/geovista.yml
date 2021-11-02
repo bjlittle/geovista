@@ -12,7 +12,6 @@ dependencies:
 # core dependencies
   - cartopy >=0.20
   - pooch
-  - pykdtree
   - pyproj >=3.1
   - pyvista
   - pyvistaqt
