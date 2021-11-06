@@ -4,13 +4,13 @@ from pyvista.core.filters import _get_output
 
 from .log import get_logger
 
-__all__ = ["cast_unstructured_grid_to_polydata"]
+__all__ = ["cast_UnstructuredGrid_to_PolyData"]
 
 # Configure the logger.
 logger = get_logger(__name__)
 
 
-def cast_unstructured_grid_to_polydata(mesh: pv.UnstructuredGrid) -> pv.PolyData:
+def cast_UnstructuredGrid_to_PolyData(mesh: pv.UnstructuredGrid) -> pv.PolyData:
     """
     TBD
 

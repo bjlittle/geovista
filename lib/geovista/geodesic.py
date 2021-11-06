@@ -9,7 +9,7 @@ import pyproj
 import pyvista as pv
 
 from .common import calculate_radius, to_xyz, wrap
-from .filters import cast_unstructured_grid_to_polydata
+from .filters import cast_UnstructuredGrid_to_PolyData
 from .log import get_logger
 
 __all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
@@ -623,7 +623,7 @@ class BBox:
                 extra=self._extra,
             )
 
-        region = cast_unstructured_grid_to_polydata(region)
+        region = cast_UnstructuredGrid_to_PolyData(region)
 
         return region
 
