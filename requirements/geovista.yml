@@ -15,6 +15,7 @@ dependencies:
   - pyproj >=3.1
   - pyvista
   - pyvistaqt
+  - vtk >=9
 
 # cmap dependencies
   - cmocean

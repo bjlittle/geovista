@@ -9,6 +9,7 @@ import pyproj
 import pyvista as pv
 
 from .common import calculate_radius, to_xyz, wrap
+from .filters import cast_unstructured_grid_to_polydata
 from .log import get_logger
 
 __all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
@@ -481,7 +482,7 @@ class BBox:
         tolerance: Optional[float] = BBOX_TOLERANCE,
         outside: Optional[bool] = False,
         preference: str = BBOX_PREFERENCE,
-    ) -> pv.UnstructuredGrid:
+    ) -> pv.PolyData:
         """
         Extract the mesh region of the ``surface`` contained within the
         bounding-box.
@@ -512,8 +513,8 @@ class BBox:
 
         Returns
         -------
-        UnstructuredGrid
-            The :class:`pyvista.UnstructuredGrid` representing those parts of
+        PolyData
+            The :class:`pyvista.PolyData` representing those parts of
             the provided ``surface`` enclosed by the bounding-box. This behaviour
             may be inverted with the ``outside`` parameter.
 
@@ -561,9 +562,10 @@ class BBox:
             self.mesh, tolerance=tolerance, inside_out=outside, check_surface=False
         )
         end = datetime.now()
+        delta = end - start
 
         logger.debug(
-            f"selected enclosed points in {(end-start).total_seconds()}s",
+            f"region: selected enclosed in {delta.total_seconds()} sec",
             extra=self._extra,
         )
 
@@ -579,6 +581,7 @@ class BBox:
             f"region: n_cells {region.n_cells}, n_points {region.n_points}",
             extra=self._extra,
         )
+        logger.debug(f"region: {delta / region.n_cells} cells/sec", extra=self._extra)
 
         # if required, perform cell vertex enclosure checks on the bbox region
         if perform_cell and region.n_cells and region.n_points:
@@ -619,6 +622,8 @@ class BBox:
                 f"region: n_cells {region.n_cells}, n_points {region.n_points}",
                 extra=self._extra,
             )
+
+        region = cast_unstructured_grid_to_polydata(region)
 
         return region
 
