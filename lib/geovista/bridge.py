@@ -32,9 +32,7 @@ logger = get_logger(__name__)
 
 class Transform:
     @classmethod
-    def from_cube(
-        cls, cube: Cube, location: Optional[bool] = True, cidxs: Optional[bool] = True
-    ) -> pv.PolyData:
+    def from_cube(cls, cube: Cube, location: Optional[bool] = True) -> pv.PolyData:
         """
         TBD
 
@@ -56,7 +54,7 @@ class Transform:
             )
             raise ValueError(emsg)
 
-        pdata = cls.from_mesh(cube.mesh, cidxs=cidxs)
+        pdata = cls.from_mesh(cube.mesh)
 
         if location:
             name = cube.name()
@@ -75,7 +73,7 @@ class Transform:
         return pdata
 
     @staticmethod
-    def from_mesh(mesh: Mesh, cidxs: Optional[bool] = True) -> pv.PolyData:
+    def from_mesh(mesh: Mesh) -> pv.PolyData:
         """
         TBD
 
@@ -115,15 +113,11 @@ class Transform:
         # create the mesh
         pdata = pv.PolyData(vertices, faces=faces, n_faces=N_faces)
 
-        if cidxs:
-            pdata.cell_data["cidxs"] = np.arange(pdata.n_cells, dtype=np.uint32)
-
         return pdata
 
     def __init__(
         self,
         data: Union[Cube, Mesh] = None,
-        cidxs: Optional[bool] = True,
     ):
         """
         TBD
@@ -138,12 +132,11 @@ class Transform:
             raise ValueError(emsg)
 
         if isinstance(data, Cube):
-            pdata = self.from_cube(data, location=False, cidxs=cidxs)
+            pdata = self.from_cube(data, location=False)
         else:
-            pdata = self.from_mesh(data, cidxs=cidxs)
+            pdata = self.from_mesh(data)
 
         self._pdata = pdata
-        self._cidxs = pdata.cell_data["cidxs"] if cidxs else None
         self._n_points = pdata.n_points
         self._n_cells = pdata.n_cells
 
@@ -173,9 +166,6 @@ class Transform:
 
         pdata = pv.PolyData()
         pdata.copy_structure(self._pdata)
-
-        if self._cidxs is not None:
-            pdata.cell_data["cidxs"] = self._cidxs
 
         if data is not None:
             if data.size == self._n_cells:
