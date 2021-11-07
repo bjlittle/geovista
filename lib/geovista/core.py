@@ -39,8 +39,22 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
         if not isinstance(mesh, pv.PolyData):
             dtype = repr(type(mesh)).split(" ")[1][:-1]
             emsg = (
-                f"Can only combine 'pyvista.PolyData' meshes, mesh {i+1} "
-                f"has type {dtype}."
+                f"Can only combine 'pyvista.PolyData' meshes, input mesh "
+                f"#{i+1} has type {dtype}."
+            )
+            raise TypeError(emsg)
+
+        if mesh.n_lines:
+            emsg = (
+                f"Can only combine meshes with faces, input mesh #{i+1} "
+                "contains lines."
+            )
+            raise TypeError(emsg)
+
+        if mesh.n_faces == 0:
+            emsg = (
+                f"Can only combine meshes with faces, input mesh #{i+1} "
+                "has no faces."
             )
             raise TypeError(emsg)
 

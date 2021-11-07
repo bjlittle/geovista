@@ -59,8 +59,8 @@ class Transform:
         if location:
             name = cube.name()
             units = cube.units
-            pdata.field_data["Name"] = np.array([name])
-            pdata.field_data["Units"] = np.array([str(units)])
+            pdata.field_data["gvName"] = np.array([name])
+            pdata.field_data["gvUnits"] = np.array([str(units)])
 
             if cube.location == "face":
                 pdata.cell_data[name] = nan_mask(cube.data)
