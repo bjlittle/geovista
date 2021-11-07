@@ -14,7 +14,28 @@ logger = get_logger(__name__)
 
 def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyData:
     """
-    TBD
+    Combine two or more meshes into on mesh.
+
+    Only meshes with faces will be combined. Support is not provided for combining
+    meshes that consist of only points or lines.
+
+    Note that, no check is performed to ensure that mesh faces do not overlap.
+    However, meshes may share coincident points. Coincident point data from the
+    first input mesh will overwrite all other mesh data sharing the same
+    coincident point.
+
+    Parameters
+    ----------
+    meshes : iterable of PolyData
+        The meshes to be combined into a single :class:`pyvista.PolyData` mesh.
+    data : bool, default=True
+        Whether to also combine and attach common data from the meshes onto
+        the resultant mesh.
+
+    Returns
+    -------
+    PolyData
+        The input meshes combined into a single :class:`pyvista.PolyData`.
 
     Notes
     -----
@@ -29,7 +50,9 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
 
     first: pv.PolyData = meshes[0]
     combined_points, combined_faces = [], []
+    active_scalars = []
     n_points, n_faces = 0, 0
+
     if data:
         point_data = set(first.point_data.keys())
         cell_data = set(first.cell_data.keys())
@@ -87,6 +110,8 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
             point_data |= set(mesh.point_data.keys())
             cell_data |= set(mesh.cell_data.keys())
             field_data |= set(mesh.field_data.keys())
+            if mesh.active_scalars_name:
+                active_scalars.append(mesh.active_scalars_name)
 
     points = np.vstack(combined_points)
     faces = np.hstack(combined_faces)
@@ -106,8 +131,13 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
         combine_data(point_data)
         combine_data(cell_data)
         combine_data(field_data, field=True)
-        combined.active_scalars_name = first.active_scalars_name
+        combined.active_scalars_name = None
+        for name in active_scalars:
+            if name in point_data or name in cell_data:
+                combined.active_scalars_name = first.active_scalars_name
+                break
 
+    # remove degenerate points and faces
     combined.clean(inplace=True)
 
     return combined
