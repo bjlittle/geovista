@@ -54,9 +54,12 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
     n_points, n_faces = 0, 0
 
     if data:
-        point_data = set(first.point_data.keys())
-        cell_data = set(first.cell_data.keys())
-        field_data = set(first.field_data.keys())
+        # determine the common point, cell and field array names
+        # attached to the input meshes - these will be combined and
+        # attached to the resultant combined mesh
+        common_point_data = set(first.point_data.keys())
+        common_cell_data = set(first.cell_data.keys())
+        common_field_data = set(first.field_data.keys())
 
     for i, mesh in enumerate(meshes):
         if not isinstance(mesh, pv.PolyData):
@@ -99,17 +102,22 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
         )
 
         if n_points:
+            # offset the current mesh connectivity by previous combined
+            # mesh points
             connectivity += n_points
 
+        # create the current mesh face connectivity
         faces = np.hstack([faces_N, connectivity])
         combined_faces.append(np.ravel(faces))
+        # accumulate running totals of combined mesh points and faces
         n_points += mesh.points.shape[0]
         n_faces += faces_N.shape[0]
 
         if data:
-            point_data |= set(mesh.point_data.keys())
-            cell_data |= set(mesh.cell_data.keys())
-            field_data |= set(mesh.field_data.keys())
+            # perform intersection to determine common names
+            common_point_data &= set(mesh.point_data.keys())
+            common_cell_data &= set(mesh.cell_data.keys())
+            common_field_data &= set(mesh.field_data.keys())
             if mesh.active_scalars_name:
                 active_scalars.append(mesh.active_scalars_name)
 
@@ -128,12 +136,15 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
                 )
 
     if data:
-        combine_data(point_data)
-        combine_data(cell_data)
-        combine_data(field_data, field=True)
+        # attach any common combined data
+        combine_data(common_point_data)
+        combine_data(common_cell_data)
+        combine_data(common_field_data, field=True)
+        # determine a sensible active scalar array, by opting for the first
+        # common active scalar array from the input meshes
         combined.active_scalars_name = None
         for name in active_scalars:
-            if name in point_data or name in cell_data:
+            if name in common_point_data or name in common_cell_data:
                 combined.active_scalars_name = first.active_scalars_name
                 break
 
