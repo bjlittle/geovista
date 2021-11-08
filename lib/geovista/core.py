@@ -88,7 +88,7 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
             npts = f"{', '.join([str(n) for n in N[:-1]])} and {N[-1]}"
             emsg = (
                 "Cannot combine meshes with a surface containing mixed face "
-                f"types, mesh {i+1} has faces with {npts} points."
+                f"types, input mesh #{i+1} has faces with {npts} points."
             )
             raise TypeError(emsg)
 
