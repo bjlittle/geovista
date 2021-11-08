@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyData:
     """
-    Combine two or more meshes into on mesh.
+    Combine two or more meshes into one mesh.
 
     Only meshes with faces will be combined. Support is not provided for combining
     meshes that consist of only points or lines.
