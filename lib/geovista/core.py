@@ -22,7 +22,7 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
     Note that, no check is performed to ensure that mesh faces do not overlap.
     However, meshes may share coincident points. Coincident point data from the
     first input mesh will overwrite all other mesh data sharing the same
-    coincident point.
+    coincident point in the resultant mesh.
 
     Parameters
     ----------
