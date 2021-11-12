@@ -16,10 +16,10 @@ logger = get_logger(__name__)
 Shape = Tuple[int]
 
 #: Default array name for data on the mesh points/vertices/nodes.
-DEFAULT_NAME_POINTS = "point data"
+DEFAULT_NAME_POINTS = "point_data"
 
 #: Default array name for data on the mesh cells/faces.
-DEFAULT_NAME_CELLS = "cell data"
+DEFAULT_NAME_CELLS = "cell_data"
 
 #: The field array name of a mesh containing point or cell data.
 GV_DATA_NAME = "gvName"
