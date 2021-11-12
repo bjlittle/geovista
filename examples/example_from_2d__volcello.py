@@ -15,10 +15,8 @@ mesh = Transform.from_2d(lons, lats, data=cube.data, name=cube.name())
 coastlines = get_coastlines("10m")
 
 plotter = pv.Plotter()
-
 sargs = dict(title=f"{cube.name()} / {cube.units}")
 plotter.add_mesh(mesh, cmap="balance", show_edges=False, scalar_bar_args=sargs)
 plotter.add_mesh(coastlines, color="white")
-
 plotter.add_axes()
 plotter.show()

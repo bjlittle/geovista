@@ -16,11 +16,9 @@ coastlines = get_coastlines("10m")
 base = pv.Sphere(radius=1 - (1e-3), theta_resolution=360, phi_resolution=180)
 
 plotter = pv.Plotter()
-
 sargs = dict(title=f"{cube.name()} / {cube.units}")
 plotter.add_mesh(base, color="grey")
 plotter.add_mesh(mesh, cmap="balance", show_edges=True, scalar_bar_args=sargs)
 plotter.add_mesh(coastlines, color="white")
-
 plotter.add_axes()
 plotter.show()

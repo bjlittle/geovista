@@ -2,7 +2,6 @@ import iris
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 import pyvista as pv
 
-from geovista import get_coastlines
 from geovista.bridge import Transform
 
 fname = "./qrparm_shared.orog.ugrid.node.nc"
@@ -23,9 +22,10 @@ mesh = Transform.from_unstructured(
 )
 
 plotter = pv.Plotter()
-
-plotter.add_mesh(get_coastlines("50m"), color="white", line_width=2)
-plotter.add_mesh(mesh, cmap="balance", show_edges=True, edge_color="grey")
-
+mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
+mesh.warp_by_scalar(scalars=cube.name(), inplace=True, factor=2e-5)
+plotter.add_mesh(
+    mesh, show_scalar_bar=False, cmap="balance", show_edges=True, edge_color="grey"
+)
 plotter.add_axes()
 plotter.show()
