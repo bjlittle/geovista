@@ -4,7 +4,7 @@ At the moment, some have publicly available data, some not... sorry about that.
 
 The intention is for this to naturally evolve and mature over time into easily
 accessible, repeatable and helpful documented examples, as one might come to 
-expect and hope.
+hope and expect.
 
 This is just the first step on that journey 😉
 
