@@ -241,6 +241,38 @@ class Transform:
             raise ValueError(emsg)
 
     @staticmethod
+    def _verify_connectivity(connectivity: Shape):
+        """
+        Ensure that the connectivity shape tuple is 2-D and minimal.
+
+        Parameters
+        ----------
+        connectivity : Shape
+            The 2-D shape of the connectivity, which must be at least (1, 3)
+            for the minimal mesh consisting of one triangular face.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        if len(connectivity) != 2:
+            emsg = (
+                "Require a 2-D '(M, N)' connectivity array, defining the "
+                "N indices for each of the M faces of the mesh, got a "
+                f"{len(connectivity)}-D '{connectivity}' array instead."
+            )
+            raise ValueError(emsg)
+
+        if connectivity[1] < 3:
+            emsg = (
+                "Require a connectivity array defining at least 3 vertices "
+                "(triangles) per mesh face i.e., minimal shape '(M, 3)', got "
+                f"connectivity with shape '{connectivity}'."
+            )
+            raise ValueError(emsg)
+
+    @staticmethod
     def _verify_unstructured(lons: ArrayLike, lats: ArrayLike):
         """
         TBD
@@ -278,54 +310,6 @@ class Transform:
                 f"longitudes/latitudes with shape '{lons.shape}'."
             )
             raise ValueError(emsg)
-
-    @staticmethod
-    def _verify_connectivity(connectivity: np.ndarray):
-        """
-        TBD
-
-        Parameters
-        ----------
-        connectivity : ndarray
-            ...
-
-        Notes
-        -----
-        .. versionadded:: 0.1.0
-
-        """
-        if connectivity.ndim != 2:
-            emsg = (
-                "Require a 2-D '(M, N)' connectivity array, defining the "
-                "N indices for each of the M faces of the mesh, got a "
-                f"{connectivity.ndim}-D '{connectivity.shape}' array instead."
-            )
-            raise ValueError(emsg)
-
-        if connectivity.shape[1] < 3:
-            emsg = (
-                "Require a connectivity array defining at least 3 vertices "
-                "(triangles) per mesh face i.e., minimal shape '(M, 3)', got "
-                f"connectivity with shape '{connectivity.shape}'."
-            )
-            raise ValueError(emsg)
-
-    @staticmethod
-    def _verify_connectivity_shape(connectivity: Shape):
-        """
-        Ensure that the connectivity shape tuple is 2-D and minimal.
-
-        Parameters
-        ----------
-        connectivity : Shape
-            The 2-D shape of the connectivity, which must be at least (1, 3)
-            for a mesh consisting of one triangular face.
-
-        Notes
-        -----
-        .. versionadded:: 0.1.0
-
-        """
 
     @classmethod
     def from_1d(
@@ -538,7 +522,7 @@ class Transform:
         lons = wrap(lons)
 
         if isinstance(connectivity, tuple):
-            cls._verify_connectivity_shape(connectivity)
+            cls._verify_connectivity(connectivity)
             n_points = np.product(connectivity)
 
             if n_points != lons.size:
@@ -557,11 +541,8 @@ class Transform:
             logger.debug("ignoring start_index")
         else:
             connectivity = np.asanyarray(connectivity)
-            cls._verify_connectivity(connectivity)
+            cls._verify_connectivity(connectivity.shape)
             ignore_start_index = False
-
-        n_points, n_cells = np.product(connectivity.shape), connectivity.shape[0]
-        data = cls._as_compatible_data(data, n_points, n_cells)
 
         # reduce any singularities at the poles to a singleton point
         poles = np.abs(lats) == 90
@@ -598,14 +579,17 @@ class Transform:
 
         # attach any optional data to the mesh
         if data is not None:
+            data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells)
+
             if not name:
                 name = (
                     DEFAULT_NAME_POINTS
-                    if data.shape == connectivity.shape
+                    if data.size == mesh.n_points
                     else DEFAULT_NAME_CELLS
                 )
             if not isinstance(name, str):
                 name = str(name)
+
             mesh.field_data[GV_DATA_NAME] = np.array([name])
             mesh[name] = data
 
