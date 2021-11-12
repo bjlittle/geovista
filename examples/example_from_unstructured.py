@@ -5,7 +5,6 @@ import pyvista as pv
 from geovista.bridge import Transform
 from geovista.geometry import get_coastlines
 
-
 fname = "./qrclim.sst.ugrid.nc"
 with PARSE_UGRID_ON_LOAD.context():
     cube = iris.load_cube(fname)[0]

@@ -4,7 +4,6 @@ import pyvista as pv
 from geovista.bridge import Transform
 from geovista.geometry import get_coastlines
 
-
 fname = iris.sample_data_path("air_temp.pp")
 cube = iris.load_cube(fname)
 

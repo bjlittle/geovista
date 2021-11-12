@@ -4,7 +4,6 @@ import pyvista as pv
 from geovista.bridge import Transform
 from geovista.geometry import get_coastlines
 
-
 # https://github.com/SciTools/iris-test-data/blob/master/test_data/NetCDF/ORCA2/votemper.nc
 fname = "./votemper.nc"
 cube = iris.load_cube(fname, "sea_water_potential_temperature")[0, 0]

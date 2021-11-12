@@ -4,7 +4,6 @@ import pyvista as pv
 from geovista.bridge import Transform
 from geovista.geometry import get_coastlines
 
-
 # https://github.com/SciTools/iris-test-data/blob/master/test_data/NetCDF/volcello/volcello_Ofx_CESM2_deforest-globe_r1i1p1f1_gn.nc
 fname = "./volcello_Ofx_CESM2_deforest-globe_r1i1p1f1_gn.nc"
 cube = iris.load_cube(fname, "ocean_volume")[0]
