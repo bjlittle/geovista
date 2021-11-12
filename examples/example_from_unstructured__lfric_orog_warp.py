@@ -2,7 +2,7 @@ import iris
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 import pyvista as pv
 
-from geovista.bridge import Transform
+import geovista as gv
 
 fname = "./qrparm_shared.orog.ugrid.node.nc"
 with PARSE_UGRID_ON_LOAD.context():
@@ -12,7 +12,7 @@ face_node = cube.mesh.face_node_connectivity
 indices = face_node.indices_by_src()
 lons, lats = cube.mesh.node_coords
 
-mesh = Transform.from_unstructured(
+mesh = gv.Transform.from_unstructured(
     lons.points,
     lats.points,
     indices,

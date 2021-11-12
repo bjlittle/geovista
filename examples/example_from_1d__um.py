@@ -1,8 +1,7 @@
 import iris
 import pyvista as pv
 
-from geovista.bridge import Transform
-from geovista.geometry import get_coastlines
+import geovista as gv
 
 fname = iris.sample_data_path("air_temp.pp")
 cube = iris.load_cube(fname)
@@ -16,8 +15,8 @@ if not lons.has_bounds():
 if not lats.has_bounds():
     lats.guess_bounds()
 
-mesh = Transform.from_1d(lons.bounds, lats.bounds, data=cube.data, name=cube.name())
-coastlines = get_coastlines("10m")
+mesh = gv.Transform.from_1d(lons.bounds, lats.bounds, data=cube.data, name=cube.name())
+coastlines = gv.get_coastlines("10m")
 
 plotter = pv.Plotter()
 

@@ -2,8 +2,7 @@ import iris
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 import pyvista as pv
 
-from geovista import get_coastlines
-from geovista.bridge import Transform
+import geovista as gv
 
 fname = "./qrparm_shared.orog.ugrid.node.nc"
 with PARSE_UGRID_ON_LOAD.context():
@@ -13,7 +12,7 @@ face_node = cube.mesh.face_node_connectivity
 indices = face_node.indices_by_src()
 lons, lats = cube.mesh.node_coords
 
-mesh = Transform.from_unstructured(
+mesh = gv.Transform.from_unstructured(
     lons.points,
     lats.points,
     indices,
@@ -23,7 +22,7 @@ mesh = Transform.from_unstructured(
 )
 
 plotter = pv.Plotter()
-plotter.add_mesh(get_coastlines("50m"), color="white", line_width=2)
+plotter.add_mesh(gv.get_coastlines("50m"), color="white", line_width=2)
 plotter.add_mesh(mesh, cmap="balance", show_edges=True, edge_color="grey")
 plotter.add_axes()
 plotter.show()
