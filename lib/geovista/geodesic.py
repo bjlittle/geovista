@@ -41,7 +41,7 @@ PANEL_IDX_BY_NAME: Dict[str, int] = dict(
     asia=1,
     pacific=2,
     americas=3,
-    polar=4,
+    arctic=4,
     antarctic=5,
 )
 
@@ -51,7 +51,7 @@ PANEL_NAME_BY_IDX: Dict[int, str] = {
     1: "asia",
     2: "pacific",
     3: "americas",
-    4: "polar",
+    4: "arctic",
     5: "antarctic",
 }
 

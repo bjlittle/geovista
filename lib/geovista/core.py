@@ -12,7 +12,11 @@ __all__ = ["combine"]
 logger = get_logger(__name__)
 
 
-def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyData:
+def combine(
+    meshes: List[pv.PolyData],
+    data: Optional[bool] = True,
+    clean: Optional[bool] = False,
+) -> pv.PolyData:
     """
     Combine two or more meshes into one mesh.
 
@@ -31,6 +35,9 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
     data : bool, default=True
         Whether to also combine and attach common data from the meshes onto
         the resultant mesh.
+    clean : bool, default=False
+        Specify whether to merge duplicate points, remove unused points,
+        and/or remove degenerate cells in the resultant mesh.
 
     Returns
     -------
@@ -149,6 +156,7 @@ def combine(meshes: List[pv.PolyData], data: Optional[bool] = True) -> pv.PolyDa
                 break
 
     # remove degenerate points and faces
-    combined.clean(inplace=True)
+    if clean:
+        combined.clean(inplace=True)
 
     return combined

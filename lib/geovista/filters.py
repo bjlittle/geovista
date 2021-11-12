@@ -24,6 +24,7 @@ def cast_UnstructuredGrid_to_PolyData(mesh: pv.UnstructuredGrid) -> pv.PolyData:
         emsg = f"Expected a 'pyvista.UnstructuredGrid', got {dtype}."
         raise TypeError(emsg)
 
+    # see https://vtk.org/pipermail/vtkusers/2011-March/066506.html
     alg = _vtk.vtkGeometryFilter()
     alg.AddInputData(mesh)
     alg.Update()
