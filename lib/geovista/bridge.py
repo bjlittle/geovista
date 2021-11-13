@@ -200,7 +200,7 @@ class Transform:
         return idxs
 
     @staticmethod
-    def _verify_2d(lons: ArrayLike, lats: ArrayLike):
+    def _verify_2d(lons: ArrayLike, lats: ArrayLike) -> None:
         """
         Verify the fitness of the provided longitudes and latitudes to create
         a (M, N) quad-mesh consisting of M*N faces.
@@ -241,7 +241,7 @@ class Transform:
             raise ValueError(emsg)
 
     @staticmethod
-    def _verify_connectivity(connectivity: Shape):
+    def _verify_connectivity(connectivity: Shape) -> None:
         """
         Ensure that the connectivity shape tuple is 2-D and minimal.
 
@@ -273,7 +273,7 @@ class Transform:
             raise ValueError(emsg)
 
     @staticmethod
-    def _verify_unstructured(lons: ArrayLike, lats: ArrayLike):
+    def _verify_unstructured(lons: ArrayLike, lats: ArrayLike) -> None:
         """
         TBD
 

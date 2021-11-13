@@ -10,13 +10,14 @@ from .common import set_jupyter_backend, to_xy0
 from .log import get_logger
 
 __all__ = [
+    "COASTLINE_RESOLUTION",
     "add_coastlines",
     "coastline_geometries",
     "coastline_mesh",
     "get_coastlines",
 ]
 
-# Configure the logger.
+# configure the logger
 logger = get_logger(__name__)
 
 #

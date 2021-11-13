@@ -1,6 +1,5 @@
 import iris
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
-import pyvista as pv
 
 import geovista as gv
 
@@ -21,8 +20,14 @@ mesh = gv.Transform.from_unstructured(
     name=cube.name(),
 )
 
-plotter = pv.Plotter()
-plotter.add_mesh(gv.get_coastlines("50m"), color="white", line_width=2)
+plotter = gv.GeoPlotter()
+plotter.add_coastlines(resolution="50m", color="white", line_width=2)
 plotter.add_mesh(mesh, cmap="balance", show_edges=True, edge_color="grey")
 plotter.add_axes()
+plotter.add_text(
+    "Unstructured Cube-Sphere Node Data (N, 4)",
+    position="upper_left",
+    font_size=10,
+    shadow=True,
+)
 plotter.show()

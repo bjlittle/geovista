@@ -1,6 +1,5 @@
 import iris
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
-import pyvista as pv
 
 import geovista as gv
 
@@ -21,11 +20,17 @@ mesh = gv.Transform.from_unstructured(
     name=cube.name(),
 )
 
-plotter = pv.Plotter()
+plotter = gv.GeoPlotter()
 mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
 mesh.warp_by_scalar(scalars=cube.name(), inplace=True, factor=2e-5)
 plotter.add_mesh(
     mesh, show_scalar_bar=False, cmap="balance", show_edges=True, edge_color="grey"
 )
 plotter.add_axes()
+plotter.add_text(
+    "Unstructured Cube-Sphere Node Data (N, 4)",
+    position="upper_left",
+    font_size=10,
+    shadow=True,
+)
 plotter.show()
