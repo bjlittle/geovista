@@ -54,8 +54,7 @@ class Transform:
             if data.size not in (n_points, n_cells):
                 emsg = (
                     f"Require mesh data with either '{n_points:,d}' points or "
-                    f"'{n_cells:,d}' cells, got '{data.size:,d}' values "
-                    "instead."
+                    f"'{n_cells:,d}' cells, got '{data.size:,d}' values."
                 )
                 raise ValueError(emsg)
 
@@ -97,14 +96,14 @@ class Transform:
         if lons.ndim not in (1, 2) or (lons.ndim == 2 and lons.shape[1] != 2):
             emsg = (
                 "Require a 1-D '(N+1,)' longitude array, or 2-D '(N, 2)' "
-                f"longitude array, got {lons.ndim}-D '{lons.shape}' instead."
+                f"longitude array, got {lons.ndim}-D '{lons.shape}'."
             )
             raise ValueError(emsg)
 
         if lats.ndim not in (1, 2) or (lats.ndim == 2 and lats.shape[1] != 2):
             emsg = (
                 "Require a 1-D '(M+1,)' latitude array, or 2-D '(M, 2)' "
-                f"latitude array, got {lats.ndim}-D '{lats.shape}' instead."
+                f"latitude array, got {lats.ndim}-D '{lats.shape}'."
             )
             raise ValueError(emsg)
 
@@ -228,7 +227,7 @@ class Transform:
             emsg = (
                 "Require a 2-D '(M+1, N+1)' longitude array, or 3-D "
                 f"'(M, N, 4)' longitude array, got {lons.ndim}-D "
-                f"'{lons.shape}' instead."
+                f"'{lons.shape}'."
             )
             raise ValueError(emsg)
 
@@ -259,8 +258,8 @@ class Transform:
         if len(connectivity) != 2:
             emsg = (
                 "Require a 2-D '(M, N)' connectivity array, defining the "
-                "N indices for each of the M faces of the mesh, got a "
-                f"{len(connectivity)}-D '{connectivity}' array instead."
+                "N indices for each of the M faces of the mesh, got "
+                f"{len(connectivity)}-D '{connectivity}' array."
             )
             raise ValueError(emsg)
 
@@ -297,10 +296,7 @@ class Transform:
             raise ValueError(emsg)
 
         if lons.ndim != 1:
-            emsg = (
-                f"Require a 1-D longitude and latitude array,"
-                f"got {lons.ndim}-D instead."
-            )
+            emsg = f"Require a 1-D longitude and latitude array, got {lons.ndim}-D."
             raise ValueError(emsg)
 
         if lons.size < 3:
