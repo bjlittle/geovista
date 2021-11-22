@@ -214,7 +214,7 @@ def coastline_mesh(
 @lru_cache
 def get_coastlines(
     resolution: Optional[str] = COASTLINE_RESOLUTION,
-    geocentric: Optional[bool] = True,
+    #    geocentric: Optional[bool] = True,
 ) -> pv.PolyData:
     """
     Create or fetch the cached mesh of the coastlines.
@@ -224,9 +224,6 @@ def get_coastlines(
     resolution : str, default=COASTLINE_RESOLUTION
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m``, or ``10m``.
-    geocentric : bool, default=True
-        Specify whether the coastlines are xyz geocentric coordinates.
-        Otherwise, longitude (φ) and latitude (λ) xy0 coordinates (i.e., φλ0).
 
     Returns
     -------
@@ -239,6 +236,12 @@ def get_coastlines(
 
     """
     from .cache import fetch_coastlines
+
+    # TODO: reinstate with projection support is available
+    # geocentric : bool, default=True
+    #     Specify whether the coastlines are xyz geocentric coordinates.
+    #     Otherwise, longitude (φ) and latitude (λ) xy0 coordinates (i.e., φλ0).
+    geocentric = True
 
     try:
         mesh = fetch_coastlines(resolution=resolution)
