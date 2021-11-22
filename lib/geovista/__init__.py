@@ -5,6 +5,7 @@ from appdirs import user_cache_dir
 
 from ._version import version as __version__  # noqa: F401
 from .bridge import Transform  # noqa: F401
+from .core import combine  # noqa: F401
 from .geodesic import BBox, line, panel, wedge  # noqa: F401
 from .geometry import get_coastlines  # noqa: F401
 from .geoplotter import GeoBackgroundPlotter, GeoMultiPlotter, GeoPlotter  # noqa: F401

@@ -22,6 +22,6 @@ plotter.add_mesh(mesh, cmap="balance", show_edges=True, scalar_bar_args=sargs)
 plotter.add_coastlines(resolution="10m", color="white")
 plotter.add_axes()
 plotter.add_text(
-    "1-D UM Face Data (M+1,) (N+1,)", position="upper_left", font_size=10, shadow=True
+    "1-D UM Face Data (M, 2) (N, 2)", position="upper_left", font_size=10, shadow=True
 )
 plotter.show()
