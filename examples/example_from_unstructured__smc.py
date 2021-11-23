@@ -1,6 +1,5 @@
 import iris
 from iris import NameConstraint
-import netCDF4 as nc
 import numpy as np
 
 import geovista as gv

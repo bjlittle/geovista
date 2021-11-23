@@ -4,7 +4,6 @@
 
 import iris
 from iris import NameConstraint
-import netCDF4 as nc
 import numpy as np
 
 import geovista as gv
@@ -22,7 +21,6 @@ def callback() -> None:
     mesh[name] = cube[idx].data
     text = time.units.num2date(time.points[idx]).strftime("%Y-%m-%d %H:%M")
     actor.SetText(3, text)
-
 
 
 def prepare(fname, std_name):
