@@ -1,11 +1,14 @@
+from typing import Tuple
+
 import iris
 from iris import NameConstraint
+from iris.cube import Cube
 import numpy as np
 
 import geovista as gv
 
 
-def prepare(fname, std_name):
+def prepare(fname: str, std_name: str) -> Tuple[Cube, np.ndarray, np.ndarray]:
     cubes = iris.load(fname)
 
     cube = cubes.extract_cube(std_name)

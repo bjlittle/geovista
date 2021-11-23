@@ -53,6 +53,7 @@ def prepare(fname, std_name):
 fname = "./gbl_2021112300.nc"
 cube, lons, lats = prepare(fname, "sea_surface_wave_significant_height")
 time = cube.coord("time")
+cube.data
 
 idx = 0
 
@@ -77,4 +78,4 @@ plotter.add_text(
     font_size=10,
     shadow=True,
 )
-plotter.add_callback(callback, interval=250)
+plotter.add_callback(callback, interval=100)
