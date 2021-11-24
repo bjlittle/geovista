@@ -12,7 +12,7 @@ dependencies:
 # core dependencies
   - cartopy >=0.20
   - pooch
-  - pyproj >=3.1
+  - pyproj >=3.3
   - pyvista
   - pyvistaqt
   - vtk >=9
