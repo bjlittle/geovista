@@ -32,12 +32,16 @@
   </a>
   <a href="https://github.com/bjlittle/geovista/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/bjlittle/geovista"
-         alt="License">
+         alt="License BSD-3-Clause">
   </a>
   <a href="https://github.com/bjlittle/geovista/graphs/contributors">
     <img src="https://img.shields.io/github/contributors/bjlittle/geovista"
          alt="Contributors">
+  </a>
+  <a href="https://github.com/bjlittle/geovista/actions/workflows/stale.yml">
+    <img src="https://github.com/bjlittle/geovista/actions/workflows/stale.yml/badge.svg?branch=main"
+         alt="Stale issues and pull-requests">
+  </a>
   <img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
        alt="wip">
-  </a>
 </p>
