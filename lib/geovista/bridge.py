@@ -536,7 +536,8 @@ class Transform:
             ignore_start_index = True
             logger.debug("ignoring start_index")
         else:
-            connectivity = np.asanyarray(connectivity)
+            # no copying results in a memory corruption within vtk
+            connectivity = np.asanyarray(connectivity).copy()
             cls._verify_connectivity(connectivity.shape)
             ignore_start_index = False
 
