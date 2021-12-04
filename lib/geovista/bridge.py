@@ -2,6 +2,7 @@ from typing import Optional, Tuple, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
+from pyproj import CRS, Transformer
 import pyvista as pv
 
 from .common import nan_mask, to_xyz, wrap
@@ -14,6 +15,7 @@ logger = get_logger(__name__)
 
 # type aliases
 Shape = Tuple[int]
+CRSLike = Union[int, str, dict, CRS]
 
 #: Default array name for data on the mesh points/vertices/nodes.
 DEFAULT_NAME_POINTS = "point_data"
@@ -23,6 +25,9 @@ DEFAULT_NAME_CELLS = "cell_data"
 
 #: The field array name of a mesh containing point or cell data.
 GV_DATA_NAME = "gvName"
+
+#: The default CRS i.e., WGS84 geographic lat/lon.
+WGS84 = CRS.from_user_input("EPSG:4326")
 
 
 class Transform:
@@ -64,60 +69,58 @@ class Transform:
 
     @staticmethod
     def _as_contiguous_1d(
-        lons: ArrayLike, lats: ArrayLike
+        xs: ArrayLike, ys: ArrayLike
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Verify and return a contiguous (N+1,) longitude and (M+1,) latitude
+        Verify and return a contiguous (N+1,) x-axis and (M+1,) y-axis
         bounds array, that will be then used afterwards to build a (M, N)
         contiguous quad-mesh consisting of M*N faces.
 
         Parameters
         ----------
-        lons : ArrayLike
-            A (N+1,) or (N, 2) longitude (degrees) array i.e., N faces in
-            longitude.
-        lats : ArrayLike
-            A (M+1,) or (M, 2) latitude (degrees) array i.e., M faces in
-            latitude.
+        xs : ArrayLike
+            A (N+1,) or (N, 2) x-axis array i.e., N-faces in the x-axis.
+        ys : ArrayLike
+            A (M+1,) or (M, 2) y-axis array i.e., M-faces in the y-axis.
 
         Returns
         -------
         tuple of ndarray
-            The longitudes and latitudes as contiguous 1-D bounds arrays.
+            The x-values and y-values as contiguous 1-D bounds arrays.
 
         Notes
         -----
         .. versionadded:: 0.1.0
 
         """
-        lons = np.asanyarray(lons)
-        lats = np.asanyarray(lats)
+        xs = np.asanyarray(xs)
+        ys = np.asanyarray(ys)
 
-        if lons.ndim not in (1, 2) or (lons.ndim == 2 and lons.shape[1] != 2):
+        if xs.ndim not in (1, 2) or (xs.ndim == 2 and xs.shape[1] != 2):
             emsg = (
-                "Require a 1-D '(N+1,)' longitude array, or 2-D '(N, 2)' "
-                f"longitude array, got {lons.ndim}-D '{lons.shape}'."
+                "Require a 1-D '(N+1,)' x-axis array, or 2-D '(N, 2)' "
+                f"x-axis array, got {xs.ndim}-D '{xs.shape}'."
             )
             raise ValueError(emsg)
 
-        if lats.ndim not in (1, 2) or (lats.ndim == 2 and lats.shape[1] != 2):
+        if ys.ndim not in (1, 2) or (ys.ndim == 2 and ys.shape[1] != 2):
             emsg = (
-                "Require a 1-D '(M+1,)' latitude array, or 2-D '(M, 2)' "
-                f"latitude array, got {lats.ndim}-D '{lats.shape}'."
+                "Require a 1-D '(M+1,)' y-axis array, or 2-D '(M, 2)' "
+                f"y-axis array, got {ys.ndim}-D '{ys.shape}'."
             )
             raise ValueError(emsg)
 
-        if lons.ndim == 1 and lons.size < 2:
+        if xs.ndim == 1 and xs.size < 2:
             emsg = (
-                "Require a 1-D longitude array with minimal shape '(2,)' i.e, "
-                "one face with two longitude bounds."
+                "Require a 1-D x-axis array with minimal shape '(2,)' i.e., "
+                "one face with two x-value bounds."
             )
             raise ValueError(emsg)
 
-        if lats.ndim == 1 and lats.size < 2:
+        if ys.ndim == 1 and ys.size < 2:
             emsg = (
-                "Require a 1-D latitude array with minimal shape '(2,)' i.e., "
-                "one face with two latitude bounds."
+                "Require a 1-D y-axis array with minimal shape '(2,)' i.e., "
+                "one face with two y-value bounds."
             )
             raise ValueError(emsg)
 
@@ -135,13 +138,13 @@ class Transform:
 
             return np.concatenate(parts)
 
-        if lons.ndim == 2:
-            lons = _contiguous(lons, "longitudes") if lons.size > 2 else lons[0]
+        if xs.ndim == 2:
+            xs = _contiguous(xs, "x-axis") if xs.size > 2 else xs[0]
 
-        if lats.ndim == 2:
-            lats = _contiguous(lats, "latitudes") if lats.size > 2 else lats[0]
+        if ys.ndim == 2:
+            ys = _contiguous(ys, "y-axis") if ys.size > 2 else ys[0]
 
-        return lons, lats
+        return xs, ys
 
     @staticmethod
     def _connectivity_M1N1(shape: Shape) -> np.ndarray:
@@ -199,43 +202,43 @@ class Transform:
         return idxs
 
     @staticmethod
-    def _verify_2d(lons: ArrayLike, lats: ArrayLike) -> None:
+    def _verify_2d(xs: ArrayLike, ys: ArrayLike) -> None:
         """
-        Verify the fitness of the provided longitudes and latitudes to create
+        Verify the fitness of the provided x-values and y-values to create
         a (M, N) quad-mesh consisting of M*N faces.
 
         Parameters
         ----------
-        lons : ArrayLike
-            A (N+1, M+1) or (N, M, 4) longitude (degrees) array.
-        lats : ArrayLike
-            A (N+1, M+1) or (N, M, 4) latitude (degrees) array.
+        xs : ArrayLike
+            A (N+1, M+1) or (N, M, 4) x-axis array.
+        ys : ArrayLike
+            A (N+1, M+1) or (N, M, 4) y-axis array.
 
         Notes
         -----
         .. versionadded:: 0.1.0
 
         """
-        if lons.shape != lats.shape:
+        if xs.shape != ys.shape:
             emsg = (
-                "Require longitudes and latitudes with the same shape, got "
-                f"'{lons.shape}' and '{lats.shape}' respectively."
+                "Require x-values and y-values with the same shape, got "
+                f"'{xs.shape}' and '{ys.shape}' respectively."
             )
             raise ValueError(emsg)
 
-        if lons.ndim not in (2, 3) or (lons.ndim == 3 and lons.shape[2] != 4):
+        if xs.ndim not in (2, 3) or (xs.ndim == 3 and xs.shape[2] != 4):
             emsg = (
-                "Require a 2-D '(M+1, N+1)' longitude array, or 3-D "
-                f"'(M, N, 4)' longitude array, got {lons.ndim}-D "
-                f"'{lons.shape}'."
+                "Require a 2-D '(M+1, N+1)' x-axis array, or 3-D "
+                f"'(M, N, 4)' x-axis array, got {xs.ndim}-D "
+                f"'{xs.shape}'."
             )
             raise ValueError(emsg)
 
-        if lons.ndim == 2 and (lons.shape[0] < 2 or lons.shape[1] < 2):
+        if xs.ndim == 2 and (xs.shape[0] < 2 or xs.shape[1] < 2):
             emsg = (
                 "Require a quad-mesh to have at least one face with four "
                 "points/vertices i.e., minimal shape '(2, 2)', got "
-                f"longitudes/latitudes with shape '{lons.shape}'."
+                f"x-values/y-values with shape '{xs.shape}'."
             )
             raise ValueError(emsg)
 
@@ -258,7 +261,7 @@ class Transform:
         if len(connectivity) != 2:
             emsg = (
                 "Require a 2-D '(M, N)' connectivity array, defining the "
-                "N indices for each of the M faces of the mesh, got "
+                "N indices for each of the M-faces of the mesh, got "
                 f"{len(connectivity)}-D '{connectivity}' array."
             )
             raise ValueError(emsg)
@@ -272,15 +275,15 @@ class Transform:
             raise ValueError(emsg)
 
     @staticmethod
-    def _verify_unstructured(lons: ArrayLike, lats: ArrayLike) -> None:
+    def _verify_unstructured(xs: ArrayLike, ys: ArrayLike) -> None:
         """
         TBD
 
         Parameters
         ----------
-        lons : ArrayLike
+        xs : ArrayLike
 
-        lats : ArrayLike
+        ys : ArrayLike
 
 
         Notes
@@ -288,64 +291,69 @@ class Transform:
         ..versionadded:: 0.1.0
 
         """
-        if lons.shape != lats.shape:
+        if xs.shape != ys.shape:
             emsg = (
-                "Require longitudes and latitudes with the same shape, got "
-                f"'{lons.shape}' and '{lats.shape}' respectively."
+                "Require x-values and y-values with the same shape, got "
+                f"'{xs.shape}' and '{ys.shape}' respectively."
             )
             raise ValueError(emsg)
 
-        if lons.ndim != 1:
-            emsg = f"Require a 1-D longitude and latitude array, got {lons.ndim}-D."
+        if xs.ndim != 1:
+            emsg = f"Require a 1-D x-values and y-values array, got {xs.ndim}-D."
             raise ValueError(emsg)
 
-        if lons.size < 3:
+        if xs.size < 3:
             emsg = (
                 "Require a mesh to have at least one face with three "
                 "points/vertices i.e., minimal shape '(3,)', got "
-                f"longitudes/latitudes with shape '{lons.shape}'."
+                f"x-values/y-values with shape '{xs.shape}'."
             )
             raise ValueError(emsg)
 
     @classmethod
     def from_1d(
         cls,
-        lons: ArrayLike,
-        lats: ArrayLike,
+        xs: ArrayLike,
+        ys: ArrayLike,
         data: Optional[ArrayLike] = None,
         name: Optional[str] = None,
+        crs: Optional[CRSLike] = None,
         clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
-        Build a quad-faced mesh from contiguous 1-D longitudes and latitudes.
+        Build a quad-faced mesh from contiguous 1-D x-values and y-values.
 
         This allows the construction of a uniform or rectilinear quad-faced
-        (M, N) mesh grid, where the mesh is M latitude faces by N longitude
-        faces, resulting in a mesh consisting of M*N faces.
+        (M, N) mesh grid, where the mesh has M-faces in the y-axis, and
+        N-faces in the x-axis, resulting in a mesh consisting of M*N faces.
+
+        The provided `xs` and `ys` will be projected from their `crs` to
+        geographic longitude and latitude values.
 
         Parameters
         ----------
-        lons : ArrayLike
-            A 1-D array of longitudes (degrees) defining the contiguous
-            face longitude boundaries of the mesh. Creating a mesh with N
-            faces in the longitude requires a (N+1,) array. Alternatively, a
-            (N, 2) contiguous bounds array may be provided. Note that,
-            longitudes will be automatically wrapped to the closed interval
-            [-180, 180].
-        lats : ArrayLike
-            A 1-D array of latitudes (degrees) in the closed interval [-90, 90],
-            defining the contiguous face latitude boundaries of the mesh.
-            Creating a mesh with M faces in the latitude requires a (M+1,)
-            array. Alternatively, a (M, 2) contiguous bounds array may be
-            provided.
+        xs : ArrayLike
+            A 1-D array of x-values, in canonical `crs` units, defining the
+            contiguous face x-value boundaries of the mesh. Creating a mesh
+            with N-faces in the `crs` x-axis requires a (N+1,) array.
+            Alternatively, a (N, 2) contiguous bounds array may be provided.
+        ys : ArrayLike
+            A 1-D array of y-values, in canonical `crs` units, defining the
+            contiguous face y-value boundaries of the mesh. Creating a mesh
+            with M-faces in the `crs` y-axis requires a (M+1,) array.
+            Alternatively, a (M, 2) contiguous bounds array may be provided.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh. The data must match
             either the shape of the fully formed mesh points (M, N), or the
             number of mesh faces, M*N.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
-            ``data`` is provided but with no ``name``, defaults to either
+            `data` is provided but with no `name`, defaults to either
             :data:`DEFAULT_NAME_POINTS` or :data:`DEFAULT_NAME_CELLS`.
+        crs : CRSLike, optional
+            The Coordinate Reference System of the provided `xs` and `ys`. May
+            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            to ``EPSG:4326`` i.e., ``WGS 84``.
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
@@ -360,51 +368,57 @@ class Transform:
         .. versionadded:: 0.1.0
 
         """
-        lons, lats = cls._as_contiguous_1d(lons, lats)
-        mlons, mlats = np.meshgrid(lons, lats, indexing="xy")
+        xs, ys = cls._as_contiguous_1d(xs, ys)
 
-        return Transform.from_2d(mlons, mlats, data=data, name=name, clean=clean)
+        mxs, mys = np.meshgrid(xs, ys, indexing="xy")
+
+        return Transform.from_2d(mxs, mys, data=data, name=name, crs=crs, clean=clean)
 
     @classmethod
     def from_2d(
         cls,
-        lons: ArrayLike,
-        lats: ArrayLike,
+        xs: ArrayLike,
+        ys: ArrayLike,
         data: Optional[ArrayLike] = None,
         name: Optional[str] = None,
+        crs: Optional[CRSLike] = None,
         clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
-        Build a quad-faced mesh from 2-D longitudes and latitudes.
+        Build a quad-faced mesh from 2-D x-values and y-values.
 
         This allows the construction of a uniform, rectilinear or curvilinear
-        quad-faced (M, N) mesh grid, where the mesh is M latitude faces by N
-        longitude faces, resulting in a mesh consisting of M*N faces.
+        quad-faced (M, N) mesh grid, where the mesh has M-faces in the y-axis,
+        and N-faces in the x-axis, resulting in a mesh consisting of M*N faces.
 
-        The provided longitudes and latitudes define the four geospatial
-        vertices of each mesh quad-face.
+        The provided `xs` and `ys` define the four vertices of each quad-face
+        in the mesh for the native `crs`, which will then be projected to
+        geographic longitude and latitude values.
 
         Parameters
         ----------
-        lons : ArrayLike
-            A 2-D array of longitudes (degrees) defining the face longitude
-            boundaries of the mesh. Creating a (M, N) mesh requires a
-            (M+1, N+1) longitude array. Alternatively, a (M, N, 4) array
-            may be provided. Note that, longitudes will be automatically
-            wrapped to the closed interval [-180, 180].
-        lats : ArrayLike
-            A 2-D array of latitudes (degrees) in the closed interval [-90, 90],
-            defining the face latitude boundaries of the mesh. Creating a
-            (M, N) mesh requires a (M+1, N+1) latitude array. Alternatively,
-            a (M, N, 4) array may be provided.
+        xs : ArrayLike
+            A 2-D array of x-values, in canonical `crs` units, defining the
+            face x-value boundaries of the mesh. Creating a (M, N) mesh
+            requires a (M+1, N+1) x-axis array. Alternatively, a (M, N, 4)
+            array may be provided.
+        ys : ArrayLike
+            A 2-D array of y-values, in canonical `crs` units, defining the
+            face y-value boundaries of the mesh. Creating a (M, N) mesh
+            requires a (M+1, N+1) y-axis array. Alternatively, a (M, N, 4)
+            array may be provided.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh. The data must match
             either the shape of the fully formed mesh points (M, N), or the
             number of mesh faces, M*N.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
-            ``data`` is provided but with no ``name``, defaults to either
+            `data` is provided but with no `name`, defaults to either
             :data:`DEFAULT_NAME_POINTS` or :data:`DEFAULT_NAME_CELLS`.
+        crs : CRSLike, optional
+            The Coordinate Reference System of the provided `xs` and `ys`. May
+            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            to ``EPSG:4326`` i.e., ``WGS 84``.
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
@@ -419,10 +433,10 @@ class Transform:
         .. versionadded:: 0.1.0
 
         """
-        lons = np.asanyarray(lons)
-        lats = np.asanyarray(lats)
-        cls._verify_2d(lons, lats)
-        shape = lons.shape
+        xs = np.asanyarray(xs)
+        ys = np.asanyarray(ys)
+        cls._verify_2d(xs, ys)
+        shape = xs.shape
 
         if len(shape) == 2:
             # we have shape (M+1, N+1)
@@ -436,66 +450,70 @@ class Transform:
         # generate connectivity (topology) map of indices into the geometry
         connectivity = (
             cls._connectivity_M1N1(points_shape)
-            if lons.ndim == 2
+            if xs.ndim == 2
             else cls._connectivity_MN4(cells_shape)
         )
 
         return Transform.from_unstructured(
-            lons, lats, connectivity, data=data, name=name, clean=clean
+            xs, ys, connectivity, data=data, name=name, crs=crs, clean=clean
         )
 
     @classmethod
     def from_unstructured(
         cls,
-        lons: ArrayLike,
-        lats: ArrayLike,
+        xs: ArrayLike,
+        ys: ArrayLike,
         connectivity: Union[ArrayLike, Shape],
         data: Optional[ArrayLike] = None,
         start_index: Optional[int] = 0,
         name: Optional[ArrayLike] = None,
+        crs: Optional[CRSLike] = None,
         clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
-        Build a mesh from unstructured 1-D longitudes and latitudes.
+        Build a mesh from unstructured 1-D x-values and y-values.
 
-        The connectivity of the unstructured mesh is required in order to
+        The `connectivity` of the unstructured mesh is required in order to
         explicitly define the face topology relationship, which is defined in
-        terms of indices into the provided mesh geometry.
+        terms of indices into the provided `xs` and `ys` mesh geometry.
 
-        Note that, the connectivity must define a mesh comprised of faces based
+        Note that, the `connectivity` must define a mesh comprised of faces based
         on the same primitive shape e.g., a mesh of triangles, or a mesh of
         quads etc. Support is not provided for mixed face meshes. Also, any
-        optional mesh data must be provided in the same order as the mesh face
-        connectivity.
+        optional mesh `data` provided must be in the same order as the mesh face
+        `connectivity`.
 
         Parameters
         ----------
-        lons : ArrayLike
-            A 1-D array of longitudes (degrees) defining the longitudes of all
-            face vertices in the mesh. Note that, longitudes will be
-            automatically wrapped to the closed interval [-180, 180].
-        lats : ArrayLike
-            A 1-D array of latitudes (degrees) in the closed interval [-90, 90],
-            defining the latitudes of all face vertices in the mesh.
+        xs : ArrayLike
+            A 1-D array of x-values, in canonical `crs` units, defining the
+            vertices of each face in the mesh.
+        ys : ArrayLike
+            A 1-D array of y-values, in canonical `crs` units, defining the
+            vertices of each face in the mesh.
         connectivity : ArrayLike or Shape
             Defines the topology of each face in the unstructured mesh in terms
-            of indices into the provided ``lons`` and ``lats`` mesh geometry
-            arrays. The ``connectivity`` is a 2-D `(M, N)` array, where `M` is
-            the number of mesh faces, and `N` is the number of
-            points/vertices/nodes per face. Alternatively, an `(M, N)` tuple
-            of the connectivity shape may be provided instead, given that the
-            ``lons`` and ``lats`` define M*N points in the mesh geometry.
+            of indices into the provided `xs` and `ys` mesh geometry
+            arrays. The `connectivity` is a 2-D (M, N) array, where ``M`` is
+            the number of mesh faces, and ``N`` is the number of
+            points/vertices/nodes per face. Alternatively, an (M, N) tuple
+            defining the connectivity shape may be provided instead, given that the
+            `xs` and `ys` define M*N points in the mesh geometry.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh.
         start_index : int, default=0
-            Specify the base index of the provided ``connectivity`` in the
+            Specify the base index of the provided `connectivity` in the
             closed interval [0, 1]. For example, if ``start_index=1``, then
-            the ``start_index`` will be subtracted from the ``connectivity``
+            the `start_index` will be subtracted from the `connectivity`
             to result in 0-based indices into the provided mesh geometry.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
-            ``data`` is provided but with no ``name``, defaults to either
+            `data` is provided but with no `name`, defaults to either
             :data:`DEFAULT_NAME_POINTS` or :data:`DEFAULT_NAME_CELLS`.
+        crs : CRSLike, optional
+            The Coordinate Reference System of the provided `xs` and `ys`. May
+            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            to ``EPSG:4326`` i.e., ``WGS 84``.
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
@@ -510,22 +528,29 @@ class Transform:
         .. versionadded:: 0.1.0
 
         """
-        lons = np.asanyarray(lons).ravel()
-        lats = np.asanyarray(lats).ravel()
-        cls._verify_unstructured(lons, lats)
+        xs = np.asanyarray(xs).ravel()
+        ys = np.asanyarray(ys).ravel()
+        cls._verify_unstructured(xs, ys)
+
+        if crs is not None:
+            crs = CRS.from_user_input(crs)
+
+            if crs != WGS84:
+                transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
+                xs, ys = transformer.transform(xs, ys)
 
         # ensure longitudes (degrees) are in closed interval [-180, 180]
-        lons = wrap(lons)
+        xs = wrap(xs)
 
         if isinstance(connectivity, tuple):
             cls._verify_connectivity(connectivity)
             n_points = np.product(connectivity)
 
-            if n_points != lons.size:
+            if n_points != xs.size:
                 emsg = (
                     f"Connectivity shape '{connectivity}' requires "
-                    f"'{n_points:,d}' longitude/latitude points, only "
-                    f"'{lons.size:,d}' available."
+                    f"'{n_points:,d}' x-values/y-values, only "
+                    f"'{xs.size:,d}' available."
                 )
                 raise ValueError(emsg)
 
@@ -536,15 +561,16 @@ class Transform:
             ignore_start_index = True
             logger.debug("ignoring start_index")
         else:
-            # no copying results in a memory corruption within vtk
+            # require to copy connectivity, otherwise reqults in a memory
+            # corruption within vtk
             connectivity = np.asanyarray(connectivity).copy()
             cls._verify_connectivity(connectivity.shape)
             ignore_start_index = False
 
         # reduce any singularities at the poles to a singleton point
-        poles = np.abs(lats) == 90
+        poles = np.abs(ys) == 90
         if np.any(poles):
-            lons[poles] = 0
+            xs[poles] = 0
 
         if start_index not in [0, 1]:
             emsg = (
@@ -557,7 +583,7 @@ class Transform:
             connectivity -= start_index
 
         # convert lat/lon to geocentric xyz
-        geometry = to_xyz(lons, lats)
+        geometry = to_xyz(xs, ys)
 
         # create face connectivity serialization e.g., for a quad-mesh, for
         # each face we have (4, V1, V2, V3, V4), where "4" is the number of
@@ -598,26 +624,28 @@ class Transform:
 
     def __init__(
         self,
-        lons: ArrayLike,
-        lats: ArrayLike,
+        xs: ArrayLike,
+        ys: ArrayLike,
         connectivity: Optional[Union[ArrayLike, Shape]] = None,
         start_index: Optional[int] = 0,
+        crs: Optional[ArrayLike] = None,
         clean: Optional[bool] = False,
     ):
-        lons = np.asanyarray(lons)
-        lats = np.asanyarray(lats)
+        xs = np.asanyarray(xs)
+        ys = np.asanyarray(ys)
 
         if connectivity is None:
-            if lons.ndim <= 1 or lats.ndim <= 1:
-                mesh = self.from_1d(lons, lats, clean=clean)
+            if xs.ndim <= 1 or ys.ndim <= 1:
+                mesh = self.from_1d(xs, ys, crs=crs, clean=clean)
             else:
-                mesh = self.from_2d(lons, lats, clean=clean)
+                mesh = self.from_2d(xs, ys, crs=crs, clean=clean)
         else:
             mesh = self.from_unstructured(
-                lons,
-                lats,
+                xs,
+                ys,
                 connectivity,
                 start_index=start_index,
+                crs=crs,
                 clean=clean,
             )
 
