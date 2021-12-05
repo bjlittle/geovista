@@ -27,3 +27,9 @@ dependencies:
 
 # test dependencies
   - pytest >=6.0
+
+# documentation dependencies
+  - sphinx
+  - pydata-sphinx-theme
+  - jupyter_sphinx
+  - pythreejs

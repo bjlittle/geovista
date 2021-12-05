@@ -6,6 +6,7 @@ from pyproj import CRS, Transformer
 import pyvista as pv
 
 from .common import nan_mask, to_xyz, wrap
+from .crs import WGS84
 from .log import get_logger
 
 __all__ = ["Transform"]
@@ -25,9 +26,6 @@ DEFAULT_NAME_CELLS = "cell_data"
 
 #: The field array name of a mesh containing point or cell data.
 GV_DATA_NAME = "gvName"
-
-#: The default CRS i.e., WGS84 geographic lat/lon.
-WGS84 = CRS.from_user_input("EPSG:4326")
 
 
 class Transform:
