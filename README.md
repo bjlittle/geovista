@@ -10,7 +10,7 @@
 </h4>
 
 <p align="center">
-  <a href='https://geovista.readthedocs.io/en/latest/?badge=latest'>
+  <a href='https://readthedocs.org/projects/geovista/'>
     <img src='https://readthedocs.org/projects/geovista/badge/?version=latest' alt='Documentation Status' />
   </a>
   <a href="https://results.pre-commit.ci/latest/github/bjlittle/geovista/main">
