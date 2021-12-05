@@ -77,10 +77,11 @@ html_theme = "pydata_sphinx_theme"
 html_logo = "_static/logo.png"
 
 html_context = {
+    "github_url": "https://github.com",
     "github_user": "bjlittle",
     "github_repo": "geovista",
     "github_version": "main",
-    "doc_path": "docs",
+    "doc_path": "docs/source",
 }
 
 html_theme_options = {
