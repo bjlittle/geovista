@@ -4,7 +4,7 @@ build:
     image: latest
 
 conda:
-    environment: requirements/ci/geovista.yml
+    environment: requirements/geovista.yml
 
 sphinx:
     configuration: docs/source/conf.py
