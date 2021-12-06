@@ -1,11 +1,3 @@
-.. geovista documentation master file, created by
-   sphinx-quickstart on Sun Dec  5 00:40:32 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to GeoVista's documentation!
-====================================
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -20,6 +12,17 @@ Welcome to GeoVista's documentation!
    pyvista.global_theme.window_size = [700, 500]
    pyvista.global_theme.axes.show = True
    pyvista.global_theme.antialiasing = True
+
+
+.. raw:: html
+
+   <h1 align="center">
+     <img src="https://raw.githubusercontent.com/bjlittle/geovista/main/branding/logo/secondary/geovistalogo2.svg" alt="GeoVista">
+   </h1>
+   <h4 align="center">
+       Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
+   </h4>
+   <br>
 
 We're just bootstrapping `geovista` and its documentation, so please be patient 👍
 
