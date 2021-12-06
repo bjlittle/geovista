@@ -22,7 +22,7 @@ import pyvista
 # -- Project information -----------------------------------------------------
 
 project = "GeoVista"
-copyright = "2021, GeoVista Developers"
+copyright = "2021, GeoVista Contributors"
 author = "Bill Little"
 
 # The full version, including alpha/beta/rc tags
