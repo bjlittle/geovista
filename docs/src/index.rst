@@ -1,6 +1,4 @@
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+.. title:: GeoVista
 
 .. jupyter-execute::
    :hide-code:
@@ -12,6 +10,11 @@
    pyvista.global_theme.window_size = [700, 500]
    pyvista.global_theme.axes.show = True
    pyvista.global_theme.antialiasing = True
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
 
 
 .. raw:: html
