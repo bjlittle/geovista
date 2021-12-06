@@ -1,0 +1,31 @@
+name: geovista-dev
+
+channels:
+  - conda-forge
+
+dependencies:
+
+# setup dependencies
+  - setuptools >=45
+  - setuptools-scm >=6.2
+
+# core dependencies
+  - cartopy >=0.20
+  - pooch
+  - pyproj >=3.3
+  - pyvista
+  - vtk >=9
+
+# cmap dependencies
+  - cmocean
+  - colorcet
+
+# dev dependencies
+  - pip
+
+# documentation dependencies
+  - sphinx
+  - sphinx-copybutton
+  - jupyter_sphinx
+  - pydata-sphinx-theme
+  - pythreejs
