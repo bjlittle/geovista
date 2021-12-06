@@ -7,7 +7,7 @@ conda:
     environment: requirements/geovista.yml
 
 sphinx:
-    configuration: docs/source/conf.py
+    configuration: docs/src/conf.py
     fail_on_warning: false
 
 python:
