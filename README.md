@@ -22,16 +22,16 @@
          alt="License BSD-3-Clause">
   </a>
   <a href="https://anaconda.org/conda-forge/geovista">
+    <img src="https://img.shields.io/conda/pn/conda-forge/geovista.svg"
+         alt="Conda Platform">
+  </a>
+  <a href="https://anaconda.org/conda-forge/geovista">
     <img src="https://img.shields.io/conda/vn/conda-forge/geovista?color=orange&label=conda-forge&logo=conda-forge&logoColor=white"
          alt="Conda geovista">
   </a>
   <a href="https://pypi.org/project/geovista/">
     <img src="https://img.shields.io/pypi/v/geovista?color=orange&label=pypi&logo=python&logoColor=white"
          alt="PyPI geovista">
-  </a>
-  <a href="https://anaconda.org/conda-forge/geovista">
-    <img src="https://img.shields.io/conda/pn/conda-forge/geovista.svg"
-         alt="Conda Platform">
   </a>
   <a href="https://github.com/psf/black">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg"

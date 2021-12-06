@@ -82,7 +82,7 @@ html_context = {
     "github_user": "bjlittle",
     "github_repo": "geovista",
     "github_version": "main",
-    "doc_path": "docs/source",
+    "doc_path": "docs/src",
 }
 
 html_theme_options = {
