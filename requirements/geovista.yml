@@ -30,6 +30,7 @@ dependencies:
 
 # documentation dependencies
   - sphinx
-  - pydata-sphinx-theme
+  - sphinx-copybutton
   - jupyter_sphinx
+  - pydata-sphinx-theme
   - pythreejs

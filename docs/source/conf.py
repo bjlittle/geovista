@@ -56,6 +56,7 @@ if not os.path.exists(pyvista.FIGURE_PATH):
 # ones.
 extensions = [
     "jupyter_sphinx",
+    "sphinx_copybutton",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -110,3 +111,10 @@ html_sidebars = {"**": ["sidebar-ethical-ads.html"]}
 # The name of the Pygments (syntac highlighting) style to use.
 # https://pygments.org/styles/
 pygments_style = "friendly"
+
+
+# -- CopyButton configuration ------------------------------------------------
+
+copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_is_regexp = True
+copybutton_line_continuation_character = "\\"

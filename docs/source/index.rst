@@ -10,6 +10,8 @@ Welcome to GeoVista's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+We're just bootstrapping `geovista` and its documentation, so please be patient 👍
+
 .. jupyter-execute::
     :hide-code:
 
@@ -18,7 +20,7 @@ Welcome to GeoVista's documentation!
     pyvista.set_jupyter_backend("pythreejs")
     pyvista.global_theme.background = "white"
     pyvista.global_theme.window_size = [700, 500]
-    pyvista.global_theme.axes.show = False
+    pyvista.global_theme.axes.show = True
     #pyvista.global_theme.smooth_shading = True
     pyvista.global_theme.antialiasing = True
 
@@ -42,5 +44,8 @@ Welcome to GeoVista's documentation!
     plotter.add_mesh(mesh, cmap='balance', show_edges=True)
     plotter.add_coastlines(resolution="10m", color="white")
     plotter.show()
+
+
+
 
 
