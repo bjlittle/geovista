@@ -93,7 +93,7 @@ html_theme_options = {
         {
             "name": "Support",
             "url": "https://github.com/bjlittle/geovista/discussions",
-            "icon": "fa fa-comment fa-fw",
+            "icon": "fa fa-comments fa-fw",
         }
     ],
 }
@@ -108,7 +108,7 @@ html_sidebars = {"**": ["sidebar-ethical-ads.html"]}
 
 # -- Pygments configuration --------------------------------------------------
 
-# The name of the Pygments (syntac highlighting) style to use.
+# The name of the Pygments (syntax highlighting) style to use.
 # https://pygments.org/styles/
 pygments_style = "friendly"
 
