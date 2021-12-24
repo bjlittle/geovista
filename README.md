@@ -1,9 +1,15 @@
-<h1 align="center">
+<p align="center">
   <img src="https://raw.githubusercontent.com/bjlittle/geovista/main/branding/logo/primary/geovistalogo.svg"
        alt="GeoVista"
        width="200">
-  <br>
-</h1>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
+       alt="wip">
+</p>
+
+<br>
 
 <h4 align="center">
   Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
@@ -45,6 +51,4 @@
     <img src="https://github.com/bjlittle/geovista/actions/workflows/stale.yml/badge.svg?branch=main"
          alt="Stale issues and pull-requests">
   </a>
-  <img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
-       alt="wip">
 </p>
