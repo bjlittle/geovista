@@ -35,8 +35,8 @@ class GeoBasePlotter:
         .. versionadded:: 0.1.0
 
         """
-        # TODO: rationalise zorder
-        mesh = pv.Sphere(radius=1 - (1e-3), theta_resolution=360, phi_resolution=180)
+        # TODO: provide robust zorder support
+        mesh = pv.Sphere(radius=1 - (1e-2), theta_resolution=360, phi_resolution=180)
         return self.add_mesh(mesh, **kwargs)
 
     def add_coastlines(
