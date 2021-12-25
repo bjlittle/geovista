@@ -14,7 +14,7 @@ sphinx:
 
 python:
   install: 
-    - method: 
+    - method: pip
       path: .
       extra_requirements:
         - cmap
