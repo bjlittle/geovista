@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 #
 
 #: Default jupyter plotting backend for pyvista.
-JUPYTER_BACKEND: bool = "ipygany"
+JUPYTER_BACKEND: bool = "pythreejs"
 
 
 def active_kernel() -> bool:
