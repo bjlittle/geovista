@@ -13,6 +13,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import datetime
 import os
 
 import geovista
@@ -22,7 +23,8 @@ import pyvista
 # -- Project information -----------------------------------------------------
 
 project = "GeoVista"
-copyright = "2021, GeoVista Contributors"
+copyright_years = f"2021 - {datetime.datetime.now().year}"
+copyright = f"{copyright_years}, {project} Contributors"
 author = "Bill Little"
 
 # The full version, including alpha/beta/rc tags
