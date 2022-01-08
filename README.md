@@ -1,12 +1,14 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista/main/branding/logo/primary/geovistalogo.svg"
-       alt="GeoVista"
-       width="200">
-</p>
+<h1 align="center">
+  <a href="https://results.pre-commit.ci/latest/github/bjlittle/geovista/main">
+    <img src="https://raw.githubusercontent.com/bjlittle/geovista/main/branding/logo/primary/geovistalogo.svg"
+         alt="GeoVista"
+         width="200">
+  </a><br>
+</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
-       alt="wip"><br>
+       alt="wip">
 </p>
 
 <h4 align="center">
