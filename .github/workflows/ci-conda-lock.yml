@@ -114,8 +114,8 @@ jobs:
           path: ${{ github.workspace }}/requirements/locks
 
       - name: "Push pull-request"
-        uses: peter-evans/create-pull-request@v3
         id: cpr
+        uses: peter-evans/create-pull-request@v3
         with:
           add-paths: ${{ github.workspace }}/requirements/locks/*.txt
           commit-message: updated conda lock files
@@ -126,7 +126,6 @@ jobs:
             Conda lock files auto-updated to latest resolved
             environment for `geovista` dependencies.
           labels: |
-            New: Pull Request
             Bot
 
       - name: "Check pull-request"
