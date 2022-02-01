@@ -1,0 +1,140 @@
+# reference:
+#   - https://github.com/actions/cache
+#   - https://github.com/actions/checkout
+#   - https://github.com/actions/download-artifact
+#   - https://github.com/actions/upload-artifact
+#   - https://github.com/marketplace/actions/setup-miniconda
+
+name: ci-conda-lock
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 3 0 * * 1
+
+
+jobs:
+  conda-lock:
+    name: "Build ${{ matrix.lock }}"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      ENV_NAME: "geovista-lock"
+      CONDA_EXE: "mamba"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lock: "py38-lock"
+          - lock: "py39-lock"
+          - lock: "py310-lock"
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+
+      - name: "Conda package cache"
+        uses: actions/cache@v2
+        env:
+          # Increment the build number to force a cache refresh.
+          CACHE_BUILD: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+
+      - name: "Conda install"
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          use-mamba: true
+          activate-environment: ${{ env.ENV_NAME }}
+          auto-update-conda: false
+          use-only-tar-bz2: true
+
+      - name: "Conda environment cache"
+        id: conda-env-cache
+        uses: actions/cache@v2
+        env:
+          # Increment the build number to force a cache refresh.
+          CACHE_BUILD: 0
+        with:
+          path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
+          key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+
+      - name: "Conda environment update"
+        if: steps.conda-env-cache.outputs.cache-hit != 'true'
+        run: |
+          mamba install --name ${{ env.ENV_NAME }} tox
+
+      - name: "Conda info"
+        run: |
+          conda info
+          conda list
+
+      - name: "Tox cache"
+        uses: actions/cache@v2
+        env:
+          # Increment the build number to forece a cache refresh.
+          CACHE_BUILD: 0
+          TOX_INI: ${{ github.workspace }}/tox.ini
+        with:
+          path: ${{ github.workspace }}/.tox
+          key: ${{ runner.os }}-tox-${{ env.ENV_NAME }}-${{ matrix.lock }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.TOX_INI) }}
+
+      - name: "Create ${{ matrix.lock }} conda locks"
+        run: |
+          tox -e ${{ matrix.lock }} -- --mamba --platform osx-64
+
+      - name: "Upload lock artifacts"
+        uses: actions/upload-artifact@v2
+        with:
+          name: lock-artifacts
+          path: ${{ github.workspace }}/requirements/locks/${{ matrix.lock }}*.txt
+
+
+  create-pr:
+    needs: conda-lock
+    name: "Create pull-request"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Download lock artifacts"
+        uses: actions/download-artifact@v2
+        with:
+          name: lock-artifacts
+          path: ${{ github.workspace }}/requirements/locks
+
+      - name: "Push pull-request"
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          add-paths: ${{ github.workspace }}/requirements/locks/*.txt
+          commit-message: "updated conda lock files"
+          branch: conda-lock-auto-update
+          delete-branch: true
+          title: "[geovista.ci] conda lock auto-update"
+          body: |
+            Conda lock files auto-updated to latest resolved environment for `geovista` dependencies.
+          labels: |
+            New: Pull Request
+            Bot
+
+      - name: "Check pull-request"
+        run: |
+          echo "pull-request #${{ steps.cpr.outputs.pull-request-number }}"
+          echo "pull-request URL ${{ steps.cpr.outputs.pull-request-url }}"
+          echo "pull-request operation [${{ steps.cpr.outputs.pull-request-operation }}]"
+          echo "pull-request SHA ${{ steps.cpr.outputs.pull-request-head-sha }}"
