@@ -93,7 +93,7 @@ jobs:
 
       - name: "Create ${{ matrix.lock }} conda locks"
         run: |
-          tox -e ${{ matrix.lock }} -- --mamba --platform osx-64
+          tox -e ${{ matrix.lock }} -- --mamba --platform osx-64 --platform win-64
 
       - name: "Upload lock artifacts"
         uses: actions/upload-artifact@v2
@@ -119,8 +119,8 @@ jobs:
 
       - name: "Push pull-request"
         id: cpr
-        # v3.12.0
-        uses: peter-evans/create-pull-request@dcd5fd746d53dd8de555c0f10bca6c35628be47a
+        # v3.12.1 (release date 31 Jan 2022)
+        uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
         with:
           add-paths: ${{ github.workspace }}/requirements/locks/*.txt
           commit-message: "updated conda lock files"
