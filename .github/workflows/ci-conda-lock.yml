@@ -133,7 +133,12 @@ jobs:
             New: Pull Request
             Bot
 
+      - name: "diag"
+        run: |
+          echo "outcome = ${{ steps.cpr.outcome }}"
+
       - name: "Check pull-request"
+        if: steps.cpr.outcome == 'success'
         run: |
           echo "pull-request #${{ steps.cpr.outputs.pull-request-number }}"
           echo "pull-request URL ${{ steps.cpr.outputs.pull-request-url }}"
