@@ -119,7 +119,8 @@ jobs:
 
       - name: "Push pull-request"
         id: cpr
-        uses: peter-evans/create-pull-request@v3
+        # v3.12.0
+        uses: peter-evans/create-pull-request@dcd5fd746d53dd8de555c0f10bca6c35628be47a
         with:
           add-paths: ${{ github.workspace }}/requirements/locks/*.txt
           commit-message: "updated conda lock files"
