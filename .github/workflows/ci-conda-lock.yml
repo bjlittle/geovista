@@ -133,7 +133,8 @@ jobs:
             New: Pull Request
             Bot
 
-      - name: "Check pull-request"
+      - name: "Show pull-request"
+        if: steps.cpr.outputs.pull-request-number != ''
         run: |
           echo "pull-request #${{ steps.cpr.outputs.pull-request-number }}"
           echo "pull-request URL ${{ steps.cpr.outputs.pull-request-url }}"
