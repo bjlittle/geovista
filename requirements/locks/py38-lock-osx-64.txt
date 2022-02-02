@@ -234,7 +234,7 @@ https://conda.anaconda.org/conda-forge/osx-64/ipython-8.0.1-py38h50d1736_0.tar.b
 https://conda.anaconda.org/conda-forge/osx-64/nbconvert-6.4.1-py38h50d1736_0.tar.bz2#cfa44f3c882a6a60e3d4494a9b9fb8a3
 https://conda.anaconda.org/conda-forge/noarch/pyvistaqt-0.7.0-pyhd8ed1ab_0.tar.bz2#c9473f675b0a73945fbe49ccee0b1545
 https://conda.anaconda.org/conda-forge/noarch/requests-2.27.1-pyhd8ed1ab_0.tar.bz2#7c1c427246b057b8fa97200ecdb2ed62
-https://conda.anaconda.org/conda-forge/osx-64/ipykernel-6.7.0-py38h5fd9f69_0.tar.bz2#1d5b64efa892a569ca40f8e90f9c694e
+https://conda.anaconda.org/conda-forge/osx-64/ipykernel-6.8.0-py38h5fd9f69_0.tar.bz2#379db6c9313e85af5c267de33472b236
 https://conda.anaconda.org/conda-forge/noarch/pooch-1.6.0-pyhd8ed1ab_0.tar.bz2#6429e1d1091c51f626b5dcfdd38bf429
 https://conda.anaconda.org/conda-forge/noarch/pyct-0.4.6-py_0.tar.bz2#42d91c89bc3993ec88681cffd3c0e326
 https://conda.anaconda.org/conda-forge/noarch/colorcet-3.0.0-pyhd8ed1ab_0.tar.bz2#a0e9e38c882d910825389de5371c5429
