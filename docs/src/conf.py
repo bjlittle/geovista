@@ -20,44 +20,16 @@ import geovista
 import pyvista
 
 
-# -- Project information -----------------------------------------------------
-
-project = "GeoVista"
-copyright_years = f"2021 - {datetime.datetime.now().year}"
-copyright = f"{copyright_years}, {project} Contributors"
-author = "Bill Little"
-
-# The full version, including alpha/beta/rc tags
-release = geovista.__version__
-
-
-# -- PyVista configuration ---------------------------------------------------
-
-# Manage errors
-pyvista.set_error_output_file("errors.txt")
-# Ensure that offscreen rendering is used for docs generation
-pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
-# Preferred plotting style for documentation
-pyvista.set_plot_theme("document")
-pyvista.global_theme.window_size = [1024, 768]
-pyvista.global_theme.font.size = 22
-pyvista.global_theme.font.label_size = 22
-pyvista.global_theme.font.title_size = 22
-pyvista.global_theme.return_cpos = False
-pyvista.set_jupyter_backend(None)
-# Save figures in specified directory
-pyvista.FIGURE_PATH = os.path.join(os.path.abspath("./images"), "auto-generated")
-if not os.path.exists(pyvista.FIGURE_PATH):
-    os.makedirs(pyvista.FIGURE_PATH)
-
-
 # -- General configuration ---------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/config.html#general-configuration
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
     "jupyter_sphinx",
+    "sphinx.ext.doctest",
+    "sphinx.ext.extlinks",
     "sphinx_copybutton",
 ]
 
@@ -70,7 +42,24 @@ templates_path = ["_templates"]
 exclude_patterns = []
 
 
+# -- Project information -----------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/config.html#project-information
+
+project = "GeoVista"
+copyright_years = f"2021 - {datetime.datetime.now().year}"
+copyright = f"{copyright_years}, {project} Contributors"
+author = "Bill Little"
+
+# The full version, including alpha/beta/rc tags
+release = geovista.__version__
+
+# The name of the Pygments (syntax highlighting) style to use.
+# https://pygments.org/styles/
+pygments_style = "friendly"
+
+
 # -- Options for HTML output -------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/config.html#options-for-html-output
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -108,15 +97,51 @@ html_static_path = ["_static"]
 html_sidebars = {"**": ["sidebar-ethical-ads.html"]}
 
 
-# -- Pygments configuration --------------------------------------------------
+# -- Options for the linkcheck builder ---------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
 
-# The name of the Pygments (syntax highlighting) style to use.
-# https://pygments.org/styles/
-pygments_style = "friendly"
+linkcheck_ignore = []
+linkcheck_retries = 3
 
 
-# -- CopyButton configuration ------------------------------------------------
+# -- Configuration: copybutton -----------------------------------------------
+# See https://sphinx-copybutton.readthedocs.io/en/latest/
 
 copybutton_prompt_text = r">>> |\.\.\. "
 copybutton_prompt_is_regexp = True
 copybutton_line_continuation_character = "\\"
+
+
+# -- Configuration: doctest --------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html#configuration
+
+doctest_global_setup = "import geovista"
+
+
+# -- Configuration: extlinks -------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
+
+extlinks = {
+    "issue": ("https://github.com/bjlittle/geovista/issues/%s", "Issue #%s"),
+    "pull": ("https://github.com/bjlittle/geovista/pull/%s", "PR #%s"),
+}
+
+
+# -- Configuration: pyvista --------------------------------------------------
+
+# Manage errors
+pyvista.set_error_output_file("errors.txt")
+# Ensure that offscreen rendering is used for docs generation
+pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
+# Preferred plotting style for documentation
+pyvista.set_plot_theme("document")
+pyvista.global_theme.window_size = [1024, 768]
+pyvista.global_theme.font.size = 22
+pyvista.global_theme.font.label_size = 22
+pyvista.global_theme.font.title_size = 22
+pyvista.global_theme.return_cpos = False
+pyvista.set_jupyter_backend(None)
+# Save figures in specified directory
+pyvista.FIGURE_PATH = os.path.join(os.path.abspath("./images"), "auto-generated")
+if not os.path.exists(pyvista.FIGURE_PATH):
+    os.makedirs(pyvista.FIGURE_PATH)
