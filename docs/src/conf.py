@@ -48,7 +48,7 @@ exclude_patterns = []
 project = "GeoVista"
 copyright_years = f"2021 - {datetime.datetime.now().year}"
 copyright = f"{copyright_years}, {project} Contributors"
-author = "Bill Little"
+author = f"{project} Contributors"
 
 # The full version, including alpha/beta/rc tags
 release = geovista.__version__
