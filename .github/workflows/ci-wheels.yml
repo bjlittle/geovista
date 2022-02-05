@@ -46,7 +46,7 @@ jobs:
         CIBW_BUILD_FRONTEND: build
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
 
-    - uses: actions/upload-artifacts@v2
+    - uses: actions/upload-artifact@v2
       with:
         name: pypi-artifacts
         path: ${{ github.workspace }}/wheelhouse/*.whl
