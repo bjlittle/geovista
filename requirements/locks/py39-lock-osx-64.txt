@@ -48,7 +48,7 @@ https://conda.anaconda.org/conda-forge/osx-64/libbrotlienc-1.0.9-h0d85af4_6.tar.
 https://conda.anaconda.org/conda-forge/osx-64/libedit-3.1.20191231-h0678c8f_2.tar.bz2#6016a8a1d0e63cac3de2c352cd40208b
 https://conda.anaconda.org/conda-forge/osx-64/libgfortran5-9.3.0-h6c81a4c_23.tar.bz2#a6956ceb628b14594613cefee5127a7a
 https://conda.anaconda.org/conda-forge/osx-64/libimagequant-2.17.0-h9bde063_1.tar.bz2#1b0c9788d0b67d74ff3b84c0705ca18d
-https://conda.anaconda.org/conda-forge/osx-64/libllvm13-13.0.0-hd011deb_0.tar.bz2#6b3c34c0c1b1007ed1f0a5cb81c8d37f
+https://conda.anaconda.org/conda-forge/osx-64/libllvm13-13.0.1-hd011deb_0.tar.bz2#7d17ddaa5020293230a7e4d2551b4ab2
 https://conda.anaconda.org/conda-forge/osx-64/libvorbis-1.3.7-h046ec9c_0.tar.bz2#fbbda1fede0aadaa252f6919148c4ce1
 https://conda.anaconda.org/conda-forge/osx-64/libxcb-1.13-h0d85af4_1004.tar.bz2#eb7860935e14aec936065cbc21a1a962
 https://conda.anaconda.org/conda-forge/osx-64/lz4-c-1.9.3-he49afe7_1.tar.bz2#05c08241b66631c00ca4f9e0b75320bc

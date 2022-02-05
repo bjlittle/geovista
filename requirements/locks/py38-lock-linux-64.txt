@@ -44,7 +44,6 @@ https://conda.anaconda.org/conda-forge/linux-64/libffi-3.4.2-h7f98852_5.tar.bz2#
 https://conda.anaconda.org/conda-forge/linux-64/libglu-9.0.0-he1b5a44_1001.tar.bz2#8208602aec4826053c116552369a394c
 https://conda.anaconda.org/conda-forge/linux-64/libiconv-1.16-h516909a_0.tar.bz2#5c0f338a513a2943c659ae619fca9211
 https://conda.anaconda.org/conda-forge/linux-64/libimagequant-2.17.0-h7f98852_1.tar.bz2#65ab613f281f227a0ca3bb3ac0c88f76
-https://conda.anaconda.org/conda-forge/linux-64/libllvm13-13.0.0-hf817b99_0.tar.bz2#b10bb2ebebfffa8800fa80ad3285719e
 https://conda.anaconda.org/conda-forge/linux-64/libnsl-2.0.0-h7f98852_0.tar.bz2#39b1328babf85c7c3a61636d9cd50206
 https://conda.anaconda.org/conda-forge/linux-64/libogg-1.3.4-h7f98852_1.tar.bz2#6e8cc2173440d77708196c5b93771680
 https://conda.anaconda.org/conda-forge/linux-64/libopenblas-0.3.18-pthreads_h8fe5266_0.tar.bz2#41532e4448c0cce086d6570f95e4e12e
@@ -80,10 +79,10 @@ https://conda.anaconda.org/conda-forge/linux-64/gnutls-3.6.13-h85f3911_1.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/libblas-3.9.0-13_linux64_openblas.tar.bz2#8a4038563ed92dfa622bd72c0d8f31d3
 https://conda.anaconda.org/conda-forge/linux-64/libbrotlidec-1.0.9-h7f98852_6.tar.bz2#c7c03a2592cac92246a13a0732bd1573
 https://conda.anaconda.org/conda-forge/linux-64/libbrotlienc-1.0.9-h7f98852_6.tar.bz2#28bfe0a70154e6881da7bae97517c948
-https://conda.anaconda.org/conda-forge/linux-64/libclang-13.0.0-default_hc23dcda_0.tar.bz2#7b140452b5bc91e46410b84807307249
 https://conda.anaconda.org/conda-forge/linux-64/libdrm-2.4.109-h7f98852_0.tar.bz2#18fe5c42a27ba54c07a7cde55902ff91
 https://conda.anaconda.org/conda-forge/linux-64/libedit-3.1.20191231-he28a2e2_2.tar.bz2#4d331e44109e3f0e19b4cb8f9b82f3e1
 https://conda.anaconda.org/conda-forge/linux-64/libevent-2.1.10-h9b69904_4.tar.bz2#390026683aef81db27ff1b8570ca1336
+https://conda.anaconda.org/conda-forge/linux-64/libllvm13-13.0.1-hf817b99_0.tar.bz2#8fd6f0628d54935a4620b8dcbf300ee3
 https://conda.anaconda.org/conda-forge/linux-64/libvorbis-1.3.7-h9c3ff4c_0.tar.bz2#309dec04b70a3cc0f1e84a4013683bc0
 https://conda.anaconda.org/conda-forge/linux-64/libxcb-1.13-h7f98852_1004.tar.bz2#b3653fdc58d03face9724f602218a904
 https://conda.anaconda.org/conda-forge/linux-64/readline-8.1-h46c0cb4_0.tar.bz2#5788de3c8d7a7d64ac56c784c4ef48e6
@@ -96,6 +95,7 @@ https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.2-ha95c52a_0.tar.bz2#52
 https://conda.anaconda.org/conda-forge/linux-64/brotli-bin-1.0.9-h7f98852_6.tar.bz2#9e94bf16f14c78a36561d5019f490d22
 https://conda.anaconda.org/conda-forge/linux-64/hdf4-4.2.15-h10796ff_3.tar.bz2#21a8d66dc17f065023b33145c42652fe
 https://conda.anaconda.org/conda-forge/linux-64/libcblas-3.9.0-13_linux64_openblas.tar.bz2#b17676dbd6688396c3a3076259fb7907
+https://conda.anaconda.org/conda-forge/linux-64/libclang-13.0.0-default_hc23dcda_0.tar.bz2#7b140452b5bc91e46410b84807307249
 https://conda.anaconda.org/conda-forge/linux-64/libglib-2.70.2-h174f98d_1.tar.bz2#d03a54631298fd1ab732ff65f6ed3a07
 https://conda.anaconda.org/conda-forge/linux-64/liblapack-3.9.0-13_linux64_openblas.tar.bz2#018b80e8f21d8560ae4961567e3e00c9
 https://conda.anaconda.org/conda-forge/linux-64/libnghttp2-1.46.0-h812cca2_0.tar.bz2#507fa47e9075f889af8e8b72925379be
