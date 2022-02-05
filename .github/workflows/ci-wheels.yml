@@ -1,0 +1,84 @@
+# Reference:
+#   - https://github.com/docker/setup-qemu-action
+#   - https://github.com/actions/checkout
+#   - https://github.com/actions/download-artifact
+#   - https://github.com/actions/upload-artifact
+#   - https://github.com/pypa/cibuildwheel
+
+
+name: ci-wheels
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+
+jobs:
+  build_bdist:
+    name: "Build binary wheel distribution on ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        arch: [auto64]
+        include:
+          - os: ubuntu-latest
+            arch: aarch64
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: "Configure QEMU"
+      if: ${{ matrix.arch == 'aarch64' }}
+      uses: docker/setup-qemu-action@v1
+
+    - name: "Build bdist"
+      uses: pypa/cibuildwheel@v2.3.1
+      env:
+        CIBW_SKIP: cp36-* cp37-* pp*
+        CIBW_ARCHS: ${{ matrix.arch }}
+        CIBW_BUILD_FRONTEND: build
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+
+    - uses: actions/upload-artifacts@v2
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/wheelhouse/*.whl
+
+
+  build_sdist:
+    name: "Build source distribution"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: "Build sdist"
+      run: |
+        pipx run build --sdist 
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/dist/*.tar.gz
+
+
+  debug:
+    needs: [build_bdist, build_sdist]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/dist
+
+    - name: "Show artifacts" 
+      run: |
+        ls -l ${{ github.workspace }}/dist

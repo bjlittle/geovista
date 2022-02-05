@@ -1,11 +1,11 @@
-# reference:
+# Reference:
 #   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/download-artifact
 #   - https://github.com/actions/upload-artifact
 #   - https://github.com/marketplace/actions/setup-miniconda
 
-name: ci-conda-lock
+name: ci-locks
 
 on:
   workflow_dispatch:
@@ -32,74 +32,74 @@ jobs:
           - lock: "py310-lock"
 
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v2
+    - name: "Checkout"
+      uses: actions/checkout@v2
 
-      - name: "Environment configure"
-        env:
-          # Maximum cache period (in weeks) before forcing a cache refresh.
-          CACHE_WEEKS: 2
-        run: |
-          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+    - name: "Environment configure"
+      env:
+        # Maximum cache period (in weeks) before forcing a cache refresh.
+        CACHE_WEEKS: 2
+      run: |
+        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
 
-      - name: "Conda package cache"
-        uses: actions/cache@v2
-        env:
-          # Increment the build number to force a cache refresh.
-          CACHE_BUILD: 0
-        with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+    - name: "Conda package cache"
+      uses: actions/cache@v2
+      env:
+        # Increment the build number to force a cache refresh.
+        CACHE_BUILD: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
-      - name: "Conda install"
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
-          use-mamba: true
-          activate-environment: ${{ env.ENV_NAME }}
-          auto-update-conda: false
-          use-only-tar-bz2: true
+    - name: "Conda install"
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniforge-variant: Mambaforge
+        miniforge-version: latest
+        use-mamba: true
+        activate-environment: ${{ env.ENV_NAME }}
+        auto-update-conda: false
+        use-only-tar-bz2: true
 
-      - name: "Conda environment cache"
-        id: conda-env-cache
-        uses: actions/cache@v2
-        env:
-          # Increment the build number to force a cache refresh.
-          CACHE_BUILD: 0
-        with:
-          path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
-          key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+    - name: "Conda environment cache"
+      id: conda-env-cache
+      uses: actions/cache@v2
+      env:
+        # Increment the build number to force a cache refresh.
+        CACHE_BUILD: 0
+      with:
+        path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
+        key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
-      - name: "Conda environment update"
-        if: steps.conda-env-cache.outputs.cache-hit != 'true'
-        run: |
-          mamba install --name ${{ env.ENV_NAME }} tox
+    - name: "Conda environment update"
+      if: steps.conda-env-cache.outputs.cache-hit != 'true'
+      run: |
+        mamba install --name ${{ env.ENV_NAME }} tox
 
-      - name: "Conda info"
-        run: |
-          conda info
-          conda list
+    - name: "Conda info"
+      run: |
+        conda info
+        conda list
 
-      - name: "Tox cache"
-        uses: actions/cache@v2
-        env:
-          # Increment the build number to forece a cache refresh.
-          CACHE_BUILD: 0
-          TOX_INI: ${{ github.workspace }}/tox.ini
-        with:
-          path: ${{ github.workspace }}/.tox
-          key: ${{ runner.os }}-tox-${{ env.ENV_NAME }}-${{ matrix.lock }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.TOX_INI) }}
+    - name: "Tox cache"
+      uses: actions/cache@v2
+      env:
+        # Increment the build number to forece a cache refresh.
+        CACHE_BUILD: 0
+        TOX_INI: ${{ github.workspace }}/tox.ini
+      with:
+        path: ${{ github.workspace }}/.tox
+        key: ${{ runner.os }}-tox-${{ env.ENV_NAME }}-${{ matrix.lock }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.TOX_INI) }}
 
-      - name: "Create ${{ matrix.lock }} conda locks"
-        run: |
-          tox -e ${{ matrix.lock }} -- --mamba --platform osx-64 --platform win-64
+    - name: "Create ${{ matrix.lock }} conda locks"
+      run: |
+        tox -e ${{ matrix.lock }} -- --mamba --platform osx-64 --platform win-64
 
-      - name: "Upload lock artifacts"
-        uses: actions/upload-artifact@v2
-        with:
-          name: lock-artifacts
-          path: ${{ github.workspace }}/requirements/locks/${{ matrix.lock }}*.txt
+    - name: "Upload lock artifacts"
+      uses: actions/upload-artifact@v2
+      with:
+        name: lock-artifacts
+        path: ${{ github.workspace }}/requirements/locks/${{ matrix.lock }}*.txt
 
 
   create-pr:
@@ -108,35 +108,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v2
+    - name: "Checkout"
+      uses: actions/checkout@v2
 
-      - name: "Download lock artifacts"
-        uses: actions/download-artifact@v2
-        with:
-          name: lock-artifacts
-          path: ${{ github.workspace }}/requirements/locks
+    - name: "Download lock artifacts"
+      uses: actions/download-artifact@v2
+      with:
+        name: lock-artifacts
+        path: ${{ github.workspace }}/requirements/locks
 
-      - name: "Push pull-request"
-        id: cpr
-        # v3.12.1 (release date 31 Jan 2022)
-        uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
-        with:
-          add-paths: ${{ github.workspace }}/requirements/locks/*.txt
-          commit-message: "updated conda lock files"
-          branch: conda-lock-auto-update
-          delete-branch: true
-          title: "[geovista.ci] conda lock auto-update"
-          body: |
-            Conda lock files auto-updated to latest resolved environment for `geovista` dependencies.
-          labels: |
-            New: Pull Request
-            Bot
+    - name: "Push pull-request"
+      id: cpr
+      # v3.12.1 (release date 31 Jan 2022)
+      uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
+      with:
+        add-paths: ${{ github.workspace }}/requirements/locks/*.txt
+        commit-message: "updated conda lock files"
+        branch: conda-lock-auto-update
+        delete-branch: true
+        title: "[geovista.ci] conda lock auto-update"
+        body: |
+          Conda lock files auto-updated to latest resolved environment for `geovista` dependencies.
+        labels: |
+          New: Pull Request
+          Bot
 
-      - name: "Show pull-request"
-        if: steps.cpr.outputs.pull-request-number != ''
-        run: |
-          echo "pull-request #${{ steps.cpr.outputs.pull-request-number }}"
-          echo "pull-request URL ${{ steps.cpr.outputs.pull-request-url }}"
-          echo "pull-request operation [${{ steps.cpr.outputs.pull-request-operation }}]"
-          echo "pull-request SHA ${{ steps.cpr.outputs.pull-request-head-sha }}"
+    - name: "Show pull-request"
+      if: steps.cpr.outputs.pull-request-number != ''
+      run: |
+        echo "pull-request #${{ steps.cpr.outputs.pull-request-number }}"
+        echo "pull-request URL ${{ steps.cpr.outputs.pull-request-url }}"
+        echo "pull-request operation [${{ steps.cpr.outputs.pull-request-operation }}]"
+        echo "pull-request SHA ${{ steps.cpr.outputs.pull-request-head-sha }}"
