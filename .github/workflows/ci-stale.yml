@@ -1,9 +1,12 @@
 # See https://github.com/actions/stale
 
 name: Stale issues and pull-requests
+
 on:
+  workflow_dispatch:
   schedule:
     - cron: 0 0 * * *
+
 
 jobs:
   stale:
