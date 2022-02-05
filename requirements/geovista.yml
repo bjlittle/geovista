@@ -31,8 +31,8 @@ dependencies:
   - pytest-cov
 
 # documentation dependencies
-  - sphinx
-  - sphinx-copybutton
   - jupyter_sphinx
   - pydata-sphinx-theme
   - pythreejs
+  - sphinx
+  - sphinx-copybutton
