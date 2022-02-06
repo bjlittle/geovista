@@ -2,7 +2,7 @@
 name: "✨ Feature Request"
 about: Submit a request for a new feature in GeoVista
 title: ''
-labels: 'New: Feature'
+labels: 'new: feature'
 assignees: ''
 
 ---

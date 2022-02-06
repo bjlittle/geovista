@@ -2,7 +2,7 @@
 name: "\U0001F41B Bug Report"
 about: Submit a bug report to help us improve GeoVista
 title: ''
-labels: 'New: Issue, Type: Bug'
+labels: 'new: issue, type: bug'
 assignees: ''
 
 ---

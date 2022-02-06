@@ -2,7 +2,7 @@
 name: "\U0001F4DA Documentation"
 about: Report an issue with the GeoVista documentation
 title: ''
-labels: 'New: Documentation, Type: Documentation'
+labels: 'new: documentation, type: documentation'
 assignees: ''
 
 ---

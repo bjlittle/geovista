@@ -55,18 +55,18 @@ jobs:
             * Add a comment pinging `@bjlittle` who will re-open on your behalf.
 
         # Label to apply on staled issues.
-        stale-issue-label: Stale
+        stale-issue-label: stale
 
         # Label to apply on staled prs.
-        stale-pr-label: Stale
+        stale-pr-label: stale
 
         # Labels on issues exempted from stale.
         exempt-issue-labels: |
-          "Status: Blocked,Status: Decision Required,Good First Issue"
+          "status: blocked,status: decision required,good first issue"
 
         # Labels on prs exempted from stale.
         exempt-pr-labels: |
-          "Status: Blocked,Status: Decision Required,Good First Issue"
+          "status: blocked,status: decision required,good first issue"
 
         # Max number of operations per run.
         operations-per-run: 100
