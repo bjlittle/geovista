@@ -50,6 +50,8 @@ jobs:
         version: ["38", "39", "310"]
 
     steps:
+    - uses: actions/checkout@v2
+
     - name: "Environment configure"
       env:
         # Maximum cache period (in weeks) before forcing a cache refresh.
