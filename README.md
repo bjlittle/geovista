@@ -48,7 +48,7 @@
          alt="Contributors">
   </a>
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml/badge.svg?branch=main&label=stale"
+    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml/badge.svg?branch=main"
          alt="Stale issues and pull-requests">
   </a>
 </p>
