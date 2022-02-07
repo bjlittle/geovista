@@ -101,6 +101,17 @@ jobs:
         conda info
         conda list
 
+    - uses: actions/download-artifact@v2
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/dist
+
+    - name: "Test bdist"
+      working-directory: ${{ github.workspace }}/dist
+      run: |
+        python -m pip install geovista-*.whl
+        python -c "import geovista; print(f"geovista v{geovista.__version__}")"
+
 
   publish-artifacts-test-pypi:
     needs: [test-artifacts]
