@@ -62,7 +62,7 @@ https://conda.anaconda.org/conda-forge/osx-64/zlib-1.2.11-h9173be1_1013.tar.bz2#
 https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.0.9-h0d85af4_6.tar.bz2#00d57e8424c3fe0aeb3c37418e1b910e
 https://conda.anaconda.org/conda-forge/osx-64/gnutls-3.6.13-h756fd2b_1.tar.bz2#cf812214a917b4d48ce536d427770ec9
 https://conda.anaconda.org/conda-forge/osx-64/hdf4-4.2.15-hefd3b78_3.tar.bz2#07bbe01a1cabdb9ec0d35524e09f4db4
-https://conda.anaconda.org/conda-forge/osx-64/libclang-13.0.0-default_he082bbe_0.tar.bz2#8b92bdf313bc85e3e0a84b669f5a1cb6
+https://conda.anaconda.org/conda-forge/osx-64/libclang-13.0.1-default_he082bbe_0.tar.bz2#0166c71e26f8b9f564a20a13b04d118d
 https://conda.anaconda.org/conda-forge/osx-64/libgfortran-5.0.0-9_3_0_h6c81a4c_23.tar.bz2#60f48cef2d50674e0428c5579b6c3f66
 https://conda.anaconda.org/conda-forge/osx-64/libglib-2.70.2-hf1fb8c0_1.tar.bz2#f7344cac7a1aeab96626fe1cd166a7d0
 https://conda.anaconda.org/conda-forge/osx-64/libnghttp2-1.46.0-h6f36284_0.tar.bz2#4a3025e50e0a3bc33034b798c6846927
@@ -192,7 +192,7 @@ https://conda.anaconda.org/conda-forge/osx-64/tornado-6.1-py38h96a0964_2.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/traittypes-0.2.1-pyh9f0ad1d_2.tar.bz2#7d32ccb5334a6822c28af3e864550618
 https://conda.anaconda.org/conda-forge/osx-64/typed-ast-1.5.2-py38h96a0964_0.tar.bz2#2e8dab16927b3f6eae5df014226552a7
 https://conda.anaconda.org/conda-forge/osx-64/unicodedata2-14.0.0-py38h96a0964_0.tar.bz2#db0be5335e0d3c57b55052e23d0697d3
-https://conda.anaconda.org/conda-forge/osx-64/virtualenv-20.13.0-py38h50d1736_0.tar.bz2#7f47d8e1b87110207861b55b5ee95cd5
+https://conda.anaconda.org/conda-forge/osx-64/virtualenv-20.13.1-py38h50d1736_0.tar.bz2#34e8775338c35feb2ef618b8693f1034
 https://conda.anaconda.org/conda-forge/osx-64/argon2-cffi-bindings-21.2.0-py38h96a0964_1.tar.bz2#9026162a4fba2f648b55d5da280abbe6
 https://conda.anaconda.org/conda-forge/noarch/backports.functools_lru_cache-1.6.4-pyhd8ed1ab_0.tar.bz2#c5b3edc62d6309088f4970b3eaaa65a6
 https://conda.anaconda.org/conda-forge/noarch/black-22.1.0-pyhd8ed1ab_0.tar.bz2#fbc4b306c6ba24c244ffb22a910424da
@@ -227,7 +227,7 @@ https://conda.anaconda.org/conda-forge/noarch/pyopenssl-22.0.0-pyhd8ed1ab_0.tar.
 https://conda.anaconda.org/conda-forge/osx-64/pyqtchart-5.12-py38hb240fba_8.tar.bz2#cfd29ba0ea0185728412d10b6891fc0b
 https://conda.anaconda.org/conda-forge/osx-64/pyqtwebengine-5.12.1-py38hb240fba_8.tar.bz2#57c65f38d7b2b74e14a1a89a0f44649d
 https://conda.anaconda.org/conda-forge/noarch/pytest-cov-3.0.0-pyhd8ed1ab_0.tar.bz2#0f7cac11bb696b62d378bde725bfc3eb
-https://conda.anaconda.org/conda-forge/osx-64/scipy-1.7.3-py38hd329d04_0.tar.bz2#af7276c25cf85408e7ac9582e9f5ca1e
+https://conda.anaconda.org/conda-forge/osx-64/scipy-1.8.0-py38hd329d04_0.tar.bz2#214dca4ca783d1bf897c4292a635b20b
 https://conda.anaconda.org/conda-forge/osx-64/shapely-1.8.0-py38hf980569_5.tar.bz2#e2c81aa189660144fcce943b28f85581
 https://conda.anaconda.org/conda-forge/osx-64/vtk-9.1.0-qt_py38h04bf400_204.tar.bz2#a9ac606c6816bf18f1b3f79c4bbad929
 https://conda.anaconda.org/conda-forge/noarch/wcwidth-0.2.5-pyh9f0ad1d_2.tar.bz2#5266fcd697043c59621fda522b3d78ee
@@ -256,5 +256,5 @@ https://conda.anaconda.org/conda-forge/noarch/pythreejs-2.3.0-pyhd8ed1ab_0.tar.b
 https://conda.anaconda.org/conda-forge/noarch/pydata-sphinx-theme-0.8.0-pyhd8ed1ab_0.tar.bz2#f039c20ce604243f3f5f0479b05225a7
 https://conda.anaconda.org/conda-forge/noarch/sphinx-4.4.0-pyh6c4a22f_1.tar.bz2#a9025d14c2a609e0d895ad3e75b5369c
 https://conda.anaconda.org/conda-forge/osx-64/jupyter_sphinx-0.3.2-py38h50d1736_0.tar.bz2#af9ca64a728132de38b41faf1d314821
-https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.4.0-pyhd8ed1ab_0.tar.bz2#80fd2cc25ad45911b4e42d5b91593e2f
+https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.0-pyhd8ed1ab_0.tar.bz2#4c969cdd5191306c269490f7ff236d9c
 https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-serializinghtml-1.1.5-pyhd8ed1ab_1.tar.bz2#63d2f874f990fdcab47c822b608d6ade
