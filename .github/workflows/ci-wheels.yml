@@ -44,7 +44,7 @@ jobs:
     name: "Test bdist with py${{ matrix.version }}"
     runs-on: ubuntu-latest
     env:
-      ENV_NAME: "geovista-wheel"
+      ENV_NAME: "geovista-wheels"
     strategy:
       matrix:
         version: ["38", "39", "310"]
