@@ -47,8 +47,8 @@
     <img src="https://img.shields.io/github/contributors/bjlittle/geovista"
          alt="Contributors">
   </a>
-  <a href="https://github.com/bjlittle/geovista/actions/workflows/stale.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/stale.yml/badge.svg?branch=main"
+  <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml">
+    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml/badge.svg?branch=main"
          alt="Stale issues and pull-requests">
   </a>
 </p>
