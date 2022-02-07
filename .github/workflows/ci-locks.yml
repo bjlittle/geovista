@@ -24,7 +24,6 @@ jobs:
       ENV_NAME: "geovista-lock"
       CONDA_EXE: "mamba"
     strategy:
-      fail-fast: false
       matrix:
         lock: [py38-lock, py39-lock, py310-lock]
 
