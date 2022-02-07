@@ -2,30 +2,36 @@
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/download-artifact
 #   - https://github.com/actions/upload-artifact
+#   - https://github.com/pypa/build
+#   - https://github.com/pypa/gh-action-pypi-publish
+#   - https://test.pypi.org/help/#apitoken
 
 
 name: ci-wheels
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+on: [pull_request, push, release]
 
 
 jobs:
   build:
-    name: "Build sdist and bdist"
+    name: "Build PyPI distributions"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
-    - name: "Build"
+    - name: "Build sdist/bdist"
       run: |
+        # geovista is a pure python package, so simply use pypa/build
         pipx run build
+
+    - name: "List built distributions"
+      run: |
+        ls -l ${{ github.workspace }}/dist
 
     - uses: actions/upload-artifact@v2
       with:
@@ -33,15 +39,19 @@ jobs:
         path: ${{ github.workspace }}/dist
 
 
-  debug:
-    needs: build
+  upload_test_pypi:
+    needs: [build]
     runs-on: ubuntu-latest
+    # upload to Test PyPI for every pull-request and commit on main or release feature branch
+    if: github.event_name != 'release' && (github.event.ref == 'main' || startsWith(github.event.ref, 'refs/tags/v'))
     steps:
-    - uses: actions/download-artifact@v2
-      with:
-        name: pypi-artifacts
-        path: ${{ github.workspace }}/dist
+      - uses: actions/download-artifact@v2
+        with:
+          name: pypi-artifacts
+          path: ${{ github.workspace }}/dist
 
-    - name: "Show artifacts" 
-      run: |
-        ls -l ${{ github.workspace }}/dist
+      - uses: pypa/gh-action-pypi-publish@v1
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
