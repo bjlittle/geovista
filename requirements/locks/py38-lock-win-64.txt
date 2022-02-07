@@ -96,7 +96,7 @@ https://conda.anaconda.org/conda-forge/noarch/param-1.12.0-pyh6c4a22f_0.tar.bz2#
 https://conda.anaconda.org/conda-forge/noarch/parso-0.8.3-pyhd8ed1ab_0.tar.bz2#17a565a0c3899244e938cdf417e7b094
 https://conda.anaconda.org/conda-forge/noarch/pathspec-0.9.0-pyhd8ed1ab_0.tar.bz2#f93dc0ccbc0a8472624165f6e256c7d1
 https://conda.anaconda.org/conda-forge/noarch/pickleshare-0.7.5-py_1003.tar.bz2#415f0ebb6198cc2801c73438a9fb5761
-https://conda.anaconda.org/conda-forge/noarch/platformdirs-2.3.0-pyhd8ed1ab_0.tar.bz2#7bc119135be2a43e1701432399d8c28a
+https://conda.anaconda.org/conda-forge/noarch/platformdirs-2.4.1-pyhd8ed1ab_1.tar.bz2#ea1a07fd28b52b73239cacb4e39d380c
 https://conda.anaconda.org/conda-forge/noarch/prometheus_client-0.13.1-pyhd8ed1ab_0.tar.bz2#9259acd5dd8746e7721474fa62e046d7
 https://conda.anaconda.org/conda-forge/win-64/pthread-stubs-0.4-hcd874cb_1001.tar.bz2#a1f820480193ea83582b13249a7e7bd9
 https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.2-pyhd8ed1ab_0.tar.bz2#6784285c7e55cb7212efabc79e4c2883
@@ -228,7 +228,7 @@ https://conda.anaconda.org/conda-forge/win-64/nbconvert-6.4.1-py38haa244fe_0.tar
 https://conda.anaconda.org/conda-forge/noarch/pyvista-0.33.2-pyhd8ed1ab_0.tar.bz2#575e8114d1af60f80d7d1fdbdbcf192c
 https://conda.anaconda.org/conda-forge/noarch/requests-2.27.1-pyhd8ed1ab_0.tar.bz2#7c1c427246b057b8fa97200ecdb2ed62
 https://conda.anaconda.org/conda-forge/noarch/codecov-2.1.11-pyhd3deb0d_0.tar.bz2#9c661c2c14b4667827218402e6624ad5
-https://conda.anaconda.org/conda-forge/win-64/ipykernel-6.8.0-py38h595d716_0.tar.bz2#d865fde25928979f9479272bbf69c3a7
+https://conda.anaconda.org/conda-forge/win-64/ipykernel-6.9.0-py38h595d716_0.tar.bz2#7dd266b7217bf45a903ce6e236d692db
 https://conda.anaconda.org/conda-forge/noarch/pooch-1.6.0-pyhd8ed1ab_0.tar.bz2#6429e1d1091c51f626b5dcfdd38bf429
 https://conda.anaconda.org/conda-forge/noarch/pyct-0.4.6-py_0.tar.bz2#42d91c89bc3993ec88681cffd3c0e326
 https://conda.anaconda.org/conda-forge/noarch/pyvistaqt-0.7.0-pyhd8ed1ab_0.tar.bz2#c9473f675b0a73945fbe49ccee0b1545
