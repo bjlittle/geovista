@@ -87,9 +87,9 @@ jobs:
         key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-py${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
     - name: "Conda environment update"
-      if: steps.conda-env-cache.outputs.cache-hit == 'false'
+      if: steps.conda-env-cache.outputs.cache-hit != 'true'
       run: |
-        mamba install ${{ github.workspace }}/requirements/locks/py${{ matrix.version }}-lock-linux-64.txt
+        mamba install --file ${{ github.workspace }}/requirements/locks/py${{ matrix.version }}-lock-linux-64.txt
 
     - name: "Conda info"
       run: |
