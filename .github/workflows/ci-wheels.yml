@@ -47,7 +47,7 @@ jobs:
       run:
         shell: bash -l {0}
     env:
-      ENV_NAME: "geovista-wheels"
+      ENV_NAME: "ci-wheels"
     strategy:
       matrix:
         version: ["38", "39", "310"]
