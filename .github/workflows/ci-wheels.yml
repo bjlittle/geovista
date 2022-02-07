@@ -51,7 +51,7 @@ jobs:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist
 
-    - uses: pypa/gh-action-pypi-publish@v1
+    - uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
