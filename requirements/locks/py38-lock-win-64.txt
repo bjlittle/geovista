@@ -170,7 +170,7 @@ https://conda.anaconda.org/conda-forge/win-64/tornado-6.1-py38h294d835_2.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/traittypes-0.2.1-pyh9f0ad1d_2.tar.bz2#7d32ccb5334a6822c28af3e864550618
 https://conda.anaconda.org/conda-forge/win-64/typed-ast-1.5.2-py38h294d835_0.tar.bz2#7fffc0d04196c897155e51e87faead07
 https://conda.anaconda.org/conda-forge/win-64/unicodedata2-14.0.0-py38h294d835_0.tar.bz2#ab4c9321f614d926fde98999b17fef3a
-https://conda.anaconda.org/conda-forge/win-64/virtualenv-20.13.0-py38haa244fe_0.tar.bz2#5288a787c9b07ae8da875e8bc480b0a6
+https://conda.anaconda.org/conda-forge/win-64/virtualenv-20.13.1-py38haa244fe_0.tar.bz2#efe3ff197863854524406f79666d8cd0
 https://conda.anaconda.org/conda-forge/win-64/win_inet_pton-1.1.0-py38haa244fe_3.tar.bz2#ff0ad7b1ce9fefab52aeaba6e025dad2
 https://conda.anaconda.org/conda-forge/win-64/argon2-cffi-bindings-21.2.0-py38h294d835_1.tar.bz2#591cbb3b7df7b220b0f82c954f338b45
 https://conda.anaconda.org/conda-forge/noarch/backports.functools_lru_cache-1.6.4-pyhd8ed1ab_0.tar.bz2#c5b3edc62d6309088f4970b3eaaa65a6
@@ -212,7 +212,7 @@ https://conda.anaconda.org/conda-forge/win-64/pyproj-3.3.0-py38hbc4243d_1.tar.bz
 https://conda.anaconda.org/conda-forge/win-64/pyqtchart-5.12-py38h885f38d_8.tar.bz2#0071270be206d3b88d15f4b9506a4ccd
 https://conda.anaconda.org/conda-forge/win-64/pyqtwebengine-5.12.1-py38h885f38d_8.tar.bz2#6aee5c37f78046fa9f597aa69a527036
 https://conda.anaconda.org/conda-forge/noarch/pytest-cov-3.0.0-pyhd8ed1ab_0.tar.bz2#0f7cac11bb696b62d378bde725bfc3eb
-https://conda.anaconda.org/conda-forge/win-64/scipy-1.7.3-py38ha1292f7_0.tar.bz2#34a633c4c6011991efa93f45e8e6e31a
+https://conda.anaconda.org/conda-forge/win-64/scipy-1.8.0-py38ha1292f7_0.tar.bz2#50e2c20664b366ceef060b58362076e5
 https://conda.anaconda.org/conda-forge/win-64/shapely-1.8.0-py38hd27d790_5.tar.bz2#265d8779425d4c5ca6fa81d3222b2a84
 https://conda.anaconda.org/conda-forge/noarch/wcwidth-0.2.5-pyh9f0ad1d_2.tar.bz2#5266fcd697043c59621fda522b3d78ee
 https://conda.anaconda.org/conda-forge/win-64/cartopy-0.20.2-py38h80db213_3.tar.bz2#ae1553f9cc43a7164e47b16dcf46aade
@@ -241,5 +241,5 @@ https://conda.anaconda.org/conda-forge/noarch/pythreejs-2.3.0-pyhd8ed1ab_0.tar.b
 https://conda.anaconda.org/conda-forge/noarch/pydata-sphinx-theme-0.8.0-pyhd8ed1ab_0.tar.bz2#f039c20ce604243f3f5f0479b05225a7
 https://conda.anaconda.org/conda-forge/noarch/sphinx-4.4.0-pyh6c4a22f_1.tar.bz2#a9025d14c2a609e0d895ad3e75b5369c
 https://conda.anaconda.org/conda-forge/win-64/jupyter_sphinx-0.3.2-py38haa244fe_0.tar.bz2#e5e1c243d2f16aa81f49d1829fb954d5
-https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.4.0-pyhd8ed1ab_0.tar.bz2#80fd2cc25ad45911b4e42d5b91593e2f
+https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.0-pyhd8ed1ab_0.tar.bz2#4c969cdd5191306c269490f7ff236d9c
 https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-serializinghtml-1.1.5-pyhd8ed1ab_1.tar.bz2#63d2f874f990fdcab47c822b608d6ade
