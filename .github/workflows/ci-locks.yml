@@ -26,10 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - lock: "py38-lock"
-          - lock: "py39-lock"
-          - lock: "py310-lock"
+        lock: [py38-lock, py39-lock, py310-lock]
 
     steps:
     - name: "Checkout"
