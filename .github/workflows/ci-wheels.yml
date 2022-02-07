@@ -41,7 +41,7 @@ jobs:
 
   test-artifacts:
     needs: [build-artifacts]
-    name: "Test bdist with py${{ matrix.version }} on ${{ runner.os }}"
+    name: "Test bdist with py${{ matrix.version }}"
     runs-on: ubuntu-latest
     env:
       ENV_NAME: "geovista-wheel"
