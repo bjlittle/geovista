@@ -3,7 +3,7 @@
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/download-artifact
 #   - https://github.com/actions/upload-artifact
-#   - https://github.com/marketplace/actions/setup-miniconda
+#   - https://github.com/conda-incubator/setup-miniconda
 
 name: ci-locks
 
@@ -21,16 +21,11 @@ jobs:
       run:
         shell: bash -l {0}
     env:
-      ENV_NAME: "geovista-lock"
+      ENV_NAME: "ci-locks"
       CONDA_EXE: "mamba"
     strategy:
-      fail-fast: false
       matrix:
-        include:
-          - lock: "py38-lock"
-          - lock: "py39-lock"
-          - lock: "py310-lock"
-
+        lock: [py38-lock, py39-lock, py310-lock]
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
@@ -106,7 +101,6 @@ jobs:
     needs: conda-lock
     name: "Create pull-request"
     runs-on: ubuntu-latest
-
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
