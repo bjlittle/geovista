@@ -17,7 +17,12 @@ import datetime
 import os
 
 import geovista
+import pooch
 import pyvista
+
+
+logger = pooch.get_logger()
+logger.setLevel("ERROR")
 
 
 # -- General configuration ---------------------------------------------------
