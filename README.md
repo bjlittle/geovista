@@ -5,14 +5,14 @@
          width="200"></a>
 </h1>
 
+<h4 align="center">
+  Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
+</h4>
+
 <p align="center">
   <img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
        alt="wip">
 </p>
-
-<h4 align="center">
-  Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
-</h4>
 
 <p align="center">
   <a href="https://github.com/bjlittle/geovista/blob/main/LICENSE">
