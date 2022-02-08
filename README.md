@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://github.com/bjlittle/geovista">
+  <a href="https://github.com/bjlittle/geovista#--------">
     <img src="https://raw.githubusercontent.com/bjlittle/geovista/main/branding/logo/primary/geovistalogo.svg"
          alt="GeoVista"
          width="200">
