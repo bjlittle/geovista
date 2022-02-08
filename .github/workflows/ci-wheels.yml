@@ -42,7 +42,7 @@ jobs:
 
   test-artifacts:
     needs: [build-artifacts]
-    name: "Test bdist with py${{ matrix.version }}"
+    name: "Test bdist with ${{ matrix.version }}"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -51,7 +51,7 @@ jobs:
       ENV_NAME: "ci-wheels"
     strategy:
       matrix:
-        version: ["38", "39", "310"]
+        version: [py38, py39, py310]
     steps:
     - uses: actions/checkout@v2
 
@@ -69,7 +69,7 @@ jobs:
         CACHE_BUILD: 0
       with:
         path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-py${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+        key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
     - name: "Conda install"
       uses: conda-incubator/setup-miniconda@v2
@@ -89,12 +89,12 @@ jobs:
         CACHE_BUILD: 0
       with:
         path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
-        key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-py${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+        key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
     - name: "Conda environment update"
       if: steps.conda-env-cache.outputs.cache-hit != 'true'
       run: |
-        mamba install --file ${{ github.workspace }}/requirements/locks/py${{ matrix.version }}-lock-linux-64.txt
+        mamba install --file ${{ github.workspace }}/requirements/locks/${{ matrix.version }}-lock-linux-64.txt
 
     - name: "Conda info"
       run: |

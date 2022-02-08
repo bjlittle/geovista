@@ -14,7 +14,7 @@ on:
 
 
 jobs:
-  conda-lock:
+  build-locks:
     name: "Build ${{ matrix.lock }}"
     runs-on: ubuntu-latest
     defaults:
