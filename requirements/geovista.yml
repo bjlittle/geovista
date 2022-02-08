@@ -8,6 +8,7 @@ dependencies:
 # setup dependencies
   - setuptools >=45
   - setuptools-scm >=6.2
+  - setuptools-scm-git-archive
 
 # core dependencies
   - cartopy >=0.20

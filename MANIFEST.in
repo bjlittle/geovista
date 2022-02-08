@@ -1,6 +1,0 @@
-# Top level files.
-include LICENSE
-
-recursive-include lib/geovista *.txt
-
-global-exclude *.pyc

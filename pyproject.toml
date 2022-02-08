@@ -3,6 +3,7 @@
 requires = [
     "setuptools>=45",
     "setuptools_scm[toml]>=6.2",
+    "setuptools_scm_git_archive",
     "wheel"
 ]
 # Defined by PEP 517
