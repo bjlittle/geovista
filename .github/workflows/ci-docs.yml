@@ -3,31 +3,24 @@
 #   - https://github.com/actions/checkout
 #   - https://github.com/conda-incubator/setup-miniconda
 
-name: ci-tests
+name: ci-docs
 
 on: [pull_request, push]
 
 
 jobs:
-  run-tests:
-    name: "Test ${{ matrix.version }} on ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
+  run-docs:
+    name: "Documentation"
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
     env:
-      ENV_NAME: "ci-tests"
+      ENV_NAME: "ci-docs"
       CONDA_EXE: "mamba"
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        version: [py38, py39, py310]
-        include:
-          - os: ubuntu-latest
-            platform: linux
-          - version: py310
-            os: macos-latest
-            platform: osx
+        task: [build, check, test]
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
@@ -46,7 +39,7 @@ jobs:
         CACHE_BUILD: 0
       with:
         path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+        key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-${{ matrix.task }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
     - name: "Conda install"
       uses: conda-incubator/setup-miniconda@v2
@@ -66,7 +59,7 @@ jobs:
         CACHE_BUILD: 0
       with:
         path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
-        key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+        key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-${{ matrix.task }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
     - name: "Conda environment update"
       if: steps.conda-env-cache.outputs.cache-hit != 'true'
@@ -86,8 +79,8 @@ jobs:
         TOX_INI: ${{ github.workspace }}/tox.ini
       with:
         path: ${{ github.workspace }}/.tox
-        key: ${{ runner.os }}-tox-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.TOX_INI) }}
+        key: ${{ runner.os }}-tox-${{ env.ENV_NAME }}-${{ matrix.task }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.TOX_INI) }}
 
-    - name: "Run ${{ matrix.os }} on ${{ matrix.version}} tests"
+    - name: "Run doc-${{ matrix.task }}"
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.platform }}-test
+        tox -e doc-${{ matrix.task }}
