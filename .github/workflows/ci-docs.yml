@@ -10,7 +10,7 @@ on: [pull_request, push]
 
 jobs:
   run-docs:
-    name: "Documentation"
+    name: "Documentation ${{ matrix.task }}"
     runs-on: ubuntu-latest
     defaults:
       run:
