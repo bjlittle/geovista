@@ -47,6 +47,9 @@
     <img src="https://img.shields.io/github/contributors/bjlittle/geovista"
          alt="Contributors">
   </a>
+</p>
+
+<p align="center">
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml">
     <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml/badge.svg?branch=main"
          alt="Conda locks">
