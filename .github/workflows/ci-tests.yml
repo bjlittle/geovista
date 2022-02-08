@@ -22,12 +22,13 @@ jobs:
       CONDA_EXE: "mamba"
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         version: [py38, py39, py310]
         include:
           - os: ubuntu-latest
             platform: linux
-          - os: macos-latest
+          - version: py310
+            os: macos-latest
             platform: osx
     steps:
     - name: "Checkout"
