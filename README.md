@@ -16,13 +16,6 @@
 </h4>
 
 <p align="center">
-  <a href='https://readthedocs.org/projects/geovista/'>
-    <img src='https://readthedocs.org/projects/geovista/badge/?version=latest' alt='Documentation Status' />
-  </a>
-  <a href="https://results.pre-commit.ci/latest/github/bjlittle/geovista/main">
-    <img src="https://results.pre-commit.ci/badge/github/bjlittle/geovista/main.svg"
-         alt="pre-commit.ci status">
-  </a>
   <a href="https://github.com/bjlittle/geovista/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/bjlittle/geovista"
          alt="License BSD-3-Clause">
@@ -42,17 +35,13 @@
 </p>
 
 <p align="center">
-  <a href="https://anaconda.org/conda-forge/geovista">
-    <img src="https://img.shields.io/conda/vn/conda-forge/geovista?color=orange&label=conda-forge&logo=conda-forge&logoColor=white"
-         alt="Conda geovista">
+  <a href='https://readthedocs.org/projects/geovista/'>
+    <img src='https://readthedocs.org/projects/geovista/badge/?version=latest' alt='Documentation Status' />
   </a>
-  <a href="https://pypi.org/project/geovista/">
-    <img src="https://img.shields.io/pypi/v/geovista?color=orange&label=pypi&logo=python&logoColor=white"
-         alt="PyPI geovista">
+  <a href="https://results.pre-commit.ci/latest/github/bjlittle/geovista/main">
+    <img src="https://results.pre-commit.ci/badge/github/bjlittle/geovista/main.svg"
+         alt="pre-commit.ci status">
   </a>
-</p>
-
-<p align="center">
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml">
     <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml/badge.svg?branch=main"
          alt="Conda locks">
@@ -60,5 +49,16 @@
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml">
     <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml/badge.svg?branch=main"
          alt="Stale issues and pull-requests">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://anaconda.org/conda-forge/geovista">
+    <img src="https://img.shields.io/conda/vn/conda-forge/geovista?color=orange&label=conda-forge&logo=conda-forge&logoColor=white"
+         alt="Conda geovista">
+  </a>
+  <a href="https://pypi.org/project/geovista/">
+    <img src="https://img.shields.io/pypi/v/geovista?color=orange&label=pypi&logo=python&logoColor=white"
+         alt="PyPI geovista">
   </a>
 </p>
