@@ -4,9 +4,9 @@
          alt="GeoVista"
          width="200">
   </a>
-  <img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
-       alt="wip">
-  <br>
+  <p><img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
+          alt="wip">
+  </p><br>
 </h1>
 
 <h4 align="center">
