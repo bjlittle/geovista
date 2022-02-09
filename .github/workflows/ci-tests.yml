@@ -25,9 +25,13 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: linux
-          - version: py310
-            os: macos-latest
-            platform: osx
+          - os: ubuntu-latest
+            version: py310
+            posargs: "--cov-report=xml --cov"
+            post-command: codecov
+#          - version: py310
+#            os: macos-latest
+#            platform: osx
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
@@ -89,5 +93,7 @@ jobs:
         key: ${{ runner.os }}-tox-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.TOX_INI) }}
 
     - name: "Run ${{ matrix.os }} on ${{ matrix.version}} tests"
+      env:
+        POST_COMMAND: ${{ matrix.post-command }}
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.platform }}-test
+        tox -e ${{ matrix.version }}-${{ matrix.platform }}-test -- ${{ matrix.posargs }}
