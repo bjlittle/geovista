@@ -29,9 +29,9 @@ jobs:
             version: py310
             posargs: "--cov-report=xml --cov"
             post-command: codecov
-#          - version: py310
-#            os: macos-latest
-#            platform: osx
+          - version: py310
+            os: macos-latest
+            platform: osx
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
