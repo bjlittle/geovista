@@ -16,6 +16,7 @@ jobs:
       run:
         shell: bash -l {0}
     env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       ENV_NAME: "ci-tests"
       CONDA_EXE: "mamba"
     strategy:
