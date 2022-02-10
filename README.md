@@ -49,6 +49,9 @@
     <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml/badge.svg?branch=main"
          alt="Stale issues and pull-requests">
   </a>
+  <a href="https://codecov.io/gh/bjlittle/geovista">
+    <img src="https://codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3"/>
+  </a>
 </p>
 
 <p align="center">
