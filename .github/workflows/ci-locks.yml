@@ -98,7 +98,7 @@ jobs:
 
 
   create-pr:
-    needs: conda-lock
+    needs: build-locks
     name: "Create pull-request"
     runs-on: ubuntu-latest
     steps:
