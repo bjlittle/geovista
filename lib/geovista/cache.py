@@ -17,8 +17,11 @@ __all__ = [
 #: Base URL for GeoVista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/main/data/"
 
+#: Environment variable to override pooch cache manager path.
+ENV = "GEOVISTA_CACHEDIR"
+
 #: The number of retry attempts to download a resource.
-RETRY_ATTEMPTS: int = 0
+RETRY_ATTEMPTS: int = 3
 
 #: Cache manager for GeoVista resources.
 CACHE: pooch.Pooch = pooch.create(
@@ -26,6 +29,7 @@ CACHE: pooch.Pooch = pooch.create(
     base_url=BASE_URL,
     registry=None,
     retry_if_failed=RETRY_ATTEMPTS,
+    env=ENV,
 )
 
 CACHE.load_registry(open_text(__package__, "registry.txt"))
