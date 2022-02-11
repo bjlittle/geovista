@@ -51,7 +51,7 @@ jobs:
       with:
         miniforge-variant: Mambaforge
         miniforge-version: latest
-        use-mamba: true
+        #use-mamba: true
         activate-environment: ${{ env.ENV_NAME }}
         auto-update-conda: false
         use-only-tar-bz2: true
