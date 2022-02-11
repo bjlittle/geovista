@@ -69,7 +69,7 @@ jobs:
     - name: "Conda environment update"
       if: steps.conda-env-cache.outputs.cache-hit != 'true'
       run: |
-        mamba install --name ${{ env.ENV_NAME }} tox
+        conda install --name ${{ env.ENV_NAME }} tox
 
     - name: "Conda info"
       run: |
