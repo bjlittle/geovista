@@ -13,6 +13,7 @@ dependencies:
 # core dependencies
   - cartopy >=0.20
   - click
+  - click-default-group
   - pooch
   - pyproj >=3.3
   - pyvista
