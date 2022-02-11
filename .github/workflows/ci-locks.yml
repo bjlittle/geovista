@@ -22,7 +22,7 @@ jobs:
         shell: bash -l {0}
     env:
       ENV_NAME: "ci-locks"
-      CONDA_EXE: "mamba"
+      #CONDA_EXE: "mamba"
     strategy:
       matrix:
         lock: [py38-lock, py39-lock, py310-lock]
@@ -88,7 +88,8 @@ jobs:
 
     - name: "Create ${{ matrix.lock }} conda locks"
       run: |
-        tox -e ${{ matrix.lock }} -- --mamba --platform osx-64 --platform win-64
+        #tox -e ${{ matrix.lock }} -- --mamba --platform osx-64 --platform win-64
+        tox -e ${{ matrix.lock }} -- --platform osx-64 --platform win-64
 
     - name: "Upload lock artifacts"
       uses: actions/upload-artifact@v2
