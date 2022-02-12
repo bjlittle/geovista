@@ -77,8 +77,7 @@ def main(version: bool) -> None:
 
     """
     if version:
-        click.echo("hello ", nl=False)
-        click.secho(f"{__version__}", fg="red")
+        click.secho(f"{__version__}", fg=DEFAULT_FG)
 
 
 @main.command(no_args_is_help=True)
