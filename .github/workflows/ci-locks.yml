@@ -70,7 +70,7 @@ jobs:
     - name: "Conda environment update"
       if: steps.conda-env-cache.outputs.cache-hit != 'true'
       run: |
-        conda install --name ${{ env.ENV_NAME }} tox
+        mamba install --name ${{ env.ENV_NAME }} tox
 
     - name: "Conda info"
       run: |
@@ -90,7 +90,6 @@ jobs:
     - name: "Create ${{ matrix.lock }} conda locks"
       run: |
         tox -e ${{ matrix.lock }} -- --mamba --platform osx-64 --platform win-64
-        #tox -e ${{ matrix.lock }} -- --platform osx-64 --platform win-64
 
     - name: "Upload lock artifacts"
       uses: actions/upload-artifact@v2
