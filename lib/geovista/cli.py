@@ -4,7 +4,9 @@ from typing import List, Optional, Tuple
 import click
 from click_default_group import DefaultGroup
 import pooch
+import pyvista as pv
 
+from . import GeoPlotter
 from ._version import version as __version__
 from .cache import CACHE
 
@@ -221,9 +223,24 @@ def download(
 
 
 @main.command(no_args_is_help=True)
-def plot() -> None:
+@click.argument(
+    "fname",
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+)
+@click.option(
+    "-b",
+    "--base",
+    is_flag=True,
+    help="Add a base layer",
+)
+def plot(fname, base) -> None:
     """
     Load and render a VTK mesh.
 
     """
-    click.echo("TBD, soz!")
+    mesh = pv.read(fname)
+    plotter = GeoPlotter()
+    plotter.add_mesh(mesh)
+    if base:
+        plotter.add_base_layer()
+    plotter.show()
