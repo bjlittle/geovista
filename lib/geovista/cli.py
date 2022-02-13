@@ -68,18 +68,29 @@ def _plural(value: int) -> bool:
     context_settings=CONTEXT_SETTINGS,
 )
 @click.option(
+    "-c",
+    "--cache",
+    is_flag=True,
+    help="Show geovista cache directory.",
+)
+@click.option(
     "-v",
     "--version",
     is_flag=True,
     help="Show geovista package version.",
 )
-def main(version: bool) -> None:
+def main(version: bool, cache: bool) -> None:
     """
     To get help for geovista commands, simply use "geovista COMMAND --help".
 
     """
     if version:
+        click.echo("version ", nl=False)
         click.secho(f"{__version__}", fg=DEFAULT_FG)
+
+    if cache:
+        click.echo("cache directory ", nl=False)
+        click.secho(f"{CACHE.abspath}", fg=DEFAULT_FG)
 
 
 @main.command(no_args_is_help=True)
