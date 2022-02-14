@@ -65,7 +65,7 @@ https://conda.anaconda.org/conda-forge/osx-64/gnutls-3.6.13-h756fd2b_1.tar.bz2#c
 https://conda.anaconda.org/conda-forge/osx-64/hdf4-4.2.15-hefd3b78_3.tar.bz2#07bbe01a1cabdb9ec0d35524e09f4db4
 https://conda.anaconda.org/conda-forge/osx-64/libclang-13.0.1-default_he082bbe_0.tar.bz2#0166c71e26f8b9f564a20a13b04d118d
 https://conda.anaconda.org/conda-forge/osx-64/libgfortran-5.0.0-9_3_0_h6c81a4c_23.tar.bz2#60f48cef2d50674e0428c5579b6c3f66
-https://conda.anaconda.org/conda-forge/osx-64/libglib-2.70.2-hf1fb8c0_2.tar.bz2#6fb63d5c0be45cc4327d80615bedd5e7
+https://conda.anaconda.org/conda-forge/osx-64/libglib-2.70.2-hf1fb8c0_4.tar.bz2#2d01e3a78efd30c56ec19e65c0ec7ce1
 https://conda.anaconda.org/conda-forge/osx-64/libnghttp2-1.46.0-h6f36284_0.tar.bz2#4a3025e50e0a3bc33034b798c6846927
 https://conda.anaconda.org/conda-forge/osx-64/libpng-1.6.37-h7cec526_2.tar.bz2#9e52521faba2b53269672628d34e1513
 https://conda.anaconda.org/conda-forge/osx-64/libssh2-1.10.0-h52ee1ee_2.tar.bz2#8c8f3804e8e252b47443cfe8e40eddf9
