@@ -47,7 +47,7 @@ repos:
         args: [--filter-files]
 
 -   repo: https://github.com/aio-libs/sort-all
-    rev: v1.1.0
+    rev: v1.2.0
     hooks:
     -   id: sort-all
         types: [file, python]
