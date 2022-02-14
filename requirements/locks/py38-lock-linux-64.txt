@@ -96,7 +96,7 @@ https://conda.anaconda.org/conda-forge/linux-64/brotli-bin-1.0.9-h7f98852_6.tar.
 https://conda.anaconda.org/conda-forge/linux-64/hdf4-4.2.15-h10796ff_3.tar.bz2#21a8d66dc17f065023b33145c42652fe
 https://conda.anaconda.org/conda-forge/linux-64/libcblas-3.9.0-13_linux64_openblas.tar.bz2#b17676dbd6688396c3a3076259fb7907
 https://conda.anaconda.org/conda-forge/linux-64/libclang-13.0.1-default_hc23dcda_0.tar.bz2#8cebb0736cba83485b13dc10d242d96d
-https://conda.anaconda.org/conda-forge/linux-64/libglib-2.70.2-h174f98d_2.tar.bz2#6c9346fef15d50ef4db897bfbd0f0db6
+https://conda.anaconda.org/conda-forge/linux-64/libglib-2.70.2-h174f98d_4.tar.bz2#d44314ffae96b17657fbf3f8e47b04fc
 https://conda.anaconda.org/conda-forge/linux-64/liblapack-3.9.0-13_linux64_openblas.tar.bz2#018b80e8f21d8560ae4961567e3e00c9
 https://conda.anaconda.org/conda-forge/linux-64/libnghttp2-1.46.0-h812cca2_0.tar.bz2#507fa47e9075f889af8e8b72925379be
 https://conda.anaconda.org/conda-forge/linux-64/libpng-1.6.37-h21135ba_2.tar.bz2#b6acf807307d033d4b7e758b4f44b036
