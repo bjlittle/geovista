@@ -10,7 +10,7 @@ name: ci-locks
 on:
   workflow_dispatch:
   schedule:
-    - cron: 3 0 * * 1
+    - cron: "3 0 * * 1"
 
 
 jobs:
