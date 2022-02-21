@@ -27,6 +27,10 @@
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg"
          alt="Code style: black">
   </a>
+  <a href="https://lgtm.com/projects/g/bjlittle/geovista/">
+    <img src="https://img.shields.io/lgtm/grade/python/github/bjlittle/geovista"
+         alt="LGTM Grade">
+  </a>
   <a href="https://github.com/bjlittle/geovista/graphs/contributors">
     <img src="https://img.shields.io/github/contributors/bjlittle/geovista"
          alt="Contributors">
