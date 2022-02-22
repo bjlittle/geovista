@@ -17,7 +17,6 @@ jobs:
         shell: bash -l {0}
     env:
       ENV_NAME: "ci-docs"
-      CONDA_EXE: "mamba"
     strategy:
       matrix:
         task: [build, linkcheck, test]
@@ -36,7 +35,7 @@ jobs:
       uses: actions/cache@v2
       env:
         # Increment the build number to force a cache refresh.
-        CACHE_BUILD: 0
+        CACHE_BUILD: 1
       with:
         path: ~/conda_pkgs_dir
         key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-${{ matrix.task }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
@@ -44,9 +43,6 @@ jobs:
     - name: "Conda install"
       uses: conda-incubator/setup-miniconda@v2
       with:
-        miniforge-variant: Mambaforge
-        miniforge-version: 4.11.0-1
-        use-mamba: true
         channels: conda-forge,defaults
         activate-environment: ${{ env.ENV_NAME }}
         auto-update-conda: false
@@ -57,7 +53,7 @@ jobs:
       uses: actions/cache@v2
       env:
         # Increment the build number to force a cache refresh.
-        CACHE_BUILD: 0
+        CACHE_BUILD: 1
       with:
         path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
         key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-${{ matrix.task }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
@@ -65,7 +61,7 @@ jobs:
     - name: "Conda environment update"
       if: steps.conda-env-cache.outputs.cache-hit != 'true'
       run: |
-        mamba install --name ${{ env.ENV_NAME }} tox
+        conda install --name ${{ env.ENV_NAME }} tox
 
     - name: "Conda info"
       run: |
@@ -76,7 +72,7 @@ jobs:
       uses: actions/cache@v2
       env:
         # Increment the build number to forece a cache refresh.
-        CACHE_BUILD: 0
+        CACHE_BUILD: 1
         TOX_INI: ${{ github.workspace }}/tox.ini
       with:
         path: ${{ github.workspace }}/.tox
