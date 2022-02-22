@@ -65,16 +65,6 @@
 </p>
 
 <p align="center">
-  <a href="https://lgtm.com/projects/g/bjlittle/geovista/">
-    <img src="https://img.shields.io/lgtm/grade/python/github/bjlittle/geovista"
-         alt="LGTM Grade">
-  </a>
-  <a href="https://codecov.io/gh/bjlittle/geovista">
-    <img src="https://codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3"/>
-  </a>
-</p>
-
-<p align="center">
   <a href="https://anaconda.org/conda-forge/geovista">
     <img src="https://img.shields.io/conda/vn/conda-forge/geovista?color=orange&label=conda-forge&logo=conda-forge&logoColor=white"
          alt="Conda geovista">
@@ -82,5 +72,12 @@
   <a href="https://pypi.org/project/geovista/">
     <img src="https://img.shields.io/pypi/v/geovista?color=orange&label=pypi&logo=python&logoColor=white"
          alt="PyPI geovista">
+  </a>
+  <a href="https://lgtm.com/projects/g/bjlittle/geovista/">
+    <img src="https://img.shields.io/lgtm/grade/python/github/bjlittle/geovista"
+         alt="LGTM Grade">
+  </a>
+  <a href="https://codecov.io/gh/bjlittle/geovista">
+    <img src="https://codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3"/>
   </a>
 </p>
