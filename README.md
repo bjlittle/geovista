@@ -34,12 +34,25 @@
 </p>
 
 <p align="center">
-  <a href='https://readthedocs.org/projects/geovista/'>
-    <img src='https://readthedocs.org/projects/geovista/badge/?version=latest' alt='Documentation Status' />
+  <a href="https://readthedocs.org/projects/geovista/">
+    <img src="https://readthedocs.org/projects/geovista/badge/?version=latest"
+         alt="Documentation status">
   </a>
   <a href="https://results.pre-commit.ci/latest/github/bjlittle/geovista/main">
     <img src="https://results.pre-commit.ci/badge/github/bjlittle/geovista/main.svg"
          alt="pre-commit.ci status">
+  </a>
+  <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml">
+    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml/badge.svg"
+         alt="Tests status">
+  </a>
+  <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml">
+    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg"
+         alt="Docs status">
+  </a>
+  <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml">
+    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg"
+         alt="PyPI artifact status"
   </a>
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml">
     <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml/badge.svg?branch=main"
