@@ -43,15 +43,15 @@
          alt="pre-commit.ci status">
   </a>
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml/badge.svg"
+    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml/badge.svg?branch=main"
          alt="Tests status">
   </a>
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg"
+    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg?branch=main"
          alt="Docs status">
   </a>
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg"
+    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg?branch=main"
          alt="PyPI artifact status"
   </a>
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml">
