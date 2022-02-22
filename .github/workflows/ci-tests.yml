@@ -44,7 +44,7 @@ jobs:
       uses: actions/cache@v2
       env:
         # Increment the build number to force a cache refresh.
-        CACHE_BUILD: 2
+        CACHE_BUILD: 3
       with:
         path: ~/conda_pkgs_dir
         key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
@@ -52,6 +52,7 @@ jobs:
     - name: "Conda install"
       uses: conda-incubator/setup-miniconda@v2
       with:
+        miniforge-version: latest
         channels: conda-forge,defaults
         activate-environment: ${{ env.ENV_NAME }}
         auto-update-conda: false
@@ -62,7 +63,7 @@ jobs:
       uses: actions/cache@v2
       env:
         # Increment the build number to force a cache refresh.
-        CACHE_BUILD: 2
+        CACHE_BUILD: 3
       with:
         path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
         key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
@@ -81,7 +82,7 @@ jobs:
       uses: actions/cache@v2
       env:
         # Increment the build number to forece a cache refresh.
-        CACHE_BUILD: 2
+        CACHE_BUILD: 3
         TOX_INI: ${{ github.workspace }}/tox.ini
       with:
         path: ${{ github.workspace }}/.tox
