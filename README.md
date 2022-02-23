@@ -73,9 +73,9 @@
     <img src="https://img.shields.io/pypi/v/geovista?color=orange&label=pypi&logo=python&logoColor=white"
          alt="PyPI geovista">
   </a>
-  <a href="https://lgtm.com/projects/g/bjlittle/geovista/">
-    <img src="https://img.shields.io/lgtm/grade/python/github/bjlittle/geovista"
-         alt="LGTM Grade">
+  <a href="https://www.codacy.com/gh/bjlittle/geovista/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bjlittle/geovista&amp;utm_campaign=Badge_Grade">
+    <img src="https://app.codacy.com/project/badge/Grade/a13c37670f854814ae58f571fab06bc2"
+         alt="Codacy">
   </a>
   <a href="https://codecov.io/gh/bjlittle/geovista">
     <img src="https://codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3"/>
