@@ -8,7 +8,7 @@ with PARSE_UGRID_ON_LOAD.context():
     cube = iris.load_cube(fname, "air_potential_temperature")[0]
 
 face_node = cube.mesh.face_node_connectivity
-indices = face_node.indices_by_src()
+indices = face_node.indices_by_location()
 lons, lats = cube.mesh.node_coords
 
 mesh = gv.Transform.from_unstructured(
