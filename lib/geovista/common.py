@@ -209,7 +209,7 @@ def to_xy0(
 
     """
     xyz = np.asanyarray(xyz)
-    lons = np.degrees(np.arctan2(xyz[:, 1], xyz[:, 0]))
+    lons = wrap(np.degrees(np.arctan2(xyz[:, 1], xyz[:, 0])))
     lats = np.degrees(np.arcsin(xyz[:, 2] / radius))
     z = np.zeros_like(lons)
     data = [lons, lats, z]
