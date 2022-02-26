@@ -3,5 +3,5 @@ coverage:
     project:
       default:
         target: auto 
-        threshold: 0.5%  # coverage can drop by up to <threshold>% while still posting success
+        threshold: 5%  # coverage can drop by up to <threshold>% while still posting success
     patch: off
