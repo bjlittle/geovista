@@ -82,10 +82,15 @@ html_theme_options = {
     "use_edit_page_button": True,
     "icon_links": [
         {
-            "name": "Support",
+            "name": "Twitter",
+            "url": "https://twitter.com/geovista_devs",
+            "icon": "fab fa-twitter-square",
+        },
+        {
+            "name": "Discussions",
             "url": "https://github.com/bjlittle/geovista/discussions",
             "icon": "fa fa-comments fa-fw",
-        }
+        },
     ],
 }
 

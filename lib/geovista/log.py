@@ -14,7 +14,7 @@ __all__ = ["DATEFMT", "FMT", "Formatter", "get_logger"]
 DATEFMT: str = "%d-%m-%Y %H:%M:%S"
 
 #: The default ``fmt`` string of the logger formatter.
-FMT: str = "%(asctime)s %(name)s %(levelname)s - %(message)s"
+FMT: str = "%(asctime)s.%(msecs)03d %(name)s %(levelname)s - %(message)s"
 
 # Critical region lock to protect against race conditions
 # when adding a handler to a logger.

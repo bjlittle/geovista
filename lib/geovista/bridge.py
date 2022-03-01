@@ -45,7 +45,6 @@ class Transform:
         -------
         ndarray
 
-
         Notes
         -----
         .. versionadded:: 0.1.0

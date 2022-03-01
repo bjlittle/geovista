@@ -17,7 +17,7 @@ __all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
 # Configure the logger.
 logger = get_logger(__name__)
 
-# type aliases
+# Type aliases
 Corners = Tuple[float, float, float, float]
 
 #: Default geodesic ellipse. See :func:`pyproj.get_ellps_map`.
@@ -81,7 +81,11 @@ PREFERENCE_CENTER: str = "center"
 PREFERENCE_POINT: str = "point"
 
 #: Enumeration of supported preferences.
-PREFERENCES: Tuple[str] = (PREFERENCE_CELL, PREFERENCE_CENTER, PREFERENCE_POINT)
+PREFERENCES: Tuple[str, str, str] = (
+    PREFERENCE_CELL,
+    PREFERENCE_CENTER,
+    PREFERENCE_POINT,
+)
 
 #: The default bounding-box preference.
 BBOX_PREFERENCE: str = PREFERENCE_POINT

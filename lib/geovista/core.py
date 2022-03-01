@@ -1,15 +1,34 @@
 from collections.abc import Iterable
+from enum import Enum, auto, unique
 from typing import List, Optional
 
 import numpy as np
 import pyvista as pv
 
+from .common import VTK_CELL_IDS, VTK_POINT_IDS, to_xy0, wrap
+from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .log import get_logger
 
-__all__ = ["combine"]
+__all__ = ["Slicer", "combine"]
 
 # Configure the logger.
 logger = get_logger(__name__)
+
+#: Preference for a slice to be west of the chosen meridian.
+CUT_WEST: str = "west"
+
+#: Preference for a slice to be true to the chosen meridian.
+CUT_EXACT: str = "exact"
+
+#: Preference for a slice to be east of the chosen meridian.
+CUT_EAST: str = "east"
+
+
+@unique
+class SlicerBias(Enum):
+    west = -1
+    exact = auto()
+    east = auto()
 
 
 def combine(
@@ -160,3 +179,170 @@ def combine(
         combined.clean(inplace=True)
 
     return combined
+
+
+class Slicer:
+    def __init__(
+        self,
+        mesh: pv.PolyData,
+        meridian: float,
+        offset: Optional[float] = None,
+    ):
+        """
+        TBD
+
+        Parameters
+        ----------
+        mesh
+        meridian
+        offset
+
+        Notes
+        -----
+        .. versionadded :: 0.1.0
+
+        """
+        # logging convenience
+        self._extra = dict(cls=self.__class__.__name__)
+
+        # TBD: require a more robust and definitive approach
+        zmin, zmax = mesh.bounds[4], mesh.bounds[5]
+        if np.isclose(zmax - zmin, 0):
+            emsg = "Cannot slice mesh appears to be a planar projection."
+            raise ValueError(emsg)
+
+        self.mesh = mesh
+        mesh[VTK_CELL_IDS] = np.arange(mesh.n_cells)
+        mesh[VTK_POINT_IDS] = np.arange(mesh.n_points)
+        self.xmin, self.xmax = mesh.bounds[0], mesh.bounds[1]
+
+        if offset is None:
+            # default to a crude approximation of a projected equatorial
+            # arcsecond of longitude
+            offset = ((self.xmax - self.xmin) / 2) / (3600 * 90)
+
+        self.meridian = wrap(meridian)[0]
+        self.offset = abs(offset)
+        logger.debug(
+            f"meridian={self.meridian}, offset={self.offset}", extra=self._extra
+        )
+        self.slices = {bias.name: self._intersection(bias.value) for bias in SlicerBias}
+
+        n_cells = self.slices[CUT_EXACT].n_cells
+        self.west_ids = set(self.slices[CUT_WEST][VTK_CELL_IDS]) if n_cells else set()
+        self.east_ids = set(self.slices[CUT_EAST][VTK_CELL_IDS]) if n_cells else set()
+        self.split_ids = self.west_ids.intersection(self.east_ids)
+        logger.debug(
+            f"west={len(self.west_ids)}, east={len(self.east_ids)}, "
+            f"split={len(self.split_ids)}",
+            extra=self._extra,
+        )
+
+    def _intersection(self, bias: float) -> pv.PolyData:
+        """
+        TBD
+
+        Parameters
+        ----------
+        bias
+
+        Returns
+        -------
+
+        Notes
+        -----
+        .. versionadded :: 0.1.0
+
+        """
+        logger.debug(f"{bias=}", extra=self._extra)
+        y = bias * self.offset
+        xyz = pv.Line((self.xmin, y, 0), (self.xmax, y, 0))
+        xyz.rotate_z(self.meridian, inplace=True)
+        spline = pv.Spline(xyz.points, 1)
+        mesh = self.mesh.slice_along_line(spline)
+        mesh.active_scalars_name = None
+        logger.debug(
+            f"n_cells={mesh.n_cells}, n_points={mesh.n_points}", extra=self._extra
+        )
+        return mesh
+
+    def extract(
+        self,
+        bias: Optional[str] = None,
+        whole_cells: Optional[bool] = True,
+        split_cells: Optional[bool] = True,
+        clip: Optional[bool] = True,
+    ) -> pv.PolyData:
+        """
+        TBD
+
+        Parameters
+        ----------
+        bias
+        whole_cells
+        split_cells
+        clip
+
+        Returns
+        -------
+
+        Notes
+        -----
+        .. versionadded :: 0.1.0
+
+        """
+        if bias is None:
+            bias = CUT_WEST
+
+        if bias.lower() not in SlicerBias.__members__:
+            options = [f"'{option.name}'" for option in SlicerBias]
+            options = f"{', '.join(options[:-1])} or {options[-1]}"
+            emsg = f"Expected a slice bias of either {options}, got '{bias}'."
+            raise ValueError(emsg)
+
+        # there is no intersection between the z-plane extruded by
+        # the spline and the mesh
+        if (mesh := self.slices[CUT_EXACT].n_cells) == 0:
+            return mesh
+
+        extract_ids = set()
+        mesh = pv.PolyData()
+
+        if whole_cells:
+            whole_ids = set(self.slices[bias][VTK_CELL_IDS]).difference(self.split_ids)
+            logger.debug(f"{bias=}, whole={len(whole_ids)}", extra=self._extra)
+            extract_ids = whole_ids
+
+        if split_cells:
+            logger.debug(f"split={len(self.split_ids)}", extra=self._extra)
+            extract_ids = extract_ids.union(self.split_ids)
+
+        logger.debug(f"extract={len(extract_ids)}", extra=self._extra)
+
+        if extract_ids:
+            mesh = self.mesh.extract_cells(np.array(list(extract_ids)))
+            mesh.active_scalars_name = None
+            logger.debug(
+                f"mesh: {bias=}, n_cells={mesh.n_cells}, " f"n_points={mesh.n_points}",
+                extra=self._extra,
+            )
+            if clip:
+                # cc = mesh.cell_centers()
+                # points = to_xy0(cc.points)
+                # if np.isclose(meridian, -180):
+                #     match = (180 - np.abs(points[:, 0])) < 90
+                # else:
+                #     match = np.abs(points[:, 0] - meridian) < 90
+                # mesh = cast(mesh.extract_cells(match))
+                points = to_xy0(mesh.points)
+                match = np.abs(points[:, 0] - self.meridian) < 90
+                mesh = cast(mesh.extract_points(match))
+                logger.debug(
+                    f"clip: {bias=}, n_cells={mesh.n_cells}, "
+                    f"n_points={mesh.n_points}",
+                    extra=self._extra,
+                )
+        else:
+            logger.debug("no cells extracted from slice", extra=self._extra)
+
+        return mesh

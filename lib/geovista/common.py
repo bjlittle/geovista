@@ -13,11 +13,17 @@ import pyvista as pv
 from .log import get_logger
 
 __all__ = [
+    "GV_CELL_IDS",
+    "GV_POINT_IDS",
+    "VTK_CELL_IDS",
+    "VTK_POINT_IDS",
     "calculate_radius",
     "nan_mask",
+    "sanitise_data",
     "set_jupyter_backend",
     "to_xy0",
     "to_xyz",
+    "triangulated",
     "wrap",
 ]
 
@@ -28,8 +34,20 @@ logger = get_logger(__name__)
 # TODO: support richer default management
 #
 
+#: Name of the geovista cell indices array.
+GV_CELL_IDS = "gvOriginalCellIds"
+
+#: Name of the geovista point indices array.
+GV_POINT_IDS = "gvOriginalPointIds"
+
 #: Default jupyter plotting backend for pyvista.
-JUPYTER_BACKEND: bool = "pythreejs"
+JUPYTER_BACKEND: str = "pythreejs"
+
+#: Name of the VTK cell indices array.
+VTK_CELL_IDS = "vtkOriginalCellIds"
+
+#: Name of the VTK point indices array.
+VTK_POINT_IDS = "vtkOriginalPointIds"
 
 
 def active_kernel() -> bool:
@@ -142,6 +160,43 @@ def nan_mask(data: npt.ArrayLike) -> np.ndarray:
         data = data.filled(np.nan)
 
     return data
+
+
+def sanitise_data(
+    surface: pv.PolyData,
+    gv: Optional[bool] = True,
+    vtk: Optional[bool] = True,
+) -> None:
+    """
+    Purge standard VTK and geovista helper cell and point data arrays.
+
+    Parameters
+    ----------
+    surface : PolyData
+        The :class:`pyvista.PolyData` to sanitise.
+    gv : bool, default=True
+        Purge :data:`GV_CELL_IDS` and :data:`GV_POINT_IDS` data arrays.
+    vtk : bool, default=True
+        Purge :data:`VTK_CELL_IDS` and :data:`VTK_POINT_IDS` arrays.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if gv:
+        if GV_CELL_IDS in surface.cell_data:
+            del surface.cell_data[GV_CELL_IDS]
+
+        if GV_POINT_IDS in surface.point_data:
+            del surface.point_data[GV_POINT_IDS]
+
+    if vtk:
+        if VTK_CELL_IDS in surface.cell_data:
+            del surface.cell_data[VTK_CELL_IDS]
+
+        if VTK_POINT_IDS in surface.point_data:
+            del surface.point_data[VTK_POINT_IDS]
 
 
 def set_jupyter_backend(backend: Optional[str] = None) -> bool:
@@ -269,6 +324,29 @@ def to_xyz(
         xyz = np.array(xyz)
 
     return xyz
+
+
+def triangulated(surface: pv.PolyData) -> bool:
+    """
+    Determine whether the provided surface is triangulated.
+
+    Parameters
+    ----------
+    surface : PolyData
+        The :class:`pyvista.PolyData` surface mesh to check
+        whether the geometry of all its cells are triangles.
+
+    Returns
+    -------
+    bool
+        Whether the surface is fully triangulated.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    return np.all(np.diff(surface._offset_array) == 3)
 
 
 def wrap(
