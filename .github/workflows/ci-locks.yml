@@ -27,7 +27,7 @@ jobs:
         lock: [py38-lock, py39-lock, py310-lock]
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: "Environment configure"
       env:
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: "Download lock artifacts"
       uses: actions/download-artifact@v2
