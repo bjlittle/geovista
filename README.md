@@ -52,7 +52,7 @@
   </a>
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml">
     <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg?branch=main"
-         alt="PyPI artifact status"
+         alt="PyPI artifact status">
   </a>
   <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml">
     <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml/badge.svg?branch=main"
