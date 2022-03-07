@@ -320,7 +320,7 @@ class Slicer:
         logger.debug(f"extract={len(extract_ids)}", extra=self._extra)
 
         if extract_ids:
-            mesh = self.mesh.extract_cells(np.array(list(extract_ids)))
+            mesh = cast(self.mesh.extract_cells(np.array(list(extract_ids))))
             mesh.active_scalars_name = None
             logger.debug(
                 f"mesh: {bias=}, n_cells={mesh.n_cells}, " f"n_points={mesh.n_points}",
