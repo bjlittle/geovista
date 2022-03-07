@@ -27,7 +27,7 @@ jobs:
         lock: [py38-lock, py39-lock, py310-lock]
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: "Environment configure"
       env:
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: "Download lock artifacts"
       uses: actions/download-artifact@v2
@@ -112,7 +112,7 @@ jobs:
     - name: "Push pull-request"
       id: cpr
       # v3.12.1 (release date 31 Jan 2022)
-      uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
+      uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672
       with:
         add-paths: ${{ github.workspace }}/requirements/locks/*.txt
         commit-message: "updated conda lock files"
