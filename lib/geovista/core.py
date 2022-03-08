@@ -5,27 +5,30 @@ from typing import List, Optional
 import numpy as np
 import pyvista as pv
 
-from .common import VTK_CELL_IDS, VTK_POINT_IDS, to_xy0, wrap
+from .common import VTK_CELL_IDS, VTK_POINT_IDS, calculate_radius, to_xy0, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .log import get_logger
 
-__all__ = ["Slicer", "combine"]
+__all__ = ["MeridianSlice", "combine"]
 
 # Configure the logger.
 logger = get_logger(__name__)
 
-#: Preference for a slice to be west of the chosen meridian.
+#: Preference for a slice to bias cells west of the chosen meridian.
 CUT_WEST: str = "west"
 
 #: Preference for a slice to be true to the chosen meridian.
 CUT_EXACT: str = "exact"
 
-#: Preference for a slice to be east of the chosen meridian.
+#: Preference for a slice to bias cells east of the chosen meridian.
 CUT_EAST: str = "east"
+
+#: Cartesian west/east bias offset of a slice.
+CUT_OFFSET: float = 1e-5
 
 
 @unique
-class SlicerBias(Enum):
+class SliceBias(Enum):
     west = -1
     exact = auto()
     east = auto()
@@ -181,7 +184,7 @@ def combine(
     return combined
 
 
-class Slicer:
+class MeridianSlice:
     def __init__(
         self,
         mesh: pv.PolyData,
@@ -211,22 +214,18 @@ class Slicer:
             emsg = "Cannot slice mesh appears to be a planar projection."
             raise ValueError(emsg)
 
-        self.mesh = mesh
         mesh[VTK_CELL_IDS] = np.arange(mesh.n_cells)
         mesh[VTK_POINT_IDS] = np.arange(mesh.n_points)
-        self.xmin, self.xmax = mesh.bounds[0], mesh.bounds[1]
 
-        if offset is None:
-            # default to a crude approximation of a projected equatorial
-            # arcsecond of longitude
-            offset = ((self.xmax - self.xmin) / 2) / (3600 * 90)
-
+        self.mesh = mesh
+        self.radius = calculate_radius(mesh)
         self.meridian = wrap(meridian)[0]
-        self.offset = abs(offset)
+        self.offset = abs(CUT_OFFSET if offset is None else offset)
         logger.debug(
-            f"meridian={self.meridian}, offset={self.offset}", extra=self._extra
+            f"meridian={self.meridian}, offset={self.offset}, radius={self.radius}",
+            extra=self._extra,
         )
-        self.slices = {bias.name: self._intersection(bias.value) for bias in SlicerBias}
+        self.slices = {bias.name: self._intersection(bias.value) for bias in SliceBias}
 
         n_cells = self.slices[CUT_EXACT].n_cells
         self.west_ids = set(self.slices[CUT_WEST][VTK_CELL_IDS]) if n_cells else set()
@@ -256,7 +255,7 @@ class Slicer:
         """
         logger.debug(f"{bias=}", extra=self._extra)
         y = bias * self.offset
-        xyz = pv.Line((self.xmin, y, 0), (self.xmax, y, 0))
+        xyz = pv.Line((-self.radius, y, 0), (self.radius, y, 0))
         xyz.rotate_z(self.meridian, inplace=True)
         spline = pv.Spline(xyz.points, 1)
         mesh = self.mesh.slice_along_line(spline)
@@ -294,8 +293,8 @@ class Slicer:
         if bias is None:
             bias = CUT_WEST
 
-        if bias.lower() not in SlicerBias.__members__:
-            options = [f"'{option.name}'" for option in SlicerBias]
+        if bias.lower() not in SliceBias.__members__:
+            options = [f"'{option.name}'" for option in SliceBias]
             options = f"{', '.join(options[:-1])} or {options[-1]}"
             emsg = f"Expected a slice bias of either {options}, got '{bias}'."
             raise ValueError(emsg)

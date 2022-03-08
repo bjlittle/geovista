@@ -1,17 +1,15 @@
 from datetime import datetime
 from typing import Optional, Tuple
 
-import numpy as np
 import pyvista as pv
 from pyvista import _vtk
 from pyvista.core.filters import _get_output
 from vtk import vtkObject
 
-from .common import triangulated
+from .common import calculate_radius, to_xy0, triangulated, wrap
 from .log import get_logger
 
 __all__ = [
-    "GV_REMESH_IDS",
     "cast_UnstructuredGrid_to_PolyData",
     "remesh",
 ]
@@ -21,9 +19,6 @@ logger = get_logger(__name__)
 
 # Type aliases.
 Remesh = Tuple[pv.PolyData, pv.PolyData, pv.PolyData]
-
-#: Name of the geovista remesh filter cell indices array.
-GV_REMESH_IDS = "gvRemeshCellIds"
 
 
 def cast_UnstructuredGrid_to_PolyData(
@@ -56,7 +51,11 @@ def cast_UnstructuredGrid_to_PolyData(
 
 
 def remesh(
-    mesh: pv.PolyData, ribbon: pv.PolyData, warnings: Optional[bool] = False
+    mesh: pv.PolyData,
+    meridian: float,
+    check: Optional[bool] = False,
+    intersection: Optional[bool] = False,
+    warnings: Optional[bool] = False,
 ) -> Remesh:
     """
     TBD
@@ -70,43 +69,73 @@ def remesh(
         # https://public.kitware.com/pipermail/vtkusers/2004-February/022390.html
         vtkObject.GlobalWarningDisplayOff()
 
-    m0: pv.PolyData = mesh.copy(deep=True)
-    r1 = pv.PolyData()
-    r1.copy_structure(ribbon)
+    meridian = wrap(meridian)[0]
+    radius = calculate_radius(mesh)
+    logger.debug(f"{meridian=}, {radius=}")
 
-    if not triangulated(m0):
-        m0.triangulate(inplace=True)
-        logger.debug("mesh: triangulate")
+    poly0: pv.PolyData = mesh.copy(deep=True)
 
-    if GV_REMESH_IDS in m0.cell_data:
-        del m0.cell_data[GV_REMESH_IDS]
+    if not triangulated(poly0):
+        start = datetime.now()
+        poly0.triangulate(inplace=True)
+        end = datetime.now()
+        logger.debug(f"mesh: triangulated [{(end-start).total_seconds()} secs]")
 
-    m0.cell_data[GV_REMESH_IDS] = np.arange(m0.n_cells)
-
-    if not triangulated(r1):
-        r1.triangulate(inplace=True)
-        logger.debug("ribbon: triangulate")
+    poly1 = pv.Plane(
+        center=(radius / 2, 0, 0),
+        i_resolution=1,
+        j_resolution=1,
+        i_size=radius,
+        j_size=radius * 2,
+        direction=(0, 1, 0),
+    )
+    poly1.rotate_z(meridian, inplace=True)
+    poly1.triangulate(inplace=True)
 
     # https://vtk.org/doc/nightly/html/classvtkIntersectionPolyDataFilter.html
     alg = _vtk.vtkIntersectionPolyDataFilter()
-    alg.SetInputDataObject(0, m0)
-    alg.SetInputDataObject(1, r1)
-    alg.SetComputeIntersectionPointArray(True)
+    alg.SetInputDataObject(0, poly0)
+    alg.SetInputDataObject(1, poly1)
+    # BoundaryPoints (points) array
+    alg.SetComputeIntersectionPointArray(intersection)
+    # BadTriangle and FreeEdge (cells) arrays
+    alg.SetCheckMesh(check)
     alg.SetSplitFirstOutput(True)
     alg.SetSplitSecondOutput(False)
     start = datetime.now()
     alg.Update()
     end = datetime.now()
     logger.debug(
-        f"remesh: lines={alg.GetNumberOfIntersectionLines()}, "
+        f"remeshed: lines={alg.GetNumberOfIntersectionLines()}, "
         f"points={alg.GetNumberOfIntersectionPoints()} "
         f"[{(end-start).total_seconds()} secs]"
     )
 
-    intersection: pv.PolyData = _get_output(alg, oport=0)
     remeshed: pv.PolyData = _get_output(alg, oport=1)
 
     if not warnings:
         vtkObject.GlobalWarningDisplayOn()
 
-    return m0, intersection, remeshed
+    if remeshed.n_cells == 0:
+        # no remeshing has been performed as the meridian does not intersect the mesh
+        remeshed_west, remeshed_east = pv.PolyData(), pv.PolyData()
+        logger.debug(f"no remesh performed with {meridian=}")
+    else:
+        # split the triangulated remesh into its two halves i.e., the mesh containing those remeshed cells west of the
+        # meridian, and the mesh containing those remeshed cells east of the meridian
+        centers = remeshed.cell_centers()
+        lons = to_xy0(centers.points)[:, 0]
+        delta = lons - meridian
+        lower_mask = (delta < 0) & (delta > -180)
+        upper_mask = delta > 180
+        western_mask = lower_mask | upper_mask
+        eastern_mask = ~western_mask
+        logger.debug(
+            f"split: lower={lower_mask.sum()}, upper={upper_mask.sum()}, "
+            f"west={western_mask.sum()}, east={eastern_mask.sum()}, "
+            f"total={remeshed.n_cells}"
+        )
+        remeshed_west = remeshed.extract_cells(western_mask)
+        remeshed_east = remeshed.extract_cells(eastern_mask)
+
+    return remeshed, remeshed_west, remeshed_east
