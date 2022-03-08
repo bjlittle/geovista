@@ -10,7 +10,7 @@
 
 name: ci-wheels
 
-on: [pull_request, push]
+on: [push]
 
 
 jobs:
