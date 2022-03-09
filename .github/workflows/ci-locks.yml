@@ -121,6 +121,8 @@ jobs:
         title: "[geovista.ci] conda lock auto-update"
         body: |
           Conda lock files auto-updated to latest resolved environment for `geovista` dependencies.
+          
+          ### If the full suite of PR checks have not run, please close and re-open this pull request to trigger them.
         labels: |
           new: pull request
           bot
