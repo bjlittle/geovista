@@ -1,21 +1,56 @@
 from datetime import datetime
 from typing import Optional, Tuple
 
+import numpy as np
 import pyvista as pv
 from pyvista import _vtk
 from pyvista.core.filters import _get_output
 from vtk import vtkObject
 
-from .common import calculate_radius, to_xy0, triangulated, wrap
+from .common import (
+    GV_CELL_IDS,
+    GV_POINT_IDS,
+    VTK_CELL_IDS,
+    VTK_POINT_IDS,
+    calculate_radius,
+    sanitize_data,
+    to_xy0,
+    triangulated,
+    wrap,
+)
 from .log import get_logger
 
 __all__ = [
+    "GV_REMESH_POINT_IDS",
+    "REMESH_BOUNDARY_EAST",
+    "REMESH_BOUNDARY_WEST",
+    "VTK_BAD_TRIANGLE_MASK",
+    "VTK_BOUNDARY_MASK",
+    "VTK_FREE_EDGE_MASK",
     "cast_UnstructuredGrid_to_PolyData",
     "remesh",
 ]
 
 # Configure the logger.
 logger = get_logger(__name__)
+
+#: Name of the geovista remesh point indices/marker array.
+GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
+
+#: Marker for remeshed eastern boundary point.
+REMESH_BOUNDARY_EAST: int = -2
+
+#: Marker for remeshed western boundary point.
+REMESH_BOUNDARY_WEST: int = -1
+
+#: vtkIntersectionPolyDataFilter bad triangle cell array name.
+VTK_BAD_TRIANGLE_MASK: str = "BadTriangle"
+
+#: vtkIntersectionPolyDataFilter intersection point array name.
+VTK_BOUNDARY_MASK: str = "BoundaryPoints"
+
+#: vtkIntersectionPolyDataFilter free edge cell array name.
+VTK_FREE_EDGE_MASK: str = "FreeEdge"
 
 # Type aliases.
 Remesh = Tuple[pv.PolyData, pv.PolyData, pv.PolyData]
@@ -53,8 +88,8 @@ def cast_UnstructuredGrid_to_PolyData(
 def remesh(
     mesh: pv.PolyData,
     meridian: float,
+    boundary: Optional[bool] = False,
     check: Optional[bool] = False,
-    intersection: Optional[bool] = False,
     warnings: Optional[bool] = False,
 ) -> Remesh:
     """
@@ -74,6 +109,12 @@ def remesh(
     logger.debug(f"{meridian=}, {radius=}")
 
     poly0: pv.PolyData = mesh.copy(deep=True)
+
+    if VTK_CELL_IDS in poly0.cell_data:
+        poly0.cell_data[GV_CELL_IDS] = poly0[VTK_CELL_IDS].copy()
+
+    if VTK_POINT_IDS in poly0.point_data:
+        poly0.point_data[GV_POINT_IDS] = poly0[VTK_POINT_IDS].copy()
 
     if not triangulated(poly0):
         start = datetime.now()
@@ -96,9 +137,9 @@ def remesh(
     alg = _vtk.vtkIntersectionPolyDataFilter()
     alg.SetInputDataObject(0, poly0)
     alg.SetInputDataObject(1, poly1)
-    # BoundaryPoints (points) array
-    alg.SetComputeIntersectionPointArray(intersection)
-    # BadTriangle and FreeEdge (cells) arrays
+    # BoundaryPoints (points) mask array
+    alg.SetComputeIntersectionPointArray(True)
+    # BadTriangle and FreeEdge (cells) mask arrays
     alg.SetCheckMesh(check)
     alg.SetSplitFirstOutput(True)
     alg.SetSplitSecondOutput(False)
@@ -121,21 +162,42 @@ def remesh(
         remeshed_west, remeshed_east = pv.PolyData(), pv.PolyData()
         logger.debug(f"no remesh performed with {meridian=}")
     else:
-        # split the triangulated remesh into its two halves i.e., the mesh containing those remeshed cells west of the
-        # meridian, and the mesh containing those remeshed cells east of the meridian
+        # split the triangulated remesh into its two halves, west and east of the meridian
         centers = remeshed.cell_centers()
         lons = to_xy0(centers.points)[:, 0]
         delta = lons - meridian
         lower_mask = (delta < 0) & (delta > -180)
         upper_mask = delta > 180
-        western_mask = lower_mask | upper_mask
-        eastern_mask = ~western_mask
+        west_mask = lower_mask | upper_mask
+        east_mask = ~west_mask
         logger.debug(
             f"split: lower={lower_mask.sum()}, upper={upper_mask.sum()}, "
-            f"west={western_mask.sum()}, east={eastern_mask.sum()}, "
+            f"west={west_mask.sum()}, east={east_mask.sum()}, "
             f"total={remeshed.n_cells}"
         )
-        remeshed_west = remeshed.extract_cells(western_mask)
-        remeshed_east = remeshed.extract_cells(eastern_mask)
+        # the vtkIntersectionPolyDataFilter is configured to *always* generate the boundary mask point array
+        boundary_mask = np.asarray(remeshed.point_data[VTK_BOUNDARY_MASK], dtype=bool)
+
+        if not boundary:
+            del remeshed.point_data[VTK_BOUNDARY_MASK]
+
+        if point_ids_available := GV_POINT_IDS in remeshed.point_data:
+            remeshed.point_data[GV_REMESH_POINT_IDS] = remeshed[GV_POINT_IDS].copy()
+            remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_BOUNDARY_WEST
+
+        logger.debug(
+            f"{GV_POINT_IDS} are{'' if point_ids_available else 'NOT'} available"
+        )
+        remeshed_west = remeshed.extract_cells(west_mask)
+
+        if point_ids_available:
+            remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_BOUNDARY_EAST
+
+        remeshed_east = remeshed.extract_cells(east_mask)
+
+        if point_ids_available:
+            del remeshed.point_data[GV_REMESH_POINT_IDS]
+
+        sanitize_data(remeshed, remeshed_west, remeshed_east)
 
     return remeshed, remeshed_west, remeshed_east

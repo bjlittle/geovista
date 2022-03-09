@@ -13,10 +13,13 @@ import pyvista as pv
 from .log import get_logger
 
 __all__ = [
+    "GV_CELL_IDS",
+    "GV_POINT_IDS",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
     "calculate_radius",
     "nan_mask",
+    "sanitize_data",
     "set_jupyter_backend",
     "to_xy0",
     "to_xyz",
@@ -30,6 +33,12 @@ logger = get_logger(__name__)
 #
 # TODO: support richer default management
 #
+
+#: Name of the geovista cell indices array.
+GV_CELL_IDS = "gvOriginalCellIds"
+
+#: Name of the geovista point indices array.
+GV_POINT_IDS = "gvOriginalPointIds"
 
 #: Default jupyter plotting backend for pyvista.
 JUPYTER_BACKEND: str = "pythreejs"
@@ -151,6 +160,33 @@ def nan_mask(data: npt.ArrayLike) -> np.ndarray:
         data = data.filled(np.nan)
 
     return data
+
+
+def sanitize_data(
+    *meshes: Tuple[pv.PolyData],
+) -> None:
+    """
+    Purge standard VTK helper cell and point data index arrays.
+
+    Parameters
+    ----------
+    meshes : iterable of PolyData
+        The :class:`pyvista.PolyData` to sanitize.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+    """
+    if not meshes:
+        emsg = "Expected one or more meshes to sanitize."
+        raise ValueError(emsg)
+
+    for mesh in meshes:
+        if VTK_CELL_IDS in mesh.cell_data:
+            del mesh.cell_data[VTK_CELL_IDS]
+
+        if VTK_POINT_IDS in mesh.point_data:
+            del mesh.point_data[VTK_POINT_IDS]
 
 
 def set_jupyter_backend(backend: Optional[str] = None) -> bool:

@@ -313,7 +313,7 @@ class MeridianSlice:
             extract_ids = whole_ids
 
         if split_cells:
-            logger.debug(f"split={len(self.split_ids)}", extra=self._extra)
+            logger.debug(f"{bias=}, split={len(self.split_ids)}", extra=self._extra)
             extract_ids = extract_ids.union(self.split_ids)
 
         logger.debug(f"extract={len(extract_ids)}", extra=self._extra)
