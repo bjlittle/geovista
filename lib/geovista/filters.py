@@ -188,12 +188,16 @@ def remesh(
         logger.debug(
             f"{GV_POINT_IDS} are{'' if point_ids_available else 'NOT'} available"
         )
-        remeshed_west = remeshed.extract_cells(west_mask)
+        remeshed_west = cast_UnstructuredGrid_to_PolyData(
+            remeshed.extract_cells(west_mask)
+        )
 
         if point_ids_available:
             remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_BOUNDARY_EAST
 
-        remeshed_east = remeshed.extract_cells(east_mask)
+        remeshed_east = cast_UnstructuredGrid_to_PolyData(
+            remeshed.extract_cells(east_mask)
+        )
 
         if point_ids_available:
             del remeshed.point_data[GV_REMESH_POINT_IDS]
