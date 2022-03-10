@@ -113,7 +113,7 @@ def combine(
             )
             raise TypeError(emsg)
 
-        combined_points.append(mesh.points)
+        combined_points.append(mesh.points.copy())
         N = sorted(set(np.diff(mesh._offset_array)))
 
         if len(N) != 1:
@@ -125,7 +125,7 @@ def combine(
             raise TypeError(emsg)
 
         (N,) = N
-        connectivity = mesh._connectivity_array.reshape(-1, N)
+        connectivity = mesh._connectivity_array.copy().reshape(-1, N)
         faces_N = np.broadcast_to(
             np.array([N], dtype=np.int8), (connectivity.shape[0], 1)
         )
