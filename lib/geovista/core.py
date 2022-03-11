@@ -1,11 +1,17 @@
-from collections.abc import Iterable
 from enum import Enum, auto, unique
-from typing import List, Optional
+from typing import Any, Optional
 
 import numpy as np
 import pyvista as pv
 
-from .common import VTK_CELL_IDS, VTK_POINT_IDS, calculate_radius, to_xy0, wrap
+from .common import (
+    GV_CELL_IDS,
+    GV_POINT_IDS,
+    calculate_radius,
+    sanitize_data,
+    to_xy0,
+    wrap,
+)
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .log import get_logger
 
@@ -35,14 +41,14 @@ class SliceBias(Enum):
 
 
 def combine(
-    meshes: List[pv.PolyData],
+    *meshes: Any,
     data: Optional[bool] = True,
     clean: Optional[bool] = False,
 ) -> pv.PolyData:
     """
     Combine two or more meshes into one mesh.
 
-    Only meshes with faces will be combined. Support is not provided for combining
+    Only meshes with faces will be combined. Support is not yet provided for combining
     meshes that consist of only points or lines.
 
     Note that, no check is performed to ensure that mesh faces do not overlap.
@@ -59,7 +65,7 @@ def combine(
         the resultant mesh.
     clean : bool, default=False
         Specify whether to merge duplicate points, remove unused points,
-        and/or remove degenerate cells in the resultant mesh.
+        and/or remove degenerate faces in the resultant mesh.
 
     Returns
     -------
@@ -71,15 +77,15 @@ def combine(
     .. versionadded:: 0.1.0
 
     """
-    if not isinstance(meshes, Iterable):
-        meshes = [meshes]
+    if not meshes:
+        emsg = "Expected one or more meshes to combine."
+        raise ValueError(emsg)
 
     if len(meshes) == 1:
         return meshes[0]
 
     first: pv.PolyData = meshes[0]
     combined_points, combined_faces = [], []
-    active_scalars = []
     n_points, n_faces = 0, 0
 
     if data:
@@ -89,13 +95,13 @@ def combine(
         common_point_data = set(first.point_data.keys())
         common_cell_data = set(first.cell_data.keys())
         common_field_data = set(first.field_data.keys())
+        active_scalars_info = set([first.active_scalars_info._namedtuple])
 
     for i, mesh in enumerate(meshes):
         if not isinstance(mesh, pv.PolyData):
-            dtype = repr(type(mesh)).split(" ")[1][:-1]
             emsg = (
                 f"Can only combine 'pyvista.PolyData' meshes, input mesh "
-                f"#{i+1} has type {dtype}."
+                f"#{i+1} has type '{mesh.__class__.__name__}'."
             )
             raise TypeError(emsg)
 
@@ -114,33 +120,24 @@ def combine(
             raise TypeError(emsg)
 
         combined_points.append(mesh.points.copy())
-        N = sorted(set(np.diff(mesh._offset_array)))
-
-        if len(N) != 1:
-            npts = f"{', '.join([str(n) for n in N[:-1]])} and {N[-1]}"
-            emsg = (
-                "Cannot combine meshes with a surface containing mixed face "
-                f"types, input mesh #{i+1} has faces with {npts} points."
-            )
-            raise TypeError(emsg)
-
-        (N,) = N
-        connectivity = mesh._connectivity_array.copy().reshape(-1, N)
-        faces_N = np.broadcast_to(
-            np.array([N], dtype=np.int8), (connectivity.shape[0], 1)
-        )
+        faces = mesh.faces.copy()
 
         if n_points:
-            # offset the current mesh connectivity by previous combined
-            # mesh points
-            connectivity += n_points
+            # compute the number of vertices (N) for each face of the mesh
+            faces_N = np.diff(mesh._offset_array)
+            # determine the N offset for each face within the faces array
+            # a face entry consists of (N, v1, v2, ..., vN), where vN is the Nth
+            # vertex offset (connectivity) for that face into the associated mesh points array
+            faces_N_offset = mesh._offset_array + np.arange(mesh._offset_array.size)
+            # offset the current mesh connectivity by the cumulative mesh points count
+            faces += n_points
+            # reinstate N for each face entry
+            faces[faces_N_offset[:-1]] = faces_N
 
-        # create the current mesh face connectivity
-        faces = np.hstack([faces_N, connectivity])
-        combined_faces.append(np.ravel(faces))
+        combined_faces.append(faces)
         # accumulate running totals of combined mesh points and faces
-        n_points += mesh.points.shape[0]
-        n_faces += faces_N.shape[0]
+        n_points += mesh.n_points
+        n_faces += mesh.n_faces
 
         if data:
             # perform intersection to determine common names
@@ -148,7 +145,7 @@ def combine(
             common_cell_data &= set(mesh.cell_data.keys())
             common_field_data &= set(mesh.field_data.keys())
             if mesh.active_scalars_name:
-                active_scalars.append(mesh.active_scalars_name)
+                active_scalars_info &= set([mesh.active_scalars_info._namedtuple])
 
     points = np.vstack(combined_points)
     faces = np.hstack(combined_faces)
@@ -172,9 +169,13 @@ def combine(
         # determine a sensible active scalar array, by opting for the first
         # common active scalar array from the input meshes
         combined.active_scalars_name = None
-        for name in active_scalars:
-            if name in common_point_data or name in common_cell_data:
-                combined.active_scalars_name = first.active_scalars_name
+        for info in active_scalars_info:
+            association = info.association.name.lower()
+            common_data = (
+                common_cell_data if association == "cell" else common_point_data
+            )
+            if info.name in common_data:
+                combined.set_active_scalars(info.name, preference=association)
                 break
 
     # remove degenerate points and faces
@@ -214,8 +215,8 @@ class MeridianSlice:
             emsg = "Cannot slice mesh appears to be a planar projection."
             raise ValueError(emsg)
 
-        mesh[VTK_CELL_IDS] = np.arange(mesh.n_cells)
-        mesh[VTK_POINT_IDS] = np.arange(mesh.n_points)
+        mesh[GV_CELL_IDS] = np.arange(mesh.n_cells)
+        mesh[GV_POINT_IDS] = np.arange(mesh.n_points)
 
         self.mesh = mesh
         self.radius = calculate_radius(mesh)
@@ -228,8 +229,8 @@ class MeridianSlice:
         self.slices = {bias.name: self._intersection(bias.value) for bias in SliceBias}
 
         n_cells = self.slices[CUT_EXACT].n_cells
-        self.west_ids = set(self.slices[CUT_WEST][VTK_CELL_IDS]) if n_cells else set()
-        self.east_ids = set(self.slices[CUT_EAST][VTK_CELL_IDS]) if n_cells else set()
+        self.west_ids = set(self.slices[CUT_WEST][GV_CELL_IDS]) if n_cells else set()
+        self.east_ids = set(self.slices[CUT_EAST][GV_CELL_IDS]) if n_cells else set()
         self.split_ids = self.west_ids.intersection(self.east_ids)
         logger.debug(
             f"west={len(self.west_ids)}, east={len(self.east_ids)}, "
@@ -308,7 +309,7 @@ class MeridianSlice:
         mesh = pv.PolyData()
 
         if whole_cells:
-            whole_ids = set(self.slices[bias][VTK_CELL_IDS]).difference(self.split_ids)
+            whole_ids = set(self.slices[bias][GV_CELL_IDS]).difference(self.split_ids)
             logger.debug(f"{bias=}, whole={len(whole_ids)}", extra=self._extra)
             extract_ids = whole_ids
 
@@ -341,6 +342,7 @@ class MeridianSlice:
                     f"n_points={mesh.n_points}",
                     extra=self._extra,
                 )
+                sanitize_data(mesh)
         else:
             logger.debug("no cells extracted from slice", extra=self._extra)
 

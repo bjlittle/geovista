@@ -3,7 +3,7 @@ A package for provisioning common geovista infra-structure.
 
 """
 from collections.abc import Iterable
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import numpy as np
 import numpy.ma as ma
@@ -163,7 +163,7 @@ def nan_mask(data: npt.ArrayLike) -> np.ndarray:
 
 
 def sanitize_data(
-    *meshes: Tuple[pv.PolyData],
+    *meshes: Any,
 ) -> None:
     """
     Purge standard VTK helper cell and point data index arrays.

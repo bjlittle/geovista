@@ -10,8 +10,6 @@ from vtk import vtkObject
 from .common import (
     GV_CELL_IDS,
     GV_POINT_IDS,
-    VTK_CELL_IDS,
-    VTK_POINT_IDS,
     calculate_radius,
     sanitize_data,
     to_xy0,
@@ -110,11 +108,11 @@ def remesh(
 
     poly0: pv.PolyData = mesh.copy(deep=True)
 
-    if VTK_CELL_IDS in poly0.cell_data:
-        poly0.cell_data[GV_CELL_IDS] = poly0[VTK_CELL_IDS].copy()
+    if GV_CELL_IDS not in poly0.cell_data:
+        poly0.cell_data[GV_CELL_IDS] = np.arange(poly0.n_cells)
 
-    if VTK_POINT_IDS in poly0.point_data:
-        poly0.point_data[GV_POINT_IDS] = poly0[VTK_POINT_IDS].copy()
+    if GV_POINT_IDS not in poly0.point_data:
+        poly0.point_data[GV_POINT_IDS] = np.arange(poly0.n_points)
 
     if not triangulated(poly0):
         start = datetime.now()
@@ -176,31 +174,22 @@ def remesh(
             f"total={remeshed.n_cells}"
         )
         # the vtkIntersectionPolyDataFilter is configured to *always* generate the boundary mask point array
+        # as we require it internally, regardless of whether the caller wants it or not afterwards
         boundary_mask = np.asarray(remeshed.point_data[VTK_BOUNDARY_MASK], dtype=bool)
 
         if not boundary:
             del remeshed.point_data[VTK_BOUNDARY_MASK]
 
-        if point_ids_available := GV_POINT_IDS in remeshed.point_data:
-            remeshed.point_data[GV_REMESH_POINT_IDS] = remeshed[GV_POINT_IDS].copy()
-            remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_BOUNDARY_WEST
-
-        logger.debug(
-            f"{GV_POINT_IDS} are{'' if point_ids_available else 'NOT'} available"
-        )
+        remeshed.point_data[GV_REMESH_POINT_IDS] = remeshed[GV_POINT_IDS].copy()
+        remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_BOUNDARY_WEST
         remeshed_west = cast_UnstructuredGrid_to_PolyData(
             remeshed.extract_cells(west_mask)
         )
-
-        if point_ids_available:
-            remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_BOUNDARY_EAST
-
+        remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_BOUNDARY_EAST
         remeshed_east = cast_UnstructuredGrid_to_PolyData(
             remeshed.extract_cells(east_mask)
         )
-
-        if point_ids_available:
-            del remeshed.point_data[GV_REMESH_POINT_IDS]
+        del remeshed.point_data[GV_REMESH_POINT_IDS]
 
         sanitize_data(remeshed, remeshed_west, remeshed_east)
 
