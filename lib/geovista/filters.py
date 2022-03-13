@@ -20,8 +20,8 @@ from .log import get_logger
 
 __all__ = [
     "GV_REMESH_POINT_IDS",
-    "REMESH_BOUNDARY_EAST",
-    "REMESH_BOUNDARY_WEST",
+    "REMESH_SEAM",
+    "REMESH_SEAM_EAST",
     "VTK_BAD_TRIANGLE_MASK",
     "VTK_BOUNDARY_MASK",
     "VTK_FREE_EDGE_MASK",
@@ -35,11 +35,14 @@ logger = get_logger(__name__)
 #: Name of the geovista remesh point indices/marker array.
 GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
 
-#: Marker for remeshed eastern boundary point.
-REMESH_BOUNDARY_EAST: int = -2
+#: Marker for remeshed cell join point.
+REMESH_JOIN: int = -3
 
-#: Marker for remeshed western boundary point.
-REMESH_BOUNDARY_WEST: int = -1
+#: Marker for remeshed eastern cell boundary point.
+REMESH_SEAM_EAST: int = -2
+
+#: Marker for remeshed western cell boundary point.
+REMESH_SEAM: int = -1
 
 #: vtkIntersectionPolyDataFilter bad triangle cell array name.
 VTK_BAD_TRIANGLE_MASK: str = "BadTriangle"
@@ -102,6 +105,10 @@ def remesh(
         # https://public.kitware.com/pipermail/vtkusers/2004-February/022390.html
         vtkObject.GlobalWarningDisplayOff()
 
+    if mesh.n_cells == 0:
+        emsg = "Cannot remesh an empty mesh"
+        raise ValueError(emsg)
+
     meridian = wrap(meridian)[0]
     radius = calculate_radius(mesh)
     logger.debug(f"{meridian=}, {radius=}")
@@ -158,7 +165,7 @@ def remesh(
     if remeshed.n_cells == 0:
         # no remeshing has been performed as the meridian does not intersect the mesh
         remeshed_west, remeshed_east = pv.PolyData(), pv.PolyData()
-        logger.debug(f"no remesh performed with {meridian=}")
+        logger.debug(f"no remesh performed using {meridian=}")
     else:
         # split the triangulated remesh into its two halves, west and east of the meridian
         centers = remeshed.cell_centers()
@@ -173,24 +180,30 @@ def remesh(
             f"west={west_mask.sum()}, east={east_mask.sum()}, "
             f"total={remeshed.n_cells}"
         )
+
         # the vtkIntersectionPolyDataFilter is configured to *always* generate the boundary mask point array
         # as we require it internally, regardless of whether the caller wants it or not afterwards
         boundary_mask = np.asarray(remeshed.point_data[VTK_BOUNDARY_MASK], dtype=bool)
-
         if not boundary:
             del remeshed.point_data[VTK_BOUNDARY_MASK]
 
         remeshed.point_data[GV_REMESH_POINT_IDS] = remeshed[GV_POINT_IDS].copy()
-        remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_BOUNDARY_WEST
+
+        remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_SEAM
         remeshed_west = cast_UnstructuredGrid_to_PolyData(
             remeshed.extract_cells(west_mask)
         )
-        remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_BOUNDARY_EAST
+        join_mask = np.where(remeshed_west[GV_REMESH_POINT_IDS] != REMESH_SEAM)[0]
+        remeshed_west[GV_REMESH_POINT_IDS][join_mask] = REMESH_JOIN
+
+        remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_SEAM_EAST
         remeshed_east = cast_UnstructuredGrid_to_PolyData(
             remeshed.extract_cells(east_mask)
         )
-        del remeshed.point_data[GV_REMESH_POINT_IDS]
+        join_mask = np.where(remeshed_east[GV_REMESH_POINT_IDS] != REMESH_SEAM_EAST)[0]
+        remeshed_east[GV_REMESH_POINT_IDS][join_mask] = REMESH_JOIN
 
+        del remeshed.point_data[GV_REMESH_POINT_IDS]
         sanitize_data(remeshed, remeshed_west, remeshed_east)
 
     return remeshed, remeshed_west, remeshed_east
