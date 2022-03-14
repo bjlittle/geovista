@@ -5,6 +5,7 @@ from pyvista.utilities import abstract_class
 import pyvistaqt as pvqt
 import vtk
 
+from .core import texturize
 from .geometry import COASTLINE_RESOLUTION, get_coastlines
 from .log import get_logger
 
@@ -37,6 +38,8 @@ class GeoBasePlotter:
         """
         # TODO: provide robust zorder support
         mesh = pv.Sphere(radius=1 - (5e-3), theta_resolution=360, phi_resolution=180)
+        if "texture" in kwargs:
+            mesh = texturize(mesh, antimeridian=True)
         return self.add_mesh(mesh, **kwargs)
 
     def add_coastlines(
