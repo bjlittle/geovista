@@ -128,13 +128,19 @@ def main(version: bool, cache: bool) -> None:
     type=click.Choice(NE_CHOICES, case_sensitive=False),
     is_flag=False,
     flag_value=ALL,
-    help="Natural Earth feature category.",
+    help="Natural Earth feature resources.",
 )
 @click.option(
     "-o",
     "--output",
     type=click.Path(file_okay=False, resolve_path=True, path_type=pathlib.Path),
     help=f"Download target directory (default: {CACHE.abspath})",
+)
+@click.option(
+    "-r",
+    "--raster",
+    is_flag=True,
+    help="Raster resources.",
 )
 def download(
     pull: bool,
@@ -143,6 +149,7 @@ def download(
     show: bool,
     pull_ne: Tuple[str],
     output: Optional[pathlib.Path],
+    raster: bool,
 ) -> None:
     """
     Download and cache geovista resources (offline support).
@@ -163,6 +170,9 @@ def download(
         previous_path = CACHE.path
         CACHE.path = output
 
+    def collect(prefix):
+        return list(filter(lambda item: item.startswith(prefix), fnames))
+
     if pull:
         _download_group(fnames)
     else:
@@ -173,9 +183,11 @@ def download(
             n_groups = len(pull_ne)
             for i, group in enumerate(pull_ne):
                 prefix = f"{NE_ROOT}/{group}"
-                items = list(filter(lambda item: item.startswith(prefix), fnames))
                 name = f"Natural Earth {group}"
-                _download_group(items, name=name, summary=(i + 1 == n_groups))
+                _download_group(collect(prefix), name=name, summary=(i + 1 == n_groups))
+        elif raster:
+            name = "raster"
+            _download_group(collect(name), name=name)
 
     if check:
         unavailable = 0

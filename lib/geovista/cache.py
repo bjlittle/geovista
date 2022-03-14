@@ -10,6 +10,8 @@ __all__ = [
     "BASE_URL",
     "CACHE",
     "RETRY_ATTEMPTS",
+    "blue_marble",
+    "checkerboard",
     "fetch_coastlines",
     "reload_registry",
 ]
@@ -33,6 +35,42 @@ CACHE: pooch.Pooch = pooch.create(
 )
 
 CACHE.load_registry(open_text(__package__, "registry.txt"))
+
+
+def blue_marble() -> pv.Texture:
+    """
+    Get the NASA Blue Marble Next Generation with topography and bathymetry
+    texture.
+
+    If the resource is not already available in the GeoVista :data:`CACHE`,
+    then it will be downloaded from the :data:`BASE_URL`.
+
+    Returns
+    -------
+    Texture
+        The PyVista texture.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    fname = CACHE.fetch("raster/world.topo.bathy.200412.3x5400x2700.jpg")
+    texture = pv.read_texture(fname)
+    return texture
+
+
+def checkerboard() -> pv.Texture:
+    """
+    Get the UV checker map 4K texture.
+
+    If the resource is not already available in the GeoVista :data:`CACHE`,
+    then it will be downloaded from the :data:`BASE_URL`.
+
+    """
+    fname = CACHE.fetch("raster/uv-checker-map-4k.png")
+    texture = pv.read_texture(fname)
+    return texture
 
 
 def fetch_coastlines(resolution: str = "110m") -> pv.PolyData:
