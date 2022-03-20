@@ -12,7 +12,7 @@ from .common import calculate_radius, to_xyz, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
 from .log import get_logger
 
-__all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
+__all__ = ["BBox", "line", "logger", "npoints", "npoints_by_idx", "panel", "wedge"]
 
 # Configure the logger.
 logger = get_logger(__name__)
@@ -114,8 +114,8 @@ class BBox:
         Parameters
         ----------
         lons : ArrayLike
-            The longitudes (degrees) of the bounding-box, in the closed interval
-            [-180, 180]. Note that, longitudes will be wrapped to this interval.
+            The longitudes (degrees) of the bounding-box, in the half-closed interval
+            [-180, 180). Note that, longitudes will be wrapped to this interval.
         lats : ArrayLike
             The latitudes (degrees) of the bounding-box, in the closed interval [-90, 90].
         ellps : str, default=ELLIPSE
@@ -648,8 +648,8 @@ def line(
     Parameters
     ----------
     lons : ArrayLike
-        The longitudes (degrees) of the geodesic line segments, in the closed
-        interval [-180, 180]. Note that, longitudes will be wrapped to this
+        The longitudes (degrees) of the geodesic line segments, in the half-closed
+        interval [-180, 180). Note that, longitudes will be wrapped to this
         interval.
     lats : ArrayLike
         The latitudes (degrees) of the geodesic line segments, in the closed
@@ -756,8 +756,8 @@ def npoints(
     intermediate longitude and latitude ``npts`` points along the geodesic line
     that spans between the start and end points.
 
-    Note that, longitudes (degrees) will be wrapped to the closed interval
-    [-180, 180].
+    Note that, longitudes (degrees) will be wrapped to the half-closed interval
+    [-180, 180).
 
     Parameters
     ----------
@@ -832,8 +832,8 @@ def npoints_by_idx(
     spaced intermediate longitude and latitude ``npts`` points along the geodesic
     line that spans between the start and end points.
 
-    Note that, longitudes (degrees) will be wrapped to the closed interval
-    [-180, 180].
+    Note that, longitudes (degrees) will be wrapped to the half-closed interval
+    [-180, 180).
 
     Parameters
     ----------

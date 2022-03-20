@@ -14,10 +14,16 @@ from .log import get_logger
 
 __all__ = [
     "GV_CELL_IDS",
+    "GV_FIELD_CRS",
+    "GV_FIELD_NAME",
     "GV_POINT_IDS",
+    "GV_REMESH_POINT_IDS",
+    "REMESH_JOIN",
+    "REMESH_SEAM",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
     "calculate_radius",
+    "logger",
     "nan_mask",
     "sanitize_data",
     "set_jupyter_backend",
@@ -27,7 +33,7 @@ __all__ = [
     "wrap",
 ]
 
-# configure the logger
+# Configure the logger
 logger = get_logger(__name__)
 
 #
@@ -37,11 +43,26 @@ logger = get_logger(__name__)
 #: Name of the geovista cell indices array.
 GV_CELL_IDS = "gvOriginalCellIds"
 
+#: The field array name of the CF serialized pyproj CRS.
+GV_FIELD_CRS = "gvCRS"
+
+#: The field array name of the mesh containing field, point and/or cell data.
+GV_FIELD_NAME = "gvName"
+
 #: Name of the geovista point indices array.
 GV_POINT_IDS = "gvOriginalPointIds"
 
+#: Name of the geovista remesh point indices/marker array.
+GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
+
 #: Default jupyter plotting backend for pyvista.
 JUPYTER_BACKEND: str = "pythreejs"
+
+#: Marker for remesh filter cell join point.
+REMESH_JOIN: int = -3
+
+#: Marker for remesh filter western cell boundary point.
+REMESH_SEAM: int = -1
 
 #: Name of the VTK cell indices array.
 VTK_CELL_IDS = "vtkOriginalCellIds"
@@ -226,22 +247,29 @@ def set_jupyter_backend(backend: Optional[str] = None) -> bool:
 
 
 def to_xy0(
-    xyz: npt.ArrayLike, radius: Optional[float] = 1.0, stacked: Optional[bool] = True
+    mesh: pv.PolyData,
+    radius: Optional[float] = 1.0,
+    stacked: Optional[bool] = True,
+    closed_interval: Optional[bool] = False,
 ) -> np.ndarray:
     """
-    Convert geocentric xyz coordinates to longitude (φ) and latitude (λ)
+    Convert the xyz cartesian points of the mesh to longitude (φ) and latitude (λ)
     xy0 (i.e., φλ0) coordinates.
 
     Parameters
     ----------
-    xyz : ArrayLike
-        A sequence of one or more (x, y, z) values to be converted to
+    mesh : PolyData
+        The mesh containing the cartesian (x, y, z) points to be converted to
         longitude and latitude coordinates.
     radius : bool, default=1.0
         The radius of the sphere. Defaults to an S2 unit sphere.
     stacked : bool, default=True
         Specify whether the resultant xy0 coordinates have shape (N, 3).
         Otherwise, they will have shape (3, N).
+    closed_interval : bool, default=False
+        Longitude values will be in the half-closed interval [-180, 180). However,
+        if the mesh has a seam at the 180th meridian and ``closed_interval``
+        is ``True``, then longitudes will be in the closed interval [-180, 180].
 
     Returns
     -------
@@ -253,11 +281,23 @@ def to_xy0(
     .. versionadded:: 0.1.0
 
     """
-    xyz = np.asanyarray(xyz)
+    xyz = mesh.points
     lons = wrap(np.degrees(np.arctan2(xyz[:, 1], xyz[:, 0])))
     lats = np.degrees(np.arcsin(xyz[:, 2] / radius))
     z = np.zeros_like(lons)
     data = [lons, lats, z]
+
+    if closed_interval:
+        if GV_REMESH_POINT_IDS in mesh.point_data:
+            seam_mask = np.where(mesh[GV_REMESH_POINT_IDS] == REMESH_SEAM)[0]
+            seam_lons = np.unique(lons[seam_mask])
+            if np.isclose(seam_lons, [-180]):
+                lons[seam_mask] = 180
+        else:
+            logger.debug(
+                "cannot honour closed interval due to missing "
+                f"'{GV_REMESH_POINT_IDS}' field"
+            )
 
     if stacked:
         result = np.vstack(data).T

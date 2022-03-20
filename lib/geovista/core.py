@@ -7,17 +7,25 @@ import pyvista as pv
 from .common import (
     GV_CELL_IDS,
     GV_POINT_IDS,
+    GV_REMESH_POINT_IDS,
+    REMESH_JOIN,
+    REMESH_SEAM,
     calculate_radius,
     sanitize_data,
     to_xy0,
     wrap,
 )
-from .filters import GV_REMESH_POINT_IDS, REMESH_JOIN, REMESH_SEAM
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .filters import remesh
 from .log import get_logger
 
-__all__ = ["MeridianSlice", "combine", "seamster", "texturize"]
+__all__ = [
+    "MeridianSlice",
+    "add_texture_coords",
+    "combine",
+    "cut_along_meridian",
+    "logger",
+]
 
 # Configure the logger.
 logger = get_logger(__name__)
@@ -185,8 +193,8 @@ class MeridianSlice:
                 extra=self._extra,
             )
             if clip:
-                points = to_xy0(mesh.points)
-                match = np.abs(points[:, 0] - self.meridian) < 90
+                ll = to_xy0(mesh)
+                match = np.abs(ll[:, 0] - self.meridian) < 90
                 mesh = cast(mesh.extract_points(match))
                 logger.debug(
                     f"clip: {bias=}, n_cells={mesh.n_cells}, "
@@ -348,7 +356,7 @@ def combine(
     return combined
 
 
-def seamster(
+def cut_along_meridian(
     mesh: pv.PolyData,
     meridian: Optional[float] = None,
     antimeridian: Optional[bool] = False,
@@ -393,8 +401,8 @@ def seamster(
     remeshed_ids = np.array([])
 
     if mesh_whole.n_cells:
-        points = to_xy0(mesh_whole.points)
-        meridian_mask = np.isclose(points[:, 0], meridian)
+        ll = to_xy0(mesh_whole)
+        meridian_mask = np.isclose(ll[:, 0], meridian)
         join_points = np.empty(mesh_whole.n_points, dtype=int)
         join_points.fill(REMESH_JOIN)
         mesh_whole[GV_REMESH_POINT_IDS] = join_points
@@ -418,11 +426,10 @@ def seamster(
     return result
 
 
-def texturize(
+def add_texture_coords(
     mesh: pv.PolyData,
     meridian: Optional[float] = None,
     antimeridian: Optional[bool] = False,
-    inplace: Optional[bool] = False,
 ) -> pv.PolyData:
     """
     TBD
@@ -451,23 +458,13 @@ def texturize(
     meridian = wrap(meridian)[0]
 
     if GV_REMESH_POINT_IDS not in mesh.point_data:
-        if inplace:
-            emsg = "Cannot add texture coordinates inplace, as mesh requires to have a seam."
-            raise ValueError(emsg)
-        mesh = seamster(mesh, meridian=meridian)
-        # ensure not to copy the mesh after creating a seam
-        inplace = True
-
-    if not inplace:
+        mesh = cut_along_meridian(mesh, meridian=meridian)
+    else:
         mesh = mesh.copy(deep=True)
 
     # convert from cartesian xyz to spherical lat/lons
-    ll = to_xy0(mesh.points)
+    ll = to_xy0(mesh, closed_interval=True)
     lons, lats = ll[:, 0], ll[:, 1]
-    # deal with [-180, 180) longitude wrap
-    if np.isclose(meridian, -180):
-        seam_mask = np.where(mesh[GV_REMESH_POINT_IDS] == REMESH_SEAM)[0]
-        lons[seam_mask] = 180
     # convert to normalised UV space
     u = (lons + 180) / 360
     v = (lats + 90) / 180

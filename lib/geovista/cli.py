@@ -9,6 +9,12 @@ import pyvista as pv
 from . import GeoPlotter
 from ._version import version as __version__
 from .cache import CACHE
+from .log import get_logger
+
+__all__ = ["logger", "main"]
+
+# Configure the logger.
+logger = get_logger(__name__)
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 

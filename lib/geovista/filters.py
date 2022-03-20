@@ -10,6 +10,9 @@ from vtk import vtkObject
 from .common import (
     GV_CELL_IDS,
     GV_POINT_IDS,
+    GV_REMESH_POINT_IDS,
+    REMESH_JOIN,
+    REMESH_SEAM,
     calculate_radius,
     sanitize_data,
     to_xy0,
@@ -19,30 +22,20 @@ from .common import (
 from .log import get_logger
 
 __all__ = [
-    "GV_REMESH_POINT_IDS",
-    "REMESH_SEAM",
     "REMESH_SEAM_EAST",
     "VTK_BAD_TRIANGLE_MASK",
     "VTK_BOUNDARY_MASK",
     "VTK_FREE_EDGE_MASK",
     "cast_UnstructuredGrid_to_PolyData",
+    "logger",
     "remesh",
 ]
 
 # Configure the logger.
 logger = get_logger(__name__)
 
-#: Name of the geovista remesh point indices/marker array.
-GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
-
-#: Marker for remeshed cell join point.
-REMESH_JOIN: int = -3
-
-#: Marker for remeshed eastern cell boundary point.
-REMESH_SEAM_EAST: int = -2
-
-#: Marker for remeshed western cell boundary point.
-REMESH_SEAM: int = -1
+#: Marker for remesh filter eastern cell boundary point.
+REMESH_SEAM_EAST: int = REMESH_SEAM - 1
 
 #: vtkIntersectionPolyDataFilter bad triangle cell array name.
 VTK_BAD_TRIANGLE_MASK: str = "BadTriangle"
@@ -169,7 +162,7 @@ def remesh(
     else:
         # split the triangulated remesh into its two halves, west and east of the meridian
         centers = remeshed.cell_centers()
-        lons = to_xy0(centers.points)[:, 0]
+        lons = to_xy0(centers)[:, 0]
         delta = lons - meridian
         lower_mask = (delta < 0) & (delta > -180)
         upper_mask = delta > 180

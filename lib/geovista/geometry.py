@@ -15,9 +15,10 @@ __all__ = [
     "coastline_geometries",
     "coastline_mesh",
     "get_coastlines",
+    "logger",
 ]
 
-# configure the logger
+# Configure the logger
 logger = get_logger(__name__)
 
 #
@@ -248,7 +249,7 @@ def get_coastlines(
 
         if not geocentric:
             radius = float(mesh.field_data["radius"])
-            mesh.points = to_xy0(mesh.points, radius=radius)
+            mesh.points = to_xy0(mesh, radius=radius)
     except ValueError:
         mesh = coastline_mesh(resolution=resolution, geocentric=geocentric)
 

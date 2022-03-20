@@ -5,11 +5,11 @@ from numpy.typing import ArrayLike
 from pyproj import CRS, Transformer
 import pyvista as pv
 
-from .common import nan_mask, to_xyz, wrap
+from .common import GV_FIELD_CRS, GV_FIELD_NAME, nan_mask, to_xyz, wrap
 from .crs import WGS84
 from .log import get_logger
 
-__all__ = ["Transform"]
+__all__ = ["Transform", "logger"]
 
 # Configure the logger.
 logger = get_logger(__name__)
@@ -23,9 +23,6 @@ DEFAULT_NAME_POINTS = "point_data"
 
 #: Default array name for data on the mesh cells/faces.
 DEFAULT_NAME_CELLS = "cell_data"
-
-#: The field array name of a mesh containing point or cell data.
-GV_DATA_NAME = "gvName"
 
 
 class Transform:
@@ -536,7 +533,7 @@ class Transform:
                 transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
                 xs, ys = transformer.transform(xs, ys)
 
-        # ensure longitudes (degrees) are in closed interval [-180, 180]
+        # ensure longitudes (degrees) are in closed interval [-180, 180)
         xs = wrap(xs)
 
         if isinstance(connectivity, tuple):
@@ -552,7 +549,7 @@ class Transform:
                 raise ValueError(emsg)
 
             logger.debug(
-                f"connectivity shape {connectivity} generating {n_points:,d} indicies"
+                f"connectivity shape {connectivity} generating {n_points:,d} indices"
             )
             connectivity = np.arange(n_points).reshape(connectivity)
             ignore_start_index = True
@@ -597,6 +594,10 @@ class Transform:
         # create the mesh
         mesh = pv.PolyData(geometry, faces=faces, n_faces=n_faces)
 
+        # attach the pyproj crs serialized as ogc wkt
+        wkt = np.array([WGS84.to_wkt()])
+        mesh.field_data[GV_FIELD_CRS] = wkt
+
         # attach any optional data to the mesh
         if data is not None:
             data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells)
@@ -610,7 +611,7 @@ class Transform:
             if not isinstance(name, str):
                 name = str(name)
 
-            mesh.field_data[GV_DATA_NAME] = np.array([name])
+            mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data
 
         # clean the mesh
@@ -685,7 +686,7 @@ class Transform:
                     else DEFAULT_NAME_CELLS
                 )
 
-            mesh.field_data[GV_DATA_NAME] = np.array([name])
+            mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data
 
         return mesh

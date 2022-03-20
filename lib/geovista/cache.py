@@ -5,6 +5,7 @@ import pooch
 import pyvista as pv
 
 from . import config
+from .log import get_logger
 
 __all__ = [
     "BASE_URL",
@@ -13,8 +14,14 @@ __all__ = [
     "blue_marble",
     "checkerboard",
     "fetch_coastlines",
+    "logger",
+    "natural_earth_1",
+    "natural_earth_hypsometric",
     "reload_registry",
 ]
+
+# Configure the logger.
+logger = get_logger(__name__)
 
 #: Base URL for GeoVista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/main/data/"
@@ -99,6 +106,44 @@ def fetch_coastlines(resolution: str = "110m") -> pv.PolyData:
     fname = CACHE.fetch(f"natural_earth/physical/ne_coastlines_{resolution}.vtk")
     mesh = pv.read(fname)
     return mesh
+
+
+def natural_earth_1() -> pv.Texture:
+    """
+    Get the 1:50m Natural Earth 1 with shaded relief and water texture
+    (down-sampled to 65%).
+
+    If the resource is not already available in the GeoVista :data:`CACHE`,
+    then it will be downloaded from the :data:`BASE_URL`.
+
+    Returns
+    -------
+    Texture
+        The PyVista texture.
+
+    """
+    fname = CACHE.fetch("raster/NE1_50M_SR_W.jpg")
+    texture = pv.read_texture(fname)
+    return texture
+
+
+def natural_earth_hypsometric() -> pv.Texture:
+    """
+    Get the 1:50m Natural Earth cross-blended hypsometric tints with shaded
+    relief and water texture (down-sampled to 65%).
+
+    If the resource is not already available in the GeoVista :data:`CACHE`,
+    then it will be downloaded from the :data:`BASE_URL`.
+
+    Returns
+    -------
+    Texture
+        The PyVista texture.
+
+    """
+    fname = CACHE.fetch("raster/HYP_50M_SR_W.jpg")
+    texture = pv.read_texture(fname)
+    return texture
 
 
 def reload_registry(fname: Optional[str] = None) -> None:
