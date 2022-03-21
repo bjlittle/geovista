@@ -12,6 +12,7 @@ __all__ = [
     "from_wkt",
     "get_central_meridian",
     "logger",
+    "set_central_meridian",
 ]
 
 # Configure the logger
@@ -75,6 +76,10 @@ def get_central_meridian(crs: CRS) -> Optional[float]:
     float
         The central meridian or ``None`` if the CRS has no such parameter.
 
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
     """
     result = None
 
@@ -87,3 +92,42 @@ def get_central_meridian(crs: CRS) -> Optional[float]:
             result = cm.value
 
     return result
+
+
+def set_central_meridian(crs: CRS, meridian: float) -> CRS:
+    """
+    Set the longitude of natural origin, also known as the central meridian,
+    of the CRS.
+
+    Parameters
+    ----------
+    crs : CRS
+        The :class:`pyproj.CRS`.
+    meridian : float
+        The replacement central meridian.
+
+    Returns
+    -------
+    CRS
+        The CRS with the specified central meridian.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    crs_json = crs.to_json_dict()
+    found = False
+    if conversion := crs_json.get("conversion"):
+        if parameters := conversion.get("parameters"):
+            for i, param in enumerate(parameters):
+                if found := param["id"]["code"] == int(EPSG_CENTRAL_MERIDIAN):
+                    param["value"] = meridian
+                    break
+    logger.debug(
+        f"CRS projection parameter epsg:{EPSG_CENTRAL_MERIDIAN} "
+        f" {'' if found else 'not '}available"
+    )
+    if found:
+        crs = CRS.from_json_dict(crs_json)
+    return crs

@@ -1,14 +1,16 @@
 from typing import Any, Optional
 
+import numpy as np
 from pyproj import CRS, Transformer
 import pyvista as pv
 from pyvista.utilities import abstract_class
 import pyvistaqt as pvqt
 import vtk
 
-from .common import to_xy0
+from .common import GV_FIELD_CRS, to_xy0
 from .core import add_texture_coords, cut_along_meridian
-from .crs import WGS84, from_wkt, get_central_meridian
+from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
+from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import COASTLINE_RESOLUTION, get_coastlines
 from .log import get_logger
 
@@ -48,9 +50,18 @@ class GeoBasePlotter:
 
         """
         # TODO: provide robust zorder support
-        mesh = pv.Sphere(radius=1 - (5e-3), theta_resolution=360, phi_resolution=180)
-        if "texture" in kwargs:
-            mesh = add_texture_coords(mesh, antimeridian=True)
+
+        radius = 1 if (zoffset := self.crs.is_projected) else 1 - (5e-3)
+        kwargs["zoffset"] = zoffset
+        mesh = pv.Sphere(radius=radius, theta_resolution=360, phi_resolution=180)
+
+        # attach the pyproj crs serialized as ogc wkt
+        wkt = np.array([WGS84.to_wkt()])
+        mesh.field_data[GV_FIELD_CRS] = wkt
+
+        if "show_edges" in kwargs:
+            _ = kwargs.pop("show_edges")
+
         return self.add_mesh(mesh, **kwargs)
 
     def add_coastlines(
@@ -80,21 +91,40 @@ class GeoBasePlotter:
         return self.add_mesh(mesh, **kwargs)
 
     def add_mesh(self, mesh, **kwargs):
+        if isinstance(mesh, pv.UnstructuredGrid):
+            mesh = cast(mesh)
+
+        zoffset = kwargs.pop("zoffset") if "zoffset" in kwargs else False
+
         if isinstance(mesh, pv.PolyData):
             src_crs = from_wkt(mesh)
-            project = src_crs and src_crs != self.crs
+            tgt_crs = self.crs
+            project = src_crs and src_crs != tgt_crs
             if project:
-                meridian = get_central_meridian(self.crs)
-                mesh = cut_along_meridian(mesh, meridian=meridian, antimeridian=True)
+                meridian = get_central_meridian(tgt_crs) or 0
+
+                if meridian:
+                    mesh.rotate_z(-meridian, inplace=True)
+                    tgt_crs = set_central_meridian(tgt_crs, 0)
+
+                mesh = cut_along_meridian(mesh, antimeridian=True)
             if "texture" in kwargs:
                 mesh = add_texture_coords(mesh, antimeridian=True)
             if project:
                 ll = to_xy0(mesh, closed_interval=True)
-                transformer = Transformer.from_crs(src_crs, self.crs, always_xy=True)
-                xs, ys = transformer.transform(ll[:, 0], ll[:, 1])
+                transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
+                xs, ys = transformer.transform(ll[:, 0], ll[:, 1], errcheck=True)
                 mesh.points[:, 0] = xs
                 mesh.points[:, 1] = ys
-                mesh.points[:, 2] = 0
+                if zoffset:
+                    xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
+                    xdelta = abs(xmax - xmin)
+                    ydelta = abs(ymax - ymin)
+                    delta = max(xdelta, ydelta)
+                    zoffset = -delta * 1e-3
+                else:
+                    zoffset = 0
+                mesh.points[:, 2] = zoffset
 
         return super().add_mesh(mesh, **kwargs)
 
