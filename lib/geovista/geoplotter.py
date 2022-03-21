@@ -3,7 +3,6 @@ from typing import Any, Optional
 import numpy as np
 from pyproj import CRS, Transformer
 import pyvista as pv
-from pyvista.utilities import abstract_class
 import pyvistaqt as pvqt
 import vtk
 
@@ -20,15 +19,15 @@ __all__ = ["GeoBackgroundPlotter", "GeoMultiPlotter", "GeoPlotter", "logger"]
 logger = get_logger(__name__)
 
 
-@abstract_class
-class GeoBasePlotter:
-    def _init(self, kwargs):
+class GeoPlotterBase:
+    def __init__(self, *args, **kwargs):
         if "crs" in kwargs:
             crs = kwargs.pop("crs")
             crs = CRS.from_user_input(crs)
         else:
             crs = WGS84
         self.crs = crs
+        super().__init__(*args, **kwargs)
 
     def add_base_layer(self, **kwargs: Optional[Any]) -> vtk.vtkActor:
         """
@@ -129,19 +128,16 @@ class GeoBasePlotter:
         return super().add_mesh(mesh, **kwargs)
 
 
-class GeoBackgroundPlotter(GeoBasePlotter, pvqt.BackgroundPlotter):
+class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
     def __init__(self, *args, **kwargs):
-        self._init(kwargs)
         super().__init__(*args, **kwargs)
 
 
-class GeoMultiPlotter(GeoBasePlotter, pvqt.MultiPlotter):
+class GeoMultiPlotter(GeoPlotterBase, pvqt.MultiPlotter):
     def __init__(self, *args, **kwargs):
-        self._init(kwargs)
         super().__init__(*args, **kwargs)
 
 
-class GeoPlotter(GeoBasePlotter, pv.Plotter):
+class GeoPlotter(GeoPlotterBase, pv.Plotter):
     def __init__(self, *args, **kwargs):
-        self._init(kwargs)
         super().__init__(*args, **kwargs)
