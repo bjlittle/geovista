@@ -48,7 +48,7 @@ jobs:
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
 
     - name: "Conda package cache"
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         # Increment the build number to force a cache refresh.
         CACHE_BUILD: 0
@@ -67,7 +67,7 @@ jobs:
 
     - name: "Conda environment cache"
       id: conda-env-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         # Increment the build number to force a cache refresh.
         CACHE_BUILD: 0
@@ -86,7 +86,7 @@ jobs:
         conda list
 
     - name: "Tox cache"
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         # Increment the build number to forece a cache refresh.
         CACHE_BUILD: 0
