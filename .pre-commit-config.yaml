@@ -1,13 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-files: |
-    (?x)(
-        setup\.py|
-        lib\/geovista\/.+\.py
-    )
-minimum_pre_commit_version: 1.21.0
-
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
@@ -29,8 +22,8 @@ repos:
     rev: 22.1.0
     hooks:
     -   id: black
-        pass_filenames: false
-        args: [--config=./pyproject.toml, .]
+        types: [file, python]
+        args: [--config=./pyproject.toml]
 
 -   repo: https://github.com/PyCQA/flake8
     rev: 4.0.1
