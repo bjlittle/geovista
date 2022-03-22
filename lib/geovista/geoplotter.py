@@ -57,9 +57,7 @@ class GeoPlotterBase:
         # attach the pyproj crs serialized as ogc wkt
         wkt = np.array([WGS84.to_wkt()])
         mesh.field_data[GV_FIELD_CRS] = wkt
-
-        if "show_edges" in kwargs:
-            _ = kwargs.pop("show_edges")
+        mesh.active_scalars_name = None
 
         return self.add_mesh(mesh, **kwargs)
 

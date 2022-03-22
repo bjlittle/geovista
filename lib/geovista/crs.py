@@ -74,7 +74,7 @@ def get_central_meridian(crs: CRS) -> Optional[float]:
     Returns
     -------
     float
-        The central meridian or ``None`` if the CRS has no such parameter.
+        The central meridian, or ``None`` if the CRS has no such parameter.
 
     Notes
     -----
@@ -94,10 +94,13 @@ def get_central_meridian(crs: CRS) -> Optional[float]:
     return result
 
 
-def set_central_meridian(crs: CRS, meridian: float) -> CRS:
+def set_central_meridian(crs: CRS, meridian: float) -> Optional[CRS]:
     """
     Set the longitude of natural origin, also known as the central meridian,
     of the CRS.
+
+    Note that, the ``crs`` is immutable, therefore a new instance will be
+    returned with the specified central meridian.
 
     Parameters
     ----------
@@ -109,13 +112,16 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS:
     Returns
     -------
     CRS
-        The CRS with the specified central meridian.
+        The CRS with the specified central meridian, or ``None`` if the CRS
+        has no such parameter.
 
     Notes
     -----
     .. versionadded:: 0.1.0
 
     """
+    # https://proj.org/development/reference/cpp/operation.html#classosgeo_1_1proj_1_1operation_1_1Conversion_1center_longitude
+    result = None
     crs_json = crs.to_json_dict()
     found = False
     if conversion := crs_json.get("conversion"):
@@ -129,5 +135,5 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS:
         f" {'' if found else 'not '}available"
     )
     if found:
-        crs = CRS.from_json_dict(crs_json)
-    return crs
+        result = CRS.from_json_dict(crs_json)
+    return result
