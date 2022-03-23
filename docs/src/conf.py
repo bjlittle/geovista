@@ -16,9 +16,9 @@
 import datetime
 import os
 
-import geovista
 import pyvista
 
+import geovista
 
 # -- General configuration ---------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#general-configuration
