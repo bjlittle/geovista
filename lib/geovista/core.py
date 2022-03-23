@@ -61,7 +61,7 @@ class MeridianSlice:
         offset: Optional[float] = None,
     ):
         """
-        TBD
+        TODO
 
         Parameters
         ----------
@@ -77,7 +77,7 @@ class MeridianSlice:
         # logging convenience
         self._extra = dict(cls=self.__class__.__name__)
 
-        # TBD: require a more robust and definitive approach
+        # TODO: require a more robust and definitive approach
         zmin, zmax = mesh.bounds[4], mesh.bounds[5]
         if np.isclose(zmax - zmin, 0):
             emsg = "Cannot slice mesh appears to be a planar projection."
@@ -112,7 +112,7 @@ class MeridianSlice:
 
     def _intersection(self, bias: float) -> pv.PolyData:
         """
-        TBD
+        TODO
 
         Parameters
         ----------
@@ -144,7 +144,7 @@ class MeridianSlice:
         clip: Optional[bool] = True,
     ) -> pv.PolyData:
         """
-        TBD
+        TODO
 
         Parameters
         ----------
@@ -362,7 +362,7 @@ def cut_along_meridian(
     antimeridian: Optional[bool] = False,
 ) -> pv.PolyData:
     """
-    TBD
+    TODO
 
     Parameters
     ----------
@@ -432,7 +432,7 @@ def add_texture_coords(
     antimeridian: Optional[bool] = False,
 ) -> pv.PolyData:
     """
-    TBD
+    TODO
 
     Parameters
     ----------

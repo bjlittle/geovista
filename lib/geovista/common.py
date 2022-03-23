@@ -40,17 +40,20 @@ logger = get_logger(__name__)
 # TODO: support richer default management
 #
 
+#: Decimal places to round calculated mesh radius.
+DEFAULT_RADIUS_DECIMALS: int = 5
+
 #: Name of the geovista cell indices array.
-GV_CELL_IDS = "gvOriginalCellIds"
+GV_CELL_IDS: str = "gvOriginalCellIds"
 
 #: The field array name of the CF serialized pyproj CRS.
-GV_FIELD_CRS = "gvCRS"
+GV_FIELD_CRS: str = "gvCRS"
 
 #: The field array name of the mesh containing field, point and/or cell data.
-GV_FIELD_NAME = "gvName"
+GV_FIELD_NAME: str = "gvName"
 
 #: Name of the geovista point indices array.
-GV_POINT_IDS = "gvOriginalPointIds"
+GV_POINT_IDS: str = "gvOriginalPointIds"
 
 #: Name of the geovista remesh point indices/marker array.
 GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
@@ -65,10 +68,10 @@ REMESH_JOIN: int = -3
 REMESH_SEAM: int = -1
 
 #: Name of the VTK cell indices array.
-VTK_CELL_IDS = "vtkOriginalCellIds"
+VTK_CELL_IDS: str = "vtkOriginalCellIds"
 
 #: Name of the VTK point indices array.
-VTK_POINT_IDS = "vtkOriginalPointIds"
+VTK_POINT_IDS: str = "vtkOriginalPointIds"
 
 
 def active_kernel() -> bool:
@@ -99,7 +102,9 @@ def active_kernel() -> bool:
 
 
 def calculate_radius(
-    mesh: pv.PolyData, origin: Optional[Tuple[float, float, float]] = None
+    mesh: pv.PolyData,
+    origin: Optional[Tuple[float, float, float]] = None,
+    decimals: Optional[int] = None,
 ) -> float:
     """
     Determine the radius of the provided mesh.
@@ -113,6 +118,9 @@ def calculate_radius(
         the ``origin``.
     origin : float, default=(0, 0, 0)
         The (x, y, z) cartesian center of the spheroid mesh.
+    decimals : int
+        The number of decimal places to round the calculated radius.
+        Defaults to ``DEFAULT_RADIUS_DECIMALS`` places.
 
     Returns
     -------
@@ -137,14 +145,19 @@ def calculate_radius(
     if origin is None:
         origin = (0, 0, 0)
 
+    if decimals is None:
+        decimals = DEFAULT_RADIUS_DECIMALS
+
     ox, oy, oz = origin
 
     # sample a representative mesh point
     mx, my, mz = mesh.points[0]
 
     radius = np.sqrt((mx - ox) ** 2 + (my - oy) ** 2 + (mz - oz) ** 2)
+    result = np.round(radius, decimals=decimals)
+    logger.debug(f"{radius=} rounded to {result=} ({decimals} decimal places)")
 
-    return radius
+    return result
 
 
 def nan_mask(data: npt.ArrayLike) -> np.ndarray:
@@ -248,7 +261,7 @@ def set_jupyter_backend(backend: Optional[str] = None) -> bool:
 
 def to_xy0(
     mesh: pv.PolyData,
-    radius: Optional[float] = 1.0,
+    radius: Optional[float] = None,
     stacked: Optional[bool] = True,
     closed_interval: Optional[bool] = False,
 ) -> np.ndarray:
@@ -261,8 +274,9 @@ def to_xy0(
     mesh : PolyData
         The mesh containing the cartesian (x, y, z) points to be converted to
         longitude and latitude coordinates.
-    radius : bool, default=1.0
-        The radius of the sphere. Defaults to an S2 unit sphere.
+    radius : bool
+        The radius of the sphere. If not provided the radius is determined
+        from the mesh.
     stacked : bool, default=True
         Specify whether the resultant xy0 coordinates have shape (N, 3).
         Otherwise, they will have shape (3, N).
@@ -281,6 +295,8 @@ def to_xy0(
     .. versionadded:: 0.1.0
 
     """
+    if radius is None:
+        radius = calculate_radius(mesh)
     xyz = mesh.points
     lons = wrap(np.degrees(np.arctan2(xyz[:, 1], xyz[:, 0])))
     lats = np.degrees(np.arcsin(xyz[:, 2] / radius))

@@ -10,10 +10,12 @@ from .log import get_logger
 __all__ = [
     "BASE_URL",
     "CACHE",
+    "DEFAULT_LFRIC",
     "RETRY_ATTEMPTS",
     "blue_marble",
     "checkerboard",
     "fetch_coastlines",
+    "lfric",
     "logger",
     "natural_earth_1",
     "natural_earth_hypsometric",
@@ -25,6 +27,9 @@ logger = get_logger(__name__)
 
 #: Base URL for GeoVista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/main/data/"
+
+#: The default LFRic Model unstructured cubed-sphere resolution.
+DEFAULT_LFRIC: str = "c192"
 
 #: Environment variable to override pooch cache manager path.
 ENV = "GEOVISTA_CACHEDIR"
@@ -74,18 +79,22 @@ def checkerboard() -> pv.Texture:
     If the resource is not already available in the GeoVista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
 
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
     """
     fname = CACHE.fetch("raster/uv-checker-map-4k.png")
     texture = pv.read_texture(fname)
     return texture
 
 
-def fetch_coastlines(resolution: str = "110m") -> pv.PolyData:
+def fetch_coastlines(resolution: Optional[str] = "110m") -> pv.PolyData:
     """
     Get the Natural Earth coastlines for the required resolution.
 
-    If the Natural Earth coastlines resource is not already available in
-    the GeoVista :data:`CACHE`, then it will be downloaded from the :data:`BASE_URL`.
+    If the resource is not already available in the GeoVista :data:`CACHE`,
+    then it will be downloaded from the :data:`BASE_URL`.
 
     Parameters
     ----------
@@ -108,6 +117,36 @@ def fetch_coastlines(resolution: str = "110m") -> pv.PolyData:
     return mesh
 
 
+def lfric(resolution: Optional[str] = None) -> pv.PolyData:
+    """
+    Get the LFRic Model unstructured cubed-sphere at the specified resolution.
+
+    If the resource is not already available in the GeoVista :data:`CACHE`,
+    then it will be downloaded from the :data:`BASE_URL`.
+
+    Parameters
+    ----------
+    resolution : str
+        The resolution of the LFRic Model mesh. Defaults to ``DEFAULT_LFRIC``.
+
+    Returns
+    -------
+    PolyData
+        The LFRic mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if resolution is None:
+        resolution = DEFAULT_LFRIC
+
+    fname = CACHE.fetch(f"mesh/lfric_{resolution}.vtk")
+    mesh = pv.read(fname)
+    return mesh
+
+
 def natural_earth_1() -> pv.Texture:
     """
     Get the 1:50m Natural Earth 1 with shaded relief and water texture
@@ -120,6 +159,10 @@ def natural_earth_1() -> pv.Texture:
     -------
     Texture
         The PyVista texture.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
     fname = CACHE.fetch("raster/NE1_50M_SR_W.jpg")
@@ -139,6 +182,10 @@ def natural_earth_hypsometric() -> pv.Texture:
     -------
     Texture
         The PyVista texture.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
     fname = CACHE.fetch("raster/HYP_50M_SR_W.jpg")

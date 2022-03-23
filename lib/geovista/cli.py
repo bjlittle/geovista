@@ -127,6 +127,12 @@ def main(version: bool, cache: bool) -> None:
     help="Show names of registered resources.",
 )
 @click.option(
+    "-m",
+    "--mesh",
+    is_flag=True,
+    help="Mesh resources.",
+)
+@click.option(
     "-ne",
     "--natural-earth",
     "pull_ne",
@@ -153,6 +159,7 @@ def download(
     check: bool,
     dry_run: bool,
     show: bool,
+    mesh: bool,
     pull_ne: Tuple[str],
     output: Optional[pathlib.Path],
     raster: bool,
@@ -193,6 +200,9 @@ def download(
                 _download_group(collect(prefix), name=name, summary=(i + 1 == n_groups))
         elif raster:
             name = "raster"
+            _download_group(collect(name), name=name)
+        elif mesh:
+            name = "mesh"
             _download_group(collect(name), name=name)
 
     if check:
@@ -257,12 +267,18 @@ def download(
     type=click.Path(exists=True, dir_okay=False, readable=True),
 )
 @click.option(
+    "-a",
+    "--axes",
+    is_flag=True,
+    help="Add axes",
+)
+@click.option(
     "-b",
     "--base",
     is_flag=True,
     help="Add a base layer",
 )
-def plot(fname, base) -> None:
+def plot(fname, axes, base) -> None:
     """
     Load and render a VTK mesh.
 
@@ -272,4 +288,6 @@ def plot(fname, base) -> None:
     plotter.add_mesh(mesh)
     if base:
         plotter.add_base_layer()
+    if axes:
+        plotter.add_axes()
     plotter.show()

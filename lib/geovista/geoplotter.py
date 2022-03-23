@@ -1,12 +1,12 @@
+from functools import lru_cache
 from typing import Any, Optional
 
-import numpy as np
 from pyproj import CRS, Transformer
 import pyvista as pv
 import pyvistaqt as pvqt
 import vtk
 
-from .common import GV_FIELD_CRS, to_xy0
+from .common import to_xy0, to_xyz
 from .core import add_texture_coords, cut_along_meridian
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
@@ -17,6 +17,45 @@ __all__ = ["GeoBackgroundPlotter", "GeoMultiPlotter", "GeoPlotter", "logger"]
 
 # configure the logger
 logger = get_logger(__name__)
+
+
+@lru_cache
+def _get_lfric(
+    resolution: Optional[str] = None,
+    radius: Optional[float] = None,
+) -> pv.PolyData:
+    """
+    Retrieve the LFRic unstructured cubed-sphere from the GeoVista cache.
+
+    Parameters
+    ----------
+    resolution : str, default="c192"
+        The resolution of the LFRic unstructured cubed-sphere.
+    radius : float, default=1.0
+        The radius of the sphere. Defaults to an S2 unit sphere.
+
+    Returns
+    -------
+    PolyData
+        The LFRic spherical mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    from .cache import lfric
+
+    mesh = lfric(resolution=resolution)
+
+    if radius:
+        ll = to_xy0(mesh)
+        xyz = to_xyz(ll[:, 0], ll[:, 1], radius=radius)
+        mesh.points = xyz
+
+    mesh.active_scalars_name = None
+
+    return mesh
 
 
 class GeoPlotterBase:
@@ -31,7 +70,7 @@ class GeoPlotterBase:
 
     def add_base_layer(self, **kwargs: Optional[Any]) -> vtk.vtkActor:
         """
-        TBD
+        TODO
 
         Parameters
         ----------
@@ -48,24 +87,27 @@ class GeoPlotterBase:
         .. versionadded:: 0.1.0
 
         """
-        # TODO: provide robust zorder support
+        offset_base_layer = self.crs.is_projected
+        kwargs["offset_base_layer"] = offset_base_layer
 
-        radius = 1 if (zoffset := self.crs.is_projected) else 1 - (5e-3)
-        kwargs["zoffset"] = zoffset
-        mesh = pv.Sphere(radius=radius, theta_resolution=360, phi_resolution=180)
+        if "radius" in kwargs:
+            radius = kwargs.pop("radius")
+        else:
+            # TODO: remove the magic numbers
+            radius = None if offset_base_layer else 1.0 - (1e-3)
 
-        # attach the pyproj crs serialized as ogc wkt
-        wkt = np.array([WGS84.to_wkt()])
-        mesh.field_data[GV_FIELD_CRS] = wkt
-        mesh.active_scalars_name = None
+        resolution = kwargs.pop("resolution") if "resolution" in kwargs else None
+        logger.debug(f"{radius=}")
+        mesh = _get_lfric(resolution=resolution, radius=radius)
+        actor = self.add_mesh(mesh, **kwargs)
 
-        return self.add_mesh(mesh, **kwargs)
+        return actor
 
     def add_coastlines(
         self, resolution: Optional[str] = COASTLINE_RESOLUTION, **kwargs: Optional[Any]
     ) -> vtk.vtkActor:
         """
-        TBD
+        TODO
 
         Parameters
         ----------
@@ -91,7 +133,9 @@ class GeoPlotterBase:
         if isinstance(mesh, pv.UnstructuredGrid):
             mesh = cast(mesh)
 
-        zoffset = kwargs.pop("zoffset") if "zoffset" in kwargs else False
+        offset_base_layer = (
+            kwargs.pop("offset_base_layer") if "offset_base_layer" in kwargs else False
+        )
 
         if isinstance(mesh, pv.PolyData):
             src_crs = from_wkt(mesh)
@@ -113,14 +157,14 @@ class GeoPlotterBase:
                 xs, ys = transformer.transform(ll[:, 0], ll[:, 1], errcheck=True)
                 mesh.points[:, 0] = xs
                 mesh.points[:, 1] = ys
-                if zoffset:
+                zoffset = 0
+                if offset_base_layer:
                     xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
                     xdelta = abs(xmax - xmin)
                     ydelta = abs(ymax - ymin)
                     delta = max(xdelta, ydelta)
+                    # TODO: remove the magic number
                     zoffset = -delta * 1e-3
-                else:
-                    zoffset = 0
                 mesh.points[:, 2] = zoffset
 
         return super().add_mesh(mesh, **kwargs)

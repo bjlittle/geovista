@@ -29,7 +29,7 @@ class Transform:
     @staticmethod
     def _as_compatible_data(data: ArrayLike, n_points: int, n_cells: int) -> np.ndarray:
         """
-        TBD
+        TODO
 
         Parameters
         ----------
@@ -143,7 +143,7 @@ class Transform:
     @staticmethod
     def _connectivity_M1N1(shape: Shape) -> np.ndarray:
         """
-        TBD
+        TODO
 
         Parameters
         ----------
@@ -173,7 +173,7 @@ class Transform:
     @staticmethod
     def _connectivity_MN4(shape: Shape) -> np.ndarray:
         """
-        TBD
+        TODO
 
         Parameters
         ----------
@@ -271,7 +271,7 @@ class Transform:
     @staticmethod
     def _verify_unstructured(xs: ArrayLike, ys: ArrayLike) -> None:
         """
-        TBD
+        TODO
 
         Parameters
         ----------
@@ -312,6 +312,7 @@ class Transform:
         data: Optional[ArrayLike] = None,
         name: Optional[str] = None,
         crs: Optional[CRSLike] = None,
+        radius: Optional[float] = None,
         clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
@@ -348,6 +349,8 @@ class Transform:
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
+        radius : float, default=1.0
+            The radius of the sphere. Defaults to an S2 unit sphere.
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
@@ -355,7 +358,7 @@ class Transform:
         Returns
         -------
         PolyData
-            The contiguous quad-faced mesh.
+            The contiguous quad-faced spherical mesh.
 
         Notes
         -----
@@ -363,10 +366,10 @@ class Transform:
 
         """
         xs, ys = cls._as_contiguous_1d(xs, ys)
-
         mxs, mys = np.meshgrid(xs, ys, indexing="xy")
-
-        return Transform.from_2d(mxs, mys, data=data, name=name, crs=crs, clean=clean)
+        return Transform.from_2d(
+            mxs, mys, data=data, name=name, crs=crs, radius=radius, clean=clean
+        )
 
     @classmethod
     def from_2d(
@@ -376,6 +379,7 @@ class Transform:
         data: Optional[ArrayLike] = None,
         name: Optional[str] = None,
         crs: Optional[CRSLike] = None,
+        radius: Optional[float] = 1.0,
         clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
@@ -413,6 +417,8 @@ class Transform:
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
+        radius : float, default=1.0
+            The radius of the sphere. Defaults to an S2 unit sphere.
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
@@ -420,7 +426,7 @@ class Transform:
         Returns
         -------
         PolyData
-            The quad-faced mesh.
+            The quad-faced spherical mesh.
 
         Notes
         -----
@@ -449,7 +455,14 @@ class Transform:
         )
 
         return Transform.from_unstructured(
-            xs, ys, connectivity, data=data, name=name, crs=crs, clean=clean
+            xs,
+            ys,
+            connectivity,
+            data=data,
+            name=name,
+            crs=crs,
+            radius=radius,
+            clean=clean,
         )
 
     @classmethod
@@ -462,6 +475,7 @@ class Transform:
         start_index: Optional[int] = 0,
         name: Optional[ArrayLike] = None,
         crs: Optional[CRSLike] = None,
+        radius: Optional[float] = 1.0,
         clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
@@ -508,6 +522,8 @@ class Transform:
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
+        radius : float, default=1.0
+            The radius of the mesh sphere. Defaults to an S2 unit sphere.
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
@@ -515,7 +531,7 @@ class Transform:
         Returns
         -------
         PolyData
-            The N-faced mesh.
+            The N-faced spherical mesh.
 
         Notes
         -----
@@ -562,7 +578,7 @@ class Transform:
             ignore_start_index = False
 
         # reduce any singularities at the poles to a singleton point
-        poles = np.abs(ys) == 90
+        poles = np.isclose(np.abs(ys), 90)
         if np.any(poles):
             xs[poles] = 0
 
@@ -576,8 +592,8 @@ class Transform:
         if start_index and not ignore_start_index:
             connectivity -= start_index
 
-        # convert lat/lon to geocentric xyz
-        geometry = to_xyz(xs, ys)
+        # convert lat/lon to cartesian xyz
+        geometry = to_xyz(xs, ys, radius=radius)
 
         # create face connectivity serialization e.g., for a quad-mesh, for
         # each face we have (4, V1, V2, V3, V4), where "4" is the number of
@@ -655,7 +671,7 @@ class Transform:
         self, data: Optional[ArrayLike] = None, name: Optional[str] = None
     ) -> pv.PolyData:
         """
-        TBD
+        TODO
 
         Parameters
         ----------
