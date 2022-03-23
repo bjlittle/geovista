@@ -68,22 +68,3 @@ shaded relief and water.
    plotter.add_coastlines(resolution="10m", color="white")
    plotter.show()
 
-Render a base layer mesh again, but on a Mollweide projection.
-
-Note that, ``geovista`` understands a ``cartopy`` CRS, thanks to ``cartopy`` v0.20+
-inheriting from ``pyproj.CRS`` goodness.
-
-In fact, ``geovista`` directly leverages the capability and benefits of ``pyproj``.
-So what ``pyproj`` can do, ``geovista`` can do also 🚀🥳
-
-.. jupyter-execute::
-
-   from cartopy.crs import Mollweide
-   import geovista as gv
-   from geovista.cache import natural_earth_hypsometric
-
-
-   plotter = gv.GeoPlotter(crs=Mollweide())
-   plotter.add_base_layer(texture=natural_earth_hypsometric())
-   plotter.view_xy()
-   plotter.show()
