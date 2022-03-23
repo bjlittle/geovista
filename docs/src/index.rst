@@ -31,7 +31,7 @@ We're just bootstrapping ``geovista`` and its documentation, so please be patien
 
 In the meantime, here's a ``geovista`` amuse-bouche to whet your appetite...
 
-Render a mesh from a uniform grid with random cell data and 1:110m Natural Earth coastlines.
+Render a mesh from a uniform grid with random cell data and 1:10m Natural Earth coastlines.
 
 .. jupyter-execute::
 
@@ -50,7 +50,7 @@ Render a mesh from a uniform grid with random cell data and 1:110m Natural Earth
 
    plotter = gv.GeoPlotter()
    plotter.add_mesh(mesh, cmap='balance', show_edges=True)
-   plotter.add_coastlines(resolution="110m", color="white")
+   plotter.add_coastlines(resolution="10m", color="white")
    plotter.show()
 
 Render a base layer mesh with 1:10m Natural Earth coastlines and a geo-located
@@ -68,8 +68,7 @@ shaded relief and water.
    plotter.add_coastlines(resolution="10m", color="white")
    plotter.show()
 
-Render a base layer mesh with a geo-located Natural Earth 1 down-sampled 1:50m
-raster with shaded relief and water on a Mollweide projection.
+Render a base layer mesh again, but on a Mollweide projection.
 
 Note that, ``geovista`` understands a ``cartopy`` CRS, thanks to ``cartopy`` v0.20+
 inheriting from ``pyproj.CRS`` goodness.
@@ -81,10 +80,10 @@ So what ``pyproj`` can do, ``geovista`` can do also 🚀🥳
 
    from cartopy.crs import Mollweide
    import geovista as gv
-   from geovista.cache import natural_earth_1
+   from geovista.cache import natural_earth_hypsometric
 
 
    plotter = gv.GeoPlotter(crs=Mollweide())
-   plotter.add_base_layer(texture=natural_earth_1())
+   plotter.add_base_layer(texture=natural_earth_hypsometric())
    plotter.view_xy()
    plotter.show()
