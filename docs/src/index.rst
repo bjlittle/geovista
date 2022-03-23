@@ -27,7 +27,11 @@
    </h4>
    <br>
 
-We're just bootstrapping `geovista` and its documentation, so please be patient 👍
+We're just bootstrapping ``geovista`` and its documentation, so please be patient 👍
+
+In the meantime, here's a ``geovista`` amuse-bouche to whet your appetite...
+
+Render a mesh from a uniform grid with random cell data and 1:110m Natural Earth coastlines.
 
 .. jupyter-execute::
 
@@ -44,8 +48,43 @@ We're just bootstrapping `geovista` and its documentation, so please be patient 
    # Create a mesh from the grid.
    mesh = gv.Transform.from_1d(lons, lats, data=data)
 
-   # Render the mesh with 10m NaturalEarth coastlines.
    plotter = gv.GeoPlotter()
    plotter.add_mesh(mesh, cmap='balance', show_edges=True)
+   plotter.add_coastlines(resolution="110m", color="white")
+   plotter.show()
+
+Render a base layer mesh with 1:10m Natural Earth coastlines and a geo-located
+Natural Earth down-sampled 1:50m cross-blended hypsometric tints raster with
+shaded relief and water.
+
+.. jupyter-execute::
+
+   import geovista as gv
+   from geovista.cache import natural_earth_hypsometric
+
+
+   plotter = gv.GeoPlotter()
+   plotter.add_base_layer(texture=natural_earth_hypsometric())
    plotter.add_coastlines(resolution="10m", color="white")
+   plotter.show()
+
+Render a base layer mesh with a geo-located Natural Earth 1 down-sampled 1:50m
+raster with shaded relief and water on a Mollweide projection.
+
+Note that, ``geovista`` understands a ``cartopy`` CRS, thanks to ``cartopy`` v0.20+
+inheriting from ``pyproj.CRS`` goodness.
+
+In fact, ``geovista`` directly leverages the capability and benefits of ``pyproj``.
+So what ``pyproj`` can do, ``geovista`` can do also 🚀🥳
+
+.. jupyter-execute::
+
+   from cartopy.crs import Mollweide
+   import geovista as gv
+   from geovista.cache import natural_earth_1
+
+
+   plotter = gv.GeoPlotter(crs=Mollweide())
+   plotter.add_base_layer(texture=natural_earth_1())
+   plotter.view_xy()
    plotter.show()
