@@ -312,7 +312,7 @@ class Transform:
         data: Optional[ArrayLike] = None,
         name: Optional[str] = None,
         crs: Optional[CRSLike] = None,
-        radius: Optional[float] = None,
+        radius: Optional[float] = 1.0,
         clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
