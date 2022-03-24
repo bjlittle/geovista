@@ -10,7 +10,8 @@ from .log import get_logger
 __all__ = [
     "BASE_URL",
     "CACHE",
-    "DEFAULT_LFRIC",
+    "DEFAULT_RESOLUTION_COASTLINES",
+    "DEFAULT_RESOLUTION_LFRIC",
     "RETRY_ATTEMPTS",
     "blue_marble",
     "checkerboard",
@@ -28,8 +29,11 @@ logger = get_logger(__name__)
 #: Base URL for GeoVista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/main/data/"
 
+#: The default Natural Earth coastlines resolution.
+DEFAULT_RESOLUTION_COASTLINES: str = "110m"
+
 #: The default LFRic Model unstructured cubed-sphere resolution.
-DEFAULT_LFRIC: str = "c192"
+DEFAULT_RESOLUTION_LFRIC: str = "c192"
 
 #: Environment variable to override pooch cache manager path.
 ENV = "GEOVISTA_CACHEDIR"
@@ -47,6 +51,33 @@ CACHE: pooch.Pooch = pooch.create(
 )
 
 CACHE.load_registry(open_text(__package__, "registry.txt"))
+
+
+def _get_texture(fname: str) -> pv.Texture:
+    """
+    Get the texture resource from cache.
+
+    If the resource is not already available in the GeoVista :data:`CACHE`,
+    then it will be downloaded from the :data:`BASE_URL`.
+
+    Parameters
+    ----------
+    fname : str
+        The base file name of the resource, excluding any directory prefix.
+
+    Returns
+    -------
+    Texture
+        The PyVista texture.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    resource = CACHE.fetch(f"raster/{fname}")
+    texture = pv.read_texture(resource)
+    return texture
 
 
 def blue_marble() -> pv.Texture:
@@ -67,9 +98,7 @@ def blue_marble() -> pv.Texture:
     .. versionadded:: 0.1.0
 
     """
-    fname = CACHE.fetch("raster/world.topo.bathy.200412.3x5400x2700.jpg")
-    texture = pv.read_texture(fname)
-    return texture
+    return _get_texture("world.topo.bathy.200412.3x5400x2700.jpg")
 
 
 def checkerboard() -> pv.Texture:
@@ -84,12 +113,10 @@ def checkerboard() -> pv.Texture:
     .. versionadded:: 0.1.0
 
     """
-    fname = CACHE.fetch("raster/uv-checker-map-4k.png")
-    texture = pv.read_texture(fname)
-    return texture
+    return _get_texture("uv-checker-map-4k.png")
 
 
-def fetch_coastlines(resolution: Optional[str] = "110m") -> pv.PolyData:
+def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
     """
     Get the Natural Earth coastlines for the required resolution.
 
@@ -98,9 +125,10 @@ def fetch_coastlines(resolution: Optional[str] = "110m") -> pv.PolyData:
 
     Parameters
     ----------
-    resolution : str, default="110m"
+    resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m`` or ``10m``.
+        ``110m``, ``50m`` or ``10m``. Default is
+        :data:`DEFAULT_RESOLUTION_COASTLINES`.
 
     Returns
     -------
@@ -112,8 +140,13 @@ def fetch_coastlines(resolution: Optional[str] = "110m") -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    fname = CACHE.fetch(f"natural_earth/physical/ne_coastlines_{resolution}.vtk")
-    mesh = pv.read(fname)
+    if resolution is None:
+        resolution = DEFAULT_RESOLUTION_COASTLINES
+
+    fname = f"ne_coastlines_{resolution}.vtk"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"natural_earth/physical/{fname}.bz2", processor=processor)
+    mesh = pv.read(resource)
     return mesh
 
 
@@ -126,8 +159,9 @@ def lfric(resolution: Optional[str] = None) -> pv.PolyData:
 
     Parameters
     ----------
-    resolution : str
-        The resolution of the LFRic Model mesh. Defaults to ``DEFAULT_LFRIC``.
+    resolution : str, optional
+        The resolution of the LFRic Model mesh. Defaults to
+        :data:`DEFAULT_RESOLUTION_LFRIC`.
 
     Returns
     -------
@@ -140,10 +174,12 @@ def lfric(resolution: Optional[str] = None) -> pv.PolyData:
 
     """
     if resolution is None:
-        resolution = DEFAULT_LFRIC
+        resolution = DEFAULT_RESOLUTION_LFRIC
 
-    fname = CACHE.fetch(f"mesh/lfric_{resolution}.vtk")
-    mesh = pv.read(fname)
+    fname = f"lfric_{resolution}.vtk"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"mesh/{fname}.bz2", processor=processor)
+    mesh = pv.read(resource)
     return mesh
 
 
@@ -165,9 +201,7 @@ def natural_earth_1() -> pv.Texture:
     .. versionadded:: 0.1.0
 
     """
-    fname = CACHE.fetch("raster/NE1_50M_SR_W.jpg")
-    texture = pv.read_texture(fname)
-    return texture
+    return _get_texture("NE1_50M_SR_W.jpg")
 
 
 def natural_earth_hypsometric() -> pv.Texture:
@@ -188,9 +222,7 @@ def natural_earth_hypsometric() -> pv.Texture:
     .. versionadded:: 0.1.0
 
     """
-    fname = CACHE.fetch("raster/HYP_50M_SR_W.jpg")
-    texture = pv.read_texture(fname)
-    return texture
+    return _get_texture("HYP_50M_SR_W.jpg")
 
 
 def reload_registry(fname: Optional[str] = None) -> None:
