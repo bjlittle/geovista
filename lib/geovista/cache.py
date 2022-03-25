@@ -1,4 +1,5 @@
 from importlib.resources import open_text
+import os
 from typing import Optional
 
 import pooch
@@ -51,6 +52,9 @@ CACHE: pooch.Pooch = pooch.create(
 )
 
 CACHE.load_registry(open_text(__package__, "registry.txt"))
+
+if os.environ.get("GEOVISTA_POOCH_MUTE"):
+    pooch.utils.get_logger().setLevel("WARNING")
 
 
 def _get_texture(fname: str) -> pv.Texture:
