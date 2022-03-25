@@ -40,9 +40,6 @@ logger = get_logger(__name__)
 # TODO: support richer default management
 #
 
-#: Decimal places to round calculated mesh radius.
-DEFAULT_RADIUS_DECIMALS: int = 5
-
 #: Name of the geovista cell indices array.
 GV_CELL_IDS: str = "gvOriginalCellIds"
 
@@ -104,7 +101,7 @@ def active_kernel() -> bool:
 def calculate_radius(
     mesh: pv.PolyData,
     origin: Optional[Tuple[float, float, float]] = None,
-    decimals: Optional[int] = None,
+    decimals: Optional[int] = 8,
 ) -> float:
     """
     Determine the radius of the provided mesh.
@@ -118,9 +115,8 @@ def calculate_radius(
         the ``origin``.
     origin : float, default=(0, 0, 0)
         The (x, y, z) cartesian center of the spheroid mesh.
-    decimals : int
+    decimals : int, default=8
         The number of decimal places to round the calculated radius.
-        Defaults to ``DEFAULT_RADIUS_DECIMALS`` places.
 
     Returns
     -------
@@ -144,9 +140,6 @@ def calculate_radius(
 
     if origin is None:
         origin = (0, 0, 0)
-
-    if decimals is None:
-        decimals = DEFAULT_RADIUS_DECIMALS
 
     ox, oy, oz = origin
 
@@ -305,10 +298,10 @@ def to_xy0(
 
     if closed_interval:
         if GV_REMESH_POINT_IDS in mesh.point_data:
-            seam_mask = np.where(mesh[GV_REMESH_POINT_IDS] == REMESH_SEAM)[0]
-            seam_lons = np.unique(lons[seam_mask])
-            if np.isclose(seam_lons, [-180]):
-                lons[seam_mask] = 180
+            seam_ids = np.where(mesh[GV_REMESH_POINT_IDS] == REMESH_SEAM)[0]
+            seam_lons = lons[seam_ids]
+            seam_mask = np.isclose(np.abs(seam_lons), 180)
+            lons[seam_ids[seam_mask]] = 180
         else:
             logger.debug(
                 "cannot honour closed interval due to missing "
@@ -396,7 +389,10 @@ def triangulated(surface: pv.PolyData) -> bool:
 
 
 def wrap(
-    longitudes: npt.ArrayLike, base: float = -180.0, period: Optional[float] = 360.0
+    longitudes: npt.ArrayLike,
+    base: Optional[float] = -180.0,
+    period: Optional[float] = 360.0,
+    decimals: Optional[int] = 8,
 ) -> np.ndarray:
     """
     Transform the longitude values to be within the closed interval
@@ -428,7 +424,7 @@ def wrap(
     if not isinstance(longitudes, Iterable):
         longitudes = [longitudes]
 
-    longitudes = np.asanyarray(longitudes)
+    longitudes = np.round(longitudes, decimals=decimals)
     result = ((longitudes.astype(np.float64) - base + period * 2) % period) + base
 
     return result

@@ -128,7 +128,7 @@ class MeridianSlice:
         """
         logger.debug(f"{bias=}", extra=self._extra)
         y = bias * self.offset
-        xyz = pv.Line((-self.radius, y, 0), (self.radius, y, 0))
+        xyz = pv.Line((-self.radius, y, -self.radius), (self.radius, y, -self.radius))
         xyz.rotate_z(self.meridian, inplace=True)
         spline = pv.Spline(xyz.points, 1)
         mesh = self.mesh.slice_along_line(spline)
@@ -169,8 +169,8 @@ class MeridianSlice:
             emsg = f"Expected a slice bias of either {options}, got '{bias}'."
             raise ValueError(emsg)
 
-        # there is no intersection between the z-plane extruded by
-        # the spline and the mesh
+        # there is no intersection between the spline extruded in the
+        # z-plane and the mesh
         if (mesh := self.slices[CUT_EXACT].n_cells) == 0:
             return mesh
 
