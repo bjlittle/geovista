@@ -5,7 +5,7 @@ from typing import Optional
 import pooch
 import pyvista as pv
 
-from . import config
+from .config import resources
 from .log import get_logger
 
 __all__ = [
@@ -44,7 +44,7 @@ RETRY_ATTEMPTS: int = 3
 
 #: Cache manager for GeoVista resources.
 CACHE: pooch.Pooch = pooch.create(
-    path=config["cache_dir"],
+    path=resources["cache_dir"],
     base_url=BASE_URL,
     registry=None,
     retry_if_failed=RETRY_ATTEMPTS,
@@ -57,7 +57,7 @@ if os.environ.get("GEOVISTA_POOCH_MUTE"):
     pooch.utils.get_logger().setLevel("WARNING")
 
 
-def _get_texture(fname: str) -> pv.Texture:
+def _fetch_texture(fname: str) -> pv.Texture:
     """
     Get the texture resource from cache.
 
@@ -102,7 +102,7 @@ def blue_marble() -> pv.Texture:
     .. versionadded:: 0.1.0
 
     """
-    return _get_texture("world.topo.bathy.200412.3x5400x2700.jpg")
+    return _fetch_texture("world.topo.bathy.200412.3x5400x2700.jpg")
 
 
 def checkerboard() -> pv.Texture:
@@ -117,7 +117,7 @@ def checkerboard() -> pv.Texture:
     .. versionadded:: 0.1.0
 
     """
-    return _get_texture("uv-checker-map-4k.png")
+    return _fetch_texture("uv-checker-map-4k.png")
 
 
 def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
@@ -205,7 +205,7 @@ def natural_earth_1() -> pv.Texture:
     .. versionadded:: 0.1.0
 
     """
-    return _get_texture("NE1_50M_SR_W.jpg")
+    return _fetch_texture("NE1_50M_SR_W.jpg")
 
 
 def natural_earth_hypsometric() -> pv.Texture:
@@ -226,7 +226,7 @@ def natural_earth_hypsometric() -> pv.Texture:
     .. versionadded:: 0.1.0
 
     """
-    return _get_texture("HYP_50M_SR_W.jpg")
+    return _fetch_texture("HYP_50M_SR_W.jpg")
 
 
 def reload_registry(fname: Optional[str] = None) -> None:
