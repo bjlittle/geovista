@@ -6,9 +6,9 @@ from click_default_group import DefaultGroup
 import pooch
 import pyvista as pv
 
-from . import GeoPlotter
 from ._version import version as __version__
 from .cache import CACHE
+from .geoplotter import GeoPlotter
 from .log import get_logger
 
 __all__ = ["logger", "main"]
