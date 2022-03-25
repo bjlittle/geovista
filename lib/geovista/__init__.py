@@ -3,6 +3,8 @@ from pathlib import Path
 
 from appdirs import user_cache_dir
 
+import geovista.theme  # noqa: F401
+
 from ._version import version as __version__  # noqa: F401
 from .bridge import Transform  # noqa: F401
 from .core import combine  # noqa: F401
