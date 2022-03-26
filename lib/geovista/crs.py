@@ -1,3 +1,7 @@
+"""
+Provide coordinate reference system (CRS) utility functions.
+
+"""
 from typing import Optional
 
 from pyproj import CRS
@@ -52,7 +56,7 @@ def from_wkt(mesh: pv.PolyData) -> CRS:
 
     if GV_FIELD_CRS not in mesh.field_data:
         logger.debug(
-            f"cannot construct 'pyproj.CRS' from missing '{GV_FIELD_CRS}' field"
+            "cannot construct 'pyproj.CRS' from missing '%s' field", GV_FIELD_CRS
         )
     else:
         wkt = str(mesh.field_data[GV_FIELD_CRS][0])
@@ -85,11 +89,13 @@ def get_central_meridian(crs: CRS) -> Optional[float]:
 
     if crs.coordinate_operation is not None:
         params = crs.coordinate_operation.params
-        cm = list(filter(lambda param: param.code == EPSG_CENTRAL_MERIDIAN, params))
-        if len(cm) == 1:
-            (cm,) = cm
-            logger.debug(f"{cm=}")
-            result = cm.value
+        cm_param = list(
+            filter(lambda param: param.code == EPSG_CENTRAL_MERIDIAN, params)
+        )
+        if len(cm_param) == 1:
+            (cm_param,) = cm_param
+            logger.debug("central_meridian=%s", cm_param.value)
+            result = cm_param.value
 
     return result
 
@@ -126,13 +132,14 @@ def set_central_meridian(crs: CRS, meridian: float) -> Optional[CRS]:
     found = False
     if conversion := crs_json.get("conversion"):
         if parameters := conversion.get("parameters"):
-            for i, param in enumerate(parameters):
+            for param in parameters:
                 if found := param["id"]["code"] == int(EPSG_CENTRAL_MERIDIAN):
                     param["value"] = meridian
                     break
     logger.debug(
-        f"CRS projection parameter epsg:{EPSG_CENTRAL_MERIDIAN} "
-        f" {'' if found else 'not '}available"
+        "CRS projection parameter epsg:%s %savailable",
+        EPSG_CENTRAL_MERIDIAN,
+        "" if found else "not ",
     )
     if found:
         result = CRS.from_json_dict(crs_json)
