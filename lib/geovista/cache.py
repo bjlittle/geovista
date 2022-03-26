@@ -13,11 +13,7 @@ from .config import resources
 from .log import get_logger
 
 __all__ = [
-    "BASE_URL",
     "CACHE",
-    "DEFAULT_RESOLUTION_COASTLINES",
-    "DEFAULT_RESOLUTION_LFRIC",
-    "RETRY_ATTEMPTS",
     "blue_marble",
     "checkerboard",
     "fetch_coastlines",
