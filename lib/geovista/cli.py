@@ -1,3 +1,10 @@
+# pylint: disable=too-many-arguments, too-many-locals, too-many-branches
+# pylint: disable=too-many-statements
+"""
+Provide geovista command line interface (CLI).
+
+"""
+
 import pathlib
 from typing import List, Optional, Tuple
 
@@ -24,7 +31,7 @@ NE_GROUPS: List[str] = sorted(["physical"])
 NE_CHOICES: List[str] = [ALL]
 NE_CHOICES.extend(NE_GROUPS)
 
-DEFAULT_FG: str = "cyan"
+DEFAULT_FG_COLOUR: str = "cyan"
 
 logger = pooch.get_logger()
 
@@ -32,23 +39,23 @@ logger = pooch.get_logger()
 def _download_group(
     fnames: List[str],
     name: Optional[str] = None,
-    fg: Optional[str] = None,
+    fg_colour: Optional[str] = None,
     summary: Optional[bool] = True,
 ) -> None:
-    if fg is None:
-        fg = DEFAULT_FG
+    if fg_colour is None:
+        fg_colour = DEFAULT_FG_COLOUR
 
     name: str = "" if name is None else f"{name} "
 
-    N: int = len(fnames)
-    n: int = len(str(N))
+    n_fnames: int = len(fnames)
+    width: int = len(str(n_fnames))
 
     logger.setLevel("ERROR")
 
-    click.echo(f"Downloading {N} {name}registered resource{_plural(N)}:")
+    click.echo(f"Downloading {n_fnames} {name}registered resource{_plural(n_fnames)}:")
     for i, fname in enumerate(fnames):
-        click.echo(f"[{i+1:0{n}d}] Downloading ", nl=False)
-        click.secho(f"{fname} ", nl=False, fg=fg)
+        click.echo(f"[{i+1:0{width}d}] Downloading ", nl=False)
+        click.secho(f"{fname} ", nl=False, fg=fg_colour)
         click.echo("... ", nl=False)
         CACHE.fetch(fname)
         click.secho("done!", fg="green")
@@ -56,7 +63,7 @@ def _download_group(
     if summary:
         click.echo("\nAll done! 👍")
         click.echo("Resources are available in the cache directory ", nl=False)
-        click.secho(f"{CACHE.abspath}", fg=fg, nl=False)
+        click.secho(f"{CACHE.abspath}", fg=fg_colour, nl=False)
         click.echo(".")
 
     logger.setLevel("INFO")
@@ -92,11 +99,11 @@ def main(version: bool, cache: bool) -> None:
     """
     if version:
         click.echo("version ", nl=False)
-        click.secho(f"{__version__}", fg=DEFAULT_FG)
+        click.secho(f"{__version__}", fg=DEFAULT_FG_COLOUR)
 
     if cache:
         click.echo("cache directory ", nl=False)
-        click.secho(f"{CACHE.abspath}", fg=DEFAULT_FG)
+        click.secho(f"{CACHE.abspath}", fg=DEFAULT_FG_COLOUR)
 
 
 @main.command(no_args_is_help=True)
@@ -174,9 +181,9 @@ def download(
         click.secho("No resources are registered with geovista.", fg="red")
         return
 
-    N: int = len(fnames)
-    n: int = len(str(N))
-    fg: str = DEFAULT_FG
+    n_fnames: int = len(fnames)
+    width: int = len(str(n_fnames))
+    fg_colour: str = DEFAULT_FG_COLOUR
 
     if output:
         output.mkdir(exist_ok=True)
@@ -209,32 +216,32 @@ def download(
         unavailable = 0
         click.echo("Checking remote availablity of registered resources:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{n}d}] ", nl=False)
-            click.secho(f"{fname} ", nl=False, fg=fg)
+            click.echo(f"[{i+1:0{width}d}] ", nl=False)
+            click.secho(f"{fname} ", nl=False, fg=fg_colour)
             click.echo("is ... ", nl=False)
-            status, sfg = (
+            status, status_fg_colour = (
                 ("available!", "green")
                 if (available := CACHE.is_available(fname))
                 else ("unavailable!", "red")
             )
             if not available:
                 unavailable += 1
-            click.secho(status, fg=sfg)
+            click.secho(status, fg=status_fg_colour)
         click.echo("\nAll done! ", nl=False)
 
         if not unavailable:
             click.echo("👍")
-            click.echo(f"{N} resource{_plural(N)} ", nl=False)
+            click.echo(f"{n_fnames} resource{_plural(n_fnames)} ", nl=False)
             click.secho("available", fg="green", nl=False)
             click.echo(".")
         else:
             click.echo("🤔")
-            if unavailable == N:
-                click.echo(f"{N} resource{_plural(N)} ", nl=False)
+            if unavailable == n_fnames:
+                click.echo(f"{n_fnames} resource{_plural(n_fnames)} ", nl=False)
                 click.secho("unavailable", fg="red", nl=False)
                 click.echo(". Nuts!")
             else:
-                available = N - unavailable
+                available = n_fnames - unavailable
                 click.echo(f"{available} resource{_plural(available)} ", nl=False)
                 click.secho("available", fg="green", nl=False)
                 click.echo(
@@ -246,15 +253,15 @@ def download(
     if dry_run:
         click.echo("URLs of registered resources:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{n}d}] ", nl=False)
-            click.secho(f"{CACHE.get_url(fname)}", fg=fg)
+            click.echo(f"[{i+1:0{width}d}] ", nl=False)
+            click.secho(f"{CACHE.get_url(fname)}", fg=fg_colour)
         click.echo("\nAll done! 👍")
 
     if show:
         click.echo("Names of registered resources:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{n}d}] ", nl=False)
-            click.secho(f"{fname}", fg=fg)
+            click.echo(f"[{i+1:0{width}d}] ", nl=False)
+            click.secho(f"{fname}", fg=fg_colour)
         click.echo("\nAll done! 👍")
 
     if output:

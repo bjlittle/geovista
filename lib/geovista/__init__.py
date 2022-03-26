@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring
 from ._version import version as __version__  # noqa: F401
 from .bridge import Transform  # noqa: F401
 from .core import MeridianSlice, combine, cut_along_meridian  # noqa: F401

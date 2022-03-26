@@ -1,3 +1,7 @@
+"""
+Provide convenience functions to access, download and cache geovista resources.
+
+"""
 from importlib.resources import open_text
 import os
 from typing import Optional
