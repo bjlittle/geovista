@@ -4,7 +4,7 @@ Provide convenience functions to access, download and cache geovista resources.
 """
 from importlib.resources import open_text
 import os
-from typing import Optional
+from typing import Optional, Union
 
 import pooch
 import pyvista as pv
@@ -26,6 +26,9 @@ __all__ = [
 
 # Configure the logger.
 logger = get_logger(__name__)
+
+# Type aliases.
+TextureLike = Union[str, pv.Texture]
 
 #: Base URL for GeoVista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/main/data/"
@@ -57,7 +60,7 @@ if os.environ.get("GEOVISTA_POOCH_MUTE"):
     pooch.utils.get_logger().setLevel("WARNING")
 
 
-def _fetch_texture(fname: str) -> pv.Texture:
+def _fetch_texture(fname: str, location: Optional[bool] = False) -> TextureLike:
     """
     Get the texture resource from cache.
 
@@ -68,11 +71,14 @@ def _fetch_texture(fname: str) -> pv.Texture:
     ----------
     fname : str
         The base file name of the resource, excluding any directory prefix.
+    location : bool, default=False
+        Determine whether the absolute path filename to the texture resource
+        location within the cache is returned
 
     Returns
     -------
-    Texture
-        The PyVista texture.
+    str or Texture
+        The PyVista texture filename or the texture.
 
     Notes
     -----
@@ -80,11 +86,12 @@ def _fetch_texture(fname: str) -> pv.Texture:
 
     """
     resource = CACHE.fetch(f"raster/{fname}")
-    texture = pv.read_texture(resource)
-    return texture
+    if not location:
+        resource = pv.read_texture(resource)
+    return resource
 
 
-def blue_marble() -> pv.Texture:
+def blue_marble(location: Optional[bool] = False) -> TextureLike:
     """
     Get the NASA Blue Marble Next Generation with topography and bathymetry
     texture.
@@ -92,32 +99,49 @@ def blue_marble() -> pv.Texture:
     If the resource is not already available in the GeoVista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
 
+    Parameters
+    ----------
+    location : bool, default=False
+        Determine whether the absolute path filename to the texture resource
+        location within the cache is returned.
+
     Returns
     -------
-    Texture
-        The PyVista texture.
+    str or Texture
+        The PyVista texture filename or the texture.
 
     Notes
     -----
     .. versionadded:: 0.1.0
 
     """
-    return _fetch_texture("world.topo.bathy.200412.3x5400x2700.jpg")
+    return _fetch_texture("world.topo.bathy.200412.3x5400x2700.jpg", location=location)
 
 
-def checkerboard() -> pv.Texture:
+def checkerboard(location: Optional[bool] = False) -> TextureLike:
     """
     Get the UV checker map 4K texture.
 
     If the resource is not already available in the GeoVista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
 
+    Parameters
+    ----------
+    location : bool, default=False
+        Determine whether the absolute path filename to the texture resource
+        location within the cache is returned.
+
+    Returns
+    -------
+    str or Texture
+        The PyVista texture filename or the texture.
+
     Notes
     -----
     .. versionadded:: 0.1.0
 
     """
-    return _fetch_texture("uv-checker-map-4k.png")
+    return _fetch_texture("uv-checker-map-4k.png", location=location)
 
 
 def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
@@ -187,7 +211,7 @@ def lfric(resolution: Optional[str] = None) -> pv.PolyData:
     return mesh
 
 
-def natural_earth_1() -> pv.Texture:
+def natural_earth_1(location: Optional[bool] = False) -> TextureLike:
     """
     Get the 1:50m Natural Earth 1 with shaded relief and water texture
     (down-sampled to 65%).
@@ -197,18 +221,18 @@ def natural_earth_1() -> pv.Texture:
 
     Returns
     -------
-    Texture
-        The PyVista texture.
+    str or Texture
+        The PyVista texture filename or the texture.
 
     Notes
     -----
     .. versionadded:: 0.1.0
 
     """
-    return _fetch_texture("NE1_50M_SR_W.jpg")
+    return _fetch_texture("NE1_50M_SR_W.jpg", location=location)
 
 
-def natural_earth_hypsometric() -> pv.Texture:
+def natural_earth_hypsometric(location: Optional[bool] = False) -> TextureLike:
     """
     Get the 1:50m Natural Earth cross-blended hypsometric tints with shaded
     relief and water texture (down-sampled to 65%).
@@ -218,15 +242,15 @@ def natural_earth_hypsometric() -> pv.Texture:
 
     Returns
     -------
-    Texture
-        The PyVista texture.
+    str or Texture
+        The PyVista texture filename or the texture.
 
     Notes
     -----
     .. versionadded:: 0.1.0
 
     """
-    return _fetch_texture("HYP_50M_SR_W.jpg")
+    return _fetch_texture("HYP_50M_SR_W.jpg", location=location)
 
 
 def reload_registry(fname: Optional[str] = None) -> None:
