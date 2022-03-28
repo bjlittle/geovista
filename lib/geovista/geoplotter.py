@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Any, Optional
+from warnings import warn
 
 from pyproj import CRS, Transformer
 import pyvista as pv
@@ -61,6 +62,22 @@ def _get_lfric(
 
 class GeoPlotterBase:
     def __init__(self, *args, **kwargs):
+        if args:
+            klass = f"'{self.__class__.__name__}'"
+            if len(args) == 1 and ("crs" not in kwargs or kwargs["crs"] is None):
+                wmsg = f"{klass} received an unexpected argument. Assuming 'crs' keyword argument instead..."
+                warn(wmsg)
+                kwargs["crs"] = args[0]
+                args = ()
+            else:
+                plural = "s" if len(args) > 1 else ""
+                pre = ",".join([f"'{arg}'" for arg in args[:-1]])
+                bad = f"{pre} and '{args[-1]}'" if pre else f"'{args[0]}'"
+                emsg = (
+                    f"{klass} received {len(args)} unexpected argument{plural}, {bad}."
+                )
+                raise ValueError(emsg)
+
         if "crs" in kwargs:
             crs = kwargs.pop("crs")
             crs = CRS.from_user_input(crs)
