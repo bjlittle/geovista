@@ -7,7 +7,7 @@ import pyvista as pv
 import pyvistaqt as pvqt
 import vtk
 
-from .common import to_xy0, to_xyz
+from .common import ZLEVEL_FACTOR, to_xy0, to_xyz
 from .core import add_texture_coords, cut_along_meridian
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
@@ -105,17 +105,26 @@ class GeoPlotterBase:
         .. versionadded:: 0.1.0
 
         """
-        offset_base_layer = self.crs.is_projected
-        kwargs["offset_base_layer"] = offset_base_layer
-
-        if "radius" in kwargs:
-            radius = kwargs.pop("radius")
-        else:
-            # TODO: remove the magic numbers
-            radius = None if offset_base_layer else 1.0 - (1e-3)
-
+        zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else -1
+        zfactor = float(kwargs["zfactor"]) if "zfactor" in kwargs else ZLEVEL_FACTOR
+        radius = (
+            float(kwargs.pop("radius"))
+            if "radius" in kwargs
+            else 1.0 + zlevel * zfactor
+        )
         resolution = kwargs.pop("resolution") if "resolution" in kwargs else None
-        logger.debug(f"{radius=}")
+
+        if self.crs.is_projected:
+            radius = None
+            kwargs["zlevel"] = zlevel
+
+        logger.debug(
+            "radius=%f, resolution=%s, zlevel=%d, zfactor=%f",
+            radius,
+            resolution,
+            zlevel,
+            zfactor,
+        )
         mesh = _get_lfric(resolution=resolution, radius=radius)
         actor = self.add_mesh(mesh, **kwargs)
 
@@ -151,25 +160,27 @@ class GeoPlotterBase:
         if isinstance(mesh, pv.UnstructuredGrid):
             mesh = cast(mesh)
 
-        offset_base_layer = (
-            kwargs.pop("offset_base_layer") if "offset_base_layer" in kwargs else False
-        )
+        zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else 0
+        zfactor = float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
+        logger.debug("zlevel=%d, zfactor=%f", zlevel, zfactor)
 
         if isinstance(mesh, pv.PolyData):
             src_crs = from_wkt(mesh)
             tgt_crs = self.crs
             project = src_crs and src_crs != tgt_crs
             meridian = get_central_meridian(tgt_crs) or 0
+
             if project:
                 if meridian:
                     mesh.rotate_z(-meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
-
                 mesh = cut_along_meridian(mesh, antimeridian=True)
+
             if "texture" in kwargs:
                 mesh = add_texture_coords(mesh, antimeridian=True)
                 texture = wrap_texture(kwargs["texture"], central_meridian=meridian)
                 kwargs["texture"] = texture
+
             if project:
                 ll = to_xy0(mesh, closed_interval=True)
                 transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
@@ -177,13 +188,12 @@ class GeoPlotterBase:
                 mesh.points[:, 0] = xs
                 mesh.points[:, 1] = ys
                 zoffset = 0
-                if offset_base_layer:
+                if zlevel:
                     xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
-                    xdelta = abs(xmax - xmin)
-                    ydelta = abs(ymax - ymin)
+                    xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
                     delta = max(xdelta, ydelta)
-                    # TODO: remove the magic number
-                    zoffset = -delta * 1e-3
+                    zoffset = zlevel * zfactor * delta
+                logger.debug("zoffset=%f", zoffset)
                 mesh.points[:, 2] = zoffset
 
         return super().add_mesh(mesh, **kwargs)

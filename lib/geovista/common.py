@@ -22,6 +22,7 @@ __all__ = [
     "REMESH_SEAM",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
+    "ZLEVEL_FACTOR",
     "calculate_radius",
     "logger",
     "nan_mask",
@@ -69,6 +70,9 @@ VTK_CELL_IDS: str = "vtkOriginalCellIds"
 
 #: Name of the VTK point indices array.
 VTK_POINT_IDS: str = "vtkOriginalPointIds"
+
+#: Proportional offset/multiplier for z-axis levels.
+ZLEVEL_FACTOR: float = 1e-3
 
 
 def active_kernel() -> bool:
