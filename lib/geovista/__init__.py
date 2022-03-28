@@ -15,6 +15,7 @@ from .geodesic import BBox, line, panel, wedge  # noqa: F401
 from .geometry import get_coastlines  # noqa: F401
 from .geoplotter import GeoBackgroundPlotter, GeoMultiPlotter, GeoPlotter  # noqa: F401
 from .log import get_logger
+from .raster import wrap_texture  # noqa: F401
 
 __all__ = ["logger"]
 

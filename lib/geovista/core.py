@@ -91,7 +91,8 @@ class MeridianSlice:
         )
 
         self.mesh = mesh
-        self.radius = calculate_radius(mesh)
+        # XXX: hack
+        self.radius = calculate_radius(mesh, decimals=6)
         self.meridian = wrap(meridian)[0]
         self.offset = abs(CUT_OFFSET if offset is None else offset)
         logger.debug(
@@ -169,12 +170,13 @@ class MeridianSlice:
             emsg = f"Expected a slice bias of either {options}, got '{bias}'."
             raise ValueError(emsg)
 
+        mesh = pv.PolyData()
+
         # there is no intersection between the spline extruded in the
         # z-plane and the mesh
-        if (mesh := self.slices[CUT_EXACT].n_cells) == 0:
+        if self.slices[CUT_EXACT].n_cells == 0:
+            logger.debug("exact: no cells extracted from slice", extra=self._extra)
             return mesh
-
-        mesh = pv.PolyData()
 
         if split_cells:
             logger.debug(f"{bias=}, split={len(self.split_ids)}", extra=self._extra)
@@ -184,7 +186,7 @@ class MeridianSlice:
             logger.debug(f"{bias=}, whole={len(whole_ids)}", extra=self._extra)
             extract_ids = whole_ids
 
-        logger.debug(f"extract={len(extract_ids)}", extra=self._extra)
+        logger.debug(f"extracting {len(extract_ids)} cells", extra=self._extra)
 
         if extract_ids:
             mesh = cast(self.mesh.extract_cells(np.array(list(extract_ids))))
@@ -202,9 +204,12 @@ class MeridianSlice:
                     extra=self._extra,
                 )
             sanitize_data(mesh)
-            mesh.set_active_scalars(
-                self._info.name, preference=self._info.association.name.lower()
-            )
+            if mesh.n_cells:
+                mesh.set_active_scalars(
+                    self._info.name, preference=self._info.association.name.lower()
+                )
+            else:
+                logger.debug("clip: no cells extracted from slice", extra=self._extra)
         else:
             logger.debug("no cells extracted from slice", extra=self._extra)
 
@@ -392,7 +397,7 @@ def cut_along_meridian(
     logger.debug(f"{meridian=}, {antimeridian=}")
 
     slicer = MeridianSlice(mesh, meridian)
-    mesh_whole = slicer.extract()
+    mesh_whole = slicer.extract(split_cells=False)
     mesh_split = slicer.extract(split_cells=True)
     info = mesh.active_scalars_info
     result: pv.PolyData = mesh.copy(deep=True)

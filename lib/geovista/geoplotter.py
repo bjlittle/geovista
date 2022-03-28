@@ -12,6 +12,7 @@ from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import COASTLINE_RESOLUTION, get_coastlines
 from .log import get_logger
+from .raster import wrap_texture
 
 __all__ = ["GeoBackgroundPlotter", "GeoMultiPlotter", "GeoPlotter", "logger"]
 
@@ -141,9 +142,8 @@ class GeoPlotterBase:
             src_crs = from_wkt(mesh)
             tgt_crs = self.crs
             project = src_crs and src_crs != tgt_crs
+            meridian = get_central_meridian(tgt_crs) or 0
             if project:
-                meridian = get_central_meridian(tgt_crs) or 0
-
                 if meridian:
                     mesh.rotate_z(-meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
@@ -151,6 +151,8 @@ class GeoPlotterBase:
                 mesh = cut_along_meridian(mesh, antimeridian=True)
             if "texture" in kwargs:
                 mesh = add_texture_coords(mesh, antimeridian=True)
+                texture = wrap_texture(kwargs["texture"], central_meridian=meridian)
+                kwargs["texture"] = texture
             if project:
                 ll = to_xy0(mesh, closed_interval=True)
                 transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
