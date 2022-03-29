@@ -34,9 +34,7 @@ class Transform:
         Parameters
         ----------
         data : ArrayLike
-
         shape : tuple of int
-
 
         Returns
         -------
@@ -149,11 +147,9 @@ class Transform:
         ----------
         shape : tuple of int
 
-
         Returns
         -------
         ndarray
-
 
         Notes
         -----
@@ -178,12 +174,10 @@ class Transform:
         Parameters
         ----------
         shape : tuple of int
-            ...
 
         Returns
         -------
         ndarray
-            ...
 
         Notes
         -----
@@ -276,9 +270,7 @@ class Transform:
         Parameters
         ----------
         xs : ArrayLike
-
         ys : ArrayLike
-
 
         Notes
         -----
@@ -729,11 +721,9 @@ class Transform:
         ----------
         data : ArrayLike, optional
 
-
         Returns
         -------
         PolyData
-
 
         Notes
         _____

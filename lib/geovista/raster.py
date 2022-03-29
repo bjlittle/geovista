@@ -1,7 +1,4 @@
-"""
-Provide minimal geolocated raster utility support.
-
-"""
+"""Provide minimal geolocated raster utility support."""
 from typing import Optional
 
 import numpy as np

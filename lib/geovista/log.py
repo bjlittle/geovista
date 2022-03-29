@@ -1,7 +1,4 @@
-"""
-A package for provisioning logging infra-structure.
-
-"""
+"""A package for provisioning logging infra-structure."""
 
 import logging
 import threading

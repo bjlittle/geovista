@@ -1,7 +1,4 @@
-"""
-Define custom pyvista theme for geovista.
-
-"""
+"""Define custom pyvista theme for geovista."""
 import pyvista as pv
 
 theme = pv.themes.DefaultTheme()
