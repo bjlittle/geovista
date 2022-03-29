@@ -71,7 +71,7 @@ VTK_CELL_IDS: str = "vtkOriginalCellIds"
 #: Name of the VTK point indices array.
 VTK_POINT_IDS: str = "vtkOriginalPointIds"
 
-#: Proportional offset/multiplier for z-axis levels.
+#: Proportional multiplier for z-axis levels/offsets.
 ZLEVEL_FACTOR: float = 1e-3
 
 
@@ -271,7 +271,7 @@ def to_xy0(
     mesh : PolyData
         The mesh containing the cartesian (x, y, z) points to be converted to
         longitude and latitude coordinates.
-    radius : bool
+    radius : float, optional
         The radius of the sphere. If not provided the radius is determined
         from the mesh.
     stacked : bool, default=True
@@ -292,8 +292,7 @@ def to_xy0(
     .. versionadded:: 0.1.0
 
     """
-    if radius is None:
-        radius = calculate_radius(mesh)
+    radius = calculate_radius(mesh) if radius is None else abs(radius)
     xyz = mesh.points
     # XXX: hack
     lons = wrap(np.degrees(np.arctan2(xyz[:, 1], xyz[:, 0])), decimals=4)
@@ -324,7 +323,7 @@ def to_xy0(
 def to_xyz(
     longitudes: npt.ArrayLike,
     latitudes: npt.ArrayLike,
-    radius: Optional[float] = 1.0,
+    radius: Optional[float] = None,
     stacked: Optional[bool] = True,
 ) -> np.ndarray:
     """
@@ -354,6 +353,7 @@ def to_xyz(
     """
     longitudes = np.ravel(longitudes)
     latitudes = np.ravel(latitudes)
+    radius = 1.0 if radius is None else abs(radius)
 
     x_rad = np.radians(longitudes)
     y_rad = np.radians(90.0 - latitudes)

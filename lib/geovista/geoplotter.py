@@ -124,12 +124,12 @@ class GeoPlotterBase:
                 kwargs["zlevel"] = -1
             logger.debug("radius=%s", radius)
         else:
-            original = float(kwargs.pop("radius")) if "radius" in kwargs else 1.0
+            original = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else 1.0
             zfactor = (
                 float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
             )
             zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else -1
-            radius = original + zlevel * zfactor
+            radius = original + original * zlevel * zfactor
             logger.debug(
                 "radius=%f(%s), zfactor=%f, zlevel=%s",
                 radius,

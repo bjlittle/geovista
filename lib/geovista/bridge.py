@@ -5,7 +5,7 @@ from numpy.typing import ArrayLike
 from pyproj import CRS, Transformer
 import pyvista as pv
 
-from .common import GV_FIELD_CRS, GV_FIELD_NAME, nan_mask, to_xyz, wrap
+from .common import GV_FIELD_CRS, GV_FIELD_NAME, ZLEVEL_FACTOR, nan_mask, to_xyz, wrap
 from .crs import WGS84
 from .log import get_logger
 
@@ -312,8 +312,10 @@ class Transform:
         data: Optional[ArrayLike] = None,
         name: Optional[str] = None,
         crs: Optional[CRSLike] = None,
-        radius: Optional[float] = 1.0,
+        radius: Optional[float] = None,
         clean: Optional[bool] = False,
+        zfactor: Optional[float] = None,
+        zlevel: Optional[int] = None,
     ) -> pv.PolyData:
         """
         Build a quad-faced mesh from contiguous 1-D x-values and y-values.
@@ -354,6 +356,12 @@ class Transform:
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
+        zfactor : float, optional
+            The roportional multiplier for z-axis levels/offsets. Defaults
+            to :data:`ZLEVEL_FACTOR`.
+        zlevel : int, default=0
+            The z-axis level/offset of the mesh, giving a computed ``radius``
+            of ``radius + zlevel * zfactor``.
 
         Returns
         -------
@@ -368,7 +376,15 @@ class Transform:
         xs, ys = cls._as_contiguous_1d(xs, ys)
         mxs, mys = np.meshgrid(xs, ys, indexing="xy")
         return Transform.from_2d(
-            mxs, mys, data=data, name=name, crs=crs, radius=radius, clean=clean
+            mxs,
+            mys,
+            data=data,
+            name=name,
+            crs=crs,
+            radius=radius,
+            clean=clean,
+            zfactor=zfactor,
+            zlevel=zlevel,
         )
 
     @classmethod
@@ -379,8 +395,10 @@ class Transform:
         data: Optional[ArrayLike] = None,
         name: Optional[str] = None,
         crs: Optional[CRSLike] = None,
-        radius: Optional[float] = 1.0,
+        radius: Optional[float] = None,
         clean: Optional[bool] = False,
+        zfactor: Optional[float] = None,
+        zlevel: Optional[int] = None,
     ) -> pv.PolyData:
         """
         Build a quad-faced mesh from 2-D x-values and y-values.
@@ -422,6 +440,12 @@ class Transform:
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
+        zfactor : float, optional
+            The roportional multiplier for z-axis levels/offsets. Defaults
+            to :data:`ZLEVEL_FACTOR`.
+        zlevel : int, default=0
+            The z-axis level/offset of the mesh, giving a computed ``radius``
+            of ``radius + zlevel * zfactor``.
 
         Returns
         -------
@@ -463,6 +487,8 @@ class Transform:
             crs=crs,
             radius=radius,
             clean=clean,
+            zfactor=zfactor,
+            zlevel=zlevel,
         )
 
     @classmethod
@@ -475,8 +501,10 @@ class Transform:
         start_index: Optional[int] = 0,
         name: Optional[ArrayLike] = None,
         crs: Optional[CRSLike] = None,
-        radius: Optional[float] = 1.0,
+        radius: Optional[float] = None,
         clean: Optional[bool] = False,
+        zfactor: Optional[float] = None,
+        zlevel: Optional[int] = None,
     ) -> pv.PolyData:
         """
         Build a mesh from unstructured 1-D x-values and y-values.
@@ -527,6 +555,12 @@ class Transform:
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
+        zfactor : float, optional
+            The roportional multiplier for z-axis levels/offsets. Defaults
+            to :data:`ZLEVEL_FACTOR`.
+        zlevel : int, default=0
+            The z-axis level/offset of the mesh, giving a computed ``radius``
+            of ``radius + zlevel * zfactor``.
 
         Returns
         -------
@@ -592,6 +626,16 @@ class Transform:
         if start_index and not ignore_start_index:
             connectivity -= start_index
 
+        radius = 1.0 if radius is None else abs(radius)
+
+        if zfactor is None:
+            zfactor = ZLEVEL_FACTOR
+
+        if zlevel is None:
+            zlevel = 0
+
+        radius += radius * zlevel * zfactor
+
         # convert lat/lon to cartesian xyz
         geometry = to_xyz(xs, ys, radius=radius)
 
@@ -644,15 +688,21 @@ class Transform:
         start_index: Optional[int] = 0,
         crs: Optional[ArrayLike] = None,
         clean: Optional[bool] = False,
+        zfactor: Optional[float] = None,
+        zlevel: Optional[int] = None,
     ):
         xs = np.asanyarray(xs)
         ys = np.asanyarray(ys)
 
         if connectivity is None:
             if xs.ndim <= 1 or ys.ndim <= 1:
-                mesh = self.from_1d(xs, ys, crs=crs, clean=clean)
+                mesh = self.from_1d(
+                    xs, ys, crs=crs, clean=clean, zfactor=zfactor, zlevel=zlevel
+                )
             else:
-                mesh = self.from_2d(xs, ys, crs=crs, clean=clean)
+                mesh = self.from_2d(
+                    xs, ys, crs=crs, clean=clean, zfactor=zfactor, zlevel=zlevel
+                )
         else:
             mesh = self.from_unstructured(
                 xs,
@@ -661,6 +711,8 @@ class Transform:
                 start_index=start_index,
                 crs=crs,
                 clean=clean,
+                zfactor=zfactor,
+                zlevel=zlevel,
             )
 
         self._mesh = mesh

@@ -329,7 +329,7 @@ class BBox:
             bbox_update(row[0], row[-1], row=row_idx)
 
     def _generate_bbox_mesh(
-        self, surface: Optional[pv.PolyData] = None, radius: Optional[float] = 1.0
+        self, surface: Optional[pv.PolyData] = None, radius: Optional[float] = None
     ) -> None:
         """
         The bounding-box mesh consists of an inner surface, an outer surface,
@@ -360,6 +360,8 @@ class BBox:
         if surface is not None:
             radius = calculate_radius(surface)
             logger.debug(f"radius: {radius}", extra=self._extra)
+
+        radius = 1.0 if radius is None else abs(radius)
 
         if radius != self._surface_radius:
             self._init()
@@ -441,7 +443,7 @@ class BBox:
         return faces
 
     def boundary(
-        self, surface: Optional[pv.PolyData] = None, radius: Optional[float] = 1.0
+        self, surface: Optional[pv.PolyData] = None, radius: Optional[float] = None
     ) -> pv.PolyData:
         """
         The region of the bounding-box that intersects on the surface of the mesh
@@ -636,7 +638,7 @@ def line(
     lons: npt.ArrayLike,
     lats: npt.ArrayLike,
     surface: Optional[pv.PolyData] = None,
-    radius: Optional[float] = 1.0,
+    radius: Optional[float] = None,
     npts: Optional[int] = GEODESIC_NPTS,
     ellps: Optional[str] = ELLIPSE,
     close: Optional[bool] = False,
@@ -682,6 +684,8 @@ def line(
     """
     if surface is not None:
         radius = calculate_radius(surface)
+
+    radius = 1.0 if radius is None else abs(radius)
 
     # TODO: address "fudge-factor" z-level
     radius += radius / 1e4

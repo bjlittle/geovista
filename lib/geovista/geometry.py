@@ -170,8 +170,7 @@ def coastline_mesh(
 
     """
     # TODO: address "fudge-factor" zlevel
-    if radius is None:
-        radius = 1.0 + 1.0 / 1e4
+    radius = 1.0 + 1.0 / 1e4 if radius is None else abs(radius)
 
     geoms = coastline_geometries(resolution=resolution)
     npoints_per_geom = [geom.shape[0] for geom in geoms]
