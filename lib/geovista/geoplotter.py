@@ -1,14 +1,17 @@
 from functools import lru_cache
-from typing import Any, Optional
+from typing import Any, Optional, Union
 from warnings import warn
 
+import numpy as np
+from numpy.typing import ArrayLike
 from pyproj import CRS, Transformer
 import pyvista as pv
 import pyvistaqt as pvqt
 import vtk
 
-from .common import ZLEVEL_FACTOR, to_xy0, to_xyz
-from .core import add_texture_coords, cut_along_meridian
+from .cache import lfric
+from .common import GV_FIELD_CRS, ZLEVEL_FACTOR, to_xy0, to_xyz
+from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import COASTLINE_RESOLUTION, get_coastlines
@@ -19,6 +22,9 @@ __all__ = ["GeoBackgroundPlotter", "GeoMultiPlotter", "GeoPlotter", "logger"]
 
 # configure the logger
 logger = get_logger(__name__)
+
+# type aliases
+CRSLike = Union[int, str, dict, CRS]
 
 
 @lru_cache
@@ -46,8 +52,6 @@ def _get_lfric(
     .. versionadded:: 0.1.0
 
     """
-    from .cache import lfric
-
     mesh = lfric(resolution=resolution)
 
     if radius:
@@ -61,7 +65,7 @@ def _get_lfric(
 
 
 class GeoPlotterBase:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Optional[Any], **kwargs: Optional[Any]):
         if args:
             klass = f"'{self.__class__.__name__}'"
             if len(args) == 1 and ("crs" not in kwargs or kwargs["crs"] is None):
@@ -89,12 +93,15 @@ class GeoPlotterBase:
         self.crs = crs
         super().__init__(*args, **kwargs)
 
-    def add_base_layer(self, **kwargs: Optional[Any]) -> vtk.vtkActor:
+    def add_base_layer(
+        self, mesh: Optional[pv.PolyData] = None, **kwargs: Optional[Any]
+    ) -> vtk.vtkActor:
         """
         TODO
 
         Parameters
         ----------
+        mesh
         kwargs : Any, optional
 
         Returns
@@ -138,7 +145,12 @@ class GeoPlotterBase:
                 zlevel,
             )
 
-        mesh = _get_lfric(resolution=resolution, radius=radius)
+        if mesh is not None:
+            if radius is not None:
+                mesh = resize(mesh, radius=radius)
+        else:
+            mesh = _get_lfric(resolution=resolution, radius=radius)
+
         actor = self.add_mesh(mesh, **kwargs)
 
         return actor
@@ -166,20 +178,24 @@ class GeoPlotterBase:
         mesh = get_coastlines(resolution=resolution)
         return self.add_mesh(mesh, **kwargs)
 
-    def add_mesh(self, mesh, **kwargs):
+    def add_mesh(self, mesh: Any, **kwargs: Optional[Any]):
         if isinstance(mesh, pv.UnstructuredGrid):
             mesh = cast(mesh)
 
-        zfactor = float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
-        zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else 0
-        logger.debug(
-            "zfactor=%f, zlevel=%d, is_projected=%s",
-            zfactor,
-            zlevel,
-            self.crs.is_projected,
-        )
-
         if isinstance(mesh, pv.PolyData):
+            radius = float(kwargs.pop("radius")) if "radius" in kwargs else None
+            zfactor = (
+                float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
+            )
+            zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else 0
+            logger.debug(
+                "radius=%s, zfactor=%f, zlevel=%d, is_projected=%s",
+                radius,
+                zfactor,
+                zlevel,
+                self.crs.is_projected,
+            )
+
             src_crs = from_wkt(mesh)
             tgt_crs = self.crs
             project = src_crs and src_crs != tgt_crs
@@ -189,15 +205,18 @@ class GeoPlotterBase:
                 if meridian:
                     mesh.rotate_z(-meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
-                mesh = cut_along_meridian(mesh, antimeridian=True)
+                try:
+                    mesh = cut_along_meridian(mesh, antimeridian=True)
+                except ValueError:
+                    pass
 
-            if "texture" in kwargs:
+            if "texture" in kwargs and kwargs["texture"] is not None:
                 mesh = add_texture_coords(mesh, antimeridian=True)
                 texture = wrap_texture(kwargs["texture"], central_meridian=meridian)
                 kwargs["texture"] = texture
 
             if project:
-                lonlat = to_xy0(mesh, closed_interval=True)
+                lonlat = to_xy0(mesh, radius=radius, closed_interval=True)
                 transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
                 xs, ys = transformer.transform(
                     lonlat[:, 0], lonlat[:, 1], errcheck=True
@@ -217,6 +236,93 @@ class GeoPlotterBase:
                 mesh.points[:, 2] = zoffset
 
         return super().add_mesh(mesh, **kwargs)
+
+    def add_point_labels(
+        self,
+        points: Any,
+        labels: Any,
+        **kwargs: Optional[Any],
+    ) -> vtk.vtkActor2D:
+        if isinstance(points, pv.PolyData):
+            crs = from_wkt(points)
+
+            if crs is not None:
+                lonlat = to_xy0(points)
+                transformer = Transformer.from_crs(crs, self.crs, always_xy=True)
+                xs, ys = transformer.transform(
+                    lonlat[:, 0], lonlat[:, 1], errcheck=True
+                )
+                result = pv.PolyData()
+                result.copy_structure(points)
+                result.points[:, 0] = xs
+                result.points[:, 1] = ys
+                result.points[:, 2] = 0
+                points = result
+
+        return super().add_point_labels(points, labels, **kwargs)
+
+    def add_points(
+        self,
+        points: Optional[Any] = None,
+        xs: Optional[ArrayLike] = None,
+        ys: Optional[ArrayLike] = None,
+        crs: Optional[CRSLike] = None,
+        radius: Optional[float] = None,
+        zfactor: Optional[float] = None,
+        zlevel: Optional[int] = None,
+        **kwargs: Optional[Any],
+    ) -> vtk.vtkActor:
+        kwargs["style"] = "points"
+
+        if "texture" in kwargs:
+            _ = kwargs.pop("texture")
+
+        if points is not None:
+            if crs is not None:
+                warn("Ignoring 'crs' as cartesian xyz 'points' have been provided.")
+                crs = None
+
+        if crs is not None:
+            if xs is None or ys is None:
+                emsg = "Given a 'crs', both 'xs' and 'ys' require to be provided."
+                raise ValueError(emsg)
+
+            xs = np.asanyarray(xs)
+            ys = np.asanyarray(ys)
+
+            if xs.shape != ys.shape:
+                emsg = (
+                    "Require 'xs' and 'ys' with the same shape, got "
+                    f"{xs.shape=} and {ys.shape}."
+                )
+                raise ValueError(emsg)
+
+            crs = CRS.from_user_input(crs)
+
+            if crs != WGS84:
+                transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
+                xs, ys = transformer.transform(xs, ys, errcheck=True)
+
+            radius = 1.0 if radius is None else abs(radius)
+
+            if zfactor is None:
+                zfactor = ZLEVEL_FACTOR
+
+            if zlevel is None:
+                zlevel = 0
+
+            radius += radius * zlevel * zfactor
+
+            xyz = to_xyz(xs, ys, radius=radius)
+            points = pv.PolyData(xyz)
+            # attach the pyproj crs serialized as ogc wkt
+            wkt = np.array([WGS84.to_wkt()])
+            points.field_data[GV_FIELD_CRS] = wkt
+            kwargs["radius"] = radius
+            kwargs["zfactor"] = zfactor
+            kwargs["zlevel"] = zlevel
+
+        return self.add_mesh(points, **kwargs)
 
 
 class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
