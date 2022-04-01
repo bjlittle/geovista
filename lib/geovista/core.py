@@ -13,8 +13,10 @@ from .common import (
     calculate_radius,
     sanitize_data,
     to_xy0,
+    to_xyz,
     wrap,
 )
+from .crs import from_wkt
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .filters import remesh
 from .log import get_logger
@@ -24,7 +26,9 @@ __all__ = [
     "add_texture_coords",
     "combine",
     "cut_along_meridian",
+    "is_projected",
     "logger",
+    "resize",
 ]
 
 # Configure the logger.
@@ -77,10 +81,8 @@ class MeridianSlice:
         # logging convenience
         self._extra = dict(cls=self.__class__.__name__)
 
-        # TODO: require a more robust and definitive approach
-        zmin, zmax = mesh.bounds[4], mesh.bounds[5]
-        if np.isclose(zmax - zmin, 0):
-            emsg = "Cannot slice mesh appears to be a planar projection."
+        if is_projected(mesh):
+            emsg = "Cannot slice mesh that appears to be a planar projection."
             raise ValueError(emsg)
 
         self._info = mesh.active_scalars_info
@@ -214,6 +216,55 @@ class MeridianSlice:
             logger.debug("no cells extracted from slice", extra=self._extra)
 
         return mesh
+
+
+def add_texture_coords(
+    mesh: pv.PolyData,
+    meridian: Optional[float] = None,
+    antimeridian: Optional[bool] = False,
+) -> pv.PolyData:
+    """
+    TODO
+
+    Parameters
+    ----------
+    mesh
+    meridian
+    antimeridian
+    inplace
+
+    Returns
+    -------
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if meridian is None:
+        meridian = DEFAULT_MERIDIAN
+
+    if antimeridian:
+        meridian += 180
+
+    meridian = wrap(meridian)[0]
+
+    if GV_REMESH_POINT_IDS not in mesh.point_data:
+        mesh = cut_along_meridian(mesh, meridian=meridian)
+    else:
+        mesh = mesh.copy(deep=True)
+
+    # convert from cartesian xyz to spherical lat/lons
+    ll = to_xy0(mesh, closed_interval=True)
+    lons, lats = ll[:, 0], ll[:, 1]
+    # convert to normalised UV space
+    u = (lons + 180) / 360
+    v = (lats + 90) / 180
+    t = np.vstack([u, v]).T
+    mesh.active_t_coords = t
+    logger.debug(f"{u.min()=}, {u.max()=}, {v.min()=}, {v.max()=}")
+
+    return mesh
 
 
 def combine(
@@ -431,50 +482,69 @@ def cut_along_meridian(
     return result
 
 
-def add_texture_coords(
-    mesh: pv.PolyData,
-    meridian: Optional[float] = None,
-    antimeridian: Optional[bool] = False,
-) -> pv.PolyData:
+def is_projected(mesh: pv.PolyData) -> bool:
     """
-    TODO
+    Determine whether the provided mesh is a planar projection by inspecting
+    the associated CRS or the mesh geometry.
 
     Parameters
     ----------
-    mesh
-    meridian
-    antimeridian
-    inplace
+    mesh : PolyData
+        The mesh to be inspected.
 
     Returns
     -------
+    bool
+        Whether the mesh is projected.
 
     Notes
     -----
     .. versionadded:: 0.1.0
 
     """
-    if meridian is None:
-        meridian = DEFAULT_MERIDIAN
+    crs = from_wkt(mesh)
 
-    if antimeridian:
-        meridian += 180
-
-    meridian = wrap(meridian)[0]
-
-    if GV_REMESH_POINT_IDS not in mesh.point_data:
-        mesh = cut_along_meridian(mesh, meridian=meridian)
+    if crs is None:
+        xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
+        xdelta, ydelta, zdelta = (xmax - xmin), (ymax - ymin), (zmax - zmin)
+        result = np.isclose(xdelta, 0) or np.isclose(ydelta, 0) or np.isclose(zdelta, 0)
     else:
-        mesh = mesh.copy(deep=True)
+        result = crs.is_projected
 
-    # convert from cartesian xyz to spherical lat/lons
-    ll = to_xy0(mesh, closed_interval=True)
-    lons, lats = ll[:, 0], ll[:, 1]
-    # convert to normalised UV space
-    u = (lons + 180) / 360
-    v = (lats + 90) / 180
-    t = np.vstack([u, v]).T
-    mesh.active_t_coords = t
-    logger.debug(f"{u.min()=}, {u.max()=}, {v.min()=}, {v.max()=}")
+    return result
+
+
+def resize(mesh: pv.PolyData, radius: Optional[float] = None) -> pv.PolyData:
+    """
+    Change the radius of the provided mesh.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The mesh to be resized to the provided ``radius``.
+    radius : float, default=1.0
+        The target radius of the ``mesh``.
+
+    Returns
+    -------
+    PolyData
+        The resized mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if is_projected(mesh):
+        emsg = "Cannot resize mesh that appears to be a planar projection."
+        raise ValueError(emsg)
+
+    if radius is None:
+        radius = 1.0
+
+    if radius and not np.isclose(calculate_radius(mesh), radius):
+        lonlat = to_xy0(mesh)
+        xyz = to_xyz(lonlat[:, 0], lonlat[:, 1], radius=radius)
+        mesh.points = xyz
 
     return mesh
