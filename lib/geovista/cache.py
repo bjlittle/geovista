@@ -37,7 +37,7 @@ BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/main/data/"
 DEFAULT_RESOLUTION_COASTLINES: str = "110m"
 
 #: The default LFRic Model unstructured cubed-sphere resolution.
-DEFAULT_RESOLUTION_LFRIC: str = "c192"
+DEFAULT_RESOLUTION_LFRIC: str = "c96"
 
 #: Environment variable to override pooch cache manager path.
 ENV = "GEOVISTA_CACHEDIR"

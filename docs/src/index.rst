@@ -60,11 +60,10 @@ shaded relief and water.
 .. jupyter-execute::
 
    import geovista as gv
-   from geovista.cache import natural_earth_hypsometric
 
 
    plotter = gv.GeoPlotter()
-   plotter.add_base_layer(texture=natural_earth_hypsometric())
+   plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
    plotter.add_coastlines(resolution="10m", color="white")
    plotter.show()
 

@@ -573,7 +573,7 @@ class Transform:
 
             if crs != WGS84:
                 transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
-                xs, ys = transformer.transform(xs, ys)
+                xs, ys = transformer.transform(xs, ys, errcheck=True)
 
         # ensure longitudes (degrees) are in closed interval [-180, 180)
         xs = wrap(xs)
