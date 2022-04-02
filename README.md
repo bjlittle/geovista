@@ -52,29 +52,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg?branch=main"
-         alt="Docs status">
-  </a>
-  <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml/badge.svg?branch=main"
-         alt="Conda locks">
-  </a>
-  <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-stale.yml/badge.svg?branch=main"
-         alt="Stale issues and pull-requests">
-  </a>
-  <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml/badge.svg?branch=main"
-         alt="Tests status">
-  </a>
-  <a href="https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml">
-    <img src="https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg?branch=main"
-         alt="PyPI artifact status">
-  </a>
-</p>
-
-<p align="center">
   <a href="https://anaconda.org/conda-forge/geovista">
     <img src="https://img.shields.io/conda/vn/conda-forge/geovista?color=orange&label=conda-forge&logo=conda-forge&logoColor=white"
          alt="Conda geovista">
