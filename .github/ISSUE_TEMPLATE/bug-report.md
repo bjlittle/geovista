@@ -20,8 +20,9 @@ assignees: ''
 <!-- If applicable, add screenshots to help explain your problem -->
 
 ## Environment 
-- OS & Version: [e.g., Ubuntu 20.04 LTS]
-- GeoVista Version: [e.g., from the command line run `python -c "import geovista; print(geovista.__version__)"`]
+<!-- Provide additional information regarding the Operating System and GeoVista version -->
+  * OS & Version: [e.g., Ubuntu 20.04 LTS]
+  * GeoVista Version: [e.g., from the command line run `python setup.py --version`]
 
 ## Additional context
 <!-- Provide any further information to help us understand -->
