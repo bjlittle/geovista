@@ -29,7 +29,7 @@ assignees: ''
 <details>
 <summary>Click to expand <b>this section...</b></summary>
 
-```
+```shell
 Please add additional verbose information in this section e.g., code, output, tracebacks, screenshots etc
 ```
 </details>
