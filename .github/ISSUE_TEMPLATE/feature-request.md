@@ -19,7 +19,7 @@ assignees: ''
 <details>
 <summary>Click to expand <b>this section...</b></summary>
 
-```
+```shell
 Please add additional verbose information in this section e.g., references, screenshots, listings etc
 ```
 </details>
