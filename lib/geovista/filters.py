@@ -104,7 +104,11 @@ def remesh(
 
     meridian = wrap(meridian)[0]
     radius = calculate_radius(mesh)
-    logger.debug(f"{meridian=}, {radius=}")
+    logger.debug(
+        "meridian=%s, radius=%s",
+        meridian,
+        radius,
+    )
 
     poly0: pv.PolyData = mesh.copy(deep=True)
 
@@ -118,7 +122,10 @@ def remesh(
         start = datetime.now()
         poly0.triangulate(inplace=True)
         end = datetime.now()
-        logger.debug(f"mesh: triangulated [{(end-start).total_seconds()} secs]")
+        logger.debug(
+            "mesh: triangulated [%s secs]",
+            (end - start).total_seconds(),
+        )
 
     poly1 = pv.Plane(
         center=(radius / 2, 0, 0),
@@ -145,9 +152,10 @@ def remesh(
     alg.Update()
     end = datetime.now()
     logger.debug(
-        f"remeshed: lines={alg.GetNumberOfIntersectionLines()}, "
-        f"points={alg.GetNumberOfIntersectionPoints()} "
-        f"[{(end-start).total_seconds()} secs]"
+        "remeshed: lines=%s, points=%s [%s secs]",
+        alg.GetNumberOfIntersectionLines(),
+        alg.GetNumberOfIntersectionPoints(),
+        (end - start).total_seconds(),
     )
 
     remeshed: pv.PolyData = _get_output(alg, oport=1)
@@ -158,7 +166,10 @@ def remesh(
     if remeshed.n_cells == 0:
         # no remeshing has been performed as the meridian does not intersect the mesh
         remeshed_west, remeshed_east = pv.PolyData(), pv.PolyData()
-        logger.debug(f"no remesh performed using {meridian=}")
+        logger.debug(
+            "no remesh performed using meridian=%s",
+            meridian,
+        )
     else:
         # split the triangulated remesh into its two halves, west and east of the meridian
         centers = remeshed.cell_centers()
@@ -169,9 +180,12 @@ def remesh(
         west_mask = lower_mask | upper_mask
         east_mask = ~west_mask
         logger.debug(
-            f"split: lower={lower_mask.sum()}, upper={upper_mask.sum()}, "
-            f"west={west_mask.sum()}, east={east_mask.sum()}, "
-            f"total={remeshed.n_cells}"
+            "split: lower=%s, upper=%s, west=%s, east=%s, total=%s",
+            lower_mask.sum(),
+            upper_mask.sum(),
+            west_mask.sum(),
+            east_mask.sum(),
+            remeshed.n_cells,
         )
 
         # the vtkIntersectionPolyDataFilter is configured to *always* generate the boundary mask point array

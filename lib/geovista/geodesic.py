@@ -237,9 +237,9 @@ class BBox:
         self._npts = self.c - 1
         self._n_faces = self.c * self.c
         self._n_points = (self.c + 1) * (self.c + 1)
-        logger.debug(f"c: {self.c}", extra=self._extra)
-        logger.debug(f"n_faces: {self._n_faces}", extra=self._extra)
-        logger.debug(f"idx_map: {self._idx_map.shape}", extra=self._extra)
+        logger.debug("c=%s", self.c, extra=self._extra)
+        logger.debug("n_faces=%s", self._n_faces, extra=self._extra)
+        logger.debug("idx_map=%s", self._idx_map.shape, extra=self._extra)
 
     def _bbox_face_edge_idxs(self) -> np.ndarray:
         """
@@ -359,7 +359,7 @@ class BBox:
         """
         if surface is not None:
             radius = calculate_radius(surface)
-            logger.debug(f"radius: {radius}", extra=self._extra)
+            logger.debug("radius=%s", radius, extra=self._extra)
 
         radius = 1.0 if radius is None else abs(radius)
 
@@ -403,14 +403,18 @@ class BBox:
             # create the bbox mesh
             self._mesh = pv.PolyData(bbox_xyz, faces=bbox_faces, n_faces=bbox_n_faces)
             logger.debug(
-                f"bbox: n_faces={self._mesh.n_faces}, n_points={self._mesh.n_points}",
+                "bbox: n_faces=%s, n_points=%s",
+                self._mesh.n_faces,
+                self._mesh.n_points,
                 extra=self._extra,
             )
 
             if self.triangulate:
                 self._mesh = self._mesh.triangulate()
                 logger.debug(
-                    f"bbox: n_faces={self._mesh.n_faces}, n_points={self._mesh.n_points} (tri)",
+                    "bbox: n_faces=%s, n_points=%s (tri)",
+                    self._mesh.n_faces,
+                    self._mesh.n_points,
                     extra=self._extra,
                 )
 
@@ -438,7 +442,7 @@ class BBox:
         faces_c4 = np.roll(faces_c3, 1)
 
         faces = np.hstack([faces_N, faces_c1, faces_c2, faces_c3, faces_c4])
-        logger.debug(f"skirt_n_faces: {skirt_n_faces}", extra=self._extra)
+        logger.debug("skirt_n_faces=%s", skirt_n_faces, extra=self._extra)
 
         return faces
 
@@ -543,9 +547,11 @@ class BBox:
 
         preference = preference.lower()
         perform_cell = False
-        logger.debug(f"preference: '{preference}'", extra=self._extra)
+        logger.debug("preference=%s", preference, extra=self._extra)
         logger.debug(
-            f"surface: n_cells {surface.n_cells}, n_points {surface.n_points}",
+            "surface: n_cells=%s, n_points=%s",
+            surface.n_cells,
+            surface.n_points,
             extra=self._extra,
         )
 
@@ -559,7 +565,7 @@ class BBox:
             original = surface
             surface = surface.cell_centers()
             logger.debug(
-                f"calculated {surface.n_cells} cell centers", extra=self._extra
+                "calculated %s cell centers", surface.n_cells, extra=self._extra
             )
 
         # filter the surface with the bbox mesh
@@ -571,7 +577,8 @@ class BBox:
         delta = end - start
 
         logger.debug(
-            f"region: selected enclosed in {delta.total_seconds()} sec",
+            "region: selected enclosed in %s secs",
+            delta.total_seconds(),
             extra=self._extra,
         )
 
@@ -584,10 +591,12 @@ class BBox:
             )
 
         logger.debug(
-            f"region: n_cells {region.n_cells}, n_points {region.n_points}",
+            "region: n_cells=%s, n_points=%s",
+            region.n_cells,
+            region.n_points,
             extra=self._extra,
         )
-        logger.debug(f"region: {delta / region.n_cells} cells/sec", extra=self._extra)
+        logger.debug("region: %s cells/sec", delta / region.n_cells, extra=self._extra)
 
         # if required, perform cell vertex enclosure checks on the bbox region
         if perform_cell and region.n_cells and region.n_points:
@@ -617,15 +626,20 @@ class BBox:
                 end = datetime.now()
                 enclosed.append(selected["SelectedPoints"].view(bool).reshape(-1, 1))
                 logger.debug(
-                    f"cell idx {idx}: selected {np.sum(selected['SelectedPoints'])} from "
-                    f"{points.n_cells} points [{(end-start).total_seconds()}]",
+                    "cell idx %s: selected %s from %s points [%s secs]",
+                    idx,
+                    np.sum(selected["SelectedPoints"]),
+                    points.n_cells,
+                    (end - start).total_seconds(),
                     extra=self._extra,
                 )
 
             enclosed = np.all(np.hstack(enclosed), axis=-1)
             region = region.extract_cells(enclosed)
             logger.debug(
-                f"region: n_cells {region.n_cells}, n_points {region.n_points}",
+                "region: n_cells=%s, n_points=%s",
+                region.n_cells,
+                region.n_points,
                 extra=self._extra,
             )
 

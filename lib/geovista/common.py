@@ -152,7 +152,9 @@ def calculate_radius(
 
     radius = np.sqrt((mx - ox) ** 2 + (my - oy) ** 2 + (mz - oz) ** 2)
     result = np.round(radius, decimals=decimals)
-    logger.debug(f"{radius=} rounded to {result=} ({decimals} decimal places)")
+    logger.debug(
+        "radius %f rounded to %f (%d decimal places)", radius, result, decimals
+    )
 
     return result
 
@@ -249,7 +251,7 @@ def set_jupyter_backend(backend: Optional[str] = None) -> bool:
             pv.set_jupyter_backend(backend)
             result = True
         except ImportError:
-            logger.info(f"Unable to set the pyvista jupyter backend to {backend!r}")
+            logger.info("Unable to set the pyvista jupyter backend to '%s'", backend)
     else:
         logger.debug("No active IPython kernel available")
 
@@ -308,8 +310,8 @@ def to_xy0(
             lons[seam_ids[seam_mask]] = 180
         else:
             logger.debug(
-                "cannot honour closed interval due to missing "
-                f"'{GV_REMESH_POINT_IDS}' field"
+                "cannot honour closed interval due to missing '%s' field",
+                GV_REMESH_POINT_IDS,
             )
 
     if stacked:

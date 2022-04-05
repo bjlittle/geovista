@@ -98,7 +98,10 @@ class MeridianSlice:
         self.meridian = wrap(meridian)[0]
         self.offset = abs(CUT_OFFSET if offset is None else offset)
         logger.debug(
-            f"meridian={self.meridian}, offset={self.offset}, radius={self.radius}",
+            "meridian=%s, offset=%s, radius=%s",
+            self.meridian,
+            self.offset,
+            self.radius,
             extra=self._extra,
         )
         self.slices = {bias.name: self._intersection(bias.value) for bias in SliceBias}
@@ -108,8 +111,10 @@ class MeridianSlice:
         self.east_ids = set(self.slices[CUT_EAST][GV_CELL_IDS]) if n_cells else set()
         self.split_ids = self.west_ids.intersection(self.east_ids)
         logger.debug(
-            f"west={len(self.west_ids)}, east={len(self.east_ids)}, "
-            f"split={len(self.split_ids)}",
+            "west=%s, east=%s, split=%s",
+            len(self.west_ids),
+            len(self.east_ids),
+            len(self.split_ids),
             extra=self._extra,
         )
 
@@ -129,14 +134,14 @@ class MeridianSlice:
         .. versionadded :: 0.1.0
 
         """
-        logger.debug(f"{bias=}", extra=self._extra)
+        logger.debug("bias=%s", bias, extra=self._extra)
         y = bias * self.offset
         xyz = pv.Line((-self.radius, y, -self.radius), (self.radius, y, -self.radius))
         xyz.rotate_z(self.meridian, inplace=True)
         spline = pv.Spline(xyz.points, 1)
         mesh = self.mesh.slice_along_line(spline)
         logger.debug(
-            f"n_cells={mesh.n_cells}, n_points={mesh.n_points}", extra=self._extra
+            "n_cells=%s, n_points=%s", mesh.n_cells, mesh.n_points, extra=self._extra
         )
         return mesh
 
@@ -181,19 +186,24 @@ class MeridianSlice:
             return mesh
 
         if split_cells:
-            logger.debug(f"{bias=}, split={len(self.split_ids)}", extra=self._extra)
+            logger.debug(
+                "bias=%s, split=%s", bias, len(self.split_ids), extra=self._extra
+            )
             extract_ids = self.split_ids
         else:
             whole_ids = set(self.slices[bias][GV_CELL_IDS]).difference(self.split_ids)
-            logger.debug(f"{bias=}, whole={len(whole_ids)}", extra=self._extra)
+            logger.debug("bias=%s, whole=%s", bias, len(whole_ids), extra=self._extra)
             extract_ids = whole_ids
 
-        logger.debug(f"extracting {len(extract_ids)} cells", extra=self._extra)
+        logger.debug("extracting %s cells", len(extract_ids), extra=self._extra)
 
         if extract_ids:
             mesh = cast(self.mesh.extract_cells(np.array(list(extract_ids))))
             logger.debug(
-                f"mesh: {bias=}, n_cells={mesh.n_cells}, " f"n_points={mesh.n_points}",
+                "mesh: bias=%s, n_cells=%s, n_points=%s",
+                bias,
+                mesh.n_cells,
+                mesh.n_points,
                 extra=self._extra,
             )
             if clip:
@@ -201,8 +211,10 @@ class MeridianSlice:
                 match = np.abs(ll[:, 0] - self.meridian) < 90
                 mesh = cast(mesh.extract_points(match))
                 logger.debug(
-                    f"clip: {bias=}, n_cells={mesh.n_cells}, "
-                    f"n_points={mesh.n_points}",
+                    "clip: bias=%s, n_cells=%s, n_points=%s",
+                    bias,
+                    mesh.n_cells,
+                    mesh.n_points,
                     extra=self._extra,
                 )
             sanitize_data(mesh)
@@ -262,7 +274,13 @@ def add_texture_coords(
     v = (lats + 90) / 180
     t = np.vstack([u, v]).T
     mesh.active_t_coords = t
-    logger.debug(f"{u.min()=}, {u.max()=}, {v.min()=}, {v.max()=}")
+    logger.debug(
+        "u.min()=%s, u.max()=%s, v.min()=%s, v.max()=%s",
+        u.min(),
+        u.max(),
+        v.min(),
+        v.max(),
+    )
 
     return mesh
 
@@ -445,7 +463,11 @@ def cut_along_meridian(
         meridian += 180
 
     meridian = wrap(meridian)[0]
-    logger.debug(f"{meridian=}, {antimeridian=}")
+    logger.debug(
+        "meridian=%s, antimeridian=%s",
+        meridian,
+        antimeridian,
+    )
 
     slicer = MeridianSlice(mesh, meridian)
     mesh_whole = slicer.extract(split_cells=False)

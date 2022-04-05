@@ -133,7 +133,10 @@ def coastline_geometries(
     if multi_lines:
         unpack(multi_lines)
 
-    logger.debug(f"loaded {len(lines)} geometries")
+    logger.debug(
+        "loaded %s geometries",
+        len(lines),
+    )
 
     return lines
 
@@ -186,9 +189,15 @@ def coastline_mesh(
         y = radius * np.sin(yr) * np.sin(xr)
         z = radius * np.cos(yr)
         geoms = np.hstack([x, y, z])
-        logger.debug(f"geometries converted from xy0 to xyz, radius={radius}")
+        logger.debug(
+            "geometries converted from xy0 to xyz, radius=%s",
+            radius,
+        )
 
-    logger.debug(f"coastlines geometry shape={geoms.shape}")
+    logger.debug(
+        "coastlines geometry shape=%s",
+        geoms.shape,
+    )
 
     # convert geometries to a vtk line mesh
     mesh = pv.PolyData()
@@ -196,7 +205,11 @@ def coastline_mesh(
     lines = np.full((nlines, 3), 2, dtype=int)
     pstart, lstart = 0, 0
 
-    logger.debug(f"ngeoms={ngeoms}, nlines={nlines}")
+    logger.debug(
+        "ngeoms=%s, nlines=%s",
+        ngeoms,
+        nlines,
+    )
 
     for npoints in npoints_per_geom:
         pend = pstart + npoints

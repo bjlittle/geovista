@@ -591,7 +591,7 @@ class Transform:
                 raise ValueError(emsg)
 
             logger.debug(
-                f"connectivity shape {connectivity} generating {n_points:,d} indices"
+                "connectivity shape %s generating %d indices", connectivity, n_points
             )
             connectivity = np.arange(n_points).reshape(connectivity)
             ignore_start_index = True
