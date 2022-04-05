@@ -21,8 +21,8 @@ assignees: ''
 
 ## Environment 
 <!-- Provide additional information regarding the Operating System and GeoVista version -->
-* OS & Version:  
-* GeoVista Version:  from the command line run `python setup.py --version`
+* OS & Version - 
+* GeoVista Version - From the command line run `python setup.py --version`
 
 ## Additional context
 <!-- Provide any further information to help us understand -->
