@@ -89,7 +89,7 @@ jobs:
         tox -e ${{ matrix.lock }} -- --platform osx-64 --platform win-64
 
     - name: "Upload lock artifacts"
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: lock-artifacts
         path: ${{ github.workspace }}/requirements/locks/${{ matrix.lock }}*.txt
