@@ -2,6 +2,7 @@ import iris
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
 import geovista as gv
+import geovista.theme
 
 fname = "./qrclim.sst.ugrid.nc"
 with PARSE_UGRID_ON_LOAD.context():
@@ -20,9 +21,12 @@ mesh = gv.Transform.from_unstructured(
     name=cube.name(),
 )
 
+mesh = mesh.threshold()
+
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{cube.name()} / {cube.units}")
 plotter.add_mesh(mesh, cmap="balance", show_edges=False, scalar_bar_args=sargs)
+plotter.add_base_layer(texture=gv.natural_earth_1())
 plotter.add_coastlines(resolution="10m", color="white")
 plotter.add_axes()
 plotter.add_text(

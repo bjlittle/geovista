@@ -1,6 +1,7 @@
 import numpy as np
 
 import geovista as gv
+import geovista.theme
 
 M, N = 45, 90
 lats = np.linspace(-90, 90, M + 1)
@@ -11,8 +12,8 @@ data = np.random.random(M * N)
 mesh = gv.Transform.from_2d(mlons, mlats, data=data, name="synthetic")
 
 plotter = gv.GeoPlotter()
-plotter.add_mesh(mesh, cmap="tempo", show_edges=False)
-plotter.add_coastlines(resolution="10m", color="white", line_width=3)
+plotter.add_mesh(mesh, cmap="tempo", show_edges=True)
+plotter.add_coastlines(resolution="10m", color="white")
 plotter.add_axes()
 plotter.add_text(
     "2-D Synthetic Face Data (M+1, N+1)",

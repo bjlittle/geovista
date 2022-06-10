@@ -6,6 +6,7 @@ from iris.cube import Cube
 import numpy as np
 
 import geovista as gv
+import geovista.theme
 
 
 def prepare(fname: str, std_name: str) -> Tuple[Cube, np.ndarray, np.ndarray]:
@@ -44,12 +45,10 @@ mesh = gv.Transform.from_unstructured(
 
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{cube.name()} / {cube.units}")
-plotter.add_mesh(
-    mesh, cmap="balance", show_edges=False, scalar_bar_args=sargs, edge_color="grey"
-)
-plotter.add_base_layer(color="grey")
+plotter.add_mesh(mesh, cmap="balance", show_edges=False, scalar_bar_args=sargs)
+plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 resolution = "10m"
-plotter.add_coastlines(resolution=resolution, color="white", line_width=2)
+plotter.add_coastlines(resolution=resolution, color="white")
 plotter.add_axes()
 plotter.add_text(
     f"Spherical Multi-Cell ({resolution} Coastlines)",

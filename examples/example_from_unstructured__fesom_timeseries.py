@@ -6,6 +6,7 @@ import iris
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
 import geovista as gv
+import geovista.theme
 
 
 def callback() -> None:
@@ -45,7 +46,7 @@ sargs = dict(title=f"{cube.name()} / {cube.units}")
 plotter.add_mesh(
     mesh, cmap="balance", show_edges=False, scalar_bar_args=sargs, clim=(-2, 33)
 )
-plotter.add_base_layer(color="grey", show_scalar_bar=False)
+plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 plotter.add_coastlines(resolution="10m", color="white")
 plotter.add_axes()
 text = time.units.num2date(time.points[idx]).strftime("%Y-%m-%d")

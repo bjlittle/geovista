@@ -7,6 +7,7 @@ from iris import NameConstraint
 import numpy as np
 
 import geovista as gv
+import geovista.theme
 
 
 def callback() -> None:
@@ -63,12 +64,13 @@ mesh = gv.Transform.from_unstructured(
 
 plotter = gv.GeoBackgroundPlotter()
 sargs = dict(title=f"{cube.name()} / {cube.units}")
+clim = (0.0, 11.032001)
 plotter.add_mesh(
-    mesh, cmap="balance", show_edges=False, scalar_bar_args=sargs, edge_color="grey"
+    mesh, cmap="balance", show_edges=False, scalar_bar_args=sargs, clim=clim
 )
-plotter.add_base_layer(color="grey")
+plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 resolution = "10m"
-plotter.add_coastlines(resolution=resolution, color="white", line_width=2)
+plotter.add_coastlines(resolution=resolution, color="white")
 plotter.add_axes()
 text = time.units.num2date(time.points[idx]).strftime("%Y-%m-%d %H:%M")
 actor = plotter.add_text(text, position="upper_right", font_size=10, shadow=True)
