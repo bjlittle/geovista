@@ -246,7 +246,7 @@ class GeoPlotterBase:
         if isinstance(points, pv.PolyData):
             crs = from_wkt(points)
 
-            if crs is not None:
+            if crs is not None and crs != WGS84:
                 lonlat = to_xy0(points)
                 transformer = Transformer.from_crs(crs, self.crs, always_xy=True)
                 xs, ys = transformer.transform(
