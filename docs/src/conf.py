@@ -14,11 +14,10 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 import datetime
+from importlib.metadata import version as get_version
 import os
 
 import pyvista
-
-import geovista
 
 # -- General configuration ---------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#general-configuration
@@ -51,7 +50,9 @@ copyright = f"{copyright_years}, {project} Contributors"
 author = f"{project} Contributors"
 
 # The full version, including alpha/beta/rc tags
-release = geovista.__version__
+release = get_version("geovista")
+if release.endswith("+dirty"):
+    release = release[: -len("+dirty")]
 
 # The name of the Pygments (syntax highlighting) style to use.
 # https://pygments.org/styles/

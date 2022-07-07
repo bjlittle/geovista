@@ -7,8 +7,7 @@ dependencies:
 
 # setup dependencies
   - setuptools >=45
-  - setuptools_scm >=6.2
-  - setuptools_scm_git_archive
+  - setuptools_scm >=7
 
 # core dependencies
   - cartopy >=0.20
@@ -35,7 +34,7 @@ dependencies:
 
 # documentation dependencies
   - jupyter_sphinx
-  - pydata-sphinx-theme
+  - pydata-sphinx-theme <9
   - pythreejs
   - sphinx
   - sphinx-copybutton
