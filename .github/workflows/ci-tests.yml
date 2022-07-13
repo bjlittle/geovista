@@ -14,6 +14,9 @@ on:
       - "pre-commit-ci-update-config"
       - "dependabot/*"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   run-tests:
