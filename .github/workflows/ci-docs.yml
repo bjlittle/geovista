@@ -31,8 +31,9 @@ jobs:
       matrix:
         task: [build, linkcheck, test]
     steps:
-    - name: "Checkout"
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: "Environment configure"
       env:

@@ -66,6 +66,8 @@ jobs:
         version: [py38, py39, py310]
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: "Environment configure"
       env:
