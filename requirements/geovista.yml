@@ -34,7 +34,7 @@ dependencies:
 
 # documentation dependencies
   - jupyter_sphinx
-  - pydata-sphinx-theme <9.0
+  - pydata-sphinx-theme <0.9
   - pythreejs
   - sphinx
   - sphinx-copybutton
