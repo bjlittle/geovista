@@ -1,6 +1,6 @@
 ---
 name: "✨ Feature Request"
-about: Submit a request for a new feature in GeoVista
+about: Request a new feature in GeoVista
 title: ''
 labels: 'new: feature'
 assignees: ''
@@ -8,18 +8,18 @@ assignees: ''
 ---
 
 ## ✨ Feature Request
-<!-- Provide a clear and concise description of the feature proposal -->
+<!-- Provide a clear and concise description of the proposed feature -->
 
 ## Motivation
 <!-- Is your feature request related to an existing issue? -->
 <!-- I'm always frustrated when ... -->
 
-## Additional context
-<!-- Provide any further information to help us understand -->
+## Additional Context
+<!-- Provide further information to help us better understand -->
 <details>
 <summary>Click to expand <b>this section...</b></summary>
 
 ```shell
-Please add additional verbose information in this section e.g., references, screenshots, listings etc
+Please provide additional verbose information here e.g., references, screenshots, listings etc
 ```
 </details>

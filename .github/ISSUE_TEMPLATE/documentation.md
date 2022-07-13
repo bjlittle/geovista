@@ -8,4 +8,4 @@ assignees: ''
 ---
 
 ## 📚 Documentation
-<!-- Describe the issue or provide a suggestion for improving the GeoVista documentation -->
+<!-- Describe the issue or provide a suggestion how we can improve the documentation -->

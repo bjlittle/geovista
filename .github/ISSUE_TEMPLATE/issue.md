@@ -8,4 +8,4 @@ assignees: ''
 ---
 
 ## 📰 Custom Issue
-<!-- Provide a clear description of what the issue is, and we'll try our best to help 😀 -->
+<!-- Provide a clear description of your issue, and we'll try our best to help 😀 -->

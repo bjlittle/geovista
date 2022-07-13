@@ -10,26 +10,26 @@ assignees: ''
 ## 🐛 Bug Report
 <!-- Provide a clear description of what the bug is -->
 
-## How To Reproduce
-<!-- Steps involved to reproduce the issue behaviour -->
+## How to Reproduce
+<!-- Steps involved to reproduce the behaviour -->
 
-## Expected behaviour
+## Expected Behaviour
 <!-- A clear and concise description of what you expected to happen -->
 
 ## Screenshots
 <!-- If applicable, add screenshots to help explain your problem -->
 
 ## Environment 
-<!-- Provide additional information regarding the Operating System and GeoVista version -->
-* OS & Version - 
-* GeoVista Version - From the command line run `python setup.py --version`
+<!-- Provide additional environment and package information -->
+* OS & Version: 
+* GeoVista Version: from the CLI run `python -c "import geovista; print(geovista.__version__)"`
 
-## Additional context
-<!-- Provide any further information to help us understand -->
+## Additional Context
+<!-- Provide further information to help us better understand -->
 <details>
 <summary>Click to expand <b>this section...</b></summary>
 
 ```shell
-Please add additional verbose information in this section e.g., code, output, tracebacks, screenshots etc
+Please provide additional verbose information here e.g., code, output, tracebacks, screenshots etc
 ```
 </details>
