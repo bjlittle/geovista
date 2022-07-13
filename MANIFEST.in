@@ -1,0 +1,5 @@
+prune .github
+exclude .gitignore
+prune branding
+prune docs/_build
+prune examples
