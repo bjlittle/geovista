@@ -7,6 +7,8 @@ name: ci-tests
 
 on:
   pull_request:
+    branches:
+      - "*"
   
   push:
     branches-ignore:
@@ -19,48 +21,62 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run-tests:
-    name: "Test ${{ matrix.version }} on ${{ matrix.os }}"
+  tests:
+    name: "${{ matrix.session }} (${{ matrix.version }} ${{ matrix.os }})"
+
     runs-on: ${{ matrix.os }}
+
     defaults:
       run:
         shell: bash -l {0}
+
     env:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       ENV_NAME: "ci-tests"
+
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        version: [py38, py39, py310]
+        os: ["ubuntu-latest"]
+        version: ["py310"]
+        session: ["tests", "doc-build", "doc-linkcheck", "doc-tests"]
         include:
-          - os: ubuntu-latest
-            platform: linux
-          - os: ubuntu-latest
-            version: py310
+          - os: "ubuntu-latest"
+            version: "py38"
+            session: "tests"
+            platform: "linux"
+          - os: "ubuntu-latest"
+            version: "py39"
+            session: "tests"
+            platform: "linux"
+          - os: "ubuntu-latest"
+            version: "py310"
+            session: "tests"
+            platform: "linux"
             posargs: "--cov-report=xml --cov"
-            post-command: codecov
+            post-command: "codecov"
+          - os: "ubuntu-latest"
+            platform: "linux"
+
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
 
-    - name: "Environment configure"
+    - name: "environment configure"
       env:
         # Maximum cache period (in weeks) before forcing a cache refresh.
         CACHE_WEEKS: 2
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+        echo "LOCK_FILE=requirements/locks/${{ matrix.version }}-lock-${{ matrix.platform }}-64.txt" >> ${GITHUB_ENV}
 
-    - name: "Conda package cache"
-      uses: actions/cache@v3
-      env:
-        # Increment the build number to force a cache refresh.
-        CACHE_BUILD: 0
+    - name: "conda package cache"
+      uses: ./.github/workflows/composite/conda-pkg-cache
       with:
-        path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+        cache_build: 0
+        cache_period: ${{ env.CACHE_PERIOD }}
+        env_name: ${{ env.ENV_NAME }}
 
-    - name: "Conda install"
+    - name: "conda install"
       uses: conda-incubator/setup-miniconda@v2
       with:
         miniforge-version: latest
@@ -69,38 +85,34 @@ jobs:
         auto-update-conda: false
         use-only-tar-bz2: true
 
-    - name: "Conda environment cache"
-      id: conda-env-cache
-      uses: actions/cache@v3
-      env:
-        # Increment the build number to force a cache refresh.
-        CACHE_BUILD: 0
+    - name: "conda environment cache"
+      uses: ./.github/workflows/composite/conda-env-cache
       with:
-        path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
-        key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+        cache_build: 0
+        cache_period: ${{ env.CACHE_PERIOD }}
+        env_name: ${{ env.ENV_NAME }}
+        install_packages: "cartopy pip tox"
 
-    - name: "Conda environment update"
-      if: steps.conda-env-cache.outputs.cache-hit != 'true'
-      run: |
-        conda install --name ${{ env.ENV_NAME }} tox
-
-    - name: "Conda info"
+    - name: "conda info"
       run: |
         conda info
         conda list
 
-    - name: "Tox cache"
-      uses: actions/cache@v3
-      env:
-        # Increment the build number to forece a cache refresh.
-        CACHE_BUILD: 0
-        TOX_INI: ${{ github.workspace }}/tox.ini
+    - name: "cartopy cache"
+      uses: ./.github/workflows/composite/cartopy-cache
       with:
-        path: ${{ github.workspace }}/.tox
-        key: ${{ runner.os }}-tox-${{ env.ENV_NAME }}-${{ matrix.version }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.TOX_INI) }}
+        cache_build: 0
+        cache_period: ${{ env.CACHE_PERIOD }}
+        env_name: ${{ env.ENV_NAME }}
 
-    - name: "Run ${{ matrix.os }} on ${{ matrix.version}} tests"
+    - name: "tox cache"
+      uses: ./.github/workflows/composite/tox-cache
+      with:
+        cache_build: 0
+        lock_file: ${{ env.LOCK_FILE }}
+
+    - name: "${{ matrix.session }} (${{ matrix.version }} ${{ matrix.os }})"
       env:
         POST_COMMAND: ${{ matrix.post-command }}
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.platform }}-test -- ${{ matrix.posargs }}
+        tox -e ${{ matrix.version }}-${{ matrix.platform }}-${{ matrix.session }} -- ${{ matrix.posargs }}

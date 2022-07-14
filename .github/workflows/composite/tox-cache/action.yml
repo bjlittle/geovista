@@ -1,0 +1,20 @@
+name: "tox cache"
+description: "cache the tox test environment"
+
+inputs:
+  cache_build:
+    description: "tox cache build number"
+    required: false
+    default: "0"
+  lock_file:
+    description: "conda-lock environment requirements filename"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v3
+      with:
+        path: ${{ github.workspace }}/.tox
+        key: ${{ runner.os }}-tox-${{ matrix.session }}-${{ matrix.version }}-b${{ inputs.cache_build }}-${{ hashFiles(inputs.lock_file) }}
