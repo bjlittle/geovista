@@ -85,7 +85,7 @@ https://conda.anaconda.org/conda-forge/osx-64/libssh2-1.10.0-h52ee1ee_2.tar.bz2#
 https://conda.anaconda.org/conda-forge/osx-64/libxml2-2.9.14-h08a9926_3.tar.bz2#acc0c68c892fdb2ed5f37f6668ad0726
 https://conda.anaconda.org/conda-forge/osx-64/libzip-1.9.2-hab082e8_0.tar.bz2#b5398199964621c680de8dd0ced9cfc4
 https://conda.anaconda.org/conda-forge/osx-64/mysql-common-8.0.29-h924029e_1.tar.bz2#b4357c201e14486f46b6b85af2da4f8e
-https://conda.anaconda.org/conda-forge/osx-64/sqlite-3.39.0-hd9f0692_0.tar.bz2#956223b8f1d808bab8ca9d8fb08778ec
+https://conda.anaconda.org/conda-forge/osx-64/sqlite-3.39.1-hd9f0692_0.tar.bz2#add14b880512697bba36cb71a3d26c8b
 https://conda.anaconda.org/conda-forge/osx-64/tbb-devel-2021.5.0-hbb4e6a2_1.tar.bz2#9f8927e96a61f73aa47dacc390a6c03a
 https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.2-ha9df2e0_2.tar.bz2#6e5b0ab35f8e4c407c3d2f25b51bc274
 https://conda.anaconda.org/conda-forge/osx-64/brotli-1.0.9-h5eb16cf_7.tar.bz2#d3320319f06d6adb52ed01e1839475a1

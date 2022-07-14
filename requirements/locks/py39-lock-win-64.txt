@@ -46,7 +46,7 @@ https://conda.anaconda.org/conda-forge/win-64/openh264-2.2.0-h0e60522_1.tar.bz2#
 https://conda.anaconda.org/conda-forge/win-64/openssl-1.1.1q-h8ffe710_0.tar.bz2#2ee16f406ee12fe4dcd08b513e9bd0c6
 https://conda.anaconda.org/conda-forge/win-64/pcre-8.45-h0e60522_0.tar.bz2#3cd3948bb5de74ebef93b6be6d8cf0d5
 https://conda.anaconda.org/conda-forge/win-64/pugixml-1.11.4-h0e60522_0.tar.bz2#7d93dd7cddabe3440f5f588892ea5407
-https://conda.anaconda.org/conda-forge/win-64/sqlite-3.39.0-h8ffe710_0.tar.bz2#c76b39a7a74df1875e7b2b3fb5549632
+https://conda.anaconda.org/conda-forge/win-64/sqlite-3.39.1-h8ffe710_0.tar.bz2#c78517cc232400e9901399a387b8210c
 https://conda.anaconda.org/conda-forge/win-64/svt-av1-1.1.0-h0e60522_1.tar.bz2#61bcb1d0fd817380fb6119f9c52fcaac
 https://conda.anaconda.org/conda-forge/win-64/tbb-2021.5.0-h2d74725_1.tar.bz2#8f00f39dbd7deaba11410b0b6e7b2cb4
 https://conda.anaconda.org/conda-forge/win-64/tk-8.6.12-h8ffe710_0.tar.bz2#c69a5047cc9291ae40afd4a1ad6f0c0f
