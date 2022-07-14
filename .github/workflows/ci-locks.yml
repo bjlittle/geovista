@@ -30,6 +30,7 @@ jobs:
       ENV_NAME: "ci-locks"
 
     strategy:
+      fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
         version: ["py38", "py39", "py310"]
