@@ -18,38 +18,43 @@ concurrency:
 
 jobs:
   build-locks:
-    name: "Build ${{ matrix.lock }}"
+    name: "${{ matrix.session }} (${{ matrix.version }})"
+
     runs-on: ubuntu-latest
+
     defaults:
       run:
         shell: bash -l {0}
+
     env:
       ENV_NAME: "ci-locks"
+
     strategy:
       matrix:
-        lock: [py38-lock, py39-lock, py310-lock]
+        os: ["ubuntu-latest"]
+        version: ["py38", "py39", "py310"]
+        session: ["lock"]
+
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    - name: "Environment configure"
+    - name: "environment configure"
       env:
         # Maximum cache period (in weeks) before forcing a cache refresh.
         CACHE_WEEKS: 2
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
 
-    - name: "Conda package cache"
-      uses: actions/cache@v3
-      env:
-        # Increment the build number to force a cache refresh.
-        CACHE_BUILD: 0
+    - name: "conda package cache"
+      uses: ./.github/workflows/composite/conda-pkg-cache
       with:
-        path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+        cache_build: 0
+        cache_period: ${{ env.CACHE_PERIOD }}
+        env_name: ${{ env.ENV_NAME }}
 
-    - name: "Conda install"
+    - name: "conda install"
       uses: conda-incubator/setup-miniconda@v2
       with:
         miniforge-version: latest
@@ -58,42 +63,29 @@ jobs:
         auto-update-conda: false
         use-only-tar-bz2: true
 
-    - name: "Conda environment cache"
-      id: conda-env-cache
-      uses: actions/cache@v3
-      env:
-        # Increment the build number to force a cache refresh.
-        CACHE_BUILD: 0
+    - name: "conda environment cache"
+      uses: ./.github/workflows/composite/conda-env-cache
       with:
-        path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
-        key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+        cache_build: 0
+        cache_period: ${{ env.CACHE_PERIOD }}
+        env_name: ${{ env.ENV_NAME }}
+        install_packages: "pip tox"
 
-    - name: "Conda environment update"
-      if: steps.conda-env-cache.outputs.cache-hit != 'true'
-      run: |
-        conda install --name ${{ env.ENV_NAME }} tox
-
-    - name: "Conda info"
+    - name: "conda info"
       run: |
         conda info
         conda list
 
-    - name: "Tox cache"
-      uses: actions/cache@v3
-      env:
-        # Increment the build number to forece a cache refresh.
-        CACHE_BUILD: 0
-        TOX_INI: ${{ github.workspace }}/tox.ini
+    - name: "tox cache"
+      uses: ./.github/workflows/composite/tox-cache
       with:
-        path: ${{ github.workspace }}/.tox
-        key: ${{ runner.os }}-tox-${{ env.ENV_NAME }}-${{ matrix.lock }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.TOX_INI) }}
+        cache_build: 0
 
-    - name: "Create ${{ matrix.lock }} conda locks"
+    - name: "${{ matrix.session }} (${{ matrix.version }})"
       run: |
-        tox -e ${{ matrix.lock }} -- --platform osx-64 --platform win-64
+        tox -e ${{ matrix.version }}-${{ matrix.session }} -- --platform osx-64 --platform win-64
 
-    - name: "Upload lock artifacts"
-      uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v3
       with:
         name: lock-artifacts
         path: ${{ github.workspace }}/requirements/locks/${{ matrix.lock }}*.txt
@@ -101,27 +93,26 @@ jobs:
 
   create-pr:
     needs: build-locks
-    name: "Create pull-request"
+    name: "create pull-request"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    - name: "Download lock artifacts"
-      uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v3
       with:
         name: lock-artifacts
         path: ${{ github.workspace }}/requirements/locks
 
-    - name: "Generate token"
+    - name: "generate token"
       uses: tibdex/github-app-token@v1
       id: generate-token
       with:
         app_id: ${{ secrets.AUTH_APP_ID }}
         private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
 
-    - name: "Push pull-request"
+    - name: "generate pull-request"
       id: cpr
       uses: peter-evans/create-pull-request@923ad837f191474af6b1721408744feb989a4c27
       with:
@@ -139,7 +130,7 @@ jobs:
           new: pull request
           bot
 
-    - name: "Show pull-request"
+    - name: "show pull-request"
       if: steps.cpr.outputs.pull-request-number != ''
       run: |
         echo "pull-request #${{ steps.cpr.outputs.pull-request-number }}"
