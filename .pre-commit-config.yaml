@@ -53,3 +53,5 @@ repos:
     rev: "0.48"
     hooks:
     -   id: check-manifest
+        args: [--no-build-isolation]
+        additional_dependencies: [setuptools-scm]
