@@ -15,6 +15,12 @@ repos:
     -   id: check-merge-conflict
         # Check for debugger imports and py37+ `breakpoint()` calls in Python source.
     -   id: debug-statements
+        # Check TOML file syntax.
+        id: check-toml
+        # Check YAML file syntax.
+        id: check-yaml
+        # Makes sure files end in a newline and only a newline.
+        id: end-of-file-fixer
         # Don't commit to main branch.
 #    -   id: no-commit-to-branch
 
