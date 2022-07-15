@@ -140,6 +140,21 @@ jobs:
         tox -e ${{ env.TESTENV }} --run-command "python -c 'import geovista; print(geovista.__version__)'"
 
 
+  show-artifacts:
+    needs: [build-artifacts]
+    name: "show artifacts"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/dist
+
+    - shell: bash
+      run: |
+        ls -l ${{ github.workspace }}/dist
+
+
   publish-artifacts-test-pypi:
     needs: [test-artifacts]
     name: "Publish to Test PyPI"
