@@ -27,3 +27,9 @@ verbose = "False"
 [tool.setuptools_scm]
 write_to = "lib/geovista/_version.py"
 local_scheme = "dirty-tag"
+
+
+[tool.check-manifest]
+ignore = [
+    "lib/geovista/_version.py",
+]
