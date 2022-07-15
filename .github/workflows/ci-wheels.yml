@@ -136,7 +136,7 @@ jobs:
       run: |
         WHEEL=$(ls -1 dist/*.whl)
         tox -e ${{ env.TESTENV }} --run-command "python -m pip uninstall --yes ${WHEEL}"
-        tox -e ${{ env.TESTENV }} --run-command "python -m pip install ${WHEEL}"
+        tox -e ${{ env.TESTENV }} --run-command "python -m pip install --no-deps ${WHEEL}"
         tox -e ${{ env.TESTENV }} --run-command "python -c 'import geovista; print(geovista.__version__)'"
 
 
