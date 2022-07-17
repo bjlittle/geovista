@@ -89,7 +89,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: lock-artifacts
-        path: ${{ github.workspace }}/requirements/locks/${{ matrix.lock }}*.txt
+        path: ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.txt
 
 
   create-pr:
