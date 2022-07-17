@@ -29,14 +29,14 @@
 
 We're just bootstrapping ``geovista`` and its documentation, so please be patient 👍
 
-In the meantime, here's a ``geovista`` amuse-bouche to whet your appetite...
+In the meantime, here's an interactive ``geovista`` amuse-bouche to whet your appetite...
 
 .. jupyter-execute::
 
    import geovista as gv
    from geovista.samples import ww3_gbl_tri_hs
 
-   # Load the sample data.
+   # Load the WAVEWATCH III (WW3) global unstructured triangular sample data.
    sample = ww3_gbl_tri_hs()
 
    # Create the mesh from the sample data.
@@ -49,6 +49,5 @@ In the meantime, here's a ``geovista`` amuse-bouche to whet your appetite...
    plotter.add_mesh(mesh, cmap="balance", show_edges=True)
    plotter.add_base_layer(texture=gv.natural_earth_hypsometric(), zlevel=-5)
    plotter.add_coastlines(resolution="10m", color="white")
+   plotter.view_xy(negative=True)
    plotter.show()
-
-
