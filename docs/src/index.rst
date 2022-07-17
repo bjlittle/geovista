@@ -31,39 +31,24 @@ We're just bootstrapping ``geovista`` and its documentation, so please be patien
 
 In the meantime, here's a ``geovista`` amuse-bouche to whet your appetite...
 
-Render a mesh from a uniform grid with random cell data and 1:10m Natural Earth coastlines.
-
-.. jupyter-execute::
-
-   import numpy as np
-   import geovista as gv
-
-
-   # Generate a synthetic uniform grid.
-   M, N = 45, 90
-   lats = np.linspace(-90, 90, M + 1)
-   lons = np.linspace(-180, 180, N + 1)
-   data = np.random.uniform(low=250, high=303, size=M * N)
-
-   # Create a mesh from the grid.
-   mesh = gv.Transform.from_1d(lons, lats, data=data)
-
-   plotter = gv.GeoPlotter()
-   plotter.add_mesh(mesh, cmap='balance', show_edges=True)
-   plotter.add_coastlines(resolution="10m", color="white")
-   plotter.show()
-
-Render a base layer mesh with 1:10m Natural Earth coastlines and a geo-located
-Natural Earth down-sampled 1:50m cross-blended hypsometric tints raster with
-shaded relief and water.
-
 .. jupyter-execute::
 
    import geovista as gv
+   from geovista.samples import ww3_gbl_tri_hs
 
+   # Load the sample data.
+   sample = ww3_gbl_tri_hs()
 
+   # Create the mesh from the sample data.
+   mesh = gv.Transform.from_unstructured(
+       sample.lons, sample.lats, sample.connectivity, data=sample.data
+   )
+
+   # Plot the mesh.
    plotter = gv.GeoPlotter()
-   plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+   plotter.add_mesh(mesh, cmap="balance", show_edges=True)
+   plotter.add_base_layer(texture=gv.natural_earth_hypsometric(), zlevel=-5)
    plotter.add_coastlines(resolution="10m", color="white")
    plotter.show()
+
 

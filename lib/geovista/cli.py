@@ -161,6 +161,7 @@ def main(version: bool, cache: bool) -> None:
     is_flag=True,
     help="Raster resources.",
 )
+@click.option("-s", "--samples", is_flag=True, help="Sample data resources")
 def download(
     pull: bool,
     check: bool,
@@ -170,6 +171,7 @@ def download(
     pull_ne: Tuple[str],
     output: Optional[pathlib.Path],
     raster: bool,
+    samples: bool,
 ) -> None:
     """
     Download and cache geovista resources (offline support).
@@ -210,6 +212,9 @@ def download(
             _download_group(collect(name), name=name)
         elif mesh:
             name = "mesh"
+            _download_group(collect(name), name=name)
+        elif samples:
+            name = "samples"
             _download_group(collect(name), name=name)
 
     if check:

@@ -19,6 +19,9 @@ dependencies:
   - pyvistaqt
   - vtk >=9
 
+# sample data dependencies
+  - netcdf4
+
 # cmap dependencies
   - cmocean
   - colorcet
