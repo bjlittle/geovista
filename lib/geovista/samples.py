@@ -14,7 +14,7 @@ import pooch
 
 from .cache import CACHE
 
-__all__ = ["orca2", "ww3_global_smc", "ww3_global_tri"]
+__all__ = ["hexahedron", "orca2", "ww3_global_smc", "ww3_global_tri"]
 
 
 @dataclass(frozen=True)
@@ -57,6 +57,39 @@ def capitalise(title: str) -> str:
     title = " ".join([word.capitalize() for word in title])
 
     return title
+
+
+def hexahedron() -> SampleUnstructuredXY:
+    """
+    Load DYNAMICO hexahedron unstructured mesh.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The hexagonal unstructured spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "hexahedron.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"samples/{fname}.bz2", processor=processor)
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat hex cell grid
+    lons = ds.variables["bounds_lon_i"][:]
+    lats = ds.variables["bounds_lat_i"][:]
+
+    # load the mesh payload
+    data = ds.variables["phis"][:]
+    name = capitalise("synthetic")
+    units = 1
+
+    sample = SampleUnstructuredXY(lons, lats, lons.shape, data, name, units)
+
+    return sample
 
 
 def orca2() -> SampleStructuredXY:
