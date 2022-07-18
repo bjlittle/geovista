@@ -1,6 +1,6 @@
 """
-This module contains convenience functions to download and load geovista
-sample data.
+This module contains convenience functions to download, cache and load
+geovista sample data.
 
 """
 
