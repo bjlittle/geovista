@@ -1,6 +1,7 @@
 """
 This module contains convenience functions to download, cache and load
-geovista sample data.
+geovista sample data, which can then be used by the :mod:`geovista.bridge`
+to generate a mesh.
 
 """
 
@@ -13,7 +14,17 @@ import pooch
 
 from .cache import CACHE
 
-__all__ = ["ww3_global_smc", "ww3_global_tri"]
+__all__ = ["orca2", "ww3_global_smc", "ww3_global_tri"]
+
+
+@dataclass(frozen=True)
+class SampleStructuredXY:
+    lons: npt.ArrayLike
+    lats: npt.ArrayLike
+    data: npt.ArrayLike
+    name: str = field(default=None)
+    units: str = field(default=None)
+    ndim: int = 2
 
 
 @dataclass(frozen=True)
@@ -48,6 +59,39 @@ def capitalise(title: str) -> str:
     return title
 
 
+def orca2() -> SampleStructuredXY:
+    """
+    Load ORCA2 curvilinear mesh.
+
+    Returns
+    -------
+    SampleStructuredXY
+        The curvilinear spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "votemper.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"samples/{fname}.bz2", processor=processor)
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat grid
+    lons = ds.variables["lont_bounds"][:]
+    lats = ds.variables["latt_bounds"][:]
+
+    # load the mesh payload
+    data = ds.variables["votemper"]
+    name = capitalise(data.standard_name)
+    units = data.units
+
+    sample = SampleStructuredXY(lons, lats, data[0, 0], name, units)
+
+    return sample
+
+
 def ww3_global_smc() -> SampleUnstructuredXY:
     """
     Load the WAVEWATCH III (WW3) unstructured Spherical Multi-Cell (SMC) mesh.
@@ -55,6 +99,7 @@ def ww3_global_smc() -> SampleUnstructuredXY:
     Returns
     -------
     SampleUnstructuredXY
+        The unstructured spatial coordinates and data payload.
 
     Notes
     -----
@@ -108,6 +153,7 @@ def ww3_global_tri() -> SampleUnstructuredXY:
     Returns
     -------
     SampleUnstructuredXY
+        The unstructured spatial coordinates and data payload.
 
     Notes
     -----

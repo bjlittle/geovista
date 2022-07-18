@@ -1,24 +1,27 @@
-import iris
-
 import geovista as gv
+from geovista.samples import orca2
 import geovista.theme
 
-# https://github.com/SciTools/iris-test-data/blob/master/test_data/NetCDF/ORCA2/votemper.nc
-fname = "./votemper.nc"
-cube = iris.load_cube(fname, "sea_water_potential_temperature")[0, 0]
+# load sample data
+sample = orca2()
 
-lons = cube.coord("longitude").bounds
-lats = cube.coord("latitude").bounds
+# create the mesh from the sample data
+mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)
 
-mesh = gv.Transform.from_2d(lons, lats, data=cube.data, name=cube.name())
+# remove cells from the mesh with nan values
+mesh = mesh.threshold()
 
+# plot the mesh
 plotter = gv.GeoPlotter()
-sargs = dict(title=f"{cube.name()} / {cube.units}")
-plotter.add_mesh(mesh, cmap="balance", show_edges=True, scalar_bar_args=sargs)
+sargs = dict(title=f"{sample.name} / {sample.units}")
+plotter.add_mesh(
+    mesh, cmap="balance", show_edges=True, edge_color="grey", scalar_bar_args=sargs
+)
 plotter.add_base_layer(texture=gv.natural_earth_1())
-plotter.add_coastlines(resolution="10m", color="white")
+resolution = "10m"
+plotter.add_coastlines(resolution=resolution, color="white")
 plotter.add_axes()
 plotter.add_text(
-    "2-D ORCA Face Data (M, N, 4)", position="upper_left", font_size=10, shadow=True
+    f"ORCA ({resolution} Coastlines)", position="upper_left", font_size=10, shadow=True
 )
 plotter.show()
