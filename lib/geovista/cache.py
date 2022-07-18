@@ -52,6 +52,9 @@ CACHE: pooch.Pooch = pooch.create(
     registry=None,
     retry_if_failed=RETRY_ATTEMPTS,
     env=ENV,
+    urls={
+        "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc": "https://swift.dkrz.de/v1/dkrz_0262ea1f00e34439850f3f1d71817205/FESOM/tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc",
+    },
 )
 
 CACHE.load_registry(open_text(__package__, "registry.txt"))

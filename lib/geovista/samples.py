@@ -6,6 +6,7 @@ to generate a mesh.
 """
 
 from dataclasses import dataclass, field
+from typing import Optional
 
 import netCDF4 as nc
 import numpy as np
@@ -24,6 +25,7 @@ class SampleStructuredXY:
     data: npt.ArrayLike
     name: str = field(default=None)
     units: str = field(default=None)
+    steps: int = field(default=None)
     ndim: int = 2
 
 
@@ -35,6 +37,7 @@ class SampleUnstructuredXY:
     data: npt.ArrayLike
     name: str = field(default=None)
     units: str = field(default=None)
+    steps: int = field(default=None)
     ndim: int = 2
 
 
@@ -57,6 +60,47 @@ def capitalise(title: str) -> str:
     title = " ".join([word.capitalize() for word in title])
 
     return title
+
+
+def fesom(step: Optional[int] = None) -> SampleUnstructuredXY:
+    """
+    Load AWI-CM FESOM 1.4 unstructured mesh.
+
+    Parameters
+    ----------
+    step : int
+        Timeseries index offset.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
+    resource = CACHE.fetch(f"{fname}")
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat cell grid
+    lons = ds.variables["lon_bnds"][:]
+    lats = ds.variables["lat_bnds"][:]
+
+    # load the mesh payload
+    data = ds.variables["tos"]
+    name = capitalise(data.standard_name)
+    units = data.units
+
+    # deal with the timeseries step
+    steps = ds.dimensions["time"].size
+    idx = 0 if step is None else (step % steps)
+
+    sample = SampleUnstructuredXY(lons, lats, lons.shape, data[idx], name, units, steps)
+
+    return sample
 
 
 def hexahedron() -> SampleUnstructuredXY:
@@ -125,9 +169,14 @@ def orca2() -> SampleStructuredXY:
     return sample
 
 
-def ww3_global_smc() -> SampleUnstructuredXY:
+def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
     """
     Load the WAVEWATCH III (WW3) unstructured Spherical Multi-Cell (SMC) mesh.
+
+    Parameters
+    ----------
+    step : int
+        Timeseries index offset.
 
     Returns
     -------
@@ -166,15 +215,16 @@ def ww3_global_smc() -> SampleUnstructuredXY:
     lons = np.hstack([x1, x2, x2, x1])
     lats = np.hstack([y1, y1, y2, y2])
 
-    # we know this is a timeseries, a priori
-    idx = 0
+    # deal with the timeseries step
+    steps = ds.dimesions["time"].size
+    idx = 0 if step is None else (step % steps)
 
     # load mesh payload
     data = ds.variables["hs"]
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleUnstructuredXY(lons, lats, lons.shape, data[idx], name, units)
+    sample = SampleUnstructuredXY(lons, lats, lons.shape, data[idx], name, units, steps)
 
     return sample
 
@@ -206,7 +256,7 @@ def ww3_global_tri() -> SampleUnstructuredXY:
     offset = 1  # minimum connectivity index offset
     connectivity = ds.variables["tri"][:] - offset
 
-    # we know this is a timeseries, a priori
+    # we know this is a single step timeseries, a priori
     idx = 0
 
     # load mesh payload

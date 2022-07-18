@@ -1,28 +1,25 @@
-import iris
-
 import geovista as gv
+from geovista.samples import fesom
 import geovista.theme
 
-# see https://fesom.de/cmip6/work-with-awi-cm-unstructured-data/
-# https://swift.dkrz.de/v1/dkrz_0262ea1f00e34439850f3f1d71817205/FESOM/tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc
-fname = "./tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
-cube = iris.load_cube(fname, "tos")[0]
+# load the sample data
+sample = fesom()
 
-lons = cube.coord("longitude").bounds
-lats = cube.coord("latitude").bounds
-
+# create the mesh from the sample data
 mesh = gv.Transform.from_unstructured(
-    lons, lats, lons.shape, data=cube.data, name=cube.name()
+    sample.lons, sample.lats, sample.connectivity, data=sample.data
 )
 
+# plot the mesh
 plotter = gv.GeoPlotter()
-sargs = dict(title=f"{cube.name()} / {cube.units}")
-plotter.add_mesh(mesh, cmap="balance", show_edges=False, scalar_bar_args=sargs)
+sargs = dict(title=f"{sample.name} / {sample.units}")
+plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
-plotter.add_coastlines(resolution="50m", color="white")
+resolution = "50m"
+plotter.add_coastlines(resolution=resolution, color="white")
 plotter.add_axes()
 plotter.add_text(
-    "Unstructured FESOM Face Data (N, 18)",
+    f"AWI-CM FESOM 1.4 ({resolution} Coastlines)",
     position="upper_left",
     font_size=10,
     shadow=True,
