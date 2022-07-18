@@ -49,5 +49,4 @@ In the meantime, here's an interactive ``geovista`` amuse-bouche to whet your ap
    plotter.add_mesh(mesh, cmap="balance", show_edges=True)
    plotter.add_base_layer(texture=gv.natural_earth_hypsometric(), zlevel=-5)
    plotter.add_coastlines(resolution="10m", color="white")
-   plotter.view_xy(negative=True)
    plotter.show()
