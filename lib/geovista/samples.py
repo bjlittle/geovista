@@ -15,14 +15,21 @@ import pooch
 
 from .cache import CACHE
 
-__all__ = ["hexahedron", "orca2", "ww3_global_smc", "ww3_global_tri"]
+__all__ = [
+    "fesom",
+    "fvcom_tamar",
+    "hexahedron",
+    "orca2",
+    "ww3_global_smc",
+    "ww3_global_tri",
+]
 
 
 @dataclass(frozen=True)
 class SampleStructuredXY:
     lons: npt.ArrayLike
     lats: npt.ArrayLike
-    data: npt.ArrayLike
+    data: npt.ArrayLike = field(default=None)
     name: str = field(default=None)
     units: str = field(default=None)
     steps: int = field(default=None)
@@ -34,7 +41,9 @@ class SampleUnstructuredXY:
     lons: npt.ArrayLike
     lats: npt.ArrayLike
     connectivity: npt.ArrayLike
-    data: npt.ArrayLike
+    data: npt.ArrayLike = field(default=None)
+    face: npt.ArrayLike = field(default=None)
+    node: npt.ArrayLike = field(default=None)
     name: str = field(default=None)
     units: str = field(default=None)
     steps: int = field(default=None)
@@ -98,7 +107,49 @@ def fesom(step: Optional[int] = None) -> SampleUnstructuredXY:
     steps = ds.dimensions["time"].size
     idx = 0 if step is None else (step % steps)
 
-    sample = SampleUnstructuredXY(lons, lats, lons.shape, data[idx], name, units, steps)
+    sample = SampleUnstructuredXY(
+        lons, lats, lons.shape, data=data[idx], name=name, units=units, steps=steps
+    )
+
+    return sample
+
+
+def fvcom_tamar() -> SampleUnstructuredXY:
+    """
+    Load PML FVCOM unstructured mesh.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "fvcom_tamar.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"samples/{fname}.bz2", processor=processor)
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat cell grid
+    lons = ds.variables["lon"][:]
+    lats = ds.variables["lat"][:]
+
+    # load the face/node connectivity
+    offset = 1  # minimum connectivity index offset
+    connectivity = ds.variables["nv"][:] - offset
+
+    # load the mesh payload
+    face = ds.variables["h_center"]
+    name = capitalise(face.standard_name)
+    units = face.units
+    node = ds.variables["h"][:]
+
+    sample = SampleUnstructuredXY(
+        lons, lats, connectivity.T, face=face[:], node=node, name=name, units=units
+    )
 
     return sample
 
@@ -131,7 +182,9 @@ def hexahedron() -> SampleUnstructuredXY:
     name = capitalise("synthetic")
     units = 1
 
-    sample = SampleUnstructuredXY(lons, lats, lons.shape, data, name, units)
+    sample = SampleUnstructuredXY(
+        lons, lats, lons.shape, data=data, name=name, units=units
+    )
 
     return sample
 
@@ -164,7 +217,7 @@ def orca2() -> SampleStructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleStructuredXY(lons, lats, data[0, 0], name, units)
+    sample = SampleStructuredXY(lons, lats, data=data[0, 0], name=name, units=units)
 
     return sample
 
@@ -216,7 +269,7 @@ def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
     lats = np.hstack([y1, y1, y2, y2])
 
     # deal with the timeseries step
-    steps = ds.dimesions["time"].size
+    steps = ds.dimensions["time"].size
     idx = 0 if step is None else (step % steps)
 
     # load mesh payload
@@ -224,7 +277,9 @@ def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleUnstructuredXY(lons, lats, lons.shape, data[idx], name, units, steps)
+    sample = SampleUnstructuredXY(
+        lons, lats, lons.shape, data=data[idx], name=name, units=units, steps=steps
+    )
 
     return sample
 
@@ -252,7 +307,7 @@ def ww3_global_tri() -> SampleUnstructuredXY:
     lons = ds.variables["longitude"][:]
     lats = ds.variables["latitude"][:]
 
-    # load the connectivity
+    # load the face/node connectivity
     offset = 1  # minimum connectivity index offset
     connectivity = ds.variables["tri"][:] - offset
 
@@ -264,6 +319,8 @@ def ww3_global_tri() -> SampleUnstructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleUnstructuredXY(lons, lats, connectivity, data[idx], name, units)
+    sample = SampleUnstructuredXY(
+        lons, lats, connectivity, data=data[idx], name=name, units=units
+    )
 
     return sample

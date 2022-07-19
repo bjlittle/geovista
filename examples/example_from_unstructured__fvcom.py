@@ -1,30 +1,31 @@
-import netCDF4 as nc
-
 import geovista as gv
+from geovista.samples import fvcom_tamar
 import geovista.theme
 
-# load the netcdf dataset
-fname = "./tamar_v2_2tsteps.nc"
-ds = nc.Dataset(fname)
+# load the sample data
+sample = fvcom_tamar()
 
-# cherry-pick the topology, connectivity and data
-lons = ds.variables["lon"][:]
-lats = ds.variables["lat"][:]
-connectivity = ds.variables["nv"][:] - 1
-elements = ds.variables["h_center"][:]
-nodes = ds.variables["h"][:]
-
-# create the mesh and warp it
+# create the mesh from the sample data
 mesh = gv.Transform.from_unstructured(
-    lons, lats, connectivity.T, data=elements, name="elements"
+    sample.lons, sample.lats, sample.connectivity, sample.face, name="face"
 )
-mesh.point_data["nodes"] = nodes
+
+# warp the mesh nodes by the bathymetry
+mesh.point_data["node"] = sample.node
 mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
-mesh.warp_by_scalar(scalars="nodes", inplace=True, factor=2e-5)
+mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 
 # plot the mesh
 plotter = gv.GeoPlotter()
-sargs = dict(title="Bathymetry / m")
-plotter.add_mesh(mesh, cmap="balance", show_edges=True, scalar_bar_args=sargs)
+sargs = dict(title=f"{sample.name} / {sample.units}")
+plotter.add_mesh(
+    mesh, cmap="balance", show_edges=True, edge_color="grey", scalar_bar_args=sargs
+)
 plotter.add_axes()
+plotter.add_text(
+    "PML FVCOM Tamar",
+    position="upper_left",
+    font_size=10,
+    shadow=True,
+)
 plotter.show()
