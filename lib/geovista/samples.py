@@ -19,6 +19,7 @@ __all__ = [
     "fesom",
     "fvcom_tamar",
     "hexahedron",
+    "lam",
     "orca2",
     "ww3_global_smc",
     "ww3_global_tri",
@@ -44,6 +45,7 @@ class SampleUnstructuredXY:
     data: npt.ArrayLike = field(default=None)
     face: npt.ArrayLike = field(default=None)
     node: npt.ArrayLike = field(default=None)
+    start_index: int = field(default=None)
     name: str = field(default=None)
     units: str = field(default=None)
     steps: int = field(default=None)
@@ -149,6 +151,50 @@ def fvcom_tamar() -> SampleUnstructuredXY:
 
     sample = SampleUnstructuredXY(
         lons, lats, connectivity.T, face=face[:], node=node, name=name, units=units
+    )
+
+    return sample
+
+
+def lam() -> SampleUnstructuredXY:
+    """
+    Load CF UGRID LAM unstructured mesh.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and data payload.
+
+    Notes:
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "lam.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"samples/{fname}.bz2", processor=processor)
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat cell grid
+    lons = ds.variables["Mesh2d_face_node_x"][:]
+    lats = ds.variables["Mesh2d_face_node_y"][:]
+
+    # load the face/node connectivity
+    connectivity = ds.variables["Mesh2d_face_face_nodes"]
+    start_index = connectivity.start_index
+
+    # load the mesh payload
+    data = ds.variables["theta"]
+    name = capitalise(data.standard_name)
+    units = data.units
+
+    sample = SampleUnstructuredXY(
+        lons,
+        lats,
+        connectivity[:],
+        data=data[:],
+        start_index=start_index,
+        name=name,
+        units=units,
     )
 
     return sample
