@@ -34,7 +34,7 @@ In the meantime, here's an interactive ``geovista`` amuse-bouche to whet your ap
 .. jupyter-execute::
 
    import geovista as gv
-   from geovista.samples import ww3_global_tri
+   from geovista.pantry import ww3_global_tri
 
    # Load the WAVEWATCH III (WW3) global unstructured triangular sample data.
    sample = ww3_global_tri()
