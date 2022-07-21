@@ -1,5 +1,5 @@
 import geovista as gv
-from geovista.samples import lam
+from geovista.pantry import lam
 import geovista.theme
 
 # load the sample data

@@ -1,5 +1,5 @@
 import geovista as gv
-from geovista.samples import ww3_global_tri
+from geovista.pantry import ww3_global_tri
 import geovista.theme
 
 # load the sample data

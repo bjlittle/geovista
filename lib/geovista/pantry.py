@@ -132,7 +132,7 @@ def fvcom_tamar() -> SampleUnstructuredXY:
     """
     fname = "fvcom_tamar.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"samples/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
     ds = nc.Dataset(resource)
 
     # load the lon/lat cell grid
@@ -171,7 +171,7 @@ def lam() -> SampleUnstructuredXY:
     """
     fname = "lam.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"samples/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
     ds = nc.Dataset(resource)
 
     # load the lon/lat cell grid
@@ -216,7 +216,7 @@ def hexahedron() -> SampleUnstructuredXY:
     """
     fname = "hexahedron.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"samples/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
     ds = nc.Dataset(resource)
 
     # load the lon/lat hex cell grid
@@ -251,7 +251,7 @@ def orca2() -> SampleStructuredXY:
     """
     fname = "votemper.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"samples/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
     ds = nc.Dataset(resource)
 
     # load the lon/lat grid
@@ -289,7 +289,7 @@ def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
     """
     fname = "ww3_gbl_smc_hs.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"samples/ww3/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"pantry/ww3/{fname}.bz2", processor=processor)
     ds = nc.Dataset(resource)
 
     # load the lon/lat grid cell centres
@@ -346,7 +346,7 @@ def ww3_global_tri() -> SampleUnstructuredXY:
     """
     fname = "ww3_gbl_tri_hs.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"samples/ww3/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"pantry/ww3/{fname}.bz2", processor=processor)
     ds = nc.Dataset(resource)
 
     # load the lon/lat points

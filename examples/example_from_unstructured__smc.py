@@ -1,5 +1,5 @@
 import geovista as gv
-from geovista.samples import ww3_global_smc
+from geovista.pantry import ww3_global_smc
 import geovista.theme
 
 # load the sample data

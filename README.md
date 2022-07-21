@@ -84,22 +84,33 @@ pip install geovista
 
 ## Quick Start
 
-GeoVista comes with various pre-canned sample data to get you started.
+GeoVista comes with various pre-canned resources to help get you started on your visualisation journey.
 
-### Sample Data
+### Resources
 
-If you want to download and cache all the available GeoVista assets at once to make them available offline, simply:
+GeoVista makes use of various resources, such as rasters, VTK meshes, [Natural Earth](https://www.naturalearthdata.com/features/) features, and sample model data.
+
+If you want to download and cache all the available GeoVista assets to make them available offline, simply:
 ```shell
 geovista download --all
 ```
-Alternatively, just leave GeoVista to download assets on-the-fly as it needs them.
+Alternatively, just leave GeoVista to download assets on-the-fly as it requires them.
+
+To view the registered list of resources available, simply:
+```shell
+geovista download --list
+```
 
 ### Plotting Examples
+
+Let's explore a sample of various oceanographic and atmospheric model data using GeoVista.
+
+#### WAVEWATCH III
 
 First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) unstructured triangular mesh:
 ```python
 import geovista as gv
-from geovista.samples import ww3_global_tri
+from geovista.pantry import ww3_global_tri
 import geovista.theme
 
 # load the sample data
@@ -124,10 +135,12 @@ plotter.show()
 
 ![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/ww3-tri.png)
 
-Now, let's visualise the bathymetry of the [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.2923012,-4.192073,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365) (UK), from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) unstructured mesh:
+#### Finite Volume Community Ocean Model
+
+Now, let's visualise the bathymetry of the [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.2923012,-4.192073,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365) from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) unstructured mesh, as kindly provided by the [Plymouth Marine Laboratory](https://pml.ac.uk/):
 ```python
 import geovista as gv
-from geovista.samples import fvcom_tamar
+from geovista.pantry import fvcom_tamar
 import geovista.theme
 
 # load the sample data
@@ -146,14 +159,12 @@ mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 # plot the mesh
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
-plotter.add_mesh(
-    mesh, cmap="balance", show_edges=True, edge_color="grey", scalar_bar_args=sargs
-)
+plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
 plotter.add_axes()
 plotter.show()
 ```
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/tamar.png)
+![tamar](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/tamar_zoom.png)
 
 ## License
 

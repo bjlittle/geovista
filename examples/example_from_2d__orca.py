@@ -1,5 +1,5 @@
 import geovista as gv
-from geovista.samples import orca2
+from geovista.pantry import orca2
 import geovista.theme
 
 # load sample data

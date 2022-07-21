@@ -1,5 +1,5 @@
 import geovista as gv
-from geovista.samples import hexahedron
+from geovista.pantry import hexahedron
 import geovista.theme
 
 # load the sample data

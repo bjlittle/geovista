@@ -1,5 +1,5 @@
 import geovista as gv
-from geovista.samples import fesom
+from geovista.pantry import fesom
 import geovista.theme
 
 # load the sample data

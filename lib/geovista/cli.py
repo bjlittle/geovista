@@ -155,13 +155,13 @@ def main(version: bool, cache: bool) -> None:
     type=click.Path(file_okay=False, resolve_path=True, path_type=pathlib.Path),
     help=f"Download target directory (default: {CACHE.abspath})",
 )
+@click.option("-s", "--pantry", is_flag=True, help="Sample data resources.")
 @click.option(
     "-r",
     "--raster",
     is_flag=True,
     help="Raster resources.",
 )
-@click.option("-s", "--samples", is_flag=True, help="Sample data resources")
 def download(
     pull: bool,
     check: bool,
@@ -170,8 +170,8 @@ def download(
     mesh: bool,
     pull_ne: Tuple[str],
     output: Optional[pathlib.Path],
+    pantry: bool,
     raster: bool,
-    samples: bool,
 ) -> None:
     """
     Download and cache geovista resources (offline support).
@@ -213,8 +213,8 @@ def download(
         elif mesh:
             name = "mesh"
             _download_group(collect(name), name=name)
-        elif samples:
-            name = "samples"
+        elif pantry:
+            name = "pantry"
             _download_group(collect(name), name=name)
 
     if check:

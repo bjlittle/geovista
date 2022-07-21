@@ -1,5 +1,5 @@
 import geovista as gv
-from geovista.samples import fvcom_tamar
+from geovista.pantry import fvcom_tamar
 import geovista.theme
 
 # load the sample data
