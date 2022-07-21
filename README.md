@@ -86,11 +86,15 @@ pip install geovista
 
 GeoVista comes with various pre-canned sample data to get you started.
 
+### Sample Data
+
 If you want to download and cache all the available GeoVista assets at once to make them available offline, simply:
 ```shell
 geovista download --all
 ```
 Alternatively, just leave GeoVista to download assets on-the-fly as it needs them.
+
+### Plotting Examples
 
 First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) unstructured triangular mesh:
 ```python
