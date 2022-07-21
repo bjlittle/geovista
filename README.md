@@ -107,7 +107,10 @@ Let's explore a sample of various oceanographic and atmospheric model data using
 
 #### WAVEWATCH III
 
-First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) unstructured triangular mesh:
+First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) unstructured triangular mesh.
+<details>
+<summary> <img src="https://raw.githubusercontent.com/bjlittle/geovista-data/main/icons/browser.png" alt="code"> </summary>
+
 ```python
 import geovista as gv
 from geovista.pantry import ww3_global_tri
@@ -132,12 +135,17 @@ plotter.add_coastlines(resolution="10m", color="white")
 plotter.add_axes()
 plotter.show()
 ```
+</details>
 
 ![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/ww3-tri.png)
 
 #### Finite Volume Community Ocean Model
 
-Now, let's visualise the bathymetry of the [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.2923012,-4.192073,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365) from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) unstructured mesh, as kindly provided by the [Plymouth Marine Laboratory](https://pml.ac.uk/):
+Now, let's visualise the bathymetry of the [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.2923012,-4.192073,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365) from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) unstructured mesh, as kindly provided by the [Plymouth Marine Laboratory](https://pml.ac.uk/).
+
+<details>
+<summary> <img src="https://raw.githubusercontent.com/bjlittle/geovista-data/main/icons/browser.png" alt="code"> </summary>
+
 ```python
 import geovista as gv
 from geovista.pantry import fvcom_tamar
@@ -163,6 +171,7 @@ plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
 plotter.add_axes()
 plotter.show()
 ```
+</details>
 
 ![tamar](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/tamar_zoom.png)
 
