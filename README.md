@@ -94,9 +94,9 @@ If you want to download and cache all the available GeoVista assets to make them
 ```shell
 geovista download --all
 ```
-Alternatively, just leave GeoVista to download assets on-the-fly as it requires them.
+Alternatively, just leave GeoVista to download assets on-the-fly as and when it needs them.
 
-To view the registered list of resources available, simply:
+To view the list of registered resources available, simply:
 ```shell
 geovista download --list
 ```
