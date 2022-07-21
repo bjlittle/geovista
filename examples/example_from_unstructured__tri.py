@@ -18,7 +18,7 @@ plotter.add_mesh(
 )
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 resolution = "10m"
-plotter.add_coastlines(resolution="10m", color="white")
+plotter.add_coastlines(resolution=resolution, color="white")
 plotter.add_axes()
 plotter.view_xy(negative=True)
 plotter.add_text(
