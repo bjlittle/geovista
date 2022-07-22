@@ -107,7 +107,7 @@ Let's explore a sample of various oceanographic and atmospheric model data using
 
 First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) unstructured triangular mesh.
 <details>
-<summary> 🗒 </summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
@@ -143,7 +143,7 @@ plotter.show()
 Now, let's visualise the bathymetry of the [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365) from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) unstructured mesh, as kindly provided by the [Plymouth Marine Laboratory](https://pml.ac.uk/).
 
 <details>
-<summary> 🗒 </summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
@@ -183,7 +183,7 @@ Initial projection support is available within GeoVista for Cylindrical and Pseu
 Let's showcase this capability with some high-resolution Local Area Model (LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html).
 
 <details>
-<summary> 🗒 </summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
@@ -218,7 +218,7 @@ plotter.show()
 Using the same LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using the [Cartopy Plate Carrée](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree) CRS.
 
 <details>
-<summary> 🗒 </summary>
+<summary>🗒 </summary>
 
 ```python
 import cartopy.crs as ccrs
@@ -256,7 +256,7 @@ plotter.show()
 Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/modelling-systems/lfric) C48 cube-sphere unstructured mesh of Sea Surface Temperature data on a [Robinson](https://proj.org/operations/projections/robin.html) projection.
 
 <details>
-<summary> 🗒 </summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
