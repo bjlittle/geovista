@@ -90,13 +90,13 @@ GeoVista comes with various pre-canned resources to help get you started on your
 
 GeoVista makes use of various resources, such as rasters, VTK meshes, [Natural Earth](https://www.naturalearthdata.com/features/) features, and sample model data.
 
-If you want to download and cache all the available GeoVista assets to make them available offline, simply:
+If you want to download and cache all the available GeoVista resources to make them available offline, simply:
 ```shell
 geovista download --all
 ```
-Alternatively, just leave GeoVista to download assets on-the-fly as and when it needs them.
+Alternatively, just leave GeoVista to download resources on-the-fly, as and when it needs them.
 
-To view the list of registered resources available, simply:
+To view the list of registered resources, simply:
 ```shell
 geovista download --list
 ```
