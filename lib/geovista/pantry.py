@@ -20,6 +20,7 @@ __all__ = [
     "fvcom_tamar",
     "hexahedron",
     "lam",
+    "lfric_sst",
     "orca2",
     "ww3_global_smc",
     "ww3_global_tri",
@@ -184,6 +185,50 @@ def lam() -> SampleUnstructuredXY:
 
     # load the mesh payload
     data = ds.variables["theta"]
+    name = capitalise(data.standard_name)
+    units = data.units
+
+    sample = SampleUnstructuredXY(
+        lons,
+        lats,
+        connectivity[:],
+        data=data[:],
+        start_index=start_index,
+        name=name,
+        units=units,
+    )
+
+    return sample
+
+
+def lfric_sst() -> SampleUnstructuredXY:
+    """
+    Load CF UGRID global unstructured mesh.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and data payload.
+
+    Notes:
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "qrclim.sst.ugrid.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat cell grid
+    lons = ds.variables["dynamics_node_x"][:]
+    lats = ds.variables["dynamics_node_y"][:]
+
+    # load the face/node connectivity
+    connectivity = ds.variables["dynamics_face_nodes"]
+    start_index = connectivity.start_index
+
+    # load the mesh payload
+    data = ds.variables["surface_temperature"]
     name = capitalise(data.standard_name)
     units = data.units
 
