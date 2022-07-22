@@ -251,6 +251,42 @@ plotter.show()
 
 ![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lam-pc.png)
 
+#### LFRic Cube-Sphere
+
+Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/modelling-systems/lfric) C48 cube-sphere unstructured mesh of Sea Surface Temperature data on a [Robinson](https://proj.org/operations/projections/robin.html) projection.
+
+<details>
+<summary> 🖥️ </summary>
+
+```python
+import geovista as gv
+from geovista.pantry import lfric_sst
+import geovista.theme
+
+# Load the sample data.
+sample = lfric_sst()
+
+# Create the mesh from the sample data.
+mesh = gv.Transform.from_unstructured(
+    sample.lons,
+    sample.lats,
+    sample.connectivity,
+    data=sample.data,
+    start_index=sample.start_index,
+)
+
+# Plot the mesh on a Robinson projection using an ESRI spatial reference identifier.
+plotter = gv.GeoPlotter(crs="ESRI:54030")
+sargs = dict(title=f"{sample.name} / {sample.units}")
+plotter.add_mesh(mesh, cmap="thermal", show_edges=True, edge_color="grey", scalar_bar_args=sargs)
+plotter.view_xy()
+plotter.add_axes()
+plotter.show()
+```
+</details>
+
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lfric-robin.png)
+
 
 ## License
 
