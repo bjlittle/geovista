@@ -109,7 +109,7 @@ Let's explore a sample of various oceanographic and atmospheric model data using
 
 First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) unstructured triangular mesh.
 <details>
-<summary> <img src="https://raw.githubusercontent.com/bjlittle/geovista-data/main/icons/browser.png" alt="code"> </summary>
+<summary> 🖥️ </summary>
 
 ```python
 import geovista as gv
@@ -144,7 +144,7 @@ plotter.show()
 Now, let's visualise the bathymetry of the [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.2923012,-4.192073,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365) from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) unstructured mesh, as kindly provided by the [Plymouth Marine Laboratory](https://pml.ac.uk/).
 
 <details>
-<summary> <img src="https://raw.githubusercontent.com/bjlittle/geovista-data/main/icons/browser.png" alt="code"> </summary>
+<summary> 🖥️ </summary>
 
 ```python
 import geovista as gv
