@@ -116,15 +116,15 @@ import geovista as gv
 from geovista.pantry import ww3_global_tri
 import geovista.theme
 
-# load the sample data
+# Load the sample data.
 sample = ww3_global_tri()
 
-# create the mesh from the sample data
+# Create the mesh from the sample data.
 mesh = gv.Transform.from_unstructured(
     sample.lons, sample.lats, sample.connectivity, data=sample.data
 )
 
-# plot the mesh
+# Plot the mesh.
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
 plotter.add_mesh(
@@ -152,20 +152,20 @@ import geovista as gv
 from geovista.pantry import fvcom_tamar
 import geovista.theme
 
-# load the sample data
+# Load the sample data.
 sample = fvcom_tamar()
 
-# create the mesh from the sample data
+# Create the mesh from the sample data.
 mesh = gv.Transform.from_unstructured(
     sample.lons, sample.lats, sample.connectivity, sample.face, name="face"
 )
 
-# warp the mesh nodes by the bathymetry
+# Warp the mesh nodes by the bathymetry.
 mesh.point_data["node"] = sample.node
 mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
 mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 
-# plot the mesh
+# Plot the mesh.
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
 plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
@@ -175,6 +175,84 @@ plotter.show()
 </details>
 
 ![tamar](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/tamar_zoom.png)
+
+#### CF UGRID
+
+##### Local Area Model
+
+Initial projection support is available within GeoVista for Cylindrical and Pseudo-Cylindrical projections.
+
+Let's showcase this capability with some high-resolution Local Area Model (LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html).
+
+<details>
+<summary> 🖥️ </summary>
+
+```python
+import geovista as gv
+from geovista.pantry import lam
+import geovista.theme
+
+# Load the sample data.
+sample = lam()
+
+# Create the mesh from the sample data.
+mesh = gv.Transform.from_unstructured(
+    sample.lons,
+    sample.lats,
+    sample.connectivity,
+    data=sample.data,
+    start_index=sample.start_index,
+)
+
+# Plot the mesh on a mollweide projection using a Proj string.
+plotter = gv.GeoPlotter(crs="+proj=moll")
+sargs = dict(title=f"{sample.name} / {sample.units}")
+plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
+plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+plotter.add_axes()
+plotter.view_xy()
+plotter.show()
+```
+</details>
+
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lam-moll.png)
+
+Using the same LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using the [Cartopy Plate Carrée](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree) CRS.
+
+<details>
+<summary> 🖥️ </summary>
+
+```python
+import cartopy.crs as ccrs
+import geovista as gv
+from geovista.pantry import lam
+import geovista.theme
+
+# Load the sample data.
+sample = lam()
+
+# Create the mesh from the sample data.
+mesh = gv.Transform.from_unstructured(
+    sample.lons,
+    sample.lats,
+    sample.connectivity,
+    data=sample.data,
+    start_index=sample.start_index,
+)
+
+# Plot the mesh on a Plate Carrée projection using a cartopy CRS.
+plotter = gv.GeoPlotter(crs=ccrs.PlateCarree(central_longitude=180))
+sargs = dict(title=f"{sample.name} / {sample.units}")
+plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
+plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+plotter.add_axes()
+plotter.view_xy()
+plotter.show()
+```
+</details>
+
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lam-pc.png)
+
 
 ## License
 
