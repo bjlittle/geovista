@@ -5,9 +5,9 @@
          width="200"></a>
 </h1>
 
-<h5 align="center">
+<h3 align="center">
   Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
-</h5>
+</h3>
 
 | | |
 | --- | --- |
