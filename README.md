@@ -30,9 +30,9 @@
 
 Unfortunately we've not yet tagged our first minor release of GeoVista.
 
-However, we have secured the package namespace on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/). Although those initial package versions are simple are simple placeholders for now, with no functionality.
+However, we have secured the package namespace on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/). Although those initial package versions are simple placeholders for now, containing no functionality.
 
-In the meantime, life is just a smidge more complicated than necessary if you wish to play with GeoVista.
+So in the meantime, life is just a smidge more complicated than necessary if you wish to play with GeoVista.
 
 
 ### Development
