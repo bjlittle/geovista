@@ -172,7 +172,7 @@ plotter.show()
 ```
 </details>
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/tamar_zoom.png)
+![tamar](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/tamar-zoom.png)
 
 #### CF UGRID
 
@@ -253,7 +253,7 @@ plotter.show()
 
 #### LFRic Cube-Sphere
 
-Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/modelling-systems/lfric) C48 cube-sphere **unstructured** mesh of Sea Surface Temperature data on a [Robinson](https://proj.org/operations/projections/robin.html) projection.
+Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/modelling-systems/lfric) C48 cube-sphere **unstructured** mesh of Sea Surface Temperature data on a [Robinson](https://proj.org/operations/projections/robin.html) projection using an ESRI SRID.
 
 <details>
 <summary>🗒 </summary>
@@ -286,6 +286,43 @@ plotter.show()
 </details>
 
 ![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lfric-robin.png)
+
+#### UM ORCA2
+
+So far we've demonstrated GeoVista's ability to cope with **unstructured** data. Now let's plot a **curvilinear** mesh using some Met Office Unified Model ORCA2 Sea Water Potential Temperature data.
+
+<details>
+<summary>🗒 </summary>
+
+```python
+import geovista as gv
+from geovista.pantry import um_orca2
+import geovista.theme
+
+# Load sample data.
+sample = um_orca2()
+
+# Create the mesh from the sample data.
+mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)
+
+# Remove cells from the mesh with NaN values.
+mesh = mesh.threshold()
+
+# Plot the mesh.
+plotter = gv.GeoPlotter()
+sargs = dict(title=f"{sample.name} / {sample.units}")
+plotter.add_mesh(
+    mesh, cmap="balance", show_edges=True, edge_color="grey", scalar_bar_args=sargs
+)
+plotter.add_base_layer(texture=gv.natural_earth_1())
+plotter.add_coastlines(resolution="10m", color="white")
+plotter.view_xy()
+plotter.add_axes()
+plotter.show()
+```
+</details>
+
+![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/um-orca.png)
 
 
 ## License

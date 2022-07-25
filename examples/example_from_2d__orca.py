@@ -1,9 +1,9 @@
 import geovista as gv
-from geovista.pantry import orca2
+from geovista.pantry import um_orca2
 import geovista.theme
 
 # load sample data
-sample = orca2()
+sample = um_orca2()
 
 # create the mesh from the sample data
 mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)

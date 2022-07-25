@@ -21,7 +21,7 @@ __all__ = [
     "hexahedron",
     "lam",
     "lfric_sst",
-    "orca2",
+    "um_orca2",
     "ww3_global_smc",
     "ww3_global_tri",
 ]
@@ -280,9 +280,9 @@ def hexahedron() -> SampleUnstructuredXY:
     return sample
 
 
-def orca2() -> SampleStructuredXY:
+def um_orca2() -> SampleStructuredXY:
     """
-    Load ORCA2 curvilinear mesh.
+    Load Met Office Unified Model ORCA2 curvilinear mesh.
 
     Returns
     -------
