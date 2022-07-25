@@ -359,6 +359,10 @@ plotter.show()
 
 ![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/oisst-avhrr.png)
 
+## Documentation
+
+The [documentation](https://geovista.readthedocs.io/en/latest/) is built by [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://docs.readthedocs.io/en/stable/).
+
 ## License
 
 GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/licenses/BSD-3-Clause.html) license.
