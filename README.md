@@ -178,9 +178,9 @@ plotter.show()
 
 ##### Local Area Model
 
-Initial projection support is available within GeoVista for Cylindrical and Pseudo-Cylindrical projections.
+Initial projection support is available within GeoVista for **Cylindrical** and **Pseudo-Cylindrical** projections. As GeoVista matures and stabalises, we'll then aim to extend our support to cover **Azimuthal** and **Conic** projections.
 
-Let's showcase this capability with some high-resolution **unstructured** Local Area Model (LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html).
+Let's showcase this capability with some high-resolution **unstructured** Local Area Model (LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html) using a [PROJ](https://proj.org/index.html) string.
 
 <details>
 <summary>🗒 </summary>
@@ -215,7 +215,7 @@ plotter.show()
 
 ![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lam-moll.png)
 
-Using the same LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using the [Cartopy Plate Carrée](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree) CRS.
+Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree).
 
 <details>
 <summary>🗒 </summary>
