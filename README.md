@@ -324,6 +324,41 @@ plotter.show()
 
 ![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/um-orca.png)
 
+#### OISST AVHRR
+
+Finally, let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.gov/products/optimum-interpolation-sst) (OISST) Advanced Very High Resolution Radiometer (AVHRR) **rectilinear** mesh
+
+<details>
+<summary>🗒 </summary>
+
+```python
+import geovista as gv
+from geovista.pantry import oisst_avhrr_sst
+import geovista.theme
+
+# Load sample data.
+sample = oisst_avhrr_sst()
+
+# Create the mesh from the sample data.
+mesh = gv.Transform.from_1d(sample.lons, sample.lats, data=sample.data)
+
+# Remove cells from the mesh with NaN values.
+mesh = mesh.threshold()
+
+# Plot the mesh.
+plotter = gv.GeoPlotter()
+sargs = dict(title=f"{sample.name} / {sample.units}")
+plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
+plotter.add_base_layer(texture=gv.blue_marble())
+resolution = "10m"
+plotter.add_coastlines(resolution=resolution, color="white")
+plotter.view_xz()
+plotter.add_axes()
+plotter.show()
+```
+</details>
+
+![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/oisst-avhrr.png)
 
 ## License
 

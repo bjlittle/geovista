@@ -21,6 +21,7 @@ __all__ = [
     "hexahedron",
     "lam",
     "lfric_sst",
+    "oisst_avhrr_sst",
     "um_orca2",
     "ww3_global_smc",
     "ww3_global_tri",
@@ -276,6 +277,39 @@ def hexahedron() -> SampleUnstructuredXY:
     sample = SampleUnstructuredXY(
         lons, lats, lons.shape, data=data, name=name, units=units
     )
+
+    return sample
+
+
+def oisst_avhrr_sst() -> SampleStructuredXY:
+    """
+    Load NOAA/NCEI OISST AVHRR rectilinear mesh.
+
+    Returns
+    -------
+    SampleStructuredXY
+        The curvilinear spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "oisst-avhrr.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat grid
+    lons = ds.variables["lon_bnds"][:]
+    lats = ds.variables["lat_bnds"][:]
+
+    # load the mesh payload
+    data = ds.variables["sst"]
+    name = capitalise(data.long_name)
+    units = data.units
+
+    sample = SampleStructuredXY(lons, lats, data=data[0, 0], name=name, units=units)
 
     return sample
 
