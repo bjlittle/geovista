@@ -105,7 +105,7 @@ Let's explore a sample of various oceanographic and atmospheric model data using
 
 #### WAVEWATCH III
 
-First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) **unstructured** triangular mesh.
+First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) **unstructured** triangular mesh, with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
 <details>
 <summary>🗒 </summary>
 
@@ -180,7 +180,7 @@ plotter.show()
 
 Initial projection support is available within GeoVista for **Cylindrical** and **Pseudo-Cylindrical** projections. As GeoVista matures and stabalises, we'll then aim to extend our support to cover **Azimuthal** and **Conic** projections.
 
-Let's showcase this capability with some high-resolution **unstructured** Local Area Model (LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html) using a [PROJ](https://proj.org/index.html) string.
+Let's showcase this capability with some high-resolution **unstructured** Local Area Model (LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html) using a [PROJ](https://proj.org/index.html) string, with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
 
 <details>
 <summary>🗒 </summary>
@@ -215,7 +215,7 @@ plotter.show()
 
 ![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lam-moll.png)
 
-Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree).
+Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree), with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
 
 <details>
 <summary>🗒 </summary>
@@ -289,7 +289,7 @@ plotter.show()
 
 #### UM ORCA2
 
-So far we've demonstrated GeoVista's ability to cope with **unstructured** data. Now let's plot a **curvilinear** mesh using some Met Office Unified Model ORCA2 Sea Water Potential Temperature data.
+So far we've demonstrated GeoVista's ability to cope with **unstructured** data. Now let's plot a **curvilinear** mesh using some Met Office Unified Model ORCA2 Sea Water Potential Temperature data, , with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
 
 <details>
 <summary>🗒 </summary>
@@ -326,7 +326,7 @@ plotter.show()
 
 #### OISST AVHRR
 
-Finally, let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.gov/products/optimum-interpolation-sst) (OISST) Advanced Very High Resolution Radiometer (AVHRR) **rectilinear** mesh
+Finally, let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.gov/products/optimum-interpolation-sst) (OISST) Advanced Very High Resolution Radiometer (AVHRR) **rectilinear** mesh, with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [NASA Blue Marble](https://visibleearth.nasa.gov/collection/1484/blue-marble) base layer.
 
 <details>
 <summary>🗒 </summary>
