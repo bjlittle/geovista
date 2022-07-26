@@ -30,13 +30,13 @@
 
 The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with convenient cartographic features and capability.
 
-Thinking of this in other tangible terms, consider "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*".
+In this regard, from a design perspective we aim to keep GeoVista as **pure** to PyVista as possible i.e., **minimise specialisation** as far as practically possible in order to **maximise native compatibility** within the PyVista and [VTK](https://vtk.org/) ecosystems.
 
-In this regard, from a design perspective we aim to keep GeoVista as **pure** to PyVista as possible i.e., **minimise specialisation** as far as practically possible in order to **maximise compatibility** within the PyVista and [VTK](https://vtk.org/) ecosystems.
+We intend GeoVista to be a cartographic gateway into the powerful world of PyVista, and all that it offers.
 
-We simply want GeoVista to be a cartographic gateway into the powerful world of PyVista, and all that it offers.
+That said, GeoVista is intentionally agnostic to packages such as [xarray](https://docs.xarray.dev/en/stable/) and [iris](https://scitools-iris.readthedocs.io/en/latest/?badge=latest) et al, which specialise in preparing your spatial data for visualisation. Rather, we delagate that responsibility and choice of tool to you the user, as we want GeoVista to remain as flexible and open-ended as possible to the whole Scientific Python community.
 
-That said, GeoVista is intentionally agnostic to packages such as [xarray](https://docs.xarray.dev/en/stable/) and [iris](https://scitools-iris.readthedocs.io/en/latest/?badge=latest) et al, which specialise in preparing your spatial data for visualisation. Rather, we delagate that responsibility and choice of tool to you, as we want GeoVista to be as flexible and open-ended as possible to the whole Scientific Python community.
+Simply put, "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*".
 
 
 ## Installation
