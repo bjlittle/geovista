@@ -178,7 +178,7 @@ plotter.show()
 
 ##### Local Area Model
 
-Initial projection support is available within GeoVista for **Cylindrical** and **Pseudo-Cylindrical** projections. As GeoVista matures and stabalises, we'll then aim to extend our support to cover **Azimuthal** and **Conic** projections.
+Initial projection support is available within GeoVista for **Cylindrical** and **Pseudo-Cylindrical** projections. As GeoVista matures and stabilises, we'll then aim to extend our support to cover **Azimuthal** and **Conic** projections.
 
 Let's showcase this capability with some high-resolution **unstructured** Local Area Model (LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html) using a [PROJ](https://proj.org/index.html) string, with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
 
@@ -289,7 +289,7 @@ plotter.show()
 
 #### UM ORCA2
 
-So far we've demonstrated GeoVista's ability to cope with **unstructured** data. Now let's plot a **curvilinear** mesh using some Met Office Unified Model ORCA2 Sea Water Potential Temperature data, , with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
+So far we've demonstrated GeoVista's ability to cope with **unstructured** data. Now let's plot a **curvilinear** mesh using some Met Office Unified Model ORCA2 Sea Water Potential Temperature data, with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
 
 <details>
 <summary>🗒 </summary>
