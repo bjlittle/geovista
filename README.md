@@ -26,6 +26,19 @@
 </p>
 
 
+## Philisophy
+
+The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with convenient cartographic features and capability.
+
+Thinking of this in other tangible terms, consider "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*".
+
+In this regard, from a design perspective we aim to keep GeoVista as **pure** to PyVista as possible i.e., **minimise specialisation** as far as practically possible in order to **maximise compatibility** within the PyVista and [VTK](https://vtk.org/) ecosystems.
+
+We simply want GeoVista to be a cartographic gateway into the powerful world of PyVista, and all that it offers.
+
+That said, GeoVista is intentionally agnostic to packages such as [xarray](https://docs.xarray.dev/en/stable/) and [iris](https://scitools-iris.readthedocs.io/en/latest/?badge=latest) et al, which specialise in preparing your spatial data for visualisation. Rather, we delagate that responsibility and choice of tool to you, as we want GeoVista to be as flexible and open-ended as possible to the whole Scientific Python community.
+
+
 ## Installation
 
 Unfortunately we've not yet tagged our first minor release of GeoVista.
@@ -35,7 +48,7 @@ However, we have secured the package namespace on both [conda-forge](https://ana
 So in the meantime, life is just a smidge more complicated than necessary if you wish to play with GeoVista.
 
 
-### Development
+### Development Installation
 
 First, clone the GeoVista GitHub repository:
 ```shell
@@ -215,7 +228,7 @@ plotter.show()
 
 ![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lam-moll.png)
 
-Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree), with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
+Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree), also with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
 
 <details>
 <summary>🗒 </summary>
@@ -289,7 +302,7 @@ plotter.show()
 
 #### UM ORCA2
 
-So far we've demonstrated GeoVista's ability to cope with **unstructured** data. Now let's plot a **curvilinear** mesh using some Met Office Unified Model ORCA2 Sea Water Potential Temperature data, with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
+So far we've demonstrated GeoVista's ability to cope with **unstructured** data. Now let's plot a **curvilinear** mesh using some Met Office Unified Model (UM) ORCA2 Sea Water Potential Temperature data, with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
 
 <details>
 <summary>🗒 </summary>
