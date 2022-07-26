@@ -2,8 +2,10 @@ import geovista as gv
 from geovista.pantry import lfric_sst
 import geovista.theme
 
+# load the sample data
 sample = lfric_sst()
 
+# create the mesh from the sample data
 mesh = gv.Transform.from_unstructured(
     sample.lons,
     sample.lats,
@@ -12,8 +14,10 @@ mesh = gv.Transform.from_unstructured(
     start_index=sample.start_index,
 )
 
+# remove cells from the mesh with nan values
 mesh = mesh.threshold()
 
+# plot the mesh
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
 plotter.add_mesh(

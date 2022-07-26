@@ -20,6 +20,7 @@ __all__ = [
     "fvcom_tamar",
     "hexahedron",
     "lam",
+    "lfric_orog",
     "lfric_sst",
     "oisst_avhrr_sst",
     "um_orca2",
@@ -158,6 +159,41 @@ def fvcom_tamar() -> SampleUnstructuredXY:
     return sample
 
 
+def hexahedron() -> SampleUnstructuredXY:
+    """
+    Load DYNAMICO hexahedron unstructured mesh.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The hexagonal unstructured spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "hexahedron.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat hex cell grid
+    lons = ds.variables["bounds_lon_i"][:]
+    lats = ds.variables["bounds_lat_i"][:]
+
+    # load the mesh payload
+    data = ds.variables["phis"][:]
+    name = capitalise("synthetic")
+    units = 1
+
+    sample = SampleUnstructuredXY(
+        lons, lats, lons.shape, data=data, name=name, units=units
+    )
+
+    return sample
+
+
 def lam() -> SampleUnstructuredXY:
     """
     Load CF UGRID LAM unstructured mesh.
@@ -186,6 +222,50 @@ def lam() -> SampleUnstructuredXY:
 
     # load the mesh payload
     data = ds.variables["theta"]
+    name = capitalise(data.standard_name)
+    units = data.units
+
+    sample = SampleUnstructuredXY(
+        lons,
+        lats,
+        connectivity[:],
+        data=data[:],
+        start_index=start_index,
+        name=name,
+        units=units,
+    )
+
+    return sample
+
+
+def lfric_orog() -> SampleUnstructuredXY:
+    """
+    Load CF UGRID global nodal orography unstructured mesh.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and data payload.
+
+    Notes:
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "qrparam_shared.orog.ugrid.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat cell grid
+    lons = ds.variables["dynamics_node_x"][:]
+    lats = ds.variables["dynamics_node_y"][:]
+
+    # load the face/node connectivity
+    connectivity = ds.variables["dynamics_face_nodes"]
+    start_index = connectivity.start_index
+
+    # load the mesh payload
+    data = ds.variables["nodal_surface_altitude"]
     name = capitalise(data.standard_name)
     units = data.units
 
@@ -241,41 +321,6 @@ def lfric_sst() -> SampleUnstructuredXY:
         start_index=start_index,
         name=name,
         units=units,
-    )
-
-    return sample
-
-
-def hexahedron() -> SampleUnstructuredXY:
-    """
-    Load DYNAMICO hexahedron unstructured mesh.
-
-    Returns
-    -------
-    SampleUnstructuredXY
-        The hexagonal unstructured spatial coordinates and data payload.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    fname = "hexahedron.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
-    ds = nc.Dataset(resource)
-
-    # load the lon/lat hex cell grid
-    lons = ds.variables["bounds_lon_i"][:]
-    lats = ds.variables["bounds_lat_i"][:]
-
-    # load the mesh payload
-    data = ds.variables["phis"][:]
-    name = capitalise("synthetic")
-    units = 1
-
-    sample = SampleUnstructuredXY(
-        lons, lats, lons.shape, data=data, name=name, units=units
     )
 
     return sample
