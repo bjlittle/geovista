@@ -105,7 +105,7 @@ If you want to download and cache all the available GeoVista resources to make t
 ```shell
 geovista download --all
 ```
-Alternatively, just leave GeoVista to download resources on-the-fly, as and when it needs them.
+Alternatively, just leave GeoVista to download resources on-the-fly, as and when she needs them.
 
 To view the list of registered resources, simply:
 ```shell
