@@ -89,6 +89,9 @@ Issues = "https://github.com/bjlittle/geovista/issues"
 [tool.hatch]
 version.source = "vcs"
 version.raw-options.local_scheme = "dirty-tag"
+build.dev-mode-dirs = [
+    "src"
+]
 build.hooks.vcs.version-file = "src/geovista/_version.py"
 build.targets.wheel.packages = [
     "src/geovista",
