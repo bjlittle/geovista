@@ -117,4 +117,4 @@ jobs:
       env:
         POST_COMMAND: ${{ matrix.post-command }}
       run: |
-        tox -v -e ${{ matrix.version }}-${{ matrix.platform }}-${{ matrix.session }} -- ${{ matrix.posargs }}
+        tox -vv -e ${{ matrix.version }}-${{ matrix.platform }}-${{ matrix.session }} -- ${{ matrix.posargs }}
