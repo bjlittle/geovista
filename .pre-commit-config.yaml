@@ -34,7 +34,7 @@ repos:
     hooks:
     -   id: flake8
         types: [file, python]
-        args: [--config=./setup.cfg]
+        args: [--config=./tox.ini]
 
 -   repo: https://github.com/PyCQA/isort
     rev: "5.10.1"
