@@ -28,7 +28,7 @@
 
 ## Philisophy
 
-The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with convenient cartographic features and capability.
+The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with convenient cartographic capability.
 
 In this regard, from a design perspective we aim to keep GeoVista as **pure** to PyVista as possible i.e., **minimise specialisation** as far as practically possible in order to **maximise native compatibility** within the PyVista and [VTK](https://vtk.org/) ecosystems.
 
