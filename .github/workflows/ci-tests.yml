@@ -110,7 +110,7 @@ jobs:
     - name: "tox cache"
       uses: ./.github/workflows/composite/tox-cache
       with:
-        cache_build: 0
+        cache_build: 1
         lock_file: ${{ env.LOCK_FILE }}
 
     - name: "${{ matrix.session }} (${{ matrix.version }} ${{ matrix.os }})"
