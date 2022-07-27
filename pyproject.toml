@@ -10,7 +10,7 @@ name = "geovista"
 description = "Cartographic rendering and mesh analytics powered by PyVista"
 readme.file = "README.md"
 readme.content-type= "text/markdown"
-license = "BSD-3-Clause"
+license.file = "LICENSE"
 requires-python = ">=3.8"
 authors = [
     { name = "GeoVista Contributors", email = "geovista.pub@gmail.com" },
