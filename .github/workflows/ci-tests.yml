@@ -90,13 +90,15 @@ jobs:
     - name: "conda environment cache"
       uses: ./.github/workflows/composite/conda-env-cache
       with:
-        cache_build: 0
+        cache_build: 1
         cache_period: ${{ env.CACHE_PERIOD }}
         env_name: ${{ env.ENV_NAME }}
-        install_packages: "cartopy pip tox"
+        install_packages: "cartopy pip"
 
     - name: "conda info"
       run: |
+        pip install --pre tox
+        pip install git+https://github.com/tox-dev/tox-conda.git@tox-4
         conda info
         conda list
 
@@ -110,7 +112,7 @@ jobs:
     - name: "tox cache"
       uses: ./.github/workflows/composite/tox-cache
       with:
-        cache_build: 0
+        cache_build: 1
         lock_file: ${{ env.LOCK_FILE }}
 
     - name: "${{ matrix.session }} (${{ matrix.version }} ${{ matrix.os }})"
