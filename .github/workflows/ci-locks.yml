@@ -115,7 +115,7 @@ jobs:
 
     - name: "generate pull-request"
       id: cpr
-      uses: peter-evans/create-pull-request@20dac2ed4875a1a8422d233a68f69088637446df
+      uses: peter-evans/create-pull-request@18f90432bedd2afd6a825469ffd38aa24712a91d
       with:
         token: ${{ steps.generate-token.outputs.token }}
         add-paths: ${{ github.workspace }}/requirements/locks/*.txt
