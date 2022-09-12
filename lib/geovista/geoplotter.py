@@ -87,7 +87,7 @@ class GeoPlotterBase:
 
         if "crs" in kwargs:
             crs = kwargs.pop("crs")
-            crs = CRS.from_user_input(crs)
+            crs = CRS.from_user_input(crs) if crs is not None else WGS84
         else:
             crs = WGS84
         self.crs = crs
