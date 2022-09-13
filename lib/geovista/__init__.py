@@ -1,5 +1,5 @@
 # pylint: disable=missing-module-docstring
-from ._version import version as __version__  # noqa: F401
+
 from .bridge import Transform  # noqa: F401
 from .cache import (  # noqa: F401
     blue_marble,
@@ -16,6 +16,11 @@ from .geometry import get_coastlines  # noqa: F401
 from .geoplotter import GeoBackgroundPlotter, GeoMultiPlotter, GeoPlotter  # noqa: F401
 from .log import get_logger
 from .raster import wrap_texture  # noqa: F401
+
+try:
+    from ._version import version as __version__  # noqa: F401
+except ModuleNotFoundError:
+    __version__ = "unknown"
 
 __all__ = ["logger"]
 
