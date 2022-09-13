@@ -31,7 +31,7 @@ logger = get_logger(__name__)
 TextureLike = Union[str, pv.Texture]
 
 #: Base URL for GeoVista resources.
-BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/main/data/"
+BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
 
 #: The default Natural Earth coastlines resolution.
 DEFAULT_RESOLUTION_COASTLINES: str = "110m"
@@ -39,8 +39,14 @@ DEFAULT_RESOLUTION_COASTLINES: str = "110m"
 #: The default LFRic Model unstructured cubed-sphere resolution.
 DEFAULT_RESOLUTION_LFRIC: str = "c96"
 
+#: The default geovista-data repository release version.
+DEFAULT_VERSION = "2022.09.2"
+
 #: Environment variable to override pooch cache manager path.
 ENV = "GEOVISTA_CACHEDIR"
+
+#: Environment variable to override default geovista-data version.
+GEOVISTA_DATA_VERSION = os.environ.get("GEOVISTA_DATA_VERSION", DEFAULT_VERSION)
 
 #: The number of retry attempts to download a resource.
 RETRY_ATTEMPTS: int = 3
@@ -49,6 +55,8 @@ RETRY_ATTEMPTS: int = 3
 CACHE: pooch.Pooch = pooch.create(
     path=resources["cache_dir"],
     base_url=BASE_URL,
+    version=GEOVISTA_DATA_VERSION,
+    version_dev="main",
     registry=None,
     retry_if_failed=RETRY_ATTEMPTS,
     env=ENV,

@@ -6,6 +6,7 @@ Provide geovista command line interface (CLI).
 """
 
 import pathlib
+from shutil import rmtree
 from typing import List, Optional, Tuple
 
 import click
@@ -61,10 +62,9 @@ def _download_group(
         click.secho("done!", fg="green")
 
     if summary:
-        click.echo("\nAll done! 👍")
-        click.echo("Resources are available in the cache directory ", nl=False)
-        click.secho(f"{CACHE.abspath}", fg=fg_colour, nl=False)
-        click.echo(".")
+        click.echo("\nResources are available in the cache directory ", nl=False)
+        click.secho(f"{CACHE.abspath}", fg=fg_colour)
+        click.echo("👍 All done!")
 
     logger.setLevel("INFO")
 
@@ -116,9 +116,9 @@ def main(version: bool, cache: bool) -> None:
 )
 @click.option(
     "-c",
-    "--check",
+    "--clean",
     is_flag=True,
-    help="Check availability of registered resources (no download).",
+    help="Delete all cached resources.",
 )
 @click.option(
     "-d",
@@ -137,7 +137,7 @@ def main(version: bool, cache: bool) -> None:
     "-m",
     "--mesh",
     is_flag=True,
-    help="Mesh resources.",
+    help="Download mesh resources.",
 )
 @click.option(
     "-ne",
@@ -147,7 +147,7 @@ def main(version: bool, cache: bool) -> None:
     type=click.Choice(NE_CHOICES, case_sensitive=False),
     is_flag=False,
     flag_value=ALL,
-    help="Natural Earth feature resources.",
+    help="Download Natural Earth feature resources.",
 )
 @click.option(
     "-o",
@@ -155,16 +155,22 @@ def main(version: bool, cache: bool) -> None:
     type=click.Path(file_okay=False, resolve_path=True, path_type=pathlib.Path),
     help=f"Download target directory (default: {CACHE.abspath})",
 )
-@click.option("-s", "--pantry", is_flag=True, help="Sample data resources.")
+@click.option("-p", "--pantry", is_flag=True, help="Download sample data resources.")
 @click.option(
     "-r",
     "--raster",
     is_flag=True,
-    help="Raster resources.",
+    help="Download raster resources.",
+)
+@click.option(
+    "-v",
+    "--verify",
+    is_flag=True,
+    help="Verify availability of registered resources (no download).",
 )
 def download(
     pull: bool,
-    check: bool,
+    clean: bool,
     dry_run: bool,
     show: bool,
     mesh: bool,
@@ -172,6 +178,7 @@ def download(
     output: Optional[pathlib.Path],
     pantry: bool,
     raster: bool,
+    verify: bool,
 ) -> None:
     """
     Download and cache geovista resources (offline support).
@@ -186,6 +193,26 @@ def download(
     n_fnames: int = len(fnames)
     width: int = len(str(n_fnames))
     fg_colour: str = DEFAULT_FG_COLOUR
+
+    if clean:
+        msg = "Are you sure you want to delete all cached geovista resources"
+        if click.confirm(f"\n{msg}?", abort=True):
+            from .config import resources
+
+            target = resources["cache_dir"]
+
+            if target.exists():
+                if target.is_symlink():
+                    rmtree(target.readlink())
+                    target.unlink()
+                else:
+                    rmtree(target)
+
+                click.echo(f"\nDeleted the cache directory ", nl=False)
+                click.secho(f"{target}", fg=DEFAULT_FG_COLOUR)
+                click.echo("👍 All done!")
+            else:
+                click.echo("\nThere are no cached resources to delete.")
 
     if output:
         output.mkdir(exist_ok=True)
@@ -207,19 +234,22 @@ def download(
                 prefix = f"{NE_ROOT}/{group}"
                 name = f"Natural Earth {group}"
                 _download_group(collect(prefix), name=name, summary=(i + 1 == n_groups))
-        elif raster:
+
+        if raster:
             name = "raster"
             _download_group(collect(name), name=name)
-        elif mesh:
+
+        if mesh:
             name = "mesh"
             _download_group(collect(name), name=name)
-        elif pantry:
+
+        if pantry:
             name = "pantry"
             _download_group(collect(name), name=name)
 
-    if check:
+    if verify:
         unavailable = 0
-        click.echo("Checking remote availablity of registered resources:")
+        click.echo("Verifying remote availablity of registered resources:")
         for i, fname in enumerate(fnames):
             click.echo(f"[{i+1:0{width}d}] ", nl=False)
             click.secho(f"{fname} ", nl=False, fg=fg_colour)
@@ -232,15 +262,14 @@ def download(
             if not available:
                 unavailable += 1
             click.secho(status, fg=status_fg_colour)
-        click.echo("\nAll done! ", nl=False)
 
         if not unavailable:
-            click.echo("👍")
-            click.echo(f"{n_fnames} resource{_plural(n_fnames)} ", nl=False)
+            click.echo(f"\n{n_fnames} resource{_plural(n_fnames)} ", nl=False)
             click.secho("available", fg="green", nl=False)
             click.echo(".")
+            click.echo("👍 All done!")
         else:
-            click.echo("🤔")
+            click.echo("\n💥 ", nl=False)
             if unavailable == n_fnames:
                 click.echo(f"{n_fnames} resource{_plural(n_fnames)} ", nl=False)
                 click.secho("unavailable", fg="red", nl=False)
@@ -260,14 +289,14 @@ def download(
         for i, fname in enumerate(fnames):
             click.echo(f"[{i+1:0{width}d}] ", nl=False)
             click.secho(f"{CACHE.get_url(fname)}", fg=fg_colour)
-        click.echo("\nAll done! 👍")
+        click.echo("\n👍 All done!")
 
     if show:
         click.echo("Names of registered resources:")
         for i, fname in enumerate(fnames):
             click.echo(f"[{i+1:0{width}d}] ", nl=False)
             click.secho(f"{fname}", fg=fg_colour)
-        click.echo("\nAll done! 👍")
+        click.echo("\n👍 All done!")
 
     if output:
         CACHE.path = previous_path
