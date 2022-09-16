@@ -13,6 +13,7 @@ dependencies:
   - cartopy >=0.20
   - click
   - click-default-group
+  - netcdf4 !=1.6.1
   - pooch
   - pyproj >=3.3
   - pyvista
