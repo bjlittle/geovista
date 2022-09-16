@@ -51,7 +51,7 @@ jobs:
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
       with:
-        cache_build: 1
+        cache_build: 0
         cache_period: ${{ env.CACHE_PERIOD }}
         env_name: ${{ env.ENV_NAME }}
 
@@ -67,10 +67,10 @@ jobs:
     - name: "conda environment cache"
       uses: ./.github/workflows/composite/conda-env-cache
       with:
-        cache_build: 1
+        cache_build: 0
         cache_period: ${{ env.CACHE_PERIOD }}
         env_name: ${{ env.ENV_NAME }}
-        install_packages: "pip tox conda-libmamba-solver"
+        install_packages: "pip tox"
 
     - name: "conda info"
       run: |
@@ -83,8 +83,6 @@ jobs:
         cache_build: 0
 
     - name: "${{ matrix.session }} (${{ matrix.version }})"
-      env:
-        CONDA_EXPERIMENTAL_SOLVER: libmamba
       run: |
         tox -e ${{ matrix.version }}-${{ matrix.session }} -- --platform osx-64 --platform win-64
 
