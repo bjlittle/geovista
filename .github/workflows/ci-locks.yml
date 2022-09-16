@@ -80,7 +80,7 @@ jobs:
     - name: "tox cache"
       uses: ./.github/workflows/composite/tox-cache
       with:
-        cache_build: 0
+        cache_build: 1
 
     - name: "${{ matrix.session }} (${{ matrix.version }})"
       run: |
