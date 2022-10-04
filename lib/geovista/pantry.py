@@ -14,19 +14,31 @@ import numpy.typing as npt
 import pooch
 
 from .cache import CACHE
+from .log import get_logger
 
 __all__ = [
     "fesom",
     "fvcom_tamar",
     "hexahedron",
-    "lam",
+    "lam_equator",
+    "lam_falklands",
+    "lam_london",
+    "lam_new_zealand",
+    "lam_pacific",
+    "lam_polar",
+    "lam_uk",
     "lfric_orog",
     "lfric_sst",
+    "logger",
     "oisst_avhrr_sst",
     "um_orca2",
     "ww3_global_smc",
     "ww3_global_tri",
 ]
+
+
+# configure the logger
+logger = get_logger(__name__)
 
 
 @dataclass(frozen=True)
@@ -59,6 +71,11 @@ def capitalise(title: str) -> str:
     """
     Format the title by capitalising each word and replacing
     inappropriate characters.
+
+    Parameters
+    ----------
+    title : str
+        The string title to be reformatted.
 
     Returns
     -------
@@ -185,7 +202,7 @@ def hexahedron() -> SampleUnstructuredXY:
     # load the mesh payload
     data = ds.variables["phis"][:]
     name = capitalise("synthetic")
-    units = 1
+    units = "1"
 
     sample = SampleUnstructuredXY(
         lons, lats, lons.shape, data=data, name=name, units=units
@@ -194,16 +211,125 @@ def hexahedron() -> SampleUnstructuredXY:
     return sample
 
 
-def lam() -> SampleUnstructuredXY:
+def _gungho_lam(fname: str) -> SampleUnstructuredXY:
     """
-    Load CF UGRID LAM unstructured mesh.
+    Load the GungHo C4 cubed-sphere LAM unstructured mesh.
+
+    Parameters
+    ----------
+    fname : str
+        The file name of the resource to load.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and connectivity.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/lams/{fname}.bz2", processor=processor)
+    ds = nc.Dataset(resource)
+
+    # load the lon/lat cell grid
+    lons = ds.variables["gungho_node_x"]
+    lats = ds.variables["gungho_node_y"]
+
+    # load the face/node connectivity
+    connectivity = ds.variables["gungho_face_nodes"]
+    start_index = connectivity.start_index
+
+    sample = SampleUnstructuredXY(lons, lats, connectivity[:], start_index=start_index)
+
+    return sample
+
+
+def lam_equator() -> SampleUnstructuredXY:
+    """
+    Load the GungHo C4 cubed-sphere LAM unstructured mesh located over
+    the equator.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and connectivity.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    return _gungho_lam("equator.nc")
+
+
+def lam_falklands() -> SampleUnstructuredXY:
+    """
+    Load the GungHo C4 cubed-sphere LAM unstructured mesh located over
+    the Falkland Islands.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and connectivity.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    return _gungho_lam("falklands.nc")
+
+
+def lam_london() -> SampleUnstructuredXY:
+    """
+    Load the GungHo C4 cubed-sphere LAM unstructured mesh located over
+    London, UK.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and connectivity.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    return _gungho_lam("london.nc")
+
+
+def lam_new_zealand() -> SampleUnstructuredXY:
+    """
+    Load the GungHo C4 cubed-sphere LAM unstructured mesh located over
+    New Zealand.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and connectivity.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    return _gungho_lam("new_zealand.nc")
+
+
+def lam_pacific() -> SampleUnstructuredXY:
+    """
+    Load a high-resolution LAM unstructured mesh located over the Pacific Ocean.
 
     Returns
     -------
     SampleUnstructuredXY
         The unstructured spatial coordinates and data payload.
 
-    Notes:
+    Notes
+    -----
     .. versionadded:: 0.1.0
 
     """
@@ -238,6 +364,41 @@ def lam() -> SampleUnstructuredXY:
     return sample
 
 
+def lam_polar() -> SampleUnstructuredXY:
+    """
+    Load the GungHo C4 cubed-sphere LAM unstructured mesh located over the
+    Polar cap.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and connectivity.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    return _gungho_lam("polar.nc")
+
+
+def lam_uk() -> SampleUnstructuredXY:
+    """
+    Load the GungHo C4 cubed-sphere LAM unstructured mesh located over the UK.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and connectivity.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    return _gungho_lam("uk.nc")
+
+
 def lfric_orog() -> SampleUnstructuredXY:
     """
     Load CF UGRID global nodal orography unstructured mesh.
@@ -247,7 +408,8 @@ def lfric_orog() -> SampleUnstructuredXY:
     SampleUnstructuredXY
         The unstructured spatial coordinates and data payload.
 
-    Notes:
+    Notes
+    -----
     .. versionadded:: 0.1.0
 
     """
@@ -291,7 +453,8 @@ def lfric_sst() -> SampleUnstructuredXY:
     SampleUnstructuredXY
         The unstructured spatial coordinates and data payload.
 
-    Notes:
+    Notes
+    -----
     .. versionadded:: 0.1.0
 
     """
@@ -361,7 +524,7 @@ def oisst_avhrr_sst() -> SampleStructuredXY:
 
 def um_orca2() -> SampleStructuredXY:
     """
-    Load Met Office Unified Model ORCA2 curvilinear mesh.
+    Load Met Office Unified Model (UM) ORCA2 curvilinear mesh.
 
     Returns
     -------
@@ -398,8 +561,8 @@ def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
 
     Parameters
     ----------
-    step : int
-        Timeseries index offset.
+    step : int, default=0
+        The time-series offset.
 
     Returns
     -------
@@ -438,7 +601,7 @@ def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
     lons = np.hstack([x1, x2, x2, x1])
     lats = np.hstack([y1, y1, y2, y2])
 
-    # deal with the timeseries step
+    # deal with the time-series step
     steps = ds.dimensions["time"].size
     idx = 0 if step is None else (step % steps)
 

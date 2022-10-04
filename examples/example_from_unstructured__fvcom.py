@@ -18,9 +18,7 @@ mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 # plot the mesh
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
-plotter.add_mesh(
-    mesh, cmap="balance", show_edges=True, edge_color="grey", scalar_bar_args=sargs
-)
+plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
 plotter.add_axes()
 plotter.add_text(
     "PML FVCOM Tamar",

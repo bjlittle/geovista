@@ -31,7 +31,7 @@ __all__ = [
     "remesh",
 ]
 
-# Configure the logger.
+# configure the logger
 logger = get_logger(__name__)
 
 #: Marker for remesh filter eastern cell boundary point.

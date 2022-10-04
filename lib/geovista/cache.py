@@ -17,14 +17,13 @@ __all__ = [
     "blue_marble",
     "checkerboard",
     "fetch_coastlines",
-    "lfric",
     "logger",
     "natural_earth_1",
     "natural_earth_hypsometric",
     "reload_registry",
 ]
 
-# Configure the logger.
+# configure the logger
 logger = get_logger(__name__)
 
 # Type aliases.
@@ -34,13 +33,10 @@ TextureLike = Union[str, pv.Texture]
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
 
 #: The default Natural Earth coastlines resolution.
-DEFAULT_RESOLUTION_COASTLINES: str = "110m"
-
-#: The default LFRic Model unstructured cubed-sphere resolution.
-DEFAULT_RESOLUTION_LFRIC: str = "c96"
+DEFAULT_COASTLINES_RESOLUTION: str = "110m"
 
 #: The default geovista-data repository release version.
-DEFAULT_VERSION = "2022.09.2"
+DEFAULT_VERSION = "2022.10.0"
 
 #: Environment variable to override pooch cache manager path.
 ENV = "GEOVISTA_CACHEDIR"
@@ -167,7 +163,7 @@ def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
     resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m`` or ``10m``. Default is
-        :data:`DEFAULT_RESOLUTION_COASTLINES`.
+        :data:`DEFAULT_COASTLINES_RESOLUTION`.
 
     Returns
     -------
@@ -180,44 +176,11 @@ def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
 
     """
     if resolution is None:
-        resolution = DEFAULT_RESOLUTION_COASTLINES
+        resolution = DEFAULT_COASTLINES_RESOLUTION
 
     fname = f"ne_coastlines_{resolution}.vtk"
     processor = pooch.Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"natural_earth/physical/{fname}.bz2", processor=processor)
-    mesh = pv.read(resource)
-    return mesh
-
-
-def lfric(resolution: Optional[str] = None) -> pv.PolyData:
-    """
-    Get the LFRic Model unstructured cubed-sphere at the specified resolution.
-
-    If the resource is not already available in the GeoVista :data:`CACHE`,
-    then it will be downloaded from the :data:`BASE_URL`.
-
-    Parameters
-    ----------
-    resolution : str, optional
-        The resolution of the LFRic Model mesh. Defaults to
-        :data:`DEFAULT_RESOLUTION_LFRIC`.
-
-    Returns
-    -------
-    PolyData
-        The LFRic mesh.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    if resolution is None:
-        resolution = DEFAULT_RESOLUTION_LFRIC
-
-    fname = f"lfric_{resolution}.vtk"
-    processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"mesh/{fname}.bz2", processor=processor)
     mesh = pv.read(resource)
     return mesh
 

@@ -14,7 +14,7 @@ from .log import get_logger
 
 __all__ = ["BBox", "line", "logger", "npoints", "npoints_by_idx", "panel", "wedge"]
 
-# Configure the logger.
+# configure the logger
 logger = get_logger(__name__)
 
 # Type aliases

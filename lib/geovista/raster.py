@@ -9,7 +9,7 @@ from .log import get_logger
 
 __all__ = ["logger", "wrap_texture"]
 
-# Configure the logger.
+# configure the logger
 logger = get_logger(__name__)
 
 

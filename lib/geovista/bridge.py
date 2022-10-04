@@ -11,7 +11,7 @@ from .log import get_logger
 
 __all__ = ["Transform", "logger"]
 
-# Configure the logger.
+# configure the logger
 logger = get_logger(__name__)
 
 # type aliases

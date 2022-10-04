@@ -18,7 +18,7 @@ __all__ = [
     "logger",
 ]
 
-# Configure the logger
+# configure the logger
 logger = get_logger(__name__)
 
 #

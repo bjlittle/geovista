@@ -4,7 +4,7 @@ from .bridge import Transform  # noqa: F401
 from .cache import (  # noqa: F401
     blue_marble,
     checkerboard,
-    lfric,
+    fetch_coastlines,
     natural_earth_1,
     natural_earth_hypsometric,
 )

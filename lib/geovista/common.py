@@ -34,7 +34,7 @@ __all__ = [
     "wrap",
 ]
 
-# Configure the logger
+# configure the logger
 logger = get_logger(__name__)
 
 #

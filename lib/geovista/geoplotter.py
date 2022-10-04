@@ -9,7 +9,6 @@ import pyvista as pv
 import pyvistaqt as pvqt
 import vtk
 
-from .cache import lfric
 from .common import GV_FIELD_CRS, ZLEVEL_FACTOR, to_xy0, to_xyz
 from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
@@ -17,6 +16,7 @@ from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import COASTLINE_RESOLUTION, get_coastlines
 from .log import get_logger
 from .raster import wrap_texture
+from .samples import lfric
 
 __all__ = ["GeoBackgroundPlotter", "GeoMultiPlotter", "GeoPlotter", "logger"]
 
@@ -37,7 +37,7 @@ def _get_lfric(
 
     Parameters
     ----------
-    resolution : str, default="c192"
+    resolution : str, default="c96"
         The resolution of the LFRic unstructured cubed-sphere.
     radius : float, default=1.0
         The radius of the sphere. Defaults to an S2 unit sphere.

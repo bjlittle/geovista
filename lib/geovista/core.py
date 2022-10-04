@@ -31,7 +31,7 @@ __all__ = [
     "resize",
 ]
 
-# Configure the logger.
+# configure the logger
 logger = get_logger(__name__)
 
 #: Preference for a slice to bias cells west of the chosen meridian.

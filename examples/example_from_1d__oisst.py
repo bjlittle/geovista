@@ -14,7 +14,7 @@ mesh = mesh.threshold()
 # plot the mesh
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
-plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
+plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.blue_marble())
 resolution = "10m"
 plotter.add_coastlines(resolution=resolution, color="white")

@@ -19,7 +19,7 @@ __all__ = [
     "set_central_meridian",
 ]
 
-# Configure the logger
+# configure the logger
 logger = get_logger(__name__)
 
 
