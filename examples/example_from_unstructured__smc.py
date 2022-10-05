@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import geovista as gv
 from geovista.pantry import ww3_global_smc
 import geovista.theme
@@ -9,6 +11,9 @@ sample = ww3_global_smc()
 mesh = gv.Transform.from_unstructured(
     sample.lons, sample.lats, sample.connectivity, data=sample.data
 )
+
+# threshold the mesh of NaNs
+mesh = mesh.threshold()
 
 # plot the mesh
 plotter = gv.GeoPlotter()

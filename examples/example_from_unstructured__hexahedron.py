@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import geovista as gv
 from geovista.pantry import hexahedron
 import geovista.theme

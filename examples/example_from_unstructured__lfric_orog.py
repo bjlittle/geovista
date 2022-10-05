@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import geovista as gv
 from geovista.pantry import lfric_orog
 import geovista.theme
