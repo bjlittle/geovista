@@ -4,13 +4,10 @@ from vtk.util.vtkAlgorithm import VTKPythonAlgorithmBase
 
 from .bridge import Transform
 from .common import ZLEVEL_FACTOR, to_xy0
-from .core import add_texture_coords, cut_along_meridian, resize
-from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
-from .filters import cast_UnstructuredGrid_to_PolyData as cast
-from .geometry import COASTLINE_RESOLUTION, get_coastlines
+from .core import add_texture_coords, cut_along_meridian
+from .crs import from_wkt, get_central_meridian, set_central_meridian
 from .log import get_logger
 from .raster import wrap_texture
-from .samples import lfric
 
 logger = get_logger(__name__)
 
@@ -26,8 +23,10 @@ def add_mesh_handler(
 ):
     if isinstance(mesh, pv.RectilinearGrid):
         if mesh.dimensions[-1] > 1:
-            raise ValueError('Cannot handle 3D RectilinearGrids.')
-        mesh = Transform.from_1d(mesh.x, mesh.y, data=mesh.active_scalars)
+            raise ValueError("Cannot handle 3D RectilinearGrids.")
+        mesh = Transform.from_1d(
+            mesh.x, mesh.y, data=mesh.active_scalars, name=mesh.active_scalars_name
+        )
 
     src_crs = from_wkt(mesh)
     project = src_crs and src_crs != tgt_crs
@@ -49,9 +48,7 @@ def add_mesh_handler(
     if project:
         lonlat = to_xy0(mesh, radius=radius, closed_interval=True)
         transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
-        xs, ys = transformer.transform(
-            lonlat[:, 0], lonlat[:, 1], errcheck=True
-        )
+        xs, ys = transformer.transform(lonlat[:, 0], lonlat[:, 1], errcheck=True)
         mesh.points[:, 0] = xs
         mesh.points[:, 1] = ys
         zoffset = 0
@@ -60,9 +57,7 @@ def add_mesh_handler(
             xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
             delta = max(xdelta, ydelta)
             zoffset = zlevel * zfactor * delta
-            logger.debug(
-                "delta=%f, zfactor=%f, zlevel=%d", delta, zfactor, zlevel
-            )
+            logger.debug("delta=%f, zfactor=%f, zlevel=%d", delta, zfactor, zlevel)
         logger.debug("zoffset=%f", zoffset)
         mesh.points[:, 2] = zoffset
 
@@ -80,7 +75,10 @@ class MeshHandler(VTKPythonAlgorithmBase):
         outputType="vtkPolyData",
     ):
         VTKPythonAlgorithmBase.__init__(
-            self, nInputPorts=1, nOutputPorts=1, outputType=outputType,
+            self,
+            nInputPorts=1,
+            nOutputPorts=1,
+            outputType=outputType,
         )
         self.tgt_crs = tgt_crs
         self.radius = radius
