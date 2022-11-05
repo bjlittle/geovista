@@ -6,16 +6,17 @@ import numpy as np
 from numpy.typing import ArrayLike
 from pyproj import CRS, Transformer
 import pyvista as pv
+from pyvista.utilities import algorithm_to_mesh_handler
 import pyvistaqt as pvqt
 import vtk
 
+from .algorithms import MeshHandler, add_mesh_handler
 from .common import GV_FIELD_CRS, ZLEVEL_FACTOR, to_xy0, to_xyz
-from .core import add_texture_coords, cut_along_meridian, resize
-from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
+from .core import resize
+from .crs import WGS84, from_wkt
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import COASTLINE_RESOLUTION, get_coastlines
 from .log import get_logger
-from .raster import wrap_texture
 from .samples import lfric
 
 __all__ = ["GeoBackgroundPlotter", "GeoMultiPlotter", "GeoPlotter", "logger"]
@@ -178,16 +179,25 @@ class GeoPlotterBase:
         mesh = get_coastlines(resolution=resolution)
         return self.add_mesh(mesh, **kwargs)
 
-    def add_mesh(self, mesh: Any, **kwargs: Optional[Any]):
+    def add_mesh(
+        self,
+        mesh: Any,
+        radius=None,
+        zfactor=ZLEVEL_FACTOR,
+        zlevel=0,
+        texture=None,
+        **kwargs: Optional[Any],
+    ):
+        mesh, algo = algorithm_to_mesh_handler(mesh)
+
         if isinstance(mesh, pv.UnstructuredGrid):
+            if algo is not None:
+                raise TypeError(
+                    "Cannot handle algorithms with `UnstructuredGrid` output."
+                )
             mesh = cast(mesh)
 
-        if isinstance(mesh, pv.PolyData):
-            radius = float(kwargs.pop("radius")) if "radius" in kwargs else None
-            zfactor = (
-                float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
-            )
-            zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else 0
+        if isinstance(mesh, (pv.PolyData, pv.RectilinearGrid)):
             logger.debug(
                 "radius=%s, zfactor=%f, zlevel=%d, is_projected=%s",
                 radius,
@@ -195,47 +205,30 @@ class GeoPlotterBase:
                 zlevel,
                 self.crs.is_projected,
             )
-
-            src_crs = from_wkt(mesh)
-            tgt_crs = self.crs
-            project = src_crs and src_crs != tgt_crs
-            meridian = get_central_meridian(tgt_crs) or 0
-
-            if project:
-                if meridian:
-                    mesh.rotate_z(-meridian, inplace=True)
-                    tgt_crs = set_central_meridian(tgt_crs, 0)
-                try:
-                    mesh = cut_along_meridian(mesh, antimeridian=True)
-                except ValueError:
-                    pass
-
-            if "texture" in kwargs and kwargs["texture"] is not None:
-                mesh = add_texture_coords(mesh, antimeridian=True)
-                texture = wrap_texture(kwargs["texture"], central_meridian=meridian)
-                kwargs["texture"] = texture
-
-            if project:
-                lonlat = to_xy0(mesh, radius=radius, closed_interval=True)
-                transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
-                xs, ys = transformer.transform(
-                    lonlat[:, 0], lonlat[:, 1], errcheck=True
+            if algo is not None:
+                algo2 = MeshHandler(
+                    tgt_crs=self.crs,
+                    radius=radius,
+                    zfactor=zfactor,
+                    zlevel=zlevel,
+                    texture=texture,
                 )
-                mesh.points[:, 0] = xs
-                mesh.points[:, 1] = ys
-                zoffset = 0
-                if zlevel:
-                    xmin, xmax, ymin, ymax, _, _ = mesh.bounds
-                    xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
-                    delta = max(xdelta, ydelta)
-                    zoffset = zlevel * zfactor * delta
-                    logger.debug(
-                        "delta=%f, zfactor=%f, zlevel=%d", delta, zfactor, zlevel
-                    )
-                logger.debug("zoffset=%f", zoffset)
-                mesh.points[:, 2] = zoffset
-
-        return super().add_mesh(mesh, **kwargs)
+                algo2.SetInputConnection(algo.GetOutputPort())
+                algo = algo2
+            else:
+                mesh = add_mesh_handler(
+                    mesh,
+                    tgt_crs=self.crs,
+                    radius=radius,
+                    zfactor=zfactor,
+                    zlevel=zlevel,
+                    texture=texture,
+                )
+            kwargs["texture"] = texture
+        if algo is not None:
+            return super().add_mesh(algo, **kwargs)
+        else:
+            return super().add_mesh(mesh, **kwargs)
 
     def add_point_labels(
         self,
