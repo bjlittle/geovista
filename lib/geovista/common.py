@@ -72,7 +72,7 @@ VTK_CELL_IDS: str = "vtkOriginalCellIds"
 VTK_POINT_IDS: str = "vtkOriginalPointIds"
 
 #: Proportional multiplier for z-axis levels/offsets.
-ZLEVEL_FACTOR: float = 1e-3
+ZLEVEL_FACTOR: float = 1e-2
 
 
 def active_kernel() -> bool:
