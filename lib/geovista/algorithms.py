@@ -26,7 +26,7 @@ def add_mesh_handler(
 ):
     if isinstance(mesh, pv.RectilinearGrid):
         if mesh.dimensions[-1] > 1:
-            raise ValueError('Cannot handle 3D RectilinearGrids.')
+            raise ValueError("Cannot handle 3D RectilinearGrids.")
         mesh = Transform.from_1d(mesh.x, mesh.y, data=mesh.active_scalars)
 
     src_crs = from_wkt(mesh)
@@ -49,9 +49,7 @@ def add_mesh_handler(
     if project:
         lonlat = to_xy0(mesh, radius=radius, closed_interval=True)
         transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
-        xs, ys = transformer.transform(
-            lonlat[:, 0], lonlat[:, 1], errcheck=True
-        )
+        xs, ys = transformer.transform(lonlat[:, 0], lonlat[:, 1], errcheck=True)
         mesh.points[:, 0] = xs
         mesh.points[:, 1] = ys
         zoffset = 0
@@ -60,9 +58,7 @@ def add_mesh_handler(
             xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
             delta = max(xdelta, ydelta)
             zoffset = zlevel * zfactor * delta
-            logger.debug(
-                "delta=%f, zfactor=%f, zlevel=%d", delta, zfactor, zlevel
-            )
+            logger.debug("delta=%f, zfactor=%f, zlevel=%d", delta, zfactor, zlevel)
         logger.debug("zoffset=%f", zoffset)
         mesh.points[:, 2] = zoffset
 
@@ -80,7 +76,10 @@ class MeshHandler(VTKPythonAlgorithmBase):
         outputType="vtkPolyData",
     ):
         VTKPythonAlgorithmBase.__init__(
-            self, nInputPorts=1, nOutputPorts=1, outputType=outputType,
+            self,
+            nInputPorts=1,
+            nOutputPorts=1,
+            outputType=outputType,
         )
         self.tgt_crs = tgt_crs
         self.radius = radius
