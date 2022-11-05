@@ -1,3 +1,5 @@
+import traceback
+
 from pyproj import Transformer
 import pyvista as pv
 from vtk.util.vtkAlgorithm import VTKPythonAlgorithmBase
@@ -96,15 +98,19 @@ class MeshHandler(VTKPythonAlgorithmBase):
         return output
 
     def RequestData(self, request, inInfo, outInfo):
-        pdi = pv.wrap(self.GetInputData(inInfo, 0, 0)).copy(deep=True)
-        pdo = self.GetOutputData(outInfo, 0)
-        mesh = add_mesh_handler(
-            pdi,
-            self.tgt_crs,
-            radius=self.radius,
-            zfactor=self.zfactor,
-            zlevel=self.zlevel,
-            texture=self.texture,
-        )
-        pdo.ShallowCopy(mesh)
+        try:
+            pdi = pv.wrap(self.GetInputData(inInfo, 0, 0)).copy(deep=True)
+            pdo = self.GetOutputData(outInfo, 0)
+            mesh = add_mesh_handler(
+                pdi,
+                self.tgt_crs,
+                radius=self.radius,
+                zfactor=self.zfactor,
+                zlevel=self.zlevel,
+                texture=self.texture,
+            )
+            pdo.ShallowCopy(mesh)
+        except Exception as e:
+            traceback.print_exc()
+            raise e
         return 1
