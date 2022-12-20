@@ -6,7 +6,7 @@ import numpy as np
 import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
 
-from .common import set_jupyter_backend, to_xy0
+from .common import GV_FIELD_RADIUS, RADIUS, set_jupyter_backend, to_xy0
 from .log import get_logger
 
 __all__ = [
@@ -173,7 +173,7 @@ def coastline_mesh(
 
     """
     # TODO: address "fudge-factor" zlevel
-    radius = 1.0 + 1.0 / 1e4 if radius is None else abs(radius)
+    radius = RADIUS + RADIUS / 1e4 if radius is None else abs(radius)
 
     geoms = coastline_geometries(resolution=resolution)
     npoints_per_geom = [geom.shape[0] for geom in geoms]
@@ -219,7 +219,7 @@ def coastline_mesh(
         pstart, lstart = pend, lend
 
     mesh.lines = lines
-    mesh.field_data["radius"] = np.array([radius if geocentric else 0])
+    mesh.field_data[GV_FIELD_RADIUS] = np.array([radius if geocentric else 0])
 
     return mesh
 
@@ -260,7 +260,7 @@ def get_coastlines(
         mesh = fetch_coastlines(resolution=resolution)
 
         if not geocentric:
-            radius = float(mesh.field_data["radius"])
+            radius = float(mesh.field_data[GV_FIELD_RADIUS])
             mesh.points = to_xy0(mesh, radius=radius)
     except ValueError:
         mesh = coastline_mesh(resolution=resolution, geocentric=geocentric)

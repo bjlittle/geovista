@@ -16,8 +16,10 @@ __all__ = [
     "GV_CELL_IDS",
     "GV_FIELD_CRS",
     "GV_FIELD_NAME",
+    "GV_FIELD_RADIUS",
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
+    "RADIUS",
     "REMESH_JOIN",
     "REMESH_SEAM",
     "VTK_CELL_IDS",
@@ -28,6 +30,8 @@ __all__ = [
     "nan_mask",
     "sanitize_data",
     "set_jupyter_backend",
+    "to_lonlat",
+    "to_lonlats",
     "to_xy0",
     "to_xyz",
     "triangulated",
@@ -41,6 +45,9 @@ logger = get_logger(__name__)
 # TODO: support richer default management
 #
 
+#: Default base for wrapped longitude half-open interval, in degrees.
+BASE: float = -180.0
+
 #: Name of the geovista cell indices array.
 GV_CELL_IDS: str = "gvOriginalCellIds"
 
@@ -50,6 +57,9 @@ GV_FIELD_CRS: str = "gvCRS"
 #: The field array name of the mesh containing field, point and/or cell data.
 GV_FIELD_NAME: str = "gvName"
 
+#: The field array name of the mesh radius.
+GV_FIELD_RADIUS: str = "gvRadius"
+
 #: Name of the geovista point indices array.
 GV_POINT_IDS: str = "gvOriginalPointIds"
 
@@ -58,6 +68,12 @@ GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
 
 #: Default jupyter plotting backend for pyvista.
 JUPYTER_BACKEND: str = "pythreejs"
+
+#: Default period for wrapped longitude half-open interval, in degrees.
+PERIOD: float = 360.0
+
+#: Default radius of a spherical mesh.
+RADIUS: float = 1.0
 
 #: Marker for remesh filter cell join point.
 REMESH_JOIN: int = -3
@@ -105,22 +121,19 @@ def active_kernel() -> bool:
 def calculate_radius(
     mesh: pv.PolyData,
     origin: Optional[Tuple[float, float, float]] = None,
-    decimals: Optional[int] = 8,
 ) -> float:
     """
     Determine the radius of the provided mesh.
 
-    Note that, assumes that the mesh is a spheroid and has not been warped.
+    Note that, assumes that the mesh is a sphere that has not been warped.
 
     Parameters
     ----------
     mesh : PolyData
         The surface that requires its radius to be calculated, relative to
-        the ``origin``.
+        the `origin`.
     origin : float, default=(0, 0, 0)
         The (x, y, z) cartesian center of the spheroid mesh.
-    decimals : int, default=8
-        The number of decimal places to round the calculated radius.
 
     Returns
     -------
@@ -146,17 +159,22 @@ def calculate_radius(
         origin = (0, 0, 0)
 
     ox, oy, oz = origin
-
     # sample a representative mesh point
     mx, my, mz = mesh.points[0]
-
     radius = np.sqrt((mx - ox) ** 2 + (my - oy) ** 2 + (mz - oz) ** 2)
-    result = np.round(radius, decimals=decimals)
-    logger.debug(
-        "radius %f rounded to %f (%d decimal places)", radius, result, decimals
+
+    gvRadius = (
+        mesh.field_data[GV_FIELD_RADIUS][0]
+        if GV_FIELD_RADIUS in mesh.field_data
+        else RADIUS
     )
 
-    return result
+    if np.isclose(radius, gvRadius):
+        radius = gvRadius
+
+    mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+
+    return radius
 
 
 def nan_mask(data: npt.ArrayLike) -> np.ndarray:
@@ -258,6 +276,115 @@ def set_jupyter_backend(backend: Optional[str] = None) -> bool:
     return result
 
 
+def to_lonlat(
+    xyz: npt.ArrayLike,
+    radians: Optional[float] = None,
+    radius: Optional[float] = None,
+) -> np.ndarray:
+    """
+    Convert the cartesian `xyz` point on a sphere to geographic longitude
+    and latitude, in degrees.
+
+    Parameters
+    ----------
+    xyz : ArrayLike
+        The cartesian (x, y, z) point to be converted.
+    radians : bool, default=False
+        Convert resultant longitude and latitude values to radians.
+        Default units are degrees.
+    radius : float, default=1.0
+        The `radius` of the sphere. Defaults to an S2 unit sphere.
+
+    Returns
+    -------
+    ndarray
+        The longitude and latitude values.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    point = np.asanyarray(xyz)
+
+    if point.shape != (3,):
+        shape = f" with shape {point.shape}" if point.shape else ""
+        emsg = (
+            "Require a 1D array of (x, y, z) points, got a "
+            f"{point.ndim}D array{shape}."
+        )
+        raise ValueError(emsg)
+
+    (result,) = to_lonlats(point, radians=radians, radius=radius)
+
+    return result
+
+
+def to_lonlats(
+    xyz: npt.ArrayLike,
+    radians: Optional[bool] = False,
+    radius: Optional[float] = None,
+    stacked: Optional[bool] = True,
+) -> np.ndarray:
+    """
+    Convert the cartesian `xyz` points on a sphere to geographic longitudes
+    and latitudes, in degrees.
+
+    Parameters
+    ----------
+    xyz : ArrayLike
+        The cartesian (x, y, z) points to be converted.
+    radians : bool, default=False
+        Convert resultant longitude and latitude values to radians.
+        Default units are degrees.
+    radius : float, default=1.0
+        The `radius` of the sphere. Defaults to an S2 unit sphere.
+    stacked : bool, default=True
+        Default the resultant shape to be (N, 2), otherwise (2, N).
+
+    Returns
+    -------
+    ndarray
+        The longitude and latitude values.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    points = np.atleast_2d(xyz)
+    radius = RADIUS if radius is None else abs(radius)
+
+    if points.ndim != 2 or points.shape[1] != 3:
+        emsg = (
+            "Require a 2D array of (x, y, z) points, got a "
+            f"{points.ndim}D array with shape {points.shape}."
+        )
+        raise ValueError(emsg)
+
+    base, period = (np.radians(BASE), np.radians(PERIOD)) if radians else (BASE, PERIOD)
+
+    lons = np.arctan2(points[:, 1], points[:, 0])
+    if not radians:
+        lons = np.degrees(lons)
+    lons = wrap(lons, base=base, period=period)
+
+    zr = points[:, 2] / radius
+    # defensive clobber of values outside arcsin domain [-1, 1]
+    if indices := np.where(zr > 1):
+        zr[indices] = 1.0
+    if indices := np.where(zr < -1):
+        zr[indices] = -1.0
+    lats = np.arcsin(zr)
+    if not radians:
+        lats = np.degrees(lats)
+
+    data = [lons, lats]
+    result = np.vstack(data).T if stacked else np.array(data)
+
+    return result
+
+
 def to_xy0(
     mesh: pv.PolyData,
     radius: Optional[float] = None,
@@ -265,8 +392,8 @@ def to_xy0(
     closed_interval: Optional[bool] = False,
 ) -> np.ndarray:
     """
-    Convert the xyz cartesian points of the mesh to longitude (φ) and latitude (λ)
-    xy0 (i.e., φλ0) coordinates.
+    Convert the `mesh` cartesian `xyz` points on a sphere to geographic
+    longitude (φ) and latitude (λ) `xy0` (i.e., φλ0) coordinates.
 
     Parameters
     ----------
@@ -281,7 +408,7 @@ def to_xy0(
         Otherwise, they will have shape (3, N).
     closed_interval : bool, default=False
         Longitude values will be in the half-closed interval [-180, 180). However,
-        if the mesh has a seam at the 180th meridian and ``closed_interval``
+        if the mesh has a seam at the 180th meridian and `closed_interval`
         is ``True``, then longitudes will be in the closed interval [-180, 180].
 
     Returns
@@ -295,10 +422,7 @@ def to_xy0(
 
     """
     radius = calculate_radius(mesh) if radius is None else abs(radius)
-    xyz = mesh.points
-    # XXX: hack
-    lons = wrap(np.degrees(np.arctan2(xyz[:, 1], xyz[:, 0])), decimals=4)
-    lats = np.degrees(np.arcsin(xyz[:, 2] / radius))
+    lons, lats = to_lonlats(mesh.points, radius=radius, stacked=False)
     z = np.zeros_like(lons)
     data = [lons, lats, z]
 
@@ -314,10 +438,7 @@ def to_xy0(
                 GV_REMESH_POINT_IDS,
             )
 
-    if stacked:
-        result = np.vstack(data).T
-    else:
-        result = np.array(data)
+    result = np.vstack(data).T if stacked else np.array(data)
 
     return result
 
@@ -355,7 +476,7 @@ def to_xyz(
     """
     longitudes = np.ravel(longitudes)
     latitudes = np.ravel(latitudes)
-    radius = 1.0 if radius is None else abs(radius)
+    radius = RADIUS if radius is None else abs(radius)
 
     x_rad = np.radians(longitudes)
     y_rad = np.radians(90.0 - latitudes)
@@ -397,23 +518,25 @@ def triangulated(surface: pv.PolyData) -> bool:
 
 def wrap(
     longitudes: npt.ArrayLike,
-    base: Optional[float] = -180.0,
-    period: Optional[float] = 360.0,
-    decimals: Optional[int] = 8,
+    base: Optional[float] = BASE,
+    period: Optional[float] = PERIOD,
+    dtype: Optional[np.dtype] = None,
 ) -> np.ndarray:
     """
-    Transform the longitude values to be within the closed interval
-    [base, base + period].
+    Transform the longitude values to be within the half-open interval
+    [base, base + period).
 
     Parameters
     ----------
     longitudes : ArrayLike
-        One or more longitude values (degrees) to be wrapped.
+        One or more longitude values to be wrapped.
     base : float, default=-180.0
-        The start limit (degrees) of the closed interval.
+        The start limit of the half-open interval.
     period : float, default=360.0
-        The end limit (degrees) of the closed interval expressed as a length
-        from the `base`.
+        The end limit of the half-open interval expressed as a length
+        from the `base`, in the same units.
+    dtype : data-type, default=float64
+        The resultant longitude `dtype`.
 
     Returns
     -------
@@ -425,13 +548,13 @@ def wrap(
     .. versionadded:: 0.1.0
 
     """
-    #
-    # TODO: support radians
-    #
     if not isinstance(longitudes, Iterable):
         longitudes = [longitudes]
 
-    longitudes = np.round(longitudes, decimals=decimals)
-    result = ((longitudes.astype(np.float64) - base + period * 2) % period) + base
+    if dtype is None:
+        dtype = np.float64
+
+    longitudes = np.asanyarray(longitudes, dtype=dtype)
+    result = ((longitudes - base + period * 2) % period) + base
 
     return result

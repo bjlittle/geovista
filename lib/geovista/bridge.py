@@ -5,7 +5,16 @@ from numpy.typing import ArrayLike
 from pyproj import CRS, Transformer
 import pyvista as pv
 
-from .common import GV_FIELD_CRS, GV_FIELD_NAME, ZLEVEL_FACTOR, nan_mask, to_xyz, wrap
+from .common import (
+    GV_FIELD_CRS,
+    GV_FIELD_NAME,
+    GV_FIELD_RADIUS,
+    RADIUS,
+    ZLEVEL_FACTOR,
+    nan_mask,
+    to_xyz,
+    wrap,
+)
 from .crs import WGS84
 from .log import get_logger
 
@@ -618,7 +627,7 @@ class Transform:
         if start_index and not ignore_start_index:
             connectivity -= start_index
 
-        radius = 1.0 if radius is None else abs(radius)
+        radius = RADIUS if radius is None else abs(radius)
 
         if zfactor is None:
             zfactor = ZLEVEL_FACTOR
@@ -649,6 +658,9 @@ class Transform:
         # attach the pyproj crs serialized as ogc wkt
         wkt = np.array([WGS84.to_wkt()])
         mesh.field_data[GV_FIELD_CRS] = wkt
+
+        # attach the radius
+        mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
 
         # attach any optional data to the mesh
         if data is not None:

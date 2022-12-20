@@ -9,7 +9,7 @@ import pyvista as pv
 import pyvistaqt as pvqt
 import vtk
 
-from .common import GV_FIELD_CRS, ZLEVEL_FACTOR, to_xy0, to_xyz
+from .common import GV_FIELD_CRS, RADIUS, ZLEVEL_FACTOR, to_xy0, to_xyz
 from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
@@ -131,7 +131,9 @@ class GeoPlotterBase:
                 kwargs["zlevel"] = -1
             logger.debug("radius=%s", radius)
         else:
-            original = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else 1.0
+            original = (
+                abs(float(kwargs.pop("radius"))) if "radius" in kwargs else RADIUS
+            )
             zfactor = (
                 float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
             )
@@ -303,7 +305,7 @@ class GeoPlotterBase:
                 transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
                 xs, ys = transformer.transform(xs, ys, errcheck=True)
 
-            radius = 1.0 if radius is None else abs(radius)
+            radius = RADIUS if radius is None else abs(radius)
 
             if zfactor is None:
                 zfactor = ZLEVEL_FACTOR

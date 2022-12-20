@@ -8,7 +8,7 @@ import numpy.typing as npt
 import pyproj
 import pyvista as pv
 
-from .common import calculate_radius, to_xyz, wrap
+from .common import RADIUS, calculate_radius, to_xyz, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
 from .log import get_logger
 
@@ -361,7 +361,7 @@ class BBox:
             radius = calculate_radius(surface)
             logger.debug("radius=%s", radius, extra=self._extra)
 
-        radius = 1.0 if radius is None else abs(radius)
+        radius = RADIUS if radius is None else abs(radius)
 
         if radius != self._surface_radius:
             self._init()
@@ -699,7 +699,7 @@ def line(
     if surface is not None:
         radius = calculate_radius(surface)
 
-    radius = 1.0 if radius is None else abs(radius)
+    radius = RADIUS if radius is None else abs(radius)
 
     # TODO: address "fudge-factor" z-level
     radius += radius / 1e4

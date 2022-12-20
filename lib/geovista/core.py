@@ -6,8 +6,10 @@ import pyvista as pv
 
 from .common import (
     GV_CELL_IDS,
+    GV_FIELD_RADIUS,
     GV_POINT_IDS,
     GV_REMESH_POINT_IDS,
+    RADIUS,
     REMESH_JOIN,
     REMESH_SEAM,
     calculate_radius,
@@ -93,8 +95,7 @@ class MeridianSlice:
         )
 
         self.mesh = mesh
-        # XXX: hack
-        self.radius = calculate_radius(mesh, decimals=6)
+        self.radius = calculate_radius(mesh)
         self.meridian = wrap(meridian)[0]
         self.offset = abs(CUT_OFFSET if offset is None else offset)
         logger.debug(
@@ -562,11 +563,12 @@ def resize(mesh: pv.PolyData, radius: Optional[float] = None) -> pv.PolyData:
         raise ValueError(emsg)
 
     if radius is None:
-        radius = 1.0
+        radius = RADIUS
 
     if radius and not np.isclose(calculate_radius(mesh), radius):
         lonlat = to_xy0(mesh)
         xyz = to_xyz(lonlat[:, 0], lonlat[:, 1], radius=radius)
         mesh.points = xyz
+        mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
 
     return mesh
