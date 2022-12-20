@@ -67,7 +67,7 @@ GV_POINT_IDS: str = "gvOriginalPointIds"
 GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
 
 #: Default jupyter plotting backend for pyvista.
-JUPYTER_BACKEND: str = "panel"
+JUPYTER_BACKEND: str = "pythreejs"
 
 #: Default period for wrapped longitude half-open interval, in degrees.
 PERIOD: float = 360.0
@@ -203,7 +203,7 @@ def nan_mask(data: npt.ArrayLike) -> np.ndarray:
         if data.dtype.char not in np.typecodes["Float"]:
             dmsg = (
                 f"converting from '{np.typename(data.dtype.char)}' "
-                f"to '{np.typename('f')}"
+                f"to '{np.typename('f')}'"
             )
             logger.debug(dmsg)
             data = ma.asanyarray(data, dtype=float)

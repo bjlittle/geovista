@@ -3,9 +3,9 @@
 .. jupyter-execute::
    :hide-code:
 
-   # configure pyvista for panel
+   # configure pyvista for pythreejs
    import pyvista
-   pyvista.set_jupyter_backend("panel")
+   pyvista.set_jupyter_backend("pythreejs")
    pyvista.global_theme.background = "white"
    pyvista.global_theme.window_size = [700, 500]
    pyvista.global_theme.axes.show = True

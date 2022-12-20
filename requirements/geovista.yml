@@ -18,7 +18,7 @@ dependencies:
   - pyproj >=3.3
   - pyvista
   - pyvistaqt
-  - vtk <9.2
+  - vtk
 
 # pantry dependencies
   - netcdf4 <1.6.1
@@ -38,7 +38,7 @@ dependencies:
 
 # documentation dependencies
   - jupyter_sphinx
-  - panel
   - pydata-sphinx-theme <0.9
+  - pythreejs
   - sphinx
   - sphinx-copybutton
