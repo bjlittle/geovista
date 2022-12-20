@@ -12,4 +12,5 @@ prune examples
 include lib/geovista/registry.txt
 prune lib/geovista/tests
 prune requirements
+prune tests
 exclude tox.ini
