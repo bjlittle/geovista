@@ -21,7 +21,7 @@ dependencies:
   - vtk >=9
 
 # pantry dependencies
-  - netcdf4 !=1.6.1
+  - netcdf4 <1.6.1
 
 # cmap dependencies
   - cmocean
@@ -38,7 +38,7 @@ dependencies:
 
 # documentation dependencies
   - jupyter_sphinx
+  - panel
   - pydata-sphinx-theme <0.9
-  - pythreejs
   - sphinx
   - sphinx-copybutton

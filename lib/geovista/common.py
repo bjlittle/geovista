@@ -67,7 +67,7 @@ GV_POINT_IDS: str = "gvOriginalPointIds"
 GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
 
 #: Default jupyter plotting backend for pyvista.
-JUPYTER_BACKEND: str = "pythreejs"
+JUPYTER_BACKEND: str = "panel"
 
 #: Default period for wrapped longitude half-open interval, in degrees.
 PERIOD: float = 360.0

@@ -3,13 +3,13 @@
 .. jupyter-execute::
    :hide-code:
 
-   # configure pyvista for pythreejs
+   # configure pyvista for panel
    import pyvista
-   pyvista.set_jupyter_backend("pythreejs")
+   pyvista.set_jupyter_backend("panel")
    pyvista.global_theme.background = "white"
    pyvista.global_theme.window_size = [700, 500]
    pyvista.global_theme.axes.show = True
-   pyvista.global_theme.antialiasing = True
+   pyvista.global_theme.anti_aliasing = "fxaa"
 
 
 .. toctree::
@@ -34,19 +34,25 @@ In the meantime, here's an interactive ``geovista`` amuse-bouche to whet your ap
 .. jupyter-execute::
 
    import geovista as gv
-   from geovista.pantry import ww3_global_tri
+   from geovista.pantry import lfric_sst
 
-   # Load the WAVEWATCH III (WW3) global unstructured triangular sample data.
-   sample = ww3_global_tri()
+
+   # Load the Met Office LFRic C48 unstructured cube-sphere sample data.
+   sample = lfric_sst()
 
    # Create the mesh from the sample data.
    mesh = gv.Transform.from_unstructured(
-       sample.lons, sample.lats, sample.connectivity, data=sample.data
+       sample.lons,
+       sample.lats,
+       sample.connectivity,
+       data=sample.data,
+       start_index=sample.start_index,
    )
 
    # Plot the mesh.
    plotter = gv.GeoPlotter()
-   plotter.add_mesh(mesh, cmap="balance", show_edges=True)
-   plotter.add_base_layer(texture=gv.natural_earth_hypsometric(), zlevel=-5)
+   sargs = dict(title=f"{sample.name} / {sample.units}")
+   plotter.add_mesh(mesh, scalar_bar_args=sargs, cmap="balance", show_edges=True)
    plotter.add_coastlines(resolution="10m", color="white")
+   plotter.add_axes()
    plotter.show()
