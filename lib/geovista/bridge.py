@@ -35,15 +35,26 @@ DEFAULT_NAME_CELLS = "cell_data"
 
 
 class Transform:
+    """
+    Build a mesh from spatial points, connectivity, data and CRS metadata.
+
+    """
+
     @staticmethod
     def _as_compatible_data(data: ArrayLike, n_points: int, n_cells: int) -> np.ndarray:
         """
-        TODO
+        Ensures that the data is compatible with the number of mesh points or cells.
+
+        Note that masked values will be filled with NaNs.
 
         Parameters
         ----------
         data : ArrayLike
-        shape : tuple of int
+            The intended data payload of the mesh.
+        n_points : int
+            The number of nodes in the mesh.
+        n_cells : int
+            The number of cells in the mesh.
 
         Returns
         -------
@@ -94,8 +105,7 @@ class Transform:
         .. versionadded:: 0.1.0
 
         """
-        xs = np.asanyarray(xs)
-        ys = np.asanyarray(ys)
+        xs, ys = np.asanyarray(xs), np.asanyarray(ys)
 
         if xs.ndim not in (1, 2) or (xs.ndim == 2 and xs.shape[1] != 2):
             emsg = (
@@ -148,55 +158,94 @@ class Transform:
         return xs, ys
 
     @staticmethod
-    def _connectivity_M1N1(shape: Shape) -> np.ndarray:
+    def _create_connectivity_M1N1(shape: Shape) -> np.ndarray:
         """
-        TODO
+        Create the connectivity for the 2-D quad-mesh from the node `shape`.
+
+        The connectivity ordering of the quad-mesh face nodes (points) is
+        anti-clockwise, as follows:
+
+            3---2
+            |   |
+            0---1
+
+        Assumes that the associated face node spatial coordinates are
+        appropriately ordered.
 
         Parameters
         ----------
         shape : tuple of int
+            The shape of the 2-D mesh nodes.
 
         Returns
         -------
         ndarray
+            The connectivity array of the face-to-node offsets (zero based).
 
         Notes
         -----
         ..versionadded:: 0.1.0
 
+        See https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
+        for VTK Quadrilateral cell type node ordering.
+
         """
+        # sanity check - internally this should always be the case
         assert len(shape) == 2
+
         npts = np.product(shape)
-        idxs = np.arange(npts).reshape(shape)
-        faces_c1 = np.ravel(idxs[:-1, :-1]).reshape(-1, 1)
-        faces_c2 = np.ravel(idxs[:-1, 1:]).reshape(-1, 1)
-        faces_c3 = np.ravel(idxs[1:, 1:]).reshape(-1, 1)
-        faces_c4 = np.ravel(idxs[1:, :-1]).reshape(-1, 1)
-        faces = np.hstack([faces_c1, faces_c2, faces_c3, faces_c4])
-        return faces
+        idxs = np.arange(npts, dtype=np.uint32).reshape(shape)
+
+        nodes_c0 = np.ravel(idxs[1:, :-1]).reshape(-1, 1)
+        nodes_c1 = np.ravel(idxs[1:, 1:]).reshape(-1, 1)
+        nodes_c2 = np.ravel(idxs[:-1, 1:]).reshape(-1, 1)
+        nodes_c3 = np.ravel(idxs[:-1, :-1]).reshape(-1, 1)
+
+        connectivity = np.hstack([nodes_c0, nodes_c1, nodes_c2, nodes_c3])
+
+        return connectivity
 
     @staticmethod
-    def _connectivity_MN4(shape: Shape) -> np.ndarray:
+    def _create_connectivity_MN4(shape: Shape) -> np.ndarray:
         """
-        TODO
+        Create the connectivity for the 2-D quad-mesh from the face `shape`.
+
+        The connectivity ordering of the quad-mesh face nodes (points) is
+        anti-clockwise, as follows:
+
+            3---2
+            |   |
+            0---1
+
+        Assumes that the associated face node spatial coordinates are
+        appropriately ordered.
 
         Parameters
         ----------
         shape : tuple of int
+            The shape of the 2-D mesh faces.
 
         Returns
         -------
         ndarray
+            The connectivity array of face-to-node offsets (zero-based).
 
         Notes
         -----
         ..versionadded:: 0.1.0
 
+        See https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
+        for VTK Quadrilateral cell type node ordering.
+
         """
+        # sanity check - internally this should always be the case
         assert len(shape) == 2
+
+        # we know that we can only be dealing with a quad mesh
         npts = np.product(shape) * 4
-        idxs = np.arange(npts).reshape(-1, 4)
-        return idxs
+        connectivity = np.arange(npts, dtype=np.uint32).reshape(-1, 4)
+
+        return connectivity
 
     @staticmethod
     def _verify_2d(xs: ArrayLike, ys: ArrayLike) -> None:
@@ -207,9 +256,9 @@ class Transform:
         Parameters
         ----------
         xs : ArrayLike
-            A (N+1, M+1) or (N, M, 4) x-axis array.
+            A (M+1, N+1) or (M, N, 4) x-axis array.
         ys : ArrayLike
-            A (N+1, M+1) or (N, M, 4) y-axis array.
+            A (M+1, N+1) or (M, N, 4) y-axis array.
 
         Notes
         -----
@@ -225,15 +274,15 @@ class Transform:
 
         if xs.ndim not in (2, 3) or (xs.ndim == 3 and xs.shape[2] != 4):
             emsg = (
-                "Require a 2-D '(M+1, N+1)' x-axis array, or 3-D "
-                f"'(M, N, 4)' x-axis array, got {xs.ndim}-D "
-                f"'{xs.shape}'."
+                "Require 2-D x-values with shape '(M+1, N+1)', or 3-D "
+                f"x-values with shape '(M, N, 4)', got {xs.ndim}-D with "
+                f"shape '{xs.shape}'."
             )
             raise ValueError(emsg)
 
         if xs.ndim == 2 and (xs.shape[0] < 2 or xs.shape[1] < 2):
             emsg = (
-                "Require a quad-mesh to have at least one face with four "
+                "Require a quad-mesh with at least one face and four "
                 "points/vertices i.e., minimal shape '(2, 2)', got "
                 f"x-values/y-values with shape '{xs.shape}'."
             )
@@ -259,49 +308,16 @@ class Transform:
             emsg = (
                 "Require a 2-D '(M, N)' connectivity array, defining the "
                 "N indices for each of the M-faces of the mesh, got "
-                f"{len(connectivity)}-D '{connectivity}' array."
+                f"{len(connectivity)}-D connectivity array with shape "
+                f"'{connectivity}'."
             )
             raise ValueError(emsg)
 
         if connectivity[1] < 3:
             emsg = (
                 "Require a connectivity array defining at least 3 vertices "
-                "(triangles) per mesh face i.e., minimal shape '(M, 3)', got "
+                "per mesh face (triangles) i.e., minimal shape '(M, 3)', got "
                 f"connectivity with shape '{connectivity}'."
-            )
-            raise ValueError(emsg)
-
-    @staticmethod
-    def _verify_unstructured(xs: ArrayLike, ys: ArrayLike) -> None:
-        """
-        TODO
-
-        Parameters
-        ----------
-        xs : ArrayLike
-        ys : ArrayLike
-
-        Notes
-        -----
-        ..versionadded:: 0.1.0
-
-        """
-        if xs.shape != ys.shape:
-            emsg = (
-                "Require x-values and y-values with the same shape, got "
-                f"'{xs.shape}' and '{ys.shape}' respectively."
-            )
-            raise ValueError(emsg)
-
-        if xs.ndim != 1:
-            emsg = f"Require a 1-D x-values and y-values array, got {xs.ndim}-D."
-            raise ValueError(emsg)
-
-        if xs.size < 3:
-            emsg = (
-                "Require a mesh to have at least one face with three "
-                "points/vertices i.e., minimal shape '(3,)', got "
-                f"x-values/y-values with shape '{xs.shape}'."
             )
             raise ValueError(emsg)
 
@@ -314,9 +330,9 @@ class Transform:
         name: Optional[str] = None,
         crs: Optional[CRSLike] = None,
         radius: Optional[float] = None,
-        clean: Optional[bool] = False,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
+        clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
         Build a quad-faced mesh from contiguous 1-D x-values and y-values.
@@ -354,20 +370,20 @@ class Transform:
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, default=1.0
             The radius of the sphere. Defaults to an S2 unit sphere.
+        zfactor : float, optional
+            The proportional multiplier for z-axis levels/offsets. Defaults
+            to :data:`ZLEVEL_FACTOR`.
+        zlevel : int, default=0
+            The z-axis level/offset of the mesh, giving a computed `radius`
+            of ``radius + zlevel * zfactor``.
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
-        zfactor : float, optional
-            The roportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`ZLEVEL_FACTOR`.
-        zlevel : int, default=0
-            The z-axis level/offset of the mesh, giving a computed ``radius``
-            of ``radius + zlevel * zfactor``.
 
         Returns
         -------
         PolyData
-            The contiguous quad-faced spherical mesh.
+            The quad-faced spherical mesh.
 
         Notes
         -----
@@ -383,9 +399,9 @@ class Transform:
             name=name,
             crs=crs,
             radius=radius,
-            clean=clean,
             zfactor=zfactor,
             zlevel=zlevel,
+            clean=clean,
         )
 
     @classmethod
@@ -397,9 +413,9 @@ class Transform:
         name: Optional[str] = None,
         crs: Optional[CRSLike] = None,
         radius: Optional[float] = None,
-        clean: Optional[bool] = False,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
+        clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
         Build a quad-faced mesh from 2-D x-values and y-values.
@@ -438,15 +454,15 @@ class Transform:
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, default=1.0
             The radius of the sphere. Defaults to an S2 unit sphere.
+        zfactor : float, optional
+            The proportional multiplier for z-axis levels/offsets. Defaults
+            to :data:`ZLEVEL_FACTOR`.
+        zlevel : int, default=0
+            The z-axis level/offset of the mesh, giving a computed `radius`
+            of ``radius + zlevel * zfactor``.
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
-        zfactor : float, optional
-            The roportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`ZLEVEL_FACTOR`.
-        zlevel : int, default=0
-            The z-axis level/offset of the mesh, giving a computed ``radius``
-            of ``radius + zlevel * zfactor``.
 
         Returns
         -------
@@ -458,12 +474,11 @@ class Transform:
         .. versionadded:: 0.1.0
 
         """
-        xs = np.asanyarray(xs)
-        ys = np.asanyarray(ys)
+        xs, ys = np.asanyarray(xs), np.asanyarray(ys)
         cls._verify_2d(xs, ys)
-        shape = xs.shape
+        shape, ndim = xs.shape, xs.ndim
 
-        if len(shape) == 2:
+        if ndim == 2:
             # we have shape (M+1, N+1)
             r, c = points_shape = shape
             cells_shape = (r - 1, c - 1)
@@ -474,22 +489,22 @@ class Transform:
 
         # generate connectivity (topology) map of indices into the geometry
         connectivity = (
-            cls._connectivity_M1N1(points_shape)
-            if xs.ndim == 2
-            else cls._connectivity_MN4(cells_shape)
+            cls._create_connectivity_M1N1(points_shape)
+            if ndim == 2
+            else cls._create_connectivity_MN4(cells_shape)
         )
 
         return Transform.from_unstructured(
             xs,
             ys,
-            connectivity,
+            connectivity=connectivity,
             data=data,
             name=name,
             crs=crs,
             radius=radius,
-            clean=clean,
             zfactor=zfactor,
             zlevel=zlevel,
+            clean=clean,
         )
 
     @classmethod
@@ -497,28 +512,28 @@ class Transform:
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
-        connectivity: Union[ArrayLike, Shape],
+        connectivity: Optional[Union[ArrayLike, Shape]] = None,
         data: Optional[ArrayLike] = None,
-        start_index: Optional[int] = 0,
+        start_index: Optional[int] = None,
         name: Optional[ArrayLike] = None,
         crs: Optional[CRSLike] = None,
         radius: Optional[float] = None,
-        clean: Optional[bool] = False,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
+        clean: Optional[bool] = False,
     ) -> pv.PolyData:
         """
         Build a mesh from unstructured 1-D x-values and y-values.
 
-        The `connectivity` of the unstructured mesh is required in order to
-        explicitly define the face topology relationship, which is defined in
-        terms of indices into the provided `xs` and `ys` mesh geometry.
+        The `connectivity` defines the topology of faces within the
+        unstructured mesh. This is represented in terms of indices into the
+        provided `xs` and `ys` mesh geometry.
 
-        Note that, the `connectivity` must define a mesh comprised of faces based
-        on the same primitive shape e.g., a mesh of triangles, or a mesh of
-        quads etc. Support is not provided for mixed face meshes. Also, any
-        optional mesh `data` provided must be in the same order as the mesh face
-        `connectivity`.
+        Note that, the `connectivity` must define a mesh comprised of faces
+        based on the same primitive shape e.g., a mesh of triangles, or a mesh
+        of quads etc. Support is not yet provided for mixed face meshes. Also,
+        any optional mesh `data` provided must be in the same order as the mesh
+        face `connectivity`.
 
         Parameters
         ----------
@@ -528,21 +543,25 @@ class Transform:
         ys : ArrayLike
             A 1-D array of y-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
-        connectivity : ArrayLike or Shape
+        connectivity : ArrayLike or Shape, optional
             Defines the topology of each face in the unstructured mesh in terms
             of indices into the provided `xs` and `ys` mesh geometry
             arrays. The `connectivity` is a 2-D (M, N) array, where ``M`` is
-            the number of mesh faces, and ``N`` is the number of
-            points/vertices/nodes per face. Alternatively, an (M, N) tuple
-            defining the connectivity shape may be provided instead, given that the
-            `xs` and `ys` define M*N points in the mesh geometry.
+            the number of mesh faces, and ``N`` is the number of nodes per
+            face. Alternatively, an (M, N) tuple defining the connectivity
+            shape may be provided instead, given that the `xs` and `ys` define
+            M*N points (at most) in the mesh geometry. If no connectivity is
+            provided, and the `xs` and `ys` are 2-D, then their shape is used
+            to determine the connectivity.
         data : ArrayLike, optional
-            Data to be optionally attached to the mesh.
+            Data to be optionally attached to the mesh face or nodes.
         start_index : int, default=0
             Specify the base index of the provided `connectivity` in the
-            closed interval [0, 1]. For example, if ``start_index=1``, then
+            closed interval [0, 1]. For example, if `start_index=1`, then
             the `start_index` will be subtracted from the `connectivity`
             to result in 0-based indices into the provided mesh geometry.
+            If no `start_index` is provided, then it will be determined
+            from the `connectivity`.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
@@ -553,29 +572,45 @@ class Transform:
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, default=1.0
             The radius of the mesh sphere. Defaults to an S2 unit sphere.
+        zfactor : float, optional
+            The proportional multiplier for z-axis levels/offsets. Defaults
+            to :data:`ZLEVEL_FACTOR`.
+        zlevel : int, default=0
+            The z-axis level/offset of the mesh, giving a computed `radius`
+            of ``radius + zlevel * zfactor``.
         clean : bool, default=False
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
-        zfactor : float, optional
-            The roportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`ZLEVEL_FACTOR`.
-        zlevel : int, default=0
-            The z-axis level/offset of the mesh, giving a computed ``radius``
-            of ``radius + zlevel * zfactor``.
 
         Returns
         -------
         PolyData
-            The N-faced spherical mesh.
+            The (M*N)-faced spherical mesh.
 
         Notes
         -----
         .. versionadded:: 0.1.0
 
         """
-        xs = np.asanyarray(xs).ravel()
-        ys = np.asanyarray(ys).ravel()
-        cls._verify_unstructured(xs, ys)
+        xs, ys = np.asanyarray(xs), np.asanyarray(ys)
+        shape = xs.shape
+
+        if ys.shape != shape:
+            emsg = (
+                "Require x-values and y-values with the same shape, got "
+                f"'{shape}' and '{ys.shape}' respectively."
+            )
+            raise ValueError(emsg)
+
+        if xs.size < 3:
+            emsg = (
+                "Require a mesh to have at least one face with three "
+                "points/vertices i.e., minimal shape '(3,)', got "
+                f"x-values/y-values with shape '{shape}'."
+            )
+            raise ValueError(emsg)
+
+        xs, ys = xs.ravel(), ys.ravel()
 
         if crs is not None:
             crs = CRS.from_user_input(crs)
@@ -584,48 +619,58 @@ class Transform:
                 transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
                 xs, ys = transformer.transform(xs, ys, errcheck=True)
 
-        # ensure longitudes (degrees) are in closed interval [-180, 180)
+        # ensure longitudes (degrees) are in half-closed interval [-180, 180)
         xs = wrap(xs)
+
+        if connectivity is None:
+            # default to the shape of the points
+            connectivity = shape
+            logger.debug("using points shape %s for connectivity", shape)
 
         if isinstance(connectivity, tuple):
             cls._verify_connectivity(connectivity)
-            n_points = np.product(connectivity)
+            npts = np.product(connectivity)
 
-            if n_points != xs.size:
+            if npts != xs.size:
                 emsg = (
-                    f"Connectivity shape '{connectivity}' requires "
-                    f"'{n_points:,d}' x-values/y-values, only "
-                    f"'{xs.size:,d}' available."
+                    f"Connectivity with shape '{connectivity}' requires "
+                    f"'{npts:,d}' x-values/y-values, but only "
+                    f"'{xs.size:,d}' have been provided."
                 )
                 raise ValueError(emsg)
 
             logger.debug(
-                "connectivity shape %s generating %d indices", connectivity, n_points
+                "connectivity shape %s generating %d indices", connectivity, npts
             )
-            connectivity = np.arange(n_points).reshape(connectivity)
+            connectivity = np.arange(npts, dtype=np.uint32).reshape(connectivity)
             ignore_start_index = True
             logger.debug("ignoring start_index")
         else:
-            # require to copy connectivity, otherwise reqults in a memory
+            # require to copy connectivity, otherwise results in a memory
             # corruption within vtk
             connectivity = np.asanyarray(connectivity).copy()
             cls._verify_connectivity(connectivity.shape)
             ignore_start_index = False
 
+        if not ignore_start_index:
+            if start_index is None:
+                start_index = connectivity.min()
+                logger.debug("found start_index = %d", start_index)
+
+            if start_index not in [0, 1]:
+                emsg = (
+                    "Require a 'start_index' in the closed interval [0, 1], got "
+                    f"'{start_index}'."
+                )
+                raise ValueError(emsg)
+
+            if start_index:
+                connectivity -= start_index
+
         # reduce any singularities at the poles to a singleton point
         poles = np.isclose(np.abs(ys), 90)
         if np.any(poles):
             xs[poles] = 0
-
-        if start_index not in [0, 1]:
-            emsg = (
-                "Require a 'start_index` in the closed interval [0, 1], got "
-                f"'{start_index}'."
-            )
-            raise ValueError(emsg)
-
-        if start_index and not ignore_start_index:
-            connectivity -= start_index
 
         radius = RADIUS if radius is None else abs(radius)
 
@@ -641,7 +686,7 @@ class Transform:
         geometry = to_xyz(xs, ys, radius=radius)
 
         # create face connectivity serialization e.g., for a quad-mesh, for
-        # each face we have (4, V1, V2, V3, V4), where "4" is the number of
+        # each face we have (4, V0, V1, V2, V3), where "4" is the number of
         # vertices defining the face, followed by the four indices specifying
         # each of the face vertices into the mesh geometry.
         n_faces, n_vertices = connectivity.shape
@@ -689,31 +734,94 @@ class Transform:
         xs: ArrayLike,
         ys: ArrayLike,
         connectivity: Optional[Union[ArrayLike, Shape]] = None,
-        start_index: Optional[int] = 0,
+        start_index: Optional[int] = None,
         crs: Optional[ArrayLike] = None,
-        clean: Optional[bool] = False,
+        radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
+        clean: Optional[bool] = False,
     ):
-        xs = np.asanyarray(xs)
-        ys = np.asanyarray(ys)
+        """
+        Convenience factory that builds a mesh from spatial points,
+        connectivity, data and CRS metadata.
+
+        Parameters
+        ----------
+        xs : ArrayLike
+            A 1-D array of x-values, in canonical `crs` units, defining the
+            vertices of each face in the mesh.
+        ys : ArrayLike
+            A 1-D array of y-values, in canonical `crs` units, defining the
+            vertices of each face in the mesh.
+        connectivity : ArrayLike or Shape, optional
+            Defines the topology of each face in the unstructured mesh in terms
+            of indices into the provided `xs` and `ys` mesh geometry
+            arrays. The `connectivity` is a 2-D (M, N) array, where ``M`` is
+            the number of mesh faces, and ``N`` is the number of nodes per
+            face. Alternatively, an (M, N) tuple defining the connectivity
+            shape may be provided instead, given that the `xs` and `ys` define
+            M*N points (at most) in the mesh geometry. If no connectivity is
+            provided, and the `xs` and `ys` are 2-D, then their shape is used
+            to determine the connectivity.
+        start_index : int, default=0
+            Specify the base index of the provided `connectivity` in the
+            closed interval [0, 1]. For example, if `start_index=1`, then
+            the `start_index` will be subtracted from the `connectivity`
+            to result in 0-based indices into the provided mesh geometry.
+            If no `start_index` is provided, then it will be determined
+            from the `connectivity`.
+        crs : CRSLike, optional
+            The Coordinate Reference System of the provided `xs` and `ys`. May
+            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            to ``EPSG:4326`` i.e., ``WGS 84``.
+        radius : float, default=1.0
+            The radius of the mesh sphere. Defaults to an S2 unit sphere.
+        zfactor : float, optional
+            The proportional multiplier for z-axis levels/offsets. Defaults
+            to :data:`ZLEVEL_FACTOR`.
+        zlevel : int, default=0
+            The z-axis level/offset of the mesh, giving a computed `radius`
+            of ``radius + zlevel * zfactor``.
+        clean : bool, default=False
+            Specify whether to merge duplicate points, remove unused points,
+            and/or remove degenerate cells in the resultant mesh.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        xs, ys = np.asanyarray(xs), np.asanyarray(ys)
 
         if connectivity is None:
             if xs.ndim <= 1 or ys.ndim <= 1:
                 mesh = self.from_1d(
-                    xs, ys, crs=crs, clean=clean, zfactor=zfactor, zlevel=zlevel
+                    xs,
+                    ys,
+                    crs=crs,
+                    radius=radius,
+                    zfactor=zfactor,
+                    zlevel=zlevel,
+                    clean=clean,
                 )
             else:
                 mesh = self.from_2d(
-                    xs, ys, crs=crs, clean=clean, zfactor=zfactor, zlevel=zlevel
+                    xs,
+                    ys,
+                    crs=crs,
+                    radius=radius,
+                    zfactor=zfactor,
+                    zlevel=zlevel,
+                    clean=clean,
                 )
         else:
             mesh = self.from_unstructured(
                 xs,
                 ys,
-                connectivity,
+                connectivity=connectivity,
                 start_index=start_index,
                 crs=crs,
+                radius=radius,
                 clean=clean,
                 zfactor=zfactor,
                 zlevel=zlevel,
@@ -727,15 +835,22 @@ class Transform:
         self, data: Optional[ArrayLike] = None, name: Optional[str] = None
     ) -> pv.PolyData:
         """
-        TODO
+        Build the mesh, and attach the provided data to either the points or
+        faces of the mesh.
 
         Parameters
         ----------
         data : ArrayLike, optional
+            Data to be optionally attached to the mesh face or nodes.
+        name : str, optional
+            The name of the optional data array to be attached to the mesh. If
+            `data` is provided but with no `name`, defaults to either
+            :data:`DEFAULT_NAME_POINTS` or :data:`DEFAULT_NAME_CELLS`.
 
         Returns
         -------
         PolyData
+            The spherical mesh.
 
         Notes
         _____

@@ -44,9 +44,8 @@ In the meantime, here's an interactive ``geovista`` amuse-bouche to whet your ap
    mesh = gv.Transform.from_unstructured(
        sample.lons,
        sample.lats,
-       sample.connectivity,
+       connectivity=sample.connectivity,
        data=sample.data,
-       start_index=sample.start_index,
    )
 
    # Plot the mesh.

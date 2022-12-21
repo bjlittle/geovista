@@ -8,9 +8,7 @@ import geovista.theme
 sample = fesom()
 
 # create the mesh from the sample data
-mesh = gv.Transform.from_unstructured(
-    sample.lons, sample.lats, sample.connectivity, data=sample.data
-)
+mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
 
 # plot the mesh
 plotter = gv.GeoPlotter()

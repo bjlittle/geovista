@@ -11,9 +11,8 @@ sample = lfric_sst()
 mesh = gv.Transform.from_unstructured(
     sample.lons,
     sample.lats,
-    sample.connectivity,
+    connectivity=sample.connectivity,
     data=sample.data,
-    start_index=sample.start_index,
 )
 
 # remove cells from the mesh with nan values
@@ -28,7 +27,7 @@ resolution = "10m"
 plotter.add_coastlines(resolution=resolution, color="white")
 plotter.add_axes()
 plotter.add_text(
-    f"LFric Unstructured Cube-Sphere ({resolution} Coastlines)",
+    f"LFRic Unstructured Cube-Sphere ({resolution} Coastlines)",
     position="upper_left",
     font_size=10,
     shadow=True,

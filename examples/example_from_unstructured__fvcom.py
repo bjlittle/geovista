@@ -9,7 +9,11 @@ sample = fvcom_tamar()
 
 # create the mesh from the sample data
 mesh = gv.Transform.from_unstructured(
-    sample.lons, sample.lats, sample.connectivity, sample.face, name="face"
+    sample.lons,
+    sample.lats,
+    connectivity=sample.connectivity,
+    data=sample.face,
+    name="face",
 )
 
 # warp the mesh nodes by the bathymetry

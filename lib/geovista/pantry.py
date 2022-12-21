@@ -161,7 +161,7 @@ def fvcom_tamar() -> SampleUnstructuredXY:
 
     # load the face/node connectivity
     offset = 1  # minimum connectivity index offset
-    connectivity = ds.variables["nv"][:] - offset
+    connectivity = ds.variables["nv"][:]
 
     # load the mesh payload
     face = ds.variables["h_center"]
@@ -170,7 +170,14 @@ def fvcom_tamar() -> SampleUnstructuredXY:
     node = ds.variables["h"][:]
 
     sample = SampleUnstructuredXY(
-        lons, lats, connectivity.T, face=face[:], node=node, name=name, units=units
+        lons,
+        lats,
+        connectivity.T,
+        face=face[:],
+        node=node,
+        start_index=offset,
+        name=name,
+        units=units,
     )
 
     return sample
@@ -642,7 +649,7 @@ def ww3_global_tri() -> SampleUnstructuredXY:
 
     # load the face/node connectivity
     offset = 1  # minimum connectivity index offset
-    connectivity = ds.variables["tri"][:] - offset
+    connectivity = ds.variables["tri"][:]
 
     # we know this is a single step timeseries, a priori
     idx = 0
@@ -653,7 +660,13 @@ def ww3_global_tri() -> SampleUnstructuredXY:
     units = data.units
 
     sample = SampleUnstructuredXY(
-        lons, lats, connectivity, data=data[idx], name=name, units=units
+        lons,
+        lats,
+        connectivity,
+        data=data[idx],
+        start_index=offset,
+        name=name,
+        units=units,
     )
 
     return sample

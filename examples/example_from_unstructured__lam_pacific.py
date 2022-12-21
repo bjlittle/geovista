@@ -11,9 +11,8 @@ sample = lam_pacific()
 mesh = gv.Transform.from_unstructured(
     sample.lons,
     sample.lats,
-    sample.connectivity,
+    connectivity=sample.connectivity,
     data=sample.data,
-    start_index=sample.start_index,
 )
 
 # plot the mesh

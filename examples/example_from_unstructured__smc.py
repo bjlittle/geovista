@@ -8,9 +8,7 @@ import geovista.theme
 sample = ww3_global_smc()
 
 # create the mesh from the sample data
-mesh = gv.Transform.from_unstructured(
-    sample.lons, sample.lats, sample.connectivity, data=sample.data
-)
+mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
 
 # threshold the mesh of NaNs
 mesh = mesh.threshold()
