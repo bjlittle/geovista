@@ -17,7 +17,7 @@ include = '\.pyi?$'
 
 [tool.check-manifest]
 ignore = [
-    "lib/geovista/_version.py",
+    "src/geovista/_version.py",
 ]
 
 
@@ -38,7 +38,7 @@ testpaths = "tests"
 
 
 [tool.setuptools_scm]
-write_to = "lib/geovista/_version.py"
+write_to = "src/geovista/_version.py"
 local_scheme = "dirty-tag"
 #version_scheme = "release-branch-semver"
 
