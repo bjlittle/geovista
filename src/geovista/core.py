@@ -21,7 +21,6 @@ from .common import (
 from .crs import from_wkt
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .filters import remesh
-from .log import get_logger
 
 __all__ = [
     "MeridianSlice",
@@ -29,12 +28,8 @@ __all__ = [
     "combine",
     "cut_along_meridian",
     "is_projected",
-    "logger",
     "resize",
 ]
-
-# configure the logger
-logger = get_logger(__name__)
 
 #: Preference for a slice to bias cells west of the chosen meridian.
 CUT_WEST: str = "west"
@@ -80,9 +75,6 @@ class MeridianSlice:
         .. versionadded :: 0.1.0
 
         """
-        # logging convenience
-        self._extra = dict(cls=self.__class__.__name__)
-
         if is_projected(mesh):
             emsg = "Cannot slice mesh that appears to be a planar projection."
             raise ValueError(emsg)
@@ -98,26 +90,12 @@ class MeridianSlice:
         self.radius = calculate_radius(mesh)
         self.meridian = wrap(meridian)[0]
         self.offset = abs(CUT_OFFSET if offset is None else offset)
-        logger.debug(
-            "meridian=%s, offset=%s, radius=%s",
-            self.meridian,
-            self.offset,
-            self.radius,
-            extra=self._extra,
-        )
         self.slices = {bias.name: self._intersection(bias.value) for bias in SliceBias}
 
         n_cells = self.slices[CUT_EXACT].n_cells
         self.west_ids = set(self.slices[CUT_WEST][GV_CELL_IDS]) if n_cells else set()
         self.east_ids = set(self.slices[CUT_EAST][GV_CELL_IDS]) if n_cells else set()
         self.split_ids = self.west_ids.intersection(self.east_ids)
-        logger.debug(
-            "west=%s, east=%s, split=%s",
-            len(self.west_ids),
-            len(self.east_ids),
-            len(self.split_ids),
-            extra=self._extra,
-        )
 
     def _intersection(self, bias: float) -> pv.PolyData:
         """
@@ -135,15 +113,12 @@ class MeridianSlice:
         .. versionadded :: 0.1.0
 
         """
-        logger.debug("bias=%s", bias, extra=self._extra)
         y = bias * self.offset
         xyz = pv.Line((-self.radius, y, -self.radius), (self.radius, y, -self.radius))
         xyz.rotate_z(self.meridian, inplace=True)
         spline = pv.Spline(xyz.points, 1)
         mesh = self.mesh.slice_along_line(spline)
-        logger.debug(
-            "n_cells=%s, n_points=%s", mesh.n_cells, mesh.n_points, extra=self._extra
-        )
+
         return mesh
 
     def extract(
@@ -183,50 +158,25 @@ class MeridianSlice:
         # there is no intersection between the spline extruded in the
         # z-plane and the mesh
         if self.slices[CUT_EXACT].n_cells == 0:
-            logger.debug("exact: no cells extracted from slice", extra=self._extra)
             return mesh
 
         if split_cells:
-            logger.debug(
-                "bias=%s, split=%s", bias, len(self.split_ids), extra=self._extra
-            )
             extract_ids = self.split_ids
         else:
             whole_ids = set(self.slices[bias][GV_CELL_IDS]).difference(self.split_ids)
-            logger.debug("bias=%s, whole=%s", bias, len(whole_ids), extra=self._extra)
             extract_ids = whole_ids
-
-        logger.debug("extracting %s cells", len(extract_ids), extra=self._extra)
 
         if extract_ids:
             mesh = cast(self.mesh.extract_cells(np.array(list(extract_ids))))
-            logger.debug(
-                "mesh: bias=%s, n_cells=%s, n_points=%s",
-                bias,
-                mesh.n_cells,
-                mesh.n_points,
-                extra=self._extra,
-            )
             if clip:
                 ll = to_xy0(mesh)
                 match = np.abs(ll[:, 0] - self.meridian) < 90
                 mesh = cast(mesh.extract_points(match))
-                logger.debug(
-                    "clip: bias=%s, n_cells=%s, n_points=%s",
-                    bias,
-                    mesh.n_cells,
-                    mesh.n_points,
-                    extra=self._extra,
-                )
             sanitize_data(mesh)
             if mesh.n_cells:
                 mesh.set_active_scalars(
                     self._info.name, preference=self._info.association.name.lower()
                 )
-            else:
-                logger.debug("clip: no cells extracted from slice", extra=self._extra)
-        else:
-            logger.debug("no cells extracted from slice", extra=self._extra)
 
         return mesh
 
@@ -275,13 +225,6 @@ def add_texture_coords(
     v = (lats + 90) / 180
     t = np.vstack([u, v]).T
     mesh.active_t_coords = t
-    logger.debug(
-        "u.min()=%s, u.max()=%s, v.min()=%s, v.max()=%s",
-        u.min(),
-        u.max(),
-        v.min(),
-        v.max(),
-    )
 
     return mesh
 
@@ -464,11 +407,6 @@ def cut_along_meridian(
         meridian += 180
 
     meridian = wrap(meridian)[0]
-    logger.debug(
-        "meridian=%s, antimeridian=%s",
-        meridian,
-        antimeridian,
-    )
 
     slicer = MeridianSlice(mesh, meridian)
     mesh_whole = slicer.extract(split_cells=False)

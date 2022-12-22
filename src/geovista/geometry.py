@@ -7,7 +7,6 @@ import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
 
 from .common import GV_FIELD_RADIUS, RADIUS, set_jupyter_backend, to_xy0
-from .log import get_logger
 
 __all__ = [
     "COASTLINE_RESOLUTION",
@@ -15,11 +14,7 @@ __all__ = [
     "coastline_geometries",
     "coastline_mesh",
     "get_coastlines",
-    "logger",
 ]
-
-# configure the logger
-logger = get_logger(__name__)
 
 #
 # TODO: support richer default management
@@ -133,11 +128,6 @@ def coastline_geometries(
     if multi_lines:
         unpack(multi_lines)
 
-    logger.debug(
-        "loaded %s geometries",
-        len(lines),
-    )
-
     return lines
 
 
@@ -189,27 +179,12 @@ def coastline_mesh(
         y = radius * np.sin(yr) * np.sin(xr)
         z = radius * np.cos(yr)
         geoms = np.hstack([x, y, z])
-        logger.debug(
-            "geometries converted from xy0 to xyz, radius=%s",
-            radius,
-        )
-
-    logger.debug(
-        "coastlines geometry shape=%s",
-        geoms.shape,
-    )
 
     # convert geometries to a vtk line mesh
     mesh = pv.PolyData()
     mesh.points = geoms
     lines = np.full((nlines, 3), 2, dtype=int)
     pstart, lstart = 0, 0
-
-    logger.debug(
-        "ngeoms=%s, nlines=%s",
-        ngeoms,
-        nlines,
-    )
 
     for npoints in npoints_per_geom:
         pend = pstart + npoints

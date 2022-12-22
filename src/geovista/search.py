@@ -17,12 +17,8 @@ from pyvista import PolyData
 
 from .common import to_xyz
 from .crs import WGS84, from_wkt
-from .log import get_logger
 
-__all__ = ["find_cell_neighbours", "find_nearest_cell", "logger"]
-
-# configure the logger
-logger = get_logger(__name__)
+__all__ = ["find_cell_neighbours", "find_nearest_cell"]
 
 # type aliases
 CellIDs = List[int]

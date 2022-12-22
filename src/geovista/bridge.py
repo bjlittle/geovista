@@ -16,12 +16,8 @@ from .common import (
     wrap,
 )
 from .crs import WGS84
-from .log import get_logger
 
-__all__ = ["Transform", "logger"]
-
-# configure the logger
-logger = get_logger(__name__)
+__all__ = ["Transform"]
 
 # type aliases
 Shape = Tuple[int]
@@ -625,7 +621,6 @@ class Transform:
         if connectivity is None:
             # default to the shape of the points
             connectivity = shape
-            logger.debug("using points shape %s for connectivity", shape)
 
         if isinstance(connectivity, tuple):
             cls._verify_connectivity(connectivity)
@@ -639,12 +634,8 @@ class Transform:
                 )
                 raise ValueError(emsg)
 
-            logger.debug(
-                "connectivity shape %s generating %d indices", connectivity, npts
-            )
             connectivity = np.arange(npts, dtype=np.uint32).reshape(connectivity)
             ignore_start_index = True
-            logger.debug("ignoring start_index")
         else:
             # require to copy connectivity, otherwise results in a memory
             # corruption within vtk
@@ -655,7 +646,6 @@ class Transform:
         if not ignore_start_index:
             if start_index is None:
                 start_index = connectivity.min()
-                logger.debug("found start_index = %d", start_index)
 
             if start_index not in [0, 1]:
                 emsg = (

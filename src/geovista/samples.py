@@ -14,7 +14,6 @@ import geovista.pantry as pantry
 
 from .bridge import Transform
 from .cache import CACHE
-from .log import get_logger
 
 __all__ = [
     "fesom",
@@ -30,15 +29,11 @@ __all__ = [
     "lfric",
     "lfric_orog",
     "lfric_sst",
-    "logger",
     "oisst_avhrr_sst",
     "um_orca2",
     "ww3_global_smc",
     "ww3_global_tri",
 ]
-
-# configure the logger
-logger = get_logger(__name__)
 
 #: The default LFRic Model unstructured cubed-sphere resolution.
 DEFAULT_LFRIC_RESOLUTION: str = "c96"

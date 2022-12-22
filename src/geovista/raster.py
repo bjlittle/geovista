@@ -5,12 +5,8 @@ import numpy as np
 import pyvista as pv
 
 from .common import wrap
-from .log import get_logger
 
-__all__ = ["logger", "wrap_texture"]
-
-# configure the logger
-logger = get_logger(__name__)
+__all__ = ["wrap_texture"]
 
 
 def wrap_texture(
@@ -51,15 +47,11 @@ def wrap_texture(
         shape = (grid.dimensions[1], grid.dimensions[0], texture.n_components)
         # convert grid to an rgb image (un-do pyvista.Texture._from_array mangling)
         image = np.flip(grid.active_scalars.reshape(shape), axis=0)
-
-        width, height = image.shape[1], image.shape[0]
-        logger.debug("texture image width=%dpx, height=%dpx)", width, height)
-
+        width = image.shape[1]
         # calculate the rendering window over the tiled image centered around the meridian
         offset = int(np.round(((meridian + 180) / 360) * width, decimals=0)) + width
         start = offset - (width // 2)
         end = start + width
-        logger.debug("start=%dpx, meridian=%dpx, end=%dpx", start, offset, end)
         # horizontally tile the image (along the x-axis)
         tiled = np.concatenate([image, image, image], axis=1)
         # now extract the image based on the central meridian

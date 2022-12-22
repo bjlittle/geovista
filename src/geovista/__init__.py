@@ -14,15 +14,9 @@ from .filters import cast_UnstructuredGrid_to_PolyData, remesh  # noqa: F401
 from .geodesic import BBox, line, panel, wedge  # noqa: F401
 from .geometry import get_coastlines  # noqa: F401
 from .geoplotter import GeoBackgroundPlotter, GeoMultiPlotter, GeoPlotter  # noqa: F401
-from .log import get_logger
 from .raster import wrap_texture  # noqa: F401
 
 try:
     from ._version import version as __version__  # noqa: F401
 except ModuleNotFoundError:
     __version__ = "unknown"
-
-__all__ = ["logger"]
-
-# Configure the top level logger.
-logger = get_logger(__name__)

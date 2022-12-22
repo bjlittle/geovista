@@ -10,8 +10,6 @@ import numpy.ma as ma
 import numpy.typing as npt
 import pyvista as pv
 
-from .log import get_logger
-
 __all__ = [
     "GV_CELL_IDS",
     "GV_FIELD_CRS",
@@ -26,7 +24,6 @@ __all__ = [
     "VTK_POINT_IDS",
     "ZLEVEL_FACTOR",
     "calculate_radius",
-    "logger",
     "nan_mask",
     "sanitize_data",
     "set_jupyter_backend",
@@ -37,9 +34,6 @@ __all__ = [
     "triangulated",
     "wrap",
 ]
-
-# configure the logger
-logger = get_logger(__name__)
 
 #
 # TODO: support richer default management
@@ -201,11 +195,6 @@ def nan_mask(data: npt.ArrayLike) -> np.ndarray:
     """
     if np.ma.isMaskedArray(data):
         if data.dtype.char not in np.typecodes["Float"]:
-            dmsg = (
-                f"converting from '{np.typename(data.dtype.char)}' "
-                f"to '{np.typename('f')}'"
-            )
-            logger.debug(dmsg)
             data = ma.asanyarray(data, dtype=float)
 
         data = data.filled(np.nan)
@@ -269,9 +258,7 @@ def set_jupyter_backend(backend: Optional[str] = None) -> bool:
             pv.set_jupyter_backend(backend)
             result = True
         except ImportError:
-            logger.info("Unable to set the pyvista jupyter backend to '%s'", backend)
-    else:
-        logger.debug("No active IPython kernel available")
+            pass
 
     return result
 
@@ -432,11 +419,6 @@ def to_xy0(
             seam_lons = lons[seam_ids]
             seam_mask = np.isclose(np.abs(seam_lons), 180)
             lons[seam_ids[seam_mask]] = 180
-        else:
-            logger.debug(
-                "cannot honour closed interval due to missing '%s' field",
-                GV_REMESH_POINT_IDS,
-            )
 
     result = np.vstack(data).T if stacked else np.array(data)
 

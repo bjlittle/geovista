@@ -14,14 +14,10 @@ from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import COASTLINE_RESOLUTION, get_coastlines
-from .log import get_logger
 from .raster import wrap_texture
 from .samples import lfric
 
-__all__ = ["GeoBackgroundPlotter", "GeoMultiPlotter", "GeoPlotter", "logger"]
-
-# configure the logger
-logger = get_logger(__name__)
+__all__ = ["GeoBackgroundPlotter", "GeoMultiPlotter", "GeoPlotter"]
 
 # type aliases
 CRSLike = Union[int, str, dict, CRS]
@@ -114,9 +110,6 @@ class GeoPlotterBase:
 
         """
         resolution = kwargs.pop("resolution") if "resolution" in kwargs else None
-        logger.debug(
-            "resolution=%s, is_projected=%s", resolution, self.crs.is_projected
-        )
 
         if self.crs.is_projected:
             # pass-thru "zfactor" and "zlevel" to the "add_mesh" method,
@@ -129,7 +122,6 @@ class GeoPlotterBase:
                 kwargs["zfactor"] = ZLEVEL_FACTOR
             if "zlevel" not in kwargs:
                 kwargs["zlevel"] = -1
-            logger.debug("radius=%s", radius)
         else:
             original = (
                 abs(float(kwargs.pop("radius"))) if "radius" in kwargs else RADIUS
@@ -139,13 +131,6 @@ class GeoPlotterBase:
             )
             zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else -1
             radius = original + original * zlevel * zfactor
-            logger.debug(
-                "radius=%f(%s), zfactor=%f, zlevel=%s",
-                radius,
-                original,
-                zfactor,
-                zlevel,
-            )
 
         if mesh is not None:
             if radius is not None:
@@ -190,13 +175,6 @@ class GeoPlotterBase:
                 float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
             )
             zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else 0
-            logger.debug(
-                "radius=%s, zfactor=%f, zlevel=%d, is_projected=%s",
-                radius,
-                zfactor,
-                zlevel,
-                self.crs.is_projected,
-            )
 
             src_crs = from_wkt(mesh)
             tgt_crs = self.crs
@@ -231,10 +209,6 @@ class GeoPlotterBase:
                     xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
                     delta = max(xdelta, ydelta)
                     zoffset = zlevel * zfactor * delta
-                    logger.debug(
-                        "delta=%f, zfactor=%f, zlevel=%d", delta, zfactor, zlevel
-                    )
-                logger.debug("zoffset=%f", zoffset)
                 mesh.points[:, 2] = zoffset
 
         return super().add_mesh(mesh, **kwargs)

@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional, Tuple
 
 import numpy as np
@@ -19,7 +18,6 @@ from .common import (
     triangulated,
     wrap,
 )
-from .log import get_logger
 
 __all__ = [
     "REMESH_SEAM_EAST",
@@ -27,12 +25,8 @@ __all__ = [
     "VTK_BOUNDARY_MASK",
     "VTK_FREE_EDGE_MASK",
     "cast_UnstructuredGrid_to_PolyData",
-    "logger",
     "remesh",
 ]
-
-# configure the logger
-logger = get_logger(__name__)
 
 #: Marker for remesh filter eastern cell boundary point.
 REMESH_SEAM_EAST: int = REMESH_SEAM - 1
@@ -104,11 +98,6 @@ def remesh(
 
     meridian = wrap(meridian)[0]
     radius = calculate_radius(mesh)
-    logger.debug(
-        "meridian=%s, radius=%s",
-        meridian,
-        radius,
-    )
 
     poly0: pv.PolyData = mesh.copy(deep=True)
 
@@ -119,13 +108,7 @@ def remesh(
         poly0.point_data[GV_POINT_IDS] = np.arange(poly0.n_points)
 
     if not triangulated(poly0):
-        start = datetime.now()
         poly0.triangulate(inplace=True)
-        end = datetime.now()
-        logger.debug(
-            "mesh: triangulated [%s secs]",
-            (end - start).total_seconds(),
-        )
 
     poly1 = pv.Plane(
         center=(radius / 2, 0, 0),
@@ -148,15 +131,7 @@ def remesh(
     alg.SetCheckMesh(check)
     alg.SetSplitFirstOutput(True)
     alg.SetSplitSecondOutput(False)
-    start = datetime.now()
     alg.Update()
-    end = datetime.now()
-    logger.debug(
-        "remeshed: lines=%s, points=%s [%s secs]",
-        alg.GetNumberOfIntersectionLines(),
-        alg.GetNumberOfIntersectionPoints(),
-        (end - start).total_seconds(),
-    )
 
     remeshed: pv.PolyData = _get_output(alg, oport=1)
 
@@ -166,10 +141,6 @@ def remesh(
     if remeshed.n_cells == 0:
         # no remeshing has been performed as the meridian does not intersect the mesh
         remeshed_west, remeshed_east = pv.PolyData(), pv.PolyData()
-        logger.debug(
-            "no remesh performed using meridian=%s",
-            meridian,
-        )
     else:
         # split the triangulated remesh into its two halves, west and east of the meridian
         centers = remeshed.cell_centers()
@@ -179,14 +150,6 @@ def remesh(
         upper_mask = delta > 180
         west_mask = lower_mask | upper_mask
         east_mask = ~west_mask
-        logger.debug(
-            "split: lower=%s, upper=%s, west=%s, east=%s, total=%s",
-            lower_mask.sum(),
-            upper_mask.sum(),
-            west_mask.sum(),
-            east_mask.sum(),
-            remeshed.n_cells,
-        )
 
         # the vtkIntersectionPolyDataFilter is configured to *always* generate the boundary mask point array
         # as we require it internally, regardless of whether the caller wants it or not afterwards

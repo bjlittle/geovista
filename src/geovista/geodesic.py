@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from datetime import datetime
 from typing import Dict, Optional, Tuple, Union
 import warnings
 
@@ -10,12 +9,8 @@ import pyvista as pv
 
 from .common import RADIUS, calculate_radius, to_xyz, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
-from .log import get_logger
 
-__all__ = ["BBox", "line", "logger", "npoints", "npoints_by_idx", "panel", "wedge"]
-
-# configure the logger
-logger = get_logger(__name__)
+__all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
 
 # Type aliases
 Corners = Tuple[float, float, float, float]
@@ -183,8 +178,6 @@ class BBox:
         self._mesh = None
         # cache prior surface radius, as an optimisation
         self._surface_radius = None
-        # logging convenience
-        self._extra = dict(cls=self.__class__.__name__)
 
     def __eq__(self, other) -> bool:
         result = NotImplemented
@@ -237,9 +230,6 @@ class BBox:
         self._npts = self.c - 1
         self._n_faces = self.c * self.c
         self._n_points = (self.c + 1) * (self.c + 1)
-        logger.debug("c=%s", self.c, extra=self._extra)
-        logger.debug("n_faces=%s", self._n_faces, extra=self._extra)
-        logger.debug("idx_map=%s", self._idx_map.shape, extra=self._extra)
 
     def _bbox_face_edge_idxs(self) -> np.ndarray:
         """
@@ -359,7 +349,6 @@ class BBox:
         """
         if surface is not None:
             radius = calculate_radius(surface)
-            logger.debug("radius=%s", radius, extra=self._extra)
 
         radius = RADIUS if radius is None else abs(radius)
 
@@ -402,21 +391,9 @@ class BBox:
 
             # create the bbox mesh
             self._mesh = pv.PolyData(bbox_xyz, faces=bbox_faces, n_faces=bbox_n_faces)
-            logger.debug(
-                "bbox: n_faces=%s, n_points=%s",
-                self._mesh.n_faces,
-                self._mesh.n_points,
-                extra=self._extra,
-            )
 
             if self.triangulate:
                 self._mesh = self._mesh.triangulate()
-                logger.debug(
-                    "bbox: n_faces=%s, n_points=%s (tri)",
-                    self._mesh.n_faces,
-                    self._mesh.n_points,
-                    extra=self._extra,
-                )
 
     def _generate_bbox_skirt(self) -> np.ndarray:
         """
@@ -442,7 +419,6 @@ class BBox:
         faces_c4 = np.roll(faces_c3, 1)
 
         faces = np.hstack([faces_N, faces_c1, faces_c2, faces_c3, faces_c4])
-        logger.debug("skirt_n_faces=%s", skirt_n_faces, extra=self._extra)
 
         return faces
 
@@ -547,13 +523,6 @@ class BBox:
 
         preference = preference.lower()
         perform_cell = False
-        logger.debug("preference=%s", preference, extra=self._extra)
-        logger.debug(
-            "surface: n_cells=%s, n_points=%s",
-            surface.n_cells,
-            surface.n_points,
-            extra=self._extra,
-        )
 
         if preference == PREFERENCE_CELL:
             # the cell preference is a subset of point, but more expensive to compute
@@ -564,22 +533,10 @@ class BBox:
         if preference == PREFERENCE_CENTER:
             original = surface
             surface = surface.cell_centers()
-            logger.debug(
-                "calculated %s cell centers", surface.n_cells, extra=self._extra
-            )
 
         # filter the surface with the bbox mesh
-        start = datetime.now()
         selected = surface.select_enclosed_points(
             self.mesh, tolerance=tolerance, inside_out=outside, check_surface=False
-        )
-        end = datetime.now()
-        delta = end - start
-
-        logger.debug(
-            "region: selected enclosed in %s secs",
-            delta.total_seconds(),
-            extra=self._extra,
         )
 
         # sample the surface with the enclosed cells to extract the bbox region
@@ -589,14 +546,6 @@ class BBox:
             region = selected.threshold(
                 0.5, scalars="SelectedPoints", preference="cell"
             )
-
-        logger.debug(
-            "region: n_cells=%s, n_points=%s",
-            region.n_cells,
-            region.n_points,
-            extra=self._extra,
-        )
-        logger.debug("region: %s cells/sec", delta / region.n_cells, extra=self._extra)
 
         # if required, perform cell vertex enclosure checks on the bbox region
         if perform_cell and region.n_cells and region.n_points:
@@ -616,32 +565,16 @@ class BBox:
 
             for idx in range(1, npts_per_cell + 1):
                 points = pv.PolyData(region.points[cells[:, idx]])
-                start = datetime.now()
                 selected = points.select_enclosed_points(
                     self.mesh,
                     tolerance=tolerance,
                     inside_out=outside,
                     check_surface=False,
                 )
-                end = datetime.now()
                 enclosed.append(selected["SelectedPoints"].view(bool).reshape(-1, 1))
-                logger.debug(
-                    "cell idx %s: selected %s from %s points [%s secs]",
-                    idx,
-                    np.sum(selected["SelectedPoints"]),
-                    points.n_cells,
-                    (end - start).total_seconds(),
-                    extra=self._extra,
-                )
 
             enclosed = np.all(np.hstack(enclosed), axis=-1)
             region = region.extract_cells(enclosed)
-            logger.debug(
-                "region: n_cells=%s, n_points=%s",
-                region.n_cells,
-                region.n_points,
-                extra=self._extra,
-            )
 
         region = cast_UnstructuredGrid_to_PolyData(region)
 

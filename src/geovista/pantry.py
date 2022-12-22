@@ -14,7 +14,6 @@ import numpy.typing as npt
 import pooch
 
 from .cache import CACHE
-from .log import get_logger
 
 __all__ = [
     "fesom",
@@ -29,16 +28,11 @@ __all__ = [
     "lam_uk",
     "lfric_orog",
     "lfric_sst",
-    "logger",
     "oisst_avhrr_sst",
     "um_orca2",
     "ww3_global_smc",
     "ww3_global_tri",
 ]
-
-
-# configure the logger
-logger = get_logger(__name__)
 
 
 @dataclass(frozen=True)

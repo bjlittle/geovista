@@ -10,21 +10,16 @@ import pooch
 import pyvista as pv
 
 from .config import resources
-from .log import get_logger
 
 __all__ = [
     "CACHE",
     "blue_marble",
     "checkerboard",
     "fetch_coastlines",
-    "logger",
     "natural_earth_1",
     "natural_earth_hypsometric",
     "reload_registry",
 ]
-
-# configure the logger
-logger = get_logger(__name__)
 
 # Type aliases.
 TextureLike = Union[str, pv.Texture]
