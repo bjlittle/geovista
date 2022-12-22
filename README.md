@@ -19,12 +19,10 @@
 | ✨ Meta | [![code style - black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![license - bds-3-clause](https://img.shields.io/github/license/bjlittle/geovista)](https://github.com/bjlittle/geovista/blob/main/LICENSE) [![conda platform](https://img.shields.io/conda/pn/conda-forge/geovista.svg)](https://anaconda.org/conda-forge/geovista) |
 | | |
 
-
 <p align="center">
   <img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
        alt="wip">
 </p>
-
 
 ## Philisophy
 
@@ -38,7 +36,6 @@ That said, GeoVista is intentionally agnostic to packages such as [geopandas](ht
 
 Simply put, "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*". That's the aspiration.
 
-
 ## Installation
 
 Unfortunately we've not yet tagged our first minor release of GeoVista.
@@ -46,7 +43,6 @@ Unfortunately we've not yet tagged our first minor release of GeoVista.
 However, we have secured the package namespace on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/). Although note that those initial package versions are simple placeholders for now, containing no functionality.
 
 So in the meantime, life is just a smidge more complicated than necessary if you wish to play with GeoVista.
-
 
 ### Development Installation
 
