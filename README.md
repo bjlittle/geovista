@@ -145,7 +145,7 @@ plotter.show()
 ```
 </details>
 
-![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/ww3-tri.png)
+![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/ww3-tri.png)
 
 #### Finite Volume Community Ocean Model
 
@@ -181,7 +181,7 @@ plotter.show()
 ```
 </details>
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/tamar-zoom.png)
+![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/tamar.png)
 
 #### CF UGRID
 
@@ -222,7 +222,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lam-moll.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/lam-moll.png)
 
 Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree), also with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
 
@@ -258,7 +258,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lam-pc.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/lam-pc.png)
 
 #### LFRic Cube-Sphere
 
@@ -294,7 +294,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/lfric-robin.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/lfric-robin.png)
 
 #### UM ORCA2
 
@@ -331,7 +331,7 @@ plotter.show()
 ```
 </details>
 
-![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/um-orca.png)
+![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/um-orca.png)
 
 #### OISST AVHRR
 
@@ -366,7 +366,7 @@ plotter.show()
 ```
 </details>
 
-![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-data/main/media/oisst-avhrr.png)
+![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/oisst-avhrr.png)
 
 ## Documentation
 
