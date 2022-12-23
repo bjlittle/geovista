@@ -154,7 +154,7 @@ class Transform:
         return xs, ys
 
     @staticmethod
-    def _create_connectivity_M1N1(shape: Shape) -> np.ndarray:
+    def _create_connectivity_m1n1(shape: Shape) -> np.ndarray:
         """
         Create the connectivity for the 2-D quad-mesh from the node `shape`.
 
@@ -202,7 +202,7 @@ class Transform:
         return connectivity
 
     @staticmethod
-    def _create_connectivity_MN4(shape: Shape) -> np.ndarray:
+    def _create_connectivity_mn4(shape: Shape) -> np.ndarray:
         """
         Create the connectivity for the 2-D quad-mesh from the face `shape`.
 
@@ -476,18 +476,18 @@ class Transform:
 
         if ndim == 2:
             # we have shape (M+1, N+1)
-            r, c = points_shape = shape
-            cells_shape = (r - 1, c - 1)
+            rows, cols = points_shape = shape
+            cells_shape = (rows - 1, cols - 1)
         else:
             # we have shape (M, N, 4)
-            r, c = cells_shape = shape[:-1]
-            points_shape = (r + 1, c + 1)
+            rows, cols = cells_shape = shape[:-1]
+            points_shape = (rows + 1, cols + 1)
 
         # generate connectivity (topology) map of indices into the geometry
         connectivity = (
-            cls._create_connectivity_M1N1(points_shape)
+            cls._create_connectivity_m1n1(points_shape)
             if ndim == 2
-            else cls._create_connectivity_MN4(cells_shape)
+            else cls._create_connectivity_mn4(cells_shape)
         )
 
         return Transform.from_unstructured(

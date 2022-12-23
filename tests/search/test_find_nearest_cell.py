@@ -22,7 +22,7 @@ def test_cell_centers(lam_uk):
 
 
 @pytest.mark.xfail(reason="requires projection support")
-def test_cell_centers__lam_rotated_pole(lam_uk):
+def test_cell_centers__lam_rotated_pole():
     assert 0
 
 

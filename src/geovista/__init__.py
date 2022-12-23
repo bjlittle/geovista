@@ -1,5 +1,3 @@
-# pylint: disable=missing-module-docstring
-
 from .bridge import Transform  # noqa: F401
 from .cache import (  # noqa: F401
     blue_marble,

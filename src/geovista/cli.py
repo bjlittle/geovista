@@ -1,5 +1,3 @@
-# pylint: disable=too-many-arguments, too-many-locals, too-many-branches
-# pylint: disable=too-many-statements
 """
 Provide geovista command line interface (CLI).
 
@@ -204,7 +202,7 @@ def download(
                 else:
                     rmtree(target)
 
-                click.echo(f"\nDeleted the cache directory ", nl=False)
+                click.echo("\nDeleted the cache directory ", nl=False)
                 click.secho(f"{target}", fg=DEFAULT_FG_COLOUR)
                 click.echo("👍 All done!")
             else:

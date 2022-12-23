@@ -85,7 +85,11 @@ disable=raw-checker-failed,
         suppressed-message,
         useless-suppression,
         deprecated-pragma,
-        use-symbolic-message-instead
+        use-symbolic-message-instead,
+        too-many-arguments,
+        too-many-locals,
+        too-many-statements
+
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -206,7 +210,11 @@ good-names=i,
            Run,
            _,
            xs,
-           ys
+           ys,
+           zs,
+           x,
+           y,
+           z
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
@@ -502,7 +510,10 @@ max-attributes=7
 max-bool-expr=5
 
 # Maximum number of branch for function / method body.
-max-branches=12
+max-branches=15
+
+# McCabe complexity cyclomatic threshold.
+max-complexity=19
 
 # Maximum number of locals for function / method body.
 max-locals=15

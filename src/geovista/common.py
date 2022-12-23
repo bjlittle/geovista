@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from typing import Any, Optional, Tuple
 
 import numpy as np
-import numpy.ma as ma
+from numpy import ma
 import numpy.typing as npt
 import pyvista as pv
 

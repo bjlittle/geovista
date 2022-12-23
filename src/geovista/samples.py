@@ -10,7 +10,7 @@ from typing import List, Optional
 import pooch
 import pyvista as pv
 
-import geovista.pantry as pantry
+from geovista import pantry
 
 from .bridge import Transform
 from .cache import CACHE
