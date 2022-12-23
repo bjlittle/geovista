@@ -128,7 +128,7 @@ sample = ww3_global_tri()
 
 # Create the mesh from the sample data.
 mesh = gv.Transform.from_unstructured(
-    sample.lons, sample.lats, sample.connectivity, data=sample.data
+    sample.lons, sample.lats, connectivity=sample.connectivity, data=sample.data
 )
 
 # Plot the mesh.
@@ -164,7 +164,11 @@ sample = fvcom_tamar()
 
 # Create the mesh from the sample data.
 mesh = gv.Transform.from_unstructured(
-    sample.lons, sample.lats, sample.connectivity, sample.face, name="face"
+    sample.lons,
+    sample.lats,
+    connectivity=sample.connectivity,
+    data=sample.face,
+    name="face",
 )
 
 # Warp the mesh nodes by the bathymetry.
@@ -196,19 +200,18 @@ In the meantime, let's showcase our basic projection support with some high-reso
 
 ```python
 import geovista as gv
-from geovista.pantry import lam
+from geovista.pantry import lam_pacific
 import geovista.theme
 
 # Load the sample data.
-sample = lam()
+sample = lam_pacific()
 
 # Create the mesh from the sample data.
 mesh = gv.Transform.from_unstructured(
     sample.lons,
     sample.lats,
-    sample.connectivity,
+    connectivity=sample.connectivity,
     data=sample.data,
-    start_index=sample.start_index,
 )
 
 # Plot the mesh on a mollweide projection using a Proj string.
@@ -231,20 +234,20 @@ Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical]
 
 ```python
 import cartopy.crs as ccrs
+
 import geovista as gv
-from geovista.pantry import lam
+from geovista.pantry import lam_pacific
 import geovista.theme
 
 # Load the sample data.
-sample = lam()
+sample = lam_pacific()
 
 # Create the mesh from the sample data.
 mesh = gv.Transform.from_unstructured(
     sample.lons,
     sample.lats,
-    sample.connectivity,
+    connectivity=sample.connectivity,
     data=sample.data,
-    start_index=sample.start_index,
 )
 
 # Plot the mesh on a Plate Carrée projection using a cartopy CRS.
@@ -279,9 +282,8 @@ sample = lfric_sst()
 mesh = gv.Transform.from_unstructured(
     sample.lons,
     sample.lats,
-    sample.connectivity,
+    connectivity=sample.connectivity,
     data=sample.data,
-    start_index=sample.start_index,
 )
 
 # Plot the mesh on a Robinson projection using an ESRI spatial reference identifier.
