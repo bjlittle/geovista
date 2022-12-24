@@ -101,6 +101,7 @@ def active_kernel() -> bool:
     result = True
 
     try:
+        # pylint: disable-next=import-outside-toplevel
         from IPython import get_ipython
 
         ip = get_ipython()

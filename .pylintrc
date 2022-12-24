@@ -88,7 +88,9 @@ disable=raw-checker-failed,
         use-symbolic-message-instead,
         too-many-arguments,
         too-many-locals,
-        too-many-statements
+        too-many-statements,
+        too-many-branches,
+        PyLintPython3_E5110
 
 
 # Enable the message, report, category or checker with the given id(s). You can

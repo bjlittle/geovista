@@ -14,6 +14,7 @@ import pyvista as pv
 
 from ._version import version as __version__
 from .cache import CACHE
+from .config import resources
 from .geoplotter import GeoPlotter
 
 __all__ = ["main"]
@@ -191,8 +192,6 @@ def download(
     if clean:
         msg = "Are you sure you want to delete all cached geovista resources"
         if click.confirm(f"\n{msg}?", abort=True):
-            from .config import resources
-
             target = resources["cache_dir"]
 
             if target.exists():
@@ -318,6 +317,7 @@ def plot(fname, axes, base) -> None:
     Load and render a VTK mesh.
 
     """
+    # pylint: disable-next=import-outside-toplevel
     import geovista.theme
 
     mesh = pv.read(fname)

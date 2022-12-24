@@ -223,6 +223,7 @@ def get_coastlines(
     .. versionadded:: 0.1.0
 
     """
+    # pylint: disable-next=import-outside-toplevel
     from .cache import fetch_coastlines
 
     # TODO: reinstate with projection support is available
