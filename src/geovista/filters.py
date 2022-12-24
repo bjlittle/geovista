@@ -151,8 +151,9 @@ def remesh(
         west_mask = lower_mask | upper_mask
         east_mask = ~west_mask
 
-        # the vtkIntersectionPolyDataFilter is configured to *always* generate the boundary mask point array
-        # as we require it internally, regardless of whether the caller wants it or not afterwards
+        # the vtkIntersectionPolyDataFilter is configured to *always* generate
+        # the boundary mask point array as we require it internally, regardless
+        # of whether the caller wants it or not afterwards
         boundary_mask = np.asarray(remeshed.point_data[VTK_BOUNDARY_MASK], dtype=bool)
         if not boundary:
             del remeshed.point_data[VTK_BOUNDARY_MASK]

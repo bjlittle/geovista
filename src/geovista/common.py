@@ -104,9 +104,8 @@ def active_kernel() -> bool:
         # pylint: disable-next=import-outside-toplevel
         from IPython import get_ipython
 
-        ip = get_ipython()
         # the following statement may or may not raise an exception
-        ip.kernel  # pylint: disable=pointless-statement
+        get_ipython().kernel  # pylint: disable=pointless-statement
     except (AttributeError, ModuleNotFoundError):
         result = False
 
@@ -153,19 +152,19 @@ def calculate_radius(
     if origin is None:
         origin = (0, 0, 0)
 
-    ox, oy, oz = origin
+    origin_x, origin_y, origin_z = origin
     # sample a representative mesh point
-    mx, my, mz = mesh.points[0]
-    radius = np.sqrt((mx - ox) ** 2 + (my - oy) ** 2 + (mz - oz) ** 2)
+    x, y, z = mesh.points[0]
+    radius = np.sqrt((x - origin_x) ** 2 + (y - origin_y) ** 2 + (z - origin_z) ** 2)
 
-    gvRadius = (
+    default_radius = (
         mesh.field_data[GV_FIELD_RADIUS][0]
         if GV_FIELD_RADIUS in mesh.field_data
         else RADIUS
     )
 
-    if np.isclose(radius, gvRadius):
-        radius = gvRadius
+    if np.isclose(radius, default_radius):
+        radius = default_radius
 
     mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
 
@@ -357,13 +356,13 @@ def to_lonlats(
         lons = np.degrees(lons)
     lons = wrap(lons, base=base, period=period)
 
-    zr = points[:, 2] / radius
+    z_radius = points[:, 2] / radius
     # defensive clobber of values outside arcsin domain [-1, 1]
-    if indices := np.where(zr > 1):
-        zr[indices] = 1.0
-    if indices := np.where(zr < -1):
-        zr[indices] = -1.0
-    lats = np.arcsin(zr)
+    if indices := np.where(z_radius > 1):
+        z_radius[indices] = 1.0
+    if indices := np.where(z_radius < -1):
+        z_radius[indices] = -1.0
+    lats = np.arcsin(z_radius)
     if not radians:
         lats = np.degrees(lats)
 
