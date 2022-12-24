@@ -90,6 +90,7 @@ disable=raw-checker-failed,
         too-many-locals,
         too-many-statements,
         too-many-branches,
+        too-many-instance-attributes,
         PyLintPython3_E5110
 
 

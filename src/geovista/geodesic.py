@@ -373,12 +373,10 @@ class BBox:
             bbox_faces = np.hstack([faces_N, faces])
 
             # convert bbox lons/lats to ndarray (internal convenience i.e., boundary)
-            self._bbox_lons = np.asanyarray(
-                self._bbox_lons
-            )  # pylint: disable=attribute-defined-outside-init
-            self._bbox_lats = np.asanyarray(
-                self._bbox_lats
-            )  # pylint: disable=attribute-defined-outside-init
+            # pylint: disable-next=attribute-defined-outside-init
+            self._bbox_lons = np.asanyarray(self._bbox_lons)
+            # pylint: disable-next=attribute-defined-outside-init
+            self._bbox_lats = np.asanyarray(self._bbox_lats)
 
             # calculate the radii of the inner and outer bbox faces
             offset = self._surface_radius * BBOX_RADIUS_RATIO
@@ -879,8 +877,8 @@ def panel(
 
     """
     if isinstance(name, str):
-        if name.lower() not in PANEL_IDX_BY_NAME.keys():
-            ordered = sorted(PANEL_IDX_BY_NAME.keys())
+        if name.lower() not in PANEL_IDX_BY_NAME:
+            ordered = sorted(PANEL_IDX_BY_NAME)
             valid = ", ".join(f"'{kind}'" for kind in ordered[:-1])
             valid = f"{valid} or '{ordered[-1]}'"
             emsg = f"Panel name must be either {valid}, got '{name}'."
