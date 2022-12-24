@@ -128,8 +128,10 @@ def find_nearest_cell(
         result = [cid]
 
     if single:
-        if (n := len(result)) > 1:
-            emsg = f"Expected to find 1 cell but found {n}, " f"got CellIDs {result}."
+        if (count := len(result)) > 1:
+            emsg = (
+                f"Expected to find 1 cell but found {count}, " f"got CellIDs {result}."
+            )
             raise ValueError(emsg)
         (result,) = result
 

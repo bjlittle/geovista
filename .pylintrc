@@ -90,8 +90,7 @@ disable=raw-checker-failed,
         too-many-locals,
         too-many-statements,
         too-many-branches,
-        too-many-instance-attributes,
-        PyLintPython3_E5110
+        too-many-instance-attributes
 
 
 # Enable the message, report, category or checker with the given id(s). You can
@@ -217,7 +216,8 @@ good-names=i,
            zs,
            x,
            y,
-           z
+           z,
+           xy,
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted

@@ -32,13 +32,13 @@ __all__ = [
 ]
 
 #: Preference for a slice to bias cells west of the chosen meridian.
-CUT_WEST: str = "west"
+CUT_WEST: str = "WEST"
 
 #: Preference for a slice to be true to the chosen meridian.
-CUT_EXACT: str = "exact"
+CUT_EXACT: str = "EXACT"
 
 #: Preference for a slice to bias cells east of the chosen meridian.
-CUT_EAST: str = "east"
+CUT_EAST: str = "EAST"
 
 #: Cartesian west/east bias offset of a slice.
 CUT_OFFSET: float = 1e-5
@@ -49,9 +49,9 @@ DEFAULT_MERIDIAN: float = 0.0
 
 @unique
 class SliceBias(Enum):
-    west = -1
-    exact = auto()
-    east = auto()
+    WEST = -1
+    EXACT = auto()
+    EAST = auto()
 
 
 class MeridianSlice:
@@ -147,12 +147,13 @@ class MeridianSlice:
         if bias is None:
             bias = CUT_WEST
 
-        if bias.lower() not in SliceBias.__members__:
-            options = [f"'{option.name}'" for option in SliceBias]
+        if bias.upper() not in SliceBias.__members__:
+            options = [f"'{option.name.lower()}'" for option in SliceBias]
             options = f"{', '.join(options[:-1])} or {options[-1]}"
             emsg = f"Expected a slice bias of either {options}, got '{bias}'."
             raise ValueError(emsg)
 
+        bias = bias.upper()
         mesh = pv.PolyData()
 
         # there is no intersection between the spline extruded in the
@@ -169,8 +170,8 @@ class MeridianSlice:
         if extract_ids:
             mesh = cast(self.mesh.extract_cells(np.array(list(extract_ids))))
             if clip:
-                ll = to_xy0(mesh)
-                match = np.abs(ll[:, 0] - self.meridian) < 90
+                lonlat = to_xy0(mesh)
+                match = np.abs(lonlat[:, 0] - self.meridian) < 90
                 mesh = cast(mesh.extract_points(match))
             sanitize_data(mesh)
             if mesh.n_cells:
@@ -218,13 +219,13 @@ def add_texture_coords(
         mesh = mesh.copy(deep=True)
 
     # convert from cartesian xyz to spherical lat/lons
-    ll = to_xy0(mesh, closed_interval=True)
-    lons, lats = ll[:, 0], ll[:, 1]
+    lonlat = to_xy0(mesh, closed_interval=True)
+    lons, lats = lonlat[:, 0], lonlat[:, 1]
     # convert to normalised UV space
-    u = (lons + 180) / 360
-    v = (lats + 90) / 180
-    t = np.vstack([u, v]).T
-    mesh.active_t_coords = t
+    u_coord = (lons + 180) / 360
+    v_coord = (lats + 90) / 180
+    t_coord = np.vstack([u_coord, v_coord]).T
+    mesh.active_t_coords = t_coord
 
     return mesh
 
@@ -313,15 +314,15 @@ def combine(
 
         if n_points:
             # compute the number of vertices (N) for each face of the mesh
-            faces_N = np.diff(mesh._offset_array)
+            faces_n = np.diff(mesh._offset_array)
             # determine the N offset for each face within the faces array
             # a face entry consists of (N, v1, v2, ..., vN), where vN is the Nth
             # vertex offset (connectivity) for that face into the associated mesh points array
-            faces_N_offset = mesh._offset_array + np.arange(mesh._offset_array.size)
+            faces_n_offset = mesh._offset_array + np.arange(mesh._offset_array.size)
             # offset the current mesh connectivity by the cumulative mesh points count
             faces += n_points
             # reinstate N for each face entry
-            faces[faces_N_offset[:-1]] = faces_N
+            faces[faces_n_offset[:-1]] = faces_n
 
         combined_faces.append(faces)
         # accumulate running totals of combined mesh points and faces
@@ -418,8 +419,8 @@ def cut_along_meridian(
     remeshed_ids = np.array([])
 
     if mesh_whole.n_cells:
-        ll = to_xy0(mesh_whole)
-        meridian_mask = np.isclose(ll[:, 0], meridian)
+        lonlat = to_xy0(mesh_whole)
+        meridian_mask = np.isclose(lonlat[:, 0], meridian)
         join_points = np.empty(mesh_whole.n_points, dtype=int)
         join_points.fill(REMESH_JOIN)
         mesh_whole[GV_REMESH_POINT_IDS] = join_points

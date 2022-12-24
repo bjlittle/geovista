@@ -31,16 +31,21 @@ BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
 DEFAULT_COASTLINES_RESOLUTION: str = "110m"
 
 #: The default geovista-data repository release version.
-DEFAULT_VERSION = "2022.12.0"
+DEFAULT_VERSION: str = "2022.12.0"
 
 #: Environment variable to override pooch cache manager path.
-ENV = "GEOVISTA_CACHEDIR"
+ENV: str = "GEOVISTA_CACHEDIR"
 
 #: Environment variable to override default geovista-data version.
-GEOVISTA_DATA_VERSION = os.environ.get("GEOVISTA_DATA_VERSION", DEFAULT_VERSION)
+GEOVISTA_DATA_VERSION: str = os.environ.get("GEOVISTA_DATA_VERSION", DEFAULT_VERSION)
 
 #: The number of retry attempts to download a resource.
 RETRY_ATTEMPTS: int = 3
+
+URL_DKRZ_FESOM: str = (
+    "https://swift.dkrz.de/v1/dkrz_0262ea1f00e34439850f3f1d71817205/FESOM/"
+    "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
+)
 
 #: Cache manager for GeoVista resources.
 CACHE: pooch.Pooch = pooch.create(
@@ -52,7 +57,7 @@ CACHE: pooch.Pooch = pooch.create(
     retry_if_failed=RETRY_ATTEMPTS,
     env=ENV,
     urls={
-        "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc": "https://swift.dkrz.de/v1/dkrz_0262ea1f00e34439850f3f1d71817205/FESOM/tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc",
+        "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc": URL_DKRZ_FESOM
     },
 )
 
