@@ -106,7 +106,7 @@ def active_kernel() -> bool:
 
         ip = get_ipython()
         # the following statement may or may not raise an exception
-        ip.kernel
+        ip.kernel  # pylint: disable=pointless-statement
     except (AttributeError, ModuleNotFoundError):
         result = False
 

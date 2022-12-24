@@ -223,6 +223,7 @@ class BBox:
         .. versionadded:: 0.1.0
 
         """
+        # pylint: disable=attribute-defined-outside-init
         self._idx_map = np.empty((self.c + 1, self.c + 1), dtype=int)
         self._bbox_lons, self._bbox_lats = [], []
         self._bbox_count = 0
@@ -372,8 +373,12 @@ class BBox:
             bbox_faces = np.hstack([faces_N, faces])
 
             # convert bbox lons/lats to ndarray (internal convenience i.e., boundary)
-            self._bbox_lons = np.asanyarray(self._bbox_lons)
-            self._bbox_lats = np.asanyarray(self._bbox_lats)
+            self._bbox_lons = np.asanyarray(
+                self._bbox_lons
+            )  # pylint: disable=attribute-defined-outside-init
+            self._bbox_lats = np.asanyarray(
+                self._bbox_lats
+            )  # pylint: disable=attribute-defined-outside-init
 
             # calculate the radii of the inner and outer bbox faces
             offset = self._surface_radius * BBOX_RADIUS_RATIO
