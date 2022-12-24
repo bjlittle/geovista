@@ -105,7 +105,7 @@ def active_kernel() -> bool:
         from IPython import get_ipython
 
         # the following statement may or may not raise an exception
-        get_ipython().kernel  # pylint: disable=pointless-statement
+        _ = get_ipython().kernel  # pylint: disable=pointless-statement
     except (AttributeError, ModuleNotFoundError):
         result = False
 
