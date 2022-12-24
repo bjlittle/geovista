@@ -2,7 +2,7 @@
 pytest infra-structure for :mod:`geovista.common` unit-tests.
 
 """
-# pylint: disable=redefine-outer-name
+# pylint: disable=redefined-outer-name
 
 from dataclasses import dataclass
 from typing import Tuple, Union
