@@ -585,22 +585,22 @@ def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
     cc_lats = dataset.variables["latitude"][:]
 
     # load integer scaling factor for the grid cells
-    cx = dataset.variables["cx"][:]
-    cy = dataset.variables["cy"][:]
+    cx_coord = dataset.variables["cx"][:]
+    cy_coord = dataset.variables["cy"][:]
     base_lon_size = dataset.getncattr("base_lon_size")
     base_lat_size = dataset.getncattr("base_lat_size")
 
     # construct the grid cells
-    dlon = cx * base_lon_size
-    dlat = cy * base_lat_size
+    dlon = cx_coord * base_lon_size
+    dlat = cy_coord * base_lat_size
     fac = 0.5
-    x1 = (cc_lons - fac * dlon).reshape(-1, 1)
-    x2 = (cc_lons + fac * dlon).reshape(-1, 1)
-    y1 = (cc_lats - fac * dlat).reshape(-1, 1)
-    y2 = (cc_lats + fac * dlat).reshape(-1, 1)
+    x1_coord = (cc_lons - fac * dlon).reshape(-1, 1)
+    x2_coord = (cc_lons + fac * dlon).reshape(-1, 1)
+    y1_coord = (cc_lats - fac * dlat).reshape(-1, 1)
+    y2_coord = (cc_lats + fac * dlat).reshape(-1, 1)
 
-    lons = np.hstack([x1, x2, x2, x1])
-    lats = np.hstack([y1, y1, y2, y2])
+    lons = np.hstack([x1_coord, x2_coord, x2_coord, x1_coord])
+    lats = np.hstack([y1_coord, y1_coord, y2_coord, y2_coord])
 
     # deal with the time-series step
     steps = dataset.dimensions["time"].size

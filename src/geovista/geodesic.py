@@ -362,7 +362,7 @@ class BBox:
 
             # generate the face indices
             bbox_n_faces = self._n_faces * 2
-            faces_N = np.broadcast_to(np.array([4], dtype=np.int8), (bbox_n_faces, 1))
+            faces_n = np.broadcast_to(np.array([4], dtype=np.int8), (bbox_n_faces, 1))
             faces_c1 = np.ravel(self._idx_map[: self.c, : self.c]).reshape(-1, 1)
             faces_c2 = np.ravel(self._idx_map[: self.c, 1:]).reshape(-1, 1)
             faces_c3 = np.ravel(self._idx_map[1:, 1:]).reshape(-1, 1)
@@ -370,7 +370,7 @@ class BBox:
             inner_faces = np.hstack([faces_c1, faces_c2, faces_c3, faces_c4])
             outer_faces = inner_faces + self._n_points
             faces = np.vstack([inner_faces, outer_faces])
-            bbox_faces = np.hstack([faces_N, faces])
+            bbox_faces = np.hstack([faces_n, faces])
 
             # convert bbox lons/lats to ndarray (internal convenience i.e., boundary)
             # pylint: disable-next=attribute-defined-outside-init
@@ -415,13 +415,13 @@ class BBox:
         """
         skirt_n_faces = 4 * self.c
 
-        faces_N = np.broadcast_to(np.array([4], dtype=np.int8), (skirt_n_faces, 1))
+        faces_n = np.broadcast_to(np.array([4], dtype=np.int8), (skirt_n_faces, 1))
         faces_c1 = self._bbox_face_edge_idxs().reshape(-1, 1)
         faces_c2 = np.roll(faces_c1, -1)
         faces_c3 = faces_c2 + self._n_points
         faces_c4 = np.roll(faces_c3, 1)
 
-        faces = np.hstack([faces_N, faces_c1, faces_c2, faces_c3, faces_c4])
+        faces = np.hstack([faces_n, faces_c1, faces_c2, faces_c3, faces_c4])
 
         return faces
 

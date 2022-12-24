@@ -218,6 +218,8 @@ good-names=i,
            y,
            z,
            xy,
+           c,
+           cast_UnstructuredGrid_to_PolyData
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
@@ -484,7 +486,8 @@ exclude-protected=_asdict,
                   _source,
                   _make,
                   _offset_array,
-                  _connectivity_array
+                  _connectivity_array,
+                  _namedtuple
 
 # List of valid names for the first argument in a class method.
 valid-classmethod-first-arg=cls
