@@ -37,7 +37,7 @@ repos:
         args: [--config=./setup.cfg]
 
 -   repo: https://github.com/PyCQA/isort
-    rev: "v5.11.3"
+    rev: "5.11.4"
     hooks:
     -   id: isort
         types: [file, python]
