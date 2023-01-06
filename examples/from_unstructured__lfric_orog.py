@@ -21,11 +21,10 @@ def main() -> None:
     plotter = gv.GeoPlotter()
     sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
-    resolution = "50m"
-    plotter.add_coastlines(resolution=resolution, color="white")
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        f"LFRic C48 Unstructured Cube-Sphere ({resolution} Coastlines)",
+        "LFRic C48 Unstructured Cube-Sphere (10m Coastlines)",
         position="upper_left",
         font_size=10,
         shadow=True,

@@ -20,7 +20,7 @@ def main() -> None:
     # plot the data
     plotter = gv.GeoPlotter()
     plotter.add_mesh(mesh, cmap="tempo", show_edges=True)
-    plotter.add_coastlines(resolution="10m", color="white")
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
         "2-D Synthetic Face Data (M+1, N+1)",

@@ -52,6 +52,6 @@ In the meantime, here's an interactive ``geovista`` amuse-bouche to whet your ap
    plotter = gv.GeoPlotter()
    sargs = dict(title=f"{sample.name} / {sample.units}")
    plotter.add_mesh(mesh, scalar_bar_args=sargs, cmap="balance", show_edges=True)
-   plotter.add_coastlines(resolution="10m", color="white")
+   plotter.add_coastlines()
    plotter.add_axes()
    plotter.show()

@@ -22,12 +22,11 @@ def main() -> None:
     sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
-    resolution = "10m"
-    plotter.add_coastlines(resolution=resolution, color="white")
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.view_yz(negative=True)
     plotter.add_text(
-        f"CF UGRID LAM ({resolution} Coastlines)",
+        "CF UGRID LAM (10m Coastlines)",
         position="upper_left",
         font_size=10,
         shadow=True,

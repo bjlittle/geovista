@@ -28,7 +28,7 @@ TextureLike = Union[str, pv.Texture]
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
 
 #: The default Natural Earth coastlines resolution.
-DEFAULT_COASTLINES_RESOLUTION: str = "110m"
+DEFAULT_COASTLINES_RESOLUTION: str = "10m"
 
 #: The default geovista-data repository release version.
 DEFAULT_VERSION: str = "2023.01.0"

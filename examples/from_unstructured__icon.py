@@ -19,9 +19,10 @@ def main() -> None:
     sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
     cmap = plt.cm.get_cmap("cet_CET_L17", lut=9)
     plotter.add_mesh(mesh, cmap=cmap, show_edges=True, scalar_bar_args=sargs)
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "ICON Global 160km Resolution",
+        "ICON Global 160km Resolution (10m Coastlines)",
         position="upper_left",
         font_size=10,
         shadow=True,

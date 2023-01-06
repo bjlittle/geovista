@@ -21,7 +21,7 @@ __all__ = [
 #
 
 #: Default coastline resolution.
-COASTLINE_RESOLUTION: str = "110m"
+COASTLINE_RESOLUTION: str = "10m"
 
 
 def add_coastlines(

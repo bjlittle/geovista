@@ -19,10 +19,10 @@ def main() -> None:
     # plot the mesh
     plotter = gv.GeoPlotter()
     plotter.add_mesh(mesh, cmap="ice", show_edges=True)
-    plotter.add_coastlines(resolution="10m", color="white")
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "1-D Synthetic Node Data (M+1,) (N+1,)",
+        "1-D Synthetic Node Data (M+1) (N+1)",
         position="upper_left",
         font_size=10,
         shadow=True,
