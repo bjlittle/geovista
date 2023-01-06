@@ -24,11 +24,11 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter()
-    sargs = dict(title=f"{sample.name} / {sample.units}")
+    sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
     plotter.add_axes()
     plotter.add_text(
-        "LFRic Unstructured Cube-Sphere",
+        "LFRic C48 Unstructured Cube-Sphere",
         position="upper_left",
         font_size=10,
         shadow=True,

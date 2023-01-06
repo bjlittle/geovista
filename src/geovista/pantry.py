@@ -19,6 +19,7 @@ __all__ = [
     "fesom",
     "fvcom_tamar",
     "hexahedron",
+    "icon_soil",
     "lam_equator",
     "lam_falklands",
     "lam_london",
@@ -203,6 +204,48 @@ def hexahedron() -> SampleUnstructuredXY:
     # load the mesh payload
     data = dataset.variables["phis"][:]
     name = capitalise("synthetic")
+    units = "1"
+
+    sample = SampleUnstructuredXY(
+        lons, lats, lons.shape, data=data, name=name, units=units
+    )
+
+    return sample
+
+
+def icon_soil() -> SampleUnstructuredXY:
+    """
+    Load Icosahedral Nonhydrostatic Weather and Climate Model (ICON)
+    global 160km resolution (R02B04 grid) triangular mesh.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and data payload.
+
+    Sourced from http://icon-downloads.mpimet.mpg.de/dwd_grids.xml
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "icon_extpar_0010_R02B04_G.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    dataset = nc.Dataset(resource)
+
+    # load the lon/lat triangular cell grid (radians)
+    rlons = dataset.variables["clon_vertices"][:]
+    rlats = dataset.variables["clat_vertices"][:]
+
+    # convert from radians to degrees
+    lons = np.rad2deg(rlons)
+    lats = np.rad2deg(rlats)
+
+    # load the mesh payload
+    data = dataset.variables["SOILTYP"][:]
+    name = capitalise("soil type")
     units = "1"
 
     sample = SampleUnstructuredXY(

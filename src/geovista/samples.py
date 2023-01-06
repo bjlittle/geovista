@@ -19,6 +19,7 @@ __all__ = [
     "fesom",
     "fvcom_tamar",
     "hexahedron",
+    "icon_soil",
     "lam_equator",
     "lam_falklands",
     "lam_london",
@@ -190,6 +191,29 @@ def hexahedron() -> pv.PolyData:
         sample.lons,
         sample.lats,
         sample.connectivity,
+        data=sample.data,
+        name=sample.name,
+    )
+
+    return mesh
+
+
+def icon_soil() -> pv.PolyData:
+    """
+    Generate an Icosahedral Nonhydrostatic Weather and Climate Model (ICON)
+    global 160km resolution (R02B04 grid) triangular mesh with soil type data.
+
+    Returns
+    -------
+    PolyData
+        The ICON mesh.
+
+    """
+    sample = pantry.icon_soil()
+
+    mesh = Transform.from_unstructured(
+        sample.lons,
+        sample.lats,
         data=sample.data,
         name=sample.name,
     )

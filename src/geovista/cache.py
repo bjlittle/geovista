@@ -31,7 +31,7 @@ BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
 DEFAULT_COASTLINES_RESOLUTION: str = "110m"
 
 #: The default geovista-data repository release version.
-DEFAULT_VERSION: str = "2022.12.0"
+DEFAULT_VERSION: str = "2023.01.0"
 
 #: Environment variable to override pooch cache manager path.
 ENV: str = "GEOVISTA_CACHEDIR"

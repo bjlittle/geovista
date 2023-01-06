@@ -14,7 +14,7 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter()
-    sargs = dict(title=f"{sample.name} / {sample.units}")
+    sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
     resolution = "10m"
     plotter.add_coastlines(resolution=resolution, color="white")
