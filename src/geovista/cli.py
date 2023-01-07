@@ -3,7 +3,9 @@ Provide geovista command line interface (CLI).
 
 """
 
+import importlib
 import pathlib
+import pkgutil
 from shutil import rmtree
 from typing import List, Optional, Tuple
 
@@ -12,6 +14,7 @@ from click_default_group import DefaultGroup
 import pooch
 import pyvista as pv
 
+from . import examples as scripts
 from ._version import version as __version__
 from .cache import CACHE
 from .config import resources
@@ -328,3 +331,40 @@ def plot(fname, axes, base) -> None:
     if axes:
         plotter.add_axes()
     plotter.show()
+
+
+def get_examples():
+    return [submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)]
+
+
+@main.command(no_args_is_help=True)
+@click.option(
+    "-l",
+    "--list",
+    is_flag=True,
+    help="Show names of available examples to run.",
+)
+@click.option(
+    "-r",
+    "--run",
+    type=click.Choice(get_examples(), case_sensitive=False),
+    is_flag=False,
+    help="Execute the example.",
+)
+def examples(list, run):
+    """
+    Execute a geovista example script.
+
+    """
+    if list:
+        click.echo("Names of available examples:")
+        names = get_examples()
+        width = len(str(len(names)))
+        for i, name in enumerate(names):
+            click.echo(f"[{i + 1:0{width}d}] ", nl=False)
+            click.secho(f"{name}", fg=DEFAULT_FG_COLOUR)
+        click.echo("\n👍 All done!")
+        return
+
+    module = importlib.import_module(f"geovista.examples.{run}")
+    module.main()

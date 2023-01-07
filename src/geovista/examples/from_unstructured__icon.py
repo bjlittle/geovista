@@ -22,7 +22,7 @@ def main() -> None:
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "ICON Global 160km Resolution (10m Coastlines)",
+        "ICON 160km Resolution Triangular Mesh (10m Coastlines)",
         position="upper_left",
         font_size=10,
         shadow=True,
