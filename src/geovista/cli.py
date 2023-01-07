@@ -32,6 +32,10 @@ NE_CHOICES.extend(NE_GROUPS)
 
 DEFAULT_FG_COLOUR: str = "cyan"
 
+SCRIPTS: List[str] = [
+    submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)
+]
+
 logger = pooch.get_logger()
 
 
@@ -333,10 +337,6 @@ def plot(fname, axes, base) -> None:
     plotter.show()
 
 
-def get_examples():
-    return [submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)]
-
-
 @main.command(no_args_is_help=True)
 @click.option(
     "-l",
@@ -347,7 +347,7 @@ def get_examples():
 @click.option(
     "-r",
     "--run",
-    type=click.Choice(get_examples(), case_sensitive=False),
+    type=click.Choice(SCRIPTS, case_sensitive=False),
     is_flag=False,
     help="Execute the example.",
 )
@@ -358,9 +358,8 @@ def examples(list, run):
     """
     if list:
         click.echo("Names of available examples:")
-        names = get_examples()
-        width = len(str(len(names)))
-        for i, name in enumerate(names):
+        width = len(str(len(SCRIPTS)))
+        for i, name in enumerate(SCRIPTS):
             click.echo(f"[{i + 1:0{width}d}] ", nl=False)
             click.secho(f"{name}", fg=DEFAULT_FG_COLOUR)
         click.echo("\n👍 All done!")
