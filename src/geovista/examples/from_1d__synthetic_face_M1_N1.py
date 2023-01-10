@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+"""
+This example demonstrates how to create a mesh from 1-D latitude and longitude
+(degrees) cell bounds.
+
+The data is synthetically generated and targets the mesh cells/faces.
+
+Note that, Natural Earth coastlines are also rendered.
+
+"""
 
 import numpy as np
 
