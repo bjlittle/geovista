@@ -339,6 +339,12 @@ def plot(fname, axes, base) -> None:
 
 @main.command(no_args_is_help=True)
 @click.option(
+    "-a",
+    "--all",
+    is_flag=True,
+    help="Execute all examples.",
+)
+@click.option(
     "-l",
     "--list",
     is_flag=True,
@@ -351,17 +357,28 @@ def plot(fname, axes, base) -> None:
     is_flag=False,
     help="Execute the example.",
 )
-def examples(list, run):
+def examples(all, list, run):
     """
     Execute a geovista example script.
 
     """
+    n_scripts = len(SCRIPTS)
+
     if list:
         click.echo("Names of available examples:")
-        width = len(str(len(SCRIPTS)))
-        for i, name in enumerate(SCRIPTS):
+        width = len(str(n_scripts))
+        for i, script in enumerate(SCRIPTS):
             click.echo(f"[{i + 1:0{width}d}] ", nl=False)
-            click.secho(f"{name}", fg=DEFAULT_FG_COLOUR)
+            click.secho(f"{script}", fg="green")
+        click.echo("\n👍 All done!")
+        return
+
+    if all:
+        for i, script in enumerate(SCRIPTS):
+            msg = f"Running example {script!r} ({i+1} of {n_scripts}) ..."
+            click.secho(msg, fg="green")
+            module = importlib.import_module(f"geovista.examples.{script}")
+            module.main()
         click.echo("\n👍 All done!")
         return
 
