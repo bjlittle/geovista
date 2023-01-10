@@ -382,5 +382,8 @@ def examples(all, list, run):
         click.echo("\n👍 All done!")
         return
 
+    msg = f"Running example {run!r} ..."
+    click.secho(msg, fg="green")
     module = importlib.import_module(f"geovista.examples.{run}")
     module.main()
+    click.echo("\n👍 All done!")
