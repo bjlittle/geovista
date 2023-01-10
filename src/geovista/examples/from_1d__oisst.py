@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+"""
+This example demonstrates how to create a mesh from 1-D latitude and longitude
+(degrees) cell bounds.
+
+The data is NOAA/NECI 1/4° Daily Optimum Interpolation Sea Surface
+Temperature (OISST) v2.1 Advanced Very High Resolution Radiometer (AVHRR)
+gridded data (https://doi.org/10.25921/RE9P-PT57).
+
+Note that, a threshold is also applied to remove land NaN cells, and a
+NASA Blue Marble base layer is rendered along with Natural Earth coastlines.
+
+"""
+
 
 import geovista as gv
 from geovista.pantry import oisst_avhrr_sst
