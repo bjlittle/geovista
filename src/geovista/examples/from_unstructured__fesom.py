@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 
+"""
+This example demonstrates how to create a mesh from 2-D latitude and longitude
+(degrees) unstructured cell bounds. The resulting mesh contains 18-sided (octadecagon)
+cells.
+
+It uses a AWI Climate Model (AWI-CI) Finite Element Sea ice-Ocean Model (FESOM)
+v1.4 unstructured mesh of surface sea temperature data.
+
+Note that, a Natural Earth base layer is rendered along with Natural Earth coastlines.
+
+"""
+
 import geovista as gv
 from geovista.pantry import fesom
 import geovista.theme  # noqa: F401
