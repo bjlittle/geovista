@@ -12,7 +12,6 @@ NASA Blue Marble base layer is rendered along with Natural Earth coastlines.
 
 """
 
-
 import geovista as gv
 from geovista.pantry import oisst_avhrr_sst
 import geovista.theme  # noqa: F401
