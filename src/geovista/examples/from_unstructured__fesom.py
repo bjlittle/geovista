@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 This example demonstrates how to create a mesh from 2-D latitude and longitude
 (degrees) unstructured cell bounds. The resulting mesh contains 18-sided (octadecagon)
