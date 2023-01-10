@@ -3,7 +3,7 @@
 This example demonstrates how to create a mesh from 1-D latitude and longitude
 (degrees) cell bounds.
 
-The data is synthetically generated and targets the mesh cells/faces.
+The data is synthetically generated and targets the mesh faces/cells.
 
 Note that, Natural Earth coastlines are also rendered.
 
@@ -23,7 +23,7 @@ def main() -> None:
     data = np.random.random(M * N)
 
     # create the mesh from the synthetic data
-    mesh = gv.Transform.from_1d(lons, lats, data=data, name="synthetic")
+    mesh = gv.Transform.from_1d(lons, lats, data=data, name="synthetic cells")
 
     # plot the mesh
     plotter = gv.GeoPlotter()

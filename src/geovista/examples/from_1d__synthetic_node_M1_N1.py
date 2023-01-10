@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+"""
+This example demonstrates how to create a mesh from 1-D latitude and longitude
+(degrees) cell bounds.
+
+The data is synthetically generated and targets the mesh nodes/points.
+
+Note that, Natural Earth coastlines are also rendered.
+
+"""
 
 import numpy as np
 
@@ -14,7 +23,7 @@ def main() -> None:
     data = np.random.random((M + 1) * (N + 1))
 
     # create the mesh from the synthetic data
-    mesh = gv.Transform.from_1d(lons, lats, data=data, name="synthetic")
+    mesh = gv.Transform.from_1d(lons, lats, data=data, name="synthetic points")
 
     # plot the mesh
     plotter = gv.GeoPlotter()
