@@ -7,7 +7,7 @@ mesh contains quad cells.
 It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
 data.
 
-Note that, the data is on the cell nodes/points which results in mesh
+Note that, the data is located on the mesh nodes/points which results in mesh
 interpolation across the cell faces. The point surface altitudes are used to
 extrude the mesh to reveal the surface topography. Also, Natural Earth
 coastlines are rendered.

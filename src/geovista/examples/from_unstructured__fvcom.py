@@ -6,7 +6,7 @@ This example demonstrates how to create a mesh from 1-D latitude and longitude
 It uses an unstructured grid Finite Volume Community Ocean Model (FVCOM) mesh of
 sea floor depth below geoid data.
 
-Note that, the data is on the cell faces/cells and also the nodes/points, which
+Note that, the data is on the mesh faces/cells and also the nodes/points, which
 can then be used to extrude the mesh to reveal the bathymetry.
 
 """

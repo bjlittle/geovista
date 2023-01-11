@@ -5,7 +5,7 @@ longitude (degrees) unstructured cell points and connectivity. The resulting
 mesh contains quad cells.
 
 It uses a high-resolution Local Area Model (LAM) mesh of air potential
-temperature data.
+temperature data located on the mesh faces/cells.
 
 Note that, a Natural Earth base layer is rendered along with Natural Earth
 coastlines.
