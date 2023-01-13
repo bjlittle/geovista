@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 This example demonstrates how to create a mesh from CF UGRID 1-D latitude and
-longitude (degrees) unstructured cell points and connectivity. The resulting
-mesh contains quad cells.
+longitude unstructured cell points and connectivity. The resulting mesh
+contains quad cells.
 
 It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
 data.

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
 This example demonstrates how to create a mesh from 2-D latitude and longitude
-(degrees) unstructured cell points. The resulting mesh contains triangular cells.
+unstructured cell points. The resulting mesh contains triangular cells.
 
 It uses Icosahedral Nonhydrostatic Weather and Climate Model (ICON) global 160km
 resolution soil type data, as developed by the Deutscher Wetterdienst (DWD) and
-the Max-Planck-Institut für Meteorologie (MPI-M).
+the Max-Planck-Institut für Meteorologie (MPI-M). The data targets the mesh
+faces/cells.
 
 Note that, Natural Earth coastlines are also rendered.
 
