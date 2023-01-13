@@ -24,7 +24,7 @@ def main() -> None:
     data = np.random.random(M * N)
 
     # create the mesh from the synthetic data
-    mesh = gv.Transform.from_2d(mlons, mlats, data=data, name="synthetic")
+    mesh = gv.Transform.from_2d(mlons, mlats, data=data, name="synthetic cells")
 
     # plot the data
     plotter = gv.GeoPlotter()
