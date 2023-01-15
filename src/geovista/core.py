@@ -116,7 +116,9 @@ class MeridianSlice:
         y = bias * self.offset
         xyz = pv.Line((-self.radius, y, -self.radius), (self.radius, y, -self.radius))
         xyz.rotate_z(self.meridian, inplace=True)
-        spline = pv.Spline(xyz.points, 1)
+        # the higher the number of spline interpolation "n_points"
+        # the more accurate, but the more compute intensive and less performant
+        spline = pv.Spline(xyz.points, n_points=1)
         mesh = self.mesh.slice_along_line(spline)
 
         return mesh
@@ -416,7 +418,7 @@ def cut_along_meridian(
     result: pv.PolyData = mesh.copy(deep=True)
 
     meshes = []
-    remeshed_ids = np.array([])
+    remeshed_ids = np.array([], dtype=int)
 
     if mesh_whole.n_cells:
         lonlat = to_xy0(mesh_whole)
