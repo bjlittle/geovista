@@ -10,6 +10,7 @@
 </h3>
 
 <!---
+fix docs pythreejs/panel
 | 📚 Docs | [![documentation](https://readthedocs.org/projects/geovista/badge/?version=latest)](https://readthedocs.org/projects/geovista/)
 -->
 
