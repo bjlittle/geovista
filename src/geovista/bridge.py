@@ -1,6 +1,8 @@
 from typing import Optional, Tuple, Union
+import warnings
 
 import numpy as np
+from numpy import ma
 from numpy.typing import ArrayLike
 from pyproj import CRS, Transformer
 import pyvista as pv
@@ -23,11 +25,14 @@ __all__ = ["Transform"]
 Shape = Tuple[int]
 CRSLike = Union[int, str, dict, CRS]
 
+#: Default mesh cleaning.
+DEFAULT_CLEAN: bool = True
+
 #: Default array name for data on the mesh points/vertices/nodes.
-DEFAULT_NAME_POINTS = "point_data"
+DEFAULT_NAME_POINTS: str = "point_data"
 
 #: Default array name for data on the mesh cells/faces.
-DEFAULT_NAME_CELLS = "cell_data"
+DEFAULT_NAME_CELLS: str = "cell_data"
 
 
 class Transform:
@@ -328,7 +333,7 @@ class Transform:
         radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
-        clean: Optional[bool] = False,
+        clean: Optional[bool] = DEFAULT_CLEAN,
     ) -> pv.PolyData:
         """
         Build a quad-faced mesh from contiguous 1-D x-values and y-values.
@@ -372,7 +377,7 @@ class Transform:
         zlevel : int, default=0
             The z-axis level/offset of the mesh, giving a computed `radius`
             of ``radius + zlevel * zfactor``.
-        clean : bool, default=False
+        clean : bool, default=True
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
 
@@ -411,7 +416,7 @@ class Transform:
         radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
-        clean: Optional[bool] = False,
+        clean: Optional[bool] = DEFAULT_CLEAN,
     ) -> pv.PolyData:
         """
         Build a quad-faced mesh from 2-D x-values and y-values.
@@ -456,7 +461,7 @@ class Transform:
         zlevel : int, default=0
             The z-axis level/offset of the mesh, giving a computed `radius`
             of ``radius + zlevel * zfactor``.
-        clean : bool, default=False
+        clean : bool, default=True
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
 
@@ -516,7 +521,7 @@ class Transform:
         radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
-        clean: Optional[bool] = False,
+        clean: Optional[bool] = DEFAULT_CLEAN,
     ) -> pv.PolyData:
         """
         Build a mesh from unstructured 1-D x-values and y-values.
@@ -548,7 +553,8 @@ class Transform:
             shape may be provided instead, given that the `xs` and `ys` define
             M*N points (at most) in the mesh geometry. If no connectivity is
             provided, and the `xs` and `ys` are 2-D, then their shape is used
-            to determine the connectivity.
+            to determine the connectivity. Also, note that masked connectivity
+            may be used to define a mesh consisting of different shaped faces.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh face or nodes.
         start_index : int, default=0
@@ -574,7 +580,7 @@ class Transform:
         zlevel : int, default=0
             The z-axis level/offset of the mesh, giving a computed `radius`
             of ``radius + zlevel * zfactor``.
-        clean : bool, default=False
+        clean : bool, default=True
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
 
@@ -675,17 +681,42 @@ class Transform:
         # convert lat/lon to cartesian xyz
         geometry = to_xyz(xs, ys, radius=radius)
 
-        # create face connectivity serialization e.g., for a quad-mesh, for
-        # each face we have (4, V0, V1, V2, V3), where "4" is the number of
-        # vertices defining the face, followed by the four indices specifying
-        # each of the face vertices into the mesh geometry.
-        n_faces, n_vertices = connectivity.shape
-        faces = np.hstack(
-            [
-                np.broadcast_to(np.array([n_vertices], dtype=np.int8), (n_faces, 1)),
-                connectivity,
-            ]
-        )
+        if ma.is_masked(connectivity):
+            # create face connectivity from masked vertex indices, thus
+            # supporting varied mesh face geometry e.g., triangular, quad,
+            # pentagon (et al) cells within a single mesh.
+            connectivity = np.atleast_2d(connectivity)
+            if (ndim := connectivity.ndim) > 2:
+                emsg = f"Masked connectivity must be at most 2-D, got {ndim}-D."
+                raise ValueError(emsg)
+            n_faces = connectivity.shape[0]
+            n_vertices = ma.sum(~connectivity.mask, axis=1)
+            # ensure at least three vertices per face
+            valid_faces_mask = n_vertices > 2
+            if not np.all(valid_faces_mask):
+                n_invalid = n_faces - np.sum(valid_faces_mask)
+                plural = "s" if n_invalid > 1 else ""
+                wmsg = f"Masked connectivity defines {n_invalid:,} face{plural} with no vertices."
+                warnings.warn(wmsg)
+                n_vertices = n_vertices[valid_faces_mask]
+                connectivity = connectivity[valid_faces_mask]
+            faces = ma.hstack([n_vertices.reshape(-1, 1), connectivity]).ravel()
+            faces = faces[~faces.mask].data
+        else:
+            # create face connectivity serialization e.g., for a quad-mesh,
+            # each face we have (4, V0, V1, V2, V3), where "4" is the number
+            # of vertices defining the face, followed by the four indices (Vn)
+            # specifying each of the face vertices in an anti-clockwise order
+            # into the mesh geometry.
+            n_faces, n_vertices = connectivity.shape
+            faces = np.hstack(
+                [
+                    np.broadcast_to(
+                        np.array([n_vertices], dtype=np.int8), (n_faces, 1)
+                    ),
+                    connectivity,
+                ]
+            )
 
         # create the mesh
         mesh = pv.PolyData(geometry, faces=faces, n_faces=n_faces)
@@ -729,7 +760,7 @@ class Transform:
         radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
-        clean: Optional[bool] = False,
+        clean: Optional[bool] = DEFAULT_CLEAN,
     ):
         """
         Convenience factory that builds a mesh from spatial points,
@@ -752,7 +783,8 @@ class Transform:
             shape may be provided instead, given that the `xs` and `ys` define
             M*N points (at most) in the mesh geometry. If no connectivity is
             provided, and the `xs` and `ys` are 2-D, then their shape is used
-            to determine the connectivity.
+            to determine the connectivity.  Also, note that masked connectivity
+            may be used to define a mesh consisting of different shaped faces.
         start_index : int, default=0
             Specify the base index of the provided `connectivity` in the
             closed interval [0, 1]. For example, if `start_index=1`, then
@@ -772,7 +804,7 @@ class Transform:
         zlevel : int, default=0
             The z-axis level/offset of the mesh, giving a computed `radius`
             of ``radius + zlevel * zfactor``.
-        clean : bool, default=False
+        clean : bool, default=True
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh.
 

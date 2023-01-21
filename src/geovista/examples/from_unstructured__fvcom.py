@@ -28,6 +28,7 @@ def main() -> None:
         connectivity=sample.connectivity,
         data=sample.face,
         name="face",
+        clean=False,
     )
 
     # warp the mesh nodes by the bathymetry

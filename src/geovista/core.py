@@ -1,5 +1,6 @@
 from enum import Enum, auto, unique
 from typing import Any, Optional
+import warnings
 
 import numpy as np
 import pyvista as pv
@@ -21,6 +22,7 @@ from .common import (
 from .crs import from_wkt
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .filters import remesh
+from .search import find_cell_neighbours
 
 __all__ = [
     "MeridianSlice",
@@ -434,12 +436,38 @@ def cut_along_meridian(
     if mesh_split.n_cells:
         remeshed, remeshed_west, remeshed_east = remesh(mesh_split, meridian)
         meshes.extend([remeshed_west, remeshed_east])
-        remeshed_ids = np.unique(np.hstack([remeshed_ids, remeshed[GV_CELL_IDS]]))
+        remeshed_ids = np.hstack([remeshed_ids, remeshed[GV_CELL_IDS]])
         if GV_REMESH_POINT_IDS not in result.point_data:
             result.point_data[GV_REMESH_POINT_IDS] = result[GV_POINT_IDS].copy()
 
+        # XXX: defensive removal of cells that span the meridian and should
+        # have been remeshed, but haven't due to their geometry ?
+        cids = set(find_cell_neighbours(result, remeshed[GV_CELL_IDS]))
+        cids = cids.difference(set(remeshed_ids))
+        if cids:
+            neighbours = result.extract_cells(list(cids))
+            xy0 = to_xy0(neighbours)
+            neighbours.points = xy0
+            xdelta = []
+            for cid in range(neighbours.n_cells):
+                cxpts = neighbours.cell_points(cid)[:, 0]
+                cxmin, cxmax = cxpts.min(), cxpts.max()
+                xdelta.append(cxmax - cxmin)
+            xdelta = np.array(xdelta)
+            bad = np.where(xdelta > 270)[0]
+            if bad.size:
+                bad_cids = np.unique(neighbours[GV_CELL_IDS][bad])
+                plural = "s" if (n_cells := bad_cids.size) > 1 else ""
+                naughty = ", ".join([f"{cid}" for cid in bad_cids])
+                wmsg = (
+                    f"Unable to remesh {n_cells} cell{plural}. Removing the "
+                    f"following mesh cell-id{plural} [{naughty}]."
+                )
+                warnings.warn(wmsg)
+                remeshed_ids = np.hstack([remeshed_ids, bad_cids])
+
     if meshes:
-        result.remove_cells(remeshed_ids, inplace=True)
+        result.remove_cells(np.unique(remeshed_ids), inplace=True)
         result.set_active_scalars(info.name, preference=info.association.name.lower())
         result = combine(result, *meshes)
 

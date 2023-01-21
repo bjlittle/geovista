@@ -75,7 +75,10 @@ def _lam_sample_to_mesh(sample: pantry.SampleUnstructuredXY) -> pv.PolyData:
 
     """
     mesh = Transform.from_unstructured(
-        sample.lons, sample.lats, sample.connectivity, start_index=sample.start_index
+        sample.lons,
+        sample.lats,
+        connectivity=sample.connectivity,
+        start_index=sample.start_index,
     )
 
     return mesh
@@ -100,7 +103,7 @@ def fesom() -> pv.PolyData:
     mesh = Transform.from_unstructured(
         sample.lons,
         sample.lats,
-        sample.connectivity,
+        connectivity=sample.connectivity,
         data=sample.data,
         name=sample.name,
     )
@@ -154,7 +157,7 @@ def fvcom_tamar(
     mesh = Transform.from_unstructured(
         sample.lons,
         sample.lats,
-        sample.connectivity,
+        connectivity=sample.connectivity,
         data=data,
         name=name,
     )
@@ -190,7 +193,7 @@ def hexahedron() -> pv.PolyData:
     mesh = Transform.from_unstructured(
         sample.lons,
         sample.lats,
-        sample.connectivity,
+        connectivity=sample.connectivity,
         data=sample.data,
         name=sample.name,
     )
@@ -303,7 +306,7 @@ def lam_pacific() -> pv.PolyData:
     mesh = Transform.from_unstructured(
         sample.lons,
         sample.lats,
-        sample.connectivity,
+        connectivity=sample.connectivity,
         data=sample.data,
         name=sample.name,
         start_index=sample.start_index,
@@ -404,7 +407,7 @@ def lfric_orog(
     mesh = Transform.from_unstructured(
         sample.lons,
         sample.lats,
-        sample.connectivity,
+        connectivity=sample.connectivity,
         data=sample.data,
         name=name,
         start_index=sample.start_index,
@@ -436,7 +439,7 @@ def lfric_sst() -> pv.PolyData:
     mesh = Transform.from_unstructured(
         sample.lons,
         sample.lats,
-        sample.connectivity,
+        connectivity=sample.connectivity,
         data=sample.data,
         name=sample.name,
         start_index=sample.start_index,
@@ -519,7 +522,7 @@ def ww3_global_smc(step: Optional[int] = None) -> pv.PolyData:
     mesh = Transform.from_unstructured(
         sample.lons,
         sample.lats,
-        sample.connectivity,
+        connectivity=sample.connectivity,
         data=sample.data,
         name=sample.name,
     )
@@ -547,7 +550,7 @@ def ww3_global_tri() -> pv.PolyData:
     mesh = Transform.from_unstructured(
         sample.lons,
         sample.lats,
-        sample.connectivity,
+        connectivity=sample.connectivity,
         data=sample.data,
         name=sample.name,
     )

@@ -4,7 +4,6 @@ import numpy as np
 import pyvista as pv
 from pyvista import _vtk
 from pyvista.core.filters import _get_output
-from vtk import vtkObject
 
 from .common import (
     GV_CELL_IDS,
@@ -78,7 +77,6 @@ def remesh(
     meridian: float,
     boundary: Optional[bool] = False,
     check: Optional[bool] = False,
-    warnings: Optional[bool] = False,
 ) -> Remesh:
     """
     TODO
@@ -88,10 +86,6 @@ def remesh(
     .. versionadded :: 0.1.0
 
     """
-    if not warnings:
-        # https://public.kitware.com/pipermail/vtkusers/2004-February/022390.html
-        vtkObject.GlobalWarningDisplayOff()
-
     if mesh.n_cells == 0:
         emsg = "Cannot remesh an empty mesh"
         raise ValueError(emsg)
@@ -135,9 +129,6 @@ def remesh(
 
     remeshed: pv.PolyData = _get_output(alg, oport=1)
 
-    if not warnings:
-        vtkObject.GlobalWarningDisplayOn()
-
     if remeshed.n_cells == 0:
         # no remeshing has been performed as the meridian does not intersect the mesh
         remeshed_west, remeshed_east = pv.PolyData(), pv.PolyData()
@@ -158,21 +149,22 @@ def remesh(
         if not boundary:
             del remeshed.point_data[VTK_BOUNDARY_MASK]
 
-        remeshed.point_data[GV_REMESH_POINT_IDS] = remeshed[GV_POINT_IDS].copy()
+        boundary_mask |= np.isclose(to_xy0(remeshed)[:, 0], meridian)
+
+        remeshed.point_data[GV_REMESH_POINT_IDS] = np.empty(
+            remeshed.n_points, dtype=int
+        )
+        remeshed.point_data[GV_REMESH_POINT_IDS].fill(REMESH_JOIN)
 
         remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_SEAM
         remeshed_west = cast_UnstructuredGrid_to_PolyData(
             remeshed.extract_cells(west_mask)
         )
-        join_mask = np.where(remeshed_west[GV_REMESH_POINT_IDS] != REMESH_SEAM)[0]
-        remeshed_west[GV_REMESH_POINT_IDS][join_mask] = REMESH_JOIN
 
         remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_SEAM_EAST
         remeshed_east = cast_UnstructuredGrid_to_PolyData(
             remeshed.extract_cells(east_mask)
         )
-        join_mask = np.where(remeshed_east[GV_REMESH_POINT_IDS] != REMESH_SEAM_EAST)[0]
-        remeshed_east[GV_REMESH_POINT_IDS][join_mask] = REMESH_JOIN
 
         del remeshed.point_data[GV_REMESH_POINT_IDS]
         sanitize_data(remeshed, remeshed_west, remeshed_east)

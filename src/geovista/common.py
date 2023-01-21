@@ -9,6 +9,7 @@ import numpy as np
 from numpy import ma
 import numpy.typing as npt
 import pyvista as pv
+from vtk import vtkObject
 
 __all__ = [
     "GV_CELL_IDS",
@@ -22,6 +23,7 @@ __all__ = [
     "REMESH_SEAM",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
+    "WRAP_RTOL",
     "ZLEVEL_FACTOR",
     "calculate_radius",
     "nan_mask",
@@ -32,6 +34,8 @@ __all__ = [
     "to_xy0",
     "to_xyz",
     "triangulated",
+    "vtk_warnings_off",
+    "vtk_warnings_on",
     "wrap",
 ]
 
@@ -80,6 +84,9 @@ VTK_CELL_IDS: str = "vtkOriginalCellIds"
 
 #: Name of the VTK point indices array.
 VTK_POINT_IDS: str = "vtkOriginalPointIds"
+
+#: Relative tolerance for values close to longitudinal wrap base + period.
+WRAP_RTOL: float = 1e-5
 
 #: Proportional multiplier for z-axis levels/offsets.
 ZLEVEL_FACTOR: float = 1e-3
@@ -498,6 +505,30 @@ def triangulated(surface: pv.PolyData) -> bool:
     return np.all(np.diff(surface._offset_array) == 3)
 
 
+def vtk_warnings_off() -> None:
+    """
+    Disable :mod:`vtk` warning messages.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    vtkObject.GlobalWarningDisplayOff()
+
+
+def vtk_warnings_on() -> None:
+    """
+    Enable :mod:`vtk` warning messages.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    vtkObject.GlobalWarningDisplayOn()
+
+
 def wrap(
     longitudes: npt.ArrayLike,
     base: Optional[float] = BASE,
@@ -538,5 +569,9 @@ def wrap(
 
     longitudes = np.asanyarray(longitudes, dtype=dtype)
     result = ((longitudes - base + period * 2) % period) + base
+
+    mask = np.isclose(result, base + period, rtol=WRAP_RTOL)
+    if np.any(mask):
+        result[mask] = base
 
     return result

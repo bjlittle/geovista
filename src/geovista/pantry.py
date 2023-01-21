@@ -10,6 +10,7 @@ from typing import Optional
 
 import netCDF4 as nc
 import numpy as np
+from numpy import ma
 import numpy.typing as npt
 import pooch
 
@@ -114,18 +115,40 @@ def fesom(step: Optional[int] = None) -> SampleUnstructuredXY:
     # load the lon/lat cell grid
     lons = dataset.variables["lon_bnds"][:]
     lats = dataset.variables["lat_bnds"][:]
+    shape = lons.shape
+    n_cells = shape[0]
+
+    emsg = (
+        "Unable to create FESOM pantry sample, as spatial points have "
+        f"different shapes. Got '{lons.shape=}' and '{lats.shape=}'."
+    )
+    assert shape == lats.shape, emsg
 
     # load the mesh payload
     data = dataset.variables["tos"]
     name = capitalise(data.standard_name)
     units = data.units
 
-    # deal with the timeseries step
+    # deal with the time-series step
     steps = dataset.dimensions["time"].size
     idx = 0 if step is None else (step % steps)
 
+    # construct the masked connectivity based on protocol of
+    # repeated identical trailing spatial values being used
+    # to identify padding to fill the fixed number of points
+    # for all cells
+    lons_mask = ~np.array(np.diff(lons), dtype=bool)
+    lats_mask = ~np.array(np.diff(lats), dtype=bool)
+
+    emsg = "Unable to create FESOM pantry sample, as cell point masks are not equal."
+    assert np.array_equal(lons_mask, lats_mask), emsg
+
+    mask = np.hstack([np.zeros(n_cells, dtype=bool).reshape(-1, 1), lons_mask])
+    connectivity = ma.arange(np.prod(shape), dtype=np.uint32).reshape(shape)
+    connectivity.mask = mask
+
     sample = SampleUnstructuredXY(
-        lons, lats, lons.shape, data=data[idx], name=name, units=units, steps=steps
+        lons, lats, connectivity, data=data[idx], name=name, units=units, steps=steps
     )
 
     return sample
