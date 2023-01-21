@@ -10,6 +10,7 @@
 </h3>
 
 <!---
+fix docs pythreejs/panel
 | 📚 Docs | [![documentation](https://readthedocs.org/projects/geovista/badge/?version=latest)](https://readthedocs.org/projects/geovista/)
 -->
 
@@ -374,12 +375,10 @@ plotter.show()
 
 ![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/oisst-avhrr.png)
 
-<!---
+
 ## Documentation
 
 The [documentation](https://geovista.readthedocs.io/en/latest/) is built by [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://docs.readthedocs.io/en/stable/).
--->
-
 
 ## License
 
