@@ -375,7 +375,7 @@ plotter.show()
 
 ![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/oisst-avhrr.png)
 
-#### Further Examples
+### Further Examples
 
 <p align="center">
 "Please, sir, I want some more.", <em>Oliver Twist, Charles Dickens, 1838.</em>
