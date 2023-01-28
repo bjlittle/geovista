@@ -348,6 +348,7 @@ def plot(fname, axes, base) -> None:
 @click.option(
     "-l",
     "--list",
+    "show",
     is_flag=True,
     help="Show names of available examples to run.",
 )
@@ -364,7 +365,7 @@ def plot(fname, axes, base) -> None:
     is_flag=True,
     help="Enable example diagnostics.",
 )
-def examples(run_all, list, run, verbose):
+def examples(run_all, show, run, verbose):
     """
     Execute a geovista example script.
 
@@ -372,7 +373,7 @@ def examples(run_all, list, run, verbose):
     # account for the "all" option
     n_scripts = len(SCRIPTS) - 1
 
-    if list:
+    if show:
         click.echo("Names of available examples:")
         width = len(str(n_scripts))
         for i, script in enumerate(SCRIPTS[1:]):
