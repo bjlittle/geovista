@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 """
-This example demonstrates how to create a mesh from 1-D latitude and longitude
-rectilinear cell bounds. The resulting mesh contains quad cells.
-
-The data is synthetically generated and targets the mesh faces/cells.
-
-Note that, Natural Earth coastlines are also rendered.
+Importable and runnable geovista example.
 
 """
 
@@ -16,6 +11,15 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
+    """
+    This example demonstrates how to create a mesh from 1-D latitude and longitude
+    rectilinear cell bounds. The resulting mesh contains quad cells.
+
+    The data is synthetically generated and targets the mesh faces/cells.
+
+    Note that, Natural Earth coastlines are also rendered.
+
+    """
     # create the 1D spatial coordinates and data
     M, N = 45, 90
     lats = np.linspace(-90, 90, M + 1)

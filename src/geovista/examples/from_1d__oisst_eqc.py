@@ -1,16 +1,6 @@
 #!/usr/bin/env python3
 """
-This example demonstrates how to create a mesh from 1-D latitude and longitude
-rectilinear cell bounds. The resulting mesh contains quad cells.
-
-It uses NOAA/NECI 1/4° Daily Optimum Interpolation Sea Surface Temperature
-(OISST) v2.1 Advanced Very High Resolution Radiometer (AVHRR) gridded data
-(https://doi.org/10.25921/RE9P-PT57). The data targets the mesh faces/cells.
-
-Note that, a threshold is also applied to remove land NaN cells, and a
-NASA Blue Marble texture is rendered as a base layer. The mesh is also
-transformed to the Equidistant Cylindrical (Plate Carrée) conformal
-cylindrical projection.
+Importable and runnable geovista example.
 
 """
 
@@ -20,6 +10,20 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
+    """
+    This example demonstrates how to create a mesh from 1-D latitude and longitude
+    rectilinear cell bounds. The resulting mesh contains quad cells.
+
+    It uses NOAA/NECI 1/4° Daily Optimum Interpolation Sea Surface Temperature
+    (OISST) v2.1 Advanced Very High Resolution Radiometer (AVHRR) gridded data
+    (https://doi.org/10.25921/RE9P-PT57). The data targets the mesh faces/cells.
+
+    Note that, a threshold is also applied to remove land NaN cells, and a
+    NASA Blue Marble texture is rendered as a base layer. The mesh is also
+    transformed to the Equidistant Cylindrical (Plate Carrée) conformal
+    cylindrical projection.
+
+    """
     # load sample data
     sample = oisst_avhrr_sst()
 

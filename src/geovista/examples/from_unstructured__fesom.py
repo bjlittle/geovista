@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
 """
-This example demonstrates how to create a mesh from 2-D latitude and longitude
-unstructured cell bounds. The resulting mesh is formed from masked connectivity,
-allowing the mesh to contain mixed cell geometries up to 18-sides (octadecagon).
-
-It uses a AWI Climate Model (AWI-CI) Finite Element Sea ice-Ocean Model (FESOM)
-v1.4 unstructured mesh of surface sea temperature data. The data targets the
-mesh faces/cells.
-
-Note that, a Natural Earth base layer is rendered along with Natural Earth coastlines.
+Importable and runnable geovista example.
 
 """
 
@@ -18,6 +10,18 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
+    """
+    This example demonstrates how to create a mesh from 2-D latitude and longitude
+    unstructured cell bounds. The resulting mesh is formed from masked connectivity,
+    allowing the mesh to contain mixed cell geometries up to 18-sides (octadecagon).
+
+    It uses a AWI Climate Model (AWI-CI) Finite Element Sea ice-Ocean Model (FESOM)
+    v1.4 unstructured mesh of surface sea temperature data. The data targets the
+    mesh faces/cells.
+
+    Note that, a Natural Earth base layer is rendered along with Natural Earth coastlines.
+
+    """
     # load the sample data
     sample = fesom()
 

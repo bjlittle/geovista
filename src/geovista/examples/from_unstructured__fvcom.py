@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
 """
-This example demonstrates how to create a mesh from 1-D latitude and longitude
-unstructured cell points. The resulting mesh contains triangular cells.
-
-It uses an unstructured grid Finite Volume Community Ocean Model (FVCOM) mesh of
-sea floor depth below geoid data.
-
-Note that, the data is on the mesh faces/cells, but also on the nodes/points
-which can then be used to extrude the mesh to reveal the bathymetry of the
-Plymouth Sound and Tamar River in Cornwall, UK.
+Importable and runnable geovista example.
 
 """
 
@@ -18,6 +10,18 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
+    """
+    This example demonstrates how to create a mesh from 1-D latitude and longitude
+    unstructured cell points. The resulting mesh contains triangular cells.
+
+    It uses an unstructured grid Finite Volume Community Ocean Model (FVCOM) mesh of
+    sea floor depth below geoid data.
+
+    Note that, the data is on the mesh faces/cells, but also on the nodes/points
+    which can then be used to extrude the mesh to reveal the bathymetry of the
+    Plymouth Sound and Tamar River in Cornwall, UK.
+
+    """
     # load the sample data
     sample = fvcom_tamar()
 

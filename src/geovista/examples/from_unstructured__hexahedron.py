@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
 """
-This example demonstrates how to create a mesh from 2-D latitude and longitude
-unstructured cell points. The resulting mesh contains 6-sided (hexagonal)
-cells.
-
-The data is synthetically generated and targets the mesh faces/cells.
-
-Note that, Natural Earth coastlines are also rendered.
+Importable and runnable geovista example.
 
 """
-
 
 import geovista as gv
 from geovista.pantry import hexahedron
@@ -17,6 +10,16 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
+    """
+    This example demonstrates how to create a mesh from 2-D latitude and longitude
+    unstructured cell points. The resulting mesh contains 6-sided (hexagonal)
+    cells.
+
+    The data is synthetically generated and targets the mesh faces/cells.
+
+    Note that, Natural Earth coastlines are also rendered.
+
+    """
     # load the sample data
     sample = hexahedron()
 

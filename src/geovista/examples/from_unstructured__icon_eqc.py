@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 """
-This example demonstrates how to create a mesh from 2-D latitude and longitude
-unstructured cell points. The resulting mesh contains triangular cells.
-
-It uses Icosahedral Nonhydrostatic Weather and Climate Model (ICON) global 160km
-resolution soil type data, as developed by the Deutscher Wetterdienst (DWD) and
-the Max-Planck-Institut für Meteorologie (MPI-M). The data targets the mesh
-faces/cells.
-
-Note that, the mesh is transformed to the Equidistant Cylindrical (Plate Carrée)
-conformal cylindrical projection..
+Importable and runnable geovista example.
 
 """
 
@@ -21,6 +12,19 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
+    """
+    This example demonstrates how to create a mesh from 2-D latitude and longitude
+    unstructured cell points. The resulting mesh contains triangular cells.
+
+    It uses Icosahedral Nonhydrostatic Weather and Climate Model (ICON) global 160km
+    resolution soil type data, as developed by the Deutscher Wetterdienst (DWD) and
+    the Max-Planck-Institut für Meteorologie (MPI-M). The data targets the mesh
+    faces/cells.
+
+    Note that, the mesh is transformed to the Equidistant Cylindrical (Plate Carrée)
+    conformal cylindrical projection..
+
+    """
     # load the sample data
     sample = icon_soil()
 

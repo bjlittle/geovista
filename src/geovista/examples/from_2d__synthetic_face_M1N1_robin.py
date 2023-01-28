@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
 """
-This example demonstrates how to create a mesh from 2-D latitude and longitude
-rectilinear cell bounds. The resulting mesh contains quad cells.
-
-The data is synthetically generated and targets the mesh faces/cells.
-
-Note that, the mesh is transformed to the Robinson pseudo-cylindrical
-projection.
+Importable and runnable geovista example.
 
 """
 
@@ -17,6 +11,16 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
+    """
+    This example demonstrates how to create a mesh from 2-D latitude and longitude
+    rectilinear cell bounds. The resulting mesh contains quad cells.
+
+    The data is synthetically generated and targets the mesh faces/cells.
+
+    Note that, the mesh is transformed to the Robinson pseudo-cylindrical
+    projection.
+
+    """
     # create the 2D spatial coordinates and data
     M, N = 45, 90
     lats = np.linspace(-90, 90, M + 1)

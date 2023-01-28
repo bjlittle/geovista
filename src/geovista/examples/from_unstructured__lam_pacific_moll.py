@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
 """
-This example demonstrates how to create a mesh from CF UGRID 1-D latitude and
-longitude unstructured cell points and connectivity. The resulting mesh
-contains quad cells.
-
-It uses a high-resolution Local Area Model (LAM) mesh of air potential
-temperature data located on the mesh faces/cells.
-
-Note that, a Natural Earth texture is rendered as a base layer, and the
-mesh is transformed to the Mollweide pseudo-cylindrical projection.
+Importable and runnable geovista example.
 
 """
 
@@ -18,6 +10,18 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
+    """
+    This example demonstrates how to create a mesh from CF UGRID 1-D latitude and
+    longitude unstructured cell points and connectivity. The resulting mesh
+    contains quad cells.
+
+    It uses a high-resolution Local Area Model (LAM) mesh of air potential
+    temperature data located on the mesh faces/cells.
+
+    Note that, a Natural Earth texture is rendered as a base layer, and the
+    mesh is transformed to the Mollweide pseudo-cylindrical projection.
+
+    """
     # load the sample data
     sample = lam_pacific()
 

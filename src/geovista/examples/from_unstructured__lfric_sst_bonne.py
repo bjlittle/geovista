@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 """
-This example demonstrates how to create a mesh from CF UGRID 1-D latitude and
-longitude unstructured cell points and connectivity. The resulting mesh
-contains quad cells.
-
-It uses an unstructured Met Office LFRic C48 cubed-sphere of surface temperature
-data located on the mesh faces/cells.
-
-Note that, a threshold is also applied to remove land NaN cells, and a
-Natural Earth texture is rendered as a base layer. The mesh is also
-transformed to the Bonne projection.
+Importable and runnable geovista example.
 
 """
 
@@ -19,6 +10,19 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
+    """
+    This example demonstrates how to create a mesh from CF UGRID 1-D latitude and
+    longitude unstructured cell points and connectivity. The resulting mesh
+    contains quad cells.
+
+    It uses an unstructured Met Office LFRic C48 cubed-sphere of surface temperature
+    data located on the mesh faces/cells.
+
+    Note that, a threshold is also applied to remove land NaN cells, and a
+    Natural Earth texture is rendered as a base layer. The mesh is also
+    transformed to the Bonne projection.
+
+    """
     # load the sample data
     sample = lfric_sst()
 
