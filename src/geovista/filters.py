@@ -77,6 +77,8 @@ def remesh(
     meridian: float,
     boundary: Optional[bool] = False,
     check: Optional[bool] = False,
+    rtol: Optional[float] = None,
+    atol: Optional[float] = None,
 ) -> Remesh:
     """
     TODO
@@ -135,7 +137,7 @@ def remesh(
     else:
         # split the triangulated remesh into its two halves, west and east of the meridian
         centers = remeshed.cell_centers()
-        lons = to_xy0(centers)[:, 0]
+        lons = to_xy0(centers, rtol=rtol, atol=atol)[:, 0]
         delta = lons - meridian
         lower_mask = (delta < 0) & (delta > -180)
         upper_mask = delta > 180

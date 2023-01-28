@@ -23,7 +23,6 @@ __all__ = [
     "REMESH_SEAM",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
-    "WRAP_RTOL",
     "ZLEVEL_FACTOR",
     "calculate_radius",
     "nan_mask",
@@ -84,6 +83,9 @@ VTK_CELL_IDS: str = "vtkOriginalCellIds"
 
 #: Name of the VTK point indices array.
 VTK_POINT_IDS: str = "vtkOriginalPointIds"
+
+#: Absolute tolerance for values close to longitudinal wrap base + period.
+WRAP_ATOL: float = 1e-8
 
 #: Relative tolerance for values close to longitudinal wrap base + period.
 WRAP_RTOL: float = 1e-5
@@ -274,6 +276,8 @@ def to_lonlat(
     xyz: npt.ArrayLike,
     radians: Optional[float] = None,
     radius: Optional[float] = None,
+    rtol: Optional[float] = None,
+    atol: Optional[float] = None,
 ) -> np.ndarray:
     """
     Convert the cartesian `xyz` point on a sphere to geographic longitude
@@ -288,6 +292,12 @@ def to_lonlat(
         Default units are degrees.
     radius : float, default=1.0
         The `radius` of the sphere. Defaults to an S2 unit sphere.
+    rtol : float, optional
+        The relative tolerance for values close to longitudinal wrap
+        base + period.
+    atol : float, optional
+        The absolute tolerance for values close to longitudinal wrap
+        base + period.
 
     Returns
     -------
@@ -309,7 +319,7 @@ def to_lonlat(
         )
         raise ValueError(emsg)
 
-    (result,) = to_lonlats(point, radians=radians, radius=radius)
+    (result,) = to_lonlats(point, radians=radians, radius=radius, rtol=rtol, atol=atol)
 
     return result
 
@@ -319,6 +329,8 @@ def to_lonlats(
     radians: Optional[bool] = False,
     radius: Optional[float] = None,
     stacked: Optional[bool] = True,
+    rtol: Optional[float] = None,
+    atol: Optional[float] = None,
 ) -> np.ndarray:
     """
     Convert the cartesian `xyz` points on a sphere to geographic longitudes
@@ -335,6 +347,12 @@ def to_lonlats(
         The `radius` of the sphere. Defaults to an S2 unit sphere.
     stacked : bool, default=True
         Default the resultant shape to be (N, 2), otherwise (2, N).
+    rtol : float, optional
+        The relative tolerance for values close to longitudinal wrap
+        base + period.
+    atol : float, optional
+        The absolute tolerance for values close to longitudinal wrap
+        base + period.
 
     Returns
     -------
@@ -361,10 +379,10 @@ def to_lonlats(
     lons = np.arctan2(points[:, 1], points[:, 0])
     if not radians:
         lons = np.degrees(lons)
-    lons = wrap(lons, base=base, period=period)
+    lons = wrap(lons, base=base, period=period, rtol=rtol, atol=atol)
 
     z_radius = points[:, 2] / radius
-    # defensive clobber of values outside arcsin domain [-1, 1]
+    # XXX: defensive clobber of values outside arcsin domain [-1, 1]
     if indices := np.where(z_radius > 1):
         z_radius[indices] = 1.0
     if indices := np.where(z_radius < -1):
@@ -384,6 +402,8 @@ def to_xy0(
     radius: Optional[float] = None,
     stacked: Optional[bool] = True,
     closed_interval: Optional[bool] = False,
+    rtol: Optional[float] = None,
+    atol: Optional[float] = None,
 ) -> np.ndarray:
     """
     Convert the `mesh` cartesian `xyz` points on a sphere to geographic
@@ -404,6 +424,12 @@ def to_xy0(
         Longitude values will be in the half-closed interval [-180, 180). However,
         if the mesh has a seam at the 180th meridian and `closed_interval`
         is ``True``, then longitudes will be in the closed interval [-180, 180].
+    rtol : float, optional
+        The relative tolerance for values close to longitudinal wrap
+        base + period.
+    atol : float, optional
+        The absolute tolerance for values close to longitudinal wrap
+        base + period.
 
     Returns
     -------
@@ -416,9 +442,55 @@ def to_xy0(
 
     """
     radius = calculate_radius(mesh) if radius is None else abs(radius)
-    lons, lats = to_lonlats(mesh.points, radius=radius, stacked=False)
+    lons, lats = to_lonlats(
+        mesh.points, radius=radius, stacked=False, rtol=rtol, atol=atol
+    )
     z = np.zeros_like(lons)
     data = [lons, lats, z]
+
+    # XXX: manage pole longitudes. an alternative future scheme could be more
+    # generic and inclusive, but this approach tackles the main use case
+    pole_pids = np.where(np.abs(lats) == 90)[0]
+    if pole_pids.size:
+        # enforce a common longitude for pole singularity mesh points
+        lons[pole_pids] = 0
+
+        # unfold pole quad-cells
+        pole_submesh = mesh.extract_points(pole_pids)
+        pole_pids = set(pole_pids)
+        # get the indices (cids) of polar participating mesh cells
+        pole_cids = np.unique(pole_submesh["vtkOriginalCellIds"])
+        for cid in pole_cids:
+            # get the indices (pids) of the polar cell points
+            cell_pids = np.array(mesh.cell_point_ids(cid))
+            # XXX: only dealing with quad-cells atm
+            if len(cell_pids) == 4:
+                # identify the pids of the cell on the pole
+                cell_pole_pids = pole_pids.intersection(cell_pids)
+                # criterion of exactly two points from the quad-cell
+                # at the pole to unfold the polar points longitudes
+                if len(cell_pole_pids) == 2:
+                    # compute the relative offset of the polar points
+                    # within the polar cell connectivity
+                    offset = sorted(
+                        [np.where(cell_pids == pid)[0][0] for pid in cell_pole_pids]
+                    )
+                    if offset == [0, 1]:
+                        lhs = cell_pids[offset]
+                        rhs = cell_pids[[3, 2]]
+                    elif offset == [1, 2]:
+                        lhs = cell_pids[offset]
+                        rhs = cell_pids[[0, 3]]
+                    elif offset == [2, 3]:
+                        lhs = cell_pids[offset]
+                        rhs = cell_pids[[1, 0]]
+                    elif offset == [0, 3]:
+                        lhs = cell_pids[offset]
+                        rhs = cell_pids[[1, 2]]
+                    else:
+                        emsg = "Failed to unfold a mesh polar quad-cell. Invalid polar points connectivity detected."
+                        raise ValueError(emsg)
+                    lons[lhs] = lons[rhs]
 
     if closed_interval:
         if GV_REMESH_POINT_IDS in mesh.point_data:
@@ -533,6 +605,8 @@ def wrap(
     longitudes: npt.ArrayLike,
     base: Optional[float] = BASE,
     period: Optional[float] = PERIOD,
+    rtol: Optional[float] = None,
+    atol: Optional[float] = None,
     dtype: Optional[np.dtype] = None,
 ) -> np.ndarray:
     """
@@ -548,6 +622,12 @@ def wrap(
     period : float, default=360.0
         The end limit of the half-open interval expressed as a length
         from the `base`, in the same units.
+    rtol : float, default=1e-5
+        The relative tolerance for values close to longitudinal wrap
+        base + period.
+    atol : float, default=1e-8
+        The absolute tolerance for values close to longitudinal wrap
+        base + period.
     dtype : data-type, default=float64
         The resultant longitude `dtype`.
 
@@ -564,13 +644,19 @@ def wrap(
     if not isinstance(longitudes, Iterable):
         longitudes = [longitudes]
 
+    if rtol is None:
+        rtol = WRAP_RTOL
+
+    if atol is None:
+        atol = WRAP_ATOL
+
     if dtype is None:
         dtype = np.float64
 
     longitudes = np.asanyarray(longitudes, dtype=dtype)
     result = ((longitudes - base + period * 2) % period) + base
 
-    mask = np.isclose(result, base + period, rtol=WRAP_RTOL)
+    mask = np.isclose(result, base + period, rtol=rtol, atol=atol)
     if np.any(mask):
         result[mask] = base
 

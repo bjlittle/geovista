@@ -23,15 +23,19 @@ def main() -> None:
     data = np.random.random(M * N)
 
     # create the mesh from the synthetic data
-    mesh = gv.Transform.from_1d(lons, lats, data=data, name="synthetic cells")
+    name = "Synthetic Cells"
+    mesh = gv.Transform.from_1d(lons, lats, data=data, name=name)
 
     # plot the mesh
     plotter = gv.GeoPlotter()
-    plotter.add_mesh(mesh, cmap="ice", show_edges=True)
+    sargs = dict(title=f"{name} / 1", shadow=True)
+    plotter.add_mesh(
+        mesh, clim=(0, 1), cmap="ice", scalar_bar_args=sargs, show_edges=True
+    )
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "1-D Synthetic Face Data (M+1) (N+1)",
+        "1-D Synthetic Face Data",
         position="upper_left",
         font_size=10,
         shadow=True,

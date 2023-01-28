@@ -383,6 +383,8 @@ def cut_along_meridian(
     mesh: pv.PolyData,
     meridian: Optional[float] = None,
     antimeridian: Optional[bool] = False,
+    rtol: Optional[float] = None,
+    atol: Optional[float] = None,
 ) -> pv.PolyData:
     """
     TODO
@@ -392,6 +394,8 @@ def cut_along_meridian(
     mesh
     meridian
     antimeridian
+    rtol
+    atol
 
     Returns
     -------
@@ -423,7 +427,7 @@ def cut_along_meridian(
     remeshed_ids = np.array([], dtype=int)
 
     if mesh_whole.n_cells:
-        lonlat = to_xy0(mesh_whole)
+        lonlat = to_xy0(mesh_whole, rtol=rtol, atol=atol)
         meridian_mask = np.isclose(lonlat[:, 0], meridian)
         join_points = np.empty(mesh_whole.n_points, dtype=int)
         join_points.fill(REMESH_JOIN)
@@ -434,7 +438,9 @@ def cut_along_meridian(
         result[GV_REMESH_POINT_IDS] = result[GV_POINT_IDS].copy()
 
     if mesh_split.n_cells:
-        remeshed, remeshed_west, remeshed_east = remesh(mesh_split, meridian)
+        remeshed, remeshed_west, remeshed_east = remesh(
+            mesh_split, meridian, rtol=rtol, atol=atol
+        )
         meshes.extend([remeshed_west, remeshed_east])
         remeshed_ids = np.hstack([remeshed_ids, remeshed[GV_CELL_IDS]])
         if GV_REMESH_POINT_IDS not in result.point_data:

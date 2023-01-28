@@ -5,7 +5,8 @@ rectilinear cell bounds. The resulting mesh contains quad cells.
 
 The data is synthetically generated and targets the mesh nodes/points.
 
-Note that, Natural Earth coastlines are also rendered.
+Note that, the mesh is transformed to the Mollweide pseudo-cylindrical
+projection.
 
 """
 
@@ -24,22 +25,28 @@ def main() -> None:
 
     # create the mesh from the synthetic data
     name = "Synthetic Points"
-    mesh = gv.Transform.from_1d(lons, lats, data=data, name=name)
+    mesh = gv.Transform.from_1d(lons, lats, data=data, name=name, clean=False)
 
     # plot the mesh
-    plotter = gv.GeoPlotter()
+    plotter = gv.GeoPlotter(crs=(projection := "+proj=moll"))
     sargs = dict(title=f"{name} / 1", shadow=True)
     plotter.add_mesh(
-        mesh, clim=(0, 1), cmap="ice", scalar_bar_args=sargs, show_edges=True
+        mesh,
+        clim=(0, 1),
+        cmap="ice",
+        scalar_bar_args=sargs,
+        scalars=name,
+        show_edges=True,
     )
-    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "1-D Synthetic Node Data",
+        f"1-D Synthetic Node Data ({projection})",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
+    plotter.view_xy()
+    plotter.camera.zoom(1.5)
     plotter.show()
 
 

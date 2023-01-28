@@ -176,7 +176,9 @@ class GeoPlotterBase:
             mesh = cast(mesh)
 
         if isinstance(mesh, pv.PolyData):
+            atol = float(kwargs.pop("atol")) if "atol" in kwargs else None
             radius = float(kwargs.pop("radius")) if "radius" in kwargs else None
+            rtol = float(kwargs.pop("rtol")) if "rtol" in kwargs else None
             zfactor = (
                 float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
             )
@@ -192,7 +194,9 @@ class GeoPlotterBase:
                     mesh.rotate_z(-meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
                 try:
-                    mesh = cut_along_meridian(mesh, antimeridian=True)
+                    mesh = cut_along_meridian(
+                        mesh, antimeridian=True, rtol=rtol, atol=atol
+                    )
                 except ValueError:
                     pass
 
@@ -202,7 +206,9 @@ class GeoPlotterBase:
                 kwargs["texture"] = texture
 
             if project:
-                lonlat = to_xy0(mesh, radius=radius, closed_interval=True)
+                lonlat = to_xy0(
+                    mesh, radius=radius, closed_interval=True, rtol=rtol, atol=atol
+                )
                 transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
                 xs, ys = transformer.transform(
                     lonlat[:, 0], lonlat[:, 1], errcheck=True

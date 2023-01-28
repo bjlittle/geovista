@@ -32,7 +32,7 @@ NE_CHOICES.extend(NE_GROUPS)
 
 DEFAULT_FG_COLOUR: str = "cyan"
 
-SCRIPTS: List[str] = [
+SCRIPTS: List[str] = ["all"] + [
     submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)
 ]
 
@@ -362,19 +362,22 @@ def examples(all, list, run):
     Execute a geovista example script.
 
     """
-    n_scripts = len(SCRIPTS)
+    # account for the "all" option
+    n_scripts = len(SCRIPTS) - 1
 
     if list:
         click.echo("Names of available examples:")
         width = len(str(n_scripts))
-        for i, script in enumerate(SCRIPTS):
+        for i, script in enumerate(SCRIPTS[1:]):
             click.echo(f"[{i + 1:0{width}d}] ", nl=False)
             click.secho(f"{script}", fg="green")
         click.echo("\n👍 All done!")
         return
 
+    all = True if run == "all" else all
+
     if all:
-        for i, script in enumerate(SCRIPTS):
+        for i, script in enumerate(SCRIPTS[1:]):
             msg = f"Running example {script!r} ({i+1} of {n_scripts}) ..."
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")

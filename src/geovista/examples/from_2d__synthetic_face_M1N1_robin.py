@@ -5,7 +5,8 @@ rectilinear cell bounds. The resulting mesh contains quad cells.
 
 The data is synthetically generated and targets the mesh faces/cells.
 
-Note that, Natural Earth coastlines are also rendered.
+Note that, the mesh is transformed to the Robinson pseudo-cylindrical
+projection.
 
 """
 
@@ -25,22 +26,23 @@ def main() -> None:
 
     # create the mesh from the synthetic data
     name = "Synthetic Cells"
-    mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name)
+    mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name, clean=False)
 
     # plot the data
-    plotter = gv.GeoPlotter()
+    plotter = gv.GeoPlotter(crs=(projection := "+proj=robin"))
     sargs = sargs = dict(title=f"{name} / 1", shadow=True)
     plotter.add_mesh(
         mesh, clim=(0, 1), cmap="tempo", scalar_bar_args=sargs, show_edges=True
     )
-    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "2-D Synthetic Face Data",
+        f"2-D Synthetic Face Data ({projection})",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
+    plotter.view_xy()
+    plotter.camera.zoom(1.5)
     plotter.show()
 
 

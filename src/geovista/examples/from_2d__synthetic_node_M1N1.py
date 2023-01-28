@@ -24,15 +24,16 @@ def main() -> None:
     data = np.random.random((M + 1) * (N + 1))
 
     # create the mesh from the synthetic data
-    mesh = gv.Transform.from_2d(mlons, mlats, data=data, name="synthetic points")
+    name = "Synthetic Points"
+    mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name)
 
     # plot the mesh
     plotter = gv.GeoPlotter()
-    plotter.add_mesh(mesh, cmap="tempo", show_edges=True, scalars="synthetic points")
+    plotter.add_mesh(mesh, clim=(0, 1), cmap="tempo", scalars=name, show_edges=True)
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "2-D Synthetic Node Data (M+1, N+1)",
+        "2-D Synthetic Node Data",
         position="upper_left",
         font_size=10,
         shadow=True,

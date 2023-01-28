@@ -663,7 +663,7 @@ class Transform:
             if start_index:
                 connectivity -= start_index
 
-        # reduce any singularities at the poles to a singleton point
+        # reduce any singularity points at the poles to a common longitude
         poles = np.isclose(np.abs(ys), 90)
         if np.any(poles):
             xs[poles] = 0
