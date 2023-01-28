@@ -384,10 +384,10 @@ plotter.show()
 Certainly, our pleasure. From the command line, simply:
 
 ```bash
-geovista examples --run all
+geovista examples --run all --verbose
 ```
 
-To find out more:
+Curious to find out more?
 
 ```bash
 geovista examples --help
