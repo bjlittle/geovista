@@ -27,6 +27,9 @@ def main() -> None:
     name = "Synthetic Points"
     mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name)
 
+    # provide mesh diagnostics via logging
+    gv.logger.info(f"{mesh}")
+
     # plot the mesh
     plotter = gv.GeoPlotter()
     plotter.add_mesh(mesh, clim=(0, 1), cmap="tempo", scalars=name, show_edges=True)

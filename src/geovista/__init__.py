@@ -1,3 +1,5 @@
+import logging
+
 from .bridge import Transform  # noqa: F401
 from .cache import (  # noqa: F401
     blue_marble,
@@ -20,5 +22,12 @@ try:
 except ModuleNotFoundError:
     __version__ = "unknown"
 
+__all__ = ["logger"]
+
 # let's assume this is a sane default to adopt
 vtk_warnings_off()
+
+# create simple logger to support diagnostics for examples
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+logger.setLevel("WARNING")

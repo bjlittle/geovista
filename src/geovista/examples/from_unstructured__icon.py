@@ -26,6 +26,9 @@ def main() -> None:
     # create the mesh from the sample data
     mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
 
+    # provide mesh diagnostics via logging
+    gv.logger.info(f"{mesh}")
+
     # plot the mesh
     plotter = gv.GeoPlotter()
     sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)

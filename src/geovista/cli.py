@@ -357,7 +357,13 @@ def plot(fname, axes, base) -> None:
     is_flag=False,
     help="Execute the example.",
 )
-def examples(all, list, run):
+@click.option(
+    "-v",
+    "--verbose",
+    is_flag=True,
+    help="Enable example diagnostics.",
+)
+def examples(all, list, run, verbose):
     """
     Execute a geovista example script.
 
@@ -376,11 +382,18 @@ def examples(all, list, run):
 
     all = True if run == "all" else all
 
+    if verbose:
+        from geovista import logger
+
+        logger.setLevel("INFO")
+
     if all:
         for i, script in enumerate(SCRIPTS[1:]):
             msg = f"Running example {script!r} ({i+1} of {n_scripts}) ..."
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")
+            if verbose:
+                print(module.__doc__)
             module.main()
         click.echo("\n👍 All done!")
         return
@@ -388,5 +401,7 @@ def examples(all, list, run):
     msg = f"Running example {run!r} ..."
     click.secho(msg, fg="green")
     module = importlib.import_module(f"geovista.examples.{run}")
+    if verbose:
+        print(module.__doc__)
     module.main()
     click.echo("\n👍 All done!")

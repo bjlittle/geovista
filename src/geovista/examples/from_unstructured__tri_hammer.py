@@ -33,6 +33,9 @@ def main() -> None:
         name=sample.name,
     )
 
+    # provide mesh diagnostics via logging
+    gv.logger.info(f"{mesh}")
+
     # plot the mesh
     plotter = gv.GeoPlotter(crs=(projection := "+proj=hammer"))
     sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)

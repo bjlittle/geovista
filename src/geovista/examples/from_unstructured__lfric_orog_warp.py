@@ -32,6 +32,9 @@ def main() -> None:
         name=sample.name,
     )
 
+    # provide mesh diagnostics via logging
+    gv.logger.info(f"{mesh}")
+
     # warp the mesh nodes by the surface altitude
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
     mesh.warp_by_scalar(scalars=sample.name, inplace=True, factor=2e-5)

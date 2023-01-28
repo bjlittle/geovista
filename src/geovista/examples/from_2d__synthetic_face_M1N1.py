@@ -27,6 +27,9 @@ def main() -> None:
     name = "Synthetic Cells"
     mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name)
 
+    # provide mesh diagnostics via logging
+    gv.logger.info(f"{mesh}")
+
     # plot the data
     plotter = gv.GeoPlotter()
     sargs = sargs = dict(title=f"{name} / 1", shadow=True)

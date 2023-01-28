@@ -28,6 +28,9 @@ def main() -> None:
         sample.lons, sample.lats, connectivity=sample.connectivity, data=sample.data
     )
 
+    # provide mesh diagnostics via logging
+    gv.logger.info(f"{mesh}")
+
     # plot the mesh
     plotter = gv.GeoPlotter()
     sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)

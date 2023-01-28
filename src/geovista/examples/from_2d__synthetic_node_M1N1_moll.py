@@ -28,6 +28,9 @@ def main() -> None:
     name = "Synthetic Points"
     mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name, clean=False)
 
+    # provide mesh diagnostics via logging
+    gv.logger.info(f"{mesh}")
+
     # plot the mesh
     plotter = gv.GeoPlotter(crs=(projection := "+proj=moll"))
     sargs = dict(title=f"{name} / 1", shadow=True)

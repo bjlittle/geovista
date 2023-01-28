@@ -31,6 +31,9 @@ def main() -> None:
         clean=False,
     )
 
+    # provide mesh diagnostics via logging
+    gv.logger.info(f"{mesh}")
+
     # warp the mesh nodes by the bathymetry
     mesh.point_data["node"] = sample.node
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)

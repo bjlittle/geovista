@@ -24,6 +24,9 @@ def main() -> None:
     # create the mesh from the sample data
     mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
 
+    # provide mesh diagnostics via logging
+    gv.logger.info(f"{mesh}")
+
     # threshold the mesh of NaNs
     mesh = mesh.threshold()
 
