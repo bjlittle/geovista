@@ -92,6 +92,7 @@ disable=raw-checker-failed,
         too-many-branches,
         too-many-instance-attributes,
         unused-import,
+        duplicate-code,
         PyLintPython3_E5110
 
 
@@ -221,7 +222,9 @@ good-names=i,
            z,
            xy,
            c,
-           cast_UnstructuredGrid_to_PolyData
+           cast_UnstructuredGrid_to_PolyData,
+           M,
+           N
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
