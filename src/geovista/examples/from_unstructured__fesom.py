@@ -27,7 +27,7 @@ def main() -> None:
     )
 
     # provide mesh diagnostics via logging
-    gv.logger.info(f"{mesh}")
+    gv.logger.info("%s", mesh)
 
     # plot the mesh
     plotter = gv.GeoPlotter()

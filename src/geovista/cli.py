@@ -32,7 +32,7 @@ NE_CHOICES.extend(NE_GROUPS)
 
 DEFAULT_FG_COLOUR: str = "cyan"
 
-SCRIPTS: List[str] = ["all"] + [
+SCRIPTS: List[str] = [ALL] + [
     submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)
 ]
 
@@ -341,6 +341,7 @@ def plot(fname, axes, base) -> None:
 @click.option(
     "-a",
     "--all",
+    "run_all",
     is_flag=True,
     help="Execute all examples.",
 )
@@ -363,7 +364,7 @@ def plot(fname, axes, base) -> None:
     is_flag=True,
     help="Enable example diagnostics.",
 )
-def examples(all, list, run, verbose):
+def examples(run_all, list, run, verbose):
     """
     Execute a geovista example script.
 
@@ -380,14 +381,14 @@ def examples(all, list, run, verbose):
         click.echo("\n👍 All done!")
         return
 
-    all = True if run == "all" else all
+    run_all = True if run == ALL else run_all
 
     if verbose:
         from geovista import logger
 
         logger.setLevel("INFO")
 
-    if all:
+    if run_all:
         for i, script in enumerate(SCRIPTS[1:]):
             msg = f"Running example {script!r} ({i+1} of {n_scripts}) ..."
             click.secho(msg, fg="green")

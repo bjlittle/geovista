@@ -32,7 +32,7 @@ def main() -> None:
     )
 
     # provide mesh diagnostics via logging
-    gv.logger.info(f"{mesh}")
+    gv.logger.info("%s", mesh)
 
     # warp the mesh nodes by the bathymetry
     mesh.point_data["node"] = sample.node

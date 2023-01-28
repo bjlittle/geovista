@@ -24,7 +24,7 @@ def main() -> None:
     mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)
 
     # provide mesh diagnostics via logging
-    gv.logger.info(f"{mesh}")
+    gv.logger.info("%s", mesh)
 
     # remove cells from the mesh with nan values
     mesh = mesh.threshold()

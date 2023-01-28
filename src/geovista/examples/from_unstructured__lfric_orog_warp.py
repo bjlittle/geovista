@@ -33,7 +33,7 @@ def main() -> None:
     )
 
     # provide mesh diagnostics via logging
-    gv.logger.info(f"{mesh}")
+    gv.logger.info("%s", mesh)
 
     # warp the mesh nodes by the surface altitude
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)

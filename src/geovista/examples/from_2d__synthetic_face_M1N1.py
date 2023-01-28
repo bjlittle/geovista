@@ -28,7 +28,7 @@ def main() -> None:
     mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name)
 
     # provide mesh diagnostics via logging
-    gv.logger.info(f"{mesh}")
+    gv.logger.info("%s", mesh)
 
     # plot the data
     plotter = gv.GeoPlotter()
