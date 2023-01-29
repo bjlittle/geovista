@@ -387,12 +387,6 @@ Certainly, our pleasure. From the command line, simply:
 geovista examples --run all --verbose
 ```
 
-Curious to find out more?
-
-```bash
-geovista examples --help
-```
-
 ## Documentation
 
 The [documentation](https://geovista.readthedocs.io/en/latest/) is built by [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://docs.readthedocs.io/en/stable/).
