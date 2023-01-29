@@ -149,7 +149,7 @@ plotter.show()
 ```
 </details>
 
-![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/ww3-tri.png)
+![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/ww3-tri.png)
 
 #### Finite Volume Community Ocean Model
 
@@ -190,7 +190,7 @@ plotter.show()
 ```
 </details>
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/tamar.png)
+![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/tamar.png)
 
 #### CF UGRID
 
@@ -230,7 +230,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/lam-moll.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/lam-moll.png)
 
 Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree), also with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
 
@@ -266,7 +266,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/lam-pc.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/lam-pc.png)
 
 #### LFRic Cube-Sphere
 
@@ -301,7 +301,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/lfric-robin.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/lfric-robin.png)
 
 #### UM ORCA2
 
@@ -338,7 +338,7 @@ plotter.show()
 ```
 </details>
 
-![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/um-orca.png)
+![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/um-orca.png)
 
 #### OISST AVHRR
 
@@ -373,7 +373,7 @@ plotter.show()
 ```
 </details>
 
-![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2022.12.2/media/readme/oisst-avhrr.png)
+![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/oisst-avhrr.png)
 
 ### Further Examples
 
@@ -400,3 +400,19 @@ The [documentation](https://geovista.readthedocs.io/en/latest/) is built by [Sph
 ## License
 
 GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/licenses/BSD-3-Clause.html) license.
+
+## [#ShowYourStripes](https://showyourstripes.info/s/globe)
+
+<h4 align="center">
+  <a href="https://showyourstripes.info/s/globe">
+    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/showyourstripes.png"
+         alt="#showyourstripes"></a>
+</h4>
+
+**Graphics and Lead Scientist**: [Ed Hawkins](http://www.met.reading.ac.uk/~ed/home/index.php), National Centre for Atmospheric Science, University of Reading.
+
+**Data**: Berkeley Earth, NOAA, UK Met Office, MeteoSwiss, DWD, SMHI, UoR, Meteo France & ZAMG
+
+  <a href="https://creativecommons.org/licenses/by/4.0/">
+    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/cc-by-80x15.png"
+         alt="creative-commons-by"></a>
