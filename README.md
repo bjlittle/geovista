@@ -375,10 +375,10 @@ plotter.show()
 
 ![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/oisst-avhrr.png)
 
-### Further Examples
+## Further Examples
 
 <p align="center">
-"Please, sir, I want some more.", <em>Charles Dickens, Oliver Twist, 1838.</em>
+"<strong>Please, sir, I want some more</strong>", <em>Charles Dickens, Oliver Twist, 1838.</em>
 </p>
 
 Certainly, our pleasure. From the command line, simply:
@@ -411,8 +411,8 @@ GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/l
 
 **Graphics and Lead Scientist**: [Ed Hawkins](http://www.met.reading.ac.uk/~ed/home/index.php), National Centre for Atmospheric Science, University of Reading.
 
-**Data**: Berkeley Earth, NOAA, UK Met Office, MeteoSwiss, DWD, SMHI, UoR, Meteo France & ZAMG
+**Data**: Berkeley Earth, NOAA, UK Met Office, MeteoSwiss, DWD, SMHI, UoR, Meteo France & ZAMG.
 
-  <a href="https://creativecommons.org/licenses/by/4.0/">
-    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/cc-by-80x15.png"
-         alt="creative-commons-by"></a>
+<a href="https://creativecommons.org/licenses/by/4.0/">
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.0/media/readme/cc-by-80x15.png"
+       alt="creative-commons-by"></a>
