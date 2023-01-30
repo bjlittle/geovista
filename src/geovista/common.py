@@ -488,7 +488,10 @@ def to_xy0(
                         lhs = cell_pids[offset]
                         rhs = cell_pids[[1, 2]]
                     else:
-                        emsg = "Failed to unfold a mesh polar quad-cell. Invalid polar points connectivity detected."
+                        emsg = (
+                            "Failed to unfold a mesh polar quad-cell. Invalid "
+                            "polar points connectivity detected."
+                        )
                         raise ValueError(emsg)
                     lons[lhs] = lons[rhs]
 
