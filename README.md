@@ -409,7 +409,7 @@ GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/l
 **Data**: Berkeley Earth, NOAA, UK Met Office, MeteoSwiss, DWD, SMHI, UoR, Meteo France & ZAMG.
 
 <p>
-<a href="https://showyourstripes.info/s/globe">#ShowYourStripes</a> is licensed under a
+<a href="https://showyourstripes.info/s/globe">#ShowYourStripes</a> is distributed under a
 <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>
 <a href="https://creativecommons.org/licenses/by/4.0/">
   <img src="https://i.creativecommons.org/l/by/4.0/80x15.png" alt="creative-commons-by" style="border-width:0"></a>
