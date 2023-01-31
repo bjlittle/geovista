@@ -43,7 +43,6 @@ def main() -> None:
         clim=(0, 1),
         cmap="tempo",
         scalar_bar_args=sargs,
-        scalars=name,
         show_edges=True,
     )
     plotter.add_axes()

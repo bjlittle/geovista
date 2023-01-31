@@ -84,10 +84,10 @@ class MeridianSlice:
         self._info = mesh.active_scalars_info
         mesh[GV_CELL_IDS] = np.arange(mesh.n_cells)
         mesh[GV_POINT_IDS] = np.arange(mesh.n_points)
+        mesh.set_active_scalars(name=None)
         mesh.set_active_scalars(
             self._info.name, preference=self._info.association.name.lower()
         )
-
         self.mesh = mesh
         self.radius = calculate_radius(mesh)
         self.meridian = wrap(meridian)[0]
@@ -417,10 +417,10 @@ def cut_along_meridian(
 
     meridian = wrap(meridian)[0]
 
+    info = mesh.active_scalars_info
     slicer = MeridianSlice(mesh, meridian)
     mesh_whole = slicer.extract(split_cells=False)
     mesh_split = slicer.extract(split_cells=True)
-    info = mesh.active_scalars_info
     result: pv.PolyData = mesh.copy(deep=True)
 
     meshes = []
@@ -474,8 +474,10 @@ def cut_along_meridian(
 
     if meshes:
         result.remove_cells(np.unique(remeshed_ids), inplace=True)
-        result.set_active_scalars(info.name, preference=info.association.name.lower())
         result = combine(result, *meshes)
+
+    result.set_active_scalars(name=None)
+    result.set_active_scalars(info.name, preference=info.association.name.lower())
 
     return result
 

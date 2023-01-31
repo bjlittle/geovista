@@ -36,7 +36,7 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter()
-    plotter.add_mesh(mesh, clim=(0, 1), cmap="tempo", scalars=name, show_edges=True)
+    plotter.add_mesh(mesh, clim=(0, 1), cmap="tempo", show_edges=True)
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
