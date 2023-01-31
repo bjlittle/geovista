@@ -194,9 +194,12 @@ class GeoPlotterBase:
                     mesh.rotate_z(-meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
                 try:
-                    mesh = cut_along_meridian(
+                    cut_mesh = cut_along_meridian(
                         mesh, antimeridian=True, rtol=rtol, atol=atol
                     )
+                    # undo rotation
+                    mesh.rotate_z(meridian, inplace=True)
+                    mesh = cut_mesh
                 except ValueError:
                     pass
 
