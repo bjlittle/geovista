@@ -30,7 +30,7 @@ fix docs pythreejs/panel
 
 ## Philisophy
 
-The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with convenient cartographic capability.
+The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with a convenient cartographic capability.
 
 In this regard, from a design perspective we aim to keep GeoVista as **pure** to PyVista as possible i.e., **minimise specialisation** as far as practically possible in order to **maximise native compatibility** within the PyVista and [VTK](https://vtk.org/) ecosystems.
 
@@ -38,17 +38,35 @@ We intend GeoVista to be a cartographic gateway into the powerful world of PyVis
 
 That said, GeoVista is intentionally agnostic to packages such as [geopandas](https://geopandas.org/en/stable/), [iris](https://scitools-iris.readthedocs.io/en/latest/?badge=latest), [xarray](https://docs.xarray.dev/en/stable/) et al, which specialise in preparing your spatial data for visualisation. Rather, we delagate that responsibility and choice of tool to you the user, as we want GeoVista to remain as flexible and open-ended as possible to the whole Scientific Python community.
 
-Simply put, "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*". That's the aspiration.
+Simply put, "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*". Well, that's the aspiration.
 
 ## Installation
 
-Unfortunately we've not yet tagged our first minor release of GeoVista.
+GeoVista is available on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/).
 
-However, we have secured the package namespace on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/). Although note that those initial package versions are simple placeholders for now, containing no functionality.
+We recommend using `conda` to install GeoVista.
 
-So in the meantime, life is just a smidge more complicated than necessary if you wish to play with GeoVista.
+### Conda
 
-### Development Installation
+GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with [conda](https://docs.conda.io/projects/conda/en/latest/index.html):
+```shell
+conda install -c conda-forge geovista
+```
+or alternatively with [mamba](https://github.com/mamba-org/mamba):
+```shell
+mamba install geovista
+```
+For more information see our [conda-forge feedstock](https://github.com/conda-forge/geovista-feedstock).
+
+### Pip
+
+GeoVista is available on [PyPI](https://pypi.org/project/geovista/):
+
+```shell
+pip install geovista
+```
+
+### Developer
 
 First, clone the GeoVista GitHub repository:
 ```shell
@@ -73,26 +91,6 @@ pip install --no-deps --editable .
 ```
 Finally, we're good to roll 👍
 
-### ~~conda~~
-
-GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with [conda](https://docs.conda.io/projects/conda/en/latest/index.html):
-```shell
-conda install -c conda-forge geovista
-```
-or alternatively with [mamba](https://github.com/mamba-org/mamba):
-```shell
-mamba install geovista
-```
-For more information see the [feedstock](https://github.com/conda-forge/geovista-feedstock).
-
-### ~~pip~~
-
-GeoVista is available on [PyPI](https://pypi.org/project/geovista/):
-
-```shell
-pip install geovista
-```
-
 ## Quick Start
 
 GeoVista comes with various pre-canned resources to help get you started on your visualisation journey.
@@ -110,6 +108,11 @@ Alternatively, just leave GeoVista to download resources on-the-fly, as and when
 To view the list of registered resources, simply:
 ```shell
 geovista download --list
+```
+
+Want to know more?
+```shell
+geovista download --help
 ```
 
 ### Plotting Examples
@@ -381,15 +384,22 @@ plotter.show()
 "Please, sir, I want some more", <em>Charles Dickens, Oliver Twist, 1838.</em>
 </p>
 
-Certainly, our pleasure. From the command line, simply:
+Certainly, our pleasure! From the command line, simply:
 
 ```bash
 geovista examples --run all --verbose
 ```
 
+Want to know more?
+```shell
+geovista examples --help
+```
+
+<!---
 ## Documentation
 
 The [documentation](https://geovista.readthedocs.io/en/latest/) is built by [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://docs.readthedocs.io/en/stable/).
+-->
 
 ## License
 
