@@ -44,7 +44,7 @@ Simply put, "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*". Well, t
 
 GeoVista is available on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/).
 
-We recommend using `conda` to install GeoVista.
+We recommend using `conda` to install GeoVista 👍
 
 ### Conda
 
@@ -54,7 +54,7 @@ conda install -c conda-forge geovista
 ```
 or alternatively with [mamba](https://github.com/mamba-org/mamba):
 ```shell
-mamba install geovista
+mamba install -c conda-forge geovista
 ```
 For more information see our [conda-forge feedstock](https://github.com/conda-forge/geovista-feedstock).
 
