@@ -89,7 +89,7 @@ Now activate the environment and install the `main` development branch of GeoVis
 conda activate geovista-dev
 pip install --no-deps --editable .
 ```
-Finally, we're good to roll 👍
+Finally, you're good to roll 🥳
 
 ## Quick Start
 
