@@ -381,7 +381,7 @@ plotter.show()
 ## Further Examples
 
 <p align="center">
-"Please, sir, I want some more", <em>Charles Dickens, Oliver Twist, 1838.</em>
+"<em>Please, sir, I want some more</em>", Charles Dickens, Oliver Twist, 1838.
 </p>
 
 Certainly, our pleasure! From the command line, simply:
