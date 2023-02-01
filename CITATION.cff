@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Little"
+  given-names: "Bill"
+  orcid: "https://orcid.org/0000-0002-1345-9465"
+title: "geovista"
+abstract: "Cartographic rendering and mesh analytics powered by PyVista"
+repository-code: "https://github.com/bjlittle/geovista"
+license: "BSD-3-Clause"
+license-url: "https://spdx.org/licenses/BSD-3-Clause.html"
+type: "software"
