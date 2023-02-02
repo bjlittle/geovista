@@ -1,5 +1,9 @@
 """
-Provide convenience functions to access, download and cache geovista resources.
+This module provides convenience functions to access, download and cache geovista resources.
+
+Notes
+-----
+.. versionadded:: 0.1.0
 
 """
 from importlib.resources import open_text
