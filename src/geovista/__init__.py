@@ -12,6 +12,7 @@ Provides:
   3. Support for interactive 3D visulization of geo-located meshes
   4. Coordinate Reference System (CRS) support, with an awareness of Cartopy
      CRSs through the commonality of the Python interface to PROJ (PyPROJ)
+     package
 
 """
 
