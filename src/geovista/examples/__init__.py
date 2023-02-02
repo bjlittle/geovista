@@ -11,4 +11,8 @@ and can be easily accessed through the geovista command line interface
   # For further details refer to the geovista examples (CLI) help
   geovista examples --help
 
+Notes
+-----
+.. versionadded:: 0.1.0
+
 """

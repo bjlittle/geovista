@@ -14,6 +14,10 @@ Provides:
      CRSs through the commonality of the Python interface to PROJ (PyPROJ)
      package
 
+Notes
+-----
+.. versionadded:: 0.1.0
+
 """
 
 import logging

@@ -1,3 +1,14 @@
+"""
+This module provides the :class:`geovista.Transform` factory class for
+transforming rectilinear, curvilinear, and unstructured geospatial data
+into geo-located PyVista mesh instances.
+
+Notes
+-----
+.. versionadded:: 0.1.0
+
+"""
+
 from typing import Optional, Tuple, Union
 import warnings
 
@@ -38,6 +49,10 @@ DEFAULT_NAME_CELLS: str = "cell_data"
 class Transform:
     """
     Build a mesh from spatial points, connectivity, data and CRS metadata.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
 

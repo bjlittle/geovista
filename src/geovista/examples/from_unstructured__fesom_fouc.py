@@ -2,6 +2,10 @@
 """
 Importable and runnable geovista example.
 
+Notes
+-----
+.. versionadded:: 0.1.0
+
 """
 
 import geovista as gv
