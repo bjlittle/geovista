@@ -36,7 +36,7 @@ def main() -> None:
     # plot the mesh
     plotter = gv.GeoPlotter()
     sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
-    plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
+    plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
