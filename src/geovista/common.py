@@ -9,7 +9,7 @@ import numpy as np
 from numpy import ma
 import numpy.typing as npt
 import pyvista as pv
-from vtk import vtkObject
+from vtk import vtkLogger, vtkObject
 
 __all__ = [
     "GV_CELL_IDS",
@@ -590,6 +590,8 @@ def vtk_warnings_off() -> None:
 
     """
     vtkObject.GlobalWarningDisplayOff()
+    # https://gitlab.kitware.com/vtk/vtk/-/issues/18785
+    vtkLogger.SetStderrVerbosity(vtkLogger.VERBOSITY_OFF)
 
 
 def vtk_warnings_on() -> None:
@@ -602,6 +604,8 @@ def vtk_warnings_on() -> None:
 
     """
     vtkObject.GlobalWarningDisplayOn()
+    # https://gitlab.kitware.com/vtk/vtk/-/issues/18785
+    vtkLogger.SetStderrVerbosity(vtkLogger.VERBOSITY_INFO)
 
 
 def wrap(
