@@ -14,7 +14,6 @@ dependencies:
   - click
   - click-default-group
   - pooch
-  - pykdtree
   - pyproj >=3.3
   - pyvista =0.37.0
   - pyvistaqt
