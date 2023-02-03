@@ -1,4 +1,11 @@
-"""Provide minimal geolocated raster utility support."""
+"""
+This module provides minimal geo-located raster utility support.
+
+Notes
+-----
+.. versionadded:: 0.1.0
+
+"""
 from typing import Optional
 
 import numpy as np
