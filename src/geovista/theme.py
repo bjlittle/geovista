@@ -1,4 +1,11 @@
-"""Define custom pyvista theme for geovista."""
+"""
+This module configures a custom pyvista theme for geovista.
+
+Notes
+-----
+.. versionadded:: 0.1.0
+
+"""
 import pyvista as pv
 
 theme = pv.themes.DefaultTheme()
