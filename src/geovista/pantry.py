@@ -3,6 +3,10 @@ This module contains convenience functions to download, cache and load
 geovista sample data, which can then be used by the :mod:`geovista.bridge`
 to generate a mesh.
 
+Notes
+-----
+.. versionadded:: 0.1.0
+
 """
 from dataclasses import dataclass, field
 from typing import Optional
@@ -94,8 +98,8 @@ def fesom(step: Optional[int] = None) -> SampleUnstructuredXY:
 
     Parameters
     ----------
-    step : int
-        Timeseries index offset.
+    step : int, default=0
+        The time-series offset.
 
     Returns
     -------

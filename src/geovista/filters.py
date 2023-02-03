@@ -131,8 +131,8 @@ def remesh(
     Returns
     -------
     Tuple of PolyData
-        The remeshed surface and the remeshed surface left of the
-        slice, along with the remeshed surface right of the slice.
+        The remeshed surface and the remeshed surface left/west of the
+        slice, along with the remeshed surface right/east of the slice.
 
     Notes
     -----
