@@ -2,9 +2,9 @@
 This module contains convenience functionality to find points or cells
 within a mesh using various techniques.
 
-.. seealso::
-
-   :meth:`~pyvista.core.dataset.DataSet.find_containing_cell`
+Notes
+-----
+.. versionadded:: 0.1.0
 
 """
 from __future__ import annotations
