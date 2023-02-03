@@ -1,5 +1,9 @@
 """
-Provide geovista command line interface (CLI).
+This module provides command line interface (CLI) support for the geovista entry-point.
+
+Notes
+-----
+.. versionadded:: 0.1.0
 
 """
 
@@ -15,6 +19,7 @@ import pooch
 import pyvista as pv
 
 from . import examples as scripts
+from . import logger
 from ._version import version as __version__
 from .cache import CACHE
 from .config import resources
@@ -36,7 +41,7 @@ SCRIPTS: List[str] = [ALL] + [
     submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)
 ]
 
-logger = pooch.get_logger()
+pooch_logger = pooch.get_logger()
 
 
 def _download_group(
@@ -45,6 +50,29 @@ def _download_group(
     fg_colour: Optional[str] = None,
     summary: Optional[bool] = True,
 ) -> None:
+    """
+    Common utility to download and populate the geovista cache with requested
+    assets.
+
+    Only assets which are not in the cache will be downloaded and verified via
+    :mod:`pooch`.
+
+    Parameters
+    ----------
+    fnames : list of str
+        The list of assets to be downloaded.
+    name : str, optional
+        The name of the asset collection within the cache e.g., raster or pantry
+    fg_color : str, default="cyan"
+        Foreground colour to highlight the asset name during download.
+    summary : bool, default=True
+        Whether to provide a download summary to the user.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
     if fg_colour is None:
         fg_colour = DEFAULT_FG_COLOUR
 
@@ -53,7 +81,7 @@ def _download_group(
     n_fnames: int = len(fnames)
     width: int = len(str(n_fnames))
 
-    logger.setLevel("ERROR")
+    pooch_logger.setLevel("ERROR")
 
     click.echo(f"Downloading {n_fnames} {name}registered resource{_plural(n_fnames)}:")
     for i, fname in enumerate(fnames):
@@ -68,11 +96,29 @@ def _download_group(
         click.secho(f"{CACHE.abspath}", fg=fg_colour)
         click.echo("👍 All done!")
 
-    logger.setLevel("INFO")
+    pooch_logger.setLevel("INFO")
 
 
-def _plural(value: int) -> bool:
-    return "s" if (value == 0 or value > 1) else ""
+def _plural(quantity: int) -> str:
+    """
+    Convenience to determine whether the provided amount is textually plural.
+
+    Parameters
+    ----------
+    quantity : int
+        The quantity under consideration.
+
+    Returns
+    -------
+    str
+        A "s" for a plural quantity, otherwise and empty string.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    return "s" if (quantity == 0 or quantity > 1) else ""
 
 
 @click.group(
@@ -385,8 +431,6 @@ def examples(run_all, show, run, verbose):
     run_all = True if run == ALL else run_all
 
     if verbose:
-        from geovista import logger
-
         logger.setLevel("INFO")
 
     if run_all:
