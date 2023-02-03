@@ -28,7 +28,7 @@ __all__ = [
 # Type aliases.
 TextureLike = Union[str, pv.Texture]
 
-#: Base URL for GeoVista resources.
+#: Base URL for geovista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
 
 #: The default Natural Earth coastlines resolution.
@@ -51,7 +51,7 @@ URL_DKRZ_FESOM: str = (
     "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
 )
 
-#: Cache manager for GeoVista resources.
+#: Cache manager for geovista resources.
 CACHE: pooch.Pooch = pooch.create(
     path=resources["cache_dir"],
     base_url=BASE_URL,
@@ -75,7 +75,7 @@ def _fetch_texture(fname: str, location: Optional[bool] = False) -> TextureLike:
     """
     Get the texture resource from cache.
 
-    If the resource is not already available in the GeoVista :data:`CACHE`,
+    If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
 
     Parameters
@@ -107,7 +107,7 @@ def blue_marble(location: Optional[bool] = False) -> TextureLike:
     Get the NASA Blue Marble Next Generation with topography and bathymetry
     texture.
 
-    If the resource is not already available in the GeoVista :data:`CACHE`,
+    If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
 
     Parameters
@@ -133,7 +133,7 @@ def checkerboard(location: Optional[bool] = False) -> TextureLike:
     """
     Get the UV checker map 4K texture.
 
-    If the resource is not already available in the GeoVista :data:`CACHE`,
+    If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
 
     Parameters
@@ -159,7 +159,7 @@ def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
     """
     Get the Natural Earth coastlines for the required resolution.
 
-    If the resource is not already available in the GeoVista :data:`CACHE`,
+    If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
 
     Parameters
@@ -194,7 +194,7 @@ def natural_earth_1(location: Optional[bool] = False) -> TextureLike:
     Get the 1:50m Natural Earth 1 with shaded relief and water texture
     (down-sampled to 65%).
 
-    If the resource is not already available in the GeoVista :data:`CACHE`,
+    If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
 
     Returns
@@ -215,7 +215,7 @@ def natural_earth_hypsometric(location: Optional[bool] = False) -> TextureLike:
     Get the 1:50m Natural Earth cross-blended hypsometric tints with shaded
     relief and water texture (down-sampled to 65%).
 
-    If the resource is not already available in the GeoVista :data:`CACHE`,
+    If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
 
     Returns
