@@ -107,9 +107,10 @@ jobs:
       with:
         miniforge-version: latest
         channels: conda-forge,defaults
+        channel-priority: true
+        auto-update-conda: true
         activate-environment: ${{ env.ENV_NAME }}
-        auto-update-conda: false
-        use-only-tar-bz2: true
+        use-only-tar-bz2: false
 
     - name: "conda environment cache"
       uses: ./.github/workflows/composite/conda-env-cache

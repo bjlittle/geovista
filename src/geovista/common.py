@@ -462,8 +462,9 @@ def to_xy0(
         pole_cids = np.unique(pole_submesh["vtkOriginalCellIds"])
         for cid in pole_cids:
             # get the indices (pids) of the polar cell points
-            cell_pids = np.array(mesh.cell_point_ids(cid))
-            # XXX: only dealing with quad-cells atm
+            # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
+            cell_pids = np.array(mesh.get_cell(cid).point_ids)
+            # TODO: only dealing with quad-cells atm
             if len(cell_pids) == 4:
                 # identify the pids of the cell on the pole
                 cell_pole_pids = pole_pids.intersection(cell_pids)

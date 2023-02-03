@@ -460,7 +460,8 @@ def cut_along_meridian(
             neighbours.points = xy0
             xdelta = []
             for cid in range(neighbours.n_cells):
-                cxpts = neighbours.cell_points(cid)[:, 0]
+                # XXX: pyvista 0.38.0: cell_points(cid) -> get_cell(cid).points
+                cxpts = neighbours.get_cell(cid).points[:, 0]
                 cxmin, cxmax = cxpts.min(), cxpts.max()
                 xdelta.append(cxmax - cxmin)
             xdelta = np.array(xdelta)

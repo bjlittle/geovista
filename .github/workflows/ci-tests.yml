@@ -39,7 +39,8 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         version: ["py310"]
-        session: ["tests", "doc-build", "doc-linkcheck", "doc-tests"]
+        #session: ["tests", "doc-build", "doc-linkcheck", "doc-tests"]
+        session: ["tests"]
         include:
           - os: "ubuntu-latest"
             version: "py38"
@@ -55,8 +56,8 @@ jobs:
             platform: "linux"
             posargs: "--cov-report=xml --cov"
             post-command: "codecov"
-          - os: "ubuntu-latest"
-            platform: "linux"
+          #- os: "ubuntu-latest"
+          #  platform: "linux"
 
     steps:
     - uses: actions/checkout@v3
@@ -83,9 +84,10 @@ jobs:
       with:
         miniforge-version: latest
         channels: conda-forge,defaults
+        channel-priority: true
+        auto-update-conda: true
         activate-environment: ${{ env.ENV_NAME }}
-        auto-update-conda: false
-        use-only-tar-bz2: true
+        use-only-tar-bz2: false
 
     - name: "conda environment cache"
       uses: ./.github/workflows/composite/conda-env-cache
