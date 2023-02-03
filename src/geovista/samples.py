@@ -2,6 +2,10 @@
 This module contains convenience functions to download, cache, load and
 transform geovista sample data into a PyVista mesh.
 
+Notes
+-----
+.. versionadded:: 0.1.0
+
 """
 from __future__ import annotations
 
@@ -211,6 +215,10 @@ def icon_soil() -> pv.PolyData:
     PolyData
         The ICON mesh.
 
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
     """
     sample = pantry.icon_soil()
 
@@ -300,6 +308,10 @@ def lam_pacific() -> pv.PolyData:
     Generate a high-resolution Local Area Model (LAM) mesh located over the
     Pacific Ocean.
 
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
     """
     sample = pantry.lam_pacific()
 
@@ -337,6 +349,10 @@ def lam_uk() -> pv.PolyData:
     """
     Generate a C4 cubed-sphere Local Area Model (LAM) mesh located over
     the United Kingdom.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
     return _lam_sample_to_mesh(pantry.lam_uk())
