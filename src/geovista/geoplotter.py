@@ -3,7 +3,6 @@ Provide behaviour specialisation of :class:`pyvista.plotting.plotting.Plotter`.
 
 """
 # pylint: disable=no-member
-
 from functools import lru_cache
 from typing import Any, Optional, Union
 from warnings import warn

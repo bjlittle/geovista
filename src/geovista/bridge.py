@@ -8,7 +8,6 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-
 from typing import Optional, Tuple, Union
 import warnings
 

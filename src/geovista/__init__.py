@@ -19,7 +19,6 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-
 import logging
 
 from .bridge import Transform  # noqa: F401

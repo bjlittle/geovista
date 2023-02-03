@@ -4,7 +4,6 @@ geovista sample data, which can then be used by the :mod:`geovista.bridge`
 to generate a mesh.
 
 """
-
 from dataclasses import dataclass, field
 from typing import Optional
 

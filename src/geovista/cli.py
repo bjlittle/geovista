@@ -6,7 +6,6 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-
 import importlib
 import pathlib
 import pkgutil
