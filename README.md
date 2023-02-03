@@ -24,7 +24,7 @@ fix docs pythreejs/panel
 | | |
 
 <p align="center">
-  <img src="https://img.shields.io/badge/wip-%20%F0%9F%9A%A7%20under%20construction%20%F0%9F%9A%A7-yellow"
+  <img src="https://img.shields.io/badge/WIP-Just%20hatched%20%F0%9F%90%A3-yellow"
        alt="wip">
 </p>
 
