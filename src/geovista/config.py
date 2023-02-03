@@ -1,5 +1,9 @@
 """
-Provide geovista resource configuration.
+This module provides geovista resource configuration.
+
+Notes
+-----
+.. versionadded:: 0.1.0
 
 """
 from os import environ
