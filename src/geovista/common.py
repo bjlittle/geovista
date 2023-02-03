@@ -293,11 +293,11 @@ def to_lonlat(
     radius : float, default=1.0
         The `radius` of the sphere. Defaults to an S2 unit sphere.
     rtol : float, optional
-        The relative tolerance for values close to longitudinal wrap
-        base + period.
+        The relative tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal wrap
-        base + period.
+        The absolute tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
 
     Returns
     -------
@@ -348,11 +348,11 @@ def to_lonlats(
     stacked : bool, default=True
         Default the resultant shape to be (N, 2), otherwise (2, N).
     rtol : float, optional
-        The relative tolerance for values close to longitudinal wrap
-        base + period.
+        The relative tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal wrap
-        base + period.
+        The absolute tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
 
     Returns
     -------
@@ -425,11 +425,11 @@ def to_xy0(
         if the mesh has a seam at the 180th meridian and `closed_interval`
         is ``True``, then longitudes will be in the closed interval [-180, 180].
     rtol : float, optional
-        The relative tolerance for values close to longitudinal wrap
-        base + period.
+        The relative tolerance for values close to longitudinal
+        :func:`geovista.common.wrap base + period.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal wrap
-        base + period.
+        The absolute tolerance for values close to longitudinal
+        :func:`geovista.common.wrap`  base + period.
 
     Returns
     -------

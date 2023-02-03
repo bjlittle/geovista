@@ -1,3 +1,15 @@
+"""
+This module contains geovista specific filters to analyse, transform and
+process geo-located meshes.
+
+These filters leverage and build upon the rich, powerful ecosystem of the
+Visualization Toolkit (VTK).
+
+Notes
+-----
+.. versionadded:: 0.1.0
+
+"""
 from typing import Optional, Tuple
 
 import numpy as np
@@ -48,7 +60,20 @@ def cast_UnstructuredGrid_to_PolyData(
     clean: Optional[bool] = False,
 ) -> pv.PolyData:
     """
-    TODO
+    Convert an unstructured grid to a :class:`pyvista.PolyData` instance.
+
+    Parameters
+    ----------
+    mesh :  UnstructuredGrid
+        The unstructured grid to be converted.
+    clean : bool, default=False
+        Specify whether to merge duplicate points, remove unused points,
+        and/or remove degenerate cells in the resultant mesh.
+
+    Returns
+    -------
+    PolyData
+        The resultant mesh.
 
     Notes
     -----
@@ -81,7 +106,33 @@ def remesh(
     atol: Optional[float] = None,
 ) -> Remesh:
     """
-    TODO
+    Slice the surface of the mesh along the `meridian`, and remesh
+    the sliced cells of the mesh using triangulisation.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The surface to be remeshed.
+    meridian : float
+        The meridian along which to remesh, in degrees longitude.
+    boundary : bool, default=False
+        Whether to attach the remeshed boundary points mask to the
+        resultant mesh.
+    check : bool, default=False
+        Whether to check the remeshed surface for bad cells and
+        free edges.
+    rtol : float, optional
+        The relative tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
+    atol :
+        The absolute tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
+
+    Returns
+    -------
+    Tuple of PolyData
+        The remeshed surface and the remeshed surface left of the
+        slice, along with the remeshed surface right of the slice.
 
     Notes
     -----

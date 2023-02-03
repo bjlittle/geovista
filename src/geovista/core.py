@@ -394,8 +394,12 @@ def cut_along_meridian(
     mesh
     meridian
     antimeridian
-    rtol
-    atol
+    rtol : float, optional
+        The relative tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
+    atol : float, optional
+        The absolute tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
 
     Returns
     -------
