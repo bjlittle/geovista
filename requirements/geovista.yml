@@ -1,4 +1,4 @@
-name: geovista-dev
+name: geovista-dev-test
 
 channels:
   - conda-forge
@@ -15,7 +15,7 @@ dependencies:
   - click-default-group
   - pooch
   - pyproj >=3.3
-  - pyvista =0.37.0
+  - pyvista
   - pyvistaqt
   - vtk =9.2.2
 
