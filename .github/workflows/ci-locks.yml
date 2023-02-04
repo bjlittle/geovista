@@ -60,8 +60,8 @@ jobs:
       with:
         miniforge-version: latest
         channels: conda-forge,defaults
+        channel-priority: true
         activate-environment: ${{ env.ENV_NAME }}
-        auto-update-conda: false
         use-only-tar-bz2: true
 
     - name: "conda environment cache"
