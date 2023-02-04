@@ -15,8 +15,8 @@ dependencies:
   - click-default-group
   - pooch
   - pyproj >=3.3
-  - pyvista
-  - pyvistaqt >0.37
+  - pyvista >0.37
+  - pyvistaqt
   - vtk =9.2.2
 
 # pantry dependencies
