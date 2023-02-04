@@ -44,7 +44,7 @@ jobs:
     - name: "environment configure"
       env:
         # Maximum cache period (in weeks) before forcing a cache refresh.
-        CACHE_WEEKS: 1
+        CACHE_WEEKS: 2
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
 
@@ -61,6 +61,7 @@ jobs:
         miniforge-version: latest
         channels: conda-forge,defaults
         channel-priority: true
+        auto-update-conda: true
         activate-environment: ${{ env.ENV_NAME }}
         use-only-tar-bz2: true
 
