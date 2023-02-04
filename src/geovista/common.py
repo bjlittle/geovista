@@ -463,7 +463,7 @@ def to_xy0(
         for cid in pole_cids:
             # get the indices (pids) of the polar cell points
             # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
-            cell_pids = np.array(mesh.get_cell(cid).point_ids)
+            cell_pids = np.array(mesh.cell_point_ids(cid))
             # TODO: only dealing with quad-cells atm
             if len(cell_pids) == 4:
                 # identify the pids of the cell on the pole
