@@ -44,7 +44,7 @@ jobs:
     - name: "environment configure"
       env:
         # Maximum cache period (in weeks) before forcing a cache refresh.
-        CACHE_WEEKS: 2
+        CACHE_WEEKS: 1
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
 
