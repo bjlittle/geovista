@@ -16,7 +16,7 @@ dependencies:
   - pooch
   - pyproj >=3.3
   - pyvista
-  - pyvistaqt
+  - pyvistaqt >=0.38
   - vtk =9.2.2
 
 # pantry dependencies
