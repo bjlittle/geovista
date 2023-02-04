@@ -76,6 +76,7 @@ jobs:
       run: |
         conda info
         conda list
+        conda search -c conda-forge pyvista
 
     - name: "tox cache"
       uses: ./.github/workflows/composite/tox-cache
