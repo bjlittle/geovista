@@ -1,3 +1,12 @@
+"""
+This module provides core geovista behaviour for processing
+geo-located meshes.
+
+Notes
+-----
+.. versionadded:: 0.1.0
+
+"""
 from enum import Enum, auto, unique
 from typing import Any, Optional
 import warnings
@@ -48,6 +57,9 @@ CUT_OFFSET: float = 1e-5
 #: By default, generate a mesh seam at this meridian.
 DEFAULT_MERIDIAN: float = 0.0
 
+#: The number of interpolation points along the meridian slice spline.
+INTERSECTION_SPLINE_N_POINTS: int = 1
+
 
 @unique
 class SliceBias(Enum):
@@ -57,6 +69,16 @@ class SliceBias(Enum):
 
 
 class MeridianSlice:
+    """
+    Remesh a geo-located mesh along a meridian, from the north pole to the
+    south pole.
+
+    Remeshing involves introducing a seam into the mesh along the meridian
+    of choice, splitting cells bisected by the meridan, which will be
+    triangulated.
+
+    """
+
     def __init__(
         self,
         mesh: pv.PolyData,
@@ -64,13 +86,23 @@ class MeridianSlice:
         offset: Optional[float] = None,
     ):
         """
-        TODO
+        Create a seam along the `meridian` of the geo-located `mesh`, from the
+        north pole to the south pole, breaking cell connectivity thus allowing
+        the mesh to be correctly projected or texture mapped.
+
+        Cells bisected by the `meridian` of choice will be remeshed i.e., split
+        and triangulated.
 
         Parameters
         ----------
-        mesh
-        meridian
-        offset
+        mesh : PolyData
+            The geo-located mesh to be remeshed along the `meridian`.
+        meridian : float
+            The meridian (degrees longitude) along which to create the mesh seam.
+        offset : float, optional
+            Offset buffer around the meridian, used to determine those cells west
+            and east of that are coincident or bisected by the `meridian`. Defaults
+            to :data:`geovista.core.CUT_OFFSET`.
 
         Notes
         -----
@@ -92,35 +124,52 @@ class MeridianSlice:
         self.radius = calculate_radius(mesh)
         self.meridian = wrap(meridian)[0]
         self.offset = abs(CUT_OFFSET if offset is None else offset)
-        self.slices = {bias.name: self._intersection(bias.value) for bias in SliceBias}
+        self.slices = {bias.name: self._intersection(bias) for bias in SliceBias}
 
         n_cells = self.slices[CUT_EXACT].n_cells
         self.west_ids = set(self.slices[CUT_WEST][GV_CELL_IDS]) if n_cells else set()
         self.east_ids = set(self.slices[CUT_EAST][GV_CELL_IDS]) if n_cells else set()
         self.split_ids = self.west_ids.intersection(self.east_ids)
 
-    def _intersection(self, bias: float) -> pv.PolyData:
+    def _intersection(
+        self, bias: SliceBias, n_points: Optional[float] = None
+    ) -> pv.PolyData:
         """
-        TODO
+        Cut the mesh along the meridian, with or without a bias, to determine
+        the cells that are coincident or bisected.
+
+        The intersection is performed by extruding a spline in the z-axis to
+        form a plane of intersection with the mesh.
 
         Parameters
         ----------
-        bias
+        bias : SliceBias
+            Whether the the spline is west, east or exactly along the slice
+            meridian.
+        n_points : float, optional
+            The number of interpolation points along the spline, which defines
+            the plane of intersection through the mesh. Defaults to
+            :data:`geovista.core.INTERSECTION_SPINE_N_POINTS`.
 
         Returns
         -------
+        PolyData
+            The cells of the mesh that are coincident or bisected by the slice.
 
         Notes
         -----
         .. versionadded :: 0.1.0
 
         """
-        y = bias * self.offset
+        if n_points is None:
+            n_points = INTERSECTION_SPLINE_N_POINTS
+
+        y = bias.value * self.offset
         xyz = pv.Line((-self.radius, y, -self.radius), (self.radius, y, -self.radius))
         xyz.rotate_z(self.meridian, inplace=True)
         # the higher the number of spline interpolation "n_points"
         # the more accurate, but the more compute intensive and less performant
-        spline = pv.Spline(xyz.points, n_points=1)
+        spline = pv.Spline(xyz.points, n_points=n_points)
         mesh = self.mesh.slice_along_line(spline)
 
         return mesh
@@ -132,16 +181,25 @@ class MeridianSlice:
         clip: Optional[bool] = True,
     ) -> pv.PolyData:
         """
-        TODO
+        Extract the cells participating in the intersection between the
+        meridian (with or without bias) and the mesh.
 
         Parameters
         ----------
-        bias
-        split_cells
-        clip
+        bias : str, optional
+            Whether to extract the west, east or exact intersection cells.
+            Default to :data:`geovista.core.CUT_WEST`.
+        split_cells : bool, default=False
+            Determine whether to return coincident whole cells or bisected
+            cells of the meridian.
+        clip : bool, default=True
+            Determine whether to return the cells of intersection along the
+            meridian or the great circle passing through the meridian.
 
         Returns
         -------
+        PolyData
+            The mesh cells from the intersection.
 
         Notes
         -----
@@ -192,17 +250,24 @@ def add_texture_coords(
     antimeridian: Optional[bool] = False,
 ) -> pv.PolyData:
     """
-    TODO
+    Compute and attach texture coordinates, in UV space, of the mesh.
+
+    Note that, the mesh will be sliced along the `meridian` to ensure that
+    cell connectivity is appropriately disconnected prior to texture mapping.
 
     Parameters
     ----------
-    mesh
-    meridian
-    antimeridian
-    inplace
+    mesh : PolyData
+        The mesh that requires texture coordinates.
+    meridian : float, optional
+        The meridian (degrees longitude) to slice along.
+    antimeridian : bool, default=False
+        Whether to flip the given `meridian` to use its anti-meridian instead.
 
     Returns
     -------
+    PolyData
+        The original mesh with inplace texture coordinates attached.
 
     Notes
     -----
@@ -387,13 +452,21 @@ def cut_along_meridian(
     atol: Optional[float] = None,
 ) -> pv.PolyData:
     """
-    TODO
+    Create a seam along the `meridian` of the geo-located `mesh`, from the
+    north pole to the south pole, breaking cell connectivity thus allowing
+    the mesh to be correctly projected or texture mapped.
+
+    Cells bisected by the `meridian` of choice will be remeshed i.e., split
+    and triangulated.
 
     Parameters
     ----------
-    mesh
-    meridian
-    antimeridian
+    mesh : PolyData
+        The mesh to be sliced along the `meridian`.
+    meridian : float, optional
+        The meridian (degrees longitude) to slice along.
+    antimeridian : bool, default=False
+        Whether to flip the given `meridian` to use its anti-meridian instead.
     rtol : float, optional
         The relative tolerance for values close to longitudinal
         :func:`geovista.common.wrap` base + period.
@@ -403,6 +476,9 @@ def cut_along_meridian(
 
     Returns
     -------
+    PolyData
+        The mesh with a seam along the meridian and remeshed cells, if
+        bisected.
 
     Notes
     -----
