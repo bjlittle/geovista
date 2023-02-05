@@ -1,3 +1,11 @@
+"""
+This module provides Natural Earth geometry support.
+
+Notes
+-----
+.. versionadded:: 0.1.0
+
+"""
 from functools import lru_cache
 from typing import List, Optional
 
@@ -25,7 +33,7 @@ COASTLINE_RESOLUTION: str = "10m"
 
 
 def add_coastlines(
-    resolution: Optional[str] = COASTLINE_RESOLUTION,
+    resolution: Optional[str] = None,
     projection: Optional[str] = None,
     plotter: Optional[pv.Plotter] = None,
     **kwargs,
@@ -36,9 +44,10 @@ def add_coastlines(
 
     Parameters
     ----------
-    resolution : str, default=COASTLINE_RESOLUTION
+    resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m`` or ``10m``.
+        ``110m``, ``50m`` or ``10m``. Defaults to
+        :data:`geovista.geometry.COASTLINE_RESOLUTION`.
     projection : str or None, default=None
         The name of the PROJ planar projection used to transform the coastlines
         into a 2D projection coordinate system. If ``None``, the coastline
@@ -60,6 +69,9 @@ def add_coastlines(
     .. versionadded:: 0.1.0
 
     """
+    if resolution is None:
+        resolution = COASTLINE_RESOLUTION
+
     notebook = set_jupyter_backend()
 
     if plotter is None:
@@ -77,7 +89,7 @@ def add_coastlines(
 
 @lru_cache
 def coastline_geometries(
-    resolution: Optional[str] = COASTLINE_RESOLUTION,
+    resolution: Optional[str] = None,
 ) -> List[np.ndarray]:
     """
     Fetch the Natural Earth shapefile coastline geometries for the required
@@ -91,9 +103,10 @@ def coastline_geometries(
 
     Parameters
     ----------
-    resolution : str, default=COASTLINE_RESOLUTION
+    resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m`` or ``10m``.
+        ``110m``, ``50m`` or ``10m``. Defaults to
+        :data:`geovista.geometry.COASTLINE_RESOLUTION`.
 
     Returns
     -------
@@ -105,6 +118,9 @@ def coastline_geometries(
     .. versionadded:: 0.1.0
 
     """
+    if resolution is None:
+        resolution = COASTLINE_RESOLUTION
+
     lines, multi_lines = [], []
     category, name = "physical", "coastline"
 
@@ -133,7 +149,7 @@ def coastline_geometries(
 
 @lru_cache
 def coastline_mesh(
-    resolution: Optional[str] = COASTLINE_RESOLUTION,
+    resolution: Optional[str] = None,
     radius: Optional[float] = None,
     geocentric: Optional[bool] = True,
 ) -> pv.PolyData:
@@ -142,9 +158,10 @@ def coastline_mesh(
 
     Parameters
     ----------
-    resolution : str, default=COASTLINE_RESOLUTION
+    resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m``, or ``10m``.
+        ``110m``, ``50m``, or ``10m``. Default to
+        :data:`geovista.geometry.COASTLINE_RESOLUTION`.
     radius : float, default=1.0
         The radius of the sphere, when geocentric. Defaults to the S2 unit
         sphere.
@@ -162,6 +179,9 @@ def coastline_mesh(
     .. versionadded:: 0.1.0
 
     """
+    if resolution is None:
+        resolution = COASTLINE_RESOLUTION
+
     # TODO: address "fudge-factor" zlevel
     radius = RADIUS + RADIUS / 1e4 if radius is None else abs(radius)
 
@@ -197,7 +217,7 @@ def coastline_mesh(
 
 @lru_cache
 def get_coastlines(
-    resolution: Optional[str] = COASTLINE_RESOLUTION,
+    resolution: Optional[str] = None,
     #    geocentric: Optional[bool] = True,
 ) -> pv.PolyData:
     """
@@ -207,7 +227,8 @@ def get_coastlines(
     ----------
     resolution : str, default=COASTLINE_RESOLUTION
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m``, or ``10m``.
+        ``110m``, ``50m``, or ``10m``. Defaults to
+        :data:`geovista.geometry.COASTLINE_RESOLUTION`.
 
     Returns
     -------
@@ -221,6 +242,9 @@ def get_coastlines(
     """
     # pylint: disable-next=import-outside-toplevel
     from .cache import fetch_coastlines
+
+    if resolution is None:
+        resolution = COASTLINE_RESOLUTION
 
     # TODO: reinstate with projection support is available
     # geocentric : bool, default=True
