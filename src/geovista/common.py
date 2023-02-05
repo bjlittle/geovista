@@ -1,6 +1,10 @@
 """
 A package for provisioning common geovista infra-structure.
 
+Notes
+-----
+.. versionadded:: 0.1.0
+
 """
 from collections.abc import Iterable
 from typing import Any, Optional, Tuple
@@ -225,6 +229,7 @@ def sanitize_data(
     Notes
     -----
     .. versionadded:: 0.1.0
+
     """
     if not meshes:
         emsg = "Expected one or more meshes to sanitize."

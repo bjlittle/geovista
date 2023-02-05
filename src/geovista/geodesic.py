@@ -1,3 +1,12 @@
+"""
+This module provides geodesic operators for geo-located meshes.
+
+Notes
+-----
+.. versionadded:: 0.1.0
+
+"""
+
 from collections.abc import Iterable
 from typing import Dict, Optional, Tuple, Union
 import warnings
@@ -340,7 +349,7 @@ class BBox:
             The surface that the bounding-box will be enclosing.
         radius : float, default=1.0
             The radius of the surface that the bounding-box will be enclosing.
-            Note that, the ``radius` is only used when the ``surface`` is not
+            Note that, the `radius` is only used when the `surface` is not
             provided.
 
         Notes
@@ -439,7 +448,7 @@ class BBox:
             bounding-box boundary.
         radius : float, default=1.0
             The radius of the mesh that will be enclosed by the bounding-box
-            boundary. Note that, the ``radius`` is only used when the ``surface``
+            boundary. Note that, the `radius` is only used when the `surface`
             is not provided.
 
         Returns
@@ -473,30 +482,30 @@ class BBox:
         preference: str = BBOX_PREFERENCE,
     ) -> pv.PolyData:
         """
-        Extract the mesh region of the ``surface`` contained within the
+        Extract the mesh region of the `surface` contained within the
         bounding-box.
 
-        Note that, any ``surface`` points that are on the edge of the
+        Note that, any `surface` points that are on the edge of the
         bounding-box will be deemed to be inside, and so will the cells
-        associated with those ``surface`` points. See ``preference``.
+        associated with those `surface` points. See `preference`.
 
         Parameters
         ----------
         surface : PolyData
             The :class:`pyvista.PolyData` mesh to be checked for containment.
         tolerance : float, default=BBOX_TOLERANCE
-            The tolerance on the intersection operation with the ``surface``,
+            The tolerance on the intersection operation with the `surface`,
             expressed as a fraction of the diagonal of the bounding-box.
         outside : bool, default=False
-            By default, select those points of the ``surface`` that are inside
+            By default, select those points of the `surface` that are inside
             the bounding-box. Otherwise, select those points that are outside
             the bounding-box.
         preference : str, default=BBOX_PREFERENCE
-            Criteria for defining whether a face of a ``surface`` mesh is
-            deemed to be enclosed by the bounding-box. A ``preference`` of
+            Criteria for defining whether a face of a `surface` mesh is
+            deemed to be enclosed by the bounding-box. A `preference` of
             ``cell`` requires all points defining the face to be in or on the
-            bounding-box. A ``preference`` of ``center`` requires that only the
-            face cell center is in or on the bounding-box. A ``preference`` of
+            bounding-box. A `preference` of ``center`` requires that only the
+            face cell center is in or on the bounding-box. A `preference` of
             ``point`` requires at least one point that defines the face to be
             in or on the bounding-box.
 
@@ -504,8 +513,8 @@ class BBox:
         -------
         PolyData
             The :class:`pyvista.PolyData` representing those parts of
-            the provided ``surface`` enclosed by the bounding-box. This behaviour
-            may be inverted with the ``outside`` parameter.
+            the provided `surface` enclosed by the bounding-box. This behaviour
+            may be inverted with the `outside` parameter.
 
         Notes
         -----
@@ -610,11 +619,11 @@ def line(
         The surface that the geodesic line will be rendered over.
     radius : float, default=1.0
         The radius of the surface that the geodesic line will be rendered over.
-        Note that, the ``radius`` is only used when the ``surface`` is not
+        Note that, the `radius` is only used when the `surface` is not
         provided.
     npts : float, default=GEODESIC_NPTS
         The number of equally spaced geodesic points in a line segment, excluding
-        the segment end-point, but including the segment start-point i.e., ``npts``
+        the segment end-point, but including the segment start-point i.e., `npts`
         must be at least 2.
     ellps : str, default=ELLIPSE
         The ellipsoid for geodesic calculations. See :func:`pyproj.get_ellps_map`.
@@ -707,7 +716,7 @@ def npoints(
 ) -> Tuple[Tuple[float], Tuple[float]]:
     """
     Given a single start-point and end-point, calculate the equally spaced
-    intermediate longitude and latitude ``npts`` points along the geodesic line
+    intermediate longitude and latitude `npts` points along the geodesic line
     that spans between the start and end points.
 
     Note that, longitudes (degrees) will be wrapped to the half-closed interval
@@ -783,7 +792,7 @@ def npoints_by_idx(
 ) -> Tuple[Tuple[float], Tuple[float]]:
     """
     Given a single start-point index and end-point index, calculate the equally
-    spaced intermediate longitude and latitude ``npts`` points along the geodesic
+    spaced intermediate longitude and latitude `npts` points along the geodesic
     line that spans between the start and end points.
 
     Note that, longitudes (degrees) will be wrapped to the half-closed interval
@@ -803,7 +812,7 @@ def npoints_by_idx(
         The number of points to be returned, which may include the start-point
         and/or the end-point, if required
     radians : bool, default=False
-        If ``True``, the ``lons`` and ``lats`` are assumed to be in radians,
+        If ``True``, the `lons` and `lats` are assumed to be in radians,
         otherwise degrees.
     include_start : bool, default=False
         Whether to include the start-point in the geodesic points returned.
