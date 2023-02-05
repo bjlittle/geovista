@@ -426,7 +426,7 @@ def to_xy0(
         is ``True``, then longitudes will be in the closed interval [-180, 180].
     rtol : float, optional
         The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap base + period.
+        :func:`geovista.common.wrap` base + period.
     atol : float, optional
         The absolute tolerance for values close to longitudinal
         :func:`geovista.common.wrap`  base + period.

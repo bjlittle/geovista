@@ -521,7 +521,7 @@ def is_projected(mesh: pv.PolyData) -> bool:
 
 def resize(mesh: pv.PolyData, radius: Optional[float] = None) -> pv.PolyData:
     """
-    Change the radius of the provided mesh.
+    Change the radius of the spherical mesh.
 
     Parameters
     ----------

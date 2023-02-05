@@ -1,5 +1,10 @@
 """
-Provide behaviour specialisation of :class:`pyvista.plotting.plotting.Plotter`.
+This module provides behaviour specialisation to support a geospatial aware
+:class:`pyvista.Plotter`.
+
+Notes
+-----
+.. versionadded:: 0.1.0
 
 """
 # pylint: disable=no-member
@@ -7,14 +12,12 @@ from functools import lru_cache
 from typing import Any, Optional, Union
 from warnings import warn
 
-import numpy as np
-from numpy.typing import ArrayLike
 from pyproj import CRS, Transformer
 import pyvista as pv
 import pyvistaqt as pvqt
 import vtk
 
-from .common import GV_FIELD_CRS, RADIUS, ZLEVEL_FACTOR, to_xy0, to_xyz
+from .common import RADIUS, ZLEVEL_FACTOR, to_xy0
 from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
@@ -34,7 +37,7 @@ def _get_lfric(
     radius: Optional[float] = None,
 ) -> pv.PolyData:
     """
-    Retrieve the LFRic unstructured cubed-sphere from the GeoVista cache.
+    Retrieve the LFRic unstructured cubed-sphere from the geovista cache.
 
     Parameters
     ----------
@@ -56,17 +59,39 @@ def _get_lfric(
     mesh = lfric(resolution=resolution)
 
     if radius:
-        lonlat = to_xy0(mesh)
-        xyz = to_xyz(lonlat[:, 0], lonlat[:, 1], radius=radius)
-        mesh.points = xyz
+        mesh = resize(mesh, radius=radius)
 
-    mesh.active_scalars_name = None
+    mesh.set_active_scalars(name=None)
 
     return mesh
 
 
 class GeoPlotterBase:
+    """
+    Base class with common behaviour for a geospatial aware :class:`pyvista.Plotter`.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+
     def __init__(self, *args: Optional[Any], **kwargs: Optional[Any]):
+        """
+
+        Parameters
+        ----------
+        crs : str or CRS, optional
+            The target CRS to render the geo-located meshes added to the
+            plotter.
+        kwargs : any, optional
+            See :class:`pyvista.Plotter`.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
         if args:
             klass = f"'{self.__class__.__name__}'"
             if len(args) == 1 and ("crs" not in kwargs or kwargs["crs"] is None):
@@ -98,16 +123,34 @@ class GeoPlotterBase:
         self, mesh: Optional[pv.PolyData] = None, **kwargs: Optional[Any]
     ) -> vtk.vtkActor:
         """
-        TODO
+        Generate a cube-sphere base layer mesh and add to the plotter scene.
+
+        Optionally, a `mesh` may be provided, which better fits the
+        geometry of the surface mesh.
 
         Parameters
         ----------
-        mesh
-        kwargs : Any, optional
+        mesh : PolyData, optional
+            Use the provided mesh as the base layer.
+        radius : float, optional
+            The radius of the spherical mesh to generate as the base layer.
+        resolution : str, default="c96"
+            The resolution of the cube-sphere to generate as the base layer,
+            which may be either ``c48``, ``c96`` or ``c192``.
+        zfactor : float, optional
+            The magnitude factor for z-axis levels (`zlevel`). Defaults to
+            :data:`geovista.common.ZLEVEL_FACTOR`.
+        zlevel : float, optional
+            The z-axis level. Used in combination with the `zfactor` to offset
+            the base layer from the surface by the proportional amount of
+            ``zlevel * zfactor``.
+        kwargs : any, optional
+            See :meth:`pyvista.Plotter.add_mesh`.
 
         Returns
         -------
         vtkActor
+            The rendered actor added to the plotter scene.
 
         Notes
         -----
@@ -151,16 +194,19 @@ class GeoPlotterBase:
         self, resolution: Optional[str] = COASTLINE_RESOLUTION, **kwargs: Optional[Any]
     ) -> vtk.vtkActor:
         """
-        TODO
+        Generate coastlines and add to the plotter scene.
 
         Parameters
         ----------
-        resolution : str, default=COASTLINE_RESOLUTION
-        kwargs : Any, optional
+        resolution : str, default="10m"
+            The resolution of the Natural Earth coastlines.
+        kwargs : any, optional
+            See :meth:`pyvista.Plotter.add_mesh`.
 
         Returns
         -------
         vtkActor
+            The rendered actor added to the plotter scene.
 
         Notes
         -----
@@ -171,6 +217,43 @@ class GeoPlotterBase:
         return self.add_mesh(mesh, **kwargs)
 
     def add_mesh(self, mesh: Any, **kwargs: Optional[Any]):
+        """
+        Add the mesh to the plotter scene.
+
+        Parameters
+        ----------
+        mesh : PolyData
+            The mesh to add to the plotter.
+        atol : float, optional
+            The absolute tolerance for values close to longitudinal
+            :func:`geovista.common.wrap` base + period.
+        radius : float, optional
+            The radius of the spherical mesh. Used to confirm the radius of
+            the spherical mesh when projecting to the target CRS. Otherwise,
+            the radius will be calculated.
+        rtol : float, optional
+            The relative tolerance for values close to longitudinal
+            :func:`geovista.common.wrap base + period.
+        zfactor : float, optional
+            The magnitude factor for z-axis levels (`zlevel`). Defaults to
+            :data:`geovista.common.ZLEVEL_FACTOR`.
+        zlevel : float, optional
+            The z-axis level. Used in combination with the `zfactor` to offset
+            the projected surface by the proportional amount of
+            ``zlevel * zfactor``.
+        kwargs : any, optional
+            See :meth:`pyvista.Plotter.add_mesh`.
+
+        Returns
+        -------
+        vtkActor
+            The rendered actor added to the plotter scene.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
         if isinstance(mesh, pv.UnstructuredGrid):
             mesh = cast(mesh)
 
@@ -227,101 +310,137 @@ class GeoPlotterBase:
 
         return super().add_mesh(mesh, **kwargs)
 
-    def add_point_labels(
-        self,
-        points: Any,
-        labels: Any,
-        **kwargs: Optional[Any],
-    ) -> vtk.vtkActor2D:
-        if isinstance(points, pv.PolyData):
-            crs = from_wkt(points)
-
-            if crs is not None and crs != WGS84:
-                lonlat = to_xy0(points)
-                transformer = Transformer.from_crs(crs, self.crs, always_xy=True)
-                xs, ys = transformer.transform(
-                    lonlat[:, 0], lonlat[:, 1], errcheck=True
-                )
-                result = pv.PolyData()
-                result.copy_structure(points)
-                result.points[:, 0] = xs
-                result.points[:, 1] = ys
-                result.points[:, 2] = 0
-                points = result
-
-        return super().add_point_labels(points, labels, **kwargs)
-
-    def add_points(
-        self,
-        points: Optional[Any] = None,
-        xs: Optional[ArrayLike] = None,
-        ys: Optional[ArrayLike] = None,
-        crs: Optional[CRSLike] = None,
-        radius: Optional[float] = None,
-        zfactor: Optional[float] = None,
-        zlevel: Optional[int] = None,
-        **kwargs: Optional[Any],
-    ) -> vtk.vtkActor:
-        kwargs["style"] = "points"
-
-        if "texture" in kwargs:
-            _ = kwargs.pop("texture")
-
-        if points is not None:
-            if crs is not None:
-                warn("Ignoring 'crs' as cartesian xyz 'points' have been provided.")
-                crs = None
-
-        if crs is not None:
-            if xs is None or ys is None:
-                emsg = "Given a 'crs', both 'xs' and 'ys' require to be provided."
-                raise ValueError(emsg)
-
-            xs = np.asanyarray(xs)
-            ys = np.asanyarray(ys)
-
-            if xs.shape != ys.shape:
-                emsg = (
-                    "Require 'xs' and 'ys' with the same shape, got "
-                    f"{xs.shape=} and {ys.shape}."
-                )
-                raise ValueError(emsg)
-
-            crs = CRS.from_user_input(crs)
-
-            if crs != WGS84:
-                transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
-                xs, ys = transformer.transform(xs, ys, errcheck=True)
-
-            radius = RADIUS if radius is None else abs(radius)
-
-            if zfactor is None:
-                zfactor = ZLEVEL_FACTOR
-
-            if zlevel is None:
-                zlevel = 0
-
-            radius += radius * zlevel * zfactor
-
-            xyz = to_xyz(xs, ys, radius=radius)
-            points = pv.PolyData(xyz)
-            # attach the pyproj crs serialized as ogc wkt
-            wkt = np.array([WGS84.to_wkt()])
-            points.field_data[GV_FIELD_CRS] = wkt
-            kwargs["radius"] = radius
-            kwargs["zfactor"] = zfactor
-            kwargs["zlevel"] = zlevel
-
-        return self.add_mesh(points, **kwargs)
+    # def add_point_labels(
+    #     self,
+    #     points: Any,
+    #     labels: Any,
+    #     **kwargs: Optional[Any],
+    # ) -> vtk.vtkActor2D:
+    #     """
+    #     TODO
+    #
+    #     Parameters
+    #     ----------
+    #     points :
+    #     labels :
+    #     kwargs : any, optional
+    #         See :meth:`pyvista.Plotter.add_point_labels`.
+    #
+    #     Returns
+    #     -------
+    #     vtkActor2D
+    #         The rendered actor added to the plotter scene.
+    #
+    #     Notes
+    #     -----
+    #     .. versionadded:: 0.1.0
+    #
+    #     """
+    #     if isinstance(points, pv.PolyData):
+    #         crs = from_wkt(points)
+    #
+    #         if crs is not None and crs != WGS84:
+    #             lonlat = to_xy0(points)
+    #             transformer = Transformer.from_crs(crs, self.crs, always_xy=True)
+    #             xs, ys = transformer.transform(
+    #                 lonlat[:, 0], lonlat[:, 1], errcheck=True
+    #             )
+    #             result = pv.PolyData()
+    #             result.copy_structure(points)
+    #             result.points[:, 0] = xs
+    #             result.points[:, 1] = ys
+    #             result.points[:, 2] = 0
+    #             points = result
+    #
+    #     return super().add_point_labels(points, labels, **kwargs)
+    #
+    # def add_points(
+    #     self,
+    #     points: Optional[Any] = None,
+    #     xs: Optional[ArrayLike] = None,
+    #     ys: Optional[ArrayLike] = None,
+    #     crs: Optional[CRSLike] = None,
+    #     radius: Optional[float] = None,
+    #     zfactor: Optional[float] = None,
+    #     zlevel: Optional[int] = None,
+    #     **kwargs: Optional[Any],
+    # ) -> vtk.vtkActor:
+    #     """
+    #
+    #
+    #     """
+    #     kwargs["style"] = "points"
+    #
+    #     if "texture" in kwargs:
+    #         _ = kwargs.pop("texture")
+    #
+    #     if points is not None:
+    #         if crs is not None:
+    #             warn("Ignoring 'crs' as cartesian xyz 'points' have been provided.")
+    #             crs = None
+    #
+    #     if crs is not None:
+    #         if xs is None or ys is None:
+    #             emsg = "Given a 'crs', both 'xs' and 'ys' require to be provided."
+    #             raise ValueError(emsg)
+    #
+    #         xs = np.asanyarray(xs)
+    #         ys = np.asanyarray(ys)
+    #
+    #         if xs.shape != ys.shape:
+    #             emsg = (
+    #                 "Require 'xs' and 'ys' with the same shape, got "
+    #                 f"{xs.shape=} and {ys.shape}."
+    #             )
+    #             raise ValueError(emsg)
+    #
+    #         crs = CRS.from_user_input(crs)
+    #
+    #         if crs != WGS84:
+    #             transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
+    #             xs, ys = transformer.transform(xs, ys, errcheck=True)
+    #
+    #         radius = RADIUS if radius is None else abs(radius)
+    #
+    #         if zfactor is None:
+    #             zfactor = ZLEVEL_FACTOR
+    #
+    #         if zlevel is None:
+    #             zlevel = 0
+    #
+    #         radius += radius * zlevel * zfactor
+    #
+    #         xyz = to_xyz(xs, ys, radius=radius)
+    #         points = pv.PolyData(xyz)
+    #         # attach the pyproj crs serialized as ogc wkt
+    #         wkt = np.array([WGS84.to_wkt()])
+    #         points.field_data[GV_FIELD_CRS] = wkt
+    #         kwargs["radius"] = radius
+    #         kwargs["zfactor"] = zfactor
+    #         kwargs["zlevel"] = zlevel
+    #
+    #     return self.add_mesh(points, **kwargs)
 
 
 class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
-    pass
+    """
+    See :class:`geovista.geoplotter.GeoPlotterBase` and
+    :class:`pyvistaqt.BackgroundPlotter`.
+
+    """
 
 
 class GeoMultiPlotter(GeoPlotterBase, pvqt.MultiPlotter):
-    pass
+    """
+    See :class:`geovista.geoplotter.GeoPlotterBase` and
+    :class:`pyvistaqt.MultiPlotter`.
+
+    """
 
 
 class GeoPlotter(GeoPlotterBase, pv.Plotter):
-    pass
+    """
+    See :class:`geovista.geoplotter.GeoPlotterBase` and
+    :class:`pyvista.Plotter`.
+
+    """
