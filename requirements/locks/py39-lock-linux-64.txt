@@ -303,7 +303,7 @@ https://conda.anaconda.org/conda-forge/linux-64/virtualenv-20.17.1-py39hf3d152e_
 https://conda.anaconda.org/conda-forge/noarch/ipython-8.9.0-pyh41d4057_0.conda#399217b9b00e59e990585576eeca3dde
 https://conda.anaconda.org/conda-forge/noarch/jupyter_client-8.0.2-pyhd8ed1ab_0.conda#cbb8d182b6053ce14b5fe60ef1e36fbb
 https://conda.anaconda.org/conda-forge/noarch/nbformat-5.7.3-pyhd8ed1ab_0.conda#9714111cb6c7dbbc9a9f34de205c2f29
-https://conda.anaconda.org/conda-forge/linux-64/pre-commit-3.0.3-py39hf3d152e_0.conda#9800c173ab73153bbed00e51a0f86c83
+https://conda.anaconda.org/conda-forge/linux-64/pre-commit-3.0.4-py39hf3d152e_0.conda#8a98273ee904735747a8f6706b187f3e
 https://conda.anaconda.org/conda-forge/linux-64/qt-main-5.15.6-h602db52_6.conda#050ed331c6b32c82b845907fd3494d3a
 https://conda.anaconda.org/conda-forge/noarch/urllib3-1.26.14-pyhd8ed1ab_0.conda#01f33ad2e0aaf6b5ba4add50dad5ad29
 https://conda.anaconda.org/conda-forge/noarch/wslink-1.10.0-pyhd8ed1ab_0.conda#09b0815040c693b465ba6c096d842ad6
