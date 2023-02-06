@@ -176,7 +176,7 @@ https://conda.anaconda.org/conda-forge/osx-64/unicodedata2-15.0.0-py310h90acd4f_
 https://conda.anaconda.org/conda-forge/noarch/webencodings-0.5.1-py_1.tar.bz2#3563be4c5611a44210d9ba0c16113136
 https://conda.anaconda.org/conda-forge/noarch/wheel-0.38.4-pyhd8ed1ab_0.tar.bz2#c829cfb8cb826acb9de0ac1a2df0a940
 https://conda.anaconda.org/conda-forge/noarch/widgetsnbextension-4.0.5-pyhd8ed1ab_0.conda#2af53b3894fb9bdbb3679c0d31028b1b
-https://conda.anaconda.org/conda-forge/noarch/zipp-3.12.0-pyhd8ed1ab_0.conda#edc3568566cc48335f0b5d86d40fdbb9
+https://conda.anaconda.org/conda-forge/noarch/zipp-3.12.1-pyhd8ed1ab_0.conda#7cc265528c9db5e40a771438108f6810
 https://conda.anaconda.org/conda-forge/noarch/aiosignal-1.3.1-pyhd8ed1ab_0.tar.bz2#d1e1eb7e21a9e2c74279d87dafb68156
 https://conda.anaconda.org/conda-forge/noarch/asttokens-2.2.1-pyhd8ed1ab_0.conda#bf7f54dd0f25c3f06ecb82a07341841a
 https://conda.anaconda.org/conda-forge/noarch/babel-2.11.0-pyhd8ed1ab_0.tar.bz2#2ea70fde8d581ba9425a761609eed6ba
@@ -234,7 +234,7 @@ https://conda.anaconda.org/conda-forge/osx-64/aiohttp-3.8.3-py310h90acd4f_1.tar.
 https://conda.anaconda.org/conda-forge/osx-64/gst-plugins-base-1.21.3-h37e1711_1.conda#653b52ba531aa8e3e23e39a67e4c35d7
 https://conda.anaconda.org/conda-forge/noarch/identify-2.5.17-pyhd8ed1ab_0.conda#a26b5ead210b1c8938c8a6a0c0fb2bed
 https://conda.anaconda.org/conda-forge/osx-64/jupyter_core-5.2.0-py310h2ec42d9_0.conda#5dfd396b995d403a7544ca59ce981fb8
-https://conda.anaconda.org/conda-forge/osx-64/numpy-1.24.1-py310h788a5b3_0.conda#fdc1dca5ea5064c9ea298c08b3dc786d
+https://conda.anaconda.org/conda-forge/osx-64/numpy-1.24.2-py310h788a5b3_0.conda#fea956b460a39dd944742b7dfbd55983
 https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.36-pyha770c72_0.conda#4d79ec192e0bfd530a254006d123b9a6
 https://conda.anaconda.org/conda-forge/noarch/pyopenssl-23.0.0-pyhd8ed1ab_0.conda#d41957700e83bbb925928764cb7f8878
 https://conda.anaconda.org/conda-forge/osx-64/virtualenv-20.17.1-py310h2ec42d9_0.conda#e3da8723ba8afdeb3fef67413312066c
@@ -267,7 +267,7 @@ https://conda.anaconda.org/conda-forge/noarch/colorcet-3.0.1-pyhd8ed1ab_0.tar.bz
 https://conda.anaconda.org/conda-forge/noarch/nbconvert-pandoc-7.2.9-pyhd8ed1ab_0.conda#4a8dc94c7c2f3736dc4b91ec345d5b4b
 https://conda.anaconda.org/conda-forge/noarch/pydata-sphinx-theme-0.12.0-pyhd8ed1ab_0.tar.bz2#fe4a16a5ffc6ff74d4a479a44f6bf6a2
 https://conda.anaconda.org/conda-forge/noarch/pyvista-0.37.0-pyhd8ed1ab_0.tar.bz2#910e3ec02b15a4747e511ae6232a18c6
-https://conda.anaconda.org/conda-forge/osx-64/scipy-1.10.0-py310h240c617_0.conda#0f05f17c0326731072325ed0f98cc60a
+https://conda.anaconda.org/conda-forge/osx-64/scipy-1.10.0-py310h240c617_2.conda#24f7ca2e9d0c09bd0f2a63c9b3604b9c
 https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.0-pyhd8ed1ab_0.tar.bz2#4c969cdd5191306c269490f7ff236d9c
 https://conda.anaconda.org/conda-forge/osx-64/cartopy-0.21.1-py310h578c2b2_0.conda#23c86535a2835b96243a4ae008e77f9e
 https://conda.anaconda.org/conda-forge/noarch/nbconvert-7.2.9-pyhd8ed1ab_0.conda#523aaa3affb003ab0e68dbc24c9027f4
