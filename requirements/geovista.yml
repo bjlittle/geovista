@@ -1,4 +1,4 @@
-name: geovista-dev-test
+name: geovista-dev
 
 channels:
   - conda-forge
