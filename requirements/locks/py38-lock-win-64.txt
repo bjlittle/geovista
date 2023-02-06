@@ -227,7 +227,7 @@ https://conda.anaconda.org/conda-forge/noarch/jupyter_client-8.0.2-pyhd8ed1ab_0.
 https://conda.anaconda.org/conda-forge/win-64/libcblas-3.9.0-16_win64_mkl.tar.bz2#14c2fb03b2bb14dfa3806186ca91d557
 https://conda.anaconda.org/conda-forge/win-64/liblapack-3.9.0-16_win64_mkl.tar.bz2#be2f9d5712a5bb05cd900005ee752a05
 https://conda.anaconda.org/conda-forge/noarch/nbformat-5.7.3-pyhd8ed1ab_0.conda#9714111cb6c7dbbc9a9f34de205c2f29
-https://conda.anaconda.org/conda-forge/win-64/pre-commit-3.0.3-py38haa244fe_0.conda#bdff92c3ec9887f81899bd36f5a5d437
+https://conda.anaconda.org/conda-forge/win-64/pre-commit-3.0.4-py38haa244fe_0.conda#bdbd6e9f6faa2e15fb0882d177e8a0c4
 https://conda.anaconda.org/conda-forge/noarch/urllib3-1.26.14-pyhd8ed1ab_0.conda#01f33ad2e0aaf6b5ba4add50dad5ad29
 https://conda.anaconda.org/conda-forge/noarch/wslink-1.10.0-pyhd8ed1ab_0.conda#09b0815040c693b465ba6c096d842ad6
 https://conda.anaconda.org/conda-forge/noarch/ipykernel-6.21.1-pyh025b116_0.conda#ec06073a146686e6075ef66924eef65e
