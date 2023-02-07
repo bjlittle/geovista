@@ -74,7 +74,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["py38", "py39", "py310"]
+        version: ["py38", "py39", "py310", "py311"]
         session: ["env"]
 
     steps:

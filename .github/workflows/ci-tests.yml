@@ -38,7 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        version: ["py310"]
+        version: ["py311"]
         #session: ["tests", "doc-build", "doc-linkcheck", "doc-tests"]
         session: ["tests"]
         include:
@@ -52,6 +52,10 @@ jobs:
             platform: "linux"
           - os: "ubuntu-latest"
             version: "py310"
+            session: "tests"
+            platform: "linux"
+          - os: "ubuntu-latest"
+            version: "py311"
             session: "tests"
             platform: "linux"
             posargs: "--cov-report=xml --cov"
