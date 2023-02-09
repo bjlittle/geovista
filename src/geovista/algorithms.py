@@ -38,9 +38,7 @@ def add_mesh_handler(
             mesh.rotate_z(-meridian, inplace=True)
             tgt_crs = set_central_meridian(tgt_crs, 0)
         try:
-            cut_mesh = cut_along_meridian(
-                mesh, antimeridian=True, rtol=rtol, atol=atol
-            )
+            cut_mesh = cut_along_meridian(mesh, antimeridian=True, rtol=rtol, atol=atol)
             # undo rotation
             mesh.rotate_z(meridian, inplace=True)
             mesh = cut_mesh
@@ -52,13 +50,9 @@ def add_mesh_handler(
         texture = wrap_texture(texture, central_meridian=meridian)
 
     if project:
-        lonlat = to_xy0(
-            mesh, radius=radius, closed_interval=True, rtol=rtol, atol=atol
-        )
+        lonlat = to_xy0(mesh, radius=radius, closed_interval=True, rtol=rtol, atol=atol)
         transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
-        xs, ys = transformer.transform(
-            lonlat[:, 0], lonlat[:, 1], errcheck=True
-        )
+        xs, ys = transformer.transform(lonlat[:, 0], lonlat[:, 1], errcheck=True)
         mesh.points[:, 0] = xs
         mesh.points[:, 1] = ys
         zoffset = 0
