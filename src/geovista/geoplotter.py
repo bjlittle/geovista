@@ -14,7 +14,6 @@ from warnings import warn
 
 from pyproj import CRS, Transformer
 import pyvista as pv
-import pyvistaqt as pvqt
 import vtk
 
 from .common import RADIUS, ZLEVEL_FACTOR, to_xy0
@@ -25,7 +24,7 @@ from .geometry import COASTLINE_RESOLUTION, get_coastlines
 from .raster import wrap_texture
 from .samples import lfric
 
-__all__ = ["GeoBackgroundPlotter", "GeoMultiPlotter", "GeoPlotter"]
+__all__ = ["GeoPlotter"]
 
 # type aliases
 CRSLike = Union[int, str, dict, CRS]
@@ -420,22 +419,6 @@ class GeoPlotterBase:
     #         kwargs["zlevel"] = zlevel
     #
     #     return self.add_mesh(points, **kwargs)
-
-
-class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
-    """
-    See :class:`geovista.geoplotter.GeoPlotterBase` and
-    :class:`pyvistaqt.BackgroundPlotter`.
-
-    """
-
-
-class GeoMultiPlotter(GeoPlotterBase, pvqt.MultiPlotter):
-    """
-    See :class:`geovista.geoplotter.GeoPlotterBase` and
-    :class:`pyvistaqt.MultiPlotter`.
-
-    """
 
 
 class GeoPlotter(GeoPlotterBase, pv.Plotter):
