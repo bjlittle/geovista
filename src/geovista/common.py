@@ -95,7 +95,7 @@ WRAP_ATOL: float = 1e-8
 WRAP_RTOL: float = 1e-5
 
 #: Proportional multiplier for z-axis levels/offsets.
-ZLEVEL_FACTOR: float = 1e-3
+ZLEVEL_FACTOR: float = 1e-2
 
 
 def active_kernel() -> bool:
