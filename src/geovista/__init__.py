@@ -35,7 +35,7 @@ from .crs import from_wkt, get_central_meridian, set_central_meridian  # noqa: F
 from .filters import cast_UnstructuredGrid_to_PolyData, remesh  # noqa: F401
 from .geodesic import BBox, line, panel, wedge  # noqa: F401
 from .geometry import get_coastlines  # noqa: F401
-from .geoplotter import GeoBackgroundPlotter, GeoMultiPlotter, GeoPlotter  # noqa: F401
+from .geoplotter import GeoPlotter  # noqa: F401
 from .raster import wrap_texture  # noqa: F401
 
 try:
