@@ -10,8 +10,7 @@ Notes
 try:
     import pyvista as pvqt
 except ImportError as e:
-    emsg = 'please install the "pyvistaqt" and "pyqt" packages.'
-    e.msg = f"{e.msg} - {emsg}"
+    e.msg = f'{e.msg} - please install the "pyvistaqt" and "pyqt" packages.'
     raise
 
 from .geoplotter import GeoPlotterBase
