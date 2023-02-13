@@ -56,7 +56,7 @@ def find_cell_neighbours(mesh: PolyData, cid: CellIDLike) -> CellIDs:
     pids = []
     for idx in cid:
         # XXX: pyvista 0.38.0: cell_point_ids(idx) -> get_cell(idx).point_ids
-        pids.extend(mesh.cell_point_ids(idx))
+        pids.extend(mesh.get_cell(idx).point_ids)
 
     # determine the unique points
     pids = np.unique(list(pids))
@@ -118,7 +118,7 @@ def find_nearest_cell(
     cid = mesh.find_closest_cell(poi)
 
     # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
-    pids = np.asanyarray(mesh.cell_point_ids(cid))
+    pids = np.asanyarray(mesh.get_cell(cid).point_ids)
     points = mesh.points[pids]
     mask = np.all(np.isclose(points, poi), axis=1)
     poi_is_vertex = np.any(mask)
