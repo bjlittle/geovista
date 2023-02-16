@@ -40,5 +40,5 @@ testpaths = "tests"
 [tool.setuptools_scm]
 write_to = "src/geovista/_version.py"
 local_scheme = "dirty-tag"
-#version_scheme = "release-branch-semver"
+version_scheme = "release-branch-semver"
 
