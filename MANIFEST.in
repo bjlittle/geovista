@@ -5,11 +5,11 @@ exclude .gitignore
 exclude .pre-commit-config.yaml
 exclude .pylintrc
 exclude .readthedocs.yml
+include *.md
 include CITATION.cff
 exclude codecov.yml
 prune branding
 prune docs
-prune examples
 include src/geovista/registry.txt
 prune src/geovista/tests
 prune requirements
