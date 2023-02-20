@@ -9,6 +9,85 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 
+[project]
+authors = [
+    {name = "GeoVista Contributors", email = "geovista.pub@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+]
+description = "Cartographic rendering and mesh analytics powered by PyVista"
+dependencies = [
+    "cartopy>=0.20",
+    "click",
+    "click-default-group",
+    "netCDF4",
+    "pooch",
+    "pyproj>=3.3",
+    "pyvista>=0.38",
+    "vtk",
+]
+dynamic = [
+    "version",
+]
+keywords = [
+    "cartography",
+    "curvilinear",
+    "earth-science",
+    "grid",
+    "mesh",
+    "python",
+    "pyvista",
+    "rectilinear",
+    "ugrid",
+    "unstructured",
+    "vtk",
+]
+license.file = "LICENSE"
+name = "geovista"
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.8"
+
+
+[project.optional-dependencies]
+cmap = [
+    "cmocean",
+    "colorcet",
+]
+docs = [
+    "sphinx",
+    "sphinx-copybutton",
+    "jupyter-sphinx",
+    "pydata-sphinx-theme",
+]
+test = [
+    "codecov",
+    "pre-commit",
+    "pytest>=6.0",
+    "pytest-cov",
+]
+
+
+[project.urls]
+Code = "https://github.com/bjlittle/geovista"
+Discussions = "https://github.com/bjlittle/geovista/discussions"
+Issues = "https://github.com/bjlittle/geovista/issues"
+
+
+[project.scripts]
+geovista = "geovista.cli:main"
+
+
 [tool.black]
 line-length = 88
 target-version = ["py38", "py39", "py310", "py311"]
@@ -35,6 +114,15 @@ addopts = "-ra -v --doctest-modules --doctest-continue-on-failure --import-mode=
 minversion = "6.0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
 testpaths = "tests"
+
+
+[tool.setuptool.dynamic]
+version = {attr = "geovista.__version__"}
+
+
+[tools.setuptool.packages.find]
+include = ["geovista"]
+where = ["src"]
 
 
 [tool.setuptools_scm]
