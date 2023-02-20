@@ -9,7 +9,7 @@ repos:
     -   id: check-added-large-files
         # Check whether files parse as valid Python.
     -   id: check-ast
-        # Check for file name conflicts on case-insensitive filesytems.
+        # Check for file name conflicts on case-insensitive file-systems.
     -   id: check-case-conflict
         # Check for files that contain merge conflict strings.
     -   id: check-merge-conflict
@@ -34,7 +34,7 @@ repos:
     hooks:
     -   id: flake8
         types: [file, python]
-        args: [--config=./setup.cfg]
+        args: [--config=./tox.ini]
 
 -   repo: https://github.com/PyCQA/isort
     rev: "5.12.0"
