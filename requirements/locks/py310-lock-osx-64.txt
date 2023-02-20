@@ -54,7 +54,7 @@ https://conda.anaconda.org/conda-forge/osx-64/libaec-1.0.6-hf0c8a7f_1.conda#7c0f
 https://conda.anaconda.org/conda-forge/osx-64/libbrotlidec-1.0.9-hb7f2c08_8.tar.bz2#7f952a036d9014b4dab96c6ea0f8c2a7
 https://conda.anaconda.org/conda-forge/osx-64/libbrotlienc-1.0.9-hb7f2c08_8.tar.bz2#b36a3bfe866d9127f25f286506982166
 https://conda.anaconda.org/conda-forge/osx-64/libedit-3.1.20191231-h0678c8f_2.tar.bz2#6016a8a1d0e63cac3de2c352cd40208b
-https://conda.anaconda.org/conda-forge/osx-64/libgfortran5-11.3.0-h082f757_27.conda#f7602714b2be91be36f00fb75c45cb14
+https://conda.anaconda.org/conda-forge/osx-64/libgfortran5-11.3.0-h082f757_28.conda#4b0400521ae098af1c87350442d88d1c
 https://conda.anaconda.org/conda-forge/osx-64/libllvm13-13.0.1-h64f94b2_2.tar.bz2#bac1c6f12f44f40e19274e6e04e9bad5
 https://conda.anaconda.org/conda-forge/osx-64/libpng-1.6.39-ha978bb4_0.conda#35e4928794c5391aec14ffdf1deaaee5
 https://conda.anaconda.org/conda-forge/osx-64/libsqlite-3.40.0-ha978bb4_0.tar.bz2#ceb13b6726534b96e3b4e3dda91e9050
@@ -83,7 +83,7 @@ https://conda.anaconda.org/conda-forge/osx-64/gl2ps-1.4.2-h4cff582_0.tar.bz2#a9e
 https://conda.anaconda.org/conda-forge/osx-64/hdf4-4.2.15-h7aa5921_5.tar.bz2#a5e171d71c6b524409de40d81c098758
 https://conda.anaconda.org/conda-forge/osx-64/krb5-1.20.1-h049b76e_0.conda#db11fa2968ef0837288fe2d7f5b77a50
 https://conda.anaconda.org/conda-forge/osx-64/libclang-13.0.1-default_he082bbe_0.tar.bz2#0166c71e26f8b9f564a20a13b04d118d
-https://conda.anaconda.org/conda-forge/osx-64/libgfortran-5.0.0-11_3_0_h97931a8_27.conda#7d25335e67256924aa04de681e68e807
+https://conda.anaconda.org/conda-forge/osx-64/libgfortran-5.0.0-10_4_0_h97931a8_28.conda#aa6a12546c19f6d816bf80371e19a409
 https://conda.anaconda.org/conda-forge/osx-64/libglib-2.74.1-h4c723e1_1.tar.bz2#68a698fe240032c2ff587028ed51b155
 https://conda.anaconda.org/conda-forge/osx-64/libidn2-2.3.4-hb7f2c08_0.tar.bz2#bd109fd705b4ce40a62759129bc4ef5a
 https://conda.anaconda.org/conda-forge/osx-64/libnghttp2-1.51.0-he2ab024_0.conda#910e7f012beecf5d845a993feb9259a9
@@ -159,7 +159,7 @@ https://conda.anaconda.org/conda-forge/noarch/pytz-2022.7.1-pyhd8ed1ab_0.conda#f
 https://conda.anaconda.org/conda-forge/osx-64/pyyaml-6.0-py310h90acd4f_5.tar.bz2#e0ba2009f52ccda088c63dedf0d1c5ec
 https://conda.anaconda.org/conda-forge/osx-64/pyzmq-25.0.0-py310hf615a82_0.conda#a1f758ee654b7723b53a582b6ae45739
 https://conda.anaconda.org/conda-forge/noarch/scooby-0.7.1-pyhd8ed1ab_0.conda#9d1e4f1bd885c1ce3b4979d120d4f239
-https://conda.anaconda.org/conda-forge/noarch/setuptools-67.3.1-pyhd8ed1ab_0.conda#97e1034f136713e29e0ef02d68cb5f64
+https://conda.anaconda.org/conda-forge/noarch/setuptools-67.3.2-pyhd8ed1ab_0.conda#543af74c4042aee5702a033e03a216d0
 https://conda.anaconda.org/conda-forge/noarch/six-1.16.0-pyh6c4a22f_0.tar.bz2#e5f25f8dbc060e9a8d912e432202afc2
 https://conda.anaconda.org/conda-forge/noarch/snowballstemmer-2.2.0-pyhd8ed1ab_0.tar.bz2#4d22a9315e78c6827f806065957d566e
 https://conda.anaconda.org/conda-forge/noarch/soupsieve-2.3.2.post1-pyhd8ed1ab_0.tar.bz2#146f4541d643d48fc8a75cacf69f03ae
@@ -178,7 +178,7 @@ https://conda.anaconda.org/conda-forge/osx-64/unicodedata2-15.0.0-py310h90acd4f_
 https://conda.anaconda.org/conda-forge/noarch/webencodings-0.5.1-py_1.tar.bz2#3563be4c5611a44210d9ba0c16113136
 https://conda.anaconda.org/conda-forge/noarch/wheel-0.38.4-pyhd8ed1ab_0.tar.bz2#c829cfb8cb826acb9de0ac1a2df0a940
 https://conda.anaconda.org/conda-forge/noarch/widgetsnbextension-4.0.5-pyhd8ed1ab_0.conda#2af53b3894fb9bdbb3679c0d31028b1b
-https://conda.anaconda.org/conda-forge/noarch/zipp-3.13.0-pyhd8ed1ab_0.conda#41b09d997939e83b231c4557a90c3b13
+https://conda.anaconda.org/conda-forge/noarch/zipp-3.14.0-pyhd8ed1ab_0.conda#01ea04980fa39d7b6dbdd6c67016d177
 https://conda.anaconda.org/conda-forge/noarch/aiosignal-1.3.1-pyhd8ed1ab_0.tar.bz2#d1e1eb7e21a9e2c74279d87dafb68156
 https://conda.anaconda.org/conda-forge/noarch/asttokens-2.2.1-pyhd8ed1ab_0.conda#bf7f54dd0f25c3f06ecb82a07341841a
 https://conda.anaconda.org/conda-forge/noarch/babel-2.11.0-pyhd8ed1ab_0.tar.bz2#2ea70fde8d581ba9425a761609eed6ba
@@ -203,7 +203,7 @@ https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.6-pyhd8ed1ab
 https://conda.anaconda.org/conda-forge/noarch/nodeenv-1.7.0-pyhd8ed1ab_0.tar.bz2#fbe1182f650c04513046d6894046cd6c
 https://conda.anaconda.org/conda-forge/noarch/pexpect-4.8.0-pyh1a96a4e_2.tar.bz2#330448ce4403cc74990ac07c555942a1
 https://conda.anaconda.org/conda-forge/osx-64/pillow-9.2.0-py310hffcf78b_3.tar.bz2#a7b7035e6aeace50e0023839f3f5beaa
-https://conda.anaconda.org/conda-forge/noarch/pip-23.0-pyhd8ed1ab_0.conda#85b35999162ec95f9f999bac15279c02
+https://conda.anaconda.org/conda-forge/noarch/pip-23.0.1-pyhd8ed1ab_0.conda#8025ca83b8ba5430b640b83917c2a6f7
 https://conda.anaconda.org/conda-forge/osx-64/proj-9.1.0-hcbd9701_0.tar.bz2#78ee95e87e5143d0e4a17d4aeef56411
 https://conda.anaconda.org/conda-forge/noarch/pyct-core-0.4.6-py_0.tar.bz2#55ec526f95e0959de3f68bc6289a20da
 https://conda.anaconda.org/conda-forge/noarch/pygments-2.14.0-pyhd8ed1ab_0.conda#c78cd16b11cd6a295484bd6c8f24bea1
@@ -242,7 +242,7 @@ https://conda.anaconda.org/conda-forge/noarch/colorspacious-1.1.2-pyh24bf2e0_0.t
 https://conda.anaconda.org/conda-forge/osx-64/contourpy-1.0.7-py310ha23aa8a_0.conda#bc714cc57ec6422105ed991167987a9d
 https://conda.anaconda.org/conda-forge/noarch/imageio-2.25.1-pyh24c5eb1_0.conda#1fc2ba3ac7ab26a46ba57f787d7545b6
 https://conda.anaconda.org/conda-forge/noarch/ipython-8.10.0-pyh41d4057_0.conda#4703355103974293bbd8a32449b3ff28
-https://conda.anaconda.org/conda-forge/noarch/jupyter_client-8.0.2-pyhd8ed1ab_0.conda#cbb8d182b6053ce14b5fe60ef1e36fbb
+https://conda.anaconda.org/conda-forge/noarch/jupyter_client-8.0.3-pyhd8ed1ab_0.conda#c279256b9f2195976b0168585a5adc79
 https://conda.anaconda.org/conda-forge/noarch/nbformat-5.7.3-pyhd8ed1ab_0.conda#9714111cb6c7dbbc9a9f34de205c2f29
 https://conda.anaconda.org/conda-forge/osx-64/pre-commit-3.0.4-py310h2ec42d9_0.conda#c8e38ea427506cde6399ae554ec38ada
 https://conda.anaconda.org/conda-forge/osx-64/qt-main-5.15.8-h1d3b3f8_6.conda#5d816352174169f7ab45fb54a0fba4ed
