@@ -398,6 +398,14 @@ geovista examples --help
 The [documentation](https://geovista.readthedocs.io/en/latest/) is built by [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://docs.readthedocs.io/en/stable/).
 -->
 
+## Further Reading
+
+Whilst you're here, why not hop on over to the [pyvista-xarray](https://github.com/pyvista/pyvista-xarray) project and
+check it out!
+
+It's aiming to provide `xarray DataArray accessors for PyVista to visualize datasets in 3D` for the
+[xarray](https://github.com/pydata/xarray) community, and will be building on top of GeoVista 🎉
+
 ## License
 
 GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/licenses/BSD-3-Clause.html) license.
