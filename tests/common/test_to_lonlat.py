@@ -2,7 +2,6 @@
 Unit-tests for :func:`geovista.common.to_lonlat`.
 
 """
-
 import numpy as np
 import pytest
 

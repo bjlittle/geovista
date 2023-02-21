@@ -1,4 +1,4 @@
 """
-Unit-tests for the :mod:`geovista.common`.
+Unit-tests for :mod:`geovista.common`.
 
 """

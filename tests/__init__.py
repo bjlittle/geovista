@@ -1,4 +1,4 @@
 """
-Unit-tests for geovista.
+Unit-tests for :mod:`geovista`.
 
 """

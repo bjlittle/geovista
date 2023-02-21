@@ -1,4 +1,4 @@
 """
-Unit-tests for the :mod:`geovista.search`.
+Unit-tests for :mod:`geovista.search`.
 
 """

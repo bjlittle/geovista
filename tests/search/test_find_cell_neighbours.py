@@ -2,7 +2,6 @@
 Unit-tests for :func:`geovista.search.find_cell_neighbours`.
 
 """
-
 from geovista.search import find_cell_neighbours
 
 

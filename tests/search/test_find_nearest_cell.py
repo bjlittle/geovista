@@ -2,7 +2,6 @@
 Unit-tests for :func:`geovista.search.find_nearest_cell`.
 
 """
-
 import pytest
 
 from geovista.common import to_lonlat, to_xy0
