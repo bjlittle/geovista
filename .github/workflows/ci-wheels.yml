@@ -136,9 +136,9 @@ jobs:
         TESTENV: "${{ matrix.version }}-linux-${{ matrix.session }}"
       run: |
         WHEEL=$(ls -1 dist/*.whl)
-        tox -e ${{ env.TESTENV }} --run-command "python -m pip uninstall --yes ${WHEEL}"
-        tox -e ${{ env.TESTENV }} --run-command "python -m pip install --no-deps ${WHEEL}"
-        tox -e ${{ env.TESTENV }} --run-command "python -c 'import geovista; print(geovista.__version__)'"
+        tox -e ${{ env.TESTENV }} -- "python -m pip uninstall --yes ${WHEEL}"
+        tox -e ${{ env.TESTENV }} -- "python -m pip install --no-deps ${WHEEL}"
+        tox -e ${{ env.TESTENV }} -- "python -c 'import geovista; print(geovista.__version__)'"
 
 
   show-artifacts:
