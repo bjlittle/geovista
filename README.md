@@ -60,7 +60,7 @@ For more information see our [conda-forge feedstock](https://github.com/conda-fo
 GeoVista is available on [PyPI](https://pypi.org/project/geovista/):
 
 ```shell
-pip install geovista
+pip install geovista[cmap]
 ```
 
 ### Developer
