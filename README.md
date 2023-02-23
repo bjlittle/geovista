@@ -60,12 +60,18 @@ For more information see our [conda-forge feedstock](https://github.com/conda-fo
 GeoVista is available on [PyPI](https://pypi.org/project/geovista/):
 
 ```shell
-pip install geovista[cmap]
+pip install geovista
 ```
 
 ### Developer
 
-First, clone the GeoVista GitHub repository:
+If you simply can't wait for the next release to play with the latest hot features, then you can easily
+install the `main` development branch from GitHub:
+```shell
+pip install git+https://github.com/bjlittle/geovista@main
+```
+
+Alternatively, to configure a full developer environment, first clone the GeoVista GitHub repository:
 ```shell
 git clone git@github.com:bjlittle/geovista.git
 ```
@@ -73,11 +79,13 @@ Change to the root directory:
 ```shell
 cd geovista
 ```
-Create the `geovista-dev` conda environment for your preferred platform and Python version e.g.,
+Create the `geovista-dev` conda development environment for your preferred platform (`linux`, `osx` or `win`) and
+Python version e.g.,
 ```shell
-conda create -n geovista-dev --file requirements/locks/py310-lock-linux-64.txt
+conda create -n geovista-dev --file requirements/locks/py311-lock-linux-64.txt
 ```
-Note that, the `requirements/locks` directory contains fully resolved conda package environments, which are automatically updated on a weekly basis. Alternatively, simply:
+Note that, the `requirements/locks` directory contains fully resolved conda package environments, which are automatically
+updated on a weekly basis. Alternatively, to get the latest package dependencies, simply:
 ```shell
 conda env create --file requirements/geovista.yml
 ```
@@ -87,6 +95,11 @@ conda activate geovista-dev
 pip install --no-deps --editable .
 ```
 Finally, you're good to roll 🥳
+
+And for extra credit, install our developer `pre-commit` git-hooks:
+```shell
+pre-commit install
+```
 
 ## Quick Start
 
@@ -139,7 +152,7 @@ mesh = gv.Transform.from_unstructured(
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
 plotter.add_mesh(
-    mesh, cmap="balance", show_edges=True, edge_color="grey", scalar_bar_args=sargs
+    mesh, show_edges=True, scalar_bar_args=sargs
 )
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 plotter.add_coastlines(resolution="10m")
@@ -184,7 +197,7 @@ mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 # Plot the mesh.
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
-plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
+plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_axes()
 plotter.show()
 ```
@@ -222,7 +235,7 @@ mesh = gv.Transform.from_unstructured(
 # Plot the mesh on a mollweide projection using a Proj string.
 plotter = gv.GeoPlotter(crs="+proj=moll")
 sargs = dict(title=f"{sample.name} / {sample.units}")
-plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
+plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 plotter.add_axes()
 plotter.view_xy()
@@ -258,7 +271,7 @@ mesh = gv.Transform.from_unstructured(
 # Plot the mesh on a Plate Carrée projection using a cartopy CRS.
 plotter = gv.GeoPlotter(crs=ccrs.PlateCarree(central_longitude=180))
 sargs = dict(title=f"{sample.name} / {sample.units}")
-plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
+plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 plotter.add_axes()
 plotter.view_xy()
@@ -294,7 +307,7 @@ mesh = gv.Transform.from_unstructured(
 # Plot the mesh on a Robinson projection using an ESRI spatial reference identifier.
 plotter = gv.GeoPlotter(crs="ESRI:54030")
 sargs = dict(title=f"{sample.name} / {sample.units}")
-plotter.add_mesh(mesh, cmap="thermal", show_edges=True, edge_color="grey", scalar_bar_args=sargs)
+plotter.add_mesh(mesh, cmap="thermal", show_edges=True, scalar_bar_args=sargs)
 plotter.view_xy()
 plotter.add_axes()
 plotter.show()
@@ -328,7 +341,7 @@ mesh = mesh.threshold()
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
 plotter.add_mesh(
-    mesh, cmap="balance", show_edges=True, edge_color="grey", scalar_bar_args=sargs
+    mesh, show_edges=True, scalar_bar_args=sargs
 )
 plotter.add_base_layer(texture=gv.natural_earth_1())
 plotter.add_coastlines(resolution="10m")
@@ -364,7 +377,7 @@ mesh = mesh.threshold()
 # Plot the mesh.
 plotter = gv.GeoPlotter()
 sargs = dict(title=f"{sample.name} / {sample.units}")
-plotter.add_mesh(mesh, cmap="balance", scalar_bar_args=sargs)
+plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.blue_marble())
 plotter.add_coastlines()
 plotter.view_xz()

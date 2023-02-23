@@ -31,6 +31,7 @@ dependencies = [
     "cartopy>=0.20",
     "click",
     "click-default-group",
+    "cmocean",
     "netCDF4",
     "pooch",
     "pyproj>=3.3",
@@ -61,7 +62,6 @@ requires-python = ">=3.8"
 
 [project.optional-dependencies]
 cmap = [
-    "cmocean",
     "colorcet",
 ]
 docs = [
