@@ -27,18 +27,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 description = "Cartographic rendering and mesh analytics powered by PyVista"
-dependencies = [
-    "cartopy>=0.20",
-    "click",
-    "click-default-group",
-    "cmocean",
-    "netCDF4",
-    "pooch",
-    "pyproj>=3.3",
-    "pyvista>=0.38",
-    "vtk",
-]
 dynamic = [
+    "dependencies",
+    "optional-dependencies",
     "version",
 ]
 keywords = [
@@ -58,24 +49,6 @@ license.file = "LICENSE"
 name = "geovista"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.8"
-
-
-[project.optional-dependencies]
-cmap = [
-    "colorcet",
-]
-docs = [
-    "sphinx",
-    "sphinx-copybutton",
-    "jupyter-sphinx",
-    "pydata-sphinx-theme",
-]
-test = [
-    "codecov",
-    "pre-commit",
-    "pytest>=6.0",
-    "pytest-cov",
-]
 
 
 [project.urls]
@@ -116,11 +89,17 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
 testpaths = "tests"
 
 
-[tool.setuptool.dynamic]
-version = {attr = "geovista.__version__"}
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements/core.txt"]}
 
 
-[tools.setuptool.packages.find]
+[tool.setuptools.dynamic.optional-dependencies]
+cmap = {file = ["requirements/optional-cmap.txt"]}
+docs = {file = ["requirements/optional-docs.txt"]}
+test = {file = ["requirements/optional-test.txt"]}
+
+
+[tool.setuptools.packages.find]
 include = ["geovista"]
 where = ["src"]
 

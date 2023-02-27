@@ -1,0 +1,9 @@
+cartopy>=0.20
+click
+click-default-group
+cmocean
+netCDF4
+pooch
+pyproj>=3.3
+pyvista>=0.38
+vtk
