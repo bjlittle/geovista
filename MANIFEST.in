@@ -10,6 +10,7 @@ include CITATION.cff
 exclude codecov.yml
 prune branding
 prune docs
+recursive-include src *.py
 include src/geovista/registry.txt
 prune src/geovista/tests
 prune requirements
