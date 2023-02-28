@@ -9,8 +9,6 @@ Notes
 """
 from __future__ import annotations
 
-from typing import List, Optional
-
 import pooch
 import pyvista as pv
 
@@ -56,7 +54,7 @@ PREFERENCE_DEFAULT: str = PREFERENCE_CELL
 PREFERENCE_POINT: str = "point"
 
 # enumeration of valid preferences
-PREFERENCES: List[str] = [PREFERENCE_CELL, PREFERENCE_POINT]
+PREFERENCES: list[str] = [PREFERENCE_CELL, PREFERENCE_POINT]
 
 
 def _lam_sample_to_mesh(sample: pantry.SampleUnstructuredXY) -> pv.PolyData:
@@ -116,9 +114,9 @@ def fesom() -> pv.PolyData:
 
 
 def fvcom_tamar(
-    preference: Optional[str] = None,
-    warp: Optional[bool] = False,
-    factor: Optional[float] = None,
+    preference: str | None = None,
+    warp: bool | None = False,
+    factor: float | None = None,
 ) -> pv.PolyData:
     """
     Generate a Plymouth Marine Laboratory (PML) Finite Volume Community Ocean
@@ -358,7 +356,7 @@ def lam_uk() -> pv.PolyData:
     return _lam_sample_to_mesh(pantry.lam_uk())
 
 
-def lfric(resolution: Optional[str] = None) -> pv.PolyData:
+def lfric(resolution: str | None = None) -> pv.PolyData:
     """
     Get the LFRic Model unstructured cubed-sphere at the specified `resolution`.
 
@@ -390,9 +388,7 @@ def lfric(resolution: Optional[str] = None) -> pv.PolyData:
     return mesh
 
 
-def lfric_orog(
-    warp: Optional[bool] = False, factor: Optional[float] = None
-) -> pv.PolyData:
+def lfric_orog(warp: bool | None = False, factor: float | None = None) -> pv.PolyData:
     """
     Generate a global surface altitude mesh.
 
@@ -513,7 +509,7 @@ def um_orca2() -> pv.PolyData:
     return mesh
 
 
-def ww3_global_smc(step: Optional[int] = None) -> pv.PolyData:
+def ww3_global_smc(step: int | None = None) -> pv.PolyData:
     """
     Generate a global Sea Surface Wave Significant Height WAVEWATCH III (WW3)
     Spherical Multi-Cell (SMC) mesh.

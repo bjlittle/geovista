@@ -10,7 +10,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import List, Optional, Union
+from typing import List, Union
 
 import numpy as np
 from pyvista import PolyData
@@ -72,8 +72,8 @@ def find_nearest_cell(
     mesh: PolyData,
     x: float,
     y: float,
-    z: Optional[float] = 0,
-    single: Optional[bool] = False,
+    z: float | None = 0,
+    single: bool | None = False,
 ) -> CellIDLike:
     """
     Determine the ``cellID`` of the cell in the `mesh` that is closest
