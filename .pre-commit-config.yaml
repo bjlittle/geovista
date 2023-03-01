@@ -20,7 +20,7 @@ repos:
       # Check YAML file syntax.
     - id: check-yaml
       # Don't commit to main branch.
-#    - id: no-commit-to-branch
+    - id: no-commit-to-branch
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: "v0.0.253"
