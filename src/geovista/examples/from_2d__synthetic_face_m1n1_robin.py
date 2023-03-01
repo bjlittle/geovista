@@ -41,7 +41,7 @@ def main() -> None:
 
     # plot the data
     plotter = gv.GeoPlotter(crs=(projection := "+proj=robin"))
-    sargs = sargs = dict(title=f"{name} / 1", shadow=True)
+    sargs = sargs = {"title": f"{name} / 1", "shadow": True}
     plotter.add_mesh(
         mesh, clim=(0, 1), cmap="tempo", scalar_bar_args=sargs, show_edges=True
     )

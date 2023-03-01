@@ -186,7 +186,7 @@ def remesh(
         # no remeshing has been performed as the meridian does not intersect the mesh
         remeshed_west, remeshed_east = pv.PolyData(), pv.PolyData()
     else:
-        # split the triangulated remesh into its two halves, west and east of the meridian
+        # split the triangulated remesh into its halves, west and east of the meridian
         centers = remeshed.cell_centers()
         lons = from_spherical(centers, rtol=rtol, atol=atol)[:, 0]
         delta = lons - meridian

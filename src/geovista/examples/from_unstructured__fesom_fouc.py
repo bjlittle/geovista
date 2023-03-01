@@ -40,7 +40,7 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter(crs=(projection := "+proj=fouc"))
-    sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
+    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     # require increased relative tolerance accuracy when cutting the mesh
     # at the anti-meridian due to its complex geometry
     plotter.add_mesh(mesh, scalar_bar_args=sargs, rtol=1e-8)

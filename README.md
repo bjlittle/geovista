@@ -150,7 +150,7 @@ mesh = gv.Transform.from_unstructured(
 
 # Plot the mesh.
 plotter = gv.GeoPlotter()
-sargs = dict(title=f"{sample.name} / {sample.units}")
+sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(
     mesh, show_edges=True, scalar_bar_args=sargs
 )
@@ -196,7 +196,7 @@ mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 
 # Plot the mesh.
 plotter = gv.GeoPlotter()
-sargs = dict(title=f"{sample.name} / {sample.units}")
+sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_axes()
 plotter.show()
@@ -234,7 +234,7 @@ mesh = gv.Transform.from_unstructured(
 
 # Plot the mesh on a mollweide projection using a Proj string.
 plotter = gv.GeoPlotter(crs="+proj=moll")
-sargs = dict(title=f"{sample.name} / {sample.units}")
+sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 plotter.add_axes()
@@ -270,7 +270,7 @@ mesh = gv.Transform.from_unstructured(
 
 # Plot the mesh on a Plate Carrée projection using a cartopy CRS.
 plotter = gv.GeoPlotter(crs=ccrs.PlateCarree(central_longitude=180))
-sargs = dict(title=f"{sample.name} / {sample.units}")
+sargs = {"title" f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 plotter.add_axes()
@@ -306,7 +306,7 @@ mesh = gv.Transform.from_unstructured(
 
 # Plot the mesh on a Robinson projection using an ESRI spatial reference identifier.
 plotter = gv.GeoPlotter(crs="ESRI:54030")
-sargs = dict(title=f"{sample.name} / {sample.units}")
+sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, cmap="thermal", show_edges=True, scalar_bar_args=sargs)
 plotter.view_xy()
 plotter.add_axes()
@@ -339,7 +339,7 @@ mesh = mesh.threshold()
 
 # Plot the mesh.
 plotter = gv.GeoPlotter()
-sargs = dict(title=f"{sample.name} / {sample.units}")
+sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(
     mesh, show_edges=True, scalar_bar_args=sargs
 )
@@ -376,7 +376,7 @@ mesh = mesh.threshold()
 
 # Plot the mesh.
 plotter = gv.GeoPlotter()
-sargs = dict(title=f"{sample.name} / {sample.units}")
+sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.blue_marble())
 plotter.add_coastlines()

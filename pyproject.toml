@@ -89,6 +89,39 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
 testpaths = "tests"
 
 
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+select = [
+    # pyflakes
+    "F",
+    # pycodestyle
+    "E",
+    "W",
+    # flake8-bugbear
+    "B",
+    # flake8-comprehensions
+    "C4",
+    # isort
+    "I",
+    # pyupgrade
+    "UP",
+]
+
+
+[tool.ruff.isort]
+force-sort-within-sections = true
+known-first-party = ["geovista"]
+
+
+[tool.ruff.mccabe]
+max-complexity = 22
+
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
+
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements/core.txt"]}
 

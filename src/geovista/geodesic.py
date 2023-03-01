@@ -40,14 +40,14 @@ BBOX_TOLERANCE: int = 0
 BBOX_RADIUS_RATIO = 1e-1
 
 #: Lookup table for cubed sphere panel index by panel name.
-PANEL_IDX_BY_NAME: Dict[str, int] = dict(
-    africa=0,
-    asia=1,
-    pacific=2,
-    americas=3,
-    arctic=4,
-    antarctic=5,
-)
+PANEL_IDX_BY_NAME: Dict[str, int] = {
+    "africa": 0,
+    "asia": 1,
+    "pacific": 2,
+    "americas": 3,
+    "arctic": 4,
+    "antarctic": 5,
+}
 
 #: Lookup table for cubed sphere panel name by panel index.
 PANEL_NAME_BY_IDX: Dict[int, str] = {
@@ -121,7 +121,8 @@ class BBox:
             The longitudes (degrees) of the bounding-box, in the half-closed interval
             [-180, 180). Note that, longitudes will be wrapped to this interval.
         lats : ArrayLike
-            The latitudes (degrees) of the bounding-box, in the closed interval [-90, 90].
+            The latitudes (degrees) of the bounding-box, in the closed interval
+            [-90, 90].
         ellps : str, default=ELLIPSE
             The ellipsoid for geodesic calculations. See :func:`pyproj.get_ellps_map`.
         c : float, default=BBOX_C
@@ -152,8 +153,9 @@ class BBox:
 
         if n_lons < 4:
             emsg = (
-                "Require a bounding-box geometry containing at least 4 longitude/latitude "
-                f"values to create the bounding-box manifold, got '{n_lons}'."
+                "Require a bounding-box geometry containing at least 4 "
+                "longitude/latitude values to create the bounding-box manifold, "
+                f"got '{n_lons}'."
             )
             raise ValueError(emsg)
 
@@ -194,7 +196,7 @@ class BBox:
             result = False
             lhs = (self.ellps, self.c, self.triangulate)
             rhs = (other.ellps, other.c, other.triangulate)
-            if all(map(lambda x: x[0] == x[1], zip(lhs, rhs))):
+            if all(x[0] == x[1] for x in zip(lhs, rhs)):
                 if np.allclose(self.lons, other.lons):
                     result = np.allclose(self.lats, other.lats)
         return result

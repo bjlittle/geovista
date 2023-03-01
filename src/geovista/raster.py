@@ -55,7 +55,8 @@ def wrap_texture(
         # convert grid to an rgb image (un-do pyvista.Texture._from_array mangling)
         image = np.flip(grid.active_scalars.reshape(shape), axis=0)
         width = image.shape[1]
-        # calculate the rendering window over the tiled image centered around the meridian
+        # calculate the rendering window over the tiled image centered around
+        # the meridian
         offset = int(np.round(((meridian + 180) / 360) * width, decimals=0)) + width
         start = offset - (width // 2)
         end = start + width

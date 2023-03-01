@@ -39,7 +39,7 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter()
-    sargs = dict(title=f"{name} / 1", shadow=True)
+    sargs = {"title": f"{name} / 1", "shadow": True}
     plotter.add_mesh(
         mesh, clim=(0, 1), cmap="ice", scalar_bar_args=sargs, show_edges=True
     )
