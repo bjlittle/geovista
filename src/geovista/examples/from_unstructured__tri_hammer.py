@@ -46,7 +46,7 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter(crs=(projection := "+proj=hammer"))
-    sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
+    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs, scalars=sample.name)
     plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
     plotter.add_axes()

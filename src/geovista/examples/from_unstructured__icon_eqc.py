@@ -40,7 +40,7 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter(crs=(projection := "+proj=eqc"))
-    sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
+    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     cmap = plt.cm.get_cmap("cet_CET_L17", lut=9)
     plotter.add_mesh(mesh, cmap=cmap, show_edges=True, scalar_bar_args=sargs)
     plotter.add_axes()

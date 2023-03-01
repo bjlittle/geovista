@@ -39,7 +39,7 @@ from .geoplotter import GeoPlotter  # noqa: F401
 from .raster import wrap_texture  # noqa: F401
 
 try:
-    from ._version import version as __version__  # noqa: F401
+    from ._version import version as __version__
 except ModuleNotFoundError:
     __version__ = "unknown"
 

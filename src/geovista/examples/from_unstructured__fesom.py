@@ -23,7 +23,8 @@ def main() -> None:
     v1.4 unstructured mesh of surface sea temperature data. The data targets the
     mesh faces/cells.
 
-    Note that, a Natural Earth base layer is rendered along with Natural Earth coastlines.
+    Note that, a Natural Earth base layer is rendered along with Natural Earth
+    coastlines.
 
     """
     # load the sample data
@@ -39,7 +40,7 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter()
-    sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
+    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
     plotter.add_coastlines()

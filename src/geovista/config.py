@@ -16,9 +16,9 @@ __all__ = ["resources"]
 # see https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 
 #: geovista resources configuration dictionary.
-resources = dict(
-    cache_dir=Path(environ.get("XDG_CACHE_HOME", user_cache_dir())) / __package__
-)
+resources = {
+    "cache_dir": Path(environ.get("XDG_CACHE_HOME", user_cache_dir())) / __package__
+}
 
 try:
     from .siteconfig import update_config

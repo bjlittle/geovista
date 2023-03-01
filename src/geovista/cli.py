@@ -26,7 +26,7 @@ from .geoplotter import GeoPlotter
 
 __all__ = ["main"]
 
-CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 ALL: str = "all"
 NE_ROOT: str = "natural_earth"
@@ -370,7 +370,7 @@ def plot(fname, axes, base) -> None:
 
     """
     # pylint: disable-next=import-outside-toplevel,unused-import
-    import geovista.theme
+    import geovista.theme  # noqa: #F401
 
     mesh = pv.read(fname)
     plotter = GeoPlotter()

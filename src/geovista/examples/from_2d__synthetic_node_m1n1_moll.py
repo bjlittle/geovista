@@ -41,7 +41,7 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter(crs=(projection := "+proj=moll"))
-    sargs = dict(title=f"{name} / 1", shadow=True)
+    sargs = {"title": f"{name} / 1", "shadow": True}
     plotter.add_mesh(
         mesh,
         clim=(0, 1),

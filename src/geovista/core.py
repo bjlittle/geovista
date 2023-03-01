@@ -386,7 +386,8 @@ def combine(
             faces_n = np.diff(mesh._offset_array)
             # determine the N offset for each face within the faces array
             # a face entry consists of (N, v1, v2, ..., vN), where vN is the Nth
-            # vertex offset (connectivity) for that face into the associated mesh points array
+            # vertex offset (connectivity) for that face into the associated mesh
+            # points array
             faces_n_offset = mesh._offset_array + np.arange(mesh._offset_array.size)
             # offset the current mesh connectivity by the cumulative mesh points count
             faces += n_points

@@ -201,8 +201,8 @@ class Transform:
         -----
         ..versionadded:: 0.1.0
 
-        See https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
-        for VTK Quadrilateral cell type node ordering.
+        For VTK Quadrilateral cell type node ordering see
+        https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
 
         """
         # sanity check - internally this should always be the case
@@ -249,8 +249,8 @@ class Transform:
         -----
         ..versionadded:: 0.1.0
 
-        See https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
-        for VTK Quadrilateral cell type node ordering.
+        For VTK Quadrilateral cell type node ordering see
+        https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
 
         """
         # sanity check - internally this should always be the case
@@ -710,7 +710,10 @@ class Transform:
             if not np.all(valid_faces_mask):
                 n_invalid = n_faces - np.sum(valid_faces_mask)
                 plural = "s" if n_invalid > 1 else ""
-                wmsg = f"Masked connectivity defines {n_invalid:,} face{plural} with no vertices."
+                wmsg = (
+                    f"Masked connectivity defines {n_invalid:,} face{plural} "
+                    "with no vertices."
+                )
                 warnings.warn(wmsg)
                 n_vertices = n_vertices[valid_faces_mask]
                 connectivity = connectivity[valid_faces_mask]

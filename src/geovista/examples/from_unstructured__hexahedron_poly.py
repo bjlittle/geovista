@@ -35,7 +35,7 @@ def main() -> None:
 
     # plot the mesh
     plotter = gv.GeoPlotter(crs=(projection := "+proj=poly"))
-    sargs = dict(title=f"{sample.name} / {sample.units}", shadow=True)
+    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_axes()
     plotter.add_text(

@@ -1,5 +1,6 @@
 """
-This module provides convenience functions to access, download and cache geovista resources.
+This module provides convenience functions to access, download and cache
+geovista resources.
 
 Notes
 -----
@@ -61,7 +62,7 @@ CACHE: pooch.Pooch = pooch.create(
     retry_if_failed=RETRY_ATTEMPTS,
     env=ENV,
     urls={
-        "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc": URL_DKRZ_FESOM
+        "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc": URL_DKRZ_FESOM  # noqa: E501
     },
 )
 
