@@ -162,11 +162,13 @@ plotter.show()
 ```
 </details>
 
-![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.2/media/readme/ww3-tri.png)
+![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/ww3-tri.png)
 
 #### Finite Volume Community Ocean Model
 
-Now, let's visualise the bathymetry of the [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365) from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) **unstructured** mesh, as kindly provided by the [Plymouth Marine Laboratory](https://pml.ac.uk/).
+Now, let's visualise the bathymetry of the [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365)
+from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) **unstructured** mesh, as kindly provided by the
+[Plymouth Marine Laboratory](https://pml.ac.uk/) using the lush [cmocean deep](https://matplotlib.org/cmocean/#deep) colormap.
 
 <details>
 <summary>🗒 </summary>
@@ -197,13 +199,13 @@ mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 # Plot the mesh.
 plotter = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(mesh, scalar_bar_args=sargs)
+plotter.add_mesh(mesh, cmap="deep", scalar_bar_args=sargs)
 plotter.add_axes()
 plotter.show()
 ```
 </details>
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.2/media/readme/tamar.png)
+![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/tamar.png)
 
 #### CF UGRID
 
@@ -243,7 +245,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.2/media/readme/lam-moll.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/lam-moll.png)
 
 Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree), also with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
 
@@ -279,7 +281,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.2/media/readme/lam-pc.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/lam-pc.png)
 
 #### LFRic Cube-Sphere
 
@@ -314,7 +316,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.2/media/readme/lfric-robin.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/lfric-robin.png)
 
 #### UM ORCA2
 
@@ -351,7 +353,7 @@ plotter.show()
 ```
 </details>
 
-![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.2/media/readme/um-orca.png)
+![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/um-orca.png)
 
 #### OISST AVHRR
 
@@ -386,7 +388,7 @@ plotter.show()
 ```
 </details>
 
-![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.2/media/readme/oisst-avhrr.png)
+![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/oisst-avhrr.png)
 
 ## Further Examples
 
