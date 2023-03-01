@@ -4,7 +4,7 @@ Unit-tests for :func:`geovista.search.find_nearest_cell`.
 """
 import pytest
 
-from geovista.common import to_lonlat, to_xy0
+from geovista.common import from_spherical, to_lonlat
 from geovista.search import find_nearest_cell
 
 
@@ -12,7 +12,7 @@ def test_cell_centers(lam_uk):
     # calculate cartesian xyz cell centers of the lam
     cell_centers = lam_uk.cell_centers()
     # convert the cell centers to lon/lat
-    lonlat = to_xy0(cell_centers)
+    lonlat = from_spherical(cell_centers)
     # check the calculated cell ids of the cell centers
     for expected, poi in enumerate(lonlat):
         cids = find_nearest_cell(lam_uk, *poi)

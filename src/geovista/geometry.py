@@ -14,7 +14,13 @@ import numpy as np
 import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
 
-from .common import GV_FIELD_RADIUS, RADIUS, set_jupyter_backend, to_xy0, to_xyz
+from .common import (
+    GV_FIELD_RADIUS,
+    RADIUS,
+    from_spherical,
+    set_jupyter_backend,
+    to_spherical,
+)
 
 __all__ = [
     "COASTLINE_RESOLUTION",
@@ -193,7 +199,7 @@ def coastline_mesh(
 
     # determine whether to calculate xyz geocentric coordinates
     if geocentric:
-        geoms = to_xyz(geoms[:, 0], geoms[:, 1], radius=radius)
+        geoms = to_spherical(geoms[:, 0], geoms[:, 1], radius=radius)
 
     # convert geometries to a vtk line mesh
     mesh = pv.PolyData()
@@ -257,7 +263,7 @@ def get_coastlines(
 
         if not geocentric:
             radius = float(mesh.field_data[GV_FIELD_RADIUS])
-            mesh.points = to_xy0(mesh, radius=radius)
+            mesh.points = from_spherical(mesh, radius=radius)
     except ValueError:
         mesh = coastline_mesh(resolution=resolution, geocentric=geocentric)
 

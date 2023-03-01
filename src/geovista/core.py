@@ -23,9 +23,9 @@ from .common import (
     REMESH_JOIN,
     REMESH_SEAM,
     calculate_radius,
+    from_spherical,
     sanitize_data,
-    to_xy0,
-    to_xyz,
+    to_spherical,
     wrap,
 )
 from .crs import from_wkt
@@ -232,7 +232,7 @@ class MeridianSlice:
         if extract_ids:
             mesh = cast(self.mesh.extract_cells(np.array(list(extract_ids))))
             if clip:
-                lonlat = to_xy0(mesh)
+                lonlat = from_spherical(mesh)
                 match = np.abs(lonlat[:, 0] - self.meridian) < 90
                 mesh = cast(mesh.extract_points(match))
             sanitize_data(mesh)
@@ -288,7 +288,7 @@ def add_texture_coords(
         mesh = mesh.copy(deep=True)
 
     # convert from cartesian xyz to spherical lat/lons
-    lonlat = to_xy0(mesh, closed_interval=True)
+    lonlat = from_spherical(mesh, closed_interval=True)
     lons, lats = lonlat[:, 0], lonlat[:, 1]
     # convert to normalised UV space
     u_coord = (lons + 180) / 360
@@ -507,7 +507,7 @@ def cut_along_meridian(
     remeshed_ids = np.array([], dtype=int)
 
     if mesh_whole.n_cells:
-        lonlat = to_xy0(mesh_whole, rtol=rtol, atol=atol)
+        lonlat = from_spherical(mesh_whole, rtol=rtol, atol=atol)
         meridian_mask = np.isclose(lonlat[:, 0], meridian)
         join_points = np.empty(mesh_whole.n_points, dtype=int)
         join_points.fill(REMESH_JOIN)
@@ -532,7 +532,7 @@ def cut_along_meridian(
         cids = cids.difference(set(remeshed_ids))
         if cids:
             neighbours = result.extract_cells(list(cids))
-            xy0 = to_xy0(neighbours)
+            xy0 = from_spherical(neighbours)
             neighbours.points = xy0
             xdelta = []
             for cid in range(neighbours.n_cells):
@@ -624,8 +624,8 @@ def resize(mesh: pv.PolyData, radius: Optional[float] = None) -> pv.PolyData:
         radius = RADIUS
 
     if radius and not np.isclose(calculate_radius(mesh), radius):
-        lonlat = to_xy0(mesh)
-        xyz = to_xyz(lonlat[:, 0], lonlat[:, 1], radius=radius)
+        lonlat = from_spherical(mesh)
+        xyz = to_spherical(lonlat[:, 0], lonlat[:, 1], radius=radius)
         mesh.points = xyz
         mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
 

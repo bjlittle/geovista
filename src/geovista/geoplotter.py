@@ -16,7 +16,7 @@ from pyproj import CRS, Transformer
 import pyvista as pv
 import vtk
 
-from .common import RADIUS, ZLEVEL_FACTOR, to_xy0
+from .common import RADIUS, ZLEVEL_FACTOR, from_spherical
 from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
@@ -290,7 +290,7 @@ class GeoPlotterBase:
                 kwargs["texture"] = texture
 
             if project:
-                lonlat = to_xy0(
+                lonlat = from_spherical(
                     mesh, radius=radius, closed_interval=True, rtol=rtol, atol=atol
                 )
                 transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
@@ -339,7 +339,7 @@ class GeoPlotterBase:
     #         crs = from_wkt(points)
     #
     #         if crs is not None and crs != WGS84:
-    #             lonlat = to_xy0(points)
+    #             lonlat = from_spherical(points)
     #             transformer = Transformer.from_crs(crs, self.crs, always_xy=True)
     #             xs, ys = transformer.transform(
     #                 lonlat[:, 0], lonlat[:, 1], errcheck=True
@@ -409,7 +409,7 @@ class GeoPlotterBase:
     #
     #         radius += radius * zlevel * zfactor
     #
-    #         xyz = to_xyz(xs, ys, radius=radius)
+    #         xyz = to_spherical(xs, ys, radius=radius)
     #         points = pv.PolyData(xyz)
     #         # attach the pyproj crs serialized as ogc wkt
     #         wkt = np.array([WGS84.to_wkt()])

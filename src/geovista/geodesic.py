@@ -16,7 +16,7 @@ import numpy.typing as npt
 import pyproj
 import pyvista as pv
 
-from .common import RADIUS, calculate_radius, to_xyz, wrap
+from .common import RADIUS, calculate_radius, to_spherical, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
 
 __all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
@@ -393,8 +393,12 @@ class BBox:
             outer_radius = self._surface_radius + offset
 
             # generate the face points
-            inner_xyz = to_xyz(self._bbox_lons, self._bbox_lats, radius=inner_radius)
-            outer_xyz = to_xyz(self._bbox_lons, self._bbox_lats, radius=outer_radius)
+            inner_xyz = to_spherical(
+                self._bbox_lons, self._bbox_lats, radius=inner_radius
+            )
+            outer_xyz = to_spherical(
+                self._bbox_lons, self._bbox_lats, radius=outer_radius
+            )
             bbox_xyz = np.vstack([inner_xyz, outer_xyz])
 
             # include the bbox skirt
@@ -469,7 +473,7 @@ class BBox:
         edge_idxs = self._bbox_face_edge_idxs()
         edge_lons = self._bbox_lons[edge_idxs]
         edge_lats = self._bbox_lats[edge_idxs]
-        edge_xyz = to_xyz(edge_lons, edge_lats, radius=radius)
+        edge_xyz = to_spherical(edge_lons, edge_lats, radius=radius)
         edge = pv.lines_from_points(edge_xyz, close=True)
 
         return edge
@@ -697,7 +701,7 @@ def line(
     line_lons.append(lons[-1])
     line_lats.append(lats[-1])
 
-    xyz = to_xyz(line_lons, line_lats, radius=radius)
+    xyz = to_spherical(line_lons, line_lats, radius=radius)
     lines = pv.lines_from_points(xyz, close=close)
 
     return lines

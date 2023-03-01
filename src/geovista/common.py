@@ -29,13 +29,13 @@ __all__ = [
     "VTK_POINT_IDS",
     "ZLEVEL_FACTOR",
     "calculate_radius",
+    "from_spherical",
     "nan_mask",
     "sanitize_data",
     "set_jupyter_backend",
     "to_lonlat",
     "to_lonlats",
-    "to_xy0",
-    "to_xyz",
+    "to_spherical",
     "triangulated",
     "vtk_warnings_off",
     "vtk_warnings_on",
@@ -402,7 +402,7 @@ def to_lonlats(
     return result
 
 
-def to_xy0(
+def from_spherical(
     mesh: pv.PolyData,
     radius: Optional[float] = None,
     stacked: Optional[bool] = True,
@@ -411,8 +411,8 @@ def to_xy0(
     atol: Optional[float] = None,
 ) -> np.ndarray:
     """
-    Convert the `mesh` cartesian `xyz` points on a sphere to geographic
-    longitude (φ) and latitude (λ) `xy0` (i.e., φλ0) coordinates.
+    Convert the `mesh` ``xyz`` spherical cartesian points to geographic
+    longitude (φ) and latitude (λ) coordinates.
 
     Parameters
     ----------
@@ -439,7 +439,7 @@ def to_xy0(
     Returns
     -------
     ndarray
-        The longitude and latitude xy0 coordinates, in degrees.
+        The longitude and latitude coordinates, in degrees.
 
     Notes
     -----
@@ -513,14 +513,15 @@ def to_xy0(
     return result
 
 
-def to_xyz(
+def to_spherical(
     longitudes: npt.ArrayLike,
     latitudes: npt.ArrayLike,
     radius: Optional[float] = None,
     stacked: Optional[bool] = True,
 ) -> np.ndarray:
     """
-    Convert longitudes (φ) and latitudes (λ) to geocentric xyz coordinates.
+    Convert geographic longitude (φ) and latitude (λ) coordinates to ``xyz``
+    spherical cartesian points.
 
     Parameters
     ----------
@@ -531,13 +532,13 @@ def to_xyz(
     radius : float, default=1.0
         The radius of the sphere. Defaults to an S2 unit sphere.
     stacked : bool, default=True
-        Specify whether the resultant xyz coordinates have shape (N, 3).
+        Specify whether the resultant xyz points have shape (N, 3).
         Otherwise, they will have shape (3, N).
 
     Returns
     -------
     ndarray
-        The geocentric xyz coordinates.
+        The ``xyz`` spherical cartesian points.
 
     Notes
     -----
