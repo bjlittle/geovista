@@ -87,6 +87,11 @@ jobs:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist
 
+    - name: "install mesa opengl"
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgl1-mesa-glx
+
     - name: "environment configure"
       env:
         # Maximum cache period (in weeks) before forcing a cache refresh.
