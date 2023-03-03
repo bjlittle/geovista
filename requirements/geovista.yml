@@ -13,6 +13,7 @@ dependencies:
   - cartopy >=0.20
   - click
   - click-default-group
+  - platformdirs
   - pooch
   - pyproj >=3.3
   - pyvista >=0.38

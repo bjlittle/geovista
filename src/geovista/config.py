@@ -9,7 +9,7 @@ Notes
 from os import environ
 from pathlib import Path
 
-from appdirs import user_cache_dir
+from platformdirs import user_cache_dir
 
 __all__ = ["resources"]
 

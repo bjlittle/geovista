@@ -3,6 +3,7 @@ click
 click-default-group
 cmocean
 netCDF4
+platformdirs
 pooch
 pyproj>=3.3
 pyvista>=0.38
