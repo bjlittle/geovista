@@ -159,7 +159,7 @@ class GeoPlotterBase:
         resolution = kwargs.pop("resolution") if "resolution" in kwargs else None
 
         if self.crs.is_projected:
-            # pass-thru "zfactor" and "zlevel" to the "add_mesh" method,
+            # pass-through "zfactor" and "zlevel" to the "add_mesh" method,
             # but remove "radius", as it's not applicable to planar projections
             if "radius" in kwargs:
                 _ = kwargs.pop("radius")

@@ -294,7 +294,7 @@ def download(
 
     if verify:
         unavailable = 0
-        click.echo("Verifying remote availablity of registered resources:")
+        click.echo("Verifying remote availability of registered resources:")
         for i, fname in enumerate(fnames):
             click.echo(f"[{i+1:0{width}d}] ", nl=False)
             click.secho(f"{fname} ", nl=False, fg=fg_colour)

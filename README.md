@@ -25,7 +25,7 @@ fix docs pythreejs/panel
 |           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 
-## Philisophy
+## Philosophy
 
 The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with a convenient cartographic capability.
 
