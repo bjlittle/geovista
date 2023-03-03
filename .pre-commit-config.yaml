@@ -29,6 +29,13 @@ repos:
         types: [file, python]
         args: [--fix]
 
+  - repo: https://github.com/codespell-project/codespell
+    rev: "v2.2.2"
+    hooks:
+    - id: codespell
+      types_or: [python, markdown, rst]
+      additional_dependencies: [tomli]
+
   - repo: https://github.com/psf/black
     rev: "23.1.0"
     hooks:

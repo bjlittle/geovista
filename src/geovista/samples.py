@@ -180,7 +180,7 @@ def hexahedron() -> pv.PolyData:
     """
     Generate a DYNAMICO hexahedron mesh.
 
-    Retruns
+    Returns
     -------
     PolyData
         The DYNAMICO mesh.
