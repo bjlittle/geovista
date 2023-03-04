@@ -127,6 +127,10 @@ jobs:
         cache_build: 0
         lock_file: ${{ env.LOCK_FILE }}
 
+    - name: "check mesa"
+      run: |
+        ldconfig -p | grep -i libegl
+
     - name: "${{ matrix.session }} (${{ matrix.version }} ${{ matrix.os }})"
       env:
         POST_COMMAND: ${{ matrix.post-command }}

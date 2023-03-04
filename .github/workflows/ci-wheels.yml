@@ -139,6 +139,10 @@ jobs:
         cache_build: 0
         lock_file: ${{ env.LOCK_FILE }}
 
+    - name: "check mesa"
+      run: |
+        ldconfig -p | grep -i libegl
+
     - name: "test wheel (${{ matrix.version }})"
       env:
         TESTENV: "${{ matrix.version }}-linux-${{ matrix.session }}"
