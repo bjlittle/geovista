@@ -41,6 +41,11 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: configure mesa opengl
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libglu1-mesa-dev libgl1-mesa-dev
+
     - name: "environment configure"
       env:
         # Maximum cache period (in weeks) before forcing a cache refresh.
