@@ -75,6 +75,7 @@ ignore = [
 
 [tool.codespell]
 ignore-words-list = "whet"
+skip = ".git,*.ipynb"
 
 
 [tool.isort]
