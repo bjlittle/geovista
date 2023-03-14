@@ -9,7 +9,7 @@ Provides:
      geospatial data to native geo-located PyVista mesh instances
   2. Compliments PyVista with cartographic features for processing, projecting
      and rendering geo-located meshes
-  3. Support for interactive 3D visulization of geo-located meshes
+  3. Support for interactive 3D visualization of geo-located meshes
   4. Coordinate Reference System (CRS) support, with an awareness of Cartopy
      CRSs through the commonality of the Python interface to PROJ (PyPROJ)
      package
