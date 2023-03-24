@@ -98,7 +98,7 @@ class GeoPlotterBase:
                     f"{klass} received an unexpected argument. "
                     "Assuming 'crs' keyword argument instead..."
                 )
-                warn(wmsg)
+                warn(wmsg, stacklevel=2)
                 kwargs["crs"] = args[0]
                 args = ()
             else:

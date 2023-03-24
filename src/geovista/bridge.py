@@ -714,7 +714,7 @@ class Transform:
                     f"Masked connectivity defines {n_invalid:,} face{plural} "
                     "with no vertices."
                 )
-                warnings.warn(wmsg)
+                warnings.warn(wmsg, stacklevel=2)
                 n_vertices = n_vertices[valid_faces_mask]
                 connectivity = connectivity[valid_faces_mask]
             faces = ma.hstack([n_vertices.reshape(-1, 1), connectivity]).ravel()
