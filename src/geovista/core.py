@@ -551,7 +551,7 @@ def cut_along_meridian(
                     f"Unable to remesh {n_cells} cell{plural}. Removing the "
                     f"following mesh cell-id{plural} [{naughty}]."
                 )
-                warnings.warn(wmsg)
+                warnings.warn(wmsg, stacklevel=2)
                 remeshed_ids = np.hstack([remeshed_ids, bad_cids])
 
     if meshes:
