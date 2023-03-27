@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - "*"
-  
+
   push:
     branches-ignore:
       - "conda-lock-auto-update"

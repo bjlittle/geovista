@@ -126,7 +126,7 @@ jobs:
         title: "[geovista.ci] conda lock auto-update"
         body: |
           🤖 Bleep! Bloop!
-          
+
           Conda lock files for `linux-64`, `osx-64` and `win-64` auto-updated to latest resolved environment of `geovista` dependencies.
         labels: |
           new: pull request

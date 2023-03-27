@@ -17,7 +17,7 @@ sphinx:
   fail_on_warning: false
 
 python:
-  install: 
+  install:
     - method: pip
       path: .
       extra_requirements:
