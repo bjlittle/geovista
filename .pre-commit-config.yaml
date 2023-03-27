@@ -22,8 +22,15 @@ repos:
     - id: check-toml
       # Check YAML file syntax.
     - id: check-yaml
+      # Makes sure files end in a newline and only a newline
+    - id: end-of-file-fixer
+      exclude_types: [svg]
+      # Replaces or checks mixed line ending
+    - id: mixed-line-ending
       # Don't commit to main branch.
     - id: no-commit-to-branch
+      # Trims trailing whitespace
+    - id: trailing-whitespace
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: "v0.0.254"
