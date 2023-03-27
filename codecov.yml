@@ -3,7 +3,7 @@ coverage:
   status:
     project:
       default:
-        target: 20 
+        target: 20
         threshold: 10%  # coverage can drop by up to <threshold>% while still posting success
     patch: off
 
@@ -11,4 +11,3 @@ ignore:
   - registry.txt
   - pantry.py
   - samples.py
-

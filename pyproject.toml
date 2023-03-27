@@ -137,4 +137,3 @@ where = ["src"]
 write_to = "src/geovista/_version.py"
 local_scheme = "dirty-tag"
 version_scheme = "release-branch-semver"
-
