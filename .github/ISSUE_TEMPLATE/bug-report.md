@@ -19,9 +19,9 @@ assignees: ''
 ## Screenshots
 <!-- If applicable, add screenshots to help explain your problem -->
 
-## Environment 
+## Environment
 <!-- Provide additional environment and package information -->
-* OS & Version: 
+* OS & Version:
 * GeoVista Version: from the CLI run `python -c "import geovista; print(geovista.__version__)"`
 
 ## Additional Context

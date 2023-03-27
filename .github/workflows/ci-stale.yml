@@ -44,7 +44,7 @@ jobs:
         # Comment on the staled issues while closed.
         close-issue-message: |
           This stale issue has been automatically closed due to a lack of community activity.
-            
+
           If you still care about this issue, then please either:
             * Re-open this issue, if you have sufficient permissions, or
             * Add a comment pinging `@bjlittle` who will re-open on your behalf.
@@ -52,7 +52,7 @@ jobs:
         # Comment on the staled prs while closed.
         close-pr-message: |
           This stale PR has been automatically closed due to a lack of community activity.
-            
+
           If you still care about this PR, then please either:
             * Re-open this PR, if you have sufficient permissions, or
             * Add a comment pinging `@bjlittle` who will re-open on your behalf.
