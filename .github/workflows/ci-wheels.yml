@@ -88,7 +88,7 @@ jobs:
         path: ${{ github.workspace }}/dist
 
     - name: configure headless display
-      uses: pyvista/setup-headless-display-action@v1
+      uses: pyvista/setup-headless-display-action@v2
 
     - name: configure mesa egl
       run: |

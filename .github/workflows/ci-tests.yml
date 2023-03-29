@@ -69,7 +69,7 @@ jobs:
         fetch-depth: 0
 
     - name: configure headless display
-      uses: pyvista/setup-headless-display-action@v1
+      uses: pyvista/setup-headless-display-action@v2
 
     - name: configure mesa egl
       run: |
