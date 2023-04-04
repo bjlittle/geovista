@@ -30,6 +30,7 @@ description = "Cartographic rendering and mesh analytics powered by PyVista"
 dynamic = [
     "dependencies",
     "optional-dependencies",
+    "readme",
     "version",
 ]
 keywords = [
@@ -47,7 +48,6 @@ keywords = [
 ]
 license.file = "LICENSE"
 name = "geovista"
-readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.8"
 
 
@@ -120,6 +120,7 @@ convention = "numpy"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements/core.txt"]}
+readme = {file = "README.md", content-type = "text/markdown"}
 
 
 [tool.setuptools.dynamic.optional-dependencies]
