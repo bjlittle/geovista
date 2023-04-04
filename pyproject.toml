@@ -46,7 +46,7 @@ keywords = [
     "unstructured",
     "vtk",
 ]
-license.file = "LICENSE"
+license = "BSD-3-Clause"
 name = "geovista"
 requires-python = ">=3.8"
 
