@@ -118,6 +118,11 @@ max-complexity = 22
 convention = "numpy"
 
 
+[tool.setuptools]
+license-files = ["LICENSE"]
+zip-safe = false
+
+
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements/core.txt"]}
 readme = {file = "README.md", content-type = "text/markdown"}
@@ -130,7 +135,7 @@ test = {file = ["requirements/optional-test.txt"]}
 
 
 [tool.setuptools.packages.find]
-include = ["geovista"]
+include = ["geovista*"]
 where = ["src"]
 
 
