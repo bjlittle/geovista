@@ -10,7 +10,7 @@ import importlib
 import pathlib
 import pkgutil
 from shutil import rmtree
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import click
 from click_default_group import DefaultGroup
@@ -30,13 +30,13 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 ALL: str = "all"
 NE_ROOT: str = "natural_earth"
-NE_GROUPS: List[str] = sorted(["physical"])
-NE_CHOICES: List[str] = [ALL]
+NE_GROUPS: list[str] = sorted(["physical"])
+NE_CHOICES: list[str] = [ALL]
 NE_CHOICES.extend(NE_GROUPS)
 
 DEFAULT_FG_COLOUR: str = "cyan"
 
-SCRIPTS: List[str] = [ALL] + [
+SCRIPTS: list[str] = [ALL] + [
     submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)
 ]
 
@@ -44,7 +44,7 @@ pooch_logger = pooch.get_logger()
 
 
 def _download_group(
-    fnames: List[str],
+    fnames: list[str],
     name: Optional[str] = None,
     fg_colour: Optional[str] = None,
     summary: Optional[bool] = True,
@@ -221,7 +221,7 @@ def download(
     dry_run: bool,
     show: bool,
     mesh: bool,
-    pull_ne: Tuple[str],
+    pull_ne: tuple[str],
     output: Optional[pathlib.Path],
     pantry: bool,
     raster: bool,
@@ -231,7 +231,7 @@ def download(
     Download and cache geovista resources (offline support).
 
     """
-    fnames: List[str] = sorted(CACHE.registry_files)
+    fnames: list[str] = sorted(CACHE.registry_files)
 
     if not fnames:
         click.secho("No resources are registered with geovista.", fg="red")

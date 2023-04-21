@@ -10,7 +10,7 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import pyvista as pv
@@ -52,7 +52,7 @@ VTK_BOUNDARY_MASK: str = "BoundaryPoints"
 VTK_FREE_EDGE_MASK: str = "FreeEdge"
 
 # Type aliases.
-Remesh = Tuple[pv.PolyData, pv.PolyData, pv.PolyData]
+Remesh = tuple[pv.PolyData, pv.PolyData, pv.PolyData]
 
 
 def cast_UnstructuredGrid_to_PolyData(

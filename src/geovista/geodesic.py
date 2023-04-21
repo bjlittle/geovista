@@ -8,7 +8,7 @@ Notes
 """
 
 from collections.abc import Iterable
-from typing import Dict, Optional, Tuple, Union
+from typing import Optional, Union
 import warnings
 
 import numpy as np
@@ -22,7 +22,7 @@ from .filters import cast_UnstructuredGrid_to_PolyData
 __all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
 
 # Type aliases
-Corners = Tuple[float, float, float, float]
+Corners = tuple[float, float, float, float]
 
 #: Default geodesic ellipse. See :func:`pyproj.get_ellps_map`.
 ELLIPSE: str = "WGS84"
@@ -40,7 +40,7 @@ BBOX_TOLERANCE: int = 0
 BBOX_RADIUS_RATIO = 1e-1
 
 #: Lookup table for cubed sphere panel index by panel name.
-PANEL_IDX_BY_NAME: Dict[str, int] = {
+PANEL_IDX_BY_NAME: dict[str, int] = {
     "africa": 0,
     "asia": 1,
     "pacific": 2,
@@ -50,7 +50,7 @@ PANEL_IDX_BY_NAME: Dict[str, int] = {
 }
 
 #: Lookup table for cubed sphere panel name by panel index.
-PANEL_NAME_BY_IDX: Dict[int, str] = {
+PANEL_NAME_BY_IDX: dict[int, str] = {
     0: "africa",
     1: "asia",
     2: "pacific",
@@ -63,7 +63,7 @@ PANEL_NAME_BY_IDX: Dict[int, str] = {
 CSC: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
 
 #: Cubed sphere panel bounding-box longitudes and latitudes.
-PANEL_BBOX_BY_IDX: Dict[int, Tuple[Corners, Corners]] = {
+PANEL_BBOX_BY_IDX: dict[int, tuple[Corners, Corners]] = {
     0: ((-45, 45, 45, -45), (CSC, CSC, -CSC, -CSC)),
     1: ((45, 135, 135, 45), (CSC, CSC, -CSC, -CSC)),
     2: ((135, -135, -135, 135), (CSC, CSC, -CSC, -CSC)),
@@ -85,7 +85,7 @@ PREFERENCE_CENTER: str = "center"
 PREFERENCE_POINT: str = "point"
 
 #: Enumeration of supported preferences.
-PREFERENCES: Tuple[str, str, str] = (
+PREFERENCES: tuple[str, str, str] = (
     PREFERENCE_CELL,
     PREFERENCE_CENTER,
     PREFERENCE_POINT,
@@ -293,7 +293,7 @@ class BBox:
         # corner indices
         c1_idx, c2_idx, c3_idx, c4_idx = range(4)
 
-        def bbox_extend(lons: Tuple[float], lats: Tuple[float]) -> None:
+        def bbox_extend(lons: tuple[float], lats: tuple[float]) -> None:
             assert len(lons) == len(lats)
             self._bbox_lons.extend(lons)
             self._bbox_lats.extend(lats)
@@ -719,7 +719,7 @@ def npoints(
     include_start: Optional[bool] = False,
     include_end: Optional[bool] = False,
     geod: Optional[pyproj.Geod] = None,
-) -> Tuple[Tuple[float], Tuple[float]]:
+) -> tuple[tuple[float], tuple[float]]:
     """
     Given a single start-point and end-point, calculate the equally spaced
     intermediate longitude and latitude `npts` points along the geodesic line
@@ -795,7 +795,7 @@ def npoints_by_idx(
     include_start: Optional[bool] = False,
     include_end: Optional[bool] = False,
     geod: Optional[pyproj.Geod] = None,
-) -> Tuple[Tuple[float], Tuple[float]]:
+) -> tuple[tuple[float], tuple[float]]:
     """
     Given a single start-point index and end-point index, calculate the equally
     spaced intermediate longitude and latitude `npts` points along the geodesic

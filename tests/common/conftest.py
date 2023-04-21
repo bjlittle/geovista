@@ -5,15 +5,15 @@ pytest infra-structure for :mod:`geovista.common` unit-tests.
 # pylint: disable=redefined-outer-name
 
 from dataclasses import dataclass
-from typing import Tuple, Union
+from typing import Union
 
 import numpy as np
 from numpy.typing import ArrayLike
 import pytest
 
 # typing alias
-XYZLike = Union[Tuple[float, float, float], ArrayLike]
-XYLike = Union[Tuple[float, float], ArrayLike]
+XYZLike = Union[tuple[float, float, float], ArrayLike]
+XYLike = Union[tuple[float, float], ArrayLike]
 
 
 @dataclass

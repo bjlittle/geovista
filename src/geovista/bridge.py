@@ -8,7 +8,7 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 import warnings
 
 import numpy as np
@@ -32,7 +32,7 @@ from .crs import WGS84
 __all__ = ["Transform"]
 
 # type aliases
-Shape = Tuple[int]
+Shape = tuple[int]
 CRSLike = Union[int, str, dict, CRS]
 
 #: Default mesh cleaning.
@@ -97,7 +97,7 @@ class Transform:
     @staticmethod
     def _as_contiguous_1d(
         xs: ArrayLike, ys: ArrayLike
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Verify and return a contiguous (N+1,) x-axis and (M+1,) y-axis
         bounds array, that will be then used afterwards to build a (M, N)
