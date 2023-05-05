@@ -7,7 +7,7 @@ Notes
 
 """
 from collections.abc import Iterable
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 import numpy as np
 from numpy import ma
@@ -127,7 +127,7 @@ def active_kernel() -> bool:
 
 def calculate_radius(
     mesh: pv.PolyData,
-    origin: Optional[Tuple[float, float, float]] = None,
+    origin: Optional[tuple[float, float, float]] = None,
 ) -> float:
     """
     Determine the radius of the provided mesh.

@@ -10,7 +10,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import List, Union
+from typing import Union
 
 import numpy as np
 from pyvista import PolyData
@@ -21,7 +21,7 @@ from .crs import WGS84, from_wkt
 __all__ = ["find_cell_neighbours", "find_nearest_cell"]
 
 # type aliases
-CellIDs = List[int]
+CellIDs = list[int]
 CellIDLike = Union[int, CellIDs]
 
 

@@ -43,10 +43,6 @@ jobs:
         session: ["tests"]
         include:
           - os: "ubuntu-latest"
-            version: "py38"
-            session: "tests"
-            platform: "linux"
-          - os: "ubuntu-latest"
             version: "py39"
             session: "tests"
             platform: "linux"

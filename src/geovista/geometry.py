@@ -7,7 +7,7 @@ Notes
 
 """
 from functools import lru_cache
-from typing import List, Optional
+from typing import Optional
 
 import cartopy.io.shapereader as shp
 import numpy as np
@@ -96,7 +96,7 @@ def add_coastlines(
 @lru_cache
 def coastline_geometries(
     resolution: Optional[str] = None,
-) -> List[np.ndarray]:
+) -> list[np.ndarray]:
     """
     Fetch the Natural Earth shapefile coastline geometries for the required
     resolution.
