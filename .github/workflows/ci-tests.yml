@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   tests:
-    name: "${{ matrix.session }} (${{ matrix.version }} ${{ matrix.os }})"
+    name: "tests (${{ matrix.version }})"
 
     runs-on: ${{ matrix.os }}
 
@@ -38,39 +38,17 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        version: ["py311"]
-        #session: ["tests", "doc-build", "doc-linkcheck", "doc-tests"]
-        session: ["tests"]
+        version: ["py39", "py310", "py311"]
         include:
           - os: "ubuntu-latest"
-            version: "py39"
-            session: "tests"
-            platform: "linux"
-          - os: "ubuntu-latest"
-            version: "py310"
-            session: "tests"
-            platform: "linux"
-          - os: "ubuntu-latest"
             version: "py311"
-            session: "tests"
-            platform: "linux"
             posargs: "--cov-report=xml --cov"
             post-command: "codecov"
-          #- os: "ubuntu-latest"
-          #  platform: "linux"
 
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-
-    - name: configure headless display
-      uses: pyvista/setup-headless-display-action@v1
-
-    - name: configure mesa egl
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libegl-dev
 
     - name: "environment configure"
       env:
@@ -123,12 +101,8 @@ jobs:
         cache_build: 0
         lock_file: ${{ env.LOCK_FILE }}
 
-    - name: "check mesa"
-      run: |
-        ldconfig -p | grep -i libegl
-
-    - name: "${{ matrix.session }} (${{ matrix.version }} ${{ matrix.os }})"
+    - name: "tests (${{ matrix.version }})"
       env:
         POST_COMMAND: ${{ matrix.post-command }}
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.platform }}-${{ matrix.session }} -- ${{ matrix.posargs }}
+        tox -e ${{ matrix.version }}-tests -- ${{ matrix.posargs }}

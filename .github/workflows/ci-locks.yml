@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   build-locks:
-    name: "${{ matrix.session }} (${{ matrix.version }})"
+    name: "lock (${{ matrix.version }})"
 
     runs-on: ubuntu-latest
 
@@ -34,7 +34,6 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         version: ["py39", "py310", "py311"]
-        session: ["lock"]
 
     steps:
     - uses: actions/checkout@v3
@@ -83,9 +82,9 @@ jobs:
       with:
         cache_build: 0
 
-    - name: "${{ matrix.session }} (${{ matrix.version }})"
+    - name: "lock (${{ matrix.version }})"
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }} -- --platform osx-64 --platform win-64
+        tox -e ${{ matrix.version }}-lock
 
     - uses: actions/upload-artifact@v3
       with:
@@ -127,7 +126,7 @@ jobs:
         body: |
           🤖 Bleep! Bloop!
 
-          Conda lock files for `linux-64`, `osx-64` and `win-64` auto-updated to latest resolved environment of `geovista` dependencies.
+          Conda lock files for `linux-64` auto-updated to latest resolved environment of `geovista` dependencies.
         labels: |
           new: pull request
           bot

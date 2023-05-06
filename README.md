@@ -80,13 +80,7 @@ Change to the root directory:
 ```shell
 cd geovista
 ```
-Create the `geovista-dev` conda development environment for your preferred platform (`linux`, `osx` or `win`) and
-Python version e.g.,
-```shell
-conda create -n geovista-dev --file requirements/locks/py311-lock-linux-64.txt
-```
-Note that, the `requirements/locks` directory contains fully resolved conda package environments, which are automatically
-updated on a weekly basis. Alternatively, to get the latest package dependencies, simply:
+Create the `geovista-dev` conda development environment:
 ```shell
 conda env create --file requirements/geovista.yml
 ```
