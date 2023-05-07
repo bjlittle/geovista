@@ -75,6 +75,7 @@ jobs:
       fail-fast: false
       matrix:
         version: ["py39", "py310", "py311"]
+        session: ["env"]
 
     steps:
     - uses: actions/checkout@v3
@@ -131,11 +132,13 @@ jobs:
         lock_file: ${{ env.LOCK_FILE }}
 
     - name: "test wheel (${{ matrix.version }})"
+      env:
+        TESTENV: "${{ matrix.version }}-${{ matrix.session }}"
       run: |
         WHEEL=$(ls -1 dist/*.whl)
-        tox -e ${{ matrix.version }}-env --run-command "python -m pip uninstall --yes ${WHEEL}"
-        tox -e ${{ matrix.version }}-env --run-command "python -m pip install --no-deps ${WHEEL}"
-        tox -e ${{ matrix.version }}-env --run-command "python -c 'import geovista; print(geovista.__version__)'"
+        tox -e ${{ env.TESTENV }} --run-command "python -m pip uninstall --yes ${WHEEL}"
+        tox -e ${{ env.TESTENV }} --run-command "python -m pip install --no-deps ${WHEEL}"
+        tox -e ${{ env.TESTENV }} --run-command "python -c 'import geovista; print(geovista.__version__)'"
 
 
   show-artifacts:
