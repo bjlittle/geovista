@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   build-locks:
-    name: "lock (${{ matrix.version }})"
+    name: "${{ matrix.session }} (${{ matrix.version }})"
 
     runs-on: ubuntu-latest
 
@@ -34,6 +34,7 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         version: ["py39", "py310", "py311"]
+        session: ["lock"]
 
     steps:
     - uses: actions/checkout@v3

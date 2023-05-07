@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   tests:
-    name: "tests (${{ matrix.version }})"
+    name: "${{ matrix.session }} (${{ matrix.version }})"
 
     runs-on: ${{ matrix.os }}
 
@@ -39,6 +39,7 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         version: ["py39", "py310", "py311"]
+        session: ["tests"]
         include:
           - os: "ubuntu-latest"
             version: "py311"
@@ -56,7 +57,7 @@ jobs:
         CACHE_WEEKS: 2
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-        echo "LOCK_FILE=requirements/locks/${{ matrix.version }}-lock-${{ matrix.platform }}-64.txt" >> ${GITHUB_ENV}
+        echo "LOCK_FILE=requirements/locks/${{ matrix.version }}-lock-linux-64.txt" >> ${GITHUB_ENV}
 
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
@@ -101,8 +102,8 @@ jobs:
         cache_build: 0
         lock_file: ${{ env.LOCK_FILE }}
 
-    - name: "tests (${{ matrix.version }})"
+    - name: "${{ matrix.session }} (${{ matrix.version }})"
       env:
         POST_COMMAND: ${{ matrix.post-command }}
       run: |
-        tox -e ${{ matrix.version }}-tests -- ${{ matrix.posargs }}
+        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.posargs }}
