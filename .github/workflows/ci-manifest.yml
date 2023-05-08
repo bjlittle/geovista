@@ -5,14 +5,16 @@ name: ci-manifest
 
 on:
   pull_request:
-    branches:
-      - "*"
 
   push:
-    branches-ignore:
-      - "conda-lock-auto-update"
-      - "pre-commit-ci-update-config"
-      - "dependabot/*"
+    branches:
+      - "main"
+      - "v*x"
+      - "!conda-lock-auto-update"
+      - "!pre-commit-ci-update-config"
+      - "!dependabot/*"
+    tags:
+      - "v*"
 
   workflow_dispatch:
 

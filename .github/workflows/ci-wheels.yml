@@ -12,16 +12,16 @@ name: ci-wheels
 
 on:
   pull_request:
-    branches:
-      - "*"
 
   push:
+    branches:
+      - "main"
+      - "v*x"
+      - "!conda-lock-auto-update"
+      - "!pre-commit-ci-update-config"
+      - "!dependabot/*"
     tags:
       - "v*"
-    branches-ignore:
-      - "conda-lock-auto-update"
-      - "pre-commit-ci-update-config"
-      - "dependabot/*"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
