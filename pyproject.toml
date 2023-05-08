@@ -123,14 +123,14 @@ zip-safe = false
 
 
 [tool.setuptools.dynamic]
-dependencies = {file = ["requirements/core.txt"]}
+dependencies = {file = ["requirements/pypi-core.txt"]}
 readme = {file = "README.md", content-type = "text/markdown"}
 
 
 [tool.setuptools.dynamic.optional-dependencies]
-cmap = {file = ["requirements/optional-cmap.txt"]}
-docs = {file = ["requirements/optional-docs.txt"]}
-test = {file = ["requirements/optional-test.txt"]}
+cmap = {file = ["requirements/pypi-optional-cmap.txt"]}
+docs = {file = ["requirements/pypi-optional-docs.txt"]}
+test = {file = ["requirements/pypi-optional-test.txt"]}
 
 
 [tool.setuptools.packages.find]
