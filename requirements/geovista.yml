@@ -13,6 +13,7 @@ dependencies:
   - cartopy >=0.20
   - click
   - click-default-group
+  - numpy >=1.21
   - platformdirs
   - pooch
   - pyproj >=3.3

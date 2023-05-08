@@ -3,6 +3,7 @@ click
 click-default-group
 cmocean
 netCDF4
+numpy>=1.21
 platformdirs
 pooch
 pyproj>=3.3
