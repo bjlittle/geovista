@@ -1,0 +1,21 @@
+name: ci-label
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v4
+
+      - uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'feat')
+        with:
+          labels: 'type: enhancement'
+
+      - uses: actions/ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'bug') || startsWith(github.event.pull_request.head.ref, 'fix') || startsWith(github.event.pull_request.head.ref, 'patch')
+        with:
+          labels: 'type: bug'

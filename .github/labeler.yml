@@ -1,0 +1,7 @@
+'type: dependencies':
+  - requirements/geovista.yml
+  - requirements/pypi*.txt
+  - requirements/locks/py*.txt
+'type: gha':
+  - .github/*.yml
+  - .github/**/*.yml
