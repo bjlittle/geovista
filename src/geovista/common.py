@@ -1,5 +1,4 @@
-"""
-A package for provisioning common geovista infra-structure.
+"""Provision common geovista infra-structure and utilities.
 
 Notes
 -----
@@ -99,8 +98,7 @@ ZLEVEL_FACTOR: float = 1e-3
 
 
 def active_kernel() -> bool:
-    """
-    Determine whether we are executing within an ``IPython`` kernel.
+    """Determine whether we are executing within an ``IPython`` kernel.
 
     Returns
     -------
@@ -129,8 +127,7 @@ def calculate_radius(
     mesh: pv.PolyData,
     origin: Optional[tuple[float, float, float]] = None,
 ) -> float:
-    """
-    Determine the radius of the provided mesh.
+    """Determine the radius of the provided mesh.
 
     Note that, assumes that the mesh is a sphere that has not been warped.
 
@@ -185,8 +182,7 @@ def calculate_radius(
 
 
 def nan_mask(data: npt.ArrayLike) -> np.ndarray:
-    """
-    Replaces any masked array values with NaNs.
+    """Replace any masked array values with NaNs.
 
     As a consequence of filling the mask with NaNs, non-float arrays will be
     cast to float.
@@ -218,8 +214,7 @@ def nan_mask(data: npt.ArrayLike) -> np.ndarray:
 def sanitize_data(
     *meshes: Any,
 ) -> None:
-    """
-    Purge standard VTK helper cell and point data index arrays.
+    """Purge standard VTK helper cell and point data index arrays.
 
     Parameters
     ----------
@@ -244,8 +239,7 @@ def sanitize_data(
 
 
 def set_jupyter_backend(backend: Optional[str] = None) -> bool:
-    """
-    Configure the jupyter plotting backend for pyvista.
+    """Configure the jupyter plotting backend for pyvista.
 
     Parameters
     ----------
@@ -284,9 +278,7 @@ def to_lonlat(
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> np.ndarray:
-    """
-    Convert the cartesian `xyz` point on a sphere to geographic longitude
-    and latitude, in degrees.
+    """Convert cartesian `xyz` point on sphere to geographic longitude and latitude.
 
     Parameters
     ----------
@@ -337,9 +329,7 @@ def to_lonlats(
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> np.ndarray:
-    """
-    Convert the cartesian `xyz` points on a sphere to geographic longitudes
-    and latitudes, in degrees.
+    """Convert cartesian `xyz` points on sphere to geographic longitudes and latitudes.
 
     Parameters
     ----------
@@ -410,9 +400,7 @@ def from_spherical(
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> np.ndarray:
-    """
-    Convert the `mesh` ``xyz`` spherical cartesian points to geographic
-    longitude (φ) and latitude (λ) coordinates.
+    """Convert cartesian ``xyz`` spherical `mesh` to geographic longitude and latitude.
 
     Parameters
     ----------
@@ -519,9 +507,7 @@ def to_spherical(
     radius: Optional[float] = None,
     stacked: Optional[bool] = True,
 ) -> np.ndarray:
-    """
-    Convert geographic longitude (φ) and latitude (λ) coordinates to ``xyz``
-    spherical cartesian points.
+    """Convert geographic `longitudes` and `latitudes` to cartesian ``xyz`` points.
 
     Parameters
     ----------
@@ -565,8 +551,7 @@ def to_spherical(
 
 
 def triangulated(surface: pv.PolyData) -> bool:
-    """
-    Determine whether the provided surface is triangulated.
+    """Determine whether the provided mesh is triangulated.
 
     Parameters
     ----------
@@ -588,8 +573,7 @@ def triangulated(surface: pv.PolyData) -> bool:
 
 
 def vtk_warnings_off() -> None:
-    """
-    Disable :mod:`vtk` warning messages.
+    """Disable :mod:`vtk` warning messages.
 
     Notes
     -----
@@ -602,8 +586,7 @@ def vtk_warnings_off() -> None:
 
 
 def vtk_warnings_on() -> None:
-    """
-    Enable :mod:`vtk` warning messages.
+    """Enable :mod:`vtk` warning messages.
 
     Notes
     -----
@@ -623,9 +606,7 @@ def wrap(
     atol: Optional[float] = None,
     dtype: Optional[np.dtype] = None,
 ) -> np.ndarray:
-    """
-    Transform the longitude values to be within the half-open interval
-    [base, base + period).
+    """Transform `longitudes` to be in the half-open interval [base, base + period).
 
     Parameters
     ----------
