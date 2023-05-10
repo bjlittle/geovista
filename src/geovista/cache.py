@@ -1,6 +1,4 @@
-"""
-This module provides convenience functions to access, download and cache
-geovista resources.
+"""Convenience functions to access, download and cache geovista resources.
 
 Notes
 -----
@@ -73,8 +71,7 @@ if os.environ.get("GEOVISTA_POOCH_MUTE"):
 
 
 def _fetch_texture(fname: str, location: Optional[bool] = False) -> TextureLike:
-    """
-    Get the texture resource from cache.
+    """Get the texture resource from cache.
 
     If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
@@ -85,7 +82,7 @@ def _fetch_texture(fname: str, location: Optional[bool] = False) -> TextureLike:
         The base file name of the resource, excluding any directory prefix.
     location : bool, default=False
         Determine whether the absolute path filename to the texture resource
-        location within the cache is returned
+        location within the cache is returned, or the actual texture.
 
     Returns
     -------
@@ -104,9 +101,7 @@ def _fetch_texture(fname: str, location: Optional[bool] = False) -> TextureLike:
 
 
 def blue_marble(location: Optional[bool] = False) -> TextureLike:
-    """
-    Get the NASA Blue Marble Next Generation with topography and bathymetry
-    texture.
+    """Get the NASA Blue Marble Next Generation with topography and bathymetry texture.
 
     If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
@@ -115,7 +110,7 @@ def blue_marble(location: Optional[bool] = False) -> TextureLike:
     ----------
     location : bool, default=False
         Determine whether the absolute path filename to the texture resource
-        location within the cache is returned.
+        location within the cache is returned, or the actual texture.
 
     Returns
     -------
@@ -131,8 +126,7 @@ def blue_marble(location: Optional[bool] = False) -> TextureLike:
 
 
 def checkerboard(location: Optional[bool] = False) -> TextureLike:
-    """
-    Get the UV checker map 4K texture.
+    """Get the UV checker map 4K texture.
 
     If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
@@ -141,7 +135,7 @@ def checkerboard(location: Optional[bool] = False) -> TextureLike:
     ----------
     location : bool, default=False
         Determine whether the absolute path filename to the texture resource
-        location within the cache is returned.
+        location within the cache is returned, or the actual texture.
 
     Returns
     -------
@@ -157,8 +151,7 @@ def checkerboard(location: Optional[bool] = False) -> TextureLike:
 
 
 def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
-    """
-    Get the Natural Earth coastlines for the required resolution.
+    """Get the Natural Earth coastlines for the required resolution.
 
     If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
@@ -191,12 +184,20 @@ def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
 
 
 def natural_earth_1(location: Optional[bool] = False) -> TextureLike:
-    """
-    Get the 1:50m Natural Earth 1 with shaded relief and water texture
-    (down-sampled to 65%).
+    """Get the 1:50m Natural Earth texture.
+
+    This is the Natural Earth 1 with shaded relief and water texture.
+
+    This resource has been down-sampled to 65% of its original resolution.
 
     If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
+
+    Parameters
+    ----------
+    location : bool, default=False
+        Determine whether the absolute path filename to the texture resource
+        location within the cache is returned, or the actual texture.
 
     Returns
     -------
@@ -212,12 +213,21 @@ def natural_earth_1(location: Optional[bool] = False) -> TextureLike:
 
 
 def natural_earth_hypsometric(location: Optional[bool] = False) -> TextureLike:
-    """
-    Get the 1:50m Natural Earth cross-blended hypsometric tints with shaded
-    relief and water texture (down-sampled to 65%).
+    """Get the 1:50m Natural Earth texture.
+
+    This is the Natural Earth cross-blended hypsometric tints with shaded relief and
+    water texture.
+
+    This resource has been down-sampled to 65% of its original resolution.
 
     If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
+
+    Parameters
+    ----------
+    location : bool, default=False
+        Determine whether the absolute path filename to the texture resource
+        location within the cache is returned, or the actual texture.
 
     Returns
     -------
@@ -233,8 +243,7 @@ def natural_earth_hypsometric(location: Optional[bool] = False) -> TextureLike:
 
 
 def reload_registry(fname: Optional[str] = None) -> None:
-    """
-    Refresh the registry of the :data:`CACHE`.
+    """Refresh the registry of the :data:`CACHE`.
 
     Parameters
     ----------
