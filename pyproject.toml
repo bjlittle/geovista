@@ -88,17 +88,19 @@ testpaths = "tests"
 line-length = 88
 target-version = "py39"
 select = [
-    # pyflakes
-    "F",
-    # pycodestyle
-    "E",
-    "W",
     # flake8-bugbear
     "B",
     # flake8-comprehensions
     "C4",
     # isort
     "I",
+    # pycodestyle
+    "E",
+    "W",
+    # pydocstyle
+    "D",
+    # pyflakes
+    "F",
     # pyupgrade
     "UP",
 ]
