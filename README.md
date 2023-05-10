@@ -26,7 +26,7 @@ fix docs pythreejs/panel
 |              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 
-## Philosophy
+## Motivation
 
 The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with a convenient cartographic capability.
 
@@ -42,26 +42,27 @@ Simply put, "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*". Well, t
 
 GeoVista is available on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/).
 
-We recommend using `conda` to install GeoVista 👍
+We recommend using [mamba](https://github.com/mamba-org/mamba) to install GeoVista 👍
 
-### Conda
+### Mamba
 
-GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with [conda](https://docs.conda.io/projects/conda/en/latest/index.html):
-```shell
-conda install -c conda-forge geovista
-```
-or alternatively with [mamba](https://github.com/mamba-org/mamba):
+GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with [mamba](https://github.com/mamba-org/mamba):
 ```shell
 mamba install -c conda-forge geovista
 ```
-For more information see our [conda-forge feedstock](https://github.com/conda-forge/geovista-feedstock).
+or alternatively with [conda](https://docs.conda.io/projects/conda/en/latest/index.html):
+```shell
+conda install -c conda-forge geovista
+```
+For more information see our [conda-forge feedstock](https://github.com/conda-forge/geovista-feedstock) and
+[prefix.dev dashboard](https://prefix.dev/channels/conda-forge/packages/geovista).
 
 ### Pip
 
 GeoVista is available on [PyPI](https://pypi.org/project/geovista/):
 
 ```shell
-pip install geovista[cmap]
+pip install geovista
 ```
 
 ### Developer
