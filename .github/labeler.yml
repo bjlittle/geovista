@@ -4,6 +4,8 @@
   - requirements/locks/py*.txt
 'type: documentation':
   - docs/**/*
+'type: examples':
+  - src/geovista/examples/**/*
 'type: gha':
   - .github/*.yml
   - .github/**/*.yml

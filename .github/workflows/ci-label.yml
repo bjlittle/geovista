@@ -1,3 +1,7 @@
+# Reference:
+#   - https://github.com/actions/labeler
+#   - https://github.com/actions-ecosystem/action-add-labels
+
 name: ci-label
 
 on:
@@ -24,3 +28,8 @@ jobs:
         if: startsWith(github.event.pull_request.head.ref, 'doc') || startsWith(github.event.pull_request.head.ref, 'docs')
         with:
           labels: 'type: documentation'
+
+      - uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'ex')
+        with:
+          labels: 'type: examples'
