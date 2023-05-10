@@ -2,6 +2,8 @@
   - requirements/geovista.yml
   - requirements/pypi*.txt
   - requirements/locks/py*.txt
+'type: documentation':
+  - docs/**/*
 'type: gha':
   - .github/*.yml
   - .github/**/*.yml
