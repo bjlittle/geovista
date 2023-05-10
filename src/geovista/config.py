@@ -1,5 +1,4 @@
-"""
-This module provides geovista resource configuration.
+"""Provide geovista resource configuration.
 
 Notes
 -----
@@ -21,6 +20,7 @@ resources = {
 }
 
 try:
+    # system level override of resources dictionary
     from .siteconfig import update_config
 
     update_config(resources)
@@ -28,6 +28,7 @@ except ImportError:
     pass
 
 try:
+    # user level override of resources dictionary
     from geovistaconfig import update_config
 
     update_config(resources)
