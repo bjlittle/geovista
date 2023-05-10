@@ -15,7 +15,12 @@ jobs:
         with:
           labels: 'type: enhancement'
 
-      - uses: actions/ecosystem/action-add-labels@v1
+      - uses: actions-ecosystem/action-add-labels@v1
         if: startsWith(github.event.pull_request.head.ref, 'bug') || startsWith(github.event.pull_request.head.ref, 'fix') || startsWith(github.event.pull_request.head.ref, 'patch')
         with:
           labels: 'type: bug'
+
+      - uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'doc') || startsWith(github.event.pull_request.head.ref, 'docs')
+        with:
+          labels: 'type: documentation'
