@@ -9,3 +9,7 @@
 'type: gha':
   - .github/*.yml
   - .github/**/*.yml
+'type: infrastructure':
+  - '*'
+'type: testing':
+  - tests/**/*

@@ -15,9 +15,9 @@ jobs:
       - uses: actions/labeler@v4
 
       - uses: actions-ecosystem/action-add-labels@v1
-        if: startsWith(github.event.pull_request.head.ref, 'feat')
+        if: startsWith(github.event.pull_request.head.ref, 'breaking-change')
         with:
-          labels: 'type: enhancement'
+          labels: 'breaking-change'
 
       - uses: actions-ecosystem/action-add-labels@v1
         if: startsWith(github.event.pull_request.head.ref, 'bug') || startsWith(github.event.pull_request.head.ref, 'fix') || startsWith(github.event.pull_request.head.ref, 'patch')
@@ -28,6 +28,11 @@ jobs:
         if: startsWith(github.event.pull_request.head.ref, 'doc') || startsWith(github.event.pull_request.head.ref, 'docs')
         with:
           labels: 'type: documentation'
+
+      - uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'feat')
+        with:
+          labels: 'type: enhancement'
 
       - uses: actions-ecosystem/action-add-labels@v1
         if: startsWith(github.event.pull_request.head.ref, 'ex')
