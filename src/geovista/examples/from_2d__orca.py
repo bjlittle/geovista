@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Importable and runnable geovista example.
+"""Importable and runnable geovista example.
 
 Notes
 -----
@@ -14,9 +13,9 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
-    """
-    This example demonstrates how to create a mesh from 2-D latitude and longitude
-    curvilinear cell bounds. The resulting mesh contains quad cells.
+    """Create a mesh from 2-D latitude and longitude curvilinear cell bounds.
+
+    The resulting mesh contains quad cells.
 
     It uses an ORCA2 global ocean with tri-polar model grid with sea water
     potential temperature data. The data targets the mesh faces/cells.

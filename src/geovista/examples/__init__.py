@@ -1,6 +1,7 @@
-"""
-This module contains various geovista eye-candy examples which are
-importable and runnable as standalone scripts from the command line.
+"""The examples showcase various geovista features and capabilities.
+
+Each example is importable and runnable as a standalone script from the command
+line.
 
 Note that, the examples are installed as part of the geovista package
 and can be easily accessed through the geovista command line interface

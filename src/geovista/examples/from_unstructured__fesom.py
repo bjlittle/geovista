@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Importable and runnable geovista example.
+"""Importable and runnable geovista example.
 
 Notes
 -----
@@ -14,10 +13,10 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
-    """
-    This example demonstrates how to create a mesh from 2-D latitude and longitude
-    unstructured cell bounds. The resulting mesh is formed from masked connectivity,
-    allowing the mesh to contain mixed cell geometries up to 18-sides (octadecagon).
+    """Create a mesh from 2-D latitude and longitude unstructured cell bounds.
+
+    The resulting mesh is formed from masked connectivity, allowing the mesh to contain
+    mixed cell geometries up to 18-sides (octadecagon).
 
     It uses a AWI Climate Model (AWI-CI) Finite Element Sea ice-Ocean Model (FESOM)
     v1.4 unstructured mesh of surface sea temperature data. The data targets the

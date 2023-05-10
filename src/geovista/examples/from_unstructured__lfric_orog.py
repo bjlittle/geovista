@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Importable and runnable geovista example.
+"""Importable and runnable geovista example.
 
 Notes
 -----
@@ -14,10 +13,10 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
-    """
-    This example demonstrates how to create a mesh from CF UGRID 1-D latitude and
-    longitude unstructured cell points and connectivity. The resulting mesh
-    contains quad cells.
+    """Create a mesh from 1-D latitude and longitude unstructured cell points.
+
+    The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
+    cell points and connectivity.
 
     It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
     data.
