@@ -1,7 +1,6 @@
-"""
-This module contains convenience functions to download, cache and load
-geovista sample data, which can then be used by the :mod:`geovista.bridge`
-to generate a mesh.
+"""Download, cache and load geovista sample data.
+
+The sample data can then be used by the :mod:`geovista.bridge` to generate a mesh.
 
 Notes
 -----
@@ -42,6 +41,8 @@ __all__ = [
 
 @dataclass(frozen=True)
 class SampleStructuredXY:
+    """Data container for structured surface."""
+
     lons: npt.ArrayLike
     lats: npt.ArrayLike
     data: npt.ArrayLike = field(default=None)
@@ -53,6 +54,8 @@ class SampleStructuredXY:
 
 @dataclass(frozen=True)
 class SampleUnstructuredXY:
+    """Data container for unstructured surface."""
+
     lons: npt.ArrayLike
     lats: npt.ArrayLike
     connectivity: npt.ArrayLike
@@ -67,9 +70,7 @@ class SampleUnstructuredXY:
 
 
 def capitalise(title: str) -> str:
-    """
-    Format the title by capitalising each word and replacing
-    inappropriate characters.
+    """Capitalise each word and replacing inappropriate characters.
 
     Parameters
     ----------
@@ -93,7 +94,8 @@ def capitalise(title: str) -> str:
 
 
 def fesom(step: Optional[int] = None) -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load AWI-CM FESOM 1.4 unstructured mesh.
 
     Parameters
@@ -158,7 +160,8 @@ def fesom(step: Optional[int] = None) -> SampleUnstructuredXY:
 
 
 def fvcom_tamar() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load PML FVCOM unstructured mesh.
 
     Returns
@@ -205,7 +208,8 @@ def fvcom_tamar() -> SampleUnstructuredXY:
 
 
 def hexahedron() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load DYNAMICO hexahedron unstructured mesh.
 
     Returns
@@ -240,7 +244,8 @@ def hexahedron() -> SampleUnstructuredXY:
 
 
 def icon_soil() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load Icosahedral Nonhydrostatic Weather and Climate Model (ICON)
     global 160km resolution (R02B04 grid) triangular mesh.
 
@@ -282,7 +287,8 @@ def icon_soil() -> SampleUnstructuredXY:
 
 
 def _gungho_lam(fname: str) -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load the GungHo C4 cubed-sphere LAM unstructured mesh.
 
     Parameters
@@ -318,7 +324,8 @@ def _gungho_lam(fname: str) -> SampleUnstructuredXY:
 
 
 def lam_equator() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load the GungHo C4 cubed-sphere LAM unstructured mesh located over
     the equator.
 
@@ -336,7 +343,8 @@ def lam_equator() -> SampleUnstructuredXY:
 
 
 def lam_falklands() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load the GungHo C4 cubed-sphere LAM unstructured mesh located over
     the Falkland Islands.
 
@@ -354,7 +362,8 @@ def lam_falklands() -> SampleUnstructuredXY:
 
 
 def lam_london() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load the GungHo C4 cubed-sphere LAM unstructured mesh located over
     London, UK.
 
@@ -372,7 +381,8 @@ def lam_london() -> SampleUnstructuredXY:
 
 
 def lam_new_zealand() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load the GungHo C4 cubed-sphere LAM unstructured mesh located over
     New Zealand.
 
@@ -390,7 +400,8 @@ def lam_new_zealand() -> SampleUnstructuredXY:
 
 
 def lam_pacific() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load a high-resolution LAM unstructured mesh located over the Pacific Ocean.
 
     Returns
@@ -435,7 +446,8 @@ def lam_pacific() -> SampleUnstructuredXY:
 
 
 def lam_polar() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load the GungHo C4 cubed-sphere LAM unstructured mesh located over the
     Polar cap.
 
@@ -453,7 +465,8 @@ def lam_polar() -> SampleUnstructuredXY:
 
 
 def lam_uk() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load the GungHo C4 cubed-sphere LAM unstructured mesh located over the UK.
 
     Returns
@@ -470,7 +483,8 @@ def lam_uk() -> SampleUnstructuredXY:
 
 
 def lfric_orog() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load CF UGRID global nodal orography unstructured mesh.
 
     Returns
@@ -515,7 +529,8 @@ def lfric_orog() -> SampleUnstructuredXY:
 
 
 def lfric_sst() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load CF UGRID global unstructured mesh.
 
     Returns
@@ -560,7 +575,8 @@ def lfric_sst() -> SampleUnstructuredXY:
 
 
 def oisst_avhrr_sst() -> SampleStructuredXY:
-    """
+    """Download and cache structured surface sample data.
+
     Load NOAA/NCEI OISST AVHRR rectilinear mesh.
 
     Returns
@@ -593,7 +609,8 @@ def oisst_avhrr_sst() -> SampleStructuredXY:
 
 
 def um_orca2() -> SampleStructuredXY:
-    """
+    """Download and cache structured surface sample data.
+
     Load Met Office Unified Model (UM) ORCA2 curvilinear mesh.
 
     Returns
@@ -626,7 +643,8 @@ def um_orca2() -> SampleStructuredXY:
 
 
 def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load the WAVEWATCH III (WW3) unstructured Spherical Multi-Cell (SMC) mesh.
 
     Parameters
@@ -688,7 +706,8 @@ def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
 
 
 def ww3_global_tri() -> SampleUnstructuredXY:
-    """
+    """Download and cache unstructured surface sample data.
+
     Load the WAVEWATCH III (WW3) unstructured triangular mesh.
 
     Returns
