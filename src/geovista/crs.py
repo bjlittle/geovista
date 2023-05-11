@@ -1,5 +1,4 @@
-"""
-This module provides coordinate reference system (CRS) utility functions.
+"""Coordinate reference system (CRS) utility functions.
 
 Notes
 -----
@@ -32,8 +31,7 @@ WGS84 = CRS.from_user_input("epsg:4326")
 
 
 def from_wkt(mesh: pv.PolyData) -> CRS:
-    """
-    Get the :class:`pyproj.CRS` associated with the mesh.
+    """Get the :class:`pyproj.CRS` associated with the mesh.
 
     Parameters
     ----------
@@ -60,9 +58,9 @@ def from_wkt(mesh: pv.PolyData) -> CRS:
 
 
 def get_central_meridian(crs: CRS) -> Optional[float]:
-    """
-    Get the longitude of natural origin, also known as the central meridian,
-    of the CRS.
+    """Retrieve the longitude of natural origin of the `CRS`.
+
+    THe natural origin is also known as the central meridian.
 
     Parameters
     ----------
@@ -94,9 +92,9 @@ def get_central_meridian(crs: CRS) -> Optional[float]:
 
 
 def set_central_meridian(crs: CRS, meridian: float) -> Optional[CRS]:
-    """
-    Set the longitude of natural origin, also known as the central meridian,
-    of the CRS.
+    """Replace the longitude of natural origin in the `CRS`.
+
+    The natural origin is also known as the central meridian.
 
     Note that, the `crs` is immutable, therefore a new instance will be
     returned with the specified central meridian.
