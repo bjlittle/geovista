@@ -1,6 +1,4 @@
-"""
-This module contains geovista specific filters to analyse, transform and
-process geo-located meshes.
+"""Filters to analyse, transform and process geo-located meshes.
 
 These filters leverage and build upon the rich, powerful ecosystem of the
 Visualization Toolkit (VTK).
@@ -59,8 +57,7 @@ def cast_UnstructuredGrid_to_PolyData(
     mesh: pv.UnstructuredGrid,
     clean: Optional[bool] = False,
 ) -> pv.PolyData:
-    """
-    Convert an unstructured grid to a :class:`pyvista.PolyData` instance.
+    """Convert an unstructured grid to a :class:`pyvista.PolyData` instance.
 
     Parameters
     ----------
@@ -105,9 +102,7 @@ def remesh(
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> Remesh:
-    """
-    Slice the surface of the mesh along the `meridian`, and remesh
-    the sliced cells of the mesh using triangulisation.
+    """Slice `mesh` along `meridian` and triangulate any sliced cells.
 
     Parameters
     ----------
