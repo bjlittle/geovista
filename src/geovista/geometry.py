@@ -1,5 +1,4 @@
-"""
-This module provides Natural Earth geometry support.
+"""Provide Natural Earth geometry support.
 
 Notes
 -----
@@ -44,9 +43,7 @@ def add_coastlines(
     plotter: Optional[pv.Plotter] = None,
     **kwargs,
 ) -> pv.Plotter:
-    """
-    Add the specified Natural Earth coastline geometries to a PyVista plotter
-    for rendering.
+    """Add Natural Earth coastline geometries to a `plotter`.
 
     Parameters
     ----------
@@ -97,15 +94,13 @@ def add_coastlines(
 def coastline_geometries(
     resolution: Optional[str] = None,
 ) -> list[np.ndarray]:
-    """
-    Fetch the Natural Earth shapefile coastline geometries for the required
-    resolution.
+    """Fetch Natural Earth coastline shapefile for the required `resolution`.
 
     If the geometries are not already available within the cartopy cache, then
     they will be downloaded.
 
-    The 2D longitude (φ) and latitude (λ) xy coastline geometries will be
-    unpacked as 3D xy0 coordinates i.e., φλ0.
+    The 2-D longitude (φ) and latitude (λ) xy coastline geometries will be
+    unpacked as 3-D xy0 coordinates i.e., φλ0.
 
     Parameters
     ----------
@@ -159,8 +154,7 @@ def coastline_mesh(
     radius: Optional[float] = None,
     geocentric: Optional[bool] = True,
 ) -> pv.PolyData:
-    """
-    Create a mesh of coastline geometries at the specified resolution.
+    """Create a mesh of coastline geometries at the specified `resolution`.
 
     Parameters
     ----------
@@ -226,8 +220,7 @@ def get_coastlines(
     resolution: Optional[str] = None,
     #    geocentric: Optional[bool] = True,
 ) -> pv.PolyData:
-    """
-    Create or fetch the cached mesh of the coastlines.
+    """Create or fetch the cached mesh of the coastlines.
 
     Parameters
     ----------
