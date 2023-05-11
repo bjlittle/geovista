@@ -59,11 +59,13 @@ For more information see our [conda-forge feedstock](https://github.com/conda-fo
 
 ### Pip
 
-GeoVista is available on [PyPI](https://pypi.org/project/geovista/):
+GeoVista is also available on [PyPI](https://pypi.org/project/geovista/):
 
 ```shell
 pip install geovista
 ```
+
+Checkout out our [PyPI Download Stats](https://pypistats.org/packages/geovista), if you like that kinda thing.
 
 ### Developer
 
@@ -83,7 +85,7 @@ cd geovista
 ```
 Create the `geovista-dev` conda development environment:
 ```shell
-conda env create --file requirements/geovista.yml
+mamba env create --file requirements/geovista.yml
 ```
 Now activate the environment and install the `main` development branch of GeoVista:
 ```shell
@@ -409,7 +411,7 @@ geovista examples --help
 The [documentation](https://geovista.readthedocs.io/en/latest/) is built by [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://docs.readthedocs.io/en/stable/).
 -->
 
-## Further Reading
+## Ecosystem
 
 Whilst you're here, why not hop on over to the [pyvista-xarray](https://github.com/pyvista/pyvista-xarray) project and
 check it out!
