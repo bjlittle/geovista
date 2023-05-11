@@ -88,6 +88,10 @@ testpaths = "tests"
 ignore = [
     "D105",  # pydocstyle: undocumented-magic-method
 ]
+extend-exclude = [
+    "docs",
+    "tests",
+]
 line-length = 88
 select = [
     "B",   # flake8-bugbear
