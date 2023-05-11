@@ -417,6 +417,19 @@ check it out!
 It's aiming to provide `xarray DataArray accessors for PyVista to visualize datasets in 3D` for the
 [xarray](https://github.com/pydata/xarray) community, and will be building on top of GeoVista 🎉
 
+## Support
+
+Need help? 🥲
+
+Why not check out our [existing GitHub issues](https://github.com/bjlittle/geovista/issues). See something similar?
+Well, give it a 👍 to raise its priority and feel free to chip in to the conversation. Otherwise, don't hesitate to
+create a [new GitHub issue](https://github.com/bjlittle/geovista/issues/new/choose) instead.
+
+However, if you'd rather have a natter, then head on over to our
+[GitHub Discussions](https://github.com/bjlittle/geovista/discussions). That's definitely the place to wax lyrical all
+things GeoVista!
+
+
 ## License
 
 GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/licenses/BSD-3-Clause.html) license.
