@@ -39,7 +39,7 @@ jobs:
         with:
           labels: 'type: examples'
 
-      - uses: actions-ecosystem/action-add-lables@v1
+      - uses: actions-ecosystem/action-add-labels@v1
         if: startsWith(github.event.pull_request.head.ref, 'perf')
         with:
           labels: 'type: performance'
