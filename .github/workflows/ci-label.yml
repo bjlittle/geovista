@@ -38,3 +38,13 @@ jobs:
         if: startsWith(github.event.pull_request.head.ref, 'ex')
         with:
           labels: 'type: examples'
+
+      - uses: actions-ecosystem/action-add-lables@v1
+        if: startsWith(github.event.pull_request.head.ref, 'perf')
+        with:
+          labels: 'type: performance'
+
+      - uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'debt')
+        with:
+          labels: 'type: tech debt'
