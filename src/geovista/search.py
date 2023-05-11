@@ -1,6 +1,4 @@
-"""
-This module contains convenience functionality to find points or cells
-within a mesh using various techniques.
+"""Support to find points or cells within a mesh using various techniques.
 
 Notes
 -----
@@ -26,8 +24,7 @@ CellIDLike = Union[int, CellIDs]
 
 
 def find_cell_neighbours(mesh: PolyData, cid: CellIDLike) -> CellIDs:
-    """
-    Determine all the cells neighbouring the given `cid` cell/s of the `mesh`.
+    """Find all the cells neighbouring the given `cid` cell/s of the `mesh`.
 
     A cell is deemed to neighbour a `cid` cell if it shares at least one
     vertex.
@@ -75,9 +72,7 @@ def find_nearest_cell(
     z: float | None = 0,
     single: bool | None = False,
 ) -> CellIDLike:
-    """
-    Determine the ``cellID`` of the cell in the `mesh` that is closest
-    to the provided point-of-interest (POI).
+    """Find the cell in the `mesh` that is closest to the point-of-interest (POI).
 
     Assumes that the POI is in the canonical units of the `gvCRS`
     associated with the `mesh`, otherwise assumes geographic longitude

@@ -1,5 +1,4 @@
-"""
-This module provides geodesic operators for geo-located meshes.
+"""Provide geodesic operators for geo-located meshes.
 
 Notes
 -----
@@ -96,6 +95,8 @@ BBOX_PREFERENCE: str = PREFERENCE_POINT
 
 
 class BBox:
+    """A 3-D bounding-box constructed from geodesic lines or great circles."""
+
     def __init__(
         self,
         lons: npt.ArrayLike,
@@ -104,9 +105,7 @@ class BBox:
         c: Optional[int] = BBOX_C,
         triangulate: Optional[bool] = False,
     ):
-        """
-        Create a 3D geodesic bounding-box for extracting an enclosed surface, lines
-        or points.
+        """Create 3-D geodesic bounding-box to extract enclosed mesh, lines or point.
 
         The bounding-box region is specified in terms of its four corners, in
         degrees of longitude and latitude. As the bounding-box is a geodesic, it
@@ -217,17 +216,13 @@ class BBox:
 
     @property
     def mesh(self):
-        """
-        The bounding-box :class:`pyvista.PolyData` mesh.
-
-        """
+        """The bounding-box :class:`pyvista.PolyData` mesh."""
         if self._mesh is None:
             self._generate_bbox_mesh()
         return self._mesh
 
     def _init(self) -> None:
-        """
-        Bootstrap the bounding-box state.
+        """Bootstrap the bounding-box state.
 
         Notes
         -----
@@ -244,7 +239,8 @@ class BBox:
         self._n_points = (self.c + 1) * (self.c + 1)
 
     def _bbox_face_edge_idxs(self) -> np.ndarray:
-        """
+        """Get the bounding-box outer edge indices.
+
         Inspects the index map (_idx_map) topology to determine the sequence
         of indices that define the bounding-box edge/boundary. This sequence of
         indices is open i.e., it's implied that the last index is connected
@@ -275,7 +271,8 @@ class BBox:
         return edge
 
     def _generate_bbox_face(self) -> None:
-        """
+        """Construct 2-D geodetic bounding-box surface defined by corners.
+
         Given the longitude/latitude corners of the bounding-box and the number
         of faces that define the bounding-box mesh i.e., c**2, determine all
         the associated geodesic points (geometry) and indices (topology) of the
@@ -333,7 +330,8 @@ class BBox:
     def _generate_bbox_mesh(
         self, surface: Optional[pv.PolyData] = None, radius: Optional[float] = None
     ) -> None:
-        """
+        """Construct 3-D geodetic bounding-box extruded surface defined by corners.
+
         The bounding-box mesh consists of an inner surface, an outer surface,
         and a skirt that joins these two surfaces together to create a mesh
         that is a manifold.
@@ -414,7 +412,8 @@ class BBox:
                 self._mesh = self._mesh.triangulate()
 
     def _generate_bbox_skirt(self) -> np.ndarray:
-        """
+        """Calculate indices of faces for boundary-box skirt.
+
         Determine the indices of the skirt that will join the inner and outer
         bounding-box surfaces to create a "water-tight" manifold.
 
@@ -443,7 +442,8 @@ class BBox:
     def boundary(
         self, surface: Optional[pv.PolyData] = None, radius: Optional[float] = None
     ) -> pv.PolyData:
-        """
+        """Footprint of bounding-box intersecting on the provided mesh surface.
+
         The region of the bounding-box that intersects on the surface of the mesh
         that will be enclosed.
 
@@ -487,9 +487,7 @@ class BBox:
         outside: Optional[bool] = False,
         preference: str = BBOX_PREFERENCE,
     ) -> pv.PolyData:
-        """
-        Extract the mesh region of the `surface` contained within the
-        bounding-box.
+        """Extract region of the `surface` contained within the bounding-box.
 
         Note that, any `surface` points that are on the edge of the
         bounding-box will be deemed to be inside, and so will the cells
@@ -608,9 +606,7 @@ def line(
     ellps: Optional[str] = ELLIPSE,
     close: Optional[bool] = False,
 ) -> pv.PolyData:
-    """
-    Create a geodesic line consisting of one or more connected geodesic
-    line segments.
+    """Geodesic line consisting of one or more connected geodesic line segments.
 
     Parameters
     ----------
@@ -720,7 +716,8 @@ def npoints(
     include_end: Optional[bool] = False,
     geod: Optional[pyproj.Geod] = None,
 ) -> tuple[tuple[float], tuple[float]]:
-    """
+    """Calculate geodesic mid-points between provided start and end points.
+
     Given a single start-point and end-point, calculate the equally spaced
     intermediate longitude and latitude `npts` points along the geodesic line
     that spans between the start and end points.
@@ -796,7 +793,8 @@ def npoints_by_idx(
     include_end: Optional[bool] = False,
     geod: Optional[pyproj.Geod] = None,
 ) -> tuple[tuple[float], tuple[float]]:
-    """
+    """Calculate geodesic mid-points between provided start and end indices.
+
     Given a single start-point index and end-point index, calculate the equally
     spaced intermediate longitude and latitude `npts` points along the geodesic
     line that spans between the start and end points.
@@ -864,9 +862,7 @@ def panel(
     c: Optional[int] = BBOX_C,
     triangulate: Optional[bool] = False,
 ) -> BBox:
-    """
-    Given a specific cubed-sphere panel, create the associated bounding-box
-    for the panel region.
+    """Create boundary-box for specific cubed-sphere panel.
 
     Parameters
     ----------
@@ -920,8 +916,7 @@ def wedge(
     c: Optional[int] = BBOX_C,
     triangulate: Optional[bool] = False,
 ) -> BBox:
-    """
-    Create a geodesic bounding-box wedge from the North Pole to the South Pole.
+    """Create geodesic bounding-box wedge from the north-pole to the south-pole.
 
     Parameters
     ----------

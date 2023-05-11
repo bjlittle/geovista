@@ -1,5 +1,4 @@
-"""
-This module configures a custom pyvista theme for geovista.
+"""Configures a custom pyvista theme for geovista.
 
 Notes
 -----

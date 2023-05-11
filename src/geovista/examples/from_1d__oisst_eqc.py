@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Importable and runnable geovista example.
+"""Importable and runnable geovista example.
 
 Notes
 -----
@@ -14,11 +13,11 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
-    """
-    This example demonstrates how to create a mesh from 1-D latitude and longitude
-    rectilinear cell bounds. The resulting mesh contains quad cells.
+    """Create a mesh from 1-D latitude and longitude rectilinear cell bounds.
 
-    It uses NOAA/NECI 1/4° Daily Optimum Interpolation Sea Surface Temperature
+    The resulting mesh contains quad cells.
+
+    The example uses NOAA/NECI 1/4° Daily Optimum Interpolation Sea Surface Temperature
     (OISST) v2.1 Advanced Very High Resolution Radiometer (AVHRR) gridded data
     (https://doi.org/10.25921/RE9P-PT57). The data targets the mesh faces/cells.
 

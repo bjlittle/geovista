@@ -1,8 +1,4 @@
-"""
-GeoVista
-========
-
-Cartographic rendering and mesh analytics powered by PyVista.
+"""Cartographic rendering and mesh analytics powered by PyVista.
 
 Provides:
   1. An agnostic bridge to transform rectilinear, curvilinear and unstructured

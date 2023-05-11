@@ -1,5 +1,4 @@
-"""
-This module provides command line interface (CLI) support for the geovista entry-point.
+"""Command line interface (CLI) support for the geovista entry-point.
 
 Notes
 -----
@@ -49,9 +48,7 @@ def _download_group(
     fg_colour: Optional[str] = None,
     summary: Optional[bool] = True,
 ) -> None:
-    """
-    Common utility to download and populate the geovista cache with requested
-    assets.
+    """Download and populate the geovista cache with requested assets.
 
     Only assets which are not in the cache will be downloaded and verified via
     :mod:`pooch`.
@@ -99,8 +96,7 @@ def _download_group(
 
 
 def _plural(quantity: int) -> str:
-    """
-    Convenience to determine whether the provided amount is textually plural.
+    """Determine whether the provided `quantity`` is textually plural.
 
     Parameters
     ----------
@@ -110,7 +106,7 @@ def _plural(quantity: int) -> str:
     Returns
     -------
     str
-        A "s" for a plural quantity, otherwise and empty string.
+        A "s" for a plural quantity, otherwise an empty string.
 
     Notes
     -----
@@ -140,10 +136,7 @@ def _plural(quantity: int) -> str:
     help="Show geovista package version.",
 )
 def main(version: bool, cache: bool) -> None:
-    """
-    To get help for geovista commands, simply use "geovista COMMAND --help".
-
-    """
+    """To get help for geovista commands, simply use "geovista COMMAND --help"."""
     if version:
         click.echo("version ", nl=False)
         click.secho(f"{__version__}", fg=DEFAULT_FG_COLOUR)
@@ -227,10 +220,7 @@ def download(
     raster: bool,
     verify: bool,
 ) -> None:
-    """
-    Download and cache geovista resources (offline support).
-
-    """
+    """Download and cache geovista resources (offline support)."""
     fnames: list[str] = sorted(CACHE.registry_files)
 
     if not fnames:
@@ -365,10 +355,7 @@ def download(
     help="Add a base layer",
 )
 def plot(fname, axes, base) -> None:
-    """
-    Load and render a VTK mesh.
-
-    """
+    """Load and render a VTK mesh."""
     # pylint: disable-next=import-outside-toplevel,unused-import
     import geovista.theme  # noqa: #F401
 
@@ -411,11 +398,8 @@ def plot(fname, axes, base) -> None:
     help="Enable example diagnostics.",
 )
 def examples(run_all, show, run, verbose):
-    """
-    Execute a geovista example script.
-
-    """
-    # account for the "all" option
+    """Execute a geovista example script."""
+    # account for the initial "all" option
     n_scripts = len(SCRIPTS) - 1
 
     if show:

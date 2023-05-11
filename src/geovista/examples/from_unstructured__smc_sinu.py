@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Importable and runnable geovista example.
+"""Importable and runnable geovista example.
 
 Notes
 -----
@@ -14,9 +13,9 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
-    """
-    This example demonstrates how to create a mesh from 2-D latitude and longitude
-    unstructured cell bounds. The resulting mesh contains quad cells.
+    """Create a mesh from 2-D latitude and longitude unstructured cell bounds.
+
+    The resulting mesh contains quad cells.
 
     It uses WAVEWATCH III (WW3) unstructured Spherical Multi-Cell (SMC) sea surface
     wave significant height data located on mesh faces/cells.

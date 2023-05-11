@@ -1,6 +1,6 @@
-"""
-This module provides behaviour specialisation to support a QT geospatial aware
-:class:`pyvistaqt.BackgroundPlotter` and :class:`pyvistaqt.MultiPlotter`.
+"""Provide specialisation to support a QT geospatial aware plotter.
+
+See :class:`pyvistaqt.BackgroundPlotter` and :class:`pyvistaqt.MultiPlotter`.
 
 Notes
 -----
@@ -18,7 +18,8 @@ from .geoplotter import GeoPlotterBase
 
 
 class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
-    """
+    """A QT aware background plotter.
+
     See :class:`geovista.geoplotter.GeoPlotterBase` and
     :class:`pyvistaqt.BackgroundPlotter`.
 
@@ -30,7 +31,8 @@ class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
 
 
 class GeoMultiPlotter(GeoPlotterBase, pvqt.MultiPlotter):
-    """
+    """A QT aware multi-plotter.
+
     See :class:`geovista.geoplotter.GeoPlotterBase` and
     :class:`pyvistaqt.MultiPlotter`.
 

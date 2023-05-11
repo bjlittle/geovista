@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Importable and runnable geovista example.
+"""Importable and runnable geovista example.
 
 Notes
 -----
@@ -14,9 +13,10 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
-    """
-    This example demonstrates how to create a mesh from 1-D latitude and longitude
-    unstructured cell points. The resulting mesh contains triangular cells.
+    """Create a mesh from 1-D latitude and longitude unstructured cell points.
+
+    The resulting mesh contains triangular cells. The connectivity is required to
+    construct the cells from the unstructured points.
 
     It uses an unstructured grid Finite Volume Community Ocean Model (FVCOM) mesh of
     sea floor depth below geoid data.

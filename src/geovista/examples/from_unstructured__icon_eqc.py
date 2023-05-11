@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Importable and runnable geovista example.
+"""Importable and runnable geovista example.
 
 Notes
 -----
@@ -16,9 +15,9 @@ import geovista.theme  # noqa: F401
 
 
 def main() -> None:
-    """
-    This example demonstrates how to create a mesh from 2-D latitude and longitude
-    unstructured cell points. The resulting mesh contains triangular cells.
+    """Create a mesh from 2-D latitude and longitude unstructured cell bounds.
+
+    The resulting mesh contains triangular cells.
 
     It uses Icosahedral Nonhydrostatic Weather and Climate Model (ICON) global 160km
     resolution soil type data, as developed by the Deutscher Wetterdienst (DWD) and

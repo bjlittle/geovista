@@ -1,5 +1,4 @@
-"""
-This module provides minimal geo-located raster utility support.
+"""Minimal geo-located raster utility support.
 
 Notes
 -----
@@ -19,9 +18,7 @@ __all__ = ["wrap_texture"]
 def wrap_texture(
     texture: pv.Texture, central_meridian: Optional[float] = None
 ) -> pv.Texture:
-    """
-    Re-center the texture about the specified central meridian, wrapping
-    the image appropriately.
+    """Re-center and wrap texture about the specified central meridian.
 
     Assumes that the source of the texture has global coverage, is on the Geographic
     projection and uses the WGS84 datum, with square pixels and no rotation.

@@ -1,7 +1,8 @@
-"""
+"""Transform structured grids and unstructured meshes.
+
 This module provides the :class:`geovista.Transform` factory class for
 transforming rectilinear, curvilinear, and unstructured geospatial data
-into geo-located PyVista mesh instances.
+into geo-located :mod:`pyvista` mesh instances.
 
 Notes
 -----
@@ -57,8 +58,7 @@ class Transform:
 
     @staticmethod
     def _as_compatible_data(data: ArrayLike, n_points: int, n_cells: int) -> np.ndarray:
-        """
-        Ensures that the data is compatible with the number of mesh points or cells.
+        """Ensure data is compatible with the number of mesh points or cells.
 
         Note that masked values will be filled with NaNs.
 
@@ -98,7 +98,8 @@ class Transform:
     def _as_contiguous_1d(
         xs: ArrayLike, ys: ArrayLike
     ) -> tuple[np.ndarray, np.ndarray]:
-        """
+        """Construct contiguous 1-D x-axis and y-axis bounds arrays.
+
         Verify and return a contiguous (N+1,) x-axis and (M+1,) y-axis
         bounds array, that will be then used afterwards to build a (M, N)
         contiguous quad-mesh consisting of M*N faces.
@@ -174,8 +175,7 @@ class Transform:
 
     @staticmethod
     def _create_connectivity_m1n1(shape: Shape) -> np.ndarray:
-        """
-        Create the connectivity for the 2-D quad-mesh from the node `shape`.
+        """Create 2-D quad-mesh connectivity from node `shape`.
 
         The connectivity ordering of the quad-mesh face nodes (points) is
         anti-clockwise, as follows:
@@ -222,8 +222,7 @@ class Transform:
 
     @staticmethod
     def _create_connectivity_mn4(shape: Shape) -> np.ndarray:
-        """
-        Create the connectivity for the 2-D quad-mesh from the face `shape`.
+        """Create 2-D quad-mesh connectivity from face `shape`.
 
         The connectivity ordering of the quad-mesh face nodes (points) is
         anti-clockwise, as follows:
@@ -264,7 +263,8 @@ class Transform:
 
     @staticmethod
     def _verify_2d(xs: ArrayLike, ys: ArrayLike) -> None:
-        """
+        """Ensure compatible quad-mesh dimensionality and shape.
+
         Verify the fitness of the provided x-values and y-values to create
         a (M, N) quad-mesh consisting of M*N faces.
 
@@ -305,8 +305,10 @@ class Transform:
 
     @staticmethod
     def _verify_connectivity(connectivity: Shape) -> None:
-        """
-        Ensure that the connectivity shape tuple is 2-D and minimal.
+        """Ensure compatible 2-D connectivity.
+
+        The connectivity shape must be 2-D and contain at least the minimal number of
+        indices to construct a mesh with a single triangular face.
 
         Parameters
         ----------
@@ -349,8 +351,7 @@ class Transform:
         zlevel: Optional[int] = None,
         clean: Optional[bool] = DEFAULT_CLEAN,
     ) -> pv.PolyData:
-        """
-        Build a quad-faced mesh from contiguous 1-D x-values and y-values.
+        """Build a quad-faced mesh from contiguous 1-D x-values and y-values.
 
         This allows the construction of a uniform or rectilinear quad-faced
         (M, N) mesh grid, where the mesh has M-faces in the y-axis, and
@@ -432,8 +433,7 @@ class Transform:
         zlevel: Optional[int] = None,
         clean: Optional[bool] = DEFAULT_CLEAN,
     ) -> pv.PolyData:
-        """
-        Build a quad-faced mesh from 2-D x-values and y-values.
+        """Build a quad-faced mesh from 2-D x-values and y-values.
 
         This allows the construction of a uniform, rectilinear or curvilinear
         quad-faced (M, N) mesh grid, where the mesh has M-faces in the y-axis,
@@ -537,8 +537,7 @@ class Transform:
         zlevel: Optional[int] = None,
         clean: Optional[bool] = DEFAULT_CLEAN,
     ) -> pv.PolyData:
-        """
-        Build a mesh from unstructured 1-D x-values and y-values.
+        """Build a mesh from unstructured 1-D x-values and y-values.
 
         The `connectivity` defines the topology of faces within the
         unstructured mesh. This is represented in terms of indices into the
@@ -779,9 +778,10 @@ class Transform:
         zlevel: Optional[int] = None,
         clean: Optional[bool] = DEFAULT_CLEAN,
     ):
-        """
-        Convenience factory that builds a mesh from spatial points,
-        connectivity, data and CRS metadata.
+        """Build a mesh from spatial points, connectivity, data and CRS metadata.
+
+        Convenience factory to build multiple identical meshes but with different face
+        or node data.
 
         Parameters
         ----------
@@ -873,9 +873,7 @@ class Transform:
     def __call__(
         self, data: Optional[ArrayLike] = None, name: Optional[str] = None
     ) -> pv.PolyData:
-        """
-        Build the mesh, and attach the provided data to either the points or
-        faces of the mesh.
+        """Build the mesh and attach the provided `data` to faces or nodes.
 
         Parameters
         ----------
@@ -892,7 +890,7 @@ class Transform:
             The spherical mesh.
 
         Notes
-        _____
+        -----
         ..versionadded:: 0.1.0
 
         """

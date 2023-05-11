@@ -1,6 +1,4 @@
-"""
-This module provides core geovista behaviour for processing
-geo-located meshes.
+"""Core geovista behaviour for processing geo-located meshes.
 
 Notes
 -----
@@ -63,15 +61,15 @@ INTERSECTION_SPLINE_N_POINTS: int = 1
 
 @unique
 class SliceBias(Enum):
+    """Enumerate meridian slice bias."""
+
     WEST = -1
     EXACT = auto()
     EAST = auto()
 
 
 class MeridianSlice:
-    """
-    Remesh a geo-located mesh along a meridian, from the north pole to the
-    south pole.
+    """Remesh geo-located mesh along a meridian, from the north-pole to the south-pole.
 
     Remeshing involves introducing a seam into the mesh along the meridian
     of choice, splitting cells bisected by the meridan, which will be
@@ -85,10 +83,11 @@ class MeridianSlice:
         meridian: float,
         offset: Optional[float] = None,
     ):
-        """
-        Create a seam along the `meridian` of the geo-located `mesh`, from the
-        north pole to the south pole, breaking cell connectivity thus allowing
-        the mesh to be correctly projected or texture mapped.
+        """Create a `meridian` seam in the `mesh`.
+
+        The seam extends from the north-pole to the south-pole in a great circle,
+        breaking cell connectivity and thus allowing the geo-located mesh to be
+        correctly projected or texture mapped.
 
         Cells bisected by the `meridian` of choice will be remeshed i.e., split
         and triangulated.
@@ -134,7 +133,8 @@ class MeridianSlice:
     def _intersection(
         self, bias: SliceBias, n_points: Optional[float] = None
     ) -> pv.PolyData:
-        """
+        """Perform the meridian intersection with the mesh.
+
         Cut the mesh along the meridian, with or without a bias, to determine
         the cells that are coincident or bisected.
 
@@ -180,7 +180,8 @@ class MeridianSlice:
         split_cells: Optional[bool] = False,
         clip: Optional[bool] = True,
     ) -> pv.PolyData:
-        """
+        """Reduce mesh to only the cells intersecting with the meridian.
+
         Extract the cells participating in the intersection between the
         meridian (with or without bias) and the mesh.
 
@@ -249,8 +250,7 @@ def add_texture_coords(
     meridian: Optional[float] = None,
     antimeridian: Optional[bool] = False,
 ) -> pv.PolyData:
-    """
-    Compute and attach texture coordinates, in UV space, of the mesh.
+    """Compute and attach texture coordinates, in UV space, to the mesh.
 
     Note that, the mesh will be sliced along the `meridian` to ensure that
     cell connectivity is appropriately disconnected prior to texture mapping.
@@ -304,8 +304,7 @@ def combine(
     data: Optional[bool] = True,
     clean: Optional[bool] = False,
 ) -> pv.PolyData:
-    """
-    Combine two or more meshes into one mesh.
+    """Combine two or more meshes into one mesh.
 
     Only meshes with faces will be combined. Support is not yet provided for combining
     meshes that consist of only points or lines.
@@ -452,9 +451,10 @@ def cut_along_meridian(
     rtol: Optional[float] = None,
     atol: Optional[float] = None,
 ) -> pv.PolyData:
-    """
+    """Inject a `meridian` seam into the `mesh`.
+
     Create a seam along the `meridian` of the geo-located `mesh`, from the
-    north pole to the south pole, breaking cell connectivity thus allowing
+    north-pole to the south-pole, breaking cell connectivity thus allowing
     the mesh to be correctly projected or texture mapped.
 
     Cells bisected by the `meridian` of choice will be remeshed i.e., split
@@ -565,9 +565,11 @@ def cut_along_meridian(
 
 
 def is_projected(mesh: pv.PolyData) -> bool:
-    """
-    Determine whether the provided mesh is a planar projection by inspecting
-    the associated CRS or the mesh geometry.
+    """Determine if the mesh is a planar projection.
+
+    Simple heuristic approach achieved by attempting to inspect the associated CRS of
+    the mesh. If the mesh CRS is unavailable then the weaker contract of inspecting the
+    mesh geometry is used to detect for a flat plane.
 
     Parameters
     ----------
@@ -597,8 +599,7 @@ def is_projected(mesh: pv.PolyData) -> bool:
 
 
 def resize(mesh: pv.PolyData, radius: Optional[float] = None) -> pv.PolyData:
-    """
-    Change the radius of the spherical mesh.
+    """Change the radius of the spherical mesh.
 
     Parameters
     ----------
