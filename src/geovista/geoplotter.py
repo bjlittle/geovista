@@ -1,6 +1,6 @@
-"""
-This module provides behaviour specialisation to support a geospatial aware
-:class:`pyvista.Plotter`.
+"""Provide specialisation to support a geospatial aware plotter.
+
+See :class:`pyvista.Plotter`.
 
 Notes
 -----
@@ -35,8 +35,7 @@ def _get_lfric(
     resolution: Optional[str] = None,
     radius: Optional[float] = None,
 ) -> pv.PolyData:
-    """
-    Retrieve the LFRic unstructured cubed-sphere from the geovista cache.
+    """Retrieve the LFRic unstructured cubed-sphere from the geovista cache.
 
     Parameters
     ----------
@@ -66,8 +65,9 @@ def _get_lfric(
 
 
 class GeoPlotterBase:
-    """
-    Base class with common behaviour for a geospatial aware :class:`pyvista.Plotter`.
+    """Base class with common behaviour for a geospatial aware plotter.
+
+    See :class:`pyvista.Plotter`.
 
     Notes
     -----
@@ -76,13 +76,12 @@ class GeoPlotterBase:
     """
 
     def __init__(self, *args: Optional[Any], **kwargs: Optional[Any]):
-        """
+        """Create geospatial aware plotter.
 
         Parameters
         ----------
         crs : str or CRS, optional
-            The target CRS to render the geo-located meshes added to the
-            plotter.
+            The target CRS to render the geo-located meshes added to the plotter.
         kwargs : any, optional
             See :class:`pyvista.Plotter`.
 
@@ -121,8 +120,7 @@ class GeoPlotterBase:
     def add_base_layer(
         self, mesh: Optional[pv.PolyData] = None, **kwargs: Optional[Any]
     ) -> vtk.vtkActor:
-        """
-        Generate a cube-sphere base layer mesh and add to the plotter scene.
+        """Generate a cube-sphere base layer mesh and add to the plotter scene.
 
         Optionally, a `mesh` may be provided, which better fits the
         geometry of the surface mesh.
@@ -192,8 +190,7 @@ class GeoPlotterBase:
     def add_coastlines(
         self, resolution: Optional[str] = COASTLINE_RESOLUTION, **kwargs: Optional[Any]
     ) -> vtk.vtkActor:
-        """
-        Generate coastlines and add to the plotter scene.
+        """Generate coastlines and add to the plotter scene.
 
         Parameters
         ----------
@@ -216,8 +213,9 @@ class GeoPlotterBase:
         return self.add_mesh(mesh, **kwargs)
 
     def add_mesh(self, mesh: Any, **kwargs: Optional[Any]):
-        """
-        Add the mesh to the plotter scene.
+        """Add the mesh to the plotter scene.
+
+        See :meth:`pyvista.Plotter.add_mesh`.
 
         Parameters
         ----------
@@ -422,7 +420,8 @@ class GeoPlotterBase:
 
 
 class GeoPlotter(GeoPlotterBase, pv.Plotter):
-    """
+    """A geospatial aware plotter.
+
     See :class:`geovista.geoplotter.GeoPlotterBase` and
     :class:`pyvista.Plotter`.
 
