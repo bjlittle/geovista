@@ -85,25 +85,21 @@ testpaths = "tests"
 
 
 [tool.ruff]
-line-length = 88
-target-version = "py39"
-select = [
-    # flake8-bugbear
-    "B",
-    # flake8-comprehensions
-    "C4",
-    # isort
-    "I",
-    # pycodestyle
-    "E",
-    "W",
-    # pydocstyle
-    "D",
-    # pyflakes
-    "F",
-    # pyupgrade
-    "UP",
+ignore = [
+    "D105",  # pydocstyle: undocumented-magic-method
 ]
+line-length = 88
+select = [
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "I",   # isort
+    "E",   # pycodestyle
+    "W",
+    "D",   # pydocstyle
+    "F",   # pyflakes
+    "UP",  # pyupgrade
+]
+target-version = "py39"
 
 
 [tool.ruff.isort]
