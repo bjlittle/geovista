@@ -18,7 +18,7 @@ dependencies:
   - pooch
   - pyproj >=3.3
   - pyvista >=0.38
-  - vtk =9.2.2
+  - vtk >=9.2.6
 
 # pantry dependencies
   - netcdf4
