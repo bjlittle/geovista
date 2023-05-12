@@ -674,9 +674,16 @@ def line(
         )
         raise ValueError(emsg)
 
-    # ensure the specified line geometry is open
+    lons = wrap(lons)
+
+    # check for minimal loop corner case
     if np.isclose(lons[0], lons[-1]) and np.isclose(lats[0], lats[-1]):
-        lons, lats = lons[-1], lats[-1]
+        if n_lons == 2:
+            emsg = (
+                "Require a closed line (loop) geometry containing at least 3 "
+                f"longitude/latitude values, got '{n_lons}'."
+            )
+            raise ValueError(emsg)
 
     line_lons, line_lats = [], []
     geod = pyproj.Geod(ellps=ellps)
