@@ -1,7 +1,4 @@
-"""
-pytest infra-structure for :mod:`geovista.search` unit-tests.
-
-"""
+"""pytest infra-structure for :mod:`geovista.search` unit-tests."""
 from collections import namedtuple
 
 import numpy as np

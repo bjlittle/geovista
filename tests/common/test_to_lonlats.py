@@ -1,7 +1,4 @@
-"""
-Unit-tests for :func:`geovista.common.to_lonlats`.
-
-"""
+"""Unit-tests for :func:`geovista.common.to_lonlats`."""
 import numpy as np
 import pytest
 

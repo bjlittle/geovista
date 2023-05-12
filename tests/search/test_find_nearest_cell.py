@@ -1,7 +1,4 @@
-"""
-Unit-tests for :func:`geovista.search.find_nearest_cell`.
-
-"""
+"""Unit-tests for :func:`geovista.search.find_nearest_cell`."""
 import pytest
 
 from geovista.common import from_spherical, to_lonlat

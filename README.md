@@ -421,7 +421,7 @@ It's aiming to provide `xarray DataArray accessors for PyVista to visualize data
 
 ## Support
 
-Need help? 🥲
+Need help? 😢
 
 Why not check out our [existing GitHub issues](https://github.com/bjlittle/geovista/issues). See something similar?
 Well, give it a 👍 to raise its priority and feel free to chip in to the conversation. Otherwise, don't hesitate to

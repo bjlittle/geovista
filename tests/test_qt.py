@@ -1,7 +1,4 @@
-"""
-Unit-tests for :mod:`geovista.qt`.
-
-"""
+"""Unit-tests for :mod:`geovista.qt`."""
 import pytest
 
 

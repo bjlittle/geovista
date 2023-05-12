@@ -95,6 +95,7 @@ disable=raw-checker-failed,
         too-many-instance-attributes,
         unused-import,
         duplicate-code,
+        missing-function-docstring,
         PyLintPython3_E5110
 
 
