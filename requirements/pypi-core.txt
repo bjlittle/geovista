@@ -8,4 +8,4 @@ platformdirs
 pooch
 pyproj>=3.3
 pyvista>=0.38
-vtk
+vtk>=9.2.6
