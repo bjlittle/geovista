@@ -16,6 +16,7 @@ from shapely.geometry.multilinestring import MultiLineString
 from .common import (
     GV_FIELD_RADIUS,
     RADIUS,
+    ZLEVEL_FACTOR,
     from_spherical,
     set_jupyter_backend,
     to_spherical,
@@ -183,7 +184,7 @@ def coastline_mesh(
         resolution = COASTLINE_RESOLUTION
 
     # TODO: address "fudge-factor" zlevel
-    radius = RADIUS + RADIUS / 1e4 if radius is None else abs(radius)
+    radius = RADIUS + RADIUS * ZLEVEL_FACTOR if radius is None else abs(radius)
 
     geoms = coastline_geometries(resolution=resolution)
     npoints_per_geom = [geom.shape[0] for geom in geoms]

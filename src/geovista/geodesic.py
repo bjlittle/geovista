@@ -15,7 +15,7 @@ import numpy.typing as npt
 import pyproj
 import pyvista as pv
 
-from .common import RADIUS, calculate_radius, to_spherical, wrap
+from .common import RADIUS, ZLEVEL_FACTOR, calculate_radius, to_spherical, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
 
 __all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
@@ -470,7 +470,7 @@ class BBox:
         self._generate_bbox_mesh(surface=surface, radius=radius)
 
         # TODO: address "fudge-factor" z-level
-        radius = self._surface_radius + self._surface_radius / 1e4
+        radius = self._surface_radius + self._surface_radius * ZLEVEL_FACTOR
 
         edge_idxs = self._bbox_face_edge_idxs()
         edge_lons = self._bbox_lons[edge_idxs]
@@ -602,8 +602,8 @@ def line(
     lats: npt.ArrayLike,
     surface: Optional[pv.PolyData] = None,
     radius: Optional[float] = None,
-    npts: Optional[int] = GEODESIC_NPTS,
-    ellps: Optional[str] = ELLIPSE,
+    npts: Optional[int] = None,
+    ellps: Optional[str] = None,
     close: Optional[bool] = False,
 ) -> pv.PolyData:
     """Geodesic line consisting of one or more connected geodesic line segments.
@@ -649,7 +649,13 @@ def line(
     radius = RADIUS if radius is None else abs(radius)
 
     # TODO: address "fudge-factor" z-level
-    radius += radius / 1e4
+    radius += radius * ZLEVEL_FACTOR
+
+    if npts is None:
+        npts = GEODESIC_NPTS
+
+    if ellps is None:
+        ellps = ELLIPSE
 
     if not isinstance(lons, Iterable):
         lons = [lons]
