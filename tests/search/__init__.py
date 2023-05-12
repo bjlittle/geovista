@@ -1,4 +1,1 @@
-"""
-Unit-tests for :mod:`geovista.search`.
-
-"""
+"""Unit-tests for :mod:`geovista.search`."""

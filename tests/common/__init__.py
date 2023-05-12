@@ -1,4 +1,1 @@
-"""
-Unit-tests for :mod:`geovista.common`.
-
-"""
+"""Unit-tests for :mod:`geovista.common`."""
