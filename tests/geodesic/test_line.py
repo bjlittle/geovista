@@ -49,9 +49,11 @@ def test_npts(nsamples, npts):
     "nsamples",
     range(2, 11),
 )
-def test_contains_sample_points(nsamples):
-    lons = lats = np.arange(nsamples, dtype=float)
+def test_contains_sample_points(lfric_sst, nsamples):
+    lons = lats = range(nsamples)
     result = line(lons, lats)
     radius = RADIUS + RADIUS * ZLEVEL_FACTOR
     xyz = to_spherical(lons, lats, radius=radius)
+    np.testing.assert_array_equal(xyz, result.points[::GEODESIC_NPTS])
+    result = line(lons, lats, surface=lfric_sst)
     np.testing.assert_array_equal(xyz, result.points[::GEODESIC_NPTS])
