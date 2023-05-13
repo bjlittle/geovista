@@ -34,7 +34,8 @@ def test_lons_lats__loop_minimal_fail():
 
 
 @pytest.mark.parametrize(
-    "nsamples,npts", [(2, None), (2, 64), (3, 128), (4, 256), (8, 512)]
+    "nsamples,npts",
+    [(2, None), (2, 64), (3, 128), (4, 256), (8, 512)],
 )
 def test_npts(nsamples, npts):
     lons = lats = range(nsamples)
@@ -57,3 +58,20 @@ def test_contains_sample_points(lfric_sst, nsamples):
     np.testing.assert_array_equal(xyz, result.points[::GEODESIC_NPTS])
     result = line(lons, lats, surface=lfric_sst)
     np.testing.assert_array_equal(xyz, result.points[::GEODESIC_NPTS])
+
+
+@pytest.mark.parametrize(
+    "lons,lats",
+    [
+        (0, [90, 0, -90]),
+        ([0], (90, 45, 0, -45, -90)),
+        ([0, 90, 180], 0),
+        ([0, 45, 90, 135, 180], [0]),
+    ],
+)
+def test_auto_repeat(lons, lats):
+    result = line(lons, lats)
+    lons, lats = np.asanyarray(lons), np.asanyarray(lats)
+    n_samples = np.max([lons.size, lats.size])
+    n_points = (n_samples - 1) * GEODESIC_NPTS + 1
+    assert result.n_points == n_points

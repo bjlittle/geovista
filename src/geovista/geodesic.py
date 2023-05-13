@@ -610,7 +610,7 @@ def line(
 
     Note that, as a convenience, if a single value is provided for `lons` and ``N``
     values are provided for `lats`, then the longitude value will be automatically
-    repeated ``M`` times, and vice versa. Where ``N > 2``.
+    repeated ``N`` times, and vice versa. Where ``N >= 2``.
 
     Parameters
     ----------
