@@ -608,6 +608,10 @@ def line(
 ) -> pv.PolyData:
     """Geodesic line consisting of one or more connected geodesic line segments.
 
+    Note that, as a convenience, if a single value is provided for `lons` and ``N``
+    values are provided for `lats`, then the longitude value will be automatically
+    repeated ``M`` times, and vice versa. Where ``N > 2``.
+
     Parameters
     ----------
     lons : ArrayLike
@@ -659,11 +663,20 @@ def line(
 
     if not isinstance(lons, Iterable):
         lons = [lons]
+
     if not isinstance(lats, Iterable):
         lats = [lats]
 
-    lons = np.asanyarray(lons)
-    lats = np.asanyarray(lats)
+    lons, lats = np.asanyarray(lons), np.asanyarray(lats)
+
+    # check whether to auto-repeat lons or lats
+    if lons.size == 1 or lats.size == 1:
+        if lons.size + lats.size > 2:
+            if lons.size == 1:
+                lons = np.repeat(lons[0], lats.size)
+            else:
+                lats = np.repeat(lats[0], lons.size)
+
     n_lons, n_lats = lons.size, lats.size
 
     if n_lons != n_lats:
