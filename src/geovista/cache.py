@@ -5,7 +5,7 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-from importlib.resources import open_text
+from importlib.resources import files
 import os
 from typing import Optional, Union
 
@@ -64,7 +64,9 @@ CACHE: pooch.Pooch = pooch.create(
     },
 )
 
-CACHE.load_registry(open_text(__package__, "registry.txt"))
+CACHE.load_registry(
+    (files(__package__) / "registry.txt").open("r", encoding="utf-8", errors="strict")
+)
 
 if os.environ.get("GEOVISTA_POOCH_MUTE"):
     pooch.utils.get_logger().setLevel("WARNING")
@@ -257,5 +259,7 @@ def reload_registry(fname: Optional[str] = None) -> None:
 
     """
     if fname is None:
-        fname = open_text(__package__, "registry.txt")
+        fname = (files(__package__) / "registry.txt").open(
+            "r", encoding="utf-8", errors="strict"
+        )
     CACHE.load_registry(fname)
