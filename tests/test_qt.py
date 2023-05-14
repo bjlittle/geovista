@@ -3,7 +3,8 @@ import pytest
 
 
 def test_import():
-    """
+    """Test the pyvistaqt optional dependency.
+
     The test environment may or may not contain the "pyvistaqt" package.
     This test only checks that the expected exception is raised when it
     detects that the package is not already available in the test

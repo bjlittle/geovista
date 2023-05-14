@@ -13,6 +13,7 @@ Vertex = namedtuple("Vertex", ["pid", "cids"])
 
 @pytest.fixture
 def lam_uk():
+    """Fixture generates a Local Area Model mesh with indexed faces and points."""
     mesh = sample_lam_uk()
     mesh.cell_data["ids"] = np.arange(mesh.n_cells)
     mesh.point_data["ids"] = np.arange(mesh.n_points)
@@ -49,6 +50,7 @@ def lam_uk():
     ]
 )
 def vertex(request):
+    """Fixture enumerates the lam_uk cell-IDs associated with the point-ID."""
     return request.param
 
 
@@ -61,6 +63,7 @@ def vertex(request):
     ]
 )
 def vertex_corner(request):
+    """Fixture enumerates the single lam_uk cell-ID for the corner point-ID (pid)."""
     return request.param
 
 
@@ -85,6 +88,7 @@ def vertex_corner(request):
     ]
 )
 def poi(request):
+    """Fixture gives the lam_uk cell-ID (cid) containing the point-of-interest (POI)."""
     return request.param
 
 
@@ -109,4 +113,5 @@ def poi(request):
     ]
 )
 def neighbours(request):
+    """Fixture enumerates the expected neighbouring cell-IDs of the given cell-ID."""
     return request.param
