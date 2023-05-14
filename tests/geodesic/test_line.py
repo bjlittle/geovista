@@ -11,6 +11,7 @@ from geovista.geodesic import GEODESIC_NPTS, line
     [(range(10), range(20)), (list(range(10)), list(range(20)))],
 )
 def test_lons_lats__size_unequal_fail(lons, lats):
+    """Test trap of lons and lats containing different number of points each."""
     emsg = "Require the same number"
     with pytest.raises(ValueError, match=emsg):
         _ = line(lons, lats)
@@ -21,12 +22,14 @@ def test_lons_lats__size_unequal_fail(lons, lats):
     [(0, 1), ([0], [1])],
 )
 def test_lons_lats__size_minimal_fail(lons, lats):
+    """Test trap of not enough points to render a line."""
     emsg = "containing at least 2 longitude/latitude"
     with pytest.raises(ValueError, match=emsg):
         _ = line(lons, lats)
 
 
 def test_lons_lats__loop_minimal_fail():
+    """Test trap of a closed line (loop) not containing enough points."""
     lons = lats = [0, 0]
     emsg = "containing at least 3 longitude/latitude"
     with pytest.raises(ValueError, match=emsg):
@@ -38,6 +41,7 @@ def test_lons_lats__loop_minimal_fail():
     [(2, None), (2, 64), (3, 128), (4, 256), (8, 512)],
 )
 def test_npts(nsamples, npts):
+    """Test line containing various number of segments at increasing resolution."""
     lons = lats = range(nsamples)
     result = line(lons, lats, npts=npts)
     if npts is None:
@@ -51,6 +55,7 @@ def test_npts(nsamples, npts):
     range(2, 11),
 )
 def test_contains_sample_points(lfric_sst, nsamples):
+    """Test resulting line must contain the original sample points."""
     lons = lats = range(nsamples)
     result = line(lons, lats)
     radius = RADIUS + RADIUS * ZLEVEL_FACTOR
@@ -70,6 +75,7 @@ def test_contains_sample_points(lfric_sst, nsamples):
     ],
 )
 def test_auto_repeat(lons, lats):
+    """Test the auto-repeat convenience for lons or lats generation."""
     result = line(lons, lats)
     lons, lats = np.asanyarray(lons), np.asanyarray(lats)
     n_samples = np.max([lons.size, lats.size])

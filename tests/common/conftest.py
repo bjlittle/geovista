@@ -15,6 +15,8 @@ XYLike = Union[tuple[float, float], ArrayLike]
 
 @dataclass
 class Convert:
+    """Container for actual cartesian to expected geographical longitude/latitude."""
+
     xyz: XYZLike
     expected: XYLike
 
@@ -52,19 +54,23 @@ manyparams = [Convert(xyz, expected) for (xyz, expected) in [list(zip(*values))]
 
 @pytest.fixture(params=params)
 def degrees(request):
+    """Fixture for testing single value from cartesian to geographic degrees."""
     return request.param
 
 
 @pytest.fixture
 def radians(degrees):
+    """Fixture for testing single value from cartesian to geographic radians."""
     return Convert(degrees.xyz, np.radians(degrees.expected))
 
 
 @pytest.fixture(params=manyparams)
 def manydegrees(request):
+    """Fixture for testing multiple values from cartesian to geographic degrees."""
     return request.param
 
 
 @pytest.fixture
 def manyradians(manydegrees):
+    """Fixture for testing multiple values from cartesian to geographic radians."""
     return Convert(manydegrees.xyz, np.radians(np.array(manydegrees.expected)))
