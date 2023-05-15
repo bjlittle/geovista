@@ -31,7 +31,7 @@ def main() -> None:
     sample = oisst_avhrr_sst()
 
     # create the mesh from the sample data
-    mesh = gv.Transform.from_1d(sample.lons, sample.lats, data=sample.data, clean=False)
+    mesh = gv.Transform.from_1d(sample.lons, sample.lats, data=sample.data)
 
     # provide mesh diagnostics via logging
     gv.logger.info("%s", mesh)

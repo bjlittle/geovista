@@ -37,7 +37,7 @@ Shape = tuple[int]
 CRSLike = Union[int, str, dict, CRS]
 
 #: Default mesh cleaning.
-DEFAULT_CLEAN: bool = True
+DEFAULT_CLEAN: bool = False
 
 #: Default array name for data on the mesh points/vertices/nodes.
 DEFAULT_NAME_POINTS: str = "point_data"
@@ -392,9 +392,10 @@ class Transform:
         zlevel : int, default=0
             The z-axis level/offset of the mesh, giving a computed `radius`
             of ``radius + zlevel * zfactor``.
-        clean : bool, default=True
+        clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
-            and/or remove degenerate cells in the resultant mesh.
+            and/or remove degenerate cells in the resultant mesh. Defaults to
+            :data:`DEFAULT_CLEAN`.
 
         Returns
         -------
@@ -475,9 +476,10 @@ class Transform:
         zlevel : int, default=0
             The z-axis level/offset of the mesh, giving a computed `radius`
             of ``radius + zlevel * zfactor``.
-        clean : bool, default=True
+        clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
-            and/or remove degenerate cells in the resultant mesh.
+            and/or remove degenerate cells in the resultant mesh. Defaults to
+            :data:`DEFAULT_CLEAN`.
 
         Returns
         -------
@@ -593,9 +595,10 @@ class Transform:
         zlevel : int, default=0
             The z-axis level/offset of the mesh, giving a computed `radius`
             of ``radius + zlevel * zfactor``.
-        clean : bool, default=True
+        clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
-            and/or remove degenerate cells in the resultant mesh.
+            and/or remove degenerate cells in the resultant mesh. Defaults to
+            :data:`DEFAULT_CLEAN`.
 
         Returns
         -------
@@ -821,9 +824,10 @@ class Transform:
         zlevel : int, default=0
             The z-axis level/offset of the mesh, giving a computed `radius`
             of ``radius + zlevel * zfactor``.
-        clean : bool, default=True
+        clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
-            and/or remove degenerate cells in the resultant mesh.
+            and/or remove degenerate cells in the resultant mesh. Defaults to
+            :data:`DEFAULT_CLEAN`.
 
         Notes
         -----
