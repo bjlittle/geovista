@@ -270,7 +270,7 @@ mesh = gv.Transform.from_unstructured(
 
 # Plot the mesh on a Plate Carrée projection using a cartopy CRS.
 plotter = gv.GeoPlotter(crs=ccrs.PlateCarree(central_longitude=180))
-sargs = {"title" f"{sample.name} / {sample.units}"}
+sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 plotter.add_axes()
