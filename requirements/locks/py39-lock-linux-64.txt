@@ -157,7 +157,7 @@ https://conda.anaconda.org/conda-forge/linux-64/debugpy-1.6.7-py39h227be39_0.con
 https://conda.anaconda.org/conda-forge/noarch/decorator-5.1.1-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/defusedxml-0.7.1-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/distlib-0.3.6-pyhd8ed1ab_0.tar.bz2
-https://conda.anaconda.org/conda-forge/linux-64/docutils-0.19-py39hf3d152e_1.tar.bz2
+https://conda.anaconda.org/conda-forge/linux-64/docutils-0.20-py39hf3d152e_0.conda
 https://conda.anaconda.org/conda-forge/noarch/entrypoints-0.4-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.1.1-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/noarch/executing-1.2.0-pyhd8ed1ab_0.tar.bz2
@@ -313,7 +313,7 @@ https://conda.anaconda.org/conda-forge/noarch/ipykernel-6.23.0-pyh210e3f2_0.cond
 https://conda.anaconda.org/conda-forge/noarch/nbconvert-core-7.4.0-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/noarch/pooch-1.7.0-pyha770c72_3.conda
 https://conda.anaconda.org/conda-forge/noarch/pyct-0.4.6-py_0.tar.bz2
-https://conda.anaconda.org/conda-forge/noarch/sphinx-7.0.0-pyhd8ed1ab_0.conda
+https://conda.anaconda.org/conda-forge/noarch/sphinx-7.0.1-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/vtk-io-ffmpeg-9.2.6-qt_py39h1234567_204.conda
 https://conda.anaconda.org/conda-forge/noarch/colorcet-3.0.1-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/ipywidgets-8.0.6-pyhd8ed1ab_0.conda
