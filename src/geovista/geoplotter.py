@@ -7,7 +7,6 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-# pylint: disable=no-member
 from functools import lru_cache
 from typing import Any, Optional, Union
 from warnings import warn
