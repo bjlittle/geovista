@@ -8,7 +8,6 @@ Notes
 
 """
 try:
-    # pylint: disable-next=import-outside-toplevel
     import pyvistaqt as pvqt
 except ImportError as e:
     e.msg = f'{e.msg} - please install the "pyvistaqt" and "pyqt" packages.'

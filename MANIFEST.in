@@ -11,7 +11,6 @@ include .git_archival.txt
 include .gitattributes
 exclude .gitignore
 exclude .pre-commit-config.yaml
-exclude .pylintrc
 exclude .readthedocs.yml
 include *.md
 include CITATION.cff

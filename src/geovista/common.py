@@ -112,11 +112,10 @@ def active_kernel() -> bool:
     result = True
 
     try:
-        # pylint: disable-next=import-outside-toplevel
         from IPython import get_ipython
 
         # the following statement may or may not raise an exception
-        _ = get_ipython().kernel  # pylint: disable=pointless-statement
+        _ = get_ipython().kernel
     except (AttributeError, ModuleNotFoundError):
         result = False
 

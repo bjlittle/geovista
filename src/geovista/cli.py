@@ -356,7 +356,6 @@ def download(
 )
 def plot(fname, axes, base) -> None:
     """Load and render a VTK mesh."""
-    # pylint: disable-next=import-outside-toplevel,unused-import
     import geovista.theme  # noqa: #F401
 
     mesh = pv.read(fname)
