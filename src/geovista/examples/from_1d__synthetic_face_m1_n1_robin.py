@@ -32,7 +32,7 @@ def main() -> None:
 
     # create the mesh from the synthetic data
     name = "Synthetic Cells"
-    mesh = gv.Transform.from_1d(lons, lats, data=data, name=name, clean=False)
+    mesh = gv.Transform.from_1d(lons, lats, data=data, name=name)
 
     # provide mesh diagnostics via logging
     gv.logger.info("%s", mesh)

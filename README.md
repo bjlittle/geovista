@@ -186,7 +186,6 @@ mesh = gv.Transform.from_unstructured(
     connectivity=sample.connectivity,
     data=sample.face,
     name="face",
-    clean=False,
 )
 
 # Warp the mesh nodes by the bathymetry.

@@ -31,7 +31,11 @@ def main() -> None:
 
     # create the mesh from the sample data
     mesh = gv.Transform.from_unstructured(
-        sample.lons, sample.lats, connectivity=sample.connectivity, data=sample.data
+        sample.lons,
+        sample.lats,
+        connectivity=sample.connectivity,
+        data=sample.data,
+        clean=True,
     )
 
     # provide mesh diagnostics via logging

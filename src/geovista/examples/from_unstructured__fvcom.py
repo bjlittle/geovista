@@ -36,7 +36,6 @@ def main() -> None:
         connectivity=sample.connectivity,
         data=sample.face,
         name="face",
-        clean=False,
     )
 
     # provide mesh diagnostics via logging
