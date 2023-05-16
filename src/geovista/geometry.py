@@ -163,9 +163,9 @@ def coastline_mesh(
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m``, or ``10m``. Default to
         :data:`geovista.geometry.COASTLINE_RESOLUTION`.
-    radius : float, default=1.0
-        The radius of the sphere, when geocentric. Defaults to the S2 unit
-        sphere.
+    radius : float, optional
+        The radius of the sphere, when geocentric. Defaults to
+        :data:`geovista.common.RADIUS`.
     geocentric : bool, default=True
         Specify whether the coastlines are xyz geocentric coordinates.
         Otherwise, longitude (φ) and latitude (λ) xy0 coordinates (i.e., φλ0).

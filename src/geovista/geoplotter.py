@@ -40,8 +40,8 @@ def _get_lfric(
     ----------
     resolution : str, default="c96"
         The resolution of the LFRic unstructured cubed-sphere.
-    radius : float, default=1.0
-        The radius of the sphere. Defaults to an S2 unit sphere.
+    radius : float, optional
+        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
 
     Returns
     -------
@@ -129,7 +129,8 @@ class GeoPlotterBase:
         mesh : PolyData, optional
             Use the provided mesh as the base layer.
         radius : float, optional
-            The radius of the spherical mesh to generate as the base layer.
+            The radius of the spherical mesh to generate as the base layer. Defaults
+            to :data:`geovista.common.RADIUS`.
         resolution : str, default="c96"
             The resolution of the cube-sphere to generate as the base layer,
             which may be either ``c48``, ``c96`` or ``c192``.

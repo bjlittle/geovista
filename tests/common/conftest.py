@@ -1,4 +1,4 @@
-"""pytest infra-structure for :mod:`geovista.common` unit-tests."""
+"""pytest fixture infra-structure for :mod:`geovista.common` unit-tests."""
 # pylint: disable=redefined-outer-name
 
 from dataclasses import dataclass
