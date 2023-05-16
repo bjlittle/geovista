@@ -16,7 +16,7 @@ import pyvista as pv
 import vtk
 
 from .common import RADIUS, ZLEVEL_FACTOR, from_spherical
-from .core import add_texture_coords, cut_along_meridian, resize
+from .core import add_texture_coords, calculate_radius, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import COASTLINE_RESOLUTION, get_coastlines
@@ -38,8 +38,9 @@ def _get_lfric(
 
     Parameters
     ----------
-    resolution : str, default="c96"
-        The resolution of the LFRic unstructured cubed-sphere.
+    resolution : str, optional
+        The resolution of the LFRic unstructured cubed-sphere. Defaults to
+        :data:`geovista.samples.DEFAULT_LFRIC_RESOLUTION`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
 
@@ -80,9 +81,9 @@ class GeoPlotterBase:
         Parameters
         ----------
         crs : str or CRS, optional
-            The target CRS to render the geo-located meshes added to the plotter.
+            The target CRS to render geolocated meshes added to the plotter.
         kwargs : any, optional
-            See :class:`pyvista.Plotter`.
+            See :class:`pyvista.Plotter` for further details.
 
         Notes
         -----
@@ -131,9 +132,10 @@ class GeoPlotterBase:
         radius : float, optional
             The radius of the spherical mesh to generate as the base layer. Defaults
             to :data:`geovista.common.RADIUS`.
-        resolution : str, default="c96"
+        resolution : str, optional
             The resolution of the cube-sphere to generate as the base layer,
-            which may be either ``c48``, ``c96`` or ``c192``.
+            which may be either ``c48``, ``c96`` or ``c192``. Defaults to
+            :data:`geovista.samples.DEFAULT_LFRIC_RESOLUTION`.
         zfactor : float, optional
             The magnitude factor for z-axis levels (`zlevel`). Defaults to
             :data:`geovista.common.ZLEVEL_FACTOR`.
@@ -168,14 +170,12 @@ class GeoPlotterBase:
             if "zlevel" not in kwargs:
                 kwargs["zlevel"] = -1
         else:
-            original = (
-                abs(float(kwargs.pop("radius"))) if "radius" in kwargs else RADIUS
-            )
+            radius = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else RADIUS
             zfactor = (
                 float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
             )
             zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else -1
-            radius = original + original * zlevel * zfactor
+            radius += radius * zlevel * zfactor
 
         if mesh is not None:
             if radius is not None:
@@ -230,7 +230,7 @@ class GeoPlotterBase:
             the radius will be calculated.
         rtol : float, optional
             The relative tolerance for values close to longitudinal
-            :func:`geovista.common.wrap base + period.
+            :func:`geovista.common.wrap` base + period.
         zfactor : float, optional
             The magnitude factor for z-axis levels (`zlevel`). Defaults to
             :data:`geovista.common.ZLEVEL_FACTOR`.
@@ -304,6 +304,11 @@ class GeoPlotterBase:
                     delta = max(xdelta, ydelta)
                     zoffset = zlevel * zfactor * delta
                 mesh.points[:, 2] = zoffset
+            else:
+                if zlevel:
+                    radius = calculate_radius(mesh) if radius is None else abs(radius)
+                    radius += radius * zlevel * zfactor
+                    mesh = resize(mesh, radius=radius)
 
         return super().add_mesh(mesh, **kwargs)
 

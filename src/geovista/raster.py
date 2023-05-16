@@ -1,4 +1,4 @@
-"""Minimal geo-located raster utility support.
+"""Minimal geolocated raster utility support.
 
 Notes
 -----

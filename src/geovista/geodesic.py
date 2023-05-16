@@ -1,4 +1,4 @@
-"""Provide geodesic operators for geo-located meshes.
+"""Provide geodesic operators for geolocated meshes.
 
 Notes
 -----
