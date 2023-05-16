@@ -22,7 +22,7 @@ def test_cell_centers(lam_uk):
 def test_cell_centers__lam_rotated_pole():
     """Test requires projection support before implementing."""
     # TODO: complete this test case
-    assert 0
+    raise AssertionError()
 
 
 def test_poi(lam_uk, poi):

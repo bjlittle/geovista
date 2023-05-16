@@ -598,15 +598,19 @@ def is_projected(mesh: pv.PolyData) -> bool:
     return result
 
 
-def resize(mesh: pv.PolyData, radius: Optional[float] = None) -> pv.PolyData:
+def resize(
+    mesh: pv.PolyData, radius: Optional[float] = None, inplace: Optional[bool] = False
+) -> pv.PolyData:
     """Change the radius of the spherical mesh.
 
     Parameters
     ----------
     mesh : PolyData
         The mesh to be resized to the provided ``radius``.
-    radius : float, default=1.0
-        The target radius of the ``mesh``.
+    radius : float, optional
+        The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
+    inplace : boolean, default=False
+        Update `mesh` in-place.
 
     Returns
     -------
@@ -628,6 +632,8 @@ def resize(mesh: pv.PolyData, radius: Optional[float] = None) -> pv.PolyData:
     if radius and not np.isclose(calculate_radius(mesh), radius):
         lonlat = from_spherical(mesh)
         xyz = to_spherical(lonlat[:, 0], lonlat[:, 1], radius=radius)
+        if not inplace:
+            mesh = mesh.copy()
         mesh.points = xyz
         mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
 

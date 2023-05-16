@@ -287,8 +287,8 @@ def to_lonlat(
     radians : bool, default=False
         Convert resultant longitude and latitude values to radians.
         Default units are degrees.
-    radius : float, default=1.0
-        The `radius` of the sphere. Defaults to an S2 unit sphere.
+    radius : float, optional
+        The `radius` of the sphere. Defaults to :data:`RADIUS`.
     rtol : float, optional
         The relative tolerance for values close to longitudinal
         :func:`geovista.common.wrap` base + period.
@@ -338,8 +338,8 @@ def to_lonlats(
     radians : bool, default=False
         Convert resultant longitude and latitude values to radians.
         Default units are degrees.
-    radius : float, default=1.0
-        The `radius` of the sphere. Defaults to an S2 unit sphere.
+    radius : float, optional
+        The `radius` of the sphere. Defaults to :data:`RADIUS`.
     stacked : bool, default=True
         Default the resultant shape to be (N, 2), otherwise (2, N).
     rtol : float, optional
@@ -409,7 +409,7 @@ def from_spherical(
         longitude and latitude coordinates.
     radius : float, optional
         The radius of the sphere. If not provided the radius is determined
-        from the mesh.
+        from the `mesh`.
     stacked : bool, default=True
         Specify whether the resultant xy0 coordinates have shape (N, 3).
         Otherwise, they will have shape (3, N).
@@ -515,8 +515,8 @@ def to_spherical(
         The longitude values (degrees) to be converted.
     latitudes : ArrayLike
         The latitude values (degrees) to be converted.
-    radius : float, default=1.0
-        The radius of the sphere. Defaults to an S2 unit sphere.
+    radius : float, optional
+        The radius of the sphere. Defaults to :data:`RADIUS`.
     stacked : bool, default=True
         Specify whether the resultant xyz points have shape (N, 3).
         Otherwise, they will have shape (3, N).

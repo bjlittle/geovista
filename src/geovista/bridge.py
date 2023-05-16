@@ -384,8 +384,8 @@ class Transform:
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        radius : float, default=1.0
-            The radius of the sphere. Defaults to an S2 unit sphere.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zfactor : float, optional
             The proportional multiplier for z-axis levels/offsets. Defaults
             to :data:`ZLEVEL_FACTOR`.
@@ -468,8 +468,8 @@ class Transform:
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        radius : float, default=1.0
-            The radius of the sphere. Defaults to an S2 unit sphere.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zfactor : float, optional
             The proportional multiplier for z-axis levels/offsets. Defaults
             to :data:`ZLEVEL_FACTOR`.
@@ -587,8 +587,8 @@ class Transform:
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        radius : float, default=1.0
-            The radius of the mesh sphere. Defaults to an S2 unit sphere.
+        radius : float, optional
+            The radius of the mesh sphere. Defaults to :data:`geovista.common.RADIUS`.
         zfactor : float, optional
             The proportional multiplier for z-axis levels/offsets. Defaults
             to :data:`ZLEVEL_FACTOR`.
@@ -816,8 +816,8 @@ class Transform:
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        radius : float, default=1.0
-            The radius of the mesh sphere. Defaults to an S2 unit sphere.
+        radius : float, optional
+            The radius of the mesh sphere. Defaults to :data:`geovista.common.RADIUS`.
         zfactor : float, optional
             The proportional multiplier for z-axis levels/offsets. Defaults
             to :data:`ZLEVEL_FACTOR`.

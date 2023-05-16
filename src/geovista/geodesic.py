@@ -347,10 +347,10 @@ class BBox:
         ----------
         surface : PolyData, optional
             The surface that the bounding-box will be enclosing.
-        radius : float, default=1.0
+        radius : float, optional
             The radius of the surface that the bounding-box will be enclosing.
             Note that, the `radius` is only used when the `surface` is not
-            provided.
+            provided. Defaults to :data:`geovista.common.RADIUS`.
 
         Notes
         -----
@@ -452,10 +452,10 @@ class BBox:
         surface : PolyData, optional
             The :class:`pyvista.PolyData` mesh that will be enclosed by the
             bounding-box boundary.
-        radius : float, default=1.0
+        radius : float, optional
             The radius of the mesh that will be enclosed by the bounding-box
             boundary. Note that, the `radius` is only used when the `surface`
-            is not provided.
+            is not provided. Defaults to :data:`geovista.common.RADIUS`.
 
         Returns
         -------
@@ -623,10 +623,10 @@ def line(
         interval [-90, 90].
     surface : PolyData, optional
         The surface that the geodesic line will be rendered over.
-    radius : float, default=1.0
+    radius : float, optional
         The radius of the surface that the geodesic line will be rendered over.
         Note that, the `radius` is only used when the `surface` is not
-        provided.
+        provided. Defaults to :data:`geovista.common.RADIUS`.
     npts : float, default=GEODESIC_NPTS
         The number of equally spaced geodesic points in a line segment, excluding
         the segment end-point, but including the segment start-point i.e., `npts`

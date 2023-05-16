@@ -1,23 +1,11 @@
-"""pytest infra-structure for :mod:`geovista.search` unit-tests."""
+"""pytest fixture infra-structure for :mod:`geovista.search` unit-tests."""
 from collections import namedtuple
 
-import numpy as np
 import pytest
-
-from geovista.samples import lam_uk as sample_lam_uk
 
 Neighbour = namedtuple("Neighbour", ["cid", "expected"])
 POI = namedtuple("POI", ["name", "lon", "lat", "cid"])
 Vertex = namedtuple("Vertex", ["pid", "cids"])
-
-
-@pytest.fixture
-def lam_uk():
-    """Fixture generates a Local Area Model mesh with indexed faces and points."""
-    mesh = sample_lam_uk()
-    mesh.cell_data["ids"] = np.arange(mesh.n_cells)
-    mesh.point_data["ids"] = np.arange(mesh.n_points)
-    return mesh
 
 
 @pytest.fixture(
