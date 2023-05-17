@@ -20,6 +20,7 @@ from .common import (
     RADIUS,
     REMESH_JOIN,
     REMESH_SEAM,
+    ZLEVEL_FACTOR,
     calculate_radius,
     from_spherical,
     sanitize_data,
@@ -599,7 +600,11 @@ def is_projected(mesh: pv.PolyData) -> bool:
 
 
 def resize(
-    mesh: pv.PolyData, radius: Optional[float] = None, inplace: Optional[bool] = False
+    mesh: pv.PolyData,
+    radius: Optional[float] = None,
+    zfactor: Optional[float] = None,
+    zlevel: Optional[int] = None,
+    inplace: Optional[bool] = False,
 ) -> pv.PolyData:
     """Change the radius of the spherical mesh.
 
@@ -609,6 +614,12 @@ def resize(
         The mesh to be resized to the provided ``radius``.
     radius : float, optional
         The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
+    zfactor : float, optional
+        The magnitude factor for the z-axis level (`zlevel`). Defaults to
+        :data:`geovista.common.ZLEVEL_FACTOR`.
+    zlevel : int, default=0
+        The z-axis level. Used in combination with the `zfactor` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
     inplace : boolean, default=False
         Update `mesh` in-place.
 
@@ -626,8 +637,10 @@ def resize(
         emsg = "Cannot resize mesh that appears to be a planar projection."
         raise ValueError(emsg)
 
-    if radius is None:
-        radius = RADIUS
+    radius = RADIUS if radius is None else abs(float(radius))
+    zfactor = ZLEVEL_FACTOR if zfactor is None else float(zfactor)
+    zlevel = 0 if zlevel is None else int(zlevel)
+    radius += radius * zlevel * zfactor
 
     if radius and not np.isclose(calculate_radius(mesh), radius):
         lonlat = from_spherical(mesh)

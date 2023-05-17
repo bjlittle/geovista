@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 import pytest
 import pyvista as pv
 
-from geovista.common import RADIUS
+from geovista.common import RADIUS, ZLEVEL_FACTOR
 from geovista.core import calculate_radius, resize
 
 
@@ -37,3 +37,25 @@ def test_resize(lfric, radius, inplace):
     compare = operator.eq if inplace or np.isclose(radius, RADIUS) else operator.ne
     assert compare(id(result), id(lfric))
     assert np.isclose(calculate_radius(result), radius)
+
+
+@pytest.mark.parametrize("zlevel", range(-10, 11))
+def test_resize__zlevel(lfric, zlevel):
+    """Test resize mesh by new zlevel."""
+    result = resize(lfric, zlevel=zlevel)
+    expected = RADIUS + RADIUS * zlevel * ZLEVEL_FACTOR
+    compare = operator.eq if np.isclose(expected, RADIUS) else operator.ne
+    assert compare(id(result), id(lfric))
+    actual = calculate_radius(result)
+    assert np.isclose(actual, expected)
+
+
+@pytest.mark.parametrize("zfactor", np.linspace(-1, 1))
+def test_resize__zfactor(lfric, zfactor):
+    """Test resize mesh by new zfactor."""
+    result = resize(lfric, zlevel=1, zfactor=zfactor)
+    expected = RADIUS + RADIUS * zfactor or RADIUS
+    compare = operator.eq if np.isclose(expected, RADIUS) else operator.ne
+    assert compare(id(result), id(lfric))
+    actual = calculate_radius(result)
+    assert np.isclose(actual, expected)

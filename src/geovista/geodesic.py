@@ -359,7 +359,7 @@ class BBox:
         if surface is not None:
             radius = calculate_radius(surface)
 
-        radius = RADIUS if radius is None else abs(radius)
+        radius = RADIUS if radius is None else abs(float(radius))
 
         if radius != self._surface_radius:
             self._init()
@@ -647,7 +647,7 @@ def line(
     if surface is not None:
         radius = calculate_radius(surface)
 
-    radius = RADIUS if radius is None else abs(radius)
+    radius = RADIUS if radius is None else abs(float(radius))
 
     # TODO: address "fudge-factor" z-level
     radius += radius * ZLEVEL_FACTOR
