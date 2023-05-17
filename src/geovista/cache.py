@@ -162,8 +162,7 @@ def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
     ----------
     resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m`` or ``10m``. Default is
-        :data:`DEFAULT_COASTLINES_RESOLUTION`.
+        ``110m``, ``50m`` or ``10m``. Defaults to :data:`DEFAULT_COASTLINES_RESOLUTION`.
 
     Returns
     -------

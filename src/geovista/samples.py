@@ -373,8 +373,7 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
     ----------
     resolution : str, optional
         The resolution of the LFRic Model mesh, which may be either
-        ``c48``, ``c96`` or ``c192``. Defaults to
-        :data:`DEFAULT_LFRIC_RESOLUTION`.
+        ``c48``, ``c96`` or ``c192``. Defaults to :data:`DEFAULT_LFRIC_RESOLUTION`.
 
     Returns
     -------

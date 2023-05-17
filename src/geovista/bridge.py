@@ -2,7 +2,7 @@
 
 This module provides the :class:`geovista.Transform` factory class for
 transforming rectilinear, curvilinear, and unstructured geospatial data
-into geo-located :mod:`pyvista` mesh instances.
+into geolocated :mod:`pyvista` mesh instances.
 
 Notes
 -----

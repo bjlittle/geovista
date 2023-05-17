@@ -1,4 +1,4 @@
-"""Core geovista behaviour for processing geo-located meshes.
+"""Core geovista behaviour for processing geolocated meshes.
 
 Notes
 -----
@@ -69,7 +69,7 @@ class SliceBias(Enum):
 
 
 class MeridianSlice:
-    """Remesh geo-located mesh along a meridian, from the north-pole to the south-pole.
+    """Remesh geolocated mesh along a meridian, from the north-pole to the south-pole.
 
     Remeshing involves introducing a seam into the mesh along the meridian
     of choice, splitting cells bisected by the meridan, which will be
@@ -86,7 +86,7 @@ class MeridianSlice:
         """Create a `meridian` seam in the `mesh`.
 
         The seam extends from the north-pole to the south-pole in a great circle,
-        breaking cell connectivity and thus allowing the geo-located mesh to be
+        breaking cell connectivity and thus allowing the geolocated mesh to be
         correctly projected or texture mapped.
 
         Cells bisected by the `meridian` of choice will be remeshed i.e., split
@@ -95,7 +95,7 @@ class MeridianSlice:
         Parameters
         ----------
         mesh : PolyData
-            The geo-located mesh to be remeshed along the `meridian`.
+            The geolocated mesh to be remeshed along the `meridian`.
         meridian : float
             The meridian (degrees longitude) along which to create the mesh seam.
         offset : float, optional
@@ -453,7 +453,7 @@ def cut_along_meridian(
 ) -> pv.PolyData:
     """Inject a `meridian` seam into the `mesh`.
 
-    Create a seam along the `meridian` of the geo-located `mesh`, from the
+    Create a seam along the `meridian` of the geolocated `mesh`, from the
     north-pole to the south-pole, breaking cell connectivity thus allowing
     the mesh to be correctly projected or texture mapped.
 

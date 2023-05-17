@@ -1,4 +1,4 @@
-"""Filters to analyse, transform and process geo-located meshes.
+"""Filters to analyse, transform and process geolocated meshes.
 
 These filters leverage and build upon the rich, powerful ecosystem of the
 Visualization Toolkit (VTK).
