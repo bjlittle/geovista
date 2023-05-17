@@ -390,8 +390,8 @@ class Transform:
             The proportional multiplier for z-axis levels/offsets. Defaults
             to :data:`ZLEVEL_FACTOR`.
         zlevel : int, default=0
-            The z-axis level/offset of the mesh, giving a computed `radius`
-            of ``radius + zlevel * zfactor``.
+            The z-axis level. Used in combination with the `zfactor` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
@@ -474,8 +474,8 @@ class Transform:
             The proportional multiplier for z-axis levels/offsets. Defaults
             to :data:`ZLEVEL_FACTOR`.
         zlevel : int, default=0
-            The z-axis level/offset of the mesh, giving a computed `radius`
-            of ``radius + zlevel * zfactor``.
+            The z-axis level. Used in combination with the `zfactor` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
@@ -593,8 +593,8 @@ class Transform:
             The proportional multiplier for z-axis levels/offsets. Defaults
             to :data:`ZLEVEL_FACTOR`.
         zlevel : int, default=0
-            The z-axis level/offset of the mesh, giving a computed `radius`
-            of ``radius + zlevel * zfactor``.
+            The z-axis level. Used in combination with the `zfactor` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
@@ -684,14 +684,9 @@ class Transform:
         if np.any(poles):
             xs[poles] = 0
 
-        radius = RADIUS if radius is None else abs(radius)
-
-        if zfactor is None:
-            zfactor = ZLEVEL_FACTOR
-
-        if zlevel is None:
-            zlevel = 0
-
+        radius = RADIUS if radius is None else abs(float(radius))
+        zfactor = ZLEVEL_FACTOR if zfactor is None else float(zfactor)
+        zlevel = 0 if zlevel is None else int(zlevel)
         radius += radius * zlevel * zfactor
 
         # convert lat/lon to cartesian xyz
@@ -822,8 +817,8 @@ class Transform:
             The proportional multiplier for z-axis levels/offsets. Defaults
             to :data:`ZLEVEL_FACTOR`.
         zlevel : int, default=0
-            The z-axis level/offset of the mesh, giving a computed `radius`
-            of ``radius + zlevel * zfactor``.
+            The z-axis level. Used in combination with the `zfactor` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to

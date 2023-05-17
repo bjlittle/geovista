@@ -139,10 +139,9 @@ class GeoPlotterBase:
         zfactor : float, optional
             The magnitude factor for z-axis levels (`zlevel`). Defaults to
             :data:`geovista.common.ZLEVEL_FACTOR`.
-        zlevel : float, optional
-            The z-axis level. Used in combination with the `zfactor` to offset
-            the base layer from the surface by the proportional amount of
-            ``zlevel * zfactor``.
+        zlevel : int, default=-1
+            The z-axis level. Used in combination with the `zfactor` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
         kwargs : any, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -234,10 +233,9 @@ class GeoPlotterBase:
         zfactor : float, optional
             The magnitude factor for z-axis levels (`zlevel`). Defaults to
             :data:`geovista.common.ZLEVEL_FACTOR`.
-        zlevel : float, optional
-            The z-axis level. Used in combination with the `zfactor` to offset
-            the projected surface by the proportional amount of
-            ``zlevel * zfactor``.
+        zlevel : int, default=0
+            The z-axis level. Used in combination with the `zfactor` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
         kwargs : any, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -256,7 +254,7 @@ class GeoPlotterBase:
 
         if isinstance(mesh, pv.PolyData):
             atol = float(kwargs.pop("atol")) if "atol" in kwargs else None
-            radius = float(kwargs.pop("radius")) if "radius" in kwargs else None
+            radius = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else None
             rtol = float(kwargs.pop("rtol")) if "rtol" in kwargs else None
             zfactor = (
                 float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
@@ -306,7 +304,8 @@ class GeoPlotterBase:
                 mesh.points[:, 2] = zoffset
             else:
                 if zlevel:
-                    radius = calculate_radius(mesh) if radius is None else abs(radius)
+                    if radius is None:
+                        radius = calculate_radius(mesh)
                     radius += radius * zlevel * zfactor
                     mesh = resize(mesh, radius=radius)
 

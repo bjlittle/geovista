@@ -359,7 +359,7 @@ def to_lonlats(
 
     """
     points = np.atleast_2d(xyz)
-    radius = RADIUS if radius is None else abs(radius)
+    radius = RADIUS if radius is None else abs(float(radius))
 
     if points.ndim != 2 or points.shape[1] != 3:
         emsg = (
@@ -433,7 +433,7 @@ def from_spherical(
     .. versionadded:: 0.1.0
 
     """
-    radius = calculate_radius(mesh) if radius is None else abs(radius)
+    radius = calculate_radius(mesh) if radius is None else abs(float(radius))
     lons, lats = to_lonlats(
         mesh.points, radius=radius, stacked=False, rtol=rtol, atol=atol
     )
@@ -532,7 +532,7 @@ def to_spherical(
     """
     longitudes = np.ravel(longitudes)
     latitudes = np.ravel(latitudes)
-    radius = RADIUS if radius is None else abs(radius)
+    radius = RADIUS if radius is None else abs(float(radius))
 
     x_rad = np.radians(longitudes)
     y_rad = np.radians(90.0 - latitudes)
