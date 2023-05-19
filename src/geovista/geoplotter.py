@@ -16,7 +16,7 @@ import pyvista as pv
 import vtk
 
 from .common import RADIUS, ZLEVEL_FACTOR, from_spherical
-from .core import add_texture_coords, calculate_radius, cut_along_meridian, resize
+from .core import add_texture_coords, cut_along_meridian, distance, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import COASTLINE_RESOLUTION, get_coastlines
@@ -305,7 +305,7 @@ class GeoPlotterBase:
             else:
                 if zlevel:
                     if radius is None:
-                        radius = calculate_radius(mesh)
+                        radius = distance(mesh)
                     radius += radius * zlevel * zfactor
                     mesh = resize(mesh, radius=radius)
 

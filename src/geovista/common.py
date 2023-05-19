@@ -27,7 +27,7 @@ __all__ = [
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
     "ZLEVEL_FACTOR",
-    "calculate_radius",
+    "distance",
     "from_spherical",
     "nan_mask",
     "sanitize_data",
@@ -47,6 +47,9 @@ __all__ = [
 
 #: Default base for wrapped longitude half-open interval, in degrees.
 BASE: float = -180.0
+
+#: Default number of decimal places for :func:`distance` calculation.
+DISTANCE_DECIMALS: int = 8
 
 #: Name of the geovista cell indices array.
 GV_CELL_IDS: str = "gvOriginalCellIds"
@@ -122,21 +125,25 @@ def active_kernel() -> bool:
     return result
 
 
-def calculate_radius(
+def distance(
     mesh: pv.PolyData,
     origin: Optional[tuple[float, float, float]] = None,
+    decimals: Optional[int] = None,
 ) -> float:
-    """Determine the radius of the provided mesh.
+    """Calculate the mean distance from the `origin` to the points of the `mesh`.
 
-    Note that, assumes that the mesh is a sphere that has not been warped.
+    Note that, given a spherical `mesh` this distance is the radius.
 
     Parameters
     ----------
     mesh : PolyData
-        The surface that requires its radius to be calculated, relative to
+        The surface that requires its distance to be calculated, relative to
         the `origin`.
     origin : float, default=(0, 0, 0)
         The (x, y, z) cartesian center of the spheroid mesh.
+    decimals : int, optional
+        Round the calculated result to `decimals` places. Defaults to
+        :data:`DISTANCE_DECIMALS`.
 
     Returns
     -------
@@ -148,32 +155,35 @@ def calculate_radius(
     .. versionadded: 0.1.0
 
     """
-    xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
-    xdiff, ydiff, zdiff = (xmax - xmin), (ymax - ymin), (zmax - zmin)
+    if origin is None:
+        origin = np.array([0, 0, 0])
 
-    if np.isclose(xdiff, 0) or np.isclose(ydiff, 0) or np.isclose(zdiff, 0):
+    origin = np.atleast_1d(origin)
+
+    if origin.ndim != 1 or origin.size != 3:
         emsg = (
-            "Cannot calculate radius of a surface that does not appear to be "
-            "spherical."
+            f"Require a single 1-D XYZ point for the origin, got {origin.ndim}-D with"
+            f"{origin.size} elements."
         )
         raise ValueError(emsg)
 
-    if origin is None:
-        origin = (0, 0, 0)
+    if decimals is None:
+        decimals = DISTANCE_DECIMALS
 
-    origin_x, origin_y, origin_z = origin
-    # sample a representative mesh point
-    x, y, z = mesh.points[0]
-    radius = np.sqrt((x - origin_x) ** 2 + (y - origin_y) ** 2 + (z - origin_z) ** 2)
+    pts = mesh.points - origin
+    nrow, ncol = pts.shape
+    radius = np.round(
+        np.sqrt(np.sum(pts.T @ pts * np.identity(ncol)) / nrow), decimals=decimals
+    )
 
-    default_radius = (
+    given_radius = (
         mesh.field_data[GV_FIELD_RADIUS][0]
         if GV_FIELD_RADIUS in mesh.field_data
         else RADIUS
     )
 
-    if np.isclose(radius, default_radius):
-        radius = default_radius
+    if np.isclose(radius, given_radius):
+        radius = given_radius
 
     mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
 
@@ -433,7 +443,7 @@ def from_spherical(
     .. versionadded:: 0.1.0
 
     """
-    radius = calculate_radius(mesh) if radius is None else abs(float(radius))
+    radius = distance(mesh) if radius is None else abs(float(radius))
     lons, lats = to_lonlats(
         mesh.points, radius=radius, stacked=False, rtol=rtol, atol=atol
     )

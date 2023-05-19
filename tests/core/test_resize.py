@@ -7,7 +7,7 @@ import pytest
 import pyvista as pv
 
 from geovista.common import RADIUS, ZLEVEL_FACTOR
-from geovista.core import calculate_radius, resize
+from geovista.core import distance, resize
 
 
 def test_projection_fail():
@@ -36,7 +36,7 @@ def test_resize(lfric, radius, inplace):
     result = resize(lfric, radius=radius, inplace=inplace)
     compare = operator.eq if inplace or np.isclose(radius, RADIUS) else operator.ne
     assert compare(id(result), id(lfric))
-    assert np.isclose(calculate_radius(result), radius)
+    assert np.isclose(distance(result), radius)
 
 
 @pytest.mark.parametrize("zlevel", range(-10, 11))
@@ -46,7 +46,7 @@ def test_resize__zlevel(lfric, zlevel):
     expected = RADIUS + RADIUS * zlevel * ZLEVEL_FACTOR
     compare = operator.eq if np.isclose(expected, RADIUS) else operator.ne
     assert compare(id(result), id(lfric))
-    actual = calculate_radius(result)
+    actual = distance(result)
     assert np.isclose(actual, expected)
 
 
@@ -57,5 +57,5 @@ def test_resize__zfactor(lfric, zfactor):
     expected = RADIUS + RADIUS * zfactor or RADIUS
     compare = operator.eq if np.isclose(expected, RADIUS) else operator.ne
     assert compare(id(result), id(lfric))
-    actual = calculate_radius(result)
+    actual = distance(result)
     assert np.isclose(actual, expected)
