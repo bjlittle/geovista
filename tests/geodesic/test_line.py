@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from geovista.common import RADIUS, ZLEVEL_FACTOR, to_spherical
+from geovista.common import RADIUS, ZLEVEL_FACTOR, distance, to_spherical
 from geovista.geodesic import GEODESIC_NPTS, line
 
 
@@ -81,3 +81,23 @@ def test_auto_repeat(lons, lats):
     n_samples = np.max([lons.size, lats.size])
     n_points = (n_samples - 1) * GEODESIC_NPTS + 1
     assert result.n_points == n_points
+
+
+@pytest.mark.parametrize("lons", range(0, 405, 45))
+@pytest.mark.parametrize("zlevel", range(-10, 11))
+def test_zlevel(lons, zlevel):
+    """Test line z-control with zlevel."""
+    result = line(lons, [90, 0, -90], zlevel=zlevel)
+    actual = distance(result)
+    expected = RADIUS + RADIUS * zlevel * ZLEVEL_FACTOR
+    assert np.isclose(actual, expected)
+
+
+@pytest.mark.parametrize("lons", range(0, 405, 45))
+@pytest.mark.parametrize("zfactor", np.linspace(-1, 1))
+def test_zfactor(lons, zfactor):
+    """Test line z-control with zfactor."""
+    result = line(180, [90, 0, -90], zfactor=zfactor)
+    actual = distance(result)
+    expected = RADIUS + RADIUS * zfactor
+    assert np.isclose(actual, expected)

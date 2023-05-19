@@ -15,7 +15,7 @@ import numpy.typing as npt
 import pyproj
 import pyvista as pv
 
-from .common import RADIUS, ZLEVEL_FACTOR, calculate_radius, to_spherical, wrap
+from .common import RADIUS, ZLEVEL_FACTOR, distance, to_spherical, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
 
 __all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
@@ -357,7 +357,7 @@ class BBox:
 
         """
         if surface is not None:
-            radius = calculate_radius(surface)
+            radius = distance(surface)
 
         radius = RADIUS if radius is None else abs(float(radius))
 
@@ -602,6 +602,8 @@ def line(
     npts: Optional[int] = None,
     ellps: Optional[str] = None,
     close: Optional[bool] = False,
+    zfactor: Optional[float] = None,
+    zlevel: Optional[int] = None,
 ) -> pv.PolyData:
     """Geodesic line consisting of one or more connected geodesic line segments.
 
@@ -633,6 +635,12 @@ def line(
     close : bool, default=False
         Whether to close the geodesic line segments into a loop i.e., the last
         point is connected to the first point.
+    zfactor : float, optional
+        The magnitude factor for the z-axis level (`zlevel`). Defaults to
+        :data:`geovista.common.ZLEVEL_FACTOR`.
+    zlevel : int, default=1
+        The z-axis level. Used in combination with the `zfactor` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
 
     Returns
     -------
@@ -645,12 +653,13 @@ def line(
 
     """
     if surface is not None:
-        radius = calculate_radius(surface)
+        radius = distance(surface)
+    else:
+        radius = RADIUS if radius is None else abs(float(radius))
 
-    radius = RADIUS if radius is None else abs(float(radius))
-
-    # TODO: address "fudge-factor" z-level
-    radius += radius * ZLEVEL_FACTOR
+    zfactor = ZLEVEL_FACTOR if zfactor is None else float(zfactor)
+    zlevel = 1 if zlevel is None else int(zlevel)
+    radius += radius * zlevel * zfactor
 
     if npts is None:
         npts = GEODESIC_NPTS

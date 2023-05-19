@@ -21,7 +21,7 @@ from .common import (
     REMESH_JOIN,
     REMESH_SEAM,
     ZLEVEL_FACTOR,
-    calculate_radius,
+    distance,
     from_spherical,
     sanitize_data,
     to_spherical,
@@ -121,7 +121,7 @@ class MeridianSlice:
             self._info.name, preference=self._info.association.name.lower()
         )
         self.mesh = mesh
-        self.radius = calculate_radius(mesh)
+        self.radius = distance(mesh)
         self.meridian = wrap(meridian)[0]
         self.offset = abs(CUT_OFFSET if offset is None else offset)
         self.slices = {bias.name: self._intersection(bias) for bias in SliceBias}
@@ -642,7 +642,7 @@ def resize(
     zlevel = 0 if zlevel is None else int(zlevel)
     radius += radius * zlevel * zfactor
 
-    if radius and not np.isclose(calculate_radius(mesh), radius):
+    if radius and not np.isclose(distance(mesh), radius):
         lonlat = from_spherical(mesh)
         xyz = to_spherical(lonlat[:, 0], lonlat[:, 1], radius=radius)
         if not inplace:

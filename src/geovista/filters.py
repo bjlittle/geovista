@@ -21,7 +21,7 @@ from .common import (
     GV_REMESH_POINT_IDS,
     REMESH_JOIN,
     REMESH_SEAM,
-    calculate_radius,
+    distance,
     from_spherical,
     sanitize_data,
     triangulated,
@@ -139,7 +139,7 @@ def remesh(
         raise ValueError(emsg)
 
     meridian = wrap(meridian)[0]
-    radius = calculate_radius(mesh)
+    radius = distance(mesh)
 
     poly0: pv.PolyData = mesh.copy(deep=True)
 
