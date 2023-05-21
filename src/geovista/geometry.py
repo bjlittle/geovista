@@ -18,13 +18,11 @@ from .common import (
     RADIUS,
     ZLEVEL_FACTOR,
     from_spherical,
-    set_jupyter_backend,
     to_spherical,
 )
 
 __all__ = [
     "COASTLINE_RESOLUTION",
-    "add_coastlines",
     "coastline_geometries",
     "coastline_mesh",
     "get_coastlines",
@@ -36,59 +34,6 @@ __all__ = [
 
 #: Default coastline resolution.
 COASTLINE_RESOLUTION: str = "10m"
-
-
-def add_coastlines(
-    resolution: Optional[str] = None,
-    projection: Optional[str] = None,
-    plotter: Optional[pv.Plotter] = None,
-    **kwargs,
-) -> pv.Plotter:
-    """Add Natural Earth coastline geometries to a `plotter`.
-
-    Parameters
-    ----------
-    resolution : str, optional
-        The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m`` or ``10m``. Defaults to
-        :data:`geovista.geometry.COASTLINE_RESOLUTION`.
-    projection : str or None, default=None
-        The name of the PROJ planar projection used to transform the coastlines
-        into a 2D projection coordinate system. If ``None``, the coastline
-        geometries are rendered on a 3D sphere.
-    plotter : Plotter or None, default=None
-        The :class:`~pyvista.Plotter` which renders the scene.
-        If ``None``, a new :class:`~pyvista.Plotter` will be created.
-    **kwargs : dict, optional
-        Additional `kwargs` to be passed to PyVista when creating a coastlines
-        :class:`~pyvista.PolyData`.
-
-    Returns
-    -------
-    Plotter
-        The provided `plotter` or a new :class:`~pyvista.Plotter`.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    if resolution is None:
-        resolution = COASTLINE_RESOLUTION
-
-    notebook = set_jupyter_backend()
-
-    if plotter is None:
-        plotter = pv.Plotter(notebook=notebook)
-
-    #
-    # TODO: support planar projections
-    #
-
-    mesh = get_coastlines(resolution=resolution)
-    plotter.add_mesh(mesh, pickable=False, **kwargs)
-
-    return plotter
 
 
 @lru_cache
