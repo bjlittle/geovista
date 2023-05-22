@@ -14,20 +14,20 @@ from geovista.geometry import load_coastlines as load
 
 
 def test_defaults():
-    """Test that the expected defaults are honoured."""
+    """Test expected defaults are honoured."""
     result = load()
     assert result[GV_FIELD_RADIUS] == RADIUS
     assert result[GV_FIELD_RESOLUTION] == COASTLINE_RESOLUTION
 
 
 def test_resolution_metadata(resolution):
-    """Test that the field data contains the correct resolution metadata."""
+    """Test field data contains the correct resolution metadata."""
     result = load(resolution=resolution)
     assert result[GV_FIELD_RESOLUTION][0] == resolution
 
 
 def test_lines(resolution):
-    """Test that the coastline mesh consists of lines."""
+    """Test coastline mesh consists of lines."""
     result = load(resolution=resolution)
     assert result.n_cells == result.n_lines
 

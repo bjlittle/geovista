@@ -6,7 +6,7 @@ from geovista.geometry import load_coastline_geometries as load
 
 
 def test_defaults(mocker):
-    """Test that the expected defaults are honoured."""
+    """Test expected defaults are honoured."""
     import cartopy.io.shapereader as shp
 
     spy = mocker.spy(shp, "natural_earth")

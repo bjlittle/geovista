@@ -6,6 +6,7 @@ Notes
 
 """
 from functools import lru_cache
+import sys
 from typing import Optional
 
 import cartopy.io.shapereader as shp
@@ -13,6 +14,7 @@ import numpy as np
 import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
 
+from .cache import fetch_coastlines
 from .common import (
     GV_FIELD_RADIUS,
     GV_FIELD_RESOLUTION,
@@ -37,7 +39,7 @@ __all__ = [
 COASTLINE_RESOLUTION: str = "10m"
 
 
-@lru_cache
+@lru_cache(maxsize=0 if "pytest" in sys.modules else 128)
 def coastlines(
     resolution: Optional[str] = None,
     radius: Optional[float] = None,
@@ -70,8 +72,6 @@ def coastlines(
     .. versionadded:: 0.1.0
 
     """
-    from .cache import fetch_coastlines
-
     if resolution is None:
         resolution = COASTLINE_RESOLUTION
 
@@ -88,7 +88,7 @@ def coastlines(
     return mesh
 
 
-@lru_cache
+@lru_cache(maxsize=0 if "pytest" in sys.modules else 128)
 def load_coastline_geometries(
     resolution: Optional[str] = None,
 ) -> list[np.ndarray]:
@@ -145,7 +145,7 @@ def load_coastline_geometries(
     return lines
 
 
-@lru_cache
+@lru_cache(maxsize=0 if "pytest" in sys.modules else 128)
 def load_coastlines(
     resolution: Optional[str] = None,
     radius: Optional[float] = None,
