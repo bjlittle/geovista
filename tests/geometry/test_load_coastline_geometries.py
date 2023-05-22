@@ -1,7 +1,19 @@
 """Unit-tests for :func:`geovista.geometry.test_load_coastline_geometries`."""
 import numpy as np
 
+from geovista.geometry import COASTLINE_RESOLUTION
 from geovista.geometry import load_coastline_geometries as load
+
+
+def test_defaults(mocker):
+    """Test that the expected defaults are honoured."""
+    import cartopy.io.shapereader as shp
+
+    spy = mocker.spy(shp, "natural_earth")
+    _ = load()
+    spy.assert_called_once_with(
+        resolution=COASTLINE_RESOLUTION, category="physical", name="coastline"
+    )
 
 
 def test(resolution):
