@@ -19,7 +19,7 @@ from .common import RADIUS, ZLEVEL_FACTOR, distance, from_spherical
 from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
-from .geometry import COASTLINE_RESOLUTION, get_coastlines
+from .geometry import COASTLINE_RESOLUTION, coastlines
 from .raster import wrap_texture
 from .samples import lfric
 
@@ -227,7 +227,7 @@ class GeoPlotterBase:
         .. versionadded:: 0.1.0
 
         """
-        mesh = get_coastlines(
+        mesh = coastlines(
             resolution=resolution, radius=radius, zfactor=zfactor, zlevel=zlevel
         )
         return self.add_mesh(mesh, **kwargs)

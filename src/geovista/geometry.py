@@ -24,7 +24,7 @@ from .core import resize
 
 __all__ = [
     "COASTLINE_RESOLUTION",
-    "get_coastlines",
+    "coastlines",
     "load_coastline_geometries",
     "load_coastlines",
 ]
@@ -38,7 +38,7 @@ COASTLINE_RESOLUTION: str = "10m"
 
 
 @lru_cache
-def get_coastlines(
+def coastlines(
     resolution: Optional[str] = None,
     radius: Optional[float] = None,
     zfactor: Optional[float] = None,
