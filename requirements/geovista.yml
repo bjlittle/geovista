@@ -35,6 +35,7 @@ dependencies:
   - codecov
   - pytest >=6.0
   - pytest-cov
+  - pytest-mock
 
 # documentation dependencies
   - jupyter_sphinx
