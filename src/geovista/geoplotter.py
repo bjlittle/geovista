@@ -15,11 +15,11 @@ from pyproj import CRS, Transformer
 import pyvista as pv
 import vtk
 
-from .common import RADIUS, ZLEVEL_FACTOR, from_spherical
-from .core import add_texture_coords, cut_along_meridian, distance, resize
+from .common import RADIUS, ZLEVEL_FACTOR, distance, from_spherical
+from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
-from .geometry import COASTLINE_RESOLUTION, get_coastlines
+from .geometry import COASTLINE_RESOLUTION, coastlines
 from .raster import wrap_texture
 from .samples import lfric
 
@@ -27,6 +27,9 @@ __all__ = ["GeoPlotter"]
 
 # type aliases
 CRSLike = Union[int, str, dict, CRS]
+
+#: Proportional multiplier for z-axis levels/offsets of base-layer mesh.
+BASE_ZLEVEL_FACTOR: int = 1e-3
 
 
 @lru_cache
@@ -138,7 +141,7 @@ class GeoPlotterBase:
             :data:`geovista.samples.DEFAULT_LFRIC_RESOLUTION`.
         zfactor : float, optional
             The magnitude factor for z-axis levels (`zlevel`). Defaults to
-            :data:`geovista.common.ZLEVEL_FACTOR`.
+            :data:`BASE_ZLEVEL_FACTOR`.
         zlevel : int, default=-1
             The z-axis level. Used in combination with the `zfactor` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
@@ -165,13 +168,15 @@ class GeoPlotterBase:
             # opt to the default radius for the base layer mesh
             radius = None
             if "zfactor" not in kwargs:
-                kwargs["zfactor"] = ZLEVEL_FACTOR
+                kwargs["zfactor"] = BASE_ZLEVEL_FACTOR
             if "zlevel" not in kwargs:
                 kwargs["zlevel"] = -1
         else:
             radius = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else RADIUS
             zfactor = (
-                float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
+                float(kwargs.pop("zfactor"))
+                if "zfactor" in kwargs
+                else BASE_ZLEVEL_FACTOR
             )
             zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else -1
             radius += radius * zlevel * zfactor
@@ -187,14 +192,28 @@ class GeoPlotterBase:
         return actor
 
     def add_coastlines(
-        self, resolution: Optional[str] = COASTLINE_RESOLUTION, **kwargs: Optional[Any]
+        self,
+        resolution: Optional[str] = COASTLINE_RESOLUTION,
+        radius: Optional[float] = None,
+        zfactor: Optional[float] = None,
+        zlevel: Optional[int] = None,
+        **kwargs: Optional[Any],
     ) -> vtk.vtkActor:
         """Generate coastlines and add to the plotter scene.
 
         Parameters
         ----------
-        resolution : str, default="10m"
-            The resolution of the Natural Earth coastlines.
+        resolution : str, optional
+            The resolution of the Natural Earth coastlines, which may be either
+            ``110m``, ``50m``, or ``10m``. Defaults to :data:`COASTLINE_RESOLUTION`.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        zfactor : float, optional
+            The proportional multiplier for z-axis levels/offsets. Defaults
+            to :data:`geovista.common.ZLEVEL_FACTOR`.
+        zlevel : int, default=1
+            The z-axis level. Used in combination with the `zfactor` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
         kwargs : any, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -208,7 +227,9 @@ class GeoPlotterBase:
         .. versionadded:: 0.1.0
 
         """
-        mesh = get_coastlines(resolution=resolution)
+        mesh = coastlines(
+            resolution=resolution, radius=radius, zfactor=zfactor, zlevel=zlevel
+        )
         return self.add_mesh(mesh, **kwargs)
 
     def add_mesh(self, mesh: Any, **kwargs: Optional[Any]):

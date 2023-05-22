@@ -356,8 +356,6 @@ def download(
 )
 def plot(fname, axes, base) -> None:
     """Load and render a VTK mesh."""
-    import geovista.theme  # noqa: #F401
-
     mesh = pv.read(fname)
     plotter = GeoPlotter()
     plotter.add_mesh(mesh)

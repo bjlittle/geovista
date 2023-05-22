@@ -19,6 +19,7 @@ __all__ = [
     "GV_FIELD_CRS",
     "GV_FIELD_NAME",
     "GV_FIELD_RADIUS",
+    "GV_FIELD_RESOLUTION",
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
     "RADIUS",
@@ -63,6 +64,9 @@ GV_FIELD_NAME: str = "gvName"
 #: The field array name of the mesh radius.
 GV_FIELD_RADIUS: str = "gvRadius"
 
+#: The field array name of the mesh resolution e.g., coastlines.
+GV_FIELD_RESOLUTION: str = "gvResolution"
+
 #: Name of the geovista point indices array.
 GV_POINT_IDS: str = "gvOriginalPointIds"
 
@@ -97,7 +101,7 @@ WRAP_ATOL: float = 1e-8
 WRAP_RTOL: float = 1e-5
 
 #: Proportional multiplier for z-axis levels/offsets.
-ZLEVEL_FACTOR: float = 1e-3
+ZLEVEL_FACTOR: float = 1e-4
 
 
 def active_kernel() -> bool:

@@ -6,6 +6,7 @@ Notes
 
 """
 from functools import lru_cache
+import sys
 from typing import Optional
 
 import cartopy.io.shapereader as shp
@@ -13,19 +14,21 @@ import numpy as np
 import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
 
+from .cache import fetch_coastlines
 from .common import (
     GV_FIELD_RADIUS,
+    GV_FIELD_RESOLUTION,
     RADIUS,
     ZLEVEL_FACTOR,
-    from_spherical,
     to_spherical,
 )
+from .core import resize
 
 __all__ = [
     "COASTLINE_RESOLUTION",
-    "coastline_geometries",
-    "coastline_mesh",
-    "get_coastlines",
+    "coastlines",
+    "load_coastline_geometries",
+    "load_coastlines",
 ]
 
 #
@@ -36,8 +39,57 @@ __all__ = [
 COASTLINE_RESOLUTION: str = "10m"
 
 
-@lru_cache
-def coastline_geometries(
+@lru_cache(maxsize=0 if "pytest" in sys.modules else 128)
+def coastlines(
+    resolution: Optional[str] = None,
+    radius: Optional[float] = None,
+    zfactor: Optional[float] = None,
+    zlevel: Optional[int] = None,
+) -> pv.PolyData:
+    """Create or fetch the cached mesh of the coastlines.
+
+    Parameters
+    ----------
+    resolution : str, optional
+        The resolution of the Natural Earth coastlines, which may be either
+        ``110m``, ``50m``, or ``10m``. Defaults to :data:`COASTLINE_RESOLUTION`.
+    radius : float, optional
+        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+    zfactor : float, optional
+        The proportional multiplier for z-axis levels/offsets. Defaults
+        to :data:`geovista.common.ZLEVEL_FACTOR`.
+    zlevel : int, default=1
+        The z-axis level. Used in combination with the `zfactor` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
+
+    Returns
+    -------
+    PolyData
+        A mesh of the coastlines.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if resolution is None:
+        resolution = COASTLINE_RESOLUTION
+
+    if zlevel is None:
+        zlevel = 1
+
+    try:
+        mesh = fetch_coastlines(resolution=resolution)
+    except ValueError:
+        mesh = load_coastlines(resolution=resolution)
+
+    resize(mesh, radius=radius, zfactor=zfactor, zlevel=zlevel, inplace=True)
+
+    return mesh
+
+
+@lru_cache(maxsize=0 if "pytest" in sys.modules else 128)
+def load_coastline_geometries(
     resolution: Optional[str] = None,
 ) -> list[np.ndarray]:
     """Fetch Natural Earth coastline shapefile for the required `resolution`.
@@ -52,8 +104,7 @@ def coastline_geometries(
     ----------
     resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m`` or ``10m``. Defaults to
-        :data:`geovista.geometry.COASTLINE_RESOLUTION`.
+        ``110m``, ``50m`` or ``10m``. Defaults to :data:`COASTLINE_RESOLUTION`.
 
     Returns
     -------
@@ -94,11 +145,12 @@ def coastline_geometries(
     return lines
 
 
-@lru_cache
-def coastline_mesh(
+@lru_cache(maxsize=0 if "pytest" in sys.modules else 128)
+def load_coastlines(
     resolution: Optional[str] = None,
     radius: Optional[float] = None,
-    geocentric: Optional[bool] = True,
+    zfactor: Optional[float] = None,
+    zlevel: Optional[int] = None,
 ) -> pv.PolyData:
     """Create a mesh of coastline geometries at the specified `resolution`.
 
@@ -106,14 +158,15 @@ def coastline_mesh(
     ----------
     resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m``, or ``10m``. Default to
-        :data:`geovista.geometry.COASTLINE_RESOLUTION`.
+        ``110m``, ``50m``, or ``10m``. Default to :data:`COASTLINE_RESOLUTION`.
     radius : float, optional
-        The radius of the sphere, when geocentric. Defaults to
-        :data:`geovista.common.RADIUS`.
-    geocentric : bool, default=True
-        Specify whether the coastlines are xyz geocentric coordinates.
-        Otherwise, longitude (φ) and latitude (λ) xy0 coordinates (i.e., φλ0).
+        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+    zfactor : float, optional
+        The proportional multiplier for z-axis levels/offsets. Defaults
+        to :data:`geovista.common.ZLEVEL_FACTOR`.
+    zlevel : int, default=0
+        The z-axis level. Used in combination with the `zfactor` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
 
     Returns
     -------
@@ -128,18 +181,18 @@ def coastline_mesh(
     if resolution is None:
         resolution = COASTLINE_RESOLUTION
 
-    # TODO: address "fudge-factor" zlevel
-    radius = RADIUS + RADIUS * ZLEVEL_FACTOR if radius is None else abs(float(radius))
+    radius = RADIUS if radius is None else abs(float(radius))
+    zfactor = ZLEVEL_FACTOR if zfactor is None else float(zfactor)
+    zlevel = 0 if zlevel is None else int(zlevel)
+    radius += radius * zlevel * zfactor
 
-    geoms = coastline_geometries(resolution=resolution)
+    geoms = load_coastline_geometries(resolution=resolution)
     npoints_per_geom = [geom.shape[0] for geom in geoms]
     ngeoms = len(geoms)
     geoms = np.concatenate(geoms)
     nlines = geoms.shape[0] - ngeoms
 
-    # determine whether to calculate xyz geocentric coordinates
-    if geocentric:
-        geoms = to_spherical(geoms[:, 0], geoms[:, 1], radius=radius)
+    geoms = to_spherical(geoms[:, 0], geoms[:, 1], radius=radius)
 
     # convert geometries to a vtk line mesh
     mesh = pv.PolyData()
@@ -155,54 +208,7 @@ def coastline_mesh(
         pstart, lstart = pend, lend
 
     mesh.lines = lines
-    if geocentric:
-        mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
-
-    return mesh
-
-
-@lru_cache
-def get_coastlines(
-    resolution: Optional[str] = None,
-    #    geocentric: Optional[bool] = True,
-) -> pv.PolyData:
-    """Create or fetch the cached mesh of the coastlines.
-
-    Parameters
-    ----------
-    resolution : str, default=COASTLINE_RESOLUTION
-        The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m``, or ``10m``. Defaults to
-        :data:`geovista.geometry.COASTLINE_RESOLUTION`.
-
-    Returns
-    -------
-    PolyData
-        A mesh of the coastlines.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    from .cache import fetch_coastlines
-
-    if resolution is None:
-        resolution = COASTLINE_RESOLUTION
-
-    # TODO: reinstate with projection support is available
-    # geocentric : bool, default=True
-    #     Specify whether the coastlines are xyz geocentric coordinates.
-    #     Otherwise, longitude (φ) and latitude (λ) xy0 coordinates (i.e., φλ0).
-    geocentric = True
-
-    try:
-        mesh = fetch_coastlines(resolution=resolution)
-
-        if not geocentric:
-            radius = float(mesh.field_data[GV_FIELD_RADIUS])
-            mesh.points = from_spherical(mesh, radius=radius)
-    except ValueError:
-        mesh = coastline_mesh(resolution=resolution, geocentric=geocentric)
+    mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+    mesh.field_data[GV_FIELD_RESOLUTION] = np.array([resolution])
 
     return mesh

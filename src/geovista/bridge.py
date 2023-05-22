@@ -388,7 +388,7 @@ class Transform:
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zfactor : float, optional
             The proportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`ZLEVEL_FACTOR`.
+            to :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zfactor` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
@@ -472,7 +472,7 @@ class Transform:
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zfactor : float, optional
             The proportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`ZLEVEL_FACTOR`.
+            to :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zfactor` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
@@ -591,7 +591,7 @@ class Transform:
             The radius of the mesh sphere. Defaults to :data:`geovista.common.RADIUS`.
         zfactor : float, optional
             The proportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`ZLEVEL_FACTOR`.
+            to :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zfactor` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
@@ -815,7 +815,7 @@ class Transform:
             The radius of the mesh sphere. Defaults to :data:`geovista.common.RADIUS`.
         zfactor : float, optional
             The proportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`ZLEVEL_FACTOR`.
+            to :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zfactor` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
