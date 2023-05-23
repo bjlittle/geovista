@@ -5,11 +5,12 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
+
 import importlib
 import pathlib
 import pkgutil
 from shutil import rmtree
-from typing import Optional
 
 import click
 from click_default_group import DefaultGroup
@@ -44,9 +45,9 @@ pooch_logger = pooch.get_logger()
 
 def _download_group(
     fnames: list[str],
-    name: Optional[str] = None,
-    fg_colour: Optional[str] = None,
-    summary: Optional[bool] = True,
+    name: str | None = None,
+    fg_colour: str | None = None,
+    summary: bool | None = True,
 ) -> None:
     """Download and populate the geovista cache with requested assets.
 
@@ -215,7 +216,7 @@ def download(
     show: bool,
     mesh: bool,
     pull_ne: tuple[str],
-    output: Optional[pathlib.Path],
+    output: pathlib.Path | None,
     pantry: bool,
     raster: bool,
     verify: bool,

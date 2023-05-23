@@ -5,8 +5,10 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
+
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 from numpy import ma
@@ -139,8 +141,8 @@ def active_kernel() -> bool:
 
 def distance(
     mesh: pv.PolyData,
-    origin: Optional[tuple[float, float, float]] = None,
-    decimals: Optional[int] = None,
+    origin: tuple[float, float, float] | None = None,
+    decimals: int | None = None,
 ) -> float:
     """Calculate the mean distance from the `origin` to the points of the `mesh`.
 
@@ -259,7 +261,7 @@ def sanitize_data(
             del mesh.point_data[VTK_POINT_IDS]
 
 
-def set_jupyter_backend(backend: Optional[str] = None) -> bool:
+def set_jupyter_backend(backend: str | None = None) -> bool:
     """Configure the jupyter plotting backend for pyvista.
 
     Parameters
@@ -294,10 +296,10 @@ def set_jupyter_backend(backend: Optional[str] = None) -> bool:
 
 def to_lonlat(
     xyz: npt.ArrayLike,
-    radians: Optional[float] = None,
-    radius: Optional[float] = None,
-    rtol: Optional[float] = None,
-    atol: Optional[float] = None,
+    radians: float | None = None,
+    radius: float | None = None,
+    rtol: float | None = None,
+    atol: float | None = None,
 ) -> np.ndarray:
     """Convert cartesian `xyz` point on sphere to geographic longitude and latitude.
 
@@ -344,11 +346,11 @@ def to_lonlat(
 
 def to_lonlats(
     xyz: npt.ArrayLike,
-    radians: Optional[bool] = False,
-    radius: Optional[float] = None,
-    stacked: Optional[bool] = True,
-    rtol: Optional[float] = None,
-    atol: Optional[float] = None,
+    radians: bool | None = False,
+    radius: float | None = None,
+    stacked: bool | None = True,
+    rtol: float | None = None,
+    atol: float | None = None,
 ) -> np.ndarray:
     """Convert cartesian `xyz` points on sphere to geographic longitudes and latitudes.
 
@@ -415,11 +417,11 @@ def to_lonlats(
 
 def from_spherical(
     mesh: pv.PolyData,
-    radius: Optional[float] = None,
-    stacked: Optional[bool] = True,
-    closed_interval: Optional[bool] = False,
-    rtol: Optional[float] = None,
-    atol: Optional[float] = None,
+    radius: float | None = None,
+    stacked: bool | None = True,
+    closed_interval: bool | None = False,
+    rtol: float | None = None,
+    atol: float | None = None,
 ) -> np.ndarray:
     """Convert cartesian ``xyz`` spherical `mesh` to geographic longitude and latitude.
 
@@ -525,8 +527,8 @@ def from_spherical(
 def to_spherical(
     longitudes: npt.ArrayLike,
     latitudes: npt.ArrayLike,
-    radius: Optional[float] = None,
-    stacked: Optional[bool] = True,
+    radius: float | None = None,
+    stacked: bool | None = True,
 ) -> np.ndarray:
     """Convert geographic `longitudes` and `latitudes` to cartesian ``xyz`` points.
 
@@ -621,11 +623,11 @@ def vtk_warnings_on() -> None:
 
 def wrap(
     longitudes: npt.ArrayLike,
-    base: Optional[float] = BASE,
-    period: Optional[float] = PERIOD,
-    rtol: Optional[float] = None,
-    atol: Optional[float] = None,
-    dtype: Optional[np.dtype] = None,
+    base: float | None = BASE,
+    period: float | None = PERIOD,
+    rtol: float | None = None,
+    atol: float | None = None,
+    dtype: np.dtype | None = None,
 ) -> np.ndarray:
     """Transform `longitudes` to be in the half-open interval [base, base + period).
 

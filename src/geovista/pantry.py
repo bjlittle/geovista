@@ -7,8 +7,9 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Optional
 
 import netCDF4 as nc
 import numpy as np
@@ -93,7 +94,7 @@ def capitalise(title: str) -> str:
     return title
 
 
-def fesom(step: Optional[int] = None) -> SampleUnstructuredXY:
+def fesom(step: int | None = None) -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
     Load AWI-CM FESOM 1.4 unstructured mesh.
@@ -642,7 +643,7 @@ def um_orca2() -> SampleStructuredXY:
     return sample
 
 
-def ww3_global_smc(step: Optional[int] = None) -> SampleUnstructuredXY:
+def ww3_global_smc(step: int | None = None) -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
     Load the WAVEWATCH III (WW3) unstructured Spherical Multi-Cell (SMC) mesh.

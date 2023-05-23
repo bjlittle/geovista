@@ -8,7 +8,7 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-from typing import Optional
+from __future__ import annotations
 
 import numpy as np
 import pyvista as pv
@@ -55,7 +55,7 @@ Remesh = tuple[pv.PolyData, pv.PolyData, pv.PolyData]
 
 def cast_UnstructuredGrid_to_PolyData(
     mesh: pv.UnstructuredGrid,
-    clean: Optional[bool] = False,
+    clean: bool | None = False,
 ) -> pv.PolyData:
     """Convert an unstructured grid to a :class:`pyvista.PolyData` instance.
 
@@ -97,10 +97,10 @@ def cast_UnstructuredGrid_to_PolyData(
 def remesh(
     mesh: pv.PolyData,
     meridian: float,
-    boundary: Optional[bool] = False,
-    check: Optional[bool] = False,
-    rtol: Optional[float] = None,
-    atol: Optional[float] = None,
+    boundary: bool | None = False,
+    check: bool | None = False,
+    rtol: float | None = None,
+    atol: float | None = None,
 ) -> Remesh:
     """Slice `mesh` along `meridian` and triangulate any sliced cells.
 

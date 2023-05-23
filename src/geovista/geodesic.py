@@ -5,9 +5,9 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Optional, Union
 import warnings
 
 import numpy as np
@@ -101,9 +101,9 @@ class BBox:
         self,
         lons: npt.ArrayLike,
         lats: npt.ArrayLike,
-        ellps: Optional[str] = ELLIPSE,
-        c: Optional[int] = BBOX_C,
-        triangulate: Optional[bool] = False,
+        ellps: str | None = ELLIPSE,
+        c: int | None = BBOX_C,
+        triangulate: bool | None = False,
     ):
         """Create 3-D geodesic bounding-box to extract enclosed mesh, lines or point.
 
@@ -327,7 +327,7 @@ class BBox:
             bbox_update(row[0], row[-1], row=row_idx)
 
     def _generate_bbox_mesh(
-        self, surface: Optional[pv.PolyData] = None, radius: Optional[float] = None
+        self, surface: pv.PolyData | None = None, radius: float | None = None
     ) -> None:
         """Construct 3-D geodetic bounding-box extruded surface defined by corners.
 
@@ -437,7 +437,7 @@ class BBox:
         return faces
 
     def boundary(
-        self, surface: Optional[pv.PolyData] = None, radius: Optional[float] = None
+        self, surface: pv.PolyData | None = None, radius: float | None = None
     ) -> pv.PolyData:
         """Footprint of bounding-box intersecting on the provided mesh surface.
 
@@ -480,8 +480,8 @@ class BBox:
     def enclosed(
         self,
         surface: pv.PolyData,
-        tolerance: Optional[float] = BBOX_TOLERANCE,
-        outside: Optional[bool] = False,
+        tolerance: float | None = BBOX_TOLERANCE,
+        outside: bool | None = False,
         preference: str = BBOX_PREFERENCE,
     ) -> pv.PolyData:
         """Extract region of the `surface` contained within the bounding-box.
@@ -597,13 +597,13 @@ class BBox:
 def line(
     lons: npt.ArrayLike,
     lats: npt.ArrayLike,
-    surface: Optional[pv.PolyData] = None,
-    radius: Optional[float] = None,
-    npts: Optional[int] = None,
-    ellps: Optional[str] = None,
-    close: Optional[bool] = False,
-    zfactor: Optional[float] = None,
-    zlevel: Optional[int] = None,
+    surface: pv.PolyData | None = None,
+    radius: float | None = None,
+    npts: int | None = None,
+    ellps: str | None = None,
+    close: bool | None = False,
+    zfactor: float | None = None,
+    zlevel: int | None = None,
 ) -> pv.PolyData:
     """Geodesic line consisting of one or more connected geodesic line segments.
 
@@ -742,11 +742,11 @@ def npoints(
     start_lat: float,
     end_lon: float,
     end_lat: float,
-    npts: Optional[int] = GEODESIC_NPTS,
-    radians: Optional[bool] = False,
-    include_start: Optional[bool] = False,
-    include_end: Optional[bool] = False,
-    geod: Optional[pyproj.Geod] = None,
+    npts: int | None = GEODESIC_NPTS,
+    radians: bool | None = False,
+    include_start: bool | None = False,
+    include_end: bool | None = False,
+    geod: pyproj.Geod | None = None,
 ) -> tuple[tuple[float], tuple[float]]:
     """Calculate geodesic mid-points between provided start and end points.
 
@@ -819,11 +819,11 @@ def npoints_by_idx(
     lats: npt.ArrayLike,
     start_idx: int,
     end_idx: int,
-    npts: Optional[int] = GEODESIC_NPTS,
-    radians: Optional[bool] = False,
-    include_start: Optional[bool] = False,
-    include_end: Optional[bool] = False,
-    geod: Optional[pyproj.Geod] = None,
+    npts: int | None = GEODESIC_NPTS,
+    radians: bool | None = False,
+    include_start: bool | None = False,
+    include_end: bool | None = False,
+    geod: pyproj.Geod | None = None,
 ) -> tuple[tuple[float], tuple[float]]:
     """Calculate geodesic mid-points between provided start and end indices.
 
@@ -889,10 +889,10 @@ def npoints_by_idx(
 
 
 def panel(
-    name: Union[int, str],
-    ellps: Optional[str] = ELLIPSE,
-    c: Optional[int] = BBOX_C,
-    triangulate: Optional[bool] = False,
+    name: int | str,
+    ellps: str | None = ELLIPSE,
+    c: int | None = BBOX_C,
+    triangulate: bool | None = False,
 ) -> BBox:
     """Create boundary-box for specific cubed-sphere panel.
 
@@ -944,9 +944,9 @@ def panel(
 def wedge(
     lon1: float,
     lon2: float,
-    ellps: Optional[str] = ELLIPSE,
-    c: Optional[int] = BBOX_C,
-    triangulate: Optional[bool] = False,
+    ellps: str | None = ELLIPSE,
+    c: int | None = BBOX_C,
+    triangulate: bool | None = False,
 ) -> BBox:
     """Create geodesic bounding-box wedge from the north-pole to the south-pole.
 

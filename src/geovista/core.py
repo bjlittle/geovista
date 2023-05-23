@@ -5,8 +5,10 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
+
 from enum import Enum, auto, unique
-from typing import Any, Optional
+from typing import Any
 import warnings
 
 import numpy as np
@@ -82,7 +84,7 @@ class MeridianSlice:
         self,
         mesh: pv.PolyData,
         meridian: float,
-        offset: Optional[float] = None,
+        offset: float | None = None,
     ):
         """Create a `meridian` seam in the `mesh`.
 
@@ -132,7 +134,7 @@ class MeridianSlice:
         self.split_ids = self.west_ids.intersection(self.east_ids)
 
     def _intersection(
-        self, bias: SliceBias, n_points: Optional[float] = None
+        self, bias: SliceBias, n_points: float | None = None
     ) -> pv.PolyData:
         """Perform the meridian intersection with the mesh.
 
@@ -177,9 +179,9 @@ class MeridianSlice:
 
     def extract(
         self,
-        bias: Optional[str] = None,
-        split_cells: Optional[bool] = False,
-        clip: Optional[bool] = True,
+        bias: str | None = None,
+        split_cells: bool | None = False,
+        clip: bool | None = True,
     ) -> pv.PolyData:
         """Reduce mesh to only the cells intersecting with the meridian.
 
@@ -248,8 +250,8 @@ class MeridianSlice:
 
 def add_texture_coords(
     mesh: pv.PolyData,
-    meridian: Optional[float] = None,
-    antimeridian: Optional[bool] = False,
+    meridian: float | None = None,
+    antimeridian: bool | None = False,
 ) -> pv.PolyData:
     """Compute and attach texture coordinates, in UV space, to the mesh.
 
@@ -302,8 +304,8 @@ def add_texture_coords(
 
 def combine(
     *meshes: Any,
-    data: Optional[bool] = True,
-    clean: Optional[bool] = False,
+    data: bool | None = True,
+    clean: bool | None = False,
 ) -> pv.PolyData:
     """Combine two or more meshes into one mesh.
 
@@ -447,10 +449,10 @@ def combine(
 
 def cut_along_meridian(
     mesh: pv.PolyData,
-    meridian: Optional[float] = None,
-    antimeridian: Optional[bool] = False,
-    rtol: Optional[float] = None,
-    atol: Optional[float] = None,
+    meridian: float | None = None,
+    antimeridian: bool | None = False,
+    rtol: float | None = None,
+    atol: float | None = None,
 ) -> pv.PolyData:
     """Inject a `meridian` seam into the `mesh`.
 
@@ -601,10 +603,10 @@ def is_projected(mesh: pv.PolyData) -> bool:
 
 def resize(
     mesh: pv.PolyData,
-    radius: Optional[float] = None,
-    zfactor: Optional[float] = None,
-    zlevel: Optional[int] = None,
-    inplace: Optional[bool] = False,
+    radius: float | None = None,
+    zfactor: float | None = None,
+    zlevel: int | None = None,
+    inplace: bool | None = False,
 ) -> pv.PolyData:
     """Change the radius of the spherical mesh.
 

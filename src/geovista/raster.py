@@ -5,7 +5,7 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-from typing import Optional
+from __future__ import annotations
 
 import numpy as np
 import pyvista as pv
@@ -16,7 +16,7 @@ __all__ = ["wrap_texture"]
 
 
 def wrap_texture(
-    texture: pv.Texture, central_meridian: Optional[float] = None
+    texture: pv.Texture, central_meridian: float | None = None
 ) -> pv.Texture:
     """Re-center and wrap texture about the specified central meridian.
 

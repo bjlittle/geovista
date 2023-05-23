@@ -5,9 +5,11 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
+
 from importlib.resources import files
 import os
-from typing import Optional, Union
+from typing import Union
 
 import pooch
 import pyvista as pv
@@ -70,7 +72,7 @@ if os.environ.get("GEOVISTA_POOCH_MUTE"):
     pooch.utils.get_logger().setLevel("WARNING")
 
 
-def _fetch_texture(fname: str, location: Optional[bool] = False) -> TextureLike:
+def _fetch_texture(fname: str, location: bool | None = False) -> TextureLike:
     """Get the texture resource from the cache.
 
     If the resource is not already available in the geovista :data:`CACHE`,
@@ -100,7 +102,7 @@ def _fetch_texture(fname: str, location: Optional[bool] = False) -> TextureLike:
     return resource
 
 
-def blue_marble(location: Optional[bool] = False) -> TextureLike:
+def blue_marble(location: bool | None = False) -> TextureLike:
     """Get the NASA Blue Marble Next Generation with topography and bathymetry texture.
 
     If the resource is not already available in the geovista :data:`CACHE`,
@@ -125,7 +127,7 @@ def blue_marble(location: Optional[bool] = False) -> TextureLike:
     return _fetch_texture("world.topo.bathy.200412.3x5400x2700.jpg", location=location)
 
 
-def checkerboard(location: Optional[bool] = False) -> TextureLike:
+def checkerboard(location: bool | None = False) -> TextureLike:
     """Get the UV checker map 4K texture.
 
     If the resource is not already available in the geovista :data:`CACHE`,
@@ -150,7 +152,7 @@ def checkerboard(location: Optional[bool] = False) -> TextureLike:
     return _fetch_texture("uv-checker-map-4k.png", location=location)
 
 
-def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
+def fetch_coastlines(resolution: str | None = None) -> pv.PolyData:
     """Get the Natural Earth coastlines for the required resolution.
 
     If the resource is not already available in the geovista :data:`CACHE`,
@@ -183,7 +185,7 @@ def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
     return mesh
 
 
-def natural_earth_1(location: Optional[bool] = False) -> TextureLike:
+def natural_earth_1(location: bool | None = False) -> TextureLike:
     """Get the 1:50m Natural Earth texture.
 
     This is the Natural Earth 1 with shaded relief and water texture.
@@ -212,7 +214,7 @@ def natural_earth_1(location: Optional[bool] = False) -> TextureLike:
     return _fetch_texture("NE1_50M_SR_W.jpg", location=location)
 
 
-def natural_earth_hypsometric(location: Optional[bool] = False) -> TextureLike:
+def natural_earth_hypsometric(location: bool | None = False) -> TextureLike:
     """Get the 1:50m Natural Earth texture.
 
     This is the Natural Earth cross-blended hypsometric tints with shaded relief and
@@ -242,7 +244,7 @@ def natural_earth_hypsometric(location: Optional[bool] = False) -> TextureLike:
     return _fetch_texture("HYP_50M_SR_W.jpg", location=location)
 
 
-def reload_registry(fname: Optional[str] = None) -> None:
+def reload_registry(fname: str | None = None) -> None:
     """Refresh the registry of the :data:`CACHE`.
 
     Parameters

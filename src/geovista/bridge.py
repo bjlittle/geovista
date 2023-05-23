@@ -9,7 +9,9 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-from typing import Optional, Union
+from __future__ import annotations
+
+from typing import Union
 import warnings
 
 import numpy as np
@@ -343,13 +345,13 @@ class Transform:
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
-        data: Optional[ArrayLike] = None,
-        name: Optional[str] = None,
-        crs: Optional[CRSLike] = None,
-        radius: Optional[float] = None,
-        zfactor: Optional[float] = None,
-        zlevel: Optional[int] = None,
-        clean: Optional[bool] = None,
+        data: ArrayLike | None = None,
+        name: str | None = None,
+        crs: CRSLike | None = None,
+        radius: float | None = None,
+        zfactor: float | None = None,
+        zlevel: int | None = None,
+        clean: bool | None = None,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from contiguous 1-D x-values and y-values.
 
@@ -426,13 +428,13 @@ class Transform:
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
-        data: Optional[ArrayLike] = None,
-        name: Optional[str] = None,
-        crs: Optional[CRSLike] = None,
-        radius: Optional[float] = None,
-        zfactor: Optional[float] = None,
-        zlevel: Optional[int] = None,
-        clean: Optional[bool] = None,
+        data: ArrayLike | None = None,
+        name: str | None = None,
+        crs: CRSLike | None = None,
+        radius: float | None = None,
+        zfactor: float | None = None,
+        zlevel: int | None = None,
+        clean: bool | None = None,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from 2-D x-values and y-values.
 
@@ -529,15 +531,15 @@ class Transform:
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
-        connectivity: Optional[Union[ArrayLike, Shape]] = None,
-        data: Optional[ArrayLike] = None,
-        start_index: Optional[int] = None,
-        name: Optional[ArrayLike] = None,
-        crs: Optional[CRSLike] = None,
-        radius: Optional[float] = None,
-        zfactor: Optional[float] = None,
-        zlevel: Optional[int] = None,
-        clean: Optional[bool] = None,
+        connectivity: ArrayLike | Shape | None = None,
+        data: ArrayLike | None = None,
+        start_index: int | None = None,
+        name: ArrayLike | None = None,
+        crs: CRSLike | None = None,
+        radius: float | None = None,
+        zfactor: float | None = None,
+        zlevel: int | None = None,
+        clean: bool | None = None,
     ) -> pv.PolyData:
         """Build a mesh from unstructured 1-D x-values and y-values.
 
@@ -764,13 +766,13 @@ class Transform:
         self,
         xs: ArrayLike,
         ys: ArrayLike,
-        connectivity: Optional[Union[ArrayLike, Shape]] = None,
-        start_index: Optional[int] = None,
-        crs: Optional[ArrayLike] = None,
-        radius: Optional[float] = None,
-        zfactor: Optional[float] = None,
-        zlevel: Optional[int] = None,
-        clean: Optional[bool] = None,
+        connectivity: ArrayLike | Shape | None = None,
+        start_index: int | None = None,
+        crs: ArrayLike | None = None,
+        radius: float | None = None,
+        zfactor: float | None = None,
+        zlevel: int | None = None,
+        clean: bool | None = None,
     ):
         """Build a mesh from spatial points, connectivity, data and CRS metadata.
 
@@ -866,7 +868,7 @@ class Transform:
         self._n_cells = mesh.n_cells
 
     def __call__(
-        self, data: Optional[ArrayLike] = None, name: Optional[str] = None
+        self, data: ArrayLike | None = None, name: str | None = None
     ) -> pv.PolyData:
         """Build the mesh and attach the provided `data` to faces or nodes.
 

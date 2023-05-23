@@ -7,9 +7,11 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
+
 from functools import lru_cache
 import sys
-from typing import Any, Optional, Union
+from typing import Any, Union
 from warnings import warn
 
 from pyproj import CRS, Transformer
@@ -35,8 +37,8 @@ BASE_ZLEVEL_FACTOR: int = 1e-3
 
 @lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def _get_lfric(
-    resolution: Optional[str] = None,
-    radius: Optional[float] = None,
+    resolution: str | None = None,
+    radius: float | None = None,
 ) -> pv.PolyData:
     """Retrieve the LFRic unstructured cubed-sphere from the geovista cache.
 
@@ -79,7 +81,7 @@ class GeoPlotterBase:
 
     """
 
-    def __init__(self, *args: Optional[Any], **kwargs: Optional[Any]):
+    def __init__(self, *args: Any | None, **kwargs: Any | None):
         """Create geospatial aware plotter.
 
         Parameters
@@ -122,7 +124,7 @@ class GeoPlotterBase:
         super().__init__(*args, **kwargs)
 
     def add_base_layer(
-        self, mesh: Optional[pv.PolyData] = None, **kwargs: Optional[Any]
+        self, mesh: pv.PolyData | None = None, **kwargs: Any | None
     ) -> vtk.vtkActor:
         """Generate a cube-sphere base layer mesh and add to the plotter scene.
 
@@ -194,11 +196,11 @@ class GeoPlotterBase:
 
     def add_coastlines(
         self,
-        resolution: Optional[str] = None,
-        radius: Optional[float] = None,
-        zfactor: Optional[float] = None,
-        zlevel: Optional[int] = None,
-        **kwargs: Optional[Any],
+        resolution: str | None = None,
+        radius: float | None = None,
+        zfactor: float | None = None,
+        zlevel: int | None = None,
+        **kwargs: Any | None,
     ) -> vtk.vtkActor:
         """Generate coastlines and add to the plotter scene.
 
@@ -234,7 +236,7 @@ class GeoPlotterBase:
         )
         return self.add_mesh(mesh, **kwargs)
 
-    def add_mesh(self, mesh: Any, **kwargs: Optional[Any]):
+    def add_mesh(self, mesh: Any, **kwargs: Any | None):
         """Add the mesh to the plotter scene.
 
         See :meth:`pyvista.Plotter.add_mesh`.

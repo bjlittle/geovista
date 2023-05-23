@@ -5,7 +5,7 @@ Notes
 .. versionadded:: 0.1.0
 
 """
-from typing import Optional
+from __future__ import annotations
 
 from pyproj import CRS
 import pyvista as pv
@@ -57,7 +57,7 @@ def from_wkt(mesh: pv.PolyData) -> CRS:
     return crs
 
 
-def get_central_meridian(crs: CRS) -> Optional[float]:
+def get_central_meridian(crs: CRS) -> float | None:
     """Retrieve the longitude of natural origin of the `CRS`.
 
     THe natural origin is also known as the central meridian.
@@ -91,7 +91,7 @@ def get_central_meridian(crs: CRS) -> Optional[float]:
     return result
 
 
-def set_central_meridian(crs: CRS, meridian: float) -> Optional[CRS]:
+def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
     """Replace the longitude of natural origin in the `CRS`.
 
     The natural origin is also known as the central meridian.
