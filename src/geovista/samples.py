@@ -37,10 +37,10 @@ __all__ = [
 ]
 
 #: The default LFRic Model unstructured cubed-sphere resolution.
-DEFAULT_LFRIC_RESOLUTION: str = "c96"
+LFRIC_RESOLUTION: str = "c96"
 
 #: The default warp factor for mesh points.
-DEFAULT_WARP_FACTOR: float = 2e-5
+WARP_FACTOR: float = 2e-5
 
 #: Preference to activate data on the mesh faces.
 PREFERENCE_CELL: str = "cell"
@@ -129,7 +129,7 @@ def fvcom_tamar(
         Warp the mesh nodes by the ``point`` data.
     factor : float, optional
         The scale factor used to warp the mesh. Defaults to
-        :data:`DEFAULT_WARP_FACTOR`.
+        :data:`WARP_FACTOR`.
 
     Returns
     -------
@@ -149,7 +149,7 @@ def fvcom_tamar(
         raise ValueError(emsg)
 
     if factor is None:
-        factor = DEFAULT_WARP_FACTOR
+        factor = WARP_FACTOR
 
     sample = pantry.fvcom_tamar()
     data = sample.face if preference == PREFERENCE_CELL else sample.node
@@ -373,7 +373,7 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
     ----------
     resolution : str, optional
         The resolution of the LFRic Model mesh, which may be either
-        ``c48``, ``c96`` or ``c192``. Defaults to :data:`DEFAULT_LFRIC_RESOLUTION`.
+        ``c48``, ``c96`` or ``c192``. Defaults to :data:`LFRIC_RESOLUTION`.
 
     Returns
     -------
@@ -386,7 +386,7 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
 
     """
     if resolution is None:
-        resolution = DEFAULT_LFRIC_RESOLUTION
+        resolution = LFRIC_RESOLUTION
 
     fname = f"lfric_{resolution}.vtk"
     processor = pooch.Decompress(method="auto", name=fname)
@@ -407,7 +407,7 @@ def lfric_orog(warp: bool | None = False, factor: float | None = None) -> pv.Pol
         Warp the mesh nodes by the orography ``point`` data.
     factor : float, optional
         The scale factor used to warp the mesh. Defaults to
-        :data:`DEFAULT_WARP_FACTOR`.
+        :data:`WARP_FACTOR`.
 
     Returns
     -------
@@ -420,7 +420,7 @@ def lfric_orog(warp: bool | None = False, factor: float | None = None) -> pv.Pol
 
     """
     if factor is None:
-        factor = DEFAULT_WARP_FACTOR
+        factor = WARP_FACTOR
 
     sample = pantry.lfric_orog()
     name = sample.name

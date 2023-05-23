@@ -1,7 +1,7 @@
 """Unit-tests for :func:`geovista.geometry.test_load_coastline_geometries`."""
 import numpy as np
 
-from geovista.geometry import COASTLINE_RESOLUTION
+from geovista.common import COASTLINES_RESOLUTION
 from geovista.geometry import load_coastline_geometries as load
 
 
@@ -12,7 +12,7 @@ def test_defaults(mocker):
     spy = mocker.spy(shp, "natural_earth")
     _ = load()
     spy.assert_called_once_with(
-        resolution=COASTLINE_RESOLUTION, category="physical", name="coastline"
+        resolution=COASTLINES_RESOLUTION, category="physical", name="coastline"
     )
 
 

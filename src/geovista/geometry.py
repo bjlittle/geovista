@@ -16,8 +16,10 @@ from shapely.geometry.multilinestring import MultiLineString
 
 from .cache import fetch_coastlines
 from .common import (
+    COASTLINES_RESOLUTION,
     GV_FIELD_RADIUS,
     GV_FIELD_RESOLUTION,
+    LRU_CACHE_SIZE,
     RADIUS,
     ZLEVEL_FACTOR,
     to_spherical,
@@ -25,21 +27,13 @@ from .common import (
 from .core import resize
 
 __all__ = [
-    "COASTLINE_RESOLUTION",
     "coastlines",
     "load_coastline_geometries",
     "load_coastlines",
 ]
 
-#
-# TODO: support richer default management
-#
 
-#: Default coastline resolution.
-COASTLINE_RESOLUTION: str = "10m"
-
-
-@lru_cache(maxsize=0 if "pytest" in sys.modules else 128)
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def coastlines(
     resolution: Optional[str] = None,
     radius: Optional[float] = None,
@@ -52,7 +46,8 @@ def coastlines(
     ----------
     resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m``, or ``10m``. Defaults to :data:`COASTLINE_RESOLUTION`.
+        ``110m``, ``50m``, or ``10m``. Defaults to
+        :data:`geovista.common.COASTLINES_RESOLUTION`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
     zfactor : float, optional
@@ -73,7 +68,7 @@ def coastlines(
 
     """
     if resolution is None:
-        resolution = COASTLINE_RESOLUTION
+        resolution = COASTLINES_RESOLUTION
 
     if zlevel is None:
         zlevel = 1
@@ -88,7 +83,7 @@ def coastlines(
     return mesh
 
 
-@lru_cache(maxsize=0 if "pytest" in sys.modules else 128)
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def load_coastline_geometries(
     resolution: Optional[str] = None,
 ) -> list[np.ndarray]:
@@ -104,7 +99,8 @@ def load_coastline_geometries(
     ----------
     resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m`` or ``10m``. Defaults to :data:`COASTLINE_RESOLUTION`.
+        ``110m``, ``50m`` or ``10m``. Defaults to
+        :data:`geovista.common.COASTLINES_RESOLUTION`.
 
     Returns
     -------
@@ -117,7 +113,7 @@ def load_coastline_geometries(
 
     """
     if resolution is None:
-        resolution = COASTLINE_RESOLUTION
+        resolution = COASTLINES_RESOLUTION
 
     lines, multi_lines = [], []
     category, name = "physical", "coastline"
@@ -145,7 +141,7 @@ def load_coastline_geometries(
     return lines
 
 
-@lru_cache(maxsize=0 if "pytest" in sys.modules else 128)
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def load_coastlines(
     resolution: Optional[str] = None,
     radius: Optional[float] = None,
@@ -158,7 +154,8 @@ def load_coastlines(
     ----------
     resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m``, or ``10m``. Default to :data:`COASTLINE_RESOLUTION`.
+        ``110m``, ``50m``, or ``10m``. Default to
+        :data:`geovista.common.COASTLINES_RESOLUTION`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
     zfactor : float, optional
@@ -179,7 +176,7 @@ def load_coastlines(
 
     """
     if resolution is None:
-        resolution = COASTLINE_RESOLUTION
+        resolution = COASTLINES_RESOLUTION
 
     radius = RADIUS if radius is None else abs(float(radius))
     zfactor = ZLEVEL_FACTOR if zfactor is None else float(zfactor)

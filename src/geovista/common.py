@@ -15,6 +15,7 @@ import pyvista as pv
 from vtk import vtkLogger, vtkObject
 
 __all__ = [
+    "COASTLINES_RESOLUTION",
     "GV_CELL_IDS",
     "GV_FIELD_CRS",
     "GV_FIELD_NAME",
@@ -22,6 +23,7 @@ __all__ = [
     "GV_FIELD_RESOLUTION",
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
+    "LRU_CACHE_SIZE",
     "RADIUS",
     "REMESH_JOIN",
     "REMESH_SEAM",
@@ -49,6 +51,9 @@ __all__ = [
 #: Default base for wrapped longitude half-open interval, in degrees.
 BASE: float = -180.0
 
+#: Default Natural Earth coastline resolution.
+COASTLINES_RESOLUTION: str = "10m"
+
 #: Default number of decimal places for :func:`distance` calculation.
 DISTANCE_DECIMALS: int = 8
 
@@ -75,6 +80,9 @@ GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
 
 #: Default jupyter plotting backend for pyvista.
 JUPYTER_BACKEND: str = "trame"
+
+#: LRU cache size.
+LRU_CACHE_SIZE: int = 128
 
 #: Default period for wrapped longitude half-open interval, in degrees.
 PERIOD: float = 360.0

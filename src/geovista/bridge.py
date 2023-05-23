@@ -36,14 +36,14 @@ __all__ = ["Transform"]
 Shape = tuple[int]
 CRSLike = Union[int, str, dict, CRS]
 
-#: Default mesh cleaning.
-DEFAULT_CLEAN: bool = False
-
-#: Default array name for data on the mesh points/vertices/nodes.
-DEFAULT_NAME_POINTS: str = "point_data"
+#: Whether mesh cleaning performed by the bridge.
+BRIDGE_CLEAN: bool = False
 
 #: Default array name for data on the mesh cells/faces.
-DEFAULT_NAME_CELLS: str = "cell_data"
+NAME_CELLS: str = "cell_data"
+
+#: Default array name for data on the mesh points/vertices/nodes.
+NAME_POINTS: str = "point_data"
 
 
 class Transform:
@@ -349,7 +349,7 @@ class Transform:
         radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
-        clean: Optional[bool] = DEFAULT_CLEAN,
+        clean: Optional[bool] = None,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from contiguous 1-D x-values and y-values.
 
@@ -379,7 +379,7 @@ class Transform:
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
-            :data:`DEFAULT_NAME_POINTS` or :data:`DEFAULT_NAME_CELLS`.
+            :data:`NAME_POINTS` or :data:`NAME_CELLS`.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
@@ -395,7 +395,7 @@ class Transform:
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
-            :data:`DEFAULT_CLEAN`.
+            :data:`BRIDGE_CLEAN`.
 
         Returns
         -------
@@ -432,7 +432,7 @@ class Transform:
         radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
-        clean: Optional[bool] = DEFAULT_CLEAN,
+        clean: Optional[bool] = None,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from 2-D x-values and y-values.
 
@@ -463,7 +463,7 @@ class Transform:
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
-            :data:`DEFAULT_NAME_POINTS` or :data:`DEFAULT_NAME_CELLS`.
+            :data:`NAME_POINTS` or :data:`NAME_CELLS`.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
@@ -479,7 +479,7 @@ class Transform:
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
-            :data:`DEFAULT_CLEAN`.
+            :data:`BRIDGE_CLEAN`.
 
         Returns
         -------
@@ -537,7 +537,7 @@ class Transform:
         radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
-        clean: Optional[bool] = DEFAULT_CLEAN,
+        clean: Optional[bool] = None,
     ) -> pv.PolyData:
         """Build a mesh from unstructured 1-D x-values and y-values.
 
@@ -582,7 +582,7 @@ class Transform:
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
-            :data:`DEFAULT_NAME_POINTS` or :data:`DEFAULT_NAME_CELLS`.
+            :data:`NAME_POINTS` or :data:`NAME_CELLS`.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
@@ -598,7 +598,7 @@ class Transform:
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
-            :data:`DEFAULT_CLEAN`.
+            :data:`BRIDGE_CLEAN`.
 
         Returns
         -------
@@ -747,11 +747,7 @@ class Transform:
             data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells)
 
             if not name:
-                name = (
-                    DEFAULT_NAME_POINTS
-                    if data.size == mesh.n_points
-                    else DEFAULT_NAME_CELLS
-                )
+                name = NAME_POINTS if data.size == mesh.n_points else NAME_CELLS
             if not isinstance(name, str):
                 name = str(name)
 
@@ -774,7 +770,7 @@ class Transform:
         radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
-        clean: Optional[bool] = DEFAULT_CLEAN,
+        clean: Optional[bool] = None,
     ):
         """Build a mesh from spatial points, connectivity, data and CRS metadata.
 
@@ -822,7 +818,7 @@ class Transform:
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
-            :data:`DEFAULT_CLEAN`.
+            :data:`BRIDGE_CLEAN`.
 
         Notes
         -----
@@ -881,7 +877,7 @@ class Transform:
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
-            :data:`DEFAULT_NAME_POINTS` or :data:`DEFAULT_NAME_CELLS`.
+            :data:`NAME_POINTS` or :data:`NAME_CELLS`.
 
         Returns
         -------
@@ -901,11 +897,7 @@ class Transform:
 
         if data is not None:
             if not name:
-                name = (
-                    DEFAULT_NAME_POINTS
-                    if data.size == self._n_points
-                    else DEFAULT_NAME_CELLS
-                )
+                name = NAME_POINTS if data.size == self._n_points else NAME_CELLS
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data
