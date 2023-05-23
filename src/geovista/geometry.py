@@ -8,7 +8,6 @@ Notes
 from __future__ import annotations
 
 from functools import lru_cache
-import sys
 
 import cartopy.io.shapereader as shp
 import numpy as np
@@ -34,7 +33,7 @@ __all__ = [
 ]
 
 
-@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
+@lru_cache(maxsize=LRU_CACHE_SIZE)
 def coastlines(
     resolution: str | None = None,
     radius: float | None = None,
@@ -84,7 +83,7 @@ def coastlines(
     return mesh
 
 
-@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
+@lru_cache(maxsize=LRU_CACHE_SIZE)
 def load_coastline_geometries(
     resolution: str | None = None,
 ) -> list[np.ndarray]:
@@ -142,7 +141,7 @@ def load_coastline_geometries(
     return lines
 
 
-@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
+@lru_cache(maxsize=LRU_CACHE_SIZE)
 def load_coastlines(
     resolution: str | None = None,
     radius: float | None = None,
