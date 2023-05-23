@@ -5,9 +5,10 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
+
 from functools import lru_cache
 import sys
-from typing import Optional
 
 import cartopy.io.shapereader as shp
 import numpy as np
@@ -35,10 +36,10 @@ __all__ = [
 
 @lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def coastlines(
-    resolution: Optional[str] = None,
-    radius: Optional[float] = None,
-    zfactor: Optional[float] = None,
-    zlevel: Optional[int] = None,
+    resolution: str | None = None,
+    radius: float | None = None,
+    zfactor: float | None = None,
+    zlevel: int | None = None,
 ) -> pv.PolyData:
     """Create or fetch the cached mesh of the coastlines.
 
@@ -85,7 +86,7 @@ def coastlines(
 
 @lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def load_coastline_geometries(
-    resolution: Optional[str] = None,
+    resolution: str | None = None,
 ) -> list[np.ndarray]:
     """Fetch Natural Earth coastline shapefile for the required `resolution`.
 
@@ -143,10 +144,10 @@ def load_coastline_geometries(
 
 @lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def load_coastlines(
-    resolution: Optional[str] = None,
-    radius: Optional[float] = None,
-    zfactor: Optional[float] = None,
-    zlevel: Optional[int] = None,
+    resolution: str | None = None,
+    radius: float | None = None,
+    zfactor: float | None = None,
+    zlevel: int | None = None,
 ) -> pv.PolyData:
     """Create a mesh of coastline geometries at the specified `resolution`.
 
