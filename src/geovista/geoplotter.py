@@ -10,7 +10,6 @@ Notes
 from __future__ import annotations
 
 from functools import lru_cache
-import sys
 from typing import Any, Union
 from warnings import warn
 
@@ -35,7 +34,7 @@ CRSLike = Union[int, str, dict, CRS]
 BASE_ZLEVEL_FACTOR: int = 1e-3
 
 
-@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
+@lru_cache(maxsize=LRU_CACHE_SIZE)
 def _get_lfric(
     resolution: str | None = None,
     radius: float | None = None,

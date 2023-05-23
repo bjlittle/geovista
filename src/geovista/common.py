@@ -8,6 +8,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
+import sys
 from typing import Any
 
 import numpy as np
@@ -83,8 +84,8 @@ GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
 #: Default jupyter plotting backend for pyvista.
 JUPYTER_BACKEND: str = "trame"
 
-#: LRU cache size.
-LRU_CACHE_SIZE: int = 128
+#: LRU cache size, which is auto-disabled for testing
+LRU_CACHE_SIZE: int = 0 if "pytest" in sys.modules else 128
 
 #: Default period for wrapped longitude half-open interval, in degrees.
 PERIOD: float = 360.0
