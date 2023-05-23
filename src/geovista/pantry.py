@@ -10,6 +10,8 @@ Notes
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import lru_cache
+import sys
 
 import netCDF4 as nc
 import numpy as np
@@ -18,6 +20,7 @@ import numpy.typing as npt
 import pooch
 
 from .cache import CACHE
+from .common import LRU_CACHE_SIZE
 
 __all__ = [
     "fesom",
@@ -94,6 +97,7 @@ def capitalise(title: str) -> str:
     return title
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def fesom(step: int | None = None) -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -160,6 +164,7 @@ def fesom(step: int | None = None) -> SampleUnstructuredXY:
     return sample
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def fvcom_tamar() -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -208,6 +213,7 @@ def fvcom_tamar() -> SampleUnstructuredXY:
     return sample
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def hexahedron() -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -244,6 +250,7 @@ def hexahedron() -> SampleUnstructuredXY:
     return sample
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def icon_soil() -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -287,6 +294,7 @@ def icon_soil() -> SampleUnstructuredXY:
     return sample
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def _gungho_lam(fname: str) -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -400,6 +408,7 @@ def lam_new_zealand() -> SampleUnstructuredXY:
     return _gungho_lam("new_zealand.nc")
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def lam_pacific() -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -483,6 +492,7 @@ def lam_uk() -> SampleUnstructuredXY:
     return _gungho_lam("uk.nc")
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def lfric_orog() -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -529,6 +539,7 @@ def lfric_orog() -> SampleUnstructuredXY:
     return sample
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def lfric_sst() -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -575,6 +586,7 @@ def lfric_sst() -> SampleUnstructuredXY:
     return sample
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def oisst_avhrr_sst() -> SampleStructuredXY:
     """Download and cache structured surface sample data.
 
@@ -609,6 +621,7 @@ def oisst_avhrr_sst() -> SampleStructuredXY:
     return sample
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def um_orca2() -> SampleStructuredXY:
     """Download and cache structured surface sample data.
 
@@ -643,6 +656,7 @@ def um_orca2() -> SampleStructuredXY:
     return sample
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def ww3_global_smc(step: int | None = None) -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -706,6 +720,7 @@ def ww3_global_smc(step: int | None = None) -> SampleUnstructuredXY:
     return sample
 
 
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def ww3_global_tri() -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
