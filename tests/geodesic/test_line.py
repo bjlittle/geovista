@@ -7,7 +7,7 @@ from geovista.geodesic import GEODESIC_NPTS, line
 
 
 @pytest.mark.parametrize(
-    "lons,lats",
+    "lons, lats",
     [(range(10), range(20)), (list(range(10)), list(range(20)))],
 )
 def test_lons_lats__size_unequal_fail(lons, lats):
@@ -18,7 +18,7 @@ def test_lons_lats__size_unequal_fail(lons, lats):
 
 
 @pytest.mark.parametrize(
-    "lons,lats",
+    "lons, lats",
     [(0, 1), ([0], [1])],
 )
 def test_lons_lats__size_minimal_fail(lons, lats):
@@ -37,7 +37,7 @@ def test_lons_lats__loop_minimal_fail():
 
 
 @pytest.mark.parametrize(
-    "nsamples,npts",
+    "nsamples, npts",
     [(2, None), (2, 64), (3, 128), (4, 256), (8, 512)],
 )
 def test_npts(nsamples, npts):
@@ -66,7 +66,7 @@ def test_contains_sample_points(lfric_sst, nsamples):
 
 
 @pytest.mark.parametrize(
-    "lons,lats",
+    "lons, lats",
     [
         (0, [90, 0, -90]),
         ([0], (90, 45, 0, -45, -90)),

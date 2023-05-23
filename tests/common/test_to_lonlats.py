@@ -6,7 +6,7 @@ from geovista.common import to_lonlats
 
 
 @pytest.mark.parametrize(
-    "points,emsg",
+    "points, emsg",
     [
         ([[[0]]], r"Require a 2D array .* got a 3D array"),
         ([[0, 1]], r"Require a 2D array .* got a 2D array with shape \(1, 2\)"),
