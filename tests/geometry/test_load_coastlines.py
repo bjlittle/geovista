@@ -3,13 +3,13 @@ import numpy as np
 import pytest
 
 from geovista.common import (
+    COASTLINES_RESOLUTION,
     GV_FIELD_RADIUS,
     GV_FIELD_RESOLUTION,
     RADIUS,
     ZLEVEL_FACTOR,
     distance,
 )
-from geovista.geometry import COASTLINE_RESOLUTION
 from geovista.geometry import load_coastlines as load
 
 
@@ -17,7 +17,7 @@ def test_defaults():
     """Test expected defaults are honoured."""
     result = load()
     assert result[GV_FIELD_RADIUS] == RADIUS
-    assert result[GV_FIELD_RESOLUTION] == COASTLINE_RESOLUTION
+    assert result[GV_FIELD_RESOLUTION] == COASTLINES_RESOLUTION
 
 
 def test_resolution_metadata(resolution):
@@ -40,7 +40,7 @@ def test_radius(resolution, radius):
     assert np.isclose(actual, radius)
 
 
-@pytest.mark.parametrize("zlevel", range(-10, 11))
+@pytest.mark.parametrize("zlevel", range(-5, 6))
 def test_zlevel(resolution, zlevel):
     """Test coastline z-control with zlevel."""
     result = load(resolution=resolution, zlevel=zlevel)

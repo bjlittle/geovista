@@ -8,6 +8,7 @@ Notes
 
 """
 from functools import lru_cache
+import sys
 from typing import Any, Optional, Union
 from warnings import warn
 
@@ -15,11 +16,11 @@ from pyproj import CRS, Transformer
 import pyvista as pv
 import vtk
 
-from .common import RADIUS, ZLEVEL_FACTOR, distance, from_spherical
+from .common import LRU_CACHE_SIZE, RADIUS, ZLEVEL_FACTOR, distance, from_spherical
 from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
-from .geometry import COASTLINE_RESOLUTION, coastlines
+from .geometry import coastlines
 from .raster import wrap_texture
 from .samples import lfric
 
@@ -32,7 +33,7 @@ CRSLike = Union[int, str, dict, CRS]
 BASE_ZLEVEL_FACTOR: int = 1e-3
 
 
-@lru_cache
+@lru_cache(maxsize=0 if "pytest" in sys.modules else LRU_CACHE_SIZE)
 def _get_lfric(
     resolution: Optional[str] = None,
     radius: Optional[float] = None,
@@ -43,7 +44,7 @@ def _get_lfric(
     ----------
     resolution : str, optional
         The resolution of the LFRic unstructured cubed-sphere. Defaults to
-        :data:`geovista.samples.DEFAULT_LFRIC_RESOLUTION`.
+        :data:`geovista.samples.LFRIC_RESOLUTION`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
 
@@ -138,7 +139,7 @@ class GeoPlotterBase:
         resolution : str, optional
             The resolution of the cube-sphere to generate as the base layer,
             which may be either ``c48``, ``c96`` or ``c192``. Defaults to
-            :data:`geovista.samples.DEFAULT_LFRIC_RESOLUTION`.
+            :data:`geovista.samples.LFRIC_RESOLUTION`.
         zfactor : float, optional
             The magnitude factor for z-axis levels (`zlevel`). Defaults to
             :data:`BASE_ZLEVEL_FACTOR`.
@@ -193,7 +194,7 @@ class GeoPlotterBase:
 
     def add_coastlines(
         self,
-        resolution: Optional[str] = COASTLINE_RESOLUTION,
+        resolution: Optional[str] = None,
         radius: Optional[float] = None,
         zfactor: Optional[float] = None,
         zlevel: Optional[int] = None,
@@ -205,7 +206,8 @@ class GeoPlotterBase:
         ----------
         resolution : str, optional
             The resolution of the Natural Earth coastlines, which may be either
-            ``110m``, ``50m``, or ``10m``. Defaults to :data:`COASTLINE_RESOLUTION`.
+            ``110m``, ``50m``, or ``10m``. Defaults to
+            :data:`geovista.common.COASTLINES_RESOLUTION`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zfactor : float, optional

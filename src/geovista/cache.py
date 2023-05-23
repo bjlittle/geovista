@@ -12,6 +12,7 @@ from typing import Optional, Union
 import pooch
 import pyvista as pv
 
+from .common import COASTLINES_RESOLUTION
 from .config import resources
 
 __all__ = [
@@ -30,17 +31,14 @@ TextureLike = Union[str, pv.Texture]
 #: Base URL for geovista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
 
-#: The default Natural Earth coastlines resolution.
-DEFAULT_COASTLINES_RESOLUTION: str = "10m"
-
-#: The default geovista-data repository release version.
-DEFAULT_VERSION: str = "2023.05.0"
+#: Pin to use the specific geovista-data repository version for geovista resources.
+DATA_VERSION: str = "2023.05.0"
 
 #: Environment variable to override pooch cache manager path.
 ENV: str = "GEOVISTA_CACHEDIR"
 
 #: Environment variable to override default geovista-data version.
-GEOVISTA_DATA_VERSION: str = os.environ.get("GEOVISTA_DATA_VERSION", DEFAULT_VERSION)
+GEOVISTA_DATA_VERSION: str = os.environ.get("GEOVISTA_DATA_VERSION", DATA_VERSION)
 
 #: The number of retry attempts to download a resource.
 RETRY_ATTEMPTS: int = 3
@@ -73,7 +71,7 @@ if os.environ.get("GEOVISTA_POOCH_MUTE"):
 
 
 def _fetch_texture(fname: str, location: Optional[bool] = False) -> TextureLike:
-    """Get the texture resource from cache.
+    """Get the texture resource from the cache.
 
     If the resource is not already available in the geovista :data:`CACHE`,
     then it will be downloaded from the :data:`BASE_URL`.
@@ -162,7 +160,8 @@ def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
     ----------
     resolution : str, optional
         The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m`` or ``10m``. Defaults to :data:`DEFAULT_COASTLINES_RESOLUTION`.
+        ``110m``, ``50m`` or ``10m``. Defaults to
+        :data:`geovista.common.COASTLINES_RESOLUTION`.
 
     Returns
     -------
@@ -175,7 +174,7 @@ def fetch_coastlines(resolution: Optional[str] = None) -> pv.PolyData:
 
     """
     if resolution is None:
-        resolution = DEFAULT_COASTLINES_RESOLUTION
+        resolution = COASTLINES_RESOLUTION
 
     fname = f"ne_coastlines_{resolution}.vtk"
     processor = pooch.Decompress(method="auto", name=fname)

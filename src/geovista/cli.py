@@ -33,7 +33,7 @@ NE_GROUPS: list[str] = sorted(["physical"])
 NE_CHOICES: list[str] = [ALL]
 NE_CHOICES.extend(NE_GROUPS)
 
-DEFAULT_FG_COLOUR: str = "cyan"
+FG_COLOUR: str = "cyan"
 
 SCRIPTS: list[str] = [ALL] + [
     submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)
@@ -70,7 +70,7 @@ def _download_group(
 
     """
     if fg_colour is None:
-        fg_colour = DEFAULT_FG_COLOUR
+        fg_colour = FG_COLOUR
 
     name: str = "" if name is None else f"{name} "
 
@@ -139,11 +139,11 @@ def main(version: bool, cache: bool) -> None:
     """To get help for geovista commands, simply use "geovista COMMAND --help"."""
     if version:
         click.echo("version ", nl=False)
-        click.secho(f"{__version__}", fg=DEFAULT_FG_COLOUR)
+        click.secho(f"{__version__}", fg=FG_COLOUR)
 
     if cache:
         click.echo("cache directory ", nl=False)
-        click.secho(f"{CACHE.abspath}", fg=DEFAULT_FG_COLOUR)
+        click.secho(f"{CACHE.abspath}", fg=FG_COLOUR)
 
 
 @main.command(no_args_is_help=True)
@@ -229,7 +229,7 @@ def download(
 
     n_fnames: int = len(fnames)
     width: int = len(str(n_fnames))
-    fg_colour: str = DEFAULT_FG_COLOUR
+    fg_colour: str = FG_COLOUR
 
     if clean:
         msg = "Are you sure you want to delete all cached geovista resources"
@@ -244,7 +244,7 @@ def download(
                     rmtree(target)
 
                 click.echo("\nDeleted the cache directory ", nl=False)
-                click.secho(f"{target}", fg=DEFAULT_FG_COLOUR)
+                click.secho(f"{target}", fg=FG_COLOUR)
                 click.echo("👍 All done!")
             else:
                 click.echo("\nThere are no cached resources to delete.")
