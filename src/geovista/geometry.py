@@ -21,7 +21,7 @@ from .common import (
     GV_FIELD_RESOLUTION,
     LRU_CACHE_SIZE,
     RADIUS,
-    ZLEVEL_FACTOR,
+    ZLEVEL_SCALE,
     to_spherical,
 )
 from .core import resize
@@ -37,8 +37,8 @@ __all__ = [
 def coastlines(
     resolution: str | None = None,
     radius: float | None = None,
-    zfactor: float | None = None,
     zlevel: int | None = None,
+    zscale: float | None = None,
 ) -> pv.PolyData:
     """Create or fetch the cached mesh of the coastlines.
 
@@ -50,12 +50,12 @@ def coastlines(
         :data:`geovista.common.COASTLINES_RESOLUTION`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
-    zfactor : float, optional
-        The proportional multiplier for z-axis levels/offsets. Defaults
-        to :data:`geovista.common.ZLEVEL_FACTOR`.
     zlevel : int, default=1
-        The z-axis level. Used in combination with the `zfactor` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
+        The z-axis level. Used in combination with the `zscale` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`geovista.common.ZLEVEL_SCALE`.
 
     Returns
     -------
@@ -78,7 +78,7 @@ def coastlines(
     except ValueError:
         mesh = load_coastlines(resolution=resolution)
 
-    resize(mesh, radius=radius, zfactor=zfactor, zlevel=zlevel, inplace=True)
+    resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale, inplace=True)
 
     return mesh
 
@@ -145,8 +145,8 @@ def load_coastline_geometries(
 def load_coastlines(
     resolution: str | None = None,
     radius: float | None = None,
-    zfactor: float | None = None,
     zlevel: int | None = None,
+    zscale: float | None = None,
 ) -> pv.PolyData:
     """Create a mesh of coastline geometries at the specified `resolution`.
 
@@ -158,12 +158,12 @@ def load_coastlines(
         :data:`geovista.common.COASTLINES_RESOLUTION`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
-    zfactor : float, optional
-        The proportional multiplier for z-axis levels/offsets. Defaults
-        to :data:`geovista.common.ZLEVEL_FACTOR`.
     zlevel : int, default=0
-        The z-axis level. Used in combination with the `zfactor` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
+        The z-axis level. Used in combination with the `zscale` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`geovista.common.ZLEVEL_SCALE`.
 
     Returns
     -------
@@ -179,9 +179,9 @@ def load_coastlines(
         resolution = COASTLINES_RESOLUTION
 
     radius = RADIUS if radius is None else abs(float(radius))
-    zfactor = ZLEVEL_FACTOR if zfactor is None else float(zfactor)
+    zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
     zlevel = 0 if zlevel is None else int(zlevel)
-    radius += radius * zlevel * zfactor
+    radius += radius * zlevel * zscale
 
     geoms = load_coastline_geometries(resolution=resolution)
     npoints_per_geom = [geom.shape[0] for geom in geoms]

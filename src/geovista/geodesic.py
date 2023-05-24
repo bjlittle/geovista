@@ -15,10 +15,18 @@ import numpy.typing as npt
 import pyproj
 import pyvista as pv
 
-from .common import RADIUS, ZLEVEL_FACTOR, distance, to_spherical, wrap
+from .common import RADIUS, ZLEVEL_SCALE, distance, to_spherical, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
 
-__all__ = ["BBox", "line", "npoints", "npoints_by_idx", "panel", "wedge"]
+__all__ = [
+    "BBox",
+    "GEODESIC_NPTS",
+    "line",
+    "npoints",
+    "npoints_by_idx",
+    "panel",
+    "wedge",
+]
 
 # Type aliases
 Corners = tuple[float, float, float, float]
@@ -466,8 +474,7 @@ class BBox:
         """
         self._generate_bbox_mesh(surface=surface, radius=radius)
 
-        # TODO: address "fudge-factor" z-level
-        radius = self._surface_radius + self._surface_radius * ZLEVEL_FACTOR
+        radius = self._surface_radius + self._surface_radius * ZLEVEL_SCALE
 
         edge_idxs = self._bbox_face_edge_idxs()
         edge_lons = self._bbox_lons[edge_idxs]
@@ -602,8 +609,8 @@ def line(
     npts: int | None = None,
     ellps: str | None = None,
     close: bool | None = False,
-    zfactor: float | None = None,
     zlevel: int | None = None,
+    zscale: float | None = None,
 ) -> pv.PolyData:
     """Geodesic line consisting of one or more connected geodesic line segments.
 
@@ -635,12 +642,12 @@ def line(
     close : bool, default=False
         Whether to close the geodesic line segments into a loop i.e., the last
         point is connected to the first point.
-    zfactor : float, optional
-        The magnitude factor for the z-axis level (`zlevel`). Defaults to
-        :data:`geovista.common.ZLEVEL_FACTOR`.
     zlevel : int, default=1
-        The z-axis level. Used in combination with the `zfactor` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
+        The z-axis level. Used in combination with the `zscale` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`geovista.common.ZLEVEL_SCALE`.
 
     Returns
     -------
@@ -657,9 +664,9 @@ def line(
     else:
         radius = RADIUS if radius is None else abs(float(radius))
 
-    zfactor = ZLEVEL_FACTOR if zfactor is None else float(zfactor)
+    zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
     zlevel = 1 if zlevel is None else int(zlevel)
-    radius += radius * zlevel * zfactor
+    radius += radius * zlevel * zscale
 
     if npts is None:
         npts = GEODESIC_NPTS

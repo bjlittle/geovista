@@ -17,7 +17,7 @@ from pyproj import CRS, Transformer
 import pyvista as pv
 import vtk
 
-from .common import LRU_CACHE_SIZE, RADIUS, ZLEVEL_FACTOR, distance, from_spherical
+from .common import LRU_CACHE_SIZE, RADIUS, ZLEVEL_SCALE, distance, from_spherical
 from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
@@ -31,7 +31,7 @@ __all__ = ["GeoPlotter"]
 CRSLike = Union[int, str, dict, CRS]
 
 #: Proportional multiplier for z-axis levels/offsets of base-layer mesh.
-BASE_ZLEVEL_FACTOR: int = 1e-3
+BASE_ZLEVEL_SCALE: int = 1e-3
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -87,7 +87,7 @@ class GeoPlotterBase:
         ----------
         crs : str or CRS, optional
             The target CRS to render geolocated meshes added to the plotter.
-        kwargs : any, optional
+        **kwargs : dict, optional
             See :class:`pyvista.Plotter` for further details.
 
         Notes
@@ -141,13 +141,13 @@ class GeoPlotterBase:
             The resolution of the cube-sphere to generate as the base layer,
             which may be either ``c48``, ``c96`` or ``c192``. Defaults to
             :data:`geovista.samples.LFRIC_RESOLUTION`.
-        zfactor : float, optional
-            The magnitude factor for z-axis levels (`zlevel`). Defaults to
-            :data:`BASE_ZLEVEL_FACTOR`.
         zlevel : int, default=-1
-            The z-axis level. Used in combination with the `zfactor` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
-        kwargs : any, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
         Returns
@@ -163,25 +163,23 @@ class GeoPlotterBase:
         resolution = kwargs.pop("resolution") if "resolution" in kwargs else None
 
         if self.crs.is_projected:
-            # pass-through "zfactor" and "zlevel" to the "add_mesh" method,
+            # pass-through "zlevel" and "zscale" to the "add_mesh" method,
             # but remove "radius", as it's not applicable to planar projections
             if "radius" in kwargs:
                 _ = kwargs.pop("radius")
             # opt to the default radius for the base layer mesh
             radius = None
-            if "zfactor" not in kwargs:
-                kwargs["zfactor"] = BASE_ZLEVEL_FACTOR
+            if "zscale" not in kwargs:
+                kwargs["zscale"] = BASE_ZLEVEL_SCALE
             if "zlevel" not in kwargs:
                 kwargs["zlevel"] = -1
         else:
             radius = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else RADIUS
-            zfactor = (
-                float(kwargs.pop("zfactor"))
-                if "zfactor" in kwargs
-                else BASE_ZLEVEL_FACTOR
+            zscale = (
+                float(kwargs.pop("zscale")) if "zscale" in kwargs else BASE_ZLEVEL_SCALE
             )
             zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else -1
-            radius += radius * zlevel * zfactor
+            radius += radius * zlevel * zscale
 
         if mesh is not None:
             if radius is not None:
@@ -197,8 +195,8 @@ class GeoPlotterBase:
         self,
         resolution: str | None = None,
         radius: float | None = None,
-        zfactor: float | None = None,
         zlevel: int | None = None,
+        zscale: float | None = None,
         **kwargs: Any | None,
     ) -> vtk.vtkActor:
         """Generate coastlines and add to the plotter scene.
@@ -211,13 +209,13 @@ class GeoPlotterBase:
             :data:`geovista.common.COASTLINES_RESOLUTION`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
-        zfactor : float, optional
-            The proportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=1
-            The z-axis level. Used in combination with the `zfactor` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
-        kwargs : any, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
         Returns
@@ -231,7 +229,7 @@ class GeoPlotterBase:
 
         """
         mesh = coastlines(
-            resolution=resolution, radius=radius, zfactor=zfactor, zlevel=zlevel
+            resolution=resolution, radius=radius, zlevel=zlevel, zscale=zscale
         )
         return self.add_mesh(mesh, **kwargs)
 
@@ -254,13 +252,13 @@ class GeoPlotterBase:
         rtol : float, optional
             The relative tolerance for values close to longitudinal
             :func:`geovista.common.wrap` base + period.
-        zfactor : float, optional
-            The magnitude factor for z-axis levels (`zlevel`). Defaults to
-            :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=0
-            The z-axis level. Used in combination with the `zfactor` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
-        kwargs : any, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
         Returns
@@ -280,9 +278,7 @@ class GeoPlotterBase:
             atol = float(kwargs.pop("atol")) if "atol" in kwargs else None
             radius = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else None
             rtol = float(kwargs.pop("rtol")) if "rtol" in kwargs else None
-            zfactor = (
-                float(kwargs.pop("zfactor")) if "zfactor" in kwargs else ZLEVEL_FACTOR
-            )
+            zscale = float(kwargs.pop("zscale")) if "zscale" in kwargs else ZLEVEL_SCALE
             zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else 0
 
             src_crs = from_wkt(mesh)
@@ -324,13 +320,13 @@ class GeoPlotterBase:
                     xmin, xmax, ymin, ymax, _, _ = mesh.bounds
                     xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
                     delta = max(xdelta, ydelta)
-                    zoffset = zlevel * zfactor * delta
+                    zoffset = zlevel * zscale * delta
                 mesh.points[:, 2] = zoffset
             else:
                 if zlevel:
                     if radius is None:
                         radius = distance(mesh)
-                    radius += radius * zlevel * zfactor
+                    radius += radius * zlevel * zscale
                     mesh = resize(mesh, radius=radius)
 
         return super().add_mesh(mesh, **kwargs)

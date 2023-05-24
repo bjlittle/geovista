@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 import pytest
 import pyvista as pv
 
-from geovista.common import RADIUS, ZLEVEL_FACTOR
+from geovista.common import RADIUS, ZLEVEL_SCALE
 from geovista.core import distance, resize
 
 
@@ -43,18 +43,18 @@ def test_resize(lfric, radius, inplace):
 def test_resize__zlevel(lfric, zlevel):
     """Test resize mesh by new zlevel."""
     result = resize(lfric, zlevel=zlevel)
-    expected = RADIUS + RADIUS * zlevel * ZLEVEL_FACTOR
+    expected = RADIUS + RADIUS * zlevel * ZLEVEL_SCALE
     compare = operator.eq if np.isclose(expected, RADIUS) else operator.ne
     assert compare(id(result), id(lfric))
     actual = distance(result)
     assert np.isclose(actual, expected)
 
 
-@pytest.mark.parametrize("zfactor", np.linspace(-1, 1))
-def test_resize__zfactor(lfric, zfactor):
-    """Test resize mesh by new zfactor."""
-    result = resize(lfric, zlevel=1, zfactor=zfactor)
-    expected = RADIUS + RADIUS * zfactor or RADIUS
+@pytest.mark.parametrize("zscale", np.linspace(-1, 1))
+def test_resize__zscale(lfric, zscale):
+    """Test resize mesh by new zscale."""
+    result = resize(lfric, zlevel=1, zscale=zscale)
+    expected = RADIUS + RADIUS * zscale or RADIUS
     compare = operator.eq if np.isclose(expected, RADIUS) else operator.ne
     assert compare(id(result), id(lfric))
     actual = distance(result)
