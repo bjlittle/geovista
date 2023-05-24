@@ -32,7 +32,7 @@ __all__ = [
     "REMESH_SEAM",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
-    "ZLEVEL_FACTOR",
+    "ZLEVEL_SCALE",
     "distance",
     "from_spherical",
     "nan_mask",
@@ -112,7 +112,7 @@ WRAP_ATOL: float = 1e-8
 WRAP_RTOL: float = 1e-5
 
 #: Proportional multiplier for z-axis levels/offsets.
-ZLEVEL_FACTOR: float = 1e-4
+ZLEVEL_SCALE: float = 1e-4
 
 
 def active_kernel() -> bool:

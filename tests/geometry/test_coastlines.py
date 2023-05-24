@@ -12,7 +12,7 @@ def test_defaults(mocker):
     assert result == mesh
     fetch.assert_called_once_with(resolution=COASTLINES_RESOLUTION)
     resize.assert_called_once_with(
-        mesh, radius=None, zfactor=None, zlevel=1, inplace=True
+        mesh, radius=None, zlevel=1, zscale=None, inplace=True
     )
 
 
@@ -21,11 +21,11 @@ def test_resize_kwarg_pass_thru(mocker):
     mesh = mocker.sentinel.mesh
     resolution = mocker.sentinel.resolution
     radius = mocker.sentinel.radius
-    zfactor = mocker.sentinel.zfactor
+    zscale = mocker.sentinel.zscale
     zlevel = mocker.sentinel.zlevel
     fetch = mocker.patch("geovista.geometry.fetch_coastlines", return_value=mesh)
     resize = mocker.patch("geovista.geometry.resize")
-    kwargs = {"radius": radius, "zfactor": zfactor, "zlevel": zlevel}
+    kwargs = {"radius": radius, "zscale": zscale, "zlevel": zlevel}
     result = coastlines(resolution=resolution, **kwargs)
     assert result == mesh
     fetch.assert_called_once_with(resolution=resolution)

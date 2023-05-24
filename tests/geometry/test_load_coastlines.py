@@ -7,7 +7,7 @@ from geovista.common import (
     GV_FIELD_RADIUS,
     GV_FIELD_RESOLUTION,
     RADIUS,
-    ZLEVEL_FACTOR,
+    ZLEVEL_SCALE,
     distance,
 )
 from geovista.geometry import load_coastlines as load
@@ -45,22 +45,22 @@ def test_zlevel(resolution, zlevel):
     """Test coastline z-control with zlevel."""
     result = load(resolution=resolution, zlevel=zlevel)
     actual = distance(result)
-    expected = RADIUS + RADIUS * zlevel * ZLEVEL_FACTOR
+    expected = RADIUS + RADIUS * zlevel * ZLEVEL_SCALE
     assert np.isclose(actual, expected)
 
 
-@pytest.mark.parametrize("zfactor", np.linspace(-1, 1, num=5))
-def test_zfactor(resolution, zfactor):
-    """Test coastline z-control with zfactor with no zlevel."""
-    result = load(resolution=resolution, zfactor=zfactor)
+@pytest.mark.parametrize("zscale", np.linspace(-1, 1, num=5))
+def test_zscale(resolution, zscale):
+    """Test coastline z-control with zscale with no zlevel."""
+    result = load(resolution=resolution, zscale=zscale)
     actual = distance(result)
     assert np.isclose(actual, RADIUS)
 
 
-@pytest.mark.parametrize("zfactor", np.linspace(-1, 1, num=5))
-def test_zfactor__with_zlevel(resolution, zfactor):
-    """Test coastline z-control with zfactor and zlevel."""
-    result = load(resolution=resolution, zlevel=1, zfactor=zfactor)
+@pytest.mark.parametrize("zscale", np.linspace(-1, 1, num=5))
+def test_zscale__with_zlevel(resolution, zscale):
+    """Test coastline z-control with zscale and zlevel."""
+    result = load(resolution=resolution, zlevel=1, zscale=zscale)
     actual = distance(result)
-    expected = RADIUS + RADIUS * zfactor
+    expected = RADIUS + RADIUS * zscale
     assert np.isclose(actual, expected)

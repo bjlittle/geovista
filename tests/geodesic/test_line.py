@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from geovista.common import RADIUS, ZLEVEL_FACTOR, distance, to_spherical
+from geovista.common import RADIUS, ZLEVEL_SCALE, distance, to_spherical
 from geovista.geodesic import GEODESIC_NPTS, line
 
 
@@ -58,7 +58,7 @@ def test_contains_sample_points(lfric_sst, nsamples):
     """Test resulting line must contain the original sample points."""
     lons = lats = range(nsamples)
     result = line(lons, lats)
-    radius = RADIUS + RADIUS * ZLEVEL_FACTOR
+    radius = RADIUS + RADIUS * ZLEVEL_SCALE
     xyz = to_spherical(lons, lats, radius=radius)
     np.testing.assert_array_equal(xyz, result.points[::GEODESIC_NPTS])
     result = line(lons, lats, surface=lfric_sst)
@@ -89,15 +89,15 @@ def test_zlevel(lons, zlevel):
     """Test line z-control with zlevel."""
     result = line(lons, [90, 0, -90], zlevel=zlevel)
     actual = distance(result)
-    expected = RADIUS + RADIUS * zlevel * ZLEVEL_FACTOR
+    expected = RADIUS + RADIUS * zlevel * ZLEVEL_SCALE
     assert np.isclose(actual, expected)
 
 
 @pytest.mark.parametrize("lons", range(0, 405, 45))
-@pytest.mark.parametrize("zfactor", np.linspace(-1, 1))
-def test_zfactor(lons, zfactor):
-    """Test line z-control with zfactor."""
-    result = line(180, [90, 0, -90], zfactor=zfactor)
+@pytest.mark.parametrize("zscale", np.linspace(-1, 1))
+def test_zscale(lons, zscale):
+    """Test line z-control with zscale."""
+    result = line(180, [90, 0, -90], zscale=zscale)
     actual = distance(result)
-    expected = RADIUS + RADIUS * zfactor
+    expected = RADIUS + RADIUS * zscale
     assert np.isclose(actual, expected)

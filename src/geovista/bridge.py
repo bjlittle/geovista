@@ -25,7 +25,7 @@ from .common import (
     GV_FIELD_NAME,
     GV_FIELD_RADIUS,
     RADIUS,
-    ZLEVEL_FACTOR,
+    ZLEVEL_SCALE,
     nan_mask,
     to_spherical,
     wrap,
@@ -349,8 +349,8 @@ class Transform:
         name: str | None = None,
         crs: CRSLike | None = None,
         radius: float | None = None,
-        zfactor: float | None = None,
         zlevel: int | None = None,
+        zscale: float | None = None,
         clean: bool | None = None,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from contiguous 1-D x-values and y-values.
@@ -388,12 +388,12 @@ class Transform:
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
-        zfactor : float, optional
-            The proportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=0
-            The z-axis level. Used in combination with the `zfactor` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
@@ -418,8 +418,8 @@ class Transform:
             name=name,
             crs=crs,
             radius=radius,
-            zfactor=zfactor,
             zlevel=zlevel,
+            zscale=zscale,
             clean=clean,
         )
 
@@ -432,8 +432,8 @@ class Transform:
         name: str | None = None,
         crs: CRSLike | None = None,
         radius: float | None = None,
-        zfactor: float | None = None,
         zlevel: int | None = None,
+        zscale: float | None = None,
         clean: bool | None = None,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from 2-D x-values and y-values.
@@ -472,12 +472,12 @@ class Transform:
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
-        zfactor : float, optional
-            The proportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=0
-            The z-axis level. Used in combination with the `zfactor` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
@@ -521,8 +521,8 @@ class Transform:
             name=name,
             crs=crs,
             radius=radius,
-            zfactor=zfactor,
             zlevel=zlevel,
+            zscale=zscale,
             clean=clean,
         )
 
@@ -537,8 +537,8 @@ class Transform:
         name: ArrayLike | None = None,
         crs: CRSLike | None = None,
         radius: float | None = None,
-        zfactor: float | None = None,
         zlevel: int | None = None,
+        zscale: float | None = None,
         clean: bool | None = None,
     ) -> pv.PolyData:
         """Build a mesh from unstructured 1-D x-values and y-values.
@@ -591,12 +591,12 @@ class Transform:
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the mesh sphere. Defaults to :data:`geovista.common.RADIUS`.
-        zfactor : float, optional
-            The proportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=0
-            The z-axis level. Used in combination with the `zfactor` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
@@ -687,9 +687,9 @@ class Transform:
             xs[poles] = 0
 
         radius = RADIUS if radius is None else abs(float(radius))
-        zfactor = ZLEVEL_FACTOR if zfactor is None else float(zfactor)
+        zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
         zlevel = 0 if zlevel is None else int(zlevel)
-        radius += radius * zlevel * zfactor
+        radius += radius * zlevel * zscale
 
         # convert lat/lon to cartesian xyz
         geometry = to_spherical(xs, ys, radius=radius)
@@ -770,8 +770,8 @@ class Transform:
         start_index: int | None = None,
         crs: ArrayLike | None = None,
         radius: float | None = None,
-        zfactor: float | None = None,
         zlevel: int | None = None,
+        zscale: float | None = None,
         clean: bool | None = None,
     ):
         """Build a mesh from spatial points, connectivity, data and CRS metadata.
@@ -811,12 +811,12 @@ class Transform:
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the mesh sphere. Defaults to :data:`geovista.common.RADIUS`.
-        zfactor : float, optional
-            The proportional multiplier for z-axis levels/offsets. Defaults
-            to :data:`geovista.common.ZLEVEL_FACTOR`.
         zlevel : int, default=0
-            The z-axis level. Used in combination with the `zfactor` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
@@ -836,8 +836,8 @@ class Transform:
                     ys,
                     crs=crs,
                     radius=radius,
-                    zfactor=zfactor,
                     zlevel=zlevel,
+                    zscale=zscale,
                     clean=clean,
                 )
             else:
@@ -846,8 +846,8 @@ class Transform:
                     ys,
                     crs=crs,
                     radius=radius,
-                    zfactor=zfactor,
                     zlevel=zlevel,
+                    zscale=zscale,
                     clean=clean,
                 )
         else:
@@ -859,8 +859,8 @@ class Transform:
                 crs=crs,
                 radius=radius,
                 clean=clean,
-                zfactor=zfactor,
                 zlevel=zlevel,
+                zscale=zscale,
             )
 
         self._mesh = mesh

@@ -22,7 +22,7 @@ from .common import (
     RADIUS,
     REMESH_JOIN,
     REMESH_SEAM,
-    ZLEVEL_FACTOR,
+    ZLEVEL_SCALE,
     distance,
     from_spherical,
     sanitize_data,
@@ -604,8 +604,8 @@ def is_projected(mesh: pv.PolyData) -> bool:
 def resize(
     mesh: pv.PolyData,
     radius: float | None = None,
-    zfactor: float | None = None,
     zlevel: int | None = None,
+    zscale: float | None = None,
     inplace: bool | None = False,
 ) -> pv.PolyData:
     """Change the radius of the spherical mesh.
@@ -616,12 +616,12 @@ def resize(
         The mesh to be resized to the provided ``radius``.
     radius : float, optional
         The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
-    zfactor : float, optional
-        The magnitude factor for the z-axis level (`zlevel`). Defaults to
-        :data:`geovista.common.ZLEVEL_FACTOR`.
     zlevel : int, default=0
-        The z-axis level. Used in combination with the `zfactor` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zfactor``.
+        The z-axis level. Used in combination with the `zscale` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`geovista.common.ZLEVEL_SCALE`.
     inplace : boolean, default=False
         Update `mesh` in-place.
 
@@ -640,9 +640,9 @@ def resize(
         raise ValueError(emsg)
 
     radius = RADIUS if radius is None else abs(float(radius))
-    zfactor = ZLEVEL_FACTOR if zfactor is None else float(zfactor)
+    zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
     zlevel = 0 if zlevel is None else int(zlevel)
-    radius += radius * zlevel * zfactor
+    radius += radius * zlevel * zscale
 
     if radius and not np.isclose(distance(mesh), radius):
         lonlat = from_spherical(mesh)
