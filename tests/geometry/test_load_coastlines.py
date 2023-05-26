@@ -49,18 +49,11 @@ def test_zlevel(resolution, zlevel):
     assert np.isclose(actual, expected)
 
 
+@pytest.mark.parametrize("zlevel", [0, 1])
 @pytest.mark.parametrize("zscale", np.linspace(-1, 1, num=5))
-def test_zscale(resolution, zscale):
+def test_zscale(resolution, zlevel, zscale):
     """Test coastline z-control with zscale with no zlevel."""
-    result = load(resolution=resolution, zscale=zscale)
+    result = load(resolution=resolution, zlevel=zlevel, zscale=zscale)
     actual = distance(result)
-    assert np.isclose(actual, RADIUS)
-
-
-@pytest.mark.parametrize("zscale", np.linspace(-1, 1, num=5))
-def test_zscale__with_zlevel(resolution, zscale):
-    """Test coastline z-control with zscale and zlevel."""
-    result = load(resolution=resolution, zlevel=1, zscale=zscale)
-    actual = distance(result)
-    expected = RADIUS + RADIUS * zscale
+    expected = RADIUS + RADIUS * zlevel * zscale
     assert np.isclose(actual, expected)

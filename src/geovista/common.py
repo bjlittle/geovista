@@ -19,6 +19,7 @@ from vtk import vtkLogger, vtkObject
 
 __all__ = [
     "COASTLINES_RESOLUTION",
+    "DISTANCE_DECIMALS",
     "GV_CELL_IDS",
     "GV_FIELD_CRS",
     "GV_FIELD_NAME",
@@ -529,6 +530,8 @@ def to_spherical(
     longitudes: npt.ArrayLike,
     latitudes: npt.ArrayLike,
     radius: float | None = None,
+    zlevel: int | npt.ArrayLike | None = None,
+    zscale: float | None = None,
     stacked: bool | None = True,
 ) -> np.ndarray:
     """Convert geographic `longitudes` and `latitudes` to cartesian ``xyz`` points.
@@ -541,6 +544,14 @@ def to_spherical(
         The latitude values (degrees) to be converted.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`RADIUS`.
+    zlevel : int or ArrayLike, default=0
+        The z-axis level. Used in combination with the `zscale` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        If `zlevel` is not a scalar, then its shape must match or broadcast
+        with the shape of `longitude` and `latitude`.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`ZLEVEL_SCALE`.
     stacked : bool, default=True
         Specify whether the resultant xyz points have shape (N, 3).
         Otherwise, they will have shape (3, N).
@@ -555,21 +566,38 @@ def to_spherical(
     .. versionadded:: 0.1.0
 
     """
-    longitudes = np.ravel(longitudes)
-    latitudes = np.ravel(latitudes)
+    longitudes = np.asanyarray(longitudes)
+    latitudes = np.asanyarray(latitudes)
+
+    if (shape := longitudes.shape) != latitudes.shape:
+        emsg = (
+            f"Require longitudes and latitudes with same shape, got {shape} and "
+            f"{latitudes.shape} respectively."
+        )
+        raise ValueError(emsg)
+
     radius = RADIUS if radius is None else abs(float(radius))
+    zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
+    zlevel = np.array([0]) if zlevel is None else np.atleast_1d(zlevel).astype(int)
+
+    try:
+        _ = np.broadcast_shapes(zshape := zlevel.shape, shape)
+    except ValueError as err:
+        emsg = (
+            f"Cannot broadcast zlevel with shape {zshape} to longitude/latitude"
+            f"shape {shape}."
+        )
+        raise ValueError(emsg) from err
+
+    radius += radius * zlevel * zscale
 
     x_rad = np.radians(longitudes)
     y_rad = np.radians(90.0 - latitudes)
-    x = radius * np.sin(y_rad) * np.cos(x_rad)
-    y = radius * np.sin(y_rad) * np.sin(x_rad)
-    z = radius * np.cos(y_rad)
+    x = np.ravel(radius * np.sin(y_rad) * np.cos(x_rad))
+    y = np.ravel(radius * np.sin(y_rad) * np.sin(x_rad))
+    z = np.ravel(radius * np.cos(y_rad))
     xyz = [x, y, z]
-
-    if stacked:
-        xyz = np.vstack(xyz).T
-    else:
-        xyz = np.array(xyz)
+    xyz = np.vstack(xyz).T if stacked else np.array(xyz)
 
     return xyz
 
