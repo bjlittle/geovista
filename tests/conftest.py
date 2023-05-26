@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 
+from geovista.pantry import lam_uk as pantry_lam_uk
 from geovista.samples import lam_uk as sample_lam_uk
 from geovista.samples import lfric as sample_lfric
 from geovista.samples import lfric_sst as sample_lfric_sst
@@ -14,6 +15,13 @@ def lam_uk():
     mesh.cell_data["ids"] = np.arange(mesh.n_cells)
     mesh.point_data["ids"] = np.arange(mesh.n_points)
     return mesh
+
+
+@pytest.fixture(scope="session")
+def lam_uk_sample():
+    """Fixture generates a Local Area Model data sample for the UK."""
+    sample = pantry_lam_uk()
+    return sample.lons, sample.lats
 
 
 @pytest.fixture
