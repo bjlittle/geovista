@@ -576,11 +576,8 @@ def to_cartesian(
         )
         raise ValueError(emsg)
 
-    if (ndim := longitudes.ndim) not in (1, 2, 3):
-        emsg = (
-            "Require either 1-D, 2-D or 3-D longitudes and latitudes, got "
-            f"{ndim}-D instead."
-        )
+    if (ndim := longitudes.ndim) > 3:
+        emsg = f"Require at most 3-D longitudes and latitudes, got {ndim}-D instead."
         raise ValueError(emsg)
 
     radius = RADIUS if radius is None else abs(float(radius))
