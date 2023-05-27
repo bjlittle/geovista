@@ -29,6 +29,14 @@ def test_shape_fail():
         _ = to_cartesian(lons, lats)
 
 
+def test_ndim_fail():
+    """Test trap of longitude and latitude dimension."""
+    lons = lats = np.array([0]).reshape(-1, 1, 1, 1)
+    emsg = "Require at most 3-D"
+    with pytest.raises(ValueError, match=emsg):
+        _ = to_cartesian(lons, lats)
+
+
 def test_zlevel_broadcast_fail():
     """Test trap of zlevel shape can't broadcast with longitude/latitude."""
     lons, lats = np.arange(10), np.arange(10)
