@@ -24,9 +24,9 @@ from .common import (
     REMESH_SEAM,
     ZLEVEL_SCALE,
     distance,
-    from_spherical,
+    from_cartesian,
     sanitize_data,
-    to_spherical,
+    to_cartesian,
     wrap,
 )
 from .crs import from_wkt
@@ -236,7 +236,7 @@ class MeridianSlice:
         if extract_ids:
             mesh = cast(self.mesh.extract_cells(np.array(list(extract_ids))))
             if clip:
-                lonlat = from_spherical(mesh)
+                lonlat = from_cartesian(mesh)
                 match = np.abs(lonlat[:, 0] - self.meridian) < 90
                 mesh = cast(mesh.extract_points(match))
             sanitize_data(mesh)
@@ -291,7 +291,7 @@ def add_texture_coords(
         mesh = mesh.copy(deep=True)
 
     # convert from cartesian xyz to spherical lat/lons
-    lonlat = from_spherical(mesh, closed_interval=True)
+    lonlat = from_cartesian(mesh, closed_interval=True)
     lons, lats = lonlat[:, 0], lonlat[:, 1]
     # convert to normalised UV space
     u_coord = (lons + 180) / 360
@@ -511,7 +511,7 @@ def cut_along_meridian(
     remeshed_ids = np.array([], dtype=int)
 
     if mesh_whole.n_cells:
-        lonlat = from_spherical(mesh_whole, rtol=rtol, atol=atol)
+        lonlat = from_cartesian(mesh_whole, rtol=rtol, atol=atol)
         meridian_mask = np.isclose(lonlat[:, 0], meridian)
         join_points = np.empty(mesh_whole.n_points, dtype=int)
         join_points.fill(REMESH_JOIN)
@@ -536,7 +536,7 @@ def cut_along_meridian(
         cids = cids.difference(set(remeshed_ids))
         if cids:
             neighbours = result.extract_cells(list(cids))
-            xy0 = from_spherical(neighbours)
+            xy0 = from_cartesian(neighbours)
             neighbours.points = xy0
             xdelta = []
             for cid in range(neighbours.n_cells):
@@ -645,8 +645,8 @@ def resize(
     radius += radius * zlevel * zscale
 
     if radius and not np.isclose(distance(mesh), radius):
-        lonlat = from_spherical(mesh)
-        xyz = to_spherical(lonlat[:, 0], lonlat[:, 1], radius=radius)
+        lonlat = from_cartesian(mesh)
+        xyz = to_cartesian(lonlat[:, 0], lonlat[:, 1], radius=radius)
         if not inplace:
             mesh = mesh.copy()
         mesh.points = xyz

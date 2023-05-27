@@ -13,7 +13,7 @@ from typing import Union
 import numpy as np
 from pyvista import PolyData
 
-from .common import to_spherical
+from .common import to_cartesian
 from .crs import WGS84, from_wkt
 
 __all__ = ["find_cell_neighbours", "find_nearest_cell"]
@@ -109,7 +109,7 @@ def find_nearest_cell(
 
     """
     crs = from_wkt(mesh)
-    poi = to_spherical(x, y)[0] if crs in [WGS84, None] else (x, y, z)
+    poi = to_cartesian(x, y)[0] if crs in [WGS84, None] else (x, y, z)
     cid = mesh.find_closest_cell(poi)
 
     # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids

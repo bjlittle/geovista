@@ -22,7 +22,7 @@ from .common import (
     LRU_CACHE_SIZE,
     RADIUS,
     ZLEVEL_SCALE,
-    to_spherical,
+    to_cartesian,
 )
 from .core import resize
 
@@ -189,7 +189,7 @@ def load_coastlines(
     geoms = np.concatenate(geoms)
     nlines = geoms.shape[0] - ngeoms
 
-    geoms = to_spherical(geoms[:, 0], geoms[:, 1], radius=radius)
+    geoms = to_cartesian(geoms[:, 0], geoms[:, 1], radius=radius)
 
     # convert geometries to a vtk line mesh
     mesh = pv.PolyData()

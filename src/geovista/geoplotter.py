@@ -17,7 +17,7 @@ from pyproj import CRS, Transformer
 import pyvista as pv
 import vtk
 
-from .common import LRU_CACHE_SIZE, RADIUS, ZLEVEL_SCALE, distance, from_spherical
+from .common import LRU_CACHE_SIZE, RADIUS, ZLEVEL_SCALE, distance, from_cartesian
 from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
@@ -306,7 +306,7 @@ class GeoPlotterBase:
                 kwargs["texture"] = texture
 
             if project:
-                lonlat = from_spherical(
+                lonlat = from_cartesian(
                     mesh, radius=radius, closed_interval=True, rtol=rtol, atol=atol
                 )
                 transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)

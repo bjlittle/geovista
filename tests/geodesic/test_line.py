@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from geovista.common import RADIUS, ZLEVEL_SCALE, distance, to_spherical
+from geovista.common import RADIUS, ZLEVEL_SCALE, distance, to_cartesian
 from geovista.geodesic import GEODESIC_NPTS, line
 
 
@@ -59,7 +59,7 @@ def test_contains_sample_points(lfric_sst, nsamples):
     lons = lats = range(nsamples)
     result = line(lons, lats)
     radius = RADIUS + RADIUS * ZLEVEL_SCALE
-    xyz = to_spherical(lons, lats, radius=radius)
+    xyz = to_cartesian(lons, lats, radius=radius)
     np.testing.assert_array_equal(xyz, result.points[::GEODESIC_NPTS])
     result = line(lons, lats, surface=lfric_sst)
     np.testing.assert_array_equal(xyz, result.points[::GEODESIC_NPTS])

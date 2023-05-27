@@ -27,7 +27,7 @@ from .common import (
     RADIUS,
     ZLEVEL_SCALE,
     nan_mask,
-    to_spherical,
+    to_cartesian,
     wrap,
 )
 from .crs import WGS84
@@ -692,7 +692,7 @@ class Transform:
         radius += radius * zlevel * zscale
 
         # convert lat/lon to cartesian xyz
-        geometry = to_spherical(xs, ys, radius=radius)
+        geometry = to_cartesian(xs, ys, radius=radius)
 
         if ma.is_masked(connectivity):
             # create face connectivity from masked vertex indices, thus
