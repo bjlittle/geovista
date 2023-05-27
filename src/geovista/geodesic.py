@@ -15,7 +15,7 @@ import numpy.typing as npt
 import pyproj
 import pyvista as pv
 
-from .common import RADIUS, ZLEVEL_SCALE, distance, to_spherical, wrap
+from .common import RADIUS, ZLEVEL_SCALE, distance, to_cartesian, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
 
 __all__ = [
@@ -398,10 +398,10 @@ class BBox:
             outer_radius = self._surface_radius + offset
 
             # generate the face points
-            inner_xyz = to_spherical(
+            inner_xyz = to_cartesian(
                 self._bbox_lons, self._bbox_lats, radius=inner_radius
             )
-            outer_xyz = to_spherical(
+            outer_xyz = to_cartesian(
                 self._bbox_lons, self._bbox_lats, radius=outer_radius
             )
             bbox_xyz = np.vstack([inner_xyz, outer_xyz])
@@ -479,7 +479,7 @@ class BBox:
         edge_idxs = self._bbox_face_edge_idxs()
         edge_lons = self._bbox_lons[edge_idxs]
         edge_lats = self._bbox_lats[edge_idxs]
-        edge_xyz = to_spherical(edge_lons, edge_lats, radius=radius)
+        edge_xyz = to_cartesian(edge_lons, edge_lats, radius=radius)
         edge = pv.lines_from_points(edge_xyz, close=True)
 
         return edge
@@ -738,7 +738,7 @@ def line(
     line_lons.append(lons[-1])
     line_lats.append(lats[-1])
 
-    xyz = to_spherical(line_lons, line_lats, radius=radius)
+    xyz = to_cartesian(line_lons, line_lats, radius=radius)
     lines = pv.lines_from_points(xyz, close=close)
 
     return lines

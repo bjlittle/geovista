@@ -22,7 +22,7 @@ from .common import (
     REMESH_JOIN,
     REMESH_SEAM,
     distance,
-    from_spherical,
+    from_cartesian,
     sanitize_data,
     triangulated,
     wrap,
@@ -183,7 +183,7 @@ def remesh(
     else:
         # split the triangulated remesh into its halves, west and east of the meridian
         centers = remeshed.cell_centers()
-        lons = from_spherical(centers, rtol=rtol, atol=atol)[:, 0]
+        lons = from_cartesian(centers, rtol=rtol, atol=atol)[:, 0]
         delta = lons - meridian
         lower_mask = (delta < 0) & (delta > -180)
         upper_mask = delta > 180
@@ -197,7 +197,7 @@ def remesh(
         if not boundary:
             del remeshed.point_data[VTK_BOUNDARY_MASK]
 
-        boundary_mask |= np.isclose(from_spherical(remeshed)[:, 0], meridian)
+        boundary_mask |= np.isclose(from_cartesian(remeshed)[:, 0], meridian)
 
         remeshed.point_data[GV_REMESH_POINT_IDS] = np.empty(
             remeshed.n_points, dtype=int

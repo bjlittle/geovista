@@ -35,13 +35,13 @@ __all__ = [
     "VTK_POINT_IDS",
     "ZLEVEL_SCALE",
     "distance",
-    "from_spherical",
+    "from_cartesian",
     "nan_mask",
     "sanitize_data",
     "set_jupyter_backend",
+    "to_cartesian",
     "to_lonlat",
     "to_lonlats",
-    "to_spherical",
     "triangulated",
     "vtk_warnings_off",
     "vtk_warnings_on",
@@ -417,7 +417,7 @@ def to_lonlats(
     return result
 
 
-def from_spherical(
+def from_cartesian(
     mesh: pv.PolyData,
     radius: float | None = None,
     stacked: bool | None = True,
@@ -526,7 +526,7 @@ def from_spherical(
     return result
 
 
-def to_spherical(
+def to_cartesian(
     longitudes: npt.ArrayLike,
     latitudes: npt.ArrayLike,
     radius: float | None = None,
