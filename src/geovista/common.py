@@ -576,6 +576,13 @@ def to_cartesian(
         )
         raise ValueError(emsg)
 
+    if (ndim := longitudes.ndim) not in (1, 2, 3):
+        emsg = (
+            "Require either 1-D, 2-D or 3-D longitudes and latitudes, got "
+            f"{ndim}-D instead."
+        )
+        raise ValueError(emsg)
+
     radius = RADIUS if radius is None else abs(float(radius))
     zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
     zlevel = np.array([0]) if zlevel is None else np.atleast_1d(zlevel).astype(int)
