@@ -21,7 +21,7 @@ def lam_uk():
 def lam_uk_sample():
     """Fixture generates a Local Area Model data sample for the UK."""
     sample = pantry_lam_uk()
-    return sample.lons, sample.lats
+    return sample.lons[:], sample.lats[:]
 
 
 @pytest.fixture

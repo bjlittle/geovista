@@ -70,8 +70,8 @@ def test_zlevel__broadcast(lam_uk_sample, xy_reshape, z_reshape, n_levels):
     """Test spherical z-control with zlevel broadcast."""
     lons, lats = lam_uk_sample
     (npts,) = lons.shape
-    vlons = np.vstack([lons[:].reshape(*xy_reshape)] * n_levels)
-    vlats = np.vstack([lats[:].reshape(*xy_reshape)] * n_levels)
+    vlons = np.vstack([lons.reshape(*xy_reshape)] * n_levels)
+    vlats = np.vstack([lats.reshape(*xy_reshape)] * n_levels)
     mid = n_levels // 2
     zlevel = np.arange(-mid, n_levels - mid)
     result = to_cartesian(vlons, vlats, zlevel=zlevel.reshape(*z_reshape))
