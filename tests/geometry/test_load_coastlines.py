@@ -4,6 +4,7 @@ import pytest
 
 from geovista.common import (
     COASTLINES_RESOLUTION,
+    GV_FIELD_CRS,
     GV_FIELD_RADIUS,
     GV_FIELD_RESOLUTION,
     RADIUS,
@@ -13,17 +14,24 @@ from geovista.common import (
 from geovista.geometry import load_coastlines as load
 
 
-def test_defaults():
+def test_defaults(wgs84_wkt):
     """Test expected defaults are honoured."""
     result = load()
     assert result[GV_FIELD_RADIUS] == RADIUS
     assert result[GV_FIELD_RESOLUTION] == COASTLINES_RESOLUTION
+    assert result[GV_FIELD_CRS] == wgs84_wkt
 
 
 def test_resolution_metadata(resolution):
     """Test field data contains the correct resolution metadata."""
     result = load(resolution=resolution)
     assert result[GV_FIELD_RESOLUTION][0] == resolution
+
+
+def test_crs_metadata(resolution, wgs84_wkt):
+    """Test field data contains the correct crs metadata."""
+    result = load(resolution=resolution)
+    assert result[GV_FIELD_CRS] == wgs84_wkt
 
 
 def test_lines(resolution):
