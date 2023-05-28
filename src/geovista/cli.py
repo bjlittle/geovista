@@ -80,7 +80,7 @@ def _download_group(
 
     pooch_logger.setLevel("ERROR")
 
-    click.echo(f"Downloading {n_fnames} {name}registered resource{_plural(n_fnames)}:")
+    click.echo(f"Downloading {n_fnames} {name}registered asset{_plural(n_fnames)}:")
     for i, fname in enumerate(fnames):
         click.echo(f"[{i+1:0{width}d}] Downloading ", nl=False)
         click.secho(f"{fname} ", nl=False, fg=fg_colour)
@@ -89,7 +89,7 @@ def _download_group(
         click.secho("done!", fg="green")
 
     if summary:
-        click.echo("\nResources are available in the cache directory ", nl=False)
+        click.echo("\nAssets are available in the cache directory ", nl=False)
         click.secho(f"{CACHE.abspath}", fg=fg_colour)
         click.echo("👍 All done!")
 
@@ -153,32 +153,32 @@ def main(version: bool, cache: bool) -> None:
     "--all",
     "pull",
     is_flag=True,
-    help="Download all registered resources.",
+    help="Download all registered assets.",
 )
 @click.option(
     "-c",
     "--clean",
     is_flag=True,
-    help="Delete all cached resources.",
+    help="Delete all cached assets.",
 )
 @click.option(
     "-d",
     "--dry-run",
     is_flag=True,
-    help="Show URLs of registered resources.",
+    help="Show URLs of registered assets.",
 )
 @click.option(
     "-l",
     "--list",
     "show",
     is_flag=True,
-    help="Show names of registered resources.",
+    help="Show names of registered assets.",
 )
 @click.option(
     "-m",
     "--mesh",
     is_flag=True,
-    help="Download mesh resources.",
+    help="Download mesh assets.",
 )
 @click.option(
     "-ne",
@@ -188,7 +188,7 @@ def main(version: bool, cache: bool) -> None:
     type=click.Choice(NE_CHOICES, case_sensitive=False),
     is_flag=False,
     flag_value=ALL,
-    help="Download Natural Earth feature resources.",
+    help="Download Natural Earth feature assets.",
 )
 @click.option(
     "-o",
@@ -196,18 +196,18 @@ def main(version: bool, cache: bool) -> None:
     type=click.Path(file_okay=False, resolve_path=True, path_type=pathlib.Path),
     help=f"Download target directory (default: {CACHE.abspath})",
 )
-@click.option("-p", "--pantry", is_flag=True, help="Download sample data resources.")
+@click.option("-p", "--pantry", is_flag=True, help="Download sample data assets.")
 @click.option(
     "-r",
     "--raster",
     is_flag=True,
-    help="Download raster resources.",
+    help="Download raster assets.",
 )
 @click.option(
     "-v",
     "--verify",
     is_flag=True,
-    help="Verify availability of registered resources (no download).",
+    help="Verify availability of registered assets (no download).",
 )
 def download(
     pull: bool,
@@ -221,11 +221,11 @@ def download(
     raster: bool,
     verify: bool,
 ) -> None:
-    """Download and cache geovista resources (offline support)."""
+    """Download and cache geovista assets (offline support)."""
     fnames: list[str] = sorted(CACHE.registry_files)
 
     if not fnames:
-        click.secho("No resources are registered with geovista.", fg="red")
+        click.secho("No assets are registered with geovista.", fg="red")
         return
 
     n_fnames: int = len(fnames)
@@ -233,7 +233,7 @@ def download(
     fg_colour: str = FG_COLOUR
 
     if clean:
-        msg = "Are you sure you want to delete all cached geovista resources"
+        msg = "Are you sure you want to delete all cached geovista assets"
         if click.confirm(f"\n{msg}?", abort=True):
             target = resources["cache_dir"]
 
@@ -248,7 +248,7 @@ def download(
                 click.secho(f"{target}", fg=FG_COLOUR)
                 click.echo("👍 All done!")
             else:
-                click.echo("\nThere are no cached resources to delete.")
+                click.echo("\nThere are no cached assets to delete.")
 
     if output:
         output.mkdir(exist_ok=True)
@@ -285,7 +285,7 @@ def download(
 
     if verify:
         unavailable = 0
-        click.echo("Verifying remote availability of registered resources:")
+        click.echo("Verifying remote availability of registered assets:")
         for i, fname in enumerate(fnames):
             click.echo(f"[{i+1:0{width}d}] ", nl=False)
             click.secho(f"{fname} ", nl=False, fg=fg_colour)
@@ -300,35 +300,35 @@ def download(
             click.secho(status, fg=status_fg_colour)
 
         if not unavailable:
-            click.echo(f"\n{n_fnames} resource{_plural(n_fnames)} ", nl=False)
+            click.echo(f"\n{n_fnames} asset{_plural(n_fnames)} ", nl=False)
             click.secho("available", fg="green", nl=False)
             click.echo(".")
             click.echo("👍 All done!")
         else:
             click.echo("\n💥 ", nl=False)
             if unavailable == n_fnames:
-                click.echo(f"{n_fnames} resource{_plural(n_fnames)} ", nl=False)
+                click.echo(f"{n_fnames} asset{_plural(n_fnames)} ", nl=False)
                 click.secho("unavailable", fg="red", nl=False)
                 click.echo(". Nuts!")
             else:
                 available = n_fnames - unavailable
-                click.echo(f"{available} resource{_plural(available)} ", nl=False)
+                click.echo(f"{available} asset{_plural(available)} ", nl=False)
                 click.secho("available", fg="green", nl=False)
                 click.echo(
-                    f", but {unavailable} resource{_plural(unavailable)} ", nl=False
+                    f", but {unavailable} asset{_plural(unavailable)} ", nl=False
                 )
                 click.secho("unavailable", fg="red", nl=False)
                 click.echo(". Dang!")
 
     if dry_run:
-        click.echo("URLs of registered resources:")
+        click.echo("URLs of registered assets:")
         for i, fname in enumerate(fnames):
             click.echo(f"[{i+1:0{width}d}] ", nl=False)
             click.secho(f"{CACHE.get_url(fname)}", fg=fg_colour)
         click.echo("\n👍 All done!")
 
     if show:
-        click.echo("Names of registered resources:")
+        click.echo("Names of registered assets:")
         for i, fname in enumerate(fnames):
             click.echo(f"[{i+1:0{width}d}] ", nl=False)
             click.secho(f"{fname}", fg=fg_colour)
