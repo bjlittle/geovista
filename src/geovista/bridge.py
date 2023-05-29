@@ -527,6 +527,114 @@ class Transform:
         )
 
     @classmethod
+    def from_points(
+        cls,
+        xs: ArrayLike,
+        ys: ArrayLike,
+        data: ArrayLike | None = None,
+        name: str | None = None,
+        crs: CRSLike | None = None,
+        radius: float | None = None,
+        zlevel: int | ArrayLike | None = None,
+        zscale: float | None = None,
+        clean: bool | None = None,
+    ) -> pv.PolyData:
+        """Build a point-cloud mesh from x-values, y-values and z-levels.
+
+        Note that, any optional mesh `data` provided must be in the same order as the
+        spatial points.
+
+        Parameters
+        ----------
+        xs : ArrayLike
+            A 1-D, 2-D or 3-D array of point-cloud x-values, in canonical `crs` units.
+            Must have the same shape as the `ys`.
+        ys : ArrayLike
+            A 1-D, 2-D or 3-D array of point-cloud y-values, in canonical `crs` units.
+            Must have the same shape as the `xs`.
+        data : ArrayLike, optional
+            Data to be optionally attached to the mesh points.
+        name : str, optional
+            The name of the optional data array to be attached to the mesh. If `data`
+            is provided but with no `name`, defaults to :data:`NAME_POINTS`.
+        crs : CRSLike, optional
+            The Coordinate Reference System of the provided `xs` and `ys`. May
+            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            to ``EPSG:4326`` i.e., ``WGS 84``.
+        radius : float, optional
+            The radius of the mesh point-cloud. Defaults to
+            :data:`geovista.common.RADIUS`.
+        zlevel : int or ArrayLike, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            If `zlevel` is not a scalar, then its shape must match or broadcast
+            with the shape of the `xs` and `ys`.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        clean : bool, optional
+            Specify whether to merge duplicate points. Defaults to
+            :data:`BRIDGE_CLEAN`.
+
+        Returns
+        -------
+        PolyData
+            The point-cloud spherical mesh.
+
+        Notes
+        -----
+        .. versionadded:: 0.2.0
+
+        """
+        radius = RADIUS if radius is None else abs(float(radius))
+
+        if crs is not None:
+            crs = CRS.from_user_input(crs)
+
+            if crs != WGS84:
+                transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
+                xs, ys = transformer.transform(xs, ys, errcheck=True)
+
+        # ensure longitudes (degrees) are in half-closed interval [-180, 180)
+        xs = wrap(xs)
+
+        # reduce any singularity points at the poles to a common longitude
+        poles = np.isclose(np.abs(ys), 90)
+        if np.any(poles):
+            xs[poles] = 0
+
+        # convert lat/lon to cartesian xyz
+        xyz = to_cartesian(xs, ys, radius=radius, zlevel=zlevel, zscale=zscale)
+
+        # create the point-cloud mesh
+        mesh = pv.PolyData(xyz)
+
+        # attach the pyproj crs serialized as ogc wkt
+        wkt = np.array([WGS84.to_wkt()])
+        mesh.field_data[GV_FIELD_CRS] = wkt
+
+        # attach the original base radius
+        mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+
+        # attach any optional data to the mesh
+        if data is not None:
+            data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells)
+
+            if not name:
+                name = NAME_POINTS
+            if not isinstance(name, str):
+                name = str(name)
+
+            mesh.field_data[GV_FIELD_NAME] = np.array([name])
+            mesh[name] = data
+
+        # clean the mesh
+        if clean:
+            mesh.clean(inplace=True)
+
+        return mesh
+
+    @classmethod
     def from_unstructured(
         cls,
         xs: ArrayLike,
@@ -534,7 +642,7 @@ class Transform:
         connectivity: ArrayLike | Shape | None = None,
         data: ArrayLike | None = None,
         start_index: int | None = None,
-        name: ArrayLike | None = None,
+        name: str | None = None,
         crs: CRSLike | None = None,
         radius: float | None = None,
         zlevel: int | None = None,

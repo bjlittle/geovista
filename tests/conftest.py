@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 
+from geovista.crs import WGS84
 from geovista.pantry import lam_uk as pantry_lam_uk
 from geovista.samples import lam_uk as sample_lam_uk
 from geovista.samples import lfric as sample_lfric
@@ -39,3 +40,9 @@ def lfric_sst():
     """Fixture to provide a cube-sphere mesh with SST face data."""
     mesh = sample_lfric_sst()
     return mesh
+
+
+@pytest.fixture
+def wgs84_wkt():
+    """Fixture for generating WG284 CRS WKT as a string."""
+    return WGS84.to_wkt()
