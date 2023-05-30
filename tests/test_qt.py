@@ -2,8 +2,8 @@
 import pytest
 
 
-def test_import():
-    """Test the pyvistaqt optional dependency.
+def test_pyvistaqt_import():
+    """Test the pyvistaqt package optional dependency.
 
     The test environment may or may not contain the "pyvistaqt" package.
     This test only checks that the expected exception is raised when it
@@ -19,5 +19,24 @@ def test_import():
     if not pyvistaqt:
         emsg = 'please install the "pyvistaqt" and "pyqt" packages'
         with pytest.raises(ImportError, match=emsg):
-            # pylint: disable-next=import-outside-toplevel
             import geovista.qt  # noqa: F401
+
+
+def test_pyvistaqt_mixin(mocker):
+    """Test pyvistaqt class mixin to geovista geo classes."""
+    slot = mocker.sentinel.slot
+
+    class BackgroundPlotter:
+        dummy = slot
+
+    class MultiPlotter:
+        dummy = slot
+
+    module = mocker.MagicMock(
+        BackgroundPlotter=BackgroundPlotter, MultiPlotter=MultiPlotter
+    )
+    mocker.patch.dict("sys.modules", pyvistaqt=module)
+    import geovista.qt
+
+    assert geovista.qt.GeoBackgroundPlotter().dummy == slot
+    assert geovista.qt.GeoMultiPlotter().dummy == slot
