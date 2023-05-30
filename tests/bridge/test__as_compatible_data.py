@@ -31,12 +31,13 @@ def test_data_size_match(size, nans):
     if nans:
         data = ma.arange(size, dtype=float)
         data[0] = data[-1] = ma.masked
+        count = np.sum(data.mask)
     else:
         data = np.arange(size)
+        count = 0
     result = Transform._as_compatible_data(data, n_points=N_POINTS, n_cells=N_CELLS)
     assert result.size == size
-    if nans:
-        assert np.sum(np.isnan(result)) == 2
+    assert np.sum(np.isnan(result)) == count
 
 
 @pytest.mark.parametrize("square", [3, 4])
