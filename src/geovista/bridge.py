@@ -21,7 +21,6 @@ from pyproj import CRS, Transformer
 import pyvista as pv
 
 from .common import (
-    GV_FIELD_CRS,
     GV_FIELD_NAME,
     GV_FIELD_RADIUS,
     RADIUS,
@@ -30,7 +29,7 @@ from .common import (
     to_cartesian,
     wrap,
 )
-from .crs import WGS84
+from .crs import WGS84, to_wkt
 
 __all__ = ["Transform"]
 
@@ -610,8 +609,7 @@ class Transform:
         mesh = pv.PolyData(xyz)
 
         # attach the pyproj crs serialized as ogc wkt
-        wkt = np.array([WGS84.to_wkt()])
-        mesh.field_data[GV_FIELD_CRS] = wkt
+        to_wkt(mesh, WGS84)
 
         # attach the original base radius
         mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
@@ -846,8 +844,7 @@ class Transform:
         mesh = pv.PolyData(geometry, faces=faces, n_faces=n_faces)
 
         # attach the pyproj crs serialized as ogc wkt
-        wkt = np.array([WGS84.to_wkt()])
-        mesh.field_data[GV_FIELD_CRS] = wkt
+        to_wkt(mesh, WGS84)
 
         # attach the radius
         mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])

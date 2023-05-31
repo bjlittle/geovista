@@ -17,7 +17,6 @@ from shapely.geometry.multilinestring import MultiLineString
 from .cache import fetch_coastlines
 from .common import (
     COASTLINES_RESOLUTION,
-    GV_FIELD_CRS,
     GV_FIELD_RADIUS,
     GV_FIELD_RESOLUTION,
     LRU_CACHE_SIZE,
@@ -26,7 +25,7 @@ from .common import (
     to_cartesian,
 )
 from .core import resize
-from .crs import WGS84
+from .crs import WGS84, to_wkt
 
 __all__ = [
     "coastlines",
@@ -209,6 +208,6 @@ def load_coastlines(
     mesh.lines = lines
     mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
     mesh.field_data[GV_FIELD_RESOLUTION] = np.array([resolution])
-    mesh.field_data[GV_FIELD_CRS] = np.array([WGS84.to_wkt()])
+    to_wkt(mesh, WGS84)
 
     return mesh
