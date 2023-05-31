@@ -29,7 +29,7 @@ from .common import (
     to_cartesian,
     wrap,
 )
-from .crs import from_wkt
+from .crs import projected
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .filters import remesh
 from .search import find_cell_neighbours
@@ -39,7 +39,6 @@ __all__ = [
     "add_texture_coords",
     "combine",
     "cut_along_meridian",
-    "is_projected",
     "resize",
 ]
 
@@ -111,7 +110,7 @@ class MeridianSlice:
         .. versionadded :: 0.1.0
 
         """
-        if is_projected(mesh):
+        if projected(mesh):
             emsg = "Cannot slice mesh that appears to be a planar projection."
             raise ValueError(emsg)
 
@@ -567,40 +566,6 @@ def cut_along_meridian(
     return result
 
 
-def is_projected(mesh: pv.PolyData) -> bool:
-    """Determine if the mesh is a planar projection.
-
-    Simple heuristic approach achieved by attempting to inspect the associated CRS of
-    the mesh. If the mesh CRS is unavailable then the weaker contract of inspecting the
-    mesh geometry is used to detect for a flat plane.
-
-    Parameters
-    ----------
-    mesh : PolyData
-        The mesh to be inspected.
-
-    Returns
-    -------
-    bool
-        Whether the mesh is projected.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    crs = from_wkt(mesh)
-
-    if crs is None:
-        xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
-        xdelta, ydelta, zdelta = (xmax - xmin), (ymax - ymin), (zmax - zmin)
-        result = np.isclose(xdelta, 0) or np.isclose(ydelta, 0) or np.isclose(zdelta, 0)
-    else:
-        result = crs.is_projected
-
-    return result
-
-
 def resize(
     mesh: pv.PolyData,
     radius: float | None = None,
@@ -635,7 +600,7 @@ def resize(
     .. versionadded:: 0.1.0
 
     """
-    if is_projected(mesh):
+    if projected(mesh):
         emsg = "Cannot resize mesh that appears to be a planar projection."
         raise ValueError(emsg)
 

@@ -7,6 +7,7 @@ Notes
 """
 from __future__ import annotations
 
+import numpy as np
 from pyproj import CRS
 import pyvista as pv
 
@@ -17,7 +18,9 @@ __all__ = [
     "WGS84",
     "from_wkt",
     "get_central_meridian",
+    "projected",
     "set_central_meridian",
+    "to_wkt",
 ]
 
 #: EPSG projection parameter for longitude of natural origin/central meridian
@@ -91,6 +94,40 @@ def get_central_meridian(crs: CRS) -> float | None:
     return result
 
 
+def projected(mesh: pv.PolyData) -> bool:
+    """Determine if the mesh is a planar projection.
+
+    Simple heuristic approach achieved by attempting to inspect the associated CRS of
+    the mesh. If the mesh CRS is unavailable then the weaker contract of inspecting the
+    mesh geometry is used to detect for a flat plane.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The mesh to be inspected.
+
+    Returns
+    -------
+    bool
+        Whether the mesh is projected.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    crs = from_wkt(mesh)
+
+    if crs is None:
+        xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
+        xdelta, ydelta, zdelta = (xmax - xmin), (ymax - ymin), (zmax - zmin)
+        result = np.isclose(xdelta, 0) or np.isclose(ydelta, 0) or np.isclose(zdelta, 0)
+    else:
+        result = crs.is_projected
+
+    return result
+
+
 def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
     """Replace the longitude of natural origin in the `CRS`.
 
@@ -131,3 +168,24 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
         result = CRS.from_json_dict(crs_json)
 
     return result
+
+
+def to_wkt(mesh: pv.PolyData, crs: CRS) -> None:
+    """Attach serialized :class:`pyproj.CRS` as Well-Known-Text in-place to the `mesh`.
+
+    The serialized OGC WKT is attached to the ``field_data`` of the mesh.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The mesh to contain the OGC WKT.
+    crs : CRS
+        The :class:`pyproj.CRS` to be serialized.
+
+    Notes
+    -----
+    .. versionadded:: 0.2.0
+
+    """
+    wkt = crs.to_wkt()
+    mesh.field_data[GV_FIELD_CRS] = np.array([wkt])
