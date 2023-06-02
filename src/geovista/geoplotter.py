@@ -307,7 +307,7 @@ class GeoPlotterBase:
 
             if project:
                 lonlat = from_cartesian(
-                    mesh, radius=radius, closed_interval=True, rtol=rtol, atol=atol
+                    mesh, closed_interval=True, rtol=rtol, atol=atol
                 )
                 transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
                 xs, ys = transformer.transform(
@@ -319,7 +319,7 @@ class GeoPlotterBase:
                 if zlevel:
                     xmin, xmax, ymin, ymax, _, _ = mesh.bounds
                     xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
-                    delta = max(xdelta, ydelta)
+                    delta = min(xdelta, ydelta) // 4
                     zoffset = zlevel * zscale * delta
                 mesh.points[:, 2] = zoffset
             else:

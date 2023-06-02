@@ -8,14 +8,22 @@ from geovista.common import to_lonlats
 @pytest.mark.parametrize(
     "points, emsg",
     [
-        ([[[0]]], r"Require a 2D array .* got a 3D array"),
-        ([[0, 1]], r"Require a 2D array .* got a 2D array with shape \(1, 2\)"),
+        ([[[0]]], r"Require a 2-D array .* got a 3-D array"),
+        ([[0, 1]], r"Require a 2-D array .* got a 2-D array with shape \(1, 2\)"),
     ],
 )
-def test_shape_fail(points, emsg):
+def test_xyz_shape_fail(points, emsg):
     """Test trap of non-compliant cartesian points array shape."""
     with pytest.raises(ValueError, match=emsg):
         _ = to_lonlats(points)
+
+
+@pytest.mark.parametrize("radius", [(1, 2), np.arange(10).reshape(5, 2)])
+def test_radius_shape_fail(manydegrees, radius):
+    """Test trap of non-compliant radius array shape."""
+    emsg = "Require a 1-D array of radii"
+    with pytest.raises(ValueError, match=emsg):
+        _ = to_lonlats(manydegrees.xyz, radius=radius)
 
 
 @pytest.mark.parametrize("stacked", [True, False])
@@ -41,3 +49,11 @@ def test_latitude_pole_arcsin_domain(radius):
     expected = [90.0, -90.0]
     lonlat = to_lonlats(poles, radius=float(radius), stacked=False)
     np.testing.assert_array_almost_equal(lonlat[1], expected)
+
+
+def test_radius(manydegrees):
+    """Test radii vector rather than scalar radius."""
+    xyz = np.asanyarray(manydegrees.xyz)
+    radii = np.ones(xyz.shape[0])
+    lonlats = to_lonlats(xyz, radius=radii)
+    np.testing.assert_array_almost_equal(lonlats, manydegrees.expected)

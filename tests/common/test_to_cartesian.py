@@ -3,21 +3,17 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from geovista.common import DISTANCE_DECIMALS, RADIUS, ZLEVEL_SCALE, to_cartesian
+from geovista.common import RADIUS, ZLEVEL_SCALE, to_cartesian
 
 
-def _distance(
-    pts: npt.ArrayLike, stacked: bool = True, decimals: int = DISTANCE_DECIMALS
-) -> float:
+def _distance(pts: npt.ArrayLike, stacked: bool = True) -> float:
     """Calculate the mean distance to the xyz-cartesian `pts` from the origin."""
     if np.ma.isMaskedArray(pts):
         pts = pts.data
     if not stacked:
         pts = np.transpose(pts)
     nrow, ncol = pts.shape
-    result = np.round(
-        np.sqrt(np.sum(pts.T @ pts * np.identity(ncol)) / nrow), decimals=decimals
-    )
+    result = np.sqrt(np.sum(pts.T @ pts * np.identity(ncol)) / nrow)
     return result
 
 
@@ -50,7 +46,7 @@ def test_zlevel_broadcast_fail():
 def test_defaults(lam_uk_sample, stacked):
     """Test expected defaults are honoured."""
     result = to_cartesian(*lam_uk_sample, stacked=stacked)
-    assert _distance(result, stacked=stacked) == RADIUS
+    assert np.isclose(_distance(result, stacked=stacked), RADIUS)
 
 
 @pytest.mark.parametrize("zlevel", range(-5, 6))
