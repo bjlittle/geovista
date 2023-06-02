@@ -19,12 +19,12 @@ from vtk import vtkLogger, vtkObject
 
 __all__ = [
     "COASTLINES_RESOLUTION",
-    "DISTANCE_DECIMALS",
     "GV_CELL_IDS",
     "GV_FIELD_CRS",
     "GV_FIELD_NAME",
     "GV_FIELD_RADIUS",
     "GV_FIELD_RESOLUTION",
+    "GV_FIELD_ZSCALE",
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
     "LRU_CACHE_SIZE",
@@ -37,6 +37,7 @@ __all__ = [
     "distance",
     "from_cartesian",
     "nan_mask",
+    "point_cloud",
     "sanitize_data",
     "set_jupyter_backend",
     "to_cartesian",
@@ -58,9 +59,6 @@ BASE: float = -180.0
 #: Default Natural Earth coastline resolution.
 COASTLINES_RESOLUTION: str = "10m"
 
-#: Default number of decimal places for :func:`distance` calculation.
-DISTANCE_DECIMALS: int = 8
-
 #: Name of the geovista cell indices array.
 GV_CELL_IDS: str = "gvOriginalCellIds"
 
@@ -75,6 +73,9 @@ GV_FIELD_RADIUS: str = "gvRadius"
 
 #: The field array name of the mesh resolution e.g., coastlines.
 GV_FIELD_RESOLUTION: str = "gvResolution"
+
+#: The field array name of the mesh proportional multiplier for z-axis levels/offsets.
+GV_FIELD_ZSCALE: str = "gvZScale"
 
 #: Name of the geovista point indices array.
 GV_POINT_IDS: str = "gvOriginalPointIds"
@@ -143,28 +144,28 @@ def active_kernel() -> bool:
 
 def distance(
     mesh: pv.PolyData,
-    origin: tuple[float, float, float] | None = None,
-    decimals: int | None = None,
-) -> float:
+    origin: npt.ArrayLike | None = None,
+    mean: bool | None = True,
+) -> float | npt.ArrayLike:
     """Calculate the mean distance from the `origin` to the points of the `mesh`.
 
-    Note that, given a spherical `mesh` this distance is the radius.
+    Note that, given a spherical `mesh` the distance calculated is the radius.
 
     Parameters
     ----------
     mesh : PolyData
         The surface that requires its distance to be calculated, relative to
         the `origin`.
-    origin : float, default=(0, 0, 0)
+    origin : ArrayLike, default=(0, 0, 0)
         The (x, y, z) cartesian center of the spheroid mesh.
-    decimals : int, optional
-        Round the calculated result to `decimals` places. Defaults to
-        :data:`DISTANCE_DECIMALS`.
+    mean : bool, default=True
+        Calculate the mean distance to the points of the `mesh`. Otherwise, calculate
+        the distance to each point from the `origin`.
 
     Returns
     -------
-    float
-        The radius of the provided mesh.
+    float or ArrayLike
+        The mean distance to the provided mesh or each mesh point.
 
     Notes
     -----
@@ -178,32 +179,27 @@ def distance(
 
     if origin.ndim != 1 or origin.size != 3:
         emsg = (
-            f"Require a single 1-D XYZ point for the origin, got {origin.ndim}-D with"
-            f"{origin.size} elements."
+            f"Require an (x, y, z) cartesian point for the origin, got {origin.shape} "
+            "instead."
         )
         raise ValueError(emsg)
 
-    if decimals is None:
-        decimals = DISTANCE_DECIMALS
-
     pts = mesh.points - origin
-    nrow, ncol = pts.shape
-    radius = np.round(
-        np.sqrt(np.sum(pts.T @ pts * np.identity(ncol)) / nrow), decimals=decimals
-    )
+    result = np.sqrt(np.sum(pts * pts, axis=1))
 
-    given_radius = (
-        mesh.field_data[GV_FIELD_RADIUS][0]
-        if GV_FIELD_RADIUS in mesh.field_data
-        else RADIUS
-    )
+    if mean:
+        result = np.mean(result)
 
-    if np.isclose(radius, given_radius):
-        radius = given_radius
+        given_radius = (
+            mesh.field_data[GV_FIELD_RADIUS][0]
+            if GV_FIELD_RADIUS in mesh.field_data
+            else RADIUS
+        )
 
-    mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+        if np.isclose(result, given_radius):
+            result = given_radius
 
-    return radius
+    return result
 
 
 def nan_mask(data: npt.ArrayLike) -> np.ndarray:
@@ -234,6 +230,27 @@ def nan_mask(data: npt.ArrayLike) -> np.ndarray:
         data = data.filled(np.nan)
 
     return data
+
+
+def point_cloud(mesh: pv.PolyData) -> bool:
+    """Determine whether the `mesh` is a point-cloud.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The :class:`pyvista.PolyData` mesh.
+
+    Returns
+    -------
+    bool
+        Whether the `mesh` is a point-cloud.
+
+    Notes
+    -----
+    .. versionadded:: 0.2.0
+
+    """
+    return (mesh.n_points == mesh.n_faces) and (mesh.n_lines == 0)
 
 
 def sanitize_data(
@@ -298,7 +315,7 @@ def set_jupyter_backend(backend: str | None = None) -> bool:
 
 def to_lonlat(
     xyz: npt.ArrayLike,
-    radians: float | None = None,
+    radians: bool | None = False,
     radius: float | None = None,
     rtol: float | None = None,
     atol: float | None = None,
@@ -336,8 +353,8 @@ def to_lonlat(
     if point.shape != (3,):
         shape = f" with shape {point.shape}" if point.shape else ""
         emsg = (
-            "Require a 1D array of (x, y, z) points, got a "
-            f"{point.ndim}D array{shape}."
+            "Require a 1-D array of (x, y, z) points, got a "
+            f"{point.ndim}-D array{shape}."
         )
         raise ValueError(emsg)
 
@@ -349,7 +366,7 @@ def to_lonlat(
 def to_lonlats(
     xyz: npt.ArrayLike,
     radians: bool | None = False,
-    radius: float | None = None,
+    radius: float | npt.ArrayLike | None = None,
     stacked: bool | None = True,
     rtol: float | None = None,
     atol: float | None = None,
@@ -363,10 +380,12 @@ def to_lonlats(
     radians : bool, default=False
         Convert resultant longitude and latitude values to radians.
         Default units are degrees.
-    radius : float, optional
-        The `radius` of the sphere. Defaults to :data:`RADIUS`.
+    radius : float or ArrayLike, optional
+        The `radius` of the sphere. If `radius` is not a scalar, then its shape must
+        match the number of `xyz` points i.e., radii with shape ``(N,)`` for `xyz`
+        points with shape ``(N, 3)``. Defaults to :data:`RADIUS`.
     stacked : bool, default=True
-        Default the resultant shape to be (N, 2), otherwise (2, N).
+        Default the resultant shape to be ``(N, 2)``, otherwise ``(2, N)``.
     rtol : float, optional
         The relative tolerance for values close to longitudinal
         :func:`geovista.common.wrap` base + period.
@@ -385,12 +404,25 @@ def to_lonlats(
 
     """
     points = np.atleast_2d(xyz)
-    radius = RADIUS if radius is None else abs(float(radius))
 
     if points.ndim != 2 or points.shape[1] != 3:
         emsg = (
-            "Require a 2D array of (x, y, z) points, got a "
-            f"{points.ndim}D array with shape {points.shape}."
+            "Require a 2-D array of (x, y, z) points, got a "
+            f"{points.ndim}-D array with shape {points.shape}."
+        )
+        raise ValueError(emsg)
+
+    if radius is None:
+        radius = RADIUS
+
+    radius = np.abs(np.atleast_1d(radius).astype(float))
+
+    if radius.shape != (1,) and (
+        radius.ndim != 1 or radius.shape[0] != points.shape[0]
+    ):
+        emsg = (
+            f"Require a 1-D array of radii, got a {radius.ndim}-D array with shape "
+            f"{radius.shape}."
         )
         raise ValueError(emsg)
 
@@ -403,6 +435,7 @@ def to_lonlats(
 
     z_radius = points[:, 2] / radius
     # XXX: defensive clobber of values outside arcsin domain [-1, 1]
+    # which is the result of floating point inaccuracies at the extremes
     if indices := np.where(z_radius > 1):
         z_radius[indices] = 1.0
     if indices := np.where(z_radius < -1):
@@ -419,7 +452,6 @@ def to_lonlats(
 
 def from_cartesian(
     mesh: pv.PolyData,
-    radius: float | None = None,
     stacked: bool | None = True,
     closed_interval: bool | None = False,
     rtol: float | None = None,
@@ -432,9 +464,6 @@ def from_cartesian(
     mesh : PolyData
         The mesh containing the cartesian (x, y, z) points to be converted to
         longitude and latitude coordinates.
-    radius : float, optional
-        The radius of the sphere. If not provided the radius is determined
-        from the `mesh`.
     stacked : bool, default=True
         Specify whether the resultant xy0 coordinates have shape (N, 3).
         Otherwise, they will have shape (3, N).
@@ -447,7 +476,7 @@ def from_cartesian(
         :func:`geovista.common.wrap` base + period.
     atol : float, optional
         The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap`  base + period.
+        :func:`geovista.common.wrap` base + period.
 
     Returns
     -------
@@ -459,16 +488,27 @@ def from_cartesian(
     .. versionadded:: 0.1.0
 
     """
-    radius = distance(mesh) if radius is None else abs(float(radius))
+    cloud = point_cloud(mesh)
+    radius = distance(mesh, mean=not cloud)
+
     lons, lats = to_lonlats(
         mesh.points, radius=radius, stacked=False, rtol=rtol, atol=atol
     )
-    z = np.zeros_like(lons)
-    data = [lons, lats, z]
+
+    zlevel = np.zeros_like(lons)
+
+    if cloud:
+        if GV_FIELD_RADIUS in mesh.field_data and GV_FIELD_ZSCALE in mesh.field_data:
+            # field data injected by geovista.bridge.Transform.from_points
+            base = mesh[GV_FIELD_RADIUS]
+            zscale = mesh[GV_FIELD_ZSCALE]
+            zlevel = (radius - base) / (base * zscale)
+
+    data = [lons, lats, zlevel]
 
     # XXX: manage pole longitudes. an alternative future scheme could be more
-    # generic and inclusive, but this approach tackles the main use case
-    pole_pids = np.where(np.abs(lats) == 90)[0]
+    # generic and inclusive, but this approach tackles the main use case for now
+    pole_pids = np.where(np.isclose(np.abs(lats), 90))[0]
     if pole_pids.size:
         # enforce a common longitude for pole singularity mesh points
         lons[pole_pids] = 0

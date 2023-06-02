@@ -534,7 +534,7 @@ def cut_along_meridian(
         cids = set(find_cell_neighbours(result, remeshed[GV_CELL_IDS]))
         cids = cids.difference(set(remeshed_ids))
         if cids:
-            neighbours = result.extract_cells(list(cids))
+            neighbours = cast(result.extract_cells(list(cids)))
             xy0 = from_cartesian(neighbours)
             neighbours.points = xy0
             xdelta = []

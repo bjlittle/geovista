@@ -23,6 +23,7 @@ import pyvista as pv
 from .common import (
     GV_FIELD_NAME,
     GV_FIELD_RADIUS,
+    GV_FIELD_ZSCALE,
     RADIUS,
     ZLEVEL_SCALE,
     nan_mask,
@@ -563,7 +564,7 @@ class Transform:
         radius : float, optional
             The radius of the mesh point-cloud. Defaults to
             :data:`geovista.common.RADIUS`.
-        zlevel : int or ArrayLike, optional
+        zlevel : int or ArrayLike, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
             If `zlevel` is not a scalar, then its shape must match or broadcast
@@ -586,6 +587,7 @@ class Transform:
 
         """
         radius = RADIUS if radius is None else abs(float(radius))
+        zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
 
         if crs is not None:
             crs = CRS.from_user_input(crs)
@@ -611,8 +613,9 @@ class Transform:
         # attach the pyproj crs serialized as ogc wkt
         to_wkt(mesh, WGS84)
 
-        # attach the original base radius
+        # attach the original base radius and zscale
         mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+        mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
 
         # attach any optional data to the mesh
         if data is not None:
