@@ -339,35 +339,6 @@ def download(
 
 
 @main.command(no_args_is_help=True)
-@click.argument(
-    "fname",
-    type=click.Path(exists=True, dir_okay=False, readable=True),
-)
-@click.option(
-    "-a",
-    "--axes",
-    is_flag=True,
-    help="Add axes",
-)
-@click.option(
-    "-b",
-    "--base",
-    is_flag=True,
-    help="Add a base layer",
-)
-def plot(fname, axes, base) -> None:
-    """Load and render a VTK mesh."""
-    mesh = pv.read(fname)
-    plotter = GeoPlotter()
-    plotter.add_mesh(mesh)
-    if base:
-        plotter.add_base_layer()
-    if axes:
-        plotter.add_axes()
-    plotter.show()
-
-
-@main.command(no_args_is_help=True)
 @click.option(
     "-a",
     "--all",
@@ -432,3 +403,32 @@ def examples(run_all, show, run, verbose):
         print(module.main.__doc__)
     module.main()
     click.echo("\n👍 All done!")
+
+
+@main.command(no_args_is_help=True)
+@click.argument(
+    "fname",
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+)
+@click.option(
+    "-a",
+    "--axes",
+    is_flag=True,
+    help="Add axes",
+)
+@click.option(
+    "-b",
+    "--base",
+    is_flag=True,
+    help="Add a base layer",
+)
+def plot(fname, axes, base) -> None:
+    """Load and render a VTK mesh."""
+    mesh = pv.read(fname)
+    plotter = GeoPlotter()
+    plotter.add_mesh(mesh)
+    if base:
+        plotter.add_base_layer()
+    if axes:
+        plotter.add_axes()
+    plotter.show()

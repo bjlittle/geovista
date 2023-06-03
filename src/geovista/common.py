@@ -202,6 +202,122 @@ def distance(
     return result
 
 
+def from_cartesian(
+    mesh: pv.PolyData,
+    stacked: bool | None = True,
+    closed_interval: bool | None = False,
+    rtol: float | None = None,
+    atol: float | None = None,
+) -> np.ndarray:
+    """Convert cartesian ``xyz`` spherical `mesh` to geographic longitude and latitude.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The mesh containing the cartesian (x, y, z) points to be converted to
+        longitude and latitude coordinates.
+    stacked : bool, default=True
+        Specify whether the resultant xy0 coordinates have shape (N, 3).
+        Otherwise, they will have shape (3, N).
+    closed_interval : bool, default=False
+        Longitude values will be in the half-closed interval [-180, 180). However,
+        if the mesh has a seam at the 180th meridian and `closed_interval`
+        is ``True``, then longitudes will be in the closed interval [-180, 180].
+    rtol : float, optional
+        The relative tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
+    atol : float, optional
+        The absolute tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
+
+    Returns
+    -------
+    ndarray
+        The longitude and latitude coordinates, in degrees.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    cloud = point_cloud(mesh)
+    radius = distance(mesh, mean=not cloud)
+
+    lons, lats = to_lonlats(
+        mesh.points, radius=radius, stacked=False, rtol=rtol, atol=atol
+    )
+
+    zlevel = np.zeros_like(lons)
+
+    if cloud:
+        if GV_FIELD_RADIUS in mesh.field_data and GV_FIELD_ZSCALE in mesh.field_data:
+            # field data injected by geovista.bridge.Transform.from_points
+            base = mesh[GV_FIELD_RADIUS]
+            zscale = mesh[GV_FIELD_ZSCALE]
+            zlevel = (radius - base) / (base * zscale)
+
+    data = [lons, lats, zlevel]
+
+    # XXX: manage pole longitudes. an alternative future scheme could be more
+    # generic and inclusive, but this approach tackles the main use case for now
+    pole_pids = np.where(np.isclose(np.abs(lats), 90))[0]
+    if pole_pids.size:
+        # enforce a common longitude for pole singularity mesh points
+        lons[pole_pids] = 0
+
+        # unfold pole quad-cells
+        pole_submesh = mesh.extract_points(pole_pids)
+        pole_pids = set(pole_pids)
+        # get the indices (cids) of polar participating mesh cells
+        pole_cids = np.unique(pole_submesh["vtkOriginalCellIds"])
+        for cid in pole_cids:
+            # get the indices (pids) of the polar cell points
+            # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
+            cell_pids = np.array(mesh.get_cell(cid).point_ids)
+            # TODO: only dealing with quad-cells atm
+            if len(cell_pids) == 4:
+                # identify the pids of the cell on the pole
+                cell_pole_pids = pole_pids.intersection(cell_pids)
+                # criterion of exactly two points from the quad-cell
+                # at the pole to unfold the polar points longitudes
+                if len(cell_pole_pids) == 2:
+                    # compute the relative offset of the polar points
+                    # within the polar cell connectivity
+                    offset = sorted(
+                        [np.where(cell_pids == pid)[0][0] for pid in cell_pole_pids]
+                    )
+                    if offset == [0, 1]:
+                        lhs = cell_pids[offset]
+                        rhs = cell_pids[[3, 2]]
+                    elif offset == [1, 2]:
+                        lhs = cell_pids[offset]
+                        rhs = cell_pids[[0, 3]]
+                    elif offset == [2, 3]:
+                        lhs = cell_pids[offset]
+                        rhs = cell_pids[[1, 0]]
+                    elif offset == [0, 3]:
+                        lhs = cell_pids[offset]
+                        rhs = cell_pids[[1, 2]]
+                    else:
+                        emsg = (
+                            "Failed to unfold a mesh polar quad-cell. Invalid "
+                            "polar points connectivity detected."
+                        )
+                        raise ValueError(emsg)
+                    lons[lhs] = lons[rhs]
+
+    if closed_interval:
+        if GV_REMESH_POINT_IDS in mesh.point_data:
+            seam_ids = np.where(mesh[GV_REMESH_POINT_IDS] == REMESH_SEAM)[0]
+            seam_lons = lons[seam_ids]
+            seam_mask = np.isclose(np.abs(seam_lons), 180)
+            lons[seam_ids[seam_mask]] = 180
+
+    result = np.vstack(data).T if stacked else np.array(data)
+
+    return result
+
+
 def nan_mask(data: npt.ArrayLike) -> np.ndarray:
     """Replace any masked array values with NaNs.
 
@@ -311,6 +427,86 @@ def set_jupyter_backend(backend: str | None = None) -> bool:
             pass
 
     return result
+
+
+def to_cartesian(
+    longitudes: npt.ArrayLike,
+    latitudes: npt.ArrayLike,
+    radius: float | None = None,
+    zlevel: int | npt.ArrayLike | None = None,
+    zscale: float | None = None,
+    stacked: bool | None = True,
+) -> np.ndarray:
+    """Convert geographic `longitudes` and `latitudes` to cartesian ``xyz`` points.
+
+    Parameters
+    ----------
+    longitudes : ArrayLike
+        The longitude values (degrees) to be converted.
+    latitudes : ArrayLike
+        The latitude values (degrees) to be converted.
+    radius : float, optional
+        The radius of the sphere. Defaults to :data:`RADIUS`.
+    zlevel : int or ArrayLike, default=0
+        The z-axis level. Used in combination with the `zscale` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        If `zlevel` is not a scalar, then its shape must match or broadcast
+        with the shape of `longitude` and `latitude`.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`ZLEVEL_SCALE`.
+    stacked : bool, default=True
+        Specify whether the resultant xyz points have shape (N, 3).
+        Otherwise, they will have shape (3, N).
+
+    Returns
+    -------
+    ndarray
+        The ``xyz`` spherical cartesian points.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    longitudes = np.asanyarray(longitudes)
+    latitudes = np.asanyarray(latitudes)
+
+    if (shape := longitudes.shape) != latitudes.shape:
+        emsg = (
+            f"Require longitudes and latitudes with same shape, got {shape} and "
+            f"{latitudes.shape} respectively."
+        )
+        raise ValueError(emsg)
+
+    if (ndim := longitudes.ndim) > 3:
+        emsg = f"Require at most 3-D longitudes and latitudes, got {ndim}-D instead."
+        raise ValueError(emsg)
+
+    radius = RADIUS if radius is None else abs(float(radius))
+    zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
+    zlevel = np.array([0]) if zlevel is None else np.atleast_1d(zlevel).astype(int)
+
+    try:
+        _ = np.broadcast_shapes(zshape := zlevel.shape, shape)
+    except ValueError as err:
+        emsg = (
+            f"Cannot broadcast zlevel with shape {zshape} to longitude/latitude"
+            f"shape {shape}."
+        )
+        raise ValueError(emsg) from err
+
+    radius += radius * zlevel * zscale
+
+    x_rad = np.radians(longitudes)
+    y_rad = np.radians(90.0 - latitudes)
+    x = np.ravel(radius * np.sin(y_rad) * np.cos(x_rad))
+    y = np.ravel(radius * np.sin(y_rad) * np.sin(x_rad))
+    z = np.ravel(radius * np.cos(y_rad))
+    xyz = [x, y, z]
+    xyz = np.vstack(xyz).T if stacked else np.array(xyz)
+
+    return xyz
 
 
 def to_lonlat(
@@ -448,202 +644,6 @@ def to_lonlats(
     result = np.vstack(data).T if stacked else np.array(data)
 
     return result
-
-
-def from_cartesian(
-    mesh: pv.PolyData,
-    stacked: bool | None = True,
-    closed_interval: bool | None = False,
-    rtol: float | None = None,
-    atol: float | None = None,
-) -> np.ndarray:
-    """Convert cartesian ``xyz`` spherical `mesh` to geographic longitude and latitude.
-
-    Parameters
-    ----------
-    mesh : PolyData
-        The mesh containing the cartesian (x, y, z) points to be converted to
-        longitude and latitude coordinates.
-    stacked : bool, default=True
-        Specify whether the resultant xy0 coordinates have shape (N, 3).
-        Otherwise, they will have shape (3, N).
-    closed_interval : bool, default=False
-        Longitude values will be in the half-closed interval [-180, 180). However,
-        if the mesh has a seam at the 180th meridian and `closed_interval`
-        is ``True``, then longitudes will be in the closed interval [-180, 180].
-    rtol : float, optional
-        The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
-    atol : float, optional
-        The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
-
-    Returns
-    -------
-    ndarray
-        The longitude and latitude coordinates, in degrees.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    cloud = point_cloud(mesh)
-    radius = distance(mesh, mean=not cloud)
-
-    lons, lats = to_lonlats(
-        mesh.points, radius=radius, stacked=False, rtol=rtol, atol=atol
-    )
-
-    zlevel = np.zeros_like(lons)
-
-    if cloud:
-        if GV_FIELD_RADIUS in mesh.field_data and GV_FIELD_ZSCALE in mesh.field_data:
-            # field data injected by geovista.bridge.Transform.from_points
-            base = mesh[GV_FIELD_RADIUS]
-            zscale = mesh[GV_FIELD_ZSCALE]
-            zlevel = (radius - base) / (base * zscale)
-
-    data = [lons, lats, zlevel]
-
-    # XXX: manage pole longitudes. an alternative future scheme could be more
-    # generic and inclusive, but this approach tackles the main use case for now
-    pole_pids = np.where(np.isclose(np.abs(lats), 90))[0]
-    if pole_pids.size:
-        # enforce a common longitude for pole singularity mesh points
-        lons[pole_pids] = 0
-
-        # unfold pole quad-cells
-        pole_submesh = mesh.extract_points(pole_pids)
-        pole_pids = set(pole_pids)
-        # get the indices (cids) of polar participating mesh cells
-        pole_cids = np.unique(pole_submesh["vtkOriginalCellIds"])
-        for cid in pole_cids:
-            # get the indices (pids) of the polar cell points
-            # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
-            cell_pids = np.array(mesh.get_cell(cid).point_ids)
-            # TODO: only dealing with quad-cells atm
-            if len(cell_pids) == 4:
-                # identify the pids of the cell on the pole
-                cell_pole_pids = pole_pids.intersection(cell_pids)
-                # criterion of exactly two points from the quad-cell
-                # at the pole to unfold the polar points longitudes
-                if len(cell_pole_pids) == 2:
-                    # compute the relative offset of the polar points
-                    # within the polar cell connectivity
-                    offset = sorted(
-                        [np.where(cell_pids == pid)[0][0] for pid in cell_pole_pids]
-                    )
-                    if offset == [0, 1]:
-                        lhs = cell_pids[offset]
-                        rhs = cell_pids[[3, 2]]
-                    elif offset == [1, 2]:
-                        lhs = cell_pids[offset]
-                        rhs = cell_pids[[0, 3]]
-                    elif offset == [2, 3]:
-                        lhs = cell_pids[offset]
-                        rhs = cell_pids[[1, 0]]
-                    elif offset == [0, 3]:
-                        lhs = cell_pids[offset]
-                        rhs = cell_pids[[1, 2]]
-                    else:
-                        emsg = (
-                            "Failed to unfold a mesh polar quad-cell. Invalid "
-                            "polar points connectivity detected."
-                        )
-                        raise ValueError(emsg)
-                    lons[lhs] = lons[rhs]
-
-    if closed_interval:
-        if GV_REMESH_POINT_IDS in mesh.point_data:
-            seam_ids = np.where(mesh[GV_REMESH_POINT_IDS] == REMESH_SEAM)[0]
-            seam_lons = lons[seam_ids]
-            seam_mask = np.isclose(np.abs(seam_lons), 180)
-            lons[seam_ids[seam_mask]] = 180
-
-    result = np.vstack(data).T if stacked else np.array(data)
-
-    return result
-
-
-def to_cartesian(
-    longitudes: npt.ArrayLike,
-    latitudes: npt.ArrayLike,
-    radius: float | None = None,
-    zlevel: int | npt.ArrayLike | None = None,
-    zscale: float | None = None,
-    stacked: bool | None = True,
-) -> np.ndarray:
-    """Convert geographic `longitudes` and `latitudes` to cartesian ``xyz`` points.
-
-    Parameters
-    ----------
-    longitudes : ArrayLike
-        The longitude values (degrees) to be converted.
-    latitudes : ArrayLike
-        The latitude values (degrees) to be converted.
-    radius : float, optional
-        The radius of the sphere. Defaults to :data:`RADIUS`.
-    zlevel : int or ArrayLike, default=0
-        The z-axis level. Used in combination with the `zscale` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-        If `zlevel` is not a scalar, then its shape must match or broadcast
-        with the shape of `longitude` and `latitude`.
-    zscale : float, optional
-        The proportional multiplier for z-axis `zlevel`. Defaults to
-        :data:`ZLEVEL_SCALE`.
-    stacked : bool, default=True
-        Specify whether the resultant xyz points have shape (N, 3).
-        Otherwise, they will have shape (3, N).
-
-    Returns
-    -------
-    ndarray
-        The ``xyz`` spherical cartesian points.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    longitudes = np.asanyarray(longitudes)
-    latitudes = np.asanyarray(latitudes)
-
-    if (shape := longitudes.shape) != latitudes.shape:
-        emsg = (
-            f"Require longitudes and latitudes with same shape, got {shape} and "
-            f"{latitudes.shape} respectively."
-        )
-        raise ValueError(emsg)
-
-    if (ndim := longitudes.ndim) > 3:
-        emsg = f"Require at most 3-D longitudes and latitudes, got {ndim}-D instead."
-        raise ValueError(emsg)
-
-    radius = RADIUS if radius is None else abs(float(radius))
-    zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
-    zlevel = np.array([0]) if zlevel is None else np.atleast_1d(zlevel).astype(int)
-
-    try:
-        _ = np.broadcast_shapes(zshape := zlevel.shape, shape)
-    except ValueError as err:
-        emsg = (
-            f"Cannot broadcast zlevel with shape {zshape} to longitude/latitude"
-            f"shape {shape}."
-        )
-        raise ValueError(emsg) from err
-
-    radius += radius * zlevel * zscale
-
-    x_rad = np.radians(longitudes)
-    y_rad = np.radians(90.0 - latitudes)
-    x = np.ravel(radius * np.sin(y_rad) * np.cos(x_rad))
-    y = np.ravel(radius * np.sin(y_rad) * np.sin(x_rad))
-    z = np.ravel(radius * np.cos(y_rad))
-    xyz = [x, y, z]
-    xyz = np.vstack(xyz).T if stacked else np.array(xyz)
-
-    return xyz
 
 
 def triangulated(surface: pv.PolyData) -> bool:
