@@ -25,6 +25,7 @@ from .common import (
     ZLEVEL_SCALE,
     distance,
     from_cartesian,
+    point_cloud,
     sanitize_data,
     to_cartesian,
     wrap,
@@ -276,6 +277,10 @@ def add_texture_coords(
     .. versionadded:: 0.1.0
 
     """
+    if point_cloud(mesh):
+        # don't attach texture coordinates to a point-cloud
+        return mesh
+
     if meridian is None:
         meridian = DEFAULT_MERIDIAN
 
@@ -489,8 +494,12 @@ def cut_along_meridian(
 
     """
     if not isinstance(mesh, pv.PolyData):
-        emsg = f"Require a 'pyvista.PolyData' mesh, got '{mesh.__class__.__name__}'."
+        emsg = f"Require a {str(pv.PolyData)!r} mesh, got {str(type(mesh))!r}."
         raise TypeError(emsg)
+
+    if point_cloud(mesh):
+        # there is no connectivity or cell remeshing required for a point-cloud
+        return mesh
 
     if meridian is None:
         meridian = DEFAULT_MERIDIAN
