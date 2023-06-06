@@ -6,8 +6,15 @@ from numpy.testing import assert_array_equal
 import pytest
 import pyvista as pv
 
-from geovista.common import RADIUS, ZLEVEL_SCALE
-from geovista.core import distance, resize
+from geovista.bridge import Transform
+from geovista.common import (
+    GV_FIELD_RADIUS,
+    GV_FIELD_ZSCALE,
+    RADIUS,
+    ZLEVEL_SCALE,
+    distance,
+)
+from geovista.core import resize
 
 
 def test_projection_fail():
@@ -59,3 +66,53 @@ def test_resize__zscale(lfric, zscale):
     assert compare(id(result), id(lfric))
     actual = distance(result)
     assert np.isclose(actual, expected)
+
+
+def test_resize_cloud__inject_metadata(lam_uk):
+    """Test inclusion of field data metadata."""
+    cloud = pv.PolyData(lam_uk.points)
+    assert GV_FIELD_RADIUS not in cloud.field_data
+    assert GV_FIELD_ZSCALE not in cloud.field_data
+    result = resize(cloud)
+    assert GV_FIELD_RADIUS in result.field_data
+    assert GV_FIELD_ZSCALE in result.field_data
+    assert id(cloud) != id(result)
+    assert np.isclose(result[GV_FIELD_RADIUS], RADIUS)
+    assert np.isclose(result[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
+
+
+@pytest.mark.parametrize("zlevel", range(1, 11))
+def test_resize_cloud__zlevel(lam_uk_sample, zlevel):
+    """Test resize cloud points by new zlevel."""
+    lons, lats = lam_uk_sample
+    zscale = 1
+    cloud = Transform.from_points(lons, lats, zscale=zscale)
+    assert np.isclose(cloud[GV_FIELD_RADIUS], RADIUS)
+    assert np.isclose(cloud[GV_FIELD_ZSCALE], zscale)
+    result = resize(cloud, zlevel=zlevel)
+    assert np.isclose(distance(result), RADIUS + zlevel * zscale)
+    assert id(cloud) != id(result)
+
+
+@pytest.mark.parametrize("zscale", np.linspace(-1, 1))
+def test_resize_cloud__zscale(lam_uk_cloud, zscale):
+    """Test resize cloud points by new zscale."""
+    zlevel = 1
+    assert np.isclose(lam_uk_cloud[GV_FIELD_RADIUS], RADIUS)
+    assert np.isclose(lam_uk_cloud[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
+    result = resize(lam_uk_cloud, zlevel=zlevel, zscale=zscale)
+    assert np.isclose(distance(result), RADIUS + zlevel * zscale)
+    assert np.isclose(result[GV_FIELD_RADIUS], RADIUS)
+    assert np.isclose(result[GV_FIELD_ZSCALE], zscale)
+    assert id(lam_uk_cloud) != id(result)
+
+
+@pytest.mark.parametrize("radius", np.linspace(0.5, 1.5))
+def test_resize_cloud__radius(lam_uk_cloud, radius):
+    """Test resize cloud points by new radius."""
+    assert np.isclose(lam_uk_cloud[GV_FIELD_RADIUS], RADIUS)
+    assert np.isclose(lam_uk_cloud[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
+    result = resize(lam_uk_cloud, radius=radius)
+    assert np.isclose(distance(result), radius)
+    assert np.isclose(result[GV_FIELD_RADIUS], radius)
+    assert np.isclose(result[GV_FIELD_ZSCALE], ZLEVEL_SCALE)

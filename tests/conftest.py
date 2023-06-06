@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 
+from geovista.bridge import Transform
 from geovista.crs import WGS84
 from geovista.pantry import lam_uk as pantry_lam_uk
 from geovista.samples import lam_uk as sample_lam_uk
@@ -16,6 +17,14 @@ def lam_uk():
     mesh.cell_data["ids"] = np.arange(mesh.n_cells)
     mesh.point_data["ids"] = np.arange(mesh.n_points)
     return mesh
+
+
+@pytest.fixture(scope="session")
+def lam_uk_cloud(lam_uk_sample):
+    """Fixture generates a Local Area Model point-could for the UK."""
+    lons, lats = lam_uk_sample
+    cloud = Transform.from_points(lons, lats)
+    return cloud
 
 
 @pytest.fixture(scope="session")

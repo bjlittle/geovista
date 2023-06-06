@@ -17,6 +17,7 @@ import pyvista as pv
 from .common import (
     GV_CELL_IDS,
     GV_FIELD_RADIUS,
+    GV_FIELD_ZSCALE,
     GV_POINT_IDS,
     GV_REMESH_POINT_IDS,
     RADIUS,
@@ -613,17 +614,54 @@ def resize(
         emsg = "Cannot resize mesh that appears to be a planar projection."
         raise ValueError(emsg)
 
-    radius = RADIUS if radius is None else abs(float(radius))
-    zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
-    zlevel = 0 if zlevel is None else int(zlevel)
-    radius += radius * zlevel * zscale
+    cloud = point_cloud(mesh)
 
-    if radius and not np.isclose(distance(mesh), radius):
+    if radius is None:
+        if cloud and GV_FIELD_RADIUS in mesh.field_data:
+            radius = mesh[GV_FIELD_RADIUS][0]
+        else:
+            radius = RADIUS
+    else:
+        radius = abs(float(radius))
+
+    if zscale is None:
+        if cloud and GV_FIELD_ZSCALE in mesh.field_data:
+            zscale = mesh[GV_FIELD_ZSCALE][0]
+        else:
+            zscale = ZLEVEL_SCALE
+    else:
+        zscale = float(zscale)
+
+    zlevel = 0 if zlevel is None else int(zlevel)
+
+    if cloud:
+        update = bool(zlevel)
+        if not update:
+            update = GV_FIELD_ZSCALE not in mesh.field_data or not np.isclose(
+                mesh[GV_FIELD_ZSCALE], zscale
+            )
+        if not update:
+            update = GV_FIELD_RADIUS not in mesh.field_data or not np.isclose(
+                mesh[GV_FIELD_RADIUS], radius
+            )
+    else:
+        new_radius = radius + radius * zlevel * zscale
+        update = new_radius and not np.isclose(distance(mesh), new_radius)
+
+    if update:
         lonlat = from_cartesian(mesh)
-        xyz = to_cartesian(lonlat[:, 0], lonlat[:, 1], radius=radius)
+        if cloud:
+            zlevel += lonlat[:, 2]
+        xyz = to_cartesian(
+            lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
+        )
         if not inplace:
             mesh = mesh.copy()
         mesh.points = xyz
+        if cloud:
+            mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
+        else:
+            radius = new_radius
         mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
 
     return mesh
