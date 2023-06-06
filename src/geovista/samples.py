@@ -32,6 +32,7 @@ __all__ = [
     "lfric_sst",
     "oisst_avhrr_sst",
     "um_orca2",
+    "um_orca2_cloud",
     "ww3_global_smc",
     "ww3_global_tri",
 ]
@@ -53,6 +54,9 @@ PREFERENCE_POINT: str = "point"
 
 # enumeration of valid preferences
 PREFERENCES: list[str] = [PREFERENCE_CELL, PREFERENCE_POINT]
+
+#: Proportional multiplier for point-cloud levels/offsets.
+ZLEVEL_SCALE_CLOUD: float = 1e-5
 
 
 def _lam_sample_to_mesh(sample: pantry.SampleUnstructuredXY) -> pv.PolyData:
@@ -519,6 +523,43 @@ def um_orca2() -> pv.PolyData:
     )
 
     return mesh
+
+
+def um_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
+    """Create a point-cloud mesh from :mod:`geovista.pantry` sample data.
+
+    Generate an ORCA2 point-cloud of Sea Water Potential Temperature gradients.
+
+    Parameters
+    ----------
+    zscale : float, optional
+        The proportional multiplier for z-axis ``zlevel``. Defaults to
+        :data:`ZLEVEL_SCALE_CLOUD`.
+
+    Returns
+    -------
+    PolyData
+        The ORCA2 point-cloud.
+
+    Notes
+    -----
+    .. versionadded:: 0.2.0
+
+    """
+    sample = pantry.um_orca2_gradient()
+
+    zscale = ZLEVEL_SCALE_CLOUD if zscale is None else float(zscale)
+
+    cloud = Transform.from_points(
+        sample.lons,
+        sample.lats,
+        data=sample.zlevel,
+        name=sample.name,
+        zlevel=-sample.zlevel,
+        zscale=zscale,
+    )
+
+    return cloud
 
 
 def ww3_global_smc(step: int | None = None) -> pv.PolyData:
