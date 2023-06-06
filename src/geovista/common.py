@@ -252,8 +252,8 @@ def from_cartesian(
     if cloud:
         if GV_FIELD_RADIUS in mesh.field_data and GV_FIELD_ZSCALE in mesh.field_data:
             # field data injected by geovista.bridge.Transform.from_points
-            base = mesh[GV_FIELD_RADIUS]
-            zscale = mesh[GV_FIELD_ZSCALE]
+            base = mesh[GV_FIELD_RADIUS][0]
+            zscale = mesh[GV_FIELD_ZSCALE][0]
             zlevel = (radius - base) / (base * zscale)
 
     data = [lons, lats, zlevel]
@@ -433,7 +433,7 @@ def to_cartesian(
     longitudes: npt.ArrayLike,
     latitudes: npt.ArrayLike,
     radius: float | None = None,
-    zlevel: int | npt.ArrayLike | None = None,
+    zlevel: float | npt.ArrayLike | None = None,
     zscale: float | None = None,
     stacked: bool | None = True,
 ) -> np.ndarray:
@@ -447,7 +447,7 @@ def to_cartesian(
         The latitude values (degrees) to be converted.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`RADIUS`.
-    zlevel : int or ArrayLike, default=0
+    zlevel : float or ArrayLike, default=0.0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
         If `zlevel` is not a scalar, then its shape must match or broadcast
@@ -485,7 +485,9 @@ def to_cartesian(
 
     radius = RADIUS if radius is None else abs(float(radius))
     zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
-    zlevel = np.array([0]) if zlevel is None else np.atleast_1d(zlevel).astype(int)
+    # cast as float here, as from_cartesian use-case results in float zlevels
+    # that should be dtype preserved for the purpose of precision
+    zlevel = np.array([0.0]) if zlevel is None else np.atleast_1d(zlevel).astype(float)
 
     try:
         _ = np.broadcast_shapes(zshape := zlevel.shape, shape)
