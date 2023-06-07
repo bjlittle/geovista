@@ -37,6 +37,7 @@ __all__ = [
     "lfric_sst",
     "oisst_avhrr_sst",
     "um_orca2",
+    "um_orca2_gradient",
     "ww3_global_smc",
     "ww3_global_tri",
 ]
@@ -53,6 +54,20 @@ class SampleStructuredXY:
     units: str = field(default=None)
     steps: int = field(default=None)
     ndim: int = 2
+
+
+@dataclass(frozen=True)
+class SampleStructuredXYZ:
+    """Data container for structured volume."""
+
+    lons: npt.ArrayLike
+    lats: npt.ArrayLike
+    zlevel: npt.ArrayLike
+    data: npt.ArrayLike = field(default=None)
+    name: str = field(default=None)
+    units: str = field(default=None)
+    steps: int = field(default=None)
+    ndim: int = 3
 
 
 @dataclass(frozen=True)
@@ -651,6 +666,40 @@ def um_orca2() -> SampleStructuredXY:
     units = data.units
 
     sample = SampleStructuredXY(lons, lats, data=data[0, 0], name=name, units=units)
+
+    return sample
+
+
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def um_orca2_gradient() -> SampleStructuredXYZ:
+    """Download and cache cloud-point sample data.
+
+    Load Met Office Unified Model (UM) ORCA2 curvilinear mesh with gradient filter.
+
+    Returns
+    -------
+    SampleStructuredXYZ
+        The gradient filtered spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.2.0
+
+    """
+    fname = "votemper-gradient.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    dataset = nc.Dataset(resource)
+
+    # load the lon/lat/zlevel points
+    lons = dataset.variables["lon"][:]
+    lats = dataset.variables["lat"][:]
+    depth = dataset.variables["deptht"]
+    units = depth.units
+    depth = depth[:]
+    name = "Depth"
+
+    sample = SampleStructuredXYZ(lons, lats, depth, data=depth, name=name, units=units)
 
     return sample
 
