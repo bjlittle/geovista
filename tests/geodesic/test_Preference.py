@@ -43,3 +43,9 @@ def test_values():
 def test_valid_members(member, expected):
     """Test valid enumeration members."""
     assert Preference.valid(member) is expected
+    if expected:
+        assert Preference(member).value == member.lower()
+    else:
+        emsg = f"{member!r} is not a valid Preference"
+        with pytest.raises(ValueError, match=emsg):
+            _ = Preference(member)
