@@ -8,6 +8,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
+from enum import StrEnum, auto
 import sys
 from typing import Any
 
@@ -28,6 +29,7 @@ __all__ = [
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
     "LRU_CACHE_SIZE",
+    "Preference",
     "RADIUS",
     "REMESH_JOIN",
     "REMESH_SEAM",
@@ -115,6 +117,48 @@ WRAP_RTOL: float = 1e-5
 
 #: Proportional multiplier for z-axis levels/offsets.
 ZLEVEL_SCALE: float = 1e-4
+
+
+class _MixinEnum:
+    """Convenience behaviour mixin for a string enumeration.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+
+    @classmethod
+    def _missing_(cls, item):
+        """Handle missing enumeration members."""
+        item = str(item).lower()
+        for member in cls:
+            if member.value == item:
+                return member
+        return None
+
+    @classmethod
+    def valid(cls, item: str | Preference) -> bool:
+        """Determine whether the provided item is a valid enumeration member."""
+        return str(item).lower() in cls.values()
+
+    @classmethod
+    def values(cls) -> tuple[str, ...]:
+        """List enumeration member values."""
+        return tuple([member.value for member in cls])
+
+
+class Preference(_MixinEnum, StrEnum):
+    """Enumeration of mesh geometry element preference.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+
+    CELL = auto()
+    POINT = auto()
 
 
 def active_kernel() -> bool:

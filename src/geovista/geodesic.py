@@ -8,6 +8,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
+from enum import StrEnum, auto
 import warnings
 
 import numpy as np
@@ -15,12 +16,13 @@ import numpy.typing as npt
 import pyproj
 import pyvista as pv
 
-from .common import RADIUS, ZLEVEL_SCALE, distance, to_cartesian, wrap
+from .common import RADIUS, ZLEVEL_SCALE, _MixinEnum, distance, to_cartesian, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
 
 __all__ = [
     "BBox",
     "GEODESIC_NPTS",
+    "Preference",
     "line",
     "npoints",
     "npoints_by_idx",
@@ -82,24 +84,22 @@ PANEL_BBOX_BY_IDX: dict[int, tuple[Corners, Corners]] = {
 #: The number of cubed sphere panels.
 N_PANELS: int = len(PANEL_IDX_BY_NAME)
 
-#: Preference for an operation to focus on all cell vertices.
-PREFERENCE_CELL: str = "cell"
-
-#: Preference for an operation to focus on the cell center.
-PREFERENCE_CENTER: str = "center"
-
-#: Preference for an operation to focus on any cell vertex.
-PREFERENCE_POINT: str = "point"
-
-#: Enumeration of supported preferences.
-PREFERENCES: tuple[str, str, str] = (
-    PREFERENCE_CELL,
-    PREFERENCE_CENTER,
-    PREFERENCE_POINT,
-)
-
 #: The default bounding-box preference.
-BBOX_PREFERENCE: str = PREFERENCE_CELL
+PREFERENCE: str = "point"
+
+
+class Preference(_MixinEnum, StrEnum):
+    """Enumeration of mesh geometry element preference.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+
+    CELL = auto()
+    CENTER = auto()
+    POINT = auto()
 
 
 class BBox:
@@ -489,7 +489,7 @@ class BBox:
         surface: pv.PolyData,
         tolerance: float | None = BBOX_TOLERANCE,
         outside: bool | None = False,
-        preference: str = BBOX_PREFERENCE,
+        preference: str | Preference | None = None,
     ) -> pv.PolyData:
         """Extract region of the `surface` contained within the bounding-box.
 
@@ -508,14 +508,14 @@ class BBox:
             By default, select those points of the `surface` that are inside
             the bounding-box. Otherwise, select those points that are outside
             the bounding-box.
-        preference : str, default=BBOX_PREFERENCE
+        preference : str or Preference, optional
             Criteria for defining whether a face of a `surface` mesh is
             deemed to be enclosed by the bounding-box. A `preference` of
             ``cell`` requires all points defining the face to be in or on the
             bounding-box. A `preference` of ``center`` requires that only the
             face cell center is in or on the bounding-box. A `preference` of
             ``point`` requires at least one point that defines the face to be
-            in or on the bounding-box.
+            in or on the bounding-box. Defaults to :data:`PREFERENCE`.
 
         Returns
         -------
@@ -530,27 +530,26 @@ class BBox:
 
         """
         if preference is None:
-            preference = BBOX_PREFERENCE
+            preference = PREFERENCE
 
-        if preference.lower() not in PREFERENCES:
-            ordered = sorted(PREFERENCES)
-            valid = ", ".join(f"'{kind}'" for kind in ordered[:-1])
-            valid = f"{valid} or '{ordered[-1]}'"
-            emsg = f"Preference must be either {valid}, got '{preference}'."
+        if not Preference.valid(preference):
+            options = " or ".join(f"{item!r}" for item in Preference.values())
+            emsg = f"Expected a preference of {options}, got '{preference}'."
             raise ValueError(emsg)
+
+        preference = Preference(preference)
 
         self._generate_bbox_mesh(surface=surface)
 
-        preference = preference.lower()
         perform_cell = False
 
-        if preference == PREFERENCE_CELL:
-            # the cell preference is a subset of point, but more expensive to compute
+        if preference == Preference("cell"):
+            # the cell preference is a superset of point and more expensive to compute.
             # therefore, perform point preference first, then cell afterwards
-            preference = PREFERENCE_POINT
+            preference = Preference("point")
             perform_cell = True
 
-        if preference == PREFERENCE_CENTER:
+        if preference == Preference("center"):
             original = surface
             surface = surface.cell_centers()
 
@@ -560,7 +559,7 @@ class BBox:
         )
 
         # sample the surface with the enclosed cells to extract the bbox region
-        if preference == PREFERENCE_CENTER:
+        if preference == Preference("center"):
             region = original.extract_cells(selected["SelectedPoints"].view(bool))
         else:
             region = selected.threshold(
