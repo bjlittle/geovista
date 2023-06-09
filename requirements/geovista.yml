@@ -16,6 +16,7 @@ dependencies:
   - numpy >=1.21
   - platformdirs
   - pooch
+  - pykdtree
   - pyproj >=3.3
   - pyvista >=0.38
   - vtk >=9.2.6
