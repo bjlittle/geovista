@@ -8,7 +8,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum, auto
+from enum import Enum
 import sys
 from typing import Any
 
@@ -147,8 +147,13 @@ class _MixinEnum:
         """List enumeration member values."""
         return tuple([member.value for member in cls])
 
+    def __str__(self):
+        # TODO: remove when minimum supported python version is 3.11
+        return f"{self.name.lower()}"
 
-class Preference(_MixinEnum, StrEnum):
+
+# TODO: use StrEnum and auto when minimum supported python version is 3.11
+class Preference(_MixinEnum, Enum):
     """Enumeration of mesh geometry element preference.
 
     Notes
@@ -157,8 +162,8 @@ class Preference(_MixinEnum, StrEnum):
 
     """
 
-    CELL = auto()
-    POINT = auto()
+    CELL = "cell"
+    POINT = "point"
 
 
 def active_kernel() -> bool:

@@ -8,7 +8,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum, auto
+from enum import Enum
 import warnings
 
 import numpy as np
@@ -88,7 +88,8 @@ N_PANELS: int = len(PANEL_IDX_BY_NAME)
 PREFERENCE: str = "point"
 
 
-class Preference(_MixinEnum, StrEnum):
+# TODO: use StrEnum and auto when minimum supported python version is 3.11
+class Preference(_MixinEnum, Enum):
     """Enumeration of mesh geometry element preference.
 
     Notes
@@ -97,9 +98,9 @@ class Preference(_MixinEnum, StrEnum):
 
     """
 
-    CELL = auto()
-    CENTER = auto()
-    POINT = auto()
+    CELL = "cell"
+    CENTER = "center"
+    POINT = "point"
 
 
 class BBox:
