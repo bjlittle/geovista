@@ -16,7 +16,7 @@ import numpy.typing as npt
 import pyproj
 import pyvista as pv
 
-from .common import RADIUS, ZLEVEL_SCALE, _MixinEnum, distance, to_cartesian, wrap
+from .common import RADIUS, ZLEVEL_SCALE, _MixinStrEnum, distance, to_cartesian, wrap
 from .filters import cast_UnstructuredGrid_to_PolyData
 
 __all__ = [
@@ -89,7 +89,7 @@ PREFERENCE: str = "point"
 
 
 # TODO: use StrEnum and auto when minimum supported python version is 3.11
-class Preference(_MixinEnum, Enum):
+class Preference(_MixinStrEnum, Enum):
     """Enumeration of mesh geometry element preference.
 
     Notes

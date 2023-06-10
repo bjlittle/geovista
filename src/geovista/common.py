@@ -119,7 +119,7 @@ WRAP_RTOL: float = 1e-5
 ZLEVEL_SCALE: float = 1e-4
 
 
-class _MixinEnum:
+class _MixinStrEnum:
     """Convenience behaviour mixin for a string enumeration.
 
     Notes
@@ -153,7 +153,7 @@ class _MixinEnum:
 
 
 # TODO: use StrEnum and auto when minimum supported python version is 3.11
-class Preference(_MixinEnum, Enum):
+class Preference(_MixinStrEnum, Enum):
     """Enumeration of mesh geometry element preference.
 
     Notes
