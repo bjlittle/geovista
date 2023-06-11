@@ -99,7 +99,7 @@ PREFERENCES: tuple[str, str, str] = (
 )
 
 #: The default bounding-box preference.
-BBOX_PREFERENCE: str = PREFERENCE_POINT
+BBOX_PREFERENCE: str = PREFERENCE_CELL
 
 
 class BBox:
