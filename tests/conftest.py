@@ -48,6 +48,10 @@ def lfric(request):
 def lfric_sst():
     """Fixture to provide a cube-sphere mesh with SST face data."""
     mesh = sample_lfric_sst()
+    name = mesh.active_scalars_name
+    mesh["cids"] = np.arange(mesh.n_cells)
+    mesh["pids"] = np.arange(mesh.n_points)
+    mesh.set_active_scalars(name)
     return mesh
 
 

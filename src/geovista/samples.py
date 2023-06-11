@@ -14,6 +14,7 @@ from geovista import pantry
 
 from .bridge import Transform
 from .cache import CACHE
+from .common import Preference
 
 __all__ = [
     "fesom",
@@ -43,17 +44,8 @@ LFRIC_RESOLUTION: str = "c96"
 #: The default warp factor for mesh points.
 WARP_FACTOR: float = 2e-5
 
-#: Preference to activate data on the mesh faces.
-PREFERENCE_CELL: str = "cell"
-
 #: The default mesh preference.
-PREFERENCE_DEFAULT: str = PREFERENCE_CELL
-
-#: Preference to activate data on the mesh vertices.
-PREFERENCE_POINT: str = "point"
-
-# enumeration of valid preferences
-PREFERENCES: list[str] = [PREFERENCE_CELL, PREFERENCE_POINT]
+PREFERENCE: Preference = Preference("cell")
 
 #: Proportional multiplier for point-cloud levels/offsets.
 ZLEVEL_SCALE_CLOUD: float = 1e-5
@@ -116,7 +108,7 @@ def fesom() -> pv.PolyData:
 
 
 def fvcom_tamar(
-    preference: str | None = None,
+    preference: str | Preference | None = None,
     warp: bool | None = False,
     factor: float | None = None,
 ) -> pv.PolyData:
@@ -127,8 +119,9 @@ def fvcom_tamar(
 
     Parameters
     ----------
-    preference : str, default="cell"
-        Render the mesh using ``cell`` or ``point`` data.
+    preference : str or Preference, optional
+        Render the mesh using ``cell`` or ``point`` data. Defaults to
+        :data:`PREFERENCE`.
     warp : boolean, default=False
         Warp the mesh nodes by the ``point`` data.
     factor : float, optional
@@ -146,17 +139,20 @@ def fvcom_tamar(
 
     """
     if preference is None:
-        preference = PREFERENCE_DEFAULT
+        preference = PREFERENCE
 
-    if preference not in PREFERENCES:
-        emsg = f"Expected a 'preference' of 'cell' or 'point', got '{preference}'."
+    if not Preference.valid(preference):
+        options = " or ".join(f"{item!r}" for item in Preference.values())
+        emsg = f"Expected a preference of {options}, got '{preference}'."
         raise ValueError(emsg)
+
+    preference = Preference(preference)
 
     if factor is None:
         factor = WARP_FACTOR
 
     sample = pantry.fvcom_tamar()
-    data = sample.face if preference == PREFERENCE_CELL else sample.node
+    data = sample.face if preference == Preference("cell") else sample.node
     name = sample.name
 
     mesh = Transform.from_unstructured(
@@ -168,13 +164,13 @@ def fvcom_tamar(
     )
 
     if warp:
-        if preference == PREFERENCE_CELL:
+        if preference == Preference("cell"):
             mesh.point_data[name] = sample.node
 
         mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
         mesh.warp_by_scalar(scalars=name, inplace=True, factor=factor)
 
-    mesh.set_active_scalars(name, preference)
+    mesh.set_active_scalars(name, preference.value)
 
     return mesh
 

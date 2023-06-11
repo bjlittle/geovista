@@ -8,6 +8,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
+from enum import Enum
 import sys
 from typing import Any
 
@@ -28,6 +29,7 @@ __all__ = [
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
     "LRU_CACHE_SIZE",
+    "Preference",
     "RADIUS",
     "REMESH_JOIN",
     "REMESH_SEAM",
@@ -115,6 +117,104 @@ WRAP_RTOL: float = 1e-5
 
 #: Proportional multiplier for z-axis levels/offsets.
 ZLEVEL_SCALE: float = 1e-4
+
+
+class _MixinStrEnum:
+    """Convenience behaviour mixin for a string enumeration.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+
+    @classmethod
+    def _missing_(cls, item: str | Preference) -> Preference | None:
+        """Handle missing enumeration members.
+
+        Parameters
+        ----------
+        item : str or Preference
+            The candidate preference enumeration member.
+
+        Returns
+        -------
+        Preference
+            The preference member or None if the member is not a valid
+            enumeration member.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        item = str(item).lower()
+        for member in cls:
+            if member.value == item:
+                return member
+        return None
+
+    @classmethod
+    def valid(cls, item: str | Preference) -> bool:
+        """Determine whether the provided item is a valid enumeration member.
+
+        Parameters
+        ----------
+        item : str or Preference
+            The candidate preference enumeration member.
+
+        Returns
+        -------
+        bool
+            Whether the preference enumeration member is valid.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        return str(item).lower() in cls.values()
+
+    @classmethod
+    def values(cls) -> tuple[str, ...]:
+        """List enumeration member values.
+
+        Returns
+        -------
+        tuple of str
+            Tuple of all the valid preference enumeration member values.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        return tuple([member.value for member in cls])
+
+    def __str__(self) -> str:
+        """Serialize enumeration name.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        # TODO: remove when minimum supported python version is 3.11
+        return f"{self.name.lower()}"
+
+
+# TODO: use StrEnum and auto when minimum supported python version is 3.11
+class Preference(_MixinStrEnum, Enum):
+    """Enumeration of mesh geometry element preference.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+
+    CELL = "cell"
+    POINT = "point"
 
 
 def active_kernel() -> bool:
