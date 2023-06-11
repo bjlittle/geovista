@@ -85,7 +85,7 @@ PANEL_BBOX_BY_IDX: dict[int, tuple[Corners, Corners]] = {
 N_PANELS: int = len(PANEL_IDX_BY_NAME)
 
 #: The default bounding-box preference.
-PREFERENCE: str = "point"
+PREFERENCE: str = "center"
 
 
 # TODO: use StrEnum and auto when minimum supported python version is 3.11
