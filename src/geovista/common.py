@@ -129,8 +129,25 @@ class _MixinStrEnum:
     """
 
     @classmethod
-    def _missing_(cls, item):
-        """Handle missing enumeration members."""
+    def _missing_(cls, item: str | Preference) -> Preference | None:
+        """Handle missing enumeration members.
+
+        Parameters
+        ----------
+        item : str or Preference
+            The candidate preference enumeration member.
+
+        Returns
+        -------
+        Preference
+            The preference member or None if the member is not a valid
+            enumeration member.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
         item = str(item).lower()
         for member in cls:
             if member.value == item:
@@ -139,15 +156,49 @@ class _MixinStrEnum:
 
     @classmethod
     def valid(cls, item: str | Preference) -> bool:
-        """Determine whether the provided item is a valid enumeration member."""
+        """Determine whether the provided item is a valid enumeration member.
+
+        Parameters
+        ----------
+        item : str or Preference
+            The candidate preference enumeration member.
+
+        Returns
+        -------
+        bool
+            Whether the preference enumeration member is valid.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
         return str(item).lower() in cls.values()
 
     @classmethod
     def values(cls) -> tuple[str, ...]:
-        """List enumeration member values."""
+        """List enumeration member values.
+
+        Returns
+        -------
+        tuple of str
+            Tuple of all the valid preference enumeration member values.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
         return tuple([member.value for member in cls])
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Serialize enumeration name.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
         # TODO: remove when minimum supported python version is 3.11
         return f"{self.name.lower()}"
 
