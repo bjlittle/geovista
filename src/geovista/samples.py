@@ -45,7 +45,7 @@ LFRIC_RESOLUTION: str = "c96"
 WARP_FACTOR: float = 2e-5
 
 #: The default mesh preference.
-PREFERENCE: Preference = Preference("cell")
+PREFERENCE: Preference = Preference.CELL
 
 #: Proportional multiplier for point-cloud levels/offsets.
 ZLEVEL_SCALE_CLOUD: float = 1e-5
@@ -152,7 +152,7 @@ def fvcom_tamar(
         factor = WARP_FACTOR
 
     sample = pantry.fvcom_tamar()
-    data = sample.face if preference == Preference("cell") else sample.node
+    data = sample.face if preference == Preference.CELL else sample.node
     name = sample.name
 
     mesh = Transform.from_unstructured(
@@ -164,7 +164,7 @@ def fvcom_tamar(
     )
 
     if warp:
-        if preference == Preference("cell"):
+        if preference == Preference.CELL:
             mesh.point_data[name] = sample.node
 
         mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
