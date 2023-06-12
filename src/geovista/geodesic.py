@@ -494,9 +494,9 @@ class BBox:
     ) -> pv.PolyData:
         """Extract region of the `surface` contained within the bounding-box.
 
-        Note that, any `surface` points that are on the edge of the
-        bounding-box will be deemed to be inside, and so will the cells
-        associated with those `surface` points. See `preference`.
+        Note that, points that are on the surface of the bounding-box manifold are not
+        considered within the bounding-box. See the `preference` and `tolerance`
+        options.
 
         Parameters
         ----------
@@ -512,11 +512,11 @@ class BBox:
         preference : str or Preference, optional
             Criteria for defining whether a face of a `surface` mesh is
             deemed to be enclosed by the bounding-box. A `preference` of
-            ``cell`` requires all points defining the face to be in or on the
+            ``cell`` requires all points defining the face to be within the
             bounding-box. A `preference` of ``center`` requires that only the
-            face cell center is in or on the bounding-box. A `preference` of
+            face cell center is within the bounding-box. A `preference` of
             ``point`` requires at least one point that defines the face to be
-            in or on the bounding-box. Defaults to :data:`PREFERENCE`.
+            within the bounding-box. Defaults to :data:`PREFERENCE`.
 
         Returns
         -------
