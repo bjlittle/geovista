@@ -48,7 +48,7 @@ def test_enclosed_cell(antarctic_corners, lfric_sst, outside, preference):
 
 @pytest.mark.parametrize("outside", [False, True])
 @pytest.mark.parametrize(
-    "preference", ["center", Preference.CENTER, Preference("center")]
+    "preference", [None, "center", Preference.CENTER, Preference("center")]
 )
 def test_enclosed_center(lfric_sst, outside, preference):
     """Test enclosed centers of antarctic cubed-sphere panel."""
@@ -60,3 +60,11 @@ def test_enclosed_center(lfric_sst, outside, preference):
     else:
         expected = ANTARCTIC_CIDS
     np.testing.assert_array_equal(region.cell_data["cids"], expected)
+
+
+def test_preference_invalid_fail(lfric_sst):
+    """Test trap of invalid preference."""
+    bbox = panel("africa")
+    emsg = "Expected a preference of 'cell' or 'center' or 'point'"
+    with pytest.raises(ValueError, match=emsg):
+        _ = bbox.enclosed(lfric_sst, preference="invalid")
