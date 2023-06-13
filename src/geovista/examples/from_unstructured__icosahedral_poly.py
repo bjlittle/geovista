@@ -8,7 +8,7 @@ Notes
 """
 
 import geovista as gv
-from geovista.pantry import hexahedron
+from geovista.pantry import icosahedral
 import geovista.theme  # noqa: F401
 
 
@@ -17,13 +17,16 @@ def main() -> None:
 
     The resulting mesh contains 6-sided (hexagonal) cells.
 
-    The data is synthetically generated and targets the mesh faces/cells.
+    It uses surface air pressure data from the DYNAMICO project, a new dynamical core
+    for the Laboratoire de Météorologie Dynamique (LMD-Z), the atmospheric General
+    Circulation Model (GCM) part of Institut Pierre-Simon Laplace (IPSL-CM) Earth
+    System Model. The data targets the mesh faces/cells.
 
-    Note that, Natural Earth coastlines are also rendered.
+    Note that, the mesh is transformed to the Polyconic pseudo-conical projection.
 
     """
     # load the sample data
-    sample = hexahedron()
+    sample = icosahedral()
 
     # create the mesh from the sample data
     mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
@@ -32,17 +35,18 @@ def main() -> None:
     gv.logger.info("%s", mesh)
 
     # plot the mesh
-    plotter = gv.GeoPlotter()
+    plotter = gv.GeoPlotter(crs=(projection := "+proj=poly"))
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
-    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "DYNAMICO Hexahedron (10m Coastlines)",
+        f"DYNAMICO Icosahedral ({projection})",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
+    plotter.view_xy()
+    plotter.camera.zoom(1.5)
     plotter.show()
 
 

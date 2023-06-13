@@ -19,8 +19,8 @@ from .common import Preference
 __all__ = [
     "fesom",
     "fvcom_tamar",
-    "hexahedron",
     "icon_soil",
+    "icosahedral",
     "lam_equator",
     "lam_falklands",
     "lam_london",
@@ -175,34 +175,6 @@ def fvcom_tamar(
     return mesh
 
 
-def hexahedron() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
-
-    Generate a DYNAMICO hexahedron mesh.
-
-    Returns
-    -------
-    PolyData
-        The DYNAMICO mesh.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    sample = pantry.hexahedron()
-
-    mesh = Transform.from_unstructured(
-        sample.lons,
-        sample.lats,
-        connectivity=sample.connectivity,
-        data=sample.data,
-        name=sample.name,
-    )
-
-    return mesh
-
-
 def icon_soil() -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry` sample data.
 
@@ -220,6 +192,33 @@ def icon_soil() -> pv.PolyData:
 
     """
     sample = pantry.icon_soil()
+
+    mesh = Transform.from_unstructured(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=sample.name,
+    )
+
+    return mesh
+
+
+def icosahedral() -> pv.PolyData:
+    """Create a mesh from :mod:`geovista.pantry` sample data.
+
+    Generate a DYNAMICO icosahedral mesh.
+
+    Returns
+    -------
+    PolyData
+        The DYNAMICO mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    sample = pantry.icosahedral()
 
     mesh = Transform.from_unstructured(
         sample.lons,
