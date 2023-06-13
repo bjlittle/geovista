@@ -24,8 +24,8 @@ from .common import LRU_CACHE_SIZE
 __all__ = [
     "fesom",
     "fvcom_tamar",
-    "hexahedron",
     "icon_soil",
+    "icosahedral",
     "lam_equator",
     "lam_falklands",
     "lam_london",
@@ -228,43 +228,6 @@ def fvcom_tamar() -> SampleUnstructuredXY:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def hexahedron() -> SampleUnstructuredXY:
-    """Download and cache unstructured surface sample data.
-
-    Load DYNAMICO hexahedron unstructured mesh.
-
-    Returns
-    -------
-    SampleUnstructuredXY
-        The hexagonal unstructured spatial coordinates and data payload.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    fname = "hexahedron.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
-    dataset = nc.Dataset(resource)
-
-    # load the lon/lat hex cell grid
-    lons = dataset.variables["bounds_lon_i"][:]
-    lats = dataset.variables["bounds_lat_i"][:]
-
-    # load the mesh payload
-    data = dataset.variables["phis"][:]
-    name = capitalise("synthetic")
-    units = "1"
-
-    sample = SampleUnstructuredXY(
-        lons, lats, lons.shape, data=data, name=name, units=units
-    )
-
-    return sample
-
-
-@lru_cache(maxsize=LRU_CACHE_SIZE)
 def icon_soil() -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
@@ -300,6 +263,43 @@ def icon_soil() -> SampleUnstructuredXY:
     data = dataset.variables["SOILTYP"][:]
     name = capitalise("soil type")
     units = "1"
+
+    sample = SampleUnstructuredXY(
+        lons, lats, lons.shape, data=data, name=name, units=units
+    )
+
+    return sample
+
+
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def icosahedral() -> SampleUnstructuredXY:
+    """Download and cache unstructured surface sample data.
+
+    Load DYNAMICO icosahedral unstructured mesh.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The hexagonal unstructured spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    fname = "dynamico_icosahedral.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    dataset = nc.Dataset(resource)
+
+    # load the lon/lat hex cell grid
+    lons = dataset.variables["lon_bnds"][:]
+    lats = dataset.variables["lat_bnds"][:]
+
+    # load the mesh payload
+    data = dataset.variables["ps"]
+    name = capitalise(data.long_name)
+    units = data.units
 
     sample = SampleUnstructuredXY(
         lons, lats, lons.shape, data=data, name=name, units=units
