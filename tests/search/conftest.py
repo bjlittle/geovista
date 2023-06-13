@@ -3,9 +3,35 @@ from collections import namedtuple
 
 import pytest
 
+Center = namedtuple("Center", ["cid", "pids"])
 Neighbour = namedtuple("Neighbour", ["cid", "expected"])
 POI = namedtuple("POI", ["name", "lon", "lat", "cid"])
 Vertex = namedtuple("Vertex", ["pid", "cids"])
+
+
+@pytest.fixture(
+    params=[
+        Center(cid=0, pids=[0, 1, 2, 3]),
+        Center(cid=1, pids=[1, 2, 4, 5]),
+        Center(cid=2, pids=[4, 5, 6, 7]),
+        Center(cid=3, pids=[6, 7, 8, 9]),
+        Center(cid=4, pids=[0, 1, 10, 11]),
+        Center(cid=5, pids=[1, 4, 11, 12]),
+        Center(cid=6, pids=[4, 6, 12, 13]),
+        Center(cid=7, pids=[6, 8, 13, 14]),
+        Center(cid=8, pids=[10, 11, 15, 16]),
+        Center(cid=9, pids=[11, 12, 16, 17]),
+        Center(cid=10, pids=[12, 13, 17, 18]),
+        Center(cid=11, pids=[13, 14, 18, 19]),
+        Center(cid=12, pids=[15, 16, 20, 21]),
+        Center(cid=13, pids=[16, 17, 21, 22]),
+        Center(cid=14, pids=[17, 18, 22, 23]),
+        Center(cid=15, pids=[18, 19, 23, 24]),
+    ]
+)
+def center(request):
+    """Fixutre enumerates the lam_uk point-IDs associated with the cell-ID."""
+    return request.param
 
 
 @pytest.fixture(
