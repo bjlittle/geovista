@@ -255,7 +255,8 @@ class KDTree:
         Returns
         -------
         NearestNeighbours
-            ...
+            The Euclidean distance and index of the k nearest neighbours for each
+            query point-of-interest.
 
         Notes
         -----
