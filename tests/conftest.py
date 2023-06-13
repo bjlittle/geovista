@@ -10,7 +10,7 @@ from geovista.samples import lfric as sample_lfric
 from geovista.samples import lfric_sst as sample_lfric_sst
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def lam_uk():
     """Fixture generates a Local Area Model mesh with indexed faces and points."""
     mesh = sample_lam_uk()

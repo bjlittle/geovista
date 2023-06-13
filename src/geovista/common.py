@@ -205,7 +205,7 @@ class _MixinStrEnum:
 
 # TODO: use StrEnum and auto when minimum supported python version is 3.11
 class Preference(_MixinStrEnum, Enum):
-    """Enumeration of mesh geometry element preference.
+    """Enumeration of common mesh geometry preferences.
 
     Notes
     -----
@@ -530,20 +530,20 @@ def set_jupyter_backend(backend: str | None = None) -> bool:
 
 
 def to_cartesian(
-    longitudes: npt.ArrayLike,
-    latitudes: npt.ArrayLike,
+    lons: npt.ArrayLike,
+    lats: npt.ArrayLike,
     radius: float | None = None,
     zlevel: float | npt.ArrayLike | None = None,
     zscale: float | None = None,
     stacked: bool | None = True,
 ) -> np.ndarray:
-    """Convert geographic `longitudes` and `latitudes` to cartesian ``xyz`` points.
+    """Convert geographic longitudes and latitudes to cartesian ``xyz`` points.
 
     Parameters
     ----------
-    longitudes : ArrayLike
+    lons : ArrayLike
         The longitude values (degrees) to be converted.
-    latitudes : ArrayLike
+    lats : ArrayLike
         The latitude values (degrees) to be converted.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`RADIUS`.
@@ -551,7 +551,7 @@ def to_cartesian(
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
         If `zlevel` is not a scalar, then its shape must match or broadcast
-        with the shape of `longitude` and `latitude`.
+        with the shape of `lons` and `lats`.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`ZLEVEL_SCALE`.
@@ -569,17 +569,17 @@ def to_cartesian(
     .. versionadded:: 0.1.0
 
     """
-    longitudes = np.asanyarray(longitudes)
-    latitudes = np.asanyarray(latitudes)
+    lons = np.asanyarray(lons)
+    lats = np.asanyarray(lats)
 
-    if (shape := longitudes.shape) != latitudes.shape:
+    if (shape := lons.shape) != lats.shape:
         emsg = (
             f"Require longitudes and latitudes with same shape, got {shape} and "
-            f"{latitudes.shape} respectively."
+            f"{lats.shape} respectively."
         )
         raise ValueError(emsg)
 
-    if (ndim := longitudes.ndim) > 3:
+    if (ndim := lons.ndim) > 3:
         emsg = f"Require at most 3-D longitudes and latitudes, got {ndim}-D instead."
         raise ValueError(emsg)
 
@@ -600,8 +600,8 @@ def to_cartesian(
 
     radius += radius * zlevel * zscale
 
-    x_rad = np.radians(longitudes)
-    y_rad = np.radians(90.0 - latitudes)
+    x_rad = np.radians(lons)
+    y_rad = np.radians(90.0 - lats)
     x = np.ravel(radius * np.sin(y_rad) * np.cos(x_rad))
     y = np.ravel(radius * np.sin(y_rad) * np.sin(x_rad))
     z = np.ravel(radius * np.cos(y_rad))
@@ -797,18 +797,18 @@ def vtk_warnings_on() -> None:
 
 
 def wrap(
-    longitudes: npt.ArrayLike,
+    lons: npt.ArrayLike,
     base: float | None = BASE,
     period: float | None = PERIOD,
     rtol: float | None = None,
     atol: float | None = None,
     dtype: np.dtype | None = None,
 ) -> np.ndarray:
-    """Transform `longitudes` to be in the half-open interval [base, base + period).
+    """Transform longitudes to be in the half-open interval [base, base + period).
 
     Parameters
     ----------
-    longitudes : ArrayLike
+    lons : ArrayLike
         One or more longitude values to be wrapped.
     base : float, default=-180.0
         The start limit of the half-open interval.
@@ -834,8 +834,8 @@ def wrap(
     .. versionadded:: 0.1.0
 
     """
-    if not isinstance(longitudes, Iterable):
-        longitudes = [longitudes]
+    if not isinstance(lons, Iterable):
+        lons = [lons]
 
     if rtol is None:
         rtol = WRAP_RTOL
@@ -846,8 +846,8 @@ def wrap(
     if dtype is None:
         dtype = np.float64
 
-    longitudes = np.asanyarray(longitudes, dtype=dtype)
-    result = ((longitudes - base + period * 2) % period) + base
+    lons = np.asanyarray(lons, dtype=dtype)
+    result = ((lons - base + period * 2) % period) + base
 
     mask = np.isclose(result, base + period, rtol=rtol, atol=atol)
     if np.any(mask):
