@@ -46,7 +46,7 @@ def main() -> None:
     plotter.add_mesh(
         cloud,
         cmap="deep",
-        point_size=10,
+        point_size=5,
         scalar_bar_args=sargs,
         render_points_as_spheres=True,
     )
