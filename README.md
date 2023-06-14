@@ -422,7 +422,7 @@ plotter.show()
 
 #### DYNAMICO Icosahedral
 
-Finally, to demonstrate support for non-traditional cell geometries i.e., triangles and quadrilaterals, we plot
+Finally, to demonstrate support for non-traditional cell geometries i.e., not triangles or quadrilaterals, we plot
 the **unstructured** icosahedral mesh from the [DYNAMICO](https://gitlab.in2p3.fr/ipsl/projets/dynamico/dynamico)
 project. This model uses hexagonal cells and is a new dynamical core for
 [LMD-Z](https://www.lmd.ipsl.fr/en/modelisations/lmdz-en/), the atmospheric general circulation model (GCM) part of the
