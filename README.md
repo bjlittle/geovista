@@ -28,13 +28,20 @@ fix docs pythreejs/panel
 
 ## Motivation
 
-The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with a convenient cartographic capability.
+The goal of GeoVista is simple; to complement [PyVista](https://docs.pyvista.org/index.html) with a convenient
+cartographic capability.
 
-In this regard, from a design perspective we aim to keep GeoVista as **pure** to PyVista as possible i.e., **minimise specialisation** as far as practically possible in order to **maximise native compatibility** within the PyVista and [VTK](https://vtk.org/) ecosystems.
+In this regard, from a design perspective we aim to keep GeoVista as **pure** to PyVista as possible i.e.,
+**minimise specialisation** as far as practically possible in order to **maximise native compatibility** within the
+PyVista and [VTK](https://vtk.org/) ecosystems.
 
 We intend GeoVista to be a cartographic gateway into the powerful world of PyVista, and all that it offers.
 
-GeoVista is intentionally agnostic to packages such as [geopandas](https://geopandas.org/en/stable/), [iris](https://scitools-iris.readthedocs.io/en/latest/?badge=latest), [xarray](https://docs.xarray.dev/en/stable/) et al, which specialise in preparing your spatial data for visualisation. Rather, we delegate that responsibility and choice of tool to you the user, as we want GeoVista to remain as flexible and open-ended as possible to the entire Scientific Python community.
+GeoVista is intentionally agnostic to packages such as [geopandas](https://geopandas.org/en/stable/),
+[iris](https://scitools-iris.readthedocs.io/en/latest/?badge=latest), [xarray](https://docs.xarray.dev/en/stable/)
+et al, which specialise in preparing your spatial data for visualisation. Rather, we delegate that responsibility and
+choice of tool to you the user, as we want GeoVista to remain as flexible and open-ended as possible to the entire
+Scientific Python community.
 
 Simply put, "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*". Well, that's the aspiration.
 
@@ -46,7 +53,8 @@ We recommend using [mamba](https://github.com/mamba-org/mamba) to install GeoVis
 
 ### Mamba
 
-GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with [mamba](https://github.com/mamba-org/mamba):
+GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with
+[mamba](https://github.com/mamba-org/mamba):
 ```shell
 mamba install -c conda-forge geovista
 ```
@@ -105,7 +113,8 @@ GeoVista comes with various pre-canned resources to help get you started on your
 
 ### Resources
 
-GeoVista makes use of various resources, such as rasters, VTK meshes, [Natural Earth](https://www.naturalearthdata.com/features/) features, and sample model data.
+GeoVista makes use of various resources, such as rasters, VTK meshes,
+[Natural Earth](https://www.naturalearthdata.com/features/) features, and sample model data.
 
 If you want to download and cache all registered GeoVista resources to make them available offline, simply:
 ```shell
@@ -129,7 +138,11 @@ Let's explore a sample of various oceanographic and atmospheric model data using
 
 #### WAVEWATCH III
 
-First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) **unstructured** triangular mesh, with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
+First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) **unstructured** triangular mesh, with
+[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
+[1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
+base layer.
+
 <details>
 <summary>🗒 </summary>
 
@@ -160,11 +173,12 @@ plotter.show()
 ```
 </details>
 
-![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/ww3-tri.png)
+![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.1/media/readme/ww3-tri.png)
 
 #### Finite Volume Community Ocean Model
 
-Now, let's visualise the bathymetry of the [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365)
+Now, let's visualise the bathymetry of the
+[Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365)
 from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) **unstructured** mesh, as kindly provided by the
 [Plymouth Marine Laboratory](https://pml.ac.uk/) using the lush [cmocean deep](https://matplotlib.org/cmocean/#deep) colormap.
 
@@ -202,15 +216,21 @@ plotter.show()
 ```
 </details>
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/tamar.png)
+![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.1/media/readme/tamar.png)
 
 #### CF UGRID
 
 ##### Local Area Model
 
-Initial projection support is available within GeoVista for **Cylindrical** and **Pseudo-Cylindrical** projections. As GeoVista matures and stabilises, we'll aim to complement this capability with other classes of projections, such as **Azimuthal** and **Conic**.
+Initial projection support is available within GeoVista for **Cylindrical** and **Pseudo-Cylindrical** projections. As
+GeoVista matures and stabilises, we'll aim to complement this capability with other classes of projections, such as
+**Azimuthal** and **Conic**.
 
-In the meantime, let's showcase our basic projection support with some high-resolution **unstructured** Local Area Model (LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html) using a [PROJ](https://proj.org/index.html) string, with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
+In the meantime, let's showcase our basic projection support with some high-resolution **unstructured** Local Area Model
+(LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html) using a
+[PROJ](https://proj.org/index.html) string, with a
+[1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
+base layer.
 
 <details>
 <summary>🗒 </summary>
@@ -242,9 +262,14 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/lam-moll.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.1/media/readme/lam-moll.png)
 
-Using the same **unstructured** LAM data, reproject to [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree), also with a [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/) base layer.
+Using the same **unstructured** LAM data, reproject to
+[Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a
+[Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree),
+also with a
+[1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
+base layer.
 
 <details>
 <summary>🗒 </summary>
@@ -278,11 +303,13 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/lam-pc.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.1/media/readme/lam-pc.png)
 
 #### LFRic Cube-Sphere
 
-Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/modelling-systems/lfric) C48 cube-sphere **unstructured** mesh of Sea Surface Temperature data on a [Robinson](https://proj.org/operations/projections/robin.html) projection using an ESRI SRID.
+Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/modelling-systems/lfric) C48 cube-sphere
+**unstructured** mesh of Sea Surface Temperature data on a
+[Robinson](https://proj.org/operations/projections/robin.html) projection using an ESRI SRID.
 
 <details>
 <summary>🗒 </summary>
@@ -313,11 +340,14 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/lfric-robin.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.1/media/readme/lfric-robin.png)
 
 #### UM ORCA2
 
-So far we've demonstrated GeoVista's ability to cope with **unstructured** data. Now let's plot a **curvilinear** mesh using Met Office Unified Model (UM) ORCA2 Sea Water Potential Temperature data, with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
+So far we've demonstrated GeoVista's ability to cope with **unstructured** data. Now let's plot a **curvilinear** mesh
+using Met Office Unified Model (UM) ORCA2 Sea Water Potential Temperature data, with
+[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
+[1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
 
 <details>
 <summary>🗒 </summary>
@@ -350,11 +380,14 @@ plotter.show()
 ```
 </details>
 
-![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/um-orca.png)
+![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.1/media/readme/um-orca.png)
 
 #### OISST AVHRR
 
-Finally, let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.gov/products/optimum-interpolation-sst) (OISST) Advanced Very High Resolution Radiometer (AVHRR) **rectilinear** mesh, with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a [NASA Blue Marble](https://visibleearth.nasa.gov/collection/1484/blue-marble) base layer.
+Now let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.gov/products/optimum-interpolation-sst)
+(OISST) Advanced Very High Resolution Radiometer (AVHRR) **rectilinear** mesh, with
+[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
+[NASA Blue Marble](https://visibleearth.nasa.gov/collection/1484/blue-marble) base layer.
 
 <details>
 <summary>🗒 </summary>
@@ -385,7 +418,42 @@ plotter.show()
 ```
 </details>
 
-![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.03.0/media/readme/oisst-avhrr.png)
+![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.1/media/readme/oisst-avhrr.png)
+
+#### DYNAMICO Icosahedral
+
+Finally, to demonstrate support for non-traditional cell geometries i.e., triangles and quadrilaterals, we plot
+the **unstructured** icosahedral mesh from the [DYNAMICO](https://gitlab.in2p3.fr/ipsl/projets/dynamico/dynamico)
+project. This model uses hexagonal cells and is a new dynamical core for
+[LMD-Z](https://www.lmd.ipsl.fr/en/modelisations/lmdz-en/), the atmospheric general circulation model (GCM) part of the
+[IPSL-CM](https://cmc.ipsl.fr/ipsl-climate-models/) Earth System Model. The render also contains
+[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/).
+
+<details>
+<summary>🗒 </summary>
+
+```python
+import geovista as gv
+from geovista.pantry import icosahedral
+import geovista.theme
+
+# Load sample data.
+sample = icosahedral()
+
+# Create the mesh from the sample data.
+mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
+
+# Plot the mesh.
+plotter = gv.GeoPlotter()
+sargs = {"title": f"{sample.name} / {sample.units}"}
+plotter.add_mesh(mesh, scalar_bar_args=sargs)
+plotter.add_coastlines()
+plotter.add_axes()
+plotter.show()
+```
+</details>
+
+![dynamico-icosahedral](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.1/media/readme/dynamico-icosahedral.png)
 
 ## Further Examples
 
