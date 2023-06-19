@@ -455,6 +455,18 @@ plotter.show()
 
 ![dynamico-icosahedral](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.1/media/readme/dynamico-icosahedral.png)
 
+## Unreal Reels
+
+GeoVista is built on the shoulders of giants, namely [PyVista](https://docs.pyvista.org/version/stable/) and
+[VTK](https://vtk.org/documentation/), thus allowing it to leverage the power of the GPU.
+
+As a result, it offers a paradigm shift in rendering performance and interactive user experience, as demonstrated by
+this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
+and **C**urrent **H**indcasting), developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/),
+quasi-unstructured Spherical Multi-Cell (SMC) grid data of Sea Surface Wave Significant Height located on cell faces.
+
+https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e
+
 ## Further Examples
 
 <p align="center">
