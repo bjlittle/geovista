@@ -425,7 +425,7 @@ plotter.show()
 Finally, to demonstrate support for non-traditional cell geometries i.e., not triangles or quadrilaterals, we plot
 the **unstructured** icosahedral mesh from the [DYNAMICO](https://gitlab.in2p3.fr/ipsl/projets/dynamico/dynamico)
 project. This model uses hexagonal cells and is a new dynamical core for
-[LMD-Z](https://www.lmd.ipsl.fr/en/modelisations/lmdz-en/), the atmospheric general circulation model (GCM) part of the
+[LMD-Z](https://www.lmd.ipsl.fr/en/modelisations/lmdz-en/), the atmospheric General Circulation Model (GCM) part of the
 [IPSL-CM](https://cmc.ipsl.fr/ipsl-climate-models/) Earth System Model. The render also contains
 [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/).
 
@@ -465,7 +465,7 @@ this realtime, time-series animation of WAVEWATCH III® third-generation wave mo
 and **C**urrent **H**indcasting), developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/),
 quasi-unstructured Spherical Multi-Cell (SMC) grid data of Sea Surface Wave Significant Height located on cell faces.
 
-[🎥 WWW3 SMC Timeseries](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
+[🎥 WW3 SMC time-series](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
 
 ## Further Examples
 
