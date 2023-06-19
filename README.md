@@ -465,7 +465,7 @@ this realtime, time-series animation of WAVEWATCH III® third-generation wave mo
 and **C**urrent **H**indcasting), developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/),
 quasi-unstructured Spherical Multi-Cell (SMC) grid data of Sea Surface Wave Significant Height located on cell faces.
 
-https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e
+[🎥 WWW3 SMC Timeseries](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
 
 ## Further Examples
 
