@@ -210,7 +210,7 @@ class Transform:
         # sanity check - internally this should always be the case
         assert len(shape) == 2
 
-        npts = np.product(shape)
+        npts = np.prod(shape)
         idxs = np.arange(npts, dtype=np.uint32).reshape(shape)
 
         nodes_c0 = np.ravel(idxs[1:, :-1]).reshape(-1, 1)
@@ -258,7 +258,7 @@ class Transform:
         assert len(shape) == 2
 
         # we know that we can only be dealing with a quad mesh
-        npts = np.product(shape) * 4
+        npts = np.prod(shape) * 4
         connectivity = np.arange(npts, dtype=np.uint32).reshape(-1, 4)
 
         return connectivity
@@ -757,7 +757,7 @@ class Transform:
 
         if isinstance(connectivity, tuple):
             cls._verify_connectivity(connectivity)
-            npts = np.product(connectivity)
+            npts = np.prod(connectivity)
 
             if npts != xs.size:
                 emsg = (
