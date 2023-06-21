@@ -798,8 +798,8 @@ def vtk_warnings_on() -> None:
 
 def wrap(
     lons: npt.ArrayLike,
-    base: float | None = BASE,
-    period: float | None = PERIOD,
+    base: float | None = None,
+    period: float | None = None,
     rtol: float | None = None,
     atol: float | None = None,
     dtype: np.dtype | None = None,
@@ -836,6 +836,12 @@ def wrap(
     """
     if not isinstance(lons, Iterable):
         lons = [lons]
+
+    if base is None:
+        base = BASE
+
+    if period is None:
+        period = PERIOD
 
     if rtol is None:
         rtol = WRAP_RTOL

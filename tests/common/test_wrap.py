@@ -106,3 +106,21 @@ def test_base_period_tolerance(delta, expected):
     result = wrap(180 - delta)
     print(result, np.isclose(result, -180))
     assert np.isclose(result, -180)[0] == expected
+
+
+def test_custom_period():
+    """Test custom interval period."""
+    lons = np.arange(-180, 190, 10)
+    expected = np.concatenate(
+        [np.arange(-180, 0, 10), np.arange(-180, 0, 10), np.array([-180])]
+    )
+    result = wrap(lons, period=180)
+    np.testing.assert_array_equal(result, expected.astype(DTYPE))
+
+
+def test_custom_base():
+    """Test custom interval base."""
+    lons = np.arange(-180, 190, 10)
+    expected = np.concatenate([np.arange(180, 360, 10), np.arange(0, 190, 10)])
+    result = wrap(lons, base=0)
+    np.testing.assert_array_equal(result, expected.astype(DTYPE))
