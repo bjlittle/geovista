@@ -110,13 +110,13 @@ VTK_CELL_IDS: str = "vtkOriginalCellIds"
 VTK_POINT_IDS: str = "vtkOriginalPointIds"
 
 #: Absolute tolerance for values close to longitudinal wrap base + period.
-WRAP_ATOL: float = 1e-8
+WRAP_ATOL: float = 1.0e-8
 
 #: Relative tolerance for values close to longitudinal wrap base + period.
-WRAP_RTOL: float = 1e-5
+WRAP_RTOL: float = 1.0e-5
 
 #: Proportional multiplier for z-axis levels/offsets.
-ZLEVEL_SCALE: float = 1e-4
+ZLEVEL_SCALE: float = 1.0e-4
 
 
 class _MixinStrEnum:
@@ -809,18 +809,18 @@ def wrap(
     Parameters
     ----------
     lons : ArrayLike
-        One or more longitude values to be wrapped.
-    base : float, default=-180.0
-        The start limit of the half-open interval.
-    period : float, default=360.0
+        One or more longitude values to be wrapped in the interval.
+    base : float, optional
+        The start limit of the half-open interval. Defaults to :data:`BASE`.
+    period : float, optional
         The end limit of the half-open interval expressed as a length
-        from the `base`, in the same units.
-    rtol : float, default=1e-5
+        from the `base`, in the same units. Defaults to :data:`PERIOD`.
+    rtol : float, optional
         The relative tolerance for values close to longitudinal wrap
-        base + period.
-    atol : float, default=1e-8
+        base + period. Defaults to :data:`WRAP_RTOL`.
+    atol : float, optional
         The absolute tolerance for values close to longitudinal wrap
-        base + period.
+        base + period. Defaults to :data:`WRAP_ATOL`.
     dtype : data-type, default=float64
         The resultant longitude `dtype`.
 
@@ -851,6 +851,7 @@ def wrap(
 
     mask = np.isclose(result, base + period, rtol=rtol, atol=atol)
     if np.any(mask):
+        # snap to the base for values within tolerances
         result[mask] = base
 
     return result
