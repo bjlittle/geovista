@@ -39,7 +39,7 @@ __all__ = ["GeoPlotter"]
 CRSLike = Union[int, str, dict, CRS]
 
 #: Proportional multiplier for z-axis levels/offsets of base-layer mesh.
-BASE_ZLEVEL_SCALE: int = 1e-3
+BASE_ZLEVEL_SCALE: int = 1.0e-3
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
