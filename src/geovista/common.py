@@ -404,6 +404,7 @@ def from_cartesian(
 
     # XXX: manage pole longitudes. an alternative future scheme could be more
     # generic and inclusive, but this approach tackles the main use case for now
+    # TBD: refactor this into a separate function
     pole_pids = np.where(np.isclose(np.abs(lats), 90))[0]
     if pole_pids.size:
         # enforce a common longitude for pole singularity mesh points
@@ -456,6 +457,26 @@ def from_cartesian(
             seam_lons = lons[seam_ids]
             seam_mask = np.isclose(np.abs(seam_lons), 180)
             lons[seam_ids[seam_mask]] = 180
+        elif mesh.n_lines:
+            # TBD: unify closed interval strategies for lines and cells
+            poi_mask = np.isclose(np.abs(lons), 180)
+
+            if np.any(poi_mask):
+                poi_pids = np.arange(lons.size)[poi_mask]
+                poi_cells = cast_UnstructuredGrid_to_PolyData(
+                    mesh.extract_points(poi_pids)
+                )
+                cell_pids = [
+                    mesh.get_cell(cid).point_ids
+                    for cid in poi_cells["vtkOriginalCellIds"]
+                ]
+                mask_positive = lons[cell_pids] > 0
+                if np.any(mask_positive):
+                    select_mask = np.sum(mask_positive, axis=1).astype(bool)
+                    select_pids = np.asanyarray(cell_pids)[select_mask]
+                    pids = select_pids[~mask_positive[select_mask]]
+
+                    lons[pids] = 180
 
     result = np.vstack(data).T if stacked else np.array(data)
 
