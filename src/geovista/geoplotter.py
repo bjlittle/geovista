@@ -13,21 +13,22 @@ from functools import lru_cache
 from typing import Any, Union
 from warnings import warn
 
-from pyproj import CRS, Transformer
+from pyproj import CRS
 import pyvista as pv
+
+try:
+    from pyvista.plotting.utilities.algorithms import algorithm_to_mesh_handler
+except ImportError:
+    from pyvista.utilities import algorithm_to_mesh_handler
 import vtk
 
+from .algorithms import add_mesh_handler, mesh_alogirthm_handler
 from .common import (
-    GV_FIELD_ZSCALE,
     LRU_CACHE_SIZE,
     RADIUS,
-    ZLEVEL_SCALE,
-    distance,
-    from_cartesian,
-    point_cloud,
 )
-from .core import add_texture_coords, cut_along_meridian, resize
-from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
+from .core import add_texture_coords, resize
+from .crs import WGS84, get_central_meridian
 from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import coastlines
 from .raster import wrap_texture
@@ -275,88 +276,26 @@ class GeoPlotterBase:
         .. versionadded:: 0.1.0
 
         """
+        mesh, algo = algorithm_to_mesh_handler(mesh)
+
         if isinstance(mesh, pv.UnstructuredGrid):
+            if algo is not None:
+                raise TypeError(
+                    "Cannot handle algorithms with `UnstructuredGrid` output."
+                )
             mesh = cast(mesh)
 
-        if isinstance(mesh, pv.PolyData):
-            atol = float(kwargs.pop("atol")) if "atol" in kwargs else None
-            radius = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else None
-            rtol = float(kwargs.pop("rtol")) if "rtol" in kwargs else None
-            zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else 0
-            cloud = point_cloud(mesh)
-
-            if "zscale" in kwargs:
-                zscale = float(kwargs.pop("zscale"))
-            elif cloud and GV_FIELD_ZSCALE in mesh.field_data:
-                zscale = mesh[GV_FIELD_ZSCALE][0]
+        if isinstance(mesh, (pv.PolyData, pv.RectilinearGrid)):
+            if algo is not None:
+                algo = mesh_alogirthm_handler(algo, self.crs, **kwargs)
             else:
-                zscale = ZLEVEL_SCALE
+                mesh = add_mesh_handler(mesh, self.crs, **kwargs)
 
-            src_crs = from_wkt(mesh)
-            tgt_crs = self.crs
-            project = src_crs and src_crs != tgt_crs
-            meridian = get_central_meridian(tgt_crs) or 0
-
-            # TODO: implement projection support for line meshes
-            if project and mesh.n_lines:
-                wmsg = (
-                    "Line projection support not yet available, "
-                    "scheduled for geovista=0.3.0."
-                )
-                warn(wmsg, stacklevel=2)
-                return
-
-            if project and not cloud:
-                if meridian:
-                    mesh.rotate_z(-meridian, inplace=True)
-                    tgt_crs = set_central_meridian(tgt_crs, 0)
-                cut_mesh = cut_along_meridian(
-                    mesh, antimeridian=True, rtol=rtol, atol=atol
-                )
-                if meridian:
-                    # undo rotation
-                    mesh.rotate_z(meridian, inplace=True)
-                mesh = cut_mesh
-
-            if "texture" in kwargs and kwargs["texture"] is not None:
-                mesh = add_texture_coords(mesh, antimeridian=True)
-                texture = wrap_texture(kwargs["texture"], central_meridian=meridian)
-                kwargs["texture"] = texture
-
-            if project:
-                lonlat = from_cartesian(
-                    mesh, closed_interval=True, rtol=rtol, atol=atol
-                )
-                transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
-                xs, ys = transformer.transform(
-                    lonlat[:, 0], lonlat[:, 1], errcheck=True
-                )
-                zs = 0
-
-                if cloud:
-                    mesh = mesh.copy(deep=True)
-
-                mesh.points[:, 0] = xs
-                mesh.points[:, 1] = ys
-
-                if zlevel or cloud:
-                    xmin, xmax, ymin, ymax, _, _ = mesh.bounds
-                    xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
-                    # TODO: make this configurable at the API/module level
-                    delta = min(xdelta, ydelta) // 4
-
-                    if cloud:
-                        zlevel += lonlat[:, 2]
-
-                    zs = zlevel * zscale * delta
-
-                mesh.points[:, 2] = zs
-            else:
-                if zlevel:
-                    if not cloud:
-                        radius = distance(mesh)
-
-                    mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
+        if "texture" in kwargs and kwargs["texture"] is not None:
+            meridian = get_central_meridian(self.crs) or 0
+            mesh = add_texture_coords(mesh, antimeridian=True)
+            texture = wrap_texture(kwargs["texture"], central_meridian=meridian)
+            kwargs["texture"] = texture
 
         return super().add_mesh(mesh, **kwargs)
 
