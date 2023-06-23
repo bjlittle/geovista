@@ -46,7 +46,7 @@ def wrap_texture(
     meridian = wrap(central_meridian)[0]
 
     if not np.isclose(meridian, 0):
-        # get the texture as a pyvista.UniformGrid
+        # get the texture as a pyvista.ImageData
         grid = texture.to_image()
         shape = (grid.dimensions[1], grid.dimensions[0], texture.n_components)
         # convert grid to an rgb image (un-do pyvista.Texture._from_array mangling)

@@ -5,10 +5,15 @@ import pyvista as pv
 from geovista.common import point_cloud
 from geovista.core import cut_along_meridian
 
+try:
+    from pyvista import ImageData
+except ImportError:
+    from pyvista import UniformGrid as ImageData
+
 
 def test_mesh_fail():
     """Test trap of mesh instance type."""
-    ugrid = pv.UniformGrid()
+    ugrid = ImageData()
     emsg = f"Require a {str(pv.PolyData)!r} mesh"
     with pytest.raises(TypeError, match=emsg):
         _ = cut_along_meridian(ugrid)
