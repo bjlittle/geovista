@@ -458,7 +458,7 @@ plotter.show()
 ## Unreal Reels
 
 GeoVista is built on the shoulders of giants, namely [PyVista](https://docs.pyvista.org/version/stable/) and
-[VTK](https://vtk.org/documentation/), thus allowing it to leverage the power of the GPU.
+[VTK](https://vtk.org/documentation/), thus allowing it to easily leverage the power of the GPU.
 
 As a result, it offers a paradigm shift in rendering performance and interactive user experience, as demonstrated by
 this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
