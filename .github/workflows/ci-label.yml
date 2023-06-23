@@ -15,7 +15,7 @@ jobs:
       - uses: actions/labeler@v4
 
       - uses: actions-ecosystem/action-add-labels@v1
-        if: startsWith(github.event.pull_request.head.ref, 'breaking-change')
+        if: startsWith(github.event.pull_request.head.ref, 'breaking-change') || startsWith(github.event.pull_request.head.ref, 'breaking')
         with:
           labels: 'breaking-change'
 
@@ -30,17 +30,17 @@ jobs:
           labels: 'type: documentation'
 
       - uses: actions-ecosystem/action-add-labels@v1
-        if: startsWith(github.event.pull_request.head.ref, 'feat')
+        if: startsWith(github.event.pull_request.head.ref, 'feat') || startsWith(github.event.pull_request.head.ref, 'feature')
         with:
           labels: 'type: enhancement'
 
       - uses: actions-ecosystem/action-add-labels@v1
-        if: startsWith(github.event.pull_request.head.ref, 'ex')
+        if: startsWith(github.event.pull_request.head.ref, 'ex') || startsWith(github.event.pull_request.head.ref, 'example') || startsWith(github.event.pull_request.head.ref, 'examples')
         with:
           labels: 'type: examples'
 
       - uses: actions-ecosystem/action-add-labels@v1
-        if: startsWith(github.event.pull_request.head.ref, 'perf')
+        if: startsWith(github.event.pull_request.head.ref, 'perf') || startsWith(github.event.pull_request.head.ref, 'performance')
         with:
           labels: 'type: performance'
 
