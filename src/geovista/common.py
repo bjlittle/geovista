@@ -16,6 +16,8 @@ import numpy as np
 from numpy import ma
 from numpy.typing import ArrayLike
 import pyvista as pv
+from pyvista import _vtk
+from pyvista.core.filters import _get_output
 from vtk import vtkLogger, vtkObject
 
 __all__ = [
@@ -36,6 +38,7 @@ __all__ = [
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
     "ZLEVEL_SCALE",
+    "cast_UnstructuredGrid_to_PolyData",
     "distance",
     "from_cartesian",
     "nan_mask",
@@ -238,6 +241,47 @@ def active_kernel() -> bool:
         _ = get_ipython().kernel
     except (AttributeError, ModuleNotFoundError):
         result = False
+
+    return result
+
+
+def cast_UnstructuredGrid_to_PolyData(
+    mesh: pv.UnstructuredGrid,
+    clean: bool | None = False,
+) -> pv.PolyData:
+    """Convert an unstructured grid to a :class:`pyvista.PolyData` instance.
+
+    Parameters
+    ----------
+    mesh :  UnstructuredGrid
+        The unstructured grid to be converted.
+    clean : bool, default=False
+        Specify whether to merge duplicate points, remove unused points,
+        and/or remove degenerate cells in the resultant mesh.
+
+    Returns
+    -------
+    PolyData
+        The resultant mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if not isinstance(mesh, pv.UnstructuredGrid):
+        dtype = type(mesh).split(" ")[1][:-1]
+        emsg = f"Expected a 'pyvista.UnstructuredGrid', got {dtype}."
+        raise TypeError(emsg)
+
+    # see https://vtk.org/pipermail/vtkusers/2011-March/066506.html
+    alg = _vtk.vtkGeometryFilter()
+    alg.AddInputData(mesh)
+    alg.Update()
+    result = _get_output(alg)
+
+    if clean:
+        result = result.clean()
 
     return result
 

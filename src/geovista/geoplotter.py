@@ -26,9 +26,9 @@ from .common import (
     from_cartesian,
     point_cloud,
 )
+from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .core import add_texture_coords, cut_along_meridian, resize
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
-from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .geometry import coastlines
 from .raster import wrap_texture
 from .samples import lfric

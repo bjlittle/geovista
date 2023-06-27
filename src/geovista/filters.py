@@ -27,13 +27,13 @@ from .common import (
     triangulated,
     wrap,
 )
+from .common import cast_UnstructuredGrid_to_PolyData as cast
 
 __all__ = [
     "REMESH_SEAM_EAST",
     "VTK_BAD_TRIANGLE_MASK",
     "VTK_BOUNDARY_MASK",
     "VTK_FREE_EDGE_MASK",
-    "cast_UnstructuredGrid_to_PolyData",
     "remesh",
 ]
 
@@ -51,47 +51,6 @@ VTK_FREE_EDGE_MASK: str = "FreeEdge"
 
 # Type aliases.
 Remesh = tuple[pv.PolyData, pv.PolyData, pv.PolyData]
-
-
-def cast_UnstructuredGrid_to_PolyData(
-    mesh: pv.UnstructuredGrid,
-    clean: bool | None = False,
-) -> pv.PolyData:
-    """Convert an unstructured grid to a :class:`pyvista.PolyData` instance.
-
-    Parameters
-    ----------
-    mesh :  UnstructuredGrid
-        The unstructured grid to be converted.
-    clean : bool, default=False
-        Specify whether to merge duplicate points, remove unused points,
-        and/or remove degenerate cells in the resultant mesh.
-
-    Returns
-    -------
-    PolyData
-        The resultant mesh.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    if not isinstance(mesh, pv.UnstructuredGrid):
-        dtype = type(mesh).split(" ")[1][:-1]
-        emsg = f"Expected a 'pyvista.UnstructuredGrid', got {dtype}."
-        raise TypeError(emsg)
-
-    # see https://vtk.org/pipermail/vtkusers/2011-March/066506.html
-    alg = _vtk.vtkGeometryFilter()
-    alg.AddInputData(mesh)
-    alg.Update()
-    result = _get_output(alg)
-
-    if clean:
-        result = result.clean()
-
-    return result
 
 
 def remesh(
@@ -205,14 +164,10 @@ def remesh(
         remeshed.point_data[GV_REMESH_POINT_IDS].fill(REMESH_JOIN)
 
         remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_SEAM
-        remeshed_west = cast_UnstructuredGrid_to_PolyData(
-            remeshed.extract_cells(west_mask)
-        )
+        remeshed_west = cast(remeshed.extract_cells(west_mask))
 
         remeshed[GV_REMESH_POINT_IDS][boundary_mask] = REMESH_SEAM_EAST
-        remeshed_east = cast_UnstructuredGrid_to_PolyData(
-            remeshed.extract_cells(east_mask)
-        )
+        remeshed_east = cast(remeshed.extract_cells(east_mask))
 
         del remeshed.point_data[GV_REMESH_POINT_IDS]
         sanitize_data(remeshed, remeshed_west, remeshed_east)

@@ -31,8 +31,8 @@ from .common import (
     to_cartesian,
     wrap,
 )
+from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import projected
-from .filters import cast_UnstructuredGrid_to_PolyData as cast
 from .filters import remesh
 from .search import find_cell_neighbours
 
