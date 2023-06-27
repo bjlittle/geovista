@@ -12,7 +12,7 @@ from enum import Enum
 import warnings
 
 import numpy as np
-import numpy.typing as npt
+from numpy.typing import ArrayLike
 import pyproj
 import pyvista as pv
 
@@ -108,8 +108,8 @@ class BBox:
 
     def __init__(
         self,
-        lons: npt.ArrayLike,
-        lats: npt.ArrayLike,
+        lons: ArrayLike,
+        lats: ArrayLike,
         ellps: str | None = ELLIPSE,
         c: int | None = BBOX_C,
         triangulate: bool | None = False,
@@ -568,8 +568,8 @@ class BBox:
 
 
 def line(
-    lons: npt.ArrayLike,
-    lats: npt.ArrayLike,
+    lons: ArrayLike,
+    lats: ArrayLike,
     surface: pv.PolyData | None = None,
     radius: float | None = None,
     npts: int | None = None,
@@ -788,8 +788,8 @@ def npoints(
 
 
 def npoints_by_idx(
-    lons: npt.ArrayLike,
-    lats: npt.ArrayLike,
+    lons: ArrayLike,
+    lats: ArrayLike,
     start_idx: int,
     end_idx: int,
     npts: int | None = GEODESIC_NPTS,
