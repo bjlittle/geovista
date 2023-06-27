@@ -17,7 +17,7 @@ import pyproj
 import pyvista as pv
 
 from .common import RADIUS, ZLEVEL_SCALE, _MixinStrEnum, distance, to_cartesian, wrap
-from .filters import cast_UnstructuredGrid_to_PolyData
+from .common import cast_UnstructuredGrid_to_PolyData as cast
 
 __all__ = [
     "BBox",
@@ -562,7 +562,7 @@ class BBox:
                 selected[scalars].view(bool), adjacent_cells=False
             )
 
-        region = cast_UnstructuredGrid_to_PolyData(region)
+        region = cast(region)
 
         return region
 
