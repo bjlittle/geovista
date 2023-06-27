@@ -25,6 +25,11 @@ jobs:
           labels: 'type: bug'
 
       - uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'debt')
+        with:
+          labels: 'type: tech debt'
+
+      - uses: actions-ecosystem/action-add-labels@v1
         if: startsWith(github.event.pull_request.head.ref, 'doc') || startsWith(github.event.pull_request.head.ref, 'docs')
         with:
           labels: 'type: documentation'
@@ -40,11 +45,11 @@ jobs:
           labels: 'type: examples'
 
       - uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'nep') || startsWith(github.event.pull_request.head.ref, 'nep29')
+        with:
+          labels: 'type: nep-29'
+
+      - uses: actions-ecosystem/action-add-labels@v1
         if: startsWith(github.event.pull_request.head.ref, 'perf') || startsWith(github.event.pull_request.head.ref, 'performance')
         with:
           labels: 'type: performance'
-
-      - uses: actions-ecosystem/action-add-labels@v1
-        if: startsWith(github.event.pull_request.head.ref, 'debt')
-        with:
-          labels: 'type: tech debt'
