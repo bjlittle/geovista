@@ -15,7 +15,7 @@ jobs:
       - uses: actions/labeler@v4
 
       - uses: actions-ecosystem/action-add-labels@v1
-        if: startsWith(github.event.pull_request.head.ref, 'breaking-change') || startsWith(github.event.pull_request.head.ref, 'breaking')
+        if: startsWith(github.event.pull_request.head.ref, 'breaking-change') || startsWith(github.event.pull_request.head.ref, 'breaking') || startsWith(github.event.pull_request.head.ref, 'break')
         with:
           labels: 'breaking-change'
 
