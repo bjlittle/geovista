@@ -14,7 +14,7 @@ from typing import Any
 
 import numpy as np
 from numpy import ma
-import numpy.typing as npt
+from numpy.typing import ArrayLike
 import pyvista as pv
 from vtk import vtkLogger, vtkObject
 
@@ -244,9 +244,9 @@ def active_kernel() -> bool:
 
 def distance(
     mesh: pv.PolyData,
-    origin: npt.ArrayLike | None = None,
+    origin: ArrayLike | None = None,
     mean: bool | None = True,
-) -> float | npt.ArrayLike:
+) -> float | ArrayLike:
     """Calculate the mean distance from the `origin` to the points of the `mesh`.
 
     Note that, given a spherical `mesh` the distance calculated is the radius.
@@ -418,7 +418,7 @@ def from_cartesian(
     return result
 
 
-def nan_mask(data: npt.ArrayLike) -> np.ndarray:
+def nan_mask(data: ArrayLike) -> np.ndarray:
     """Replace any masked array values with NaNs.
 
     As a consequence of filling the mask with NaNs, non-float arrays will be
@@ -530,10 +530,10 @@ def set_jupyter_backend(backend: str | None = None) -> bool:
 
 
 def to_cartesian(
-    lons: npt.ArrayLike,
-    lats: npt.ArrayLike,
+    lons: ArrayLike,
+    lats: ArrayLike,
     radius: float | None = None,
-    zlevel: float | npt.ArrayLike | None = None,
+    zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
     stacked: bool | None = True,
 ) -> np.ndarray:
@@ -612,7 +612,7 @@ def to_cartesian(
 
 
 def to_lonlat(
-    xyz: npt.ArrayLike,
+    xyz: ArrayLike,
     radians: bool | None = False,
     radius: float | None = None,
     rtol: float | None = None,
@@ -662,9 +662,9 @@ def to_lonlat(
 
 
 def to_lonlats(
-    xyz: npt.ArrayLike,
+    xyz: ArrayLike,
     radians: bool | None = False,
-    radius: float | npt.ArrayLike | None = None,
+    radius: float | ArrayLike | None = None,
     stacked: bool | None = True,
     rtol: float | None = None,
     atol: float | None = None,
@@ -797,7 +797,7 @@ def vtk_warnings_on() -> None:
 
 
 def wrap(
-    lons: npt.ArrayLike,
+    lons: ArrayLike,
     base: float | None = None,
     period: float | None = None,
     rtol: float | None = None,

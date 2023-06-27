@@ -15,7 +15,7 @@ from functools import lru_cache
 import netCDF4 as nc
 import numpy as np
 from numpy import ma
-import numpy.typing as npt
+from numpy.typing import ArrayLike
 import pooch
 
 from .cache import CACHE
@@ -47,9 +47,9 @@ __all__ = [
 class SampleStructuredXY:
     """Data container for structured surface."""
 
-    lons: npt.ArrayLike
-    lats: npt.ArrayLike
-    data: npt.ArrayLike = field(default=None)
+    lons: ArrayLike
+    lats: ArrayLike
+    data: ArrayLike = field(default=None)
     name: str = field(default=None)
     units: str = field(default=None)
     steps: int = field(default=None)
@@ -60,10 +60,10 @@ class SampleStructuredXY:
 class SampleStructuredXYZ:
     """Data container for structured volume."""
 
-    lons: npt.ArrayLike
-    lats: npt.ArrayLike
-    zlevel: npt.ArrayLike
-    data: npt.ArrayLike = field(default=None)
+    lons: ArrayLike
+    lats: ArrayLike
+    zlevel: ArrayLike
+    data: ArrayLike = field(default=None)
     name: str = field(default=None)
     units: str = field(default=None)
     steps: int = field(default=None)
@@ -74,12 +74,12 @@ class SampleStructuredXYZ:
 class SampleUnstructuredXY:
     """Data container for unstructured surface."""
 
-    lons: npt.ArrayLike
-    lats: npt.ArrayLike
-    connectivity: npt.ArrayLike
-    data: npt.ArrayLike = field(default=None)
-    face: npt.ArrayLike = field(default=None)
-    node: npt.ArrayLike = field(default=None)
+    lons: ArrayLike
+    lats: ArrayLike
+    connectivity: ArrayLike
+    data: ArrayLike = field(default=None)
+    face: ArrayLike = field(default=None)
+    node: ArrayLike = field(default=None)
     start_index: int = field(default=None)
     name: str = field(default=None)
     units: str = field(default=None)
