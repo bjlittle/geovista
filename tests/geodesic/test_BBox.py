@@ -2,7 +2,15 @@
 import numpy as np
 import pytest
 
-from geovista.geodesic import BBox, Preference, panel
+from geovista.common import (
+    GV_FIELD_CRS,
+    GV_FIELD_RADIUS,
+    RADIUS,
+    ZLEVEL_SCALE,
+    distance,
+)
+from geovista.crs import WGS84, from_wkt
+from geovista.geodesic import PANEL_IDX_BY_NAME, BBox, Preference, panel
 
 from .conftest import CIDS
 
@@ -68,3 +76,27 @@ def test_preference_invalid_fail(lfric_sst):
     emsg = "Expected a preference of 'cell' or 'center' or 'point'"
     with pytest.raises(ValueError, match=emsg):
         _ = bbox.enclosed(lfric_sst, preference="invalid")
+
+
+@pytest.mark.parametrize("name", PANEL_IDX_BY_NAME)
+def test_mesh_field_data(name):
+    """Test expected metadata populated within field-data."""
+    bbox = panel(name)
+    result = bbox.mesh
+    assert GV_FIELD_CRS in result.field_data
+    assert GV_FIELD_RADIUS in result.field_data
+    assert from_wkt(result) == WGS84
+    expected = distance(result)
+    assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
+
+
+@pytest.mark.parametrize("name", PANEL_IDX_BY_NAME)
+def test_boundary_field_data(name):
+    """Test expected metadata populated within field-data."""
+    bbox = panel(name)
+    result = bbox.boundary()
+    assert GV_FIELD_CRS in result.field_data
+    assert GV_FIELD_RADIUS in result.field_data
+    assert from_wkt(result) == WGS84
+    expected = RADIUS + RADIUS * ZLEVEL_SCALE
+    assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
