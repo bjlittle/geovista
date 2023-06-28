@@ -16,8 +16,17 @@ from numpy.typing import ArrayLike
 import pyproj
 import pyvista as pv
 
-from .common import RADIUS, ZLEVEL_SCALE, _MixinStrEnum, distance, to_cartesian, wrap
+from .common import (
+    GV_FIELD_RADIUS,
+    RADIUS,
+    ZLEVEL_SCALE,
+    _MixinStrEnum,
+    distance,
+    to_cartesian,
+    wrap,
+)
 from .common import cast_UnstructuredGrid_to_PolyData as cast
+from .crs import WGS84, to_wkt
 
 __all__ = [
     "BBox",
@@ -414,6 +423,9 @@ class BBox:
             # create the bbox mesh
             self._mesh = pv.PolyData(bbox_xyz, faces=bbox_faces, n_faces=bbox_n_faces)
 
+            self._mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+            to_wkt(self._mesh, WGS84)
+
             if self.triangulate:
                 self._mesh = self._mesh.triangulate()
 
@@ -482,6 +494,9 @@ class BBox:
         edge_lats = self._bbox_lats[edge_idxs]
         edge_xyz = to_cartesian(edge_lons, edge_lats, radius=radius)
         edge = pv.lines_from_points(edge_xyz, close=True)
+
+        edge.field_data[GV_FIELD_RADIUS] = np.array([radius])
+        to_wkt(edge, WGS84)
 
         return edge
 
@@ -706,6 +721,9 @@ def line(
 
     xyz = to_cartesian(line_lons, line_lats, radius=radius)
     lines = pv.lines_from_points(xyz, close=close)
+
+    lines.field_data[GV_FIELD_RADIUS] = np.array([radius])
+    to_wkt(lines, WGS84)
 
     return lines
 

@@ -2,7 +2,15 @@
 import numpy as np
 import pytest
 
-from geovista.common import RADIUS, ZLEVEL_SCALE, distance, to_cartesian
+from geovista.common import (
+    GV_FIELD_CRS,
+    GV_FIELD_RADIUS,
+    RADIUS,
+    ZLEVEL_SCALE,
+    distance,
+    to_cartesian,
+)
+from geovista.crs import WGS84, from_wkt
 from geovista.geodesic import GEODESIC_NPTS, line
 
 
@@ -101,3 +109,13 @@ def test_zscale(lons, zscale):
     actual = distance(result)
     expected = RADIUS + RADIUS * zscale
     assert np.isclose(actual, expected)
+
+
+def test_field_data():
+    """Test expected metadata populated within field-data."""
+    result = line(0, [90, 0, -90])
+    assert GV_FIELD_CRS in result.field_data
+    assert GV_FIELD_RADIUS in result.field_data
+    assert from_wkt(result) == WGS84
+    expected = RADIUS + RADIUS * ZLEVEL_SCALE
+    assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
