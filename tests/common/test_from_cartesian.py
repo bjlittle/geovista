@@ -11,6 +11,7 @@ from geovista.common import (
     REMESH_SEAM,
     ZLEVEL_SCALE,
     from_cartesian,
+    to_cartesian,
     wrap,
 )
 
@@ -85,3 +86,34 @@ def test_polar_quad_mesh_unfold(sign, n_lons, closed_interval):
     expected = np.concatenate([np.ones(n_lons) * lats[0], np.ones(n_lons) * lats[1]])
     np.testing.assert_allclose(lonlats[:, 1], expected)
     assert np.isclose(np.sum(lonlats[:, 2]), 0)
+
+
+@pytest.mark.parametrize("closed_interval", [False, True])
+@pytest.mark.parametrize(
+    "lonlat, pids",
+    [
+        [
+            np.array([[170, 10], [180, 10], [-180, 0], [-170, 0]]),
+            np.array([[0, 1], [2, 3]]),
+        ],
+        [
+            np.array([[170, 0], [180, 0], [-170, 0]]),
+            np.array([[0, 1], [1, 2]]),
+        ],
+        [
+            np.array([[170, 0], [180, 0], [-180, 0], [-170, 0]]),
+            np.array([[0, 1], [2, 3]]),
+        ],
+    ],
+)
+def test_lines_closed_interval(closed_interval, lonlat, pids):
+    """Test antimeridian closed interval wrapping of line meshes."""
+    nlines = pids.shape[0]
+    lines = np.full((nlines, 3), 2, dtype=int)
+    lines[:, 1:] = pids
+    points = to_cartesian(lonlat[:, 0], lonlat[:, 1])
+    mesh = pv.PolyData()
+    mesh.points = points
+    mesh.lines = lines
+    result = from_cartesian(mesh, closed_interval=closed_interval)
+    assert np.all(np.isclose(result[:, :-1], lonlat)) == closed_interval

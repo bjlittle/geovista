@@ -4,10 +4,21 @@ import pytest
 
 from geovista.bridge import Transform
 from geovista.crs import WGS84
+from geovista.geometry import coastlines as geometry_coastlines
 from geovista.pantry import lam_uk as pantry_lam_uk
 from geovista.samples import lam_uk as sample_lam_uk
 from geovista.samples import lfric as sample_lfric
 from geovista.samples import lfric_sst as sample_lfric_sst
+
+
+@pytest.fixture
+def coastlines(request):
+    """Fixture generates a coastlines line mesh."""
+    # support indirect parameters for fixtures and also
+    # calling the fixture with no parameter
+    resolution = request.param if hasattr(request, "param") else "110m"
+    mesh = geometry_coastlines(resolution=resolution)
+    return mesh
 
 
 @pytest.fixture

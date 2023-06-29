@@ -12,6 +12,7 @@ from typing import Any
 import warnings
 
 import numpy as np
+from numpy.typing import ArrayLike
 import pyvista as pv
 
 from .common import (
@@ -42,6 +43,7 @@ __all__ = [
     "combine",
     "cut_along_meridian",
     "resize",
+    "slice_lines",
 ]
 
 #: Preference for a slice to bias cells west of the chosen meridian.
@@ -59,8 +61,8 @@ CUT_OFFSET: float = 1e-5
 #: By default, generate a mesh seam at this meridian.
 DEFAULT_MERIDIAN: float = 0.0
 
-#: The number of interpolation points along the meridian slice spline.
-INTERSECTION_SPLINE_N_POINTS: int = 1
+#: The default number of interpolation points along a spline.
+SPLINE_N_POINTS: int = 1
 
 
 @unique
@@ -76,7 +78,7 @@ class MeridianSlice:
     """Remesh geolocated mesh along a meridian, from the north-pole to the south-pole.
 
     Remeshing involves introducing a seam into the mesh along the meridian
-    of choice, splitting cells bisected by the meridan, which will be
+    of choice, splitting cells bisected by the meridian, which will be
     triangulated.
 
     """
@@ -153,7 +155,7 @@ class MeridianSlice:
         n_points : float, optional
             The number of interpolation points along the spline, which defines
             the plane of intersection through the mesh. Defaults to
-            :data:`geovista.core.INTERSECTION_SPINE_N_POINTS`.
+            :data:`SPLINE_N_POINTS`.
 
         Returns
         -------
@@ -166,7 +168,7 @@ class MeridianSlice:
 
         """
         if n_points is None:
-            n_points = INTERSECTION_SPLINE_N_POINTS
+            n_points = SPLINE_N_POINTS
 
         y = bias.value * self.offset
         xyz = pv.Line((-self.radius, y, -self.radius), (self.radius, y, -self.radius))
@@ -665,3 +667,156 @@ def resize(
         mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
 
     return mesh
+
+
+def slice_lines(mesh: pv.PolyData, n_points: int | None = None) -> pv.PolyData:
+    """Cut the line mesh along the antimeridian, breaking line connectivity.
+
+    The connectivity of any line segment in the mesh traversing the antimeridian will be
+    broken. Each end-point of the segment will be connected to a new interior point,
+    located at the point of intersection between the line segment and the antimeridian
+    i.e., the segment will be split into two separate, disjointed segments. If the
+    end-point of a segment lies on the antimeridian, then it is replaced with an
+    identical but distinct co-located point.
+
+    This operation is typically performed prior to reprojection in order to create a
+    seam in the line segments.
+
+    The mesh is sliced with a z-x plane formed by extruding a line on the x-axis along
+    the z-axis.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The line mesh that requires to be sliced.
+    n_points : int, optional
+        The number of intermediate points for the line that will be extruded to form a
+        plane which will slice the `mesh` e.g., with ``n_points=1``, a mid-point will be
+        calculated for the line, which will then consist of 2 line segments i.e., the 2
+        end-points and 1 mid-point. Defaults to :data:`SPLINE_N_POINTS`.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    if projected(mesh):
+        emsg = "Cannot slice a mesh that has been projected."
+        raise ValueError(emsg)
+
+    if mesh.n_lines == 0:
+        emsg = "Cannot slice a mesh containing no lines."
+        raise ValueError(emsg)
+
+    if n_points is None:
+        n_points = SPLINE_N_POINTS
+
+    if n_points < 1:
+        wmsg = f"Ignoring 'n_points={n_points}', defaulting to 'n_points=1'."
+        warnings.warn(wmsg, stacklevel=2)
+
+    radius = distance(mesh)
+    line = pv.Line(pointa=(radius, 0, 0), pointb=(-radius, 0, 0))
+    spline = pv.Spline(line.points, n_points=n_points + 2)
+    intersection = mesh.slice_along_line(spline)
+    lonlat = from_cartesian(intersection)
+    antimeridian = np.isclose(lonlat[:, 0], -180)
+
+    if antimeridian.sum() == 0:
+        return mesh
+
+    # antimeridian points-of-interest (N, 3)
+    poi_xyz = intersection.points[antimeridian]
+
+    # there is 1 cid per intersection poi (N,)
+    poi_cids = mesh.find_closest_cell(poi_xyz)
+    # there are 2 pids per cid i.e., by defn, each line has 2 end-points
+    cid_pids = [mesh.get_cell(cid).point_ids for cid in poi_cids]
+    # flatten the pids (2N,)
+    cid_pids_1d = np.concatenate(cid_pids)
+    # flatten the cartesian points (2N, 3)
+    cid_xyz_1d = np.concatenate([mesh.points[pids] for pids in cid_pids])
+
+    # use explicit typing for clarity ...
+    split_cids: list[int, ...] = []
+    split_xyz: list[ArrayLike, ...] = []
+    detach_cids: list[int] = []
+    detach_pids: list[int, ...] = []
+
+    for xyz, cid in zip(poi_xyz, poi_cids):
+        mask = np.all(np.isclose(cid_xyz_1d, xyz), axis=1)
+        if np.any(mask):
+            # we want to detach the connectivity of the line segment only at the pid
+            # i.e., replace the pid with a new co-located xyz point
+            if (count := np.sum(mask)) != 1:
+                emsg = f"Expected only 1 line segment end-point, got {count} instead."
+                raise ValueError(emsg)
+
+            pid = cid_pids_1d[mask][0]
+            detach_cids.append(cid)
+            detach_pids.append(pid)
+        else:
+            # we want to break the connectivity of the line segment @ xyz
+            # i.e., split the segment into two new segments about xyz
+            split_cids.append(cid)
+            split_xyz.append(xyz)
+
+    result = pv.PolyData()
+    points = mesh.points.copy()
+    lines = mesh.lines.copy().reshape(-1, 3)
+
+    if split_cids:
+        # for M points of intersection, introduce 2xM new xyz cartesian intersection
+        # points and M cells i.e.,
+        #        cid                    cid                       cid(new)
+        # pid(0) --- pid(1)  =>  pid(0) --- pid(new0) & pid(new1) -------- pid(1)
+        #                             [step1]                     [step2]
+        # where, pid(new0) and pid(new1) are distinct pids but reference identical, but
+        # not the same cartesian xyz point
+        #
+        # [step1]
+        n_points = points.shape[0]
+        split_points = np.vstack(split_xyz)
+        points = np.vstack([points, split_points])  # append M points
+        new_pids = np.arange(n_points, points.shape[0])
+        split_lines = lines[split_cids]
+        lines[split_cids, 2] = new_pids  # inplace M cells
+        # [step2]
+        n_points = points.shape[0]
+        points = np.vstack([points, split_points])  # append M points
+        new_pids = np.arange(n_points, points.shape[0])
+        split_lines[:, 1] = new_pids
+        lines = np.vstack([lines, split_lines])  # append M new cells
+
+    if detach_cids:
+        # for M points of intersection, introduce M new xyz cartesian intersection
+        # points i.e.,
+        #        cid0        cid1                    cid0                   cid1
+        # pid(0) ---- pid(1) ---- pid(2)  =>  pid(0) ---- pid(new) & pid(1) ---- pid(2)
+        #                                                                   [nop]
+        # where, pid(new) and pid(1) are distinct pids but reference identical, but not
+        # the same cartesian xyz point
+        #
+        # find the location of the pids
+        line_pids = lines[detach_cids, 1:]
+        pids = np.asanyarray(detach_pids).reshape(-1, 1)
+        pids = np.broadcast_to(pids, (pids.size, 2))
+        delta = line_pids - pids
+        replace_idx = np.where(delta == 0)
+        # create new identical points and reference them with new pids
+        n_points = points.shape[0]
+        points = np.vstack([points, points[detach_pids]])  # append M points
+        new_pids = np.arange(n_points, points.shape[0])
+        line_pids[replace_idx] = new_pids
+        lines[detach_cids, 1:] = line_pids  # inplace M cells
+
+    if mesh.field_data.keys():
+        for key in mesh.field_data.keys():
+            result.field_data[key] = mesh.field_data[key].copy()
+
+    # TDB: given mesh.points, perform linear interpolation for new intersection points
+
+    result.points = points
+    result.lines = lines
+
+    return result

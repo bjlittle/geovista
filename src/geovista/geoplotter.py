@@ -27,7 +27,7 @@ from .common import (
     point_cloud,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
-from .core import add_texture_coords, cut_along_meridian, resize
+from .core import add_texture_coords, cut_along_meridian, resize, slice_lines
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .geometry import coastlines
 from .raster import wrap_texture
@@ -40,6 +40,9 @@ CRSLike = Union[int, str, dict, CRS]
 
 #: Proportional multiplier for z-axis levels/offsets of base-layer mesh.
 BASE_ZLEVEL_SCALE: int = 1.0e-3
+
+#: Coastlines relative tolerance for values close to longitudinal wrap base + period.
+COASTLINES_RTOL: float = 1.0e-8
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -205,6 +208,8 @@ class GeoPlotterBase:
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
+        rtol: float | None = None,
+        atol: float | None = None,
         **kwargs: Any | None,
     ) -> vtk.vtkActor:
         """Generate coastlines and add to the plotter scene.
@@ -223,6 +228,12 @@ class GeoPlotterBase:
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
+        rtol : float, optional
+            The relative tolerance for values close to longitudinal
+            :func:`geovista.common.wrap` base + period.
+        atol : float, optional
+            The absolute tolerance for values close to longitudinal
+            :func:`geovista.common.wrap` base + period.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -236,10 +247,30 @@ class GeoPlotterBase:
         .. versionadded:: 0.1.0
 
         """
+        if self.crs.is_projected:
+            # don't pass-through "radius", as it's not applicable
+            if rtol is None:
+                rtol = COASTLINES_RTOL
+            if zscale is None:
+                zscale = ZLEVEL_SCALE
+            if zlevel is None:
+                zlevel = 5
+            # pass-through kwargs to "add_mesh"
+            kwargs.update({"zlevel": zlevel, "zscale": zscale})
+
         mesh = coastlines(
             resolution=resolution, radius=radius, zlevel=zlevel, zscale=zscale
         )
-        return self.add_mesh(mesh, **kwargs)
+
+        if rtol is not None:
+            kwargs["rtol"] = rtol
+
+        if atol is not None:
+            kwargs["atol"] = atol
+
+        actor = self.add_mesh(mesh, **kwargs)
+
+        return actor
 
     def add_mesh(self, mesh: Any, **kwargs: Any | None):
         """Add the mesh to the plotter scene.
@@ -297,25 +328,23 @@ class GeoPlotterBase:
             project = src_crs and src_crs != tgt_crs
             meridian = get_central_meridian(tgt_crs) or 0
 
-            # TODO: implement projection support for line meshes
-            if project and mesh.n_lines:
-                wmsg = (
-                    "Line projection support not yet available, "
-                    "scheduled for geovista=0.3.0."
-                )
-                warn(wmsg, stacklevel=2)
-                return
-
             if project and not cloud:
                 if meridian:
                     mesh.rotate_z(-meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
-                cut_mesh = cut_along_meridian(
-                    mesh, antimeridian=True, rtol=rtol, atol=atol
+
+                cut_mesh = (
+                    slice_lines(mesh)
+                    if mesh.n_lines
+                    else cut_along_meridian(
+                        mesh, antimeridian=True, rtol=rtol, atol=atol
+                    )
                 )
+
                 if meridian:
-                    # undo rotation
+                    # undo rotation of original mesh
                     mesh.rotate_z(meridian, inplace=True)
+
                 mesh = cut_mesh
 
             if "texture" in kwargs and kwargs["texture"] is not None:
