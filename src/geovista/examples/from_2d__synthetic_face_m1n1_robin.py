@@ -20,8 +20,8 @@ def main() -> None:
 
     The data is synthetically generated and targets the mesh faces/cells.
 
-    Note that, the mesh is transformed to the Robinson pseudo-cylindrical
-    projection.
+    Note that, Natural Earth coastlines are also rendered, and the mesh is transformed
+    to the Robinson pseudo-cylindrical projection.
 
     """
     # create the 2D spatial coordinates and data
@@ -44,6 +44,7 @@ def main() -> None:
     plotter.add_mesh(
         mesh, clim=(0, 1), cmap="tempo", scalar_bar_args=sargs, show_edges=True
     )
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
         f"2-D Synthetic Face Data ({projection})",

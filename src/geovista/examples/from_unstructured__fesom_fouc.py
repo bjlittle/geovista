@@ -22,8 +22,9 @@ def main() -> None:
     v1.4 unstructured mesh of surface sea temperature data. The data targets the
     mesh faces/cells.
 
-    Note that, a Natural Earth texture is rendered as a base layer, and the mesh
-    is also transformed to the Foucaut pseudo-cylindrical projection.
+    Note that, a Natural Earth base layer is rendered along with Natural Earth
+    coastlines, and the mesh is also transformed to the Foucaut pseudo-cylindrical
+    projection.
 
     """
     # load the sample data
@@ -48,6 +49,7 @@ def main() -> None:
     # at the anti-meridian due to its complex geometry
     plotter.add_mesh(mesh, scalar_bar_args=sargs, rtol=1e-8)
     plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
         f"AWI-CM FESOM v1.4 ({projection})",

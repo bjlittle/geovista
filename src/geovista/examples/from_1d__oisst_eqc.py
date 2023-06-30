@@ -22,9 +22,9 @@ def main() -> None:
     (https://doi.org/10.25921/RE9P-PT57). The data targets the mesh faces/cells.
 
     Note that, a threshold is also applied to remove land NaN cells, and a
-    NASA Blue Marble texture is rendered as a base layer. The mesh is also
-    transformed to the Equidistant Cylindrical (Plate Carrée) conformal
-    cylindrical projection.
+    NASA Blue Marble base layer is rendered along with Natural Earth coastlines.
+    The mesh is also transformed to the Equidistant Cylindrical (Plate Carrée)
+    conformal cylindrical projection.
 
     """
     # load sample data
@@ -44,6 +44,7 @@ def main() -> None:
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.blue_marble())
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
         f"NOAA/NCEI OISST AVHRR ({projection})",

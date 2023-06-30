@@ -22,8 +22,8 @@ def main() -> None:
     data located on the mesh faces/cells.
 
     Note that, a threshold is also applied to remove land NaN cells, and a
-    Natural Earth texture is rendered as a base layer. The mesh is also
-    transformed to the Bonne projection.
+    Natural Earth base layer is rendered along with Natural Earth coastlines. The mesh
+    is also transformed to the Bonne projection.
 
     """
     # load the sample data
@@ -48,6 +48,7 @@ def main() -> None:
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_1())
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
         f"LFRic C48 Unstructured Cube-Sphere ({projection})",

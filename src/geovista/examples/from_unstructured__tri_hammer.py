@@ -22,8 +22,8 @@ def main() -> None:
     wave significant height data located on mesh nodes/points.
 
     Note that, a threshold is also applied to remove land NaN cells, and a
-    Natural Earth texture is rendered as a base layer. The mesh is also
-    transformed to the Hammer & Eckert-Greifendorff azimuthal projection.
+    Natural Earth base layer is rendered along with Natural Earth coastlines. The mesh
+    is also transformed to the Hammer & Eckert-Greifendorff azimuthal projection.
     As data is located on the mesh nodes/points, these values are interpolated
     across the mesh faces/cells.
 
@@ -48,6 +48,7 @@ def main() -> None:
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs, scalars=sample.name)
     plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
         f"WW3 Triangular Mesh ({projection})",

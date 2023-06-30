@@ -21,8 +21,9 @@ def main() -> None:
     wave significant height data located on mesh faces/cells.
 
     Note that, a threshold is also applied to remove land NaN cells, and a
-    Natural Earth texture is rendered as a base layer. The mesh is also
-    transformed to the Sinusoidal (Sanson-Flamsteed) pseudo-cylindrical projection.
+    Natural Earth base layer is rendered along with Natural Earth coastlines. The mesh
+    is also transformed to the Sinusoidal (Sanson-Flamsteed) pseudo-cylindrical
+    projection.
 
     """
     # load the sample data
@@ -42,6 +43,7 @@ def main() -> None:
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
         f"WW3 Spherical Multi-Cell ({projection})",
