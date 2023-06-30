@@ -139,9 +139,10 @@ Let's explore a sample of various oceanographic and atmospheric model data using
 #### WAVEWATCH III
 
 First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) **unstructured** triangular mesh, with
-[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
+[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/), a
 [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
-base layer.
+base layer, and the gorgeous perceptually uniform [cmocean balance](https://matplotlib.org/cmocean/#balance) diverging
+colormap.
 
 <details>
 <summary>🗒 </summary>
@@ -173,7 +174,7 @@ plotter.show()
 ```
 </details>
 
-![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.2/media/readme/ww3-tri.png)
+![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/ww3-tri.png)
 
 #### Finite Volume Community Ocean Model
 
@@ -216,7 +217,7 @@ plotter.show()
 ```
 </details>
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.2/media/readme/tamar.png)
+![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/tamar.png)
 
 #### CF UGRID
 
@@ -228,7 +229,8 @@ GeoVista matures and stabilises, we'll aim to complement this capability with ot
 
 In the meantime, let's showcase our basic projection support with some high-resolution **unstructured** Local Area Model
 (LAM) data reprojected to [Mollweide](https://proj.org/operations/projections/moll.html) using a
-[PROJ](https://proj.org/index.html) string, with a
+[PROJ](https://proj.org/index.html) string, with
+[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
 [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
 base layer.
 
@@ -263,12 +265,13 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.2/media/readme/lam-moll.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/lam-moll.png)
 
 Using the same **unstructured** LAM data, reproject to
 [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a
 [Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree),
-also with a
+also with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/)
+and a
 [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
 base layer.
 
@@ -305,13 +308,15 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.2/media/readme/lam-eqc.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/lam-eqc.png)
 
 #### LFRic Cube-Sphere
 
 Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/modelling-systems/lfric) C48 cube-sphere
 **unstructured** mesh of Sea Surface Temperature data on a
-[Robinson](https://proj.org/operations/projections/robin.html) projection using an ESRI SRID.
+[Robinson](https://proj.org/operations/projections/robin.html) projection using an ESRI SRID, with
+[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
+[cmocean thermal](https://matplotlib.org/cmocean/#thermal) colormap.
 
 <details>
 <summary>🗒 </summary>
@@ -343,7 +348,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.2/media/readme/lfric-robin.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/lfric-robin.png)
 
 #### UM ORCA2
 
@@ -383,7 +388,7 @@ plotter.show()
 ```
 </details>
 
-![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.2/media/readme/um-orca.png)
+![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/um-orca.png)
 
 #### OISST AVHRR
 
@@ -421,7 +426,7 @@ plotter.show()
 ```
 </details>
 
-![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.2/media/readme/oisst-avhrr.png)
+![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/oisst-avhrr.png)
 
 #### DYNAMICO Icosahedral
 
@@ -456,7 +461,7 @@ plotter.show()
 ```
 </details>
 
-![dynamico-icosahedral](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.2/media/readme/dynamico-icosahedral.png)
+![dynamico-icosahedral](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/dynamico-icosahedral.png)
 
 ## Unreal Reels
 
