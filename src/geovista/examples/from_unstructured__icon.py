@@ -7,7 +7,7 @@ Notes
 
 """
 
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 import geovista as gv
 from geovista.pantry import icon_soil
@@ -39,7 +39,7 @@ def main() -> None:
     # plot the mesh
     plotter = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    cmap = plt.cm.get_cmap("cet_CET_L17", lut=9)
+    cmap = mpl.colormaps.get_cmap("cet_CET_L17").resampled(lutsize=9)
     plotter.add_mesh(mesh, cmap=cmap, show_edges=True, scalar_bar_args=sargs)
     plotter.add_coastlines()
     plotter.add_axes()
