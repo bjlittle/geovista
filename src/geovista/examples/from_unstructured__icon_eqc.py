@@ -24,8 +24,8 @@ def main() -> None:
     the Max-Planck-Institut für Meteorologie (MPI-M). The data targets the mesh
     faces/cells.
 
-    Note that, the mesh is transformed to the Equidistant Cylindrical (Plate Carrée)
-    conformal cylindrical projection..
+    Note that, Natural Earth coastlines are also rendered, and the mesh is transformed
+    to the Equidistant Cylindrical (Plate Carrée) conformal cylindrical projection..
 
     """
     # load the sample data
@@ -42,6 +42,7 @@ def main() -> None:
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     cmap = plt.cm.get_cmap("cet_CET_L17", lut=9)
     plotter.add_mesh(mesh, cmap=cmap, show_edges=True, scalar_bar_args=sargs)
+    plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
         f"ICON 160km Resolution Triangular Mesh ({projection})",
