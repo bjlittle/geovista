@@ -41,8 +41,8 @@ __all__ = [
     "MeridianSlice",
     "add_texture_coords",
     "combine",
-    "cut_along_meridian",
     "resize",
+    "slice_cells",
     "slice_lines",
 ]
 
@@ -293,7 +293,7 @@ def add_texture_coords(
     meridian = wrap(meridian)[0]
 
     if GV_REMESH_POINT_IDS not in mesh.point_data:
-        mesh = cut_along_meridian(mesh, meridian=meridian)
+        mesh = slice_cells(mesh, meridian=meridian)
     else:
         mesh = mesh.copy(deep=True)
 
@@ -454,7 +454,98 @@ def combine(
     return combined
 
 
-def cut_along_meridian(
+def resize(
+    mesh: pv.PolyData,
+    radius: float | None = None,
+    zlevel: int | None = None,
+    zscale: float | None = None,
+    inplace: bool | None = False,
+) -> pv.PolyData:
+    """Change the radius of the spherical mesh.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The mesh to be resized to the provided ``radius``.
+    radius : float, optional
+        The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
+    zlevel : int, default=0
+        The z-axis level. Used in combination with the `zscale` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`geovista.common.ZLEVEL_SCALE`.
+    inplace : boolean, default=False
+        Update `mesh` in-place.
+
+    Returns
+    -------
+    PolyData
+        The resized mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    if projected(mesh):
+        emsg = "Cannot resize mesh that appears to be a planar projection."
+        raise ValueError(emsg)
+
+    cloud = point_cloud(mesh)
+
+    if radius is None:
+        if cloud and GV_FIELD_RADIUS in mesh.field_data:
+            radius = mesh[GV_FIELD_RADIUS][0]
+        else:
+            radius = RADIUS
+    else:
+        radius = abs(float(radius))
+
+    if zscale is None:
+        if cloud and GV_FIELD_ZSCALE in mesh.field_data:
+            zscale = mesh[GV_FIELD_ZSCALE][0]
+        else:
+            zscale = ZLEVEL_SCALE
+    else:
+        zscale = float(zscale)
+
+    zlevel = 0 if zlevel is None else int(zlevel)
+
+    if cloud:
+        update = bool(zlevel)
+        if not update:
+            update = GV_FIELD_ZSCALE not in mesh.field_data or not np.isclose(
+                mesh[GV_FIELD_ZSCALE], zscale
+            )
+        if not update:
+            update = GV_FIELD_RADIUS not in mesh.field_data or not np.isclose(
+                mesh[GV_FIELD_RADIUS], radius
+            )
+    else:
+        new_radius = radius + radius * zlevel * zscale
+        update = new_radius and not np.isclose(distance(mesh), new_radius)
+
+    if update:
+        lonlat = from_cartesian(mesh)
+        if cloud:
+            zlevel += lonlat[:, 2]
+        xyz = to_cartesian(
+            lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
+        )
+        if not inplace:
+            mesh = mesh.copy()
+        mesh.points = xyz
+        if cloud:
+            mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
+        else:
+            radius = new_radius
+        mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+
+    return mesh
+
+
+def slice_cells(
     mesh: pv.PolyData,
     meridian: float | None = None,
     antimeridian: bool | None = False,
@@ -576,97 +667,6 @@ def cut_along_meridian(
     result.set_active_scalars(info.name, preference=info.association.name.lower())
 
     return result
-
-
-def resize(
-    mesh: pv.PolyData,
-    radius: float | None = None,
-    zlevel: int | None = None,
-    zscale: float | None = None,
-    inplace: bool | None = False,
-) -> pv.PolyData:
-    """Change the radius of the spherical mesh.
-
-    Parameters
-    ----------
-    mesh : PolyData
-        The mesh to be resized to the provided ``radius``.
-    radius : float, optional
-        The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
-    zlevel : int, default=0
-        The z-axis level. Used in combination with the `zscale` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-    zscale : float, optional
-        The proportional multiplier for z-axis `zlevel`. Defaults to
-        :data:`geovista.common.ZLEVEL_SCALE`.
-    inplace : boolean, default=False
-        Update `mesh` in-place.
-
-    Returns
-    -------
-    PolyData
-        The resized mesh.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    if projected(mesh):
-        emsg = "Cannot resize mesh that appears to be a planar projection."
-        raise ValueError(emsg)
-
-    cloud = point_cloud(mesh)
-
-    if radius is None:
-        if cloud and GV_FIELD_RADIUS in mesh.field_data:
-            radius = mesh[GV_FIELD_RADIUS][0]
-        else:
-            radius = RADIUS
-    else:
-        radius = abs(float(radius))
-
-    if zscale is None:
-        if cloud and GV_FIELD_ZSCALE in mesh.field_data:
-            zscale = mesh[GV_FIELD_ZSCALE][0]
-        else:
-            zscale = ZLEVEL_SCALE
-    else:
-        zscale = float(zscale)
-
-    zlevel = 0 if zlevel is None else int(zlevel)
-
-    if cloud:
-        update = bool(zlevel)
-        if not update:
-            update = GV_FIELD_ZSCALE not in mesh.field_data or not np.isclose(
-                mesh[GV_FIELD_ZSCALE], zscale
-            )
-        if not update:
-            update = GV_FIELD_RADIUS not in mesh.field_data or not np.isclose(
-                mesh[GV_FIELD_RADIUS], radius
-            )
-    else:
-        new_radius = radius + radius * zlevel * zscale
-        update = new_radius and not np.isclose(distance(mesh), new_radius)
-
-    if update:
-        lonlat = from_cartesian(mesh)
-        if cloud:
-            zlevel += lonlat[:, 2]
-        xyz = to_cartesian(
-            lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
-        )
-        if not inplace:
-            mesh = mesh.copy()
-        mesh.points = xyz
-        if cloud:
-            mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
-        else:
-            radius = new_radius
-        mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
-
-    return mesh
 
 
 def slice_lines(mesh: pv.PolyData, n_points: int | None = None) -> pv.PolyData:

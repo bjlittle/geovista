@@ -27,7 +27,7 @@ from .common import (
     point_cloud,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
-from .core import add_texture_coords, cut_along_meridian, resize, slice_lines
+from .core import add_texture_coords, resize, slice_cells, slice_lines
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .geometry import coastlines
 from .raster import wrap_texture
@@ -336,9 +336,7 @@ class GeoPlotterBase:
                 cut_mesh = (
                     slice_lines(mesh)
                     if mesh.n_lines
-                    else cut_along_meridian(
-                        mesh, antimeridian=True, rtol=rtol, atol=atol
-                    )
+                    else slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
                 )
 
                 if meridian:
