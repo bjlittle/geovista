@@ -1,9 +1,9 @@
-"""Unit-tests for :func:`geovista.core.cut_along_meridian`."""
+"""Unit-tests for :func:`geovista.core.slice_cells`."""
 import pytest
 import pyvista as pv
 
 from geovista.common import point_cloud
-from geovista.core import cut_along_meridian
+from geovista.core import slice_cells
 
 try:
     from pyvista import ImageData
@@ -16,13 +16,13 @@ def test_mesh_fail():
     ugrid = ImageData()
     emsg = f"Require a {str(pv.PolyData)!r} mesh"
     with pytest.raises(TypeError, match=emsg):
-        _ = cut_along_meridian(ugrid)
+        _ = slice_cells(ugrid)
 
 
 def test_point_cloud_pass_thru(lam_uk):
     """Test point-cloud nop."""
     cloud = pv.PolyData(lam_uk.points)
     assert point_cloud(cloud)
-    result = cut_along_meridian(cloud)
+    result = slice_cells(cloud)
     assert result is cloud
     assert result == cloud
