@@ -26,13 +26,11 @@ from .cache import (  # noqa: F401
     natural_earth_hypsometric,
 )
 from .common import vtk_warnings_off, vtk_warnings_on  # noqa: F401
-from .core import MeridianSlice, combine, slice_cells  # noqa: F401
-from .crs import from_wkt, get_central_meridian, set_central_meridian  # noqa: F401
-from .filters import remesh  # noqa: F401
+from .core import slice_cells, slice_lines  # noqa: F401
+from .crs import from_wkt, to_wkt  # noqa: F401
 from .geodesic import BBox, line, panel, wedge  # noqa: F401
-from .geometry import coastlines, load_coastlines  # noqa: F401
+from .geometry import coastlines  # noqa: F401
 from .geoplotter import GeoPlotter  # noqa: F401
-from .raster import wrap_texture  # noqa: F401
 
 try:
     from ._version import version as __version__
