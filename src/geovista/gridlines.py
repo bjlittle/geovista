@@ -43,8 +43,8 @@ LABEL_WEST: str = f"{LABEL_DEGREE}W"
 #: The default number of points in a line of latitude.
 LATITUDE_N_SAMPLES: int = 360
 
-#: Whether to generate a label for the north/south poles.
-LATITUDE_LABEL_POLES: bool = False
+#: Whether to generate parallels at the north/south poles.
+LATITUDE_POLES: bool = False
 
 #: The first graticule line of latitude (degrees).
 LATITUDE_START: float = -90.0
@@ -140,7 +140,7 @@ def create_parallel_labels(
         south of the prime meridian.
     poles : bool, optional
         Whether to generate a label for the north/south poles. Defaults to
-        :data:`LATITUDE_LABEL_POLES`.
+        :data:`LATITUDE_POLES`.
 
     Returns
     -------
@@ -155,7 +155,7 @@ def create_parallel_labels(
     result = []
 
     if poles is None:
-        poles = LATITUDE_LABEL_POLES
+        poles = LATITUDE_POLES
 
     if not isinstance(lats, Iterable):
         lats = [lats]
@@ -205,13 +205,51 @@ def create_meridians(
     start: float | None = None,
     stop: float | None = None,
     step: float | None = None,
-    n_samples: int | None = None,
     lat_step: float | None = None,
+    n_samples: int | None = None,
     radius: float | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
 ) -> GraticuleGrid:
-    """TBD."""
+    """Generate graticule lines of constant longitude (meridians) with labels.
+
+    Parameters
+    ----------
+    start : float, optional
+        The starting line of longitude (degrees). The graticule will include this
+        meridian. Defaults to :data:`LONGITUDE_START`.
+    stop : float, optional
+        The last line of longitude (degrees). The graticule will include this meridian
+        when it is a multiple of ``step``. Defaults to :data:`LONGITUDE_STOP`.
+    step : float, optional
+        The delta (degrees) between neighbouring meridians. Defaults to
+        :data:`LONGITUDE_STEP`.
+    lat_step : float, optional
+        The delta (degrees) between neighbouring parallels. Defaults to
+        :data:`LATITUDE_STEP`.
+    n_samples : int, optional
+        The number of points in a single line of longitude. Defaults to
+        :data:`LONGITUDE_N_SAMPLES`.
+    radius : float, optional
+        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+    zlevel : int, optional
+        The z-axis level. Used in combination with the `zscale` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``. Defaults
+        to :data:`GRATICULE_ZLEVEL`
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`geovista.common.ZLEVEL_SCALE`.
+
+    Returns
+    -------
+    GraticuleGrid
+        The graticule meridians and points with labels on those meridians.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
     if start is None:
         start = LONGITUDE_START
 
@@ -229,7 +267,7 @@ def create_meridians(
     if zlevel is None:
         zlevel = GRATICULE_ZLEVEL
 
-    # step modulo sanity
+    # modulo sanity for step sizes
     lon_step, lat_step = _step_modulo(lon_step, lat_step)
 
     lons = np.unique(wrap(np.arange(start, stop + lon_step, lon_step, dtype=float)))
@@ -253,7 +291,7 @@ def create_meridians(
 
         mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
         to_wkt(mesh, WGS84)
-        blocks.append(mesh)
+        blocks[str(lon)] = mesh
         grid_lons.append(lon)
 
     grid_points, grid_labels = [], []
@@ -283,38 +321,43 @@ def create_parallels(
     radius: float | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
-    clean: bool | None = False,
 ) -> GraticuleGrid:
-    """Generate graticule lines of latitude (parallels), with optional labels.
+    """Generate graticule lines of constant latitude (parallels) with labels.
 
     Parameters
     ----------
-    * labels (bool):
-        Specify whether the graticule parallels are labelled. Default is ``True``.
-    * n_samples (None or float):
-        Specify the number of points contained within a graticule line of latitude.
-        Default is ``LATITUDE_N_SAMPLES``.
-    * step (None or float):
-        Specify the increment (in degrees) step size from the equator to the poles,
-        used to determine the graticule lines of latitude. The ``step`` is
-        modulo ``90`` degrees. Default is ``DEFAULT_LATITUDE_STEP``.
-    * lon_step (None or float):
-        Specify the increment (in degrees) step size from the prime meridian eastwards,
-        used to determine the longitude position of latitude labels. The ``lon_step`` is
-        modulo ``180`` degrees. Default is ``DEFAULT_LONGITUDE_STEP``.
+    start : float, optional
+        The starting line of latitude (degrees). The graticule will include this
+        parallel. Defaults to :data:`LATITUDE_START`.
+    stop : float, optional
+        The last line of latitude (degrees). The graticule will include this parallel
+        when it is a multiple of ``step``. Defaults to :data:`LATITUDE_STOP`.
+    step : float, optional
+        The delta (degrees) between neighbouring parallels. Defaults to
+        :data:`LATITUDE_STEP`.
+    lon_step : float, optional
+        The delta (degrees) between neighbouring meridians. Defaults to
+        :data:`LONGITUDE_STEP`.
+    n_samples : int, optional
+        The number of points in a single line of latitude. Defaults to
+        :data:`LATITUDE_N_SAMPLES`.
+    poles : bool, optional
+        Whether to create a line of latitude at the north/south poles. Defaults to
+        :data:`LATITUDE_POLES`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
-    zlevel : int, default=1
+    zlevel : int, optional
         The z-axis level. Used in combination with the `zscale` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``. Defaults
+        to :data:`GRATICULE_ZLEVEL`
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
 
     Returns
     -------
-    PolyData
-
+    GraticuleGrid
+        The graticule parallels and points with labels on the parallels.
 
     Notes
     -----
@@ -329,26 +372,26 @@ def create_parallels(
 
     lat_step = LATITUDE_STEP if step is None else step
 
-    if n_samples is None:
-        n_samples = LATITUDE_N_SAMPLES
-
     if lon_step is None:
         lon_step = LONGITUDE_STEP
 
+    if n_samples is None:
+        n_samples = LATITUDE_N_SAMPLES
+
     if poles is None:
-        poles = LATITUDE_LABEL_POLES
+        poles = LATITUDE_POLES
 
     if zlevel is None:
         zlevel = GRATICULE_ZLEVEL
 
-    # step modulo sanity
+    # modulo sanity for step sizes
     lon_step, lat_step = _step_modulo(lon_step, lat_step)
 
     lats = np.arange(start, stop + lat_step, lat_step, dtype=float)
     lons = wrap(np.linspace(LONGITUDE_START, LONGITUDE_STOP, num=n_samples + 1)[:-1])
 
-    n_lines, n_segments = 0, 0
-    lines, grid_lats, points = [], [], []
+    grid_lats = []
+    blocks = pv.MultiBlock()
 
     for lat in lats:
         if not poles and np.isclose(np.abs(lat), 90.0):
@@ -362,21 +405,15 @@ def create_parallels(
             zscale=zscale,
         )
         n_points = xyz.shape[0]
-        points.append(xyz)
-        line = np.full((n_points, 3), 2, dtype=int)
-        line[:, 1] = np.arange(n_points) + n_segments
-        line[:, 2] = np.arange(n_points) + n_segments + 1
-        line[-1, 2] = n_segments
-        lines.append(line)
-        n_segments += n_points
-        n_lines += 1
+        lines = np.full((n_points, 3), 2, dtype=int)
+        lines[:, 1] = np.arange(n_points)
+        lines[:, 2] = np.arange(n_points) + 1
+        lines[-1, 2] = 0
+
+        mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
+        to_wkt(mesh, WGS84)
+        blocks[str(lat)] = mesh
         grid_lats.append(lat)
-
-    points = np.vstack(points)
-    lines = np.vstack(lines)
-
-    mesh = pv.PolyData(points, lines=lines, n_lines=n_lines)
-    to_wkt(mesh, WGS84)
 
     grid_points, grid_labels = [], []
     labels = create_parallel_labels(grid_lats, poles=poles)
@@ -391,15 +428,13 @@ def create_parallels(
         grid_labels.extend(labels)
 
     if not poles:
+        # create pole labels at when there are no polar parallels
         lonlat = np.array([[0, 90], [0, -90]], dtype=float)
         grid_points.append(lonlat)
         pole_labels = create_parallel_labels([90, -90], poles=True)
         grid_labels.extend(pole_labels)
 
-    if clean:
-        mesh.clean(inplace=True)
-
     grid_points = np.vstack(grid_points)
-    graticule = GraticuleGrid(blocks=mesh, lonlat=grid_points, labels=grid_labels)
+    graticule = GraticuleGrid(blocks=blocks, lonlat=grid_points, labels=grid_labels)
 
     return graticule
