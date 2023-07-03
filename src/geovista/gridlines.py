@@ -7,6 +7,7 @@ Notes
 """
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 import numpy as np
@@ -17,8 +18,12 @@ from .common import to_cartesian, wrap
 from .crs import WGS84, to_wkt
 
 __all__ = [
+    "create_meridians",
     "create_parallels",
 ]
+
+#: The default zlevel for graticule meridians and parallels.
+GRATICULE_ZLEVEL: int = 1
 
 #: The degree symbol label.
 LABEL_DEGREE: str = "°"
@@ -38,9 +43,6 @@ LABEL_WEST: str = f"{LABEL_DEGREE}W"
 #: The default number of points in a line of latitude.
 LATITUDE_N_SAMPLES: int = 360
 
-#: Whether to generate a label for the equatorial parallel.
-LATITUDE_LABEL_EQUATOR: bool = False
-
 #: Whether to generate a label for the north/south poles.
 LATITUDE_LABEL_POLES: bool = False
 
@@ -49,6 +51,9 @@ LATITUDE_START: float = -90.0
 
 #: The default step size between graticule parallels (degrees).
 LATITUDE_STEP: float = 30.0
+
+#: The modulo upper bound (degrees) for parallel step size.
+LATITUDE_STEP_MODULO: float = 90.0
 
 #: The last graticule line of latitude (degrees).
 LATITUDE_STOP: float = 90.0
@@ -62,21 +67,69 @@ LONGITUDE_START: float = -180.0
 #: The default step size between graticule meridians (degrees).
 LONGITUDE_STEP: float = 30.0
 
+#: The modulo upper bound (degrees) for meridian step size.
+LONGITUDE_STEP_MODULO: float = 180.0
+
 #: The last graticule meridian (degrees).
 LONGITUDE_STOP: float = 180.0
 
 
 @dataclass
 class GraticuleGrid:
-    """Graticule grid composed of the grid mesh, labels and their points."""
+    """Graticule composed of the grid, labels and their points.
 
-    mesh: pv.PolyData
-    points: ArrayLike  # geographical lon/lat
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+
+    blocks: pv.MultiBlock
+    lonlat: ArrayLike
     labels: list[str, ...]
 
 
+def create_meridian_labels(lons: list[float, ...]) -> list[str, ...]:
+    """Generate labels for the meridians.
+
+    Parameters
+    ----------
+    lons : list of float
+        The meridian lines that require a label of their location east or west of
+        the prime meridian.
+
+    Returns
+    -------
+    list of str
+        The sequence of string labels for each meridian line.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    result = []
+
+    if not isinstance(lons, Iterable):
+        lons = [lons]
+
+    lons = wrap(lons)
+
+    for lon in lons:
+        direction = LABEL_EAST
+        if lon == 0 or np.isclose(np.abs(lon), 180.0):
+            direction = LABEL_DEGREE
+        elif lon < 0:
+            direction = LABEL_WEST
+
+        value = int(np.abs(lon))
+        result.append(f"{value}{direction}")
+
+    return result
+
+
 def create_parallel_labels(
-    lats: list[float, ...], equator: bool | None = None, poles: bool | None = None
+    lats: list[float, ...], poles: bool | None = None
 ) -> list[str, ...]:
     """Generate labels for the parallels.
 
@@ -85,9 +138,6 @@ def create_parallel_labels(
     lats : list of float
         The lines of latitude that require a label of their location north or
         south of the prime meridian.
-    equator : bool, optional
-        Whether to generate a populated or empty label for the equatorial parallel.
-        Defaults to :data:`LATITUDE_LABEL_EQUATOR`.
     poles : bool, optional
         Whether to generate a label for the north/south poles. Defaults to
         :data:`LATITUDE_LABEL_POLES`.
@@ -104,11 +154,11 @@ def create_parallel_labels(
     """
     result = []
 
-    if equator is None:
-        equator = LATITUDE_LABEL_EQUATOR
-
     if poles is None:
         poles = LATITUDE_LABEL_POLES
+
+    if not isinstance(lats, Iterable):
+        lats = [lats]
 
     for lat in lats:
         direction = ""
@@ -116,25 +166,119 @@ def create_parallel_labels(
             direction = LABEL_NORTH
         elif lat < 0:
             direction = LABEL_SOUTH
-        elif lat == 0 and equator:
-            direction = "°"
+        elif lat == 0:
+            direction = LABEL_DEGREE
 
         if not poles and np.isclose(np.abs(lat), 90.0):
             continue
 
-        value = int(abs(lat)) if direction else ""
+        value = int(np.abs(lat)) if direction else ""
         result.append(f"{value}{direction}")
 
     return result
+
+
+def _step_modulo(lon_step: float, lat_step: float) -> tuple[float, float]:
+    """Wrap graticule meridian/parallel step size (degrees) to sane upper bounds.
+
+    Parameters
+    ----------
+    lon_step : float
+        The longitude step (degrees) between meridians.
+    lat_step : float
+        The latitude step (degrees) between parallels.
+
+    Returns
+    -------
+    tuple of float
+        The lon/lat step values.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    return (lon_step % LONGITUDE_STEP_MODULO, lat_step % LATITUDE_STEP_MODULO)
+
+
+def create_meridians(
+    start: float | None = None,
+    stop: float | None = None,
+    step: float | None = None,
+    n_samples: int | None = None,
+    lat_step: float | None = None,
+    radius: float | None = None,
+    zlevel: float | ArrayLike | None = None,
+    zscale: float | None = None,
+) -> GraticuleGrid:
+    """TBD."""
+    if start is None:
+        start = LONGITUDE_START
+
+    if stop is None:
+        stop = LONGITUDE_STOP
+
+    lon_step = LONGITUDE_STEP if step is None else step
+
+    if n_samples is None:
+        n_samples = LONGITUDE_N_SAMPLES
+
+    if lat_step is None:
+        lat_step = LATITUDE_STEP
+
+    if zlevel is None:
+        zlevel = GRATICULE_ZLEVEL
+
+    # step modulo sanity
+    lon_step, lat_step = _step_modulo(lon_step, lat_step)
+
+    lons = np.unique(wrap(np.arange(start, stop + lon_step, lon_step, dtype=float)))
+    lats = np.linspace(LATITUDE_START, LATITUDE_STOP, num=n_samples)
+
+    grid_lons = []
+    blocks = pv.MultiBlock()
+
+    for lon in lons:
+        xyz = to_cartesian(
+            np.ones_like(lats) * lon,
+            lats,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+        )
+        n_points = xyz.shape[0]
+        lines = np.full((n_points, 3), 2, dtype=int)
+        lines[:, 1] = np.arange(n_points)
+        lines[:, 2] = np.arange(n_points) + 1
+
+        mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
+        to_wkt(mesh, WGS84)
+        blocks.append(mesh)
+        grid_lons.append(lon)
+
+    grid_points, grid_labels = [], []
+    labels = create_meridian_labels(grid_lons)
+    grid_lats = np.arange(LATITUDE_START, LATITUDE_STOP, lat_step, dtype=float) + (
+        lat_step / 2
+    )
+
+    for lat in grid_lats:
+        lonlat = np.vstack([grid_lons, np.ones_like(grid_lons, dtype=float) * lat]).T
+        grid_points.append(lonlat)
+        grid_labels.extend(labels)
+
+    grid_points = np.vstack(grid_points)
+    graticule = GraticuleGrid(blocks=blocks, lonlat=grid_points, labels=grid_labels)
+
+    return graticule
 
 
 def create_parallels(
     start: float | None = None,
     stop: float | None = None,
     step: float | None = None,
-    n_samples: int | None = None,
     lon_step: float | None = None,
-    equator: bool | None = None,
+    n_samples: int | None = None,
     poles: bool | None = None,
     radius: float | None = None,
     zlevel: float | ArrayLike | None = None,
@@ -158,8 +302,6 @@ def create_parallels(
         Specify the increment (in degrees) step size from the prime meridian eastwards,
         used to determine the longitude position of latitude labels. The ``lon_step`` is
         modulo ``180`` degrees. Default is ``DEFAULT_LONGITUDE_STEP``.
-    * equator (bool):
-        Specify whether equatorial labels are to be rendered. Default is ``False``.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
     zlevel : int, default=1
@@ -193,21 +335,17 @@ def create_parallels(
     if lon_step is None:
         lon_step = LONGITUDE_STEP
 
-    if equator is None:
-        equator = LATITUDE_LABEL_EQUATOR
-
     if poles is None:
         poles = LATITUDE_LABEL_POLES
 
     if zlevel is None:
-        zlevel = 1
+        zlevel = GRATICULE_ZLEVEL
 
     # step modulo sanity
-    lat_step %= 90.0
-    lon_step %= 180.0
+    lon_step, lat_step = _step_modulo(lon_step, lat_step)
 
     lats = np.arange(start, stop + lat_step, lat_step, dtype=float)
-    lons = wrap(np.linspace(-180.0, 180.0, num=n_samples + 1)[:-1])
+    lons = wrap(np.linspace(LONGITUDE_START, LONGITUDE_STOP, num=n_samples + 1)[:-1])
 
     n_lines, n_segments = 0, 0
     lines, grid_lats, points = [], [], []
@@ -241,8 +379,11 @@ def create_parallels(
     to_wkt(mesh, WGS84)
 
     grid_points, grid_labels = [], []
-    labels = create_parallel_labels(grid_lats, equator=equator, poles=poles)
-    grid_lons = np.arange(LONGITUDE_START, LONGITUDE_STOP, lon_step, dtype=float)
+    labels = create_parallel_labels(grid_lats, poles=poles)
+    grid_lons = wrap(
+        np.arange(LONGITUDE_START, LONGITUDE_STOP, lon_step, dtype=float)
+        + (lon_step / 2)
+    )
 
     for lon in grid_lons:
         lonlat = np.vstack([np.ones_like(grid_lats, dtype=float) * lon, grid_lats]).T
@@ -259,6 +400,6 @@ def create_parallels(
         mesh.clean(inplace=True)
 
     grid_points = np.vstack(grid_points)
-    graticule = GraticuleGrid(mesh=mesh, points=grid_points, labels=grid_labels)
+    graticule = GraticuleGrid(blocks=mesh, lonlat=grid_points, labels=grid_labels)
 
     return graticule
