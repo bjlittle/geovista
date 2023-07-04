@@ -289,7 +289,8 @@ def create_meridians(
             zlevel=zlevel,
             zscale=zscale,
         )
-        n_points = xyz.shape[0]
+        # a meridian with N points has N-1 lines
+        n_points = xyz.shape[0] - 1
         lines = np.full((n_points, 3), 2, dtype=int)
         lines[:, 1] = np.arange(n_points)
         lines[:, 2] = np.arange(n_points) + 1
