@@ -25,11 +25,18 @@ from .common import (
     distance,
     from_cartesian,
     point_cloud,
+    to_cartesian,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .core import add_texture_coords, resize, slice_cells, slice_lines
 from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
 from .geometry import coastlines
+from .gridlines import (
+    GRATICULE_ZLEVEL,
+    GraticuleGrid,
+    create_meridians,
+    create_parallels,
+)
 from .raster import wrap_texture
 from .samples import lfric
 
@@ -43,6 +50,12 @@ BASE_ZLEVEL_SCALE: int = 1.0e-3
 
 #: Coastlines relative tolerance for values close to longitudinal wrap base + period.
 COASTLINES_RTOL: float = 1.0e-8
+
+#: The default font size for graticule labels.
+GRATICULE_LABEL_FONT_SIZE: int = 9
+
+#: Whether to rendering graticule labels by default.
+GRATICULE_SHOW_LABELS: bool = True
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -132,6 +145,46 @@ class GeoPlotterBase:
             crs = WGS84
         self.crs = crs
         super().__init__(*args, **kwargs)
+
+    def _add_graticule_labels(
+        self,
+        graticule: GraticuleGrid,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """TBD.
+
+        Note
+        ----
+        .. versionadded:: 0.3.0
+
+        """
+        if zlevel is None:
+            zlevel = GRATICULE_ZLEVEL
+
+        if point_labels_args is None:
+            point_labels_args = {}
+
+        lonlat = graticule.lonlat
+        xyz = to_cartesian(
+            lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
+        )
+
+        if "show_points" in point_labels_args:
+            _ = point_labels_args.pop("show_points")
+
+        if "font_size" not in point_labels_args:
+            point_labels_args["font_size"] = GRATICULE_LABEL_FONT_SIZE
+
+        # labels over-plot points, therefore enforce non-rendering of points,
+        # which is more efficient
+        point_labels_args["show_points"] = False
+        # opinionated over-ride to disable label visibility filter
+        point_labels_args["always_visible"] = False
+
+        self.add_point_labels(xyz, graticule.labels, **point_labels_args)
 
     def add_base_layer(
         self, mesh: pv.PolyData | None = None, **kwargs: Any | None
@@ -272,8 +325,62 @@ class GeoPlotterBase:
 
         return actor
 
+    def add_graticule(
+        self,
+        lon_start: float | None = None,
+        lon_stop: float | None = None,
+        lon_step: float | None = None,
+        lat_start: float | None = None,
+        lat_step: float | None = None,
+        lat_stop: float | None = None,
+        n_samples: int | None = None,
+        poles: bool | None = None,
+        poles_label: bool | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """TBD.
+
+        Note
+        ----
+        .. versionadded:: 0.3.0
+
+        """
+        self.add_meridians(
+            start=lon_start,
+            stop=lon_stop,
+            step=lon_step,
+            lat_step=lat_step,
+            n_samples=n_samples,
+            show_labels=show_labels,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+            mesh_args=mesh_args,
+            point_labels_args=point_labels_args,
+        )
+        self.add_parallels(
+            start=lat_start,
+            stop=lat_stop,
+            step=lat_step,
+            lon_step=lon_step,
+            n_samples=n_samples,
+            poles=poles,
+            poles_label=poles_label,
+            show_labels=show_labels,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+            mesh_args=mesh_args,
+            point_labels_args=point_labels_args,
+        )
+
     def add_mesh(self, mesh: Any, **kwargs: Any | None):
-        """Add the mesh to the plotter scene.
+        """Add the ``mesh`` to the plotter scene.
 
         See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -387,11 +494,197 @@ class GeoPlotterBase:
 
         return super().add_mesh(mesh, **kwargs)
 
+    def add_meridian(
+        self,
+        lon: float,
+        lat_step: float | None = None,
+        n_samples: int | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """TBD.
+
+        Note
+        ----
+        .. versionadded:: 0.3.0
+
+        """
+        self.add_meridians(
+            start=lon,
+            stop=lon,
+            lat_step=lat_step,
+            n_samples=n_samples,
+            show_labels=show_labels,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+            mesh_args=mesh_args,
+            point_labels_args=point_labels_args,
+        )
+
+    def add_meridians(
+        self,
+        start: float | None = None,
+        stop: float | None = None,
+        step: float | None = None,
+        lat_step: float | None = None,
+        n_samples: int | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """TBD.
+
+        Note
+        ----
+        .. versionadded:: 0.3.0
+
+        """
+        if show_labels is None:
+            show_labels = GRATICULE_SHOW_LABELS
+
+        if zlevel is None:
+            zlevel = GRATICULE_ZLEVEL
+
+        if mesh_args is None:
+            mesh_args = {}
+
+        if point_labels_args is None:
+            point_labels_args = {}
+
+        meridians = create_meridians(
+            start=start,
+            stop=stop,
+            step=step,
+            lat_step=lat_step,
+            n_samples=n_samples,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+        )
+
+        for mesh in meridians.blocks:
+            self.add_mesh(mesh, **mesh_args)
+
+        if show_labels:
+            self._add_graticule_labels(
+                meridians,
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
+                point_labels_args=point_labels_args,
+            )
+
+    def add_parallel(
+        self,
+        lat: float,
+        lon_step: float | None = None,
+        n_samples: int | None = None,
+        poles: bool | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """TBD.
+
+        Note
+        ----
+        .. versionadded:: 0.3.0
+
+        """
+        self.add_parallels(
+            start=lat,
+            stop=lat,
+            lon_step=lon_step,
+            n_samples=n_samples,
+            poles=poles,
+            show_labels=show_labels,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+            mesh_args=mesh_args,
+            point_labels_args=point_labels_args,
+        )
+
+    def add_parallels(
+        self,
+        start: float | None = None,
+        stop: float | None = None,
+        step: float | None = None,
+        lon_step: float | None = None,
+        n_samples: int | None = None,
+        poles: bool | None = None,
+        poles_label: bool | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """TBD.
+
+        Note
+        ----
+        .. versionadded:: 0.3.0
+
+        """
+        if show_labels is None:
+            show_labels = GRATICULE_SHOW_LABELS
+
+        if zlevel is None:
+            zlevel = GRATICULE_ZLEVEL
+
+        if mesh_args is None:
+            mesh_args = {}
+
+        if point_labels_args is None:
+            point_labels_args = {}
+
+        parallels = create_parallels(
+            start=start,
+            stop=stop,
+            step=step,
+            lon_step=lon_step,
+            n_samples=n_samples,
+            poles=poles,
+            poles_label=poles_label,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+        )
+
+        for mesh in parallels.blocks:
+            self.add_mesh(mesh, **mesh_args)
+
+        if show_labels:
+            self._add_graticule_labels(
+                parallels,
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
+                point_labels_args=point_labels_args,
+            )
+
 
 class GeoPlotter(GeoPlotterBase, pv.Plotter):
     """A geospatial aware plotter.
 
     See :class:`geovista.geoplotter.GeoPlotterBase` and
     :class:`pyvista.Plotter`.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """

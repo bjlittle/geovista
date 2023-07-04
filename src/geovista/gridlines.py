@@ -18,6 +18,8 @@ from .common import to_cartesian, wrap
 from .crs import WGS84, to_wkt
 
 __all__ = [
+    "GRATICULE_ZLEVEL",
+    "GraticuleGrid",
     "create_meridians",
     "create_parallels",
 ]
@@ -45,6 +47,9 @@ LATITUDE_N_SAMPLES: int = 360
 
 #: Whether to generate parallels at the north/south poles.
 LATITUDE_POLES: bool = False
+
+#: Whether to generate a north/south pole label.
+LATITUDE_POLES_LABEL: bool = True
 
 #: The first graticule line of latitude (degrees).
 LATITUDE_START: float = -90.0
@@ -76,7 +81,7 @@ LONGITUDE_STOP: float = 180.0
 
 @dataclass
 class GraticuleGrid:
-    """Graticule composed of the grid, labels and their points.
+    """Graticule composed of a block of meshes, labels and their points.
 
     Notes
     -----
@@ -208,7 +213,7 @@ def create_meridians(
     lat_step: float | None = None,
     n_samples: int | None = None,
     radius: float | None = None,
-    zlevel: float | ArrayLike | None = None,
+    zlevel: int | None = None,
     zscale: float | None = None,
 ) -> GraticuleGrid:
     """Generate graticule lines of constant longitude (meridians) with labels.
@@ -318,8 +323,9 @@ def create_parallels(
     lon_step: float | None = None,
     n_samples: int | None = None,
     poles: bool | None = None,
+    poles_label: bool | None = None,
     radius: float | None = None,
-    zlevel: float | ArrayLike | None = None,
+    zlevel: int | None = None,
     zscale: float | None = None,
 ) -> GraticuleGrid:
     """Generate graticule lines of constant latitude (parallels) with labels.
@@ -344,6 +350,9 @@ def create_parallels(
     poles : bool, optional
         Whether to create a line of latitude at the north/south poles. Defaults to
         :data:`LATITUDE_POLES`.
+    poles_label : bool, optional
+        Whether to create a single north/south pole label. Only applies when
+        ``poles=False``. Defaults to :data:`LATITUDE_POLES_LABEL`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
     zlevel : int, optional
@@ -380,6 +389,9 @@ def create_parallels(
 
     if poles is None:
         poles = LATITUDE_POLES
+
+    if poles_label is None:
+        poles_label = LATITUDE_POLES_LABEL
 
     if zlevel is None:
         zlevel = GRATICULE_ZLEVEL
@@ -427,12 +439,17 @@ def create_parallels(
         grid_points.append(lonlat)
         grid_labels.extend(labels)
 
-    if not poles:
-        # create pole labels at when there are no polar parallels
-        lonlat = np.array([[0, 90], [0, -90]], dtype=float)
-        grid_points.append(lonlat)
-        pole_labels = create_parallel_labels([90, -90], poles=True)
-        grid_labels.extend(pole_labels)
+    if not poles and poles_label:
+        lonlat = []
+        if 90 in lats:
+            lonlat.append([0, 90])
+        if -90 in lats:
+            lonlat.append([0, -90])
+        if lonlat:
+            lonlat = np.array(lonlat, dtype=float)
+            grid_points.append(lonlat)
+            pole_labels = create_parallel_labels(list(lonlat[:, 1]), poles=True)
+            grid_labels.extend(pole_labels)
 
     grid_points = np.vstack(grid_points)
     graticule = GraticuleGrid(blocks=blocks, lonlat=grid_points, labels=grid_labels)
