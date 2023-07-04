@@ -669,7 +669,9 @@ def slice_cells(
     return result
 
 
-def slice_lines(mesh: pv.PolyData, n_points: int | None = None) -> pv.PolyData:
+def slice_lines(
+    mesh: pv.PolyData, n_points: int | None = None, copy: bool | None = False
+) -> pv.PolyData:
     """Cut the line mesh along the antimeridian, breaking line connectivity.
 
     The connectivity of any line segment in the mesh traversing the antimeridian will be
@@ -694,6 +696,9 @@ def slice_lines(mesh: pv.PolyData, n_points: int | None = None) -> pv.PolyData:
         plane which will slice the `mesh` e.g., with ``n_points=1``, a mid-point will be
         calculated for the line, which will then consist of 2 line segments i.e., the 2
         end-points and 1 mid-point. Defaults to :data:`SPLINE_N_POINTS`.
+    copy : bool, default=False
+        Return a deepcopy of the ``mesh`` when there are no points of intersection with
+        the antimeridian. Otherwise, the original ``mesh`` is returned.
 
     Notes
     -----
@@ -723,6 +728,8 @@ def slice_lines(mesh: pv.PolyData, n_points: int | None = None) -> pv.PolyData:
     antimeridian = np.isclose(lonlat[:, 0], -180)
 
     if antimeridian.sum() == 0:
+        if copy:
+            mesh = mesh.copy()
         return mesh
 
     # antimeridian points-of-interest (N, 3)

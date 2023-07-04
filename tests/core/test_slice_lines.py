@@ -46,11 +46,15 @@ def test_n_points_warning(coastlines, n_points):
         _ = slice_lines(coastlines, n_points=n_points)
 
 
+@pytest.mark.parametrize("copy", [False, True])
 @pytest.mark.parametrize("mesh", [line(0, [90, 0, -90]), line([-135, -45, 45, 135], 0)])
-def test_no_traversal_slice(mesh):
+def test_no_traversal_slice(copy, mesh):
     """Test a line mesh that does not traverse the antimeridian."""
-    result = slice_lines(mesh)
-    assert id(result) == id(mesh)
+    result = slice_lines(mesh, copy=copy)
+    if copy:
+        assert id(result) != id(mesh)
+    else:
+        assert id(result) == id(mesh)
     assert result == mesh
 
 
