@@ -408,6 +408,7 @@ def from_cartesian(
     pole_pids = np.where(np.isclose(np.abs(lats), 90))[0]
     if pole_pids.size:
         # enforce a common longitude for pole singularities
+        # TBD: review this strategy
         lons[pole_pids] = 0
 
         if (
