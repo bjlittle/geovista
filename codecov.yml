@@ -8,6 +8,7 @@ coverage:
     patch: off
 
 ignore:
+  - "**/cli.py"
   - "**/geoplotter.py"
   - "**/pantry.py"
   - "**/registry.txt"
