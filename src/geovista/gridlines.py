@@ -14,15 +14,19 @@ import numpy as np
 from numpy.typing import ArrayLike
 import pyvista as pv
 
-from .common import to_cartesian, wrap
+from .common import GV_REMESH_POINT_IDS, REMESH_SEAM, to_cartesian, wrap
 from .crs import WGS84, to_wkt
 
 __all__ = [
+    "GRATICULE_CLOSED_INTERVAL",
     "GRATICULE_ZLEVEL",
     "GraticuleGrid",
     "create_meridians",
     "create_parallels",
 ]
+
+#: Whether longitudes within half-open [-180, 180) or closed [-180, 180] interval.
+GRATICULE_CLOSED_INTERVAL: bool = False
 
 #: The default zlevel for graticule meridians and parallels.
 GRATICULE_ZLEVEL: int = 1
@@ -46,7 +50,7 @@ LABEL_WEST: str = f"{LABEL_DEGREE}W"
 LATITUDE_N_SAMPLES: int = 360
 
 #: Whether to generate parallels at the north/south poles.
-LATITUDE_POLES: bool = False
+LATITUDE_POLES_PARALLEL: bool = False
 
 #: Whether to generate a north/south pole label.
 LATITUDE_POLES_LABEL: bool = True
@@ -118,7 +122,7 @@ def create_meridian_labels(lons: list[float, ...]) -> list[str, ...]:
     if not isinstance(lons, Iterable):
         lons = [lons]
 
-    lons = wrap(lons)
+    print(f"create_meridian_labels: {lons=}")
 
     for lon in lons:
         direction = LABEL_EAST
@@ -134,7 +138,7 @@ def create_meridian_labels(lons: list[float, ...]) -> list[str, ...]:
 
 
 def create_parallel_labels(
-    lats: list[float, ...], poles: bool | None = None
+    lats: list[float, ...], poles_parallel: bool | None = None
 ) -> list[str, ...]:
     """Generate labels for the parallels.
 
@@ -143,9 +147,9 @@ def create_parallel_labels(
     lats : list of float
         The lines of latitude that require a label of their location north or
         south of the prime meridian.
-    poles : bool, optional
+    poles_parallel : bool, optional
         Whether to generate a label for the north/south poles. Defaults to
-        :data:`LATITUDE_POLES`.
+        :data:`LATITUDE_POLES_PARALLEL`.
 
     Returns
     -------
@@ -159,8 +163,8 @@ def create_parallel_labels(
     """
     result = []
 
-    if poles is None:
-        poles = LATITUDE_POLES
+    if poles_parallel is None:
+        poles_parallel = LATITUDE_POLES_PARALLEL
 
     if not isinstance(lats, Iterable):
         lats = [lats]
@@ -174,7 +178,7 @@ def create_parallel_labels(
         elif lat == 0:
             direction = LABEL_DEGREE
 
-        if not poles and np.isclose(np.abs(lat), 90.0):
+        if not poles_parallel and np.isclose(np.abs(lat), 90.0):
             continue
 
         value = int(np.abs(lat)) if direction else ""
@@ -212,6 +216,7 @@ def create_meridians(
     step: float | None = None,
     lat_step: float | None = None,
     n_samples: int | None = None,
+    closed_interval: bool | None = None,
     radius: float | None = None,
     zlevel: int | None = None,
     zscale: float | None = None,
@@ -225,7 +230,8 @@ def create_meridians(
         meridian. Defaults to :data:`LONGITUDE_START`.
     stop : float, optional
         The last line of longitude (degrees). The graticule will include this meridian
-        when it is a multiple of ``step``. Defaults to :data:`LONGITUDE_STOP`.
+        when it is a multiple of ``step``. See ``closed_interval``. Defaults to
+        :data:`LONGITUDE_STOP`.
     step : float, optional
         The delta (degrees) between neighbouring meridians. Defaults to
         :data:`LONGITUDE_STEP`.
@@ -235,6 +241,10 @@ def create_meridians(
     n_samples : int, optional
         The number of points in a single line of longitude. Defaults to
         :data:`LONGITUDE_N_SAMPLES`.
+    closed_interval : bool, default=False
+        Longitude values will be in the half-closed interval [-180, 180). Otherwise,
+        longitudes will be in the closed interval [-180, 180]. Defaults to
+        :data:`GRATICULE_CLOSED_INTERVAL`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
     zlevel : int, optional
@@ -269,16 +279,26 @@ def create_meridians(
     if lat_step is None:
         lat_step = LATITUDE_STEP
 
+    if closed_interval is None:
+        closed_interval = GRATICULE_CLOSED_INTERVAL
+
     if zlevel is None:
         zlevel = GRATICULE_ZLEVEL
 
     # modulo sanity for step sizes
     lon_step, lat_step = _step_modulo(lon_step, lat_step)
 
-    lons = np.unique(wrap(np.arange(start, stop + lon_step, lon_step, dtype=float)))
-    lats = np.linspace(LATITUDE_START, LATITUDE_STOP, num=n_samples)
+    lons = np.arange(start, stop + lon_step, lon_step, dtype=float)
 
-    grid_lons = []
+    if closed_interval:
+        mask = np.isclose(lons, 180.0)
+        lons = wrap(lons)
+        if np.any(mask):
+            lons[mask] = 180.0
+    else:
+        lons = np.unique(wrap(lons))
+
+    lats = np.linspace(LATITUDE_START, LATITUDE_STOP, num=n_samples)
     blocks = pv.MultiBlock()
 
     for lon in lons:
@@ -297,17 +317,24 @@ def create_meridians(
 
         mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
         to_wkt(mesh, WGS84)
+
+        # TBD: require lon_0 to determine the wrap meridian
+        if np.isclose(lon, 180.0):
+            # mark this meridian as a closed-interval
+            mask = np.empty(mesh.n_points, dtype=int)
+            mask.fill(REMESH_SEAM)
+            mesh.point_data[GV_REMESH_POINT_IDS] = mask
+
         blocks[str(lon)] = mesh
-        grid_lons.append(lon)
 
     grid_points, grid_labels = [], []
-    labels = create_meridian_labels(grid_lons)
+    labels = create_meridian_labels(list(lons))
     grid_lats = np.arange(LATITUDE_START, LATITUDE_STOP, lat_step, dtype=float) + (
         lat_step / 2
     )
 
     for lat in grid_lats:
-        lonlat = np.vstack([grid_lons, np.ones_like(grid_lons, dtype=float) * lat]).T
+        lonlat = np.vstack([lons, np.ones_like(lons, dtype=float) * lat]).T
         grid_points.append(lonlat)
         grid_labels.extend(labels)
 
@@ -323,7 +350,7 @@ def create_parallels(
     step: float | None = None,
     lon_step: float | None = None,
     n_samples: int | None = None,
-    poles: bool | None = None,
+    poles_parallel: bool | None = None,
     poles_label: bool | None = None,
     radius: float | None = None,
     zlevel: int | None = None,
@@ -348,9 +375,9 @@ def create_parallels(
     n_samples : int, optional
         The number of points in a single line of latitude. Defaults to
         :data:`LATITUDE_N_SAMPLES`.
-    poles : bool, optional
+    poles_parallel : bool, optional
         Whether to create a line of latitude at the north/south poles. Defaults to
-        :data:`LATITUDE_POLES`.
+        :data:`LATITUDE_POLES_PARALLEL`.
     poles_label : bool, optional
         Whether to create a single north/south pole label. Only applies when
         ``poles=False``. Defaults to :data:`LATITUDE_POLES_LABEL`.
@@ -388,8 +415,8 @@ def create_parallels(
     if n_samples is None:
         n_samples = LATITUDE_N_SAMPLES
 
-    if poles is None:
-        poles = LATITUDE_POLES
+    if poles_parallel is None:
+        poles_parallel = LATITUDE_POLES_PARALLEL
 
     if poles_label is None:
         poles_label = LATITUDE_POLES_LABEL
@@ -407,7 +434,7 @@ def create_parallels(
     blocks = pv.MultiBlock()
 
     for lat in lats:
-        if not poles and np.isclose(np.abs(lat), 90.0):
+        if not poles_parallel and np.isclose(np.abs(lat), 90.0):
             continue
 
         xyz = to_cartesian(
@@ -417,6 +444,7 @@ def create_parallels(
             zlevel=zlevel,
             zscale=zscale,
         )
+        # a parallel is a closed loop with N points and N lines
         n_points = xyz.shape[0]
         lines = np.full((n_points, 3), 2, dtype=int)
         lines[:, 1] = np.arange(n_points)
@@ -429,7 +457,7 @@ def create_parallels(
         grid_lats.append(lat)
 
     grid_points, grid_labels = [], []
-    labels = create_parallel_labels(grid_lats, poles=poles)
+    labels = create_parallel_labels(grid_lats, poles_parallel=poles_parallel)
     grid_lons = wrap(
         np.arange(LONGITUDE_START, LONGITUDE_STOP, lon_step, dtype=float)
         + (lon_step / 2)
@@ -440,7 +468,7 @@ def create_parallels(
         grid_points.append(lonlat)
         grid_labels.extend(labels)
 
-    if not poles and poles_label:
+    if not poles_parallel and poles_label:
         lonlat = []
         if 90 in lats:
             lonlat.append([0, 90])
@@ -449,7 +477,9 @@ def create_parallels(
         if lonlat:
             lonlat = np.array(lonlat, dtype=float)
             grid_points.append(lonlat)
-            pole_labels = create_parallel_labels(list(lonlat[:, 1]), poles=True)
+            pole_labels = create_parallel_labels(
+                list(lonlat[:, 1]), poles_parallel=True
+            )
             grid_labels.extend(pole_labels)
 
     grid_points = np.vstack(grid_points)

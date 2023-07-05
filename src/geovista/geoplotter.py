@@ -352,9 +352,10 @@ class GeoPlotterBase:
         lat_step: float | None = None,
         lat_stop: float | None = None,
         n_samples: int | None = None,
-        poles: bool | None = None,
+        poles_parallel: bool | None = None,
         poles_label: bool | None = None,
         show_labels: bool | None = None,
+        closed_interval: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -391,9 +392,9 @@ class GeoPlotterBase:
         n_samples : int, optional
             The number of points in a single line of latitude. Defaults to
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
-        poles : bool, optional
+        poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
-            :data:`geovista.gridlines.LATITUDE_POLES`.
+            :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
         poles_label : bool, optional
             Whether to create a single north/south pole label. Only applies when
             ``poles=False``. Defaults to
@@ -401,6 +402,10 @@ class GeoPlotterBase:
         show_labels : bool, optional
             Whether to render the labels of the parallels. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
+        closed_interval : bool, optional
+            Longitude values will be in the half-closed interval [-180, 180). Otherwise,
+            longitudes will be in the closed interval [-180, 180]. Defaults to
+            :data:`geovista.gridlines.GRATICULE_CLOSED_INTERVAL`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
@@ -427,6 +432,7 @@ class GeoPlotterBase:
             lat_step=lat_step,
             n_samples=n_samples,
             show_labels=show_labels,
+            closed_interval=closed_interval,
             radius=radius,
             zlevel=zlevel,
             zscale=zscale,
@@ -439,7 +445,7 @@ class GeoPlotterBase:
             step=lat_step,
             lon_step=lon_step,
             n_samples=n_samples,
-            poles=poles,
+            poles_parallel=poles_parallel,
             poles_label=poles_label,
             show_labels=show_labels,
             radius=radius,
@@ -511,7 +517,7 @@ class GeoPlotterBase:
                     tgt_crs = set_central_meridian(tgt_crs, 0)
 
                 cut_mesh = (
-                    slice_lines(mesh)
+                    slice_lines(mesh, copy=True)
                     if mesh.n_lines
                     else slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
                 )
@@ -570,6 +576,7 @@ class GeoPlotterBase:
         lat_step: float | None = None,
         n_samples: int | None = None,
         show_labels: bool | None = None,
+        closed_interval: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -591,6 +598,10 @@ class GeoPlotterBase:
         show_labels : bool, optional
             Whether to render the labels of the parallels. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
+        closed_interval : bool, optional
+            Longitude values will be in the half-closed interval [-180, 180). Otherwise,
+            longitudes will be in the closed interval [-180, 180]. Defaults to
+            :data:`geovista.gridlines.GRATICULE_CLOSED_INTERVAL`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
@@ -616,6 +627,7 @@ class GeoPlotterBase:
             lat_step=lat_step,
             n_samples=n_samples,
             show_labels=show_labels,
+            closed_interval=closed_interval,
             radius=radius,
             zlevel=zlevel,
             zscale=zscale,
@@ -631,6 +643,7 @@ class GeoPlotterBase:
         lat_step: float | None = None,
         n_samples: int | None = None,
         show_labels: bool | None = None,
+        closed_interval: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -660,6 +673,10 @@ class GeoPlotterBase:
         show_labels : bool, optional
             Whether to render the labels of the parallels. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
+        closed_interval : bool, optional
+            Longitude values will be in the half-closed interval [-180, 180). Otherwise,
+            longitudes will be in the closed interval [-180, 180]. Defaults to
+            :data:`geovista.gridlines.GRATICULE_CLOSED_INTERVAL`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
@@ -697,6 +714,7 @@ class GeoPlotterBase:
             step=step,
             lat_step=lat_step,
             n_samples=n_samples,
+            closed_interval=closed_interval,
             radius=radius,
             zlevel=zlevel,
             zscale=zscale,
@@ -719,7 +737,7 @@ class GeoPlotterBase:
         lat: float,
         lon_step: float | None = None,
         n_samples: int | None = None,
-        poles: bool | None = None,
+        poles_parallel: bool | None = None,
         show_labels: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
@@ -739,9 +757,9 @@ class GeoPlotterBase:
         n_samples : int, optional
             The number of points in a single line of latitude. Defaults to
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
-        poles : bool, optional
+        poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
-            :data:`geovista.gridlines.LATITUDE_POLES`.
+            :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
         show_labels : bool, optional
             Whether to render the labels of the parallels. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
@@ -769,7 +787,7 @@ class GeoPlotterBase:
             stop=lat,
             lon_step=lon_step,
             n_samples=n_samples,
-            poles=poles,
+            poles_parallel=poles_parallel,
             show_labels=show_labels,
             radius=radius,
             zlevel=zlevel,
@@ -785,7 +803,7 @@ class GeoPlotterBase:
         step: float | None = None,
         lon_step: float | None = None,
         n_samples: int | None = None,
-        poles: bool | None = None,
+        poles_parallel: bool | None = None,
         poles_label: bool | None = None,
         show_labels: bool | None = None,
         radius: float | None = None,
@@ -814,9 +832,9 @@ class GeoPlotterBase:
         n_samples : int, optional
             The number of points in a single line of latitude. Defaults to
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
-        poles : bool, optional
+        poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
-            :data:`geovista.gridlines.LATITUDE_POLES`.
+            :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
         poles_label : bool, optional
             Whether to create a single north/south pole label. Only applies when
             ``poles=False``. Defaults to
@@ -861,7 +879,7 @@ class GeoPlotterBase:
             step=step,
             lon_step=lon_step,
             n_samples=n_samples,
-            poles=poles,
+            poles_parallel=poles_parallel,
             poles_label=poles_label,
             radius=radius,
             zlevel=zlevel,
