@@ -98,6 +98,29 @@ class GraticuleGrid:
     labels: list[str, ...]
 
 
+def _step_modulo(lon_step: float, lat_step: float) -> tuple[float, float]:
+    """Wrap graticule meridian/parallel step size (degrees) to sane upper bounds.
+
+    Parameters
+    ----------
+    lon_step : float
+        The longitude step (degrees) between meridians.
+    lat_step : float
+        The latitude step (degrees) between parallels.
+
+    Returns
+    -------
+    tuple of float
+        The lon/lat step values.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    return (lon_step % LONGITUDE_STEP_MODULO, lat_step % LATITUDE_STEP_MODULO)
+
+
 def create_meridian_labels(lons: list[float, ...]) -> list[str, ...]:
     """Generate labels for the meridians.
 
@@ -133,79 +156,6 @@ def create_meridian_labels(lons: list[float, ...]) -> list[str, ...]:
         result.append(f"{value}{direction}")
 
     return result
-
-
-def create_parallel_labels(
-    lats: list[float, ...], poles_parallel: bool | None = None
-) -> list[str, ...]:
-    """Generate labels for the parallels.
-
-    Parameters
-    ----------
-    lats : list of float
-        The lines of latitude that require a label of their location north or
-        south of the prime meridian.
-    poles_parallel : bool, optional
-        Whether to generate a label for the north/south poles. Defaults to
-        :data:`LATITUDE_POLES_PARALLEL`.
-
-    Returns
-    -------
-    list of str
-        The sequence of string labels for each line of latitude.
-
-    Notes
-    -----
-    .. versionadded:: 0.3.0
-
-    """
-    result = []
-
-    if poles_parallel is None:
-        poles_parallel = LATITUDE_POLES_PARALLEL
-
-    if not isinstance(lats, Iterable):
-        lats = [lats]
-
-    for lat in lats:
-        direction = ""
-        if lat > 0:
-            direction = LABEL_NORTH
-        elif lat < 0:
-            direction = LABEL_SOUTH
-        elif lat == 0:
-            direction = LABEL_DEGREE
-
-        if not poles_parallel and np.isclose(np.abs(lat), 90.0):
-            continue
-
-        value = int(np.abs(lat)) if direction else ""
-        result.append(f"{value}{direction}")
-
-    return result
-
-
-def _step_modulo(lon_step: float, lat_step: float) -> tuple[float, float]:
-    """Wrap graticule meridian/parallel step size (degrees) to sane upper bounds.
-
-    Parameters
-    ----------
-    lon_step : float
-        The longitude step (degrees) between meridians.
-    lat_step : float
-        The latitude step (degrees) between parallels.
-
-    Returns
-    -------
-    tuple of float
-        The lon/lat step values.
-
-    Notes
-    -----
-    .. versionadded:: 0.3.0
-
-    """
-    return (lon_step % LONGITUDE_STEP_MODULO, lat_step % LATITUDE_STEP_MODULO)
 
 
 def create_meridians(
@@ -340,6 +290,56 @@ def create_meridians(
     graticule = GraticuleGrid(blocks=blocks, lonlat=grid_points, labels=grid_labels)
 
     return graticule
+
+
+def create_parallel_labels(
+    lats: list[float, ...], poles_parallel: bool | None = None
+) -> list[str, ...]:
+    """Generate labels for the parallels.
+
+    Parameters
+    ----------
+    lats : list of float
+        The lines of latitude that require a label of their location north or
+        south of the prime meridian.
+    poles_parallel : bool, optional
+        Whether to generate a label for the north/south poles. Defaults to
+        :data:`LATITUDE_POLES_PARALLEL`.
+
+    Returns
+    -------
+    list of str
+        The sequence of string labels for each line of latitude.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    result = []
+
+    if poles_parallel is None:
+        poles_parallel = LATITUDE_POLES_PARALLEL
+
+    if not isinstance(lats, Iterable):
+        lats = [lats]
+
+    for lat in lats:
+        direction = ""
+        if lat > 0:
+            direction = LABEL_NORTH
+        elif lat < 0:
+            direction = LABEL_SOUTH
+        elif lat == 0:
+            direction = LABEL_DEGREE
+
+        if not poles_parallel and np.isclose(np.abs(lat), 90.0):
+            continue
+
+        value = int(np.abs(lat)) if direction else ""
+        result.append(f"{value}{direction}")
+
+    return result
 
 
 def create_parallels(
