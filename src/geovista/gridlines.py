@@ -135,8 +135,8 @@ def create_meridian_labels(lons: list[float, ...]) -> list[str, ...]:
     Parameters
     ----------
     lons : list of float
-        The meridian lines that require a label of their location east or west of
-        the prime meridian.
+        The meridian lines that require a label of their location east or west relative
+        to the prime meridian.
 
     Returns
     -------
@@ -154,13 +154,16 @@ def create_meridian_labels(lons: list[float, ...]) -> list[str, ...]:
         lons = [lons]
 
     for lon in lons:
+        # explicit truncation, perhaps offer format control when required
+        lon = int(lon)
         direction = LABEL_EAST
-        if lon == 0 or np.isclose(np.abs(lon), 180.0):
+
+        if lon == 0 or np.isclose(np.abs(lon), 180):
             direction = LABEL_DEGREE
         elif lon < 0:
             direction = LABEL_WEST
 
-        value = int(np.abs(lon))
+        value = np.abs(lon)
         result.append(f"{value}{direction}")
 
     return result
@@ -309,7 +312,7 @@ def create_parallel_labels(
     ----------
     lats : list of float
         The lines of latitude that require a label of their location north or
-        south of the prime meridian.
+        south relative to the equator.
     poles_parallel : bool, optional
         Whether to generate a label for the north/south poles. Defaults to
         :data:`LATITUDE_POLES_PARALLEL`.
@@ -333,18 +336,19 @@ def create_parallel_labels(
         lats = [lats]
 
     for lat in lats:
-        direction = ""
-        if lat > 0:
-            direction = LABEL_NORTH
+        # explicit truncation, perhaps offer format control when required
+        lat = int(lat)
+        direction = LABEL_NORTH
+
+        if lat == 0:
+            direction = LABEL_DEGREE
         elif lat < 0:
             direction = LABEL_SOUTH
-        elif lat == 0:
-            direction = LABEL_DEGREE
 
-        if not poles_parallel and np.isclose(np.abs(lat), 90.0):
+        if not poles_parallel and np.isclose(np.abs(lat), 90):
             continue
 
-        value = int(np.abs(lat)) if direction else ""
+        value = np.abs(lat)
         result.append(f"{value}{direction}")
 
     return result
