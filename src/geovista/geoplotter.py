@@ -351,7 +351,6 @@ class GeoPlotterBase:
         lat_start: float | None = None,
         lat_step: float | None = None,
         lat_stop: float | None = None,
-        n_samples: int | None = None,
         poles_parallel: bool | None = None,
         poles_label: bool | None = None,
         show_labels: bool | None = None,
@@ -370,37 +369,35 @@ class GeoPlotterBase:
         Parameters
         ----------
         lon_start : float, optional
-            The starting line of longitude (degrees). The graticule will include this
+            The first line of longitude (degrees). The graticule will include this
             meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
         lon_stop : float, optional
             The last line of longitude (degrees). The graticule will include this
-            meridian when it is a multiple of ``step``. Defaults to
-            :data:`geovista.gridlines.LONGITUDE_STOP`.
+            meridian when it is a multiple of ``lon_step``. Also see
+            ``closed_interval``. Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
         lon_step : float, optional
             The delta (degrees) between neighbouring meridians. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
         lat_start : float, optional
-            The starting line of latitude (degrees). The graticule will include this
-            parallel. Defaults to :data:`geovista.gridlines.LATITUDE_START`.
+            The first line of latitude (degrees). The graticule will include this
+            parallel. Also see `poles_parallel`. Defaults to
+            :data:`geovista.gridlines.LATITUDE_START`.
         lat_stop : float, optional
             The last line of latitude (degrees). The graticule will include this
-            parallel when it is a multiple of ``step``. Defaults to
+            parallel when it is a multiple of ``lat_step``. Defaults to
             :data:`geovista.gridlines.LATITUDE_STOP`.
         lat_step : float, optional
             The delta (degrees) between neighbouring parallels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
-        n_samples : int, optional
-            The number of points in a single line of latitude. Defaults to
-            :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
         poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
         poles_label : bool, optional
             Whether to create a single north/south pole label. Only applies when
-            ``poles=False``. Defaults to
+            ``poles_parallel=False``. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_LABEL`.
         show_labels : bool, optional
-            Whether to render the labels of the parallels. Defaults to
+            Whether to render the labels of the parallels and meridians. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
         closed_interval : bool, optional
             Longitude values will be in the half-closed interval [-180, 180). Otherwise,
@@ -430,7 +427,6 @@ class GeoPlotterBase:
             stop=lon_stop,
             step=lon_step,
             lat_step=lat_step,
-            n_samples=n_samples,
             show_labels=show_labels,
             closed_interval=closed_interval,
             radius=radius,
@@ -444,7 +440,6 @@ class GeoPlotterBase:
             stop=lat_stop,
             step=lat_step,
             lon_step=lon_step,
-            n_samples=n_samples,
             poles_parallel=poles_parallel,
             poles_label=poles_label,
             show_labels=show_labels,
@@ -596,7 +591,7 @@ class GeoPlotterBase:
             The number of points in a single line of longitude. Defaults to
             :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
         show_labels : bool, optional
-            Whether to render the labels of the parallels. Defaults to
+            Whether to render the meridian label. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
         closed_interval : bool, optional
             Longitude values will be in the half-closed interval [-180, 180). Otherwise,
@@ -655,12 +650,12 @@ class GeoPlotterBase:
         Parameters
         ----------
         start : float, optional
-            The starting line of longitude (degrees). The graticule will include this
+            The first line of longitude (degrees). The graticule will include this
             meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
         stop : float, optional
             The last line of longitude (degrees). The graticule will include this
-            meridian when it is a multiple of ``step``. Defaults to
-            :data:`geovista.gridlines.LONGITUDE_STOP`.
+            meridian when it is a multiple of ``step``. Also see ``closed_interval``.
+            Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
         step : float, optional
             The delta (degrees) between neighbouring meridians. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
@@ -671,7 +666,7 @@ class GeoPlotterBase:
             The number of points in a single line of longitude. Defaults to
             :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
         show_labels : bool, optional
-            Whether to render the labels of the parallels. Defaults to
+            Whether to render the labels of the meridians. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
         closed_interval : bool, optional
             Longitude values will be in the half-closed interval [-180, 180). Otherwise,
@@ -761,7 +756,7 @@ class GeoPlotterBase:
             Whether to create a line of latitude at the north/south poles. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
         show_labels : bool, optional
-            Whether to render the labels of the parallels. Defaults to
+            Whether to render the parallel label. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
@@ -817,12 +812,13 @@ class GeoPlotterBase:
         Parameters
         ----------
         start : float, optional
-            The starting line of latitude (degrees). The graticule will include this
-            parallel. Defaults to :data:`geovista.gridlines.LATITUDE_START`.
+            The first line of latitude (degrees). The graticule will include this
+            parallel. Also see ``poles_parallel``. Defaults to
+            :data:`geovista.gridlines.LATITUDE_START`.
         stop : float, optional
             The last line of latitude (degrees). The graticule will include this
-            parallel when it is a multiple of ``step``. Defaults to
-            :data:`geovista.gridlines.LATITUDE_STOP`.
+            parallel when it is a multiple of ``step``. Also see ``poles_parallel`.
+            Defaults to :data:`geovista.gridlines.LATITUDE_STOP`.
         step : float, optional
             The delta (degrees) between neighbouring parallels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
@@ -837,7 +833,7 @@ class GeoPlotterBase:
             :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
         poles_label : bool, optional
             Whether to create a single north/south pole label. Only applies when
-            ``poles=False``. Defaults to
+            ``poles_parallel=False``. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_LABEL`.
         show_labels : bool, optional
             Whether to render the labels of the parallels. Defaults to

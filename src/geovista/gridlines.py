@@ -402,7 +402,7 @@ def create_parallels(
         ``poles_label``. Defaults to :data:`LATITUDE_POLES_PARALLEL`.
     poles_label : bool, optional
         Whether to create a single north/south pole label. Only applies when
-        ``poles=False``. Defaults to :data:`LATITUDE_POLES_LABEL`.
+        ``poles_parallel=False``. Defaults to :data:`LATITUDE_POLES_LABEL`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
     zlevel : int, optional
