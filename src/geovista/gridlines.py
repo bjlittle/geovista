@@ -122,8 +122,6 @@ def create_meridian_labels(lons: list[float, ...]) -> list[str, ...]:
     if not isinstance(lons, Iterable):
         lons = [lons]
 
-    print(f"create_meridian_labels: {lons=}")
-
     for lon in lons:
         direction = LABEL_EAST
         if lon == 0 or np.isclose(np.abs(lon), 180.0):
