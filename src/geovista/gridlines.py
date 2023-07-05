@@ -61,8 +61,8 @@ LATITUDE_START: float = -90.0
 #: The default step size between graticule parallels (degrees).
 LATITUDE_STEP: float = 30.0
 
-#: The modulo upper bound (degrees) for parallel step size.
-LATITUDE_STEP_MODULO: float = 90.0
+#: The period or upper bound (degrees) for parallel step size.
+LATITUDE_STEP_PERIOD: float = 90.0
 
 #: The last graticule line of latitude (degrees).
 LATITUDE_STOP: float = 90.0
@@ -76,8 +76,8 @@ LONGITUDE_START: float = -180.0
 #: The default step size between graticule meridians (degrees).
 LONGITUDE_STEP: float = 30.0
 
-#: The modulo upper bound (degrees) for meridian step size.
-LONGITUDE_STEP_MODULO: float = 180.0
+#: The period or upper bound (degrees) for meridian step size.
+LONGITUDE_STEP_PERIOD: float = 180.0
 
 #: The last graticule meridian (degrees).
 LONGITUDE_STOP: float = 180.0
@@ -98,27 +98,35 @@ class GraticuleGrid:
     labels: list[str, ...]
 
 
-def _step_modulo(lon_step: float, lat_step: float) -> tuple[float, float]:
+def _step_period(lon: float, lat: float) -> tuple[float, float]:
     """Wrap graticule meridian/parallel step size (degrees) to sane upper bounds.
 
     Parameters
     ----------
-    lon_step : float
+    lon : float
         The longitude step (degrees) between meridians.
-    lat_step : float
+    lat : float
         The latitude step (degrees) between parallels.
 
     Returns
     -------
     tuple of float
-        The lon/lat step values.
+        The lon/lat step values within the period.
 
     Notes
     -----
     .. versionadded:: 0.3.0
 
     """
-    return (lon_step % LONGITUDE_STEP_MODULO, lat_step % LATITUDE_STEP_MODULO)
+    lon_sign = 1 if lon >= 0 else -1
+    lat_sign = 1 if lat >= 0 else -1
+    lon = (lon % LONGITUDE_STEP_PERIOD) * lon_sign
+    lat = (lat % LATITUDE_STEP_PERIOD) * lat_sign
+    if np.isclose(lon, 0):
+        lon = abs(lon)
+    if np.isclose(lat, 0):
+        lat = abs(lat)
+    return (lon, lat)
 
 
 def create_meridian_labels(lons: list[float, ...]) -> list[str, ...]:
@@ -233,8 +241,8 @@ def create_meridians(
     if zlevel is None:
         zlevel = GRATICULE_ZLEVEL
 
-    # modulo sanity for step sizes
-    lon_step, lat_step = _step_modulo(lon_step, lat_step)
+    # period sanity for step sizes
+    lon_step, lat_step = _step_period(lon_step, lat_step)
 
     lons = np.arange(start, stop + lon_step, lon_step, dtype=float)
 
@@ -422,8 +430,8 @@ def create_parallels(
     if zlevel is None:
         zlevel = GRATICULE_ZLEVEL
 
-    # modulo sanity for step sizes
-    lon_step, lat_step = _step_modulo(lon_step, lat_step)
+    # period sanity for step sizes
+    lon_step, lat_step = _step_period(lon_step, lat_step)
 
     lats = np.arange(start, stop + lat_step, lat_step, dtype=float)
     lons = wrap(np.linspace(LONGITUDE_START, LONGITUDE_STOP, num=n_samples + 1)[:-1])
