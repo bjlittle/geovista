@@ -14,7 +14,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 import pyvista as pv
 
-from .common import GV_REMESH_POINT_IDS, REMESH_SEAM, to_cartesian, wrap
+from .common import BASE, GV_REMESH_POINT_IDS, PERIOD, REMESH_SEAM, to_cartesian, wrap
 from .crs import WGS84, to_wkt
 
 __all__ = [
@@ -71,7 +71,7 @@ LATITUDE_STOP: float = 90.0
 LONGITUDE_N_SAMPLES: int = 180
 
 #: The first meridian line in the graticule (degrees).
-LONGITUDE_START: float = -180.0
+LONGITUDE_START: float = BASE
 
 #: The default step size between graticule meridians (degrees).
 LONGITUDE_STEP: float = 30.0
@@ -80,7 +80,7 @@ LONGITUDE_STEP: float = 30.0
 LONGITUDE_STEP_PERIOD: float = 180.0
 
 #: The last graticule meridian (degrees).
-LONGITUDE_STOP: float = 180.0
+LONGITUDE_STOP: float = BASE + PERIOD
 
 
 @dataclass
@@ -185,11 +185,11 @@ def create_meridians(
     Parameters
     ----------
     start : float, optional
-        The starting line of longitude (degrees). The graticule will include this
+        The first line of longitude (degrees). The graticule will include this
         meridian. Defaults to :data:`LONGITUDE_START`.
     stop : float, optional
         The last line of longitude (degrees). The graticule will include this meridian
-        when it is a multiple of ``step``. See ``closed_interval``. Defaults to
+        when it is a multiple of ``step``. Also see ``closed_interval``. Defaults to
         :data:`LONGITUDE_STOP`.
     step : float, optional
         The delta (degrees) between neighbouring meridians. Defaults to
@@ -232,11 +232,21 @@ def create_meridians(
 
     lon_step = LONGITUDE_STEP if step is None else step
 
+    if lon_step <= 0:
+        emsg = f"Require a non-zero positive value for 'step', got {str(lon_step)!r}."
+        raise ValueError(emsg)
+
     if n_samples is None:
         n_samples = LONGITUDE_N_SAMPLES
 
     if lat_step is None:
         lat_step = LATITUDE_STEP
+
+    if lat_step <= 0:
+        emsg = (
+            f"Require a non-zero positive value for 'lat_step', got {str(lat_step)!r}."
+        )
+        raise ValueError(emsg)
 
     if closed_interval is None:
         closed_interval = GRATICULE_CLOSED_INTERVAL
@@ -249,6 +259,7 @@ def create_meridians(
 
     lons = np.arange(start, stop + lon_step, lon_step, dtype=float)
 
+    # TBD: require lon_0 to determine the wrap meridian
     if closed_interval:
         mask = np.isclose(lons, 180.0)
         lons = wrap(lons)
@@ -278,8 +289,8 @@ def create_meridians(
         to_wkt(mesh, WGS84)
 
         # TBD: require lon_0 to determine the wrap meridian
-        if np.isclose(lon, 180.0):
-            # mark this meridian as a closed-interval
+        if closed_interval and np.isclose(lon, 180.0):
+            # mark this meridian as the closed interval wrap
             mask = np.empty(mesh.n_points, dtype=int)
             mask.fill(REMESH_SEAM)
             mesh.point_data[GV_REMESH_POINT_IDS] = mask
@@ -371,11 +382,12 @@ def create_parallels(
     Parameters
     ----------
     start : float, optional
-        The starting line of latitude (degrees). The graticule will include this
-        parallel. Defaults to :data:`LATITUDE_START`.
+        The first line of latitude (degrees). The graticule will include this
+        parallel. Also see ``poles_parallel``. Defaults to :data:`LATITUDE_START`.
     stop : float, optional
         The last line of latitude (degrees). The graticule will include this parallel
-        when it is a multiple of ``step``. Defaults to :data:`LATITUDE_STOP`.
+        when it is a multiple of ``step``. Also see ``poles_parallel`. Defaults to
+        :data:`LATITUDE_STOP`.
     step : float, optional
         The delta (degrees) between neighbouring parallels. Defaults to
         :data:`LATITUDE_STEP`.
@@ -386,8 +398,8 @@ def create_parallels(
         The number of points in a single line of latitude. Defaults to
         :data:`LATITUDE_N_SAMPLES`.
     poles_parallel : bool, optional
-        Whether to create a line of latitude at the north/south poles. Defaults to
-        :data:`LATITUDE_POLES_PARALLEL`.
+        Whether to create a line of latitude at the north/south poles. Also see
+        ``poles_label``. Defaults to :data:`LATITUDE_POLES_PARALLEL`.
     poles_label : bool, optional
         Whether to create a single north/south pole label. Only applies when
         ``poles=False``. Defaults to :data:`LATITUDE_POLES_LABEL`.
@@ -419,8 +431,18 @@ def create_parallels(
 
     lat_step = LATITUDE_STEP if step is None else step
 
+    if lat_step <= 0:
+        emsg = f"Require a non-zero positive value for 'step', got {str(lat_step)!r}."
+        raise ValueError(emsg)
+
     if lon_step is None:
         lon_step = LONGITUDE_STEP
+
+    if lon_step <= 0:
+        emsg = (
+            f"Require a non-zero positive value for 'lon_step', got {str(lon_step)!r}."
+        )
+        raise ValueError(emsg)
 
     if n_samples is None:
         n_samples = LATITUDE_N_SAMPLES
