@@ -70,7 +70,7 @@ def test_core(n_samples, zlevel, step):
         if zlevel is None:
             zlevel = GRATICULE_ZLEVEL
         expected_radius = RADIUS + (RADIUS * ZLEVEL_SCALE * zlevel)
-        assert np.isclose(distance(mesh, mean=True), expected_radius)
+        assert np.isclose(distance(mesh), expected_radius)
         assert GV_FIELD_CRS in mesh.field_data
         assert from_wkt(mesh) == WGS84
     # check the meridian label points (lonlat)
@@ -87,7 +87,7 @@ def test_core(n_samples, zlevel, step):
     np.testing.assert_array_equal(actual_labels, np.sort(expected_labels))
 
 
-@pytest.mark.parametrize("lat_step", [None, 15, 30])
+@pytest.mark.parametrize("lat_step", [None, 15, 30, 60])
 def test_lat_step(lat_step):
     """Test meridian label generation over different lat_step's."""
     result = create_meridians(lat_step=lat_step)
