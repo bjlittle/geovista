@@ -591,8 +591,8 @@ def slice_cells(
         emsg = f"Require a {str(pv.PolyData)!r} mesh, got {str(type(mesh))!r}."
         raise TypeError(emsg)
 
-    if point_cloud(mesh):
-        # there is no connectivity or cell remeshing required for a point-cloud
+    if point_cloud(mesh) or mesh.n_lines:
+        # no cell remeshing required for a point-cloud or line mesh
         return mesh
 
     if meridian is None:
@@ -710,8 +710,8 @@ def slice_lines(
         raise ValueError(emsg)
 
     if mesh.n_lines == 0:
-        emsg = "Cannot slice a mesh containing no lines."
-        raise ValueError(emsg)
+        # there are no lines to slice
+        return mesh
 
     if n_points is None:
         n_points = SPLINE_N_POINTS
@@ -729,7 +729,7 @@ def slice_lines(
 
     if antimeridian.sum() == 0:
         if copy:
-            mesh = mesh.copy()
+            mesh = mesh.copy(deep=True)
         return mesh
 
     # antimeridian points-of-interest (N, 3)

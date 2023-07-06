@@ -32,10 +32,12 @@ def test_projected_fail(mesh):
 
 @pytest.mark.parametrize("mesh", [pv.Sphere(), lam_uk(), lfric()])
 def test_no_lines(mesh):
-    """Test trap of mesh with no lines."""
-    emsg = "Cannot slice a mesh containing no lines"
-    with pytest.raises(ValueError, match=emsg):
-        _ = slice_lines(mesh)
+    """Test nop slicing mesh with no lines."""
+    result = slice_lines(mesh)
+    assert id(result) == id(mesh)
+    assert result.n_cells == mesh.n_cells
+    assert result.n_lines == mesh.n_lines
+    assert result.n_points == mesh.n_points
 
 
 @pytest.mark.parametrize("n_points", [0, -1])
