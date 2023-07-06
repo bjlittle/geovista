@@ -20,7 +20,7 @@ from geovista.core import resize
 def test_projection_fail():
     """Test trap of mesh that is not spherical."""
     mesh = pv.Plane()
-    emsg = "appears to be a planar projection"
+    emsg = "Cannot resize a mesh that has been projected"
     with pytest.raises(ValueError, match=emsg):
         _ = resize(mesh)
 

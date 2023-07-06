@@ -13,7 +13,7 @@ from functools import lru_cache
 from typing import Any, Union
 from warnings import warn
 
-from pyproj import CRS, Transformer
+from pyproj import CRS
 import pyvista as pv
 import vtk
 
@@ -23,13 +23,19 @@ from .common import (
     RADIUS,
     ZLEVEL_SCALE,
     distance,
-    from_cartesian,
     point_cloud,
     to_cartesian,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
-from .core import add_texture_coords, resize, slice_cells, slice_lines
-from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
+from .core import add_texture_coords, resize, slice_mesh
+from .crs import (
+    WGS84,
+    from_wkt,
+    get_central_meridian,
+    projected,
+    set_central_meridian,
+    to_wkt,
+)
 from .geometry import coastlines
 from .gridlines import (
     GRATICULE_ZLEVEL,
@@ -39,6 +45,7 @@ from .gridlines import (
 )
 from .raster import wrap_texture
 from .samples import lfric
+from .transform import transform_mesh
 
 __all__ = ["GeoPlotter"]
 
@@ -184,7 +191,7 @@ class GeoPlotterBase:
         if point_labels_args is None:
             point_labels_args = {}
 
-        # TBD: projection support required here
+        # TODO: projection support required here
         lonlat = graticule.lonlat
         xyz = to_cartesian(
             lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
@@ -459,15 +466,19 @@ class GeoPlotterBase:
         ----------
         mesh : PolyData
             The mesh to add to the plotter.
-        atol : float, optional
-            The absolute tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` base + period.
         rtol : float, optional
             The relative tolerance for values close to longitudinal
             :func:`geovista.common.wrap` base + period.
-        zlevel : int, default=0
+        atol : float, optional
+            The absolute tolerance for values close to longitudinal
+            :func:`geovista.common.wrap` base + period.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        zlevel : int or ArrayLike, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            `radius`/vertical by a proportional amount e.g.,
+            ``radius * zlevel * zscale``. If `zlevel` is not a scalar, then its shape
+            must match or broadcast with the shape of the ``mesh.points``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -502,62 +513,51 @@ class GeoPlotterBase:
                 zscale = ZLEVEL_SCALE
 
             src_crs = from_wkt(mesh)
-            tgt_crs = self.crs
-            project = src_crs and src_crs != tgt_crs
-            meridian = get_central_meridian(tgt_crs) or 0
 
-            if project and not cloud:
-                if meridian:
-                    mesh.rotate_z(-meridian, inplace=True)
+            if src_crs is None:
+                wmsg = "Found no coordinate reference system (CRS) attached to mesh."
+                warn(wmsg, stacklevel=2)
+
+            tgt_crs = self.crs
+            transform_required = src_crs and src_crs != tgt_crs
+            central_meridian = get_central_meridian(tgt_crs) or 0
+
+            if transform_required and not cloud:
+                if central_meridian:
+                    mesh.rotate_z(-central_meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
 
-                cut_mesh = (
-                    slice_lines(mesh, copy=True)
-                    if mesh.n_lines
-                    else slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
-                )
+                # the sliced_mesh is guaranteed to be a new instance,
+                # even if not bisected
+                sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
 
-                if meridian:
+                if central_meridian:
                     # undo rotation of original mesh
-                    mesh.rotate_z(meridian, inplace=True)
+                    mesh.rotate_z(central_meridian, inplace=True)
 
-                mesh = cut_mesh
+                mesh = sliced_mesh
 
             if "texture" in kwargs and kwargs["texture"] is not None:
                 mesh = add_texture_coords(mesh, antimeridian=True)
-                texture = wrap_texture(kwargs["texture"], central_meridian=meridian)
+                texture = wrap_texture(
+                    kwargs["texture"], central_meridian=central_meridian
+                )
                 kwargs["texture"] = texture
 
-            if project:
-                lonlat = from_cartesian(
-                    mesh, closed_interval=True, rtol=rtol, atol=atol
+            if transform_required:
+                mesh = transform_mesh(
+                    mesh,
+                    tgt_crs,
+                    slice_connectivity=False,
+                    rtol=rtol,
+                    atol=atol,
+                    zlevel=zlevel,
+                    zscale=zscale,
+                    inplace=not cloud,
                 )
-                transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
-                xs, ys = transformer.transform(
-                    lonlat[:, 0], lonlat[:, 1], errcheck=True
-                )
-                zs = 0
-
-                if cloud:
-                    mesh = mesh.copy(deep=True)
-
-                mesh.points[:, 0] = xs
-                mesh.points[:, 1] = ys
-
-                if zlevel or cloud:
-                    xmin, xmax, ymin, ymax, _, _ = mesh.bounds
-                    xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
-                    # TODO: make this configurable at the API/module level
-                    delta = min(xdelta, ydelta) // 4
-
-                    if cloud:
-                        zlevel += lonlat[:, 2]
-
-                    zs = zlevel * zscale * delta
-
-                mesh.points[:, 2] = zs
+                to_wkt(mesh, self.crs)
             else:
-                if zlevel:
+                if not projected(mesh) and zlevel:
                     if not cloud:
                         radius = distance(mesh)
 

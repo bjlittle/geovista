@@ -404,11 +404,11 @@ def from_cartesian(
 
     # XXX: manage pole longitudes. an alternative future scheme could be more
     # generic and inclusive, but this approach tackles the main use case for now
-    # TBD: refactor this into a separate function
+    # TODO: refactor this into a separate function
     pole_pids = np.where(np.isclose(np.abs(lats), 90))[0]
     if pole_pids.size:
         # enforce a common longitude for pole singularities
-        # TBD: review this strategy
+        # TODO: review this strategy
         lons[pole_pids] = 0
 
         if (
@@ -466,7 +466,7 @@ def from_cartesian(
             seam_mask = np.isclose(np.abs(seam_lons), 180)
             lons[seam_ids[seam_mask]] = 180
         elif mesh.n_lines:
-            # TBD: unify closed interval strategies for lines and cells
+            # TODO: unify closed interval strategies for lines and cells
             poi_mask = np.isclose(np.abs(lons), 180)
 
             if np.any(poi_mask):

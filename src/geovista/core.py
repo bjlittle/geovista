@@ -7,6 +7,7 @@ Notes
 """
 from __future__ import annotations
 
+import copy
 from enum import Enum, auto, unique
 from typing import Any
 import warnings
@@ -44,6 +45,7 @@ __all__ = [
     "resize",
     "slice_cells",
     "slice_lines",
+    "slice_mesh",
 ]
 
 #: Preference for a slice to bias cells west of the chosen meridian.
@@ -115,7 +117,7 @@ class MeridianSlice:
 
         """
         if projected(mesh):
-            emsg = "Cannot slice mesh that appears to be a planar projection."
+            emsg = "Cannot slice a mesh that has been projected."
             raise ValueError(emsg)
 
         self._info = mesh.active_scalars_info
@@ -489,7 +491,7 @@ def resize(
 
     """
     if projected(mesh):
-        emsg = "Cannot resize mesh that appears to be a planar projection."
+        emsg = "Cannot resize a mesh that has been projected."
         raise ValueError(emsg)
 
     cloud = point_cloud(mesh)
@@ -552,11 +554,11 @@ def slice_cells(
     rtol: float | None = None,
     atol: float | None = None,
 ) -> pv.PolyData:
-    """Inject a `meridian` seam into the `mesh`.
+    """Cut the mesh along the `meridian`, breaking cell connectivity.
 
     Create a seam along the `meridian` of the geolocated `mesh`, from the
     north-pole to the south-pole, breaking cell connectivity thus allowing
-    the mesh to be correctly projected or texture mapped.
+    the mesh to be correctly transformed (projected) or texture mapped.
 
     Cells bisected by the `meridian` of choice will be remeshed i.e., split
     and triangulated.
@@ -661,6 +663,9 @@ def slice_cells(
 
     if meshes:
         result.remove_cells(np.unique(remeshed_ids), inplace=True)
+        # reinstate field data purged by remove_cells
+        for field in mesh.field_data.keys():
+            result.field_data[field] = copy.deepcopy(mesh.field_data[field])
         result = combine(result, *meshes)
 
     result.set_active_scalars(name=None)
@@ -699,6 +704,11 @@ def slice_lines(
     copy : bool, default=False
         Return a deepcopy of the ``mesh`` when there are no points of intersection with
         the antimeridian. Otherwise, the original ``mesh`` is returned.
+
+    Returns
+    -------
+    PolyData
+        The line mesh with a seam along the antimeridian, if bisected.
 
     Notes
     -----
@@ -825,5 +835,53 @@ def slice_lines(
 
     result.points = points
     result.lines = lines
+
+    return result
+
+
+def slice_mesh(
+    mesh: pv.PolyData,
+    rtol: float | None = None,
+    atol: float | None = None,
+) -> pv.PolyData:
+    """Cut the mesh along the antimeridian, breaking line connectivity.
+
+    A point-cloud cannot be sliced as there are no cells or lines, and will be
+    returned unaltered. Otherwise, a new instance of the mesh will be returned
+    regardless of whether it has been bisected or not.
+
+    Also see :func:`geovista.core.slice_lines` and :func:`geovista.core.slice_cells`
+    for further details.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The mesh that requires to be sliced.
+    rtol : float, optional
+        The relative tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
+    atol : float, optional
+        The absolute tolerance for values close to longitudinal
+        :func:`geovista.common.wrap` base + period.
+
+    Returns
+    -------
+    PolyData
+        The mesh with a seam along the antimeridian, if bisected.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    if projected(mesh):
+        emsg = "Cannot slice a mesh that has been projected."
+        raise ValueError(emsg)
+
+    result = (
+        slice_lines(mesh, copy=True)
+        if mesh.n_lines
+        else slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
+    )
 
     return result

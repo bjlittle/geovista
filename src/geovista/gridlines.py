@@ -259,7 +259,7 @@ def create_meridians(
 
     lons = np.arange(start, stop + lon_step, lon_step, dtype=float)
 
-    # TBD: require lon_0 to determine the wrap meridian
+    # TODO: require lon_0 to determine the wrap meridian
     if closed_interval:
         mask = np.isclose(lons, 180.0)
         lons = wrap(lons)
@@ -288,7 +288,7 @@ def create_meridians(
         mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
         to_wkt(mesh, WGS84)
 
-        # TBD: require lon_0 to determine the wrap meridian
+        # TODO: require lon_0 to determine the wrap meridian
         if closed_interval and np.isclose(lon, 180.0):
             # mark this meridian as the closed interval wrap
             mask = np.empty(mesh.n_points, dtype=int)

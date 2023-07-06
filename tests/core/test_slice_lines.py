@@ -20,8 +20,8 @@ class Kind:
     detach: int = 0
 
 
-# TBD: add further examples of geovista projected meshes,
-#      this requires "project_mesh" API support
+# TODO: add further examples of geovista projected meshes,
+#      this requires "transform_mesh" API support
 @pytest.mark.parametrize("mesh", [pv.Plane()])
 def test_projected_fail(mesh):
     """Test trap of a mesh that is projected."""
