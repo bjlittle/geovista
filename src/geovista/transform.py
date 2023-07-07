@@ -94,13 +94,17 @@ def transform_mesh(
 
     if transform_required:
         # slice the mesh to break connectivity, but not for a point-cloud
-        if slice_connectivity and not cloud:
+        if slice_connectivity:
             if central_meridian:
                 mesh.rotate_z(-central_meridian, inplace=True)
                 tgt_crs = set_central_meridian(tgt_crs, 0)
 
-            # the sliced_mesh is guaranteed to be a new instance, even if not bisected
-            sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
+            if not cloud:
+                # the sliced_mesh is guaranteed to be a new instance,
+                # even if not bisected
+                sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
+            else:
+                sliced_mesh = mesh.copy()
 
             if central_meridian:
                 # undo rotation of original mesh
@@ -118,7 +122,7 @@ def transform_mesh(
         xs, ys = transformer.transform(xyz[:, 0], xyz[:, 1], errcheck=True)
         zs = 0
 
-        if not inplace and (cloud or not slice_connectivity):
+        if not inplace and not slice_connectivity:
             mesh = mesh.copy(deep=True)
 
         mesh.points[:, 0] = xs

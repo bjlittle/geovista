@@ -207,9 +207,9 @@ class GeoPlotterBase:
             mesh.set_active_scalars(name=None)
 
         to_wkt(mesh, WGS84)
-        mesh = transform_mesh(
-            mesh, self.crs, slice_connectivity=False, zlevel=zlevel, inplace=True
-        )
+        # the point-cloud won't be sliced, however it's important that the
+        # central-meridian rotation is performed here
+        mesh = transform_mesh(mesh, self.crs, zlevel=zlevel, inplace=True)
         xyz = mesh.points
 
         if "show_points" in point_labels_args:
@@ -702,6 +702,7 @@ class GeoPlotterBase:
             point_labels_args = {}
 
         closed_interval = self.crs.is_projected
+        central_meridian = get_central_meridian(self.crs)
 
         meridians = create_meridians(
             start=start,
@@ -710,6 +711,7 @@ class GeoPlotterBase:
             lat_step=lat_step,
             n_samples=n_samples,
             closed_interval=closed_interval,
+            central_meridian=central_meridian,
             radius=radius,
             zlevel=zlevel,
             zscale=zscale,

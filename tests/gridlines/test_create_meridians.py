@@ -10,6 +10,7 @@ from geovista.common import (
     ZLEVEL_SCALE,
     distance,
     from_cartesian,
+    wrap,
 )
 from geovista.crs import WGS84, from_wkt
 from geovista.gridlines import (
@@ -24,6 +25,8 @@ from geovista.gridlines import (
     create_meridian_labels,
     create_meridians,
 )
+
+from .conftest import deindex
 
 
 @pytest.mark.parametrize("step", [-1, 0])
@@ -53,20 +56,21 @@ def test_core(n_samples, zlevel, step):
     result = create_meridians(step=step, n_samples=n_samples, zlevel=zlevel)
     if step is None:
         step = LONGITUDE_STEP
-    meridian_lons = np.arange(LONGITUDE_START, LONGITUDE_STOP, step)
+    meridian_lons = wrap(np.arange(LONGITUDE_START, LONGITUDE_STOP, step))
     meridians = [str(lon) for lon in meridian_lons]
     # check the meridian longitudes
-    assert result.blocks.keys() == meridians
+    blocks_meridians = deindex(result.blocks.keys())
+    assert blocks_meridians == meridians
     # check the meridian meshes (blocks)
-    for meridian in meridians:
-        mesh = result.blocks[meridian]
+    for key in result.blocks.keys():
+        mesh = result.blocks[key]
         assert mesh.n_points == n_samples
         assert mesh.n_cells == (n_lines := n_samples - 1)
         assert mesh.n_lines == n_lines
         lonlat = from_cartesian(mesh)
         lons = np.unique(lonlat[:, 0])
         assert lons.size == 1
-        assert np.isclose(lons, float(meridian))
+        assert np.isclose(lons, float(deindex(key)))
         if zlevel is None:
             zlevel = GRATICULE_ZLEVEL
         expected_radius = RADIUS + (RADIUS * ZLEVEL_SCALE * zlevel)
@@ -85,6 +89,8 @@ def test_core(n_samples, zlevel, step):
     actual_labels = np.unique(result.labels)
     expected_labels = create_meridian_labels(list(meridian_lons))
     np.testing.assert_array_equal(actual_labels, np.sort(expected_labels))
+    # check the meridian label mask (mask)
+    assert result.mask is None
 
 
 @pytest.mark.parametrize("lat_step", [None, 15, 30, 60])
@@ -109,18 +115,30 @@ def test_lat_step(lat_step):
 def test_closed_interval():
     """Test the treatment of meridian closed intervals."""
     result = create_meridians(closed_interval=True)
-    meridian_lons = np.arange(
-        LONGITUDE_START, LONGITUDE_STOP + LONGITUDE_STEP, LONGITUDE_STEP
+    meridian_lons = wrap(
+        np.arange(LONGITUDE_START, LONGITUDE_STOP + LONGITUDE_STEP, LONGITUDE_STEP)
     )
     meridians = [str(lon) for lon in meridian_lons]
     # check the meridian longitudes
-    assert result.blocks.keys() == meridians
-    boundary = str(float(180))
-    assert boundary in result.blocks.keys()
-    for meridian in meridians:
-        mesh = result.blocks[meridian]
-        if meridian == boundary:
-            assert GV_REMESH_POINT_IDS in mesh.point_data
-            assert np.isclose(np.unique(mesh[GV_REMESH_POINT_IDS]), REMESH_SEAM)
+    blocks_meridians = deindex(result.blocks.keys())
+    assert blocks_meridians == meridians
+    boundary = str(float(-180))
+    assert boundary in blocks_meridians
+    idxs = np.where(np.array(blocks_meridians) == boundary)[0]
+    assert idxs.size == 2
+    remesh_found = 0
+    for key in result.blocks.keys():
+        mesh = result.blocks[key]
+        if deindex(key) == boundary:
+            if GV_REMESH_POINT_IDS in mesh.point_data:
+                assert np.isclose(np.unique(mesh[GV_REMESH_POINT_IDS]), REMESH_SEAM)
+                remesh_found += 1
         else:
             assert GV_REMESH_POINT_IDS not in mesh.point_data
+    assert remesh_found == 1
+    # check the meridian longitude mask
+    expected = np.zeros_like(meridian_lons).astype(bool)
+    expected[idxs[-1]] = True
+    expected = np.tile(expected, 6)
+    assert expected.shape == result.mask.shape
+    np.testing.assert_array_equal(result.mask, expected)

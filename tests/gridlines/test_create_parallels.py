@@ -23,6 +23,8 @@ from geovista.gridlines import (
     create_parallels,
 )
 
+from .conftest import deindex
+
 
 @pytest.mark.parametrize("step", [-1, 0])
 def test_step_fail(step):
@@ -56,17 +58,18 @@ def test_core(n_samples, zlevel, poles_label):
     )[1:-1]
     parallels = [str(lat) for lat in parallel_lats]
     # check the parallel latitudes
-    assert result.blocks.keys() == parallels
+    blocks_parallels = deindex(result.blocks.keys())
+    assert blocks_parallels == parallels
     # check the parallel meshes (blocks)
-    for parallel in parallels:
-        mesh = result.blocks[parallel]
+    for key in result.blocks.keys():
+        mesh = result.blocks[key]
         assert mesh.n_points == n_samples
         assert mesh.n_cells == n_samples
         assert mesh.n_lines == n_samples
         lonlat = from_cartesian(mesh)
         lats = np.unique(lonlat[:, 1])
         assert lats.size == 1
-        assert np.isclose(lats, float(parallel))
+        assert np.isclose(lats, float(deindex(key)))
         if zlevel is None:
             zlevel = GRATICULE_ZLEVEL
         expected_radius = RADIUS + (RADIUS * ZLEVEL_SCALE * zlevel)
@@ -127,20 +130,21 @@ def test_poles_parallel():
     )
     parallels = [str(lat) for lat in parallel_lats]
     # check the parallel latitudes
-    assert result.blocks.keys() == parallels
+    blocks_parallels = deindex(result.blocks.keys())
+    assert blocks_parallels == parallels
     # check the parallel meshes (blocks)
-    for parallel in parallels:
-        mesh = result.blocks[parallel]
+    for key in result.blocks.keys():
+        mesh = result.blocks[key]
         assert mesh.n_points == LATITUDE_N_SAMPLES
         assert mesh.n_cells == LATITUDE_N_SAMPLES
         assert mesh.n_lines == LATITUDE_N_SAMPLES
         lonlat = from_cartesian(mesh)
         lats = np.unique(lonlat[:, 1])
         assert lats.size == 1
-        assert np.isclose(lats, float(parallel))
+        assert np.isclose(lats, float(deindex(key)))
         assert GV_FIELD_CRS in mesh.field_data
         assert from_wkt(mesh) == WGS84
-    # check the parallel label points (lonlat)
+    # # check the parallel label points (lonlat)
     label_lons = np.arange(LONGITUDE_START, LONGITUDE_STOP, LONGITUDE_STEP) + (
         LONGITUDE_STEP / 2
     )

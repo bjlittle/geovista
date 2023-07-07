@@ -14,7 +14,15 @@ import numpy as np
 from numpy.typing import ArrayLike
 import pyvista as pv
 
-from .common import BASE, GV_REMESH_POINT_IDS, PERIOD, REMESH_SEAM, to_cartesian, wrap
+from .common import (
+    BASE,
+    CENTRAL_MERIDIAN,
+    GV_REMESH_POINT_IDS,
+    PERIOD,
+    REMESH_SEAM,
+    to_cartesian,
+    wrap,
+)
 from .crs import WGS84, to_wkt
 
 __all__ = [
@@ -177,6 +185,7 @@ def create_meridians(
     lat_step: float | None = None,
     n_samples: int | None = None,
     closed_interval: bool | None = None,
+    central_meridian: float | None = None,
     radius: float | None = None,
     zlevel: int | None = None,
     zscale: float | None = None,
@@ -205,6 +214,9 @@ def create_meridians(
         Longitude values will be in the half-closed interval [-180, 180). Otherwise,
         longitudes will be in the closed interval [-180, 180]. Defaults to
         :data:`GRATICULE_CLOSED_INTERVAL`.
+    central_meridian : float, optional
+        The central meridian of the longitude range. Defaults to
+        :data:`geovista.common.CENTRAL_MERIDIAN`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
     zlevel : int, optional
@@ -252,6 +264,9 @@ def create_meridians(
     if closed_interval is None:
         closed_interval = GRATICULE_CLOSED_INTERVAL
 
+    if central_meridian is None:
+        central_meridian = CENTRAL_MERIDIAN
+
     if zlevel is None:
         zlevel = GRATICULE_ZLEVEL
 
@@ -260,12 +275,13 @@ def create_meridians(
 
     lons = np.arange(start, stop + lon_step, lon_step, dtype=float)
 
-    # TODO: require lon_0 to determine the wrap meridian
     if closed_interval:
-        mask = np.isclose(lons, 180.0)
-        lons = wrap(lons)
-        if np.any(mask):
-            lons[mask] = 180.0
+        boundary = wrap(central_meridian - BASE)
+        lons = wrap(lons + central_meridian)
+        mask = np.isclose(lons, boundary)
+        idxs = np.where(mask)[0]
+        if idxs.size:
+            mask[idxs[0]] = False
     else:
         mask = None
         lons = np.unique(wrap(lons))
@@ -273,7 +289,7 @@ def create_meridians(
     lats = np.linspace(LATITUDE_START, LATITUDE_STOP, num=n_samples)
     blocks = pv.MultiBlock()
 
-    for lon in lons:
+    for index, lon in enumerate(lons):
         xyz = to_cartesian(
             np.ones_like(lats) * lon,
             lats,
@@ -290,15 +306,14 @@ def create_meridians(
         mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
         to_wkt(mesh, WGS84)
 
-        # TODO: require lon_0 to determine the wrap meridian
-        if closed_interval and np.isclose(lon, 180.0):
+        if closed_interval and mask[index]:
             # mark this meridian as the closed interval wrap
             seam = np.empty(mesh.n_points, dtype=int)
             seam.fill(REMESH_SEAM)
             mesh.point_data[GV_REMESH_POINT_IDS] = seam
             mesh.set_active_scalars(name=None)
 
-        blocks[str(lon)] = mesh
+        blocks[f"{index},{str(lon)}"] = mesh
 
     grid_points, grid_labels = [], []
     labels = create_meridian_labels(list(lons))
@@ -474,7 +489,7 @@ def create_parallels(
     grid_lats = []
     blocks = pv.MultiBlock()
 
-    for lat in lats:
+    for index, lat in enumerate(lats):
         if not poles_parallel and np.isclose(np.abs(lat), 90.0):
             continue
 
@@ -494,7 +509,7 @@ def create_parallels(
 
         mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
         to_wkt(mesh, WGS84)
-        blocks[str(lat)] = mesh
+        blocks[f"{index},{str(lat)}"] = mesh
         grid_lats.append(lat)
 
     grid_points, grid_labels = [], []
