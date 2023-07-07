@@ -57,7 +57,7 @@ BBOX_TOLERANCE: int = 0
 #: Ratio that the bounding-box inner and outer faces are offset from the surface mesh.
 BBOX_RADIUS_RATIO = 1e-1
 
-#: Lookup table for cubed sphere panel index by panel name.
+#: Lookup table for cubed-sphere panel index by panel name.
 PANEL_IDX_BY_NAME: dict[str, int] = {
     "africa": 0,
     "asia": 1,
@@ -67,7 +67,7 @@ PANEL_IDX_BY_NAME: dict[str, int] = {
     "antarctic": 5,
 }
 
-#: Lookup table for cubed sphere panel name by panel index.
+#: Lookup table for cubed-sphere panel name by panel index.
 PANEL_NAME_BY_IDX: dict[int, str] = {
     0: "africa",
     1: "asia",
@@ -77,10 +77,10 @@ PANEL_NAME_BY_IDX: dict[int, str] = {
     5: "antarctic",
 }
 
-#: Latitude (degrees) of a cubed sphere panel corner.
+#: Latitude (degrees) of a cubed-sphere panel corner.
 CSC: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
 
-#: Cubed sphere panel bounding-box longitudes and latitudes.
+#: Cubed-sphere panel bounding-box longitudes and latitudes.
 PANEL_BBOX_BY_IDX: dict[int, tuple[Corners, Corners]] = {
     0: ((-45, 45, 45, -45), (CSC, CSC, -CSC, -CSC)),
     1: ((45, 135, 135, 45), (CSC, CSC, -CSC, -CSC)),
@@ -90,7 +90,7 @@ PANEL_BBOX_BY_IDX: dict[int, tuple[Corners, Corners]] = {
     5: ((-45, 45, 135, -135), (-CSC, -CSC, -CSC, -CSC)),
 }
 
-#: The number of cubed sphere panels.
+#: The number of cubed-sphere panels.
 N_PANELS: int = len(PANEL_IDX_BY_NAME)
 
 #: The default bounding-box preference.

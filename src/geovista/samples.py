@@ -7,6 +7,8 @@ Notes
 """
 from __future__ import annotations
 
+from warnings import warn
+
 import pooch
 import pyvista as pv
 
@@ -17,6 +19,11 @@ from .cache import CACHE
 from .common import Preference
 
 __all__ = [
+    "LFRIC_RESOLUTION",
+    "LFRIC_RESOLUTIONS",
+    "PREFERENCE",
+    "WARP_FACTOR",
+    "ZLEVEL_SCALE_CLOUD",
     "fesom",
     "fvcom_tamar",
     "icon_soil",
@@ -38,14 +45,17 @@ __all__ = [
     "ww3_global_tri",
 ]
 
-#: The default LFRic Model unstructured cubed-sphere resolution.
+#: The default LFRic model unstructured cubed-sphere resolution.
 LFRIC_RESOLUTION: str = "c96"
 
-#: The default warp factor for mesh points.
-WARP_FACTOR: float = 2e-5
+#: The available Met Office cubed-sphere assets.
+LFRIC_RESOLUTIONS: list[str, ...] = ["c48", "c96", "c192"]
 
 #: The default mesh preference.
 PREFERENCE: Preference = Preference.CELL
+
+#: The default warp factor for mesh points.
+WARP_FACTOR: float = 2e-5
 
 #: Proportional multiplier for point-cloud levels/offsets.
 ZLEVEL_SCALE_CLOUD: float = 1e-5
@@ -366,18 +376,19 @@ def lam_uk() -> pv.PolyData:
 def lfric(resolution: str | None = None) -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry` sample data.
 
-    Get the LFRic Model unstructured cubed-sphere at the specified `resolution`.
+    Get the LFRic model unstructured cubed-sphere at the specified `resolution`.
 
     Parameters
     ----------
     resolution : str, optional
-        The resolution of the LFRic Model mesh, which may be either
+        The resolution of the LFRic model mesh, which may be either
         ``c48``, ``c96`` or ``c192``. Defaults to :data:`LFRIC_RESOLUTION`.
+        Also see :data:`LFRIC_RESOLUTIONS`.
 
     Returns
     -------
     PolyData
-        The LFRic mesh.
+        The LFRic cubed-sphere mesh.
 
     Notes
     -----
@@ -385,6 +396,17 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
 
     """
     if resolution is None:
+        resolution = LFRIC_RESOLUTION
+
+    original = str(resolution)
+    resolution = original.lower()
+
+    if resolution not in LFRIC_RESOLUTIONS:
+        wmsg = (
+            f"Unknown LFRic cubed-sphere resolution {original!r}, "
+            f"using {LFRIC_RESOLUTION!r} instead."
+        )
+        warn(wmsg, stacklevel=2)
         resolution = LFRIC_RESOLUTION
 
     fname = f"lfric_{resolution}.vtk"
