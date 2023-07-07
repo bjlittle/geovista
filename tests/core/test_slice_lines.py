@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.common.slice_lines`."""
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import numpy as np

@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.search.find_cell_neighbours`."""
+from __future__ import annotations
+
 from geovista.search import find_cell_neighbours
 
 

@@ -1,4 +1,6 @@
 """Unit-tests for :meth:`geovista.Transform.from_points`."""
+from __future__ import annotations
+
 import numpy as np
 from pyproj import CRS, Transformer
 import pytest

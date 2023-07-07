@@ -1,4 +1,5 @@
 """pytest fixture infra-structure for :mod:`geovista.common` unit-tests."""
+from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Union

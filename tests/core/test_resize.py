@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.core.resize`."""
+from __future__ import annotations
+
 import operator
 
 import numpy as np

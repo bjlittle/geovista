@@ -1,4 +1,6 @@
 """Unit-tests for :class:`geovista.common.Preference`."""
+from __future__ import annotations
+
 import pytest
 
 from geovista.common import Preference

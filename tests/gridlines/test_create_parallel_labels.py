@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.gridlines.create_parallel_labels`."""
+from __future__ import annotations
+
 import pytest
 
 from geovista.gridlines import (

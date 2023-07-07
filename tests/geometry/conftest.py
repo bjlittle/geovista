@@ -1,4 +1,5 @@
 """pytest fixture infra-structure for :mod:`geovista.geometry` unit-tests."""
+from __future__ import annotations
 
 import pytest
 

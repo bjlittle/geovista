@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.geometry.test_load_coastline_geometries`."""
+from __future__ import annotations
+
 import numpy as np
 
 from geovista.common import COASTLINES_RESOLUTION

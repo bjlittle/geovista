@@ -5,6 +5,7 @@ Notes
 .. versionadded:: 0.2.0
 
 """
+from __future__ import annotations
 
 import geovista as gv
 from geovista.pantry import um_orca2_gradient

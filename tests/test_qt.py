@@ -1,4 +1,6 @@
 """Unit-tests for :mod:`geovista.qt`."""
+from __future__ import annotations
+
 import pytest
 
 

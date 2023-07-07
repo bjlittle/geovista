@@ -1,4 +1,5 @@
 """pytest fixture infra-structure for :mod:`geovista.gridlines` unit-tests."""
+from __future__ import annotations
 
 
 def deindex(keys: list[str, ...] | str) -> list[str, ...] | str:

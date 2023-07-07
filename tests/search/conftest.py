@@ -1,4 +1,6 @@
 """pytest fixture infra-structure for :mod:`geovista.search` unit-tests."""
+from __future__ import annotations
+
 from collections import namedtuple
 
 import pytest

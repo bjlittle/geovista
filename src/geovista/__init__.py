@@ -15,6 +15,8 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
+
 import logging
 
 from .bridge import Transform  # noqa: F401

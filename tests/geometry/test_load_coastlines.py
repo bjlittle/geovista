@@ -1,4 +1,6 @@
 """Unit-test for :func:`geovista.geometry.load_coastlines`."""
+from __future__ import annotations
+
 import numpy as np
 import pytest
 

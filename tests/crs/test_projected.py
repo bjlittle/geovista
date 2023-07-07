@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.crs.projected`."""
+from __future__ import annotations
+
 from pyproj import CRS
 import pyvista as pv
 
