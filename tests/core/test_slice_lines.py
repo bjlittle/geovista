@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.common.slice_lines`."""
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import numpy as np
@@ -20,8 +22,8 @@ class Kind:
     detach: int = 0
 
 
-# TBD: add further examples of geovista projected meshes,
-#      this requires "project_mesh" API support
+# TODO: add further examples of geovista projected meshes,
+#      this requires "transform_mesh" API support
 @pytest.mark.parametrize("mesh", [pv.Plane()])
 def test_projected_fail(mesh):
     """Test trap of a mesh that is projected."""
@@ -32,10 +34,12 @@ def test_projected_fail(mesh):
 
 @pytest.mark.parametrize("mesh", [pv.Sphere(), lam_uk(), lfric()])
 def test_no_lines(mesh):
-    """Test trap of mesh with no lines."""
-    emsg = "Cannot slice a mesh containing no lines"
-    with pytest.raises(ValueError, match=emsg):
-        _ = slice_lines(mesh)
+    """Test nop slicing mesh with no lines."""
+    result = slice_lines(mesh)
+    assert id(result) == id(mesh)
+    assert result.n_cells == mesh.n_cells
+    assert result.n_lines == mesh.n_lines
+    assert result.n_points == mesh.n_points
 
 
 @pytest.mark.parametrize("n_points", [0, -1])
@@ -46,11 +50,15 @@ def test_n_points_warning(coastlines, n_points):
         _ = slice_lines(coastlines, n_points=n_points)
 
 
+@pytest.mark.parametrize("copy", [False, True])
 @pytest.mark.parametrize("mesh", [line(0, [90, 0, -90]), line([-135, -45, 45, 135], 0)])
-def test_no_traversal_slice(mesh):
+def test_no_traversal_slice(copy, mesh):
     """Test a line mesh that does not traverse the antimeridian."""
-    result = slice_lines(mesh)
-    assert id(result) == id(mesh)
+    result = slice_lines(mesh, copy=copy)
+    if copy:
+        assert id(result) != id(mesh)
+    else:
+        assert id(result) == id(mesh)
     assert result == mesh
 
 

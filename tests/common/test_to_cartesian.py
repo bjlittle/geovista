@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.common.to_cartesian`."""
+from __future__ import annotations
+
 import numpy as np
 import numpy.typing as npt
 import pytest

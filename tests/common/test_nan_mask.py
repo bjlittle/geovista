@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.common.nan_mask`."""
+from __future__ import annotations
+
 import numpy as np
 import numpy.ma as ma
 import pytest

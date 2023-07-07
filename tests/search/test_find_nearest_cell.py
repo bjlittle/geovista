@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.search.find_nearest_cell`."""
+from __future__ import annotations
+
 import pytest
 
 from geovista.common import from_cartesian, to_lonlat

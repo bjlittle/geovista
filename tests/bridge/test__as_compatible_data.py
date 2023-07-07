@@ -1,4 +1,6 @@
 """Unit-tests for :meth:`geovista.Transform._as_compatible_data`."""
+from __future__ import annotations
+
 import numpy as np
 import numpy.ma as ma
 import pytest

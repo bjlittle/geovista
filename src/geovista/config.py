@@ -5,6 +5,8 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+from __future__ import annotations
+
 from os import environ
 from pathlib import Path
 

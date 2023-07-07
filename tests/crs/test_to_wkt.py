@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.crs.to_wkt`."""
+from __future__ import annotations
+
 import pyvista as pv
 
 from geovista.common import GV_FIELD_CRS

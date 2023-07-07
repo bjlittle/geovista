@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.common.active_kernel`."""
+from __future__ import annotations
+
 import pytest
 
 from geovista.common import active_kernel

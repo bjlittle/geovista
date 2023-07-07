@@ -13,25 +13,42 @@ from functools import lru_cache
 from typing import Any, Union
 from warnings import warn
 
-from pyproj import CRS, Transformer
+from pyproj import CRS
 import pyvista as pv
 import vtk
 
 from .common import (
     GV_FIELD_ZSCALE,
+    GV_REMESH_POINT_IDS,
     LRU_CACHE_SIZE,
     RADIUS,
+    REMESH_SEAM,
     ZLEVEL_SCALE,
+    ZTRANSFORM_FACTOR,
     distance,
-    from_cartesian,
     point_cloud,
+    to_cartesian,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
-from .core import add_texture_coords, resize, slice_cells, slice_lines
-from .crs import WGS84, from_wkt, get_central_meridian, set_central_meridian
+from .core import add_texture_coords, resize, slice_mesh
+from .crs import (
+    WGS84,
+    from_wkt,
+    get_central_meridian,
+    projected,
+    set_central_meridian,
+    to_wkt,
+)
 from .geometry import coastlines
+from .gridlines import (
+    GRATICULE_ZLEVEL,
+    GraticuleGrid,
+    create_meridians,
+    create_parallels,
+)
 from .raster import wrap_texture
 from .samples import lfric
+from .transform import transform_mesh
 
 __all__ = ["GeoPlotter"]
 
@@ -43,6 +60,12 @@ BASE_ZLEVEL_SCALE: int = 1.0e-3
 
 #: Coastlines relative tolerance for values close to longitudinal wrap base + period.
 COASTLINES_RTOL: float = 1.0e-8
+
+#: The default font size for graticule labels.
+GRATICULE_LABEL_FONT_SIZE: int = 9
+
+#: Whether to rendering graticule labels by default.
+GRATICULE_SHOW_LABELS: bool = True
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -133,6 +156,76 @@ class GeoPlotterBase:
         self.crs = crs
         super().__init__(*args, **kwargs)
 
+    def _add_graticule_labels(
+        self,
+        graticule: GraticuleGrid,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """Render the labels for the given parallels/meridians.
+
+        Parameters
+        ----------
+        graticule : GraticuleGrid
+            The labels and associated lon/lat points for the graticule
+            parallels/meridians.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        zlevel : int, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        point_labels_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        if zlevel is None:
+            zlevel = GRATICULE_ZLEVEL
+
+        if point_labels_args is None:
+            point_labels_args = {}
+
+        lonlat = graticule.lonlat
+        xyz = to_cartesian(
+            lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
+        )
+
+        mesh = pv.PolyData(xyz)
+
+        if graticule.mask is not None:
+            mask = graticule.mask * REMESH_SEAM
+            mesh.point_data[GV_REMESH_POINT_IDS] = mask
+            mesh.set_active_scalars(name=None)
+
+        to_wkt(mesh, WGS84)
+        # the point-cloud won't be sliced, however it's important that the
+        # central-meridian rotation is performed here
+        mesh = transform_mesh(mesh, self.crs, zlevel=zlevel, inplace=True)
+        xyz = mesh.points
+
+        if "show_points" in point_labels_args:
+            _ = point_labels_args.pop("show_points")
+
+        if "font_size" not in point_labels_args:
+            point_labels_args["font_size"] = GRATICULE_LABEL_FONT_SIZE
+
+        # labels over-plot points, therefore enforce non-rendering of points,
+        # which is more efficient
+        point_labels_args["show_points"] = False
+        # opinionated over-ride to disable label visibility filter
+        point_labels_args["always_visible"] = False
+
+        self.add_point_labels(xyz, graticule.labels, **point_labels_args)
+
     def add_base_layer(
         self, mesh: pv.PolyData | None = None, **kwargs: Any | None
     ) -> vtk.vtkActor:
@@ -174,7 +267,7 @@ class GeoPlotterBase:
         resolution = kwargs.pop("resolution") if "resolution" in kwargs else None
 
         if self.crs.is_projected:
-            # pass-through "zlevel" and "zscale" to the "add_mesh" method,
+            # pass through "zlevel" and "zscale" to the "add_mesh" method,
             # but remove "radius", as it's not applicable to planar projections
             if "radius" in kwargs:
                 _ = kwargs.pop("radius")
@@ -248,14 +341,14 @@ class GeoPlotterBase:
 
         """
         if self.crs.is_projected:
-            # don't pass-through "radius", as it's not applicable
+            # don't pass through "radius", as it's not applicable
             if rtol is None:
                 rtol = COASTLINES_RTOL
             if zscale is None:
                 zscale = ZLEVEL_SCALE
             if zlevel is None:
-                zlevel = 5
-            # pass-through kwargs to "add_mesh"
+                zlevel = ZTRANSFORM_FACTOR
+            # pass through kwargs to "add_mesh"
             kwargs.update({"zlevel": zlevel, "zscale": zscale})
 
         mesh = coastlines(
@@ -272,8 +365,109 @@ class GeoPlotterBase:
 
         return actor
 
+    def add_graticule(
+        self,
+        lon_start: float | None = None,
+        lon_stop: float | None = None,
+        lon_step: float | None = None,
+        lat_start: float | None = None,
+        lat_step: float | None = None,
+        lat_stop: float | None = None,
+        poles_parallel: bool | None = None,
+        poles_label: bool | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """Generate a graticule and add to the plotter scene.
+
+        This involves generating lines of constant latitude (parallels) and
+        lines of constant longitude (meridians), which together form the graticule.
+
+        Parameters
+        ----------
+        lon_start : float, optional
+            The first line of longitude (degrees). The graticule will include this
+            meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
+        lon_stop : float, optional
+            The last line of longitude (degrees). The graticule will include this
+            meridian when it is a multiple of ``lon_step``. Also see
+            ``closed_interval``. Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
+        lon_step : float, optional
+            The delta (degrees) between neighbouring meridians. Defaults to
+            :data:`geovista.gridlines.LONGITUDE_STEP`.
+        lat_start : float, optional
+            The first line of latitude (degrees). The graticule will include this
+            parallel. Also see `poles_parallel`. Defaults to
+            :data:`geovista.gridlines.LATITUDE_START`.
+        lat_stop : float, optional
+            The last line of latitude (degrees). The graticule will include this
+            parallel when it is a multiple of ``lat_step``. Defaults to
+            :data:`geovista.gridlines.LATITUDE_STOP`.
+        lat_step : float, optional
+            The delta (degrees) between neighbouring parallels. Defaults to
+            :data:`geovista.gridlines.LATITUDE_STEP`.
+        poles_parallel : bool, optional
+            Whether to create a line of latitude at the north/south poles. Defaults to
+            :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
+        poles_label : bool, optional
+            Whether to create a single north/south pole label. Only applies when
+            ``poles_parallel=False``. Defaults to
+            :data:`geovista.gridlines.LATITUDE_POLES_LABEL`.
+        show_labels : bool, optional
+            Whether to render the labels of the parallels and meridians. Defaults to
+            :data:`GRATICULE_SHOW_LABELS`.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        zlevel : int, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        mesh_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
+        point_labels_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        self.add_meridians(
+            start=lon_start,
+            stop=lon_stop,
+            step=lon_step,
+            lat_step=lat_step,
+            show_labels=show_labels,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+            mesh_args=mesh_args,
+            point_labels_args=point_labels_args,
+        )
+        self.add_parallels(
+            start=lat_start,
+            stop=lat_stop,
+            step=lat_step,
+            lon_step=lon_step,
+            poles_parallel=poles_parallel,
+            poles_label=poles_label,
+            show_labels=show_labels,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+            mesh_args=mesh_args,
+            point_labels_args=point_labels_args,
+        )
+
     def add_mesh(self, mesh: Any, **kwargs: Any | None):
-        """Add the mesh to the plotter scene.
+        """Add the ``mesh`` to the plotter scene.
 
         See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -281,15 +475,19 @@ class GeoPlotterBase:
         ----------
         mesh : PolyData
             The mesh to add to the plotter.
-        atol : float, optional
-            The absolute tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` base + period.
         rtol : float, optional
             The relative tolerance for values close to longitudinal
             :func:`geovista.common.wrap` base + period.
-        zlevel : int, default=0
+        atol : float, optional
+            The absolute tolerance for values close to longitudinal
+            :func:`geovista.common.wrap` base + period.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        zlevel : int or ArrayLike, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            `radius`/vertical by a proportional amount e.g.,
+            ``radius * zlevel * zscale``. If `zlevel` is not a scalar, then its shape
+            must match or broadcast with the shape of the ``mesh.points``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -324,62 +522,51 @@ class GeoPlotterBase:
                 zscale = ZLEVEL_SCALE
 
             src_crs = from_wkt(mesh)
-            tgt_crs = self.crs
-            project = src_crs and src_crs != tgt_crs
-            meridian = get_central_meridian(tgt_crs) or 0
 
-            if project and not cloud:
-                if meridian:
-                    mesh.rotate_z(-meridian, inplace=True)
+            if src_crs is None:
+                wmsg = "Found no coordinate reference system (CRS) attached to mesh."
+                warn(wmsg, stacklevel=2)
+
+            tgt_crs = self.crs
+            transform_required = src_crs and src_crs != tgt_crs
+            central_meridian = get_central_meridian(tgt_crs) or 0
+
+            if transform_required and not cloud:
+                if central_meridian:
+                    mesh.rotate_z(-central_meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
 
-                cut_mesh = (
-                    slice_lines(mesh)
-                    if mesh.n_lines
-                    else slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
-                )
+                # the sliced_mesh is guaranteed to be a new instance,
+                # even if not bisected
+                sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
 
-                if meridian:
+                if central_meridian:
                     # undo rotation of original mesh
-                    mesh.rotate_z(meridian, inplace=True)
+                    mesh.rotate_z(central_meridian, inplace=True)
 
-                mesh = cut_mesh
+                mesh = sliced_mesh
 
             if "texture" in kwargs and kwargs["texture"] is not None:
                 mesh = add_texture_coords(mesh, antimeridian=True)
-                texture = wrap_texture(kwargs["texture"], central_meridian=meridian)
+                texture = wrap_texture(
+                    kwargs["texture"], central_meridian=central_meridian
+                )
                 kwargs["texture"] = texture
 
-            if project:
-                lonlat = from_cartesian(
-                    mesh, closed_interval=True, rtol=rtol, atol=atol
+            if transform_required:
+                mesh = transform_mesh(
+                    mesh,
+                    tgt_crs,
+                    slice_connectivity=False,
+                    rtol=rtol,
+                    atol=atol,
+                    zlevel=zlevel,
+                    zscale=zscale,
+                    inplace=not cloud,
                 )
-                transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
-                xs, ys = transformer.transform(
-                    lonlat[:, 0], lonlat[:, 1], errcheck=True
-                )
-                zs = 0
-
-                if cloud:
-                    mesh = mesh.copy(deep=True)
-
-                mesh.points[:, 0] = xs
-                mesh.points[:, 1] = ys
-
-                if zlevel or cloud:
-                    xmin, xmax, ymin, ymax, _, _ = mesh.bounds
-                    xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
-                    # TODO: make this configurable at the API/module level
-                    delta = min(xdelta, ydelta) // 4
-
-                    if cloud:
-                        zlevel += lonlat[:, 2]
-
-                    zs = zlevel * zscale * delta
-
-                mesh.points[:, 2] = zs
+                to_wkt(mesh, self.crs)
             else:
-                if zlevel:
+                if not projected(mesh) and zlevel:
                     if not cloud:
                         radius = distance(mesh)
 
@@ -387,11 +574,358 @@ class GeoPlotterBase:
 
         return super().add_mesh(mesh, **kwargs)
 
+    def add_meridian(
+        self,
+        lon: float,
+        lat_step: float | None = None,
+        n_samples: int | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """Generate a line of constant longitude and add to the plotter scene.
+
+        Parameters
+        ----------
+        lon : float
+            The constant line of longitude (degrees) to generate.
+        lat_step : float, optional
+            The delta (degrees) between neighbouring parallels. Defaults to
+            :data:`geovista.gridlines.LATITUDE_STEP`.
+        n_samples : int, optional
+            The number of points in a single line of longitude. Defaults to
+            :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
+        show_labels : bool, optional
+            Whether to render the meridian label. Defaults to
+            :data:`GRATICULE_SHOW_LABELS`.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        zlevel : int, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        mesh_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
+        point_labels_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        self.add_meridians(
+            start=lon,
+            stop=lon,
+            lat_step=lat_step,
+            n_samples=n_samples,
+            show_labels=show_labels,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+            mesh_args=mesh_args,
+            point_labels_args=point_labels_args,
+        )
+
+    def add_meridians(
+        self,
+        start: float | None = None,
+        stop: float | None = None,
+        step: float | None = None,
+        lat_step: float | None = None,
+        n_samples: int | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """Generate lines of constant longitude and add to the plotter scene.
+
+        Parameters
+        ----------
+        start : float, optional
+            The first line of longitude (degrees). The graticule will include this
+            meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
+        stop : float, optional
+            The last line of longitude (degrees). The graticule will include this
+            meridian when it is a multiple of ``step``. Also see ``closed_interval``.
+            Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
+        step : float, optional
+            The delta (degrees) between neighbouring meridians. Defaults to
+            :data:`geovista.gridlines.LONGITUDE_STEP`.
+        lat_step : float, optional
+            The delta (degrees) between neighbouring parallels. Defaults to
+            :data:`geovista.gridlines.LATITUDE_STEP`.
+        n_samples : int, optional
+            The number of points in a single line of longitude. Defaults to
+            :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
+        show_labels : bool, optional
+            Whether to render the labels of the meridians. Defaults to
+            :data:`GRATICULE_SHOW_LABELS`.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        zlevel : int, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        mesh_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
+        point_labels_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        if show_labels is None:
+            show_labels = GRATICULE_SHOW_LABELS
+
+        if zlevel is None:
+            zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
+
+        if mesh_args is None:
+            mesh_args = {}
+
+        if point_labels_args is None:
+            point_labels_args = {}
+
+        closed_interval = self.crs.is_projected
+        central_meridian = get_central_meridian(self.crs)
+
+        meridians = create_meridians(
+            start=start,
+            stop=stop,
+            step=step,
+            lat_step=lat_step,
+            n_samples=n_samples,
+            closed_interval=closed_interval,
+            central_meridian=central_meridian,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+        )
+
+        if radius is not None:
+            mesh_args["radius"] = radius
+
+        if zlevel is not None:
+            mesh_args["zlevel"] = zlevel
+
+        if zscale is not None:
+            mesh_args["zscale"] = zscale
+
+        for mesh in meridians.blocks:
+            self.add_mesh(mesh, **mesh_args)
+
+        if show_labels:
+            self._add_graticule_labels(
+                meridians,
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
+                point_labels_args=point_labels_args,
+            )
+
+    def add_parallel(
+        self,
+        lat: float,
+        lon_step: float | None = None,
+        n_samples: int | None = None,
+        poles_parallel: bool | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """Generate a line of constant latitude and add to the plotter scene.
+
+        Parameters
+        ----------
+        lat : float
+            The constant line of latitude (degrees) to generate.
+        lon_step : float, optional
+            The delta (degrees) between neighbouring meridians. Defaults to
+            :data:`geovista.gridlines.LONGITUDE_STEP`.
+        n_samples : int, optional
+            The number of points in a single line of latitude. Defaults to
+            :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
+        poles_parallel : bool, optional
+            Whether to create a line of latitude at the north/south poles. Defaults to
+            :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
+        show_labels : bool, optional
+            Whether to render the parallel label. Defaults to
+            :data:`GRATICULE_SHOW_LABELS`.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        zlevel : int, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        mesh_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
+        point_labels_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        self.add_parallels(
+            start=lat,
+            stop=lat,
+            lon_step=lon_step,
+            n_samples=n_samples,
+            poles_parallel=poles_parallel,
+            show_labels=show_labels,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+            mesh_args=mesh_args,
+            point_labels_args=point_labels_args,
+        )
+
+    def add_parallels(
+        self,
+        start: float | None = None,
+        stop: float | None = None,
+        step: float | None = None,
+        lon_step: float | None = None,
+        n_samples: int | None = None,
+        poles_parallel: bool | None = None,
+        poles_label: bool | None = None,
+        show_labels: bool | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        mesh_args: dict[Any, Any] | None = None,
+        point_labels_args: dict[Any, Any] | None = None,
+    ) -> None:
+        """Generate lines of constant latitude and add to the plotter scene.
+
+        Parameters
+        ----------
+        start : float, optional
+            The first line of latitude (degrees). The graticule will include this
+            parallel. Also see ``poles_parallel``. Defaults to
+            :data:`geovista.gridlines.LATITUDE_START`.
+        stop : float, optional
+            The last line of latitude (degrees). The graticule will include this
+            parallel when it is a multiple of ``step``. Also see ``poles_parallel`.
+            Defaults to :data:`geovista.gridlines.LATITUDE_STOP`.
+        step : float, optional
+            The delta (degrees) between neighbouring parallels. Defaults to
+            :data:`geovista.gridlines.LATITUDE_STEP`.
+        lon_step : float, optional
+            The delta (degrees) between neighbouring meridians. Defaults to
+            :data:`geovista.gridlines.LONGITUDE_STEP`.
+        n_samples : int, optional
+            The number of points in a single line of latitude. Defaults to
+            :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
+        poles_parallel : bool, optional
+            Whether to create a line of latitude at the north/south poles. Defaults to
+            :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
+        poles_label : bool, optional
+            Whether to create a single north/south pole label. Only applies when
+            ``poles_parallel=False``. Defaults to
+            :data:`geovista.gridlines.LATITUDE_POLES_LABEL`.
+        show_labels : bool, optional
+            Whether to render the labels of the parallels. Defaults to
+            :data:`GRATICULE_SHOW_LABELS`.
+        radius : float, optional
+            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        zlevel : int, optional
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        mesh_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
+        point_labels_args : dict, optional
+            Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
+        if show_labels is None:
+            show_labels = GRATICULE_SHOW_LABELS
+
+        if zlevel is None:
+            zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
+
+        if mesh_args is None:
+            mesh_args = {}
+
+        if point_labels_args is None:
+            point_labels_args = {}
+
+        # TODO: fix behaviour of longitudes at poles
+        poles_parallel = False
+
+        parallels = create_parallels(
+            start=start,
+            stop=stop,
+            step=step,
+            lon_step=lon_step,
+            n_samples=n_samples,
+            poles_parallel=poles_parallel,
+            poles_label=poles_label,
+            radius=radius,
+            zlevel=zlevel,
+            zscale=zscale,
+        )
+
+        if radius is not None:
+            mesh_args["radius"] = radius
+
+        if zlevel is not None:
+            mesh_args["zlevel"] = zlevel
+
+        if zscale is not None:
+            mesh_args["zscale"] = zscale
+
+        for mesh in parallels.blocks:
+            self.add_mesh(mesh, **mesh_args)
+
+        if show_labels:
+            self._add_graticule_labels(
+                parallels,
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
+                point_labels_args=point_labels_args,
+            )
+
 
 class GeoPlotter(GeoPlotterBase, pv.Plotter):
     """A geospatial aware plotter.
 
     See :class:`geovista.geoplotter.GeoPlotterBase` and
     :class:`pyvista.Plotter`.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """

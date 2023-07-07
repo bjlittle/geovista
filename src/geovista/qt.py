@@ -7,6 +7,8 @@ Notes
 .. versionadded:: 0.1.3
 
 """
+from __future__ import annotations
+
 try:
     import pyvistaqt as pvqt
 except ImportError as e:

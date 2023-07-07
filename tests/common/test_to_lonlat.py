@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.common.to_lonlat`."""
+from __future__ import annotations
+
 import numpy as np
 import pytest
 

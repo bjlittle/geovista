@@ -21,6 +21,8 @@ from pyvista.core.filters import _get_output
 from vtk import vtkLogger, vtkObject
 
 __all__ = [
+    "BASE",
+    "CENTRAL_MERIDIAN",
     "COASTLINES_RESOLUTION",
     "GV_CELL_IDS",
     "GV_FIELD_CRS",
@@ -31,13 +33,17 @@ __all__ = [
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
     "LRU_CACHE_SIZE",
+    "PERIOD",
     "Preference",
     "RADIUS",
     "REMESH_JOIN",
     "REMESH_SEAM",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
+    "WRAP_ATOL",
+    "WRAP_RTOL",
     "ZLEVEL_SCALE",
+    "ZTRANSFORM_FACTOR",
     "cast_UnstructuredGrid_to_PolyData",
     "distance",
     "from_cartesian",
@@ -60,6 +66,9 @@ __all__ = [
 
 #: Default base for wrapped longitude half-open interval, in degrees.
 BASE: float = -180.0
+
+#: Default central meridian.
+CENTRAL_MERIDIAN: float = 0.0
 
 #: Default Natural Earth coastline resolution.
 COASTLINES_RESOLUTION: str = "10m"
@@ -120,6 +129,9 @@ WRAP_RTOL: float = 1.0e-5
 
 #: Proportional multiplier for z-axis levels/offsets.
 ZLEVEL_SCALE: float = 1.0e-4
+
+#: The zlevel scaling to be applied when transforming to a projection.
+ZTRANSFORM_FACTOR: int = 3
 
 
 class _MixinStrEnum:
@@ -404,52 +416,60 @@ def from_cartesian(
 
     # XXX: manage pole longitudes. an alternative future scheme could be more
     # generic and inclusive, but this approach tackles the main use case for now
-    # TBD: refactor this into a separate function
+    # TODO: refactor this into a separate function
     pole_pids = np.where(np.isclose(np.abs(lats), 90))[0]
     if pole_pids.size:
-        # enforce a common longitude for pole singularity mesh points
+        # enforce a common longitude for pole singularities
+        # TODO: review this strategy
         lons[pole_pids] = 0
 
-        # unfold pole quad-cells
-        pole_submesh = mesh.extract_points(pole_pids)
-        pole_pids = set(pole_pids)
-        # get the indices (cids) of polar participating mesh cells
-        pole_cids = np.unique(pole_submesh["vtkOriginalCellIds"])
-        for cid in pole_cids:
-            # get the indices (pids) of the polar cell points
-            # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
-            cell_pids = np.array(mesh.get_cell(cid).point_ids)
-            # TODO: only dealing with quad-cells atm
-            if len(cell_pids) == 4:
-                # identify the pids of the cell on the pole
-                cell_pole_pids = pole_pids.intersection(cell_pids)
-                # criterion of exactly two points from the quad-cell
-                # at the pole to unfold the polar points longitudes
-                if len(cell_pole_pids) == 2:
-                    # compute the relative offset of the polar points
-                    # within the polar cell connectivity
-                    offset = sorted(
-                        [np.where(cell_pids == pid)[0][0] for pid in cell_pole_pids]
-                    )
-                    if offset == [0, 1]:
-                        lhs = cell_pids[offset]
-                        rhs = cell_pids[[3, 2]]
-                    elif offset == [1, 2]:
-                        lhs = cell_pids[offset]
-                        rhs = cell_pids[[0, 3]]
-                    elif offset == [2, 3]:
-                        lhs = cell_pids[offset]
-                        rhs = cell_pids[[1, 0]]
-                    elif offset == [0, 3]:
-                        lhs = cell_pids[offset]
-                        rhs = cell_pids[[1, 2]]
-                    else:
-                        emsg = (
-                            "Failed to unfold a mesh polar quad-cell. Invalid "
-                            "polar points connectivity detected."
+        if (
+            mesh.n_points
+            and {0, mesh.n_points - 1} == set(pole_pids)
+            and np.unique(lons[1:-1]).size == 1
+        ):
+            # unfold polar end-points of a meridian i.e., a line of constant longitude
+            lons[0] = lons[-1] = lons[1]
+        else:
+            pole_submesh = mesh.extract_points(pole_pids)
+            pole_pids = set(pole_pids)
+            # get the cids (cell-indices) of mesh cells with polar vertices
+            pole_cids = np.unique(pole_submesh["vtkOriginalCellIds"])
+            for cid in pole_cids:
+                # get the pids (point-indices) of the polar cell points
+                # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
+                cell_pids = np.array(mesh.get_cell(cid).point_ids)
+                # unfold polar quad-cells
+                if len(cell_pids) == 4:
+                    # identify the pids of the cell on the pole
+                    cell_pole_pids = pole_pids.intersection(cell_pids)
+                    # criterion of exactly two points from the quad-cell
+                    # at the pole to unfold the polar points longitudes
+                    if len(cell_pole_pids) == 2:
+                        # compute the relative offset of the polar points
+                        # within the polar cell connectivity
+                        offset = sorted(
+                            [np.where(cell_pids == pid)[0][0] for pid in cell_pole_pids]
                         )
-                        raise ValueError(emsg)
-                    lons[lhs] = lons[rhs]
+                        if offset == [0, 1]:
+                            lhs = cell_pids[offset]
+                            rhs = cell_pids[[3, 2]]
+                        elif offset == [1, 2]:
+                            lhs = cell_pids[offset]
+                            rhs = cell_pids[[0, 3]]
+                        elif offset == [2, 3]:
+                            lhs = cell_pids[offset]
+                            rhs = cell_pids[[1, 0]]
+                        elif offset == [0, 3]:
+                            lhs = cell_pids[offset]
+                            rhs = cell_pids[[1, 2]]
+                        else:
+                            emsg = (
+                                "Failed to unfold a mesh polar quad-cell. Invalid "
+                                "polar points connectivity detected."
+                            )
+                            raise ValueError(emsg)
+                        lons[lhs] = lons[rhs]
 
     if closed_interval:
         if GV_REMESH_POINT_IDS in mesh.point_data:
@@ -458,7 +478,7 @@ def from_cartesian(
             seam_mask = np.isclose(np.abs(seam_lons), 180)
             lons[seam_ids[seam_mask]] = 180
         elif mesh.n_lines:
-            # TBD: unify closed interval strategies for lines and cells
+            # TODO: unify closed interval strategies for lines and cells
             poi_mask = np.isclose(np.abs(lons), 180)
 
             if np.any(poi_mask):

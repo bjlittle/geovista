@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.common.triangulated`."""
+from __future__ import annotations
+
 from geovista.common import triangulated
 
 

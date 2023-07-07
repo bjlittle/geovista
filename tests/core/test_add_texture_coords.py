@@ -1,4 +1,6 @@
 """Unit-tests for :func:`geovista.core.add_texture_coords`."""
+from __future__ import annotations
+
 import pyvista as pv
 
 from geovista.common import point_cloud
