@@ -17,6 +17,7 @@ from numpy.typing import ArrayLike
 import pyvista as pv
 
 from .common import (
+    CENTRAL_MERIDIAN,
     GV_CELL_IDS,
     GV_FIELD_RADIUS,
     GV_FIELD_ZSCALE,
@@ -59,9 +60,6 @@ CUT_EAST: str = "EAST"
 
 #: Cartesian west/east bias offset of a slice.
 CUT_OFFSET: float = 1e-5
-
-#: By default, generate a mesh seam at this meridian.
-DEFAULT_MERIDIAN: float = 0.0
 
 #: The default number of interpolation points along a spline.
 SPLINE_N_POINTS: int = 1
@@ -268,7 +266,8 @@ def add_texture_coords(
     mesh : PolyData
         The mesh that requires texture coordinates.
     meridian : float, optional
-        The meridian (degrees longitude) to slice along.
+        The meridian (degrees longitude) to slice along. Defaults to
+        :data:`geovista.common.CENTRAL_MERIDIAN`.
     antimeridian : bool, default=False
         Whether to flip the given `meridian` to use its anti-meridian instead.
 
@@ -287,7 +286,7 @@ def add_texture_coords(
         return mesh
 
     if meridian is None:
-        meridian = DEFAULT_MERIDIAN
+        meridian = CENTRAL_MERIDIAN
 
     if antimeridian:
         meridian += 180
@@ -568,7 +567,8 @@ def slice_cells(
     mesh : PolyData
         The mesh to be sliced along the `meridian`.
     meridian : float, optional
-        The meridian (degrees longitude) to slice along.
+        The meridian (degrees longitude) to slice along. Defaults to
+        :data:`geovista.common.CENTRAL_MERIDIAN`.
     antimeridian : bool, default=False
         Whether to flip the given `meridian` to use its anti-meridian instead.
     rtol : float, optional
@@ -598,7 +598,7 @@ def slice_cells(
         return mesh
 
     if meridian is None:
-        meridian = DEFAULT_MERIDIAN
+        meridian = CENTRAL_MERIDIAN
 
     if antimeridian:
         meridian += 180

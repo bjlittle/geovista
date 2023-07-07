@@ -21,6 +21,8 @@ from pyvista.core.filters import _get_output
 from vtk import vtkLogger, vtkObject
 
 __all__ = [
+    "BASE",
+    "CENTRAL_MERIDIAN",
     "COASTLINES_RESOLUTION",
     "GV_CELL_IDS",
     "GV_FIELD_CRS",
@@ -31,12 +33,15 @@ __all__ = [
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
     "LRU_CACHE_SIZE",
+    "PERIOD",
     "Preference",
     "RADIUS",
     "REMESH_JOIN",
     "REMESH_SEAM",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
+    "WRAP_ATOL",
+    "WRAP_RTOL",
     "ZLEVEL_SCALE",
     "ZTRANSFORM_FACTOR",
     "cast_UnstructuredGrid_to_PolyData",
@@ -61,6 +66,9 @@ __all__ = [
 
 #: Default base for wrapped longitude half-open interval, in degrees.
 BASE: float = -180.0
+
+#: Default central meridian.
+CENTRAL_MERIDIAN: float = 0.0
 
 #: Default Natural Earth coastline resolution.
 COASTLINES_RESOLUTION: str = "10m"
