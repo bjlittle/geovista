@@ -19,9 +19,12 @@ import vtk
 
 from .common import (
     GV_FIELD_ZSCALE,
+    GV_REMESH_POINT_IDS,
     LRU_CACHE_SIZE,
     RADIUS,
+    REMESH_SEAM,
     ZLEVEL_SCALE,
+    ZTRANSFORM_FACTOR,
     distance,
     point_cloud,
     to_cartesian,
@@ -191,11 +194,23 @@ class GeoPlotterBase:
         if point_labels_args is None:
             point_labels_args = {}
 
-        # TODO: projection support required here
         lonlat = graticule.lonlat
         xyz = to_cartesian(
             lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
         )
+
+        mesh = pv.PolyData(xyz)
+
+        if graticule.mask is not None:
+            mask = graticule.mask * REMESH_SEAM
+            mesh.point_data[GV_REMESH_POINT_IDS] = mask
+            mesh.set_active_scalars(name=None)
+
+        to_wkt(mesh, WGS84)
+        mesh = transform_mesh(
+            mesh, self.crs, slice_connectivity=False, zlevel=zlevel, inplace=True
+        )
+        xyz = mesh.points
 
         if "show_points" in point_labels_args:
             _ = point_labels_args.pop("show_points")
@@ -332,7 +347,7 @@ class GeoPlotterBase:
             if zscale is None:
                 zscale = ZLEVEL_SCALE
             if zlevel is None:
-                zlevel = 5
+                zlevel = ZTRANSFORM_FACTOR
             # pass through kwargs to "add_mesh"
             kwargs.update({"zlevel": zlevel, "zscale": zscale})
 
@@ -361,7 +376,6 @@ class GeoPlotterBase:
         poles_parallel: bool | None = None,
         poles_label: bool | None = None,
         show_labels: bool | None = None,
-        closed_interval: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -406,10 +420,6 @@ class GeoPlotterBase:
         show_labels : bool, optional
             Whether to render the labels of the parallels and meridians. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
-        closed_interval : bool, optional
-            Longitude values will be in the half-closed interval [-180, 180). Otherwise,
-            longitudes will be in the closed interval [-180, 180]. Defaults to
-            :data:`geovista.gridlines.GRATICULE_CLOSED_INTERVAL`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
@@ -435,7 +445,6 @@ class GeoPlotterBase:
             step=lon_step,
             lat_step=lat_step,
             show_labels=show_labels,
-            closed_interval=closed_interval,
             radius=radius,
             zlevel=zlevel,
             zscale=zscale,
@@ -571,7 +580,6 @@ class GeoPlotterBase:
         lat_step: float | None = None,
         n_samples: int | None = None,
         show_labels: bool | None = None,
-        closed_interval: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -593,10 +601,6 @@ class GeoPlotterBase:
         show_labels : bool, optional
             Whether to render the meridian label. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
-        closed_interval : bool, optional
-            Longitude values will be in the half-closed interval [-180, 180). Otherwise,
-            longitudes will be in the closed interval [-180, 180]. Defaults to
-            :data:`geovista.gridlines.GRATICULE_CLOSED_INTERVAL`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
@@ -622,7 +626,6 @@ class GeoPlotterBase:
             lat_step=lat_step,
             n_samples=n_samples,
             show_labels=show_labels,
-            closed_interval=closed_interval,
             radius=radius,
             zlevel=zlevel,
             zscale=zscale,
@@ -638,7 +641,6 @@ class GeoPlotterBase:
         lat_step: float | None = None,
         n_samples: int | None = None,
         show_labels: bool | None = None,
-        closed_interval: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -668,10 +670,6 @@ class GeoPlotterBase:
         show_labels : bool, optional
             Whether to render the labels of the meridians. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
-        closed_interval : bool, optional
-            Longitude values will be in the half-closed interval [-180, 180). Otherwise,
-            longitudes will be in the closed interval [-180, 180]. Defaults to
-            :data:`geovista.gridlines.GRATICULE_CLOSED_INTERVAL`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
@@ -695,13 +693,15 @@ class GeoPlotterBase:
             show_labels = GRATICULE_SHOW_LABELS
 
         if zlevel is None:
-            zlevel = GRATICULE_ZLEVEL
+            zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
 
         if mesh_args is None:
             mesh_args = {}
 
         if point_labels_args is None:
             point_labels_args = {}
+
+        closed_interval = self.crs.is_projected
 
         meridians = create_meridians(
             start=start,
@@ -714,6 +714,15 @@ class GeoPlotterBase:
             zlevel=zlevel,
             zscale=zscale,
         )
+
+        if radius is not None:
+            mesh_args["radius"] = radius
+
+        if zlevel is not None:
+            mesh_args["zlevel"] = zlevel
+
+        if zscale is not None:
+            mesh_args["zscale"] = zscale
 
         for mesh in meridians.blocks:
             self.add_mesh(mesh, **mesh_args)
@@ -861,13 +870,16 @@ class GeoPlotterBase:
             show_labels = GRATICULE_SHOW_LABELS
 
         if zlevel is None:
-            zlevel = GRATICULE_ZLEVEL
+            zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
 
         if mesh_args is None:
             mesh_args = {}
 
         if point_labels_args is None:
             point_labels_args = {}
+
+        # TODO: fix behaviour of longitudes at poles
+        poles_parallel = False
 
         parallels = create_parallels(
             start=start,
@@ -881,6 +893,15 @@ class GeoPlotterBase:
             zlevel=zlevel,
             zscale=zscale,
         )
+
+        if radius is not None:
+            mesh_args["radius"] = radius
+
+        if zlevel is not None:
+            mesh_args["zlevel"] = zlevel
+
+        if zscale is not None:
+            mesh_args["zscale"] = zscale
 
         for mesh in parallels.blocks:
             self.add_mesh(mesh, **mesh_args)

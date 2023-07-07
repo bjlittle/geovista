@@ -38,6 +38,7 @@ __all__ = [
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
     "ZLEVEL_SCALE",
+    "ZTRANSFORM_FACTOR",
     "cast_UnstructuredGrid_to_PolyData",
     "distance",
     "from_cartesian",
@@ -120,6 +121,9 @@ WRAP_RTOL: float = 1.0e-5
 
 #: Proportional multiplier for z-axis levels/offsets.
 ZLEVEL_SCALE: float = 1.0e-4
+
+#: The zlevel scaling to be applied when transforming to a projection.
+ZTRANSFORM_FACTOR: int = 3
 
 
 class _MixinStrEnum:

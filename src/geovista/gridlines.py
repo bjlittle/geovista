@@ -96,6 +96,7 @@ class GraticuleGrid:
     blocks: pv.MultiBlock
     lonlat: ArrayLike
     labels: list[str, ...]
+    mask: ArrayLike = None
 
 
 def _step_period(lon: float, lat: float) -> tuple[float, float]:
@@ -266,6 +267,7 @@ def create_meridians(
         if np.any(mask):
             lons[mask] = 180.0
     else:
+        mask = None
         lons = np.unique(wrap(lons))
 
     lats = np.linspace(LATITUDE_START, LATITUDE_STOP, num=n_samples)
@@ -291,9 +293,10 @@ def create_meridians(
         # TODO: require lon_0 to determine the wrap meridian
         if closed_interval and np.isclose(lon, 180.0):
             # mark this meridian as the closed interval wrap
-            mask = np.empty(mesh.n_points, dtype=int)
-            mask.fill(REMESH_SEAM)
-            mesh.point_data[GV_REMESH_POINT_IDS] = mask
+            seam = np.empty(mesh.n_points, dtype=int)
+            seam.fill(REMESH_SEAM)
+            mesh.point_data[GV_REMESH_POINT_IDS] = seam
+            mesh.set_active_scalars(name=None)
 
         blocks[str(lon)] = mesh
 
@@ -309,7 +312,13 @@ def create_meridians(
         grid_labels.extend(labels)
 
     grid_points = np.vstack(grid_points)
-    graticule = GraticuleGrid(blocks=blocks, lonlat=grid_points, labels=grid_labels)
+
+    if mask is not None:
+        mask = np.tile(mask, grid_lats.size)
+
+    graticule = GraticuleGrid(
+        blocks=blocks, lonlat=grid_points, labels=grid_labels, mask=mask
+    )
 
     return graticule
 

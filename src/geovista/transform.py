@@ -128,7 +128,9 @@ def transform_mesh(
             xmin, xmax, ymin, ymax, _, _ = mesh.bounds
             xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
             # TODO: make this scale factor configurable at the API/module level
-            delta = min(xdelta, ydelta) // 4
+            # current strategy is slightly flawed in that there isn't consistent
+            # scaling across all geometries added to the render
+            delta = max(xdelta, ydelta) // 4
 
             if cloud:
                 zlevel += xyz[:, 2]
