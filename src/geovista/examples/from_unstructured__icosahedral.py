@@ -23,7 +23,7 @@ def main() -> None:
     Circulation Model (GCM) part of Institut Pierre-Simon Laplace (IPSL-CM) Earth
     System Model. The data targets the mesh faces/cells.
 
-    Note that, Natural Earth coastlines are also rendered.
+    Note that, a graticule and Natural Earth coastlines are also rendered.
 
     """
     # load the sample data
@@ -40,6 +40,7 @@ def main() -> None:
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_coastlines()
+    plotter.add_graticule()
     plotter.add_axes()
     plotter.add_text(
         "DYNAMICO Icosahedral (10m Coastlines)",
