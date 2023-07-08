@@ -47,7 +47,7 @@ from .gridlines import (
     create_parallels,
 )
 from .raster import wrap_texture
-from .samples import lfric
+from .samples import LFRIC_RESOLUTION, REGULAR_RESOLUTION, lfric, regular_grid
 from .transform import transform_mesh
 
 __all__ = ["GeoPlotter"]
@@ -69,7 +69,7 @@ GRATICULE_SHOW_LABELS: bool = True
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def _get_lfric(
+def _lfric_mesh(
     resolution: str | None = None,
     radius: float | None = None,
 ) -> pv.PolyData:
@@ -229,7 +229,7 @@ class GeoPlotterBase:
     def add_base_layer(
         self, mesh: pv.PolyData | None = None, **kwargs: Any | None
     ) -> vtk.vtkActor:
-        """Generate a cube-sphere base layer mesh and add to the plotter scene.
+        """Generate a cubed-sphere base layer mesh and add to the plotter scene.
 
         Optionally, a `mesh` may be provided, which better fits the
         geometry of the surface mesh.
@@ -242,9 +242,13 @@ class GeoPlotterBase:
             The radius of the spherical mesh to generate as the base layer. Defaults
             to :data:`geovista.common.RADIUS`.
         resolution : str, optional
-            The resolution of the cube-sphere to generate as the base layer,
+            The resolution of the cubed-sphere to generate as the base layer,
             which may be either ``c48``, ``c96`` or ``c192``. Defaults to
-            :data:`geovista.samples.LFRIC_RESOLUTION`.
+            :data:`geovista.samples.LFRIC_RESOLUTION`. Alternatively, generate a
+            regular grid using a format of ``rN``, where ``N`` is the number of cells
+            in latitude, and ``N * 1.5`` cells in longitude. When adding a base layer
+            to a projection, the default is to use a regular grid with resolution
+            :data:`REGULAR_RESOLUTION`.
         zlevel : int, default=-1
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
@@ -265,6 +269,13 @@ class GeoPlotterBase:
 
         """
         resolution = kwargs.pop("resolution") if "resolution" in kwargs else None
+
+        if resolution is None:
+            resolution = (
+                REGULAR_RESOLUTION if self.crs.is_projected else LFRIC_RESOLUTION
+            )
+        else:
+            resolution = str(resolution)
 
         if self.crs.is_projected:
             # pass through "zlevel" and "zscale" to the "add_mesh" method,
@@ -289,7 +300,10 @@ class GeoPlotterBase:
             if radius is not None:
                 mesh = resize(mesh, radius=radius)
         else:
-            mesh = _get_lfric(resolution=resolution, radius=radius)
+            if resolution.startswith("r"):
+                mesh = regular_grid(resolution=resolution, radius=radius)
+            else:
+                mesh = _lfric_mesh(resolution=resolution, radius=radius)
 
         actor = self.add_mesh(mesh, **kwargs)
 

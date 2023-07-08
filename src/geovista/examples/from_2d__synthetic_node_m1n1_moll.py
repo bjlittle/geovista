@@ -25,7 +25,7 @@ def main() -> None:
     to the Mollweide pseudo-cylindrical projection.
 
     """
-    # create the 2D spatial coordinates and data
+    # create the 2-D spatial coordinates and data
     M, N = 45, 90
     lats = np.linspace(-90, 90, M + 1)
     lons = np.linspace(-180, 180, N + 1)

@@ -7,6 +7,9 @@ Notes
 """
 from __future__ import annotations
 
+from warnings import warn
+
+import numpy as np
 import pooch
 import pyvista as pv
 
@@ -17,6 +20,12 @@ from .cache import CACHE
 from .common import Preference
 
 __all__ = [
+    "LFRIC_RESOLUTION",
+    "LFRIC_RESOLUTIONS",
+    "PREFERENCE",
+    "REGULAR_RESOLUTION",
+    "WARP_FACTOR",
+    "ZLEVEL_SCALE_CLOUD",
     "fesom",
     "fvcom_tamar",
     "icon_soil",
@@ -32,20 +41,27 @@ __all__ = [
     "lfric_orog",
     "lfric_sst",
     "oisst_avhrr_sst",
+    "regular_grid",
     "um_orca2",
     "um_orca2_cloud",
     "ww3_global_smc",
     "ww3_global_tri",
 ]
 
-#: The default LFRic Model unstructured cubed-sphere resolution.
+#: The default LFRic model unstructured cubed-sphere resolution.
 LFRIC_RESOLUTION: str = "c96"
 
-#: The default warp factor for mesh points.
-WARP_FACTOR: float = 2e-5
+#: The available Met Office cubed-sphere assets.
+LFRIC_RESOLUTIONS: list[str, ...] = ["c48", "c96", "c192"]
 
 #: The default mesh preference.
 PREFERENCE: Preference = Preference.CELL
+
+#: Default regular grid resolution.
+REGULAR_RESOLUTION: str = "r60"
+
+#: The default warp factor for mesh points.
+WARP_FACTOR: float = 2e-5
 
 #: Proportional multiplier for point-cloud levels/offsets.
 ZLEVEL_SCALE_CLOUD: float = 1e-5
@@ -366,18 +382,19 @@ def lam_uk() -> pv.PolyData:
 def lfric(resolution: str | None = None) -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry` sample data.
 
-    Get the LFRic Model unstructured cubed-sphere at the specified `resolution`.
+    Get the LFRic model unstructured cubed-sphere at the specified `resolution`.
 
     Parameters
     ----------
     resolution : str, optional
-        The resolution of the LFRic Model mesh, which may be either
+        The resolution of the LFRic model mesh, which may be either
         ``c48``, ``c96`` or ``c192``. Defaults to :data:`LFRIC_RESOLUTION`.
+        Also see :data:`LFRIC_RESOLUTIONS`.
 
     Returns
     -------
     PolyData
-        The LFRic mesh.
+        The LFRic cubed-sphere mesh.
 
     Notes
     -----
@@ -385,6 +402,17 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
 
     """
     if resolution is None:
+        resolution = LFRIC_RESOLUTION
+
+    original = str(resolution)
+    resolution = original.lower()
+
+    if resolution not in LFRIC_RESOLUTIONS:
+        wmsg = (
+            f"Unknown LFRic cubed-sphere resolution {original!r}, "
+            f"using {LFRIC_RESOLUTION!r} instead."
+        )
+        warn(wmsg, stacklevel=2)
         resolution = LFRIC_RESOLUTION
 
     fname = f"lfric_{resolution}.vtk"
@@ -466,6 +494,60 @@ def lfric_sst() -> pv.PolyData:
         start_index=sample.start_index,
     )
 
+    return mesh
+
+
+def regular_grid(
+    resolution: str | None = None,
+    radius: float | None = None,
+) -> pv.PolyData:
+    """Generate a regular grid given the `resolution`.
+
+    Parameters
+    ----------
+    resolution : str, optional
+        In the format of ``rN``, where ``N`` is the number of cells in latitude,
+        and ``N * 1.5`` cells in longitude. Defaults to :data:`REGULAR_RESOLUTION`.
+    radius: float, optional
+        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+
+    Returns
+    -------
+    PolyData
+        The regular longitude/latitude grid mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    if resolution is None:
+        resolution = REGULAR_RESOLUTION
+
+    original = str(resolution)
+    resolution = original.lower()
+
+    def warn_unknown() -> None:
+        """Generate warning message for invalid resolution."""
+        wmsg = (
+            f"Unknown regular grid resolution {original!r}, using "
+            f"{REGULAR_RESOLUTION!r} instead."
+        )
+        warn(wmsg, stacklevel=2)
+
+    if resolution.startswith("r"):
+        try:
+            n_cells = int(resolution.split("r")[1])
+        except ValueError:
+            warn_unknown()
+            n_cells = int(REGULAR_RESOLUTION.split("r")[1])
+    else:
+        warn_unknown()
+        n_cells = int(REGULAR_RESOLUTION.split("r")[1])
+
+    lats = np.linspace(-90.0, 90.0, n_cells + 1)
+    lons = np.linspace(-180.0, 180.0, int(n_cells * 1.5) + 1)
+    mesh = Transform.from_1d(lons, lats, radius=radius)
     return mesh
 
 
