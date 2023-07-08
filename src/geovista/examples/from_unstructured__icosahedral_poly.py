@@ -23,8 +23,8 @@ def main() -> None:
     Circulation Model (GCM) part of Institut Pierre-Simon Laplace (IPSL-CM) Earth
     System Model. The data targets the mesh faces/cells.
 
-    Note that, Natural Earth coastlines are also rendered, and the mesh is transformed
-    to the Polyconic pseudo-conical projection.
+    Note that, a graticule and Natural Earth coastlines are rendered, and the
+    mesh is also transformed to the Polyconic pseudo-conical projection.
 
     """
     # load the sample data
@@ -41,6 +41,7 @@ def main() -> None:
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_coastlines()
+    plotter.add_graticule()
     plotter.add_axes()
     plotter.add_text(
         f"DYNAMICO Icosahedral ({projection})",

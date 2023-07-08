@@ -22,8 +22,8 @@ def main() -> None:
     It uses an unstructured Met Office LFRic C48 cubed-sphere of surface temperature
     data located on the mesh faces/cells.
 
-    Note that, a threshold is also applied to remove land NaN cells, and a
-    Natural Earth base layer is rendered along with Natural Earth coastlines.
+    Note that, a threshold is also applied to remove land NaN cells. A Natural Earth
+    base layer is also rendered along with Natural Earth coastlines and a graticule.
 
     """
     # load the sample data
@@ -49,6 +49,7 @@ def main() -> None:
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_1())
     plotter.add_coastlines()
+    plotter.add_graticule()
     plotter.add_axes()
     plotter.add_text(
         "LFRic C48 Unstructured Cube-Sphere (10m Coastlines)",

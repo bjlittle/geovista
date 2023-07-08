@@ -82,7 +82,7 @@ LONGITUDE_N_SAMPLES: int = 180
 LONGITUDE_START: float = BASE
 
 #: The default step size between graticule meridians (degrees).
-LONGITUDE_STEP: float = 30.0
+LONGITUDE_STEP: float = 45.0
 
 #: The period or upper bound (degrees) for meridian step size.
 LONGITUDE_STEP_PERIOD: float = 180.0
