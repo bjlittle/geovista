@@ -168,13 +168,14 @@ plotter.add_mesh(
 )
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 plotter.add_coastlines(resolution="10m")
+plotter.add_graticule(lon_step=45)
 plotter.view_xy(negative=True)
 plotter.add_axes()
 plotter.show()
 ```
 </details>
 
-![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/ww3-tri.png)
+![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.07.0/media/readme/ww3-tri.png)
 
 #### Finite Volume Community Ocean Model
 
@@ -217,7 +218,7 @@ plotter.show()
 ```
 </details>
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/tamar.png)
+![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.07.0/media/readme/tamar.png)
 
 #### CF UGRID
 
@@ -259,13 +260,14 @@ sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_coastlines()
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+plotter.add_graticule(lon_step=45)
 plotter.add_axes()
 plotter.view_xy()
 plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/lam-moll.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.07.0/media/readme/lam-moll.png)
 
 Using the same **unstructured** LAM data, reproject to
 [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a
@@ -302,13 +304,14 @@ sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, scalar_bar_args=sargs)
 plotter.add_coastlines()
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+plotter.add_graticule(lon_step=45)
 plotter.add_axes()
 plotter.view_xy()
 plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/lam-eqc.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.07.0/media/readme/lam-eqc.png)
 
 #### LFRic Cube-Sphere
 
@@ -348,7 +351,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/lfric-robin.png)
+![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.07.0/media/readme/lfric-robin.png)
 
 #### UM ORCA2
 
@@ -388,7 +391,7 @@ plotter.show()
 ```
 </details>
 
-![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/um-orca.png)
+![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.07.0/media/readme/um-orca.png)
 
 #### OISST AVHRR
 
@@ -426,7 +429,7 @@ plotter.show()
 ```
 </details>
 
-![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/oisst-avhrr.png)
+![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.07.0/media/readme/oisst-avhrr.png)
 
 #### DYNAMICO Icosahedral
 
@@ -461,7 +464,7 @@ plotter.show()
 ```
 </details>
 
-![dynamico-icosahedral](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.06.4/media/readme/dynamico-icosahedral.png)
+![dynamico-icosahedral](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.07.0/media/readme/dynamico-icosahedral.png)
 
 ## Unreal Reels
 
