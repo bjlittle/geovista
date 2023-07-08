@@ -13,7 +13,6 @@ from functools import lru_cache
 from typing import Any, Union
 from warnings import warn
 
-import numpy as np
 from pyproj import CRS
 import pyvista as pv
 import vtk
@@ -48,7 +47,7 @@ from .gridlines import (
     create_parallels,
 )
 from .raster import wrap_texture
-from .samples import LFRIC_RESOLUTION, lfric
+from .samples import LFRIC_RESOLUTION, REGULAR_RESOLUTION, lfric, regular_grid
 from .transform import transform_mesh
 
 __all__ = ["GeoPlotter"]
@@ -67,9 +66,6 @@ GRATICULE_LABEL_FONT_SIZE: int = 9
 
 #: Whether to rendering graticule labels by default.
 GRATICULE_SHOW_LABELS: bool = True
-
-#: Default regular grid resolution.
-REGULAR_RESOLUTION: str = "r60"
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -104,63 +100,6 @@ def _lfric_mesh(
 
     mesh.set_active_scalars(name=None)
 
-    return mesh
-
-
-@lru_cache(maxsize=LRU_CACHE_SIZE)
-def _regular_grid(
-    resolution: str | None = None,
-    radius: float | None = None,
-) -> pv.PolydData:
-    """Generate a regular grid given the `resolution`.
-
-    Parameters
-    ----------
-    resolution : str, optional
-        In the format of ``rN``, where ``N`` is the number of cells in latitude,
-        and ``N * 1.5`` cells in longitude. Defaults to :data:`REGULAR_RESOLUTION`.
-    radius: float, optional
-        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
-
-    Returns
-    -------
-    PolyData
-        The regular longitude/latitude grid mesh.
-
-    Notes
-    -----
-    .. versionadded:: 0.3.0
-
-    """
-    from .bridge import Transform
-
-    if resolution is None:
-        resolution = REGULAR_RESOLUTION
-
-    original = str(resolution)
-    resolution = original.lower()
-
-    def warn_unknown() -> None:
-        """Generate warning message for invalid resolution."""
-        wmsg = (
-            f"Unknown regular grid resolution {original!r}, using "
-            f"{REGULAR_RESOLUTION!r} instead."
-        )
-        warn(wmsg, stacklevel=2)
-
-    if resolution.startswith("r"):
-        try:
-            n_cells = int(resolution.split("r")[1])
-        except ValueError:
-            warn_unknown()
-            n_cells = int(REGULAR_RESOLUTION.split("r")[1])
-    else:
-        warn_unknown()
-        n_cells = int(REGULAR_RESOLUTION.split("r")[1])
-
-    lats = np.linspace(-90.0, 90.0, n_cells + 1)
-    lons = np.linspace(-180.0, 180.0, int(n_cells * 1.5) + 1)
-    mesh = Transform.from_1d(lons, lats, radius=radius)
     return mesh
 
 
@@ -362,7 +301,7 @@ class GeoPlotterBase:
                 mesh = resize(mesh, radius=radius)
         else:
             if resolution.startswith("r"):
-                mesh = _regular_grid(resolution=resolution, radius=radius)
+                mesh = regular_grid(resolution=resolution, radius=radius)
             else:
                 mesh = _lfric_mesh(resolution=resolution, radius=radius)
 

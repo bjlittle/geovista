@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from warnings import warn
 
+import numpy as np
 import pooch
 import pyvista as pv
 
@@ -22,6 +23,7 @@ __all__ = [
     "LFRIC_RESOLUTION",
     "LFRIC_RESOLUTIONS",
     "PREFERENCE",
+    "REGULAR_RESOLUTION",
     "WARP_FACTOR",
     "ZLEVEL_SCALE_CLOUD",
     "fesom",
@@ -39,6 +41,7 @@ __all__ = [
     "lfric_orog",
     "lfric_sst",
     "oisst_avhrr_sst",
+    "regular_grid",
     "um_orca2",
     "um_orca2_cloud",
     "ww3_global_smc",
@@ -53,6 +56,9 @@ LFRIC_RESOLUTIONS: list[str, ...] = ["c48", "c96", "c192"]
 
 #: The default mesh preference.
 PREFERENCE: Preference = Preference.CELL
+
+#: Default regular grid resolution.
+REGULAR_RESOLUTION: str = "r60"
 
 #: The default warp factor for mesh points.
 WARP_FACTOR: float = 2e-5
@@ -488,6 +494,60 @@ def lfric_sst() -> pv.PolyData:
         start_index=sample.start_index,
     )
 
+    return mesh
+
+
+def regular_grid(
+    resolution: str | None = None,
+    radius: float | None = None,
+) -> pv.PolyData:
+    """Generate a regular grid given the `resolution`.
+
+    Parameters
+    ----------
+    resolution : str, optional
+        In the format of ``rN``, where ``N`` is the number of cells in latitude,
+        and ``N * 1.5`` cells in longitude. Defaults to :data:`REGULAR_RESOLUTION`.
+    radius: float, optional
+        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+
+    Returns
+    -------
+    PolyData
+        The regular longitude/latitude grid mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    if resolution is None:
+        resolution = REGULAR_RESOLUTION
+
+    original = str(resolution)
+    resolution = original.lower()
+
+    def warn_unknown() -> None:
+        """Generate warning message for invalid resolution."""
+        wmsg = (
+            f"Unknown regular grid resolution {original!r}, using "
+            f"{REGULAR_RESOLUTION!r} instead."
+        )
+        warn(wmsg, stacklevel=2)
+
+    if resolution.startswith("r"):
+        try:
+            n_cells = int(resolution.split("r")[1])
+        except ValueError:
+            warn_unknown()
+            n_cells = int(REGULAR_RESOLUTION.split("r")[1])
+    else:
+        warn_unknown()
+        n_cells = int(REGULAR_RESOLUTION.split("r")[1])
+
+    lats = np.linspace(-90.0, 90.0, n_cells + 1)
+    lons = np.linspace(-180.0, 180.0, int(n_cells * 1.5) + 1)
+    mesh = Transform.from_1d(lons, lats, radius=radius)
     return mesh
 
 

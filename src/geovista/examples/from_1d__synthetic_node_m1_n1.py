@@ -24,7 +24,7 @@ def main() -> None:
     Note that, Natural Earth coastlines are also rendered.
 
     """
-    # create the 1D spatial coordinates and data
+    # create the 1-D spatial coordinates and data
     M, N = 45, 90
     lats = np.linspace(-90, 90, M + 1)
     lons = np.linspace(-180, 180, N + 1)
