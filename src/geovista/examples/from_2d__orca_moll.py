@@ -8,9 +8,13 @@ Notes
 """
 from __future__ import annotations
 
+from pyproj import CRS
+
 import geovista as gv
+from geovista.common import cast_UnstructuredGrid_to_PolyData as cast
 from geovista.pantry import um_orca2
 import geovista.theme  # noqa: F401
+from geovista.transform import transform_mesh
 
 
 def main() -> None:
@@ -21,9 +25,10 @@ def main() -> None:
     It uses an ORCA2 global ocean with tri-polar model grid with sea water
     potential temperature data. The data targets the mesh faces/cells.
 
-    Note that, a threshold is also applied to remove land NaN cells, and a
-    Natural Earth base layer is rendered along with Natural Earth coastlines.
-    The mesh is also transformed to the Mollweide pseudo-cylindrical projection.
+    Note that, a threshold is applied to remove land NaN cells, before the
+    mesh is then transformed to the Mollweide pseudo-cylindrical projection
+    and extruded to give depth to the projected surface. Finally, 10m
+    resolution Natural Earth coastlines are also rendered.
 
     """
     # load sample data
@@ -35,18 +40,24 @@ def main() -> None:
     # provide mesh diagnostics via logging
     gv.logger.info("%s", mesh)
 
+    # create the target coordinate reference system
+    crs = CRS.from_user_input(projection := "+proj=moll")
+
     # remove cells from the mesh with nan values
-    mesh = mesh.threshold()
+    mesh = cast(mesh.threshold())
+
+    # transform and extrude the mesh
+    mesh = transform_mesh(mesh, crs)
+    mesh.extrude((0, 0, -1000000), capping=True, inplace=True)
 
     # plot the mesh
-    plotter = gv.GeoPlotter(crs=(projection := "+proj=moll"))
+    plotter = gv.GeoPlotter(crs=crs)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
-    plotter.add_base_layer(texture=gv.natural_earth_1())
-    plotter.add_coastlines()
+    plotter.add_mesh(mesh, scalar_bar_args=sargs)
+    plotter.add_coastlines(color="black")
     plotter.add_axes()
     plotter.add_text(
-        f"ORCA ({projection})",
+        f"ORCA ({projection} extrude)",
         position="upper_left",
         font_size=10,
         shadow=True,
