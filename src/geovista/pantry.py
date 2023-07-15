@@ -837,7 +837,8 @@ def sample_earthquake() -> SampleStructuredXYZ:
         import pandas as pd
     except ImportError:
         raise ImportError(
-            "\n\nInstall pandas to download this sample. Run:\n\n    pip install pandas\n"
+            "\n\nInstall pandas to download this sample. Run:\n",
+            "\n    pip install pandas\n"
         ) from None
     fname = "earthquakes.parq"
     processor = pooch.Decompress(method="auto", name=fname)
