@@ -40,6 +40,7 @@ __all__ = [
     "um_orca2_gradient",
     "ww3_global_smc",
     "ww3_global_tri",
+    "sample_earthquake",
 ]
 
 
@@ -814,5 +815,44 @@ def ww3_global_tri() -> SampleUnstructuredXY:
         name=name,
         units=units,
     )
+
+    return sample
+
+
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def sample_earthquake() -> SampleStructuredXYZ:
+    """Download and cache the sample large earthquake dataset.
+
+    Returns
+    -------
+
+    Sourced from https://holoviz.org/tutorial/Setup.html#downloading-sample-data
+
+    Notes
+    -----
+    .. versionadded:: 0.4.0
+
+    """
+    try:
+        import pandas as pd
+    except ImportError:
+        raise ImportError(
+            '\n\nInstall pandas to download this sample. Run:\n\n    pip install pandas\n'
+        ) from None
+    fname = "earthquakes.parq"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+
+    # load the lon/lat points
+    columns = ['depth', 'id', 'latitude', 'longitude', 'mag', 'place', 'time', 'type']
+    dataset = pd.read_parquet(resource, columns=columns, engine='fastparquet')
+
+    # load the lon/lat/zlevel points
+    lons = dataset["longitude"][:]
+    lats = dataset["latitude"][:]
+    zlevel = dataset["depth"][:]
+    data = dataset["mag"][:]
+
+    sample = SampleStructuredXYZ(lons=lons, lats=lats, zlevel=zlevel, data=data)
 
     return sample
