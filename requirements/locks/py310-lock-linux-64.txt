@@ -262,7 +262,7 @@ https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.6-pyhd8ed1ab
 https://conda.anaconda.org/conda-forge/noarch/nodeenv-1.8.0-pyhd8ed1ab_0.conda#2a75b296096adabbabadd5e9782e5fcc
 https://conda.anaconda.org/conda-forge/noarch/pexpect-4.8.0-pyh1a96a4e_2.tar.bz2#330448ce4403cc74990ac07c555942a1
 https://conda.anaconda.org/conda-forge/linux-64/pillow-10.0.0-py310h582fbeb_0.conda#adcc7ea52e4d39d0a93f6a2ef36c7fd4
-https://conda.anaconda.org/conda-forge/noarch/pip-23.1.2-pyhd8ed1ab_0.conda#7288da0d36821349cf1126e8670292df
+https://conda.anaconda.org/conda-forge/noarch/pip-23.2-pyhd8ed1ab_0.conda#fb90dfe13ce16c0a3374e3d34e3291c5
 https://conda.anaconda.org/conda-forge/linux-64/proj-9.2.1-ha643af7_0.conda#e992387307f4403ba0ec07d009032550
 https://conda.anaconda.org/conda-forge/linux-64/pulseaudio-client-16.1-hb77b528_4.conda#8f349ca16d30950aa00870484d9d30c4
 https://conda.anaconda.org/conda-forge/noarch/pyct-core-0.4.6-py_0.tar.bz2#55ec526f95e0959de3f68bc6289a20da
