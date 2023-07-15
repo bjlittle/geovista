@@ -85,6 +85,8 @@ jobs:
         cache_build: 0
 
     - name: "lock (${{ matrix.version }})"
+      env:
+        VTK_BUILD: "  - vtk=*=qt_*"
       run: |
         tox -e ${{ matrix.version }}-lock
 
