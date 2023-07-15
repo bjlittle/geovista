@@ -825,7 +825,8 @@ def sample_earthquake() -> SampleStructuredXYZ:
 
     Returns
     -------
-    Sourced from https://holoviz.org/tutorial/Setup.html#downloading-sample-data
+    SampleStructuredXYZ
+        The spatial coordinates and data payload.
 
     Notes
     -----
