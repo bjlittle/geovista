@@ -9,8 +9,8 @@ Notes
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry import sample_earthquake
 from geovista.common import to_cartesian
+from geovista.pantry import sample_earthquake
 import geovista.theme
 
 

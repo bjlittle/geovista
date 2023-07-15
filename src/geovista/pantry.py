@@ -36,11 +36,11 @@ __all__ = [
     "lfric_orog",
     "lfric_sst",
     "oisst_avhrr_sst",
+    "sample_earthquake",
     "um_orca2",
     "um_orca2_gradient",
     "ww3_global_smc",
     "ww3_global_tri",
-    "sample_earthquake",
 ]
 
 
@@ -825,7 +825,6 @@ def sample_earthquake() -> SampleStructuredXYZ:
 
     Returns
     -------
-
     Sourced from https://holoviz.org/tutorial/Setup.html#downloading-sample-data
 
     Notes
@@ -837,15 +836,15 @@ def sample_earthquake() -> SampleStructuredXYZ:
         import pandas as pd
     except ImportError:
         raise ImportError(
-            '\n\nInstall pandas to download this sample. Run:\n\n    pip install pandas\n'
+            "\n\nInstall pandas to download this sample. Run:\n\n    pip install pandas\n"
         ) from None
     fname = "earthquakes.parq"
     processor = pooch.Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
 
     # load the lon/lat points
-    columns = ['depth', 'id', 'latitude', 'longitude', 'mag', 'place', 'time', 'type']
-    dataset = pd.read_parquet(resource, columns=columns, engine='fastparquet')
+    columns = ["depth", "id", "latitude", "longitude", "mag", "place", "time", "type"]
+    dataset = pd.read_parquet(resource, columns=columns, engine="fastparquet")
 
     # load the lon/lat/zlevel points
     lons = dataset["longitude"][:]
