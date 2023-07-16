@@ -13,6 +13,7 @@ import pyvista as pv
 
 import geovista
 import geovista as gv
+import geovista.theme
 
 
 def main() -> None:
@@ -31,9 +32,8 @@ def main() -> None:
 
     # plot mesh
     plotter = gv.GeoPlotter()
-    plotter.set_background("gray")
     plotter.enable_anti_aliasing("ssaa")
-    plotter.add_base_layer(color="white", lighting=False)
+    plotter.add_base_layer(lighting=False)
     plotter.add_coastlines(color="black", lighting=False)
     plotter.add_mesh(sphere.arrows, lighting=False)
     plotter.camera.zoom(1.5)
