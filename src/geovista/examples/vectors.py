@@ -24,7 +24,7 @@ import geovista
 
 
 def main() -> None:
-    """Example inspired by Vector plotting in cartopy."""
+    """Create vectors plotting inspired by cartopy."""
 
 
     # make cool swirly pattern
