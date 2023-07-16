@@ -34,7 +34,7 @@ TextureLike = Union[str, pv.Texture]
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
 
 #: Pin to use the specific geovista-data repository version for geovista resources.
-DATA_VERSION: str = "2023.07.0"
+DATA_VERSION: str = "2023.07.1"
 
 #: Environment variable to override pooch cache manager path.
 ENV: str = "GEOVISTA_CACHEDIR"
