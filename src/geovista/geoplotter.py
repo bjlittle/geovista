@@ -965,6 +965,9 @@ class GeoPlotterBase:
                 point_labels_args=point_labels_args,
             )
 
+    def add_points(self) -> pv.Actor:
+        pass
+
 
 class GeoPlotter(GeoPlotterBase, pv.Plotter):
     """A geospatial aware plotter.
