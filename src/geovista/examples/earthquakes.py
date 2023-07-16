@@ -23,10 +23,24 @@ def main() -> None:
     with a Natural Earth base layer along and Natural Earth coastlines.
 
     The earthquakes dataset is sourced from the
-    [USGS Earthquake Hazards Program](https://www.usgs.gov/programs/earthquake-hazards)
-    and [pre-processed](https://github.com/holoviz/holoviz/blob/main/examples/data/preprocessing/earthquake_data.py)
+    `USGS Earthquake Hazards Program <https://www.usgs.gov/programs/earthquake-hazards>`_
+    and
+    `pre-processed <https://github.com/holoviz/holoviz/blob/main/examples/data/preprocessing/earthquake_data.py>`_
     as part of this
-    [HoloViz Tutorial](https://holoviz.org/tutorial/Overview.html#the-holoviz-tutorial).
+    `HoloViz Tutorial <https://holoviz.org/tutorial/Overview.html#the-holoviz-tutorial>`_.
+
+    =========  =============================================================  =========================
+    Magnitude  Earthquake Effects                                             Estimated Number per Year
+    =========  =============================================================  =========================
+    <=2.5      Usually not felt, but can be recorded by seismograph.          Millions
+    2.5 - 5.4  Often felt, but only causes minor damage.                      500,000
+    5.5 - 6.0  Slight damage to buildings and other structures.               350
+    6.1 - 6.9  May cause a lot of damage in very populated areas.             100
+    7.0 - 7.9  Major earthquake. Serious damage.                              10-15
+    >=8.0      Great earthquake. Can destroy communities near the epicenter.  One every year or two
+    =========  =============================================================  =========================
+
+    `Reference <https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/>`_.
 
     """
     # load sample data, which requires the optional package

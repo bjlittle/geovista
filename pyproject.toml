@@ -114,6 +114,10 @@ known-first-party = ["geovista"]
 max-complexity = 22
 
 
+[tool.ruff.per-file-ignores]
+"src/geovista/examples/earthquakes.py" = ["E501"]
+
+
 [tool.ruff.pydocstyle]
 convention = "numpy"
 
