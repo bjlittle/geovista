@@ -24,7 +24,7 @@ import geovista
 
 
 def main() -> None:
-    """This example is inspired by Vector plotting in cartopy.
+    """Example inspired by Vector plotting in cartopy.
     """
 
 
