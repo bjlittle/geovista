@@ -33,6 +33,7 @@ from .crs import from_wkt, to_wkt  # noqa: F401
 from .geodesic import BBox, line, panel, wedge  # noqa: F401
 from .geometry import coastlines  # noqa: F401
 from .geoplotter import GeoPlotter  # noqa: F401
+from .report import Report  # noqa: F401
 
 try:
     from ._version import version as __version__
