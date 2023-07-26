@@ -755,10 +755,10 @@ def slice_lines(
     cid_xyz_1d = np.concatenate([mesh.points[pids] for pids in cid_pids])
 
     # use explicit typing for clarity ...
-    split_cids: list[int, ...] = []
-    split_xyz: list[ArrayLike, ...] = []
+    split_cids: list[int] = []
+    split_xyz: list[ArrayLike] = []
     detach_cids: list[int] = []
-    detach_pids: list[int, ...] = []
+    detach_pids: list[int] = []
 
     for xyz, cid in zip(poi_xyz, poi_cids):
         mask = np.all(np.isclose(cid_xyz_1d, xyz), axis=1)
