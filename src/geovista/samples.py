@@ -52,7 +52,7 @@ __all__ = [
 LFRIC_RESOLUTION: str = "c96"
 
 #: The available Met Office cubed-sphere assets.
-LFRIC_RESOLUTIONS: list[str, ...] = ["c48", "c96", "c192"]
+LFRIC_RESOLUTIONS: list[str] = ["c48", "c96", "c192"]
 
 #: The default mesh preference.
 PREFERENCE: Preference = Preference.CELL
