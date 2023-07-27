@@ -530,9 +530,9 @@ GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/l
 
 <h4 align="center">
   <a href="https://showyourstripes.info/s/globe">
-    <img src="https://raw.githubusercontent.com/ed-hawkins/show-your-stripes/master/2021/GLOBE---1850-2021-MO.png"
+    <img src="https://raw.githubusercontent.com/ed-hawkins/show-your-stripes/master/2022/GLOBE---1850-2022-MO.png"
          height="50" width="800"
-         alt="#showyourstripes Global 1850-2021"></a>
+         alt="#showyourstripes Global 1850-2022"></a>
 </h4>
 
 **Graphics and Lead Scientist**: [Ed Hawkins](http://www.met.reading.ac.uk/~ed/home/index.php), National Centre for Atmospheric Science, University of Reading.
