@@ -11,13 +11,12 @@ Notes
 """
 from __future__ import annotations
 
-from typing import Union
 import warnings
 
 import numpy as np
 from numpy import ma
 from numpy.typing import ArrayLike
-from pyproj import CRS, Transformer
+from pyproj import CRS
 import pyvista as pv
 
 from .common import (
@@ -30,13 +29,13 @@ from .common import (
     to_cartesian,
     wrap,
 )
-from .crs import WGS84, to_wkt
+from .crs import WGS84, CRSLike, to_wkt
+from .transform import transform_points
 
 __all__ = ["Transform"]
 
 # type aliases
 Shape = tuple[int]
-CRSLike = Union[int, str, dict, CRS]
 
 #: Whether mesh cleaning performed by the bridge.
 BRIDGE_CLEAN: bool = False
@@ -593,8 +592,8 @@ class Transform:
             crs = CRS.from_user_input(crs)
 
             if crs != WGS84:
-                transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
-                xs, ys = transformer.transform(xs, ys, errcheck=True)
+                transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
+                xs, ys = transformed[:, 0], transformed[:, 1]
 
         # ensure longitudes (degrees) are in half-closed interval [-180, 180)
         xs = wrap(xs)
@@ -745,8 +744,8 @@ class Transform:
             crs = CRS.from_user_input(crs)
 
             if crs != WGS84:
-                transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
-                xs, ys = transformer.transform(xs, ys, errcheck=True)
+                transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
+                xs, ys = transformed[:, 0], transformed[:, 1]
 
         # ensure longitudes (degrees) are in half-closed interval [-180, 180)
         xs = wrap(xs)

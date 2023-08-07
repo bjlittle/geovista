@@ -10,7 +10,7 @@ Notes
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any, Union
+from typing import Any
 from warnings import warn
 
 from pyproj import CRS
@@ -51,9 +51,6 @@ from .samples import LFRIC_RESOLUTION, REGULAR_RESOLUTION, lfric, regular_grid
 from .transform import transform_mesh
 
 __all__ = ["GeoPlotter"]
-
-# type aliases
-CRSLike = Union[int, str, dict, CRS]
 
 #: Proportional multiplier for z-axis levels/offsets of base-layer mesh.
 BASE_ZLEVEL_SCALE: int = 1.0e-3
@@ -216,7 +213,7 @@ class GeoPlotterBase:
         to_wkt(mesh, WGS84)
         # the point-cloud won't be sliced, however it's important that the
         # central-meridian rotation is performed here
-        mesh = transform_mesh(mesh, self.crs, zlevel=zlevel, inplace=True)
+        mesh = transform_mesh(self.crs, mesh, zlevel=zlevel, inplace=True)
         xyz = mesh.points
 
         if "show_points" in point_labels_args:
@@ -601,8 +598,8 @@ class GeoPlotterBase:
 
             if transform_required:
                 mesh = transform_mesh(
-                    mesh,
                     tgt_crs,
+                    mesh,
                     slice_connectivity=False,
                     rtol=rtol,
                     atol=atol,

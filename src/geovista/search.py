@@ -14,11 +14,11 @@ from typing import Union
 import numpy as np
 from numpy.typing import ArrayLike
 from pykdtree.kdtree import KDTree as pyKDTree
-from pyproj import Transformer
 from pyvista import PolyData
 
 from .common import _MixinStrEnum, to_cartesian
 from .crs import WGS84, from_wkt
+from .transform import transform_points
 
 __all__ = ["KDTree", "Preference", "find_cell_neighbours", "find_nearest_cell"]
 
@@ -127,9 +127,11 @@ class KDTree:
             crs = WGS84
 
         if crs != WGS84:
-            transformer = Transformer.from_crs(crs, WGS84, always_xy=True)
-            xs, ys = transformer.transform(xyz[:, 0], xyz[:, 1], errcheck=True)
-            xyz = to_cartesian(xs, ys)
+            transformed = transform_points(
+                src_crs=crs, tgt_crs=WGS84, xs=xyz[:, 0], ys=xyz[:, 1]
+            )
+            # TODO: clarify zlevel preservation for non-WGS84 point-clouds
+            xyz = to_cartesian(transformed[:, 0], transformed[:, 1])
 
         self._n_points = xyz.shape[0]
         self._mesh_type = mesh.__class__.__name__
