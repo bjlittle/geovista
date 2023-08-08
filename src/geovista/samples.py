@@ -111,7 +111,7 @@ def cloud_amount(preference: str | pantry.CloudPreference | None = None) -> pv.P
 
     Returns
     -------
-    PolyData
+    pv.PolyData
         The unstructured cubed-sphere mesh.
 
     Notes
