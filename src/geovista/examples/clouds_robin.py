@@ -55,7 +55,7 @@ def main() -> None:
     clim = (cmin := 0.3, 1.0)
 
     # create the plotter
-    plotter = gv.GeoPlotter()
+    plotter = gv.GeoPlotter(crs=(projection := "+proj=robin"))
 
     for i, cloud in enumerate(cmaps):
         # load the sample data
@@ -88,11 +88,12 @@ def main() -> None:
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "Low, Medium, High & Very High Cloud Amount",
+        f"Low, Medium, High & Very High Cloud Amount ({projection})",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
+    plotter.view_xy()
     plotter.camera.zoom(1.5)
     # generate warning, if no gpu opacity support
     warn_opacity(plotter)
