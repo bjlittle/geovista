@@ -26,6 +26,7 @@ __all__ = [
     "REGULAR_RESOLUTION",
     "WARP_FACTOR",
     "ZLEVEL_SCALE_CLOUD",
+    "cloud_amount",
     "fesom",
     "fvcom_tamar",
     "icon_soil",
@@ -67,7 +68,7 @@ WARP_FACTOR: float = 2e-5
 ZLEVEL_SCALE_CLOUD: float = 1e-5
 
 
-def _lam_sample_to_mesh(sample: pantry.SampleUnstructuredXY) -> pv.PolyData:
+def _lfric_sample_to_mesh(sample: pantry.SampleUnstructuredXY) -> pv.PolyData:
     """Transform the provided pantry `sample` into a mesh.
 
     Parameters
@@ -78,7 +79,7 @@ def _lam_sample_to_mesh(sample: pantry.SampleUnstructuredXY) -> pv.PolyData:
     Returns
     -------
     PolyData
-        The LAM mesh.
+        The unstructured cubed-sphere mesh.
 
     Notes
     -----
@@ -91,6 +92,48 @@ def _lam_sample_to_mesh(sample: pantry.SampleUnstructuredXY) -> pv.PolyData:
         connectivity=sample.connectivity,
         start_index=sample.start_index,
     )
+
+    return mesh
+
+
+def cloud_amount(preference: str | pantry.CloudPreference | None = None) -> pv.PolyData:
+    """Create a mesh from :mod:`geovista.pantry` sample data.
+
+    Generate a Met Office c768 unstructured cubed-sphere with
+    optional cloud amount data.
+
+    Parameters
+    ----------
+    preference : str or CloudPreference, optional
+        The cloud type, which may be ``low``, ``medium``, ``high``,
+        ``very_high`` or ``mesh``. Defaults to ``mesh``, the
+        c768 mesh with no data payload attached.
+
+    Returns
+    -------
+    pv.PolyData
+        The unstructured cubed-sphere mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.4.0
+
+    """
+    if preference is None:
+        preference = pantry.CLOUD_AMOUNT_PREFERENCE
+
+    if not pantry.CloudPreference.valid(preference):
+        options = " or ".join(f"{item!r}" for item in pantry.CloudPreference.values())
+        emsg = f"Expected a preference of {options}, got '{preference}'."
+        raise ValueError(emsg)
+
+    preference = pantry.CloudPreference(preference)
+
+    sample = pantry.cloud_amount(preference)
+    mesh = _lfric_sample_to_mesh(sample)
+
+    if preference != pantry.CloudPreference.MESH:
+        mesh[sample.name] = sample.data
 
     return mesh
 
@@ -261,7 +304,7 @@ def lam_equator() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lam_sample_to_mesh(pantry.lam_equator())
+    return _lfric_sample_to_mesh(pantry.lam_equator())
 
 
 def lam_falklands() -> pv.PolyData:
@@ -280,7 +323,7 @@ def lam_falklands() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lam_sample_to_mesh(pantry.lam_falklands())
+    return _lfric_sample_to_mesh(pantry.lam_falklands())
 
 
 def lam_london() -> pv.PolyData:
@@ -299,7 +342,7 @@ def lam_london() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lam_sample_to_mesh(pantry.lam_london())
+    return _lfric_sample_to_mesh(pantry.lam_london())
 
 
 def lam_new_zealand() -> pv.PolyData:
@@ -318,7 +361,7 @@ def lam_new_zealand() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lam_sample_to_mesh(pantry.lam_new_zealand())
+    return _lfric_sample_to_mesh(pantry.lam_new_zealand())
 
 
 def lam_pacific() -> pv.PolyData:
@@ -362,7 +405,7 @@ def lam_polar() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lam_sample_to_mesh(pantry.lam_polar())
+    return _lfric_sample_to_mesh(pantry.lam_polar())
 
 
 def lam_uk() -> pv.PolyData:
@@ -376,7 +419,7 @@ def lam_uk() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lam_sample_to_mesh(pantry.lam_uk())
+    return _lfric_sample_to_mesh(pantry.lam_uk())
 
 
 def lfric(resolution: str | None = None) -> pv.PolyData:

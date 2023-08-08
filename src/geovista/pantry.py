@@ -10,6 +10,7 @@ Notes
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from functools import lru_cache
 
 import netCDF4 as nc
@@ -19,9 +20,12 @@ from numpy.typing import ArrayLike
 import pooch
 
 from .cache import CACHE
-from .common import LRU_CACHE_SIZE
+from .common import LRU_CACHE_SIZE, _MixinStrEnum
 
 __all__ = [
+    "CLOUD_AMOUNT_PREFERENCE",
+    "CloudPreference",
+    "cloud_amount",
     "fesom",
     "fvcom_tamar",
     "icon_soil",
@@ -42,6 +46,26 @@ __all__ = [
     "ww3_global_smc",
     "ww3_global_tri",
 ]
+
+#: The default type of cloud amount mesh.
+CLOUD_AMOUNT_PREFERENCE: str = "mesh"
+
+
+# TODO: use StrEnum and auto when minimum supported python version is 3.11
+class CloudPreference(_MixinStrEnum, Enum):
+    """Enumeration of mesh types for cloud amount.
+
+    Notes
+    -----
+    .. versionadded:: 0.4.0
+
+    """
+
+    HIGH = "high"
+    LOW = "low"
+    MEDIUM = "medium"
+    MESH = "mesh"
+    VERY_HIGH = "very_high"
 
 
 @dataclass(frozen=True)
@@ -110,6 +134,103 @@ def capitalise(title: str) -> str:
     title = " ".join([word.capitalize() for word in title])
 
     return title
+
+
+def _cloud_amount_dataset(fname: str | CloudPreference) -> nc.Dataset:
+    """Download unstructured cloud amount data.
+
+    Parameters
+    ----------
+    preference : str or CloudPreference
+        The cloud type, which may be ``low``, ``medium``, ``high``,
+        ``very_high`` or ``mesh``.
+
+    Returns
+    -------
+    Dataset
+        The open netCDF dataset of the required cloud amount data.
+
+    Notes
+    -----
+    .. versionadded:: 0.4.0
+
+    """
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"pantry/c768/{fname}.bz2", processor=processor)
+    dataset = nc.Dataset(resource)
+
+    return dataset
+
+
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def cloud_amount(
+    preference: str | CloudPreference | None = None,
+) -> SampleUnstructuredXY:
+    """Download and cache unstructured cloud amount data.
+
+    Load Met Office LFRic c768 unstructured cubed-sphere quad-mesh
+    cloud amount data.
+
+    Parameters
+    ----------
+    preference : str or CloudPreference, optional
+        The cloud type, which may be ``low``, ``medium``, ``high``,
+        ``very_high`` or ``mesh``. Defaults to ``mesh``, the
+        c768 mesh with no data payload attached.
+
+    Returns
+    -------
+    SampleUnstructuredXY
+        The unstructured spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.4.0
+
+    """
+    if preference is None:
+        preference = CLOUD_AMOUNT_PREFERENCE
+
+    if not CloudPreference.valid(preference):
+        options = " or ".join(f"{item!r}" for item in CloudPreference.values())
+        emsg = f"Expected a preference of {options}, got '{preference}'."
+        raise ValueError(emsg)
+
+    preference = CloudPreference(preference)
+
+    fname = "cloud_amount_mesh.nc"
+    dataset = _cloud_amount_dataset(fname)
+
+    # load the lon/lat cell mesh
+    lons = dataset.variables["Mesh2d_node_x"][:]
+    lats = dataset.variables["Mesh2d_node_y"][:]
+
+    # load the face/node connectivity
+    connectivity = dataset.variables["Mesh2d_face_nodes"]
+    start_index = connectivity.start_index
+
+    data = name = units = None
+
+    if preference != CloudPreference.MESH:
+        fname = f"cloud_amount_{preference}.nc"
+        dataset = _cloud_amount_dataset(fname)
+        variable = f"{preference}_type_cloud_amount"
+        data = dataset.variables[variable]
+        name = capitalise(data.long_name)
+        units = data.units
+        data = data[:][0]
+
+    sample = SampleUnstructuredXY(
+        lons,
+        lats,
+        connectivity[:],
+        data=data,
+        start_index=start_index,
+        name=name,
+        units=units,
+    )
+
+    return sample
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
