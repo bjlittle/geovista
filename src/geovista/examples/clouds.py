@@ -12,6 +12,7 @@ import cmocean
 from matplotlib.colors import LinearSegmentedColormap
 
 import geovista as gv
+from geovista.common import warn_opacity
 from geovista.pantry import cloud_amount
 import geovista.theme  # noqa: F401
 
@@ -91,6 +92,7 @@ def main() -> None:
         font_size=10,
         shadow=True,
     )
+    warn_opacity(plotter)
     plotter.camera.zoom(1.5)
     plotter.show()
 
