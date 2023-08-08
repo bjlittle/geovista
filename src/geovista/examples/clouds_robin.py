@@ -95,7 +95,7 @@ def main() -> None:
     )
     plotter.view_xy()
     plotter.camera.zoom(1.5)
-    # generate warning, if no gpu opacity support
+    # generate warning, if no gpu opacity support available
     warn_opacity(plotter)
     plotter.show()
 

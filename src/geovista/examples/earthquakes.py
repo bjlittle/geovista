@@ -70,6 +70,7 @@ def main() -> None:
         point_size=5,
         scalar_bar_args=sargs,
     )
+    # force zlevel alignment of coastlines and base layer
     plotter.add_base_layer(texture=gv.natural_earth_1(), zlevel=0)
     plotter.add_graticule()
     plotter.add_coastlines()

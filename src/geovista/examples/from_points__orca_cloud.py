@@ -8,6 +8,7 @@ Notes
 from __future__ import annotations
 
 import geovista as gv
+from geovista.common import warn_opacity
 from geovista.pantry import um_orca2_gradient
 from geovista.samples import ZLEVEL_SCALE_CLOUD
 import geovista.theme  # noqa: F401
@@ -18,11 +19,12 @@ def main() -> None:
 
     The resulting mesh contains only points.
 
-    Based on a curvilinear ORCA2 global ocean with tri-polar model grid of sea water
-    potential temperature data, which has been reduced to a limited area and
-    pre-filtered for temperature gradients.
+    Based on a curvilinear ORCA2 global ocean with tri-polar model grid of
+    sea water potential temperature data, which has been reduced to a limited
+    area and pre-filtered for temperature gradients.
 
-    Note that, Natural Earth coastlines are also rendered.
+    Note that, Natural Earth coastlines are also rendered along with a Natural
+    Earth base layer with opacity.
 
     """
     # load the sample data
@@ -52,6 +54,8 @@ def main() -> None:
         render_points_as_spheres=True,
     )
     plotter.add_coastlines(color="black")
+    # force zlevel alignment of coastlines and base layer
+    plotter.add_base_layer(texture=gv.natural_earth_1(), opacity=0.5, zlevel=0)
     plotter.add_axes()
     plotter.view_yz()
     plotter.add_text(
@@ -60,6 +64,8 @@ def main() -> None:
         font_size=10,
         shadow=True,
     )
+    # generate warning, if no gpu opacity support available
+    warn_opacity(plotter)
     plotter.show()
 
 
