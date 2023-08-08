@@ -18,7 +18,7 @@ import geovista.theme  # noqa: F401
 #: The colormap to render the clouds.
 CMAP = cmocean.cm.gray
 
-#: Multiplication factor of the z-level for cloud surface stratification.
+#: Multiplication factor of the zlevel for cloud surface stratification.
 ZLEVEL_FACTOR: int = 75
 
 
