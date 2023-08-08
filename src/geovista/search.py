@@ -40,6 +40,7 @@ KDTREE_LEAF_SIZE: int = 16
 KDTREE_PREFERENCE: str = "point"
 
 
+# TODO: use StrEnum and auto when minimum supported python version is 3.11
 class Preference(_MixinStrEnum, Enum):
     """Enumeration of mesh geometry preferences.
 
