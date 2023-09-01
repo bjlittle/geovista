@@ -58,3 +58,8 @@ repos:
     hooks:
       - id: sort-all
         types: [file, python]
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: "v0.14"
+    hooks:
+      - id: validate-pyproject
