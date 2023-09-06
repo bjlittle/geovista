@@ -730,13 +730,25 @@ def slice_lines(
         wmsg = f"Ignoring 'n_points={n_points}', defaulting to 'n_points=1'."
         warnings.warn(wmsg, stacklevel=2)
 
+    # check whether the line is completely aligned with the slice plane
+    # that passes through the anti-meridian
+    lonlat = from_cartesian(mesh)
+    antimeridian = np.isclose(np.abs(lonlat[:, 0]), 180)
+
+    # nop - all points intersect
+    if np.all(antimeridian):
+        if copy:
+            mesh = mesh.copy(deep=True)
+        return mesh
+
     radius = distance(mesh)
     line = pv.Line(pointa=(radius, 0, 0), pointb=(-radius, 0, 0))
     spline = pv.Spline(line.points, n_points=n_points + 2)
     intersection = mesh.slice_along_line(spline)
     lonlat = from_cartesian(intersection)
-    antimeridian = np.isclose(lonlat[:, 0], -180)
+    antimeridian = np.isclose(np.abs(lonlat[:, 0]), 180)
 
+    # nop - there are no points of intersection
     if antimeridian.sum() == 0:
         if copy:
             mesh = mesh.copy(deep=True)
@@ -763,15 +775,17 @@ def slice_lines(
     for xyz, cid in zip(poi_xyz, poi_cids):
         mask = np.all(np.isclose(cid_xyz_1d, xyz), axis=1)
         if np.any(mask):
-            # we want to detach the connectivity of the line segment only at the pid
+            # we want to detach the connectivity of a single line segment at the pid
             # i.e., replace the pid with a new co-located xyz point
-            if (count := np.sum(mask)) != 1:
+            intersection_pid = np.unique(cid_pids_1d[mask])
+            if (count := intersection_pid.size) > 1:
+                # detected a loop containing different line segments with
+                # coincident end-points at the intersection poi
                 emsg = f"Expected only 1 line segment end-point, got {count} instead."
                 raise ValueError(emsg)
 
-            pid = cid_pids_1d[mask][0]
             detach_cids.append(cid)
-            detach_pids.append(pid)
+            detach_pids.append(intersection_pid[0])
         else:
             # we want to break the connectivity of the line segment @ xyz
             # i.e., split the segment into two new segments about xyz

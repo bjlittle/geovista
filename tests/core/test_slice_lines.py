@@ -62,10 +62,22 @@ def test_no_traversal_slice(copy, mesh):
     assert result == mesh
 
 
+@pytest.mark.parametrize("copy", [False, True])
+@pytest.mark.parametrize("mesh", [line(180, [90, 0, -90]), line(-180, [-90, 0, 90])])
+def test_full_traversal_slice(copy, mesh):
+    """Test a line mesh that completely traverses the antimeridian."""
+    result = slice_lines(mesh, copy=copy)
+    if copy:
+        assert id(result) != id(mesh)
+    else:
+        assert id(result) == id(mesh)
+    assert result == mesh
+
+
 def antimeridian_count(mesh: pv.PolyData) -> int:
     """Count the number of points on the antimeridian of the mesh."""
     lonlat = from_cartesian(mesh)
-    mask = np.isclose(lonlat[:, 0], -180)
+    mask = np.isclose(np.abs(lonlat[:, 0]), 180)
     return np.sum(mask)
 
 
