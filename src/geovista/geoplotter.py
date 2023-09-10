@@ -67,6 +67,11 @@ GRATICULE_LABEL_FONT_SIZE: int = 9
 #: Whether to rendering graticule labels by default.
 GRATICULE_SHOW_LABELS: bool = True
 
+#: Known GPU renderer and version combinations that don't support opacity.
+OPACITY_BLACKLIST = [
+    ("llvmpipe (LLVM 7.0, 256 bits)", "3.3 (Core Profile) Mesa 18.3.4"),
+]
+
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def _lfric_mesh(
@@ -154,6 +159,8 @@ class GeoPlotterBase:
         else:
             crs = WGS84
         self.crs = crs
+        # status of gpu opacity support
+        self._missing_opacity = False
         super().__init__(*args, **kwargs)
 
     def _add_graticule_labels(
@@ -225,6 +232,31 @@ class GeoPlotterBase:
         point_labels_args["always_visible"] = False
 
         self.add_point_labels(xyz, graticule.labels, **point_labels_args)
+
+    def _warn_opacity(self) -> None:
+        """Add textual warning for no opacity support to plotter scene.
+
+        Convenience for adding a text warning to the render scene for known GPU
+        configurations that don't support opacity.
+
+        Notes
+        -----
+        .. versionadded:: 0.4.0
+
+        """
+        if not self._missing_opacity:
+            info = pv.GPUInfo()
+            renderer_version = info.renderer, info.version
+
+            if renderer_version in OPACITY_BLACKLIST:
+                self.add_text(
+                    "GPU Requires Opacity Support",
+                    position="lower_right",
+                    font_size=7,
+                    color="red",
+                    shadow=True,
+                )
+                self._missing_opacity = True
 
     def add_base_layer(
         self, mesh: pv.PolyData | None = None, **kwargs: Any | None
@@ -585,6 +617,12 @@ class GeoPlotterBase:
                         radius = distance(mesh)
 
                     mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
+
+        def _check(option: str) -> bool:
+            return option in kwargs and kwargs[option] is not None
+
+        if not self._missing_opacity and (_check("opacity") or _check("nan_opacity")):
+            self._warn_opacity()
 
         return super().add_mesh(mesh, **kwargs)
 

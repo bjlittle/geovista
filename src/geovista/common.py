@@ -57,7 +57,6 @@ __all__ = [
     "triangulated",
     "vtk_warnings_off",
     "vtk_warnings_on",
-    "warn_opacity",
     "wrap",
 ]
 
@@ -103,11 +102,6 @@ JUPYTER_BACKEND: str = "trame"
 
 #: LRU cache size, which is auto-disabled for testing
 LRU_CACHE_SIZE: int = 0 if "pytest" in sys.modules else 128
-
-#: Known GPU renderer and version combinations that don't support opacity.
-OPACITY_BLACKLIST = [
-    ("llvmpipe (LLVM 7.0, 256 bits)", "3.3 (Core Profile) Mesa 18.3.4"),
-]
 
 #: Default period for wrapped longitude half-open interval, in degrees.
 PERIOD: float = 360.0
@@ -885,35 +879,6 @@ def vtk_warnings_on() -> None:
     vtkObject.GlobalWarningDisplayOn()
     # https://gitlab.kitware.com/vtk/vtk/-/issues/18785
     vtkLogger.SetStderrVerbosity(vtkLogger.VERBOSITY_INFO)
-
-
-def warn_opacity(plotter: pv.Plotter) -> None:
-    """Add text opacity support warning to plotter scene.
-
-    Convenience for adding a text warning to the render scene for known GPU
-    configurations that don't support opacity.
-
-    Parameters
-    ----------
-    plotter : pv.Plotter
-        The plotter rendering the scene.
-
-    Notes
-    -----
-    .. versionadded:: 0.4.0
-
-    """
-    info = pv.GPUInfo()
-    renderer_version = info.renderer, info.version
-
-    if renderer_version in OPACITY_BLACKLIST:
-        plotter.add_text(
-            "Requires Opacity Support",
-            position="lower_right",
-            font_size=7,
-            color="red",
-            shadow=True,
-        )
 
 
 def wrap(
