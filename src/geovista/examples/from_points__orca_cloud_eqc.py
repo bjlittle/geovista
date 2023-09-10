@@ -8,7 +8,6 @@ Notes
 from __future__ import annotations
 
 import geovista as gv
-from geovista.common import warn_opacity
 from geovista.pantry import um_orca2_gradient
 from geovista.samples import ZLEVEL_SCALE_CLOUD
 import geovista.theme  # noqa: F401
@@ -67,8 +66,6 @@ def main() -> None:
         font_size=10,
         shadow=True,
     )
-    # generate warning, if no gpu opacity support available
-    warn_opacity(plotter)
     plotter.show()
 
 

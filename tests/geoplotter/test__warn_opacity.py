@@ -1,9 +1,13 @@
-"""Unit-tests for :func:`geovista.common.warn_opacity`."""
+"""Unit-tests for :meth:`geovista.geoplotter.GeoPlotter._warn_opacity`."""
 from __future__ import annotations
 
-import pyvista
+from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
 
-from geovista.common import OPACITY_BLACKLIST, warn_opacity
+
+def test_init_state():
+    """Test GeoPlotter initial state."""
+    plotter = GeoPlotter()
+    assert plotter._missing_opacity is False
 
 
 def test_gpu_opacity_available(mocker):
@@ -12,10 +16,11 @@ def test_gpu_opacity_available(mocker):
     version = mocker.sentinel.version
     minfo = mocker.MagicMock(renderer=renderer, version=version)
     _ = mocker.patch("pyvista.GPUInfo", return_value=minfo)
-    plotter = pyvista.Plotter()
+    plotter = GeoPlotter()
     spy = mocker.spy(plotter, "add_text")
-    warn_opacity(plotter)
+    plotter._warn_opacity()
     assert spy.call_count == 0
+    assert plotter._missing_opacity is False
 
 
 def test_gpu_opacity_unavailable(mocker):
@@ -23,10 +28,11 @@ def test_gpu_opacity_unavailable(mocker):
     renderer, version = OPACITY_BLACKLIST[0]
     minfo = mocker.MagicMock(renderer=renderer, version=version)
     _ = mocker.patch("pyvista.GPUInfo", return_value=minfo)
-    plotter = pyvista.Plotter()
+    plotter = GeoPlotter()
     spy = mocker.spy(plotter, "add_text")
-    warn_opacity(plotter)
+    plotter._warn_opacity()
     assert spy.call_count == 1
-    args = ("Requires Opacity Support",)
+    args = ("GPU Requires Opacity Support",)
     kwargs = {"position": "lower_right", "font_size": 7, "color": "red", "shadow": True}
     spy.assert_called_once_with(*args, **kwargs)
+    assert plotter._missing_opacity is True

@@ -12,7 +12,6 @@ import cmocean
 from matplotlib.colors import LinearSegmentedColormap
 
 import geovista as gv
-from geovista.common import warn_opacity
 from geovista.pantry import cloud_amount
 import geovista.theme  # noqa: F401
 
@@ -95,8 +94,6 @@ def main() -> None:
     )
     plotter.view_xy()
     plotter.camera.zoom(1.5)
-    # generate warning, if no gpu opacity support available
-    warn_opacity(plotter)
     plotter.show()
 
 
