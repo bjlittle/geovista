@@ -213,7 +213,7 @@ class GeoPlotterBase:
         to_wkt(mesh, WGS84)
         # the point-cloud won't be sliced, however it's important that the
         # central-meridian rotation is performed here
-        mesh = transform_mesh(self.crs, mesh, zlevel=zlevel, inplace=True)
+        mesh = transform_mesh(mesh, self.crs, zlevel=zlevel, inplace=True)
         xyz = mesh.points
 
         if "show_points" in point_labels_args:
@@ -598,8 +598,8 @@ class GeoPlotterBase:
 
             if transform_required:
                 mesh = transform_mesh(
-                    tgt_crs,
                     mesh,
+                    tgt_crs,
                     slice_connectivity=False,
                     rtol=rtol,
                     atol=atol,

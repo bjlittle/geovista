@@ -47,7 +47,7 @@ def main() -> None:
     mesh = cast(mesh.threshold())
 
     # transform and extrude the mesh
-    mesh = transform_mesh(crs, mesh)
+    mesh = transform_mesh(mesh, crs)
     mesh.extrude((0, 0, -1000000), capping=True, inplace=True)
 
     # plot the mesh

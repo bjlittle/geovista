@@ -32,8 +32,8 @@ __all__ = [
 
 
 def transform_mesh(
-    tgt_crs: CRSLike,
     mesh: pv.PolyData,
+    tgt_crs: CRSLike,
     slice_connectivity: bool | None = True,
     rtol: float | None = None,
     atol: float | None = None,
@@ -45,11 +45,11 @@ def transform_mesh(
 
     Parameters
     ----------
-    tgt_crs : CRSLike
-        The target coordinate reference system (CRS) of the transformation.
     mesh : PolyData
         The mesh to be transformed from its source coordinate reference system (CRS) to
         the given `tgt_crs`.
+    tgt_crs : CRSLike
+        The target coordinate reference system (CRS) of the transformation.
     slice_connectivity : bool, default=True
         Slice the mesh prior to transformation in order to break mesh connectivity and
         create a seam in the mesh. Also see :func:`geovista.core.slice_mesh`.
