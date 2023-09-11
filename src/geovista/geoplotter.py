@@ -250,7 +250,7 @@ class GeoPlotterBase:
 
             if renderer_version in OPACITY_BLACKLIST:
                 self.add_text(
-                    "GPU Requires Opacity Support",
+                    "Requires GPU opacity support",
                     position="lower_right",
                     font_size=7,
                     color="red",

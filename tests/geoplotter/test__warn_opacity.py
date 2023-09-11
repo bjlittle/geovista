@@ -32,7 +32,7 @@ def test_gpu_opacity_unavailable(mocker):
     spy = mocker.spy(plotter, "add_text")
     plotter._warn_opacity()
     assert spy.call_count == 1
-    args = ("GPU Requires Opacity Support",)
+    args = ("Requires GPU opacity support",)
     kwargs = {"position": "lower_right", "font_size": 7, "color": "red", "shadow": True}
     spy.assert_called_once_with(*args, **kwargs)
     assert plotter._missing_opacity is True
