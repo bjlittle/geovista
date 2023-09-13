@@ -98,7 +98,6 @@ jobs:
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
       with:
-        cache_build: 0
         cache_period: ${{ env.CACHE_PERIOD }}
         env_name: ${{ env.ENV_NAME }}
 
@@ -115,7 +114,6 @@ jobs:
     - name: "conda environment cache"
       uses: ./.github/workflows/composite/conda-env-cache
       with:
-        cache_build: 1
         cache_period: ${{ env.CACHE_PERIOD }}
         env_name: ${{ env.ENV_NAME }}
         install_packages: "pip 'tox<4'"
@@ -128,7 +126,6 @@ jobs:
     - name: "tox cache"
       uses: ./.github/workflows/composite/tox-cache
       with:
-        cache_build: 0
         lock_file: ${{ env.LOCK_FILE }}
 
     - name: "test wheel (${{ matrix.version }})"

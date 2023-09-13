@@ -6,10 +6,6 @@ description: "create and cache the conda environment"
 #   - CONDA
 #
 inputs:
-  cache_build:
-    description: "conda environment cache build number"
-    required: false
-    default: "0"
   cache_period:
     description: "conda environment cache timestamp"
     required: true
@@ -27,7 +23,7 @@ runs:
       id: conda-env-cache
       with:
         path: ${{ env.CONDA }}/envs/${{ inputs.env_name }}
-        key: ${{ runner.os }}-conda-env-${{ inputs.env_name }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}
+        key: ${{ runner.os }}-conda-env-${{ inputs.env_name }}-${{ inputs.cache_period }}
 
     - if: steps.conda-env-cache.outputs.cache-hit != 'true'
       shell: bash
