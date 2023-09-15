@@ -214,7 +214,9 @@ def transform_point(
     .. versionadded:: 0.4.0
 
     """
-    result = transform_points(src_crs, tgt_crs, x, y, z, trap=trap)
+    result = transform_points(
+        src_crs=src_crs, tgt_crs=tgt_crs, xs=x, ys=y, zs=z, trap=trap
+    )
     shape = result.shape
     assert shape == (1, 3), f"Cannot transform point, got unexpected shape {shape}."
     return result[0]
