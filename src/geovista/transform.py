@@ -179,22 +179,22 @@ def transform_point(
     Parameters
     ----------
     src_crs : CRSLike
-        The source Coordinate Reference System (CRS) of the provided `xs`,
-        `ys` and `zs` spatial point. May be anything accepted by
+        The source Coordinate Reference System (CRS) of the provided `x`,
+        `y` and `z` spatial point. May be anything accepted by
         :meth:`pyproj.CRS.from_user_input`.
     tgt_crs : CRSLike
         The target Coordinate Reference System (CRS) of the transform for
         the spatial point. May be anything accepted by
         :meth:`pyproj.CRS.from_user_input`.
-    xs : ArrayLike
+    x : ArrayLike
         The spatial point x-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar
         or 1-D.
-    ys : ArrayLike
+    y : ArrayLike
         The spatial point y-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar
         or 1-D.
-    zs : ArrayLike, optional
+    z : ArrayLike, optional
         The spatial point z-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar
         or 1-D.
