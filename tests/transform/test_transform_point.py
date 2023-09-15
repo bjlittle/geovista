@@ -21,7 +21,7 @@ def test_shape_fail(mocker, bad):
     patcher = mocker.patch("geovista.transform.transform_points", return_value=bad)
     emsg = "Cannot transform point, got unexpected shape"
     with pytest.raises(AssertionError, match=emsg):
-        transform_point(src_crs=src_crs, tgt_crs=tgt_crs, x=x, y=y, z=z, trap=trap)
+        _ = transform_point(src_crs=src_crs, tgt_crs=tgt_crs, x=x, y=y, z=z, trap=trap)
     patcher.assert_called_once_with(
         src_crs=src_crs,
         tgt_crs=tgt_crs,
@@ -33,13 +33,13 @@ def test_shape_fail(mocker, bad):
 
 
 @pytest.mark.parametrize(
-    "extract",
+    "extract_xyz",
     [lambda arg: arg, lambda arg: arg.reshape(3, 1)],
 )
-def test_valid_pass_thru(extract):
+def test_valid_pass_thru(extract_xyz):
     """Test transforming scalar spatial values."""
     expected = np.array([0, 1, 2], dtype=float)
-    x, y, z = extract(expected)
+    x, y, z = extract_xyz(expected)
     result = transform_point(src_crs=WGS84, tgt_crs=WGS84, x=x, y=y, z=z)
     assert result.shape == expected.shape
     np.testing.assert_array_equal(result, expected)
