@@ -1,0 +1,45 @@
+"""Unit-tests for :func:`geovista.transform.transform_point`."""
+from __future__ import annotations
+
+import numpy as np
+import pytest
+
+from geovista.crs import WGS84
+from geovista.transform import transform_point
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [np.array([]), np.empty(()), np.empty((3,)), np.empty((3, 1)), np.empty((2, 3))],
+)
+def test_shape_fail(mocker, bad):
+    """Test trap for unexpected result shape."""
+    src_crs = mocker.sentinel.src_crs
+    tgt_crs = mocker.sentinel.tgt_crs
+    x, y, z = mocker.sentinel.x, mocker.sentinel.y, mocker.sentinel.z
+    trap = mocker.sentinel.trap
+    patcher = mocker.patch("geovista.transform.transform_points", return_value=bad)
+    emsg = "Cannot transform point, got unexpected shape"
+    with pytest.raises(AssertionError, match=emsg):
+        transform_point(src_crs=src_crs, tgt_crs=tgt_crs, x=x, y=y, z=z, trap=trap)
+    patcher.assert_called_once_with(
+        src_crs=src_crs,
+        tgt_crs=tgt_crs,
+        xs=x,
+        ys=y,
+        zs=z,
+        trap=trap,
+    )
+
+
+@pytest.mark.parametrize(
+    "extract",
+    [lambda arg: arg, lambda arg: arg.reshape(3, 1)],
+)
+def test_valid_pass_thru(extract):
+    """Test transforming scalar spatial values."""
+    expected = np.array([0, 1, 2], dtype=float)
+    x, y, z = extract(expected)
+    result = transform_point(src_crs=WGS84, tgt_crs=WGS84, x=x, y=y, z=z)
+    assert result.shape == expected.shape
+    np.testing.assert_array_equal(result, expected)
