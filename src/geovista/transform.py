@@ -318,7 +318,7 @@ def transform_points(
             raise ValueError(emsg)
 
     def combine(xs: ArrayLike, ys: ArrayLike, zs: ArrayLike | None = None) -> ArrayLike:
-        """Combine the provided points into a single array with shape (N,3).
+        """Combine the provided points into a single array with shape (N, 3).
 
         Parameters
         ----------
@@ -362,6 +362,6 @@ def transform_points(
 
     if xndim == 2:
         shape.append(3)
-        result = result.reshape(**shape)
+        result = result.reshape(tuple(shape))
 
     return result

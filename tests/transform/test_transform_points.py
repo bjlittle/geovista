@@ -6,7 +6,7 @@ from pyproj.exceptions import CRSError
 import pytest
 
 from geovista.crs import WGS84
-from geovista.transform import transform_points
+from geovista.transform import Transformer, transform_points
 
 
 @pytest.mark.parametrize(
@@ -70,3 +70,44 @@ def test_z_size_fail():
     emsg = "Cannot transform points, 'xs' and 'zs' require same length"
     with pytest.raises(ValueError, match=emsg):
         _ = transform_points(src_crs=WGS84, tgt_crs=WGS84, xs=data, ys=data, zs=zs)
+
+
+@pytest.mark.parametrize("zoffset", [None, 100])
+@pytest.mark.parametrize("reshape", [False, True])
+@pytest.mark.parametrize("roundtrip", [False, True])
+def test_transform(mocker, zoffset, reshape, roundtrip):
+    """Test transformation with identical and different CRSs."""
+    xs = np.arange(size := 10, dtype=float)
+    ys = np.arange(size, dtype=float) + 10
+    zs = np.arange(size, dtype=float) + zoffset if zoffset is not None else zoffset
+    if reshape:
+        shape = (2, 5)
+        xs, ys = xs.reshape(shape), ys.reshape(shape)
+        if zs is not None:
+            zs = zs.reshape(shape)
+    else:
+        shape = (size,)
+    shape = shape + (3,)
+    spy_from_crs = mocker.spy(Transformer, "from_crs")
+    spy_transform = mocker.spy(Transformer, "transform")
+    if roundtrip:
+        tmp = transform_points(src_crs=WGS84, tgt_crs="+proj=eqc", xs=xs, ys=ys, zs=zs)
+        result = transform_points(
+            src_crs="+proj=eqc",
+            tgt_crs=WGS84,
+            xs=tmp[..., 0],
+            ys=tmp[..., 1],
+            zs=tmp[..., 2],
+        )
+    else:
+        result = transform_points(src_crs=WGS84, tgt_crs=WGS84, xs=xs, ys=ys, zs=zs)
+    if zoffset is None:
+        zs = np.zeros_like(xs)
+    expected = np.vstack([xs.flatten(), ys.flatten(), zs.flatten()]).T
+    if reshape:
+        expected = expected.reshape(shape)
+    np.testing.assert_array_almost_equal(result, expected)
+    call_count = 2 if roundtrip else 0
+    assert spy_from_crs.call_count == call_count
+    assert spy_transform.call_count == call_count
+    assert result.shape == shape
