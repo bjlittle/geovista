@@ -4,7 +4,7 @@ from __future__ import annotations
 from pyproj import CRS
 import pyvista as pv
 
-from geovista.crs import WGS84, projected, to_wkt
+from geovista.crs import WGS84, has_wkt, projected, to_wkt
 
 
 def test_planar__no_crs():
@@ -20,15 +20,14 @@ def test_planer__with_crs():
     assert not projected(mesh)
 
 
-def test_non_planar__no_crs():
+def test_non_planar__no_crs(sphere):
     """Test that the mesh is not projected."""
-    mesh = pv.Sphere()
-    assert not projected(mesh)
+    assert not projected(sphere)
 
 
-def test_non_planer__with_crs():
+def test_non_planer__with_crs(sphere):
     """Test that the mesh CRS is used over the geometry heuristic."""
-    mesh = pv.Sphere()
+    assert has_wkt(sphere) is False
     crs = CRS.from_user_input("+proj=eqc")
-    to_wkt(mesh, crs)
-    assert projected(mesh)
+    to_wkt(sphere, crs)
+    assert projected(sphere)

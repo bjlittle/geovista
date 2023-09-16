@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+import pyvista as pv
 
 from geovista.bridge import Transform
 from geovista.crs import WGS84
@@ -66,6 +67,12 @@ def lfric_sst():
     mesh["pids"] = np.arange(mesh.n_points)
     mesh.set_active_scalars(name)
     return mesh
+
+
+@pytest.fixture()
+def sphere():
+    """Fixture to provide a pyvista sphere mesh."""
+    return pv.Sphere()
 
 
 @pytest.fixture

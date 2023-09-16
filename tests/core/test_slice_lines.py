@@ -32,7 +32,7 @@ def test_projected_fail(mesh):
         _ = slice_lines(mesh)
 
 
-@pytest.mark.parametrize("mesh", [pv.Sphere(), lam_uk(), lfric()])
+@pytest.mark.parametrize("mesh", [pv.Cube(), lam_uk(), lfric()])
 def test_no_lines(mesh):
     """Test nop slicing mesh with no lines."""
     result = slice_lines(mesh)
