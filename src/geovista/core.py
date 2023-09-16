@@ -88,7 +88,7 @@ class MeridianSlice:
         mesh: pv.PolyData,
         meridian: float,
         offset: float | None = None,
-    ):
+    ) -> None:
         """Create a `meridian` seam in the `mesh`.
 
         The seam extends from the north-pole to the south-pole in a great circle,

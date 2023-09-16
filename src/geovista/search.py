@@ -70,7 +70,7 @@ class KDTree:
         mesh: PolyData,
         leaf_size: int | None = None,
         preference: str | Preference | None = None,
-    ):
+    ) -> None:
         """Construct kd-tree for nearest neighbour search of mesh points/cell centers.
 
         Note that, the cell centers will be calculated from the mesh geometry and do not
