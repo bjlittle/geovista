@@ -91,7 +91,9 @@ def test_transform(mocker, zoffset, reshape, roundtrip):
     spy_from_crs = mocker.spy(Transformer, "from_crs")
     spy_transform = mocker.spy(Transformer, "transform")
     if roundtrip:
-        points = transform_points(src_crs=WGS84, tgt_crs="+proj=eqc", xs=xs, ys=ys, zs=zs)
+        points = transform_points(
+            src_crs=WGS84, tgt_crs="+proj=eqc", xs=xs, ys=ys, zs=zs
+        )
         result = transform_points(
             src_crs="+proj=eqc",
             tgt_crs=WGS84,
