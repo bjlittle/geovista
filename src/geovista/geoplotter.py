@@ -13,9 +13,12 @@ from functools import lru_cache
 from typing import Any
 from warnings import warn
 
+import numpy.typing as npt
 from pyproj import CRS
 import pyvista as pv
+import pyvista.core.utilities.helpers as helpers
 
+from .bridge import Transform
 from .common import (
     GV_FIELD_ZSCALE,
     GV_REMESH_POINT_IDS,
@@ -34,6 +37,7 @@ from .crs import (
     WGS84,
     from_wkt,
     get_central_meridian,
+    has_wkt,
     projected,
     set_central_meridian,
     to_wkt,
@@ -67,6 +71,9 @@ GRATICULE_SHOW_LABELS: bool = True
 OPACITY_BLACKLIST = [
     ("llvmpipe (LLVM 7.0, 256 bits)", "3.3 (Core Profile) Mesa 18.3.4"),
 ]
+
+#: The valid 'style' options for adding points.
+STYLE_ADD_POINTS: list[str, ...] = ["points", "points_gaussian"]
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -965,8 +972,97 @@ class GeoPlotterBase:
                 point_labels_args=point_labels_args,
             )
 
-    def add_points(self) -> pv.Actor:
-        pass
+    def add_points(
+        self,
+        points: npt.ArrayLike | pv.PolyData | None = None,
+        xs: npt.ArrayLike | None = None,
+        ys: npt.ArrayLike | None = None,
+        scalars: str | npt.ArrayLike | None = None,
+        name: str | None = None,
+        crs: CRSLike | None = None,
+        radius: float | None = None,
+        style: str | None = None,
+        zlevel: int | npt.ArrayLike | None = None,
+        zscale: float | None = None,
+        **kwargs: Any | None,
+    ) -> pv.Actor:
+        """TBD.
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+            See :meth:`pyvista.Plotter.add_mesh`.
+
+        Returns
+        -------
+        Actor
+            The rendered actor added to the plotter scene.
+
+        Notes
+        -----
+        .. versionadded:: 0.4.0
+
+        """
+        if points is None and xs is None and ys is None:
+            emsg = ""
+            raise ValueError(emsg)
+
+        if points is not None and xs is not None and ys is not None:
+            emsg = ""
+            raise ValueError(emsg)
+
+        if points is not None:
+            if xs is not None or ys is not None:
+                emsg = ""
+                raise ValueError(emsg)
+
+            if not helpers.is_pyvista_dataset(points):
+                points = helpers.wrap(points)
+
+            mesh = points
+
+            if crs is not None:
+                if has_wkt(mesh):
+                    other = from_wkt(mesh)
+                    if other != crs:
+                        emsg = ""
+                        raise ValueError(emsg)
+                else:
+                    to_wkt(mesh, crs)
+            elif not has_wkt(mesh):
+                # assume CRS is WGS84
+                to_wkt(mesh, WGS84)
+        else:
+            if xs is None or ys is None:
+                emsg = ""
+                raise ValueError(emsg)
+
+            mesh = Transform.from_points(
+                xs=xs,
+                ys=ys,
+                data=scalars,
+                name=name,
+                crs=crs,
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
+            )
+
+        if style is None:
+            style = "points"
+
+        if style not in STYLE_ADD_POINTS:
+            options = "or ".join(f"{option!r}" for option in STYLE_ADD_POINTS)
+            emsg = (
+                f"Invalid 'style' for 'add_points', expected {options}, "
+                f"got {style!r}."
+            )
+            raise ValueError(emsg)
+
+        if "texture" in kwargs:
+            _ = kwargs.pop("texture")
+
+        return self.add_mesh(mesh, style=style, scalars=scalars, **kwargs)
 
 
 class GeoPlotter(GeoPlotterBase, pv.Plotter):
