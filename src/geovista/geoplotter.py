@@ -10,7 +10,7 @@ Notes
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any, Union
+from typing import Any
 from warnings import warn
 
 from pyproj import CRS
@@ -51,9 +51,6 @@ from .samples import LFRIC_RESOLUTION, REGULAR_RESOLUTION, lfric, regular_grid
 from .transform import transform_mesh
 
 __all__ = ["GeoPlotter"]
-
-# type aliases
-CRSLike = Union[int, str, dict, CRS]
 
 #: Proportional multiplier for z-axis levels/offsets of base-layer mesh.
 BASE_ZLEVEL_SCALE: int = 1.0e-3

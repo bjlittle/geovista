@@ -7,6 +7,8 @@ Notes
 """
 from __future__ import annotations
 
+from typing import Union
+
 import numpy as np
 from pyproj import CRS
 import pyvista as pv
@@ -14,6 +16,7 @@ import pyvista as pv
 from .common import GV_FIELD_CRS
 
 __all__ = [
+    "CRSLike",
     "PlateCarree",
     "WGS84",
     "from_wkt",
@@ -22,6 +25,9 @@ __all__ = [
     "set_central_meridian",
     "to_wkt",
 ]
+
+# type aliases
+CRSLike = Union[int, str, dict, CRS]
 
 #: EPSG projection parameter for longitude of natural origin/central meridian
 EPSG_CENTRAL_MERIDIAN: str = "8802"
