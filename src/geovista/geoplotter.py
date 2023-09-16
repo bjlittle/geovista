@@ -15,7 +15,6 @@ from warnings import warn
 
 from pyproj import CRS
 import pyvista as pv
-import vtk
 
 from .common import (
     GV_FIELD_ZSCALE,
@@ -257,7 +256,7 @@ class GeoPlotterBase:
 
     def add_base_layer(
         self, mesh: pv.PolyData | None = None, **kwargs: Any | None
-    ) -> vtk.vtkActor:
+    ) -> pv.Actor:
         """Generate a cubed-sphere base layer mesh and add to the plotter scene.
 
         Optionally, a `mesh` may be provided, which better fits the
@@ -289,7 +288,7 @@ class GeoPlotterBase:
 
         Returns
         -------
-        vtkActor
+        Actor
             The rendered actor added to the plotter scene.
 
         Notes
@@ -347,7 +346,7 @@ class GeoPlotterBase:
         rtol: float | None = None,
         atol: float | None = None,
         **kwargs: Any | None,
-    ) -> vtk.vtkActor:
+    ) -> pv.Actor:
         """Generate coastlines and add to the plotter scene.
 
         Parameters
@@ -375,7 +374,7 @@ class GeoPlotterBase:
 
         Returns
         -------
-        vtkActor
+        Actor
             The rendered actor added to the plotter scene.
 
         Notes
@@ -509,7 +508,7 @@ class GeoPlotterBase:
             point_labels_args=point_labels_args,
         )
 
-    def add_mesh(self, mesh: Any, **kwargs: Any | None):
+    def add_mesh(self, mesh: Any, **kwargs: Any | None) -> pv.Actor:
         """Add the ``mesh`` to the plotter scene.
 
         See :meth:`pyvista.Plotter.add_mesh`.
@@ -539,7 +538,7 @@ class GeoPlotterBase:
 
         Returns
         -------
-        vtkActor
+        Actor
             The rendered actor added to the plotter scene.
 
         Notes
