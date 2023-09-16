@@ -880,7 +880,7 @@ class Transform:
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
-    ):
+    ) -> None:
         """Build a mesh from spatial points, connectivity, data and CRS metadata.
 
         Convenience factory to build multiple identical meshes but with different face

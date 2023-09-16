@@ -116,7 +116,7 @@ class GeoPlotterBase:
 
     """
 
-    def __init__(self, *args: Any | None, **kwargs: Any | None):
+    def __init__(self, *args: Any | None, **kwargs: Any | None) -> None:
         """Create geospatial aware plotter.
 
         Parameters

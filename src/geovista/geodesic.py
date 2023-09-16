@@ -122,7 +122,7 @@ class BBox:
         ellps: str | None = ELLIPSE,
         c: int | None = BBOX_C,
         triangulate: bool | None = False,
-    ):
+    ) -> None:
         """Create 3-D geodesic bounding-box to extract enclosed mesh, lines or point.
 
         The bounding-box region is specified in terms of its four corners, in
