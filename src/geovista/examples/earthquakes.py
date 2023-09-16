@@ -13,7 +13,7 @@ from warnings import warn
 import geovista as gv
 from geovista.common import to_cartesian
 from geovista.pantry import usgs_earthquakes
-import geovista.theme
+import geovista.theme  # noqa: F401
 
 
 def main() -> None:

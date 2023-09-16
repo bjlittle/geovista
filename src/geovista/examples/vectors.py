@@ -11,9 +11,8 @@ from __future__ import annotations
 import numpy as np
 import pyvista as pv
 
-import geovista
 import geovista as gv
-import geovista.theme
+import geovista.theme  # noqa: F401
 
 
 def main() -> None:
