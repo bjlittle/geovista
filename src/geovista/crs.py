@@ -21,6 +21,7 @@ __all__ = [
     "WGS84",
     "from_wkt",
     "get_central_meridian",
+    "has_wkt",
     "projected",
     "set_central_meridian",
     "to_wkt",
@@ -59,7 +60,7 @@ def from_wkt(mesh: pv.PolyData) -> CRS:
     """
     crs = None
 
-    if GV_FIELD_CRS in mesh.field_data:
+    if has_wkt(mesh):
         wkt = str(mesh.field_data[GV_FIELD_CRS][0])
         crs = CRS.from_wkt(wkt)
 
@@ -98,6 +99,27 @@ def get_central_meridian(crs: CRS) -> float | None:
             result = cm_param.value
 
     return result
+
+
+def has_wkt(mesh: pv.PolyData) -> bool:
+    """Determine whether the provided mesh has a CRS serialized as WKT attached.
+
+    Parameters
+    ----------
+    mesh : PolyData
+        The mesh to be inspected for a serialized CRS.
+
+    Returns
+    -------
+    bool
+        Whether the mesh has a CRS serialized as WKT attached.
+
+    Notes
+    -----
+    .. versionadded:: 0.4.0
+
+    """
+    return GV_FIELD_CRS in mesh.field_data
 
 
 def projected(mesh: pv.PolyData) -> bool:
