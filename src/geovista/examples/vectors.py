@@ -31,10 +31,8 @@ def main() -> None:
 
     # plot mesh
     plotter = gv.GeoPlotter()
-    plotter.enable_anti_aliasing("ssaa")
-    plotter.add_base_layer(lighting=False)
-    plotter.add_coastlines(color="black", lighting=False)
-    plotter.add_mesh(sphere.arrows, lighting=False)
+    plotter.add_base_layer(texture=gv.natural_earth_1(), zlevel=0, lighting=False)
+    plotter.add_mesh(sphere.arrows, lighting=None)
     plotter.camera.zoom(1.5)
     plotter.add_axes()
     plotter.show()
