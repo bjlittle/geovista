@@ -56,6 +56,9 @@ from .transform import transform_mesh
 
 __all__ = ["GeoPlotter"]
 
+#: The valid 'style' options for adding points.
+ADD_POINTS_STYLE: list[str, ...] = ["points", "points_gaussian"]
+
 #: Proportional multiplier for z-axis levels/offsets of base-layer mesh.
 BASE_ZLEVEL_SCALE: int = 1.0e-3
 
@@ -72,9 +75,6 @@ GRATICULE_SHOW_LABELS: bool = True
 OPACITY_BLACKLIST = [
     ("llvmpipe (LLVM 7.0, 256 bits)", "3.3 (Core Profile) Mesa 18.3.4"),
 ]
-
-#: The valid 'style' options for adding points.
-STYLE_ADD_POINTS: list[str, ...] = ["points", "points_gaussian"]
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -1038,6 +1038,10 @@ class GeoPlotterBase:
                 emsg = ""
                 raise ValueError(emsg)
 
+            if isinstance(scalars, str):
+                emsg = ""
+                raise ValueError(emsg)
+
             mesh = Transform.from_points(
                 xs=xs,
                 ys=ys,
@@ -1052,8 +1056,8 @@ class GeoPlotterBase:
         if style is None:
             style = "points"
 
-        if style not in STYLE_ADD_POINTS:
-            options = "or ".join(f"{option!r}" for option in STYLE_ADD_POINTS)
+        if style not in ADD_POINTS_STYLE:
+            options = "or ".join(f"{option!r}" for option in ADD_POINTS_STYLE)
             emsg = (
                 f"Invalid 'style' for 'add_points', expected {options}, "
                 f"got {style!r}."
