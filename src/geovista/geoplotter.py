@@ -35,6 +35,7 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .core import add_texture_coords, resize, slice_mesh
 from .crs import (
     WGS84,
+    CRSLike,
     from_wkt,
     get_central_meridian,
     has_wkt,
@@ -443,7 +444,7 @@ class GeoPlotterBase:
             meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
         lon_stop : float, optional
             The last line of longitude (degrees). The graticule will include this
-            meridian when it is a multiple of ``lon_step``. Also see
+            meridian when it is a multiple of `lon_step`. Also see
             ``closed_interval``. Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
         lon_step : float, optional
             The delta (degrees) between neighbouring meridians. Defaults to
@@ -454,7 +455,7 @@ class GeoPlotterBase:
             :data:`geovista.gridlines.LATITUDE_START`.
         lat_stop : float, optional
             The last line of latitude (degrees). The graticule will include this
-            parallel when it is a multiple of ``lat_step``. Defaults to
+            parallel when it is a multiple of `lat_step`. Defaults to
             :data:`geovista.gridlines.LATITUDE_STOP`.
         lat_step : float, optional
             The delta (degrees) between neighbouring parallels. Defaults to
@@ -516,7 +517,7 @@ class GeoPlotterBase:
         )
 
     def add_mesh(self, mesh: Any, **kwargs: Any | None) -> pv.Actor:
-        """Add the ``mesh`` to the plotter scene.
+        """Add the `mesh` to the plotter scene.
 
         See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -711,7 +712,7 @@ class GeoPlotterBase:
             meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
         stop : float, optional
             The last line of longitude (degrees). The graticule will include this
-            meridian when it is a multiple of ``step``. Also see ``closed_interval``.
+            meridian when it is a multiple of `step`. Also see ``closed_interval``.
             Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
         step : float, optional
             The delta (degrees) between neighbouring meridians. Defaults to
@@ -879,11 +880,11 @@ class GeoPlotterBase:
         ----------
         start : float, optional
             The first line of latitude (degrees). The graticule will include this
-            parallel. Also see ``poles_parallel``. Defaults to
+            parallel. Also see `poles_parallel`. Defaults to
             :data:`geovista.gridlines.LATITUDE_START`.
         stop : float, optional
             The last line of latitude (degrees). The graticule will include this
-            parallel when it is a multiple of ``step``. Also see ``poles_parallel`.
+            parallel when it is a multiple of `step`. Also see `poles_parallel`.
             Defaults to :data:`geovista.gridlines.LATITUDE_STOP`.
         step : float, optional
             The delta (degrees) between neighbouring parallels. Defaults to
