@@ -979,7 +979,6 @@ class GeoPlotterBase:
         xs: npt.ArrayLike | None = None,
         ys: npt.ArrayLike | None = None,
         scalars: str | npt.ArrayLike | None = None,
-        name: str | None = None,
         crs: CRSLike | None = None,
         radius: float | None = None,
         style: str | None = None,
@@ -987,10 +986,46 @@ class GeoPlotterBase:
         zscale: float | None = None,
         **kwargs: Any | None,
     ) -> pv.Actor:
-        """TBD.
+        """Add points to the plotter scene.
+
+        See :meth:`pyvista.Plotter.add_mesh`.
 
         Parameters
         ----------
+        points : ArrayLike or PolyData, optional
+            Array of xyz points, in canonical `crs` units, or the points of the mesh
+            to be rendered.
+        xs : ArrayLike, optional
+            A 1-D, 2-D or 3-D array of point-cloud x-values, in canonical `crs` units.
+            Must have the same shape as the `ys`.
+        ys : ys : ArrayLike
+            A 1-D, 2-D or 3-D array of point-cloud y-values, in canonical `crs` units.
+            Must have the same shape as the `xs`.
+        scalars : str or ArrayLike, optional
+            Values used to color the points. Either, the string name of an array that is
+            present on the `points` mesh or an array equal to the number of points.
+            Alternatively, an array of values equal to the number of points to be
+            rendered. If both `color` and `scalars` are ``None``, then the active
+            scalars on the `points` mesh are used.
+        crs : CRSLike, optional
+            The Coordinate Reference System of the provided `points`, or `xs` and `ys`.
+            May be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            to ``EPSG:4326`` i.e., ``WGS 84``.
+        radius : float, optional
+            The radius of the mesh point-cloud. Defaults to
+            :data:`geovista.common.RADIUS`.
+        style : str, optional
+            Visualization style of the points to be rendered. Maybe either ``points``
+            or ``points_gaussian``. The ``points_gaussian`` option maybe controlled
+            with the ``emissive`` and ``render_points_as_spheres`` options.
+        zlevel : int or ArrayLike, default=0
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            If `zlevel` is not a scalar, then its shape must match or broadcast
+            with the shape of the `xs` and `ys`.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -1005,16 +1040,25 @@ class GeoPlotterBase:
 
         """
         if points is None and xs is None and ys is None:
-            emsg = ""
+            emsg = (
+                "Require either 'points' or both 'xs' and 'ys' to be specified, "
+                "got neither."
+            )
             raise ValueError(emsg)
 
         if points is not None and xs is not None and ys is not None:
-            emsg = ""
+            emsg = (
+                "Require either 'points' or both 'xs' and 'ys' to be specified, "
+                "got both 'points', and 'xs' and 'ys'."
+            )
             raise ValueError(emsg)
 
         if points is not None:
             if xs is not None or ys is not None:
-                emsg = ""
+                emsg = (
+                    "Require either 'points' or both 'xs' and 'ys' to be specified, "
+                    "got both 'points', and 'xs' and/or 'ys'."
+                )
                 raise ValueError(emsg)
 
             if not helpers.is_pyvista_dataset(points):
@@ -1026,27 +1070,35 @@ class GeoPlotterBase:
                 if has_wkt(mesh):
                     other = from_wkt(mesh)
                     if other != crs:
-                        emsg = ""
+                        emsg = (
+                            "The CRS serialized as WKT on the 'points' mesh does match "
+                            "the provided 'crs'."
+                        )
                         raise ValueError(emsg)
                 else:
+                    # serialize the provided CRS on the points mesh as wkt
                     to_wkt(mesh, crs)
             elif not has_wkt(mesh):
                 # assume CRS is WGS84
                 to_wkt(mesh, WGS84)
         else:
             if xs is None or ys is None:
-                emsg = ""
+                emsg = (
+                    "Require either 'points', or both 'xs' and 'ys' to be specified, "
+                    "got only 'xs' or 'ys'."
+                )
                 raise ValueError(emsg)
 
             if isinstance(scalars, str):
-                emsg = ""
-                raise ValueError(emsg)
+                wmsg = (
+                    f"Ignoring the 'scalars' string name '{scalars}', as no 'points' "
+                    "mesh was provided."
+                )
+                warn(wmsg, stacklevel=2)
 
             mesh = Transform.from_points(
                 xs=xs,
                 ys=ys,
-                data=scalars,
-                name=name,
                 crs=crs,
                 radius=radius,
                 zlevel=zlevel,
