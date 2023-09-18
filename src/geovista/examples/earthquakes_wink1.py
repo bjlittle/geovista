@@ -19,7 +19,8 @@ def main() -> None:
     """Create a point cloud from a USGS earthquakes dataset.
 
     The resulting render contains a point cloud of M2.5+ earthquakes along
-    with a Natural Earth base layer and Natural Earth coastlines.
+    with a Natural Earth base layer and Natural Earth coastlines. The point
+    cloud is also transformed to the Winkel I pseudo-cylindrical projection.
 
     The earthquakes dataset is sourced from the
     `USGS Earthquake Hazards Program <https://www.usgs.gov/programs/earthquake-hazards>`_
@@ -56,7 +57,7 @@ def main() -> None:
         return
 
     # plot the mesh
-    plotter = gv.GeoPlotter()
+    plotter = gv.GeoPlotter(crs=(projection := "+proj=wink1 +lon_0=180"))
     sargs = {"title": "Magnitude", "shadow": True}
     plotter.add_points(
         xs=sample.lons,
@@ -73,12 +74,12 @@ def main() -> None:
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        "USGS M2.5+ Earthquakes, 2000-2018",
+        f"USGS M2.5+ Earthquakes, 2000-2018 ({projection})",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.view_xz(negative=True)
+    plotter.view_xy()
     plotter.camera.zoom(1.5)
     plotter.show()
 
