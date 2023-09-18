@@ -1,6 +1,5 @@
 prune .github
 prune .tox
-prune branding
 prune docs
 prune requirements
 recursive-include requirements pypi-*.txt
