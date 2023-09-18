@@ -20,7 +20,7 @@
 .. raw:: html
 
    <h1 align="center">
-     <img src="https://raw.githubusercontent.com/bjlittle/geovista/main/branding/logo/secondary/geovistalogo2.png" alt="GeoVista">
+     <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/branding/logo/secondary/geovistalogo2.png" alt="GeoVista">
    </h1>
    <h4 align="center">
        Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
