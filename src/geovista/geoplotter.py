@@ -1039,6 +1039,21 @@ class GeoPlotterBase:
         .. versionadded:: 0.4.0
 
         """
+        if crs is not None:
+            # sanity check the source crs
+            crs = CRS.from_user_input(crs)
+
+        if style is None:
+            style = "points"
+
+        if style not in ADD_POINTS_STYLE:
+            options = "or ".join(f"{option!r}" for option in ADD_POINTS_STYLE)
+            emsg = (
+                f"Invalid 'style' for 'add_points', expected {options}, "
+                f"got {style!r}."
+            )
+            raise ValueError(emsg)
+
         if points is None and xs is None and ys is None:
             emsg = (
                 "Require either 'points' or both 'xs' and 'ys' to be specified, "
@@ -1057,7 +1072,7 @@ class GeoPlotterBase:
             if xs is not None or ys is not None:
                 emsg = (
                     "Require either 'points' or both 'xs' and 'ys' to be specified, "
-                    "got both 'points', and 'xs' and/or 'ys'."
+                    "got both 'points', and 'xs' or 'ys'."
                 )
                 raise ValueError(emsg)
 
@@ -1071,8 +1086,8 @@ class GeoPlotterBase:
                     other = from_wkt(mesh)
                     if other != crs:
                         emsg = (
-                            "The CRS serialized as WKT on the 'points' mesh does match "
-                            "the provided 'crs'."
+                            "The CRS serialized as WKT on the 'points' mesh does not "
+                            "match the provided 'crs'."
                         )
                         raise ValueError(emsg)
                 else:
@@ -1105,17 +1120,7 @@ class GeoPlotterBase:
                 zscale=zscale,
             )
 
-        if style is None:
-            style = "points"
-
-        if style not in ADD_POINTS_STYLE:
-            options = "or ".join(f"{option!r}" for option in ADD_POINTS_STYLE)
-            emsg = (
-                f"Invalid 'style' for 'add_points', expected {options}, "
-                f"got {style!r}."
-            )
-            raise ValueError(emsg)
-
+        # defensive kwarg pop
         if "texture" in kwargs:
             _ = kwargs.pop("texture")
 
