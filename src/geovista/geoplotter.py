@@ -13,9 +13,12 @@ from functools import lru_cache
 from typing import Any
 from warnings import warn
 
+import numpy.typing as npt
 from pyproj import CRS
 import pyvista as pv
+import pyvista.core.utilities.helpers as helpers
 
+from .bridge import Transform
 from .common import (
     GV_FIELD_ZSCALE,
     GV_REMESH_POINT_IDS,
@@ -32,8 +35,10 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .core import add_texture_coords, resize, slice_mesh
 from .crs import (
     WGS84,
+    CRSLike,
     from_wkt,
     get_central_meridian,
+    has_wkt,
     projected,
     set_central_meridian,
     to_wkt,
@@ -50,6 +55,9 @@ from .samples import LFRIC_RESOLUTION, REGULAR_RESOLUTION, lfric, regular_grid
 from .transform import transform_mesh
 
 __all__ = ["GeoPlotter"]
+
+#: The valid 'style' options for adding points.
+ADD_POINTS_STYLE: list[str, ...] = ["points", "points_gaussian"]
 
 #: Proportional multiplier for z-axis levels/offsets of base-layer mesh.
 BASE_ZLEVEL_SCALE: int = 1.0e-3
@@ -436,7 +444,7 @@ class GeoPlotterBase:
             meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
         lon_stop : float, optional
             The last line of longitude (degrees). The graticule will include this
-            meridian when it is a multiple of ``lon_step``. Also see
+            meridian when it is a multiple of `lon_step`. Also see
             ``closed_interval``. Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
         lon_step : float, optional
             The delta (degrees) between neighbouring meridians. Defaults to
@@ -447,7 +455,7 @@ class GeoPlotterBase:
             :data:`geovista.gridlines.LATITUDE_START`.
         lat_stop : float, optional
             The last line of latitude (degrees). The graticule will include this
-            parallel when it is a multiple of ``lat_step``. Defaults to
+            parallel when it is a multiple of `lat_step`. Defaults to
             :data:`geovista.gridlines.LATITUDE_STOP`.
         lat_step : float, optional
             The delta (degrees) between neighbouring parallels. Defaults to
@@ -509,7 +517,7 @@ class GeoPlotterBase:
         )
 
     def add_mesh(self, mesh: Any, **kwargs: Any | None) -> pv.Actor:
-        """Add the ``mesh`` to the plotter scene.
+        """Add the `mesh` to the plotter scene.
 
         See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -704,7 +712,7 @@ class GeoPlotterBase:
             meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
         stop : float, optional
             The last line of longitude (degrees). The graticule will include this
-            meridian when it is a multiple of ``step``. Also see ``closed_interval``.
+            meridian when it is a multiple of `step`. Also see ``closed_interval``.
             Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
         step : float, optional
             The delta (degrees) between neighbouring meridians. Defaults to
@@ -872,11 +880,11 @@ class GeoPlotterBase:
         ----------
         start : float, optional
             The first line of latitude (degrees). The graticule will include this
-            parallel. Also see ``poles_parallel``. Defaults to
+            parallel. Also see `poles_parallel`. Defaults to
             :data:`geovista.gridlines.LATITUDE_START`.
         stop : float, optional
             The last line of latitude (degrees). The graticule will include this
-            parallel when it is a multiple of ``step``. Also see ``poles_parallel`.
+            parallel when it is a multiple of `step`. Also see `poles_parallel`.
             Defaults to :data:`geovista.gridlines.LATITUDE_STOP`.
         step : float, optional
             The delta (degrees) between neighbouring parallels. Defaults to
@@ -964,6 +972,159 @@ class GeoPlotterBase:
                 zscale=zscale,
                 point_labels_args=point_labels_args,
             )
+
+    def add_points(
+        self,
+        points: npt.ArrayLike | pv.PolyData | None = None,
+        xs: npt.ArrayLike | None = None,
+        ys: npt.ArrayLike | None = None,
+        scalars: str | npt.ArrayLike | None = None,
+        crs: CRSLike | None = None,
+        radius: float | None = None,
+        style: str | None = None,
+        zlevel: int | npt.ArrayLike | None = None,
+        zscale: float | None = None,
+        **kwargs: Any | None,
+    ) -> pv.Actor:
+        """Add points to the plotter scene.
+
+        See :meth:`pyvista.Plotter.add_mesh`.
+
+        Parameters
+        ----------
+        points : ArrayLike or PolyData, optional
+            Array of xyz points, in canonical `crs` units, or the points of the mesh
+            to be rendered.
+        xs : ArrayLike, optional
+            A 1-D, 2-D or 3-D array of point-cloud x-values, in canonical `crs` units.
+            Must have the same shape as the `ys`.
+        ys : ys : ArrayLike
+            A 1-D, 2-D or 3-D array of point-cloud y-values, in canonical `crs` units.
+            Must have the same shape as the `xs`.
+        scalars : str or ArrayLike, optional
+            Values used to color the points. Either, the string name of an array that is
+            present on the `points` mesh or an array equal to the number of points.
+            Alternatively, an array of values equal to the number of points to be
+            rendered. If both `color` and `scalars` are ``None``, then the active
+            scalars on the `points` mesh are used.
+        crs : CRSLike, optional
+            The Coordinate Reference System of the provided `points`, or `xs` and `ys`.
+            May be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            to ``EPSG:4326`` i.e., ``WGS 84``.
+        radius : float, optional
+            The radius of the mesh point-cloud. Defaults to
+            :data:`geovista.common.RADIUS`.
+        style : str, optional
+            Visualization style of the points to be rendered. Maybe either ``points``
+            or ``points_gaussian``. The ``points_gaussian`` option maybe controlled
+            with the ``emissive`` and ``render_points_as_spheres`` options.
+        zlevel : int or ArrayLike, default=0
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            If `zlevel` is not a scalar, then its shape must match or broadcast
+            with the shape of the `xs` and `ys`.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`geovista.common.ZLEVEL_SCALE`.
+        **kwargs : dict, optional
+            See :meth:`pyvista.Plotter.add_mesh`.
+
+        Returns
+        -------
+        Actor
+            The rendered actor added to the plotter scene.
+
+        Notes
+        -----
+        .. versionadded:: 0.4.0
+
+        """
+        if crs is not None:
+            # sanity check the source crs
+            crs = CRS.from_user_input(crs)
+
+        if style is None:
+            style = "points"
+
+        if style not in ADD_POINTS_STYLE:
+            options = "or ".join(f"{option!r}" for option in ADD_POINTS_STYLE)
+            emsg = (
+                f"Invalid 'style' for 'add_points', expected {options}, "
+                f"got {style!r}."
+            )
+            raise ValueError(emsg)
+
+        if points is None and xs is None and ys is None:
+            emsg = (
+                "Require either 'points' or both 'xs' and 'ys' to be specified, "
+                "got neither."
+            )
+            raise ValueError(emsg)
+
+        if points is not None and xs is not None and ys is not None:
+            emsg = (
+                "Require either 'points' or both 'xs' and 'ys' to be specified, "
+                "got both 'points', and 'xs' and 'ys'."
+            )
+            raise ValueError(emsg)
+
+        if points is not None:
+            if xs is not None or ys is not None:
+                emsg = (
+                    "Require either 'points' or both 'xs' and 'ys' to be specified, "
+                    "got both 'points', and 'xs' or 'ys'."
+                )
+                raise ValueError(emsg)
+
+            if not helpers.is_pyvista_dataset(points):
+                points = helpers.wrap(points)
+
+            mesh = points
+
+            if crs is not None:
+                if has_wkt(mesh):
+                    other = from_wkt(mesh)
+                    if other != crs:
+                        emsg = (
+                            "The CRS serialized as WKT on the 'points' mesh does not "
+                            "match the provided 'crs'."
+                        )
+                        raise ValueError(emsg)
+                else:
+                    # serialize the provided CRS on the points mesh as wkt
+                    to_wkt(mesh, crs)
+            elif not has_wkt(mesh):
+                # assume CRS is WGS84
+                to_wkt(mesh, WGS84)
+        else:
+            if xs is None or ys is None:
+                emsg = (
+                    "Require either 'points', or both 'xs' and 'ys' to be specified, "
+                    "got only 'xs' or 'ys'."
+                )
+                raise ValueError(emsg)
+
+            if isinstance(scalars, str):
+                wmsg = (
+                    f"Ignoring the 'scalars' string name '{scalars}', as no 'points' "
+                    "mesh was provided."
+                )
+                warn(wmsg, stacklevel=2)
+
+            mesh = Transform.from_points(
+                xs=xs,
+                ys=ys,
+                crs=crs,
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
+            )
+
+        # defensive kwarg pop
+        if "texture" in kwargs:
+            _ = kwargs.pop("texture")
+
+        return self.add_mesh(mesh, style=style, scalars=scalars, **kwargs)
 
 
 class GeoPlotter(GeoPlotterBase, pv.Plotter):

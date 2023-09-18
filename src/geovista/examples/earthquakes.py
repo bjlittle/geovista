@@ -11,7 +11,6 @@ from __future__ import annotations
 from warnings import warn
 
 import geovista as gv
-from geovista.common import to_cartesian
 from geovista.pantry import usgs_earthquakes
 import geovista.theme  # noqa: F401
 
@@ -56,14 +55,12 @@ def main() -> None:
         warn(wmsg, stacklevel=2)
         return
 
-    # convert coordinate to cartesian
-    points = to_cartesian(lons=sample.lons, lats=sample.lats)
-
     # plot the mesh
     plotter = gv.GeoPlotter()
     sargs = {"title": "Magnitude", "shadow": True}
     plotter.add_points(
-        points,
+        xs=sample.lons,
+        ys=sample.lats,
         cmap="fire_r",
         render_points_as_spheres=True,
         scalars=sample.data,

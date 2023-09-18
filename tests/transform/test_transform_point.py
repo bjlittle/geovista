@@ -18,11 +18,13 @@ def test_shape_fail(mocker, bad):
     tgt_crs = mocker.sentinel.tgt_crs
     x, y, z = mocker.sentinel.x, mocker.sentinel.y, mocker.sentinel.z
     trap = mocker.sentinel.trap
-    patcher = mocker.patch("geovista.transform.transform_points", return_value=bad)
+    _ = mocker.patch("geovista.transform.transform_points", return_value=bad)
     emsg = "Cannot transform point, got unexpected shape"
     with pytest.raises(AssertionError, match=emsg):
         _ = transform_point(src_crs=src_crs, tgt_crs=tgt_crs, x=x, y=y, z=z, trap=trap)
-    patcher.assert_called_once_with(
+    from geovista.transform import transform_points
+
+    transform_points.assert_called_once_with(
         src_crs=src_crs,
         tgt_crs=tgt_crs,
         xs=x,
