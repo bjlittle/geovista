@@ -32,7 +32,7 @@ def main() -> None:
     # plot mesh
     plotter = gv.GeoPlotter()
     plotter.add_base_layer(texture=gv.natural_earth_1(), zlevel=0, lighting=False)
-    plotter.add_mesh(sphere.arrows, lighting=None)
+    plotter.add_mesh(sphere.arrows, lighting=False)
     plotter.camera.zoom(1.5)
     plotter.add_axes()
     plotter.show()
