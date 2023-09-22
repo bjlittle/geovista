@@ -1,16 +1,7 @@
 """Unit-tests for :class:`geovista.examples`."""
-import pytest
 
 import geovista as gv
 from geovista.pantry import usgs_earthquakes
-
-pytestmark = pytest.mark.skip_plotting
-
-
-@pytest.fixture(autouse=True)
-def verify_image_cache_wrapper(verify_image_cache):
-    """Verify image cache wrapper."""
-    return verify_image_cache
 
 
 def test_earthquakes(verify_image_cache):
