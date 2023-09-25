@@ -15,7 +15,7 @@ from geovista.pantry import usgs_earthquakes
 import geovista.theme  # noqa: F401
 
 
-def main(off_screen: bool = False) -> gv.GeoPlotter:
+def main(off_screen: bool = False) -> None:
     """Create a point cloud from a USGS earthquakes dataset.
 
     The resulting render contains a point cloud of M2.5+ earthquakes along
@@ -80,9 +80,9 @@ def main(off_screen: bool = False) -> gv.GeoPlotter:
     )
     plotter.view_xz(negative=True)
     plotter.camera.zoom(1.5)
-    return plotter
+    plotter.show()
+    return None
 
 
 if __name__ == "__main__":
-    plotter = main()
-    plotter.show()
+    main()
