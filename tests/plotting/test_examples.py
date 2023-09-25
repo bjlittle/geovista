@@ -25,7 +25,7 @@ def test_earthquakes(verify_image_cache):
         return
 
     # plot the mesh
-    plotter = gv.GeoPlotter(off_screen=off_screen)
+    plotter = gv.GeoPlotter(off_screen=True)
     sargs = {"title": "Magnitude", "shadow": True}
     plotter.add_points(
         xs=sample.lons,
