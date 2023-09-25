@@ -80,7 +80,7 @@ def main(off_screen: bool = False) -> gv.GeoPlotter:
     )
     plotter.view_xz(negative=True)
     plotter.camera.zoom(1.5)
-    return plotter.show()
+    return plotter
 
 
 if __name__ == "__main__":
