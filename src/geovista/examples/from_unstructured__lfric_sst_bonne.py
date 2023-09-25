@@ -13,7 +13,7 @@ from geovista.pantry import lfric_sst
 import geovista.theme  # noqa: F401
 
 
-def main() -> None:
+def main(off_screen: bool = False) -> None:
     """Create a mesh from 1-D latitude and longitude unstructured cell points.
 
     The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
@@ -45,7 +45,8 @@ def main() -> None:
     mesh = mesh.threshold()
 
     # plot the mesh
-    plotter = gv.GeoPlotter(crs=(projection := "+proj=bonne +lat_1=10 +lon_0=180"))
+    crs = "+proj=bonne +lat_1=10 +lon_0=180"
+    plotter = gv.GeoPlotter(crs=crs, off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_1())
@@ -53,7 +54,7 @@ def main() -> None:
     plotter.add_graticule()
     plotter.add_axes()
     plotter.add_text(
-        f"LFRic C48 Unstructured Cube-Sphere ({projection})",
+        f"LFRic C48 Unstructured Cube-Sphere ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,

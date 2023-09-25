@@ -13,7 +13,7 @@ from geovista.pantry import fvcom_tamar
 import geovista.theme  # noqa: F401
 
 
-def main() -> None:
+def main(off_screen: bool = False) -> None:
     """Create a mesh from 1-D latitude and longitude unstructured cell points.
 
     The resulting mesh contains triangular cells. The connectivity is required to
@@ -48,7 +48,7 @@ def main() -> None:
     mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 
     # plot the mesh
-    plotter = gv.GeoPlotter()
+    plotter = gv.GeoPlotter(off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(
         mesh, cmap="deep", scalars="face", show_edges=True, scalar_bar_args=sargs
