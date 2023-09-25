@@ -15,7 +15,7 @@ from geovista.pantry import usgs_earthquakes
 import geovista.theme  # noqa: F401
 
 
-def main(off_screen: bool = False) -> None:
+def main(off_screen: bool = False, verify_image_cache = None) -> None:
     """Create a point cloud from a USGS earthquakes dataset.
 
     The resulting render contains a point cloud of M2.5+ earthquakes along
