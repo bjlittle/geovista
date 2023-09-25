@@ -6,7 +6,6 @@ from warnings import warn
 import geovista as gv
 from geovista.pantry import usgs_earthquakes
 import geovista.theme  # noqa: F401
-from geovista.examples import earthquakes
 
 
 def test_earthquakes(verify_image_cache):
