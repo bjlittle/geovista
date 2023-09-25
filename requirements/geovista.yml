@@ -37,6 +37,9 @@ dependencies:
   - pytest-cov
   - pytest-mock
   - pytest-pyvista
+
+# examples dependencies
+  - fastparquet
   - pandas
 
 # documentation dependencies
