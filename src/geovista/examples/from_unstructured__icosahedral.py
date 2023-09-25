@@ -13,7 +13,7 @@ from geovista.pantry import icosahedral
 import geovista.theme  # noqa: F401
 
 
-def main() -> None:
+def main(off_screen: bool = False) -> None:
     """Create a mesh from 2-D latitude and longitude unstructured cell bounds.
 
     The resulting mesh contains 6-sided (hexagonal) cells.
@@ -36,7 +36,7 @@ def main() -> None:
     gv.logger.info("%s", mesh)
 
     # plot the mesh
-    plotter = gv.GeoPlotter()
+    plotter = gv.GeoPlotter(off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_coastlines()

@@ -13,7 +13,7 @@ from geovista.pantry import oisst_avhrr_sst
 import geovista.theme  # noqa: F401
 
 
-def main() -> None:
+def main(off_screen: bool = False) -> None:
     """Create a mesh from 1-D latitude and longitude rectilinear cell bounds.
 
     The resulting mesh contains quad cells.
@@ -41,14 +41,15 @@ def main() -> None:
     mesh = mesh.threshold()
 
     # plot the mesh
-    plotter = gv.GeoPlotter(crs=(projection := "+proj=eqc"))
+    crs = "+proj=eqc"
+    plotter = gv.GeoPlotter(crs=crs, off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.blue_marble())
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        f"NOAA/NCEI OISST AVHRR ({projection})",
+        f"NOAA/NCEI OISST AVHRR ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,
