@@ -5,4 +5,5 @@ from geovista.examples import earthquakes
 
 def test_earthquakes(verify_image_cache):
     """Test earthquakes example."""
-    earthquakes.main(off_screen=True, verify_image_cache=verify_image_cache)
+    plotter = earthquakes.main(off_screen=True)
+    plotter.show()
