@@ -57,9 +57,8 @@ def main(off_screen: bool = False) -> None:
         return
 
     # plot the mesh
-    plotter = gv.GeoPlotter(
-        crs=(projection := "+proj=wink1 +lon_0=180"), off_screen=off_screen
-    )
+    crs = "+proj=wink1 +lon_0=180"
+    plotter = gv.GeoPlotter(crs=crs, off_screen=off_screen)
     sargs = {"title": "Magnitude", "shadow": True}
     plotter.add_points(
         xs=sample.lons,
@@ -76,7 +75,7 @@ def main(off_screen: bool = False) -> None:
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        f"USGS M2.5+ Earthquakes, 2000-2018 ({projection})",
+        f"USGS M2.5+ Earthquakes, 2000-2018 ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,

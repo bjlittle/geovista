@@ -45,7 +45,8 @@ def main(off_screen: bool = False) -> None:
     gv.logger.info("%s", cloud)
 
     # plot the point-cloud
-    plotter = gv.GeoPlotter(crs="+proj=eqc", off_screen=off_screen)
+    crs = "+proj=eqc"
+    plotter = gv.GeoPlotter(crs=crs, off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(
         cloud,
@@ -61,7 +62,7 @@ def main(off_screen: bool = False) -> None:
     plotter.view_xy()
     plotter.camera.zoom(1.5)
     plotter.add_text(
-        "ORCA Point-Cloud (10m Coastlines)",
+        f"ORCA Point-Cloud ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,

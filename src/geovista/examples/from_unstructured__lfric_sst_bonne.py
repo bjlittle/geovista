@@ -45,9 +45,8 @@ def main(off_screen: bool = False) -> None:
     mesh = mesh.threshold()
 
     # plot the mesh
-    plotter = gv.GeoPlotter(
-        crs=(projection := "+proj=bonne +lat_1=10 +lon_0=180"), off_screen=off_screen
-    )
+    crs = "+proj=bonne +lat_1=10 +lon_0=180"
+    plotter = gv.GeoPlotter(crs=crs, off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_1())
@@ -55,7 +54,7 @@ def main(off_screen: bool = False) -> None:
     plotter.add_graticule()
     plotter.add_axes()
     plotter.add_text(
-        f"LFRic C48 Unstructured Cube-Sphere ({projection})",
+        f"LFRic C48 Unstructured Cube-Sphere ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,

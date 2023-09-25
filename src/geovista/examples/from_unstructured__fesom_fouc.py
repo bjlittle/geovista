@@ -44,7 +44,8 @@ def main(off_screen: bool = False) -> None:
     gv.logger.info("%s", mesh)
 
     # plot the mesh
-    plotter = gv.GeoPlotter(crs=(projection := "+proj=fouc"), off_screen=off_screen)
+    crs = "+proj=fouc"
+    plotter = gv.GeoPlotter(crs=crs, off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     # require increased relative tolerance accuracy when cutting the mesh
     # at the anti-meridian due to its complex geometry
@@ -53,7 +54,7 @@ def main(off_screen: bool = False) -> None:
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        f"AWI-CM FESOM v1.4 ({projection})",
+        f"AWI-CM FESOM v1.4 ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,

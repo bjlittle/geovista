@@ -54,7 +54,8 @@ def main(off_screen: bool = False) -> None:
     clim = (cmin := 0.3, 1.0)
 
     # create the plotter
-    plotter = gv.GeoPlotter(crs=(projection := "+proj=robin"), off_screen=off_screen)
+    crs = "+proj=robin"
+    plotter = gv.GeoPlotter(crs=crs, off_screen=off_screen)
 
     for i, cloud in enumerate(cmaps):
         # load the sample data
@@ -87,7 +88,7 @@ def main(off_screen: bool = False) -> None:
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(
-        f"Low, Medium, High & Very High Cloud Amount ({projection})",
+        f"Low, Medium, High & Very High Cloud Amount ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,
