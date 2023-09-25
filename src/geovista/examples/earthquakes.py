@@ -81,7 +81,6 @@ def main(off_screen: bool = False) -> None:
     plotter.view_xz(negative=True)
     plotter.camera.zoom(1.5)
     plotter.show()
-    return None
 
 
 if __name__ == "__main__":
