@@ -13,7 +13,7 @@ from geovista.samples import ZLEVEL_SCALE_CLOUD
 import geovista.theme  # noqa: F401
 
 
-def main() -> None:
+def main(off_screen: bool = False) -> None:
     """Create a point-cloud from 1-D latitude, longitude and z-levels.
 
     The resulting mesh contains only points.
@@ -43,7 +43,7 @@ def main() -> None:
     gv.logger.info("%s", cloud)
 
     # plot the point-cloud
-    plotter = gv.GeoPlotter()
+    plotter = gv.GeoPlotter(off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(
         cloud,

@@ -15,7 +15,7 @@ from geovista.pantry import icon_soil
 import geovista.theme  # noqa: F401
 
 
-def main() -> None:
+def main(off_screen: bool = False) -> None:
     """Create a mesh from 2-D latitude and longitude unstructured cell bounds.
 
     The resulting mesh contains triangular cells.
@@ -39,7 +39,7 @@ def main() -> None:
     gv.logger.info("%s", mesh)
 
     # plot the mesh
-    plotter = gv.GeoPlotter(crs=(projection := "+proj=eqc"))
+    plotter = gv.GeoPlotter(crs=(projection := "+proj=eqc"), off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     cmap = mpl.colormaps.get_cmap("cet_CET_L17").resampled(lutsize=9)
     plotter.add_mesh(mesh, cmap=cmap, show_edges=True, scalar_bar_args=sargs)

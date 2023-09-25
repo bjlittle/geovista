@@ -13,7 +13,7 @@ from geovista.pantry import ww3_global_tri
 import geovista.theme  # noqa: F401
 
 
-def main() -> None:
+def main(off_screen: bool = False) -> None:
     """Create a mesh from 1-D latitude and longitude unstructured cell points.
 
     The resulting mesh contains triangular cells. The connectivity is required to
@@ -45,7 +45,7 @@ def main() -> None:
     gv.logger.info("%s", mesh)
 
     # plot the mesh
-    plotter = gv.GeoPlotter(crs=(projection := "+proj=hammer"))
+    plotter = gv.GeoPlotter(crs=(projection := "+proj=hammer"), off_screen=off_screen)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs, scalars=sample.name)
     plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
