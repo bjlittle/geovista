@@ -36,8 +36,7 @@ dependencies:
   - pytest >=6.0
   - pytest-cov
   - pytest-mock
-  - pip:
-    - pytest-pyvista
+  - pytest-pyvista
 
 # documentation dependencies
   - jupyter_sphinx
