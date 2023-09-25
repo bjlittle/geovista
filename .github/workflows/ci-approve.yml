@@ -1,0 +1,33 @@
+# Reference:
+#   - https://github.com/tibdex/github-app-token
+#   - https://github.com/hmarr/auto-approve-action
+
+name: ci-approve
+
+on: pull_request_target
+
+jobs:
+  auto-approve:
+    name: "auto-approve"
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: "generate token"
+        uses: tibdex/github-app-token@v2
+        id: generate-token
+        with:
+          app_id: ${{ secrets.AUTH_APP_ID }}
+          private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
+
+      - uses: hmarr/auto-approve-action@v3
+        with:
+          github-token: ${{ steps.generate-token.outputs.token }}
+          review-message: |
+            🤖 Bleep! Bloop!
+
+            Dependabot[bot] pull-request auto-approved 👍
