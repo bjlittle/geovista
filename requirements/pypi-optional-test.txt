@@ -3,3 +3,4 @@ pre-commit
 pytest>=6.0
 pytest-cov
 pytest-mock
+pytest-pyvista
