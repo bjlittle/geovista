@@ -1,4 +1,4 @@
-cartopy>=0.20
+cartopy>=0.22
 click
 click-default-group
 cmocean
