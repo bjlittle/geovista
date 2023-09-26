@@ -82,7 +82,7 @@ jobs:
 
     - name: "lock (${{ matrix.version }})"
       env:
-        VTK_BUILD: "  - vtk=*=qt_*"
+        VTK_BUILD: "  - vtk=*=osmesa_*"
       run: |
         tox -e ${{ matrix.version }}-lock
 
