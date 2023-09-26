@@ -3,7 +3,7 @@ click
 click-default-group
 cmocean
 netCDF4
-numpy>=1.21
+numpy>1.21
 platformdirs
 pooch
 pykdtree
