@@ -3,12 +3,14 @@ from __future__ import annotations
 
 from warnings import warn
 
+import pyvista as pv
+
 import geovista as gv
 from geovista.pantry import usgs_earthquakes
 import geovista.theme  # noqa: F401
-import pyvista as pv
 
 pv.OFF_SCREEN = True
+
 
 def test_earthquakes(verify_image_cache):
     """Test earthquakes example."""
