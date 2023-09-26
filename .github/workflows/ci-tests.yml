@@ -110,4 +110,4 @@ jobs:
       env:
         POST_COMMAND: ${{ matrix.post-command }}
       run: |
-        xvfb-run tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.posargs }}
+        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.posargs }}
