@@ -6,7 +6,9 @@ from warnings import warn
 import geovista as gv
 from geovista.pantry import usgs_earthquakes
 import geovista.theme  # noqa: F401
+import pyvista as pv
 
+pv.OFF_SCREEN = True
 
 def test_earthquakes(verify_image_cache):
     """Test earthquakes example."""
@@ -24,7 +26,7 @@ def test_earthquakes(verify_image_cache):
         return
 
     # plot the mesh
-    plotter = gv.GeoPlotter(off_screen=True)
+    plotter = gv.GeoPlotter()
     sargs = {"title": "Magnitude", "shadow": True}
     plotter.add_points(
         xs=sample.lons,
