@@ -38,10 +38,6 @@ dependencies:
   - pytest-mock
   - pytest-pyvista
 
-# examples dependencies
-  - fastparquet
-  - pandas
-
 # documentation dependencies
   - jupyter_sphinx
   - pydata-sphinx-theme
