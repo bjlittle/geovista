@@ -10,6 +10,7 @@ coverage:
 ignore:
   - "**/cli.py"
   - "**/geoplotter.py"
+  - "**/image_cache"
   - "**/pantry.py"
   - "**/registry.txt"
   - "**/report.py"
