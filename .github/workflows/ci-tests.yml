@@ -110,4 +110,11 @@ jobs:
       env:
         POST_COMMAND: ${{ matrix.post-command }}
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.posargs }}
+        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.posargs }} --xvfb-backend xvfb
+
+    - name: "upload test images"
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-images
+        path: ${{ github.workspace }}/test_images
