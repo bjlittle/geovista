@@ -23,6 +23,7 @@ from ._version import version as __version__
 from .cache import CACHE
 from .config import resources
 from .geoplotter import GeoPlotter
+from .report import Report
 
 __all__ = ["main"]
 
@@ -131,16 +132,25 @@ def _plural(quantity: int) -> str:
     help="Show geovista cache directory.",
 )
 @click.option(
+    "-r",
+    "--report",
+    is_flag=True,
+    help="Show GPU and environment package report",
+)
+@click.option(
     "-v",
     "--version",
     is_flag=True,
     help="Show geovista package version.",
 )
-def main(version: bool, cache: bool) -> None:
+def main(version: bool, report: bool, cache: bool) -> None:
     """To get help for geovista commands, simply use "geovista COMMAND --help"."""
     if version:
         click.echo("version ", nl=False)
         click.secho(f"{__version__}", fg=FG_COLOUR)
+
+    if report:
+        click.echo(Report())
 
     if cache:
         click.echo("cache directory ", nl=False)
