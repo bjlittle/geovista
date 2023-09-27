@@ -13,7 +13,7 @@ from geovista.pantry import fesom
 import geovista.theme  # noqa: F401
 
 
-def main(off_screen: bool = False) -> None:
+def main() -> None:
     """Create a mesh from 2-D latitude and longitude unstructured cell bounds.
 
     The resulting mesh is formed from masked connectivity, allowing the mesh to contain
@@ -39,7 +39,7 @@ def main(off_screen: bool = False) -> None:
     gv.logger.info("%s", mesh)
 
     # plot the mesh
-    plotter = gv.GeoPlotter(off_screen=off_screen)
+    plotter = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_hypsometric())

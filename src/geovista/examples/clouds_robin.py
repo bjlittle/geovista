@@ -30,7 +30,7 @@ cmaps: dict[str, LinearSegmentedColormap] = {
 }
 
 
-def main(off_screen: bool = False) -> None:
+def main() -> None:
     """Create meshes from 1-D latitude and longitude unstructured cell points.
 
     The resulting meshes contain quad cells and are constructed from CF UGRID
@@ -55,7 +55,7 @@ def main(off_screen: bool = False) -> None:
 
     # create the plotter
     crs = "+proj=robin"
-    plotter = gv.GeoPlotter(crs=crs, off_screen=off_screen)
+    plotter = gv.GeoPlotter(crs=crs)
 
     for i, cloud in enumerate(cmaps):
         # load the sample data

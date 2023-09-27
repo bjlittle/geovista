@@ -14,7 +14,7 @@ import geovista as gv
 import geovista.theme  # noqa: F401
 
 
-def main(off_screen: bool = False) -> None:
+def main() -> None:
     """Create a mesh from 2-D latitude and longitude rectilinear cell bounds.
 
     The resulting mesh contains quad cells.
@@ -39,7 +39,7 @@ def main(off_screen: bool = False) -> None:
     gv.logger.info("%s", mesh)
 
     # plot the mesh
-    plotter = gv.GeoPlotter(off_screen=off_screen)
+    plotter = gv.GeoPlotter()
     plotter.add_mesh(mesh, clim=(0, 1), cmap="tempo", show_edges=True)
     plotter.add_coastlines()
     plotter.add_axes()

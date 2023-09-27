@@ -14,7 +14,7 @@ import geovista as gv
 import geovista.theme  # noqa: F401
 
 
-def main(off_screen: bool = False) -> None:
+def main() -> None:
     """Create a mesh from 1-D latitude and longitude rectilinear cell bounds.
 
     The resulting mesh contains quad cells.
@@ -38,7 +38,7 @@ def main(off_screen: bool = False) -> None:
     gv.logger.info("%s", mesh)
 
     # plot the mesh
-    plotter = gv.GeoPlotter(off_screen=off_screen)
+    plotter = gv.GeoPlotter()
     sargs = {"title": f"{name} / 1", "shadow": True}
     plotter.add_mesh(
         mesh, clim=(0, 1), cmap="ice", scalar_bar_args=sargs, show_edges=True
