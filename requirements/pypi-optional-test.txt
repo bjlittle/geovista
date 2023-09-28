@@ -5,5 +5,4 @@ pytest-cov
 pytest-mock
 pytest-pyvista
 pytest-xvfb
-pandas
-fastparquet
+-r pypi-optional-exam.txt
