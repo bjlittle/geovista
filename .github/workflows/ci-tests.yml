@@ -100,8 +100,21 @@ jobs:
       with:
         lock_file: ${{ env.LOCK_FILE }}
 
+    - name: "apt cache"
+      uses: awalsh128/cache-apt-pkgs-action@v1.3.0
+      with:
+        packages: libgl1-mesa-glx xvfb
+        version: 1.0
+
     - name: "${{ matrix.session }} (${{ matrix.version }})"
       env:
         POST_COMMAND: ${{ matrix.post-command }}
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.posargs }}
+        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.posargs }} --xvfb-backend xvfb
+
+    - name: "upload test images"
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-images
+        path: ${{ github.workspace }}/test_images

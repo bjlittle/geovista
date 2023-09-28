@@ -82,6 +82,7 @@ addopts = "-ra -v --doctest-modules --doctest-continue-on-failure --import-mode=
 minversion = "6.0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
 testpaths = "tests"
+image_cache_dir = "tests/plotting/image_cache"
 
 
 [tool.ruff]

@@ -13,7 +13,7 @@ from geovista.pantry import ww3_global_tri
 import geovista.theme  # noqa: F401
 
 
-def main(off_screen: bool = False) -> None:
+def main() -> None:
     """Create a mesh from 1-D latitude and longitude unstructured cell points.
 
     The resulting mesh contains triangular cells. The connectivity is required to

@@ -13,7 +13,7 @@ from geovista.pantry import lfric_sst
 import geovista.theme  # noqa: F401
 
 
-def main(off_screen: bool = False) -> None:
+def main() -> None:
     """Create a mesh from 1-D latitude and longitude unstructured cell points.
 
     The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
@@ -44,7 +44,7 @@ def main(off_screen: bool = False) -> None:
     mesh = mesh.threshold()
 
     # plot the mesh
-    plotter = gv.GeoPlotter(off_screen=off_screen)
+    plotter = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_1())

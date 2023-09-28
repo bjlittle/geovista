@@ -13,7 +13,7 @@ from geovista.pantry import fesom
 import geovista.theme  # noqa: F401
 
 
-def main(off_screen: bool = False) -> None:
+def main() -> None:
     """Create a mesh from 2-D latitude and longitude unstructured cell bounds.
 
     The resulting mesh is formed from masked connectivity, allowing the mesh to contain
@@ -45,7 +45,7 @@ def main(off_screen: bool = False) -> None:
 
     # plot the mesh
     crs = "+proj=fouc"
-    plotter = gv.GeoPlotter(crs=crs, off_screen=off_screen)
+    plotter = gv.GeoPlotter(crs=crs)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     # require increased relative tolerance accuracy when cutting the mesh
     # at the anti-meridian due to its complex geometry
