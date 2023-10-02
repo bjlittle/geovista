@@ -24,6 +24,7 @@ __all__ = [
     "fetch_coastlines",
     "natural_earth_1",
     "natural_earth_hypsometric",
+    "pooch_mute",
     "reload_registry",
 ]
 
@@ -68,8 +69,10 @@ CACHE.load_registry(
     (files(__package__) / "registry.txt").open("r", encoding="utf-8", errors="strict")
 )
 
-if os.environ.get("GEOVISTA_POOCH_MUTE"):
-    pooch.utils.get_logger().setLevel("WARNING")
+#: Verbosity status of the pooch cache manager logger.
+GEOVISTA_POOCH_MUTE: bool = (
+    os.environ.get("GEOVISTA_POOCH_MUTE", "false").lower() == "true"
+)
 
 
 def _fetch_texture(fname: str, location: bool | None = False) -> TextureLike:
@@ -244,6 +247,29 @@ def natural_earth_hypsometric(location: bool | None = False) -> TextureLike:
     return _fetch_texture("HYP_50M_SR_W.jpg", location=location)
 
 
+def pooch_mute(silent: bool = True) -> None:
+    """Control the pooch cache manager logger verbosity.
+
+    Updates the status variable :data:`GEOVISTA_POOCH_MUTE`.
+
+    Parameters
+    ----------
+    silent : bool, optional
+        Whether to silence or activate the pooch cache manager logger messages to the
+        console.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
+    global GEOVISTA_POOCH_MUTE
+
+    level = "WARNING" if silent else "NOTSET"
+    pooch.utils.get_logger().setLevel(level)
+    GEOVISTA_POOCH_MUTE = silent
+
+
 def reload_registry(fname: str | None = None) -> None:
     """Refresh the registry of the :data:`CACHE`.
 
@@ -263,3 +289,7 @@ def reload_registry(fname: str | None = None) -> None:
             "r", encoding="utf-8", errors="strict"
         )
     CACHE.load_registry(fname)
+
+
+# configure the pooch cache manager logger verbosity
+pooch_mute(GEOVISTA_POOCH_MUTE)
