@@ -78,14 +78,25 @@ skip = ".git,*.ipynb"
 
 
 [tool.pytest.ini_options]
-addopts = "-ra -v --doctest-modules --doctest-continue-on-failure --import-mode=importlib --strict-markers"
+addopts = [
+    "--doctest-continue-on-failure",
+    "--doctest-modules",
+    "--import-mode=importlib",
+    "-ra",
+    "--strict-markers",
+    "-v",
+]
+doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
+filterwarnings = [
+    "error",
+    "ignore:numpy.ndarray size changed:RuntimeWarning",
+]
+image_cache_dir = "tests/plotting/image_cache"
 markers = [
     "image: plotter rendering image test",
 ]
 minversion = "6.0"
-doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
 testpaths = "tests"
-image_cache_dir = "tests/plotting/image_cache"
 
 
 [tool.ruff]
