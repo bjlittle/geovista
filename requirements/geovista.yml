@@ -5,7 +5,7 @@ channels:
 
 dependencies:
 
-# setup dependencies
+# setup dependencies (core)
   - setuptools >=61
   - setuptools-scm >=7
 
@@ -20,30 +20,31 @@ dependencies:
   - pyproj >=3.3
   - pyvista >=0.40,<0.42.2
 
-# pantry dependencies
+# pantry dependencies (core)
   - netcdf4
 
-# cmap dependencies
+# cmap dependencies (core)
   - cmocean
   - colorcet
 
-# dev dependencies
+# dev dependencies (optional)
   - pip
   - pre-commit
 
-# test dependencies
+# test dependencies (optional)
   - codecov
   - pytest >=6.0
   - pytest-cov
   - pytest-mock
   - pytest-pyvista
+  - pytest-xdist
   - pytest-xvfb
 
-# examples dependencies
+# examples dependencies (optional)
   - fastparquet
   - pandas
 
-# documentation dependencies
+# documentation dependencies (optional)
   - jupyter_sphinx
   - pydata-sphinx-theme
   - sphinx
