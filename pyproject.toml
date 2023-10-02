@@ -83,6 +83,7 @@ addopts = [
     "--doctest-modules",
     "--import-mode=importlib",
     "-ra",
+    "--strict-config",
     "--strict-markers",
     "-v",
 ]
