@@ -43,9 +43,10 @@ jobs:
         version: ["py39", "py310", "py311"]
         session: ["tests"]
         include:
+          - posargs: "-n 4"
           - os: "ubuntu-latest"
             version: "py311"
-            posargs: "--cov-report=xml --cov"
+            posargs: "-n 4 --cov-report=xml --cov=geovista"
             post-command: "codecov"
 
     steps:
