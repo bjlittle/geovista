@@ -78,7 +78,10 @@ skip = ".git,*.ipynb"
 
 
 [tool.pytest.ini_options]
-addopts = "-ra -v --doctest-modules --doctest-continue-on-failure --import-mode=importlib"
+addopts = "-ra -v --doctest-modules --doctest-continue-on-failure --import-mode=importlib --strict-markers"
+markers = [
+    "image: plotter rendering image test",
+]
 minversion = "6.0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
 testpaths = "tests"
