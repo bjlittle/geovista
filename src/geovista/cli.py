@@ -14,13 +14,12 @@ from shutil import rmtree
 
 import click
 from click_default_group import DefaultGroup
-import pooch
 import pyvista as pv
 
 from . import examples as scripts
 from . import logger
 from ._version import version as __version__
-from .cache import CACHE
+from .cache import CACHE, GEOVISTA_POOCH_MUTE, pooch_mute
 from .config import resources
 from .geoplotter import GeoPlotter
 from .report import Report
@@ -40,8 +39,6 @@ FG_COLOUR: str = "cyan"
 SCRIPTS: list[str] = [ALL] + [
     submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)
 ]
-
-pooch_logger = pooch.get_logger()
 
 
 def _download_group(
@@ -79,7 +76,8 @@ def _download_group(
     n_fnames: int = len(fnames)
     width: int = len(str(n_fnames))
 
-    pooch_logger.setLevel("ERROR")
+    status = GEOVISTA_POOCH_MUTE
+    pooch_mute(True)
 
     click.echo(f"Downloading {n_fnames} {name}registered asset{_plural(n_fnames)}:")
     for i, fname in enumerate(fnames):
@@ -94,7 +92,7 @@ def _download_group(
         click.secho(f"{CACHE.abspath}", fg=fg_colour)
         click.echo("👍 All done!")
 
-    pooch_logger.setLevel("INFO")
+    pooch_mute(status)
 
 
 def _plural(quantity: int) -> str:
