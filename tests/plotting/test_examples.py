@@ -1,5 +1,6 @@
 """Unit-tests for :mod:`geovista.examples`."""
 
+import pytest
 import pyvista as pv
 
 from geovista.examples import earthquakes
@@ -7,6 +8,7 @@ from geovista.examples import earthquakes
 pv.OFF_SCREEN = True
 
 
+@pytest.mark.image
 def test_earthquakes(verify_image_cache):
     """Image test of earthquakes example."""
     verify_image_cache.high_variance_test = True
