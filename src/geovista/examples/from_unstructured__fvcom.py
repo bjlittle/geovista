@@ -50,9 +50,7 @@ def main() -> None:
     # plot the mesh
     plotter = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(
-        mesh, cmap="deep", scalars="face", show_edges=True, scalar_bar_args=sargs
-    )
+    plotter.add_mesh(mesh, cmap="deep", scalars="face", scalar_bar_args=sargs)
     plotter.add_axes()
     plotter.add_text(
         "PML FVCOM Tamar",

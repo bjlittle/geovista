@@ -9,16 +9,15 @@ Notes
 from __future__ import annotations
 
 import numpy as np
-import pyvista as pv
 
 import geovista as gv
+from geovista.samples import regular_grid
 import geovista.theme  # noqa: F401
 
 
 def main() -> None:
     """Create vectors plotting inspired by cartopy."""
-    # make cool swirly pattern
-    sphere = pv.Sphere(gv.common.RADIUS)
+    sphere = regular_grid(resolution="r25")
     vectors = np.vstack(
         (
             -sphere.points[:, 1],
@@ -33,7 +32,6 @@ def main() -> None:
     plotter = gv.GeoPlotter()
     plotter.add_base_layer(texture=gv.natural_earth_1(), zlevel=0, lighting=False)
     plotter.add_mesh(sphere.arrows, lighting=False)
-    plotter.camera.zoom(1.5)
     plotter.add_axes()
     plotter.show()
 

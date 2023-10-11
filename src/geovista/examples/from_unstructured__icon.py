@@ -41,7 +41,7 @@ def main() -> None:
     plotter = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     cmap = mpl.colormaps.get_cmap("cet_CET_L17").resampled(lutsize=9)
-    plotter.add_mesh(mesh, cmap=cmap, show_edges=True, scalar_bar_args=sargs)
+    plotter.add_mesh(mesh, cmap=cmap, scalar_bar_args=sargs)
     plotter.add_coastlines()
     plotter.add_axes()
     plotter.add_text(

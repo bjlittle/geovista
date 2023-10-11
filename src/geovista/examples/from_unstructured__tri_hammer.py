@@ -48,7 +48,7 @@ def main() -> None:
     crs = "+proj=hammer"
     plotter = gv.GeoPlotter(crs=crs)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs, scalars=sample.name)
+    plotter.add_mesh(mesh, scalar_bar_args=sargs, scalars=sample.name)
     plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
     plotter.add_coastlines()
     plotter.add_axes()
@@ -59,7 +59,6 @@ def main() -> None:
         shadow=True,
     )
     plotter.view_xy()
-    plotter.camera.zoom(1.5)
     plotter.show()
 
 

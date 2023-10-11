@@ -60,7 +60,6 @@ def main() -> None:
     plotter.add_base_layer(texture=gv.natural_earth_1(), opacity=0.5, zlevel=0)
     plotter.add_axes()
     plotter.view_xy()
-    plotter.camera.zoom(1.5)
     plotter.add_text(
         f"ORCA Point-Cloud ({crs})",
         position="upper_left",

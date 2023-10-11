@@ -48,7 +48,7 @@ def main() -> None:
     crs = "+proj=bonne +lat_1=10 +lon_0=180"
     plotter = gv.GeoPlotter(crs=crs)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
+    plotter.add_mesh(mesh, scalar_bar_args=sargs)
     plotter.add_base_layer(texture=gv.natural_earth_1())
     plotter.add_coastlines()
     plotter.add_graticule()
@@ -60,7 +60,6 @@ def main() -> None:
         shadow=True,
     )
     plotter.view_xy()
-    plotter.camera.zoom(1.5)
     plotter.show()
 
 

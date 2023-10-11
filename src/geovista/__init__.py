@@ -18,6 +18,7 @@ Notes
 from __future__ import annotations
 
 import logging
+import os
 
 from .bridge import Transform  # noqa: F401
 from .cache import (  # noqa: F401
@@ -49,3 +50,8 @@ vtk_warnings_off()
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 logger.setLevel("WARNING")
+
+#: flag when performing image testing
+GEOVISTA_IMAGE_TESTING: bool = (
+    os.environ.get("GEOVISTA_IMAGE_TESTING", "false").lower() == "true"
+)
