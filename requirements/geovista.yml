@@ -37,7 +37,6 @@ dependencies:
   - pytest-cov
   - pytest-mock
   - pytest-pyvista
-  - pytest-xdist
   - pytest-xvfb
 
 # examples dependencies (optional)
