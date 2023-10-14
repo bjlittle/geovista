@@ -175,6 +175,7 @@ def main(version: bool, report: bool, cache: bool) -> None:
     is_flag=True,
     help="Show URLs of registered assets.",
 )
+@click.option("-i", "--image", is_flag=True, help="Download image test assets.")
 @click.option(
     "-l",
     "--list",
@@ -221,6 +222,7 @@ def download(
     pull: bool,
     clean: bool,
     dry_run: bool,
+    image: bool,
     show: bool,
     mesh: bool,
     pull_ne: tuple[str],
@@ -269,6 +271,18 @@ def download(
     if pull:
         _download_group(fnames)
     else:
+        if image:
+            name = "images"
+            _download_group(collect(f"tests/{name}"), name=name)
+
+        if mesh:
+            name = "mesh"
+            _download_group(collect(name), name=name)
+
+        if pantry:
+            name = "pantry"
+            _download_group(collect(name), name=name)
+
         if pull_ne:
             if ALL in pull_ne:
                 pull_ne = NE_GROUPS
@@ -281,14 +295,6 @@ def download(
 
         if raster:
             name = "raster"
-            _download_group(collect(name), name=name)
-
-        if mesh:
-            name = "mesh"
-            _download_group(collect(name), name=name)
-
-        if pantry:
-            name = "pantry"
             _download_group(collect(name), name=name)
 
     if verify:

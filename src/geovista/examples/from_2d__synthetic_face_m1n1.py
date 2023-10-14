@@ -29,7 +29,8 @@ def main() -> None:
     lats = np.linspace(-90, 90, M + 1)
     lons = np.linspace(-180, 180, N + 1)
     mlons, mlats = np.meshgrid(lons, lats, indexing="xy")
-    data = np.random.random(M * N)
+    clim = (0, 1)
+    data = np.linspace(*clim, num=M * N)
 
     # create the mesh from the synthetic data
     name = "Synthetic Cells"
@@ -40,9 +41,9 @@ def main() -> None:
 
     # plot the data
     plotter = gv.GeoPlotter()
-    sargs = sargs = {"title": f"{name} / 1", "shadow": True}
+    sargs = {"title": f"{name} / 1", "shadow": True}
     plotter.add_mesh(
-        mesh, clim=(0, 1), cmap="tempo", scalar_bar_args=sargs, show_edges=True
+        mesh, clim=clim, cmap="tempo", scalar_bar_args=sargs, show_edges=True
     )
     plotter.add_coastlines()
     plotter.add_axes()

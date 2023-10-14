@@ -91,6 +91,9 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
 filterwarnings = [
     "error",
     "ignore:numpy.ndarray size changed:RuntimeWarning",
+    "ignore:Unable to remesh 1 cell:UserWarning",
+    "ignore:pyvista test cache image dir:UserWarning",
+    "ignore:pyvista test generated image dir:UserWarning",
 ]
 image_cache_dir = "tests/plotting/image_cache"
 markers = [

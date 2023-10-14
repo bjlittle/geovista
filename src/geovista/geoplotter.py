@@ -745,8 +745,10 @@ class GeoPlotterBase:
         .. versionadded:: 0.3.0
 
         """
+        from . import GEOVISTA_IMAGE_TESTING
+
         if show_labels is None:
-            show_labels = GRATICULE_SHOW_LABELS
+            show_labels = False if GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
 
         if zlevel is None:
             zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
@@ -924,8 +926,10 @@ class GeoPlotterBase:
         .. versionadded:: 0.3.0
 
         """
+        from . import GEOVISTA_IMAGE_TESTING
+
         if show_labels is None:
-            show_labels = GRATICULE_SHOW_LABELS
+            show_labels = False if GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
 
         if zlevel is None:
             zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
