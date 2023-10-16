@@ -142,7 +142,7 @@ class GeoPlotterBase:
             klass = f"'{self.__class__.__name__}'"
             if len(args) == 1 and ("crs" not in kwargs or kwargs["crs"] is None):
                 wmsg = (
-                    f"{klass} received an unexpected argument. "
+                    f"geovista {klass} received an unexpected argument. "
                     "Assuming 'crs' keyword argument instead..."
                 )
                 warn(wmsg, stacklevel=2)
@@ -574,7 +574,10 @@ class GeoPlotterBase:
             src_crs = from_wkt(mesh)
 
             if src_crs is None:
-                wmsg = "Found no coordinate reference system (CRS) attached to mesh."
+                wmsg = (
+                    "geovista found no coordinate reference system (CRS) attached "
+                    "to mesh."
+                )
                 warn(wmsg, stacklevel=2)
 
             tgt_crs = self.crs
@@ -1110,8 +1113,8 @@ class GeoPlotterBase:
 
             if isinstance(scalars, str):
                 wmsg = (
-                    f"Ignoring the 'scalars' string name '{scalars}', as no 'points' "
-                    "mesh was provided."
+                    f"geovista ignoring the 'scalars' string name '{scalars}', as no "
+                    "'points' mesh was provided."
                 )
                 warn(wmsg, stacklevel=2)
 

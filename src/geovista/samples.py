@@ -452,7 +452,7 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
 
     if resolution not in LFRIC_RESOLUTIONS:
         wmsg = (
-            f"Unknown LFRic cubed-sphere resolution {original!r}, "
+            f"geovista detected unknown LFRic cubed-sphere resolution {original!r}, "
             f"using {LFRIC_RESOLUTION!r} instead."
         )
         warn(wmsg, stacklevel=2)

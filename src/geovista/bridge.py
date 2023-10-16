@@ -818,7 +818,7 @@ class Transform:
                 n_invalid = n_faces - np.sum(valid_faces_mask)
                 plural = "s" if n_invalid > 1 else ""
                 wmsg = (
-                    f"Masked connectivity defines {n_invalid:,} face{plural} "
+                    f"geovista masked connectivity defines {n_invalid:,} face{plural} "
                     "with no vertices."
                 )
                 warnings.warn(wmsg, stacklevel=2)

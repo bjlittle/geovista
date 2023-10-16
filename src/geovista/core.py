@@ -655,7 +655,7 @@ def slice_cells(
                 plural = "s" if (n_cells := bad_cids.size) > 1 else ""
                 naughty = ", ".join([f"{cid}" for cid in bad_cids])
                 wmsg = (
-                    f"Unable to remesh {n_cells} cell{plural}. Removing the "
+                    f"geovista unable to remesh {n_cells} cell{plural}. Removing the "
                     f"following mesh cell-id{plural} [{naughty}]."
                 )
                 warnings.warn(wmsg, stacklevel=2)
@@ -727,7 +727,7 @@ def slice_lines(
         n_points = SPLINE_N_POINTS
 
     if n_points < 1:
-        wmsg = f"Ignoring 'n_points={n_points}', defaulting to 'n_points=1'."
+        wmsg = f"geovista ignoring 'n_points={n_points}', defaulting to 'n_points=1'."
         warnings.warn(wmsg, stacklevel=2)
 
     # check whether the line is completely aligned with the slice plane

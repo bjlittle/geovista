@@ -190,9 +190,9 @@ class BBox:
                 lons, lats = lons[-1], lats[-1]
             else:
                 wmsg = (
-                    "The bounding-box was specified with 5 longitude/latitude values, "
-                    "however the first and last values are not close enough to specify "
-                    "a closed geometry - ignoring last value."
+                    "geovista bounding-box was specified with 5 longitude/latitude"
+                    "values, however the first and last values are not close enough to "
+                    "specify a closed geometry - ignoring last value."
                 )
                 warnings.warn(wmsg, stacklevel=2)
                 lons, lats = lons[:-1], lats[:-1]

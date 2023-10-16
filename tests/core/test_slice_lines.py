@@ -45,7 +45,7 @@ def test_no_lines(mesh):
 @pytest.mark.parametrize("n_points", [0, -1])
 def test_n_points_warning(coastlines, n_points):
     """Test invalid domain for n_points warning is raised."""
-    wmsg = f"Ignoring 'n_points={n_points}'"
+    wmsg = f"geovista ignoring 'n_points={n_points}'"
     with pytest.warns(UserWarning, match=wmsg):
         _ = slice_lines(coastlines, n_points=n_points)
 
