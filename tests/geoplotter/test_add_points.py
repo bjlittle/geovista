@@ -143,7 +143,7 @@ def test_xy_ys_scalars_name_warnings(mocker):
     xs, ys = mocker.sentinel.xs, mocker.sentinel.ys
     scalars = "invalid"
     wmsg = (
-        f"Ignoring the 'scalars' string name '{scalars}', "
+        f"geovista ignoring the 'scalars' string name '{scalars}', "
         "as no 'points' mesh was provided"
     )
     with pytest.warns(UserWarning, match=wmsg):
