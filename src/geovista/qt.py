@@ -11,7 +11,7 @@ from __future__ import annotations
 
 try:
     import pyvistaqt as pvqt
-except ImportError as e:
+except ModuleNotFoundError as e:
     e.msg = f'{e.msg} - please install the "pyvistaqt" and "pyqt" packages.'
     raise
 
