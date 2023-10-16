@@ -81,7 +81,7 @@ def _download_group(
 
     click.echo(f"Downloading {n_fnames} {name}registered asset{_plural(n_fnames)}:")
     for i, fname in enumerate(fnames):
-        click.echo(f"[{i+1:0{width}d}] Downloading ", nl=False)
+        click.echo(f"[{i+1:0{width}d}/{n_fnames}] Downloading ", nl=False)
         click.secho(f"{fname} ", nl=False, fg=fg_colour)
         click.echo("... ", nl=False)
         CACHE.fetch(fname)
@@ -301,7 +301,7 @@ def download(
         unavailable = 0
         click.echo("Verifying remote availability of registered assets:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{width}d}] ", nl=False)
+            click.echo(f"[{i+1:0{width}d}/{n_fnames}] ", nl=False)
             click.secho(f"{fname} ", nl=False, fg=fg_colour)
             click.echo("is ... ", nl=False)
             status, status_fg_colour = (
@@ -337,14 +337,14 @@ def download(
     if dry_run:
         click.echo("URLs of registered assets:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{width}d}] ", nl=False)
+            click.echo(f"[{i+1:0{width}d}/{n_fnames}] ", nl=False)
             click.secho(f"{CACHE.get_url(fname)}", fg=fg_colour)
         click.echo("\n👍 All done!")
 
     if show:
         click.echo("Names of registered assets:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{width}d}] ", nl=False)
+            click.echo(f"[{i+1:0{width}d}/{n_fnames}] ", nl=False)
             click.secho(f"{fname}", fg=fg_colour)
         click.echo("\n👍 All done!")
 
@@ -389,7 +389,7 @@ def examples(run_all, show, run, verbose):
         click.echo("Names of available examples:")
         width = len(str(n_scripts))
         for i, script in enumerate(SCRIPTS[1:]):
-            click.echo(f"[{i + 1:0{width}d}] ", nl=False)
+            click.echo(f"[{i + 1:0{width}d}/{n_scripts}] ", nl=False)
             click.secho(f"{script}", fg="green")
         click.echo("\n👍 All done!")
         return
