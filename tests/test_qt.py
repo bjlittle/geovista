@@ -15,12 +15,12 @@ def test_pyvistaqt_import():
     """
     try:
         import pyvistaqt
-    except ImportError:
+    except ModuleNotFoundError:
         pyvistaqt = False
 
     if not pyvistaqt:
         emsg = 'please install the "pyvistaqt" and "pyqt" packages'
-        with pytest.raises(ImportError, match=emsg):
+        with pytest.raises(ModuleNotFoundError, match=emsg):
             import geovista.qt  # noqa: F401
 
 
