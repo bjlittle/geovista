@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import warnings
 
-import numpy as np
 from numpy import ma
+import numpy as np
 from numpy.typing import ArrayLike
 from pyproj import CRS
 import pyvista as pv
