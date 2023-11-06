@@ -12,11 +12,11 @@ from enum import Enum
 import sys
 from typing import Any
 
-import numpy as np
 from numpy import ma
+import numpy as np
 from numpy.typing import ArrayLike
-import pyvista as pv
 from pyvista import _vtk
+import pyvista as pv
 from pyvista.core.filters import _get_output
 from vtk import vtkLogger, vtkObject
 
