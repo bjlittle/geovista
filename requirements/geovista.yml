@@ -41,6 +41,7 @@ dependencies:
 
 # examples dependencies (optional)
   - fastparquet
+  - h3-py
   - pandas
 
 # documentation dependencies (optional)
