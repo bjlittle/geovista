@@ -33,6 +33,9 @@ if cache_dir.is_dir() and not cache_dir.is_symlink():
     # remove directory which may have been created by pytest-pyvista
     # when plugin is bootstrapped by pytest
     shutil.rmtree(str(cache_dir))
+if cache_dir.is_symlink() and not cache_dir.exists():
+    # detected a broken symlink
+    cache_dir.unlink()
 if not cache_dir.exists():
     base_dir = CACHE.abspath / "tests" / "images"
     base_dir.mkdir(parents=True, exist_ok=True)
@@ -61,6 +64,7 @@ def test(script, verify_image_cache):
     module = importlib.import_module(f"geovista.examples.{script}")
     # if necessary, download and cache missing script base image (expected) to
     # compare with the actual test image generated via pytest-pyvista plugin
-    _ = CACHE.fetch(f"tests/images/{script}.png")
+    if verify_image_cache.add_missing_images is False:
+        _ = CACHE.fetch(f"tests/images/{script}.png")
     # execute the example script for image testing
     module.main()
