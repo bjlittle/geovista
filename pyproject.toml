@@ -3,7 +3,6 @@
 requires = [
     "setuptools>=61",
     "setuptools_scm[toml]>=7",
-    "wheel"
 ]
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"
