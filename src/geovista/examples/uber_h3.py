@@ -23,8 +23,8 @@ except ImportError:
     )
     raise ImportError(emsg) from None
 
-from numpy import ma
 import numpy as np
+from numpy import ma
 from numpy.typing import ArrayLike
 from pyvista import PolyData
 
