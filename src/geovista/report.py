@@ -8,7 +8,6 @@ Notes
 from __future__ import annotations
 
 from types import ModuleType
-from typing import Union
 
 import pyvista
 import scooby
@@ -16,7 +15,7 @@ import scooby
 __all__ = ["Report"]
 
 # type aliases
-PackageLike = Union[ModuleType, str]
+PackageLike = ModuleType | str
 
 #: Default number of package columns in report HTML table.
 NCOL: int = 3

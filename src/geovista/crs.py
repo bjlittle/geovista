@@ -7,8 +7,6 @@ Notes
 """
 from __future__ import annotations
 
-from typing import Union
-
 import numpy as np
 from pyproj import CRS
 import pyvista as pv
@@ -28,7 +26,7 @@ __all__ = [
 ]
 
 # type aliases
-CRSLike = Union[int, str, dict, CRS]
+CRSLike = int | str | dict | CRS
 
 #: EPSG projection parameter for longitude of natural origin/central meridian
 EPSG_CENTRAL_MERIDIAN: str = "8802"

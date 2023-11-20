@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from importlib.resources import files
 import os
-from typing import Union
 
 import pooch
 import pyvista as pv
@@ -29,7 +28,7 @@ __all__ = [
 ]
 
 # Type aliases.
-TextureLike = Union[str, pv.Texture]
+TextureLike = str | pv.Texture
 
 #: Base URL for geovista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
