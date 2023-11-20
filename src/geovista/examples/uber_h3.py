@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from functools import partial
 from itertools import combinations
 from pathlib import Path
+from typing import Union
 
 try:
     import h3
@@ -35,7 +36,7 @@ import geovista.theme
 MDI = -1
 
 #: Type alias
-H3AssetLike = str | PolyData
+H3AssetLike = Union[str, PolyData]
 H3Indexes = set[str]
 
 
