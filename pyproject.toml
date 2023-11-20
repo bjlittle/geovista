@@ -95,6 +95,8 @@ filterwarnings = [
     "ignore:pyvista test generated image dir:UserWarning",
 ]
 image_cache_dir = "tests/plotting/image_cache"
+log_cli = "True"
+log_cli_level = "INFO"
 markers = [
     "image: plotter rendering image test",
 ]
