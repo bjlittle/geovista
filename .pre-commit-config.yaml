@@ -4,6 +4,8 @@
 
 ci:
   autofix_prs: false
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.5.0"
