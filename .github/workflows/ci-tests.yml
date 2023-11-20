@@ -40,7 +40,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        version: ["py39", "py310", "py311"]
+        version: ["py310", "py311", "py312"]
         session: ["tests"]
         include:
           - os: "ubuntu-latest"

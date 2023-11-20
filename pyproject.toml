@@ -20,9 +20,9 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 description = "Cartographic rendering and mesh analytics powered by PyVista"
@@ -47,7 +47,7 @@ keywords = [
 ]
 license.file = "LICENSE"
 name = "geovista"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 
 [project.urls]
@@ -62,7 +62,7 @@ geovista = "geovista.cli:main"
 
 [tool.black]
 line-length = 88
-target-version = ["py39", "py310", "py311"]
+target-version = ["py310", "py311", "py312"]
 include = '\.pyi?$'
 
 
