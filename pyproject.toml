@@ -125,6 +125,7 @@ select = [
     "UP",  # pyupgrade
 ]
 target-version = "py39"
+src = ["src", "tests"]
 
 
 [tool.ruff.isort]
