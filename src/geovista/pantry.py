@@ -14,8 +14,8 @@ from enum import Enum
 from functools import lru_cache
 
 import netCDF4 as nc
-from numpy import ma
 import numpy as np
+from numpy import ma
 from numpy.typing import ArrayLike
 import pooch
 

@@ -11,8 +11,8 @@ Notes
 from __future__ import annotations
 
 import numpy as np
-from pyvista import _vtk
 import pyvista as pv
+from pyvista import _vtk
 from pyvista.core.filters import _get_output
 
 from .common import (
