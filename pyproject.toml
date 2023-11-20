@@ -103,6 +103,7 @@ markers = [
 minversion = "6.0"
 required_plugins = "pytest-mock pytest_pyvista"
 testpaths = "tests"
+xfail_strict = "True"
 
 
 [tool.ruff]
