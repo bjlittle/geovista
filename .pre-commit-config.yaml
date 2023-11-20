@@ -47,7 +47,7 @@ repos:
       types_or: [python, markdown, rst]
       additional_dependencies: [tomli]
 
-  - repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black-pre-commit-mirror
     rev: "23.11.0"
     hooks:
       - id: black
