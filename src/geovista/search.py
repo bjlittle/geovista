@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from enum import Enum
-from typing import Union
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -24,7 +23,7 @@ __all__ = ["KDTree", "Preference", "find_cell_neighbours", "find_nearest_cell"]
 
 # type aliases
 CellIDs = list[int]
-CellIDLike = Union[int, CellIDs]
+CellIDLike = int | CellIDs
 NearestNeighbours = tuple[ArrayLike, ArrayLike]
 
 #: The default kd-tree nearest neighbour epsilon.
