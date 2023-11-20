@@ -46,6 +46,7 @@ if not cache_dir.exists():
 thresholds = {
     "from_points__orca_cloud": {"warning_value": 202.0},
     "from_points__orca_cloud_eqc": {"warning_value": 250.0},
+    "uber_h3": {"warning_value": 395.0},
 }
 
 
