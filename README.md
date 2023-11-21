@@ -163,9 +163,7 @@ mesh = gv.Transform.from_unstructured(
 # Plot the mesh.
 plotter = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(
-    mesh, show_edges=True, scalar_bar_args=sargs
-)
+plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
 plotter.add_coastlines(resolution="10m")
 plotter.add_graticule()
@@ -380,9 +378,7 @@ mesh = mesh.threshold()
 # Plot the mesh.
 plotter = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(
-    mesh, show_edges=True, scalar_bar_args=sargs
-)
+plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_1())
 plotter.add_coastlines(resolution="10m")
 plotter.view_xy()
