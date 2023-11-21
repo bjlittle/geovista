@@ -57,6 +57,12 @@ repos:
         types: [file, python]
         args: [--config=./pyproject.toml]
 
+  - repo: https://github.com/adamchainz/blacken-docs
+    rev: "1.16.0"
+    hooks:
+      - id: blacken-docs
+        additional_dependencies: [black==23.*]
+
   - repo: https://github.com/aio-libs/sort-all
     rev: "v1.2.0"
     hooks:
