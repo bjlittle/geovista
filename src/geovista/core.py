@@ -772,7 +772,7 @@ def slice_lines(
     detach_cids: list[int] = []
     detach_pids: list[int] = []
 
-    for xyz, cid in zip(poi_xyz, poi_cids):
+    for xyz, cid in zip(poi_xyz, poi_cids, strict=True):
         mask = np.all(np.isclose(cid_xyz_1d, xyz), axis=1)
         if np.any(mask):
             # we want to detach the connectivity of a single line segment at the pid

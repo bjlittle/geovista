@@ -213,7 +213,7 @@ class BBox:
             result = False
             lhs = (self.ellps, self.c, self.triangulate)
             rhs = (other.ellps, other.c, other.triangulate)
-            if all(x[0] == x[1] for x in zip(lhs, rhs)):
+            if all(x[0] == x[1] for x in zip(lhs, rhs, strict=True)):
                 if np.allclose(self.lons, other.lons):
                     result = np.allclose(self.lats, other.lats)
         return result
@@ -799,7 +799,7 @@ def npoints(
         initial_idx=initial_idx,
         terminus_idx=terminus_idx,
     )
-    glons, glats = zip(*glonlats)
+    glons, glats = zip(*glonlats, strict=True)
     glons = tuple(wrap(glons))
 
     return glons, glats
