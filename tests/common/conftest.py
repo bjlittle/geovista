@@ -2,15 +2,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Union
 
 import numpy as np
 from numpy.typing import ArrayLike
 import pytest
 
 # typing alias
-XYZLike = Union[tuple[float, float, float], ArrayLike]
-XYLike = Union[tuple[float, float], ArrayLike]
+XYZLike = tuple[float, float, float] | ArrayLike
+XYLike = tuple[float, float] | ArrayLike
 
 
 @dataclass
@@ -49,7 +48,9 @@ values = [
 ]
 
 params = [Convert(xyz, expected) for (xyz, expected) in values]
-manyparams = [Convert(xyz, expected) for (xyz, expected) in [list(zip(*values))]]
+manyparams = [
+    Convert(xyz, expected) for (xyz, expected) in [list(zip(*values, strict=True))]
+]
 
 
 @pytest.fixture(params=params)

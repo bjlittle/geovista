@@ -107,13 +107,16 @@ xfail_strict = "True"
 
 
 [tool.ruff]
+extend-exclude = ["docs"]
+line-length = 88
+src = ["src", "tests"]
+target-version = "py310"
+
+
+[tool.ruff.lint]
 ignore = [
     "D105",  # pydocstyle: undocumented-magic-method
 ]
-extend-exclude = [
-    "docs",
-]
-line-length = 88
 select = [
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
@@ -124,26 +127,24 @@ select = [
     "F",   # pyflakes
     "UP",  # pyupgrade
 ]
-target-version = "py39"
-src = ["src", "tests"]
 
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = ["geovista"]
 
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 22
 
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "src/geovista/examples/earthquakes.py" = ["E501"]
 "src/geovista/examples/earthquakes_wink1.py" = ["E501"]
 "src/geovista/report.py" = ["E722"]
 
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
 

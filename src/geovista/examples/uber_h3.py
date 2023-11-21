@@ -80,7 +80,7 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
     # Get the lat/lon vertices of each H3Index cell polygon.
     for h3index in h3indexes:
         boundary = h3.h3_to_geo_boundary(h3index, geo_json=False)
-        boundary_lats, boundary_lons = zip(*boundary)
+        boundary_lats, boundary_lons = zip(*boundary, strict=True)
         lats.extend(boundary_lats)
         lons.extend(boundary_lons)
         nverts.append(len(boundary_lats))
@@ -149,7 +149,7 @@ def generate_icosahedron_surface(resolution: int | None = 0) -> GeoSurface:
 
     """
     pairs = [h3.h3_to_geo(cell) for cell in sorted(h3.get_pentagon_indexes(resolution))]
-    lats, lons = list(zip(*pairs))
+    lats, lons = list(zip(*pairs, strict=True))
 
     # An icosahedron contains 20 equilateral triangle faces, 12 vertices and 30 edges.
     connectivity = [
