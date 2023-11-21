@@ -10,30 +10,30 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.5.0"
     hooks:
-      # Prevent giant files from being committed.
     - id: check-added-large-files
       exclude: "tests/plotting/image_cache"
-      # Check whether files parse as valid Python.
+      # Prevent giant files from being committed.
     - id: check-ast
-      # Check for file name conflicts on case-insensitive file-systems.
+      # Check whether files parse as valid Python.
     - id: check-case-conflict
-      # Check for files that contain merge conflict strings.
+      # Check for file name conflicts on case-insensitive file-systems.
     - id: check-merge-conflict
-      # Check for debugger imports and py37+ `breakpoint()` calls in Python source.
+      # Check for files that contain merge conflict strings.
     - id: debug-statements
-      # Check TOML file syntax.
+      # Check for debugger imports and py37+ `breakpoint()` calls in Python source.
     - id: check-toml
-      # Check YAML file syntax.
+      # Check TOML file syntax.
     - id: check-yaml
-      # Makes sure files end in a newline and only a newline
+      # Check YAML file syntax.
     - id: end-of-file-fixer
+      # Makes sure files end in a newline and only a newline.
       exclude_types: [svg]
-      # Replaces or checks mixed line ending
     - id: mixed-line-ending
-      # Don't commit to main branch.
+      # Replaces or checks mixed line ending.
     - id: no-commit-to-branch
-      # Trims trailing whitespace
+      # Don't commit to main branch.
     - id: trailing-whitespace
+      # Trims trailing whitespace.
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.1.6"
@@ -62,6 +62,25 @@ repos:
     hooks:
       - id: blacken-docs
         additional_dependencies: [black==23.*]
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+        # Enforce that all noqa annotations always occur with specific codes.
+      - id: python-check-blanket-type-ignore
+        # Enforce that "# type: ignore" annotations always occur with specific codes.
+      - id: python-check-mock-methods
+        # Prevent common mistakes of assert mck.not_called(), assert
+        # mck.called_once_with(...) and mck.assert_called.
+      - id: rst-backticks
+        # Detect common mistake of using single backticks when writing rst.
+      - id: rst-directive-colons
+        # Detect mistake of rst directive not ending with double colon.
+      - id: rst-inline-touching-normal
+        # Detect mistake of inline code touching normal text in rst.
+      - id: text-unicode-replacement-char
+        # Forbid files which have a UTF-8 Unicode replacement character.
 
   - repo: https://github.com/aio-libs/sort-all
     rev: "v1.2.0"
