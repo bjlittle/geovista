@@ -92,20 +92,20 @@ def test_polar_quad_mesh_unfold(sign, n_lons, closed_interval):
 
 @pytest.mark.parametrize("closed_interval", [False, True])
 @pytest.mark.parametrize(
-    "lonlat, pids",
+    ("lonlat", "pids"),
     [
-        [
+        (
             np.array([[170, 10], [180, 10], [-180, 0], [-170, 0]]),
             np.array([[0, 1], [2, 3]]),
-        ],
-        [
+        ),
+        (
             np.array([[170, 0], [180, 0], [-170, 0]]),
             np.array([[0, 1], [1, 2]]),
-        ],
-        [
+        ),
+        (
             np.array([[170, 0], [180, 0], [-180, 0], [-170, 0]]),
             np.array([[0, 1], [2, 3]]),
-        ],
+        ),
     ],
 )
 def test_lines_closed_interval(closed_interval, lonlat, pids):

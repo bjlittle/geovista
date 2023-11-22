@@ -34,7 +34,7 @@ def test_duplicate_points_fail(mocker):
         _ = plotter.add_points(points=points, xs=xs, ys=ys)
 
 
-@pytest.mark.parametrize("xs, ys", [(True, None), (None, True)])
+@pytest.mark.parametrize(("xs", "ys"), [(True, None), (None, True)])
 def test_over_specified_points_fail(mocker, xs, ys):
     """Test trap of points and xs or ys provided."""
     plotter = GeoPlotter()
@@ -93,7 +93,7 @@ def test_texture_kwarg_pop(mocker, sphere):
     plotter.add_mesh.assert_called_once_with(sphere, style="points", scalars=None)
 
 
-@pytest.mark.parametrize("xs, ys", [(None, True), (True, None)])
+@pytest.mark.parametrize(("xs", "ys"), [(None, True), (True, None)])
 def test_xs_ys_incomplete_fail(xs, ys):
     """Test trap of missing spatial points."""
     plotter = GeoPlotter()

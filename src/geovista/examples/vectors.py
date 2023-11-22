@@ -12,7 +12,7 @@ import numpy as np
 
 import geovista as gv
 from geovista.samples import regular_grid
-import geovista.theme  # noqa: F401
+import geovista.theme
 
 
 def main() -> None:

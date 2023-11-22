@@ -1,0 +1,45 @@
+extend = "pyproject.toml"
+
+lint.ignore = [
+    # NOTE: To find a rule code to fix, run:
+    #       ruff --select="ALL" --statistics src/geovista/<subpackage>
+
+    # flake8-boolean-trap (FBT)
+    # NOTE: A good thing to fix, but changes API.
+    "FBT001",  # boolean-positional-arg-in-function-definition.
+    "FBT002",  # boolean-default-value-in-function-definition.
+    "FBT003",  # boolean-positional-value-in-function-call.
+
+    # Pylint (PL)
+    "PLR0912",  # Too many branches.
+    "PLR0913",  # Too many arguments in function definition.
+    "PLR0915",  # Too many statements.
+    "PLR2004",  # Magic value used in comparison, consider replacing with a constant.
+    "PLW0603",  # Using the global statement to update is discouraged.
+
+    # flake8-self (SLF)
+    "SLF001",  # Private member accessed.
+
+    # flake8-todos (TD)
+    "TD003",  # Missing issue link on the line following this TODO.
+]
+
+[lint.extend-per-file-ignores]
+"conftest.py" = [
+    # flake8-annotations (ANN)
+    "ANN001",  # Missing type annotation for function argument.
+    "ANN201",  # Missing return type annotation for public function.
+]
+"src/geovista/geoplotter.py" = [
+    # flake8-annotations (ANN)
+    "ANN401",  # Dynamically typed expressions (typing.Any).
+]
+"test_*.py" = [
+    # flake8-annotations (ANN)
+    "ANN001",  # Missing type annotation for function argument.
+    "ANN201",  # Missing return type annotation for public funciton.
+]
+"test_slice_lines.py" = [
+    # eradicate (ERA)
+    "ERA001",  # Found commented-out code.
+]

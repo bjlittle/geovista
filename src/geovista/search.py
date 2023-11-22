@@ -9,15 +9,18 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from enum import Enum
+from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import ArrayLike
 from pykdtree.kdtree import KDTree as pyKDTree
-from pyvista import PolyData
 
 from .common import _MixinStrEnum, to_cartesian
 from .crs import WGS84, from_wkt
 from .transform import transform_points
+
+if TYPE_CHECKING:
+    from pyvista import PolyData
 
 __all__ = ["KDTree", "Preference", "find_cell_neighbours", "find_nearest_cell"]
 
@@ -39,7 +42,7 @@ KDTREE_LEAF_SIZE: int = 16
 KDTREE_PREFERENCE: str = "point"
 
 
-# TODO: use StrEnum and auto when minimum supported python version is 3.11
+# TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
 class Preference(_MixinStrEnum, Enum):
     """Enumeration of mesh geometry preferences.
 
@@ -129,14 +132,14 @@ class KDTree:
             transformed = transform_points(
                 src_crs=crs, tgt_crs=WGS84, xs=xyz[:, 0], ys=xyz[:, 1]
             )
-            # TODO: clarify zlevel preservation for non-WGS84 point-clouds
+            # TODO @bjlittle: Clarify zlevel preservation for non-WGS84 point-clouds.
             xyz = to_cartesian(transformed[:, 0], transformed[:, 1])
 
         self._n_points = xyz.shape[0]
         self._mesh_type = mesh.__class__.__name__
         self._kdtree = pyKDTree(xyz, leafsize=leaf_size)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Serialize kd-tree representation.
 
         Returns
@@ -272,11 +275,10 @@ class KDTree:
             epsilon = KDTREE_EPSILON
 
         xyz = to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
-        result = self._kdtree.query(
+
+        return self._kdtree.query(
             xyz, k=k, eps=epsilon, distance_upper_bound=distance_upper_bound
         )
-
-        return result
 
 
 def find_cell_neighbours(mesh: PolyData, cid: CellIDLike) -> CellIDs:
@@ -308,7 +310,7 @@ def find_cell_neighbours(mesh: PolyData, cid: CellIDLike) -> CellIDs:
 
     pids = []
     for idx in cid:
-        # XXX: pyvista 0.38.0: cell_point_ids(idx) -> get_cell(idx).point_ids
+        # NOTE: pyvista 0.38.0: cell_point_ids(idx) -> get_cell(idx).point_ids
         pids.extend(mesh.get_cell(idx).point_ids)
 
     # determine the unique points
@@ -368,7 +370,7 @@ def find_nearest_cell(
     poi = to_cartesian(x, y)[0] if crs in [WGS84, None] else (x, y, z)
     cid = mesh.find_closest_cell(poi)
 
-    # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
+    # NOTE: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
     pids = np.asanyarray(mesh.get_cell(cid).point_ids)
     points = mesh.points[pids]
     mask = np.all(np.isclose(points, poi), axis=1)
@@ -382,9 +384,7 @@ def find_nearest_cell(
 
     if single:
         if (count := len(result)) > 1:
-            emsg = (
-                f"Expected to find 1 cell but found {count}, " f"got CellIDs {result}."
-            )
+            emsg = f"Expected to find 1 cell but found {count}, got CellIDs {result}."
             raise ValueError(emsg)
         (result,) = result
 

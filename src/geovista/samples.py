@@ -86,14 +86,12 @@ def _lfric_sample_to_mesh(sample: pantry.SampleUnstructuredXY) -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    mesh = Transform.from_unstructured(
+    return Transform.from_unstructured(
         sample.lons,
         sample.lats,
         connectivity=sample.connectivity,
         start_index=sample.start_index,
     )
-
-    return mesh
 
 
 def cloud_amount(preference: str | pantry.CloudPreference | None = None) -> pv.PolyData:
@@ -155,15 +153,13 @@ def fesom() -> pv.PolyData:
     """
     sample = pantry.fesom()
 
-    mesh = Transform.from_unstructured(
+    return Transform.from_unstructured(
         sample.lons,
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
         name=sample.name,
     )
-
-    return mesh
 
 
 def fvcom_tamar(
@@ -252,14 +248,12 @@ def icon_soil() -> pv.PolyData:
     """
     sample = pantry.icon_soil()
 
-    mesh = Transform.from_unstructured(
+    return Transform.from_unstructured(
         sample.lons,
         sample.lats,
         data=sample.data,
         name=sample.name,
     )
-
-    return mesh
 
 
 def icosahedral() -> pv.PolyData:
@@ -279,14 +273,12 @@ def icosahedral() -> pv.PolyData:
     """
     sample = pantry.icosahedral()
 
-    mesh = Transform.from_unstructured(
+    return Transform.from_unstructured(
         sample.lons,
         sample.lats,
         data=sample.data,
         name=sample.name,
     )
-
-    return mesh
 
 
 def lam_equator() -> pv.PolyData:
@@ -377,7 +369,7 @@ def lam_pacific() -> pv.PolyData:
     """
     sample = pantry.lam_pacific()
 
-    mesh = Transform.from_unstructured(
+    return Transform.from_unstructured(
         sample.lons,
         sample.lats,
         connectivity=sample.connectivity,
@@ -385,8 +377,6 @@ def lam_pacific() -> pv.PolyData:
         name=sample.name,
         start_index=sample.start_index,
     )
-
-    return mesh
 
 
 def lam_polar() -> pv.PolyData:
@@ -461,9 +451,8 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
     fname = f"lfric_{resolution}.vtk"
     processor = pooch.Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"mesh/{fname}.bz2", processor=processor)
-    mesh = pv.read(resource)
 
-    return mesh
+    return pv.read(resource)
 
 
 def lfric_orog(warp: bool | None = False, factor: float | None = None) -> pv.PolyData:
@@ -528,7 +517,7 @@ def lfric_sst() -> pv.PolyData:
     """
     sample = pantry.lfric_sst()
 
-    mesh = Transform.from_unstructured(
+    return Transform.from_unstructured(
         sample.lons,
         sample.lats,
         connectivity=sample.connectivity,
@@ -536,8 +525,6 @@ def lfric_sst() -> pv.PolyData:
         name=sample.name,
         start_index=sample.start_index,
     )
-
-    return mesh
 
 
 def regular_grid(
@@ -590,8 +577,8 @@ def regular_grid(
 
     lats = np.linspace(-90.0, 90.0, n_cells + 1)
     lons = np.linspace(-180.0, 180.0, int(n_cells * 1.5) + 1)
-    mesh = Transform.from_1d(lons, lats, radius=radius)
-    return mesh
+
+    return Transform.from_1d(lons, lats, radius=radius)
 
 
 def oisst_avhrr_sst() -> pv.PolyData:
@@ -611,14 +598,12 @@ def oisst_avhrr_sst() -> pv.PolyData:
     """
     sample = pantry.oisst_avhrr_sst()
 
-    mesh = Transform.from_1d(
+    return Transform.from_1d(
         sample.lons,
         sample.lats,
         data=sample.data,
         name=sample.name,
     )
-
-    return mesh
 
 
 def um_orca2() -> pv.PolyData:
@@ -638,11 +623,9 @@ def um_orca2() -> pv.PolyData:
     """
     sample = pantry.um_orca2()
 
-    mesh = Transform.from_2d(
+    return Transform.from_2d(
         sample.lons, sample.lats, data=sample.data, name=sample.name
     )
-
-    return mesh
 
 
 def um_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
@@ -670,7 +653,7 @@ def um_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
 
     zscale = ZLEVEL_SCALE_CLOUD if zscale is None else float(zscale)
 
-    cloud = Transform.from_points(
+    return Transform.from_points(
         sample.lons,
         sample.lats,
         data=sample.zlevel,
@@ -678,8 +661,6 @@ def um_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
         zlevel=-sample.zlevel,
         zscale=zscale,
     )
-
-    return cloud
 
 
 def ww3_global_smc(step: int | None = None) -> pv.PolyData:
@@ -705,15 +686,13 @@ def ww3_global_smc(step: int | None = None) -> pv.PolyData:
     """
     sample = pantry.ww3_global_smc(step=step)
 
-    mesh = Transform.from_unstructured(
+    return Transform.from_unstructured(
         sample.lons,
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
         name=sample.name,
     )
-
-    return mesh
 
 
 def ww3_global_tri() -> pv.PolyData:
@@ -734,12 +713,10 @@ def ww3_global_tri() -> pv.PolyData:
     """
     sample = pantry.ww3_global_tri()
 
-    mesh = Transform.from_unstructured(
+    return Transform.from_unstructured(
         sample.lons,
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
         name=sample.name,
     )
-
-    return mesh

@@ -52,7 +52,7 @@ thresholds = {
 }
 
 
-@pytest.mark.image
+@pytest.mark.image()
 @pytest.mark.parametrize("script", SCRIPTS)
 def test(script, verify_image_cache):
     """Image test the example scripts."""

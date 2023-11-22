@@ -10,7 +10,7 @@ from geovista.transform import Transformer, transform_points
 
 
 @pytest.mark.parametrize(
-    "src_crs, tgt_crs", [(None, WGS84), (WGS84, None), (None, None)]
+    ("src_crs", "tgt_crs"), [(None, WGS84), (WGS84, None), (None, None)]
 )
 def test_crs_fail(src_crs, tgt_crs):
     """Test trap of invalid source and/or target CRSs."""
@@ -21,7 +21,7 @@ def test_crs_fail(src_crs, tgt_crs):
 
 
 @pytest.mark.parametrize(
-    "xbad, ybad",
+    ("xbad", "ybad"),
     [
         (True, False),
         (False, True),
@@ -44,7 +44,7 @@ def test_xy_dimension_fail(xbad, ybad):
 
 
 @pytest.mark.parametrize(
-    "xs, ys",
+    ("xs", "ys"),
     [(np.arange(10), np.arange(20)), (np.arange(10), np.arange(20).reshape(10, 2))],
 )
 def test_xy_size_fail(xs, ys):

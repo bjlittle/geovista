@@ -7,12 +7,13 @@ Notes
 """
 from __future__ import annotations
 
+from collections.abc import Generator
 from functools import lru_cache
 
 import cartopy.io.shapereader as shp
 import numpy as np
 import pyvista as pv
-from shapely.geometry.multilinestring import MultiLineString
+from shapely import LineString, MultiLineString
 
 from .cache import fetch_coastlines
 from .common import (
@@ -32,6 +33,9 @@ __all__ = [
     "load_coastline_geometries",
     "load_coastlines",
 ]
+
+# type aliases
+Geometries = Generator[LineString | MultiLineString]
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -123,7 +127,7 @@ def load_coastline_geometries(
     fname = shp.natural_earth(resolution=resolution, category=category, name=name)
     reader = shp.Reader(fname)
 
-    def unpack(geometries):
+    def unpack(geometries: Geometries) -> None:
         for geometry in geometries:
             if isinstance(geometry, MultiLineString):
                 multi_lines.extend(list(geometry.geoms))

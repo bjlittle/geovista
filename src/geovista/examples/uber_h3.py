@@ -25,7 +25,7 @@ except ImportError:
 import numpy as np
 from numpy import ma
 from numpy.typing import ArrayLike
-from pyvista import PolyData
+from pyvista import Actor, PolyData
 
 import geovista
 from geovista.geodesic import line
@@ -98,9 +98,8 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
 
     # Create the mesh from the H3 geometry and topology.
     connectivity = ma.masked_equal(connectivity, MDI)
-    mesh = geovista.Transform.from_unstructured(lons, lats, connectivity=connectivity)
 
-    return mesh
+    return geovista.Transform.from_unstructured(lons, lats, connectivity=connectivity)
 
 
 def to_children(h3indexes: H3Indexes) -> H3Indexes:
@@ -175,9 +174,7 @@ def generate_icosahedron_surface(resolution: int | None = 0) -> GeoSurface:
         [11, 7, 9],
     ]
 
-    surface = GeoSurface(lons=lons, lats=lats, connectivity=connectivity)
-
-    return surface
+    return GeoSurface(lons=lons, lats=lats, connectivity=connectivity)
 
 
 def generate_geodesic_edges(surface: GeoSurface) -> PolyData:
@@ -208,9 +205,7 @@ def generate_geodesic_edges(surface: GeoSurface) -> PolyData:
         meshes.append(line(lons, lats))
 
     # Combine the geodesic lines into one mesh.
-    combined = meshes[0].append_polydata(*meshes[1:])
-
-    return combined
+    return meshes[0].append_polydata(*meshes[1:])
 
 
 def add_checkboxes(
@@ -218,7 +213,7 @@ def add_checkboxes(
 ) -> None:
     """Render the checkbox for each ``H3Asset``.
 
-    A checkbox is created for each actor will allows the visibility
+    A checkbox is created for each actor that allows the visibility
     of the actor to be toggled on/off within the `plotter` scene.
 
     Parameters
@@ -236,7 +231,7 @@ def add_checkboxes(
     x, y = 10, 10
     offset = size * 0.2
 
-    def callback(actor, flag):
+    def callback(actor: Actor, flag: bool) -> None:
         actor.SetVisibility(flag)
 
     for i, slot in enumerate(sorted(H3Asset.__slots__)):

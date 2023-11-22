@@ -12,15 +12,18 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
-import netCDF4 as nc
+import netCDF4 as nc  # noqa: N813
 import numpy as np
 from numpy import ma
-from numpy.typing import ArrayLike
 import pooch
 
 from .cache import CACHE
 from .common import LRU_CACHE_SIZE, _MixinStrEnum
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 
 __all__ = [
     "CLOUD_AMOUNT_PREFERENCE",
@@ -51,7 +54,7 @@ __all__ = [
 CLOUD_AMOUNT_PREFERENCE: str = "mesh"
 
 
-# TODO: use StrEnum and auto when minimum supported python version is 3.11
+# TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
 class CloudPreference(_MixinStrEnum, Enum):
     """Enumeration of mesh types for cloud amount.
 
@@ -131,9 +134,8 @@ def capitalise(title: str) -> str:
     """
     title = title.replace("_", " ")
     title = title.split(" ")
-    title = " ".join([word.capitalize() for word in title])
 
-    return title
+    return " ".join([word.capitalize() for word in title])
 
 
 def _cloud_amount_dataset(fname: str | CloudPreference) -> nc.Dataset:
@@ -157,9 +159,8 @@ def _cloud_amount_dataset(fname: str | CloudPreference) -> nc.Dataset:
     """
     processor = pooch.Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"pantry/c768/{fname}.bz2", processor=processor)
-    dataset = nc.Dataset(resource)
 
-    return dataset
+    return nc.Dataset(resource)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -220,7 +221,7 @@ def cloud_amount(
         units = data.units
         data = data[:][0]
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons,
         lats,
         connectivity[:],
@@ -229,8 +230,6 @@ def cloud_amount(
         name=name,
         units=units,
     )
-
-    return sample
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -293,11 +292,9 @@ def fesom(step: int | None = None) -> SampleUnstructuredXY:
     connectivity = ma.arange(np.prod(shape), dtype=np.uint32).reshape(shape)
     connectivity.mask = mask
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons, lats, connectivity, data=data[idx], name=name, units=units, steps=steps
     )
-
-    return sample
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -335,7 +332,7 @@ def fvcom_tamar() -> SampleUnstructuredXY:
     units = face.units
     node = dataset.variables["h"][:]
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons,
         lats,
         connectivity.T,
@@ -345,8 +342,6 @@ def fvcom_tamar() -> SampleUnstructuredXY:
         name=name,
         units=units,
     )
-
-    return sample
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -386,11 +381,9 @@ def icon_soil() -> SampleUnstructuredXY:
     name = capitalise("soil type")
     units = "1"
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons, lats, lons.shape, data=data, name=name, units=units
     )
-
-    return sample
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -423,11 +416,9 @@ def icosahedral() -> SampleUnstructuredXY:
     name = capitalise(data.long_name)
     units = data.units
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons, lats, lons.shape, data=data, name=name, units=units
     )
-
-    return sample
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -463,9 +454,7 @@ def _gungho_lam(fname: str) -> SampleUnstructuredXY:
     connectivity = dataset.variables["gungho_face_nodes"]
     start_index = connectivity.start_index
 
-    sample = SampleUnstructuredXY(lons, lats, connectivity[:], start_index=start_index)
-
-    return sample
+    return SampleUnstructuredXY(lons, lats, connectivity[:], start_index=start_index)
 
 
 def lam_equator() -> SampleUnstructuredXY:
@@ -578,7 +567,7 @@ def lam_pacific() -> SampleUnstructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons,
         lats,
         connectivity[:],
@@ -587,8 +576,6 @@ def lam_pacific() -> SampleUnstructuredXY:
         name=name,
         units=units,
     )
-
-    return sample
 
 
 def lam_polar() -> SampleUnstructuredXY:
@@ -662,7 +649,7 @@ def lfric_orog() -> SampleUnstructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons,
         lats,
         connectivity[:],
@@ -671,8 +658,6 @@ def lfric_orog() -> SampleUnstructuredXY:
         name=name,
         units=units,
     )
-
-    return sample
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -709,7 +694,7 @@ def lfric_sst() -> SampleUnstructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons,
         lats,
         connectivity[:],
@@ -718,8 +703,6 @@ def lfric_sst() -> SampleUnstructuredXY:
         name=name,
         units=units,
     )
-
-    return sample
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -752,9 +735,7 @@ def oisst_avhrr_sst() -> SampleStructuredXY:
     name = capitalise(data.long_name)
     units = data.units
 
-    sample = SampleStructuredXY(lons, lats, data=data[0, 0], name=name, units=units)
-
-    return sample
+    return SampleStructuredXY(lons, lats, data=data[0, 0], name=name, units=units)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -787,9 +768,7 @@ def um_orca2() -> SampleStructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleStructuredXY(lons, lats, data=data[0, 0], name=name, units=units)
-
-    return sample
+    return SampleStructuredXY(lons, lats, data=data[0, 0], name=name, units=units)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -821,9 +800,7 @@ def um_orca2_gradient() -> SampleStructuredXYZ:
     depth = depth[:]
     name = "Depth"
 
-    sample = SampleStructuredXYZ(lons, lats, depth, data=depth, name=name, units=units)
-
-    return sample
+    return SampleStructuredXYZ(lons, lats, depth, data=depth, name=name, units=units)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -866,9 +843,7 @@ def usgs_earthquakes() -> SampleStructuredXYZ:
     zlevel = dataset.depth.to_numpy()
     data = dataset.mag.to_numpy()
 
-    sample = SampleStructuredXYZ(lons=lons, lats=lats, zlevel=zlevel, data=data)
-
-    return sample
+    return SampleStructuredXYZ(lons=lons, lats=lats, zlevel=zlevel, data=data)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -928,11 +903,9 @@ def ww3_global_smc(step: int | None = None) -> SampleUnstructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons, lats, lons.shape, data=data[idx], name=name, units=units, steps=steps
     )
-
-    return sample
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -972,7 +945,7 @@ def ww3_global_tri() -> SampleUnstructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    sample = SampleUnstructuredXY(
+    return SampleUnstructuredXY(
         lons,
         lats,
         connectivity,
@@ -981,5 +954,3 @@ def ww3_global_tri() -> SampleUnstructuredXY:
         name=name,
         units=units,
     )
-
-    return sample

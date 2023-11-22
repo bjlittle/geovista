@@ -24,7 +24,7 @@ def test_values():
 
 
 @pytest.mark.parametrize(
-    "member, expected",
+    ("member", "expected"),
     [
         ("center", True),
         ("Center", True),

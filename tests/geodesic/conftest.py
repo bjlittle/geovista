@@ -9,7 +9,7 @@ from geovista.common import from_cartesian
 CIDS = [11520, 11567, 13776, 13823]
 
 
-@pytest.fixture
+@pytest.fixture()
 def antarctic_corners(lfric_sst):
     """Fixture generates lon/lats of cubed-sphere corner cells centers."""
     cells = lfric_sst.extract_cells(CIDS)

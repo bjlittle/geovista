@@ -8,11 +8,10 @@ Notes
 from __future__ import annotations
 
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 import numpy as np
-from numpy.typing import ArrayLike
 from pyproj import CRS, Transformer
-import pyvista as pv
 
 from .common import GV_FIELD_ZSCALE, ZLEVEL_SCALE, from_cartesian, point_cloud
 from .crs import (
@@ -23,6 +22,11 @@ from .crs import (
     set_central_meridian,
     to_wkt,
 )
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+    import pyvista as pv
+
 
 __all__ = [
     "transform_mesh",
@@ -147,9 +151,10 @@ def transform_mesh(
         if zlevel or cloud:
             xmin, xmax, ymin, ymax, _, _ = mesh.bounds
             xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
-            # TODO: make this scale factor configurable at the API/module level
-            # current strategy is slightly flawed in that there isn't consistent
-            # scaling across all geometries added to the render
+            # TODO @bjlittle: Make this scale factor configurable at the API/module
+            #                 level, as current strategy is slightly flawed in that
+            #                 there isn't consistent scaling across all geometries
+            #                 added to the render scene.
             delta = max(xdelta, ydelta) // 4
 
             if cloud:
@@ -160,7 +165,7 @@ def transform_mesh(
 
         mesh.points[:, 2] = zs
 
-        # TODO: check whether to clean other field_data metadata
+        # TODO @bjlittle: Check whether to clean other field_data metadata.
         to_wkt(mesh, original_tgt_crs)
 
     return mesh
@@ -169,9 +174,9 @@ def transform_mesh(
 def transform_point(
     src_crs: CRSLike,
     tgt_crs: CRSLike,
-    x: int | float,
-    y: int | float,
-    z: int | float | None = None,
+    x: float,
+    y: float,
+    z: float | None = None,
     trap: bool | None = True,
 ) -> ArrayLike:
     """Transform the spatial point from the source to the target CRS.

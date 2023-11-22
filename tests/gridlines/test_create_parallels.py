@@ -63,7 +63,7 @@ def test_core(n_samples, zlevel, poles_label):
     blocks_parallels = deindex(result.blocks.keys())
     assert blocks_parallels == parallels
     # check the parallel meshes (blocks)
-    for key in result.blocks.keys():
+    for key in result.blocks.keys():  # noqa: SIM118
         mesh = result.blocks[key]
         assert mesh.n_points == n_samples
         assert mesh.n_cells == n_samples
@@ -135,7 +135,7 @@ def test_poles_parallel():
     blocks_parallels = deindex(result.blocks.keys())
     assert blocks_parallels == parallels
     # check the parallel meshes (blocks)
-    for key in result.blocks.keys():
+    for key in result.blocks.keys():  # noqa: SIM118
         mesh = result.blocks[key]
         assert mesh.n_points == LATITUDE_N_SAMPLES
         assert mesh.n_cells == LATITUDE_N_SAMPLES

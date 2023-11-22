@@ -11,11 +11,11 @@ Notes
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 import warnings
 
 import numpy as np
 from numpy import ma
-from numpy.typing import ArrayLike
 from pyproj import CRS
 import pyvista as pv
 
@@ -31,6 +31,9 @@ from .common import (
 )
 from .crs import WGS84, CRSLike, to_wkt
 from .transform import transform_points
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 
 __all__ = ["Transform"]
 
@@ -217,9 +220,7 @@ class Transform:
         nodes_c2 = np.ravel(idxs[:-1, 1:]).reshape(-1, 1)
         nodes_c3 = np.ravel(idxs[:-1, :-1]).reshape(-1, 1)
 
-        connectivity = np.hstack([nodes_c0, nodes_c1, nodes_c2, nodes_c3])
-
-        return connectivity
+        return np.hstack([nodes_c0, nodes_c1, nodes_c2, nodes_c3])
 
     @staticmethod
     def _create_connectivity_mn4(shape: Shape) -> np.ndarray:
@@ -258,9 +259,8 @@ class Transform:
 
         # we know that we can only be dealing with a quad mesh
         npts = np.prod(shape) * 4
-        connectivity = np.arange(npts, dtype=np.uint32).reshape(-1, 4)
 
-        return connectivity
+        return np.arange(npts, dtype=np.uint32).reshape(-1, 4)
 
     @staticmethod
     def _verify_2d(xs: ArrayLike, ys: ArrayLike) -> None:

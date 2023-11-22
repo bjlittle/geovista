@@ -183,8 +183,8 @@ def fetch_coastlines(resolution: str | None = None) -> pv.PolyData:
     fname = f"ne_coastlines_{resolution}.vtk"
     processor = pooch.Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"natural_earth/physical/{fname}.bz2", processor=processor)
-    mesh = pv.read(resource)
-    return mesh
+
+    return pv.read(resource)
 
 
 def natural_earth_1(location: bool | None = False) -> TextureLike:

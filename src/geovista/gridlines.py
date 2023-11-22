@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
-from numpy.typing import ArrayLike
 import pyvista as pv
 
 from .common import (
@@ -24,6 +24,9 @@ from .common import (
     wrap,
 )
 from .crs import WGS84, to_wkt
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 
 __all__ = [
     "GRATICULE_CLOSED_INTERVAL",
@@ -163,17 +166,17 @@ def create_meridian_labels(lons: list[float]) -> list[str]:
         lons = [lons]
 
     for lon in lons:
-        # explicit truncation, perhaps offer format control when required
-        lon = int(lon)
+        # TODO @bjlittle: Explicit truncation is performed, perhaps offer format
+        #                 control when required.
+        value = int(lon)
         direction = LABEL_EAST
 
-        if lon == 0 or np.isclose(np.abs(lon), 180):
+        if value == 0 or np.isclose(np.abs(value), 180):
             direction = LABEL_DEGREE
-        elif lon < 0:
+        elif value < 0:
             direction = LABEL_WEST
 
-        value = np.abs(lon)
-        result.append(f"{value}{direction}")
+        result.append(f"{np.abs(value)}{direction}")
 
     return result
 
@@ -313,7 +316,7 @@ def create_meridians(
             mesh.point_data[GV_REMESH_POINT_IDS] = seam
             mesh.set_active_scalars(name=None)
 
-        blocks[f"{index},{str(lon)}"] = mesh
+        blocks[f"{index},{lon!r}"] = mesh
 
     grid_points, grid_labels = [], []
     labels = create_meridian_labels(list(lons))
@@ -331,11 +334,9 @@ def create_meridians(
     if mask is not None:
         mask = np.tile(mask, grid_lats.size)
 
-    graticule = GraticuleGrid(
+    return GraticuleGrid(
         blocks=blocks, lonlat=grid_points, labels=grid_labels, mask=mask
     )
-
-    return graticule
 
 
 def create_parallel_labels(
@@ -372,19 +373,18 @@ def create_parallel_labels(
 
     for lat in lats:
         # explicit truncation, perhaps offer format control when required
-        lat = int(lat)
+        value = int(lat)
         direction = LABEL_NORTH
 
-        if lat == 0:
+        if value == 0:
             direction = LABEL_DEGREE
-        elif lat < 0:
+        elif value < 0:
             direction = LABEL_SOUTH
 
-        if not poles_parallel and np.isclose(np.abs(lat), 90):
+        if not poles_parallel and np.isclose(np.abs(value), 90):
             continue
 
-        value = np.abs(lat)
-        result.append(f"{value}{direction}")
+        result.append(f"{np.abs(value)}{direction}")
 
     return result
 
@@ -509,7 +509,7 @@ def create_parallels(
 
         mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
         to_wkt(mesh, WGS84)
-        blocks[f"{index},{str(lat)}"] = mesh
+        blocks[f"{index},{lat!r}"] = mesh
         grid_lats.append(lat)
 
     grid_points, grid_labels = [], []
@@ -539,6 +539,5 @@ def create_parallels(
             grid_labels.extend(pole_labels)
 
     grid_points = np.vstack(grid_points)
-    graticule = GraticuleGrid(blocks=blocks, lonlat=grid_points, labels=grid_labels)
 
-    return graticule
+    return GraticuleGrid(blocks=blocks, lonlat=grid_points, labels=grid_labels)

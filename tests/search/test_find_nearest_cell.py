@@ -23,8 +23,8 @@ def test_cell_centers(lam_uk):
 @pytest.mark.xfail(reason="requires projection support")
 def test_cell_centers__lam_rotated_pole():
     """Test requires projection support before implementing."""
-    # TODO: complete this test case
-    raise AssertionError()
+    # TODO @bjlittle: Complete this test case.
+    raise AssertionError
 
 
 def test_poi(lam_uk, poi):

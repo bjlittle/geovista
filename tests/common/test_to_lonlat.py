@@ -8,7 +8,7 @@ from geovista.common import to_lonlat
 
 
 @pytest.mark.parametrize(
-    "point, emsg",
+    ("point", "emsg"),
     [
         (0, r"Require a 1-D array .* got a 0-D array"),
         ([0], r"Require a 1-D array .* got a 1-D array with shape \(1,\)"),

@@ -12,7 +12,7 @@ import matplotlib as mpl
 
 import geovista as gv
 from geovista.pantry import icon_soil
-import geovista.theme  # noqa: F401
+import geovista.theme
 
 
 def main() -> None:

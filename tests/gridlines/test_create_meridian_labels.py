@@ -18,18 +18,18 @@ def test_empty():
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    ("value", "expected"),
     [
-        [-180, f"180{LABEL_DEGREE}"],
-        [[-180], f"180{LABEL_DEGREE}"],
-        [-90, f"90{LABEL_WEST}"],
-        [[-90], f"90{LABEL_WEST}"],
-        [0, f"0{LABEL_DEGREE}"],
-        [[0], f"0{LABEL_DEGREE}"],
-        [90, f"90{LABEL_EAST}"],
-        [[90], f"90{LABEL_EAST}"],
-        [180, f"180{LABEL_DEGREE}"],
-        [[180], f"180{LABEL_DEGREE}"],
+        (-180, f"180{LABEL_DEGREE}"),
+        ([-180], f"180{LABEL_DEGREE}"),
+        (-90, f"90{LABEL_WEST}"),
+        ([-90], f"90{LABEL_WEST}"),
+        (0, f"0{LABEL_DEGREE}"),
+        ([0], f"0{LABEL_DEGREE}"),
+        (90, f"90{LABEL_EAST}"),
+        ([90], f"90{LABEL_EAST}"),
+        (180, f"180{LABEL_DEGREE}"),
+        ([180], f"180{LABEL_DEGREE}"),
     ],
 )
 def test(value, expected):
@@ -39,13 +39,13 @@ def test(value, expected):
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    ("value", "expected"),
     [
-        [-180.1, f"180{LABEL_DEGREE}"],
-        [-90.12, f"90{LABEL_WEST}"],
-        [0.123, f"0{LABEL_DEGREE}"],
-        [90.1234, f"90{LABEL_EAST}"],
-        [180.12345, f"180{LABEL_DEGREE}"],
+        (-180.1, f"180{LABEL_DEGREE}"),
+        (-90.12, f"90{LABEL_WEST}"),
+        (0.123, f"0{LABEL_DEGREE}"),
+        (90.1234, f"90{LABEL_EAST}"),
+        (180.12345, f"180{LABEL_DEGREE}"),
     ],
 )
 def test_truncation(value, expected):

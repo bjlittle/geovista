@@ -18,18 +18,18 @@ def test_empty():
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    ("value", "expected"),
     [
-        [-90, f"90{LABEL_SOUTH}"],
-        [[-90], f"90{LABEL_SOUTH}"],
-        [-45, f"45{LABEL_SOUTH}"],
-        [[-45], f"45{LABEL_SOUTH}"],
-        [0, f"0{LABEL_DEGREE}"],
-        [[0], f"0{LABEL_DEGREE}"],
-        [45, f"45{LABEL_NORTH}"],
-        [[45], f"45{LABEL_NORTH}"],
-        [90, f"90{LABEL_NORTH}"],
-        [[90], f"90{LABEL_NORTH}"],
+        (-90, f"90{LABEL_SOUTH}"),
+        ([-90], f"90{LABEL_SOUTH}"),
+        (-45, f"45{LABEL_SOUTH}"),
+        ([-45], f"45{LABEL_SOUTH}"),
+        (0, f"0{LABEL_DEGREE}"),
+        ([0], f"0{LABEL_DEGREE}"),
+        (45, f"45{LABEL_NORTH}"),
+        ([45], f"45{LABEL_NORTH}"),
+        (90, f"90{LABEL_NORTH}"),
+        ([90], f"90{LABEL_NORTH}"),
     ],
 )
 def test(value, expected):
@@ -39,13 +39,13 @@ def test(value, expected):
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    ("value", "expected"),
     [
-        [-90, None],
-        [-45, f"45{LABEL_SOUTH}"],
-        [0, f"0{LABEL_DEGREE}"],
-        [45, f"45{LABEL_NORTH}"],
-        [90, None],
+        (-90, None),
+        (-45, f"45{LABEL_SOUTH}"),
+        (0, f"0{LABEL_DEGREE}"),
+        (45, f"45{LABEL_NORTH}"),
+        (90, None),
     ],
 )
 def test_default_poles_parallel(value, expected):
@@ -56,13 +56,13 @@ def test_default_poles_parallel(value, expected):
 
 
 @pytest.mark.parametrize(
-    "value, expected",
+    ("value", "expected"),
     [
-        [-90.1, f"90{LABEL_SOUTH}"],
-        [-45.12, f"45{LABEL_SOUTH}"],
-        [0.123, f"0{LABEL_DEGREE}"],
-        [45.1234, f"45{LABEL_NORTH}"],
-        [90.12345, f"90{LABEL_NORTH}"],
+        (-90.1, f"90{LABEL_SOUTH}"),
+        (-45.12, f"45{LABEL_SOUTH}"),
+        (0.123, f"0{LABEL_DEGREE}"),
+        (45.1234, f"45{LABEL_NORTH}"),
+        (90.12345, f"90{LABEL_NORTH}"),
     ],
 )
 def test_truncation(value, expected):
