@@ -11,24 +11,20 @@ from geovista.gridlines import _step_period as step_period
 def expected(value: float, period: float) -> tuple[float, float]:
     """Calculate expected value within period."""
     count = abs(value) // period
-    if value >= 0:
-        result = value - (count * period)
-    else:
-        result = value + (count * period)
 
-    return result
+    return value - (count * period) if value >= 0 else value + (count * period)
 
 
 @pytest.mark.parametrize(
-    "lon, lat",
+    ("lon", "lat"),
     [
-        [0, 0],
-        [LONGITUDE_STEP_PERIOD // 2, LATITUDE_STEP_PERIOD // 2],
-        [LONGITUDE_STEP_PERIOD, LATITUDE_STEP_PERIOD],
-        [LONGITUDE_STEP_PERIOD * 1.5, LATITUDE_STEP_PERIOD * 1.5],
-        [-LONGITUDE_STEP_PERIOD // 2, -LATITUDE_STEP_PERIOD // 2],
-        [-LONGITUDE_STEP_PERIOD, -LATITUDE_STEP_PERIOD],
-        [-LONGITUDE_STEP_PERIOD * 1.5, -LATITUDE_STEP_PERIOD * 1.5],
+        (0, 0),
+        (LONGITUDE_STEP_PERIOD // 2, LATITUDE_STEP_PERIOD // 2),
+        (LONGITUDE_STEP_PERIOD, LATITUDE_STEP_PERIOD),
+        (LONGITUDE_STEP_PERIOD * 1.5, LATITUDE_STEP_PERIOD * 1.5),
+        (-LONGITUDE_STEP_PERIOD // 2, -LATITUDE_STEP_PERIOD // 2),
+        (-LONGITUDE_STEP_PERIOD, -LATITUDE_STEP_PERIOD),
+        (-LONGITUDE_STEP_PERIOD * 1.5, -LATITUDE_STEP_PERIOD * 1.5),
     ],
 )
 def test(lon, lat):

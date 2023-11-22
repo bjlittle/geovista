@@ -265,7 +265,7 @@ def download(
         previous_path = CACHE.path
         CACHE.path = output
 
-    def collect(prefix):
+    def collect(prefix: str) -> list[str]:
         return list(filter(lambda item: item.startswith(prefix), fnames))
 
     if pull:
@@ -380,7 +380,7 @@ def download(
     is_flag=True,
     help="Enable example diagnostics.",
 )
-def examples(run_all, show, run, verbose):
+def examples(run_all: bool, show: bool, run: bool, verbose: bool) -> None:
     """Execute a geovista example script."""
     # account for the initial "all" option
     n_scripts = len(SCRIPTS) - 1
@@ -436,7 +436,7 @@ def examples(run_all, show, run, verbose):
     is_flag=True,
     help="Add a base layer",
 )
-def plot(fname, axes, base) -> None:
+def plot(fname: str, axes: bool, base: bool) -> None:
     """Load and render a VTK mesh."""
     mesh = pv.read(fname)
     plotter = GeoPlotter()

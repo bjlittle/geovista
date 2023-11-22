@@ -10,15 +10,17 @@ from __future__ import annotations
 from collections.abc import Iterable
 from enum import Enum
 import sys
-from typing import Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy import ma
-from numpy.typing import ArrayLike
 import pyvista as pv
 from pyvista import _vtk
 from pyvista.core.filters import _get_output
 from vtk import vtkLogger, vtkObject
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 
 __all__ = [
     "BASE",
@@ -60,9 +62,7 @@ __all__ = [
     "wrap",
 ]
 
-#
-# TODO: support richer default management
-#
+# TODO @bjlittle: support richer default management
 
 #: Default base for wrapped longitude half-open interval, in degrees.
 BASE: float = -180.0
@@ -214,11 +214,11 @@ class _MixinStrEnum:
         .. versionadded:: 0.3.0
 
         """
-        # TODO: remove when minimum supported python version is 3.11
+        # TODO @bjlittle: Remove when minimum supported python version is 3.11.
         return f"{self.name.lower()}"
 
 
-# TODO: use StrEnum and auto when minimum supported python version is 3.11
+# TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
 class Preference(_MixinStrEnum, Enum):
     """Enumeration of common mesh geometry preferences.
 
@@ -257,7 +257,7 @@ def active_kernel() -> bool:
     return result
 
 
-def cast_UnstructuredGrid_to_PolyData(
+def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
     mesh: pv.UnstructuredGrid,
     clean: bool | None = False,
 ) -> pv.PolyData:
@@ -405,22 +405,27 @@ def from_cartesian(
 
     zlevel = np.zeros_like(lons)
 
-    if cloud:
-        if GV_FIELD_RADIUS in mesh.field_data and GV_FIELD_ZSCALE in mesh.field_data:
-            # field data injected by geovista.bridge.Transform.from_points
-            base = mesh[GV_FIELD_RADIUS][0]
-            zscale = mesh[GV_FIELD_ZSCALE][0]
-            zlevel = (radius - base) / (base * zscale)
+    if (
+        cloud
+        and GV_FIELD_RADIUS in mesh.field_data
+        and GV_FIELD_ZSCALE in mesh.field_data
+    ):
+        # field data injected by geovista.bridge.Transform.from_points
+        base = mesh[GV_FIELD_RADIUS][0]
+        zscale = mesh[GV_FIELD_ZSCALE][0]
+        zlevel = (radius - base) / (base * zscale)
 
     data = [lons, lats, zlevel]
 
-    # XXX: manage pole longitudes. an alternative future scheme could be more
-    # generic and inclusive, but this approach tackles the main use case for now
-    # TODO: refactor this into a separate function
+    # TODO @bjlittle: Manage pole longitudes. an alternative future scheme could be
+    #                 more generic and inclusive, but this approach tackles the main
+    #                 use case for now.
+
+    # TODO @bjlittle: Refactor this into a separate function.
     pole_pids = np.where(np.isclose(np.abs(lats), 90))[0]
     if pole_pids.size:
         # enforce a common longitude for pole singularities
-        # TODO: review this strategy
+        # TODO @bjlittle: Review this strategy.
         lons[pole_pids] = 0
 
         if (
@@ -437,7 +442,7 @@ def from_cartesian(
             pole_cids = np.unique(pole_submesh["vtkOriginalCellIds"])
             for cid in pole_cids:
                 # get the pids (point-indices) of the polar cell points
-                # XXX: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
+                # NOTE: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
                 cell_pids = np.array(mesh.get_cell(cid).point_ids)
                 # unfold polar quad-cells
                 if len(cell_pids) == 4:
@@ -478,7 +483,7 @@ def from_cartesian(
             seam_mask = np.isclose(np.abs(seam_lons), 180)
             lons[seam_ids[seam_mask]] = 180
         elif mesh.n_lines:
-            # TODO: unify closed interval strategies for lines and cells
+            # TODO @bjlittle: Unify closed interval strategies for lines and cells.
             poi_mask = np.isclose(np.abs(lons), 180)
 
             if np.any(poi_mask):
@@ -498,9 +503,7 @@ def from_cartesian(
 
                     lons[pids] = 180
 
-    result = np.vstack(data).T if stacked else np.array(data)
-
-    return result
+    return np.vstack(data).T if stacked else np.array(data)
 
 
 def nan_mask(data: ArrayLike) -> np.ndarray:
@@ -555,7 +558,7 @@ def point_cloud(mesh: pv.PolyData) -> bool:
 
 
 def sanitize_data(
-    *meshes: Any,
+    *meshes: Iterable[pv.PolyData],
 ) -> None:
     """Purge standard VTK helper cell and point data index arrays.
 
@@ -691,9 +694,8 @@ def to_cartesian(
     y = np.ravel(radius * np.sin(y_rad) * np.sin(x_rad))
     z = np.ravel(radius * np.cos(y_rad))
     xyz = [x, y, z]
-    xyz = np.vstack(xyz).T if stacked else np.array(xyz)
 
-    return xyz
+    return np.vstack(xyz).T if stacked else np.array(xyz)
 
 
 def to_lonlat(
@@ -817,8 +819,8 @@ def to_lonlats(
     lons = wrap(lons, base=base, period=period, rtol=rtol, atol=atol)
 
     z_radius = points[:, 2] / radius
-    # XXX: defensive clobber of values outside arcsin domain [-1, 1]
-    # which is the result of floating point inaccuracies at the extremes
+    # NOTE: defensive clobber of values outside arcsin domain [-1, 1]
+    #       which is the result of floating point inaccuracies at the extremes
     if indices := np.where(z_radius > 1):
         z_radius[indices] = 1.0
     if indices := np.where(z_radius < -1):
@@ -828,9 +830,8 @@ def to_lonlats(
         lats = np.degrees(lats)
 
     data = [lons, lats]
-    result = np.vstack(data).T if stacked else np.array(data)
 
-    return result
+    return np.vstack(data).T if stacked else np.array(data)
 
 
 def triangulated(surface: pv.PolyData) -> bool:

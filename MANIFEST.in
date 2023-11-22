@@ -11,6 +11,7 @@ include .gitattributes
 exclude .gitignore
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
+exclude .ruff.toml
 include *.md
 include CITATION.cff
 exclude codecov.yml

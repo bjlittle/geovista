@@ -14,17 +14,17 @@ from geovista.samples import lfric as sample_lfric
 from geovista.samples import lfric_sst as sample_lfric_sst
 
 
-@pytest.fixture
+@pytest.fixture()
 def coastlines(request):
     """Fixture generates a coastlines line mesh."""
     # support indirect parameters for fixtures and also
     # calling the fixture with no parameter
     resolution = request.param if hasattr(request, "param") else "110m"
-    mesh = geometry_coastlines(resolution=resolution)
-    return mesh
+
+    return geometry_coastlines(resolution=resolution)
 
 
-@pytest.fixture
+@pytest.fixture()
 def lam_uk():
     """Fixture generates a Local Area Model mesh with indexed faces and points."""
     mesh = sample_lam_uk()
@@ -37,8 +37,8 @@ def lam_uk():
 def lam_uk_cloud(lam_uk_sample):
     """Fixture generates a Local Area Model point-could for the UK."""
     lons, lats = lam_uk_sample
-    cloud = Transform.from_points(lons, lats)
-    return cloud
+
+    return Transform.from_points(lons, lats)
 
 
 @pytest.fixture(scope="session")
@@ -48,14 +48,14 @@ def lam_uk_sample():
     return sample.lons[:], sample.lats[:]
 
 
-@pytest.fixture
+@pytest.fixture()
 def lfric(request):
     """Fixture to provide a cube-sphere mesh."""
     # support indirect parameters for fixtures and also
     # calling the fixture with no parameter
     resolution = request.param if hasattr(request, "param") else "c48"
-    mesh = sample_lfric(resolution=resolution)
-    return mesh
+
+    return sample_lfric(resolution=resolution)
 
 
 @pytest.fixture(scope="session")
@@ -75,7 +75,7 @@ def sphere():
     return pv.Sphere()
 
 
-@pytest.fixture
+@pytest.fixture()
 def wgs84_wkt():
     """Fixture for generating WG284 CRS WKT as a string."""
     return WGS84.to_wkt()

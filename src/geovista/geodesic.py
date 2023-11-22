@@ -9,10 +9,10 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from enum import Enum
+from typing import TYPE_CHECKING
 import warnings
 
 import numpy as np
-from numpy.typing import ArrayLike
 import pyproj
 import pyvista as pv
 
@@ -27,6 +27,9 @@ from .common import (
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import WGS84, to_wkt
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 
 __all__ = [
     "BBox",
@@ -97,7 +100,7 @@ N_PANELS: int = len(PANEL_IDX_BY_NAME)
 PREFERENCE: str = "center"
 
 
-# TODO: use StrEnum and auto when minimum supported python version is 3.11
+# TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
 class Preference(_MixinStrEnum, Enum):
     """Enumeration of geodesic mesh geometry preferences.
 
@@ -207,18 +210,19 @@ class BBox:
         # cache prior surface radius, as an optimisation
         self._surface_radius = None
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: BBox) -> bool:
         result = NotImplemented
         if isinstance(other, BBox):
             result = False
             lhs = (self.ellps, self.c, self.triangulate)
             rhs = (other.ellps, other.c, other.triangulate)
-            if all(x[0] == x[1] for x in zip(lhs, rhs, strict=True)):
-                if np.allclose(self.lons, other.lons):
-                    result = np.allclose(self.lats, other.lats)
+            if all(x[0] == x[1] for x in zip(lhs, rhs, strict=True)) and np.allclose(
+                self.lons, other.lons
+            ):
+                result = np.allclose(self.lats, other.lats)
         return result
 
-    def __ne__(self, other) -> bool:
+    def __ne__(self, other: BBox) -> bool:
         result = self == other
         if result is not NotImplemented:
             result = not result
@@ -229,11 +233,11 @@ class BBox:
             f"ellps={self.ellps}, c={self.c}, n_points={self.mesh.n_points}, "
             f"n_cells={self.mesh.n_cells}"
         )
-        result = f"{__package__}.{self.__class__.__name__}<{params}>"
-        return result
+
+        return f"{__package__}.{self.__class__.__name__}<{params}>"
 
     @property
-    def mesh(self):
+    def mesh(self) -> pv.PolyData:
         """The bounding-box :class:`pyvista.PolyData` mesh."""
         if self._mesh is None:
             self._generate_bbox_mesh()
@@ -277,7 +281,7 @@ class BBox:
         .. versionadded:: 0.1.0
 
         """
-        edge = np.concatenate(
+        return np.concatenate(
             [
                 self._idx_map[0],
                 self._idx_map[1:, -1],
@@ -285,7 +289,6 @@ class BBox:
                 self._idx_map[-2:0:-1, 0],
             ]
         )
-        return edge
 
     def _generate_bbox_face(self) -> None:
         """Construct 2-D geodetic bounding-box surface defined by corners.
@@ -313,7 +316,9 @@ class BBox:
             self._bbox_lats.extend(lats)
             self._bbox_count += len(lons)
 
-        def bbox_update(idx1, idx2, row=None, column=None) -> None:
+        def bbox_update(
+            idx1: int, idx2: int, row: int | None = None, column: int | None = None
+        ) -> None:
             assert row is not None or column is not None
             if row is None:
                 row = slice(None)
@@ -453,9 +458,7 @@ class BBox:
         faces_c3 = faces_c2 + self._n_points
         faces_c4 = np.roll(faces_c3, 1)
 
-        faces = np.hstack([faces_n, faces_c1, faces_c2, faces_c3, faces_c4])
-
-        return faces
+        return np.hstack([faces_n, faces_c1, faces_c2, faces_c3, faces_c4])
 
     def boundary(
         self, surface: pv.PolyData | None = None, radius: float | None = None
@@ -577,9 +580,7 @@ class BBox:
                 selected[scalars].view(bool), adjacent_cells=False
             )
 
-        region = cast(region)
-
-        return region
+        return cast(region)
 
 
 def line(
@@ -664,12 +665,11 @@ def line(
     lons, lats = np.asanyarray(lons), np.asanyarray(lats)
 
     # check whether to auto-repeat lons or lats
-    if lons.size == 1 or lats.size == 1:
-        if lons.size + lats.size > 2:
-            if lons.size == 1:
-                lons = np.repeat(lons[0], lats.size)
-            else:
-                lats = np.repeat(lats[0], lons.size)
+    if (lons.size == 1 or lats.size == 1) and (lons.size + lats.size > 2):
+        if lons.size == 1:
+            lons = np.repeat(lons[0], lats.size)
+        else:
+            lats = np.repeat(lats[0], lons.size)
 
     n_lons, n_lats = lons.size, lats.size
 
@@ -690,13 +690,12 @@ def line(
     lons = wrap(lons)
 
     # check for minimal loop corner case
-    if np.isclose(lons[0], lons[-1]) and np.isclose(lats[0], lats[-1]):
-        if n_lons == 2:
-            emsg = (
-                "Require a closed line (loop) geometry containing at least 3 "
-                f"longitude/latitude values, got '{n_lons}'."
-            )
-            raise ValueError(emsg)
+    if np.isclose(lons[0], lons[-1]) and np.isclose(lats[0], lats[-1]) and n_lons == 2:
+        emsg = (
+            "Require a closed line (loop) geometry containing at least 3 "
+            f"longitude/latitude values, got '{n_lons}'."
+        )
+        raise ValueError(emsg)
 
     line_lons, line_lats = [], []
     geod = pyproj.Geod(ellps=ellps)
@@ -866,7 +865,7 @@ def npoints_by_idx(
     start_lonlat = lons[start_idx], lats[start_idx]
     end_lonlat = lons[end_idx], lats[end_idx]
 
-    result = npoints(
+    return npoints(
         *start_lonlat,
         *end_lonlat,
         npts=npts,
@@ -875,8 +874,6 @@ def npoints_by_idx(
         include_end=include_end,
         geod=geod,
     )
-
-    return result
 
 
 def panel(

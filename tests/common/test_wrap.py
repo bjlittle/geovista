@@ -101,12 +101,11 @@ def test_base0__dtype(base0, dtype):
 
 
 @pytest.mark.parametrize(
-    "delta, expected", [(1.0e-4, True), (1.0e-3, True), (2.0e-3, False)]
+    ("delta", "expected"), [(1.0e-4, True), (1.0e-3, True), (2.0e-3, False)]
 )
 def test_base_period_tolerance(delta, expected):
     """Test the relative and absolute tolerance of the base + period value."""
     result = wrap(180 - delta)
-    print(result, np.isclose(result, -180))
     assert np.isclose(result, -180)[0] == expected
 
 

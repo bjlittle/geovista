@@ -115,17 +115,38 @@ target-version = "py310"
 
 [tool.ruff.lint]
 ignore = [
-    "D105",  # pydocstyle: undocumented-magic-method
+    # NOTE: Non-permanent exclusions should be added to ".ruff.toml".
+
+    # flake8-annotations (ANN)
+    "ANN101",  # Missing type annotation for 'self' in method.
+    "ANN102",  # Missing type annotation for 'cls' in classmethod.
+
+    # flake8-commas (COM)
+    "COM812",  # Trailing comma missing.
+    "COM819",  # Trailing comma prohibited.
+
+    # pydocstyle (D)
+    "D105",  # Missing docstring in magic method.
+
+    # flake8-fixme (FIX)
+    "FIX002",  # Line contains TODO, consider resolving the issue.
+
+    # pep8-naming
+    "N806",  # Variable name in function should be lowercase.
+    "N999",  # Invalid module name.
+
+    # pandas-vet (PD)
+    "PD",
+
+    # Ruff-specific rules (RUF)
+    "RUF005",  # Consider {expression} instead of concatenation.
+
+    # flake8-bandit (S)
+    "S101",  # Use of assert detected.
 ]
+preview = false
 select = [
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "I",   # isort
-    "E",   # pycodestyle
-    "W",
-    "D",   # pydocstyle
-    "F",   # pyflakes
-    "UP",  # pyupgrade
+    "ALL",
 ]
 
 
@@ -136,13 +157,22 @@ required-imports = ["from __future__ import annotations"]
 
 
 [tool.ruff.lint.mccabe]
-max-complexity = 22
+max-complexity = 26
 
 
 [tool.ruff.lint.per-file-ignores]
-"src/geovista/examples/earthquakes.py" = ["E501"]
-"src/geovista/examples/earthquakes_wink1.py" = ["E501"]
-"src/geovista/report.py" = ["E722"]
+"src/geovista/cli.py" = [
+    "T201",  # flake8-print: print found.
+]
+"src/geovista/examples/*.py" = [
+    "TCH002",  # flake8-type-checking: Move 3rd-party import into a type checking block.
+]
+"src/geovista/examples/earthquakes.py" = [
+    "E501",  # pycodestyle: Line too long.
+]
+"src/geovista/examples/earthquakes_wink1.py" = [
+    "E501",  # pycodestyle: Line too long.
+]
 
 
 [tool.ruff.lint.pydocstyle]

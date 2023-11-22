@@ -13,7 +13,7 @@ from pyproj import CRS
 import geovista as gv
 from geovista.common import cast_UnstructuredGrid_to_PolyData as cast
 from geovista.pantry import um_orca2
-import geovista.theme  # noqa: F401
+import geovista.theme
 from geovista.transform import transform_mesh
 
 

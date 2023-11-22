@@ -1,9 +1,13 @@
 """Unit-tests for :func:`geovista.common.sanitize_data`."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
-import pyvista as pv
+
+if TYPE_CHECKING:
+    import pyvista as pv
 
 from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS, sanitize_data
 

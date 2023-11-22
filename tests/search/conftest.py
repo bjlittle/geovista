@@ -1,14 +1,42 @@
 """pytest fixture infra-structure for :mod:`geovista.search` unit-tests."""
 from __future__ import annotations
 
-from collections import namedtuple
+from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 
-Center = namedtuple("Center", ["cid", "pids"])
-Neighbour = namedtuple("Neighbour", ["cid", "expected"])
-POI = namedtuple("POI", ["name", "lon", "lat", "cid"])
-Vertex = namedtuple("Vertex", ["pid", "cids"])
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+
+class Center(NamedTuple):
+    """Define cell and associated vertices."""
+
+    cid: int
+    pids: Iterable[int]
+
+
+class Neighbour(NamedTuple):
+    """Define cell and associated neighbouring cells."""
+
+    cid: int
+    expected: Iterable[int]
+
+
+class POI(NamedTuple):
+    """Define cell and named geolocated point-of-interest."""
+
+    name: str
+    lon: float
+    lat: float
+    cid: int
+
+
+class Vertex(NamedTuple):
+    """Define vertex and parent cell/s."""
+
+    pid: int
+    cids: Iterable[int]
 
 
 @pytest.fixture(

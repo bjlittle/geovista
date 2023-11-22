@@ -7,11 +7,15 @@ Notes
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 from pyproj import CRS
-import pyvista as pv
 
 from .common import GV_FIELD_CRS
+
+if TYPE_CHECKING:
+    import pyvista as pv
 
 __all__ = [
     "CRSLike",
@@ -184,12 +188,13 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
     result = None
     crs_json = crs.to_json_dict()
     found = False
-    if conversion := crs_json.get("conversion"):
-        if parameters := conversion.get("parameters"):
-            for param in parameters:
-                if found := param["id"]["code"] == int(EPSG_CENTRAL_MERIDIAN):
-                    param["value"] = meridian
-                    break
+    if (conversion := crs_json.get("conversion")) and (
+        parameters := conversion.get("parameters")
+    ):
+        for param in parameters:
+            if found := param["id"]["code"] == int(EPSG_CENTRAL_MERIDIAN):
+                param["value"] = meridian
+                break
     if found:
         result = CRS.from_json_dict(crs_json)
 

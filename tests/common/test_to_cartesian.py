@@ -15,8 +15,8 @@ def _distance(pts: npt.ArrayLike, stacked: bool = True) -> float:
     if not stacked:
         pts = np.transpose(pts)
     nrow, ncol = pts.shape
-    result = np.sqrt(np.sum(pts.T @ pts * np.identity(ncol)) / nrow)
-    return result
+
+    return np.sqrt(np.sum(pts.T @ pts * np.identity(ncol)) / nrow)
 
 
 def test_shape_fail():
@@ -61,7 +61,7 @@ def test_zlevel__scalar(lam_uk_sample, zlevel):
 
 
 @pytest.mark.parametrize(
-    "xy_reshape, z_reshape", [((-1,), (-1, 1)), ((1, 5, 5), (-1, 1, 1))]
+    ("xy_reshape", "z_reshape"), [((-1,), (-1, 1)), ((1, 5, 5), (-1, 1, 1))]
 )
 @pytest.mark.parametrize("n_levels", range(3, 11))
 def test_zlevel__broadcast(lam_uk_sample, xy_reshape, z_reshape, n_levels):

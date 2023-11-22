@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.pantry import um_orca2
-import geovista.theme  # noqa: F401
+import geovista.theme
 
 
 def main() -> None:

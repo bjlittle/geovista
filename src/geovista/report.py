@@ -117,8 +117,8 @@ class Report(scooby.Report):
         if gpu:
             try:
                 extra_meta = pyvista.GPUInfo().get_info()
-            except:
-                # XXX: bare except required in order to handle rendering faults
+            except:  # noqa: E722
+                # bare except required in order to handle rendering faults
                 extra_meta = [
                     ("GPU Details", "Error"),
                 ]

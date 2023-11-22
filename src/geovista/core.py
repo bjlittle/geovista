@@ -9,11 +9,10 @@ from __future__ import annotations
 
 import copy
 from enum import Enum, auto, unique
-from typing import Any
+from typing import TYPE_CHECKING
 import warnings
 
 import numpy as np
-from numpy.typing import ArrayLike
 import pyvista as pv
 
 from .common import (
@@ -38,6 +37,11 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import projected
 from .filters import remesh
 from .search import find_cell_neighbours
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from numpy.typing import ArrayLike
 
 __all__ = [
     "MeridianSlice",
@@ -176,9 +180,8 @@ class MeridianSlice:
         # the higher the number of spline interpolation "n_points"
         # the more accurate, but the more compute intensive and less performant
         spline = pv.Spline(xyz.points, n_points=n_points)
-        mesh = self.mesh.slice_along_line(spline)
 
-        return mesh
+        return self.mesh.slice_along_line(spline)
 
     def extract(
         self,
@@ -311,7 +314,7 @@ def add_texture_coords(
 
 
 def combine(
-    *meshes: Any,
+    *meshes: Iterable[pv.PolyData],
     data: bool | None = True,
     clean: bool | None = False,
 ) -> pv.PolyData:
@@ -421,7 +424,7 @@ def combine(
     faces = np.hstack(combined_faces)
     combined = pv.PolyData(points, faces=faces, n_faces=n_faces)
 
-    def combine_data(names, field=False):
+    def combine_data(names: set[str], field: bool | None = False) -> None:
         for name in names:
             if field:
                 combined.field_data[name] = first[name]
@@ -634,8 +637,9 @@ def slice_cells(
         if GV_REMESH_POINT_IDS not in result.point_data:
             result.point_data[GV_REMESH_POINT_IDS] = result[GV_POINT_IDS].copy()
 
-        # XXX: defensive removal of cells that span the meridian and should
-        # have been remeshed, but haven't due to their geometry ?
+        # TODO @bjlittle: Investigate defensive removal of cells that span the meridian
+        #                 and should have been remeshed, but haven't due to their
+        #                 geometry ?
         cids = set(find_cell_neighbours(result, remeshed[GV_CELL_IDS]))
         cids = cids.difference(set(remeshed_ids))
         if cids:
@@ -644,7 +648,7 @@ def slice_cells(
             neighbours.points = xy0
             xdelta = []
             for cid in range(neighbours.n_cells):
-                # XXX: pyvista 0.38.0: cell_points(cid) -> get_cell(cid).points
+                # NOTE: pyvista 0.38.0: cell_points(cid) -> get_cell(cid).points
                 cxpts = neighbours.get_cell(cid).points[:, 0]
                 cxmin, cxmax = cxpts.min(), cxpts.max()
                 xdelta.append(cxmax - cxmin)
@@ -664,7 +668,7 @@ def slice_cells(
     if meshes:
         result.remove_cells(np.unique(remeshed_ids), inplace=True)
         # reinstate field data purged by remove_cells
-        for field in mesh.field_data.keys():
+        for field in mesh.field_data:
             result.field_data[field] = copy.deepcopy(mesh.field_data[field])
         result = combine(result, *meshes)
 
@@ -801,18 +805,18 @@ def slice_lines(
         # points and M cells i.e.,
         #        cid                    cid                       cid(new)
         # pid(0) --- pid(1)  =>  pid(0) --- pid(new0) & pid(new1) -------- pid(1)
-        #                             [step1]                     [step2]
+        #                             <step1>                     <step2>
         # where, pid(new0) and pid(new1) are distinct pids but reference identical, but
         # not the same cartesian xyz point
         #
-        # [step1]
+        # <step1>
         n_points = points.shape[0]
         split_points = np.vstack(split_xyz)
         points = np.vstack([points, split_points])  # append M points
         new_pids = np.arange(n_points, points.shape[0])
         split_lines = lines[split_cids]
         lines[split_cids, 2] = new_pids  # inplace M cells
-        # [step2]
+        # <step2>
         n_points = points.shape[0]
         points = np.vstack([points, split_points])  # append M points
         new_pids = np.arange(n_points, points.shape[0])
@@ -824,7 +828,7 @@ def slice_lines(
         # points i.e.,
         #        cid0        cid1                    cid0                   cid1
         # pid(0) ---- pid(1) ---- pid(2)  =>  pid(0) ---- pid(new) & pid(1) ---- pid(2)
-        #                                                                   [nop]
+        #                                                                   <nop>
         # where, pid(new) and pid(1) are distinct pids but reference identical, but not
         # the same cartesian xyz point
         #
@@ -842,7 +846,7 @@ def slice_lines(
         lines[detach_cids, 1:] = line_pids  # inplace M cells
 
     if mesh.field_data.keys():
-        for key in mesh.field_data.keys():
+        for key in mesh.field_data:
             result.field_data[key] = mesh.field_data[key].copy()
 
     # TDB: given mesh.points, perform linear interpolation for new intersection points
@@ -892,10 +896,9 @@ def slice_mesh(
         emsg = "Cannot slice a mesh that has been projected."
         raise ValueError(emsg)
 
-    result = (
-        slice_lines(mesh, copy=True)
-        if mesh.n_lines
-        else slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
-    )
+    if mesh.n_lines:
+        result = slice_lines(mesh, copy=True)
+    else:
+        result = slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
 
     return result

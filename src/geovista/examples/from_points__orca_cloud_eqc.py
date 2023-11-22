@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Importable and runnable geovista example.
 
 Notes
@@ -10,7 +11,7 @@ from __future__ import annotations
 import geovista as gv
 from geovista.pantry import um_orca2_gradient
 from geovista.samples import ZLEVEL_SCALE_CLOUD
-import geovista.theme  # noqa: F401
+import geovista.theme
 
 
 def main() -> None:

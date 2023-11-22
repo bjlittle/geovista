@@ -10,13 +10,12 @@ Notes
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from warnings import warn
 
-import numpy.typing as npt
 from pyproj import CRS
 import pyvista as pv
-import pyvista.core.utilities.helpers as helpers
+from pyvista.core.utilities import helpers
 
 from .bridge import Transform
 from .common import (
@@ -53,6 +52,9 @@ from .gridlines import (
 from .raster import wrap_texture
 from .samples import LFRIC_RESOLUTION, REGULAR_RESOLUTION, lfric, regular_grid
 from .transform import transform_mesh
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 __all__ = ["GeoPlotter"]
 
@@ -335,15 +337,12 @@ class GeoPlotterBase:
         if mesh is not None:
             if radius is not None:
                 mesh = resize(mesh, radius=radius)
+        elif resolution.startswith("r"):
+            mesh = regular_grid(resolution=resolution, radius=radius)
         else:
-            if resolution.startswith("r"):
-                mesh = regular_grid(resolution=resolution, radius=radius)
-            else:
-                mesh = _lfric_mesh(resolution=resolution, radius=radius)
+            mesh = _lfric_mesh(resolution=resolution, radius=radius)
 
-        actor = self.add_mesh(mesh, **kwargs)
-
-        return actor
+        return self.add_mesh(mesh, **kwargs)
 
     def add_coastlines(
         self,
@@ -411,9 +410,7 @@ class GeoPlotterBase:
         if atol is not None:
             kwargs["atol"] = atol
 
-        actor = self.add_mesh(mesh, **kwargs)
-
-        return actor
+        return self.add_mesh(mesh, **kwargs)
 
     def add_graticule(
         self,
@@ -618,12 +615,11 @@ class GeoPlotterBase:
                     inplace=not cloud,
                 )
                 to_wkt(mesh, self.crs)
-            else:
-                if not projected(mesh) and zlevel:
-                    if not cloud:
-                        radius = distance(mesh)
+            elif not projected(mesh) and zlevel:
+                if not cloud:
+                    radius = distance(mesh)
 
-                    mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
+                mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
 
         def _check(option: str) -> bool:
             return option in kwargs and kwargs[option] is not None
@@ -943,7 +939,7 @@ class GeoPlotterBase:
         if point_labels_args is None:
             point_labels_args = {}
 
-        # TODO: fix behaviour of longitudes at poles
+        # TODO @bjlittle: Fix behaviour of longitudes at poles.
         poles_parallel = False
 
         parallels = create_parallels(

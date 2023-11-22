@@ -64,7 +64,7 @@ def test_core(n_samples, zlevel, step):
     blocks_meridians = deindex(result.blocks.keys())
     assert blocks_meridians == meridians
     # check the meridian meshes (blocks)
-    for key in result.blocks.keys():
+    for key in result.blocks.keys():  # noqa: SIM118
         mesh = result.blocks[key]
         assert mesh.n_points == n_samples
         assert mesh.n_cells == (n_lines := n_samples - 1)
@@ -129,7 +129,7 @@ def test_closed_interval():
     idxs = np.where(np.array(blocks_meridians) == boundary)[0]
     assert idxs.size == 2
     remesh_found = 0
-    for key in result.blocks.keys():
+    for key in result.blocks.keys():  # noqa: SIM118
         mesh = result.blocks[key]
         if deindex(key) == boundary:
             if GV_REMESH_POINT_IDS in mesh.point_data:

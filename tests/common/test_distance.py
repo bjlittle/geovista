@@ -24,7 +24,11 @@ def test_mean_distance(lfric, scale):
 
 
 @pytest.mark.parametrize(
-    "origin", [np.random.randint(0, high=10, size=3).astype(float) for _ in range(10)]
+    "origin",
+    [
+        np.random.default_rng().integers(0, high=10, size=3).astype(float)
+        for _ in range(10)
+    ],
 )
 def test_mean_distance__origin(lfric, origin):
     """Test mean distance with mesh translated to random origin."""
@@ -44,7 +48,11 @@ def test_point_distance(lfric, scale):
 
 
 @pytest.mark.parametrize(
-    "origin", [np.random.randint(0, high=10, size=3).astype(float) for _ in range(10)]
+    "origin",
+    [
+        np.random.default_rng().integers(0, high=10, size=3).astype(float)
+        for _ in range(10)
+    ],
 )
 def test_point_distance__origin(lfric, origin):
     """Test point distance with mesh translated to random origin."""

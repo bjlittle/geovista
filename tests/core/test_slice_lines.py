@@ -22,8 +22,8 @@ class Kind:
     detach: int = 0
 
 
-# TODO: add further examples of geovista projected meshes,
-#      this requires "transform_mesh" API support
+# TODO @bjlittle: Add further examples of geovista projected meshes, this requires
+#                 "transform_mesh" API support.
 @pytest.mark.parametrize("mesh", [pv.Plane()])
 def test_projected_fail(mesh):
     """Test trap of a mesh that is projected."""
@@ -114,16 +114,16 @@ def antimeridian_count(mesh: pv.PolyData) -> int:
 
 
 @pytest.mark.parametrize(
-    "lonlat, pids, kind",
+    ("lonlat", "pids", "kind"),
     [
-        [np.array([[179, 0], [181, 0]]), np.array([[0, 1]]), Kind(split=1, detach=0)],
-        [
+        (np.array([[179, 0], [181, 0]]), np.array([[0, 1]]), Kind(split=1, detach=0)),
+        (
             np.array([[179, 0], [180, 0], [181, 0]]),
             np.array([[0, 1], [1, 2]]),
             Kind(split=0, detach=1),
-        ],
-        [np.array([[179, 0], [180, 0]]), np.array([[0, 1]]), Kind(split=0, detach=0)],
-        [np.array([[180, 0], [181, 0]]), np.array([[0, 1]]), Kind(split=0, detach=1)],
+        ),
+        (np.array([[179, 0], [180, 0]]), np.array([[0, 1]]), Kind(split=0, detach=0)),
+        (np.array([[180, 0], [181, 0]]), np.array([[0, 1]]), Kind(split=0, detach=1)),
     ],
 )
 def test_slice_lines(lonlat, pids, kind):
@@ -170,6 +170,6 @@ def test_field_data(coastlines):
     metadata = dict(coastlines.field_data.items())
     result = slice_lines(coastlines)
     assert set(result.field_data.keys()) == set(metadata.keys())
-    for key in metadata.keys():
+    for key in metadata:
         assert id(result.field_data[key]) != id(metadata[key])
         np.testing.assert_array_equal(result.field_data[key], metadata[key])
