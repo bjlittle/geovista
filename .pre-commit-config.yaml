@@ -38,10 +38,11 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.1.6"
     hooks:
-      # Linter
       - id: ruff
         types: [file, python]
         args: [--fix, --show-fixes]
+      - id: ruff-format
+        types: [file, python]
 
   - repo: https://github.com/codespell-project/codespell
     rev: "v2.2.6"
@@ -49,13 +50,6 @@ repos:
     - id: codespell
       types_or: [python, markdown, rst]
       additional_dependencies: [tomli]
-
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: "23.11.0"
-    hooks:
-      - id: black
-        types: [file, python]
-        args: [--config=./pyproject.toml]
 
   - repo: https://github.com/adamchainz/blacken-docs
     rev: "1.16.0"
