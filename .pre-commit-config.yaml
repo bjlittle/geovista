@@ -93,3 +93,15 @@ repos:
       - id: check-dependabot
       - id: check-github-workflows
       - id: check-readthedocs
+
+  - repo: https://github.com/scientific-python/cookie
+    rev: 2023.11.17
+    hooks:
+      - id: sp-repo-review
+        additional_dependencies: ["repo-review[cli]"]
+        args: ["--ignore=MY100,PC140,PC180", "--show=errskip"]
+        # MyPy (MY)
+        # - MY100: Uses MyPy (pyproject config).
+        # Pre-commit (PC)
+        # - PC140: Uses mypy.
+        # - PC180: Uses prettier.
