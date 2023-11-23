@@ -1,3 +1,8 @@
+# Copyright (c) 2021, GeoVista Contributors.
+#
+# This file is part of GeoVista and is distributed under the 3-Clause BSD license.
+# See the LICENSE file in the package root directory for licensing details.
+
 """Download, cache and load geovista sample data.
 
 The sample data can then be used by the :mod:`geovista.bridge` to generate a mesh.
