@@ -59,12 +59,6 @@ Issues = "https://github.com/bjlittle/geovista/issues"
 geovista = "geovista.cli:main"
 
 
-[tool.black]
-line-length = 88
-target-version = ["py310", "py311", "py312"]
-include = '\.pyi?$'
-
-
 [tool.check-manifest]
 ignore = [
     "src/geovista/_version.py",
@@ -113,6 +107,10 @@ src = ["src", "tests"]
 target-version = "py310"
 
 
+[tool.ruff.format]
+preview = false
+
+
 [tool.ruff.lint]
 ignore = [
     # NOTE: Non-permanent exclusions should be added to ".ruff.toml".
@@ -130,6 +128,9 @@ ignore = [
 
     # flake8-fixme (FIX)
     "FIX002",  # Line contains TODO, consider resolving the issue.
+
+    # flake8-implicit-str-concat (ISC)
+    "ISC001",  # Implicitly concatenate string literals on one line.
 
     # pep8-naming
     "N806",  # Variable name in function should be lowercase.
