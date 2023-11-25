@@ -53,3 +53,8 @@ jobs:
         if: startsWith(github.event.pull_request.head.ref, 'perf') || startsWith(github.event.pull_request.head.ref, 'performance')
         with:
           labels: 'type: performance'
+
+      - uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'pre-commit-ci-update-config') || startsWith(github.event.pull_request.head.ref, 'conda-lock-auto-update')
+        with:
+          labels: 'skip changelog'
