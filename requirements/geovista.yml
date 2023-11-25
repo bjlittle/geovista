@@ -49,3 +49,4 @@ dependencies:
   - pydata-sphinx-theme
   - sphinx
   - sphinx-copybutton
+  - sphinx-gallery
