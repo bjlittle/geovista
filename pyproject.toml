@@ -101,9 +101,15 @@ xfail_strict = "True"
 
 
 [tool.ruff]
-extend-exclude = ["docs"]
+extend-exclude = [
+    "docs/src/generated",
+]
 line-length = 88
-src = ["src", "tests"]
+src = [
+    "src",
+    "tests",
+    "docs/src",
+]
 target-version = "py310"
 
 
@@ -132,6 +138,11 @@ ignore = [
     # flake8-fixme (FIX)
     # https://docs.astral.sh/ruff/rules/line-contains-todo/
     "FIX002",  # Line contains TODO, consider resolving the issue.
+
+    # flake8-implicit-str-concat (ISC)
+    # https://docs.astral.sh/ruff/rules/single-line-implicit-string-concatenation/
+    # NOTE: This rule may cause conflicts when used with "ruff format".
+    "ISC001",  # Implicitly concatenate string literals on one line.
 
     # pep8-naming
     # https://docs.astral.sh/ruff/rules/#pep8-naming-n
