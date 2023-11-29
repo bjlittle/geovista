@@ -116,33 +116,38 @@ ignore = [
     # NOTE: Non-permanent exclusions should be added to ".ruff.toml".
 
     # flake8-annotations (ANN)
+    # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
     "ANN101",  # Missing type annotation for 'self' in method.
     "ANN102",  # Missing type annotation for 'cls' in classmethod.
 
     # flake8-commas (COM)
+    # https://docs.astral.sh/ruff/rules/#flake8-commas-com
     "COM812",  # Trailing comma missing.
     "COM819",  # Trailing comma prohibited.
 
     # pydocstyle (D)
+    # https://docs.astral.sh/ruff/rules/undocumented-magic-method/
     "D105",  # Missing docstring in magic method.
 
     # flake8-fixme (FIX)
+    # https://docs.astral.sh/ruff/rules/line-contains-todo/
     "FIX002",  # Line contains TODO, consider resolving the issue.
 
-    # flake8-implicit-str-concat (ISC)
-    "ISC001",  # Implicitly concatenate string literals on one line.
-
     # pep8-naming
+    # https://docs.astral.sh/ruff/rules/#pep8-naming-n
     "N806",  # Variable name in function should be lowercase.
     "N999",  # Invalid module name.
 
     # pandas-vet (PD)
+    # https://docs.astral.sh/ruff/rules/#pandas-vet-pd
     "PD",
 
     # Ruff-specific rules (RUF)
+    # https://docs.astral.sh/ruff/rules/collection-literal-concatenation/
     "RUF005",  # Consider {expression} instead of concatenation.
 
     # flake8-bandit (S)
+    # https://docs.astral.sh/ruff/rules/assert/
     "S101",  # Use of assert detected.
 ]
 preview = false
@@ -163,15 +168,19 @@ max-complexity = 26
 
 [tool.ruff.lint.per-file-ignores]
 "src/geovista/cli.py" = [
+    # https://docs.astral.sh/ruff/rules/print/
     "T201",  # flake8-print: print found.
 ]
 "src/geovista/examples/*.py" = [
+    # https://docs.astral.sh/ruff/rules/typing-only-third-party-import/
     "TCH002",  # flake8-type-checking: Move 3rd-party import into a type checking block.
 ]
 "src/geovista/examples/earthquakes.py" = [
+    # https://docs.astral.sh/ruff/rules/line-too-long/
     "E501",  # pycodestyle: Line too long.
 ]
 "src/geovista/examples/earthquakes_wink1.py" = [
+    # https://docs.astral.sh/ruff/rules/line-too-long/
     "E501",  # pycodestyle: Line too long.
 ]
 
