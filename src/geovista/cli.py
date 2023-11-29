@@ -14,17 +14,16 @@ from __future__ import annotations
 
 import importlib
 import pathlib
-import pkgutil
 from shutil import rmtree
 
 import click
 from click_default_group import DefaultGroup
 import pyvista as pv
 
-from . import examples as scripts
 from . import logger
 from ._version import version as __version__
 from .cache import CACHE, GEOVISTA_POOCH_MUTE, pooch_mute
+from .common import get_modules
 from .config import resources
 from .geoplotter import GeoPlotter
 from .report import Report
@@ -41,9 +40,7 @@ NE_CHOICES.extend(NE_GROUPS)
 
 FG_COLOUR: str = "cyan"
 
-SCRIPTS: list[str] = [ALL] + [
-    submodule.name for submodule in pkgutil.iter_modules(scripts.__path__)
-]
+EXAMPLES: list[str] = [ALL] + get_modules("geovista.examples")
 
 
 def _download_group(
@@ -375,7 +372,7 @@ def download(
 @click.option(
     "-r",
     "--run",
-    type=click.Choice(SCRIPTS, case_sensitive=False),
+    type=click.Choice(EXAMPLES, case_sensitive=False),
     is_flag=False,
     help="Execute the example.",
 )
@@ -388,13 +385,13 @@ def download(
 def examples(run_all: bool, show: bool, run: bool, verbose: bool) -> None:
     """Execute a geovista example script."""
     # account for the initial "all" option
-    n_scripts = len(SCRIPTS) - 1
+    n_examples = len(EXAMPLES) - 1
 
     if show:
         click.echo("Names of available examples:")
-        width = len(str(n_scripts))
-        for i, script in enumerate(SCRIPTS[1:]):
-            click.echo(f"[{i + 1:0{width}d}/{n_scripts}] ", nl=False)
+        width = len(str(n_examples))
+        for i, script in enumerate(EXAMPLES[1:]):
+            click.echo(f"[{i + 1:0{width}d}/{n_examples}] ", nl=False)
             click.secho(f"{script}", fg="green")
         click.echo("\n👍 All done!")
         return
@@ -405,8 +402,8 @@ def examples(run_all: bool, show: bool, run: bool, verbose: bool) -> None:
         logger.setLevel("INFO")
 
     if run_all:
-        for i, script in enumerate(SCRIPTS[1:]):
-            msg = f"Running example {script!r} ({i+1} of {n_scripts}) ..."
+        for i, script in enumerate(EXAMPLES[1:]):
+            msg = f"Running example {script!r} ({i+1} of {n_examples}) ..."
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")
             if verbose:

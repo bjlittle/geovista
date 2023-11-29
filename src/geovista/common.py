@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from enum import Enum
+import importlib
+import pkgutil
 import sys
 from typing import TYPE_CHECKING
 
@@ -54,6 +56,7 @@ __all__ = [
     "cast_UnstructuredGrid_to_PolyData",
     "distance",
     "from_cartesian",
+    "get_modules",
     "nan_mask",
     "point_cloud",
     "sanitize_data",
@@ -509,6 +512,48 @@ def from_cartesian(
                     lons[pids] = 180
 
     return np.vstack(data).T if stacked else np.array(data)
+
+
+def get_modules(root: str, base: bool | None = True) -> list[str]:
+    """Find all submodule names relative to the `root` package.
+
+    Recursively searches down from the `root` to find all child (leaf) modules.
+
+    The names of the modules will be relative to the `root`.
+
+    Parameters
+    ----------
+    root : str
+        The name (dot notation) of the top level package to search under.
+        e.g., ``geovista.examples``.
+    base : bool, optional
+        Flag the top level `root` package, which will then remove the `root` prefix
+        from all packages found and sort them alphabetically.
+
+    Returns
+    -------
+    list of str
+        The sorted list of child module names, relative to the `root`.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
+    modules, pkgs = [], []
+
+    for info in pkgutil.iter_modules(importlib.import_module(root).__path__):
+        name = f"{root}.{info.name}"
+        container = pkgs if info.ispkg else modules
+        container.append(name)
+
+    for pkg in pkgs:
+        modules.extend(get_modules(pkg, base=False))
+
+    if base:
+        modules = sorted([name.split(f"{root}.")[1] for name in modules])
+
+    return modules
 
 
 def nan_mask(data: ArrayLike) -> np.ndarray:
