@@ -9,7 +9,6 @@ from __future__ import annotations
 import importlib
 import os
 from pathlib import Path
-import pkgutil
 import shutil
 
 import pytest
@@ -17,16 +16,14 @@ import pyvista as pv
 
 import geovista as gv
 from geovista.cache import CACHE
-import geovista.examples
+from geovista.common import get_modules
 
 # determine whether executing on a GHA runner
 # https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
 CI: bool = os.environ.get("CI", "false").lower() == "true"
 
-# construct list of example script names
-SCRIPTS = sorted(
-    [submodule.name for submodule in pkgutil.iter_modules(gv.examples.__path__)]
-)
+# construct list of example module names relative to "geovista.examples"
+EXAMPLES = get_modules("geovista.examples")
 
 # prepare geovista/pyvista for off-screen image testing
 pv.global_theme.load_theme(pv.plotting.themes._TestingTheme())
@@ -49,7 +46,7 @@ if not cache_dir.exists():
     # create the symbolic link to the pooch cache
     cache_dir.symlink_to(base_dir)
 
-# individual GHA CI test case exceptions to the default image tolerances
+# individual GHA CI example test case exceptions to the default image tolerances
 thresholds = {
     "from_points__orca_cloud": {"warning_value": 202.0},
     "from_points__orca_cloud_eqc": {"warning_value": 250.0},
@@ -58,21 +55,23 @@ thresholds = {
 
 
 @pytest.mark.image()
-@pytest.mark.parametrize("script", SCRIPTS)
-def test(script, verify_image_cache):
+@pytest.mark.parametrize("example", EXAMPLES)
+def test(example, verify_image_cache):
     """Image test the example scripts."""
     # apply individual test case image tolerance exceptions only when
     # executing within a remote GHA runner environment
-    if CI and script in thresholds:
-        for attr, value in thresholds[script].items():
+    if CI and example in thresholds:
+        for attr, value in thresholds[example].items():
             setattr(verify_image_cache, attr, value)
 
-    verify_image_cache.test_name = f"test_{script}"
-    # import the example script
-    module = importlib.import_module(f"geovista.examples.{script}")
-    # if necessary, download and cache missing script base image (expected) to
+    # replace dot notation with double underscores
+    safe = example.replace(".", "__")
+    verify_image_cache.test_name = f"test_{safe}"
+    # import the example module
+    module = importlib.import_module(f"geovista.examples.{example}")
+    # if necessary, download and cache missing example base image (expected) to
     # compare with the actual test image generated via pytest-pyvista plugin
     if verify_image_cache.add_missing_images is False:
-        _ = CACHE.fetch(f"tests/images/{script}.png")
-    # execute the example script for image testing
+        _ = CACHE.fetch(f"tests/images/{safe}.png")
+    # execute the example module for image testing
     module.main()
