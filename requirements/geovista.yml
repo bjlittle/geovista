@@ -50,3 +50,11 @@ dependencies:
   - sphinx
   - sphinx-copybutton
   - sphinx-gallery
+  - ipywidgets
+  - jupyter-server-proxy
+  - nest-asyncio
+  - trame
+  - trame-client
+  - trame-server
+  - trame-vtk
+  - trame-vuetify

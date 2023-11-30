@@ -3,3 +3,11 @@ sphinx-copybutton
 sphinx-gallery
 jupyter-sphinx
 pydata-sphinx-theme
+ipywidgets
+jupyter-server-proxy
+nest_asyncio
+trame
+trame-client
+trame-server
+trame-vtk
+trame-vuetify
