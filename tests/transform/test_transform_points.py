@@ -92,7 +92,7 @@ def test_transform(mocker, zoffset, reshape, roundtrip):
             zs = zs.reshape(shape)
     else:
         shape = (size,)
-    shape = shape + (3,)
+    shape = (*shape, 3)
     spy_from_crs = mocker.spy(Transformer, "from_crs")
     spy_transform = mocker.spy(Transformer, "transform")
     if roundtrip:

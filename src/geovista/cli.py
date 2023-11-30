@@ -40,7 +40,7 @@ NE_CHOICES.extend(NE_GROUPS)
 
 FG_COLOUR: str = "cyan"
 
-EXAMPLES: list[str] = [ALL] + get_modules("geovista.examples")
+EXAMPLES: list[str] = [ALL, *get_modules("geovista.examples")]
 
 
 def _download_group(
