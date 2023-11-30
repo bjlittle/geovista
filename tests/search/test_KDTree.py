@@ -103,7 +103,7 @@ def test_cell_neighbours(lam_uk, neighbours):
     kdtree = KDTree(lam_uk, preference="center")
     lonlat = from_cartesian(pv.PolyData(kdtree.points))
     cid = neighbours.cid
-    expected = [cid] + neighbours.expected
+    expected = [cid, *neighbours.expected]
     k = len(expected)
     lon, lat = lonlat[cid][0], lonlat[cid][1]
     _, idx = kdtree.query(lon, lat, k=k)

@@ -337,9 +337,11 @@ class BBox:
                 npts=self._npts,
                 geod=self._geod,
             )
-            self._idx_map[row, column] = (
-                [idx1] + list(np.arange(self._npts) + self._bbox_count) + [idx2]
-            )
+            self._idx_map[row, column] = [
+                idx1,
+                *(np.arange(self._npts) + self._bbox_count),
+                idx2,
+            ]
             bbox_extend(glons, glats)
 
         # register bbox edge indices, and points

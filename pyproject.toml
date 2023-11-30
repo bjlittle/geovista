@@ -142,10 +142,6 @@ ignore = [
     # https://docs.astral.sh/ruff/rules/#pandas-vet-pd
     "PD",
 
-    # Ruff-specific rules (RUF)
-    # https://docs.astral.sh/ruff/rules/collection-literal-concatenation/
-    "RUF005",  # Consider {expression} instead of concatenation.
-
     # flake8-bandit (S)
     # https://docs.astral.sh/ruff/rules/assert/
     "S101",  # Use of assert detected.
