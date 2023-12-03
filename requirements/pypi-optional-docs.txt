@@ -1,4 +1,5 @@
 sphinx
+sphinx_design
 sphinx-copybutton
 sphinx-gallery
 jupyter-sphinx
