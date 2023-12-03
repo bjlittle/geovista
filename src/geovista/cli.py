@@ -407,7 +407,7 @@ def examples(run_all: bool, show: bool, run: bool, verbose: bool) -> None:
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")
             if verbose:
-                print(module.main.__doc__)
+                print(module.__doc__)
             module.main()
         click.echo("\n👍 All done!")
         return
@@ -416,7 +416,7 @@ def examples(run_all: bool, show: bool, run: bool, verbose: bool) -> None:
     click.secho(msg, fg="green")
     module = importlib.import_module(f"geovista.examples.{run}")
     if verbose:
-        print(module.main.__doc__)
+        print(module.__doc__)
     module.main()
     click.echo("\n👍 All done!")
 

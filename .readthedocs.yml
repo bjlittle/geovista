@@ -11,6 +11,8 @@ build:
     post_checkout:
       - git fetch --unshallow
       - git fetch --all
+    post_install:
+      - geovista download --all
 
 conda:
   environment: requirements/geovista.yml

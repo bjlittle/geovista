@@ -3,11 +3,17 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-# Configuration file for the Sphinx documentation builder.
-#
-# This file only contains a selection of the most common options. For a full
-# list see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""Configuration file for the Sphinx documentation builder.
+
+This file only contains a selection of the most common options. For a full
+list see the documentation:
+https://www.sphinx-doc.org/en/master/usage/configuration.html
+
+Notes
+-----
+.. versionadded:: 0.1.0
+
+"""
 
 # -- Path setup --------------------------------------------------------------
 
@@ -15,14 +21,18 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+# import sys                                # noqa: ERA001
+# sys.path.insert(0, os.path.abspath('.'))  # noqa: ERA001
+from __future__ import annotations
 
 import datetime
 from importlib.metadata import version as get_version
 import os
+from pathlib import Path
 
 import pyvista
+from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
+from sphinx_gallery.sorting import ExampleTitleSortKey
 
 # -- General configuration ---------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#general-configuration
@@ -31,10 +41,13 @@ import pyvista
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "jupyter_sphinx",
+    #    "jupyter_sphinx",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
     "sphinx_copybutton",
+    "sphinx_gallery.gen_gallery",
+    "pyvista.ext.viewer_directive",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -50,14 +63,19 @@ exclude_patterns = []
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
 
 project = "GeoVista"
-copyright_years = f"2021 - {datetime.datetime.now().year}"
-copyright = f"{copyright_years}, {project} Contributors"
+copyright_years = f"2021 - {datetime.datetime.now(datetime.UTC).year}"
+copyright = f"{copyright_years}, {project} Contributors"  # noqa: A001
 author = f"{project} Contributors"
+on_rtd = os.environ.get("READTHEDOCS")
 
 # The full version, including alpha/beta/rc tags
 release = get_version("geovista")
 if release.endswith("+dirty"):
     release = release[: -len("+dirty")]
+
+# src base directory
+base_dir = Path(__file__).absolute().parent
+
 
 # The name of the Pygments (syntax highlighting) style to use.
 # https://pygments.org/styles/
@@ -105,7 +123,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_sidebars = {"**": ["sidebar-ethical-ads.html"]}
+html_sidebars = {"**": ["sidebar-nav-bs", "sidebar-ethical-ads.html"]}
 
 
 # -- Options for the linkcheck builder ---------------------------------------
@@ -113,6 +131,16 @@ html_sidebars = {"**": ["sidebar-ethical-ads.html"]}
 
 linkcheck_ignore = []
 linkcheck_retries = 3
+
+
+# -- Configuration: intersphinx ----------------------------------------------
+intersphinx_mapping = {
+    "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "python": ("https://docs.python.org/3/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
+}
 
 
 # -- Configuration: copybutton -----------------------------------------------
@@ -142,8 +170,10 @@ extlinks = {
 
 # Manage errors
 pyvista.set_error_output_file("errors.txt")
-# Ensure that offscreen rendering is used for docs generation
-pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
+
+# Ensure that off-screen rendering is used for docs generation
+pyvista.OFF_SCREEN = True
+
 # Preferred plotting style for documentation
 pyvista.set_plot_theme("document")
 pyvista.global_theme.window_size = [1024, 768]
@@ -151,8 +181,37 @@ pyvista.global_theme.font.size = 22
 pyvista.global_theme.font.label_size = 22
 pyvista.global_theme.font.title_size = 22
 pyvista.global_theme.return_cpos = False
-pyvista.set_jupyter_backend(None)
+pyvista.BUILDING_GALLERY = True
+os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
+
 # Save figures in specified directory
-pyvista.FIGURE_PATH = os.path.join(os.path.abspath("./images"), "auto-generated")
-if not os.path.exists(pyvista.FIGURE_PATH):
-    os.makedirs(pyvista.FIGURE_PATH)
+images_dir = base_dir / "generated" / "images"
+pyvista.FIGURE_PATH = str(images_dir)
+if not images_dir.exists():
+    images_dir.mkdir(parents=True, exist_ok=True)
+
+# We also need to start this on CI services and GitHub Actions has a CI env var
+if on_rtd or os.environ.get("CI"):
+    pyvista.start_xvfb()
+    scraper = DynamicScraper()
+else:
+    scraper = "pyvista"
+
+
+# -- Configuration: sphinx gallery -------------------------------------------
+sphinx_gallery_conf = {
+    "filename_pattern": "/.*",
+    "ignore_pattern": (
+        "(__init__)|(clouds)|(earthquakes)|(from_1d)|(from_2d)"
+        "|(from_unstructured)|(uber)"
+    ),
+    "examples_dirs": "../../src/geovista/examples",
+    "gallery_dirs": "generated/gallery",
+    "matplotlib_animations": True,
+    "plot_gallery": True,
+    "doc_module": ("geovista"),
+    "image_scrapers": (scraper, "matplotlib"),
+    "download_all_examples": False,
+    "remove_config_comments": True,
+    "within_subsection_order": ExampleTitleSortKey,
+}
