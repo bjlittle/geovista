@@ -10,7 +10,15 @@
    </h4>
    <br>
 
-We're just bootstrapping ``geovista`` and its documentation, so please be patient 👍
+.. card:: Gallery
+   :text-align: center
+   :link: gallery
+   :link-type: ref
+   :img-top: _static/images/icons/gallery.svg
+   :width: 25%
+   :margin: 0 5 auto auto
+
+We're just starting to populate the documentation, so the content will evolve over time ...
 
 .. toctree::
    :maxdepth: 1

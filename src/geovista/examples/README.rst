@@ -1,4 +1,6 @@
+.. _gallery:
+
 Gallery
 =======
 
-GeoVista example gallery.
+An interactive gallery of the ``geovista.examples``.
