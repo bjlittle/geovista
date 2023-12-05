@@ -10,12 +10,12 @@
    </h4>
    <br>
 
-.. card:: Gallery
+.. card:: Examples Gallery
    :text-align: center
-   :link: gallery
+   :link: examples_gallery
    :link-type: ref
    :img-top: _static/images/icons/gallery.svg
-   :width: 25%
+   :width: 50%
    :margin: 0 5 auto auto
 
 We're just starting to populate the documentation, so the content will evolve over time ...
