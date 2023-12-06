@@ -1,6 +1,6 @@
-.. _gallery:
+.. _examples_gallery:
 
-Gallery
-=======
+Examples Gallery
+================
 
 An interactive gallery of the ``geovista.examples``.
