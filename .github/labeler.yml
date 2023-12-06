@@ -1,15 +1,27 @@
 'type: dependencies':
-  - requirements/geovista.yml
-  - requirements/pypi*.txt
-  - requirements/locks/py*.txt
+- any:
+  - changed-files:
+    - any-glob-to-any-file: 'requirements/geovista.yml'
+    - any-glob-to-any-file: 'requirements/pypi*.txt'
+    - any-glob-to-any-file: 'requirements/locks/py*.txt'
 'type: documentation':
-  - docs/**/*
+- any:
+  - changed-files:
+    - any-glob-to-any-file: 'docs/**/*'
 'type: examples':
-  - src/geovista/examples/**/*
+- any:
+  - changed-files:
+    - any-glob-to-any-file: 'src/geovista/examples/**/*'
 'type: gha':
-  - .github/*.yml
-  - .github/**/*.yml
+- any:
+  - changed-files:
+    - any-glob-to-any-file: '.github/*.yml'
+    - any-glob-to-any-file: '.github/**/*.yml'
 'type: infrastructure':
-  - '*'
+- any:
+  - changed-files:
+    - any-glob-to-any-file: '*'
 'type: testing':
-  - tests/**/*
+- any:
+  - changed-files:
+    - any-glob-to-any-file: 'tests/**/*'
