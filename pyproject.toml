@@ -101,6 +101,8 @@ xfail_strict = "True"
 
 
 [tool.ruff]
+# Exclude the following, in addition to the standard set of exclusions.
+# See https://docs.astral.sh/ruff/settings/#exclude for defaults.
 extend-exclude = [
     "docs/src/generated",
 ]
