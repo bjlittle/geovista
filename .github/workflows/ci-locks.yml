@@ -86,7 +86,7 @@ jobs:
       run: |
         tox -e ${{ matrix.version }}-lock
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: lock-artifacts
         path: ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.txt

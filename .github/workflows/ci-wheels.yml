@@ -51,7 +51,7 @@ jobs:
       run: |
         ls -l ${{ github.workspace }}/dist
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist
