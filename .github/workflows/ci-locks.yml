@@ -101,7 +101,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: lock-artifacts
         path: ${{ github.workspace }}/requirements/locks
