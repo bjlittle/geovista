@@ -114,7 +114,7 @@ jobs:
 
     - name: "upload test images"
       if: ${{ failure() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-images
         path: ${{ github.workspace }}/test_images
