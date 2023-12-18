@@ -56,8 +56,7 @@ NAME_POINTS: str = "point_data"
 
 
 class Transform:
-    """
-    Build a mesh from spatial points, connectivity, data and CRS metadata.
+    """Build a mesh from spatial points, connectivity, data and CRS metadata.
 
     Notes
     -----

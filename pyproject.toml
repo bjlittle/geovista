@@ -162,6 +162,10 @@ ignore = [
 preview = false
 select = [
     "ALL",
+
+    # pydocstyle (D)
+    # https://docs.astral.sh/ruff/rules/multi-line-summary-first-line/
+    "D212",  # Multi-line docstring summary should start at the first line
 ]
 
 
