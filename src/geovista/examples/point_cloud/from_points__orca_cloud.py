@@ -21,7 +21,7 @@ area and pre-filtered for temperature gradients.
 Note that, Natural Earth coastlines are also rendered along with a Natural
 Earth base layer with opacity.
 
-"""  # noqa: D205,D400
+"""  # noqa: D205,D212,D400
 from __future__ import annotations
 
 import geovista as gv
