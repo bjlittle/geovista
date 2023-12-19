@@ -8,15 +8,16 @@
 Uber H3 Spatial Index
 ---------------------
 
-Create Uber ``H3`` hexagonal hierarchical spatial index meshes.
+This example demonstrates the Uber ``H3`` hexagonal hierarchical spatial index.
 
 💼 Background
 ^^^^^^^^^^^^^
 
-This example demonstrates the relationship between the ``H3`` **base icosahedron**
-Platonic solid and its **base resolution mesh** consisting of
-**110 hexagons** and **12 pentagons**. Note that, a spherical surface cannot
-be tessellated solely with hexagons; pentagons are also required.
+The relationship between the ``H3`` **base icosahedron** Platonic solid and its
+**base resolution mesh** consisting of **110 hexagons** and **12 pentagons**
+defines the starting point of this hierarchical sequence of hexagonal meshes.
+Note that, a spherical surface cannot be tessellated solely with hexagons;
+pentagons are also required.
 
 The **12 vertices** of the underlying **base icosahedron** anchors the center of
 the **12 pentagon cells**, around which the **110 hexagon cells** are tessellated
