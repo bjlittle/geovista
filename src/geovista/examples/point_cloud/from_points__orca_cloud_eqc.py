@@ -13,7 +13,7 @@ This example demonstrates how to render a projected point cloud.
 📋 Summary
 ^^^^^^^^^^
 
-Create a point cloud from 1-D latitude, longitude and z-levels.
+Creates a point cloud from 1-D latitude, longitude and z-levels.
 
 The resulting mesh contains only points.
 
