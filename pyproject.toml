@@ -116,6 +116,7 @@ target-version = "py310"
 
 
 [tool.ruff.format]
+docstring-code-format = true
 preview = false
 
 
