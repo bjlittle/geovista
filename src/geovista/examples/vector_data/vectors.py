@@ -11,10 +11,13 @@ Arrows
 
 This example demonstrates how to render glyph arrows of a simple vector field.
 
+📋 Summary
+^^^^^^^^^^
+
 The vector field is generated based on the cartesian ``XYZ`` vertices of a
 regular quad-cell sample grid.
 
-A Natural Earth base layer is also rendered.
+A Natural Earth base layer is also rendered for geolocation context.
 
 """  # noqa: D205,D212,D400
 from __future__ import annotations

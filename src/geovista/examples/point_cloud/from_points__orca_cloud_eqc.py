@@ -10,7 +10,10 @@ ORCA2 Point Cloud Projection
 
 This example demonstrates how to render a projected point cloud.
 
-Create a point-cloud from 1-D latitude, longitude and z-levels.
+📋 Summary
+^^^^^^^^^^
+
+Create a point cloud from 1-D latitude, longitude and z-levels.
 
 The resulting mesh contains only points.
 
