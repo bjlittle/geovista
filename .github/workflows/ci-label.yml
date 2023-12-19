@@ -55,6 +55,6 @@ jobs:
           labels: 'type: performance'
 
       - uses: actions-ecosystem/action-add-labels@v1
-        if: startsWith(github.event.pull_request.head.ref, 'pre-commit-ci-update-config') || startsWith(github.event.pull_request.head.ref, 'conda-lock-auto-update')
+        if: github.actor == 'dependabot[bot]' || github.actor == 'geovista-ci[bot]' || github.actor == 'pre-commit-ci[bot]'
         with:
           labels: 'skip changelog'
