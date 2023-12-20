@@ -5,8 +5,8 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-ORCA2 Point Cloud Projection
-----------------------------
+ORCA2 Point Cloud (Projected)
+-----------------------------
 
 This example demonstrates how to render a projected point cloud.
 
