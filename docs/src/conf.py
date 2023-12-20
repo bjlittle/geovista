@@ -203,7 +203,8 @@ else:
 sphinx_gallery_conf = {
     "filename_pattern": "/.*",
     "ignore_pattern": (
-        "(__init__)|(clouds)|(earthquakes)|(from_1d)|(from_2d)" "|(from_unstructured)"
+        "(__init__)|(clouds)|(earthquakes)|(from_1d)|(from_2d__synthetic)"
+        "|(from_unstructured)"
     ),
     "examples_dirs": "../../src/geovista/examples",
     "gallery_dirs": "generated/gallery",
