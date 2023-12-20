@@ -27,7 +27,7 @@ def main() -> None:
     It uses an unstructured Met Office LFRic C48 cubed-sphere of surface temperature
     data located on the mesh faces/cells.
 
-    Note that, a threshold is also applied to remove land NaN cells. A Natural Earth
+    Note that, a threshold is also applied to remove land ``NaN`` cells. A Natural Earth
     base layer is also rendered along with Natural Earth coastlines and a graticule.
     The mesh is also transformed to the Bonne projection.
 

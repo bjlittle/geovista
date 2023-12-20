@@ -27,7 +27,7 @@ def main() -> None:
     It uses a WAVEWATCH III (WW3) unstructured triangular mesh sea surface
     wave significant height data located on mesh nodes/points.
 
-    Note that, a threshold is also applied to remove land NaN cells, and a
+    Note that, a threshold is also applied to remove land ``NaN`` cells, and a
     Natural Earth base layer is rendered along with Natural Earth coastlines.
     As data is located on the mesh nodes/points, these values are interpolated
     across the mesh faces/cells.

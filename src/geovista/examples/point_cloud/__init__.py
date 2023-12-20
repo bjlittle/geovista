@@ -14,7 +14,7 @@ and can be easily accessed through the geovista command line interface
 
 .. code: bash
 
-  # For further details refer to the geovista examples (CLI) help
+  # For further details refer to the geovista examples (CLI) help.
   geovista examples --help
 
 Notes
