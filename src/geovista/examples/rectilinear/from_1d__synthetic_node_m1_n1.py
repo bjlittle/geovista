@@ -4,13 +4,24 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Importable and runnable geovista example.
-
-Notes
------
-.. versionadded:: 0.1.0
-
 """
+Synthetic Rectilinear Grid
+--------------------------
+
+This example demonstrates how to render a rectilinear grid.
+
+📋 Summary
+^^^^^^^^^^
+
+Creates a mesh from 1-D latitude and longitude rectilinear cell bounds.
+
+The resulting mesh contains quad cells.
+
+The data is synthetically generated and targets the mesh nodes/points.
+
+Note that, Natural Earth coastlines are also rendered.
+
+"""  # noqa: D205,D212,D400
 from __future__ import annotations
 
 import numpy as np
@@ -20,30 +31,28 @@ import geovista.theme
 
 
 def main() -> None:
-    """Create a mesh from 1-D latitude and longitude rectilinear cell bounds.
+    """Plot the synthetic rectilinear grid.
 
-    The resulting mesh contains quad cells.
-
-    The data is synthetically generated and targets the mesh nodes/points.
-
-    Note that, Natural Earth coastlines are also rendered.
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
-    # create the 1-D spatial coordinates and data
+    # Create the 1-D spatial coordinates and data.
     M, N = 45, 90
     lats = np.linspace(-90, 90, M + 1)
     lons = np.linspace(-180, 180, N + 1)
     clim = (0, 1)
     data = np.linspace(*clim, num=(M + 1) * (N + 1))
 
-    # create the mesh from the synthetic data
+    # Create the mesh from the synthetic data.
     name = "Synthetic Points"
     mesh = gv.Transform.from_1d(lons, lats, data=data, name=name)
 
-    # provide mesh diagnostics via logging
+    # Provide mesh diagnostics via logging.
     gv.logger.info("%s", mesh)
 
-    # plot the mesh
+    # Plot the rectilinear grid.
     plotter = gv.GeoPlotter()
     sargs = {"title": f"{name} / 1", "shadow": True}
     plotter.add_mesh(
