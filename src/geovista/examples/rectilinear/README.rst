@@ -1,2 +1,2 @@
-Rectilinear Grids
-=================
+Rectilinear Grid
+================
