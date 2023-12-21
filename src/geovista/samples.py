@@ -32,10 +32,10 @@ __all__ = [
     "WARP_FACTOR",
     "ZLEVEL_SCALE_CLOUD",
     "cloud_amount",
+    "dynamico",
     "fesom",
     "fvcom_tamar",
     "icon_soil",
-    "icosahedral",
     "lam_equator",
     "lam_falklands",
     "lam_london",
@@ -139,6 +139,31 @@ def cloud_amount(preference: str | pantry.CloudPreference | None = None) -> pv.P
         mesh[sample.name] = sample.data
 
     return mesh
+
+
+def dynamico() -> pv.PolyData:
+    """Create a mesh from :mod:`geovista.pantry` sample data.
+
+    Generate a DYNAMICO icosahedral mesh.
+
+    Returns
+    -------
+    PolyData
+        The DYNAMICO mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.3.0
+
+    """
+    sample = pantry.dynamico()
+
+    return Transform.from_unstructured(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=sample.name,
+    )
 
 
 def fesom() -> pv.PolyData:
@@ -252,31 +277,6 @@ def icon_soil() -> pv.PolyData:
 
     """
     sample = pantry.icon_soil()
-
-    return Transform.from_unstructured(
-        sample.lons,
-        sample.lats,
-        data=sample.data,
-        name=sample.name,
-    )
-
-
-def icosahedral() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
-
-    Generate a DYNAMICO icosahedral mesh.
-
-    Returns
-    -------
-    PolyData
-        The DYNAMICO mesh.
-
-    Notes
-    -----
-    .. versionadded:: 0.3.0
-
-    """
-    sample = pantry.icosahedral()
 
     return Transform.from_unstructured(
         sample.lons,
