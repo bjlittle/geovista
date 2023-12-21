@@ -428,11 +428,11 @@ plotter.show()
 
 ![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/oisst-avhrr.png)
 
-#### DYNAMICO Icosahedral
+#### DYNAMICO
 
 Finally, to demonstrate support for non-traditional cell geometries i.e., not triangles or quadrilaterals, we plot
-the **unstructured** icosahedral mesh from the [DYNAMICO](https://gitlab.in2p3.fr/ipsl/projets/dynamico/dynamico)
-project. This model uses hexagonal cells and is a new dynamical core for
+the **unstructured** mesh from the [DYNAMICO](https://gitlab.in2p3.fr/ipsl/projets/dynamico/dynamico) project. This
+model uses hexagonal and pentagonal cells, and is a new dynamical core for
 [LMD-Z](https://www.lmd.ipsl.fr/en/modelisations/lmdz-en/), the atmospheric General Circulation Model (GCM) part of the
 [IPSL-CM](https://cmc.ipsl.fr/ipsl-climate-models/) Earth System Model. The render also contains
 [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/).
@@ -442,11 +442,11 @@ project. This model uses hexagonal cells and is a new dynamical core for
 
 ```python
 import geovista as gv
-from geovista.pantry import icosahedral
+from geovista.pantry import dynamico
 import geovista.theme
 
 # Load sample data.
-sample = icosahedral()
+sample = dynamico()
 
 # Create the mesh from the sample data.
 mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
