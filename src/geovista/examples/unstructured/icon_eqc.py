@@ -4,13 +4,25 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Importable and runnable geovista example.
-
-Notes
------
-.. versionadded:: 0.1.0
-
 """
+ICON Mesh (Projected)
+---------------------
+
+This example demonstrates how to render a projected unstructured triangular mesh.
+
+Creates a mesh from 2-D latitude and longitude unstructured cell bounds.
+
+The resulting mesh contains triangular cells.
+
+It uses Icosahedral Nonhydrostatic Weather and Climate Model (ICON) global 160km
+resolution soil type data, as developed by the Deutscher Wetterdienst (DWD) and
+the Max-Planck-Institut für Meteorologie (MPI-M). The data targets the mesh
+faces/cells.
+
+Note that, Natural Earth coastlines are also rendered, and the mesh is transformed
+to the Equidistant Cylindrical (Plate Carrée) conformal cylindrical projection.
+
+"""  # noqa: D205,D212,D400
 from __future__ import annotations
 
 import matplotlib as mpl
@@ -21,29 +33,24 @@ import geovista.theme
 
 
 def main() -> None:
-    """Create a mesh from 2-D latitude and longitude unstructured cell bounds.
+    """Plot a projected ICON unstructured mesh.
 
-    The resulting mesh contains triangular cells.
-
-    It uses Icosahedral Nonhydrostatic Weather and Climate Model (ICON) global 160km
-    resolution soil type data, as developed by the Deutscher Wetterdienst (DWD) and
-    the Max-Planck-Institut für Meteorologie (MPI-M). The data targets the mesh
-    faces/cells.
-
-    Note that, Natural Earth coastlines are also rendered, and the mesh is transformed
-    to the Equidistant Cylindrical (Plate Carrée) conformal cylindrical projection..
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
-    # load the sample data
+    # Load the sample data.
     sample = icon_soil()
 
-    # create the mesh from the sample data
+    # Create the mesh from the sample data.
     mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
-
-    # provide mesh diagnostics via logging
+    # sphinx_gallery_start_ignore
+    # Provide mesh diagnostics via logging.
     gv.logger.info("%s", mesh)
+    # sphinx_gallery_end_ignore
 
-    # plot the mesh
+    # Plot the unstructured mesh.
     crs = "+proj=eqc"
     plotter = gv.GeoPlotter(crs=crs)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
