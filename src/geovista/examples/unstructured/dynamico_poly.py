@@ -72,8 +72,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-# %%
-# .. note::
-#   Graticule labels will **not** be rendered when viewing the documentation on
-#   ``ReadtheDocs``, as labels are not supported in this headless environment.
