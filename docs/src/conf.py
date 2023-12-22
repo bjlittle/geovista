@@ -69,6 +69,11 @@ copyright = f"{copyright_years}, {project} Contributors"  # noqa: A001
 author = f"{project} Contributors"
 on_rtd = os.environ.get("READTHEDOCS")
 
+if on_rtd:
+    # https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#including-content-based-on-tags
+    # https://www.sphinx-doc.org/en/master/usage/configuration.html#conf-tags
+    tags.add("on_rtd")  # noqa: F821
+
 # The full version, including alpha/beta/rc tags
 release = get_version("geovista")
 if release.endswith("+dirty"):
