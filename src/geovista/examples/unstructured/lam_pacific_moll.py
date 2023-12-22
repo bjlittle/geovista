@@ -4,13 +4,28 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Importable and runnable geovista example.
-
-Notes
------
-.. versionadded:: 0.1.0
-
 """
+LFRic LAM Mesh (Projected)
+--------------------------
+
+This example demonstrates how to render a projected unstructured quadrilateral mesh.
+
+📋 Summary
+^^^^^^^^^^
+
+Creates a mesh from 1-D latitude and longitude unstructured cell points.
+
+The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
+cell points and connectivity.
+
+It uses a high-resolution Local Area Model (LAM) mesh of air potential
+temperature data located on the mesh faces/cells.
+
+Note that, a Natural Earth base layer is rendered along with Natural Earth
+coastlines, and the mesh is transformed to the Mollweide pseudo-cylindrical
+projection.
+
+"""  # noqa: D205,D212,D400
 from __future__ import annotations
 
 import geovista as gv
@@ -19,34 +34,29 @@ import geovista.theme
 
 
 def main() -> None:
-    """Create a mesh from 1-D latitude and longitude unstructured cell points.
+    """Plot a projected LFRic LAM unstructured mesh.
 
-    The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
-    cell points and connectivity.
-
-    It uses a high-resolution Local Area Model (LAM) mesh of air potential
-    temperature data located on the mesh faces/cells.
-
-    Note that, a Natural Earth base layer is rendered along with Natural Earth
-    coastlines, and the mesh is transformed to the Mollweide pseudo-cylindrical
-    projection.
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
-    # load the sample data
+    # Load the sample data.
     sample = lam_pacific()
 
-    # create the mesh from the sample data
+    # Create the mesh from the sample data.
     mesh = gv.Transform.from_unstructured(
         sample.lons,
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
     )
-
-    # provide mesh diagnostics via logging
+    # sphinx_gallery_start_ignore
+    # Provide mesh diagnostics via logging.
     gv.logger.info("%s", mesh)
+    # sphinx_gallery_end_ignore
 
-    # plot the mesh
+    # Plot the unstructured mesh.
     crs = "+proj=moll"
     plotter = gv.GeoPlotter(crs=crs)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
