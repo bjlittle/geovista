@@ -382,9 +382,9 @@ def add_checkboxes(
 
 # %%
 # .. note::
-#   The checkboxes will **not** be rendered when viewing the documentation
-#   on ``ReadTheDocs``, as the appropriate VTK widget is not available
-#   in this headless environment.
+#   The checkboxes will **not** be rendered when viewing the documentation on
+#   ``ReadtheDocs``, as the appropriate VTK widget is not supported in this
+#   headless environment.
 
 # %%
 # Finally, we create the :class:`~geovista.geoplotter.GeoPlotter` and add the
