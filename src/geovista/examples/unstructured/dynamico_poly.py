@@ -4,13 +4,29 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Importable and runnable geovista example.
-
-Notes
------
-.. versionadded:: 0.1.0
-
 """
+DYNAMICO Mesh (Projected)
+-------------------------
+
+This example demonstrates how to render a projected unstructured hexagon/pentagon mesh.
+
+📋 Summary
+^^^^^^^^^^
+
+Creates a mesh from 2-D latitude and longitude unstructured cell bounds.
+
+The resulting mesh contains hexagonal cells tessellated around 12 pentagon cells,
+which are centered over the 12 vertices of a base icosahedron.
+
+It uses surface air pressure data from the DYNAMICO project, a new dynamical core
+for the Laboratoire de Météorologie Dynamique (LMD-Z), the atmospheric General
+Circulation Model (GCM) part of Institut Pierre-Simon Laplace (IPSL-CM) Earth
+System Model. The data targets the mesh faces/cells.
+
+Note that, a graticule and Natural Earth coastlines are rendered, and the
+mesh is also transformed to the Polyconic pseudo-conical projection.
+
+"""  # noqa: D205,D212,D400
 from __future__ import annotations
 
 import geovista as gv
@@ -19,29 +35,24 @@ import geovista.theme
 
 
 def main() -> None:
-    """Create a mesh from 2-D latitude and longitude unstructured cell bounds.
+    """Plot a projected DYNAMICO unstructured mesh.
 
-    The resulting mesh contains both hexagonal and pentagonal cells.
-
-    It uses surface air pressure data from the DYNAMICO project, a new dynamical core
-    for the Laboratoire de Météorologie Dynamique (LMD-Z), the atmospheric General
-    Circulation Model (GCM) part of Institut Pierre-Simon Laplace (IPSL-CM) Earth
-    System Model. The data targets the mesh faces/cells.
-
-    Note that, a graticule and Natural Earth coastlines are rendered, and the
-    mesh is also transformed to the Polyconic pseudo-conical projection.
+    Notes
+    -----
+    .. versionadded:: 0.1.0
 
     """
-    # load the sample data
+    # Load the sample data.
     sample = dynamico()
 
-    # create the mesh from the sample data
+    # Create the mesh from the sample data.
     mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
-
-    # provide mesh diagnostics via logging
+    # sphinx_gallery_start_ignore
+    # Provide mesh diagnostics via logging.
     gv.logger.info("%s", mesh)
+    # sphinx_gallery_end_ignore
 
-    # plot the mesh
+    # Plot the unstructured mesh.
     crs = "+proj=poly"
     plotter = gv.GeoPlotter(crs=crs)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
@@ -61,3 +72,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# %%
+# .. note::
+#   Graticule labels will **not** be rendered when viewing the documentation on
+#   ``ReadtheDocs``, as labels are not supported in this headless environment.

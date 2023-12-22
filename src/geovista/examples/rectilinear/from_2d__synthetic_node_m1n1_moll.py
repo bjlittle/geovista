@@ -32,7 +32,7 @@ import geovista.theme
 
 
 def main() -> None:
-    """Plot the synthetic rectilinear grid.
+    """Plot a projected synthetic rectilinear grid.
 
     Notes
     -----
