@@ -4,10 +4,10 @@
 Examples Gallery
 ****************
 
-Enjoy this interactive gallery, which aims to highlight the growing capabilities and
+This interactive gallery highlights the growing capabilities and
 features of ``geovista``.
 
-The gallery is generated from a sample of the ``geovista.examples``, which can also
+The gallery is generated from the ``geovista.examples``, which can also
 be run from the command line::
 
   geovista examples --run all --verbose
