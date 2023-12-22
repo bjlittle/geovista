@@ -10,6 +10,9 @@ ICON Mesh (Projected)
 
 This example demonstrates how to render a projected unstructured triangular mesh.
 
+📋 Summary
+^^^^^^^^^^
+
 Creates a mesh from 2-D latitude and longitude unstructured cell bounds.
 
 The resulting mesh contains triangular cells.
