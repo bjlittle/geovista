@@ -5,8 +5,8 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-OISST AVHRR Rectilinear Grid
-----------------------------
+OISST AVHRR Grid
+----------------
 
 This example demonstrates how to render a rectilinear grid.
 

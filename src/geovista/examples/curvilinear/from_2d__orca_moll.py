@@ -5,8 +5,8 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-ORCA2 Curvilinear Grid (Projected)
-----------------------------------
+ORCA2 Grid (Projected)
+----------------------
 
 This example demonstrates how to render a projected extruded curvilinear grid.
 

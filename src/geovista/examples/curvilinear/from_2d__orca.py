@@ -5,8 +5,8 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-ORCA2 Curvilinear Grid
-----------------------
+ORCA2 Grid
+----------
 
 This example demonstrates how to render a curvilinear grid.
 
