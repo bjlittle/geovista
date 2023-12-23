@@ -5,8 +5,8 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-Synthetic Rectilinear Grid
---------------------------
+Synthetic Grid
+--------------
 
 This example demonstrates how to render a rectilinear grid.
 

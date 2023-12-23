@@ -5,8 +5,8 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-Synthetic Rectilinear Grid (Projected)
---------------------------------------
+Synthetic Grid (Projected)
+--------------------------
 
 This example demonstrates how to render a projected rectilinear grid.
 
