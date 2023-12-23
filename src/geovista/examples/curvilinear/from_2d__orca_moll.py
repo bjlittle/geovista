@@ -28,8 +28,6 @@ resolution Natural Earth coastlines are also rendered.
 """  # noqa: D205,D212,D400
 from __future__ import annotations
 
-from pyproj import CRS
-
 import geovista as gv
 from geovista.common import cast_UnstructuredGrid_to_PolyData as cast
 from geovista.pantry import um_orca2
@@ -55,14 +53,11 @@ def main() -> None:
     gv.logger.info("%s", mesh)
     # sphinx_gallery_end_ignore
 
-    # create the target coordinate reference system
-    crs = CRS.from_user_input(projection := "+proj=moll")
-
     # Remove cells from the mesh with NaN values.
     mesh = cast(mesh.threshold())
 
     # Transform and extrude the mesh.
-    mesh = transform_mesh(mesh, crs)
+    mesh = transform_mesh(mesh, crs := "esri:54009")
     mesh.extrude((0, 0, -1000000), capping=True, inplace=True)
 
     # Plot the curvilinear mesh.
@@ -72,7 +67,7 @@ def main() -> None:
     plotter.add_coastlines(color="black")
     plotter.add_axes()
     plotter.add_text(
-        f"ORCA ({projection} extrude)",
+        f"ORCA ({crs}, extrude)",
         position="upper_left",
         font_size=10,
         shadow=True,
