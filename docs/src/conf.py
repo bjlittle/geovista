@@ -207,7 +207,7 @@ else:
 # -- Configuration: sphinx gallery -------------------------------------------
 sphinx_gallery_conf = {
     "filename_pattern": "/.*",
-    "ignore_pattern": "(__init__)|(clouds)|(earthquakes)|(fesom)|(synthetic)",
+    "ignore_pattern": "(__init__)|(clouds)|(fesom)|(synthetic)",
     "examples_dirs": "../../src/geovista/examples",
     "gallery_dirs": "generated/gallery",
     "matplotlib_animations": True,
