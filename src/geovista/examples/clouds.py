@@ -4,13 +4,33 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Importable and runnable geovista example.
-
-Notes
------
-.. versionadded:: 0.4.0
-
 """
+Clouds
+------
+
+This example demonstrates how to render stratified unstructured meshes.
+
+📋 Summary
+^^^^^^^^^^
+
+Creates meshes from 1-D latitude and longitude unstructured cell points.
+
+The resulting meshes contain quad cells and are constructed from CF UGRID
+unstructured cell points and connectivity.
+
+It uses an unstructured Met Office high-resolution LFRic C768 cubed-sphere
+of low, medium, high and very high cloud amount located on the mesh
+faces/cells.
+
+Note that, a threshold is applied to remove lower cloud amount cells,
+and a linear opacity transfer function is applied to a custom cropped
+colormap of each cloud amount type mesh i.e., the colormaps get lighter
+with increased altitude.
+
+A Natural Earth base layer is also rendered along with Natural Earth
+coastlines.
+
+"""  # noqa: D205,D212,D400
 from __future__ import annotations
 
 import cmocean
@@ -36,36 +56,25 @@ cmaps: dict[str, LinearSegmentedColormap] = {
 
 
 def main() -> None:
-    """Create meshes from 1-D latitude and longitude unstructured cell points.
+    """Plot stratified unstructured meshes.
 
-    The resulting meshes contain quad cells and are constructed from CF UGRID
-    unstructured cell points and connectivity.
-
-    It uses an unstructured Met Office high-resolution LFRic C768 cubed-sphere
-    of low, medium, high and very high cloud amount located on the mesh
-    faces/cells.
-
-    Note that, a threshold is applied to remove lower cloud amount cells,
-    and a linear opacity transfer function is applied to a custom cropped
-    colormap of each cloud amount type mesh i.e., the colormaps get lighter
-    with increased altitude.
-
-    A Natural Earth base layer is also rendered along with Natural Earth
-    coastlines.
+    Notes
+    -----
+    .. versionadded:: 0.4.0
 
     """
-    # use the pyvista linear opacity transfer function
+    # Use the pyvista linear opacity transfer function.
     opacity = "linear"
     clim = (cmin := 0.3, 1.0)
 
-    # create the plotter
+    # Create the plotter.
     plotter = gv.GeoPlotter()
 
     for i, cloud in enumerate(cmaps):
-        # load the sample data
+        # Load the sample data.
         sample = cloud_amount(cloud)
 
-        # create the mesh from the sample data
+        # Create the mesh from the sample data.
         mesh = gv.Transform.from_unstructured(
             sample.lons,
             sample.lats,
@@ -75,7 +84,7 @@ def main() -> None:
             name=cloud,
         )
 
-        # remove cells from the mesh below the specified threshold
+        # Remove cells from the mesh below the specified threshold.
         mesh = mesh.threshold(cmin)
 
         plotter.add_mesh(
@@ -87,7 +96,7 @@ def main() -> None:
             zlevel=(i + 1) * ZLEVEL_FACTOR,
         )
 
-    # force zlevel alignment of coastlines and base layer
+    # Force zlevel alignment of coastlines and base layer.
     plotter.add_base_layer(texture=gv.natural_earth_1(), zlevel=0)
     plotter.add_coastlines()
     plotter.add_axes()
