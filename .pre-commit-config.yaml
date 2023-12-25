@@ -36,7 +36,7 @@ repos:
       # Trims trailing whitespace.
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.1.8"
+    rev: "v0.1.9"
     hooks:
       - id: ruff
         types: [file, python]
@@ -95,7 +95,7 @@ repos:
       - id: check-readthedocs
 
   - repo: https://github.com/scientific-python/cookie
-    rev: 2023.11.17
+    rev: 2023.12.21
     hooks:
       - id: sp-repo-review
         additional_dependencies: ["repo-review[cli]"]
