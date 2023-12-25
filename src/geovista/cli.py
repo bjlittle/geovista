@@ -18,6 +18,7 @@ from shutil import rmtree
 
 import click
 from click_default_group import DefaultGroup
+import pooch
 import pyvista as pv
 
 from . import logger
@@ -45,6 +46,7 @@ EXAMPLES: list[str] = [ALL, *get_modules("geovista.examples")]
 
 def _download_group(
     fnames: list[str],
+    decompress: bool | None = False,
     name: str | None = None,
     fg_colour: str | None = None,
     summary: bool | None = True,
@@ -58,6 +60,8 @@ def _download_group(
     ----------
     fnames : list of str
         The list of assets to be downloaded.
+    decompress : bool, default=False
+        Decompress the downloaded assets.
     name : str, optional
         The name of the asset collection within the cache e.g., raster or pantry
     fg_color : str, default="cyan"
@@ -86,7 +90,12 @@ def _download_group(
         click.echo(f"[{i+1:0{width}d}/{n_fnames}] Downloading ", nl=False)
         click.secho(f"{fname} ", nl=False, fg=fg_colour)
         click.echo("... ", nl=False)
-        CACHE.fetch(fname)
+        processor = None
+        name = pathlib.Path(fname)
+        if decompress and (suffix := name.suffix) in pooch.Decompress.extensions:
+            name = name.stem.removesuffix(suffix)
+            processor = pooch.Decompress(method="auto", name=name)
+        CACHE.fetch(fname, processor=processor)
         click.secho("done!", fg="green")
 
     if summary:
@@ -173,6 +182,11 @@ def main(version: bool, report: bool, cache: bool) -> None:
 )
 @click.option(
     "-d",
+    "--decompress",
+    is_flag=True,
+    help="Decompress all cached assets.",
+)
+@click.option(
     "--dry-run",
     is_flag=True,
     help="Show URLs of registered assets.",
@@ -223,6 +237,7 @@ def main(version: bool, report: bool, cache: bool) -> None:
 def download(
     pull: bool,
     clean: bool,
+    decompress: bool,
     dry_run: bool,
     image: bool,
     show: bool,
@@ -271,19 +286,19 @@ def download(
         return list(filter(lambda item: item.startswith(prefix), fnames))
 
     if pull:
-        _download_group(fnames)
+        _download_group(fnames, decompress=decompress)
     else:
         if image:
             name = "images"
-            _download_group(collect(f"tests/{name}"), name=name)
+            _download_group(collect(f"tests/{name}"), decompress=decompress, name=name)
 
         if mesh:
             name = "mesh"
-            _download_group(collect(name), name=name)
+            _download_group(collect(name), decompress=decompress, name=name)
 
         if pantry:
             name = "pantry"
-            _download_group(collect(name), name=name)
+            _download_group(collect(name), decompress=decompress, name=name)
 
         if pull_ne:
             if ALL in pull_ne:
@@ -293,11 +308,16 @@ def download(
             for i, group in enumerate(pull_ne):
                 prefix = f"{NE_ROOT}/{group}"
                 name = f"Natural Earth {group}"
-                _download_group(collect(prefix), name=name, summary=(i + 1 == n_groups))
+                _download_group(
+                    collect(prefix),
+                    decompress=decompress,
+                    name=name,
+                    summary=(i + 1 == n_groups),
+                )
 
         if raster:
             name = "raster"
-            _download_group(collect(name), name=name)
+            _download_group(collect(name), decompress=decompress, name=name)
 
     if verify:
         unavailable = 0
