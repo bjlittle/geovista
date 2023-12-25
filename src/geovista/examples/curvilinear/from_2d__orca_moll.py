@@ -56,7 +56,7 @@ def main() -> None:
     # Remove cells from the mesh with NaN values.
     mesh = cast(mesh.threshold())
 
-    # Transform and extrude the mesh.
+    # Transform the mesh to the Mollweide projection and extrude.
     mesh = transform_mesh(mesh, crs := "esri:54009")
     mesh.extrude((0, 0, -1000000), capping=True, inplace=True)
 
