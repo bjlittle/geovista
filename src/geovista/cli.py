@@ -106,6 +106,30 @@ def _download_group(
     pooch_mute(status)
 
 
+def _groups() -> list[str]:
+    """Filter examples for unique group names.
+
+    Always contains the "all" group.
+
+    Returns
+    -------
+    list of str
+        The sorted list of unique example script groups.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
+    result = {ALL}
+
+    for example in EXAMPLES[1:]:
+        if "." in example:
+            result.add(example.split(".")[0])
+
+    return sorted(result)
+
+
 def _plural(quantity: int) -> str:
     """Determine whether the provided `quantity`` is textually plural.
 
@@ -144,7 +168,7 @@ def _plural(quantity: int) -> str:
     "-r",
     "--report",
     is_flag=True,
-    help="Show GPU and environment package report",
+    help="Show GPU and environment package report.",
 )
 @click.option(
     "-v",
@@ -380,21 +404,29 @@ def download(
     "--all",
     "run_all",
     is_flag=True,
-    help="Execute all examples.",
+    help="Run all examples.",
 )
+@click.option("-g", "--groups", is_flag=True, help="Show available example groups.")
 @click.option(
     "-l",
     "--list",
     "show",
     is_flag=True,
-    help="Show names of available examples to run.",
+    help="Show available examples.",
 )
 @click.option(
     "-r",
     "--run",
     type=click.Choice(EXAMPLES, case_sensitive=False),
     is_flag=False,
-    help="Execute the example.",
+    help="Run an example.",
+)
+@click.option(
+    "--run-group",
+    "run_group",
+    type=click.Choice(_groups(), case_sensitive=False),
+    is_flag=False,
+    help="Run all examples in the group.",
 )
 @click.option(
     "-v",
@@ -402,13 +434,15 @@ def download(
     is_flag=True,
     help="Enable example diagnostics.",
 )
-def examples(run_all: bool, show: bool, run: bool, verbose: bool) -> None:
-    """Execute a geovista example script."""
+def examples(
+    run_all: bool, groups: bool, show: bool, run: str, run_group: str, verbose: bool
+) -> None:
+    """Run a geovista example or group of examples."""
     # account for the initial "all" option
     n_examples = len(EXAMPLES) - 1
 
     if show:
-        click.echo("Names of available examples:")
+        click.echo("Available examples:")
         width = len(str(n_examples))
         for i, script in enumerate(EXAMPLES[1:]):
             click.echo(f"[{i + 1:0{width}d}/{n_examples}] ", nl=False)
@@ -416,7 +450,18 @@ def examples(run_all: bool, show: bool, run: bool, verbose: bool) -> None:
         click.echo("\n👍 All done!")
         return
 
-    run_all = True if run == ALL else run_all
+    if groups:
+        click.echo("Available example groups:")
+        groups = _groups()
+        n_groups = len(groups)
+        width = len(str(n_groups))
+        for i, group in enumerate(groups):
+            click.echo(f"[{i + 1:0{width}d}/{n_groups}] ", nl=False)
+            click.secho(f"{group}", fg="green")
+        click.echo("\n👍 All done!")
+        return
+
+    run_all = ALL in (run, run_group) or run_all
 
     if verbose:
         logger.setLevel("INFO")
@@ -424,6 +469,19 @@ def examples(run_all: bool, show: bool, run: bool, verbose: bool) -> None:
     if run_all:
         for i, script in enumerate(EXAMPLES[1:]):
             msg = f"Running example {script!r} ({i+1} of {n_examples}) ..."
+            click.secho(msg, fg="green")
+            module = importlib.import_module(f"geovista.examples.{script}")
+            if verbose:
+                print(module.__doc__)
+            module.main()
+        click.echo("\n👍 All done!")
+        return
+
+    if run_group:
+        group = [script for script in EXAMPLES[1:] if script.startswith(run_group)]
+        n_group = len(group)
+        for i, script in enumerate(group):
+            msg = f"Running {run_group!r} example {script!r} ({i+1} of {n_group}) ..."
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")
             if verbose:
