@@ -1,3 +1,7 @@
+'type: cli':
+- any:
+  - changed-files:
+    - any-glob-to-any-file: 'src/geovista/cli.py'
 'type: dependencies':
 - any:
   - changed-files:
