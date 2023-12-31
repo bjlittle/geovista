@@ -186,6 +186,7 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_css_files = ["style.css", "theme_overrides.css"]
 
 html_sidebars = {"**": ["sidebar-nav-bs", "sidebar-ethical-ads.html"]}
 

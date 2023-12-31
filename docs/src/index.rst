@@ -1,24 +1,53 @@
 .. title:: GeoVista
+GeoVista Documentation
+======================
 
-.. raw:: html
+Welcome to the GeoVista documentation!
 
-   <h1 align="center">
-     <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/branding/logo/secondary/geovistalogo2.png" alt="GeoVista">
-   </h1>
-   <h4 align="center">
-       Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
-   </h4>
-   <br>
+We're currently bootstrapping the documentation, so please bear with us as we continue to build and bank content.
 
-.. card:: Examples Gallery
-   :text-align: center
-   :link: examples_gallery
-   :link-type: ref
-   :img-top: _static/images/icons/gallery.svg
-   :width: 50%
-   :margin: 0 5 auto auto
+In the meantime, you're feedback is welcome! Please feel free to submit an issue or pull request to help shape
 
-We're just starting to populate the documentation, so the content will evolve over time ...
+----
+
+Choose your approach to learning and GeoVista knowledge discovery.
+
+.. grid:: 1 1 2 2
+    :gutter: 2
+
+    .. grid-item-card:: Tutorials
+        :class-title: custom-title
+        :class-body: custom-body
+        :img-top: _static/images/icons/tutorials.svg
+        :class-card: sd-bg-light
+
+        Themed learning journeys.
+
+    .. grid-item-card:: Patterns
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: examples_gallery
+        :link-type: ref
+        :img-top: _static/images/icons/patterns.svg
+
+        Treasure trove of how-tos & guides.
+
+    .. grid-item-card:: Enrichment
+        :class-title: custom-title
+        :class-body: custom-body
+        :img-top: _static/images/icons/enrichment.svg
+        :class-card: sd-bg-light
+
+        Gain a deeper understanding.
+
+    .. grid-item-card:: Reference
+        :class-title: custom-title
+        :class-body: custom-body
+        :img-top: _static/images/icons/reference.svg
+        :class-card: sd-bg-light
+
+        No fuss facts.
+
 
 .. toctree::
    :maxdepth: 1
