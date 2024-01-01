@@ -1,5 +1,6 @@
 sphinx
 sphinx_design
+sphinx-book-theme
 sphinx-copybutton
 sphinx-gallery
 jupyter-sphinx
