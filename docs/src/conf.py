@@ -27,12 +27,17 @@ from __future__ import annotations
 
 import datetime
 from importlib.metadata import version as get_version
+import ntpath
 import os
 from pathlib import Path
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 from sphinx_gallery.sorting import ExampleTitleSortKey
+
+# function to write  useful output to stdout, prefixing the source.
+def autolog(message):
+    print("[{}] {}".format(ntpath.basename(__file__), message))
 
 # -- General configuration ---------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#general-configuration
@@ -42,12 +47,16 @@ from sphinx_gallery.sorting import ExampleTitleSortKey
 # ones.
 extensions = [
     #    "jupyter_sphinx",
+    "sphinxcontrib.apidoc",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",    
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
+    "sphinx.ext.napoleon",    
     "pyvista.ext.viewer_directive",
 ]
 
@@ -59,6 +68,21 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# -- Napoleon extension -------------------------------------------------------
+# See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = False
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True  # includes dunders in api doc
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = True
+napoleon_use_rtype = True
+napoleon_use_keyword = True
+napoleon_custom_sections = None
 
 # -- Project information -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
@@ -81,6 +105,28 @@ if release.endswith("+dirty"):
 
 # src base directory
 base_dir = Path(__file__).absolute().parent
+
+
+# -- apidoc extension ---------------------------------------------------------
+# See https://github.com/sphinx-contrib/apidoc
+source_code_root = (Path(__file__).parents[2]).absolute()
+module_dir = source_code_root / "src" 
+apidoc_module_dir = str(module_dir)
+apidoc_output_dir = str(Path(__file__).parent / "generated/api")
+apidoc_toc_file = False
+
+apidoc_excluded_paths = [
+    str(module_dir / "geovista/examples"),
+]
+
+apidoc_module_first = True
+apidoc_separate_modules = True
+apidoc_extra_args = []
+
+autolog(f"[sphinx-apidoc] source_code_root      = {source_code_root}")
+autolog(f"[sphinx-apidoc] module_dir            = {apidoc_module_dir}")
+autolog(f"[sphinx-apidoc] apidoc_excluded_paths = {apidoc_excluded_paths}")
+autolog(f"[sphinx-apidoc] apidoc_output_dir     = {apidoc_output_dir}")
 
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -110,6 +156,7 @@ html_theme_options = {
     "github_url": "https://github.com/bjlittle/geovista",
     "show_prev_next": False,
     "use_edit_page_button": True,
+    "show_toc_level": 3,
     "icon_links": [
         {
             "name": "Twitter",

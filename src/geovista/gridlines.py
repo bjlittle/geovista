@@ -415,7 +415,7 @@ def create_parallels(
         parallel. Also see ``poles_parallel``. Defaults to :data:`LATITUDE_START`.
     stop : float, optional
         The last line of latitude (degrees). The graticule will include this parallel
-        when it is a multiple of ``step``. Also see ``poles_parallel`. Defaults to
+        when it is a multiple of ``step``. Also see ``poles_parallel``. Defaults to
         :data:`LATITUDE_STOP`.
     step : float, optional
         The delta (degrees) between neighbouring parallels. Defaults to

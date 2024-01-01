@@ -1,4 +1,5 @@
 sphinx
+sphinxcontrib-apidoc
 sphinx_design
 sphinx-book-theme
 sphinx-copybutton
