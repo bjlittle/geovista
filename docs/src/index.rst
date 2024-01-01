@@ -4,9 +4,12 @@ GeoVista Documentation
 
 Welcome to the GeoVista documentation!
 
-We're currently bootstrapping the documentation, so please bear with us as we continue to build and bank content.
+We're busy bootstrapping the initial structure and contents at the moment, so please bear with us.
 
-In the meantime, you're feedback is welcome! Please feel free to submit an issue or pull request to help shape
+In the meantime, you're feedback is important to us. Please feel free to submit an issue or pull request
+to help us shape the documentation for the community.
+
+You can also join the conversation on our `GitHub Discussions <https://github.com/bjlittle/geovista/discussions>`_.
 
 ----
 
@@ -21,7 +24,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
         :img-top: _static/images/icons/tutorials.svg
         :class-card: sd-bg-light
 
-        Themed learning journeys.
+        Journeys of themed learning.
 
     .. grid-item-card:: Patterns
         :class-title: custom-title

@@ -66,23 +66,19 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["generated/api/index.rst"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints", "generated/api/index.rst"]
 
-# -- Napoleon extension -------------------------------------------------------
-# See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
-napoleon_google_docstring = False
-napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = False
-napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = True  # includes dunders in api doc
-napoleon_use_admonition_for_examples = False
-napoleon_use_admonition_for_notes = False
-napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
-napoleon_use_param = True
-napoleon_use_rtype = True
-napoleon_use_keyword = True
-napoleon_custom_sections = None
+# The file extensions of source files.
+source_suffix = {
+    ".rst": "restructuredtext",
+}
+
+# The master toctree document.
+root_doc = "index"
+
+# If true, 'todo' and 'todoList' produce output, else they produce nothing.
+todo_include_todos = False
+
 
 # -- Project information -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
@@ -107,10 +103,30 @@ if release.endswith("+dirty"):
 docs_dir = Path(__file__).absolute().parent
 autolog(f"[general] {docs_dir         = }")
 
-# -- autoapi extension --------------------------------------------------------
+
+# -- napoleon options --------------------------------------------------------
+# See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
+
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = False
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True  # includes dunders in api doc
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = True
+napoleon_use_rtype = True
+napoleon_use_keyword = True
+napoleon_custom_sections = None
+
+
+# -- autoapi options ---------------------------------------------------------
 # See https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
 #     https://github.com/readthedocs/sphinx-autoapi
 #
+
 root_dir = docs_dir.parent.parent
 module_dir = root_dir / "src"
 autoapi_dirs = [module_dir]
@@ -140,23 +156,30 @@ autolog(f"[autoapi] {autoapi_dirs     = }")
 autolog(f"[autoapi] {autoapi_ignore   = }")
 autolog(f"[autoapi] {autoapi_root     = }")
 
+
+# -- internationalization options --------------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-internationalization
+
+language = "en"
+
+
+# -- pygments options --------------------------------------------------------
+# See https://pygments.org/styles/
+
 # The name of the Pygments (syntax highlighting) style to use.
-# https://pygments.org/styles/
 pygments_style = "friendly"
 
 
-# -- Options for HTML output -------------------------------------------------
+# -- HTML output options -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#options-for-html-output
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
-html_theme = "pydata_sphinx_theme"
 
+html_theme = "sphinx_book_theme"
 html_logo = "_static/logo.png"
 
 html_context = {
-    "github_url": "https://github.com",
     "github_user": "bjlittle",
     "github_repo": "geovista",
     "github_version": "main",
@@ -164,10 +187,19 @@ html_context = {
 }
 
 html_theme_options = {
-    "github_url": "https://github.com/bjlittle/geovista",
-    "show_prev_next": False,
-    "use_edit_page_button": True,
+    "home_page_in_toc": False,
+    "path_to_docs": "docs/src",
+    "repository_branch": "main",
+    "repository_url": "https://github.com/bjlittle/geovista",
+    "show_prev_next": True,
     "show_toc_level": 3,
+    "use_download_button": True,
+    "use_edit_page_button": True,
+    "use_fullscreen_button": True,
+    "use_issues_button": True,
+    "use_repository_button": True,
+    "use_source_button": True,
+    "toc_title": "",
     "icon_links": [
         {
             "name": "Twitter",
@@ -188,17 +220,17 @@ html_theme_options = {
 html_static_path = ["_static"]
 html_css_files = ["style.css", "theme_overrides.css"]
 
-html_sidebars = {"**": ["sidebar-nav-bs", "sidebar-ethical-ads.html"]}
 
-
-# -- Options for the linkcheck builder ---------------------------------------
+# -- linkcheck builder options -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
 
 linkcheck_ignore = []
 linkcheck_retries = 3
 
 
-# -- Configuration: intersphinx ----------------------------------------------
+# -- intersphinx options -----------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
+
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
@@ -207,7 +239,8 @@ intersphinx_mapping = {
     "pyvista": ("https://docs.pyvista.org/", None),
 }
 
-# -- Configuration: copybutton -----------------------------------------------
+
+# -- copybutton options ------------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
 
 copybutton_prompt_text = r">>> |\.\.\. "
@@ -215,13 +248,13 @@ copybutton_prompt_is_regexp = True
 copybutton_line_continuation_character = "\\"
 
 
-# -- Configuration: doctest --------------------------------------------------
+# -- doctest options ---------------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html#configuration
 
 doctest_global_setup = "import geovista"
 
 
-# -- Configuration: extlinks -------------------------------------------------
+# -- extlinks options --------------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
@@ -230,7 +263,7 @@ extlinks = {
 }
 
 
-# -- Configuration: pyvista --------------------------------------------------
+# -- pyvista options ---------------------------------------------------------
 
 # Manage errors
 pyvista.set_error_output_file("errors.txt")
@@ -262,7 +295,9 @@ else:
     scraper = "pyvista"
 
 
-# -- Configuration: sphinx gallery -------------------------------------------
+# -- sphinx-gallery options --------------------------------------------------
+# See https://sphinx-gallery.github.io/stable/configuration.html
+
 sphinx_gallery_conf = {
     "filename_pattern": "/.*",
     "ignore_pattern": "(__init__)|(clouds)|(fesom)|(synthetic)",
