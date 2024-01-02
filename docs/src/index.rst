@@ -32,4 +32,4 @@ We're just starting to populate the documentation, so the content will evolve ov
    :maxdepth: 1
    :hidden:
 
-   API Reference <generated/api/geovista>
+   API Reference <generated/api/geovista/index>

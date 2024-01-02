@@ -64,11 +64,11 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = [ "generated/api/index.rst"]
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
-napoleon_google_docstring = True
+napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False
@@ -161,7 +161,7 @@ html_theme_options = {
     "github_url": "https://github.com/bjlittle/geovista",
     "show_prev_next": False,
     "use_edit_page_button": True,
-    "show_toc_level": 5,
+    "show_toc_level": 3,
     "icon_links": [
         {
             "name": "Twitter",
