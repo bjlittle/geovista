@@ -131,7 +131,7 @@ autoapi_options = [
 autoapi_python_class_content = "both"
 autoapi_keep_files = True
 
-autolog(f"[autoapi] {source_code_root = }")
+autolog(f"[autoapi] {root_dir = }")
 autolog(f"[autoapi] {autoapi_dirs     = }")
 autolog(f"[autoapi] {autoapi_ignore   = }")
 autolog(f"[autoapi] {autoapi_root     = }")
