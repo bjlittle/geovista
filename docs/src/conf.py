@@ -104,7 +104,7 @@ if release.endswith("+dirty"):
     release = release[: -len("+dirty")]
 
 # src base directory
-base_dir = Path(__file__).absolute().parent
+base_dir = Path(__file__).absolute().parents[1]
 
 # -- autoapi extension --------------------------------------------------------
 # See https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
@@ -131,7 +131,7 @@ autoapi_options = [
 autoapi_python_class_content = "both"
 autoapi_keep_files = True
 
-autolog(f"[autoapi] {root_dir = }")
+autolog(f"[autoapi] {root_dir         = }")
 autolog(f"[autoapi] {autoapi_dirs     = }")
 autolog(f"[autoapi] {autoapi_ignore   = }")
 autolog(f"[autoapi] {autoapi_root     = }")
