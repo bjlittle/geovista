@@ -35,9 +35,10 @@ import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 from sphinx_gallery.sorting import ExampleTitleSortKey
 
-# function to write  useful output to stdout, prefixing the source.
-def autolog(message):
-    print("[{}] {}".format(ntpath.basename(__file__), message))
+
+def autolog(message: str) -> None:
+    """Write useful output to stdout, prefixing the source."""
+    print(f"[{ntpath.basename(__file__)}] {message}")  # noqa: T201
 
 # -- General configuration ---------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#general-configuration
@@ -54,7 +55,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
-    "sphinx.ext.napoleon",    
+    "sphinx.ext.napoleon",
     "pyvista.ext.viewer_directive",
 ]
 
@@ -116,23 +117,21 @@ autoapi_ignore = [
     str(module_dir / "geovista/examples/*"),
 ]
 autoapi_member_order = "alphabetical"
-autoapi_options = [ "members", 
-                   "undoc-members", 
-                   #'private-members', 
-                   "show-inheritance", 
-                   "show-module-summary", 
-                   #'special-members', 
+autoapi_options = [ "members",
+                   "undoc-members",
+                   #'private-members',
+                   "show-inheritance",
+                   "show-module-summary",
+                   #'special-members',
                    "imported-members" ]
 
 autoapi_python_class_content = "both"
 autoapi_keep_files = True
-#suppress_warnings = ["autoapi"]
-#suppress_warnings = ["autoapi.python_import_resolution", "autoapi.not_readable"]
 
-autolog(f"[autoapi] source_code_root  = {source_code_root}")
-autolog(f"[autoapi] autoapi_dirs      = {autoapi_dirs}")
-autolog(f"[autoapi] autoapi_ignore    = {autoapi_ignore}")
-autolog(f"[autoapi] autoapi_root      = {autoapi_root}")
+autolog(f"[autoapi] {source_code_root = }")
+autolog(f"[autoapi] {autoapi_dirs     = }")
+autolog(f"[autoapi] {autoapi_ignore   = }")
+autolog(f"[autoapi] {autoapi_root     = }")
 
 # The name of the Pygments (syntax highlighting) style to use.
 # https://pygments.org/styles/
