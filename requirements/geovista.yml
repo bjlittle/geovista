@@ -48,6 +48,7 @@ dependencies:
   - jupyter_sphinx
   - pydata-sphinx-theme
   - sphinx
+  - sphinx-autoapi
   - sphinx-book-theme
   - sphinx-copybutton
   - sphinx-design
