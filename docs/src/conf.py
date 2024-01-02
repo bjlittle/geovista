@@ -40,6 +40,7 @@ def autolog(message: str) -> None:
     """Write useful output to stdout, prefixing the source."""
     print(f"[{ntpath.basename(__file__)}] {message}")  # noqa: T201
 
+
 # -- General configuration ---------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#general-configuration
 
@@ -65,7 +66,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [ "generated/api/index.rst"]
+exclude_patterns = ["generated/api/index.rst"]
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -117,13 +118,15 @@ autoapi_ignore = [
     str(module_dir / "geovista/examples/*"),
 ]
 autoapi_member_order = "alphabetical"
-autoapi_options = [ "members",
-                   "undoc-members",
-                   #'private-members',
-                   "show-inheritance",
-                   "show-module-summary",
-                   #'special-members',
-                   "imported-members" ]
+autoapi_options = [
+    "members",
+    "undoc-members",
+    #'private-members',
+    "show-inheritance",
+    "show-module-summary",
+    #'special-members',
+    "imported-members",
+]
 
 autoapi_python_class_content = "both"
 autoapi_keep_files = True
