@@ -13,7 +13,7 @@ dependencies:
   - cartopy >=0.22
   - click
   - click-default-group
-  - numpy >1.21
+  - numpy >=1.23
   - platformdirs
   - pooch
   - pykdtree
