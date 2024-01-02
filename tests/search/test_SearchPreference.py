@@ -3,29 +3,29 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Unit-tests for :class:`geovista.search.Preference`."""
+"""Unit-tests for :class:`geovista.search.SearchPreference`."""
 from __future__ import annotations
 
 import pytest
 
-from geovista.search import Preference
+from geovista.search import SearchPreference
 
 EXPECTED_VALUES: tuple[str, str] = ("center", "point")
 
 
 def test_member_count():
     """Test expected number of enumeration members."""
-    assert len(Preference) == 2
+    assert len(SearchPreference) == 2
 
 
 def test_members():
     """Test expected enumeration members."""
-    assert tuple([member.value for member in Preference]) == EXPECTED_VALUES
+    assert tuple([member.value for member in SearchPreference]) == EXPECTED_VALUES
 
 
 def test_values():
     """Test expected enumeration member values."""
-    assert Preference.values() == EXPECTED_VALUES
+    assert SearchPreference.values() == EXPECTED_VALUES
 
 
 @pytest.mark.parametrize(
@@ -45,10 +45,10 @@ def test_values():
 )
 def test_valid_members(member, expected):
     """Test valid enumeration members."""
-    assert Preference.valid(member) is expected
+    assert SearchPreference.valid(member) is expected
     if expected:
-        assert Preference(member).value == member.lower()
+        assert SearchPreference(member).value == member.lower()
     else:
-        emsg = f"{member!r} is not a valid Preference"
+        emsg = f"{member!r} is not a valid SearchPreference"
         with pytest.raises(ValueError, match=emsg):
-            _ = Preference(member)
+            _ = SearchPreference(member)

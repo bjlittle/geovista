@@ -17,7 +17,7 @@ from geovista.common import (
     distance,
 )
 from geovista.crs import WGS84, from_wkt
-from geovista.geodesic import PANEL_IDX_BY_NAME, BBox, Preference, panel
+from geovista.geodesic import PANEL_IDX_BY_NAME, BBox, EnclosedPreference, panel
 
 from .conftest import CIDS
 
@@ -29,7 +29,9 @@ C48 = (48, 48)
 
 
 @pytest.mark.parametrize("outside", [False, True])
-@pytest.mark.parametrize("preference", ["point", Preference.POINT, Preference("point")])
+@pytest.mark.parametrize(
+    "preference", ["point", EnclosedPreference.POINT, EnclosedPreference("point")]
+)
 def test_enclosed_point(antarctic_corners, lfric_sst, outside, preference):
     """Test enclosed points of antarctic cubed-sphere panel."""
     lons, lats = antarctic_corners
@@ -46,7 +48,9 @@ def test_enclosed_point(antarctic_corners, lfric_sst, outside, preference):
 
 
 @pytest.mark.parametrize("outside", [False, True])
-@pytest.mark.parametrize("preference", ["cell", Preference.CELL, Preference("cell")])
+@pytest.mark.parametrize(
+    "preference", ["cell", EnclosedPreference.CELL, EnclosedPreference("cell")]
+)
 def test_enclosed_cell(antarctic_corners, lfric_sst, outside, preference):
     """Test enclosed cells of antarctic cubed-sphere panel."""
     lons, lats = antarctic_corners
@@ -63,7 +67,8 @@ def test_enclosed_cell(antarctic_corners, lfric_sst, outside, preference):
 
 @pytest.mark.parametrize("outside", [False, True])
 @pytest.mark.parametrize(
-    "preference", [None, "center", Preference.CENTER, Preference("center")]
+    "preference",
+    [None, "center", EnclosedPreference.CENTER, EnclosedPreference("center")],
 )
 def test_enclosed_center(lfric_sst, outside, preference):
     """Test enclosed centers of antarctic cubed-sphere panel."""
