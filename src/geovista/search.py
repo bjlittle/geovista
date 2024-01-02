@@ -27,7 +27,7 @@ from .transform import transform_points
 if TYPE_CHECKING:
     from pyvista import PolyData
 
-__all__ = ["KDTree", "Preference", "find_cell_neighbours", "find_nearest_cell"]
+__all__ = ["KDTree", "SearchPreference", "find_cell_neighbours", "find_nearest_cell"]
 
 # type aliases
 CellIDs = list[int]
@@ -48,8 +48,8 @@ KDTREE_PREFERENCE: str = "point"
 
 
 # TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class Preference(_MixinStrEnum, Enum):
-    """Enumeration of mesh geometry preferences.
+class SearchPreference(_MixinStrEnum, Enum):
+    """Enumeration of mesh geometry search preferences.
 
     Notes
     -----
@@ -76,7 +76,7 @@ class KDTree:
         self,
         mesh: PolyData,
         leaf_size: int | None = None,
-        preference: str | Preference | None = None,
+        preference: str | SearchPreference | None = None,
     ) -> None:
         """Construct kd-tree for nearest neighbour search of mesh points/cell centers.
 
@@ -99,9 +99,9 @@ class KDTree:
             of the kd-tree. Increasing the leaf size will reduce the memory overhead and
             construction time, but increase the query time. Defaults to
             :data:`KDTREE_LEAF_SIZE`.
-        preference : str or Preference, optional
+        preference : str or SearchPreference, optional
             Construct the kd-tree from the `mesh` points ``point`` or cell centers
-            ``center``. Also see :class:`Preference`. Defaults to
+            ``center``. Also see :class:`SearchPreference`. Defaults to
             :data:`KDTREE_PREFERENCE`.
 
         Notes
@@ -117,15 +117,15 @@ class KDTree:
         if preference is None:
             preference = KDTREE_PREFERENCE
 
-        if not Preference.valid(preference):
-            options = " or ".join(f"{item!r}" for item in Preference.values())
+        if not SearchPreference.valid(preference):
+            options = " or ".join(f"{item!r}" for item in SearchPreference.values())
             emsg = f"Expected a preference of {options}, got '{preference}'."
             raise ValueError(emsg)
 
-        self._preference = Preference(preference)
+        self._preference = SearchPreference(preference)
         xyz = (
             mesh.points
-            if self._preference == Preference.POINT
+            if self._preference == SearchPreference.POINT
             else mesh.cell_centers().points
         )
         crs = from_wkt(mesh)
@@ -205,14 +205,14 @@ class KDTree:
         return self._kdtree.data.reshape(-1, 3).copy()
 
     @property
-    def preference(self) -> Preference:
+    def preference(self) -> SearchPreference:
         """The target mesh geometry to search.
 
         Focus either on the mesh points or the mesh cell centers.
 
         Returns
         -------
-        Preference
+        SearchPreference
             The preference of mesh geometry to search.
 
         Notes

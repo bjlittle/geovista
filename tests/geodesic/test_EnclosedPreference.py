@@ -3,29 +3,29 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Unit-tests for :class:`geovista.geodesic.Preference`."""
+"""Unit-tests for :class:`geovista.geodesic.EnclosedPreference`."""
 from __future__ import annotations
 
 import pytest
 
-from geovista.geodesic import Preference
+from geovista.geodesic import EnclosedPreference
 
 EXPECTED_VALUES: tuple[str, str] = ("cell", "center", "point")
 
 
 def test_member_count():
     """Test expected number of enumeration members."""
-    assert len(Preference) == 3
+    assert len(EnclosedPreference) == 3
 
 
 def test_members():
     """Test expected enumeration members."""
-    assert tuple([member.value for member in Preference]) == EXPECTED_VALUES
+    assert tuple([member.value for member in EnclosedPreference]) == EXPECTED_VALUES
 
 
 def test_values():
     """Test expected enumeration member values."""
-    assert Preference.values() == EXPECTED_VALUES
+    assert EnclosedPreference.values() == EXPECTED_VALUES
 
 
 @pytest.mark.parametrize(
@@ -49,10 +49,10 @@ def test_values():
 )
 def test_valid_members(member, expected):
     """Test valid enumeration members."""
-    assert Preference.valid(member) is expected
+    assert EnclosedPreference.valid(member) is expected
     if expected:
-        assert Preference(member).value == member.lower()
+        assert EnclosedPreference(member).value == member.lower()
     else:
-        emsg = f"{member!r} is not a valid Preference"
+        emsg = f"{member!r} is not a valid EnclosedPreference"
         with pytest.raises(ValueError, match=emsg):
-            _ = Preference(member)
+            _ = EnclosedPreference(member)

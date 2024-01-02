@@ -38,8 +38,8 @@ if TYPE_CHECKING:
 
 __all__ = [
     "BBox",
+    "EnclosedPreference",
     "GEODESIC_NPTS",
-    "Preference",
     "line",
     "npoints",
     "npoints_by_idx",
@@ -106,8 +106,8 @@ PREFERENCE: str = "center"
 
 
 # TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class Preference(_MixinStrEnum, Enum):
-    """Enumeration of geodesic mesh geometry preferences.
+class EnclosedPreference(_MixinStrEnum, Enum):
+    """Enumeration of mesh geometry enclosed preferences.
 
     Notes
     -----
@@ -515,7 +515,7 @@ class BBox:
         surface: pv.PolyData,
         tolerance: float | None = BBOX_TOLERANCE,
         outside: bool | None = False,
-        preference: str | Preference | None = None,
+        preference: str | EnclosedPreference | None = None,
     ) -> pv.PolyData:
         """Extract region of the `surface` contained within the bounding-box.
 
@@ -534,7 +534,7 @@ class BBox:
             By default, select those points of the `surface` that are inside
             the bounding-box. Otherwise, select those points that are outside
             the bounding-box.
-        preference : str or Preference, optional
+        preference : str or EnclosedPreference, optional
             Criteria for defining whether a face of a `surface` mesh is
             deemed to be enclosed by the bounding-box. A `preference` of
             ``cell`` requires all points defining the face to be within the
@@ -558,15 +558,15 @@ class BBox:
         if preference is None:
             preference = PREFERENCE
 
-        if not Preference.valid(preference):
-            options = " or ".join(f"{item!r}" for item in Preference.values())
+        if not EnclosedPreference.valid(preference):
+            options = " or ".join(f"{item!r}" for item in EnclosedPreference.values())
             emsg = f"Expected a preference of {options}, got '{preference}'."
             raise ValueError(emsg)
 
-        preference = Preference(preference)
+        preference = EnclosedPreference(preference)
         self._generate_bbox_mesh(surface=surface)
 
-        if preference == Preference.CENTER:
+        if preference == EnclosedPreference.CENTER:
             original = surface
             surface = surface.cell_centers()
 
@@ -578,9 +578,9 @@ class BBox:
         scalars = "SelectedPoints"
 
         # sample the surface with the enclosed cells to extract the bbox region
-        if preference == Preference.CENTER:
+        if preference == EnclosedPreference.CENTER:
             region = original.extract_cells(selected[scalars].view(bool))
-        elif preference == Preference.POINT:
+        elif preference == EnclosedPreference.POINT:
             region = selected.threshold(0.5, scalars=scalars, preference="cell")
         else:
             region = surface.extract_points(

@@ -13,9 +13,14 @@ import pyvista as pv
 
 from geovista.common import GV_FIELD_CRS, from_cartesian
 from geovista.crs import WGS84, to_wkt
-from geovista.search import KDTREE_LEAF_SIZE, KDTREE_PREFERENCE, KDTree, Preference
+from geovista.search import (
+    KDTREE_LEAF_SIZE,
+    KDTREE_PREFERENCE,
+    KDTree,
+    SearchPreference,
+)
 
-PREFERENCES = Preference.values()
+PREFERENCES = SearchPreference.values()
 
 
 def test_defaults(lam_uk):
@@ -42,7 +47,7 @@ def test_preference(lam_uk, preference):
     kdtree = KDTree(lam_uk, preference=preference)
     n_points = (
         lam_uk.n_cells
-        if Preference(preference) == Preference.CENTER
+        if SearchPreference(preference) == SearchPreference.CENTER
         else lam_uk.n_points
     )
     assert kdtree.n_points == n_points
@@ -50,7 +55,7 @@ def test_preference(lam_uk, preference):
 
 def test_preference_fail(lam_uk):
     """Test trap of invalid preference."""
-    options = " or ".join([f"{item!r}" for item in Preference.values()])
+    options = " or ".join([f"{item!r}" for item in SearchPreference.values()])
     emsg = f"Expected a preference of {options}"
     with pytest.raises(ValueError, match=emsg):
         _ = KDTree(lam_uk, preference="invalid")
@@ -65,7 +70,7 @@ def test_missing_crs(lam_uk, preference):
     kdtree = KDTree(lam_uk, preference=preference)
     expected = (
         lam_uk.points
-        if Preference(preference) == Preference.POINT
+        if SearchPreference(preference) == SearchPreference.POINT
         else lam_uk.cell_centers().points
     )
     np.testing.assert_array_almost_equal(kdtree.points, expected)
@@ -76,7 +81,7 @@ def test_crs_eqc(lam_uk, preference):
     """Test kd-tree CRS transformation."""
     lam_xyz = (
         lam_uk.points
-        if Preference(preference) == Preference.POINT
+        if SearchPreference(preference) == SearchPreference.POINT
         else lam_uk.cell_centers().points
     )
     lam_lonlat = from_cartesian(pv.PolyData(lam_xyz))
