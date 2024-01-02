@@ -17,7 +17,7 @@ Notes
 
 # -- Path setup --------------------------------------------------------------
 
-# If extensions (or modules to document with autodoc) are in another directory,
+# If extensions (or modules to document with api docs) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
@@ -47,9 +47,7 @@ def autolog(message):
 # ones.
 extensions = [
     #    "jupyter_sphinx",
-    "sphinxcontrib.apidoc",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",    
+    "autoapi.extension",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
@@ -106,28 +104,35 @@ if release.endswith("+dirty"):
 # src base directory
 base_dir = Path(__file__).absolute().parent
 
-
-# -- apidoc extension ---------------------------------------------------------
-# See https://github.com/sphinx-contrib/apidoc
+# -- autoapi extension --------------------------------------------------------
+# See https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
+#     https://github.com/readthedocs/sphinx-autoapi
+#
 source_code_root = (Path(__file__).parents[2]).absolute()
-module_dir = source_code_root / "src" 
-apidoc_module_dir = str(module_dir)
-apidoc_output_dir = str(Path(__file__).parent / "generated/api")
-apidoc_toc_file = False
-
-apidoc_excluded_paths = [
-    str(module_dir / "geovista/examples"),
+module_dir = source_code_root / "src"
+autoapi_dirs = [module_dir]
+autoapi_root = "generated/api"
+autoapi_ignore = [
+    str(module_dir / "geovista/examples/*"),
 ]
+autoapi_member_order = "alphabetical"
+autoapi_options = [ "members", 
+                   "undoc-members", 
+                   #'private-members', 
+                   "show-inheritance", 
+                   "show-module-summary", 
+                   #'special-members', 
+                   "imported-members" ]
 
-apidoc_module_first = True
-apidoc_separate_modules = True
-apidoc_extra_args = []
+autoapi_python_class_content = "both"
+autoapi_keep_files = True
+#suppress_warnings = ["autoapi"]
+#suppress_warnings = ["autoapi.python_import_resolution", "autoapi.not_readable"]
 
-autolog(f"[sphinx-apidoc] source_code_root      = {source_code_root}")
-autolog(f"[sphinx-apidoc] module_dir            = {apidoc_module_dir}")
-autolog(f"[sphinx-apidoc] apidoc_excluded_paths = {apidoc_excluded_paths}")
-autolog(f"[sphinx-apidoc] apidoc_output_dir     = {apidoc_output_dir}")
-
+autolog(f"[autoapi] source_code_root  = {source_code_root}")
+autolog(f"[autoapi] autoapi_dirs      = {autoapi_dirs}")
+autolog(f"[autoapi] autoapi_ignore    = {autoapi_ignore}")
+autolog(f"[autoapi] autoapi_root      = {autoapi_root}")
 
 # The name of the Pygments (syntax highlighting) style to use.
 # https://pygments.org/styles/
@@ -156,7 +161,7 @@ html_theme_options = {
     "github_url": "https://github.com/bjlittle/geovista",
     "show_prev_next": False,
     "use_edit_page_button": True,
-    "show_toc_level": 3,
+    "show_toc_level": 5,
     "icon_links": [
         {
             "name": "Twitter",
@@ -194,7 +199,6 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
 }
-
 
 # -- Configuration: copybutton -----------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
