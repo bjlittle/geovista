@@ -1,6 +1,7 @@
 sphinx
 sphinxcontrib-apidoc
 sphinx_design
+sphinx-autoapi
 sphinx-book-theme
 sphinx-copybutton
 sphinx-gallery

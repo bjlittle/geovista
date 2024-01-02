@@ -13,7 +13,7 @@ dependencies:
   - cartopy >=0.22
   - click
   - click-default-group
-  - numpy >1.21
+  - numpy >=1.23
   - platformdirs
   - pooch
   - pykdtree
@@ -48,7 +48,7 @@ dependencies:
   - jupyter_sphinx
   - pydata-sphinx-theme
   - sphinx
-  - sphinxcontrib-apidoc  
+  - sphinx-autoapi
   - sphinx-book-theme
   - sphinx-copybutton
   - sphinx-design
