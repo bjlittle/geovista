@@ -110,7 +110,7 @@ base_dir = Path(__file__).absolute().parent
 # See https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
 #     https://github.com/readthedocs/sphinx-autoapi
 #
-source_code_root = (Path(__file__).parents[2]).absolute()
+root_dir = base_dir.parent
 module_dir = source_code_root / "src"
 autoapi_dirs = [module_dir]
 autoapi_root = "generated/api"
