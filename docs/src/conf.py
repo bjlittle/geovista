@@ -17,7 +17,7 @@ Notes
 
 # -- Path setup --------------------------------------------------------------
 
-# If extensions (or modules to document with autodoc) are in another directory,
+# If extensions (or modules to document with api docs) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
@@ -27,12 +27,19 @@ from __future__ import annotations
 
 import datetime
 from importlib.metadata import version as get_version
+import ntpath
 import os
 from pathlib import Path
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 from sphinx_gallery.sorting import ExampleTitleSortKey
+
+
+def autolog(message: str) -> None:
+    """Write useful output to stdout, prefixing the source."""
+    print(f"[{ntpath.basename(__file__)}] {message}")  # noqa: T201
+
 
 # -- General configuration ---------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#general-configuration
@@ -42,12 +49,14 @@ from sphinx_gallery.sorting import ExampleTitleSortKey
 # ones.
 extensions = [
     #    "jupyter_sphinx",
+    "autoapi.extension",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
+    "sphinx.ext.napoleon",
     "pyvista.ext.viewer_directive",
 ]
 
@@ -57,8 +66,23 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ["generated/api/index.rst"]
 
+# -- Napoleon extension -------------------------------------------------------
+# See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = False
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True  # includes dunders in api doc
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = True
+napoleon_use_rtype = True
+napoleon_use_keyword = True
+napoleon_custom_sections = None
 
 # -- Project information -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
@@ -79,9 +103,42 @@ release = get_version("geovista")
 if release.endswith("+dirty"):
     release = release[: -len("+dirty")]
 
-# src base directory
-base_dir = Path(__file__).absolute().parent
+# src docs directory
+docs_dir = Path(__file__).absolute().parent
+autolog(f"[general] {docs_dir         = }")
 
+# -- autoapi extension --------------------------------------------------------
+# See https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
+#     https://github.com/readthedocs/sphinx-autoapi
+#
+root_dir = docs_dir.parent.parent
+module_dir = root_dir / "src"
+autoapi_dirs = [module_dir]
+autoapi_root = "generated/api"
+autoapi_ignore = [
+    str(module_dir / "geovista/examples/*"),
+]
+autoapi_member_order = "alphabetical"
+autoapi_options = [
+    "members",
+    # "inherited-members",
+    "undoc-members",
+    #'private-members',
+    # "special-members",
+    "show-inheritance",
+    # "show-inheritance-diagram",
+    "show-module-summary",
+    #'special-members',
+    "imported-members",
+]
+
+autoapi_python_class_content = "both"
+autoapi_keep_files = True
+
+autolog(f"[autoapi] {root_dir         = }")
+autolog(f"[autoapi] {autoapi_dirs     = }")
+autolog(f"[autoapi] {autoapi_ignore   = }")
+autolog(f"[autoapi] {autoapi_root     = }")
 
 # The name of the Pygments (syntax highlighting) style to use.
 # https://pygments.org/styles/
@@ -110,6 +167,7 @@ html_theme_options = {
     "github_url": "https://github.com/bjlittle/geovista",
     "show_prev_next": False,
     "use_edit_page_button": True,
+    "show_toc_level": 3,
     "icon_links": [
         {
             "name": "Twitter",
@@ -147,7 +205,6 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
 }
-
 
 # -- Configuration: copybutton -----------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
@@ -191,7 +248,7 @@ pyvista.BUILDING_GALLERY = True
 os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 
 # Save figures in specified directory
-images_dir = base_dir / "generated" / "images"
+images_dir = docs_dir / "generated" / "images"
 pyvista.FIGURE_PATH = str(images_dir)
 if not images_dir.exists():
     images_dir.mkdir(parents=True, exist_ok=True)

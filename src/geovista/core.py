@@ -484,7 +484,7 @@ def resize(
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
-    inplace : boolean, default=False
+    inplace : bool, default=False
         Update `mesh` in-place.
 
     Returns

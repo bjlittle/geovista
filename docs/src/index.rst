@@ -25,3 +25,11 @@ We're just starting to populate the documentation, so the content will evolve ov
    :hidden:
 
    generated/gallery/index
+
+
+.. toctree::
+   :caption: API Reference
+   :maxdepth: 1
+   :hidden:
+
+   API Reference <generated/api/geovista/index>

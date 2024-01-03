@@ -207,7 +207,7 @@ def fvcom_tamar(
     preference : str or Preference, optional
         Render the mesh using ``cell`` or ``point`` data. Defaults to
         :data:`PREFERENCE`.
-    warp : boolean, default=False
+    warp : bool, default=False
         Warp the mesh nodes by the ``point`` data.
     factor : float, optional
         The scale factor used to warp the mesh. Defaults to
@@ -467,7 +467,7 @@ def lfric_orog(warp: bool | None = False, factor: float | None = None) -> pv.Pol
 
     Parameters
     ----------
-    warp : boolean, default=False
+    warp : bool, default=False
         Warp the mesh nodes by the orography ``point`` data.
     factor : float, optional
         The scale factor used to warp the mesh. Defaults to
