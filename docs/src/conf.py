@@ -103,14 +103,15 @@ release = get_version("geovista")
 if release.endswith("+dirty"):
     release = release[: -len("+dirty")]
 
-# src base directory
-base_dir = Path(__file__).absolute().parents[1]
+# src docs directory
+docs_dir = Path(__file__).absolute().parent
+autolog(f"[general] {docs_dir         = }")
 
 # -- autoapi extension --------------------------------------------------------
 # See https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
 #     https://github.com/readthedocs/sphinx-autoapi
 #
-root_dir = base_dir.parent
+root_dir = docs_dir.parent.parent
 module_dir = root_dir / "src"
 autoapi_dirs = [module_dir]
 autoapi_root = "generated/api"
@@ -120,9 +121,12 @@ autoapi_ignore = [
 autoapi_member_order = "alphabetical"
 autoapi_options = [
     "members",
+    #"inherited-members",
     "undoc-members",
     #'private-members',
+    #"special-members",
     "show-inheritance",
+    #"show-inheritance-diagram",
     "show-module-summary",
     #'special-members',
     "imported-members",
@@ -244,7 +248,7 @@ pyvista.BUILDING_GALLERY = True
 os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 
 # Save figures in specified directory
-images_dir = base_dir / "generated" / "images"
+images_dir = docs_dir / "generated" / "images"
 pyvista.FIGURE_PATH = str(images_dir)
 if not images_dir.exists():
     images_dir.mkdir(parents=True, exist_ok=True)
