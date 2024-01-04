@@ -66,7 +66,13 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints", "generated/api/index.rst"]
+exclude_patterns = [
+    "**.ipynb_checkpoints",
+    ".DS_Store",
+    "_build",
+    "Thumbs.db",
+    "reference/generated/api/index.rst",
+]
 
 # The file extensions of source files.
 source_suffix = {
@@ -99,9 +105,14 @@ release = get_version("geovista")
 if release.endswith("+dirty"):
     release = release[: -len("+dirty")]
 
-# src docs directory
-docs_dir = Path(__file__).absolute().parent
-autolog(f"[general] {docs_dir         = }")
+# docs src directory
+src_dir = Path(__file__).absolute().parent
+root_dir = src_dir.parents[1]
+package_dir = root_dir / "src"
+
+autolog(f"[general] {src_dir=}")
+autolog(f"[general] {root_dir=}")
+autolog(f"[general] {package_dir=}")
 
 
 # -- napoleon options --------------------------------------------------------
@@ -127,34 +138,34 @@ napoleon_custom_sections = None
 #     https://github.com/readthedocs/sphinx-autoapi
 #
 
-root_dir = docs_dir.parent.parent
-module_dir = root_dir / "src"
-autoapi_dirs = [module_dir]
-autoapi_root = "generated/api"
+autoapi_type = "python"
+autoapi_dirs = [
+    package_dir,
+]
+autoapi_root = "reference/generated/api"
 autoapi_ignore = [
-    str(module_dir / "geovista/examples/*"),
+    str(package_dir / "geovista/examples/*"),
 ]
 autoapi_member_order = "alphabetical"
 autoapi_options = [
     "members",
     # "inherited-members",
     "undoc-members",
-    #'private-members',
+    # "private-members",
     # "special-members",
     "show-inheritance",
     # "show-inheritance-diagram",
     "show-module-summary",
-    #'special-members',
     "imported-members",
 ]
 
 autoapi_python_class_content = "both"
 autoapi_keep_files = True
+autoapi_add_toctree_entry = False
 
-autolog(f"[autoapi] {root_dir         = }")
-autolog(f"[autoapi] {autoapi_dirs     = }")
-autolog(f"[autoapi] {autoapi_ignore   = }")
-autolog(f"[autoapi] {autoapi_root     = }")
+autolog(f"[autoapi] {autoapi_dirs=}")
+autolog(f"[autoapi] {autoapi_ignore=}")
+autolog(f"[autoapi] {autoapi_root=}")
 
 
 # -- internationalization options --------------------------------------------
@@ -187,38 +198,54 @@ html_context = {
 }
 
 html_theme_options = {
-    "home_page_in_toc": False,
+    "home_page_in_toc": True,
+    "icon_links": [
+        {
+            "name": "GitHub Discussions",
+            "url": "https://github.com/bjlittle/geovista/discussions",
+            "icon": "fa fa-comments fa-fw",
+        },
+        {
+            "name": "GitHub Issues",
+            "url": "https://github.com/bjlittle/geovista/issues",
+            "icon": "fa-brands fa-square-github fa-fw",
+        },
+        {
+            "name": "GitHub Pulls",
+            "url": "https://github.com/bjlittle/geovista/pulls",
+            "icon": "fa-brands fa-github-alt fa-fw",
+        },
+        {
+            "name": "X (formally Twitter)",
+            "url": "https://twitter.com/geovista_devs",
+            "icon": "fa-brands fa-twitter",
+        },
+    ],
     "path_to_docs": "docs/src",
     "repository_branch": "main",
     "repository_url": "https://github.com/bjlittle/geovista",
     "show_prev_next": True,
     "show_toc_level": 3,
+    "toc_title": "On this page",
     "use_download_button": True,
-    "use_edit_page_button": True,
+    "use_edit_page_button": False,
     "use_fullscreen_button": True,
-    "use_issues_button": True,
+    "use_issues_button": False,
     "use_repository_button": True,
-    "use_source_button": True,
-    "toc_title": "",
-    "icon_links": [
-        {
-            "name": "Twitter",
-            "url": "https://twitter.com/geovista_devs",
-            "icon": "fab fa-twitter-square",
-        },
-        {
-            "name": "Discussions",
-            "url": "https://github.com/bjlittle/geovista/discussions",
-            "icon": "fa fa-comments fa-fw",
-        },
-    ],
+    "use_sidenotes": True,
+    "use_source_button": False,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
-html_css_files = ["style.css", "theme_overrides.css"]
+html_static_path = [
+    "_static",
+]
+html_css_files = [
+    "style.css",
+    "theme_overrides.css",
+]
 
 
 # -- linkcheck builder options -----------------------------------------------
@@ -282,7 +309,7 @@ pyvista.BUILDING_GALLERY = True
 os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 
 # Save figures in specified directory
-images_dir = docs_dir / "generated" / "images"
+images_dir = src_dir / "generated" / "images"
 pyvista.FIGURE_PATH = str(images_dir)
 if not images_dir.exists():
     images_dir.mkdir(parents=True, exist_ok=True)
