@@ -38,7 +38,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
         :link-type: ref
         :img-top: _static/images/icons/tutorials.svg
         :class-img-top: dark-light
-        :class-card: sd-rounded-3 sd-bg-light
+        :class-card: sd-rounded-3
 
         Topic driven themed lessons.
 
@@ -49,7 +49,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
         :link-type: ref
         :img-top: _static/images/icons/howtos.svg
         :class-img-top: dark-light
-        :class-card: sd-rounded-3 sd-bg-light
+        :class-card: sd-rounded-3
 
         Treasure trove of how-to guides.
 
@@ -60,7 +60,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
         :link-type: ref
         :img-top: _static/images/icons/enrichment.svg
         :class-img-top: dark-light
-        :class-card: sd-rounded-3 sd-bg-light
+        :class-card: sd-rounded-3
 
         Gain a deeper understanding.
 
