@@ -1,0 +1,12 @@
+.sd-card-img-top {
+    width: 15% !important;
+    position: absolute !important;
+    padding-left: 10px;
+    min-width: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.sd-card-img {
+    height: auto;
+}

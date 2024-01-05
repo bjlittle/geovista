@@ -1,4 +1,4 @@
-.. _examples_gallery:
+.. _gv-examples-gallery:
 
 ****************
 Examples Gallery

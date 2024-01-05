@@ -22,6 +22,7 @@ help:
 clean:
 	-rm -rf $(BUILDDIR)
 	-rm -rf $(SOURCEDIR)/generated
+	-rm -rf $(SOURCEDIR)/reference/generated
 	-rm -f $(SOURCEDIR)/sg_execution_times.rst
 
 # Catch-all target: route all unknown targets to Sphinx using the new

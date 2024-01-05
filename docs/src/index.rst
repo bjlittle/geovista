@@ -1,35 +1,105 @@
-.. title:: GeoVista
+.. _gv-root:
 
-.. raw:: html
+GeoVista Documentation
+======================
 
-   <h1 align="center">
-     <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/branding/logo/secondary/geovistalogo2.png" alt="GeoVista">
-   </h1>
-   <h4 align="center">
-       Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
-   </h4>
-   <br>
+Welcome to the GeoVista documentation!
 
-.. card:: Examples Gallery
-   :text-align: center
-   :link: examples_gallery
-   :link-type: ref
-   :img-top: _static/images/icons/gallery.svg
-   :width: 50%
-   :margin: 0 5 auto auto
+.. margin:: **Under Construction**
 
-We're just starting to populate the documentation, so the content will evolve over time ...
+    We've marked content with a 🚧 to indicate that it's still under construction.
+
+We're busily crafting the structure and content of the documentation,
+so it's likely that some material will change, move around or even be removed.  However,
+the dust will settle and we'll eventually have a solid foundation to build upon.  Thanks
+for your patience.
+
+In the meantime, your feedback is important to us.  So feel free to submit a GitHub
+`Issue <https://github.com/bjlittle/geovista/issues>`_  or
+`Pull-Request <https://github.com/bjlittle/geovista/pulls>`_ to help us elevate our
+documentation to the next level of awesome 🚀
+
+Alternatively, if it's easier, come share with us over on our GitHub
+`Discussions <https://github.com/bjlittle/geovista/discussions>`_.
+
+We'd 💛 to hear from you.
+
+----
+
+Choose your approach to learning and GeoVista knowledge discovery.
+
+.. grid:: 1 1 2 2
+    :gutter: 2
+
+    .. grid-item-card:: Tutorials 🚧
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-tutorials
+        :link-type: ref
+        :img-top: _static/images/icons/tutorials.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3 sd-bg-light
+
+        Topic driven themed lessons.
+
+    .. grid-item-card:: How-To Guides 🚧
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-howtos
+        :link-type: ref
+        :img-top: _static/images/icons/howtos.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3 sd-bg-light
+
+        Treasure trove of how-to guides.
+
+    .. grid-item-card:: Enrichment 🚧
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-enrichment
+        :link-type: ref
+        :img-top: _static/images/icons/enrichment.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3 sd-bg-light
+
+        Gain a deeper understanding.
+
+    .. grid-item-card:: Reference Material 🚧
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-reference
+        :link-type: ref
+        :img-top: _static/images/icons/reference.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        No fuss facts.
+
 
 .. toctree::
-   :maxdepth: 1
-   :hidden:
+    :caption: GeoVista 101
+    :maxdepth: 1
+    :hidden:
 
-   generated/gallery/index
+    overview
+    quick_start
+    installation
 
 
 .. toctree::
-   :caption: API Reference
-   :maxdepth: 1
-   :hidden:
+    :caption: Contents
+    :maxdepth: 1
+    :hidden:
 
-   API Reference <generated/api/geovista/index>
+    tutorials/index
+    howtos/index
+    enrichment/index
+    reference/index
+
+
+.. toctree::
+    :caption: Gallery
+    :maxdepth: 1
+    :hidden:
+
+    Examples <generated/gallery/index>

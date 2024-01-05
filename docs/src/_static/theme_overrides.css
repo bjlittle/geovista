@@ -1,0 +1,10 @@
+.custom-title {
+    font-weight: bold;
+    color: #80d050 !important;
+    text-align: left;
+}
+
+.custom-body {
+    text-align: left;
+    margin-left: max(45px, 15%);
+}

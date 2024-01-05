@@ -67,7 +67,7 @@ ignore = [
 
 [tool.codespell]
 ignore-words-list = "whet,projets"
-skip = ".git,*.ipynb"
+skip = ".git,*.ipynb,*.rst"
 
 
 [tool.pytest.ini_options]
