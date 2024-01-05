@@ -18,6 +18,12 @@ Citation 🚧
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum metus est, mollis vitae nunc eu, ultrices pretium.
 
 
+Diátaxis 🚧
+-----------
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam at lectus et turpis imperdiet iaculis ultrices sit.
+
+
 License 🚧
 ----------
 
