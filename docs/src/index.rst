@@ -53,7 +53,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
 
         Treasure trove of how-to guides.
 
-    .. grid-item-card:: Enrichment 🚧
+    .. grid-item-card:: Enrichment Material 🚧
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-enrichment
@@ -62,7 +62,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        Gain a deeper understanding.
+        Deeper understanding awaits.
 
     .. grid-item-card:: Reference Material 🚧
         :class-title: custom-title
