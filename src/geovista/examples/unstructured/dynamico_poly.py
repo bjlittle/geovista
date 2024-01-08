@@ -26,6 +26,8 @@ System Model. The data targets the mesh faces/cells.
 Note that, a graticule and Natural Earth coastlines are rendered, and the
 mesh is also transformed to the Polyconic pseudo-conical projection.
 
+----
+
 """  # noqa: D205,D212,D400
 from __future__ import annotations
 

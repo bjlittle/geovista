@@ -18,6 +18,8 @@ regular quad-cell sample grid.
 
 A Natural Earth base layer is also rendered for geolocation context.
 
+----
+
 """  # noqa: D205,D212,D400
 from __future__ import annotations
 

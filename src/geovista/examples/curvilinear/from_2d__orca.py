@@ -23,6 +23,8 @@ potential temperature data. The data targets the mesh faces/cells.
 Note that, a threshold is also applied to remove land ``NaN`` cells, and a
 Natural Earth base layer is rendered along with Natural Earth coastlines.
 
+----
+
 """  # noqa: D205,D212,D400
 from __future__ import annotations
 

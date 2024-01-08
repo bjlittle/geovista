@@ -26,6 +26,8 @@ Note that, a Natural Earth base layer is rendered along with Natural Earth
 coastlines, and the mesh is also transformed to the Foucaut pseudo-cylindrical
 projection.
 
+----
+
 """  # noqa: D205,D212,D400
 from __future__ import annotations
 

@@ -24,6 +24,8 @@ temperature data located on the mesh faces/cells.
 Note that, a Natural Earth base layer is rendered along with Natural Earth
 coastlines.
 
+----
+
 """  # noqa: D205,D212,D400
 from __future__ import annotations
 
