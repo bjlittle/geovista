@@ -84,6 +84,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
     overview
     quick_start
     installation
+    next_steps
 
 
 .. toctree::
