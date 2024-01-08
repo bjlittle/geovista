@@ -1,30 +1,30 @@
 .. _gv-about:
 
-About 🚧
+🚧 About
 ========
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in consectetur orci. Nam convallis viverra dolor in.
 
 
-Authors 🚧
+🚧 Authors
 ----------
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque et tristique turpis, sed imperdiet lacus. Maecenas pretium.
 
 
-Citation 🚧
+🚧 Citation
 -----------
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum metus est, mollis vitae nunc eu, ultrices pretium.
 
 
-Diátaxis 🚧
+🚧 Diátaxis
 -----------
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam at lectus et turpis imperdiet iaculis ultrices sit.
 
 
-License 🚧
+🚧 License
 ----------
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam augue purus, sodales eget porttitor at, tempus at.
