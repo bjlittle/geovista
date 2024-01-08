@@ -25,6 +25,8 @@ Natural Earth base layer is rendered along with Natural Earth coastlines. The me
 is also transformed to the Sinusoidal (Sanson-Flamsteed) pseudo-cylindrical
 projection.
 
+----
+
 """  # noqa: D205,D212,D400
 from __future__ import annotations
 

@@ -21,6 +21,8 @@ The data is synthetically generated and targets the mesh nodes/points.
 
 Note that, Natural Earth coastlines are also rendered.
 
+----
+
 """  # noqa: D205,D212,D400
 from __future__ import annotations
 

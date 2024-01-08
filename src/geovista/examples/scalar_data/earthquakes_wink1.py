@@ -26,18 +26,21 @@ and
 as part of this
 `HoloViz Tutorial <https://holoviz.org/tutorial/Overview.html#the-holoviz-tutorial>`_.
 
-=========  =============================================================  =========================
-Magnitude  Earthquake Effects                                             Estimated Number per Year
-=========  =============================================================  =========================
-<=2.5      Usually not felt, but can be recorded by seismograph.          Millions
-2.5 - 5.4  Often felt, but only causes minor damage.                      500,000
-5.5 - 6.0  Slight damage to buildings and other structures.               350
-6.1 - 6.9  May cause a lot of damage in very populated areas.             100
-7.0 - 7.9  Major earthquake. Serious damage.                              10-15
->=8.0      Great earthquake. Can destroy communities near the epicenter.  One every year or two
-=========  =============================================================  =========================
+=============  =============================================================  =========================
+Magnitude      Earthquake Effects                                             Estimated Number per Year
+=============  =============================================================  =========================
+**<=2.5**      Usually not felt, but can be recorded by seismograph.          Millions
+**2.5 - 5.4**  Often felt, but only causes minor damage.                      500,000
+**5.5 - 6.0**  Slight damage to buildings and other structures.               350
+**6.1 - 6.9**  May cause a lot of damage in very populated areas.             100
+**7.0 - 7.9**  Major earthquake. Serious damage.                              10-15
+**>=8.0**      Great earthquake. Can destroy communities near the epicenter.  One every year or two
+=============  =============================================================  =========================
 
-`Reference <https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/>`_.
+See `reference <https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/>`_
+for further details.
+
+----
 
 """  # noqa: D205,D212,D400,E501
 from __future__ import annotations

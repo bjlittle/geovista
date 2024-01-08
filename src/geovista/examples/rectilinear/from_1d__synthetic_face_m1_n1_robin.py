@@ -22,6 +22,8 @@ The data is synthetically generated and targets the mesh faces/cells.
 Note that, Natural Earth coastlines are also rendered, and the mesh is transformed
 to the Robinson pseudo-cylindrical projection.
 
+----
+
 """  # noqa: D205,D212,D400
 from __future__ import annotations
 
