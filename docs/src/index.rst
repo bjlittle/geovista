@@ -31,7 +31,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
 .. grid:: 1 1 2 2
     :gutter: 2
 
-    .. grid-item-card:: Tutorials 🚧
+    .. grid-item-card:: 🚧 Tutorials
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-tutorials
@@ -42,7 +42,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
 
         Topic driven themed lessons.
 
-    .. grid-item-card:: How-To Guides 🚧
+    .. grid-item-card:: 🚧 How-To Guides
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-howtos
@@ -53,7 +53,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
 
         Treasure trove of how-to guides.
 
-    .. grid-item-card:: Enrichment Material 🚧
+    .. grid-item-card:: 🚧 Enrichment Material
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-enrichment
@@ -64,7 +64,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
 
         Deeper understanding awaits.
 
-    .. grid-item-card:: Reference Material 🚧
+    .. grid-item-card:: 🚧 Reference Material
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-reference

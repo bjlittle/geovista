@@ -1,6 +1,6 @@
 .. _gv-reference:
 
-Reference Material 🚧
+🚧 Reference Material
 =====================
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sed mi id leo volutpat porttitor a eu.
