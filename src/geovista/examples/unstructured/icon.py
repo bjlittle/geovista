@@ -68,6 +68,7 @@ def main() -> None:
         shadow=True,
     )
     plotter.view_yz()
+    plotter.camera.zoom(1.3)
     plotter.show()
 
 

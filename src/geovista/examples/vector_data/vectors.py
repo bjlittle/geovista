@@ -57,6 +57,7 @@ def main() -> None:
     plotter.add_base_layer(texture=gv.natural_earth_1(), zlevel=0, lighting=False)
     plotter.add_mesh(mesh.arrows, lighting=False)
     plotter.add_axes()
+    plotter.camera.zoom(1.3)
     plotter.show()
 
 

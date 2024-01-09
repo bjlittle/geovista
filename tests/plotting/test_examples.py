@@ -29,6 +29,7 @@ EXAMPLES = get_modules("geovista.examples")
 
 # prepare geovista/pyvista for off-screen image testing
 pv.global_theme.load_theme(pv.plotting.themes._TestingTheme())
+pv.global_theme.window_size = [450, 300]
 pv.OFF_SCREEN = True
 gv.GEOVISTA_IMAGE_TESTING = True
 
@@ -53,7 +54,7 @@ if not cache_dir.exists():
 thresholds = {
     "point_cloud.from_points__orca_cloud": {"warning_value": 202.0},
     "point_cloud.from_points__orca_cloud_eqc": {"warning_value": 250.0},
-    "spatial_index.uber_h3": {"warning_value": 395.0},
+    "spatial_index.uber_h3": {"warning_value": 446.0},
 }
 
 

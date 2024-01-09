@@ -63,7 +63,7 @@ def main() -> None:
     # Plot the unstructured mesh.
     plotter = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(mesh, scalar_bar_args=sargs)
+    plotter.add_mesh(mesh, scalar_bar_args=sargs, show_edges=True)
     plotter.add_base_layer(texture=gv.natural_earth_1())
     plotter.add_coastlines()
     plotter.add_graticule()
@@ -74,6 +74,7 @@ def main() -> None:
         font_size=10,
         shadow=True,
     )
+    plotter.camera.zoom(1.3)
     plotter.show()
 
 

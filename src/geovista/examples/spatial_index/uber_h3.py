@@ -503,6 +503,7 @@ def main() -> None:
         shadow=True,
     )
     plotter.add_coastlines()
+    plotter.camera.zoom(1.5)
     plotter.show()
 
 
