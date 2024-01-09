@@ -305,7 +305,7 @@ def add_texture_coords(
     u_coord = (lons + 180) / 360
     v_coord = (lats + 90) / 180
     t_coord = np.vstack([u_coord, v_coord]).T
-    mesh.active_t_coords = t_coord
+    mesh.active_texture_coordinates = t_coord
 
     return mesh
 
