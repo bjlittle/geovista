@@ -551,7 +551,7 @@ def point_cloud(mesh: pv.PolyData) -> bool:
     .. versionadded:: 0.2.0
 
     """
-    return (mesh.n_points == mesh.n_faces) and (mesh.n_lines == 0)
+    return (mesh.n_points == mesh.n_cells) and (mesh.n_lines == 0)
 
 
 def sanitize_data(
