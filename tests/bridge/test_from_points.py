@@ -17,7 +17,7 @@ def test_defaults(lam_uk_sample, wgs84_wkt):
     assert result[GV_FIELD_CRS] == wgs84_wkt
     assert np.isclose(result[GV_FIELD_RADIUS], RADIUS)
     assert result.n_points == lons.size
-    assert result.n_points == result.n_faces
+    assert result.n_points == result.n_cells
 
 
 def test_to_cartesian_kwarg_pass_thru(mocker, lam_uk_sample):
