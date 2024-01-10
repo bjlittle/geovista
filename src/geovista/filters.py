@@ -116,14 +116,18 @@ def remesh(
     if not triangulated(poly0):
         poly0.triangulate(inplace=True)
 
+    # Ensure to explicitly use default direction=(0, 0, 1) for
+    # the plane with a post x-axis rotation of 90 degrees.
+    # See https://github.com/bjlittle/geovista/issues/447
     poly1 = pv.Plane(
         center=(radius / 2, 0, 0),
         i_resolution=1,
         j_resolution=1,
         i_size=radius,
         j_size=radius * 2,
-        direction=(0, 1, 0),
+        direction=(0, 0, 1),
     )
+    poly1.rotate_x(90, inplace=True)
     poly1.rotate_z(meridian, inplace=True)
     poly1.triangulate(inplace=True)
 
