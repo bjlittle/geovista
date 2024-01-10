@@ -71,7 +71,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import partial
 from itertools import combinations
-from pathlib import Path
 
 try:
     import h3
