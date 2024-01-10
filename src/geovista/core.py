@@ -313,7 +313,7 @@ def add_texture_coords(
     u_coord = (lons + 180) / 360
     v_coord = (lats + 90) / 180
     t_coord = np.vstack([u_coord, v_coord]).T
-    mesh.active_t_coords = t_coord
+    mesh.active_texture_coordinates = t_coord
 
     return mesh
 
@@ -325,10 +325,10 @@ def combine(
 ) -> pv.PolyData:
     """Combine two or more meshes into one mesh.
 
-    Only meshes with faces will be combined. Support is not yet provided for combining
+    Only meshes with cells will be combined. Support is not yet provided for combining
     meshes that consist of only points or lines.
 
-    Note that, no check is performed to ensure that mesh faces do not overlap.
+    Note that, no check is performed to ensure that mesh cells do not overlap.
     However, meshes may share coincident points. Coincident point data from the
     first input mesh will overwrite all other mesh data sharing the same
     coincident point in the resultant mesh.
@@ -342,7 +342,7 @@ def combine(
         the resultant mesh.
     clean : bool, default=False
         Specify whether to merge duplicate points, remove unused points,
-        and/or remove degenerate faces in the resultant mesh.
+        and/or remove degenerate cells in the resultant mesh.
 
     Returns
     -------
@@ -384,15 +384,15 @@ def combine(
 
         if mesh.n_lines:
             emsg = (
-                f"Can only combine meshes with faces, input mesh #{i+1} "
+                f"Can only combine meshes with cells, input mesh #{i+1} "
                 "contains lines."
             )
             raise TypeError(emsg)
 
-        if mesh.n_faces == 0:
+        if mesh.n_cells == 0:
             emsg = (
-                f"Can only combine meshes with faces, input mesh #{i+1} "
-                "has no faces."
+                f"Can only combine meshes with cells, input mesh #{i+1} "
+                "has no cells."
             )
             raise TypeError(emsg)
 
@@ -413,9 +413,9 @@ def combine(
             faces[faces_n_offset[:-1]] = faces_n
 
         combined_faces.append(faces)
-        # accumulate running totals of combined mesh points and faces
+        # accumulate running totals of combined mesh points and cells
         n_points += mesh.n_points
-        n_faces += mesh.n_faces
+        n_faces += mesh.n_cells
 
         if data:
             # perform intersection to determine common names
