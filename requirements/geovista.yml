@@ -18,7 +18,7 @@ dependencies:
   - pooch
   - pykdtree
   - pyproj >=3.3
-  - pyvista >=0.40
+  - pyvista >=0.43.1
 
 # pantry dependencies (core)
   - netcdf4
