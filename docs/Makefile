@@ -29,3 +29,9 @@ clean:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+# Spin up a local http server to view the rendered documentation.
+# This is required for interactive examples to work.
+serve-html:
+	@echo "Serving documentation at http://localhost:11000"
+	@python -m http.server 11000 --directory "$(BUILDDIR)"/html

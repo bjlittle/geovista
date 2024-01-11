@@ -71,15 +71,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import partial
 from itertools import combinations
-from pathlib import Path
 
 try:
     import h3
 except ImportError:
     emsg = (
         "Missing optional dependency 'h3' is required for the "
-        f"{Path(__file__).stem!r} example. Use pip or conda "
-        "to install."
+        "`uber_h3.py` example. Use pip or conda to install."
     )
     raise ImportError(emsg) from None
 
