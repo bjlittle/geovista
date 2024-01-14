@@ -222,6 +222,7 @@ html_theme_options = {
             "icon": "fa-brands fa-twitter",
         },
     ],
+    "navigation_with_keys": False,
     "path_to_docs": "docs/src",
     "repository_branch": "main",
     "repository_url": "https://github.com/bjlittle/geovista",
