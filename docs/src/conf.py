@@ -318,9 +318,8 @@ if not images_dir.exists():
 # We also need to start this on CI services and GitHub Actions has a CI env var
 if on_rtd or os.environ.get("CI"):
     pyvista.start_xvfb()
-    scraper = DynamicScraper()
-else:
-    scraper = "pyvista"
+
+scraper = DynamicScraper()
 
 
 # -- sphinx-gallery options --------------------------------------------------
