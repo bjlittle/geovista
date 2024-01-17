@@ -20,7 +20,6 @@ import numpy as np
 import pyvista as pv
 from shapely import LineString, MultiLineString
 
-from . import fetch_coastlines
 from .common import (
     COASTLINES_RESOLUTION,
     GV_FIELD_RADIUS,
@@ -32,6 +31,7 @@ from .common import (
 )
 from .core import resize
 from .crs import WGS84, to_wkt
+from .pantry import fetch_coastlines
 
 __all__ = [
     "coastlines",
