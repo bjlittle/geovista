@@ -26,10 +26,10 @@ import logging
 import os
 
 from .bridge import Transform  # noqa: F401
-from .cache import (  # noqa: F401
+from .cache import fetch_coastlines
+from .assets.textures import ( # noqa: F401
     blue_marble,
     checkerboard,
-    fetch_coastlines,
     natural_earth_1,
     natural_earth_hypsometric,
 )
@@ -60,3 +60,4 @@ logger.setLevel("WARNING")
 GEOVISTA_IMAGE_TESTING: bool = (
     os.environ.get("GEOVISTA_IMAGE_TESTING", "false").lower() == "true"
 )
+
