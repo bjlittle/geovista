@@ -32,6 +32,7 @@ from .crs import from_wkt, to_wkt  # noqa: F401
 from .geodesic import BBox, line, panel, wedge  # noqa: F401
 from .geometry import coastlines  # noqa: F401
 from .geoplotter import GeoPlotter  # noqa: F401
+from .pantry import fetch_coastlines  # noqa: F401
 from .pantry.textures import (  # noqa: F401
     blue_marble,
     checkerboard,
