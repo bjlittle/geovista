@@ -17,6 +17,15 @@ import pyvista as pv
 
 from ..cache import CACHE
 
+
+__all__ = [
+    "blue_marble",
+    "checkerboard",
+    "natural_earth_1",
+    "natural_earth_hypsometric",
+]
+
+
 # Type aliases.
 TextureLike = str | pv.Texture
 

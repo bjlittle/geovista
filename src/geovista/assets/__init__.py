@@ -19,6 +19,11 @@ from geovista.cache import CACHE
 from geovista.common import COASTLINES_RESOLUTION
 
 
+__all__ = [
+    "fetch_coastlines",
+]
+
+
 def fetch_coastlines(resolution: str | None = None) -> pv.PolyData:
     """Get the Natural Earth coastlines for the required resolution.
 
