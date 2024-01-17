@@ -3,7 +3,7 @@ prune .tox
 prune docs
 prune requirements
 recursive-include requirements pypi-*.txt
-recursive-include src *.py *.rst *.txt
+recursive-include src *.py *.rst *.txt *.md
 prune tests
 
 include .git_archival.txt
