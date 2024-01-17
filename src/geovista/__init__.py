@@ -26,7 +26,7 @@ import logging
 import os
 
 from .bridge import Transform  # noqa: F401
-from .cache import fetch_coastlines
+from .assets import fetch_coastlines
 from .assets.textures import ( # noqa: F401
     blue_marble,
     checkerboard,
