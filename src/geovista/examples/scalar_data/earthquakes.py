@@ -47,7 +47,7 @@ from __future__ import annotations
 from warnings import warn
 
 import geovista as gv
-from geovista.assets.pantry import usgs_earthquakes
+from geovista.pantry.data import usgs_earthquakes
 import geovista.theme
 
 

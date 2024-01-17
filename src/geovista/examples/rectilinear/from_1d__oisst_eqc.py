@@ -32,7 +32,7 @@ conformal cylindrical projection.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.assets.pantry import oisst_avhrr_sst
+from geovista.pantry.data import oisst_avhrr_sst
 import geovista.theme
 
 

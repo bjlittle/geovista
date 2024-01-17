@@ -29,7 +29,7 @@ Natural Earth base layer is rendered along with Natural Earth coastlines.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.assets.pantry import ww3_global_smc
+from geovista.pantry.data import ww3_global_smc
 import geovista.theme
 
 

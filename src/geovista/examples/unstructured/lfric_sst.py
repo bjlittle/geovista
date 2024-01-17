@@ -30,7 +30,7 @@ base layer is also rendered along with Natural Earth coastlines and a graticule.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.assets.pantry import lfric_sst
+from geovista.pantry.data import lfric_sst
 import geovista.theme
 
 

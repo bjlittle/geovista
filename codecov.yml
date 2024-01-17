@@ -11,7 +11,7 @@ ignore:
   - "**/cli.py"
   - "**/geoplotter.py"
   - "**/image_cache"
-  - "**/assets/pantry.py"
+  - "**/pantry/data.py"
   - "**/cache/registry.txt"
   - "**/report.py"
   - "**/samples.py"

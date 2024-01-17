@@ -33,7 +33,7 @@ across the mesh faces/cells.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.assets.pantry import ww3_global_tri
+from geovista.pantry.data import ww3_global_tri
 import geovista.theme
 
 

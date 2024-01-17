@@ -26,19 +26,18 @@ import logging
 import os
 
 from .bridge import Transform  # noqa: F401
-from .assets import fetch_coastlines
-from .assets.textures import ( # noqa: F401
-    blue_marble,
-    checkerboard,
-    natural_earth_1,
-    natural_earth_hypsometric,
-)
 from .common import vtk_warnings_off, vtk_warnings_on  # noqa: F401
 from .core import slice_cells, slice_lines  # noqa: F401
 from .crs import from_wkt, to_wkt  # noqa: F401
 from .geodesic import BBox, line, panel, wedge  # noqa: F401
 from .geometry import coastlines  # noqa: F401
 from .geoplotter import GeoPlotter  # noqa: F401
+from .pantry.textures import (  # noqa: F401
+    blue_marble,
+    checkerboard,
+    natural_earth_1,
+    natural_earth_hypsometric,
+)
 from .report import Report  # noqa: F401
 
 try:
@@ -60,4 +59,3 @@ logger.setLevel("WARNING")
 GEOVISTA_IMAGE_TESTING: bool = (
     os.environ.get("GEOVISTA_IMAGE_TESTING", "false").lower() == "true"
 )
-

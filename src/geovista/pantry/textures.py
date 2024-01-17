@@ -15,8 +15,7 @@ from __future__ import annotations
 
 import pyvista as pv
 
-from ..cache import CACHE
-
+from geovista.cache import CACHE
 
 __all__ = [
     "blue_marble",
@@ -85,7 +84,6 @@ def blue_marble(location: bool | None = False) -> TextureLike:
 
     """
     return _fetch_texture("world.topo.bathy.200412.3x5400x2700.jpg", location=location)
-
 
 
 def checkerboard(location: bool | None = False) -> TextureLike:

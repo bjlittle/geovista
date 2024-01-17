@@ -31,7 +31,7 @@ coastlines.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.assets.pantry import fesom
+from geovista.pantry.data import fesom
 import geovista.theme
 
 
