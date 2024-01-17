@@ -5,13 +5,14 @@ GeoVista Documentation
 
 Welcome to the GeoVista documentation!
 
-.. margin:: **Under Construction**
+.. note::
+    :class: margin
 
     We've marked content with a 🚧 to indicate that it's still under construction.
 
 We're busily crafting the structure and content of the documentation,
 so it's likely that some material will change, move around or even be removed.  However,
-the dust will settle and we'll eventually have a solid foundation to build upon.  Thanks
+the dust will eventually settle and we'll have a stable foundation to build upon.  Thanks
 for your patience.
 
 In the meantime, your feedback is important to us.  So feel free to submit a GitHub
