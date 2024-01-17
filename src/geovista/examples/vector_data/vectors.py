@@ -26,7 +26,7 @@ from __future__ import annotations
 import numpy as np
 
 import geovista as gv
-from geovista.pantry.samples import regular_grid
+from geovista.pantry.meshes import regular_grid
 import geovista.theme
 
 

@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Unit-tests for :func:`geovista.pantry.samples.fvcom_tamar`."""
+"""Unit-tests for :func:`geovista.pantry.meshes.fvcom_tamar`."""
 from __future__ import annotations
 
 import operator
@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from geovista.common import RADIUS, Preference, distance
-from geovista.pantry.samples import fvcom_tamar
+from geovista.pantry.meshes import fvcom_tamar
 
 PREFERENCES: tuple[str, str] = ("cell", "point")
 

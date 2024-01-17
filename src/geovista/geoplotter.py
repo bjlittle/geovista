@@ -22,7 +22,7 @@ from pyproj import CRS
 import pyvista as pv
 from pyvista.core.utilities import helpers
 
-from geovista.pantry.samples import (
+from geovista.pantry.meshes import (
     LFRIC_RESOLUTION,
     REGULAR_RESOLUTION,
     lfric,
@@ -101,7 +101,7 @@ def _lfric_mesh(
     ----------
     resolution : str, optional
         The resolution of the LFRic unstructured cubed-sphere. Defaults to
-        :data:`geovista.pantry.samples.LFRIC_RESOLUTION`.
+        :data:`geovista.pantry.meshes.LFRIC_RESOLUTION`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
 
@@ -293,7 +293,7 @@ class GeoPlotterBase:
         resolution : str, optional
             The resolution of the cubed-sphere to generate as the base layer,
             which may be either ``c48``, ``c96`` or ``c192``. Defaults to
-            :data:`geovista.pantry.samples.LFRIC_RESOLUTION`. Alternatively, generate a
+            :data:`geovista.pantry.meshes.LFRIC_RESOLUTION`. Alternatively, generate a
             regular grid using a format of ``rN``, where ``N`` is the number of cells
             in latitude, and ``N * 1.5`` cells in longitude. When adding a base layer
             to a projection, the default is to use a regular grid with resolution
