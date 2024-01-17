@@ -58,3 +58,8 @@ jobs:
         if: github.actor == 'dependabot[bot]' || github.actor == 'geovista-ci[bot]' || github.actor == 'pre-commit-ci[bot]'
         with:
           labels: 'skip changelog'
+
+      - uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.pull_request.head.ref, 'merge-back') || startsWith(github.event.pull_request.head.ref, 'mb')
+        with:
+          labels: 'type: merge-back'
