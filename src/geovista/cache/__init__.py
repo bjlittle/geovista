@@ -12,12 +12,12 @@ Notes
 """
 from __future__ import annotations
 
-from importlib.resources import files
 import os
+from pathlib import Path
 
 import pooch
 
-from .config import resources
+from geovista.config import resources
 
 __all__ = [
     "CACHE",
@@ -60,7 +60,9 @@ CACHE: pooch.Pooch = pooch.create(
 )
 
 CACHE.load_registry(
-    (files(__package__) / "registry.txt").open("r", encoding="utf-8", errors="strict")
+    (Path(__file__).parent / "registry.txt").open(
+        "r", encoding="utf-8", errors="strict"
+    )
 )
 
 #: Verbosity status of the pooch cache manager logger.
@@ -99,7 +101,7 @@ def reload_registry(fname: str | None = None) -> None:
     ----------
     fname : str, optional
         The filename of the registry to be loaded. If ``None``, defaults to
-        the ``registry.txt`` resource file packaged with geovista.
+        the ``cache/registry.txt`` resource file packaged with geovista.
 
     Notes
     -----
@@ -107,7 +109,7 @@ def reload_registry(fname: str | None = None) -> None:
 
     """
     if fname is None:
-        fname = (files(__package__) / "registry.txt").open(
+        fname = (Path(__file__).parent / "registry.txt").open(
             "r", encoding="utf-8", errors="strict"
         )
     CACHE.load_registry(fname)
@@ -115,4 +117,3 @@ def reload_registry(fname: str | None = None) -> None:
 
 # configure the pooch cache manager logger verbosity
 pooch_mute(GEOVISTA_POOCH_MUTE)
-
