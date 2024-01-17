@@ -32,7 +32,7 @@ from __future__ import annotations
 import matplotlib as mpl
 
 import geovista as gv
-from geovista.pantry import icon_soil
+from geovista.assets.pantry import icon_soil
 import geovista.theme
 
 

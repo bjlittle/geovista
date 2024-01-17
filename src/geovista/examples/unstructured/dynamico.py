@@ -31,7 +31,7 @@ Note that, a graticule and Natural Earth coastlines are also rendered.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry import dynamico
+from geovista.assets.pantry import dynamico
 import geovista.theme
 
 

@@ -24,8 +24,8 @@ import numpy as np
 from numpy import ma
 import pooch
 
-from .cache import CACHE
-from .common import LRU_CACHE_SIZE, _MixinStrEnum
+from geovista.cache import CACHE
+from geovista.common import LRU_CACHE_SIZE, _MixinStrEnum
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike

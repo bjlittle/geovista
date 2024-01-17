@@ -31,8 +31,8 @@ resolution Natural Earth coastlines are also rendered.
 from __future__ import annotations
 
 import geovista as gv
+from geovista.assets.pantry import um_orca2
 from geovista.common import cast_UnstructuredGrid_to_PolyData as cast
-from geovista.pantry import um_orca2
 import geovista.theme
 from geovista.transform import transform_mesh
 

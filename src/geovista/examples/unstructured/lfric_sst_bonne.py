@@ -31,7 +31,7 @@ The mesh is also transformed to the Bonne projection.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry import lfric_sst
+from geovista.assets.pantry import lfric_sst
 import geovista.theme
 
 

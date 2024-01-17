@@ -30,7 +30,7 @@ coastlines.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry import lam_pacific
+from geovista.assets.pantry import lam_pacific
 import geovista.theme
 
 

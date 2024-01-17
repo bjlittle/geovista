@@ -18,8 +18,7 @@ import numpy as np
 import pooch
 import pyvista as pv
 
-from geovista import pantry
-
+from .assets import pantry
 from .bridge import Transform
 from .cache import CACHE
 from .common import Preference
@@ -100,7 +99,7 @@ def _lfric_sample_to_mesh(sample: pantry.SampleUnstructuredXY) -> pv.PolyData:
 
 
 def cloud_amount(preference: str | pantry.CloudPreference | None = None) -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a Met Office c768 unstructured cubed-sphere with
     optional cloud amount data.
@@ -142,7 +141,7 @@ def cloud_amount(preference: str | pantry.CloudPreference | None = None) -> pv.P
 
 
 def dynamico() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a DYNAMICO icosahedral mesh.
 
@@ -167,7 +166,7 @@ def dynamico() -> pv.PolyData:
 
 
 def fesom() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a AWI-CM FESOM 1.4 mesh with Sea Surface Temperature data.
 
@@ -197,7 +196,7 @@ def fvcom_tamar(
     warp: bool | None = False,
     factor: float | None = None,
 ) -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a Plymouth Marine Laboratory (PML) Finite Volume Community Ocean
     Model (FVCOM) mesh of the Tamar Estuaries and Plymouth Sound.
@@ -261,7 +260,7 @@ def fvcom_tamar(
 
 
 def icon_soil() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate an Icosahedral Nonhydrostatic Weather and Climate Model (ICON)
     global 160km resolution (R02B04 grid) triangular mesh with soil type data.
@@ -287,7 +286,7 @@ def icon_soil() -> pv.PolyData:
 
 
 def lam_equator() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a C4 cubed-sphere Local Area Model (LAM) mesh located at the equator.
 
@@ -305,7 +304,7 @@ def lam_equator() -> pv.PolyData:
 
 
 def lam_falklands() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a C4 cubed-sphere Local Area Model (LAM) mesh located over
     the Falkland Islands.
@@ -324,7 +323,7 @@ def lam_falklands() -> pv.PolyData:
 
 
 def lam_london() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a C4 cubed-sphere Local Area Model (LAM) mesh located over
     London, United Kingdom.
@@ -343,7 +342,7 @@ def lam_london() -> pv.PolyData:
 
 
 def lam_new_zealand() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a C4 cubed-sphere Local Area Model (LAM) mesh located over
     New Zealand.
@@ -362,7 +361,7 @@ def lam_new_zealand() -> pv.PolyData:
 
 
 def lam_pacific() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a high-resolution Local Area Model (LAM) mesh located over the
     Pacific Ocean.
@@ -385,7 +384,7 @@ def lam_pacific() -> pv.PolyData:
 
 
 def lam_polar() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a C4 cubed-sphere Local Area Model (LAM) mesh located over
     the Polar cap.
@@ -404,7 +403,7 @@ def lam_polar() -> pv.PolyData:
 
 
 def lam_uk() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a C4 cubed-sphere Local Area Model (LAM) mesh located over
     the United Kingdom.
@@ -418,7 +417,7 @@ def lam_uk() -> pv.PolyData:
 
 
 def lfric(resolution: str | None = None) -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Get the LFRic model unstructured cubed-sphere at the specified `resolution`.
 
@@ -461,7 +460,7 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
 
 
 def lfric_orog(warp: bool | None = False, factor: float | None = None) -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a global surface altitude mesh.
 
@@ -506,7 +505,7 @@ def lfric_orog(warp: bool | None = False, factor: float | None = None) -> pv.Pol
 
 
 def lfric_sst() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a global Sea Surface Temperature (SST) mesh.
 
@@ -587,7 +586,7 @@ def regular_grid(
 
 
 def oisst_avhrr_sst() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a global Sea Surface Temperature (SST) NOAA/NCEI OISST AVHRR mesh.
 
@@ -612,7 +611,7 @@ def oisst_avhrr_sst() -> pv.PolyData:
 
 
 def um_orca2() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a global Sea Water Potential Temperature ORCA2 mesh.
 
@@ -634,7 +633,7 @@ def um_orca2() -> pv.PolyData:
 
 
 def um_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
-    """Create a point-cloud mesh from :mod:`geovista.pantry` sample data.
+    """Create a point-cloud mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate an ORCA2 point-cloud of Sea Water Potential Temperature gradients.
 
@@ -669,7 +668,7 @@ def um_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
 
 
 def ww3_global_smc(step: int | None = None) -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a global Sea Surface Wave Significant Height WAVEWATCH III (WW3)
     Spherical Multi-Cell (SMC) mesh.
@@ -701,7 +700,7 @@ def ww3_global_smc(step: int | None = None) -> pv.PolyData:
 
 
 def ww3_global_tri() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry` sample data.
+    """Create a mesh from :mod:`geovista.assets.pantry` sample data.
 
     Generate a global Sea Surface Wave Significant Height WAVEWATCH III (WW3)
     triangular mesh.

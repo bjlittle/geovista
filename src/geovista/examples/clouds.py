@@ -39,7 +39,7 @@ import cmocean
 from matplotlib.colors import LinearSegmentedColormap
 
 import geovista as gv
-from geovista.pantry import cloud_amount
+from geovista.assets.pantry import cloud_amount
 import geovista.theme
 
 #: The colormap to render the clouds.

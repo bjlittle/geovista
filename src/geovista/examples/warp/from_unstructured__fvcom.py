@@ -31,7 +31,7 @@ Plymouth Sound and Tamar River in Cornwall, UK.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry import fvcom_tamar
+from geovista.assets.pantry import fvcom_tamar
 import geovista.theme
 
 

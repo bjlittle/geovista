@@ -32,7 +32,7 @@ mesh is also transformed to the Polyconic pseudo-conical projection.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry import dynamico
+from geovista.assets.pantry import dynamico
 import geovista.theme
 
 

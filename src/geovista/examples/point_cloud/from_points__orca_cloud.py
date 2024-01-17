@@ -30,7 +30,7 @@ Earth base layer with opacity.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry import um_orca2_gradient
+from geovista.assets.pantry import um_orca2_gradient
 from geovista.samples import ZLEVEL_SCALE_CLOUD
 import geovista.theme
 

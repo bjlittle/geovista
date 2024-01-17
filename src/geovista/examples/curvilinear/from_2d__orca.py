@@ -29,7 +29,7 @@ Natural Earth base layer is rendered along with Natural Earth coastlines.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry import um_orca2
+from geovista.assets.pantry import um_orca2
 import geovista.theme
 
 

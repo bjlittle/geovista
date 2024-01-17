@@ -10,10 +10,10 @@ import numpy as np
 import pytest
 import pyvista as pv
 
+from geovista.assets.pantry import lam_uk as pantry_lam_uk
 from geovista.bridge import Transform
 from geovista.crs import WGS84
 from geovista.geometry import coastlines as geometry_coastlines
-from geovista.pantry import lam_uk as pantry_lam_uk
 from geovista.samples import lam_uk as sample_lam_uk
 from geovista.samples import lfric as sample_lfric
 from geovista.samples import lfric_sst as sample_lfric_sst
