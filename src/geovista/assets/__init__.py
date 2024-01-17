@@ -27,8 +27,9 @@ __all__ = [
 def fetch_coastlines(resolution: str | None = None) -> pv.PolyData:
     """Get the Natural Earth coastlines for the required resolution.
 
-    If the resource is not already available in the geovista :data:`CACHE`,
-    then it will be downloaded from the :data:`BASE_URL`.
+    If the resource is not already available in the geovista
+    :data:`geovista.cache.CACHE`, then it will be downloaded from the
+    :data:`geovista.cache.BASE_URL`.
 
     Parameters
     ----------

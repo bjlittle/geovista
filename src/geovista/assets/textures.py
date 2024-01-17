@@ -33,8 +33,9 @@ TextureLike = str | pv.Texture
 def _fetch_texture(fname: str, location: bool | None = False) -> TextureLike:
     """Get the texture resource from the cache.
 
-    If the resource is not already available in the geovista :data:`CACHE`,
-    then it will be downloaded from the :data:`BASE_URL`.
+    If the resource is not already available in the geovista
+    :data:`geovista.cache.CACHE`, then it will be downloaded from the
+    :data:`geovista.cache.BASE_URL`.
 
     Parameters
     ----------
@@ -63,8 +64,9 @@ def _fetch_texture(fname: str, location: bool | None = False) -> TextureLike:
 def blue_marble(location: bool | None = False) -> TextureLike:
     """Get the NASA Blue Marble Next Generation with topography and bathymetry texture.
 
-    If the resource is not already available in the geovista :data:`CACHE`,
-    then it will be downloaded from the :data:`BASE_URL`.
+    If the resource is not already available in the geovista
+    :data:`geovista.cache.CACHE`, then it will be downloaded from the
+    :data:`geovista.cache.BASE_URL`.
 
     Parameters
     ----------
@@ -89,8 +91,9 @@ def blue_marble(location: bool | None = False) -> TextureLike:
 def checkerboard(location: bool | None = False) -> TextureLike:
     """Get the UV checker map 4K texture.
 
-    If the resource is not already available in the geovista :data:`CACHE`,
-    then it will be downloaded from the :data:`BASE_URL`.
+    If the resource is not already available in the geovista
+    :data:`geovista.cache.CACHE`, then it will be downloaded from the
+    :data:`geovista.cache.BASE_URL`.
 
     Parameters
     ----------
@@ -118,8 +121,9 @@ def natural_earth_1(location: bool | None = False) -> TextureLike:
 
     This resource has been down-sampled to 65% of its original resolution.
 
-    If the resource is not already available in the geovista :data:`CACHE`,
-    then it will be downloaded from the :data:`BASE_URL`.
+    If the resource is not already available in the geovista
+    :data:`geovista.cache.CACHE`, then it will be downloaded from the
+    :data:`geovista.cache.BASE_URL`.
 
     Parameters
     ----------
@@ -148,8 +152,9 @@ def natural_earth_hypsometric(location: bool | None = False) -> TextureLike:
 
     This resource has been down-sampled to 65% of its original resolution.
 
-    If the resource is not already available in the geovista :data:`CACHE`,
-    then it will be downloaded from the :data:`BASE_URL`.
+    If the resource is not already available in the geovista
+    :data:`geovista.cache.CACHE`, then it will be downloaded from the
+    :data:`geovista.cache.BASE_URL`.
 
     Parameters
     ----------
