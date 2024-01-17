@@ -7,14 +7,15 @@ Examples Gallery
 This interactive gallery highlights the growing capabilities and
 features of ``geovista``.
 
+.. role:: bash(code)
+    :language: bash
+
 The gallery is generated from the ``geovista.examples``, which can also
-be run from the command line::
+be run from the command line with :bash:`geovista examples --all --verbose`.
 
-  geovista examples --run all --verbose
+.. note::
+  :class: margin
 
-.. only:: on_rtd
-
-  .. note::
-    Title text and graticule labels will **not** be rendered when viewing the
-    documentation on ``ReadtheDocs``, as they are not supported in this
-    headless environment.
+  The gallery `vtk.js <https://kitware.github.io/vtk-js/index.html>`_
+  **Interactive Scene** backend does **not** support text rendering,
+  or points as spheres.

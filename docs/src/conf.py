@@ -176,8 +176,15 @@ language = "en"
 
 # -- pygments options --------------------------------------------------------
 # See https://pygments.org/styles/
+# See https://pygments.org/docs/lexers/#lexers-for-python-and-related-languages
 
 # The name of the Pygments (syntax highlighting) style to use.
+highlight_language = "python"
+highlight_options = {
+    "default": "python",
+    "bash": "powershell",
+    "python": "python",
+}
 pygments_style = "friendly"
 
 
