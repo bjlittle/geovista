@@ -18,10 +18,10 @@ import numpy as np
 import pooch
 import pyvista as pv
 
-from .bridge import Transform
-from .cache import CACHE
-from .common import Preference
-from .pantry import data as pantry_data
+from geovista.bridge import Transform
+from geovista.cache import CACHE
+from geovista.common import Preference
+from geovista.pantry import data as pantry_data
 
 __all__ = [
     "LFRIC_RESOLUTION",
