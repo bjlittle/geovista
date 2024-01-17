@@ -105,3 +105,11 @@ Choose your approach to learning and GeoVista knowledge discovery.
     :hidden:
 
     Examples <generated/gallery/index>
+
+
+.. toctree::
+    :caption: Developer
+    :maxdepth: 1
+    :hidden:
+
+    developer/index
