@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.pantry.data import um_orca2_gradient
-from geovista.samples import ZLEVEL_SCALE_CLOUD
+from geovista.pantry.samples import ZLEVEL_SCALE_CLOUD
 import geovista.theme
 
 
