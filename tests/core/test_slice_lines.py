@@ -16,7 +16,7 @@ from geovista.common import from_cartesian, to_cartesian
 from geovista.core import slice_lines
 from geovista.crs import WGS84, to_wkt
 from geovista.geodesic import line
-from geovista.samples import lam_uk, lfric
+from geovista.pantry.meshes import lam_uk, lfric
 
 
 @dataclass

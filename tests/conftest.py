@@ -13,10 +13,10 @@ import pyvista as pv
 from geovista.bridge import Transform
 from geovista.crs import WGS84
 from geovista.geometry import coastlines as geometry_coastlines
-from geovista.pantry import lam_uk as pantry_lam_uk
-from geovista.samples import lam_uk as sample_lam_uk
-from geovista.samples import lfric as sample_lfric
-from geovista.samples import lfric_sst as sample_lfric_sst
+from geovista.pantry.data import lam_uk as pantry_lam_uk
+from geovista.pantry.meshes import lam_uk as sample_lam_uk
+from geovista.pantry.meshes import lfric as sample_lfric
+from geovista.pantry.meshes import lfric_sst as sample_lfric_sst
 
 
 @pytest.fixture()

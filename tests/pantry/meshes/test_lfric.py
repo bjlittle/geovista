@@ -3,12 +3,12 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Unit-tests for :func:`geovista.samples.lfric`."""
+"""Unit-tests for :func:`geovista.pantry.meshes.lfric`."""
 from __future__ import annotations
 
 import pytest
 
-from geovista.samples import LFRIC_RESOLUTION, lfric
+from geovista.pantry.meshes import LFRIC_RESOLUTION, lfric
 
 
 def test_resolution_warning(mocker):
