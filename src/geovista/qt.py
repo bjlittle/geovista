@@ -23,6 +23,19 @@ except ModuleNotFoundError as e:
 from .geoplotter import GeoPlotterBase
 
 
+class GeoQtInteractor(GeoPlotterBase, pvqt.QtInteractor):
+    """A Geovista QtInteractor.
+
+    See :class:`geovista.geoplotter.GeoPlotterBase` and
+    :class:`pyvistaqt.QtInteractor`.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
+
+
 class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
     """A QT aware background plotter.
 

@@ -33,6 +33,9 @@ def test_pyvistaqt_mixin(mocker):
     """Test pyvistaqt class mixin to geovista geo classes."""
     slot = mocker.sentinel.slot
 
+    class QtInteractor:
+        dummy = slot
+
     class BackgroundPlotter:
         dummy = slot
 
@@ -40,10 +43,13 @@ def test_pyvistaqt_mixin(mocker):
         dummy = slot
 
     module = mocker.MagicMock(
-        BackgroundPlotter=BackgroundPlotter, MultiPlotter=MultiPlotter
+        QtInteractor=QtInteractor,
+        BackgroundPlotter=BackgroundPlotter,
+        MultiPlotter=MultiPlotter,
     )
     mocker.patch.dict("sys.modules", pyvistaqt=module)
     import geovista.qt
 
     assert geovista.qt.GeoBackgroundPlotter().dummy == slot
     assert geovista.qt.GeoMultiPlotter().dummy == slot
+    assert geovista.qt.GeoQtInteractor().dummy == slot
