@@ -3,9 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Provide specialisation to support a QT geospatial aware plotter.
-
-See :class:`pyvistaqt.BackgroundPlotter` and :class:`pyvistaqt.MultiPlotter`.
+"""Extend functionality of :mod:`pyvistaqt` to provide geospatial support.
 
 Notes
 -----
@@ -24,7 +22,7 @@ from .geoplotter import GeoPlotterBase
 
 
 class GeoQtInteractor(GeoPlotterBase, pvqt.QtInteractor):
-    """A Geovista QtInteractor.
+    """Extend the Qt render window interactor.
 
     See :class:`geovista.geoplotter.GeoPlotterBase` and
     :class:`pyvistaqt.QtInteractor`.
@@ -37,7 +35,7 @@ class GeoQtInteractor(GeoPlotterBase, pvqt.QtInteractor):
 
 
 class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
-    """A QT aware background plotter.
+    """A Qt interactive background plotter.
 
     See :class:`geovista.geoplotter.GeoPlotterBase` and
     :class:`pyvistaqt.BackgroundPlotter`.
@@ -50,7 +48,7 @@ class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
 
 
 class GeoMultiPlotter(GeoPlotterBase, pvqt.MultiPlotter):
-    """A QT aware multi-plotter.
+    """A Qt interactive multi-plotter.
 
     See :class:`geovista.geoplotter.GeoPlotterBase` and
     :class:`pyvistaqt.MultiPlotter`.
