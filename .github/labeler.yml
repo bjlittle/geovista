@@ -1,3 +1,7 @@
+'type: cache':
+- any:
+  - changed-files:
+    - any-glob-to-any-file: 'src/geovista/cache/registry.txt'
 'type: cli':
 - any:
   - changed-files:
