@@ -1,0 +1,8 @@
+# Reference:
+# - https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# This file is used to automatically assign reviewers to pull requests.
+# For further details see the link above.
+
+          @bjlittle
+/.github/ @bjlittle
