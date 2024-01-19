@@ -4,5 +4,5 @@
 # This file is used to automatically assign reviewers to pull requests.
 # For further details see the link above.
 
-          @bjlittle
+*         @bjlittle
 /.github/ @bjlittle
