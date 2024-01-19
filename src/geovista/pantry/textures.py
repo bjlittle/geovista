@@ -54,7 +54,7 @@ def _fetch_texture(fname: str, location: bool | None = False) -> TextureLike:
     .. versionadded:: 0.1.0
 
     """
-    resource = CACHE.fetch(f"raster/{fname}")
+    resource = CACHE.fetch(f"pantry/textures/{fname}")
     if not location:
         resource = pv.read_texture(resource)
     return resource

@@ -31,6 +31,8 @@ def test_resolution_warning(mocker):
 
     fname = f"lfric_{LFRIC_RESOLUTION}.vtk"
     pooch.Decompress.assert_called_once_with(method="auto", name=fname)
-    CACHE.fetch.assert_called_once_with(f"mesh/{fname}.bz2", processor=processor)
+    CACHE.fetch.assert_called_once_with(
+        f"pantry/meshes/{fname}.bz2", processor=processor
+    )
     pv.read.assert_called_once_with(resource)
     assert result == mesh

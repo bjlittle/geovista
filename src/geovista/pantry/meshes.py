@@ -421,7 +421,7 @@ def lam_uk() -> pv.PolyData:
 
 
 def lfric(resolution: str | None = None) -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry.data` sample data.
+    """Load a pre-defined LFRic mesh available from the :obj:`~geovista.cache.CACHE`.
 
     Get the LFRic model unstructured cubed-sphere at the specified `resolution`.
 
@@ -458,7 +458,7 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
 
     fname = f"lfric_{resolution}.vtk"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"mesh/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"pantry/meshes/{fname}.bz2", processor=processor)
 
     return pv.read(resource)
 

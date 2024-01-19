@@ -26,10 +26,10 @@ __all__ = [
 ]
 
 #: Base URL for geovista resources.
-BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/data/"
+BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
 
 #: Pin to use the specific geovista-data repository version for geovista resources.
-DATA_VERSION: str = "2024.01.1"
+DATA_VERSION: str = "2024.01.2"
 
 #: Environment variable to override pooch cache manager path.
 ENV: str = "GEOVISTA_CACHEDIR"

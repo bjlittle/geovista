@@ -58,6 +58,9 @@ __all__ = [
 #: The default type of cloud amount mesh.
 CLOUD_AMOUNT_PREFERENCE: str = "mesh"
 
+#: The registry key for the pantry data.
+PANTRY_DATA: str = "pantry/data"
+
 
 # TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
 class CloudPreference(_MixinStrEnum, Enum):
@@ -163,7 +166,7 @@ def _cloud_amount_dataset(fname: str | CloudPreference) -> nc.Dataset:
 
     """
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/c768/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/c768/{fname}.bz2", processor=processor)
 
     return nc.Dataset(resource)
 
@@ -255,7 +258,7 @@ def dynamico() -> SampleUnstructuredXY:
     """
     fname = "dynamico_icosahedral.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat hex cell grid
@@ -355,7 +358,7 @@ def fvcom_tamar() -> SampleUnstructuredXY:
     """
     fname = "fvcom_tamar.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat cell grid
@@ -405,7 +408,7 @@ def icon_soil() -> SampleUnstructuredXY:
     """
     fname = "icon_extpar_0010_R02B04_G.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat triangular cell grid (radians)
@@ -448,7 +451,7 @@ def _gungho_lam(fname: str) -> SampleUnstructuredXY:
 
     """
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/lams/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/lams/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat cell grid
@@ -556,7 +559,7 @@ def lam_pacific() -> SampleUnstructuredXY:
     """
     fname = "lam.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat cell grid
@@ -638,7 +641,7 @@ def lfric_orog() -> SampleUnstructuredXY:
     """
     fname = "qrparam_shared.orog.ugrid.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat cell grid
@@ -683,7 +686,7 @@ def lfric_sst() -> SampleUnstructuredXY:
     """
     fname = "qrclim.sst.ugrid.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat cell grid
@@ -728,7 +731,7 @@ def oisst_avhrr_sst() -> SampleStructuredXY:
     """
     fname = "oisst-avhrr.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat grid
@@ -761,7 +764,7 @@ def um_orca2() -> SampleStructuredXY:
     """
     fname = "votemper.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat grid
@@ -794,7 +797,7 @@ def um_orca2_gradient() -> SampleStructuredXYZ:
     """
     fname = "votemper-gradient.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat/zlevel points
@@ -833,7 +836,7 @@ def usgs_earthquakes() -> SampleStructuredXYZ:
 
     fname = "earthquakes.parq"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
 
     # load the lon/lat points
     # see https://github.com/holoviz/holoviz/blob/main/examples/data/preprocessing/earthquake_data.py
@@ -874,7 +877,7 @@ def ww3_global_smc(step: int | None = None) -> SampleUnstructuredXY:
     """
     fname = "ww3_gbl_smc_hs.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/ww3/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/ww3/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat grid cell centres
@@ -931,7 +934,7 @@ def ww3_global_tri() -> SampleUnstructuredXY:
     """
     fname = "ww3_gbl_tri_hs.nc"
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"pantry/ww3/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/ww3/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
     # load the lon/lat points
