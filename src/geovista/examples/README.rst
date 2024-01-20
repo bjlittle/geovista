@@ -16,6 +16,6 @@ be run from the command line with :bash:`geovista examples --all --verbose`.
 .. note::
   :class: margin
 
-  The gallery `vtk.js <https://kitware.github.io/vtk-js/index.html>`_
-  **Interactive Scene** backend does **not** support text rendering,
-  or points as spheres.
+  The gallery **Interactive Scene**
+  `vtk.js <https://kitware.github.io/vtk-js/index.html>`_ backend does **not** support
+  text rendering or points as spheres.
