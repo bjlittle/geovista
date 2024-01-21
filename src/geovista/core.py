@@ -363,7 +363,7 @@ def combine(
 
     first: pv.PolyData = meshes[0]
     combined_points, combined_faces = [], []
-    n_points, n_faces = 0, 0
+    n_points = 0
 
     if data:
         # determine the common point, cell and field array names
@@ -415,7 +415,6 @@ def combine(
         combined_faces.append(faces)
         # accumulate running totals of combined mesh points and cells
         n_points += mesh.n_points
-        n_faces += mesh.n_cells
 
         if data:
             # perform intersection to determine common names
@@ -427,7 +426,7 @@ def combine(
 
     points = np.vstack(combined_points)
     faces = np.hstack(combined_faces)
-    combined = pv.PolyData(points, faces=faces, n_faces=n_faces)
+    combined = pv.PolyData(points, faces=faces)
 
     def combine_data(names: set[str], field: bool | None = False) -> None:
         for name in names:

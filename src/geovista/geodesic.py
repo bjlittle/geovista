@@ -430,10 +430,9 @@ class BBox:
 
             # include the bbox skirt
             bbox_faces = np.vstack([bbox_faces, skirt_faces])
-            bbox_n_faces += skirt_faces.shape[0]
 
             # create the bbox mesh
-            self._mesh = pv.PolyData(bbox_xyz, faces=bbox_faces, n_faces=bbox_n_faces)
+            self._mesh = pv.PolyData(bbox_xyz, faces=bbox_faces)
 
             self._mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
             to_wkt(self._mesh, WGS84)
