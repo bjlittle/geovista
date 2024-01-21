@@ -311,7 +311,7 @@ def create_meridians(
         lines[:, 1] = np.arange(n_points)
         lines[:, 2] = np.arange(n_points) + 1
 
-        mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
+        mesh = pv.PolyData(xyz, lines=lines)
         to_wkt(mesh, WGS84)
 
         if closed_interval and mask[index]:
@@ -512,7 +512,7 @@ def create_parallels(
         lines[:, 2] = np.arange(n_points) + 1
         lines[-1, 2] = 0
 
-        mesh = pv.PolyData(xyz, lines=lines, n_lines=n_points)
+        mesh = pv.PolyData(xyz, lines=lines)
         to_wkt(mesh, WGS84)
         blocks[f"{index},{lat!r}"] = mesh
         grid_lats.append(lat)

@@ -847,7 +847,7 @@ class Transform:
             )
 
         # create the mesh
-        mesh = pv.PolyData(geometry, faces=faces, n_faces=n_faces)
+        mesh = pv.PolyData(geometry, faces=faces)
 
         # attach the pyproj crs serialized as ogc wkt
         to_wkt(mesh, WGS84)
