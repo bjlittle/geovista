@@ -1,3 +1,4 @@
 fastparquet
 h3
 pandas
+pyarrow

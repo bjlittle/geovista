@@ -43,6 +43,7 @@ dependencies:
   - fastparquet
   - h3-py
   - pandas
+  - pyarrow
 
 # documentation dependencies (optional)
   - jupyter_sphinx
