@@ -7,7 +7,7 @@
 
 Notes
 -----
-.. versionadded:: 0.1.0
+.. versionadded:: 0.5.0
 
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ import pyvista as pv
 from geovista.bridge import Transform
 from geovista.cache import CACHE
 from geovista.common import Preference
-from geovista.pantry import data as pantry_data
+import geovista.pantry
 
 __all__ = [
     "LFRIC_RESOLUTION",
@@ -72,7 +72,9 @@ WARP_FACTOR: float = 2e-5
 ZLEVEL_SCALE_CLOUD: float = 1e-5
 
 
-def _lfric_sample_to_mesh(sample: pantry_data.SampleUnstructuredXY) -> pv.PolyData:
+def _lfric_sample_to_mesh(
+    sample: geovista.pantry.data.SampleUnstructuredXY,
+) -> pv.PolyData:
     """Transform the provided pantry `sample` into a mesh.
 
     Parameters
@@ -99,7 +101,7 @@ def _lfric_sample_to_mesh(sample: pantry_data.SampleUnstructuredXY) -> pv.PolyDa
 
 
 def cloud_amount(
-    preference: str | pantry_data.CloudPreference | None = None,
+    preference: str | geovista.pantry.data.CloudPreference | None = None,
 ) -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry.data` sample data.
 
@@ -124,21 +126,21 @@ def cloud_amount(
 
     """
     if preference is None:
-        preference = pantry_data.CLOUD_AMOUNT_PREFERENCE
+        preference = geovista.pantry.data.CLOUD_AMOUNT_PREFERENCE
 
-    if not pantry_data.CloudPreference.valid(preference):
+    if not geovista.pantry.data.CloudPreference.valid(preference):
         options = " or ".join(
-            f"{item!r}" for item in pantry_data.CloudPreference.values()
+            f"{item!r}" for item in geovista.pantry.data.CloudPreference.values()
         )
         emsg = f"Expected a preference of {options}, got '{preference}'."
         raise ValueError(emsg)
 
-    preference = pantry_data.CloudPreference(preference)
+    preference = geovista.pantry.data.CloudPreference(preference)
 
-    sample = pantry_data.cloud_amount(preference)
+    sample = geovista.pantry.data.cloud_amount(preference)
     mesh = _lfric_sample_to_mesh(sample)
 
-    if preference != pantry_data.CloudPreference.MESH:
+    if preference != geovista.pantry.data.CloudPreference.MESH:
         mesh[sample.name] = sample.data
 
     return mesh
@@ -159,7 +161,7 @@ def dynamico() -> pv.PolyData:
     .. versionadded:: 0.3.0
 
     """
-    sample = pantry_data.dynamico()
+    sample = geovista.pantry.data.dynamico()
 
     return Transform.from_unstructured(
         sample.lons,
@@ -184,7 +186,7 @@ def fesom() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = pantry_data.fesom()
+    sample = geovista.pantry.data.fesom()
 
     return Transform.from_unstructured(
         sample.lons,
@@ -239,7 +241,7 @@ def fvcom_tamar(
     if factor is None:
         factor = WARP_FACTOR
 
-    sample = pantry_data.fvcom_tamar()
+    sample = geovista.pantry.data.fvcom_tamar()
     data = sample.face if preference == Preference.CELL else sample.node
     name = sample.name
 
@@ -279,7 +281,7 @@ def icon_soil() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = pantry_data.icon_soil()
+    sample = geovista.pantry.data.icon_soil()
 
     return Transform.from_unstructured(
         sample.lons,
@@ -304,7 +306,7 @@ def lam_equator() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lfric_sample_to_mesh(pantry_data.lam_equator())
+    return _lfric_sample_to_mesh(geovista.pantry.data.lam_equator())
 
 
 def lam_falklands() -> pv.PolyData:
@@ -323,7 +325,7 @@ def lam_falklands() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lfric_sample_to_mesh(pantry_data.lam_falklands())
+    return _lfric_sample_to_mesh(geovista.pantry.data.lam_falklands())
 
 
 def lam_london() -> pv.PolyData:
@@ -342,7 +344,7 @@ def lam_london() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lfric_sample_to_mesh(pantry_data.lam_london())
+    return _lfric_sample_to_mesh(geovista.pantry.data.lam_london())
 
 
 def lam_new_zealand() -> pv.PolyData:
@@ -361,7 +363,7 @@ def lam_new_zealand() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lfric_sample_to_mesh(pantry_data.lam_new_zealand())
+    return _lfric_sample_to_mesh(geovista.pantry.data.lam_new_zealand())
 
 
 def lam_pacific() -> pv.PolyData:
@@ -375,7 +377,7 @@ def lam_pacific() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = pantry_data.lam_pacific()
+    sample = geovista.pantry.data.lam_pacific()
 
     return Transform.from_unstructured(
         sample.lons,
@@ -403,7 +405,7 @@ def lam_polar() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lfric_sample_to_mesh(pantry_data.lam_polar())
+    return _lfric_sample_to_mesh(geovista.pantry.data.lam_polar())
 
 
 def lam_uk() -> pv.PolyData:
@@ -417,7 +419,7 @@ def lam_uk() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    return _lfric_sample_to_mesh(pantry_data.lam_uk())
+    return _lfric_sample_to_mesh(geovista.pantry.data.lam_uk())
 
 
 def lfric(resolution: str | None = None) -> pv.PolyData:
@@ -489,7 +491,7 @@ def lfric_orog(warp: bool | None = False, factor: float | None = None) -> pv.Pol
     if factor is None:
         factor = WARP_FACTOR
 
-    sample = pantry_data.lfric_orog()
+    sample = geovista.pantry.data.lfric_orog()
     name = sample.name
 
     mesh = Transform.from_unstructured(
@@ -523,7 +525,7 @@ def lfric_sst() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = pantry_data.lfric_sst()
+    sample = geovista.pantry.data.lfric_sst()
 
     return Transform.from_unstructured(
         sample.lons,
@@ -604,7 +606,7 @@ def oisst_avhrr_sst() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = pantry_data.oisst_avhrr_sst()
+    sample = geovista.pantry.data.oisst_avhrr_sst()
 
     return Transform.from_1d(
         sample.lons,
@@ -629,7 +631,7 @@ def um_orca2() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = pantry_data.um_orca2()
+    sample = geovista.pantry.data.um_orca2()
 
     return Transform.from_2d(
         sample.lons, sample.lats, data=sample.data, name=sample.name
@@ -657,7 +659,7 @@ def um_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
     .. versionadded:: 0.2.0
 
     """
-    sample = pantry_data.um_orca2_gradient()
+    sample = geovista.pantry.data.um_orca2_gradient()
 
     zscale = ZLEVEL_SCALE_CLOUD if zscale is None else float(zscale)
 
@@ -692,7 +694,7 @@ def ww3_global_smc(step: int | None = None) -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = pantry_data.ww3_global_smc(step=step)
+    sample = geovista.pantry.data.ww3_global_smc(step=step)
 
     return Transform.from_unstructured(
         sample.lons,
@@ -719,7 +721,7 @@ def ww3_global_tri() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = pantry_data.ww3_global_tri()
+    sample = geovista.pantry.data.ww3_global_tri()
 
     return Transform.from_unstructured(
         sample.lons,

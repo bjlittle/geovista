@@ -22,13 +22,6 @@ from pyproj import CRS
 import pyvista as pv
 from pyvista.core.utilities import helpers
 
-from geovista.pantry.meshes import (
-    LFRIC_RESOLUTION,
-    REGULAR_RESOLUTION,
-    lfric,
-    regular_grid,
-)
-
 from .bridge import Transform
 from .common import (
     GV_FIELD_ZSCALE,
@@ -60,6 +53,12 @@ from .gridlines import (
     GraticuleGrid,
     create_meridians,
     create_parallels,
+)
+from .pantry.meshes import (
+    LFRIC_RESOLUTION,
+    REGULAR_RESOLUTION,
+    lfric,
+    regular_grid,
 )
 from .raster import wrap_texture
 from .transform import transform_mesh
