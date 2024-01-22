@@ -58,6 +58,7 @@ thresholds = {
 }
 
 
+@pytest.mark.example()
 @pytest.mark.image()
 @pytest.mark.parametrize("example", EXAMPLES)
 def test(example, verify_image_cache):
