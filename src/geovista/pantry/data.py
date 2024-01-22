@@ -5,11 +5,9 @@
 
 """Download, cache and load geovista sample data.
 
-The sample data can then be used by the :mod:`geovista.bridge` to generate a mesh.
-
 Notes
 -----
-.. versionadded:: 0.1.0
+.. versionadded:: 0.5.0
 
 """
 from __future__ import annotations
