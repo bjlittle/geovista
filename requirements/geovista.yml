@@ -19,6 +19,7 @@ dependencies:
   - pykdtree
   - pyproj >=3.3
   - pyvista >=0.43.1
+  - rasterio >=1.3
 
 # pantry dependencies (core)
   - netcdf4
