@@ -753,6 +753,90 @@ def to_cartesian(
     return np.vstack(xyz).T if stacked else np.array(xyz)
 
 
+def vectors_to_cartesian(
+    lons_lats: (ArrayLike, ArrayLike),
+    vectors_uvw: (ArrayLike, ArrayLike, ArrayLike),
+    scaling: float | None = None,
+    z_scaling: float | None = None,
+    equalise_length: float | None = None,
+    min_length: float | None = None,
+) -> np.ndarray:
+    """Convert geographic-oriented vectors to cartesian ``xyz`` points.
+
+    Parameters
+    ----------
+    lons_lats : pair of ArrayLike
+        The longitude + latitude locations of the vectors (in degrees).
+        Both shapes must be the same.
+    vectors_uvw : triple of ArrayLike
+        The eastward, northward and upward vector components.
+        All shapes must be the same as in ``lons_lats``.
+    scaling : float or None, optional
+        scaling factor to apply to all vector values. Defaults to 1.0
+    z_scaling : float, optional
+        additional scaling factor applied to vertical components.  Defaults to 1.0
+    equalise_length : float, optional
+        If set, after initial scaling, scale all vectors individually to this length,
+        except those < min_length.
+    min_length : float, optional
+        After initial scaling, clip all vectors of less than this length to zero.
+        Defaults to 1.0e-12 if 'equalise_length' is given, otherwise zero.
+
+    Returns
+    -------
+    (ndarray, ndarray, ndarray)
+        The corresponding ``xyz`` cartesian vector components.
+
+    Notes
+    -----
+    .. versionadded:: 0.?.?
+
+    """
+    # TODO: Argument checking ???
+    lons, lats = [np.deg2rad(arr) for arr in lons_lats]
+    u, v, w = vectors_uvw
+
+    if scaling != None:
+        u, v, w = [arr * scaling for arr in (u, v, w)]
+
+    # apply vertical scaling as required
+    if z_scaling is not None:
+        w *= z_scaling
+
+    coslons = np.cos(lons)
+    sinlons = np.sin(lons)
+    coslats = np.cos(lats)
+    sinlats = np.sin(lats)
+    # N.B. the term signs are slightly unexpected here, because the viewing coord system
+    # is not quite what you may expect :  The "Y" axis goes to the right, and the "X"
+    # axis points out of the screen, towards the viewer.
+    z_factor = (w * coslats - v * sinlats)
+    wy = coslons * u + sinlons * z_factor
+    wx = -sinlons * u + coslons * z_factor
+    wz = v * coslats + w * sinlats
+    # NOTE: for better efficiency, we *COULD* handle the w=0 special case separately.
+
+    # normalise if required.
+    if equalise_length is not None or min_length is not None:
+        if min_length is None:
+            # To equalise lengths, apply a default minimum to (avoid divide-by-zeros)
+            min_length = 1.0e-12
+
+        mags = np.sqrt(wx * wx + wy * wy + wz * wz)
+        zeros = mags < min_length
+        mags[zeros] = 1.0  # fix mags so we can safely divide by it
+        for arr in (wx, wy, wz):
+            if equalise_length is not None:
+                # Fix all lengths to required value..
+                arr = arr / mags * equalise_length
+            # .. except where initial lengths were below threshold : those= all zero
+            arr[zeros] = 0.0
+
+    return wx, wy, wz
+
+
+
+
 def to_lonlat(
     xyz: ArrayLike,
     radians: bool | None = False,
