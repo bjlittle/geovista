@@ -2,6 +2,7 @@ cartopy>=0.22
 click
 click-default-group
 cmocean
+lazy_loader
 netCDF4
 numpy>=1.23
 platformdirs
