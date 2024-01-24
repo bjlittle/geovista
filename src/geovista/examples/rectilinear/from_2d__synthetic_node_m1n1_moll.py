@@ -53,9 +53,6 @@ def main() -> None:
     name = "Synthetic Points"
     mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name)
 
-    # Provide mesh diagnostics via logging.
-    gv.logger.info("%s", mesh)
-
     # Plot the rectilinear grid.
     crs = "+proj=moll"
     plotter = gv.GeoPlotter(crs=crs)
