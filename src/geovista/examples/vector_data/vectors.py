@@ -27,7 +27,7 @@ import numpy as np
 
 import geovista as gv
 from geovista.pantry.meshes import regular_grid
-import geovista.theme
+import geovista.themes
 
 
 def main() -> None:

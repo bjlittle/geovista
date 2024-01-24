@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.pantry.data import um_orca2
-import geovista.theme
+import geovista.themes
 
 
 def main() -> None:

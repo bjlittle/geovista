@@ -49,7 +49,7 @@ from warnings import warn
 
 import geovista as gv
 from geovista.pantry.data import usgs_earthquakes
-import geovista.theme
+import geovista.themes
 
 
 def main() -> None:

@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.pantry.data import fesom
-import geovista.theme
+import geovista.themes
 
 
 def main() -> None:

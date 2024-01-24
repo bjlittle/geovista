@@ -33,7 +33,7 @@ from __future__ import annotations
 import geovista as gv
 from geovista.common import cast_UnstructuredGrid_to_PolyData as cast
 from geovista.pantry.data import um_orca2
-import geovista.theme
+import geovista.themes
 from geovista.transform import transform_mesh
 
 

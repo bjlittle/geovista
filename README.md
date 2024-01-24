@@ -151,7 +151,7 @@ colormap.
 ```python
 import geovista as gv
 from geovista.pantry.data import ww3_global_tri
-import geovista.theme
+import geovista.themes
 
 # Load the sample data.
 sample = ww3_global_tri()
@@ -189,7 +189,7 @@ from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) **unstructured** mesh, as 
 ```python
 import geovista as gv
 from geovista.pantry.data import fvcom_tamar
-import geovista.theme
+import geovista.themes
 
 # Load the sample data.
 sample = fvcom_tamar()
@@ -240,7 +240,7 @@ base layer.
 ```python
 import geovista as gv
 from geovista.pantry.data import lam_pacific
-import geovista.theme
+import geovista.themes
 
 # Load the sample data.
 sample = lam_pacific()
@@ -284,7 +284,7 @@ import cartopy.crs as ccrs
 
 import geovista as gv
 from geovista.pantry.data import lam_pacific
-import geovista.theme
+import geovista.themes
 
 # Load the sample data.
 sample = lam_pacific()
@@ -326,7 +326,7 @@ Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/m
 ```python
 import geovista as gv
 from geovista.pantry.data import lfric_sst
-import geovista.theme
+import geovista.themes
 
 # Load the sample data.
 sample = lfric_sst()
@@ -365,7 +365,7 @@ using Met Office Unified Model (UM) ORCA2 Sea Water Potential Temperature data, 
 ```python
 import geovista as gv
 from geovista.pantry.data import um_orca2
-import geovista.theme
+import geovista.themes
 
 # Load sample data.
 sample = um_orca2()
@@ -403,7 +403,7 @@ Now let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.g
 ```python
 import geovista as gv
 from geovista.pantry.data import oisst_avhrr_sst
-import geovista.theme
+import geovista.themes
 
 # Load sample data.
 sample = oisst_avhrr_sst()
@@ -443,7 +443,7 @@ model uses hexagonal and pentagonal cells, and is a new dynamical core for
 ```python
 import geovista as gv
 from geovista.pantry.data import dynamico
-import geovista.theme
+import geovista.themes
 
 # Load sample data.
 sample = dynamico()
