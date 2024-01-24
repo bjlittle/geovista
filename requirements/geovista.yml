@@ -13,6 +13,7 @@ dependencies:
   - cartopy >=0.22
   - click
   - click-default-group
+  - lazy_loader
   - numpy >=1.23
   - platformdirs
   - pooch
