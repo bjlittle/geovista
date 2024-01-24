@@ -56,10 +56,6 @@ def main() -> None:
         data=sample.data,
         name=sample.name,
     )
-    # sphinx_gallery_start_ignore
-    # Provide mesh diagnostics via logging.
-    gv.logger.info("%s", mesh)
-    # sphinx_gallery_end_ignore
 
     # Plot the unstructured mesh.
     crs = "+proj=hammer"

@@ -54,10 +54,6 @@ def main() -> None:
         data=sample.face,
         name="face",
     )
-    # sphinx_gallery_start_ignore
-    # Provide mesh diagnostics via logging.
-    gv.logger.info("%s", mesh)
-    # sphinx_gallery_end_ignore
 
     # Warp the mesh nodes by the bathymetry.
     mesh.point_data["node"] = sample.node

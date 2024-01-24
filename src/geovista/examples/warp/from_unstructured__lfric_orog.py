@@ -55,10 +55,6 @@ def main() -> None:
         data=sample.data,
         name=sample.name,
     )
-    # sphinx_gallery_start_ignore
-    # Provide mesh diagnostics via logging.
-    gv.logger.info("%s", mesh)
-    # sphinx_gallery_end_ignore
 
     # Warp the mesh nodes by the surface altitude.
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)

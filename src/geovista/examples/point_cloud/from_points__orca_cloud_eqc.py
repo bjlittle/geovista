@@ -57,10 +57,6 @@ def main() -> None:
         zlevel=-sample.zlevel,
         zscale=ZLEVEL_SCALE_CLOUD,
     )
-    # sphinx_gallery_start_ignore
-    # Provide mesh diagnostics via logging.
-    gv.logger.info("%s", cloud)
-    # sphinx_gallery_end_ignore
 
     # Plot the projected point cloud.
     crs = "+proj=eqc"

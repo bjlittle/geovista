@@ -52,10 +52,6 @@ def main() -> None:
         connectivity=sample.connectivity,
         data=sample.data,
     )
-    # sphinx_gallery_start_ignore
-    # Provide mesh diagnostics via logging.
-    gv.logger.info("%s", mesh)
-    # sphinx_gallery_end_ignore
 
     # Plot the unstructured mesh.
     plotter = gv.GeoPlotter()

@@ -46,10 +46,6 @@ def main() -> None:
 
     # Create the mesh from the sample data.
     mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)
-    # sphinx_gallery_start_ignore
-    # Provide mesh diagnostics via logging.
-    gv.logger.info("%s", mesh)
-    # sphinx_gallery_end_ignore
 
     # Remove cells from the mesh with NaN values.
     mesh = mesh.threshold()

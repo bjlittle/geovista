@@ -58,10 +58,6 @@ def main() -> None:
         data=sample.data,
         name=sample.name,
     )
-    # sphinx_gallery_start_ignore
-    # Provide mesh diagnostics via logging.
-    gv.logger.info("%s", mesh)
-    # sphinx_gallery_end_ignore
 
     # Transform the mesh to the Plate Carrée projection.
     mesh = transform_mesh(mesh, crs := "esri:54001")

@@ -52,9 +52,6 @@ def main() -> None:
     name = "Synthetic Cells"
     mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name)
 
-    # Provide mesh diagnostics via logging.
-    gv.logger.info("%s", mesh)
-
     # Plot the rectilinear grid.
     plotter = gv.GeoPlotter()
     sargs = {"title": f"{name} / 1", "shadow": True}
