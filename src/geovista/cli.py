@@ -21,7 +21,6 @@ from click_default_group import DefaultGroup
 import pooch
 import pyvista as pv
 
-from . import logger
 from ._version import version as __version__
 from .cache import CACHE, GEOVISTA_POOCH_MUTE, pooch_mute
 from .common import get_modules
@@ -462,9 +461,6 @@ def examples(
         return
 
     run_all = ALL in (run, run_group) or run_all
-
-    if verbose:
-        logger.setLevel("INFO")
 
     if run_all:
         for i, script in enumerate(EXAMPLES[1:]):
