@@ -7,13 +7,13 @@
 
 Provides:
   1. An agnostic bridge to transform rectilinear, curvilinear and unstructured
-     geospatial data to native geolocated PyVista mesh instances
+     geospatial data to native geolocated PyVista mesh instances.
   2. Compliments PyVista with cartographic features for processing, projecting
-     and rendering geolocated meshes
-  3. Support for interactive 3D visualization of geolocated meshes
+     and rendering geolocated meshes.
+  3. Support for interactive 3D visualization of geolocated meshes.
   4. Coordinate Reference System (CRS) support, with an awareness of Cartopy
      CRSs through the commonality of the Python interface to PROJ (PyPROJ)
-     package
+     package.
 
 Notes
 -----
