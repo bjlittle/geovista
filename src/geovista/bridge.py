@@ -741,7 +741,7 @@ class Transform:  # numpydoc ignore=PR01
                 vectors_array_name = "vectors"
 
             if not isinstance(vectors, tuple) or not all(
-                isinstance(arr, np.typing,ArrayLike)
+                isinstance(arr, np.ndarray)
                 for arr in vectors
             ):
                 msg = 'Keyword "vectors" must be a tuple of array-like.'
@@ -757,7 +757,7 @@ class Transform:  # numpydoc ignore=PR01
 
             vectors = [np.asanyarray(vecdata) for vecdata in vectors]
             xx, yy = vectors[:2]
-            if n_vecs == 2:
+            if n_vecs > 2:
                 zz = vectors[2]
             else:
                 zz = np.zeros_like(xx)
@@ -769,8 +769,6 @@ class Transform:  # numpydoc ignore=PR01
                 vectors_uvw=(xx, yy, zz),
                 scaling=vectors_scaling,
                 z_scaling=vectors_zscaling,
-                equalise_length=vectors_equalise_length,
-                min_length=vectors_min_length,
             )
             vectors = np.vstack((xx, yy, zz)).T
             mesh[vectors_array_name] = vectors

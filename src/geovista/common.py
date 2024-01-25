@@ -758,8 +758,6 @@ def vectors_to_cartesian(
     vectors_uvw: (ArrayLike, ArrayLike, ArrayLike),
     scaling: float | None = None,
     z_scaling: float | None = None,
-    equalise_length: float | None = None,
-    min_length: float | None = None,
 ) -> np.ndarray:
     """Convert geographic-oriented vectors to cartesian ``xyz`` points.
 
@@ -775,12 +773,6 @@ def vectors_to_cartesian(
         scaling factor to apply to all vector values. Defaults to 1.0
     z_scaling : float, optional
         additional scaling factor applied to vertical components.  Defaults to 1.0
-    equalise_length : float, optional
-        If set, after initial scaling, scale all vectors individually to this length,
-        except those < min_length.
-    min_length : float, optional
-        After initial scaling, clip all vectors of less than this length to zero.
-        Defaults to 1.0e-12 if 'equalise_length' is given, otherwise zero.
 
     Returns
     -------
@@ -815,22 +807,6 @@ def vectors_to_cartesian(
     wx = -sinlons * u + coslons * z_factor
     wz = v * coslats + w * sinlats
     # NOTE: for better efficiency, we *COULD* handle the w=0 special case separately.
-
-    # normalise if required.
-    if equalise_length is not None or min_length is not None:
-        if min_length is None:
-            # To equalise lengths, apply a default minimum to (avoid divide-by-zeros)
-            min_length = 1.0e-12
-
-        mags = np.sqrt(wx * wx + wy * wy + wz * wz)
-        zeros = mags < min_length
-        mags[zeros] = 1.0  # fix mags so we can safely divide by it
-        for arr in (wx, wy, wz):
-            if equalise_length is not None:
-                # Fix all lengths to required value..
-                arr = arr / mags * equalise_length
-            # .. except where initial lengths were below threshold : those= all zero
-            arr[zeros] = 0.0
 
     return wx, wy, wz
 
