@@ -756,9 +756,7 @@ def to_cartesian(
 def vectors_to_cartesian(
     lons_lats: (ArrayLike, ArrayLike),
     vectors_uvw: (ArrayLike, ArrayLike, ArrayLike),
-    scaling: float | None = None,
-    z_scaling: float | None = None,
-) -> np.ndarray:
+) -> (np.ndarray, np.ndarray, np.ndarray):
     """Convert geographic-oriented vectors to cartesian ``xyz`` points.
 
     Parameters
@@ -769,10 +767,6 @@ def vectors_to_cartesian(
     vectors_uvw : triple of ArrayLike
         The eastward, northward and upward vector components.
         All shapes must be the same as in ``lons_lats``.
-    scaling : float or None, optional
-        scaling factor to apply to all vector values. Defaults to 1.0
-    z_scaling : float, optional
-        additional scaling factor applied to vertical components.  Defaults to 1.0
 
     Returns
     -------
@@ -787,13 +781,6 @@ def vectors_to_cartesian(
     # TODO: Argument checking ???
     lons, lats = [np.deg2rad(arr) for arr in lons_lats]
     u, v, w = vectors_uvw
-
-    if scaling != None:
-        u, v, w = [arr * scaling for arr in (u, v, w)]
-
-    # apply vertical scaling as required
-    if z_scaling is not None:
-        w *= z_scaling
 
     coslons = np.cos(lons)
     sinlons = np.sin(lons)

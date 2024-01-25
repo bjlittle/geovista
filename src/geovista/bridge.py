@@ -620,7 +620,7 @@ class Transform:  # numpydoc ignore=PR01
         vectors: ArrayLike | tuple(ArrayLike) | None = None,
         vectors_array_name: str | None = None,
         vectors_scaling: float | None = None,
-        vectors_zscaling: float | None = None,
+        vectors_z_scaling: float | None = None,
         vectors_equalise_length: float | None = None,
         vectors_min_length: float | None = None,
     ) -> pv.PolyData:
@@ -673,7 +673,7 @@ class Transform:  # numpydoc ignore=PR01
             Also set as the active vectors name.   Defaults to "vectors".
         vectors_scaling : float, optional
             scaling factor to apply to all vector values.  Defaults to 1.0
-        vectors_zscaling : float, optional
+        vectors_z_scaling : float, optional
             scaling factor to apply to vertical vectors (i.e. relative to the eastward
             and northward components).  Defaults to 1.0
         vectors_equalise_length : float, optional
@@ -762,13 +762,17 @@ class Transform:  # numpydoc ignore=PR01
             else:
                 zz = np.zeros_like(xx)
 
+            if vectors_scaling is not None:
+                xx, yy, zz = [arr * vectors_scaling for arr in (xx, yy, zz)]
+
+            if vectors_z_scaling is not None:
+                zz *= vectors_z_scaling
+
             # TODO: should we pass flattened arrays here, and reshape as-per the inputs
             #  (and xyz)?  not clear if multidimensional input is used or needed
             xx, yy, zz = vectors_to_cartesian(
                 lons_lats=(xs, ys),
                 vectors_uvw=(xx, yy, zz),
-                scaling=vectors_scaling,
-                z_scaling=vectors_zscaling,
             )
             vectors = np.vstack((xx, yy, zz)).T
             mesh[vectors_array_name] = vectors
