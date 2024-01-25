@@ -14,8 +14,11 @@ from __future__ import annotations
 
 from types import ModuleType
 
-import pyvista
+import lazy_loader as lazy
 import scooby
+
+# lazy import third-party dependencies
+pv = lazy.load("pyvista")
 
 __all__ = ["Report"]
 
@@ -121,7 +124,7 @@ class Report(scooby.Report):
         # attempt to detect gpu hardware details
         if gpu:
             try:
-                extra_meta = pyvista.GPUInfo().get_info()
+                extra_meta = pv.GPUInfo().get_info()
             except:  # noqa: E722
                 # bare except required in order to handle rendering faults
                 extra_meta = [

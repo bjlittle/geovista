@@ -15,10 +15,9 @@ Notes
 """
 from __future__ import annotations
 
-import numpy as np
-import pyvista as pv
-from pyvista import _vtk
-from pyvista.core.filters import _get_output
+from typing import TYPE_CHECKING
+
+import lazy_loader as lazy
 
 from .common import (
     GV_CELL_IDS,
@@ -33,6 +32,16 @@ from .common import (
     wrap,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
+
+if TYPE_CHECKING:
+    import pyvista as pv
+
+    # type aliases.
+    Remesh = tuple[pv.PolyData, pv.PolyData, pv.PolyData]
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pv = lazy.load("pyvista")
 
 __all__ = [
     "REMESH_SEAM_EAST",
@@ -53,9 +62,6 @@ VTK_BOUNDARY_MASK: str = "BoundaryPoints"
 
 #: vtkIntersectionPolyDataFilter free edge cell array name.
 VTK_FREE_EDGE_MASK: str = "FreeEdge"
-
-# Type aliases.
-Remesh = tuple[pv.PolyData, pv.PolyData, pv.PolyData]
 
 
 def remesh(
@@ -132,7 +138,7 @@ def remesh(
     poly1.triangulate(inplace=True)
 
     # https://vtk.org/doc/nightly/html/classvtkIntersectionPolyDataFilter.html
-    alg = _vtk.vtkIntersectionPolyDataFilter()
+    alg = pv._vtk.vtkIntersectionPolyDataFilter()
     alg.SetInputDataObject(0, poly0)
     alg.SetInputDataObject(1, poly1)
     # BoundaryPoints (points) mask array
@@ -143,7 +149,7 @@ def remesh(
     alg.SetSplitSecondOutput(False)
     alg.Update()
 
-    remeshed: pv.PolyData = _get_output(alg, oport=1)
+    remeshed: pv.PolyData = pv.core.filters._get_output(alg, oport=1)
 
     if remeshed.n_cells == 0:
         # no remeshing has been performed as the meridian does not intersect the mesh

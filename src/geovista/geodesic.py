@@ -17,9 +17,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 import warnings
 
-import numpy as np
-import pyproj
-import pyvista as pv
+import lazy_loader as lazy
 
 from .common import (
     GV_FIELD_RADIUS,
@@ -34,7 +32,14 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import WGS84, to_wkt
 
 if TYPE_CHECKING:
+    import numpy as np
     from numpy.typing import ArrayLike
+    import pyvista as pv
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pyproj = lazy.load("pyproj")
+pv = lazy.load("pyvista")
 
 __all__ = [
     "BBox",

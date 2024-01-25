@@ -14,13 +14,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
+import lazy_loader as lazy
 from pyproj import CRS
 
 from .common import GV_FIELD_CRS
 
 if TYPE_CHECKING:
     import pyvista as pv
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
 
 __all__ = [
     "CRSLike",

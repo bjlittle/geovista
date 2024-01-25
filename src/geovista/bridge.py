@@ -19,10 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import warnings
 
-import numpy as np
-from numpy import ma
-from pyproj import CRS
-import pyvista as pv
+import lazy_loader as lazy
 
 from .common import (
     GV_FIELD_NAME,
@@ -38,12 +35,19 @@ from .crs import WGS84, CRSLike, to_wkt
 from .transform import transform_points
 
 if TYPE_CHECKING:
+    import numpy as np
     from numpy.typing import ArrayLike
+    import pyvista as pv
+
+    # type aliases
+    Shape = tuple[int]
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pv = lazy.load("pyvista")
+pyproj = lazy.load("pyproj")
 
 __all__ = ["Transform"]
-
-# type aliases
-Shape = tuple[int]
 
 #: Whether mesh cleaning performed by the bridge.
 BRIDGE_CLEAN: bool = False
@@ -593,7 +597,7 @@ class Transform:
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
 
         if crs is not None:
-            crs = CRS.from_user_input(crs)
+            crs = pyproj.CRS.from_user_input(crs)
 
             if crs != WGS84:
                 transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
@@ -745,7 +749,7 @@ class Transform:
         xs, ys = xs.ravel(), ys.ravel()
 
         if crs is not None:
-            crs = CRS.from_user_input(crs)
+            crs = pyproj.CRS.from_user_input(crs)
 
             if crs != WGS84:
                 transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
@@ -806,7 +810,7 @@ class Transform:
         # convert lat/lon to cartesian xyz
         geometry = to_cartesian(xs, ys, radius=radius)
 
-        if ma.is_masked(connectivity):
+        if np.ma.is_masked(connectivity):
             # create face connectivity from masked vertex indices, thus
             # supporting varied mesh face geometry e.g., triangular, quad,
             # pentagon (et al) cells within a single mesh.
@@ -815,7 +819,7 @@ class Transform:
                 emsg = f"Masked connectivity must be at most 2-D, got {ndim}-D."
                 raise ValueError(emsg)
             n_faces = connectivity.shape[0]
-            n_vertices = ma.sum(~connectivity.mask, axis=1)
+            n_vertices = np.ma.sum(~connectivity.mask, axis=1)
             # ensure at least three vertices per face
             valid_faces_mask = n_vertices > 2
             if not np.all(valid_faces_mask):
@@ -828,7 +832,7 @@ class Transform:
                 warnings.warn(wmsg, stacklevel=2)
                 n_vertices = n_vertices[valid_faces_mask]
                 connectivity = connectivity[valid_faces_mask]
-            faces = ma.hstack([n_vertices.reshape(-1, 1), connectivity]).ravel()
+            faces = np.ma.hstack([n_vertices.reshape(-1, 1), connectivity]).ravel()
             faces = faces[~faces.mask].data
         else:
             # create face connectivity serialization e.g., for a quad-mesh,
