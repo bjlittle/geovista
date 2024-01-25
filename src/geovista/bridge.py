@@ -621,8 +621,6 @@ class Transform:  # numpydoc ignore=PR01
         vectors_array_name: str | None = None,
         vectors_scaling: float | None = None,
         vectors_z_scaling: float | None = None,
-        vectors_equalise_length: float | None = None,
-        vectors_min_length: float | None = None,
     ) -> pv.PolyData:
         """Build a point-cloud mesh from x-values, y-values and z-levels.
 
@@ -766,7 +764,7 @@ class Transform:  # numpydoc ignore=PR01
                 xx, yy, zz = [arr * vectors_scaling for arr in (xx, yy, zz)]
 
             if vectors_z_scaling is not None:
-                zz *= vectors_z_scaling
+                zz = zz * vectors_z_scaling
 
             # TODO: should we pass flattened arrays here, and reshape as-per the inputs
             #  (and xyz)?  not clear if multidimensional input is used or needed
