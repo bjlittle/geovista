@@ -16,23 +16,25 @@ from collections.abc import Iterable
 from enum import Enum
 from typing import TYPE_CHECKING
 
-import numpy as np
-from numpy.typing import ArrayLike
-from pykdtree.kdtree import KDTree as pyKDTree
+import lazy_loader as lazy
 
 from .common import _MixinStrEnum, to_cartesian
 from .crs import WGS84, from_wkt
 from .transform import transform_points
 
 if TYPE_CHECKING:
-    from pyvista import PolyData
+    from numpy.typing import ArrayLike
+    import pyvista as pv
+
+    # type aliases
+    CellIDs = list[int]
+    CellIDLike = int | CellIDs
+    NearestNeighbours = tuple[ArrayLike, ArrayLike]
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
 
 __all__ = ["KDTree", "SearchPreference", "find_cell_neighbours", "find_nearest_cell"]
-
-# type aliases
-CellIDs = list[int]
-CellIDLike = int | CellIDs
-NearestNeighbours = tuple[ArrayLike, ArrayLike]
 
 #: The default kd-tree nearest neighbour epsilon.
 KDTREE_EPSILON: float = 0.0
@@ -74,7 +76,7 @@ class KDTree:
 
     def __init__(
         self,
-        mesh: PolyData,
+        mesh: pv.PolyData,
         leaf_size: int | None = None,
         preference: str | SearchPreference | None = None,
     ) -> None:
@@ -109,6 +111,8 @@ class KDTree:
         .. versionadded:: 0.3.0
 
         """
+        from pykdtree.kdtree import KDTree as pyKDTree
+
         if leaf_size is None:
             leaf_size = KDTREE_LEAF_SIZE
 
@@ -286,7 +290,7 @@ class KDTree:
         )
 
 
-def find_cell_neighbours(mesh: PolyData, cid: CellIDLike) -> CellIDs:
+def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:
     """Find all the cells neighbouring the given `cid` cell/s of the `mesh`.
 
     A cell is deemed to neighbour a `cid` cell if it shares at least one
@@ -329,7 +333,7 @@ def find_cell_neighbours(mesh: PolyData, cid: CellIDLike) -> CellIDs:
 
 
 def find_nearest_cell(
-    mesh: PolyData,
+    mesh: pv.PolyData,
     x: float,
     y: float,
     z: float | None = 0,

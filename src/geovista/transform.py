@@ -15,8 +15,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-import numpy as np
-from pyproj import CRS, Transformer
+import lazy_loader as lazy
 
 from .common import GV_FIELD_ZSCALE, ZLEVEL_SCALE, from_cartesian, point_cloud
 from .crs import (
@@ -32,6 +31,9 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     import pyvista as pv
 
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pyproj = lazy.load("pyproj")
 
 __all__ = [
     "transform_mesh",
@@ -99,7 +101,7 @@ def transform_mesh(
         raise ValueError(emsg)
 
     # sanity check the target crs
-    tgt_crs = CRS.from_user_input(tgt_crs)
+    tgt_crs = pyproj.CRS.from_user_input(tgt_crs)
 
     original_tgt_crs = deepcopy(tgt_crs)
     transform_required = src_crs != tgt_crs
@@ -289,8 +291,8 @@ def transform_points(
         zs = np.atleast_1d(zs)
 
     # sanity check the crs's
-    src_crs = CRS.from_user_input(src_crs)
-    tgt_crs = CRS.from_user_input(tgt_crs)
+    src_crs = pyproj.CRS.from_user_input(src_crs)
+    tgt_crs = pyproj.CRS.from_user_input(tgt_crs)
 
     # sanity check spatial arrays
     if (xndim := xs.ndim) > 2 or (yndim := ys.ndim) > 2:
@@ -360,7 +362,7 @@ def transform_points(
     if src_crs == tgt_crs:
         result = combine(xs, ys, zs)
     else:
-        transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
+        transformer = pyproj.Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
         transformed = transformer.transform(xs, ys, zs, errcheck=trap)
 
         if zs is None:

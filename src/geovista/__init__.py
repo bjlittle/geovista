@@ -24,29 +24,15 @@ from __future__ import annotations
 
 import os
 
-from .bridge import Transform  # noqa: F401
-from .common import vtk_warnings_off, vtk_warnings_on  # noqa: F401
-from .core import slice_cells, slice_lines  # noqa: F401
-from .crs import from_wkt, to_wkt  # noqa: F401
-from .geodesic import BBox, line, panel, wedge  # noqa: F401
-from .geometry import coastlines  # noqa: F401
-from .geoplotter import GeoPlotter  # noqa: F401
-from .pantry import fetch_coastlines  # noqa: F401
-from .pantry.textures import (  # noqa: F401
-    blue_marble,
-    checkerboard,
-    natural_earth_1,
-    natural_earth_hypsometric,
-)
-from .report import Report  # noqa: F401
+import lazy_loader as lazy
+
+# lazy import submodules
+(__getattr__, __dir__, __all__) = lazy.attach_stub(__name__, __file__)
 
 try:
     from ._version import version as __version__
 except ModuleNotFoundError:
     __version__ = "unknown"
-
-# let's assume this is a sane default to adopt
-vtk_warnings_off()
 
 #: flag when performing image testing
 GEOVISTA_IMAGE_TESTING: bool = (

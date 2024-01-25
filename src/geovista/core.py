@@ -17,8 +17,7 @@ from enum import Enum, auto, unique
 from typing import TYPE_CHECKING
 import warnings
 
-import numpy as np
-import pyvista as pv
+import lazy_loader as lazy
 
 from .common import (
     CENTRAL_MERIDIAN,
@@ -47,6 +46,11 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from numpy.typing import ArrayLike
+    import pyvista as pv
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pv = lazy.load("pyvista")
 
 __all__ = [
     "MeridianSlice",

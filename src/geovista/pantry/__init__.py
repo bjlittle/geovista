@@ -12,11 +12,19 @@ Notes
 """
 from __future__ import annotations
 
-import pooch
-import pyvista as pv
+from typing import TYPE_CHECKING
+
+import lazy_loader as lazy
 
 from geovista.cache import CACHE
 from geovista.common import COASTLINES_RESOLUTION
+
+if TYPE_CHECKING:
+    import pyvista as pv
+
+# lazy import third-party dependencies
+pooch = lazy.load("pooch")
+pv = lazy.load("pyvista")
 
 __all__ = [
     "fetch_coastlines",

@@ -17,16 +17,19 @@ from enum import Enum
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-import netCDF4 as nc  # noqa: N813
-import numpy as np
-from numpy import ma
-import pooch
+import lazy_loader as lazy
 
 from geovista.cache import CACHE
 from geovista.common import LRU_CACHE_SIZE, _MixinStrEnum
 
 if TYPE_CHECKING:
+    import netCDF4 as nc  # noqa: N813
     from numpy.typing import ArrayLike
+
+# lazy import third-party dependencies
+nc = lazy.load("netCDF4")
+np = lazy.load("numpy")
+pooch = lazy.load("pooch")
 
 __all__ = [
     "CLOUD_AMOUNT_PREFERENCE",
@@ -330,7 +333,7 @@ def fesom(step: int | None = None) -> SampleUnstructuredXY:
     assert np.array_equal(lons_mask, lats_mask), emsg
 
     mask = np.hstack([np.zeros(n_cells, dtype=bool).reshape(-1, 1), lons_mask])
-    connectivity = ma.arange(np.prod(shape), dtype=np.uint32).reshape(shape)
+    connectivity = np.ma.arange(np.prod(shape), dtype=np.uint32).reshape(shape)
     connectivity.mask = mask
 
     return SampleUnstructuredXY(

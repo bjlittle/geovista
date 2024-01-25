@@ -19,15 +19,17 @@ import pkgutil
 import sys
 from typing import TYPE_CHECKING
 
-import numpy as np
-from numpy import ma
-import pyvista as pv
-from pyvista import _vtk
-from pyvista.core.filters import _get_output
-from vtk import vtkLogger, vtkObject
+import lazy_loader as lazy
 
 if TYPE_CHECKING:
+    import numpy as np
     from numpy.typing import ArrayLike
+    import pyvista as pv
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pv = lazy.load("pyvista")
+vtk = lazy.load("vtk")
 
 __all__ = [
     "BASE",
@@ -295,10 +297,10 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
         raise TypeError(emsg)
 
     # see https://vtk.org/pipermail/vtkusers/2011-March/066506.html
-    alg = _vtk.vtkGeometryFilter()
+    alg = pv._vtk.vtkGeometryFilter()
     alg.AddInputData(mesh)
     alg.Update()
-    result = _get_output(alg)
+    result = pv.core.filters._get_output(alg)
 
     if clean:
         result = result.clean()
@@ -579,7 +581,7 @@ def nan_mask(data: ArrayLike) -> np.ndarray:
     """
     if np.ma.isMaskedArray(data):
         if data.dtype.char not in np.typecodes["Float"]:
-            data = ma.asanyarray(data, dtype=float)
+            data = np.ma.asanyarray(data, dtype=float)
 
         data = data.filled(np.nan)
 
@@ -914,9 +916,9 @@ def vtk_warnings_off() -> None:
     .. versionadded:: 0.1.0
 
     """
-    vtkObject.GlobalWarningDisplayOff()
+    vtk.vtkObject.GlobalWarningDisplayOff()
     # https://gitlab.kitware.com/vtk/vtk/-/issues/18785
-    vtkLogger.SetStderrVerbosity(vtkLogger.VERBOSITY_OFF)
+    vtk.vtkLogger.SetStderrVerbosity(vtk.vtkLogger.VERBOSITY_OFF)
 
 
 def vtk_warnings_on() -> None:
@@ -927,9 +929,9 @@ def vtk_warnings_on() -> None:
     .. versionadded:: 0.1.0
 
     """
-    vtkObject.GlobalWarningDisplayOn()
+    vtk.vtkObject.GlobalWarningDisplayOn()
     # https://gitlab.kitware.com/vtk/vtk/-/issues/18785
-    vtkLogger.SetStderrVerbosity(vtkLogger.VERBOSITY_INFO)
+    vtk.vtkLogger.SetStderrVerbosity(vtk.vtkLogger.VERBOSITY_INFO)
 
 
 def wrap(
