@@ -73,11 +73,11 @@ class CloudPreference(_MixinStrEnum, Enum):
 
     """
 
-    HIGH = "high"
     LOW = "low"
     MEDIUM = "medium"
-    MESH = "mesh"
+    HIGH = "high"
     VERY_HIGH = "very_high"
+    MESH = "mesh"
 
 
 @dataclass(frozen=True)
