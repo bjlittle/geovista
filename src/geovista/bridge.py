@@ -619,7 +619,6 @@ class Transform:  # numpydoc ignore=PR01
         clean: bool | None = None,
         vectors: ArrayLike | tuple(ArrayLike) | None = None,
         vectors_array_name: str | None = None,
-        vectors_scaling: float | None = None,
         vectors_z_scaling: float | None = None,
     ) -> pv.PolyData:
         """Build a point-cloud mesh from x-values, y-values and z-levels.
@@ -669,19 +668,9 @@ class Transform:  # numpydoc ignore=PR01
         vectors_array_name : str, optional
             Specifies an alternate name for the points array to store the vectors.
             Also set as the active vectors name.   Defaults to "vectors".
-        vectors_scaling : float, optional
-            scaling factor to apply to all vector values.  Defaults to 1.0
         vectors_z_scaling : float, optional
             scaling factor to apply to vertical vectors (i.e. relative to the eastward
             and northward components).  Defaults to 1.0
-        vectors_equalise_length : float, optional
-            If set, after initial scaling, scale all vectors individually to this
-            length, keeping same direction, _except_ those < vectors_min_length.
-        vectors_min_length : float, optional
-            If set, after initial scaling, clip all vectors of less than this length
-            to zero.  NOTE: this does not of itself guarantee that no glyph is drawn
-            at that point.
-            If 'vectors_equalise_length' is set, this defaults to 1.0e-12.
 
         Returns
         -------
@@ -759,9 +748,6 @@ class Transform:  # numpydoc ignore=PR01
                 zz = vectors[2]
             else:
                 zz = np.zeros_like(xx)
-
-            if vectors_scaling is not None:
-                xx, yy, zz = [arr * vectors_scaling for arr in (xx, yy, zz)]
 
             if vectors_z_scaling is not None:
                 zz = zz * vectors_z_scaling
