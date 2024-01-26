@@ -20,7 +20,7 @@ import lazy_loader as lazy
 from geovista.bridge import Transform
 from geovista.cache import CACHE
 from geovista.common import Preference
-import geovista.pantry
+import geovista.pantry.data
 
 if TYPE_CHECKING:
     import pyvista as pv
