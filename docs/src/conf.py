@@ -234,7 +234,7 @@ html_theme_options = {
     "repository_branch": "main",
     "repository_url": "https://github.com/bjlittle/geovista",
     "show_prev_next": True,
-    "show_toc_level": 3,
+    "show_toc_level": 4,
     "toc_title": "On this page",
     "use_download_button": True,
     "use_edit_page_button": False,
