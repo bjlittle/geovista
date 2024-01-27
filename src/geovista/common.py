@@ -779,7 +779,7 @@ def vectors_to_cartesian(
 
     """
     # TODO: Argument checking ???
-    lons, lats = [np.deg2rad(arr) for arr in lons_lats]
+    lons, lats = (np.deg2rad(arr) for arr in lons_lats)
     u, v, w = vectors_uvw
 
     coslons = np.cos(lons)
@@ -789,15 +789,13 @@ def vectors_to_cartesian(
     # N.B. the term signs are slightly unexpected here, because the viewing coord system
     # is not quite what you may expect :  The "Y" axis goes to the right, and the "X"
     # axis points out of the screen, towards the viewer.
-    z_factor = (w * coslats - v * sinlats)
+    z_factor = w * coslats - v * sinlats
     wy = coslons * u + sinlons * z_factor
     wx = -sinlons * u + coslons * z_factor
     wz = v * coslats + w * sinlats
     # NOTE: for better efficiency, we *COULD* handle the w=0 special case separately.
 
     return wx, wy, wz
-
-
 
 
 def to_lonlat(

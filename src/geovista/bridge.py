@@ -728,8 +728,7 @@ class Transform:  # numpydoc ignore=PR01
                 vectors_array_name = "vectors"
 
             if not isinstance(vectors, tuple) or not all(
-                isinstance(arr, np.ndarray)
-                for arr in vectors
+                isinstance(arr, np.ndarray) for arr in vectors
             ):
                 msg = 'Keyword "vectors" must be a tuple of array-like.'
                 raise ValueError(msg)
