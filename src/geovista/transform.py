@@ -193,11 +193,11 @@ def transform_point(
     src_crs : CRSLike
         The source Coordinate Reference System (CRS) of the provided `x`,
         `y` and `z` spatial point. May be anything accepted by
-        :meth:`pyproj.CRS.from_user_input`.
+        :meth:`pyproj.crs.CRS.from_user_input`.
     tgt_crs : CRSLike
         The target Coordinate Reference System (CRS) of the transform for
         the spatial point. May be anything accepted by
-        :meth:`pyproj.CRS.from_user_input`.
+        :meth:`pyproj.crs.CRS.from_user_input`.
     x : ArrayLike
         The spatial point x-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar
@@ -249,11 +249,11 @@ def transform_points(
     src_crs : CRSLike
         The source Coordinate Reference System (CRS) of the provided `xs`,
         `ys` and `zs` spatial points. May be anything accepted by
-        :meth:`pyproj.CRS.from_user_input`.
+        :meth:`pyproj.crs.CRS.from_user_input`.
     tgt_crs : CRSLike
         The target Coordinate Reference System (CRS) of the transform for
         the spatial points. May be anything accepted by
-        :meth:`pyproj.CRS.from_user_input`.
+        :meth:`pyproj.crs.CRS.from_user_input`.
     xs : ArrayLike
         The spatial points x-values, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar,

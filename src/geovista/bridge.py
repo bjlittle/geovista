@@ -391,7 +391,7 @@ class Transform:
             :data:`NAME_POINTS` or :data:`NAME_CELLS`.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
-            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
@@ -475,7 +475,7 @@ class Transform:
             :data:`NAME_POINTS` or :data:`NAME_CELLS`.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
-            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
@@ -566,7 +566,7 @@ class Transform:
             is provided but with no `name`, defaults to :data:`NAME_POINTS`.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
-            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the mesh point-cloud. Defaults to
@@ -703,7 +703,7 @@ class Transform:
             :data:`NAME_POINTS` or :data:`NAME_CELLS`.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
-            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the mesh sphere. Defaults to :data:`geovista.common.RADIUS`.
@@ -922,7 +922,7 @@ class Transform:
             from the `connectivity`.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
-            be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the mesh sphere. Defaults to :data:`geovista.common.RADIUS`.
