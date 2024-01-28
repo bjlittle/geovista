@@ -51,7 +51,7 @@ WGS84 = CRS.from_user_input("epsg:4326")
 
 
 def from_wkt(mesh: pv.PolyData) -> CRS:
-    """Get the :class:`pyproj.CRS` associated with the mesh.
+    """Get the :class:`pyproj.crs.CRS` associated with the mesh.
 
     Parameters
     ----------
@@ -61,7 +61,7 @@ def from_wkt(mesh: pv.PolyData) -> CRS:
     Returns
     -------
     CRS
-        The :class:`pyproj.CRS`
+        The :class:`pyproj.crs.CRS`
 
     Notes
     -----
@@ -85,7 +85,7 @@ def get_central_meridian(crs: CRS) -> float | None:
     Parameters
     ----------
     crs : CRS
-        The :class:`pyproj.CRS`.
+        The :class:`pyproj.crs.CRS`.
 
     Returns
     -------
@@ -177,7 +177,7 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
     Parameters
     ----------
     crs : CRS
-        The :class:`pyproj.CRS`.
+        The :class:`pyproj.crs.CRS`.
     meridian : float
         The replacement central meridian.
 
@@ -210,16 +210,16 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
 
 
 def to_wkt(mesh: pv.PolyData, crs: CRS) -> None:
-    """Attach serialized :class:`pyproj.CRS` as Well-Known-Text in-place to the `mesh`.
+    """Attach serialized :class:`pyproj.crs.CRS` as Well-Known-Text to the `mesh`.
 
-    The serialized OGC WKT is attached to the ``field_data`` of the mesh.
+    The serialized OGC WKT is attached to the ``field_data`` of the mesh in-place.
 
     Parameters
     ----------
     mesh : PolyData
         The mesh to contain the OGC WKT.
     crs : CRS
-        The :class:`pyproj.CRS` to be serialized.
+        The :class:`pyproj.crs.CRS` to be serialized.
 
     Notes
     -----

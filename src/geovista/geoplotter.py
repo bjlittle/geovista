@@ -1031,7 +1031,7 @@ class GeoPlotterBase:
             scalars on the `points` mesh are used.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `points`, or `xs` and `ys`.
-            May be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the mesh point-cloud. Defaults to
