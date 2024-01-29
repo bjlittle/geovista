@@ -88,8 +88,10 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-        name: lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.txt
+        name: lock-artifacts-${{ github.job }}-${{ strategy.job-ia }}
+        path: |
+          ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.txt
+          ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.yml
 
 
   create-pr:
