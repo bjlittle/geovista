@@ -86,9 +86,9 @@ jobs:
       run: |
         tox -e ${{ matrix.version }}-lock
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
-        name: lock-artifacts
+        name: lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
         path: |
           ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.txt
           ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.yml
@@ -103,10 +103,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
-        name: lock-artifacts
+        pattern: lock-artifacts-*
         path: ${{ github.workspace }}/requirements/locks
+        merge-multiple: true
 
     - name: "generate token"
       uses: tibdex/github-app-token@v2
