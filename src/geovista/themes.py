@@ -69,6 +69,14 @@ def set_plot_theme(theme: str | pv_themes.Theme) -> None:
         documented in :data:`NATIVE_THEMES` (e.g. ``NATIVE_THEMES.foo`` OR
         ``"foo"`` work the same).
 
+    Warnings
+    --------
+    To use a theme from :func:`pyvista.set_plot_theme` that has a name clash
+    with a theme from :data:`NATIVE_THEMES`: either use a
+    :class:`pyvista.plotting.themes.Theme` instance (see PyVista's
+    :external+pyvista:doc:`api/plotting/theme`), or use
+    :func:`pyvista.set_plot_theme` directly.
+
     Notes
     -----
     .. versionadded:: 0.5.0
