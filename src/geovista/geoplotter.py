@@ -15,12 +15,11 @@ Notes
 from __future__ import annotations
 
 from functools import lru_cache
+import os
 from typing import TYPE_CHECKING, Any
 from warnings import warn
 
-from pyproj import CRS
-import pyvista as pv
-from pyvista.core.utilities import helpers
+import lazy_loader as lazy
 
 from .bridge import Transform
 from .common import (
@@ -34,6 +33,7 @@ from .common import (
     distance,
     point_cloud,
     to_cartesian,
+    vtk_warnings_off,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .core import add_texture_coords, resize, slice_mesh
@@ -64,7 +64,12 @@ from .raster import wrap_texture
 from .transform import transform_mesh
 
 if TYPE_CHECKING:
-    import numpy.typing as npt
+    from numpy.typing import ArrayLike
+    import pyvista as pv
+
+# lazy import third-party dependencies
+pyproj = lazy.load("pyproj")
+pv = lazy.load("pyvista")
 
 __all__ = ["GeoPlotter"]
 
@@ -171,7 +176,7 @@ class GeoPlotterBase:
 
         if "crs" in kwargs:
             crs = kwargs.pop("crs")
-            crs = CRS.from_user_input(crs) if crs is not None else WGS84
+            crs = pyproj.CRS.from_user_input(crs) if crs is not None else WGS84
         else:
             crs = WGS84
         self.crs = crs
@@ -561,6 +566,10 @@ class GeoPlotterBase:
         .. versionadded:: 0.1.0
 
         """
+        # assume this is a sane default
+        if os.environ.get("GEOVISTA_VTK_WARNINGS", "false").lower() == "false":
+            vtk_warnings_off()
+
         if isinstance(mesh, pv.UnstructuredGrid):
             mesh = cast(mesh)
 
@@ -988,14 +997,14 @@ class GeoPlotterBase:
 
     def add_points(
         self,
-        points: npt.ArrayLike | pv.PolyData | None = None,
-        xs: npt.ArrayLike | None = None,
-        ys: npt.ArrayLike | None = None,
-        scalars: str | npt.ArrayLike | None = None,
+        points: ArrayLike | pv.PolyData | None = None,
+        xs: ArrayLike | None = None,
+        ys: ArrayLike | None = None,
+        scalars: str | ArrayLike | None = None,
         crs: CRSLike | None = None,
         radius: float | None = None,
         style: str | None = None,
-        zlevel: int | npt.ArrayLike | None = None,
+        zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         **kwargs: Any | None,
     ) -> pv.Actor:
@@ -1022,7 +1031,7 @@ class GeoPlotterBase:
             scalars on the `points` mesh are used.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `points`, or `xs` and `ys`.
-            May be anything accepted by :meth:`pyproj.CRS.from_user_input`. Defaults
+            May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the mesh point-cloud. Defaults to
@@ -1054,7 +1063,7 @@ class GeoPlotterBase:
         """
         if crs is not None:
             # sanity check the source crs
-            crs = CRS.from_user_input(crs)
+            crs = pyproj.CRS.from_user_input(crs)
 
         if style is None:
             style = "points"
@@ -1089,8 +1098,8 @@ class GeoPlotterBase:
                 )
                 raise ValueError(emsg)
 
-            if not helpers.is_pyvista_dataset(points):
-                points = helpers.wrap(points)
+            if not pv.core.utilities.helpers.is_pyvista_dataset(points):
+                points = pv.core.utilities.helpers.wrap(points)
 
             mesh = points
 

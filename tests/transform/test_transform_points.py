@@ -7,11 +7,12 @@
 from __future__ import annotations
 
 import numpy as np
+from pyproj import Transformer
 from pyproj.exceptions import CRSError
 import pytest
 
 from geovista.crs import WGS84
-from geovista.transform import Transformer, transform_points
+from geovista.transform import transform_points
 
 
 @pytest.mark.parametrize(

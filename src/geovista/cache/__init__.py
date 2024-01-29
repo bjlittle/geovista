@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Convenience functions to access, download and cache geovista resources.
+"""Convenience functions to access, download and cache :mod:`geovista` resources.
 
 Notes
 -----
@@ -20,32 +20,36 @@ import pooch
 from geovista.config import resources
 
 __all__ = [
+    "BASE_URL",
     "CACHE",
+    "DATA_VERSION",
+    "GEOVISTA_CACHEDIR",
+    "GEOVISTA_DATA_VERSION",
+    "RETRY_ATTEMPTS",
     "pooch_mute",
     "reload_registry",
 ]
 
-#: Base URL for geovista resources.
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
+"""Base URL for :mod:`geovista` resources."""
 
-#: Pin to use the specific geovista-data repository version for geovista resources.
 DATA_VERSION: str = "2024.01.2"
+"""The ``geovista-data`` repository version for :mod:`geovista` resources."""
 
-#: Environment variable to override pooch cache manager path.
-ENV: str = "GEOVISTA_CACHEDIR"
+GEOVISTA_CACHEDIR: str = "GEOVISTA_CACHEDIR"
+"""Environment variable to override :mod:`pooch` cache manager path."""
 
-#: Environment variable to override default geovista-data version.
 GEOVISTA_DATA_VERSION: str = os.environ.get("GEOVISTA_DATA_VERSION", DATA_VERSION)
+"""Environment variable to override default ``geovista-data`` version."""
 
-#: The number of retry attempts to download a resource.
 RETRY_ATTEMPTS: int = 3
+"""The number of retry attempts to download a resource."""
 
 URL_DKRZ_FESOM: str = (
     "https://swift.dkrz.de/v1/dkrz_0262ea1f00e34439850f3f1d71817205/FESOM/"
     "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
 )
 
-#: Cache manager for geovista resources.
 CACHE: pooch.Pooch = pooch.create(
     path=resources["cache_dir"],
     base_url=BASE_URL,
@@ -53,11 +57,12 @@ CACHE: pooch.Pooch = pooch.create(
     version_dev="main",
     registry=None,
     retry_if_failed=RETRY_ATTEMPTS,
-    env=ENV,
+    env=GEOVISTA_CACHEDIR,
     urls={
         "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc": URL_DKRZ_FESOM  # noqa: E501
     },
 )
+"""Cache manager for :mod:`geovista` resources."""
 
 CACHE.load_registry(
     (Path(__file__).parent / "registry.txt").open(
@@ -65,22 +70,22 @@ CACHE.load_registry(
     )
 )
 
-#: Verbosity status of the pooch cache manager logger.
 GEOVISTA_POOCH_MUTE: bool = (
     os.environ.get("GEOVISTA_POOCH_MUTE", "false").lower() == "true"
 )
+"""Verbosity status of the :mod:`pooch` cache manager logger."""
 
 
 def pooch_mute(silent: bool = True) -> None:
-    """Control the pooch cache manager logger verbosity.
+    """Control the :mod:`pooch` cache manager logger verbosity.
 
     Updates the status variable :data:`GEOVISTA_POOCH_MUTE`.
 
     Parameters
     ----------
     silent : bool, optional
-        Whether to silence or activate the pooch cache manager logger messages to the
-        console.
+        Whether to silence or activate the :mod:`pooch` cache manager logger messages
+        to the console.
 
     Notes
     -----
@@ -101,7 +106,7 @@ def reload_registry(fname: str | None = None) -> None:
     ----------
     fname : str, optional
         The filename of the registry to be loaded. If ``None``, defaults to
-        the ``cache/registry.txt`` resource file packaged with geovista.
+        the ``cache/registry.txt`` resource file packaged with :mod:`geovista`.
 
     Notes
     -----

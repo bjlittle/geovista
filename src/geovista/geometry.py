@@ -12,13 +12,10 @@ Notes
 """
 from __future__ import annotations
 
-from collections.abc import Generator
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
-import cartopy.io.shapereader as shp
-import numpy as np
-import pyvista as pv
-from shapely import LineString, MultiLineString
+import lazy_loader as lazy
 
 from .common import (
     COASTLINES_RESOLUTION,
@@ -33,14 +30,20 @@ from .core import resize
 from .crs import WGS84, to_wkt
 from .pantry import fetch_coastlines
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from shapely import LineString, MultiLineString
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pv = lazy.load("pyvista")
+
 __all__ = [
     "coastlines",
     "load_coastline_geometries",
     "load_coastlines",
 ]
-
-# type aliases
-Geometries = Generator[LineString | MultiLineString]
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -122,6 +125,9 @@ def load_coastline_geometries(
     .. versionadded:: 0.1.0
 
     """
+    import cartopy.io.shapereader as shp
+    from shapely import MultiLineString
+
     if resolution is None:
         resolution = COASTLINES_RESOLUTION
 
@@ -132,7 +138,7 @@ def load_coastline_geometries(
     fname = shp.natural_earth(resolution=resolution, category=category, name=name)
     reader = shp.Reader(fname)
 
-    def unpack(geometries: Geometries) -> None:
+    def unpack(geometries: Generator[LineString | MultiLineString]) -> None:
         for geometry in geometries:
             if isinstance(geometry, MultiLineString):
                 multi_lines.extend(list(geometry.geoms))

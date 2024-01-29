@@ -50,6 +50,7 @@ def autolog(message: str) -> None:
 extensions = [
     #    "jupyter_sphinx",
     "autoapi.extension",
+    "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
@@ -131,6 +132,11 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_use_keyword = True
 napoleon_custom_sections = None
+
+
+# -- autoapi options ---------------------------------------------------------
+# See https://sphinx-autoapi.readthedocs.io/en/latest/how_to.html#how-to-include-type-annotations-as-types-in-rendered-docstrings
+autodoc_typehints = "description"
 
 
 # -- autoapi options ---------------------------------------------------------
@@ -234,7 +240,7 @@ html_theme_options = {
     "repository_branch": "main",
     "repository_url": "https://github.com/bjlittle/geovista",
     "show_prev_next": True,
-    "show_toc_level": 3,
+    "show_toc_level": 4,
     "toc_title": "On this page",
     "use_download_button": True,
     "use_edit_page_button": False,
@@ -271,6 +277,8 @@ intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
+    "pooch": ("https://www.fatiando.org/pooch/latest/", None),
+    "pyproj": ("https://pyproj4.github.io/pyproj/stable/", None),
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
 }

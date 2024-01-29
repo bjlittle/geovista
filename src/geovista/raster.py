@@ -12,10 +12,18 @@ Notes
 """
 from __future__ import annotations
 
-import numpy as np
-import pyvista as pv
+from typing import TYPE_CHECKING
+
+import lazy_loader as lazy
 
 from .common import wrap
+
+if TYPE_CHECKING:
+    import pyvista as pv
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pv = lazy.load("pyvista")
 
 __all__ = ["wrap_texture"]
 

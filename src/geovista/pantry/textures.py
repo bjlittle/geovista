@@ -13,9 +13,20 @@ Notes
 
 from __future__ import annotations
 
-import pyvista as pv
+from typing import TYPE_CHECKING
+
+import lazy_loader as lazy
 
 from geovista.cache import CACHE
+
+if TYPE_CHECKING:
+    import pyvista as pv
+
+    # type aliases
+    TextureLike = str | pv.Texture
+
+# lazy import third-party dependencies
+pv = lazy.load("pyvista")
 
 __all__ = [
     "blue_marble",
@@ -23,10 +34,6 @@ __all__ = [
     "natural_earth_1",
     "natural_earth_hypsometric",
 ]
-
-
-# Type aliases.
-TextureLike = str | pv.Texture
 
 
 def _fetch_texture(fname: str, location: bool | None = False) -> TextureLike:

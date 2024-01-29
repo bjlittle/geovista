@@ -12,16 +12,23 @@ Notes
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from warnings import warn
 
-import numpy as np
-import pooch
-import pyvista as pv
+import lazy_loader as lazy
 
 from geovista.bridge import Transform
 from geovista.cache import CACHE
 from geovista.common import Preference
-import geovista.pantry
+import geovista.pantry.data
+
+if TYPE_CHECKING:
+    import pyvista as pv
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pooch = lazy.load("pooch")
+pv = lazy.load("pyvista")
 
 __all__ = [
     "LFRIC_RESOLUTION",

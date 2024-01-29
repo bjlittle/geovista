@@ -16,8 +16,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-import numpy as np
-import pyvista as pv
+import lazy_loader as lazy
 
 from .common import (
     BASE,
@@ -32,6 +31,11 @@ from .crs import WGS84, to_wkt
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
+    import pyvista as pv
+
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+pv = lazy.load("pyvista")
 
 __all__ = [
     "GRATICULE_CLOSED_INTERVAL",
