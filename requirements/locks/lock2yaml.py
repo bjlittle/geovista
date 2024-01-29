@@ -7,7 +7,6 @@
 """Convert a lock file to a YAML file."""
 from __future__ import annotations
 
-from pathlib import Path
 import sys
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -27,8 +26,9 @@ lock = f"{env}-linux-64.txt"
 name = f"geovista-{env}"
 yaml = f"{env}-linux-64.yml"
 
-with Path.open(lock) as fin:
+# TODO @bjlittle: use Path.open when >=py311 and remove .ruff.toml ignore
+with open(lock) as fin:
     content = template.render(file=fin, name=name)
 
-with Path.open(yaml, mode="w", encoding="utf-8") as fout:
+with open(yaml, mode="w", encoding="utf-8") as fout:
     fout.write(content)
