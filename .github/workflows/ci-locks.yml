@@ -118,7 +118,9 @@ jobs:
       uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38
       with:
         token: ${{ steps.generate-token.outputs.token }}
-        add-paths: ${{ github.workspace }}/requirements/locks/*.txt
+        add-paths: |
+          ${{ github.workspace }}/requirements/locks/*.txt
+          ${{ github.workspace }}/requirements/locks/*.yml
         commit-message: "updated conda lock files"
         branch: conda-lock-auto-update
         delete-branch: true
