@@ -53,7 +53,7 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-        name: prefix-${{ github.job }}-${{ strategy.job-index }}
+        name: pypi-${{ github.job }}-${{ strategy.job-index }}
         path: ${{ github.workspace }}/dist
 
 
@@ -84,7 +84,7 @@ jobs:
 
     - uses: actions/download-artifact@v3
       with:
-        name: prefix-${{ github.job }}-${{ strategy.job-index }}
+        name: pypi-${{ github.job }}-${{ strategy.job-index }}
         path: ${{ github.workspace }}/dist
 
     - name: "environment configure"
@@ -145,7 +145,7 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: prefix-${{ github.job }}-${{ strategy.job-index }}
+        name: pypi-${{ github.job }}-${{ strategy.job-index }}
         path: ${{ github.workspace }}/dist
 
     - shell: bash
@@ -162,7 +162,7 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: prefix-${{ github.job }}-${{ strategy.job-index }}
+        name: pypi-${{ github.job }}-${{ strategy.job-index }}
         path: ${{ github.workspace }}/dist
 
     - uses: pypa/gh-action-pypi-publish@release/v1
@@ -183,7 +183,7 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: prefix-${{ github.job }}-${{ strategy.job-index }}
+        name: pypi-${{ github.job }}-${{ strategy.job-index }}
         path: ${{ github.workspace }}/dist
 
     - uses: pypa/gh-action-pypi-publish@release/v1
