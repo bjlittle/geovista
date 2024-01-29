@@ -3,7 +3,10 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Configures a custom pyvista theme for geovista.
+""":mod:`geovista` specialisation of PyVista :external+pyvista:doc:`api/plotting/theme`.
+
+To set a theme: either use :func:`set_plot_theme` or set the
+``$GEOVISTA_THEME`` environment variable.
 
 Notes
 -----
@@ -14,10 +17,10 @@ from __future__ import annotations
 
 import contextlib
 from enum import Enum
+from os import environ
+from warnings import warn
 
 from pyvista.plotting import themes as pv_themes
-
-from . import GEOVISTA_IMAGE_TESTING
 
 
 class GeoVistaTheme(pv_themes.Theme):
@@ -67,8 +70,8 @@ def set_plot_theme(theme: str | pv_themes.Theme) -> None:
     theme : str or pyvista.themes.Theme
         The theme to apply. All inputs documented in
         :func:`pyvista.set_plot_theme` are accepted, as well as those
-        documented in :data:`NATIVE_THEMES` (e.g. ``NATIVE_THEMES.foo`` OR
-        ``"foo"`` work the same).
+        documented in :data:`NATIVE_THEMES` (e.g. ``NATIVE_THEMES.foo.value()``
+        OR ``"foo"`` work the same).
 
     Warnings
     --------
@@ -118,7 +121,22 @@ def set_plot_theme(theme: str | pv_themes.Theme) -> None:
         raise ValueError(msg) from err
 
 
-if not GEOVISTA_IMAGE_TESTING:
-    # only load the geovista theme if we're not performing image testing,
-    # as the default pyvista testing theme is adopted instead
-    set_plot_theme(GeoVistaTheme())
+def _find_and_set_plot_theme() -> None:
+    """:func:`set_plot_theme` from env var or default :class:`GeoVistaTheme`."""
+    default_theme = NATIVE_THEMES.geovista
+    theme = environ.get("GEOVISTA_THEME", None)
+    if theme is not None:
+        try:
+            set_plot_theme(theme)
+        except ValueError:
+            message = (
+                "Invalid GeoVista/PyVista theme set in $GEOVISTA_THEME: "
+                f"'{theme}'. Defaulting to {default_theme}. See the "
+                f"geovista.themes docs for other valid themes."
+            )
+            warn(message, stacklevel=2)
+            theme = default_theme.value()
+    else:
+        theme = GeoVistaTheme()
+
+    set_plot_theme(theme)

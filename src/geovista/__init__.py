@@ -34,7 +34,14 @@ try:
 except ModuleNotFoundError:
     __version__ = "unknown"
 
-#: flag when performing image testing
 GEOVISTA_IMAGE_TESTING: bool = (
     os.environ.get("GEOVISTA_IMAGE_TESTING", "false").lower() == "true"
 )
+"""Flag when performing image testing."""
+
+if not GEOVISTA_IMAGE_TESTING:
+    # only load the geovista theme if we're not performing image testing,
+    # as the default pyvista testing theme is adopted instead
+    from .themes import _find_and_set_plot_theme
+
+    _find_and_set_plot_theme()
