@@ -88,7 +88,7 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-        name: prefix-${{ github.job }}-${{ strategy.job-index }}
+        name: lock-${{ github.job }}-${{ strategy.job-index }}
         path: ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.txt
 
 
@@ -103,7 +103,7 @@ jobs:
 
     - uses: actions/download-artifact@v3
       with:
-        name: prefix-${{ github.job }}-${{ strategy.job-index }}
+        name: lock-${{ github.job }}-${{ strategy.job-index }}
         path: ${{ github.workspace }}/requirements/locks
 
     - name: "generate token"
