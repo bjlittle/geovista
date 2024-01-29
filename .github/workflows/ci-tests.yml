@@ -116,5 +116,5 @@ jobs:
       if: ${{ failure() }}
       uses: actions/upload-artifact@v3
       with:
-        name: test-images
+        name: prefix-${{ github.job }}-${{ strategy.job-index }
         path: ${{ github.workspace }}/test_images
