@@ -103,7 +103,7 @@ jobs:
 
     - uses: actions/download-artifact@v3
       with:
-        name: lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
+        name: lock-artifacts-build-locks-${{ strategy.job-index }}
         path: ${{ github.workspace }}/requirements/locks
 
     - name: "generate token"
