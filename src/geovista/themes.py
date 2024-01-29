@@ -21,7 +21,13 @@ from . import GEOVISTA_IMAGE_TESTING
 
 
 class GeoVistaTheme(pv_themes.Theme):
-    """A PyVista theme optimised for typical GeoVista operations."""
+    """A PyVista theme optimised for typical GeoVista operations.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
 
     def __init__(self) -> None:
         super().__init__()
@@ -36,7 +42,13 @@ class GeoVistaTheme(pv_themes.Theme):
 
 
 class NATIVE_THEMES(Enum):  # noqa: N801 (Python recommends UPPER_CASE for Enums)
-    """Global built-in themes available to GeoVista."""
+    """Global built-in themes available to GeoVista.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
 
     # This class is public, unlike the PyVista equivalent, to improve
     #  the documentation of valid themes.
@@ -57,6 +69,9 @@ def set_plot_theme(theme: str | pv_themes.Theme) -> None:
         documented in :data:`NATIVE_THEMES` (e.g. ``NATIVE_THEMES.foo`` OR
         ``"foo"`` work the same).
 
+    Notes
+    -----
+    .. versionadded:: 0.5.0
 
     Examples
     --------
