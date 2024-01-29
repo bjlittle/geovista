@@ -53,6 +53,7 @@ class NATIVE_THEMES(Enum):  # noqa: N801 (Python recommends UPPER_CASE for Enums
     # This class is public, unlike the PyVista equivalent, to improve
     #  the documentation of valid themes.
     geovista = GeoVistaTheme
+    """:class:`GeoVistaTheme`"""
 
 
 def set_plot_theme(theme: str | pv_themes.Theme) -> None:
