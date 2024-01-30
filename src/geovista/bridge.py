@@ -70,7 +70,7 @@ class Transform:  # numpydoc ignore=PR01
     """
 
     @staticmethod
-    def _as_compatible_data(data: ArrayLike, n_points: int, n_cells: int) -> np.ndarray:
+    def _as_compatible_data(data: ArrayLike, n_points: int, n_cells: int, rgb: bool=False) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 
         Note that masked values will be filled with NaNs.
@@ -83,6 +83,8 @@ class Transform:  # numpydoc ignore=PR01
             The number of nodes in the mesh.
         n_cells : int
             The number of cells in the mesh.
+        rgb : bool
+            Whether the data is RGB or RGBA.
 
         Returns
         -------
@@ -96,15 +98,21 @@ class Transform:  # numpydoc ignore=PR01
         """
         if data is not None:
             data = np.asanyarray(data)
-
-            if data.size not in (n_points, n_cells):
+            if data.ndim < 2 and rgb:
+                emsg = (
+                    f"RGB data must have more than 1 dimension, got {data.ndim}"
+                )
+                raise ValueError(emsg)
+            size = data.size // data.shape[-1] if rgb else data.size
+            if size not in (n_points, n_cells): # (M, N, P)
                 emsg = (
                     f"Require mesh data with either '{n_points:,d}' points or "
                     f"'{n_cells:,d}' cells, got '{data.size:,d}' values."
                 )
                 raise ValueError(emsg)
-
             data = nan_mask(np.ravel(data))
+            if rgb:
+                data = data.reshape(size, -1)
 
         return data
 
@@ -376,6 +384,7 @@ class Transform:  # numpydoc ignore=PR01
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
+        rgb: bool | None = False,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from contiguous 1-D x-values and y-values.
 
@@ -422,6 +431,8 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
             :data:`BRIDGE_CLEAN`.
+        rgb : bool, optional
+            Whether the data is RGB or RGBA.
 
         Returns
         -------
@@ -445,6 +456,7 @@ class Transform:  # numpydoc ignore=PR01
             zlevel=zlevel,
             zscale=zscale,
             clean=clean,
+            rgb=rgb,
         )
 
     @classmethod
@@ -459,6 +471,7 @@ class Transform:  # numpydoc ignore=PR01
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
+        rgb: bool | None = False,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from 2-D x-values and y-values.
 
@@ -506,6 +519,8 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
             :data:`BRIDGE_CLEAN`.
+        rgb : bool, optional
+            Whether the data is RGB or RGBA.
 
         Returns
         -------
@@ -548,6 +563,7 @@ class Transform:  # numpydoc ignore=PR01
             zlevel=zlevel,
             zscale=zscale,
             clean=clean,
+            rgb=rgb,
         )
 
     @classmethod
@@ -673,6 +689,7 @@ class Transform:  # numpydoc ignore=PR01
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
+        rgb: bool | None = None,
     ) -> pv.PolyData:
         """Build a mesh from unstructured 1-D x-values and y-values.
 
@@ -734,6 +751,8 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
             :data:`BRIDGE_CLEAN`.
+        rgb : bool, optional
+            Whether the data is RGB or RGBA.
 
         Returns
         -------
@@ -878,10 +897,10 @@ class Transform:  # numpydoc ignore=PR01
 
         # attach any optional data to the mesh
         if data is not None:
-            data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells)
-
+            data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells, rgb)
             if not name:
-                name = NAME_POINTS if data.size == mesh.n_points else NAME_CELLS
+                size = data.size // data.shape[-1] if rgb else data.size
+                name = NAME_POINTS if size == mesh.n_points else NAME_CELLS
             if not isinstance(name, str):
                 name = str(name)
 
