@@ -383,9 +383,9 @@ class Transform:
             with M-faces in the `crs` y-axis requires a (M+1,) array.
             Alternatively, a (M, 2) contiguous bounds array may be provided.
         data : :data:`~numpy.typing.ArrayLike`, optional
-            Data to be optionally attached to the mesh. The data must match
-            either the shape of the fully formed mesh points (M, N), or the
-            number of mesh faces, M*N.
+            Data to be optionally attached to the mesh. The size of the data
+            must match either the shape of the fully formed mesh points (M+1)*(N+1),
+            or the number of mesh faces, M*N.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
@@ -467,9 +467,9 @@ class Transform:
             requires a (M+1, N+1) y-axis array. Alternatively, a (M, N, 4)
             array may be provided.
         data : :data:`~numpy.typing.ArrayLike`, optional
-            Data to be optionally attached to the mesh. The data must match
-            either the shape of the fully formed mesh points (M, N), or the
-            number of mesh faces, M*N.
+            Data to be optionally attached to the mesh. The size of the data
+            must match either the shape of the fully formed mesh points (M+1)*(N+1),
+            or the number of mesh faces, M*N.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
