@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import lru_cache
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
@@ -987,7 +986,6 @@ def ww3_global_tri() -> SampleUnstructuredXY:
     )
 
 
-
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def lfric_winds() -> SampleStructuredXYZ:
     """Download and cache unstructured 3D winds sample.
@@ -997,26 +995,17 @@ def lfric_winds() -> SampleStructuredXYZ:
     Returns
     -------
     SampleStructuredXYUV
-        data payload with XY spatial coordinates and UVW wind components.
+        Data payload with XY spatial coordinates and UVW wind components.
 
     Notes
     -----
     .. versionadded:: 0.5.0
 
     """
-    # TODO:
-    #  #1 access with pooch and cache
-    #  #2 include the data in geovista-data
-    # fname = "lfric-winds.nc"
-    # processor = pooch.Decompress(method="auto", name=fname)
-    # resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
-    # dataset = nc.Dataset(resource)
-    temporary_path = (
-        Path(__file__).parent
-        / "temporary_mini_test_data"
-        / "lfric_winds_sample.nc"
-    )
-    dataset = nc.Dataset(temporary_path)
+    fname = "lfric_winds_sample.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
+    dataset = nc.Dataset(resource)
 
     # load the lon/lat/zlevel points
     lons = dataset.variables["Mesh2d_face_x"][:]
@@ -1030,5 +1019,3 @@ def lfric_winds() -> SampleStructuredXYZ:
     name = "Wind"
 
     return SampleVectorsXYUVW(lons, lats, u, v, w, name=name, units=units)
-
-
