@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import lru_cache
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
@@ -125,6 +126,21 @@ class SampleUnstructuredXY:
     units: str | None = field(default=None)
     steps: int | None = field(default=None)
     ndim: int = 2
+
+
+@dataclass(frozen=True)
+class SampleVectorsXYUVW:
+    """Data container for vector information on unconnected points."""
+
+    lons: ArrayLike
+    lats: ArrayLike
+    u: ArrayLike
+    v: ArrayLike
+    w: ArrayLike = field(default=None)
+    name: str = field(default=None)
+    units: str = field(default=None)
+    steps: int = field(default=None)
+    ndim: int = 1
 
 
 def capitalise(title: str) -> str:
@@ -969,3 +985,50 @@ def ww3_global_tri() -> SampleUnstructuredXY:
         name=name,
         units=units,
     )
+
+
+
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def lfric_winds() -> SampleStructuredXYZ:
+    """Download and cache cloud-point sample data.
+
+    Load Met Office Unified Model (UM) ORCA2 curvilinear mesh with gradient filter.
+
+    Returns
+    -------
+    SampleStructuredXYZ
+        The gradient filtered spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.2.0
+
+    """
+    # TODO:
+    #  #1 access with pooch and cache
+    #  #2 include the data in geovista-data
+    # fname = "lfric-winds.nc"
+    # processor = pooch.Decompress(method="auto", name=fname)
+    # resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
+    # dataset = nc.Dataset(resource)
+    temporary_path = (
+        Path(__file__).parent
+        / "temporary_mini_test_data"
+        / "lfric_winds_sample.nc"
+    )
+    dataset = nc.Dataset(temporary_path)
+
+    # load the lon/lat/zlevel points
+    lons = dataset.variables["Mesh2d_face_x"][:]
+    lats = dataset.variables["Mesh2d_face_y"][:]
+    # NOTE: for now, take first time and depth.
+    # This effectively 'pretends' U and V are on same levels as W -- which they aren't!
+    units = dataset.variables["u_in_w3"].units
+    u = dataset.variables["u_in_w3"][0, 0]
+    v = dataset.variables["v_in_w3"][0, 0]
+    w = dataset.variables["w_in_wth"][0, 0]
+    name = "Wind"
+
+    return SampleVectorsXYUVW(lons, lats, u, v, w, name=name, units=units)
+
+
