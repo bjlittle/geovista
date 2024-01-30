@@ -135,8 +135,7 @@ def _find_and_set_plot_theme() -> None:
                 f"geovista.themes docs for other valid themes."
             )
             warn(message, stacklevel=2)
-            theme = default_theme.value()
-    else:
-        theme = GeoVistaTheme()
+        else:
+            return
 
-    set_plot_theme(theme)
+    set_plot_theme(default_theme.value())
