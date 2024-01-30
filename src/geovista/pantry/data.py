@@ -990,18 +990,18 @@ def ww3_global_tri() -> SampleUnstructuredXY:
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def lfric_winds() -> SampleStructuredXYZ:
-    """Download and cache cloud-point sample data.
+    """Download and cache unstructured 3D winds sample.
 
-    Load Met Office Unified Model (UM) ORCA2 curvilinear mesh with gradient filter.
+    This data is derived from the LFRic test suite.
 
     Returns
     -------
-    SampleStructuredXYZ
-        The gradient filtered spatial coordinates and data payload.
+    SampleStructuredXYUV
+        data payload with XY spatial coordinates and UVW wind components.
 
     Notes
     -----
-    .. versionadded:: 0.2.0
+    .. versionadded:: 0.5.0
 
     """
     # TODO:
