@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Command line interface (CLI) support for the geovista entry-point.
+"""Command line interface (CLI) support for the :mod:`geovista` entry-point.
 
 Notes
 -----
@@ -15,6 +15,7 @@ from __future__ import annotations
 import importlib
 import pathlib
 from shutil import rmtree
+from typing import TYPE_CHECKING
 
 import click
 from click_default_group import DefaultGroup
@@ -26,6 +27,9 @@ from .common import get_modules
 from .config import resources
 from .geoplotter import GeoPlotter
 from .report import Report
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 # lazy import third-party dependencies
 pooch = lazy.load("pooch")
@@ -234,18 +238,11 @@ def main(version: bool, report: bool, cache: bool) -> None:
 @click.option(
     "-ne",
     "--natural-earth",
-    "pull_ne",
     multiple=True,
     type=click.Choice(NE_CHOICES, case_sensitive=False),
     is_flag=False,
     flag_value=ALL,
     help="Download Natural Earth feature assets.",
-)
-@click.option(
-    "-o",
-    "--output",
-    type=click.Path(file_okay=False, resolve_path=True, path_type=pathlib.Path),
-    help=f"Download target directory (default: {CACHE.abspath})",
 )
 @click.option("-p", "--pantry", is_flag=True, help="Download sample data assets.")
 @click.option(
@@ -253,6 +250,12 @@ def main(version: bool, report: bool, cache: bool) -> None:
     "--raster",
     is_flag=True,
     help="Download raster assets.",
+)
+@click.option(
+    "-t",
+    "--target",
+    type=click.Path(file_okay=False, resolve_path=True, path_type=pathlib.Path),
+    help=f"Download target directory (default: {CACHE.abspath})",
 )
 @click.option(
     "-v",
@@ -268,10 +271,10 @@ def download(
     image: bool,
     show: bool,
     mesh: bool,
-    pull_ne: tuple[str],
-    output: pathlib.Path | None,
+    natural_earth: Iterable[str],
     pantry: bool,
     raster: bool,
+    target: pathlib.Path | None,
     verify: bool,
 ) -> None:
     """Download and cache geovista assets (offline support)."""
@@ -303,10 +306,10 @@ def download(
             else:
                 click.echo("\nThere are no cached assets to delete.")
 
-    if output:
-        output.mkdir(exist_ok=True)
+    if target:
+        target.mkdir(exist_ok=True)
         previous_path = CACHE.path
-        CACHE.path = output
+        CACHE.path = target
 
     def collect(prefix: str) -> list[str]:
         return list(filter(lambda item: item.startswith(prefix), fnames))
@@ -326,12 +329,12 @@ def download(
             name = "pantry"
             _download_group(collect(name), decompress=decompress, name=name)
 
-        if pull_ne:
-            if ALL in pull_ne:
-                pull_ne = NE_GROUPS
-            pull_ne = sorted(set(pull_ne))
-            n_groups = len(pull_ne)
-            for i, group in enumerate(pull_ne):
+        if natural_earth:
+            if ALL in natural_earth:
+                natural_earth = NE_GROUPS
+            natural_earth = sorted(set(natural_earth))
+            n_groups = len(natural_earth)
+            for i, group in enumerate(natural_earth):
                 prefix = f"{NE_ROOT}/{group}"
                 name = f"Natural Earth {group}"
                 _download_group(
@@ -396,7 +399,7 @@ def download(
             click.secho(f"{fname}", fg=fg_colour)
         click.echo("\n👍 All done!")
 
-    if output:
+    if target:
         CACHE.path = previous_path
 
 
@@ -439,7 +442,7 @@ def download(
 def examples(
     run_all: bool, groups: bool, show: bool, run: str, run_group: str, verbose: bool
 ) -> None:
-    """Run a geovista example or group of examples."""
+    """Execute a geovista example or group of examples."""
     # account for the initial "all" option
     n_examples = len(EXAMPLES) - 1
 
@@ -489,13 +492,16 @@ def examples(
         click.echo("\n👍 All done!")
         return
 
-    msg = f"Running example {run!r} ..."
-    click.secho(msg, fg="green")
-    module = importlib.import_module(f"geovista.examples.{run}")
-    if verbose:
-        print(module.__doc__)
-    module.main()
-    click.echo("\n👍 All done!")
+    if run:
+        msg = f"Running example {run!r} ..."
+        click.secho(msg, fg="green")
+        module = importlib.import_module(f"geovista.examples.{run}")
+        if verbose:
+            print(module.__doc__)
+        module.main()
+        click.echo("\n👍 All done!")
+    else:
+        click.secho("Please select an example to run.", fg="red")
 
 
 @main.command(no_args_is_help=True)
