@@ -150,6 +150,8 @@ autoapi_dirs = [
 ]
 autoapi_root = "reference/generated/api"
 autoapi_ignore = [
+    str(package_dir / "geovista/__main__.py"),
+    str(package_dir / "geovista/cli.py"),
     str(package_dir / "geovista/examples/*"),
 ]
 autoapi_member_order = "alphabetical"
