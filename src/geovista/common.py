@@ -43,6 +43,7 @@ __all__ = [
     "GV_FIELD_ZSCALE",
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
+    "JUPYTER_BACKEND",
     "LRU_CACHE_SIZE",
     "PERIOD",
     "Preference",
@@ -55,6 +56,7 @@ __all__ = [
     "WRAP_RTOL",
     "ZLEVEL_SCALE",
     "ZTRANSFORM_FACTOR",
+    "active_kernel",
     "cast_UnstructuredGrid_to_PolyData",
     "distance",
     "from_cartesian",
@@ -74,74 +76,74 @@ __all__ = [
 
 # TODO @bjlittle: support richer default management
 
-#: Default base for wrapped longitude half-open interval, in degrees.
 BASE: float = -180.0
+"""Default base for wrapped longitude half-open interval, in degrees."""
 
-#: Default central meridian.
 CENTRAL_MERIDIAN: float = 0.0
+"""Default central meridian."""
 
-#: Default Natural Earth coastline resolution.
 COASTLINES_RESOLUTION: str = "10m"
+"""Default Natural Earth coastline resolution."""
 
-#: Name of the geovista cell indices array.
 GV_CELL_IDS: str = "gvOriginalCellIds"
+"""Name of the geovista cell indices array."""
 
-#: The field array name of the CF serialized pyproj CRS.
 GV_FIELD_CRS: str = "gvCRS"
+"""The field array name of the CF serialized pyproj CRS."""
 
-#: The field array name of the mesh containing field, point and/or cell data.
 GV_FIELD_NAME: str = "gvName"
+"""The field array name of the mesh containing field, point and/or cell data."""
 
-#: The field array name of the mesh radius.
 GV_FIELD_RADIUS: str = "gvRadius"
+"""The field array name of the mesh radius."""
 
-#: The field array name of the mesh resolution e.g., coastlines.
 GV_FIELD_RESOLUTION: str = "gvResolution"
+"""The field array name of the mesh resolution e.g., coastlines."""
 
-#: The field array name of the mesh proportional multiplier for z-axis levels/offsets.
 GV_FIELD_ZSCALE: str = "gvZScale"
+"""The field array name of the mesh proportional multiplier for z-axis levels."""
 
-#: Name of the geovista point indices array.
 GV_POINT_IDS: str = "gvOriginalPointIds"
+"""Name of the geovista point indices array."""
 
-#: Name of the geovista remesh point indices/marker array.
 GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
+"""Name of the geovista remesh point indices/marker array."""
 
-#: Default jupyter plotting backend for pyvista.
 JUPYTER_BACKEND: str = "trame"
+"""Default jupyter plotting backend for pyvista."""
 
-#: LRU cache size, which is auto-disabled for testing
 LRU_CACHE_SIZE: int = 0 if "pytest" in sys.modules else 128
+"""LRU cache size, which is auto-disabled for testing."""
 
-#: Default period for wrapped longitude half-open interval, in degrees.
 PERIOD: float = 360.0
+"""Default period for wrapped longitude half-open interval, in degrees."""
 
-#: Default radius of a spherical mesh.
 RADIUS: float = 1.0
+"""Default radius of a spherical mesh."""
 
-#: Marker for remesh filter cell join point.
 REMESH_JOIN: int = -3
+"""Marker for remesh filter cell join point."""
 
-#: Marker for remesh filter western cell boundary point.
 REMESH_SEAM: int = -1
+"""Marker for remesh filter western cell boundary point."""
 
-#: Name of the VTK cell indices array.
 VTK_CELL_IDS: str = "vtkOriginalCellIds"
+"""Name of the VTK cell indices array."""
 
-#: Name of the VTK point indices array.
 VTK_POINT_IDS: str = "vtkOriginalPointIds"
+"""Name of the VTK point indices array."""
 
-#: Absolute tolerance for values close to longitudinal wrap base + period.
 WRAP_ATOL: float = 1.0e-8
+"""Absolute tolerance for values close to longitudinal wrap base + period."""
 
-#: Relative tolerance for values close to longitudinal wrap base + period.
 WRAP_RTOL: float = 1.0e-5
+"""Relative tolerance for values close to longitudinal wrap base + period."""
 
-#: Proportional multiplier for z-axis levels/offsets.
 ZLEVEL_SCALE: float = 1.0e-4
+"""Proportional multiplier for z-axis levels/offsets."""
 
-#: The zlevel scaling to be applied when transforming to a projection.
 ZTRANSFORM_FACTOR: int = 3
+"""The zlevel scaling to be applied when transforming to a projection."""
 
 
 class _MixinStrEnum:
@@ -271,11 +273,11 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
     mesh: pv.UnstructuredGrid,
     clean: bool | None = False,
 ) -> pv.PolyData:
-    """Convert an unstructured grid to a :class:`pyvista.PolyData` instance.
+    """Convert a :class:`~pyvista.UnstructuredGrid` to a :class:`~pyvista.PolyData`.
 
     Parameters
     ----------
-    mesh :  UnstructuredGrid
+    mesh :  :class:`~pyvista.UnstructuredGrid`
         The unstructured grid to be converted.
     clean : bool, default=False
         Specify whether to merge duplicate points, remove unused points,
@@ -283,7 +285,7 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
 
     Returns
     -------
-    PolyData
+    :class:`~pyvista.PolyData`
         The resultant mesh.
 
     Notes
@@ -312,17 +314,17 @@ def distance(
     mesh: pv.PolyData,
     origin: ArrayLike | None = None,
     mean: bool | None = True,
-) -> float | ArrayLike:
+) -> float | np.ndarray:
     """Calculate the mean distance from the `origin` to the points of the `mesh`.
 
     Note that, given a spherical `mesh` the distance calculated is the radius.
 
     Parameters
     ----------
-    mesh : PolyData
+    mesh : :class:`~pyvista.PolyData`
         The surface that requires its distance to be calculated, relative to
         the `origin`.
-    origin : ArrayLike, default=(0, 0, 0)
+    origin : :data:`~numpy.typing.ArrayLike`, default=(0, 0, 0)
         The (x, y, z) cartesian center of the spheroid mesh.
     mean : bool, default=True
         Calculate the mean distance to the points of the `mesh`. Otherwise, calculate
@@ -330,7 +332,7 @@ def distance(
 
     Returns
     -------
-    float or ArrayLike
+    float or :class:`~numpy.ndarray`
         The mean distance to the provided mesh or each mesh point.
 
     Notes
@@ -379,7 +381,7 @@ def from_cartesian(
 
     Parameters
     ----------
-    mesh : PolyData
+    mesh : :class:`~pyvista.PolyData`
         The mesh containing the cartesian (x, y, z) points to be converted to
         longitude and latitude coordinates.
     stacked : bool, default=True
@@ -398,7 +400,7 @@ def from_cartesian(
 
     Returns
     -------
-    ndarray
+    :class:`~numpy.ndarray`
         The longitude and latitude coordinates, in degrees.
 
     Notes
@@ -566,12 +568,12 @@ def nan_mask(data: ArrayLike) -> np.ndarray:
 
     Parameters
     ----------
-    data : ArrayLike
+    data : :data:`~numpy.typing.ArrayLike`
         The masked array to be filled with NaNs.
 
     Returns
     -------
-    ndarray
+    :class:`~numpy.ndarray`
         The `data` with masked values replaced with NaNs.
 
     Notes
@@ -593,8 +595,8 @@ def point_cloud(mesh: pv.PolyData) -> bool:
 
     Parameters
     ----------
-    mesh : PolyData
-        The :class:`pyvista.PolyData` mesh.
+    mesh : :class:`~pyvista.PolyData`
+        The mesh to be checked.
 
     Returns
     -------
@@ -616,8 +618,8 @@ def sanitize_data(
 
     Parameters
     ----------
-    meshes : iterable of PolyData
-        The :class:`pyvista.PolyData` to sanitize.
+    meshes : iterable of :class:`~pyvista.PolyData`
+        One or more meshes to sanitize.
 
     Notes
     -----
@@ -681,13 +683,13 @@ def to_cartesian(
 
     Parameters
     ----------
-    lons : ArrayLike
+    lons : :data:`~numpy.typing.ArrayLike`
         The longitude values (degrees) to be converted.
-    lats : ArrayLike
+    lats : :data:`~numpy.typing.ArrayLike`
         The latitude values (degrees) to be converted.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`RADIUS`.
-    zlevel : float or ArrayLike, default=0.0
+    zlevel : float or :data:`~numpy.typing.ArrayLike`, default=0.0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
         If `zlevel` is not a scalar, then its shape must match or broadcast
@@ -701,7 +703,7 @@ def to_cartesian(
 
     Returns
     -------
-    ndarray
+    :class:`~numpy.ndarray`
         The ``xyz`` spherical cartesian points.
 
     Notes
@@ -761,7 +763,7 @@ def to_lonlat(
 
     Parameters
     ----------
-    xyz : ArrayLike
+    xyz : :data:`~numpy.typing.ArrayLike`
         The cartesian (x, y, z) point to be converted.
     radians : bool, default=False
         Convert resultant longitude and latitude values to radians.
@@ -777,7 +779,7 @@ def to_lonlat(
 
     Returns
     -------
-    ndarray
+    :class:`~numpy.ndarray`
         The longitude and latitude values.
 
     Notes
@@ -812,7 +814,7 @@ def to_lonlats(
 
     Parameters
     ----------
-    xyz : ArrayLike
+    xyz : :data:`~numpy.typing.ArrayLike`
         The cartesian (x, y, z) points to be converted.
     radians : bool, default=False
         Convert resultant longitude and latitude values to radians.
@@ -832,7 +834,7 @@ def to_lonlats(
 
     Returns
     -------
-    ndarray
+    :class:`~numpy.ndarray`
         The longitude and latitude values.
 
     Notes
@@ -891,9 +893,8 @@ def triangulated(surface: pv.PolyData) -> bool:
 
     Parameters
     ----------
-    surface : PolyData
-        The :class:`pyvista.PolyData` surface mesh to check
-        whether the geometry of all its cells are triangles.
+    surface : :class:`~pyvista.PolyData`
+        The surface mesh to check whether the geometry of all its cells are triangles.
 
     Returns
     -------
@@ -946,7 +947,7 @@ def wrap(
 
     Parameters
     ----------
-    lons : ArrayLike
+    lons : :data:`~numpy.typing.ArrayLike`
         One or more longitude values to be wrapped in the interval.
     base : float, optional
         The start limit of the half-open interval. Defaults to :data:`BASE`.
@@ -964,7 +965,7 @@ def wrap(
 
     Returns
     -------
-    ndarray
+    :class:`~numpy.ndarray`
         The transformed longitude values.
 
     Notes
