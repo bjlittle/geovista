@@ -72,7 +72,8 @@ def test_core(n_samples, zlevel, step):
     for key in result.blocks.keys():  # noqa: SIM118
         mesh = result.blocks[key]
         assert mesh.n_points == n_samples
-        assert mesh.n_cells == (n_lines := n_samples - 1)
+        n_lines = n_samples - 1
+        assert mesh.n_cells == n_lines
         assert mesh.n_lines == n_lines
         lonlat = from_cartesian(mesh)
         lons = np.unique(lonlat[:, 0])
