@@ -3,7 +3,42 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Provide geovista resource configuration.
+"""Provide :mod:`geovista` resource configuration.
+
+The :data:`resources` dictionary defines the options used to configure the
+location of various :mod:`geovista` resources.
+
+The following :data:`resources` dictionary keys are defined:
+
+* ``cache_dir`` - The directory used to store :mod:`geovista.cache` assets.  The default
+  configuration is based on the
+  `XDG Base Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>`_
+  i.e., ``${XDG_CACHE_HOME}/geovista``.  Otherwise, the default is the ``geovista``
+  directory under :func:`platformdirs.user_cache_dir`.
+
+
+Package Override
+----------------
+
+The :data:`resources` dictionary ``cache_dir`` may be overridden at a package
+**system** or **environment** level by creating a ``siteconfig.py`` file in the
+:mod:`geovista` package installation root directory and defining an ``update_config``
+function that updates the ``resources`` dictionary.  For example:
+
+.. code-block:: python
+
+        def update_config(resources: dict[str, str]) -> None:
+            resources["cache_dir"] = "/var/cache/geovista"
+
+
+User Override
+-------------
+
+The user may override both the default and package level configuration by defining an
+``update_config`` function within a ``geovistaconfig``
+`user site-packages <https://docs.python.org/3/library/site.html#site.USER_SITE>`_
+module.
+
 
 Notes
 -----
@@ -21,10 +56,11 @@ __all__ = ["resources"]
 
 # see https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 
-#: geovista resources configuration dictionary.
-resources = {
+resources: dict = {
     "cache_dir": Path(environ.get("XDG_CACHE_HOME", user_cache_dir())) / __package__
 }
+"""Resources configuration dictionary."""
+
 
 try:
     # system level override of resources dictionary
