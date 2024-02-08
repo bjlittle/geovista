@@ -54,6 +54,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
