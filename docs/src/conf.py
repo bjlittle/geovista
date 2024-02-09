@@ -30,10 +30,37 @@ from importlib.metadata import version as get_version
 import ntpath
 import os
 from pathlib import Path
+import re
+from typing import TYPE_CHECKING
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 from sphinx_gallery.sorting import ExampleTitleSortKey
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from autoapi.mappers.python.objects import (
+        PythonAttribute,
+        PythonData,
+        PythonFunction,
+        PythonMethod,
+        PythonModule,
+        PythonPackage,
+        PythonProperty,
+    )
+    from sphinx.application import Sphinx
+
+    # type aliases.
+    Mapper = (
+        PythonAttribute
+        | PythonData
+        | PythonFunction
+        | PythonMethod
+        | PythonModule
+        | PythonPackage
+        | PythonProperty
+    )
 
 
 def autolog(message: str) -> None:
@@ -59,6 +86,7 @@ extensions = [
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.napoleon",
+    "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
 ]
 
@@ -361,3 +389,56 @@ sphinx_gallery_conf = {
         "geovista": None,
     },
 }
+
+
+# -- pyvista-plot directive options ------------------------------------------
+
+DIRECTIVE_NAME = "pyvista-plot"
+DIRECTIVE = f".. {DIRECTIVE_NAME}::\n\n"
+PATTERN = r"""(?P<prefix>.*)
+              (?P<rubric>\.\.\ rubric::\ Examples\n\n)
+              (?P<examples>.*)
+              (?P<postfix>(\.\.\ rubric::)?.*)"""
+REGEX = re.compile(PATTERN, flags=re.DOTALL | re.MULTILINE | re.VERBOSE)
+
+plot_setup = """
+from pyvista import set_plot_theme as __s_p_t
+__s_p_t('document')
+del __s_p_t
+"""
+plot_cleanup = plot_setup
+
+
+def indent(document: str, amount: int = 3) -> str:
+    """Indent the document by the specified amount."""
+    return "\n".join(
+        " " * amount + line if line else line for line in document.split("\n")
+    )
+
+
+def skip_member(
+    app: Sphinx,  # noqa: ARG001
+    what: str,
+    name: str,  # noqa: ARG001
+    obj: Mapper,
+    skip: bool,
+    options: Iterable[str],  # noqa: ARG001
+) -> bool:
+    """Inject the pyvista-plot directive into the docstring."""
+    if not skip and what in ["class", "function", "method", "module"]:
+        match = REGEX.fullmatch(obj.docstring)
+        if match is not None:
+            examples = match.group("examples")
+            if DIRECTIVE_NAME not in examples:
+                prefix = match.group("prefix")
+                rubric = match.group("rubric")
+                postfix = match.group("postfix")
+                new = f"{prefix}{rubric}{DIRECTIVE}{indent(examples)}{postfix}"
+                obj.docstring = new
+
+    return skip
+
+
+def setup(app: Sphinx) -> None:
+    """Register the autoapi event."""
+    app.connect("autoapi-skip-member", skip_member)
