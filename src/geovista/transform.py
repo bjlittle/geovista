@@ -66,10 +66,10 @@ def transform_mesh(
         create a seam in the mesh. Also see :func:`geovista.core.slice_mesh`.
     rtol : float, optional
         The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
     atol : float, optional
         The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
     zlevel : int or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius`/vertical by a proportional amount e.g., ``radius * zlevel * zscale``.
