@@ -37,31 +37,32 @@ __all__ = [
     "to_wkt",
 ]
 
-# type aliases
 CRSLike = int | str | dict | CRS
+"""Coordinate Reference System type alias."""
 
-#: EPSG projection parameter for longitude of natural origin/central meridian
 EPSG_CENTRAL_MERIDIAN: str = "8802"
+"""EPSG projection parameter for longitude of natural origin/central meridian."""
 
-#: WGS84 / Plate Carree (Equidistant Cylindrical)
 PlateCarree = CRS.from_user_input("epsg:32662")
+"""WGS84 / Plate Carree (Equidistant Cylindrical)."""
 
-#: Geographic WGS84
 WGS84 = CRS.from_user_input("epsg:4326")
+"""Geographic WGS84."""
 
 
 def from_wkt(mesh: pv.PolyData) -> CRS:
-    """Get the :class:`pyproj.crs.CRS` associated with the mesh.
+    """Get the :class:`~pyproj.crs.CRS` associated with the mesh.
 
     Parameters
     ----------
-    mesh : PolyData
-        The mesh containing the pyproj CRS serialized as OGC WKT.
+    mesh : :class:`~pyvista.PolyData`
+        The mesh containing the :class:`~pyproj.crs.CRS` serialized as OGC
+        Well-Known-Text (WKT).
 
     Returns
     -------
-    CRS
-        The :class:`pyproj.crs.CRS`
+    :class:`~pyproj.crs.CRS`
+        The Coordinate Reference System.
 
     Notes
     -----
@@ -84,13 +85,13 @@ def get_central_meridian(crs: CRS) -> float | None:
 
     Parameters
     ----------
-    crs : CRS
-        The :class:`pyproj.crs.CRS`.
+    crs : :class:`~pyproj.crs.CRS`
+        The Coordinate Reference System.
 
     Returns
     -------
     float
-        The central meridian, or ``None`` if the CRS has no such parameter.
+        The central meridian, or ``None`` if the `crs` has no such parameter.
 
     Notes
     -----
@@ -116,13 +117,13 @@ def has_wkt(mesh: pv.PolyData) -> bool:
 
     Parameters
     ----------
-    mesh : PolyData
-        The mesh to be inspected for a serialized CRS.
+    mesh : :class:`~pyvista.PolyData`
+        The mesh to be inspected for a serialized :class:`~pyproj.crs.CRS`.
 
     Returns
     -------
     bool
-        Whether the mesh has a CRS serialized as WKT attached.
+        Whether the mesh has a :class:`~pyproj.crs.CRS` serialized as WKT attached.
 
     Notes
     -----
@@ -135,13 +136,14 @@ def has_wkt(mesh: pv.PolyData) -> bool:
 def projected(mesh: pv.PolyData) -> bool:
     """Determine if the mesh is a planar projection.
 
-    Simple heuristic approach achieved by attempting to inspect the associated CRS of
-    the mesh. If the mesh CRS is unavailable then the weaker contract of inspecting the
-    mesh geometry is used to detect for a flat plane.
+    Simple heuristic approach achieved by attempting to inspect the associated
+    :class:`~pyproj.crs.CRS` of the mesh. If the mesh :class:`~pyproj.crs.CRS` is
+    unavailable then the weaker contract of inspecting the mesh geometry is
+    used to detect for a flat plane.
 
     Parameters
     ----------
-    mesh : PolyData
+    mesh : :class:`~pyvista.PolyData`
         The mesh to be inspected.
 
     Returns
@@ -167,7 +169,7 @@ def projected(mesh: pv.PolyData) -> bool:
 
 
 def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
-    """Replace the longitude of natural origin in the `CRS`.
+    """Replace the longitude of natural origin in the :class:`~pyproj.crs.CRS`.
 
     The natural origin is also known as the central meridian.
 
@@ -176,16 +178,16 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
 
     Parameters
     ----------
-    crs : CRS
-        The :class:`pyproj.crs.CRS`.
+    crs : :class:`~pyproj.crs.CRS`
+        The Coordinate Reference System.
     meridian : float
         The replacement central meridian.
 
     Returns
     -------
-    CRS
-        The CRS with the specified central meridian, or ``None`` if the CRS
-        has no such parameter.
+    :class:`~pyproj.crs.CRS` or None
+        The :class:`~pyproj.crs.CRS` with the specified central meridian, or ``None``
+        if the :class:`~pyproj.crs.CRS` has no such parameter.
 
     Notes
     -----
@@ -210,16 +212,16 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
 
 
 def to_wkt(mesh: pv.PolyData, crs: CRS) -> None:
-    """Attach serialized :class:`pyproj.crs.CRS` as Well-Known-Text to the `mesh`.
+    """Attach serialized :class:`~pyproj.crs.CRS` as Well-Known-Text (WKT) to the mesh.
 
     The serialized OGC WKT is attached to the ``field_data`` of the mesh in-place.
 
     Parameters
     ----------
-    mesh : PolyData
-        The mesh to contain the OGC WKT.
-    crs : CRS
-        The :class:`pyproj.crs.CRS` to be serialized.
+    mesh : :class:`~pyvista.PolyData`
+        The mesh to contain the serialized OGC WKT.
+    crs : :class:`~pyproj.crs.CRS`
+        The Coordinate Reference System to be serialized.
 
     Notes
     -----
