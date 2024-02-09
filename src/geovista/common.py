@@ -134,10 +134,10 @@ VTK_POINT_IDS: str = "vtkOriginalPointIds"
 """Name of the VTK point indices array."""
 
 WRAP_ATOL: float = 1.0e-8
-"""Absolute tolerance for values close to longitudinal wrap base + period."""
+"""Absolute tolerance for values close to longitudinal wrap ``base + period``."""
 
 WRAP_RTOL: float = 1.0e-5
-"""Relative tolerance for values close to longitudinal wrap base + period."""
+"""Relative tolerance for values close to longitudinal wrap ``base + period``."""
 
 ZLEVEL_SCALE: float = 1.0e-4
 """Proportional multiplier for z-axis levels/offsets."""
@@ -393,10 +393,10 @@ def from_cartesian(
         is ``True``, then longitudes will be in the closed interval [-180, 180].
     rtol : float, optional
         The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
     atol : float, optional
         The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
 
     Returns
     -------
@@ -772,10 +772,10 @@ def to_lonlat(
         The `radius` of the sphere. Defaults to :data:`RADIUS`.
     rtol : float, optional
         The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
     atol : float, optional
         The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
 
     Returns
     -------
@@ -827,10 +827,10 @@ def to_lonlats(
         Default the resultant shape to be ``(N, 2)``, otherwise ``(2, N)``.
     rtol : float, optional
         The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
     atol : float, optional
         The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
 
     Returns
     -------
@@ -943,7 +943,7 @@ def wrap(
     atol: float | None = None,
     dtype: np.dtype | None = None,
 ) -> np.ndarray:
-    """Transform longitudes to be in the half-open interval [base, base + period).
+    """Transform longitudes to be in the half-open interval ``[base, base + period)``.
 
     Parameters
     ----------
@@ -956,10 +956,10 @@ def wrap(
         from the `base`, in the same units. Defaults to :data:`PERIOD`.
     rtol : float, optional
         The relative tolerance for values close to longitudinal wrap
-        base + period. Defaults to :data:`WRAP_RTOL`.
+        ``base + period``. Defaults to :data:`WRAP_RTOL`.
     atol : float, optional
         The absolute tolerance for values close to longitudinal wrap
-        base + period. Defaults to :data:`WRAP_ATOL`.
+        ``base + period``. Defaults to :data:`WRAP_ATOL`.
     dtype : data-type, default=float64
         The resultant longitude `dtype`.
 

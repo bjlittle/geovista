@@ -387,10 +387,10 @@ class GeoPlotterBase:
             :data:`geovista.common.ZLEVEL_SCALE`.
         rtol : float, optional
             The relative tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` base + period.
+            :func:`geovista.common.wrap` ``base + period``.
         atol : float, optional
             The absolute tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` base + period.
+            :func:`geovista.common.wrap` ``base + period``.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -539,10 +539,10 @@ class GeoPlotterBase:
             The mesh to add to the plotter.
         rtol : float, optional
             The relative tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` base + period.
+            :func:`geovista.common.wrap` ``base + period``.
         atol : float, optional
             The absolute tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` base + period.
+            :func:`geovista.common.wrap` ``base + period``.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int or ArrayLike, default=0

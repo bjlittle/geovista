@@ -88,10 +88,10 @@ def remesh(
         free edges.
     rtol : float, optional
         The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
     atol :
         The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
 
     Returns
     -------

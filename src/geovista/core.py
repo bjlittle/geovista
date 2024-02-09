@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Core geovista behaviour for processing geolocated meshes.
+"""Core :mod:`geovista` behaviour for processing geolocated meshes.
 
 Notes
 -----
@@ -53,7 +53,13 @@ np = lazy.load("numpy")
 pv = lazy.load("pyvista")
 
 __all__ = [
+    "CUT_EAST",
+    "CUT_EXACT",
+    "CUT_OFFSET",
+    "CUT_WEST",
     "MeridianSlice",
+    "SPLINE_N_POINTS",
+    "SliceBias",
     "add_texture_coords",
     "combine",
     "resize",
@@ -62,20 +68,20 @@ __all__ = [
     "slice_mesh",
 ]
 
-#: Preference for a slice to bias cells west of the chosen meridian.
-CUT_WEST: str = "WEST"
-
-#: Preference for a slice to be true to the chosen meridian.
-CUT_EXACT: str = "EXACT"
-
-#: Preference for a slice to bias cells east of the chosen meridian.
 CUT_EAST: str = "EAST"
+"""Preference for a slice to bias cells east of the chosen meridian."""
 
-#: Cartesian west/east bias offset of a slice.
+CUT_EXACT: str = "EXACT"
+"""Preference for a slice to be true to the chosen meridian."""
+
 CUT_OFFSET: float = 1e-5
+"""Cartesian west/east bias offset of a slice."""
 
-#: The default number of interpolation points along a spline.
+CUT_WEST: str = "WEST"
+"""Preference for a slice to bias cells west of the chosen meridian."""
+
 SPLINE_N_POINTS: int = 1
+"""The default number of interpolation points along a spline."""
 
 
 @unique
@@ -113,14 +119,14 @@ class MeridianSlice:
 
         Parameters
         ----------
-        mesh : PolyData
+        mesh : :class:`~pyvista.PolyData`
             The geolocated mesh to be remeshed along the `meridian`.
         meridian : float
             The meridian (degrees longitude) along which to create the mesh seam.
         offset : float, optional
             Offset buffer around the meridian, used to determine those cells west
             and east of that are coincident or bisected by the `meridian`. Defaults
-            to :data:`geovista.core.CUT_OFFSET`.
+            to :data:`CUT_OFFSET`.
 
         Notes
         -----
@@ -163,7 +169,7 @@ class MeridianSlice:
         Parameters
         ----------
         bias : SliceBias
-            Whether the the spline is west, east or exactly along the slice
+            Whether the spline is west, east or exactly along the slice
             meridian.
         n_points : float, optional
             The number of interpolation points along the spline, which defines
@@ -172,7 +178,7 @@ class MeridianSlice:
 
         Returns
         -------
-        PolyData
+        :class:`~pyvista.PolyData`
             The cells of the mesh that are coincident or bisected by the slice.
 
         Notes
@@ -207,7 +213,7 @@ class MeridianSlice:
         ----------
         bias : str, optional
             Whether to extract the west, east or exact intersection cells.
-            Default to :data:`geovista.core.CUT_WEST`.
+            Default to :data:`CUT_WEST`.
         split_cells : bool, default=False
             Determine whether to return coincident whole cells or bisected
             cells of the meridian.
@@ -217,7 +223,7 @@ class MeridianSlice:
 
         Returns
         -------
-        PolyData
+        :class:`~pyvista.PolyData`
             The mesh cells from the intersection.
 
         Notes
@@ -275,7 +281,7 @@ def add_texture_coords(
 
     Parameters
     ----------
-    mesh : PolyData
+    mesh : :class:`~pyvista.PolyData`
         The mesh that requires texture coordinates.
     meridian : float, optional
         The meridian (degrees longitude) to slice along. Defaults to
@@ -285,7 +291,7 @@ def add_texture_coords(
 
     Returns
     -------
-    PolyData
+    :class:`~pyvista.PolyData`
         The original mesh with inplace texture coordinates attached.
 
     Notes
@@ -339,8 +345,8 @@ def combine(
 
     Parameters
     ----------
-    meshes : iterable of PolyData
-        The meshes to be combined into a single :class:`pyvista.PolyData` mesh.
+    meshes : iterable of :class:`~pyvista.PolyData`
+        The meshes to be combined into a single :class:`~pyvista.PolyData` mesh.
     data : bool, default=True
         Whether to also combine and attach common data from the meshes onto
         the resultant mesh.
@@ -350,8 +356,8 @@ def combine(
 
     Returns
     -------
-    PolyData
-        The input meshes combined into a single :class:`pyvista.PolyData`.
+    :class:`~pyvista.PolyData`
+        The input meshes combined into a single :class:`~pyvista.PolyData`.
 
     Notes
     -----
@@ -477,7 +483,7 @@ def resize(
 
     Parameters
     ----------
-    mesh : PolyData
+    mesh : :class:`~pyvista.PolyData`
         The mesh to be resized to the provided ``radius``.
     radius : float, optional
         The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
@@ -492,7 +498,7 @@ def resize(
 
     Returns
     -------
-    PolyData
+    :class:`~pyvista.PolyData`
         The resized mesh.
 
     Notes
@@ -575,7 +581,7 @@ def slice_cells(
 
     Parameters
     ----------
-    mesh : PolyData
+    mesh : :class:`~pyvista.PolyData`
         The mesh to be sliced along the `meridian`.
     meridian : float, optional
         The meridian (degrees longitude) to slice along. Defaults to
@@ -584,14 +590,14 @@ def slice_cells(
         Whether to flip the given `meridian` to use its anti-meridian instead.
     rtol : float, optional
         The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
     atol : float, optional
         The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
 
     Returns
     -------
-    PolyData
+    :class:`~pyvista.PolyData`
         The mesh with a seam along the meridian and remeshed cells, if
         bisected.
 
@@ -706,7 +712,7 @@ def slice_lines(
 
     Parameters
     ----------
-    mesh : PolyData
+    mesh : :class:`~pyvista.PolyData`
         The line mesh that requires to be sliced.
     n_points : int, optional
         The number of intermediate points for the line that will be extruded to form a
@@ -719,7 +725,7 @@ def slice_lines(
 
     Returns
     -------
-    PolyData
+    :class:`~pyvista.PolyData`
         The line mesh with a seam along the antimeridian, if bisected.
 
     Notes
@@ -876,23 +882,22 @@ def slice_mesh(
     returned unaltered. Otherwise, a new instance of the mesh will be returned
     regardless of whether it has been bisected or not.
 
-    Also see :func:`geovista.core.slice_lines` and :func:`geovista.core.slice_cells`
-    for further details.
+    Also see :func:`slice_lines` and :func:`slice_cells` for further details.
 
     Parameters
     ----------
-    mesh : PolyData
+    mesh : :class:`~pyvista.PolyData`
         The mesh that requires to be sliced.
     rtol : float, optional
         The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
     atol : float, optional
         The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` base + period.
+        :func:`geovista.common.wrap` ``base + period``.
 
     Returns
     -------
-    PolyData
+    :class:`~pyvista.PolyData`
         The mesh with a seam along the antimeridian, if bisected.
 
     Notes
