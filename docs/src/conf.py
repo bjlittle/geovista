@@ -379,7 +379,7 @@ sphinx_gallery_conf = {
     "examples_dirs": "../../src/geovista/examples",
     "gallery_dirs": "generated/gallery",
     "matplotlib_animations": True,
-    "plot_gallery": True,
+    "plot_gallery": True,  # set to False, for fast developer docs build
     "doc_module": ("geovista"),
     "image_scrapers": (scraper, "matplotlib"),
     "download_all_examples": False,
@@ -395,8 +395,11 @@ sphinx_gallery_conf = {
 
 DIRECTIVE_NAME = "pyvista-plot"
 DIRECTIVE = f".. {DIRECTIVE_NAME}::\n\n"
+GEOVISTA_DOCSTRING_NOPLOT: str = os.environ.get(
+    "GEOVISTA_DOCSTRING_NOPLOT", "false"
+).lower()
 PATTERN = r"""(?P<prefix>.*)
-              (?P<rubric>\.\.\ rubric::\ Examples\n\n)
+              (?P<rubric>\.\.\ rubric::\ Examples?\n\n)
               (?P<examples>.*)
               (?P<postfix>(\.\.\ rubric::)?.*)"""
 REGEX = re.compile(PATTERN, flags=re.DOTALL | re.MULTILINE | re.VERBOSE)
@@ -409,10 +412,14 @@ del __s_p_t
 plot_cleanup = plot_setup
 
 
-def indent(document: str, amount: int = 3) -> str:
-    """Indent the document by the specified amount."""
+def indent(block: str, amount: int = 3) -> str:
+    """Indent the document text `block` by the specified amount.
+
+    Honours indenting multi-lines within the `block`.
+
+    """
     return "\n".join(
-        " " * amount + line if line else line for line in document.split("\n")
+        " " * amount + line if line else line for line in block.split("\n")
     )
 
 
@@ -424,8 +431,18 @@ def skip_member(
     skip: bool,
     options: Iterable[str],  # noqa: ARG001
 ) -> bool:
-    """Inject the pyvista-plot directive into the docstring."""
-    if not skip and what in ["class", "function", "method", "module"]:
+    """Inject the ``pyvista-plot`` directive into the docstring.
+
+    The directive will be injected between an ``Example`` or ``Examples`` rubric,
+    and the associated text block of the rubric, which itself will be indented
+    appropriately to belong to the scope of the injected directive.
+
+    Note that, the directive will be at the same level as the rubric.
+
+    """
+    noplot = GEOVISTA_DOCSTRING_NOPLOT != "false"
+
+    if not skip and not noplot and what in ["class", "function", "method", "module"]:
         match = REGEX.fullmatch(obj.docstring)
         if match is not None:
             examples = match.group("examples")
