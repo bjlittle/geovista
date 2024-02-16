@@ -81,6 +81,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_design",
@@ -143,6 +144,12 @@ package_dir = root_dir / "src"
 autolog(f"[general] {src_dir=}")
 autolog(f"[general] {root_dir=}")
 autolog(f"[general] {package_dir=}")
+
+
+# sphinx.ext.todo configuration -----------------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
+todo_include_todos = False
+todo_emit_warnings = False  # set to True, to discover todos in the code
 
 
 # -- napoleon options --------------------------------------------------------
