@@ -5,9 +5,9 @@
 
 """Transform structured grids and unstructured meshes.
 
-This module provides the :class:`geovista.Transform` factory class for
+This module provides the :class:`~geovista.bridge.Transform` factory class for
 transforming rectilinear, curvilinear, and unstructured geospatial data
-into geolocated :mod:`pyvista` mesh instances.
+into geolocated :class:`pyvista` mesh instances.
 
 Notes
 -----
@@ -202,7 +202,7 @@ class Transform:
 
         Parameters
         ----------
-        shape : tuple of int
+        shape : Shape
             The shape of the 2-D mesh nodes.
 
         Returns
@@ -247,7 +247,7 @@ class Transform:
 
         Parameters
         ----------
-        shape : tuple of int
+        shape : Shape
             The shape of the 2-D mesh faces.
 
         Returns
@@ -372,17 +372,17 @@ class Transform:
 
         Parameters
         ----------
-        xs : :data:`~numpy.typing.ArrayLike`
+        xs : ArrayLike
             A 1-D array of x-values, in canonical `crs` units, defining the
             contiguous face x-value boundaries of the mesh. Creating a mesh
             with N-faces in the `crs` x-axis requires a (N+1,) array.
             Alternatively, a (N, 2) contiguous bounds array may be provided.
-        ys : :data:`~numpy.typing.ArrayLike`
+        ys : ArrayLike
             A 1-D array of y-values, in canonical `crs` units, defining the
             contiguous face y-value boundaries of the mesh. Creating a mesh
             with M-faces in the `crs` y-axis requires a (M+1,) array.
             Alternatively, a (M, 2) contiguous bounds array may be provided.
-        data : :data:`~numpy.typing.ArrayLike`, optional
+        data : ArrayLike, optional
             Data to be optionally attached to the mesh. The size of the data
             must match either the shape of the fully formed mesh points (M+1)*(N+1),
             or the number of mesh faces, M*N.
@@ -390,7 +390,7 @@ class Transform:
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
             :data:`NAME_POINTS` or :data:`NAME_CELLS`.
-        crs : :data:`~geovista.crs.CRSLike`, optional
+        crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
@@ -409,7 +409,7 @@ class Transform:
 
         Returns
         -------
-        :class:`~pyvista.PolyData`
+        PolyData
             The quad-faced spherical mesh.
 
         Notes
@@ -456,17 +456,17 @@ class Transform:
 
         Parameters
         ----------
-        xs : :data:`~numpy.typing.ArrayLike`
+        xs : ArrayLike
             A 2-D array of x-values, in canonical `crs` units, defining the
             face x-value boundaries of the mesh. Creating a (M, N) mesh
             requires a (M+1, N+1) x-axis array. Alternatively, a (M, N, 4)
             array may be provided.
-        ys : :data:`~numpy.typing.ArrayLike`
+        ys : ArrayLike
             A 2-D array of y-values, in canonical `crs` units, defining the
             face y-value boundaries of the mesh. Creating a (M, N) mesh
             requires a (M+1, N+1) y-axis array. Alternatively, a (M, N, 4)
             array may be provided.
-        data : :data:`~numpy.typing.ArrayLike`, optional
+        data : ArrayLike, optional
             Data to be optionally attached to the mesh. The size of the data
             must match either the shape of the fully formed mesh points (M+1)*(N+1),
             or the number of mesh faces, M*N.
@@ -474,7 +474,7 @@ class Transform:
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
             :data:`NAME_POINTS` or :data:`NAME_CELLS`.
-        crs : :data:`~geovista.crs.CRSLike`, optional
+        crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
@@ -493,7 +493,7 @@ class Transform:
 
         Returns
         -------
-        :class:`~pyvista.PolyData`
+        PolyData
             The quad-faced spherical mesh.
 
         Notes
@@ -554,25 +554,25 @@ class Transform:
 
         Parameters
         ----------
-        xs : :data:`~numpy.typing.ArrayLike`
+        xs : ArrayLike
             A 1-D, 2-D or 3-D array of point-cloud x-values, in canonical `crs` units.
             Must have the same shape as the `ys`.
-        ys : :data:`~numpy.typing.ArrayLike`
+        ys : ArrayLike
             A 1-D, 2-D or 3-D array of point-cloud y-values, in canonical `crs` units.
             Must have the same shape as the `xs`.
-        data : :data:`~numpy.typing.ArrayLike`, optional
+        data : ArrayLike, optional
             Data to be optionally attached to the mesh points.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If `data`
             is provided but with no `name`, defaults to :data:`NAME_POINTS`.
-        crs : :data:`~geovista.crs.CRSLike`, optional
+        crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float, optional
             The radius of the mesh point-cloud. Defaults to
             :data:`~geovista.common.RADIUS`.
-        zlevel : int or :data:`~numpy.typing.ArrayLike`, default=0
+        zlevel : int or ArrayLike, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
             If `zlevel` is not a scalar, then its shape must match or broadcast
@@ -586,7 +586,7 @@ class Transform:
 
         Returns
         -------
-        :class:`~pyvista.PolyData`
+        PolyData
             The point-cloud spherical mesh.
 
         Notes
@@ -672,13 +672,13 @@ class Transform:
 
         Parameters
         ----------
-        xs : :data:`~numpy.typing.ArrayLike`
+        xs : ArrayLike
             A 1-D array of x-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
-        ys : :data:`~numpy.typing.ArrayLike`
+        ys : ArrayLike
             A 1-D array of y-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
-        connectivity : :data:`~numpy.typing.ArrayLike` or :data:`Shape`, optional
+        connectivity : ArrayLike or Shape, optional
             Defines the topology of each face in the unstructured mesh in terms
             of indices into the provided `xs` and `ys` mesh geometry
             arrays. The `connectivity` is a 2-D (M, N) array, where ``M`` is
@@ -689,7 +689,7 @@ class Transform:
             provided, and the `xs` and `ys` are 2-D, then their shape is used
             to determine the connectivity. Also, note that masked connectivity
             may be used to define a mesh consisting of different shaped faces.
-        data : :data:`~numpy.typing.ArrayLike`, optional
+        data : ArrayLike, optional
             Data to be optionally attached to the mesh face or nodes.
         start_index : int, default=0
             Specify the base index of the provided `connectivity` in the
@@ -702,7 +702,7 @@ class Transform:
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
             :data:`NAME_POINTS` or :data:`NAME_CELLS`.
-        crs : :data:`~geovista.crs.CRSLike`, optional
+        crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
@@ -721,7 +721,7 @@ class Transform:
 
         Returns
         -------
-        :class:`~pyvista.PolyData`
+        PolyData
             The (M*N)-faced spherical mesh.
 
         Notes
@@ -897,13 +897,13 @@ class Transform:
 
         Parameters
         ----------
-        xs : :data:`~numpy.typing.ArrayLike`
+        xs : ArrayLike
             A 1-D array of x-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
-        ys : :data:`~numpy.typing.ArrayLike`
+        ys : ArrayLike
             A 1-D array of y-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
-        connectivity : :data:`~numpy.typing.ArrayLike` or :data:`Shape`, optional
+        connectivity : ArrayLike or Shape, optional
             Defines the topology of each face in the unstructured mesh in terms
             of indices into the provided `xs` and `ys` mesh geometry
             arrays. The `connectivity` is a 2-D (M, N) array, where ``M`` is
@@ -921,7 +921,7 @@ class Transform:
             to result in 0-based indices into the provided mesh geometry.
             If no `start_index` is provided, then it will be determined
             from the `connectivity`.
-        crs : :class:`~geovista.crs.CRSLike`, optional
+        crs : CRSLike, optional
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
@@ -990,7 +990,7 @@ class Transform:
 
         Parameters
         ----------
-        data : :data:`~numpy.typing.ArrayLike`, optional
+        data : ArrayLike, optional
             Data to be optionally attached to the mesh face or nodes.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
@@ -999,7 +999,7 @@ class Transform:
 
         Returns
         -------
-        :class:`~pyvista.PolyData`
+        PolyData
             The spherical mesh.
 
         Notes

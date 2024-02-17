@@ -81,12 +81,12 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
-    "sphinx.ext.napoleon",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
 ]
@@ -155,19 +155,28 @@ todo_emit_warnings = False  # set to True, to discover todos in the code
 # -- napoleon options --------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 
+napoleon_attr_annotations = True
+napoleon_custom_sections = None
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False
 napoleon_include_special_with_doc = True  # includes dunders in api doc
-napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_examples = False  # don't enable, see pyvista-plot injection
 napoleon_use_admonition_for_notes = False
 napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_use_keyword = True
-napoleon_custom_sections = None
+
+napoleon_preprocess_types = True
+napoleon_type_aliases = {
+    "ArrayLike": ":data:`~numpy.typing.ArrayLike`",
+    "CRSLike": ":data:`~geovista.crs.CRSLike`",
+    "PolyData": ":class:`~pyvista.PolyData`",
+    "Shape": ":data:`~geovista.bridge.Shape`",
+}
 
 
 # -- autoapi options ---------------------------------------------------------
@@ -320,6 +329,7 @@ intersphinx_mapping = {
     "pyproj": ("https://pyproj4.github.io/pyproj/stable/", None),
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
+    "pyvistaqt": ("https://qtdocs.pyvista.org/", None),
 }
 
 
