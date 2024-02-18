@@ -49,6 +49,7 @@ dependencies:
 
 # documentation dependencies (optional)
   - jupyter_sphinx
+  - numpydoc
   - pydata-sphinx-theme
   - sphinx
   - sphinx-autoapi

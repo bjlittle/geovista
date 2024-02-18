@@ -1,3 +1,4 @@
+numpydoc
 sphinx
 sphinx_design
 sphinx-autoapi
