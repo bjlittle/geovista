@@ -32,3 +32,4 @@ with open(lock) as fin:
 
 with open(yaml, mode="w", encoding="utf-8") as fout:
     fout.write(content)
+    fout.write("\n")
