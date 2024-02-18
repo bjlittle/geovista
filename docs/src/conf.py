@@ -76,12 +76,13 @@ def autolog(message: str) -> None:
 # ones.
 extensions = [
     #    "jupyter_sphinx",
-    "autoapi.extension",
+    "numpydoc",
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "autoapi.extension",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.napoleon",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
@@ -152,36 +153,30 @@ todo_include_todos = False
 todo_emit_warnings = False  # set to True, to discover todos in the code
 
 
-# -- napoleon options --------------------------------------------------------
-# See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
+# -- numpydoc options --------------------------------------------------------
+# See https://numpydoc.readthedocs.io/en/latest/index.html
 
-napoleon_attr_annotations = True
-napoleon_custom_sections = None
-napoleon_google_docstring = False
-napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = False
-napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = True  # includes dunders in api doc
-napoleon_use_admonition_for_examples = False  # don't enable, see pyvista-plot injection
-napoleon_use_admonition_for_notes = False
-napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
-napoleon_use_param = True
-napoleon_use_rtype = True
-napoleon_use_keyword = True
-
-napoleon_preprocess_types = True
-napoleon_type_aliases = {
-    "ArrayLike": ":data:`~numpy.typing.ArrayLike`",
-    "CRSLike": ":data:`~geovista.crs.CRSLike`",
-    "PolyData": ":class:`~pyvista.PolyData`",
-    "Shape": ":data:`~geovista.bridge.Shape`",
+numpydoc_attributes_as_param_list = True
+numpydoc_class_members_toctree = False
+numpydoc_show_class_members = False
+numpydoc_use_plots = True
+numpydoc_validation_checks = {"all", "GL08"}
+numpydoc_xref_aliases = {
+    "ArrayLike": "numpy.typing.ArrayLike",
+    "CRSLike": "geovista.crs.CRSLike",
+    "PolyData": "pyvista.PolyData",
+    "Shape": "geovista.bridge.Shape",
 }
+numpydoc_xref_ignore = {"optional", "default"}
+numpydoc_xref_param_type = True
 
 
-# -- autoapi options ---------------------------------------------------------
+# -- autodoc options ---------------------------------------------------------
 # See https://sphinx-autoapi.readthedocs.io/en/latest/how_to.html#how-to-include-type-annotations-as-types-in-rendered-docstrings
+#     https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
+
 autodoc_typehints = "description"
+autodoc_typehints_description_target = "documented"
 
 
 # -- autoapi options ---------------------------------------------------------
