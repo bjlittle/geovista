@@ -125,7 +125,7 @@ class EnclosedPreference(_MixinStrEnum, Enum):
     POINT = "point"
 
 
-class BBox:
+class BBox:  # numpydoc ignore=PR01
     """A 3-D bounding-box constructed from geodesic lines or great circles."""
 
     def __init__(
@@ -248,7 +248,18 @@ class BBox:
 
     @property
     def mesh(self) -> pv.PolyData:
-        """The bounding-box :class:`pyvista.PolyData` mesh."""
+        """The bounding-box :class:`pyvista.PolyData` mesh.
+
+        Returns
+        -------
+        PolyData
+            The bounding-box manifold mesh.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
         if self._mesh is None:
             self._generate_bbox_mesh()
         return self._mesh
@@ -320,7 +331,17 @@ class BBox:
         # corner indices
         c1_idx, c2_idx, c3_idx, c4_idx = range(4)
 
-        def bbox_extend(lons: tuple[float], lats: tuple[float]) -> None:
+        def bbox_extend(lons: Iterable[float], lats: Iterable[float]) -> None:
+            """Register the bounding box longitudes and latitudes.
+
+            Parameters
+            ----------
+            lons : iterable of float
+                The bounding box longitudes.
+            lats : iterable of float
+                The bounding box latitudes.
+
+            """
             assert len(lons) == len(lats)
             self._bbox_lons.extend(lons)
             self._bbox_lats.extend(lats)
@@ -329,6 +350,25 @@ class BBox:
         def bbox_update(
             idx1: int, idx2: int, row: int | None = None, column: int | None = None
         ) -> None:
+            """Generate and register a sampled geodesic bounding box line.
+
+            The line is either a row or column that is a bounding box edge, or
+            a row or column that traverses across the surface of the bounding box.
+
+            Parameters
+            ----------
+            idx1 : int
+                The start index of the bounding box, located on an edge.
+            idx2 : int
+                The end index of the bounding box, located on an edge.
+            row : int, optional
+                The index of the bounding box row. If not provided, the column spans
+                all rows.
+            column : int, optional
+                The index of the bounding box column. If not provided, the row spans
+                all columns.
+
+            """
             assert row is not None or column is not None
             if row is None:
                 row = slice(None)
@@ -847,7 +887,7 @@ def npoints_by_idx(
         The index of the end-point.
     npts : int, default=GEODESIC_NPTS
         The number of points to be returned, which may include the start-point
-        and/or the end-point, if required
+        and/or the end-point, if required.
     radians : bool, default=False
         If ``True``, the `lons` and `lats` are assumed to be in radians,
         otherwise degrees.
@@ -961,6 +1001,11 @@ def wedge(
         The bounding-box face geometry will contain ``c**2`` cells.
     triangulate : bool, default=False
         Specify whether the wedge bounding-box faces are triangulated.
+
+    Returns
+    -------
+    BBox
+        The bounding-box that encloses the required geodesic wedge.
 
     Notes
     -----

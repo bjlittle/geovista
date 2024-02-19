@@ -72,7 +72,7 @@ PACKAGES_OPTIONAL: list[str] = [
 TEXT_WIDTH: int = 88
 
 
-class Report(scooby.Report):
+class Report(scooby.Report):  # numpydoc ignore=PR01
     """Generate an environment package and hardware report.
 
     Notes

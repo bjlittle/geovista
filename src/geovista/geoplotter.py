@@ -67,6 +67,8 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     import pyvista as pv
 
+    from geovista.crs import CRSLike
+
 # lazy import third-party dependencies
 pyproj = lazy.load("pyproj")
 pv = lazy.load("pyvista")
@@ -129,7 +131,7 @@ def _lfric_mesh(
     return mesh
 
 
-class GeoPlotterBase:
+class GeoPlotterBase:  # numpydoc ignore=PR01
     """Base class with common behaviour for a geospatial aware plotter.
 
     See :class:`pyvista.Plotter`.
@@ -140,11 +142,15 @@ class GeoPlotterBase:
 
     """
 
-    def __init__(self, *args: Any | None, **kwargs: Any | None) -> None:
+    def __init__(
+        self, *args: Any | None, crs: CRSLike | None = None, **kwargs: Any | None
+    ) -> None:
         """Create geospatial aware plotter.
 
         Parameters
         ----------
+        *args : tuple, optional
+            See :class:`pyvista.Plotter` for further details.
         crs : str or CRS, optional
             The target CRS to render geolocated meshes added to the plotter.
         **kwargs : dict, optional
@@ -174,12 +180,8 @@ class GeoPlotterBase:
                 )
                 raise ValueError(emsg)
 
-        if "crs" in kwargs:
-            crs = kwargs.pop("crs")
-            crs = pyproj.CRS.from_user_input(crs) if crs is not None else WGS84
-        else:
-            crs = WGS84
-        self.crs = crs
+        self.crs = pyproj.CRS.from_user_input(crs) if crs is not None else WGS84
+
         # status of gpu opacity support
         self._missing_opacity = False
         super().__init__(*args, **kwargs)
@@ -204,7 +206,7 @@ class GeoPlotterBase:
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -280,7 +282,15 @@ class GeoPlotterBase:
                 self._missing_opacity = True
 
     def add_base_layer(
-        self, mesh: pv.PolyData | None = None, **kwargs: Any | None
+        self,
+        mesh: pv.PolyData | None = None,
+        resolution: str | None = None,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        rtol: float | None = None,
+        atol: float | None = None,
+        **kwargs: Any | None,
     ) -> pv.Actor:
         """Generate a cubed-sphere base layer mesh and add to the plotter scene.
 
@@ -291,9 +301,6 @@ class GeoPlotterBase:
         ----------
         mesh : PolyData, optional
             Use the provided mesh as the base layer.
-        radius : float, optional
-            The radius of the spherical mesh to generate as the base layer. Defaults
-            to :data:`geovista.common.RADIUS`.
         resolution : str, optional
             The resolution of the cubed-sphere to generate as the base layer,
             which may be either ``c48``, ``c96`` or ``c192``. Defaults to
@@ -302,12 +309,21 @@ class GeoPlotterBase:
             in latitude, and ``N * 1.5`` cells in longitude. When adding a base layer
             to a projection, the default is to use a regular grid with resolution
             :data:`REGULAR_RESOLUTION`.
+        radius : float, optional
+            The radius of the spherical mesh to generate as the base layer. Defaults
+            to :data:`geovista.common.RADIUS`.
         zlevel : int, default=-1
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
-            :data:`geovista.common.ZLEVEL_SCALE`.
+            :data:`geovista.common.BASE_ZLEVEL_SCALE`.
+        rtol : float, optional
+            The relative tolerance for values close to longitudinal
+            :func:`geovista.common.wrap` ``base + period``.
+        atol : float, optional
+            The absolute tolerance for values close to longitudinal
+            :func:`geovista.common.wrap` ``base + period``.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -321,8 +337,6 @@ class GeoPlotterBase:
         .. versionadded:: 0.1.0
 
         """
-        resolution = kwargs.pop("resolution") if "resolution" in kwargs else None
-
         if resolution is None:
             resolution = (
                 REGULAR_RESOLUTION if self.crs.is_projected else LFRIC_RESOLUTION
@@ -332,21 +346,17 @@ class GeoPlotterBase:
 
         if self.crs.is_projected:
             # pass through "zlevel" and "zscale" to the "add_mesh" method,
-            # but remove "radius", as it's not applicable to planar projections
-            if "radius" in kwargs:
-                _ = kwargs.pop("radius")
-            # opt to the default radius for the base layer mesh
+            # but ignore "radius", as it's not applicable to planar projections
             radius = None
-            if "zscale" not in kwargs:
-                kwargs["zscale"] = BASE_ZLEVEL_SCALE
-            if "zlevel" not in kwargs:
-                kwargs["zlevel"] = -1
+            kwargs["zlevel"] = -1 if zlevel is None else zlevel
+            kwargs["zscale"] = BASE_ZLEVEL_SCALE if zscale is None else zscale
         else:
-            radius = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else RADIUS
-            zscale = (
-                float(kwargs.pop("zscale")) if "zscale" in kwargs else BASE_ZLEVEL_SCALE
-            )
-            zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else -1
+            if radius is None:
+                radius = RADIUS
+            if zlevel is None:
+                zlevel = -1
+            if zscale is None:
+                zscale = BASE_ZLEVEL_SCALE
             radius += radius * zlevel * zscale
 
         if mesh is not None:
@@ -357,7 +367,7 @@ class GeoPlotterBase:
         else:
             mesh = _lfric_mesh(resolution=resolution, radius=radius)
 
-        return self.add_mesh(mesh, **kwargs)
+        return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
     def add_coastlines(
         self,
@@ -405,27 +415,24 @@ class GeoPlotterBase:
 
         """
         if self.crs.is_projected:
-            # don't pass through "radius", as it's not applicable
+            # ignore "radius", as it's not applicable to planar projections
+            radius = None
+
             if rtol is None:
                 rtol = COASTLINES_RTOL
             if zscale is None:
                 zscale = ZLEVEL_SCALE
             if zlevel is None:
                 zlevel = ZTRANSFORM_FACTOR
-            # pass through kwargs to "add_mesh"
+
+            # pass through kwargs to "add_mesh" method
             kwargs.update({"zlevel": zlevel, "zscale": zscale})
 
         mesh = coastlines(
             resolution=resolution, radius=radius, zlevel=zlevel, zscale=zscale
         )
 
-        if rtol is not None:
-            kwargs["rtol"] = rtol
-
-        if atol is not None:
-            kwargs["atol"] = atol
-
-        return self.add_mesh(mesh, **kwargs)
+        return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
     def add_graticule(
         self,
@@ -433,8 +440,8 @@ class GeoPlotterBase:
         lon_stop: float | None = None,
         lon_step: float | None = None,
         lat_start: float | None = None,
-        lat_step: float | None = None,
         lat_stop: float | None = None,
+        lat_step: float | None = None,
         poles_parallel: bool | None = None,
         poles_label: bool | None = None,
         show_labels: bool | None = None,
@@ -487,7 +494,7 @@ class GeoPlotterBase:
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -528,7 +535,16 @@ class GeoPlotterBase:
             point_labels_args=point_labels_args,
         )
 
-    def add_mesh(self, mesh: Any, **kwargs: Any | None) -> pv.Actor:
+    def add_mesh(
+        self,
+        mesh: Any,
+        radius: float | None = None,
+        zlevel: int | ArrayLike | None = None,
+        zscale: float | None = None,
+        rtol: float | None = None,
+        atol: float | None = None,
+        **kwargs: Any | None,
+    ) -> pv.Actor:
         """Add the `mesh` to the plotter scene.
 
         See :meth:`pyvista.Plotter.add_mesh`.
@@ -537,12 +553,6 @@ class GeoPlotterBase:
         ----------
         mesh : PolyData
             The mesh to add to the plotter.
-        rtol : float, optional
-            The relative tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` ``base + period``.
-        atol : float, optional
-            The absolute tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` ``base + period``.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int or ArrayLike, default=0
@@ -553,6 +563,12 @@ class GeoPlotterBase:
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
+        rtol : float, optional
+            The relative tolerance for values close to longitudinal
+            :func:`geovista.common.wrap` ``base + period``.
+        atol : float, optional
+            The absolute tolerance for values close to longitudinal
+            :func:`geovista.common.wrap` ``base + period``.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -574,18 +590,16 @@ class GeoPlotterBase:
             mesh = cast(mesh)
 
         if isinstance(mesh, pv.PolyData):
-            atol = float(kwargs.pop("atol")) if "atol" in kwargs else None
-            radius = abs(float(kwargs.pop("radius"))) if "radius" in kwargs else None
-            rtol = float(kwargs.pop("rtol")) if "rtol" in kwargs else None
-            zlevel = int(kwargs.pop("zlevel")) if "zlevel" in kwargs else 0
+            if zlevel is None:
+                zlevel = 0
+
+            if zscale is None:
+                zscale = ZLEVEL_SCALE
+
             cloud = point_cloud(mesh)
 
-            if "zscale" in kwargs:
-                zscale = float(kwargs.pop("zscale"))
-            elif cloud and GV_FIELD_ZSCALE in mesh.field_data:
+            if cloud and GV_FIELD_ZSCALE in mesh.field_data:
                 zscale = mesh[GV_FIELD_ZSCALE][0]
-            else:
-                zscale = ZLEVEL_SCALE
 
             src_crs = from_wkt(mesh)
 
@@ -641,6 +655,23 @@ class GeoPlotterBase:
                 mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
 
         def _check(option: str) -> bool:
+            """Determine whether the keyword argument is present and not ``None``.
+
+            Parameters
+            ----------
+            option : str
+                Keyword argument to check.
+
+            Returns
+            -------
+            bool
+                Whether the keyword argument is present and not ``None``.
+
+            Notes
+            -----
+            .. versionadded:: 0.1.0
+
+            """
             return option in kwargs and kwargs[option] is not None
 
         if not self._missing_opacity and (_check("opacity") or _check("nan_opacity")):
@@ -680,7 +711,7 @@ class GeoPlotterBase:
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -749,7 +780,7 @@ class GeoPlotterBase:
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -850,7 +881,7 @@ class GeoPlotterBase:
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -930,7 +961,7 @@ class GeoPlotterBase:
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`
+            Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.

@@ -379,6 +379,11 @@ def lam_pacific() -> pv.PolyData:
     Generate a high-resolution Local Area Model (LAM) mesh located over the
     Pacific Ocean.
 
+    Returns
+    -------
+    PolyData
+        The LAM mesh.
+
     Notes
     -----
     .. versionadded:: 0.1.0
@@ -420,6 +425,11 @@ def lam_uk() -> pv.PolyData:
 
     Generate a C4 cubed-sphere Local Area Model (LAM) mesh located over
     the United Kingdom.
+
+    Returns
+    -------
+    PolyData
+        The LAM mesh.
 
     Notes
     -----
@@ -555,7 +565,7 @@ def regular_grid(
     resolution : str, optional
         In the format of ``rN``, where ``N`` is the number of cells in latitude,
         and ``N * 1.5`` cells in longitude. Defaults to :data:`REGULAR_RESOLUTION`.
-    radius: float, optional
+    radius : float, optional
         The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
 
     Returns

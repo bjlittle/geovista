@@ -93,7 +93,7 @@ class SliceBias(Enum):
     EAST = auto()
 
 
-class MeridianSlice:
+class MeridianSlice:  # numpydoc ignore=PR01
     """Remesh geolocated mesh along a meridian, from the north-pole to the south-pole.
 
     Remeshing involves introducing a seam into the mesh along the meridian
@@ -130,7 +130,7 @@ class MeridianSlice:
 
         Notes
         -----
-        .. versionadded :: 0.1.0
+        .. versionadded:: 0.1.0
 
         """
         if projected(mesh):
@@ -183,7 +183,7 @@ class MeridianSlice:
 
         Notes
         -----
-        .. versionadded :: 0.1.0
+        .. versionadded:: 0.1.0
 
         """
         if n_points is None:
@@ -345,7 +345,7 @@ def combine(
 
     Parameters
     ----------
-    meshes : iterable of :class:`~pyvista.PolyData`
+    *meshes : iterable of :class:`~pyvista.PolyData`
         The meshes to be combined into a single :class:`~pyvista.PolyData` mesh.
     data : bool, default=True
         Whether to also combine and attach common data from the meshes onto
@@ -439,6 +439,16 @@ def combine(
     combined = pv.PolyData(points, faces=faces)
 
     def combine_data(names: set[str], field: bool | None = False) -> None:
+        """Combine point, cell or field data from the meshes onto a single mesh.
+
+        Parameters
+        ----------
+        names : set of str
+            The names of the point, cell or field data to be combined.
+        field : bool, optional
+            Whether the data is field data. Defaults to False.
+
+        """
         for name in names:
             if field:
                 combined.field_data[name] = first[name]

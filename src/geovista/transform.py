@@ -80,7 +80,7 @@ def transform_mesh(
         :data:`geovista.common.ZLEVEL_SCALE`.
     inplace : bool, default=False
         Update the `mesh` in-place. Can only perform an in-place operation when
-        ``slice_connectivity=False``
+        ``slice_connectivity=False``.
 
     Returns
     -------

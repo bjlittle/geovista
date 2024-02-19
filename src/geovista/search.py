@@ -23,6 +23,7 @@ from .crs import WGS84, from_wkt
 from .transform import transform_points
 
 if TYPE_CHECKING:
+    import numpy as np
     from numpy.typing import ArrayLike
     import pyvista as pv
 
@@ -63,7 +64,7 @@ class SearchPreference(_MixinStrEnum, Enum):
     POINT = "point"
 
 
-class KDTree:
+class KDTree:  # numpydoc ignore=PR01
     """Construct a kd-tree for fast nearest neighbour search of a mesh.
 
     For further details, see https://github.com/storpipfugl/pykdtree.
@@ -204,8 +205,19 @@ class KDTree:
         return self._n_points
 
     @property
-    def points(self) -> ArrayLike:
-        """The cartesian data points registered with the kd-tree."""
+    def points(self) -> np.ndarray:
+        """The cartesian data points registered with the kd-tree.
+
+        Returns
+        -------
+        np.ndarray
+            The cartesian data points in the kd-tree.
+
+        Notes
+        -----
+        .. versionadded:: 0.3.0
+
+        """
         return self._kdtree.data.reshape(-1, 3).copy()
 
     @property

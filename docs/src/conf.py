@@ -160,7 +160,6 @@ numpydoc_attributes_as_param_list = True
 numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False
 numpydoc_use_plots = True
-numpydoc_validation_checks = {"all", "GL08"}
 numpydoc_xref_aliases = {
     "ArrayLike": "numpy.typing.ArrayLike",
     "CRSLike": "geovista.crs.CRSLike",

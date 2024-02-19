@@ -69,8 +69,8 @@ def _download_group(
     decompress : bool, default=False
         Decompress the downloaded assets.
     name : str, optional
-        The name of the asset collection within the cache e.g., raster or pantry
-    fg_color : str, default="cyan"
+        The name of the asset collection within the cache e.g., raster or pantry.
+    fg_colour : str, default="cyan"
         Foreground colour to highlight the asset name during download.
     summary : bool, default=True
         Whether to provide a download summary to the user.
@@ -182,7 +182,7 @@ def _plural(quantity: int) -> str:
     is_flag=True,
     help="Show geovista package version.",
 )
-def main(version: bool, report: bool, cache: bool) -> None:
+def main(version: bool, report: bool, cache: bool) -> None:  # numpydoc ignore=PR01
     """To get help for geovista commands, simply use "geovista COMMAND --help"."""
     if version:
         click.echo("version ", nl=False)
@@ -276,7 +276,7 @@ def download(
     raster: bool,
     target: pathlib.Path | None,
     verify: bool,
-) -> None:
+) -> None:  # numpydoc ignore=PR01
     """Download and cache geovista assets (offline support)."""
     fnames: list[str] = sorted(CACHE.registry_files)
 
@@ -312,6 +312,19 @@ def download(
         CACHE.path = target
 
     def collect(prefix: str) -> list[str]:
+        """Filter the asset names with the provided `prefix`.
+
+        Parameters
+        ----------
+        prefix : str
+            The `prefix` to filter the asset names.
+
+        Returns
+        -------
+        list of str
+            The list of assets with the provided `prefix`.
+
+        """
         return list(filter(lambda item: item.startswith(prefix), fnames))
 
     if pull:
@@ -441,7 +454,7 @@ def download(
 )
 def examples(
     run_all: bool, groups: bool, show: bool, run: str, run_group: str, verbose: bool
-) -> None:
+) -> None:  # numpydoc ignore=PR01
     """Execute a geovista example or group of examples."""
     # account for the initial "all" option
     n_examples = len(EXAMPLES) - 1
@@ -521,7 +534,7 @@ def examples(
     is_flag=True,
     help="Add a base layer",
 )
-def plot(fname: str, axes: bool, base: bool) -> None:
+def plot(fname: str, axes: bool, base: bool) -> None:  # numpydoc ignore=PR01
     """Load and render a VTK mesh."""
     mesh = pv.read(fname)
     plotter = GeoPlotter()

@@ -60,7 +60,7 @@ NAME_POINTS: str = "point_data"
 """Default array name for data on the mesh points."""
 
 
-class Transform:
+class Transform:  # numpydoc ignore=PR01
     """Build a mesh from spatial points, connectivity, data and CRS metadata.
 
     Notes
@@ -87,6 +87,7 @@ class Transform:
         Returns
         -------
         ndarray
+            The verified data.
 
         Notes
         -----
@@ -165,6 +166,21 @@ class Transform:
             raise ValueError(emsg)
 
         def _contiguous(bnds: ArrayLike, kind: str) -> np.ndarray:
+            """Verify and construct a contiguous bounds array.
+
+            Parameters
+            ----------
+            bnds : ArrayLike
+                The bounds array.
+            kind : str
+                The kind of bounds array e.g., 'x-axis' or 'y-axis'.
+
+            Returns
+            -------
+            ndarray
+                The contiguous bounds array.
+
+            """
             left, right = bnds[:-1, 1], bnds[1:, 0]
 
             if not np.allclose(left, right):
