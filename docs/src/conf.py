@@ -275,6 +275,11 @@ html_theme_options = {
             "url": "https://twitter.com/geovista_devs",
             "icon": "fa-brands fa-twitter",
         },
+        {
+            "name": "YouTube",
+            "url": "https://www.youtube.com/@geovista_devs/videos",
+            "icon": "fa-brands fa-youtube",
+        },
     ],
     "navigation_with_keys": False,
     "path_to_docs": "docs/src",
