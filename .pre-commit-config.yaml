@@ -109,3 +109,11 @@ repos:
         # - PC140: Uses mypy.
         # https://learn.scientific-python.org/development/guides/style/#PC180
         # - PC180: Uses prettier.
+
+  - repo: https://github.com/numpy/numpydoc
+    rev: v1.6.0
+    hooks:
+      - id: numpydoc-validation
+        files: "^src/"
+        exclude: "^src/geovista/examples/"
+        types: [file, python]

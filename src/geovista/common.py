@@ -221,6 +221,11 @@ class _MixinStrEnum:
     def __str__(self) -> str:
         """Serialize enumeration name.
 
+        Returns
+        -------
+        str
+            The enumeration name.
+
         Notes
         -----
         .. versionadded:: 0.3.0
@@ -250,6 +255,7 @@ def active_kernel() -> bool:
     Returns
     -------
     bool
+        Whether there is an active ``IPython`` kernel.
 
     Notes
     -----
@@ -337,7 +343,7 @@ def distance(
 
     Notes
     -----
-    .. versionadded: 0.1.0
+    .. versionadded:: 0.1.0
 
     """
     if origin is None:
@@ -618,7 +624,7 @@ def sanitize_data(
 
     Parameters
     ----------
-    meshes : iterable of :class:`~pyvista.PolyData`
+    *meshes : iterable of :class:`~pyvista.PolyData`
         One or more meshes to sanitize.
 
     Notes

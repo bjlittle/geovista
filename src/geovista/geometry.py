@@ -139,6 +139,14 @@ def load_coastline_geometries(
     reader = shp.Reader(fname)
 
     def unpack(geometries: Generator[LineString | MultiLineString]) -> None:
+        """Unpack the geometries coordinates.
+
+        Parameters
+        ----------
+        geometries : Generator of LineString or MultiLineString
+            The geometries to unpack.
+
+        """
         for geometry in geometries:
             if isinstance(geometry, MultiLineString):
                 multi_lines.extend(list(geometry.geoms))

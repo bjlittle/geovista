@@ -135,6 +135,7 @@ def capitalise(title: str) -> str:
     Returns
     -------
     str
+        The capitalised title.
 
     Notes
     -----
@@ -152,9 +153,8 @@ def _cloud_amount_dataset(fname: str | CloudPreference) -> nc.Dataset:
 
     Parameters
     ----------
-    preference : str or CloudPreference
-        The cloud type, which may be ``low``, ``medium``, ``high``,
-        ``very_high`` or ``mesh``.
+    fname : str
+        The file name of the netCDF resource to load.
 
     Returns
     -------
@@ -400,6 +400,8 @@ def icon_soil() -> SampleUnstructuredXY:
     SampleUnstructuredXY
         The unstructured spatial coordinates and data payload.
 
+    References
+    ----------
     Sourced from http://icon-downloads.mpimet.mpg.de/dwd_grids.xml
 
     Notes

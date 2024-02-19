@@ -89,7 +89,7 @@ def remesh(
     rtol : float, optional
         The relative tolerance for values close to longitudinal
         :func:`geovista.common.wrap` ``base + period``.
-    atol :
+    atol : float, optional
         The absolute tolerance for values close to longitudinal
         :func:`geovista.common.wrap` ``base + period``.
 
@@ -101,7 +101,7 @@ def remesh(
 
     Notes
     -----
-    .. versionadded :: 0.1.0
+    .. versionadded:: 0.1.0
 
     """
     if mesh.n_cells == 0:

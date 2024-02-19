@@ -16,10 +16,6 @@ The following :data:`resources` dictionary keys are defined:
   i.e., ``${XDG_CACHE_HOME}/geovista``.  Otherwise, the default is the ``geovista``
   directory under :func:`platformdirs.user_cache_dir`.
 
-
-Package Override
-----------------
-
 The :data:`resources` dictionary ``cache_dir`` may be overridden at a package
 **system** or **environment** level by creating a ``siteconfig.py`` file in the
 :mod:`geovista` package installation root directory and defining an ``update_config``
@@ -30,15 +26,10 @@ function that updates the ``resources`` dictionary.  For example:
         def update_config(resources: dict[str, str]) -> None:
             resources["cache_dir"] = "/var/cache/geovista"
 
-
-User Override
--------------
-
 The user may override both the default and package level configuration by defining an
 ``update_config`` function within a ``geovistaconfig``
 `user site-packages <https://docs.python.org/3/library/site.html#site.USER_SITE>`_
 module.
-
 
 Notes
 -----

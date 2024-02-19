@@ -234,7 +234,7 @@ def create_meridians(
     zlevel : int, optional
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``. Defaults
-        to :data:`GRATICULE_ZLEVEL`
+        to :data:`GRATICULE_ZLEVEL`.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
@@ -441,7 +441,7 @@ def create_parallels(
     zlevel : int, optional
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``. Defaults
-        to :data:`GRATICULE_ZLEVEL`
+        to :data:`GRATICULE_ZLEVEL`.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
