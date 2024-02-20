@@ -42,9 +42,20 @@ pyproj = lazy.load("pyproj")
 pv = lazy.load("pyvista")
 
 __all__ = [
+    "BBOX_C",
+    "BBOX_RADIUS_RATIO",
+    "BBOX_TOLERANCE",
     "BBox",
+    "CSC",
+    "Corners",
+    "ELLIPSE",
     "EnclosedPreference",
     "GEODESIC_NPTS",
+    "N_PANELS",
+    "PANEL_IDX_BY_NAME",
+    "PANEL_IDX_BY_NAME",
+    "PANEL_NAME_BY_IDX",
+    "PREFERENCE",
     "line",
     "npoints",
     "npoints_by_idx",
@@ -54,23 +65,23 @@ __all__ = [
 
 # Type aliases
 Corners = tuple[float, float, float, float]
+"""Type alias for a tuple of bounding-box corners."""
 
-#: Default geodesic ellipse. See :func:`pyproj.get_ellps_map`.
 ELLIPSE: str = "WGS84"
+"""Default geodesic ellipse. See :func:`pyproj.list.get_ellps_map`."""
 
-#: Number of equally spaced geodesic points between/including end-point/s.
 GEODESIC_NPTS: int = 64
+"""Number of equally spaced geodesic points between/including end-point/s."""
 
-#: The bounding-box face geometry will contain ``BBOX_C**2`` cells.
 BBOX_C: int = 256
+"""The bounding-box face geometry will contain ``BBOX_C**2`` cells."""
 
-#: The bounding-box tolerance on intersection.
-BBOX_TOLERANCE: int = 0
-
-#: Ratio that the bounding-box inner and outer faces are offset from the surface mesh.
 BBOX_RADIUS_RATIO = 1e-1
+"""Ratio the bounding-box inner and outer faces are offset from the surface mesh."""
 
-#: Lookup table for cubed-sphere panel index by panel name.
+BBOX_TOLERANCE: int = 0
+"""The bounding-box tolerance on intersection."""
+
 PANEL_IDX_BY_NAME: dict[str, int] = {
     "africa": 0,
     "asia": 1,
@@ -79,8 +90,8 @@ PANEL_IDX_BY_NAME: dict[str, int] = {
     "arctic": 4,
     "antarctic": 5,
 }
+"""Lookup table for cubed-sphere panel index by panel name."""
 
-#: Lookup table for cubed-sphere panel name by panel index.
 PANEL_NAME_BY_IDX: dict[int, str] = {
     0: "africa",
     1: "asia",
@@ -89,11 +100,11 @@ PANEL_NAME_BY_IDX: dict[int, str] = {
     4: "arctic",
     5: "antarctic",
 }
+"""Lookup table for cubed-sphere panel name by panel index."""
 
-#: Latitude (degrees) of a cubed-sphere panel corner.
 CSC: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
+"""Latitude (degrees) of a cubed-sphere panel corner."""
 
-#: Cubed-sphere panel bounding-box longitudes and latitudes.
 PANEL_BBOX_BY_IDX: dict[int, tuple[Corners, Corners]] = {
     0: ((-45, 45, 45, -45), (CSC, CSC, -CSC, -CSC)),
     1: ((45, 135, 135, 45), (CSC, CSC, -CSC, -CSC)),
@@ -102,12 +113,13 @@ PANEL_BBOX_BY_IDX: dict[int, tuple[Corners, Corners]] = {
     4: ((-45, 45, 135, -135), (CSC, CSC, CSC, CSC)),
     5: ((-45, 45, 135, -135), (-CSC, -CSC, -CSC, -CSC)),
 }
+"""Cubed-sphere panel bounding-box longitudes and latitudes."""
 
-#: The number of cubed-sphere panels.
 N_PANELS: int = len(PANEL_IDX_BY_NAME)
+"""The number of cubed-sphere panels."""
 
-#: The default bounding-box preference.
 PREFERENCE: str = "center"
+"""The default bounding-box preference."""
 
 
 # TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
@@ -149,16 +161,19 @@ class BBox:  # numpydoc ignore=PR01
         ----------
         lons : ArrayLike
             The longitudes (degrees) of the bounding-box, in the half-closed interval
-            [-180, 180). Note that, longitudes will be wrapped to this interval.
+            ``[-180, 180)``. Note that, longitudes will be wrapped to this interval.
         lats : ArrayLike
             The latitudes (degrees) of the bounding-box, in the closed interval
-            [-90, 90].
-        ellps : str, default=ELLIPSE
-            The ellipsoid for geodesic calculations. See :func:`pyproj.get_ellps_map`.
-        c : float, default=BBOX_C
+            ``[-90, 90]``.
+        ellps : str, optional
+            The ellipsoid for geodesic calculations. See
+            :func:`pyproj.list.get_ellps_map`. Defaults to :data:`ELLIPSE`.
+        c : float, optional
             The bounding-box face geometry will contain ``c**2`` cells.
-        triangulate : bool, default=False
-            Specify whether the bounding-box faces are triangulated.
+            Defaults to :data:`BBOX_C`.
+        triangulate : bool, optional
+            Specify whether the bounding-box faces are triangulated. Defaults to
+            ``False``.
 
         Notes
         -----
@@ -248,16 +263,32 @@ class BBox:  # numpydoc ignore=PR01
 
     @property
     def mesh(self) -> pv.PolyData:
-        """The bounding-box :class:`pyvista.PolyData` mesh.
+        """The manifold bounding-box mesh.
 
         Returns
         -------
         PolyData
-            The bounding-box manifold mesh.
+            The bounding-box mesh.
 
         Notes
         -----
         .. versionadded:: 0.1.0
+
+        Examples
+        --------
+        Add a bounding-box to the plotter for the ``africa`` panel of a cubed-sphere.
+        The geodesic bounding-box is generated from the 4 corners of the cubed-sphere
+        panel located over Africa. Natural Earth coastlines are also rendered along
+        with a texture mapped Natural Earth base layer.
+
+        >>> import geovista
+        >>> from geovista.geodesic import panel
+        >>> plotter = geovista.GeoPlotter()
+        >>> plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+        >>> bbox = panel("africa", c=32)
+        >>> plotter.add_mesh(bbox.mesh, color="white")
+        >>> plotter.view_yz()
+        >>> plotter.show()
 
         """
         if self._mesh is None:
@@ -538,6 +569,26 @@ class BBox:  # numpydoc ignore=PR01
         -----
         .. versionadded:: 0.1.0
 
+        Examples
+        --------
+        Add the boundary of the bounding-box to the plotter for the ``africa`` panel
+        of a cubed-sphere. The geodesic bounding-box is generated from the 4 corners of
+        the cubed-sphere panel located over Africa.
+
+        The boundary is generated from where the bounding-box intersects with the
+        surface of the C48 Sea Surface Temperature (SST) cubed-sphere mesh.
+
+        >>> import geovista
+        >>> from geovista.geodesic import panel
+        >>> from geovista.pantry.meshes import lfric_sst
+        >>> plotter = geovista.GeoPlotter()
+        >>> mesh = lfric_sst()
+        >>> plotter.add_mesh(mesh, cmap="balance")
+        >>> bbox = panel("africa", c=32)
+        >>> plotter.add_mesh(bbox.boundary(mesh), color="red", line_width=3)
+        >>> plotter.view_yz()
+        >>> plotter.show()
+
         """
         self._generate_bbox_mesh(surface=surface, radius=radius)
 
@@ -571,13 +622,14 @@ class BBox:  # numpydoc ignore=PR01
         ----------
         surface : PolyData
             The :class:`pyvista.PolyData` mesh to be checked for containment.
-        tolerance : float, default=BBOX_TOLERANCE
+        tolerance : float, optional
             The tolerance on the intersection operation with the `surface`,
             expressed as a fraction of the diagonal of the bounding-box.
-        outside : bool, default=False
+            Defaults to :data:`BBOX_TOLERANCE`.
+        outside : bool, optional
             By default, select those points of the `surface` that are inside
             the bounding-box. Otherwise, select those points that are outside
-            the bounding-box.
+            the bounding-box. Defaults to ``False``.
         preference : str or EnclosedPreference, optional
             Criteria for defining whether a face of a `surface` mesh is
             deemed to be enclosed by the bounding-box. A `preference` of
@@ -597,6 +649,37 @@ class BBox:  # numpydoc ignore=PR01
         Notes
         -----
         .. versionadded:: 0.1.0
+
+        Examples
+        --------
+        Add the region enclosed by bounding-box manifold to the plotter for the
+        ``africa`` panel of a cubed-sphere. The geodesic bounding-box is generated
+        from the 4 corners of the cubed-sphere panel located over Africa.
+
+        The region is generated from all cells of the C48 Sea Surface Temperature
+        (SST) cubed-sphere mesh that have their cell ``center`` enclosed by the
+        bounding-box manifold.
+
+        >>> import geovista
+        >>> from geovista.geodesic import panel
+        >>> from geovista.pantry.meshes import lfric_sst
+        >>> plotter = geovista.GeoPlotter()
+        >>> plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+        >>> mesh = lfric_sst()
+        >>> bbox = panel("africa", c=32)
+        >>> region = bbox.enclosed(mesh)
+        >>> plotter.add_mesh(region, cmap="balance")
+        >>> plotter.view_yz()
+        >>> plotter.show()
+
+        The same ``region`` is rendered again, but with the land mask cells removed
+        using the :meth:`pyvista.DataSetFilters.threshold` filter.
+
+        >>> plotter = geovista.GeoPlotter()
+        >>> plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+        >>> plotter.add_mesh(region.threshold(), cmap="balance")
+        >>> plotter.view_yz()
+        >>> plotter.show()
 
         """
         if preference is None:
@@ -655,29 +738,31 @@ def line(
     ----------
     lons : ArrayLike
         The longitudes (degrees) of the geodesic line segments, in the half-closed
-        interval [-180, 180). Note that, longitudes will be wrapped to this
+        interval ``[-180, 180)``. Note that, longitudes will be wrapped to this
         interval.
     lats : ArrayLike
         The latitudes (degrees) of the geodesic line segments, in the closed
-        interval [-90, 90].
+        interval ``[-90, 90]``.
     surface : PolyData, optional
         The surface that the geodesic line will be rendered over.
     radius : float, optional
         The radius of the surface that the geodesic line will be rendered over.
         Note that, the `radius` is only used when the `surface` is not
         provided. Defaults to :data:`geovista.common.RADIUS`.
-    npts : float, default=GEODESIC_NPTS
+    npts : float, optional
         The number of equally spaced geodesic points in a line segment, excluding
         the segment end-point, but including the segment start-point i.e., `npts`
-        must be at least 2.
-    ellps : str, default=ELLIPSE
-        The ellipsoid for geodesic calculations. See :func:`pyproj.get_ellps_map`.
-    close : bool, default=False
+        must be at least 2. Defaults to :data:`GEODESIC_NPTS`.
+    ellps : str, optional
+        The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
+        Defaults to :data:`ELLIPSE`.
+    close : bool, optional
         Whether to close the geodesic line segments into a loop i.e., the last
-        point is connected to the first point.
-    zlevel : int, default=1
+        point is connected to the first point. Defaults to ``False``.
+    zlevel : int, optional
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        Defaults to ``1``.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
@@ -690,6 +775,20 @@ def line(
     Notes
     -----
     .. versionadded:: 0.1.0
+
+    Examples
+    --------
+    Add the anti-meridian great circle to the plotter. A texture mapped Natural Earth
+    base layer is also rendered.
+
+    >>> import geovista
+    >>> from geovista.geodesic import line
+    >>> plotter = geovista.GeoPlotter()
+    >>> plotter.add_base_layer(texture=geovista.natural_earth_1())
+    >>> meridian = line(-180, [90, 0, -90])
+    >>> plotter.add_mesh(meridian, color="green", line_width=3)
+    >>> plotter.view_yz(negative=True)
+    >>> plotter.show()
 
     """
     if surface is not None:
@@ -796,7 +895,7 @@ def npoints(
     that spans between the start and end points.
 
     Note that, longitudes (degrees) will be wrapped to the half-closed interval
-    [-180, 180).
+    ``[-180, 180)``.
 
     Parameters
     ----------
@@ -808,24 +907,26 @@ def npoints(
         The longitude of the end-point for the geodesic line.
     end_lat : float
         The latitude of the end-point for the geodesic line.
-    npts : int, default=GEODESIC_NPTS
+    npts : int, optional
         The number of points to be returned, which may include the start-point
-        and/or the end-point, if required.
-    radians : bool, default=False
+        and/or the end-point, if required. Defaults to :data:`GEODESIC_NPTS`.
+    radians : bool, optional
         If ``True``, the start and end points are assumed to be in radians,
-        otherwise degrees.
-    include_start : bool, default=False
-        Whether to include the start-point in the geodesic points returned.
-    include_end : bool, default=False
-        Whether to include the end-point in the geodesic points returned.
+        otherwise degrees. Defaults to ``False``.
+    include_start : bool, optional
+        Whether to include the start-point in the geodesic points returned. Defaults to
+        ``False``.
+    include_end : bool, optional
+        Whether to include the end-point in the geodesic points returned. Defaults to
+        ``False``.
     geod : Geod, optional
         Definition of the ellipsoid for geodesic calculations. Defaults to
         :data:`ELLIPSE`.
 
     Returns
     -------
-    tuple of tuples
-        Tuple of (longitude, latitude) points along the geodesic line
+    tuple
+        Tuple of longitude points and latitude points along the geodesic line
         between the start-point and the end-point.
 
     Notes
@@ -873,7 +974,7 @@ def npoints_by_idx(
     line that spans between the start and end points.
 
     Note that, longitudes (degrees) will be wrapped to the half-closed interval
-    [-180, 180).
+    ``[-180, 180)``.
 
     Parameters
     ----------
@@ -885,24 +986,26 @@ def npoints_by_idx(
         The index of the start-point.
     end_idx : int
         The index of the end-point.
-    npts : int, default=GEODESIC_NPTS
+    npts : int, optional
         The number of points to be returned, which may include the start-point
-        and/or the end-point, if required.
-    radians : bool, default=False
+        and/or the end-point, if required. Defaults to :data:`GEODESIC_NPTS`.
+    radians : bool, optional
         If ``True``, the `lons` and `lats` are assumed to be in radians,
-        otherwise degrees.
-    include_start : bool, default=False
-        Whether to include the start-point in the geodesic points returned.
-    include_end : bool, default=False
-        Whether to include the end-point in the geodesic points returned.
+        otherwise degrees. Defaults to ``False``.
+    include_start : bool, optional
+        Whether to include the start-point in the geodesic points returned. Defaults
+        to ``False``.
+    include_end : bool, optional
+        Whether to include the end-point in the geodesic points returned. Defaults to
+        ``False``.
     geod : Geod, optional
         Definition of the ellipsoid for geodesic calculations. Defaults to
         :data:`ELLIPSE`.
 
     Returns
     -------
-    tuple of tuples
-        Tuple of (longitude, latitude) points along the geodesic line
+    tuple
+        Tuple of longitude points and latitude points along the geodesic line
         between the start-point and the end-point.
 
     Notes
@@ -941,12 +1044,15 @@ def panel(
         The cubed-sphere index, see :data:`PANEL_NAME_BY_IDX`, or name, see
         :data:`PANEL_IDX_BY_NAME`, which specifies the panel bounding-box,
         see :data:`PANEL_BBOX_BY_IDX`.
-    ellps : str, default=ELLIPSE
-        The ellipsoid for geodesic calculations. See :func:`pyproj.get_ellps_map`.
-    c : float, default=BBOX_C
-        The bounding-box face geometry will contain ``c**2`` cells.
-    triangulate : bool, default=False
-        Specify whether the panel bounding-box faces are triangulated.
+    ellps : str, optional
+        The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
+        Defaults to :data:`ELLIPSE`.
+    c : float, optional
+        The bounding-box face geometry will contain ``c**2`` cells. Defaults to
+        :data:`BBOX_C`.
+    triangulate : bool, optional
+        Specify whether the panel bounding-box faces are triangulated. Defaults to
+        ``False``.
 
     Returns
     -------
@@ -956,6 +1062,22 @@ def panel(
     Notes
     -----
     .. versionadded:: 0.1.0
+
+    Examples
+    --------
+    Add a ``wireframe`` bounding-box to the plotter for the ``americas`` panel of a
+    cubed-sphere. The geodesic bounding-box is generated from the 4 corners of the
+    cubed-sphere panel located over Americas.  A texture mapped Natural Earth base
+    layer is also rendered.
+
+    >>> import geovista
+    >>> from geovista.geodesic import panel
+    >>> plotter = geovista.GeoPlotter()
+    >>> plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+    >>> bbox = panel("americas", c=8)
+    >>> plotter.add_mesh(bbox.mesh, color="orange", style="wireframe")
+    >>> plotter.view_xz()
+    >>> plotter.show()
 
     """
     if isinstance(name, str):
@@ -987,7 +1109,7 @@ def wedge(
     c: int | None = BBOX_C,
     triangulate: bool | None = False,
 ) -> BBox:
-    """Create geodesic bounding-box wedge from the north-pole to the south-pole.
+    """Create geodesic bounding-box manifold wedge from the north to the south pole.
 
     Parameters
     ----------
@@ -995,12 +1117,15 @@ def wedge(
         The first longitude (degrees) defining the geodesic wedge region.
     lon2 : float
         The second longitude (degrees) defining the geodesic wedge region.
-    ellps : str, default=ELLIPSE
-        The ellipsoid for geodesic calculations. See :func:`pyproj.get_ellps_map`.
-    c : float, default=BBOX_C
-        The bounding-box face geometry will contain ``c**2`` cells.
-    triangulate : bool, default=False
-        Specify whether the wedge bounding-box faces are triangulated.
+    ellps : str, optional
+        The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
+        Defaults to :data:`ELLIPSE`.
+    c : float, optional
+        The bounding-box face geometry will contain ``c**2`` cells. Defaults to
+        :data:`BBOX_C`.
+    triangulate : bool, optional
+        Specify whether the wedge bounding-box faces are triangulated. Defaults to
+        ``False``.
 
     Returns
     -------
@@ -1010,6 +1135,20 @@ def wedge(
     Notes
     -----
     .. versionadded:: 0.1.0
+
+    Examples
+    --------
+    Add a ``C8`` sixty-degree wide ``wireframe`` bounding-box wedge to the plotter. A
+    texture mapped NASA Blue Marble base layer is also rendered.
+
+    >>> import geovista
+    >>> from geovista.geodesic import wedge
+    >>> plotter = geovista.GeoPlotter()
+    >>> plotter.add_base_layer(texture=geovista.blue_marble())
+    >>> bbox = wedge(-30, 30, c=8)
+    >>> plotter.add_mesh(bbox.mesh, color="orange", style="wireframe")
+    >>> plotter.view_yz()
+    >>> plotter.show()
 
     """
     delta = abs(lon1 - lon2)

@@ -163,6 +163,7 @@ numpydoc_use_plots = True
 numpydoc_xref_aliases = {
     "ArrayLike": "numpy.typing.ArrayLike",
     "CRSLike": "geovista.crs.CRSLike",
+    "Geod": "pyproj.geod.Geod",
     "PolyData": "pyvista.PolyData",
     "Shape": "geovista.bridge.Shape",
 }
@@ -459,8 +460,9 @@ def skip_member(
 
     """
     noplot = GEOVISTA_DOCSTRING_NOPLOT != "false"
+    targets = ["class", "function", "method", "property", "module"]
 
-    if not skip and not noplot and what in ["class", "function", "method", "module"]:
+    if not skip and not noplot and what in targets:
         match = REGEX.fullmatch(obj.docstring)
         if match is not None:
             examples = match.group("examples")
