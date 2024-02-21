@@ -161,7 +161,7 @@ class BBox:  # numpydoc ignore=PR01
         ----------
         lons : ArrayLike
             The longitudes (degrees) of the bounding-box, in the half-closed interval
-            ``[-180, 180)``. Note that, longitudes will be wrapped to this interval.
+            ``[-180, 180]``. Note that, longitudes will be wrapped to this interval.
         lats : ArrayLike
             The latitudes (degrees) of the bounding-box, in the closed interval
             ``[-90, 90]``.
