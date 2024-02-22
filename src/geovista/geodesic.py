@@ -585,7 +585,7 @@ class BBox:  # numpydoc ignore=PR01
         >>> mesh = lfric_sst()
         >>> plotter.add_mesh(mesh, cmap="balance")
         >>> bbox = panel("africa", c=32)
-        >>> plotter.add_mesh(bbox.boundary(mesh), color="red", line_width=3)
+        >>> plotter.add_mesh(bbox.boundary(mesh), color="orange", line_width=3)
         >>> plotter.view_yz()
         >>> plotter.show()
 
@@ -786,7 +786,7 @@ def line(
     >>> plotter = geovista.GeoPlotter()
     >>> plotter.add_base_layer(texture=geovista.natural_earth_1())
     >>> meridian = line(-180, [90, 0, -90])
-    >>> plotter.add_mesh(meridian, color="green", line_width=3)
+    >>> plotter.add_mesh(meridian, color="orange", line_width=3)
     >>> plotter.view_yz(negative=True)
     >>> plotter.show()
 
