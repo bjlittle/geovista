@@ -35,6 +35,7 @@ from typing import TYPE_CHECKING
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 from sphinx.util import logging
+from sphinx.util.console import colorize
 from sphinx_gallery.sorting import ExampleTitleSortKey
 
 if TYPE_CHECKING:
@@ -64,18 +65,24 @@ if TYPE_CHECKING:
 
 
 def autolog(message: str, section: str | None = None, color: str | None = None) -> None:
-    """Write useful output to stdout, prefixing the source."""
-    if section is None:
-        section = ""
+    """Log the diagnostics `message` with optional `section` prefix.
 
+    Parameters
+    ----------
+    message : str
+        The diagnostics message.
+    section : str, optional
+        The prefix text for the diagnostics message.
+    color : str, optional
+        The color of the `section` prefix text.
+
+    """
     if color is None:
         color = "brown"
 
-    if section:
-        section = f"[{section}] "
-
-    msg = f"{section}{message}"
-    logger.info(msg, color=color)
+    section = colorize(color, colorize("bold", f"[{section}] ")) if section else ""
+    msg = f'{colorize(color, section)}{colorize("darkblue", f"{message}")}'
+    logger.info(msg)
 
 
 logger = logging.getLogger("sphinx-geovista")
