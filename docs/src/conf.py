@@ -398,7 +398,8 @@ sphinx_gallery_conf = {
     "examples_dirs": "../../src/geovista/examples",
     "gallery_dirs": "generated/gallery",
     "matplotlib_animations": True,
-    "plot_gallery": True,  # set to False, for fast developer docs build
+    # see https://github.com/sphinx-gallery/sphinx-gallery/pull/195
+    "plot_gallery": "'True'",
     "doc_module": ("geovista"),
     "image_scrapers": (scraper, "matplotlib"),
     "download_all_examples": False,
