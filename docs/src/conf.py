@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import datetime
 from importlib.metadata import version as get_version
-import ntpath
 import os
 from pathlib import Path
 import re
@@ -35,6 +34,7 @@ from typing import TYPE_CHECKING
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
+from sphinx.util import logging
 from sphinx_gallery.sorting import ExampleTitleSortKey
 
 if TYPE_CHECKING:
@@ -63,9 +63,22 @@ if TYPE_CHECKING:
     )
 
 
-def autolog(message: str) -> None:
+def autolog(message: str, section: str | None = None, color: str | None = None) -> None:
     """Write useful output to stdout, prefixing the source."""
-    print(f"[{ntpath.basename(__file__)}] {message}")  # noqa: T201
+    if section is None:
+        section = ""
+
+    if color is None:
+        color = "brown"
+
+    if section:
+        section = f"[{section}] "
+
+    msg = f"{section}{message}"
+    logger.info(msg, color=color)
+
+
+logger = logging.getLogger("sphinx-geovista")
 
 
 # -- General configuration ---------------------------------------------------
@@ -142,9 +155,9 @@ src_dir = Path(__file__).absolute().parent
 root_dir = src_dir.parents[1]
 package_dir = root_dir / "src"
 
-autolog(f"[general] {src_dir=}")
-autolog(f"[general] {root_dir=}")
-autolog(f"[general] {package_dir=}")
+autolog(f"{src_dir=}", section="General")
+autolog(f"{root_dir=}", section="General")
+autolog(f"{package_dir=}", section="General")
 
 
 # sphinx.ext.todo configuration -----------------------------------------------
@@ -211,9 +224,9 @@ autoapi_python_class_content = "both"
 autoapi_keep_files = True
 autoapi_add_toctree_entry = False
 
-autolog(f"[autoapi] {autoapi_dirs=}")
-autolog(f"[autoapi] {autoapi_ignore=}")
-autolog(f"[autoapi] {autoapi_root=}")
+autolog(f"{autoapi_dirs=}", section="AutoAPI")
+autolog(f"{autoapi_ignore=}", section="AutoAPI")
+autolog(f"{autoapi_root=}", section="AutoAPI")
 
 
 # -- internationalization options --------------------------------------------
