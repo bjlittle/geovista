@@ -214,7 +214,7 @@ autoapi_ignore = [
     str(package_dir / "geovista/cli.py"),
     str(package_dir / "geovista/examples/*"),
 ]
-autoapi_member_order = "alphabetical"
+autoapi_member_order = "groupwise"
 autoapi_options = [
     "members",
     # "inherited-members",
