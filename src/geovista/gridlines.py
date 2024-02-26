@@ -41,66 +41,85 @@ __all__ = [
     "GRATICULE_CLOSED_INTERVAL",
     "GRATICULE_ZLEVEL",
     "GraticuleGrid",
+    "LABEL_DEGREE",
+    "LABEL_EAST",
+    "LABEL_NORTH",
+    "LABEL_SOUTH",
+    "LABEL_WEST",
+    "LATITUDE_N_SAMPLES",
+    "LATITUDE_POLES_LABEL",
+    "LATITUDE_POLES_PARALLEL",
+    "LATITUDE_START",
+    "LATITUDE_STEP",
+    "LATITUDE_STEP_PERIOD",
+    "LATITUDE_STOP",
+    "LONGITUDE_N_SAMPLES",
+    "LONGITUDE_START",
+    "LONGITUDE_STEP",
+    "LONGITUDE_STEP_PERIOD",
+    "LONGITUDE_STOP",
+    "create_meridian_labels",
     "create_meridians",
+    "create_parallel_labels",
     "create_parallels",
 ]
 
-#: Whether longitudes within half-open [-180, 180) or closed [-180, 180] interval.
 GRATICULE_CLOSED_INTERVAL: bool = False
+"""Whether longitudes within half-closed [-180, 180) or closed [-180, 180] interval."""
 
-#: The default zlevel for graticule meridians and parallels.
 GRATICULE_ZLEVEL: int = 1
+"""The default zlevel for graticule meridians and parallels."""
 
-#: The degree symbol label.
 LABEL_DEGREE: str = "°"
+"""The degree symbol label."""
 
-#: The east of the prime meridian label.
 LABEL_EAST: str = f"{LABEL_DEGREE}E"
+"""The east of the prime meridian label."""
 
-#: The north of the equatorial parallel label.
 LABEL_NORTH: str = f"{LABEL_DEGREE}N"
+"""The north of the equatorial parallel label."""
 
-#: The south of the equatorial parallel label.
 LABEL_SOUTH: str = f"{LABEL_DEGREE}S"
+"""The south of the equatorial parallel label."""
 
-#: The west of the prime meridian label.
 LABEL_WEST: str = f"{LABEL_DEGREE}W"
+"""The west of the prime meridian label."""
 
-#: The default number of points in a line of latitude.
 LATITUDE_N_SAMPLES: int = 360
+"""The default number of points in a line of latitude."""
 
-#: Whether to generate parallels at the north/south poles.
 LATITUDE_POLES_PARALLEL: bool = False
+"""Whether to generate parallels at the north/south poles."""
 
-#: Whether to generate a north/south pole label.
 LATITUDE_POLES_LABEL: bool = True
+"""Whether to generate a north/south pole label."""
 
-#: The first graticule line of latitude (degrees).
 LATITUDE_START: float = -90.0
+"""The first graticule line of latitude (degrees)."""
 
-#: The default step size between graticule parallels (degrees).
 LATITUDE_STEP: float = 30.0
+"""The default step size between graticule parallels (degrees)."""
 
-#: The period or upper bound (degrees) for parallel step size.
 LATITUDE_STEP_PERIOD: float = 90.0
+"""The period or upper bound (degrees) for parallel step size."""
 
-#: The last graticule line of latitude (degrees).
 LATITUDE_STOP: float = 90.0
+"""The last graticule line of latitude (degrees)."""
 
-# The default number of points in a meridian line.
 LONGITUDE_N_SAMPLES: int = 180
+"""The default number of points in a meridian line."""
 
-#: The first meridian line in the graticule (degrees).
 LONGITUDE_START: float = BASE
+"""The first meridian line in the graticule (degrees)."""
 
-#: The default step size between graticule meridians (degrees).
 LONGITUDE_STEP: float = 45.0
+"""The default step size between graticule meridians (degrees)."""
 
-#: The period or upper bound (degrees) for meridian step size.
 LONGITUDE_STEP_PERIOD: float = 180.0
+"""The period or upper bound (degrees) for meridian step size."""
 
-#: The last graticule meridian (degrees).
 LONGITUDE_STOP: float = BASE + PERIOD
+"""The last graticule meridian (degrees)."""
 
 
 @dataclass

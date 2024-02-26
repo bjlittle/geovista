@@ -73,27 +73,36 @@ if TYPE_CHECKING:
 pyproj = lazy.load("pyproj")
 pv = lazy.load("pyvista")
 
-__all__ = ["GeoPlotter"]
+__all__ = [
+    "ADD_POINTS_STYLE",
+    "BASE_ZLEVEL_SCALE",
+    "COASTLINES_RTOL",
+    "GRATICULE_LABEL_FONT_SIZE",
+    "GRATICULE_SHOW_LABELS",
+    "GeoPlotter",
+    "GeoPlotterBase",
+    "OPACITY_BLACKLIST",
+]
 
-#: The valid 'style' options for adding points.
-ADD_POINTS_STYLE: list[str, ...] = ["points", "points_gaussian"]
+ADD_POINTS_STYLE: list[str, str] = ["points", "points_gaussian"]
+"""The valid 'style' options for adding points."""
 
-#: Proportional multiplier for z-axis levels/offsets of base-layer mesh.
 BASE_ZLEVEL_SCALE: int = 1.0e-3
+"""Proportional multiplier for z-axis levels/offsets of base-layer mesh."""
 
-#: Coastlines relative tolerance for values close to longitudinal wrap base + period.
 COASTLINES_RTOL: float = 1.0e-8
+"""Coastlines relative tolerance for values close to longitudinal wrap base + period."""
 
-#: The default font size for graticule labels.
 GRATICULE_LABEL_FONT_SIZE: int = 9
+"""The default font size for graticule labels."""
 
-#: Whether to rendering graticule labels by default.
 GRATICULE_SHOW_LABELS: bool = True
+"""Whether to rendering graticule labels by default."""
 
-#: Known GPU renderer and version combinations that don't support opacity.
 OPACITY_BLACKLIST = [
     ("llvmpipe (LLVM 7.0, 256 bits)", "3.3 (Core Profile) Mesa 18.3.4"),
 ]
+"""Known GPU renderer and version combinations that don't support opacity."""
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -151,7 +160,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         ----------
         *args : tuple, optional
             See :class:`pyvista.Plotter` for further details.
-        crs : str or CRS, optional
+        crs : str or CRSLike, optional
             The target CRS to render geolocated meshes added to the plotter.
         **kwargs : dict, optional
             See :class:`pyvista.Plotter` for further details.
@@ -308,7 +317,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             regular grid using a format of ``rN``, where ``N`` is the number of cells
             in latitude, and ``N * 1.5`` cells in longitude. When adding a base layer
             to a projection, the default is to use a regular grid with resolution
-            :data:`REGULAR_RESOLUTION`.
+            :data:`geovista.pantry.meshes.REGULAR_RESOLUTION`.
         radius : float, optional
             The radius of the spherical mesh to generate as the base layer. Defaults
             to :data:`geovista.common.RADIUS`.
@@ -317,7 +326,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
-            :data:`geovista.common.BASE_ZLEVEL_SCALE`.
+            :data:`BASE_ZLEVEL_SCALE`.
         rtol : float, optional
             The relative tolerance for values close to longitudinal
             :func:`geovista.common.wrap` ``base + period``.
@@ -1051,7 +1060,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         xs : ArrayLike, optional
             A 1-D, 2-D or 3-D array of point-cloud x-values, in canonical `crs` units.
             Must have the same shape as the `ys`.
-        ys : ys : ArrayLike
+        ys : ArrayLike
             A 1-D, 2-D or 3-D array of point-cloud y-values, in canonical `crs` units.
             Must have the same shape as the `xs`.
         scalars : str or ArrayLike, optional

@@ -23,7 +23,7 @@ from .common import (
     GV_FIELD_RADIUS,
     RADIUS,
     ZLEVEL_SCALE,
-    _MixinStrEnum,
+    MixinStrEnum,
     distance,
     to_cartesian,
     wrap,
@@ -52,6 +52,7 @@ __all__ = [
     "EnclosedPreference",
     "GEODESIC_NPTS",
     "N_PANELS",
+    "PANEL_BBOX_BY_IDX",
     "PANEL_IDX_BY_NAME",
     "PANEL_IDX_BY_NAME",
     "PANEL_NAME_BY_IDX",
@@ -65,7 +66,7 @@ __all__ = [
 
 # Type aliases
 Corners = tuple[float, float, float, float]
-"""Type alias for a tuple of bounding-box corners."""
+"""Type alias for the corners of a bounding-box."""
 
 ELLIPSE: str = "WGS84"
 """Default geodesic ellipse. See :func:`pyproj.list.get_ellps_map`."""
@@ -123,7 +124,7 @@ PREFERENCE: str = "center"
 
 
 # TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class EnclosedPreference(_MixinStrEnum, Enum):
+class EnclosedPreference(MixinStrEnum, Enum):
     """Enumeration of mesh geometry enclosed preferences.
 
     Notes

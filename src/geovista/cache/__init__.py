@@ -25,6 +25,7 @@ __all__ = [
     "DATA_VERSION",
     "GEOVISTA_CACHEDIR",
     "GEOVISTA_DATA_VERSION",
+    "GEOVISTA_POOCH_MUTE",
     "RETRY_ATTEMPTS",
     "pooch_mute",
     "reload_registry",

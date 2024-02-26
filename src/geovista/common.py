@@ -45,6 +45,7 @@ __all__ = [
     "GV_REMESH_POINT_IDS",
     "JUPYTER_BACKEND",
     "LRU_CACHE_SIZE",
+    "MixinStrEnum",
     "PERIOD",
     "Preference",
     "RADIUS",
@@ -146,7 +147,7 @@ ZTRANSFORM_FACTOR: int = 3
 """The zlevel scaling to be applied when transforming to a projection."""
 
 
-class _MixinStrEnum:
+class MixinStrEnum:
     """Convenience behaviour mixin for a string enumeration.
 
     Notes
@@ -236,7 +237,7 @@ class _MixinStrEnum:
 
 
 # TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class Preference(_MixinStrEnum, Enum):
+class Preference(MixinStrEnum, Enum):
     """Enumeration of common mesh geometry preferences.
 
     Notes
