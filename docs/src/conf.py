@@ -167,7 +167,23 @@ autolog(f"{root_dir=}", section="General")
 autolog(f"{package_dir=}", section="General")
 
 
-# sphinx.ext.todo configuration -----------------------------------------------
+# nitpicky configuration -----------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-nitpicky
+
+nitpicky = True
+nitpick_ignore_regex = [
+    (r"py:.*", r"Corners"),  # TBD: geovista.geodesic.PANEL_BBOX_BY_IDX
+    (r"py:.*", r"h3.get_res0_indexes"),  # no uber/h3 sphinx docs available
+    (r"py:.*", r"scooby.Report"),  # no scooby sphinx docs available
+    (r"py:.*", r"pv"),  # TBD: geovista.geoplotter, geovista.gridlines (lazy import)
+    (r"py:class", r"numpy.typing.ArrayLike"),  # TBD: geovista.pantry.data (lazy import)
+    (r"py:mod", r"pyvista"),  # see https://github.com/pyvista/pyvista/issues/5663
+    (r"py:mod", r"pyvistaqt"),  # no :mod:`pyvistaqt` inventory entry available
+    (r"py:mod", r"vtk"),  # no :mod:`vtk` inventory entry available
+]
+
+
+# sphinx.ext.todo configuration ----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = False
 todo_emit_warnings = False  # set to True, to discover todos in the code
@@ -181,13 +197,18 @@ numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False
 numpydoc_use_plots = True
 numpydoc_xref_aliases = {
+    "Actor": "pyvista.Actor",
     "ArrayLike": "numpy.typing.ArrayLike",
     "CRSLike": "geovista.crs.CRSLike",
+    "CloudPreference": "geovista.pantry.data.CloudPreference",
+    "Corners": "geovista.geodesic.Corners",
     "Geod": "pyproj.geod.Geod",
+    "Preference": "geovista.common.Preference",
     "PolyData": "pyvista.PolyData",
     "Shape": "geovista.bridge.Shape",
+    "Texture": "pyvista.Texture",
 }
-numpydoc_xref_ignore = {"optional", "default"}
+numpydoc_xref_ignore = {"optional", "default", "of"}
 numpydoc_xref_param_type = True
 
 
@@ -210,6 +231,7 @@ autoapi_dirs = [
 ]
 autoapi_root = "reference/generated/api"
 autoapi_ignore = [
+    str(package_dir / "geovista/_version.py"),
     str(package_dir / "geovista/__main__.py"),
     str(package_dir / "geovista/cli.py"),
     str(package_dir / "geovista/examples/*"),

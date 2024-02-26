@@ -60,23 +60,23 @@ __all__ = [
     "ww3_global_tri",
 ]
 
-#: The default LFRic model unstructured cubed-sphere resolution.
 LFRIC_RESOLUTION: str = "c96"
+"""The default LFRic model unstructured cubed-sphere resolution."""
 
-#: The available Met Office cubed-sphere assets.
 LFRIC_RESOLUTIONS: list[str] = ["c48", "c96", "c192"]
+"""The available Met Office cubed-sphere assets."""
 
-#: The default mesh preference.
 PREFERENCE: Preference = Preference.CELL
+"""The default mesh preference."""
 
-#: Default regular grid resolution.
 REGULAR_RESOLUTION: str = "r60"
+"""Default regular grid resolution."""
 
-#: The default warp factor for mesh points.
 WARP_FACTOR: float = 2e-5
+"""The default warp factor for mesh points."""
 
-#: Proportional multiplier for point-cloud levels/offsets.
 ZLEVEL_SCALE_CLOUD: float = 1e-5
+"""Proportional multiplier for point-cloud levels/offsets."""
 
 
 def _lfric_sample_to_mesh(
@@ -124,7 +124,7 @@ def cloud_amount(
 
     Returns
     -------
-    pv.PolyData
+    PolyData
         The unstructured cubed-sphere mesh.
 
     Notes
@@ -554,6 +554,31 @@ def lfric_sst() -> pv.PolyData:
     )
 
 
+def oisst_avhrr_sst() -> pv.PolyData:
+    """Create a mesh from :mod:`geovista.pantry.data` sample data.
+
+    Generate a global Sea Surface Temperature (SST) NOAA/NCEI OISST AVHRR mesh.
+
+    Returns
+    -------
+    PolyData
+        The SST mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    sample = geovista.pantry.data.oisst_avhrr_sst()
+
+    return Transform.from_1d(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=sample.name,
+    )
+
+
 def regular_grid(
     resolution: str | None = None,
     radius: float | None = None,
@@ -606,31 +631,6 @@ def regular_grid(
     lons = np.linspace(-180.0, 180.0, int(n_cells * 1.5) + 1)
 
     return Transform.from_1d(lons, lats, radius=radius)
-
-
-def oisst_avhrr_sst() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry.data` sample data.
-
-    Generate a global Sea Surface Temperature (SST) NOAA/NCEI OISST AVHRR mesh.
-
-    Returns
-    -------
-    PolyData
-        The SST mesh.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    sample = geovista.pantry.data.oisst_avhrr_sst()
-
-    return Transform.from_1d(
-        sample.lons,
-        sample.lats,
-        data=sample.data,
-        name=sample.name,
-    )
 
 
 def um_orca2() -> pv.PolyData:

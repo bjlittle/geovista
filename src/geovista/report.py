@@ -20,15 +20,22 @@ import scooby
 # lazy import third-party dependencies
 pv = lazy.load("pyvista")
 
-__all__ = ["Report"]
+__all__ = [
+    "NCOL",
+    "PACKAGES_CORE",
+    "PACKAGES_OPTIONAL",
+    "PackageLike",
+    "Report",
+    "TEXT_WIDTH",
+]
 
 # type aliases
 PackageLike = ModuleType | str
+"""Type alias for a package module or package name."""
 
-#: Default number of package columns in report HTML table.
 NCOL: int = 3
+"""Default number of package columns in report HTML table."""
 
-#: The core packages of geovista to include in the environment report.
 PACKAGES_CORE: list[str] = [
     "cartopy",
     "click",
@@ -47,8 +54,8 @@ PACKAGES_CORE: list[str] = [
     "scooby",
     "vtk",
 ]
+"""The core packages of geovista to include in the environment report."""
 
-#: The optional packages of geovista to include in the environment report.
 PACKAGES_OPTIONAL: list[str] = [
     "IPython",
     "PyQt5",
@@ -67,9 +74,10 @@ PACKAGES_OPTIONAL: list[str] = [
     "trame_vtk",
     "tqdm",
 ]
+"""The optional packages of geovista to include in the environment report."""
 
-#: Default text width of non-HTML report.
 TEXT_WIDTH: int = 88
+"""Default text width of non-HTML report."""
 
 
 class Report(scooby.Report):  # numpydoc ignore=PR01

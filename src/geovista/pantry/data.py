@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 import lazy_loader as lazy
 
 from geovista.cache import CACHE
-from geovista.common import LRU_CACHE_SIZE, _MixinStrEnum
+from geovista.common import LRU_CACHE_SIZE, MixinStrEnum
 
 if TYPE_CHECKING:
     import netCDF4 as nc  # noqa: N813
@@ -34,6 +34,10 @@ pooch = lazy.load("pooch")
 __all__ = [
     "CLOUD_AMOUNT_PREFERENCE",
     "CloudPreference",
+    "SampleStructuredXY",
+    "SampleStructuredXYZ",
+    "SampleUnstructuredXY",
+    "capitalise",
     "cloud_amount",
     "dynamico",
     "fesom",
@@ -56,15 +60,15 @@ __all__ = [
     "ww3_global_tri",
 ]
 
-#: The default type of cloud amount mesh.
 CLOUD_AMOUNT_PREFERENCE: str = "mesh"
+"""The default type of cloud amount mesh."""
 
-#: The registry key for the pantry data.
 PANTRY_DATA: str = "pantry/data"
+"""The registry key for the pantry data."""
 
 
 # TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class CloudPreference(_MixinStrEnum, Enum):
+class CloudPreference(MixinStrEnum, Enum):
     """Enumeration of mesh types for cloud amount.
 
     Notes

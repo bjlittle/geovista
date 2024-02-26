@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
-from .common import _MixinStrEnum, to_cartesian
+from .common import MixinStrEnum, to_cartesian
 from .crs import WGS84, from_wkt
 from .transform import transform_points
 
@@ -27,31 +27,44 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     import pyvista as pv
 
+    # Type aliases
+    NearestNeighbours = tuple[ArrayLike, ArrayLike]
+    """Type alias for a tuple of nearest neighbour distances and indices.""" ""
+
     # type aliases
     CellIDs = list[int]
     CellIDLike = int | CellIDs
-    NearestNeighbours = tuple[ArrayLike, ArrayLike]
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
 
-__all__ = ["KDTree", "SearchPreference", "find_cell_neighbours", "find_nearest_cell"]
+__all__ = [
+    "KDTREE_EPSILON",
+    "KDTREE_K",
+    "KDTREE_LEAF_SIZE",
+    "KDTREE_PREFERENCE",
+    "KDTree",
+    "NearestNeighbours",
+    "SearchPreference",
+    "find_cell_neighbours",
+    "find_nearest_cell",
+]
 
-#: The default kd-tree nearest neighbour epsilon.
 KDTREE_EPSILON: float = 0.0
+"""The default kd-tree nearest neighbour epsilon."""
 
-#: The default kd-tree number of nearest neighbours.
 KDTREE_K: int = 1
+"""The default kd-tree number of nearest neighbours."""
 
-#: The default kd-tree leaf-size.
 KDTREE_LEAF_SIZE: int = 16
+"""The default kd-tree leaf-size."""
 
-#: The default search preference.
 KDTREE_PREFERENCE: str = "point"
+"""The default search preference."""
 
 
 # TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class SearchPreference(_MixinStrEnum, Enum):
+class SearchPreference(MixinStrEnum, Enum):
     """Enumeration of mesh geometry search preferences.
 
     Notes
@@ -318,7 +331,7 @@ def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:
 
     Returns
     -------
-    list of ints
+    list of int
         The sorted list of neighbouring cell-ids.
 
     Notes
