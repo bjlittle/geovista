@@ -57,6 +57,7 @@ dependencies:
   - sphinx-copybutton
   - sphinx-design
   - sphinx-gallery
+  - sphinx-tags
   - ipywidgets
   - jupyter-server-proxy
   - nest-asyncio

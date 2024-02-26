@@ -5,6 +5,7 @@ sphinx-autoapi
 sphinx-book-theme
 sphinx-copybutton
 sphinx-gallery
+sphinx-tags
 jupyter-sphinx
 pydata-sphinx-theme
 ipywidgets
