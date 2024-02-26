@@ -26,6 +26,8 @@ NASA Blue Marble base layer is rendered along with Natural Earth coastlines.
 The mesh is also transformed to the Equidistant Cylindrical (Plate Carrée)
 conformal cylindrical projection.
 
+.. tags:: Coastlines, Projection, Rectilinear, Texture, Threshold
+
 ----
 
 """  # noqa: D205,D212,D400

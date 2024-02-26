@@ -25,6 +25,8 @@ Note that, the data is on the mesh faces/cells, but also on the nodes/points
 which can then be used to extrude the mesh to reveal the bathymetry of the
 Plymouth Sound and Tamar River in Cornwall, UK.
 
+.. tags:: Unstructured, Warp
+
 ----
 
 """  # noqa: D205,D212,D400

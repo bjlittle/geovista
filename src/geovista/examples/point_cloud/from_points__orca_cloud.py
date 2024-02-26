@@ -24,6 +24,8 @@ area and pre-filtered for temperature gradients.
 Note that, Natural Earth coastlines are also rendered along with a Natural
 Earth base layer with opacity.
 
+.. tags:: Coastlines, Globe, Opacity, Point Cloud, Texture
+
 ----
 
 """  # noqa: D205,D212,D400

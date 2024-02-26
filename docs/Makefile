@@ -23,6 +23,7 @@ clean:
 	-rm -rf $(BUILDDIR)
 	-rm -rf $(SOURCEDIR)/generated
 	-rm -rf $(SOURCEDIR)/reference/generated
+	-rm -rf $(SOURCEDIR)/tags
 	-rm -f $(SOURCEDIR)/sg_execution_times.rst
 
 html-docstring:

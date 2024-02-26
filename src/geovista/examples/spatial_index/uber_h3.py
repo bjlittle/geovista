@@ -60,6 +60,10 @@ the relationship between the geometric objects rendered in the scene.
 
 For further information see https://h3geo.org/.
 
+.. tags:: Coastlines, Globe, Texture, Unstructured
+
+----
+
 """  # noqa: D205,D212,D400
 # %%
 # 🦉 Walk-Through

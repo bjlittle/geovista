@@ -40,6 +40,8 @@ Magnitude      Earthquake Effects                                             Es
 See `reference <https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/>`_
 for further details.
 
+.. tags:: Coastlines, Graticule, Points, Projection, Texture
+
 ----
 
 """  # noqa: D205,D212,D400,E501

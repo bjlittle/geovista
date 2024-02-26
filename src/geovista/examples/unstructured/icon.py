@@ -24,6 +24,8 @@ faces/cells.
 
 Note that, Natural Earth coastlines are also rendered.
 
+.. tags:: Coastlines, Globe, Unstructured
+
 ----
 
 """  # noqa: D205,D212,D400

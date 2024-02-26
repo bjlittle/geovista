@@ -23,6 +23,8 @@ wave significant height data located on mesh faces/cells.
 Note that, a threshold is also applied to remove land ``NaN`` cells, and a
 Natural Earth base layer is rendered along with Natural Earth coastlines.
 
+.. tags:: Coastlines, Globe, Unstructured, Texture, Threshold
+
 ----
 
 """  # noqa: D205,D212,D400

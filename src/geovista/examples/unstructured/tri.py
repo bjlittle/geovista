@@ -26,6 +26,8 @@ Natural Earth base layer is rendered along with Natural Earth coastlines.
 As data is located on the mesh nodes/points, these values are interpolated
 across the mesh faces/cells.
 
+.. tags:: Coastlines, Globe, Unstructured, Texture
+
 ----
 
 """  # noqa: D205,D212,D400

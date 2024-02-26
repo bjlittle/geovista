@@ -18,6 +18,8 @@ regular quad-cell sample grid.
 
 A Natural Earth base layer is also rendered for geolocation context.
 
+.. tags:: Globe, Lighting, Texture, Vectors
+
 ----
 
 """  # noqa: D205,D212,D400

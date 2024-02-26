@@ -108,6 +108,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
+    "sphinx_tags",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
 ]
@@ -165,6 +166,38 @@ package_dir = root_dir / "src"
 autolog(f"{src_dir=}", section="General")
 autolog(f"{root_dir=}", section="General")
 autolog(f"{package_dir=}", section="General")
+
+
+# sphinx-tags configuration ---------------------------------------------------
+# See https://sphinx-tags.readthedocs.io/en/latest/index.html
+
+tags_badge_colors = {
+    "Coastlines": "primary",
+    "Curvilinear": "secondary",
+    "Extrude": "dark",
+    "Globe": "success",
+    "Graticule": "primary",
+    "Lighting": "primary",
+    "Opacity": "primary",
+    "Points": "secondary",
+    "Point Cloud": "secondary",
+    "Projection": "success",
+    "Rectilinear": "secondary",
+    "Texture": "primary",
+    "Threshold": "primary",
+    "Transform Mesh": "light",
+    "Unstructured": "secondary",
+    "Vectors": "secondary",
+    "Warp": "dark",
+}
+tags_create_tags = True
+tags_create_badges = True
+tags_index_head = "Gallery examples categorised by tag:"  # tags landing page intro text
+tags_intro_text = "🏷 Tags:"  # prefix text for a tags list
+tags_overview_title = "🏷 Tags"  # title for the tags landing page
+tags_output_dir = "tags"
+tags_page_header = "Gallery examples contain this tag:"  # tag sub-page, header text
+tags_page_title = "🏷 Tag"  # tag sub-page, title appended with the tag name
 
 
 # nitpicky configuration -----------------------------------------------------

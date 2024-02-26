@@ -25,6 +25,8 @@ Natural Earth base layer is rendered along with Natural Earth coastlines. The me
 is also transformed to the Sinusoidal (Sanson-Flamsteed) pseudo-cylindrical
 projection.
 
+.. tags:: Coastlines, Projection, Unstructured, Texture, Threshold
+
 ----
 
 """  # noqa: D205,D212,D400
