@@ -25,6 +25,8 @@ System Model. The data targets the mesh faces/cells.
 
 Note that, a graticule and Natural Earth coastlines are also rendered.
 
+.. tags:: Coastlines, Globe, Graticule, Unstructured
+
 ----
 
 """  # noqa: D205,D212,D400

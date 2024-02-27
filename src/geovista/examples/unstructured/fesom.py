@@ -25,6 +25,8 @@ mesh faces/cells.
 Note that, a Natural Earth base layer is rendered along with Natural Earth
 coastlines.
 
+.. tags:: Coastlines, Globe, Unstructured, Texture
+
 ----
 
 """  # noqa: D205,D212,D400

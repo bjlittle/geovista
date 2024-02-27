@@ -25,6 +25,8 @@ mesh is then transformed to the Mollweide pseudo-cylindrical projection
 and extruded to give depth to the projected surface. Finally, 10m
 resolution Natural Earth coastlines are also rendered.
 
+.. tags:: Coastlines, Curvilinear, Extrude, Projection, Threshold, Transform Mesh
+
 ----
 
 """  # noqa: D205,D212,D400

@@ -24,6 +24,8 @@ The example uses NOAA/NECI 1/4° Daily Optimum Interpolation Sea Surface Tempera
 Note that, a threshold is also applied to remove land ``NaN`` cells, and a
 NASA Blue Marble base layer is rendered along with Natural Earth coastlines.
 
+.. tags:: Coastlines, Globe, Rectilinear, Texture, Threshold
+
 ----
 
 """  # noqa: D205,D212,D400

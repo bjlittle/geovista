@@ -26,6 +26,8 @@ interpolation across the cell faces. The point surface altitudes are used to
 extrude the mesh to reveal the global surface topography. Also, Natural Earth
 coastlines are rendered.
 
+.. tags:: Globe, Unstructured, Warp
+
 ----
 
 """  # noqa: D205,D212,D400

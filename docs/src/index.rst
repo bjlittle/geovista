@@ -105,6 +105,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
     :hidden:
 
     Examples <generated/gallery/index>
+    tags/tagsindex
 
 
 .. toctree::

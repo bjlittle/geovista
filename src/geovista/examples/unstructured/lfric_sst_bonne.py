@@ -25,6 +25,8 @@ Note that, a threshold is also applied to remove land ``NaN`` cells. A Natural E
 base layer is also rendered along with Natural Earth coastlines and a graticule.
 The mesh is also transformed to the Bonne projection.
 
+.. tags:: Coastlines, Graticule, Projection, Unstructured, Texture, Threshold
+
 ----
 
 """  # noqa: D205,D212,D400

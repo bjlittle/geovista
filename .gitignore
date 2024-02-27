@@ -84,6 +84,7 @@ instance/
 docs/_build/
 docs/src/generated
 docs/src/reference/generated
+docs/src/tags
 docs/src/sg_execution_times.rst
 
 # PyBuilder
