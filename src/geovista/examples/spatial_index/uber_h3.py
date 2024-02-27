@@ -92,7 +92,7 @@ from pyvista import Actor, PolyData
 
 import geovista
 from geovista.geodesic import line
-import geovista.theme
+import geovista.themes
 
 # %%
 # As a convenience, we create some **type aliases** and **data containers**
