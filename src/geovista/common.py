@@ -759,6 +759,51 @@ def to_cartesian(
     return np.vstack(xyz).T if stacked else np.array(xyz)
 
 
+def vectors_to_cartesian(
+    lons_lats: (ArrayLike, ArrayLike),
+    vectors_uvw: (ArrayLike, ArrayLike, ArrayLike),
+) -> (np.ndarray, np.ndarray, np.ndarray):
+    """Convert geographic-oriented vectors to cartesian ``xyz`` points.
+
+    Parameters
+    ----------
+    lons_lats : pair of ArrayLike
+        The longitude + latitude locations of the vectors (in degrees).
+        Both shapes must be the same.
+    vectors_uvw : triple of ArrayLike
+        The eastward, northward and upward vector components.
+        All shapes must be the same as in ``lons_lats``.
+
+    Returns
+    -------
+    (ndarray, ndarray, ndarray)
+        The corresponding ``xyz`` cartesian vector components.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
+    # TODO @pp-mo: Argument checking ???
+    lons, lats = (np.deg2rad(arr) for arr in lons_lats)
+    u, v, w = vectors_uvw
+
+    coslons = np.cos(lons)
+    sinlons = np.sin(lons)
+    coslats = np.cos(lats)
+    sinlats = np.sin(lats)
+    # N.B. the term signs are slightly unexpected here, because the viewing coord system
+    # is not quite what you may expect :  The "Y" axis goes to the right, and the "X"
+    # axis points out of the screen, towards the viewer.
+    z_factor = w * coslats - v * sinlats
+    wy = coslons * u + sinlons * z_factor
+    wx = -sinlons * u + coslons * z_factor
+    wz = v * coslats + w * sinlats
+    # NOTE: for better efficiency, we *COULD* handle the w=0 special case separately.
+
+    return wx, wy, wz
+
+
 def to_lonlat(
     xyz: ArrayLike,
     radians: bool | None = False,

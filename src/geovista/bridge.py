@@ -29,6 +29,7 @@ from .common import (
     ZLEVEL_SCALE,
     nan_mask,
     to_cartesian,
+    vectors_to_cartesian,
     wrap,
 )
 from .crs import WGS84, CRSLike, to_wkt
@@ -562,6 +563,9 @@ class Transform:  # numpydoc ignore=PR01
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
+        vectors: ArrayLike | tuple(ArrayLike) | None = None,
+        vectors_array_name: str | None = None,
+        vectors_z_scaling: float | None = None,
     ) -> pv.PolyData:
         """Build a point-cloud mesh from x-values, y-values and z-levels.
 
@@ -599,6 +603,18 @@ class Transform:  # numpydoc ignore=PR01
         clean : bool, optional
             Specify whether to merge duplicate points. Defaults to
             :data:`BRIDGE_CLEAN`.
+        vectors : tuple(ArrayLike), optional
+            If present, a tuple of 2 or 3 arrays of the same shape as `xs` and `ys`.
+            These give eastward, northward and (optionally) vertical vectors, which are
+            converted to an [N, 3] array of 3-D vectors attached to the result as a
+            points array ``mesh["vectors"]``.  This can be used to generate glyphs
+            (such as arrows) and streamlines.
+        vectors_array_name : str, optional
+            Specifies an alternate name for the points array to store the vectors.
+            Also set as the active vectors name.   Defaults to "vectors".
+        vectors_z_scaling : float, optional
+            scaling factor to apply to vertical vectors (i.e. relative to the eastward
+            and northward components).  Defaults to 1.0
 
         Returns
         -------
@@ -652,6 +668,42 @@ class Transform:  # numpydoc ignore=PR01
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data
+
+        if vectors is not None:
+            if vectors_array_name is None:
+                vectors_array_name = "vectors"
+
+            if not isinstance(vectors, tuple) or not all(
+                isinstance(arr, np.ndarray) for arr in vectors
+            ):
+                msg = 'Keyword "vectors" must be a tuple of array-like.'
+                raise ValueError(msg)
+
+            n_vecs = len(vectors)
+            if n_vecs not in (2, 3):
+                msg = (
+                    'Keyword "vectors" must be a tuple of 2 or 3 arrays : '
+                    f"got {n_vecs}."
+                )
+                raise ValueError(msg)
+
+            vectors = [np.asanyarray(vecdata) for vecdata in vectors]
+            xx, yy = vectors[:2]
+            zz = vectors[2] if n_vecs > 2 else np.zeros_like(xx)
+
+            if vectors_z_scaling is not None:
+                zz = zz * vectors_z_scaling
+
+            # TODO @pp-mo: should we pass flattened arrays here, and reshape
+            # as-per the inputs
+            #  (and xyz)?  not clear if multidimensional input is used or needed
+            xx, yy, zz = vectors_to_cartesian(
+                lons_lats=(xs, ys),
+                vectors_uvw=(xx, yy, zz),
+            )
+            vectors = np.vstack((xx, yy, zz)).T
+            mesh[vectors_array_name] = vectors
+            mesh.set_active_vectors(vectors_array_name)
 
         # clean the mesh
         if clean:
