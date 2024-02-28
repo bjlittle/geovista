@@ -168,7 +168,7 @@ autolog(f"{root_dir=}", section="General")
 autolog(f"{package_dir=}", section="General")
 
 
-# sphinx-tags configuration ---------------------------------------------------
+# sphinx-tags options --------------------------------------------------------
 # See https://sphinx-tags.readthedocs.io/en/latest/index.html
 
 tags_badge_colors = {
@@ -185,9 +185,9 @@ tags_badge_colors = {
     "Rectilinear": "secondary",
     "Texture": "primary",
     "Threshold": "primary",
-    "Transform Mesh": "light",
+    "Transform Mesh": "warning",
     "Unstructured": "secondary",
-    "Vectors": "secondary",
+    "Vectors": "warning",
     "Warp": "dark",
 }
 tags_create_tags = True
@@ -200,7 +200,7 @@ tags_page_header = "Gallery examples:"  # tag sub-page, header text
 tags_page_title = "🏷 Tag"  # tag sub-page, title appended with the tag name
 
 
-# nitpicky configuration -----------------------------------------------------
+# nitpicky options -----------------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-nitpicky
 
 nitpicky = True
@@ -216,7 +216,7 @@ nitpick_ignore_regex = [
 ]
 
 
-# sphinx.ext.todo configuration ----------------------------------------------
+# sphinx.ext.todo options ----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = False
 todo_emit_warnings = False  # set to True, to discover todos in the code
