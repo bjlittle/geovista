@@ -17,6 +17,7 @@ Notes
 
 from __future__ import annotations
 
+from pathlib import Path, PurePath
 from typing import TYPE_CHECKING
 import warnings
 
@@ -28,6 +29,7 @@ from .common import (
     GV_FIELD_ZSCALE,
     RADIUS,
     ZLEVEL_SCALE,
+    cast_UnstructuredGrid_to_PolyData,
     nan_mask,
     to_cartesian,
     wrap,
@@ -42,12 +44,21 @@ if TYPE_CHECKING:
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
+rio = lazy.load("rasterio")
 pv = lazy.load("pyvista")
 pyproj = lazy.load("pyproj")
 
-__all__ = ["BRIDGE_CLEAN", "NAME_CELLS", "NAME_POINTS", "Shape", "Transform"]
+__all__ = [
+    "BRIDGE_CLEAN",
+    "NAME_CELLS",
+    "NAME_POINTS",
+    "PathLike",
+    "Shape",
+    "Transform",
+]
 
 # type aliases
+PathLike = str | PurePath
 Shape = tuple[int]
 """Type alias for a tuple of integers."""
 
@@ -675,6 +686,144 @@ class Transform:  # numpydoc ignore=PR01
             mesh.clean(inplace=True)
 
         return mesh
+
+    @classmethod
+    def from_tiff(
+        cls,
+        fname: PathLike,
+        name: str | None = None,
+        band: int | None = None,
+        nodata: float | None = None,
+        masked: bool | None = False,
+        extract: bool | None = False,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        clean: bool | None = None,
+    ) -> pv.PolyData:
+        """Build a quad-faced mesh from the GeoTIFF.
+
+        Note that, the GeoTIFF data will be located on the ``points``
+        of the resultant mesh.
+
+        Parameters
+        ----------
+        fname : PathLike
+            The file path to the GeoTIFF.
+        name : str, optional
+            The name of the GeoTIFF data array to be attached to the mesh.
+            Defaults to :data:`NAME_POINTS`. ``{units}`` may be used as a
+            placeholder for the units of the data array e.g.,
+            ``"Elevation / {units}"``.
+        band : int, optional
+            The band index to read from the GeoTIFF. Note that, the `band`
+            index is one-based. Defaults to the first band i.e., ``band=1``.
+        nodata : float, optional
+            The invalid data or pixel value to mask. Defaults to the ``nodata``
+            value associated with the band of the GeoTIFF.
+        masked : bool, default=False
+            Specify whether to mask the data array and replace with ``NaN``
+            values.
+        extract : bool, default=False
+            Specify whether to extract the mesh points from the masked data.
+            Automatically enables ``masked=True``.
+        radius : float, optional
+            The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
+        zlevel : int, default=0
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`~geovista.common.ZLEVEL_SCALE`.
+        clean : bool, optional
+            Specify whether to merge duplicate points, remove unused points,
+            and/or remove degenerate cells in the resultant mesh. Defaults to
+            :data:`BRIDGE_CLEAN`.
+
+        Returns
+        -------
+        PolyData
+            The GeoTIFF spherical mesh.
+
+        """
+        try:
+            import rasterio as rio
+        except ImportError:
+            emsg = (
+                "Optional dependency 'rasterio' is required to read GeoTIFF files. "
+                "Use pip or conda to install this package."
+            )
+            raise ImportError(emsg) from None
+
+        if isinstance(fname, str):
+            fname = Path(fname)
+
+        fname = fname.resolve(strict=True)
+
+        if band is None:
+            band = 1
+
+        with rio.open(fname) as src:
+            count = src.count
+
+            if band < 1 or band > count:
+                emsg = (
+                    f"Require a band index in the closed interval [1, {count}], "
+                    f"got '{band}'."
+                )
+                raise ValueError(emsg)
+
+            if name is not None:
+                name = str(name)
+                if "{units}" in name:
+                    if (units := src.units[band - 1]) is None:
+                        name = None
+                    else:
+                        name = name.format(units=units)
+
+            if extract:
+                # enforce masking prior to extracting points
+                masked = True
+
+            if masked:
+                if nodata is None or nodata == src.nodatavals[band - 1]:
+                    data = src.read(band, masked=masked)
+                    mask = data.mask
+                else:
+                    data = src.read(band)
+                    mask = data == nodata
+                    data = np.ma.array(data, mask=mask)
+            else:
+                data = src.read(band)
+
+            if extract:
+                # ensure there is masked data prior to extracting unmasked points
+                extract = np.ma.is_masked(data)
+
+            if masked:
+                data = nan_mask(data)
+
+            height, width = data.shape
+            cols, rows = np.meshgrid(np.arange(width), np.arange(height))
+            xs, ys = rio.transform.xy(src.transform, rows, cols)
+            mesh = cls.from_2d(
+                xs,
+                ys,
+                data=data,
+                name=name,
+                crs=src.crs,
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
+                clean=clean,
+            )
+
+            if extract:
+                # extract cells with no masked points
+                mesh = mesh.extract_points(~np.ravel(mask), adjacent_cells=False)
+                mesh = cast_UnstructuredGrid_to_PolyData(mesh)
+
+            return mesh
 
     @classmethod
     def from_unstructured(
