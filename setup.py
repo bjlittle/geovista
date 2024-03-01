@@ -5,6 +5,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """geovista setuptools packaging."""
+
 from __future__ import annotations
 
 from setuptools import setup

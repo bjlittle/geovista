@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-tests for :func:`geovista.pantry.fetch_raster`."""
+
 from __future__ import annotations
 
 import pytest

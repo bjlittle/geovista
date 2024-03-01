@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """pytest fixture infra-structure for :mod:`geovista.gridlines` unit-tests."""
+
 from __future__ import annotations
 
 

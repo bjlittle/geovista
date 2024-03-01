@@ -31,6 +31,7 @@ across the mesh faces/cells.
 ----
 
 """  # noqa: D205,D212,D400
+
 from __future__ import annotations
 
 import geovista as gv

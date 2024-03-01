@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-tests for :meth:`geovista.geoplotter.GeoPlotter.add_base_layer`."""
+
 from __future__ import annotations
 
 import pytest

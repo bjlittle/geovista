@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-tests for :func:`geovista.core.add_texture_coords`."""
+
 from __future__ import annotations
 
 import pyvista as pv

@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-tests for :meth:`geovista.geoplotter.GeoPlotter._warn_opacity`."""
+
 from __future__ import annotations
 
 from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter

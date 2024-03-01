@@ -5,6 +5,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Convert a lock file to a YAML file."""
+
 from __future__ import annotations
 
 import sys

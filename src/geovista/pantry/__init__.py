@@ -10,6 +10,7 @@ Notes
 .. versionadded:: 0.5.0
 
 """
+
 from __future__ import annotations
 
 from pathlib import Path

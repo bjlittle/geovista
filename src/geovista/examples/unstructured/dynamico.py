@@ -30,6 +30,7 @@ Note that, a graticule and Natural Earth coastlines are also rendered.
 ----
 
 """  # noqa: D205,D212,D400
+
 from __future__ import annotations
 
 import geovista as gv

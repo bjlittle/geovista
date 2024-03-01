@@ -10,6 +10,7 @@ Notes
 .. versionadded:: 0.3.0
 
 """
+
 from __future__ import annotations
 
 from copy import deepcopy

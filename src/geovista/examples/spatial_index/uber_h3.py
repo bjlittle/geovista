@@ -65,6 +65,7 @@ For further information see https://h3geo.org/.
 ----
 
 """  # noqa: D205,D212,D400
+
 # %%
 # 🦉 Walk-Through
 # ^^^^^^^^^^^^^^^

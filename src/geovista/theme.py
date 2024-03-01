@@ -10,6 +10,7 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+
 from __future__ import annotations
 
 import pyvista as pv

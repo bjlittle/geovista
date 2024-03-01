@@ -12,6 +12,7 @@ Notes
 .. versionadded:: 0.1.0
 
 """
+
 from __future__ import annotations
 
 from functools import lru_cache
