@@ -45,6 +45,7 @@ for further details.
 ----
 
 """  # noqa: D205,D212,D400,E501
+
 from __future__ import annotations
 
 from warnings import warn

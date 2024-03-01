@@ -10,6 +10,7 @@ Notes
 .. versionadded:: 0.4.0
 
 """
+
 from __future__ import annotations
 
 from types import ModuleType

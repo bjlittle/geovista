@@ -25,6 +25,7 @@ to the Mollweide pseudo-cylindrical projection.
 ----
 
 """  # noqa: D205,D212,D400
+
 from __future__ import annotations
 
 import numpy as np

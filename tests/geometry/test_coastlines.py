@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-test for :func:`geovista.geometry.coastlines`."""
+
 from __future__ import annotations
 
 from geovista.common import COASTLINES_RESOLUTION

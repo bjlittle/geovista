@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-tests for :func:`geovista.common.sanitize_data`."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

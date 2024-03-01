@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-tests for :func:`geovista.gridlines.create_parallels`."""
+
 from __future__ import annotations
 
 import numpy as np

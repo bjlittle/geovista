@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-tests for :func:`geovista.common.slice_lines`."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

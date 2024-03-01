@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-tests for :func:`geovista.search.find_nearest_cell`."""
+
 from __future__ import annotations
 
 import pytest

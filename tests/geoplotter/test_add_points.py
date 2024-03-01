@@ -4,6 +4,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """Unit-tests for :meth:`geovista.geoplotter.GeoPlotter.add_points`."""
+
 from __future__ import annotations
 
 from pyproj import CRS
