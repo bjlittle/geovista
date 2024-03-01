@@ -693,8 +693,7 @@ class Transform:  # numpydoc ignore=PR01
         fname: PathLike,
         name: str | None = None,
         band: int | None = None,
-        nodata: float | None = None,
-        masked: bool | None = False,
+        rgb: bool | None = False,
         extract: bool | None = False,
         radius: float | None = None,
         zlevel: int | None = None,
@@ -718,15 +717,11 @@ class Transform:  # numpydoc ignore=PR01
         band : int, optional
             The band index to read from the GeoTIFF. Note that, the `band`
             index is one-based. Defaults to the first band i.e., ``band=1``.
-        nodata : float, optional
-            The invalid data or pixel value to mask. Defaults to the ``nodata``
-            value associated with the band of the GeoTIFF.
-        masked : bool, default=False
-            Specify whether to mask the data array and replace with ``NaN``
-            values.
+        rgb : bool default=False
+            Specify whether to read the GeoTIFF as an RGB or RGBA image.
+            When ``rgb=True``, the `band` index is ignored.
         extract : bool, default=False
-            Specify whether to extract the mesh points from the masked data.
-            Automatically enables ``masked=True``.
+            Specify whether to extract cells from the mesh with no masked points.
         radius : float, optional
             The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -759,14 +754,21 @@ class Transform:  # numpydoc ignore=PR01
             fname = Path(fname)
 
         fname = fname.resolve(strict=True)
-
-        if band is None:
-            band = 1
+        band = None if rgb else band or 1
 
         with rio.open(fname) as src:
             count = src.count
 
-            if band < 1 or band > count:
+            if rgb:
+                if count not in [3, 4]:
+                    plural = "s" if count > 1 else ""
+                    emsg = (
+                        f"Require a GeoTIFF with 3 or 4 bands to read as "
+                        f"an RGB or RGBA image, only {count} band{plural} "
+                        "available."
+                    )
+                    raise ValueError(emsg)
+            elif band < 1 or band > count:
                 emsg = (
                     f"Require a band index in the closed interval [1, {count}], "
                     f"got '{band}'."
@@ -782,26 +784,18 @@ class Transform:  # numpydoc ignore=PR01
                         name = name.format(units=units)
 
             if extract:
-                # enforce masking prior to extracting points
-                masked = True
+                data = src.read(masked=True) if rgb else src.read(band, masked=True)
 
-            if masked:
-                if nodata is None or nodata == src.nodatavals[band - 1]:
-                    data = src.read(band, masked=masked)
-                    mask = data.mask
-                else:
-                    data = src.read(band)
-                    mask = data == nodata
-                    data = np.ma.array(data, mask=mask)
+                # ignore the mask on the alpha channel, if present
+                mask = data[0].mask & data[1].mask & data[2].mask if rgb else data.mask
+                # ensure there is masked data prior to extracting unmasked points
+                extract = np.sum(mask) > 0
+
+                data = data.data
+                if rgb:
+                    data = np.dstack(data).reshape(-1, count)
             else:
                 data = src.read(band)
-
-            if extract:
-                # ensure there is masked data prior to extracting unmasked points
-                extract = np.ma.is_masked(data)
-
-            if masked:
-                data = nan_mask(data)
 
             height, width = data.shape
             cols, rows = np.meshgrid(np.arange(width), np.arange(height))
