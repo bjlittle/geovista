@@ -783,21 +783,19 @@ class Transform:  # numpydoc ignore=PR01
                     else:
                         name = name.format(units=units)
 
-            if extract:
-                data = src.read(masked=True) if rgb else src.read(band, masked=True)
+            data = src.read(masked=extract) if rgb else src.read(band, masked=extract)
 
+            if extract:
                 # ignore the mask on the alpha channel, if present
                 mask = data[0].mask & data[1].mask & data[2].mask if rgb else data.mask
                 # ensure there is masked data prior to extracting unmasked points
                 extract = np.sum(mask) > 0
-
                 data = data.data
-                if rgb:
-                    data = np.dstack(data).reshape(-1, count)
-            else:
-                data = src.read(band)
 
-            height, width = data.shape
+            if rgb:
+                data = np.dstack(data).reshape(-1, count)
+
+            height, width = src.height, src.width
             cols, rows = np.meshgrid(np.arange(width), np.arange(height))
             xs, ys = rio.transform.xy(src.transform, rows, cols)
             mesh = cls.from_2d(
@@ -810,6 +808,7 @@ class Transform:  # numpydoc ignore=PR01
                 zlevel=zlevel,
                 zscale=zscale,
                 clean=clean,
+                rgb=rgb,
             )
 
             if extract:
