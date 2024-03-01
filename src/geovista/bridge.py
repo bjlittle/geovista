@@ -70,7 +70,9 @@ class Transform:  # numpydoc ignore=PR01
     """
 
     @staticmethod
-    def _as_compatible_data(data: ArrayLike, n_points: int, n_cells: int, rgb: bool=False) -> np.ndarray:
+    def _as_compatible_data(
+        data: ArrayLike, n_points: int, n_cells: int, rgb: bool = False
+    ) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 
         Note that masked values will be filled with NaNs.
@@ -99,12 +101,10 @@ class Transform:  # numpydoc ignore=PR01
         if data is not None:
             data = np.asanyarray(data)
             if data.ndim < 2 and rgb:
-                emsg = (
-                    f"RGB data must have more than 1 dimension, got {data.ndim}"
-                )
+                emsg = f"RGB data must have more than 1 dimension, got {data.ndim}"
                 raise ValueError(emsg)
             size = data.size // data.shape[-1] if rgb else data.size
-            if size not in (n_points, n_cells): # (M, N, P)
+            if size not in (n_points, n_cells):  # (M, N, P)
                 emsg = (
                     f"Require mesh data with either '{n_points:,d}' points or "
                     f"'{n_cells:,d}' cells, got '{data.size:,d}' values."
