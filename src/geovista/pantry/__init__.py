@@ -12,6 +12,7 @@ Notes
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
@@ -28,6 +29,7 @@ pv = lazy.load("pyvista")
 
 __all__ = [
     "fetch_coastlines",
+    "fetch_raster",
 ]
 
 
@@ -63,3 +65,29 @@ def fetch_coastlines(resolution: str | None = None) -> pv.PolyData:
     resource = CACHE.fetch(f"natural_earth/physical/{fname}.bz2", processor=processor)
 
     return pv.read(resource)
+
+
+def fetch_raster(fname: str) -> Path:
+    """Download, uncompress and cache a raster file.
+
+    The asset will only be downloaded and uncompressed if it is not already available.
+
+    Parameters
+    ----------
+    fname : str
+        The name of the raster file to be downloaded, uncompressed and cached.
+
+    Returns
+    -------
+    Path
+        The absolute path to the raster file.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"raster/{fname}.bz2", processor=processor)
+
+    return Path(resource)
