@@ -236,6 +236,7 @@ numpydoc_xref_aliases = {
     "CloudPreference": "geovista.pantry.data.CloudPreference",
     "Corners": "geovista.geodesic.Corners",
     "Geod": "pyproj.geod.Geod",
+    "Path": "pathlib.Path",
     "Preference": "geovista.common.Preference",
     "PolyData": "pyvista.PolyData",
     "Shape": "geovista.bridge.Shape",
@@ -407,6 +408,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/version/stable/", None),
     "pyvistaqt": ("https://qtdocs.pyvista.org/", None),
+    "rasterio": ("https://rasterio.readthedocs.io/en/latest/", None),
 }
 
 
