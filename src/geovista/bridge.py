@@ -44,9 +44,9 @@ if TYPE_CHECKING:
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
-rio = lazy.load("rasterio")
 pv = lazy.load("pyvista")
 pyproj = lazy.load("pyproj")
+rio = lazy.load("rasterio")
 
 __all__ = [
     "BRIDGE_CLEAN",
@@ -835,11 +835,13 @@ class Transform:  # numpydoc ignore=PR01
                 if sieve:
                     from rasterio.features import sieve as riosieve
 
-                    # convert boolean mask to conform to GDAL RFC 15
+                    # convert boolean mask to conform to GDAL RFC 15 for sieve
                     # see https://trac.osgeo.org/gdal/wiki/rfc15_nodatabitmask
-                    mask = (~mask * 255).astype(src.dtypes[0])
+                    dtype = np.dtype(src.dtypes[0])
+                    muint = 2 ** (dtype.itemsize * 8) - 1
+                    mask = (~mask * muint).astype(dtype)
                     mask = riosieve(mask, size=size)
-                    # convert mask back to boolean
+                    # convert back to boolean mask
                     mask = ~mask.astype(bool)
 
                 # extract cells with no masked points
