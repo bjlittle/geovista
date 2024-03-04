@@ -757,6 +757,27 @@ class Transform:  # numpydoc ignore=PR01
         PolyData
             The GeoTIFF spherical mesh.
 
+        Notes
+        -----
+        .. versionadded:: 0.5.0
+
+        Examples
+        --------
+        Render the GeoTIFF ``RGB`` image as a geolocated mesh.
+
+        First, :func:`rasterio.features.sieve` the GeoTIFF image to remove several
+        unwanted masked regions within the interior of the image, due to a lack of
+        dynamic range in the ``uint8`` image data. Then, extract the mesh to remove
+        cells with no masked points.
+
+        .. tags:: GeoTIFF, Lighting, RGB
+
+        >>> from geovista import Transform
+        >>> from geovista.pantry import fetch_raster
+        >>> fname = fetch_raster("bahamas_rgb.tif")
+        >>> mesh = Transform.from_tiff(fname, rgb=True, sieve=True, extract=True)
+        >>> mesh.plot(cpos="xz", lighting=False, rgb=True)
+
         """
         try:
             import rasterio as rio

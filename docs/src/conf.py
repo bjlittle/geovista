@@ -176,12 +176,14 @@ tags_badge_colors = {
     "Curvilinear": "secondary",
     "Extrude": "dark",
     "Globe": "success",
+    "GeoTIFF": "secondary",
     "Graticule": "primary",
     "Lighting": "primary",
     "Opacity": "primary",
     "Points": "secondary",
     "Point Cloud": "secondary",
     "Projection": "success",
+    "RGB": "primary",
     "Rectilinear": "secondary",
     "Texture": "primary",
     "Threshold": "primary",
@@ -192,11 +194,11 @@ tags_badge_colors = {
 }
 tags_create_tags = True
 tags_create_badges = True
-tags_index_head = "Gallery examples categorised by tag:"  # tags landing page intro text
+tags_index_head = "Examples categorised by tag:"  # tags landing page intro text
 tags_intro_text = "🏷 Tags:"  # prefix text for a tags list
 tags_overview_title = "🏷 Tags"  # title for the tags landing page
 tags_output_dir = "tags"
-tags_page_header = "Gallery examples:"  # tag sub-page, header text
+tags_page_header = "Examples:"  # tag sub-page, header text
 tags_page_title = "🏷 Tag"  # tag sub-page, title appended with the tag name
 
 
@@ -408,7 +410,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/version/stable/", None),
     "pyvistaqt": ("https://qtdocs.pyvista.org/", None),
-    "rasterio": ("https://rasterio.readthedocs.io/en/latest/", None),
+    "rasterio": ("https://rasterio.readthedocs.io/en/stable/", None),
 }
 
 
