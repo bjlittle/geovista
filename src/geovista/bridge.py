@@ -770,8 +770,6 @@ class Transform:  # numpydoc ignore=PR01
         dynamic range in the ``uint8`` image data. Then, extract the mesh to remove
         cells with no masked points.
 
-        .. tags:: GeoTIFF, Lighting, RGB
-
         >>> from geovista import Transform
         >>> from geovista.pantry import fetch_raster
         >>> fname = fetch_raster("bahamas_rgb.tif")
