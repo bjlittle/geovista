@@ -194,11 +194,11 @@ tags_badge_colors = {
 }
 tags_create_tags = True
 tags_create_badges = True
-tags_index_head = "Examples categorised by tag:"  # tags landing page intro text
+tags_index_head = "Gallery examples categorised by tag:"  # tags landing page intro text
 tags_intro_text = "🏷 Tags:"  # prefix text for a tags list
 tags_overview_title = "🏷 Tags"  # title for the tags landing page
 tags_output_dir = "tags"
-tags_page_header = "Examples:"  # tag sub-page, header text
+tags_page_header = "Gallery examples:"  # tag sub-page, header text
 tags_page_title = "🏷 Tag"  # tag sub-page, title appended with the tag name
 
 

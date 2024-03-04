@@ -702,7 +702,7 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         fname: PathLike,
         name: str | None = None,
-        band: int | None = None,
+        band: int | None = 1,
         rgb: bool | None = False,
         sieve: bool | None = False,
         size: int | None = None,
@@ -790,12 +790,12 @@ class Transform:  # numpydoc ignore=PR01
             fname = Path(fname)
 
         fname = fname.resolve(strict=True)
-        band = None if rgb else band or 1
+        band = None if rgb else band
 
         if size is None:
             size = RIO_SIEVE_SIZE
 
-        with rio.open(fname) as src:
+        with rio.open(fname, mode="r") as src:
             count = src.count
 
             if rgb:
@@ -808,19 +808,20 @@ class Transform:  # numpydoc ignore=PR01
                     )
                     raise ValueError(emsg)
             elif band < 1 or band > count:
-                emsg = (
-                    f"Require a band index in the closed interval [1, {count}], "
-                    f"got '{band}'."
-                )
+                if count == 1:
+                    emsg = f"Require a band index of 1, got '{band}'."
+                else:
+                    emsg = (
+                        f"Require a band index in the closed interval [1, {count}], "
+                        f"got '{band}'."
+                    )
                 raise ValueError(emsg)
 
             if name is not None:
                 name = str(name)
                 if "{units}" in name:
-                    if (units := src.units[band - 1]) is None:
-                        name = None
-                    else:
-                        name = name.format(units=units)
+                    units = str(src.units[0] if rgb else src.units[band - 1])
+                    name = name.format(units=units)
 
             data = src.read(masked=extract) if rgb else src.read(band, masked=extract)
 
@@ -835,7 +836,7 @@ class Transform:  # numpydoc ignore=PR01
                 data = np.dstack(data).reshape(-1, count)
 
             height, width = src.height, src.width
-            cols, rows = np.meshgrid(np.arange(width), np.arange(height))
+            cols, rows = np.meshgrid(np.arange(width), np.arange(height), indexing="xy")
             xs, ys = rio.transform.xy(src.transform, rows, cols)
             mesh = cls.from_2d(
                 xs,
@@ -843,11 +844,11 @@ class Transform:  # numpydoc ignore=PR01
                 data=data,
                 name=name,
                 crs=src.crs,
+                rgb=rgb,
                 radius=radius,
                 zlevel=zlevel,
                 zscale=zscale,
                 clean=clean,
-                rgb=rgb,
             )
 
             if extract:
