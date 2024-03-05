@@ -69,9 +69,9 @@ def main() -> None:
         sample = usgs_earthquakes()
     except ImportError:
         wmsg = (
-            "Missing optional dependencies 'pandas' and 'fastparquet' are "
+            "Optional dependencies 'pandas' and 'fastparquet' are "
             "required for the 'earthquakes' example. Use pip or conda to "
-            "install them."
+            "install these packages."
         )
         warn(wmsg, stacklevel=2)
         return

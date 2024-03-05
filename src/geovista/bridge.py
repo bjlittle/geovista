@@ -17,6 +17,7 @@ Notes
 
 from __future__ import annotations
 
+from pathlib import Path, PurePath
 from typing import TYPE_CHECKING
 import warnings
 
@@ -28,6 +29,7 @@ from .common import (
     GV_FIELD_ZSCALE,
     RADIUS,
     ZLEVEL_SCALE,
+    cast_UnstructuredGrid_to_PolyData,
     nan_mask,
     to_cartesian,
     wrap,
@@ -44,10 +46,20 @@ if TYPE_CHECKING:
 np = lazy.load("numpy")
 pv = lazy.load("pyvista")
 pyproj = lazy.load("pyproj")
+rio = lazy.load("rasterio")
 
-__all__ = ["BRIDGE_CLEAN", "NAME_CELLS", "NAME_POINTS", "Shape", "Transform"]
+__all__ = [
+    "BRIDGE_CLEAN",
+    "NAME_CELLS",
+    "NAME_POINTS",
+    "PathLike",
+    "RIO_SIEVE_SIZE",
+    "Shape",
+    "Transform",
+]
 
 # type aliases
+PathLike = str | PurePath
 Shape = tuple[int]
 """Type alias for a tuple of integers."""
 
@@ -59,6 +71,9 @@ NAME_CELLS: str = "cell_data"
 
 NAME_POINTS: str = "point_data"
 """Default array name for data on the mesh points."""
+
+RIO_SIEVE_SIZE: int = 800
+"""The default size of the :func:`rasterio.features.sieve` filter."""
 
 
 class Transform:  # numpydoc ignore=PR01
@@ -76,7 +91,7 @@ class Transform:  # numpydoc ignore=PR01
     ) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 
-        Note that masked values will be filled with NaNs.
+        Note that, masked values will be filled with NaNs.
 
         Parameters
         ----------
@@ -86,8 +101,8 @@ class Transform:  # numpydoc ignore=PR01
             The number of nodes in the mesh.
         n_cells : int
             The number of cells in the mesh.
-        rgb : bool
-            Whether the data is RGB or RGBA.
+        rgb : bool, default=False
+            Whether the data is an ``RGB`` or ``RGBA`` image.
 
         Returns
         -------
@@ -101,18 +116,24 @@ class Transform:  # numpydoc ignore=PR01
         """
         if data is not None:
             data = np.asanyarray(data)
-            if data.ndim < 2 and rgb:
-                emsg = f"RGB data must have more than 1 dimension, got {data.ndim}"
+
+            if rgb and data.ndim < 2:
+                emsg = f"RGB/RGBA image data must be at least 2-D, got {data.ndim}-D."
                 raise ValueError(emsg)
+
             size = data.size // data.shape[-1] if rgb else data.size
-            if size not in (n_points, n_cells):  # (M, N, P)
+
+            if size not in (n_points, n_cells):
                 emsg = (
                     f"Require mesh data with either '{n_points:,d}' points or "
                     f"'{n_cells:,d}' cells, got '{data.size:,d}' values."
                 )
                 raise ValueError(emsg)
+
             data = nan_mask(np.ravel(data))
+
             if rgb:
+                # reshape to be (N, 3) or (N, 4) for RGB or RGBA image data
                 data = data.reshape(size, -1)
 
         return data
@@ -381,11 +402,11 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
+        rgb: bool | None = False,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
-        rgb: bool | None = False,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from contiguous 1-D x-values and y-values.
 
@@ -420,6 +441,8 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
+        rgb : bool, default=False
+            Whether the data is an ``RGB`` or ``RGBA`` image.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -432,8 +455,6 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
             :data:`BRIDGE_CLEAN`.
-        rgb : bool, optional
-            Whether the data is RGB or RGBA.
 
         Returns
         -------
@@ -468,11 +489,11 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
+        rgb: bool | None = False,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
-        rgb: bool | None = False,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from 2-D x-values and y-values.
 
@@ -508,6 +529,8 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
+        rgb : bool, default=False
+            Whether the data is an ``RGB`` or ``RGBA`` image.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -520,8 +543,6 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
             :data:`BRIDGE_CLEAN`.
-        rgb : bool, optional
-            Whether the data is RGB or RGBA.
 
         Returns
         -------
@@ -677,6 +698,179 @@ class Transform:  # numpydoc ignore=PR01
         return mesh
 
     @classmethod
+    def from_tiff(
+        cls,
+        fname: PathLike,
+        name: str | None = None,
+        band: int | None = 1,
+        rgb: bool | None = False,
+        sieve: bool | None = False,
+        size: int | None = None,
+        extract: bool | None = False,
+        radius: float | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        clean: bool | None = None,
+    ) -> pv.PolyData:
+        """Build a quad-faced mesh from the GeoTIFF.
+
+        Note that, the GeoTIFF data will be located on the ``points``
+        of the resultant mesh.
+
+        Parameters
+        ----------
+        fname : PathLike
+            The file path to the GeoTIFF.
+        name : str, optional
+            The name of the GeoTIFF data array to be attached to the mesh.
+            Defaults to :data:`NAME_POINTS`. Note that, ``{units}`` may be
+            used as a placeholder for the units of the data array e.g.,
+            ``"Elevation / {units}"``.
+        band : int, optional
+            The band index to read from the GeoTIFF. Note that, the `band`
+            index is one-based. Defaults to the first band i.e., ``band=1``.
+        rgb : bool, default=False
+            Specify whether to read the GeoTIFF as an ``RGB`` or ``RGBA`` image.
+            When ``rgb=True``, the `band` index is ignored.
+        sieve : bool, default=False
+            Specify whether to sieve the GeoTIFF mask to remove small connected
+            regions. See :func:`rasterio.features.sieve` for more information.
+        size : int, optional
+            The size of the `sieve` filter. Defaults to :data:`RIO_SIEVE_SIZE`.
+        extract : bool, default=False
+            Specify whether to extract cells from the mesh with no masked points.
+        radius : float, optional
+            The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
+        zlevel : int, default=0
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`~geovista.common.ZLEVEL_SCALE`.
+        clean : bool, optional
+            Specify whether to merge duplicate points, remove unused points,
+            and/or remove degenerate cells in the resultant mesh. Defaults to
+            :data:`BRIDGE_CLEAN`.
+
+        Returns
+        -------
+        PolyData
+            The GeoTIFF spherical mesh.
+
+        Notes
+        -----
+        .. versionadded:: 0.5.0
+
+        Examples
+        --------
+        Render the GeoTIFF ``RGB`` image as a geolocated mesh.
+
+        First, :func:`rasterio.features.sieve` the GeoTIFF image to remove several
+        unwanted masked regions within the interior of the image, due to a lack of
+        dynamic range in the ``uint8`` image data. Then, extract the mesh to remove
+        cells with no masked points.
+
+        >>> from geovista import Transform
+        >>> from geovista.pantry import fetch_raster
+        >>> fname = fetch_raster("bahamas_rgb.tif")
+        >>> mesh = Transform.from_tiff(fname, rgb=True, sieve=True, extract=True)
+        >>> mesh.plot(cpos="xz", lighting=False, rgb=True)
+
+        """
+        try:
+            import rasterio as rio
+        except ImportError:
+            emsg = (
+                "Optional dependency 'rasterio' is required to read GeoTIFF files. "
+                "Use pip or conda to install this package."
+            )
+            raise ImportError(emsg) from None
+
+        if isinstance(fname, str):
+            fname = Path(fname)
+
+        fname = fname.resolve(strict=True)
+        band = None if rgb else band
+
+        if size is None:
+            size = RIO_SIEVE_SIZE
+
+        with rio.open(fname, mode="r") as src:
+            count = src.count
+
+            if rgb:
+                if count not in [3, 4]:
+                    plural = "s" if count > 1 else ""
+                    emsg = (
+                        f"Require a GeoTIFF with 3 or 4 bands to read as "
+                        f"an RGB or RGBA image, only {count} band{plural} "
+                        "available."
+                    )
+                    raise ValueError(emsg)
+            elif band < 1 or band > count:
+                if count == 1:
+                    emsg = f"Require a band index of 1, got '{band}'."
+                else:
+                    emsg = (
+                        f"Require a band index in the closed interval [1, {count}], "
+                        f"got '{band}'."
+                    )
+                raise ValueError(emsg)
+
+            if name is not None:
+                name = str(name)
+                if "{units}" in name:
+                    units = str(src.units[0] if rgb else src.units[band - 1])
+                    name = name.format(units=units)
+
+            data = src.read(masked=extract) if rgb else src.read(band, masked=extract)
+
+            if extract:
+                # ignore the mask on the alpha channel, if present
+                mask = data[0].mask & data[1].mask & data[2].mask if rgb else data.mask
+                # ensure there is masked data prior to extracting unmasked points
+                extract = np.sum(mask) > 0
+                data = data.data
+
+            if rgb:
+                data = np.dstack(data).reshape(-1, count)
+
+            height, width = src.height, src.width
+            cols, rows = np.meshgrid(np.arange(width), np.arange(height), indexing="xy")
+            xs, ys = rio.transform.xy(src.transform, rows, cols)
+            mesh = cls.from_2d(
+                xs,
+                ys,
+                data=data,
+                name=name,
+                crs=src.crs,
+                rgb=rgb,
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
+                clean=clean,
+            )
+
+            if extract:
+                if sieve:
+                    from rasterio.features import sieve as riosieve
+
+                    # convert boolean mask to conform to GDAL RFC 15 for sieve
+                    # see https://trac.osgeo.org/gdal/wiki/rfc15_nodatabitmask
+                    dtype = np.dtype(src.dtypes[0])
+                    muint = 2 ** (dtype.itemsize * 8) - 1
+                    mask = (~mask * muint).astype(dtype)
+                    mask = riosieve(mask, size=size)
+                    # convert back to boolean mask
+                    mask = ~mask.astype(bool)
+
+                # extract cells with no masked points
+                mesh = mesh.extract_points(~np.ravel(mask), adjacent_cells=False)
+                mesh = cast_UnstructuredGrid_to_PolyData(mesh)
+
+            return mesh
+
+    @classmethod
     def from_unstructured(
         cls,
         xs: ArrayLike,
@@ -686,11 +880,11 @@ class Transform:  # numpydoc ignore=PR01
         start_index: int | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
+        rgb: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
-        rgb: bool | None = None,
     ) -> pv.PolyData:
         """Build a mesh from unstructured 1-D x-values and y-values.
 
@@ -740,6 +934,8 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
+        rgb : bool, default=False
+            Whether the data is an ``RGB`` or ``RGBA`` image.
         radius : float, optional
             The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -752,8 +948,6 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. Defaults to
             :data:`BRIDGE_CLEAN`.
-        rgb : bool, optional
-            Whether the data is RGB or RGBA.
 
         Returns
         -------
