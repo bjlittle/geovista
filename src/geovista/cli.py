@@ -17,6 +17,7 @@ import importlib
 import pathlib
 from shutil import rmtree
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import click
 from click_default_group import DefaultGroup
@@ -489,7 +490,10 @@ def examples(
             module = importlib.import_module(f"geovista.examples.{script}")
             if verbose:
                 print(module.__doc__)
-            module.main()
+            try:
+                module.main()
+            except ImportError as err:
+                warn(str(err), stacklevel=1)
         click.echo("\n👍 All done!")
         return
 
@@ -502,7 +506,10 @@ def examples(
             module = importlib.import_module(f"geovista.examples.{script}")
             if verbose:
                 print(module.__doc__)
-            module.main()
+            try:
+                module.main()
+            except ImportError as err:
+                warn(str(err), stacklevel=1)
         click.echo("\n👍 All done!")
         return
 

@@ -53,8 +53,6 @@ for further details.
 
 from __future__ import annotations
 
-from warnings import warn
-
 import geovista as gv
 from geovista.pantry.data import usgs_earthquakes
 import geovista.theme
@@ -69,17 +67,8 @@ def main() -> None:
 
     """
     # Load sample data, which requires the optional package
-    # dependencies 'pandas' and 'fastparquet'.
-    try:
-        sample = usgs_earthquakes()
-    except ImportError:
-        wmsg = (
-            "Optional dependencies 'pandas' and 'fastparquet' are "
-            "required for the 'earthquakes' example. Use pip or conda to "
-            "install these packages."
-        )
-        warn(wmsg, stacklevel=2)
-        return
+    # dependencies 'fastparquet' and 'pandas'.
+    sample = usgs_earthquakes()
 
     # Plot the points.
     crs = "+proj=wink1 +lon_0=180"

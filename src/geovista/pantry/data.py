@@ -834,11 +834,12 @@ def usgs_earthquakes() -> SampleStructuredXYZ:
 
     """
     try:
+        import fastparquet  # noqa: F401
         import pandas as pd
     except ImportError:
         emsg = (
-            "Missing optional dependency 'pandas' is required for the "
-            "'earthquakes' sample. Use pip or conda to install pandas."
+            "Optional dependencies 'fastparquet' and 'pandas' are required "
+            "for the 'earthquakes' sample. Use pip or conda to install."
         )
         raise ImportError(emsg) from None
 
