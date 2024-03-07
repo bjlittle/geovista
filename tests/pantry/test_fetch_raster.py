@@ -23,6 +23,6 @@ def test_fetch_raster():
 def test_fetch_raster_fail():
     """Test retrieval of non-existent raster asset."""
     fname = "bad.tif"
-    emsg = f"File 'raster/{fname}.bz2' is not in the registry."
+    emsg = f"File 'rasters/{fname}.bz2' is not in the registry."
     with pytest.raises(ValueError, match=emsg):
         _ = fetch_raster(fname)

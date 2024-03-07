@@ -89,6 +89,6 @@ def fetch_raster(fname: str) -> Path:
 
     """
     processor = pooch.Decompress(method="auto", name=fname)
-    resource = CACHE.fetch(f"raster/{fname}.bz2", processor=processor)
+    resource = CACHE.fetch(f"rasters/{fname}.bz2", processor=processor)
 
     return Path(resource)
