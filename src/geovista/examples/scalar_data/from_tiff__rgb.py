@@ -30,6 +30,8 @@ masked points.
 
 .. tags:: GeoTIFF, Lighting, RGB
 
+.. attention:: Optional package dependency :mod:`rasterio` is required.
+
 ----
 
 """  # noqa: D205,D212,D400

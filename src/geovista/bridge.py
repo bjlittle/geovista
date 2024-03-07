@@ -761,6 +761,8 @@ class Transform:  # numpydoc ignore=PR01
         -----
         .. versionadded:: 0.5.0
 
+        .. attention:: Optional package dependency :mod:`rasterio` is required.
+
         Examples
         --------
         Render the GeoTIFF ``RGB`` image as a geolocated mesh.
