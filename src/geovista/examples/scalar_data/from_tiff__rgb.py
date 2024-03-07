@@ -38,8 +38,6 @@ masked points.
 
 from __future__ import annotations
 
-from warnings import warn
-
 import geovista as gv
 from geovista.pantry import fetch_raster
 import geovista.theme
@@ -59,13 +57,9 @@ def main() -> None:
     # Plot the RGB image.
     plotter = gv.GeoPlotter()
 
-    try:
-        # Load the GeoTIFF image, which requires the optional
-        # package dependency 'rasterio'.
-        mesh = gv.Transform.from_tiff(fname, rgb=True, sieve=True, extract=True)
-    except ImportError as err:
-        warn(f"{err}", stacklevel=2)
-        return
+    # Load the GeoTIFF image, which requires the optional package
+    # dependency 'rasterio'.
+    mesh = gv.Transform.from_tiff(fname, rgb=True, sieve=True, extract=True)
 
     plotter.add_mesh(mesh, lighting=False, rgb=True)
     plotter.add_axes()

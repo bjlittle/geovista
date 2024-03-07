@@ -784,7 +784,7 @@ class Transform:  # numpydoc ignore=PR01
         except ImportError:
             emsg = (
                 "Optional dependency 'rasterio' is required to read GeoTIFF files. "
-                "Use pip or conda to install this package."
+                "Use pip or conda to install."
             )
             raise ImportError(emsg) from None
 
