@@ -35,7 +35,7 @@ __all__ = [
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
 """Base URL for :mod:`geovista` resources."""
 
-DATA_VERSION: str = "2024.03.4"
+DATA_VERSION: str = "2024.03.8"
 """The ``geovista-data`` repository version for :mod:`geovista` resources."""
 
 GEOVISTA_CACHEDIR: str = "GEOVISTA_CACHEDIR"
