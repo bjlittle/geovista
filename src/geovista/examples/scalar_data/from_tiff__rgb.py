@@ -15,7 +15,7 @@ geolocated mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Create a mesh from a GeoTIFF encoded RGB image.
+Creates a mesh from a GeoTIFF encoded RGB image.
 
 The resulting mesh contains quad cells.
 
@@ -64,7 +64,7 @@ def main() -> None:
     plotter.add_mesh(mesh, lighting=False, rgb=True)
     plotter.add_axes()
     plotter.add_text(
-        "Bahamas GeoTIFF RGB Image",
+        "Bahamas, RGB GeoTIFF",
         position="upper_left",
         font_size=10,
         shadow=True,
