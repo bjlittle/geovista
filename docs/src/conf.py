@@ -476,6 +476,7 @@ sphinx_gallery_conf = {
     "ignore_pattern": "(__init__)|(clouds)|(fesom)|(synthetic)",
     "examples_dirs": "../../src/geovista/examples",
     "gallery_dirs": "generated/gallery",
+    "min_reported_time": 90,
     "matplotlib_animations": True,
     # see https://github.com/sphinx-gallery/sphinx-gallery/pull/195
     "plot_gallery": "'True'",
