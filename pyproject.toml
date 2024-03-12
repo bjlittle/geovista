@@ -152,7 +152,6 @@ src = [
     "tests",
     "docs/src",
 ]
-target-version = "py310"
 
 
 [tool.ruff.format]
