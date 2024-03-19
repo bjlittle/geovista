@@ -995,6 +995,17 @@ class Transform:  # numpydoc ignore=PR01
             # default to the shape of the points
             connectivity = shape
 
+            # generate connectivity from masked points
+            if (
+                np.ma.is_masked(xs)
+                and np.ma.is_masked(ys)
+                and np.array_equal(xs.mask, ys.mask)
+            ):
+                connectivity = np.ma.arange(np.ma.prod(shape), dtype=np.uint32).reshape(
+                    shape
+                )
+                connectivity.mask = xs.mask
+
         if isinstance(connectivity, tuple):
             cls._verify_connectivity(connectivity)
             npts = np.prod(connectivity)
