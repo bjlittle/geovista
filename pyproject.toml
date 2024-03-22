@@ -140,6 +140,17 @@ testpaths = "tests"
 xfail_strict = "True"
 
 
+[tool.repo-review]
+ignore = [
+    # https://learn.scientific-python.org/development/guides/style/#MY100
+    "MY100",  # Uses MyPy (pyproject config).
+    # https://learn.scientific-python.org/development/guides/style/#PC140
+    "PC140",  # Uses mypy.
+    # https://learn.scientific-python.org/development/guides/style/#PC180
+    "PC180",  # Uses prettier.
+]
+
+
 [tool.ruff]
 # Exclude the following, in addition to the standard set of exclusions.
 # See https://docs.astral.sh/ruff/settings/#exclude for defaults.
