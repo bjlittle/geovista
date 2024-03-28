@@ -523,6 +523,12 @@ things GeoVista!
 
 GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/licenses/BSD-3-Clause.html) license.
 
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=bjlittle/geovista&type=Date)](https://star-history.com/#bjlittle/geovista&Date)
+
+
 ## [#ShowYourStripes](https://showyourstripes.info/s/globe)
 
 <h4 align="center">
