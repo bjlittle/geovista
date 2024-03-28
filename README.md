@@ -492,11 +492,11 @@ Want to know more?
 geovista examples --help
 ```
 
-<!---
+
 ## Documentation
 
 The [documentation](https://geovista.readthedocs.io/en/latest/) is built by [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://docs.readthedocs.io/en/stable/).
--->
+
 
 ## Ecosystem
 
