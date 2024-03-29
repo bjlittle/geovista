@@ -837,9 +837,13 @@ class Transform:  # numpydoc ignore=PR01
             if rgb:
                 data = np.dstack(data).reshape(-1, count)
 
-            height, width = src.height, src.width
-            cols, rows = np.meshgrid(np.arange(width), np.arange(height), indexing="xy")
+            # transform from pixel offsets to crs coordinates
+            cols, rows = np.meshgrid(
+                np.arange(src.width), np.arange(src.height), indexing="xy"
+            )
             xs, ys = rio.transform.xy(src.transform, rows, cols)
+
+            # create the geotiff mesh
             mesh = cls.from_2d(
                 xs,
                 ys,
