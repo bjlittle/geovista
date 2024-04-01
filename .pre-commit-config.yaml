@@ -89,7 +89,7 @@ repos:
       - id: validate-pyproject
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.0
+    rev: 0.28.1
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
@@ -103,7 +103,7 @@ repos:
         args: ["--show=errskip"]
 
   - repo: https://github.com/numpy/numpydoc
-    rev: v1.7.0rc0
+    rev: v1.7.0
     hooks:
       - id: numpydoc-validation
         files: "^src/"
