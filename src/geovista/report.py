@@ -14,6 +14,7 @@ Notes
 from __future__ import annotations
 
 from types import ModuleType
+from typing import TypeAlias
 
 import lazy_loader as lazy
 import scooby
@@ -31,9 +32,10 @@ __all__ = [
 ]
 
 # type aliases
-PackageLike = ModuleType | str
+PackageLike: TypeAlias = ModuleType | str
 """Type alias for a package module or package name."""
 
+# constants
 NCOL: int = 3
 """Default number of package columns in report HTML table."""
 

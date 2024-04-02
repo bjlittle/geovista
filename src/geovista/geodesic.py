@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
 import lazy_loader as lazy
@@ -65,10 +65,11 @@ __all__ = [
     "wedge",
 ]
 
-# Type aliases
-Corners = tuple[float, float, float, float]
+# type aliases
+Corners: TypeAlias = tuple[float, float, float, float]
 """Type alias for the corners of a bounding-box."""
 
+# constants
 ELLIPSE: str = "WGS84"
 """Default geodesic ellipse. See :func:`pyproj.list.get_ellps_map`."""
 
