@@ -18,7 +18,7 @@ Notes
 from __future__ import annotations
 
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
 import lazy_loader as lazy
@@ -59,10 +59,13 @@ __all__ = [
 ]
 
 # type aliases
-PathLike = str | PurePath
-Shape = tuple[int]
+PathLike: TypeAlias = str | PurePath
+"""Type alias for an asset file path."""
+
+Shape: TypeAlias = tuple[int]
 """Type alias for a tuple of integers."""
 
+# constants
 BRIDGE_CLEAN: bool = False
 """Whether mesh cleaning performed by the bridge."""
 

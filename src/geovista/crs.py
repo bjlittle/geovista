@@ -13,7 +13,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeAlias
 
 import lazy_loader as lazy
 from pyproj import CRS
@@ -38,9 +38,11 @@ __all__ = [
     "to_wkt",
 ]
 
-CRSLike = int | str | dict | CRS
-"""Coordinate Reference System type alias."""
+# type aliases
+CRSLike: TypeAlias = int | str | dict | CRS
+"""Type alias for a Coordinate Reference System."""
 
+# constants
 EPSG_CENTRAL_MERIDIAN: str = "8802"
 """EPSG projection parameter for longitude of natural origin/central meridian."""
 
