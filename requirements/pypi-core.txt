@@ -1,7 +1,7 @@
 cartopy>=0.22
 click
 click-default-group
-cmocean
+cmocean<4.0
 lazy_loader
 netCDF4
 numpy>=1.23
