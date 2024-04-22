@@ -1,8 +1,8 @@
 [build-system]
 # Defined by PEP 518
 requires = [
-    "setuptools>=61",
-    "setuptools_scm[toml]>=7",
+    "setuptools>=64",
+    "setuptools_scm[toml]>=8",
 ]
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"
