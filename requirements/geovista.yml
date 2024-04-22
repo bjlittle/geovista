@@ -6,8 +6,8 @@ channels:
 dependencies:
 
 # setup dependencies (core)
-  - setuptools >=61
-  - setuptools-scm >=7
+  - setuptools >=64
+  - setuptools-scm >=8
 
 # core dependencies
   - cartopy >=0.22
