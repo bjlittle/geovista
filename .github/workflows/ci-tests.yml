@@ -45,8 +45,7 @@ jobs:
         include:
           - os: "ubuntu-latest"
             version: "py311"
-            posargs: "--cov-report=xml --cov"
-            post-command: "codecov"
+            coverage: "--cov-report=xml --cov"
 
     steps:
     - uses: actions/checkout@v4
@@ -108,10 +107,9 @@ jobs:
 
     - name: "${{ matrix.session }} (${{ matrix.version }})"
       env:
-        POST_COMMAND: ${{ matrix.post-command }}
         PY_COLORS: "1"
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.posargs }} --xvfb-backend xvfb
+        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.coverage }} --xvfb-backend xvfb
 
     - name: "upload test images"
       if: ${{ failure() }}
@@ -119,3 +117,9 @@ jobs:
       with:
         name: test-images-${{ github.job }}-${{ strategy.job-index }}
         path: ${{ github.workspace }}/test_images
+
+    - name: "upload coverage report"
+      if: ${{ matrix.coverage }}
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
