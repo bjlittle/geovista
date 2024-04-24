@@ -45,7 +45,7 @@ jobs:
         include:
           - os: "ubuntu-latest"
             version: "py312"
-            coverage: "--cov-report=xml --cov"
+            coverage: "--cov-report=xml --cov=geovista"
 
     steps:
     - uses: actions/checkout@v4
