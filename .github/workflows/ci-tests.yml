@@ -44,7 +44,7 @@ jobs:
         session: ["tests"]
         include:
           - os: "ubuntu-latest"
-            version: "py311"
+            version: "py312"
             coverage: "--cov-report=xml --cov"
 
     steps:
