@@ -1,12 +1,11 @@
 numpydoc
-sphinx
+sphinx >=7.3
 sphinx_design
 sphinx-autoapi
 sphinx-book-theme
 sphinx-copybutton
-sphinx-gallery
+sphinx-gallery >=0.16
 sphinx-tags
-jupyter-sphinx
 pydata-sphinx-theme
 ipywidgets
 jupyter-server-proxy
