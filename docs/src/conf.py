@@ -36,7 +36,6 @@ import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 from sphinx.util import logging
 from sphinx.util.console import colorize
-from sphinx_gallery.sorting import ExampleTitleSortKey
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -95,7 +94,6 @@ logger = logging.getLogger("sphinx-geovista")
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    #    "jupyter_sphinx",
     "numpydoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
@@ -484,7 +482,7 @@ sphinx_gallery_conf = {
     "image_scrapers": (scraper, "matplotlib"),
     "download_all_examples": False,
     "remove_config_comments": True,
-    "within_subsection_order": ExampleTitleSortKey,
+    "within_subsection_order": "ExampleTitleSortKey",
     "reference_url": {
         "geovista": None,
     },
