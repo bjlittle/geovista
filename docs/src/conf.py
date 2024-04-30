@@ -25,6 +25,8 @@ Notes
 # sys.path.insert(0, os.path.abspath('.'))  # noqa: ERA001
 from __future__ import annotations
 
+import ast
+import contextlib
 import datetime
 from importlib.metadata import version as get_version
 import os
@@ -493,9 +495,6 @@ sphinx_gallery_conf = {
 
 DIRECTIVE_NAME = "pyvista-plot"
 DIRECTIVE = f".. {DIRECTIVE_NAME}::\n\n"
-GEOVISTA_DOCSTRING_NOPLOT: str = os.environ.get(
-    "GEOVISTA_DOCSTRING_NOPLOT", "false"
-).lower()
 PATTERN = r"""(?P<prefix>.*)
               (?P<rubric>\.\.\ rubric::\ Examples?\n\n)
               (?P<examples>.*)
@@ -522,7 +521,7 @@ def indent(block: str, amount: int = 3) -> str:
 
 
 def skip_member(
-    app: Sphinx,  # noqa: ARG001
+    app: Sphinx,
     what: str,
     name: str,  # noqa: ARG001
     obj: Mapper,
@@ -538,10 +537,10 @@ def skip_member(
     Note that, the directive will be at the same level as the rubric.
 
     """
-    noplot = GEOVISTA_DOCSTRING_NOPLOT != "false"
+    plot_docstring = app.builder.config.plot_docstring
     targets = ["class", "function", "method", "property", "module"]
 
-    if not skip and not noplot and what in targets:
+    if not skip and plot_docstring and what in targets:
         match = REGEX.fullmatch(obj.docstring)
         if match is not None:
             examples = match.group("examples")
@@ -555,6 +554,27 @@ def skip_member(
     return skip
 
 
+def _bool_eval(arg: str | bool) -> bool:
+    """Sanitise to a boolean only configuration."""
+    if isinstance(arg, str):
+        with contextlib.suppress(TypeError):
+            arg = ast.literal_eval(arg.capitalize())
+
+    return bool(arg)
+
+
+def geovista_config(app: Sphinx) -> None:
+    """Configure geovista sphinx options."""
+    # sanitise the config options
+    app.builder.config.plot_docstring = _bool_eval(app.builder.config.plot_docstring)
+    autolog(f"plot_docstring={app.builder.config.plot_docstring}", section="GeoVista")
+
+
 def setup(app: Sphinx) -> None:
-    """Register the autoapi event."""
+    """Configure sphinx application."""
+    # register geovista options
+    app.add_config_value("plot_docstring", "True", "html")
+    # early configuration of geovista options
+    app.connect("builder-inited", geovista_config, priority=10)
+    # register the autoapi event
     app.connect("autoapi-skip-member", skip_member)

@@ -287,9 +287,9 @@ class BBox:  # numpydoc ignore=PR01
         >>> import geovista
         >>> from geovista.geodesic import panel
         >>> plotter = geovista.GeoPlotter()
-        >>> plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+        >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
         >>> bbox = panel("africa", c=32)
-        >>> plotter.add_mesh(bbox.mesh, color="white")
+        >>> _ = plotter.add_mesh(bbox.mesh, color="white")
         >>> plotter.view_yz()
         >>> plotter.show()
 
@@ -586,9 +586,9 @@ class BBox:  # numpydoc ignore=PR01
         >>> from geovista.pantry.meshes import lfric_sst
         >>> plotter = geovista.GeoPlotter()
         >>> mesh = lfric_sst()
-        >>> plotter.add_mesh(mesh, cmap="balance")
+        >>> _ = plotter.add_mesh(mesh, cmap="balance")
         >>> bbox = panel("africa", c=32)
-        >>> plotter.add_mesh(bbox.boundary(mesh), color="orange", line_width=3)
+        >>> _ = plotter.add_mesh(bbox.boundary(mesh), color="orange", line_width=3)
         >>> plotter.view_yz()
         >>> plotter.show()
 
@@ -667,11 +667,11 @@ class BBox:  # numpydoc ignore=PR01
         >>> from geovista.geodesic import panel
         >>> from geovista.pantry.meshes import lfric_sst
         >>> plotter = geovista.GeoPlotter()
-        >>> plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+        >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
         >>> mesh = lfric_sst()
         >>> bbox = panel("africa", c=32)
         >>> region = bbox.enclosed(mesh)
-        >>> plotter.add_mesh(region, cmap="balance")
+        >>> _ = plotter.add_mesh(region, cmap="balance")
         >>> plotter.view_yz()
         >>> plotter.show()
 
@@ -679,8 +679,8 @@ class BBox:  # numpydoc ignore=PR01
         using the :meth:`pyvista.DataSetFilters.threshold` filter.
 
         >>> plotter = geovista.GeoPlotter()
-        >>> plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
-        >>> plotter.add_mesh(region.threshold(), cmap="balance")
+        >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+        >>> _ = plotter.add_mesh(region.threshold(), cmap="balance")
         >>> plotter.view_yz()
         >>> plotter.show()
 
@@ -787,9 +787,9 @@ def line(
     >>> import geovista
     >>> from geovista.geodesic import line
     >>> plotter = geovista.GeoPlotter()
-    >>> plotter.add_base_layer(texture=geovista.natural_earth_1())
+    >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_1())
     >>> meridian = line(-180, [90, 0, -90])
-    >>> plotter.add_mesh(meridian, color="orange", line_width=3)
+    >>> _ = plotter.add_mesh(meridian, color="orange", line_width=3)
     >>> plotter.view_yz(negative=True)
     >>> plotter.show()
 
@@ -1076,9 +1076,9 @@ def panel(
     >>> import geovista
     >>> from geovista.geodesic import panel
     >>> plotter = geovista.GeoPlotter()
-    >>> plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+    >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
     >>> bbox = panel("americas", c=8)
-    >>> plotter.add_mesh(bbox.mesh, color="orange", style="wireframe")
+    >>> _ = plotter.add_mesh(bbox.mesh, color="orange", style="wireframe")
     >>> plotter.view_xz()
     >>> plotter.show()
 
@@ -1147,9 +1147,9 @@ def wedge(
     >>> import geovista
     >>> from geovista.geodesic import wedge
     >>> plotter = geovista.GeoPlotter()
-    >>> plotter.add_base_layer(texture=geovista.blue_marble())
+    >>> _ = plotter.add_base_layer(texture=geovista.blue_marble())
     >>> bbox = wedge(-30, 30, c=8)
-    >>> plotter.add_mesh(bbox.mesh, color="orange", style="wireframe")
+    >>> _ = plotter.add_mesh(bbox.mesh, color="orange", style="wireframe")
     >>> plotter.view_yz()
     >>> plotter.show()
 

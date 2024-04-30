@@ -40,12 +40,19 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        version: ["py310", "py311", "py312"]
-        session: ["tests"]
+        version: ["py312"]
+        session: ["doctest", "linkcheck"]
         include:
           - os: "ubuntu-latest"
             version: "py312"
+            session: "tests"
             coverage: "--cov-report=xml --cov=geovista"
+          - os: "ubuntu-latest"
+            version: "py311"
+            session: "tests"
+          - os: "ubuntu-latest"
+            version: "py310"
+            session: "tests"
 
     steps:
     - uses: actions/checkout@v4
