@@ -40,12 +40,22 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        version: ["py310", "py311", "py312"]
-        session: ["tests"]
+        version: ["py312"]
+        session: ["doctest", "linkcheck"]
         include:
           - os: "ubuntu-latest"
             version: "py312"
+            session: "tests"
             coverage: "--cov-report=xml --cov=geovista"
+            posargs: "--xvfb-backend xvfb"
+          - os: "ubuntu-latest"
+            version: "py311"
+            session: "tests"
+            posargs: "--xvfb-backend xvfb"
+          - os: "ubuntu-latest"
+            version: "py310"
+            session: "tests"
+            posargs: "--xvfb-backend xvfb"
 
     steps:
     - uses: actions/checkout@v4
@@ -109,10 +119,10 @@ jobs:
       env:
         PY_COLORS: "1"
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.coverage }} --xvfb-backend xvfb
+        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.coverage }} ${{ matrix.posargs }}
 
     - name: "upload test images"
-      if: ${{ failure() }}
+      if: ${{ matrix.posargs && failure() }}
       uses: actions/upload-artifact@v4
       with:
         name: test-images-${{ github.job }}-${{ strategy.job-index }}
