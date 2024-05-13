@@ -29,12 +29,16 @@ ANTARCTIC_CIDS = np.arange(CIDS[0], CIDS[-1] + 1)
 C48 = (48, 48)
 
 
+@pytest.mark.parametrize("active", [False, True])
 @pytest.mark.parametrize("outside", [False, True])
 @pytest.mark.parametrize(
     "preference", ["point", EnclosedPreference.POINT, EnclosedPreference("point")]
 )
-def test_enclosed_point(antarctic_corners, lfric_sst, outside, preference):
+def test_enclosed_point(antarctic_corners, lfric_sst, active, outside, preference):
     """Test enclosed points of antarctic cubed-sphere panel."""
+    if not active:
+        lfric_sst.active_scalars_name = None
+    active_scalars_name = lfric_sst.active_scalars_name
     lons, lats = antarctic_corners
     bbox = BBox(lons, lats)
     region = bbox.enclosed(lfric_sst, outside=outside, preference=preference)
@@ -46,14 +50,19 @@ def test_enclosed_point(antarctic_corners, lfric_sst, outside, preference):
     else:
         expected = ANTARCTIC_CIDS
     np.testing.assert_array_equal(region.cell_data["cids"], expected)
+    assert region.active_scalars_name == active_scalars_name
 
 
+@pytest.mark.parametrize("active", [False, True])
 @pytest.mark.parametrize("outside", [False, True])
 @pytest.mark.parametrize(
     "preference", ["cell", EnclosedPreference.CELL, EnclosedPreference("cell")]
 )
-def test_enclosed_cell(antarctic_corners, lfric_sst, outside, preference):
+def test_enclosed_cell(antarctic_corners, lfric_sst, active, outside, preference):
     """Test enclosed cells of antarctic cubed-sphere panel."""
+    if not active:
+        lfric_sst.active_scalars_name = None
+    active_scalars_name = lfric_sst.active_scalars_name
     lons, lats = antarctic_corners
     bbox = BBox(lons, lats)
     region = bbox.enclosed(lfric_sst, outside=outside, preference=preference)
@@ -64,15 +73,20 @@ def test_enclosed_cell(antarctic_corners, lfric_sst, outside, preference):
         expected = ANTARCTIC_CIDS.reshape(C48)
         expected = np.ravel(expected[1:-1][:, 1:-1])
     np.testing.assert_array_equal(region.cell_data["cids"], expected)
+    assert region.active_scalars_name == active_scalars_name
 
 
+@pytest.mark.parametrize("active", [False, True])
 @pytest.mark.parametrize("outside", [False, True])
 @pytest.mark.parametrize(
     "preference",
     [None, "center", EnclosedPreference.CENTER, EnclosedPreference("center")],
 )
-def test_enclosed_center(lfric_sst, outside, preference):
+def test_enclosed_center(lfric_sst, active, outside, preference):
     """Test enclosed centers of antarctic cubed-sphere panel."""
+    if not active:
+        lfric_sst.active_scalars_name = None
+    active_scalars_name = lfric_sst.active_scalars_name
     bbox = panel("antarctic")
     region = bbox.enclosed(lfric_sst, outside=outside, preference=preference)
     if outside:
@@ -81,6 +95,7 @@ def test_enclosed_center(lfric_sst, outside, preference):
     else:
         expected = ANTARCTIC_CIDS
     np.testing.assert_array_equal(region.cell_data["cids"], expected)
+    assert region.active_scalars_name == active_scalars_name
 
 
 def test_preference_invalid_fail(lfric_sst):

@@ -693,6 +693,9 @@ class BBox:  # numpydoc ignore=PR01
             emsg = f"Expected a preference of {options}, got '{preference}'."
             raise ValueError(emsg)
 
+        # capture the current active scalars name
+        active_scalars_name = surface.active_scalars_name
+
         preference = EnclosedPreference(preference)
         self._generate_bbox_mesh(surface=surface)
 
@@ -716,6 +719,9 @@ class BBox:  # numpydoc ignore=PR01
             region = surface.extract_points(
                 selected[scalars].view(bool), adjacent_cells=False
             )
+
+        # ensure to preserve active scalars name
+        region.active_scalars_name = active_scalars_name
 
         return cast(region)
 
