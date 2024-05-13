@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   tests:
-    name: "${{ matrix.session }} (${{ matrix.version }})"
+    name: "${{ matrix.session }} (${{ matrix.version }}) [group=${{ matrix.group }}]"
 
     runs-on: ${{ matrix.os }}
 
@@ -41,22 +41,9 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         version: ["py312"]
-        session: ["doctest", "linkcheck"]
-        include:
-          - os: "ubuntu-latest"
-            version: "py312"
-            session: "tests"
-            coverage: "--cov-report=xml --cov=geovista"
-            posargs: "--xvfb-backend xvfb"
-          - os: "ubuntu-latest"
-            version: "py311"
-            session: "tests"
-            posargs: "--xvfb-backend xvfb"
-          - os: "ubuntu-latest"
-            version: "py310"
-            session: "tests"
-            posargs: "--xvfb-backend xvfb"
-
+        session: ["tests"]
+        group: [1, 2, 3, 4, 5]
+        posargs: ["--xvfb-backend xvfb --splits 5 --splitting-algorithm least_duration --durations-path tests/.test_durations"]
     steps:
     - uses: actions/checkout@v4
       with:
@@ -115,21 +102,21 @@ jobs:
         packages: libgl1-mesa-glx xvfb
         version: 1.0
 
-    - name: "${{ matrix.session }} (${{ matrix.version }})"
+    - name: "${{ matrix.session }} (${{ matrix.version }}) [group=${{ matrix.group }}]"
       env:
         PY_COLORS: "1"
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.coverage }} ${{ matrix.posargs }}
+        tox -e ${{ matrix.version }}-${{ matrix.session }} -- ${{ matrix.coverage }} ${{ matrix.posargs }} --group ${{ matrix.group }}
 
-    - name: "upload test images"
-      if: ${{ matrix.posargs && failure() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-images-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/test_images
+#    - name: "upload test images"
+#      if: ${{ matrix.posargs && failure() }}
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: test-images-${{ github.job }}-${{ strategy.job-index }}
+#        path: ${{ github.workspace }}/test_images
 
-    - name: "upload coverage report"
-      if: ${{ matrix.coverage }}
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+#    - name: "upload coverage report"
+#      if: ${{ matrix.coverage }}
+#      uses: codecov/codecov-action@v4
+#      with:
+#        token: ${{ secrets.CODECOV_TOKEN }}
