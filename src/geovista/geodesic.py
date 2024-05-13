@@ -82,7 +82,7 @@ BBOX_C: int = 256
 BBOX_RADIUS_RATIO = 1e-1
 """Ratio the bounding-box inner and outer faces are offset from the surface mesh."""
 
-BBOX_TOLERANCE: int = 0
+BBOX_TOLERANCE = 1e-6
 """The bounding-box tolerance on intersection."""
 
 PANEL_IDX_BY_NAME: dict[str, int] = {
