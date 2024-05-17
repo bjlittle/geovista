@@ -287,7 +287,9 @@ class BBox:  # numpydoc ignore=PR01
         >>> import geovista
         >>> from geovista.geodesic import panel
         >>> plotter = geovista.GeoPlotter()
-        >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+        >>> _ = plotter.add_base_layer(
+        ...     texture=geovista.natural_earth_hypsometric(), style="wireframe"
+        ... )
         >>> bbox = panel("africa", c=32)
         >>> _ = plotter.add_mesh(bbox.mesh, color="white")
         >>> plotter.view_yz()
@@ -1082,7 +1084,9 @@ def panel(
     >>> import geovista
     >>> from geovista.geodesic import panel
     >>> plotter = geovista.GeoPlotter()
-    >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_hypsometric())
+    >>> _ = plotter.add_base_layer(
+    ...     texture=geovista.natural_earth_hypsometric(), opacity=0.5
+    ... )
     >>> bbox = panel("americas", c=8)
     >>> _ = plotter.add_mesh(bbox.mesh, color="orange", style="wireframe")
     >>> plotter.view_xz()
@@ -1153,7 +1157,7 @@ def wedge(
     >>> import geovista
     >>> from geovista.geodesic import wedge
     >>> plotter = geovista.GeoPlotter()
-    >>> _ = plotter.add_base_layer(texture=geovista.blue_marble())
+    >>> _ = plotter.add_base_layer(texture=geovista.blue_marble(), opacity=0.5)
     >>> bbox = wedge(-30, 30, c=8)
     >>> _ = plotter.add_mesh(bbox.mesh, color="orange", style="wireframe")
     >>> plotter.view_yz()
