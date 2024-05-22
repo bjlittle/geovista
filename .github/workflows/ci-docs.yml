@@ -102,7 +102,5 @@ jobs:
         version: 1.0
 
     - name: "${{ matrix.session }} (${{ matrix.version }})"
-      env:
-        PY_COLORS: "1"
       run: |
         tox -e ${{ matrix.version }}-${{ matrix.session }}
