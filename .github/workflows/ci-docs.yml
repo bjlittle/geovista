@@ -3,7 +3,7 @@
 #   - https://github.com/actions/checkout
 #   - https://github.com/conda-incubator/setup-miniconda
 
-name: ci-tests
+name: ci-docs
 
 on:
   pull_request:
@@ -34,19 +34,14 @@ jobs:
 
     env:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      ENV_NAME: "ci-tests"
+      ENV_NAME: "ci-docs"
 
     strategy:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        version: ["py310", "py311", "py312"]
-        session: ["tests"]
-        marker: ["image", "not image"]
-        posargs: ["--xvfb-backend xvfb --durations=10"]
-        include:
-          - version: "py312"
-            coverage: "--cov-report=xml --cov=geovista"
+        version: ["py312"]
+        session: ["doctest", "linkcheck"]
 
     steps:
     - uses: actions/checkout@v4
@@ -106,21 +101,8 @@ jobs:
         packages: libgl1-mesa-glx xvfb
         version: 1.0
 
-    - name: "${{ matrix.session }} (${{ matrix.version }}) [${{ matrix.marker }}]"
+    - name: "${{ matrix.session }} (${{ matrix.version }})"
       env:
         PY_COLORS: "1"
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }} -- -m "${{ matrix.marker }}" ${{ matrix.coverage }} ${{ matrix.posargs }}
-
-    - name: "upload test images"
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-images-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/test_images
-
-    - name: "upload coverage report"
-      if: ${{ matrix.coverage }}
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+        tox -e ${{ matrix.version }}-${{ matrix.session }}
