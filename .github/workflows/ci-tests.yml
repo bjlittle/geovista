@@ -1,6 +1,10 @@
 # Reference:
-#   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
+#   - https://github.com/actions/download-artifact
+#   - https://github.com/actions/setup-python
+#   - https://github.com/actions/upload-artifact
+#   - https://github.com/awalsh128/cache-apt-pkgs-action
+#   - https://github.com/codecov/codecov-action
 #   - https://github.com/conda-incubator/setup-miniconda
 
 name: ci-tests

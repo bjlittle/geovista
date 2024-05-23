@@ -1,6 +1,6 @@
 # Reference:
-#   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
+#   - https://github.com/awalsh128/cache-apt-pkgs-action
 #   - https://github.com/conda-incubator/setup-miniconda
 
 name: ci-docs
