@@ -1,13 +1,9 @@
 # Reference:
 #   - https://github.com/actions/checkout
-#   - https://github.com/actions/download-artifact
-#   - https://github.com/actions/setup-python
-#   - https://github.com/actions/upload-artifact
 #   - https://github.com/awalsh128/cache-apt-pkgs-action
-#   - https://github.com/codecov/codecov-action
 #   - https://github.com/conda-incubator/setup-miniconda
 
-name: ci-tests
+name: ci-docs
 
 on:
   pull_request:
@@ -28,7 +24,7 @@ concurrency:
 
 jobs:
   tests:
-    name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
+    name: "${{ matrix.session }} (${{ matrix.version }})"
 
     runs-on: ${{ matrix.os }}
 
@@ -38,19 +34,14 @@ jobs:
 
     env:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      ENV_NAME: "ci-tests"
+      ENV_NAME: "ci-docs"
 
     strategy:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        version: ["py310", "py311", "py312"]
-        session: ["tests"]
-        marker: ["image", "not image"]
-        posargs: ["--xvfb-backend xvfb --durations=10"]
-        include:
-          - version: "py312"
-            coverage: "--cov-report=xml --cov=geovista"
+        version: ["py312"]
+        session: ["doctest", "linkcheck"]
 
     steps:
     - uses: actions/checkout@v4
@@ -110,64 +101,6 @@ jobs:
         packages: libgl1-mesa-glx xvfb
         version: 1.0
 
-    - name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
-      env:
-        PY_COLORS: "1"
+    - name: "${{ matrix.session }} (${{ matrix.version }})"
       run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }} -- -m "${{ matrix.marker }}" ${{ matrix.coverage }} ${{ matrix.posargs }}
-
-    - name: "upload test images"
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-images-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/test_images
-
-    - name: "prepare coverage"
-      if: ${{ matrix.coverage }}
-      run: |
-        mv .coverage .coverage${{ strategy.job-index }}
-
-    - if: ${{ matrix.coverage }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-artifacts-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/.coverage*
-
-
-  coverage:
-    name: "upload coverage"
-    needs: tests
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        shell: bash -l {0}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - run: |
-          python -m pip install --upgrade pip
-          pip install coverage
-
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: coverage-artifacts-*
-          merge-multiple: true
-
-      - name: "create coverage report"
-        run: |
-          coverage combine .coverage*
-          coverage xml --omit=*/_version.py
-
-      - name: "upload coverage report"
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+        tox -e ${{ matrix.version }}-${{ matrix.session }}
