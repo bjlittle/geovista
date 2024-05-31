@@ -67,7 +67,7 @@ ignore = [
 
 [tool.codespell]
 ignore-words-list = "whet,projets"
-skip = ".git,*.ipynb,*.rst"
+skip = ".git,*.ipynb,*.rst,CODE_OF_CONDUCT.md"
 
 
 [tool.numpydoc_validation]
