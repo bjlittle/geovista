@@ -10,7 +10,7 @@ inputs:
     description: "conda environment cache timestamp"
     required: true
   env_name:
-    description: "environment name"
+    description: "gha environment name"
     required: true
   install_packages:
     description: "conda packages to install into environment"
