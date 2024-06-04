@@ -5,9 +5,6 @@ inputs:
   cache_period:
     description: "geovista assets cache timestamp"
     required: true
-  env_name:
-    description: "gha environment name"
-    required: true
   data_version:
     description: "geovista assets version"
     required: true
@@ -19,7 +16,7 @@ runs:
       id: geovista-cache
       with:
         path: ~/.cache/geovista
-        key: ${{ runner.os }}-geovista-${{ inputs.env_name }}-${{ inputs.cache_period }}-${{ inputs.data_version }}
+        key: ${{ runner.os }}-geovista-data-${{ inputs.data_version }}-${{ inputs.cache_period }}
 
     - if: steps.geovista-cache.outputs.cache-hit != 'true'
       shell: bash

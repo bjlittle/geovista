@@ -106,7 +106,6 @@ jobs:
       uses: ./.github/workflows/composite/geovista-cache
       with:
         cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
         data_version: ${{ env.DATA_VERSION }}
 
     - name: "${{ matrix.session }} (${{ matrix.version }})"
