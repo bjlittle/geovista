@@ -1,0 +1,25 @@
+name: "geovista-cache"
+description: "create and cache the geovista assets"
+
+inputs:
+  cache_period:
+    description: "geovista assets cache timestamp"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
+
+    - uses: actions/cache@v3
+      id: geovista-cache
+      with:
+        path: ~/.cache/geovista
+        key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ inputs.cache_period }}
+
+    - if: steps.geovista-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "GEOVISTA_DOWNLOAD=geovista download --all --decompress" >> ${GITHUB_ENV}

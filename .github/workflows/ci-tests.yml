@@ -110,6 +110,11 @@ jobs:
         packages: libgl1-mesa-glx xvfb
         version: 1.0
 
+    - name: "geovista cache"
+      uses: ./.github/workflows/composite/geovista-cache
+      with:
+        cache_period: ${{ env.CACHE_PERIOD }}
+
     - name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
       env:
         PY_COLORS: "1"
