@@ -5,18 +5,19 @@ inputs:
   cache_period:
     description: "geovista assets cache timestamp"
     required: true
-  data_version:
-    description: "geovista assets version"
-    required: true
 
 runs:
   using: "composite"
   steps:
+    - shell: bash
+      run: |
+        echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
+
     - uses: actions/cache@v3
       id: geovista-cache
       with:
         path: ~/.cache/geovista
-        key: ${{ runner.os }}-geovista-data-${{ inputs.data_version }}-${{ inputs.cache_period }}
+        key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ inputs.cache_period }}
 
     - if: steps.geovista-cache.outputs.cache-hit != 'true'
       shell: bash

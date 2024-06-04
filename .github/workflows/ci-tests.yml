@@ -64,7 +64,6 @@ jobs:
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
         echo "LOCK_FILE=requirements/locks/${{ matrix.version }}-lock-linux-64.txt" >> ${GITHUB_ENV}
-        echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
 
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
@@ -115,7 +114,6 @@ jobs:
       uses: ./.github/workflows/composite/geovista-cache
       with:
         cache_period: ${{ env.CACHE_PERIOD }}
-        data_version: ${{ env.DATA_VERSION }}
 
     - name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
       env:
