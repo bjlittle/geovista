@@ -64,6 +64,7 @@ PACKAGES_OPTIONAL: list[str] = [
     "PyQt5",
     "fastparquet",
     "imageio",
+    "ipywidgets",
     "jupyter_server_proxy",
     "jupyterlab",
     "meshio",
@@ -73,9 +74,12 @@ PACKAGES_OPTIONAL: list[str] = [
     "scipy",
     "trame",
     "trame_client",
+    "trame_jupyter_extension",
     "trame_server",
     "trame_vtk",
+    "trame_vuetify",
     "tqdm",
+    "wslink",
 ]
 """The optional packages of geovista to include in the environment report."""
 
