@@ -1244,9 +1244,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         is the primary focus of the scene.
 
         >>> plotter = geovista.GeoPlotter()
-        >>> plotter.add_mesh(bahamas, rgb=True)
+        >>> _ = plotter.add_mesh(bahamas, rgb=True)
         >>> plotter.view_poi()
-        >>> plotter.add_base_layer(texture=geovista.natural_earth_1())
+        >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_1())
         >>> plotter.show()
 
         In comparison, add a texture mapped base layer to a ``plotter`` **before** the
@@ -1254,8 +1254,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         rendered scene, however the base layer is now fully visible.
 
         >>> plotter = geovista.GeoPlotter()
-        >>> plotter.add_base_layer(texture=geovista.natural_earth_1())
-        >>> plotter.add_mesh(bahamas, rgb=True)
+        >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_1())
+        >>> _ = plotter.add_mesh(bahamas, rgb=True)
         >>> plotter.view_poi()
         >>> plotter.show()
 
