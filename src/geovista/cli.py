@@ -232,12 +232,6 @@ def main(version: bool, report: bool, cache: bool) -> None:  # numpydoc ignore=P
     help="Show names of registered assets.",
 )
 @click.option(
-    "-m",
-    "--mesh",
-    is_flag=True,
-    help="Download mesh assets.",
-)
-@click.option(
     "-ne",
     "--natural-earth",
     multiple=True,
@@ -246,6 +240,7 @@ def main(version: bool, report: bool, cache: bool) -> None:  # numpydoc ignore=P
     flag_value=ALL,
     help="Download Natural Earth feature assets.",
 )
+@click.option("-o", "--operational", is_flag=True, help="Download all non-test assets.")
 @click.option("-p", "--pantry", is_flag=True, help="Download sample data assets.")
 @click.option(
     "-r",
@@ -272,8 +267,8 @@ def download(
     dry_run: bool,
     image: bool,
     show: bool,
-    mesh: bool,
     natural_earth: Iterable[str],
+    operational: bool,
     pantry: bool,
     raster: bool,
     target: pathlib.Path | None,
@@ -331,14 +326,13 @@ def download(
 
     if pull:
         _download_group(fnames, decompress=decompress)
+    elif operational:
+        names = sorted(set(fnames) - set(collect("tests")))
+        _download_group(names, decompress=decompress, name="operational")
     else:
         if image:
             name = "images"
             _download_group(collect(f"tests/{name}"), decompress=decompress, name=name)
-
-        if mesh:
-            name = "mesh"
-            _download_group(collect(name), decompress=decompress, name=name)
 
         if pantry:
             name = "pantry"

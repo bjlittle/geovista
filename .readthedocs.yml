@@ -12,7 +12,7 @@ build:
       - git fetch --unshallow
       - git fetch --all
     post_install:
-      - geovista download --all --decompress
+      - geovista download --operational --decompress
 
 conda:
   environment: requirements/locks/rtd.yml
