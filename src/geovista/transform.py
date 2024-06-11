@@ -352,18 +352,27 @@ def transform_points(
         .. versionadded:: 0.4.0
 
         """
-        if zs is None:
-            zs = np.zeros_like(xs)
+        # ensure to promote unpacked scalars
+        xs = np.atleast_1d(xs)
+        ys = np.atleast_1d(ys)
+        zs = np.zeros_like(xs) if zs is None else np.atleast_1d(zs)
 
         assert (
             xs.shape == ys.shape == zs.shape
         ), "Cannot combine points, non-uniform shapes."
+
         return np.vstack([xs, ys, zs]).T
 
     if src_crs == tgt_crs:
         result = combine(xs, ys, zs)
     else:
         transformer = pyproj.Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
+        if xs.size == 1:
+            # unpack to avoid "conversion of an array with ndim > 0 to a scalar"
+            # deprecation (numpy 1.25)
+            xs, ys = xs[0], ys[0]
+            if zs is not None:
+                zs = zs[0]
         transformed = transformer.transform(xs, ys, zs, errcheck=trap)
 
         if zs is None:

@@ -1291,12 +1291,16 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             camera.focal_point = (0, 0, 0)
             # convert POI lon/lat to cartesian xyz
             xyz = to_cartesian(x, y)[0]
-            magnitude = np.linalg.norm(xyz)
             # calculate the unit vector
-            u_hat = xyz / magnitude
+            u_hat = xyz / np.linalg.norm(xyz)
             # set the new camera position at the same magnitude from the focal point
-            camera.position = u_hat * magnitude
-            self.reset_camera()
+            camera.position = u_hat * np.linalg.norm(camera.position)
+            self.reset_camera(render=False)
+            clip = camera.clipping_range
+            # defensive: extend far clip range to ensure no accidental
+            # back culling of any potential forth-coming actors that
+            # may be added to the scene
+            camera.clipping_range = (clip[0], clip[1] * 2)
         else:
             position = np.array(camera.position)
             focal_point = np.array(camera.focal_point)
