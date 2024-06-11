@@ -131,8 +131,8 @@ image_cache_dir = "tests/plotting/image_cache"
 log_cli = "True"
 log_cli_level = "INFO"
 markers = [
-    "example: geovista example image tests",
-    "image: plotter rendering image tests",
+    "example: gallery image tests",
+    "image: plotting image tests",
 ]
 minversion = "6.0"
 required_plugins = "pytest-mock pytest_pyvista"

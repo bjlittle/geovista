@@ -11,7 +11,6 @@ import importlib
 
 import pytest
 
-from geovista.cache import CACHE
 from geovista.common import get_modules
 
 from . import CI
@@ -43,9 +42,5 @@ def test(example, verify_image_cache):
     verify_image_cache.test_name = f"test_{safe}"
     # import the example module
     module = importlib.import_module(f"geovista.examples.{example}")
-    # if necessary, download and cache missing example base image (expected) to
-    # compare with the actual test image generated via pytest-pyvista plugin
-    if verify_image_cache.add_missing_images is False:
-        _ = CACHE.fetch(f"tests/images/{safe}.png")
     # execute the example module for image testing
     module.main()
