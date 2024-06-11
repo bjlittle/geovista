@@ -8,48 +8,16 @@
 from __future__ import annotations
 
 import importlib
-import os
-from pathlib import Path
-import shutil
 
 import pytest
-import pyvista as pv
 
-import geovista as gv
 from geovista.cache import CACHE
 from geovista.common import get_modules
 
-BASE_DIR: Path = CACHE.abspath / "tests" / "images"
-
-# determine whether executing on a GHA runner
-# https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
-CI: bool = os.environ.get("CI", "false").lower() == "true"
+from . import CI
 
 # construct list of example module names relative to "geovista.examples"
 EXAMPLES = get_modules("geovista.examples")
-
-# prepare geovista/pyvista for off-screen image testing
-pv.global_theme.load_theme(pv.plotting.themes._TestingTheme())
-pv.global_theme.window_size = [450, 300]
-pv.OFF_SCREEN = True
-gv.GEOVISTA_IMAGE_TESTING = True
-
-# prepare to download image cache for each image test
-# also see reference in pyproject.toml
-cache_dir = Path(__file__).parent.resolve() / "image_cache"
-if cache_dir.is_dir() and not cache_dir.is_symlink():
-    # remove directory which may have been created by pytest-pyvista
-    # when plugin is bootstrapped by pytest
-    shutil.rmtree(str(cache_dir))
-if cache_dir.is_symlink() and (
-    not cache_dir.exists() or cache_dir.readlink() != BASE_DIR
-):
-    # detected a broken symlink or non-latest version of cache
-    cache_dir.unlink()
-if not cache_dir.exists():
-    BASE_DIR.mkdir(parents=True, exist_ok=True)
-    # create the symbolic link to the pooch cache
-    cache_dir.symlink_to(BASE_DIR)
 
 # individual GHA CI example test case exceptions to the default image tolerances
 thresholds = {

@@ -34,6 +34,7 @@ from .common import (
     distance,
     point_cloud,
     to_cartesian,
+    to_lonlat,
     vtk_warnings_off,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
@@ -62,7 +63,7 @@ from .pantry.meshes import (
     regular_grid,
 )
 from .raster import wrap_texture
-from .transform import transform_mesh
+from .transform import transform_mesh, transform_point
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
@@ -71,6 +72,7 @@ if TYPE_CHECKING:
     from geovista.crs import CRSLike
 
 # lazy import third-party dependencies
+np = lazy.load("numpy")
 pyproj = lazy.load("pyproj")
 pv = lazy.load("pyvista")
 
@@ -194,6 +196,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         # status of gpu opacity support
         self._missing_opacity = False
+        # cartesian (xyz) center of last mesh added to the plotter
+        self._poi = None
         super().__init__(*args, **kwargs)
 
     def _add_graticule_labels(
@@ -686,6 +690,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         if not self._missing_opacity and (_check("opacity") or _check("nan_opacity")):
             self._warn_opacity()
+
+        if hasattr(mesh, "center"):
+            # POI cartesian xyz
+            self._poi = mesh.center
 
         return super().add_mesh(mesh, **kwargs)
 
@@ -1188,6 +1196,118 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             _ = kwargs.pop("texture")
 
         return self.add_mesh(mesh, style=style, scalars=scalars, **kwargs)
+
+    def view_poi(
+        self,
+        x: float | None = None,
+        y: float | None = None,
+        crs: CRSLike | None = None,
+    ) -> None:
+        """Center the camera at a point-of-interest (POI).
+
+        If no POI is provided, then the center of the previous mesh added to the scene
+        is used, if available.
+
+        Note that, the camera will be positioned at the POI to view **all** the actors
+        added to the scene so far; order is important. The point at which
+        :meth:`~geovista.geoplotter.GeoPlotterBase.view_poi` is called relative to the
+        other actors influences the final rendered scene.
+
+        Parameters
+        ----------
+        x : float, optional
+            The spatial x-value point, in canonical `crs` units, of the POI.
+        y : float, optional
+            The spatial y-value point, in canonical `crs` units, of the POI.
+        crs : CRSLike, optional
+            The Coordinate Reference System of the POI. May be anything accepted by
+            :meth:`pyproj.crs.CRS.from_user_input`. Defaults to ``EPSG:4326`` i.e.,
+            ``WGS 84``.
+
+        Notes
+        -----
+        .. versionadded:: 0.5.0
+
+        Examples
+        --------
+        First, create an RGB mesh of the Bahamas from a GeoTIFF.
+
+        >>> import geovista
+        >>> from geovista.pantry import fetch_raster
+        >>> fname = fetch_raster("bahamas_rgb.tif")
+        >>> bahamas = geovista.Transform.from_tiff(
+        ...     fname, rgb=True, sieve=True, extract=True
+        ... )
+
+        Now add the ``bahamas`` mesh to a ``plotter`` **before** adding a texture mapped
+        base layer. Note that, the camera is centered over the ``bahamas`` mesh, which
+        is the primary focus of the scene.
+
+        >>> plotter = geovista.GeoPlotter()
+        >>> _ = plotter.add_mesh(bahamas, rgb=True)
+        >>> plotter.view_poi()
+        >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_1())
+        >>> plotter.show()
+
+        In comparison, add a texture mapped base layer to a ``plotter`` **before** the
+        ``bahamas`` mesh. The camera is still centered over the ``bahamas`` in the
+        rendered scene, however the base layer is now fully visible.
+
+        >>> plotter = geovista.GeoPlotter()
+        >>> _ = plotter.add_base_layer(texture=geovista.natural_earth_1())
+        >>> _ = plotter.add_mesh(bahamas, rgb=True)
+        >>> plotter.view_poi()
+        >>> plotter.show()
+
+        """
+        camera = self.camera
+
+        if crs is None:
+            crs = WGS84
+
+        if not (use_mesh_poi := x is None and y is None) and (x is None or y is None):
+            emsg = "Point-of-interest (POI) requires both an 'x' and 'y' value."
+            raise ValueError(emsg)
+
+        if use_mesh_poi:
+            if self._poi is None:
+                # this is a no-op
+                wmsg = "No point-of-interest (POI) is available or has been provided."
+                warn(wmsg, stacklevel=2)
+                return
+
+            if self.crs.is_geographic:
+                # convert cartesian xyz to lon/lat
+                x, y = to_lonlat(self._poi)
+                crs = WGS84
+            else:
+                x, y, _ = self._poi
+                crs = self.crs
+
+        if crs != self.crs:
+            x, y, _ = transform_point(crs, self.crs, x, y)
+
+        if self.crs.is_geographic:
+            camera.focal_point = (0, 0, 0)
+            # convert POI lon/lat to cartesian xyz
+            xyz = to_cartesian(x, y)[0]
+            # calculate the unit vector
+            u_hat = xyz / np.linalg.norm(xyz)
+            # set the new camera position at the same magnitude from the focal point
+            camera.position = u_hat * np.linalg.norm(camera.position)
+            self.reset_camera(render=False)
+            clip = camera.clipping_range
+            # defensive: extend far clip range to ensure no accidental
+            # back culling of any potential forth-coming actors that
+            # may be added to the scene
+            camera.clipping_range = (clip[0], clip[1] * 2)
+        else:
+            position = np.array(camera.position)
+            focal_point = np.array(camera.focal_point)
+            magnitude = np.linalg.norm(focal_point - position)
+            camera.up = (0, 1, 0)
+            camera.focal_point = (x, y, 0)
+            camera.position = (x, y, magnitude)
 
 
 class GeoPlotter(GeoPlotterBase, pv.Plotter):

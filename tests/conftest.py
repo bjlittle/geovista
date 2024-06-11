@@ -15,9 +15,25 @@ from geovista.bridge import Transform
 from geovista.crs import WGS84
 from geovista.geometry import coastlines as geometry_coastlines
 from geovista.pantry.data import lam_uk as pantry_lam_uk
+from geovista.pantry.meshes import lam_polar as sample_lam_polar
 from geovista.pantry.meshes import lam_uk as sample_lam_uk
 from geovista.pantry.meshes import lfric as sample_lfric
 from geovista.pantry.meshes import lfric_sst as sample_lfric_sst
+
+
+@pytest.fixture()
+def plot_nodeid(request):
+    """Fixture generates a dotted nodeid for plotting tests."""
+    names = request.node.listnames()
+    index = names.index("plotting")
+    names = names[index + 1 :]
+    # remove ".py" extension
+    names[-2] = names[-2].split(".")[0]
+    # reformat parametrization
+    names[-1] = names[-1].replace("]", "")
+    names[-1] = names[-1].replace("[", "__")
+    name = ".".join(names)
+    return f"test_{name}"
 
 
 @pytest.fixture()
@@ -31,17 +47,28 @@ def coastlines(request):
 
 
 @pytest.fixture()
+def lam_polar():
+    """Fixture generates a Polar Local Area Model mesh with indexed faces and points."""
+    mesh = sample_lam_polar()
+    mesh.point_data["pids"] = np.arange(mesh.n_points)
+    mesh.cell_data["cids"] = np.arange(mesh.n_cells)
+    mesh.set_active_scalars("cids")
+    return mesh
+
+
+@pytest.fixture()
 def lam_uk():
-    """Fixture generates a Local Area Model mesh with indexed faces and points."""
+    """Fixture generates a UK Local Area Model mesh with indexed faces and points."""
     mesh = sample_lam_uk()
-    mesh.cell_data["ids"] = np.arange(mesh.n_cells)
-    mesh.point_data["ids"] = np.arange(mesh.n_points)
+    mesh.point_data["pids"] = np.arange(mesh.n_points)
+    mesh.cell_data["cids"] = np.arange(mesh.n_cells)
+    mesh.set_active_scalars("cids")
     return mesh
 
 
 @pytest.fixture(scope="session")
 def lam_uk_cloud(lam_uk_sample):
-    """Fixture generates a Local Area Model point-could for the UK."""
+    """Fixture generates a Local Area Model point-cloud for the UK."""
     lons, lats = lam_uk_sample
 
     return Transform.from_points(lons, lats)
