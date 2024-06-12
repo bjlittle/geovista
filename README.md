@@ -40,22 +40,19 @@ et al, which specialise in preparing your spatial data for visualisation. Rather
 choice of tool to you the user, as we want GeoVista to remain as flexible and open-ended as possible to the entire
 Scientific Python community.
 
-Simply put, "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*". Well, that's the aspiration.
+Simply put, "*GeoVista is to PyVista*", as "*[Cartopy](https://scitools.org.uk/cartopy/docs/latest/) is to
+[Matplotlib](https://matplotlib.org/stable/index.html)*". Well, that's the aspiration.
 
 ## Installation
 
 GeoVista is available on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/).
 
-We recommend using [mamba](https://github.com/mamba-org/mamba) to install GeoVista 👍
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/index.html) to install GeoVista 👍
 
-### Mamba
+### Conda
 
 GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with
-[mamba](https://github.com/mamba-org/mamba):
-```shell
-mamba install -c conda-forge geovista
-```
-or alternatively with [conda](https://docs.conda.io/projects/conda/en/latest/index.html):
+[conda](https://docs.conda.io/projects/conda/en/latest/index.html):
 ```shell
 conda install -c conda-forge geovista
 ```
@@ -90,7 +87,7 @@ cd geovista
 ```
 Create the `geovista-dev` conda development environment:
 ```shell
-mamba env create --file requirements/geovista.yml
+conda env create --file requirements/geovista.yml
 ```
 Now activate the environment and install the `main` development branch of GeoVista:
 ```shell
@@ -170,13 +167,13 @@ plotter.show()
 ```
 </details>
 
-![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/ww3-tri.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/ww3-tri.png" height="400"></p>
 
 #### Finite Volume Community Ocean Model
 
 Now, let's visualise the bathymetry of the
 [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365)
-from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) **unstructured** mesh, as kindly provided by the
+from an [FVCOM](https://www.fvcom.org/) **unstructured** mesh, as kindly provided by the
 [Plymouth Marine Laboratory](https://pml.ac.uk/) using the lush [cmocean deep](https://matplotlib.org/cmocean/#deep) colormap.
 
 <details>
@@ -213,7 +210,7 @@ plotter.show()
 ```
 </details>
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/tamar.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/tamar.png" height="400"></p>
 
 #### CF UGRID
 
@@ -262,7 +259,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lam-moll.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lam-moll.png" height="400"></p>
 
 Using the same **unstructured** LAM data, reproject to
 [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a
@@ -306,7 +303,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lam-eqc.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lam-eqc.png" height="400"></p>
 
 #### LFRic Cube-Sphere
 
@@ -346,7 +343,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lfric-robin.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lfric-robin.png" height="400"></p>
 
 #### UM ORCA2
 
@@ -384,7 +381,7 @@ plotter.show()
 ```
 </details>
 
-![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/um-orca.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/um-orca.png" height="400"></p>
 
 #### OISST AVHRR
 
@@ -422,7 +419,7 @@ plotter.show()
 ```
 </details>
 
-![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/oisst-avhrr.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/oisst-avhrr.png" height="400"></p>
 
 #### DYNAMICO
 
@@ -457,7 +454,7 @@ plotter.show()
 ```
 </details>
 
-![dynamico-icosahedral](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/dynamico-icosahedral.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/dynamico-icosahedral.png" height="400"></p>
 
 ## Unreal Reels
 
