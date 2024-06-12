@@ -22,6 +22,11 @@
 | 🛡️ Status   | [![scitools](https://img.shields.io/badge/scitools-ownership%20pending-yellow)](https://github.com/bjlittle/geovista/issues/167)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 |              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/ww3-tri.png" height="250">
+<br>
+<a href="#wavewatch-iii"><b>Less than 20 lines of Python!</b></a>
+</p>
 
 ## Motivation
 
