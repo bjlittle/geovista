@@ -29,17 +29,16 @@ thresholds = {
 @pytest.mark.example()
 @pytest.mark.image()
 @pytest.mark.parametrize("example", EXAMPLES)
-def test(example, verify_image_cache):
+def test(plot_nodeid, example, verify_image_cache):
     """Image test the example scripts."""
+    verify_image_cache.test_name = plot_nodeid
+
     # apply individual test case image tolerance exceptions only when
     # executing within a remote GHA runner environment
     if CI and example in thresholds:
         for attr, value in thresholds[example].items():
             setattr(verify_image_cache, attr, value)
 
-    # replace dot notation with double underscores
-    safe = example.replace(".", "__")
-    verify_image_cache.test_name = f"test_{safe}"
     # import the example module
     module = importlib.import_module(f"geovista.examples.{example}")
     # execute the example module for image testing

@@ -7,11 +7,14 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
+
 import numpy as np
 import pytest
 import pyvista as pv
 
 from geovista.bridge import Transform
+from geovista.cache import CACHE
 from geovista.crs import WGS84
 from geovista.geometry import coastlines as geometry_coastlines
 from geovista.pantry.data import lam_uk as pantry_lam_uk
@@ -27,13 +30,25 @@ def plot_nodeid(request):
     names = request.node.listnames()
     index = names.index("plotting")
     names = names[index + 1 :]
+
     # remove ".py" extension
     names[-2] = names[-2].split(".")[0]
-    # reformat parametrization
+
+    # reformat pytest parametrization syntax
     names[-1] = names[-1].replace("]", "")
     names[-1] = names[-1].replace("[", "__")
     name = ".".join(names)
-    return f"test_{name}"
+
+    if not name.startswith("test_"):
+        name = f"test_{name}"
+
+    # ensure cache is populated with *existing* baseline image
+    with suppress(ValueError):
+        # pyvista-pytest removes the "test_" prefix from baseline image
+        baseline = f"tests/images/{name.removeprefix('test_')}.png"
+        _ = CACHE.fetch(baseline)
+
+    return name
 
 
 @pytest.fixture()
