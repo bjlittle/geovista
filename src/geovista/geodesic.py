@@ -631,12 +631,13 @@ class BBox:  # numpydoc ignore=PR01
         tolerance : float, optional
             The tolerance on the intersection operation with the `surface`,
             expressed as a fraction of the diagonal of the bounding-box.
-            Defaults to :data:`BBOX_TOLERANCE`. See PyVista's
+            See PyVista's
             :meth:`~pyvista.DataSetFilters.select_enclosed_points` for more.
+            Defaults to :data:`BBOX_TOLERANCE`.
         outside : bool, optional
             By default, select those points of the `surface` that are inside
             the bounding-box. Otherwise, select those points that are outside
-            the bounding-box.
+            the bounding-box. Defaults to ``False``.
         preference : str or EnclosedPreference, optional
             Criteria for defining whether a face of a `surface` mesh is
             deemed to be enclosed by the bounding-box. A `preference` of
