@@ -9,27 +9,6 @@
   Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
 </h3>
 
-<h3 align="center">
-  😍 <i>Bring your data to life!</i> 😍
-</h3>
-
-[🎥 WW3 SMC time-series](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
-
-<details><summary><i>What is this?</i></summary>
-
-GeoVista is built on the shoulders of giants, namely [PyVista](https://docs.pyvista.org/version/stable/) and
-[VTK](https://vtk.org/documentation/), thus allowing it to easily leverage the power of the GPU.
-
-As a result, it offers a paradigm shift in rendering performance and interactive user experience, as demonstrated by
-this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
-and **C**urrent **H**indcasting), developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/),
-quasi-unstructured Spherical Multi-Cell (SMC) grid data of Sea Surface Wave Significant Height located on cell faces.
-
-Like what you see? Loads more information is available below, so keep on scrolling! 🚀
-
-</details>
-
-
 |              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 |--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | ⚙️ CI        | [![ci-citation](https://github.com/bjlittle/geovista/actions/workflows/ci-citation.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-citation.yml) [![ci-locks](https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml) [![ci-manifest](https://github.com/bjlittle/geovista/actions/workflows/ci-manifest.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-manifest.yml) [![ci-tests](https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml) [![ci-wheels](https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml) [![pre-commit](https://results.pre-commit.ci/badge/github/bjlittle/geovista/main.svg)](https://results.pre-commit.ci/latest/github/bjlittle/geovista/main) |
@@ -41,6 +20,24 @@ Like what you see? Loads more information is available below, so keep on scrolli
 | 🧰 Repo      | [![commits-since](https://img.shields.io/github/commits-since/bjlittle/geovista/latest.svg)](https://github.com/bjlittle/geovista/commits/main) [![contributors](https://img.shields.io/github/contributors/bjlittle/geovista)](https://github.com/bjlittle/geovista/graphs/contributors) [![release](https://img.shields.io/github/v/release/bjlittle/geovista)](https://github.com/bjlittle/geovista/releases)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 🛡️ Status   | [![scitools](https://img.shields.io/badge/scitools-ownership%20pending-yellow)](https://github.com/bjlittle/geovista/issues/167)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 |              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+
+## Rediscover Your Data
+
+[🎥 WW3 SMC time-series](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
+
+GeoVista is built on the shoulders of giants, namely [PyVista](https://docs.pyvista.org/version/stable/) and
+[VTK](https://vtk.org/documentation/), thus allowing it to easily leverage the power of the GPU.
+
+As a result, it offers a paradigm shift in rendering performance and interactive user experience, as demonstrated by
+this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
+and **C**urrent **H**indcasting) data developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/).
+
+The animation shows a timeseries of Sea Surface Wave Significant Height data located on the cell faces of a
+quasi-unstructured Spherical Multi-Cell (SMC) grid.
+
+Bring your data alive with GeoVista!
+
+Keen to know more? Well, let's begin ...
 
 ## Motivation
 
