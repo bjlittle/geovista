@@ -9,6 +9,26 @@
   Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
 </h3>
 
+<h3 align="center">
+  😍 <i>Bring your data to life!</i> 😍
+</h3>
+
+[🎥 WW3 SMC time-series](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
+
+<details><summary><i>What is this?</i></summary>
+
+GeoVista is built on the shoulders of giants, namely [PyVista](https://docs.pyvista.org/version/stable/) and
+[VTK](https://vtk.org/documentation/), thus allowing it to easily leverage the power of the GPU.
+
+As a result, it offers a paradigm shift in rendering performance and interactive user experience, as demonstrated by
+this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
+and **C**urrent **H**indcasting), developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/),
+quasi-unstructured Spherical Multi-Cell (SMC) grid data of Sea Surface Wave Significant Height located on cell faces.
+
+Like what you see? Loads more information is available below, so keep on scrolling! 🚀
+
+</details>
+
 
 |              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 |--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -21,7 +41,6 @@
 | 🧰 Repo      | [![commits-since](https://img.shields.io/github/commits-since/bjlittle/geovista/latest.svg)](https://github.com/bjlittle/geovista/commits/main) [![contributors](https://img.shields.io/github/contributors/bjlittle/geovista)](https://github.com/bjlittle/geovista/graphs/contributors) [![release](https://img.shields.io/github/v/release/bjlittle/geovista)](https://github.com/bjlittle/geovista/releases)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 🛡️ Status   | [![scitools](https://img.shields.io/badge/scitools-ownership%20pending-yellow)](https://github.com/bjlittle/geovista/issues/167)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 |              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-
 
 ## Motivation
 
@@ -40,22 +59,21 @@ et al, which specialise in preparing your spatial data for visualisation. Rather
 choice of tool to you the user, as we want GeoVista to remain as flexible and open-ended as possible to the entire
 Scientific Python community.
 
-Simply put, "*GeoVista is to PyVista*", as "*Cartopy is to Matplotlib*". Well, that's the aspiration.
+Simply put, "*[GeoVista](https://geovista.readthedocs.io/) is to
+[PyVista](https://docs.pyvista.org/)*", as
+"*[Cartopy](https://scitools.org.uk/cartopy/docs/latest/) is to
+[Matplotlib](https://matplotlib.org/)*". Well, that's the aspiration.
 
 ## Installation
 
 GeoVista is available on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/).
 
-We recommend using [mamba](https://github.com/mamba-org/mamba) to install GeoVista 👍
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/index.html) to install GeoVista 👍
 
-### Mamba
+### Conda
 
 GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with
-[mamba](https://github.com/mamba-org/mamba):
-```shell
-mamba install -c conda-forge geovista
-```
-or alternatively with [conda](https://docs.conda.io/projects/conda/en/latest/index.html):
+[conda](https://docs.conda.io/projects/conda/en/latest/index.html):
 ```shell
 conda install -c conda-forge geovista
 ```
@@ -90,7 +108,7 @@ cd geovista
 ```
 Create the `geovista-dev` conda development environment:
 ```shell
-mamba env create --file requirements/geovista.yml
+conda env create --file requirements/geovista.yml
 ```
 Now activate the environment and install the `main` development branch of GeoVista:
 ```shell
@@ -142,7 +160,7 @@ base layer, and the gorgeous perceptually uniform [cmocean balance](https://matp
 colormap.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -170,17 +188,17 @@ plotter.show()
 ```
 </details>
 
-![ww3-tri](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/ww3-tri.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/ww3-tri.png" height="400"></p>
 
 #### Finite Volume Community Ocean Model
 
 Now, let's visualise the bathymetry of the
 [Plymouth Sound and Tamar River](https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365)
-from an [FVCOM](http://fvcom.smast.umassd.edu/fvcom/) **unstructured** mesh, as kindly provided by the
+from an [FVCOM](https://www.fvcom.org/) **unstructured** mesh, as kindly provided by the
 [Plymouth Marine Laboratory](https://pml.ac.uk/) using the lush [cmocean deep](https://matplotlib.org/cmocean/#deep) colormap.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -213,7 +231,7 @@ plotter.show()
 ```
 </details>
 
-![tamar](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/tamar.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/tamar.png" height="400"></p>
 
 #### CF UGRID
 
@@ -231,7 +249,7 @@ In the meantime, let's showcase our basic projection support with some high-reso
 base layer.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -262,7 +280,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lam-moll.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lam-moll.png" height="400"></p>
 
 Using the same **unstructured** LAM data, reproject to
 [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a
@@ -273,7 +291,7 @@ and a
 base layer.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import cartopy.crs as ccrs
@@ -306,7 +324,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lam-eqc.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lam-eqc.png" height="400"></p>
 
 #### LFRic Cube-Sphere
 
@@ -317,7 +335,7 @@ Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/m
 [cmocean thermal](https://matplotlib.org/cmocean/#thermal) colormap.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -346,7 +364,7 @@ plotter.show()
 ```
 </details>
 
-![lam-mollweide](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lfric-robin.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/lfric-robin.png" height="400"></p>
 
 #### UM ORCA2
 
@@ -356,7 +374,7 @@ using Met Office Unified Model (UM) ORCA2 Sea Water Potential Temperature data, 
 [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -384,7 +402,7 @@ plotter.show()
 ```
 </details>
 
-![um-orca](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/um-orca.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/um-orca.png" height="400"></p>
 
 #### OISST AVHRR
 
@@ -394,7 +412,7 @@ Now let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.g
 [NASA Blue Marble](https://visibleearth.nasa.gov/collection/1484/blue-marble) base layer.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -422,7 +440,7 @@ plotter.show()
 ```
 </details>
 
-![oisst-avhrr](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/oisst-avhrr.png)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/oisst-avhrr.png" height="400"></p>
 
 #### DYNAMICO
 
@@ -434,7 +452,7 @@ model uses hexagonal and pentagonal cells, and is a new dynamical core for
 [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/).
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -457,19 +475,7 @@ plotter.show()
 ```
 </details>
 
-![dynamico-icosahedral](https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/dynamico-icosahedral.png)
-
-## Unreal Reels
-
-GeoVista is built on the shoulders of giants, namely [PyVista](https://docs.pyvista.org/version/stable/) and
-[VTK](https://vtk.org/documentation/), thus allowing it to easily leverage the power of the GPU.
-
-As a result, it offers a paradigm shift in rendering performance and interactive user experience, as demonstrated by
-this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
-and **C**urrent **H**indcasting), developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/),
-quasi-unstructured Spherical Multi-Cell (SMC) grid data of Sea Surface Wave Significant Height located on cell faces.
-
-[🎥 WW3 SMC time-series](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/dynamico-icosahedral.png" height="400"></p>
 
 ## Further Examples
 
