@@ -1,8 +1,8 @@
 .. _gv-examples-gallery:
 
-****************
-Examples Gallery
-****************
+*********************
+:fa:`images` Examples
+*********************
 
 This interactive gallery highlights the growing capabilities and
 features of ``geovista``.

@@ -1,7 +1,7 @@
 .. _gv-about:
 
-🚧 About
-========
+🚧 :fa:`circle-info` About
+==========================
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in consectetur orci. Nam convallis viverra dolor in.
 

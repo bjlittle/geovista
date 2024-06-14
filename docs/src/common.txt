@@ -1,0 +1,38 @@
+.. comment
+
+    common URL resources in alphabetical order:
+
+.. _Discussions: https://github.com/bjlittle/geovista/discussions
+.. _Issue: https://github.com/bjlittle/geovista/issues
+.. _Issues: https://github.com/bjlittle/geovista/issues
+.. _Pull-Request: https://github.com/bjlittle/geovista/pulls
+.. _Pull-Requests: https://github.com/bjlittle/geovista/pulls
+.. _PyPI: https://pypi.org/project/geovista/
+.. _RTD (latest): https://geovista.readthedocs.io/en/latest
+.. _RTD (stable): https://geovista.readthedocs.io/en/stable
+.. _conda: https://docs.conda.io/projects/conda/en/latest/index.html
+.. _conda environment.yml file: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file
+.. _conda-forge: https://anaconda.org/conda-forge/geovista
+.. _feedstock: https://github.com/conda-forge/geovista-feedstock
+.. _geovista: https://github.com/bjlittle/geovista
+.. _geovista-data: https://github.com/bjlittle/geovista-data
+.. _geovista-media: https://github.com/bjlittle/geovista-media
+.. _pip: https://pip.pypa.io/en/stable/index.html
+.. _pre-commit: https://pre-commit.com/
+
+
+.. comment
+
+    core developers and prolific contributors (github handle) in
+    alphabetical order:
+
+.. _@banesullivan: https://github.com/banesullivan
+.. _@bjlittle: https://github.com/bjlittle
+.. _@ESadek-MO: https://github.com/ESadek-MO
+.. _@HGWright: https://github.com/HGWright
+.. _@lbdreyer: https://github.com/lbdreyer
+.. _@pp-mo: https://github.com/pp-mo
+.. _@stephenworsley: https://github.com/stephenworsley
+.. _@tkknight: https://github.com/tkknight
+.. _@tkoyama010: https://github.com/tkoyama010
+.. _@trexfeathers: https://github.com/trexfeathers

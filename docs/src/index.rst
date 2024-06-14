@@ -1,33 +1,35 @@
 .. _gv-root:
 
+.. include:: common.txt
+
 GeoVista Documentation
 ======================
 
-Welcome to the GeoVista documentation!
+Welcome to the ``geovista`` documentation!
 
 .. note::
     :class: margin
 
-    We've marked content with a 🚧 to indicate that it's still under construction.
+    We've marked content with a 🚧 to indicate that it's still under
+    construction.
 
 We're busily crafting the structure and content of the documentation,
-so it's likely that some material will change, move around or even be removed.  However,
-the dust will eventually settle and we'll have a stable foundation to build upon.  Thanks
-for your patience.
+so it's likely that some material will change, move around or even be removed.
+However, the dust will eventually settle and we'll have a stable foundation to
+build upon.  Thanks for your patience.
 
-In the meantime, your feedback is important to us.  So feel free to submit a GitHub
-`Issue <https://github.com/bjlittle/geovista/issues>`_  or
-`Pull-Request <https://github.com/bjlittle/geovista/pulls>`_ to help us elevate our
+In the meantime, your feedback is important to us.  So feel free to submit a
+:fab:`github` `Issue`_  or `Pull-Request`_ to help elevate our
 documentation to the next level of awesome 🚀
 
-Alternatively, if it's easier, come share with us over on our GitHub
-`Discussions <https://github.com/bjlittle/geovista/discussions>`_.
+Alternatively, if it's easier, come share with us over on our
+:fab:`github` `Discussions`_.
 
 We'd 💛 to hear from you.
 
 ----
 
-Choose your approach to learning and GeoVista knowledge discovery.
+Choose your approach to learning and ``geovista`` knowledge discovery.
 
 .. grid:: 1 1 2 2
     :gutter: 2
@@ -83,8 +85,8 @@ Choose your approach to learning and GeoVista knowledge discovery.
     :hidden:
 
     overview
-    quick_start
     installation
+    quick_start
     next_steps
 
 
@@ -104,7 +106,7 @@ Choose your approach to learning and GeoVista knowledge discovery.
     :maxdepth: 1
     :hidden:
 
-    Examples <generated/gallery/index>
+    generated/gallery/index
     tags/tagsindex
 
 
