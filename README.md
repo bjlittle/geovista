@@ -144,11 +144,11 @@ base layer, and the gorgeous perceptually uniform [cmocean balance](https://matp
 colormap.
 
 <details>
-<summary>🗒 click for code</summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
-from geovista.pantry.data import ww3_global_tri
+from geovista.pantry import ww3_global_tri
 import geovista.theme
 
 # Load the sample data.
@@ -182,11 +182,11 @@ from an [FVCOM](https://www.fvcom.org/) **unstructured** mesh, as kindly provide
 [Plymouth Marine Laboratory](https://pml.ac.uk/) using the lush [cmocean deep](https://matplotlib.org/cmocean/#deep) colormap.
 
 <details>
-<summary>🗒 click for code</summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
-from geovista.pantry.data import fvcom_tamar
+from geovista.pantry import fvcom_tamar
 import geovista.theme
 
 # Load the sample data.
@@ -233,11 +233,11 @@ In the meantime, let's showcase our basic projection support with some high-reso
 base layer.
 
 <details>
-<summary>🗒 click for code</summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
-from geovista.pantry.data import lam_pacific
+from geovista.pantry import lam_pacific
 import geovista.theme
 
 # Load the sample data.
@@ -275,13 +275,13 @@ and a
 base layer.
 
 <details>
-<summary>🗒 click for code</summary>
+<summary>🗒 </summary>
 
 ```python
 import cartopy.crs as ccrs
 
 import geovista as gv
-from geovista.pantry.data import lam_pacific
+from geovista.pantry import lam_pacific
 import geovista.theme
 
 # Load the sample data.
@@ -319,11 +319,11 @@ Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/m
 [cmocean thermal](https://matplotlib.org/cmocean/#thermal) colormap.
 
 <details>
-<summary>🗒 click for code</summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
-from geovista.pantry.data import lfric_sst
+from geovista.pantry import lfric_sst
 import geovista.theme
 
 # Load the sample data.
@@ -358,11 +358,11 @@ using Met Office Unified Model (UM) ORCA2 Sea Water Potential Temperature data, 
 [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
 
 <details>
-<summary>🗒 click for code</summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
-from geovista.pantry.data import um_orca2
+from geovista.pantry import um_orca2
 import geovista.theme
 
 # Load sample data.
@@ -396,11 +396,11 @@ Now let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.g
 [NASA Blue Marble](https://visibleearth.nasa.gov/collection/1484/blue-marble) base layer.
 
 <details>
-<summary>🗒 click for code</summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
-from geovista.pantry.data import oisst_avhrr_sst
+from geovista.pantry import oisst_avhrr_sst
 import geovista.theme
 
 # Load sample data.
@@ -436,11 +436,11 @@ model uses hexagonal and pentagonal cells, and is a new dynamical core for
 [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/).
 
 <details>
-<summary>🗒 click for code</summary>
+<summary>🗒 </summary>
 
 ```python
 import geovista as gv
-from geovista.pantry.data import dynamico
+from geovista.pantry import dynamico
 import geovista.theme
 
 # Load sample data.
