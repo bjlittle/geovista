@@ -7,11 +7,18 @@
 This interactive gallery highlights the growing capabilities and
 features of ``geovista``.
 
-.. role:: bash(code)
-    :language: bash
+It is generated from the ``geovista.examples``, which can also
+be run from the command line with:
 
-The gallery is generated from the ``geovista.examples``, which can also
-be run from the command line with :bash:`geovista examples --all --verbose`.
+.. code:: console
+
+    geovista examples --all --verbose
+
+For more details, simply:
+
+.. code:: console
+
+    geovista examples --help
 
 .. note::
   :class: margin
