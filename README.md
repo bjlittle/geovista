@@ -7,7 +7,9 @@
 
 <h3 align="center">
   Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
-  <br>
+</h3>
+
+<h3 align="center">
   😍 <i>Bring your data to life!</i> 😍
 </h3>
 
