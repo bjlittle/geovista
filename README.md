@@ -7,8 +7,8 @@
 
 <h3 align="center">
   Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
-
-  😍 Bring your data to life! 😍
+  <br>
+  😍 <i>Bring your data to life!</i> 😍
 </h3>
 
 [🎥 WW3 SMC time-series](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
@@ -22,6 +22,8 @@ As a result, it offers a paradigm shift in rendering performance and interactive
 this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
 and **C**urrent **H**indcasting), developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/),
 quasi-unstructured Spherical Multi-Cell (SMC) grid data of Sea Surface Wave Significant Height located on cell faces.
+
+Like what you see? Loads more information is available below, so keep on scrolling! 🚀
 
 </details>
 
