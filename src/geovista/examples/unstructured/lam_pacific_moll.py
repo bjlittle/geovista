@@ -13,10 +13,10 @@ This example demonstrates how to render a projected unstructured quadrilateral m
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude unstructured cell points.
+Creates a mesh from 1-D latitude and longitude unstructured points and connectivity.
 
-The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
-cell points and connectivity.
+The resulting mesh contains quad cells. The connectivity is required to construct
+the cells by indexing into the CF UGRID unstructured points.
 
 It uses a high-resolution Local Area Model (LAM) mesh of air potential
 temperature data located on the mesh faces/cells.

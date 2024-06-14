@@ -10,7 +10,7 @@ Welcome to the ``geovista`` documentation!
 .. note::
     :class: margin
 
-    We've marked content with a 🚧 to indicate that it's still under
+    We've marked content with 🚧 to indicate that it's still under
     construction.
 
 We're busily crafting the structure and content of the documentation,
@@ -19,7 +19,7 @@ However, the dust will eventually settle and we'll have a stable foundation to
 build upon.  Thanks for your patience.
 
 In the meantime, your feedback is important to us.  So feel free to submit a
-:fab:`github` `Issue`_  or `Pull-Request`_ to help elevate our
+:fab:`github` `Issue`_  or :fab:`github` `Pull-Request`_ to help elevate our
 documentation to the next level of awesome 🚀
 
 Alternatively, if it's easier, come share with us over on our
@@ -34,6 +34,17 @@ Choose your approach to learning and ``geovista`` knowledge discovery.
 .. grid:: 1 1 2 2
     :gutter: 2
 
+    .. grid-item-card:: 🚧 Reference
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-reference
+        :link-type: ref
+        :img-top: _static/images/icons/reference.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        No fuss facts.
+
     .. grid-item-card:: 🚧 Tutorials
         :class-title: custom-title
         :class-body: custom-body
@@ -45,18 +56,7 @@ Choose your approach to learning and ``geovista`` knowledge discovery.
 
         Topic driven themed lessons.
 
-    .. grid-item-card:: 🚧 How-To Guides
-        :class-title: custom-title
-        :class-body: custom-body
-        :link: gv-howtos
-        :link-type: ref
-        :img-top: _static/images/icons/howtos.svg
-        :class-img-top: dark-light
-        :class-card: sd-rounded-3
-
-        Treasure trove of how-to guides.
-
-    .. grid-item-card:: 🚧 Enrichment Material
+    .. grid-item-card:: 🚧 Enrichment
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-enrichment
@@ -67,16 +67,16 @@ Choose your approach to learning and ``geovista`` knowledge discovery.
 
         Deeper understanding awaits.
 
-    .. grid-item-card:: 🚧 Reference Material
+    .. grid-item-card:: 🚧 How-Tos
         :class-title: custom-title
         :class-body: custom-body
-        :link: gv-reference
+        :link: gv-howtos
         :link-type: ref
-        :img-top: _static/images/icons/reference.svg
+        :img-top: _static/images/icons/howtos.svg
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        No fuss facts.
+        Treasure trove of how-to guides.
 
 
 .. toctree::
@@ -95,9 +95,9 @@ Choose your approach to learning and ``geovista`` knowledge discovery.
     :maxdepth: 1
     :hidden:
 
-    tutorials/index
     howtos/index
     enrichment/index
+    tutorials/index
     reference/index
 
 

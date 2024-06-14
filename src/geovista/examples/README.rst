@@ -14,15 +14,17 @@ be run from the command line with:
 
     geovista examples --all --verbose
 
-For more details, simply:
+.. note::
 
-.. code:: console
+    Want to know more?
 
-    geovista examples --help
+    .. code:: console
+
+        geovista examples --help
 
 .. note::
   :class: margin
 
-  The gallery **Interactive Scene**
+  The **Interactive Scene**
   `vtk.js <https://kitware.github.io/vtk-js/index.html>`_ backend does **not** support
-  text rendering or points as spheres.
+  rendering text or points as spheres.

@@ -5,11 +5,19 @@
 .. _Discussions: https://github.com/bjlittle/geovista/discussions
 .. _Issue: https://github.com/bjlittle/geovista/issues
 .. _Issues: https://github.com/bjlittle/geovista/issues
+.. _Natural Earth Features: https://www.naturalearthdata.com/features/
 .. _Pull-Request: https://github.com/bjlittle/geovista/pulls
 .. _Pull-Requests: https://github.com/bjlittle/geovista/pulls
 .. _PyPI: https://pypi.org/project/geovista/
+.. _PyVista: https://github.com/pyvista/pyvista
+.. _PyVistaQt: https://github.com/pyvista/pyvistaqt
 .. _RTD (latest): https://geovista.readthedocs.io/en/latest
 .. _RTD (stable): https://geovista.readthedocs.io/en/stable
+.. _VTK: https://vtk.org/
+.. _cartopy: https://github.com/SciTools/cartopy
+.. _cmocean: https://matplotlib.org/cmocean
+.. _cmocean balance: https://matplotlib.org/cmocean/#balance
+.. _cmocean thermal: https://matplotlib.org/cmocean/#thermal
 .. _conda: https://docs.conda.io/projects/conda/en/latest/index.html
 .. _conda environment.yml file: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file
 .. _conda-forge: https://anaconda.org/conda-forge/geovista

@@ -1,7 +1,7 @@
 .. _gv-reference:
 
-🚧 Reference Material
-=====================
+🚧 :fa:`mountain` Reference
+===========================
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sed mi id leo volutpat porttitor a eu.
 

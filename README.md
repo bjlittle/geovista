@@ -37,7 +37,7 @@ quasi-unstructured Spherical Multi-Cell (SMC) grid.
 
 Bring your data alive with GeoVista! 🚀
 
-Keen to know more? Well, let's begin ...
+Tempted? Keen to know more? Well, let's begin ...
 
 ## Motivation
 
