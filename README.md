@@ -144,7 +144,7 @@ base layer, and the gorgeous perceptually uniform [cmocean balance](https://matp
 colormap.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -182,7 +182,7 @@ from an [FVCOM](https://www.fvcom.org/) **unstructured** mesh, as kindly provide
 [Plymouth Marine Laboratory](https://pml.ac.uk/) using the lush [cmocean deep](https://matplotlib.org/cmocean/#deep) colormap.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -233,7 +233,7 @@ In the meantime, let's showcase our basic projection support with some high-reso
 base layer.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -275,7 +275,7 @@ and a
 base layer.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import cartopy.crs as ccrs
@@ -319,7 +319,7 @@ Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/m
 [cmocean thermal](https://matplotlib.org/cmocean/#thermal) colormap.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -358,7 +358,7 @@ using Met Office Unified Model (UM) ORCA2 Sea Water Potential Temperature data, 
 [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -396,7 +396,7 @@ Now let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.g
 [NASA Blue Marble](https://visibleearth.nasa.gov/collection/1484/blue-marble) base layer.
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
@@ -436,7 +436,7 @@ model uses hexagonal and pentagonal cells, and is a new dynamical core for
 [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/).
 
 <details>
-<summary>🗒 </summary>
+<summary>🗒 click for code</summary>
 
 ```python
 import geovista as gv
