@@ -47,7 +47,6 @@ __all__ = [
     "BBOX_RADIUS_RATIO",
     "BBOX_TOLERANCE",
     "BBox",
-    "CSC",
     "Corners",
     "ELLIPSE",
     "EnclosedPreference",
@@ -106,7 +105,7 @@ PANEL_NAME_BY_IDX: dict[int, str] = {
 """Lookup table for cubed-sphere panel name by panel index."""
 
 CSC: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
-"""Absolute latitude (degrees) of all cubed-sphere panel corners."""
+"""Latitude (degrees) of a cubed-sphere panel corner."""
 
 PANEL_BBOX_BY_IDX: dict[int, tuple[Corners, Corners]] = {
     0: ((-45, 45, 45, -45), (CSC, CSC, -CSC, -CSC)),
