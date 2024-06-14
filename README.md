@@ -7,7 +7,23 @@
 
 <h3 align="center">
   Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
+
+  😍 Bring your data to life! 😍
 </h3>
+
+[🎥 WW3 SMC time-series](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
+
+<details><summary><i>What is this?</i></summary>
+
+GeoVista is built on the shoulders of giants, namely [PyVista](https://docs.pyvista.org/version/stable/) and
+[VTK](https://vtk.org/documentation/), thus allowing it to easily leverage the power of the GPU.
+
+As a result, it offers a paradigm shift in rendering performance and interactive user experience, as demonstrated by
+this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
+and **C**urrent **H**indcasting), developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/),
+quasi-unstructured Spherical Multi-Cell (SMC) grid data of Sea Surface Wave Significant Height located on cell faces.
+
+</details>
 
 
 |              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -21,12 +37,6 @@
 | 🧰 Repo      | [![commits-since](https://img.shields.io/github/commits-since/bjlittle/geovista/latest.svg)](https://github.com/bjlittle/geovista/commits/main) [![contributors](https://img.shields.io/github/contributors/bjlittle/geovista)](https://github.com/bjlittle/geovista/graphs/contributors) [![release](https://img.shields.io/github/v/release/bjlittle/geovista)](https://github.com/bjlittle/geovista/releases)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 🛡️ Status   | [![scitools](https://img.shields.io/badge/scitools-ownership%20pending-yellow)](https://github.com/bjlittle/geovista/issues/167)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 |              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-
-<p align="center">
-<img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/ww3-tri.png" height="250">
-<br>
-<a href="#wavewatch-iii"><b>Less than 20 lines of Python!</b></a>
-</p>
 
 ## Motivation
 
@@ -45,8 +55,10 @@ et al, which specialise in preparing your spatial data for visualisation. Rather
 choice of tool to you the user, as we want GeoVista to remain as flexible and open-ended as possible to the entire
 Scientific Python community.
 
-Simply put, "*GeoVista is to PyVista*", as "*[Cartopy](https://scitools.org.uk/cartopy/docs/latest/) is to
-[Matplotlib](https://matplotlib.org/stable/index.html)*". Well, that's the aspiration.
+Simply put, "*[GeoVista](https://geovista.readthedocs.io/) is to
+[PyVista](https://docs.pyvista.org/)*", as
+"*[Cartopy](https://scitools.org.uk/cartopy/docs/latest/) is to
+[Matplotlib](https://matplotlib.org/)*". Well, that's the aspiration.
 
 ## Installation
 
@@ -460,18 +472,6 @@ plotter.show()
 </details>
 
 <p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.09.1/media/readme/dynamico-icosahedral.png" height="400"></p>
-
-## Unreal Reels
-
-GeoVista is built on the shoulders of giants, namely [PyVista](https://docs.pyvista.org/version/stable/) and
-[VTK](https://vtk.org/documentation/), thus allowing it to easily leverage the power of the GPU.
-
-As a result, it offers a paradigm shift in rendering performance and interactive user experience, as demonstrated by
-this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
-and **C**urrent **H**indcasting), developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/),
-quasi-unstructured Spherical Multi-Cell (SMC) grid data of Sea Surface Wave Significant Height located on cell faces.
-
-[🎥 WW3 SMC time-series](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
 
 ## Further Examples
 
