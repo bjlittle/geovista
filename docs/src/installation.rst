@@ -75,7 +75,7 @@ repository from :fab:`github`:
 
     git clone git@github.com:bjlittle/geovista.git
 
-Change to the root directory of cloned ``geovista`` repository:
+Change to the root directory of cloned repository:
 
 .. code:: console
 
@@ -88,7 +88,8 @@ Create the ``geovista-dev`` `conda`_ environment:
     conda env create --file requirements/geovista.yml
 
 
-Now activate the environment and install the ``main`` development branch of ``geovista``:
+Now **activate** the environment and **install** the ``main`` development
+branch of ``geovista``:
 
 .. code:: console
 
@@ -105,4 +106,4 @@ And for extra credit, install our developer `pre-commit`_ git-hooks:
 
 .. note::
 
-    Ensure to install `pre-commit`_ into your environment first.
+    Please ensure to install `pre-commit`_ into your environment first.
