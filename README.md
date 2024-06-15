@@ -32,7 +32,7 @@ As a result, it offers a paradigm shift in rendering performance and interactive
 this realtime, time-series animation of WAVEWATCH III® third-generation wave model (**WAVE**-height, **WAT**er depth
 and **C**urrent **H**indcasting) data developed at [NOAA](https://www.noaa.gov/)/[NCEP](https://www.weather.gov/ncep/).
 
-The animation shows a timeseries of Sea Surface Wave Significant Height data located on the cell faces of a
+The animation shows a time-series of Sea Surface Wave Significant Height data located on the cell faces of a
 quasi-unstructured Spherical Multi-Cell (SMC) grid.
 
 Bring your data alive with GeoVista!
