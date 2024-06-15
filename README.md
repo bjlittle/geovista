@@ -35,7 +35,7 @@ and **C**urrent **H**indcasting) data developed at [NOAA](https://www.noaa.gov/)
 The animation shows a time-series of Sea Surface Wave Significant Height data located on the cell faces of a
 quasi-unstructured Spherical Multi-Cell (SMC) grid.
 
-Bring your data alive with GeoVista!
+Bring your data alive with GeoVista! 🚀
 
 Keen to know more? Well, let's begin ...
 
@@ -177,7 +177,7 @@ plotter = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
-plotter.add_coastlines(resolution="10m")
+plotter.add_coastlines()
 plotter.add_graticule()
 plotter.view_xy(negative=True)
 plotter.add_axes()
@@ -268,8 +268,8 @@ mesh = gv.Transform.from_unstructured(
 plotter = gv.GeoPlotter(crs="+proj=moll")
 sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, scalar_bar_args=sargs)
-plotter.add_coastlines()
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+plotter.add_coastlines()
 plotter.add_graticule()
 plotter.add_axes()
 plotter.view_xy()
@@ -312,8 +312,8 @@ mesh = gv.Transform.from_unstructured(
 plotter = gv.GeoPlotter(crs=ccrs.PlateCarree(central_longitude=180))
 sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, scalar_bar_args=sargs)
-plotter.add_coastlines()
 plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
+plotter.add_coastlines()
 plotter.add_graticule()
 plotter.add_axes()
 plotter.view_xy()
@@ -392,7 +392,7 @@ plotter = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
 plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
 plotter.add_base_layer(texture=gv.natural_earth_1())
-plotter.add_coastlines(resolution="10m")
+plotter.add_coastlines()
 plotter.view_xy()
 plotter.add_axes()
 plotter.show()
