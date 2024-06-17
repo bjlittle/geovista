@@ -37,7 +37,7 @@ repos:
       # Trims trailing whitespace.
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.4.8"
+    rev: "v0.4.9"
     hooks:
       - id: ruff
         types: [file, python]
@@ -89,7 +89,7 @@ repos:
       - id: validate-pyproject
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.4
+    rev: 0.28.5
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
