@@ -33,7 +33,7 @@ Earth base layer with opacity.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry.data import um_orca2_gradient
+from geovista.pantry.data import nemo_orca2_gradient
 from geovista.pantry.meshes import ZLEVEL_SCALE_CLOUD
 import geovista.theme
 
@@ -47,7 +47,7 @@ def main() -> None:
 
     """
     # Load the sample data.
-    sample = um_orca2_gradient()
+    sample = nemo_orca2_gradient()
 
     # Create the point cloud from the sample data.
     cloud = gv.Transform.from_points(
