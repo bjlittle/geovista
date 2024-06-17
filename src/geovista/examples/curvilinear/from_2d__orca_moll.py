@@ -35,7 +35,7 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.common import cast_UnstructuredGrid_to_PolyData as cast
-from geovista.pantry.data import um_orca2
+from geovista.pantry.data import nemo_orca2
 import geovista.theme
 from geovista.transform import transform_mesh
 
@@ -49,7 +49,7 @@ def main() -> None:
 
     """
     # Load the sample data.
-    sample = um_orca2()
+    sample = nemo_orca2()
 
     # Create the mesh from the sample data.
     mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)

@@ -53,10 +53,10 @@ __all__ = [
     "lfric",
     "lfric_orog",
     "lfric_sst",
+    "nemo_orca2",
+    "nemo_orca2_cloud",
     "oisst_avhrr_sst",
     "regular_grid",
-    "um_orca2",
-    "um_orca2_cloud",
     "ww3_global_smc",
     "ww3_global_tri",
 ]
@@ -555,6 +555,63 @@ def lfric_sst() -> pv.PolyData:
     )
 
 
+def nemo_orca2() -> pv.PolyData:
+    """Create a mesh from :mod:`geovista.pantry.data` sample data.
+
+    Generate a global Sea Water Potential Temperature ORCA2 mesh.
+
+    Returns
+    -------
+    PolyData
+        The ORCA2 mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    sample = geovista.pantry.data.nemo_orca2()
+
+    return Transform.from_2d(
+        sample.lons, sample.lats, data=sample.data, name=sample.name
+    )
+
+
+def nemo_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
+    """Create a point-cloud mesh from :mod:`geovista.pantry.data` sample data.
+
+    Generate an ORCA2 point-cloud of Sea Water Potential Temperature gradients.
+
+    Parameters
+    ----------
+    zscale : float, optional
+        The proportional multiplier for z-axis ``zlevel``. Defaults to
+        :data:`ZLEVEL_SCALE_CLOUD`.
+
+    Returns
+    -------
+    PolyData
+        The ORCA2 point-cloud.
+
+    Notes
+    -----
+    .. versionadded:: 0.2.0
+
+    """
+    sample = geovista.pantry.data.nemo_orca2_gradient()
+
+    zscale = ZLEVEL_SCALE_CLOUD if zscale is None else float(zscale)
+
+    return Transform.from_points(
+        sample.lons,
+        sample.lats,
+        data=sample.zlevel,
+        name=sample.name,
+        zlevel=-sample.zlevel,
+        zscale=zscale,
+    )
+
+
 def oisst_avhrr_sst() -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry.data` sample data.
 
@@ -632,63 +689,6 @@ def regular_grid(
     lons = np.linspace(-180.0, 180.0, int(n_cells * 1.5) + 1)
 
     return Transform.from_1d(lons, lats, radius=radius)
-
-
-def um_orca2() -> pv.PolyData:
-    """Create a mesh from :mod:`geovista.pantry.data` sample data.
-
-    Generate a global Sea Water Potential Temperature ORCA2 mesh.
-
-    Returns
-    -------
-    PolyData
-        The ORCA2 mesh.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    sample = geovista.pantry.data.um_orca2()
-
-    return Transform.from_2d(
-        sample.lons, sample.lats, data=sample.data, name=sample.name
-    )
-
-
-def um_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
-    """Create a point-cloud mesh from :mod:`geovista.pantry.data` sample data.
-
-    Generate an ORCA2 point-cloud of Sea Water Potential Temperature gradients.
-
-    Parameters
-    ----------
-    zscale : float, optional
-        The proportional multiplier for z-axis ``zlevel``. Defaults to
-        :data:`ZLEVEL_SCALE_CLOUD`.
-
-    Returns
-    -------
-    PolyData
-        The ORCA2 point-cloud.
-
-    Notes
-    -----
-    .. versionadded:: 0.2.0
-
-    """
-    sample = geovista.pantry.data.um_orca2_gradient()
-
-    zscale = ZLEVEL_SCALE_CLOUD if zscale is None else float(zscale)
-
-    return Transform.from_points(
-        sample.lons,
-        sample.lats,
-        data=sample.zlevel,
-        name=sample.name,
-        zlevel=-sample.zlevel,
-        zscale=zscale,
-    )
 
 
 def ww3_global_smc(step: int | None = None) -> pv.PolyData:

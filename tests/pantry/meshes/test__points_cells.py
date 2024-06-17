@@ -172,16 +172,16 @@ def test_oisst_avhrr_sst():
     assert mesh.n_cells == 1036800
 
 
-def test_um_orca2():
-    """Test generation of um orca2 mesh."""
-    mesh = meshes.um_orca2()
+def test_nemo_orca2():
+    """Test generation of nemo orca2 mesh."""
+    mesh = meshes.nemo_orca2()
     assert mesh.n_points == 106560
     assert mesh.n_cells == 26640
 
 
-def test_um_orca2_cloud():
-    """Test generation of um orca2 cloud mesh."""
-    mesh = meshes.um_orca2_cloud()
+def test_nemo_orca2_cloud():
+    """Test generation of nemo orca2 cloud mesh."""
+    mesh = meshes.nemo_orca2_cloud()
     assert mesh.n_points == 265791
     assert mesh.n_cells == 265791
 

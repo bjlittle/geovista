@@ -53,9 +53,10 @@ __all__ = [
     "lam_uk",
     "lfric_orog",
     "lfric_sst",
+    "lfric_sst",
+    "nemo_orca2",
+    "nemo_orca2_gradient",
     "oisst_avhrr_sst",
-    "um_orca2",
-    "um_orca2_gradient",
     "usgs_earthquakes",
     "ww3_global_smc",
     "ww3_global_tri",
@@ -755,10 +756,10 @@ def oisst_avhrr_sst() -> SampleStructuredXY:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def um_orca2() -> SampleStructuredXY:
+def nemo_orca2() -> SampleStructuredXY:
     """Download and cache structured surface sample data.
 
-    Load Met Office Unified Model (UM) ORCA2 curvilinear mesh.
+    Load NEMO ORCA2 curvilinear mesh.
 
     Returns
     -------
@@ -788,10 +789,10 @@ def um_orca2() -> SampleStructuredXY:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def um_orca2_gradient() -> SampleStructuredXYZ:
+def nemo_orca2_gradient() -> SampleStructuredXYZ:
     """Download and cache cloud-point sample data.
 
-    Load Met Office Unified Model (UM) ORCA2 curvilinear mesh with gradient filter.
+    Load NEMO ORCA2 curvilinear mesh with gradient filter.
 
     Returns
     -------
