@@ -16,7 +16,7 @@ This example demonstrates how to render a warped unstructured cubed-sphere mesh.
 Creates a mesh from 1-D latitude and longitude unstructured data.
 
 The resulting mesh contains quad cells and is constructed from CF UGRID
-unstructured cell points and connectivity.
+unstructured points and connectivity.
 
 It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
 data.
