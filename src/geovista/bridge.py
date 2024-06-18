@@ -3,15 +3,17 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Transform structured grids and unstructured meshes.
+"""Transform structured grids and unstructured meshes to PyVista format.
 
 This module provides the :class:`~geovista.bridge.Transform` factory class for
 transforming rectilinear, curvilinear, and unstructured geospatial data
-into geolocated :mod:`pyvista` mesh instances.
+into geolocated :doc:`PyVista <pyvista:index>` mesh instances.
 
 Notes
 -----
 .. versionadded:: 0.1.0
+
+:doc:`pyvista:user-guide/what-is-a-mesh`
 
 """
 
@@ -414,8 +416,8 @@ class Transform:  # numpydoc ignore=PR01
         """Build a quad-faced mesh from contiguous 1-D x-values and y-values.
 
         This allows the construction of a uniform or rectilinear quad-faced
-        (M, N) mesh grid, where the mesh has M-faces in the y-axis, and
-        N-faces in the x-axis, resulting in a mesh consisting of M*N faces.
+        ``(M, N)`` mesh grid, where the mesh has ``M``-faces in the y-axis, and
+        ``N``-faces in the x-axis, resulting in a mesh consisting of ``M*N`` faces.
 
         The provided `xs` and `ys` will be projected from their `crs` to
         geographic longitude and latitude values.
@@ -425,17 +427,18 @@ class Transform:  # numpydoc ignore=PR01
         xs : ArrayLike
             A 1-D array of x-values, in canonical `crs` units, defining the
             contiguous face x-value boundaries of the mesh. Creating a mesh
-            with N-faces in the `crs` x-axis requires a (N+1,) array.
-            Alternatively, a (N, 2) contiguous bounds array may be provided.
+            with ``N``-faces in the `crs` x-axis requires a ``(N+1,)`` array.
+            Alternatively, a ``(N, 2)`` contiguous bounds array may be provided.
         ys : ArrayLike
             A 1-D array of y-values, in canonical `crs` units, defining the
             contiguous face y-value boundaries of the mesh. Creating a mesh
-            with M-faces in the `crs` y-axis requires a (M+1,) array.
-            Alternatively, a (M, 2) contiguous bounds array may be provided.
+            with ``M``-faces in the `crs` y-axis requires a ``(M+1,)`` array.
+            Alternatively, a ``(M, 2)`` contiguous bounds array may be provided.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh. The size of the data
-            must match either the shape of the fully formed mesh points (M+1)*(N+1),
-            or the number of mesh faces, M*N.
+            must match either the shape of the fully formed mesh points
+            ``(M+1)*(N+1)``,
+            or the number of mesh faces, ``M*N`` (but see the `rgb` parameter).
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
@@ -445,7 +448,9 @@ class Transform:  # numpydoc ignore=PR01
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         rgb : bool, default=False
-            Whether the data is an ``RGB`` or ``RGBA`` image.
+            Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
+            `data` is expected to have an extra dimension for the colour
+            channels (length ``3`` or ``4``).
         radius : float, optional
             The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -456,7 +461,8 @@ class Transform:  # numpydoc ignore=PR01
             :data:`~geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
-            and/or remove degenerate cells in the resultant mesh. Defaults to
+            and/or remove degenerate cells in the resultant mesh. See
+            :meth:`pyvista.PolyDataFilters.clean`. Defaults to
             :data:`BRIDGE_CLEAN`.
 
         Returns
@@ -501,8 +507,8 @@ class Transform:  # numpydoc ignore=PR01
         """Build a quad-faced mesh from 2-D x-values and y-values.
 
         This allows the construction of a uniform, rectilinear or curvilinear
-        quad-faced (M, N) mesh grid, where the mesh has M-faces in the y-axis,
-        and N-faces in the x-axis, resulting in a mesh consisting of M*N faces.
+        quad-faced ``(M, N)`` mesh grid, where the mesh has ``M``-faces in the y-axis,
+        and ``N``-faces in the x-axis, resulting in a mesh consisting of ``M*N`` faces.
 
         The provided `xs` and `ys` define the four vertices of each quad-face
         in the mesh for the native `crs`, which will then be projected to
@@ -512,18 +518,19 @@ class Transform:  # numpydoc ignore=PR01
         ----------
         xs : ArrayLike
             A 2-D array of x-values, in canonical `crs` units, defining the
-            face x-value boundaries of the mesh. Creating a (M, N) mesh
-            requires a (M+1, N+1) x-axis array. Alternatively, a (M, N, 4)
+            face x-value boundaries of the mesh. Creating a ``(M, N)`` mesh
+            requires a ``(M+1, N+1)`` x-axis array. Alternatively, a ``(M, N, 4)``
             array may be provided.
         ys : ArrayLike
             A 2-D array of y-values, in canonical `crs` units, defining the
-            face y-value boundaries of the mesh. Creating a (M, N) mesh
-            requires a (M+1, N+1) y-axis array. Alternatively, a (M, N, 4)
+            face y-value boundaries of the mesh. Creating a ``(M, N)`` mesh
+            requires a ``(M+1, N+1)`` y-axis array. Alternatively, a ``(M, N, 4)``
             array may be provided.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh. The size of the data
-            must match either the shape of the fully formed mesh points (M+1)*(N+1),
-            or the number of mesh faces, M*N.
+            must match either the shape of the fully formed mesh points
+            ``(M+1)*(N+1)``,
+            or the number of mesh faces, ``M*N`` (but see the `rgb` parameter).
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
@@ -533,7 +540,9 @@ class Transform:  # numpydoc ignore=PR01
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         rgb : bool, default=False
-            Whether the data is an ``RGB`` or ``RGBA`` image.
+            Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
+            `data` is expected to have an extra dimension for the colour
+            channels (length ``3`` or ``4``).
         radius : float, optional
             The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -544,7 +553,8 @@ class Transform:  # numpydoc ignore=PR01
             :data:`~geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
-            and/or remove degenerate cells in the resultant mesh. Defaults to
+            and/or remove degenerate cells in the resultant mesh. See
+            :meth:`pyvista.PolyDataFilters.clean`. Defaults to
             :data:`BRIDGE_CLEAN`.
 
         Returns
@@ -618,7 +628,8 @@ class Transform:  # numpydoc ignore=PR01
             A 1-D, 2-D or 3-D array of point-cloud y-values, in canonical `crs` units.
             Must have the same shape as the `xs`.
         data : ArrayLike, optional
-            Data to be optionally attached to the mesh points.
+            Data to be optionally attached to the mesh points defined by
+            `xs` and `ys`.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If `data`
             is provided but with no `name`, defaults to :data:`NAME_POINTS`.
@@ -638,7 +649,8 @@ class Transform:  # numpydoc ignore=PR01
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
-            Specify whether to merge duplicate points. Defaults to
+            Specify whether to merge duplicate points. See
+            :meth:`pyvista.PolyDataFilters.clean`. Defaults to
             :data:`BRIDGE_CLEAN`.
 
         Returns
@@ -752,7 +764,8 @@ class Transform:  # numpydoc ignore=PR01
             :data:`~geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
-            and/or remove degenerate cells in the resultant mesh. Defaults to
+            and/or remove degenerate cells in the resultant mesh. See
+            :meth:`pyvista.PolyDataFilters.clean`. Defaults to
             :data:`BRIDGE_CLEAN`.
 
         Returns
@@ -768,6 +781,10 @@ class Transform:  # numpydoc ignore=PR01
 
         Examples
         --------
+        >>> from geovista import GeoPlotter, Transform
+        >>> from geovista.pantry import fetch_raster
+        >>> from geovista.pantry.textures import natural_earth_1
+
         Render the GeoTIFF ``RGB`` image as a geolocated mesh.
 
         First, :func:`rasterio.features.sieve` the GeoTIFF image to remove several
@@ -775,11 +792,18 @@ class Transform:  # numpydoc ignore=PR01
         dynamic range in the ``uint8`` image data. Then, extract the mesh to remove
         cells with no masked points.
 
-        >>> from geovista import Transform
-        >>> from geovista.pantry import fetch_raster
         >>> fname = fetch_raster("bahamas_rgb.tif")
         >>> mesh = Transform.from_tiff(fname, rgb=True, sieve=True, extract=True)
-        >>> mesh.plot(cpos="xz", lighting=False, rgb=True)
+
+        Plot the result!
+
+        >>> plotter = GeoPlotter()
+        >>> plotter.add_base_layer(texture=natural_earth_1())
+        >>> plotter.add_coastlines()
+        >>> plotter.add_mesh(mesh, rgb=True)
+        >>> plotter.view_poi()
+        >>> plotter.camera.zoom(40)
+        >>> plotter.show()
 
         """
         try:
@@ -901,11 +925,8 @@ class Transform:  # numpydoc ignore=PR01
         unstructured mesh. This is represented in terms of indices into the
         provided `xs` and `ys` mesh geometry.
 
-        Note that, the `connectivity` must define a mesh comprised of faces
-        based on the same primitive shape e.g., a mesh of triangles, or a mesh
-        of quads etc. Support is not yet provided for mixed face meshes. Also,
-        any optional mesh `data` provided must be in the same order as the mesh
-        face `connectivity`.
+        Note that any optional mesh `data` provided must be in the same order
+        as the mesh face `connectivity`.
 
         Parameters
         ----------
@@ -918,11 +939,11 @@ class Transform:  # numpydoc ignore=PR01
         connectivity : ArrayLike or Shape, optional
             Defines the topology of each face in the unstructured mesh in terms
             of indices into the provided `xs` and `ys` mesh geometry
-            arrays. The `connectivity` is a 2-D (M, N) array, where ``M`` is
+            arrays. The `connectivity` is a 2-D ``(M, N)`` array, where ``M`` is
             the number of mesh faces, and ``N`` is the number of nodes per
-            face. Alternatively, an (M, N) tuple defining the connectivity
+            face. Alternatively, an ``(M, N)`` tuple defining the connectivity
             shape may be provided instead, given that the `xs` and `ys` define
-            M*N points (at most) in the mesh geometry. If no connectivity is
+            ``M*N`` points (at most) in the mesh geometry. If no connectivity is
             provided, and the `xs` and `ys` are 2-D, then their shape is used
             to determine the connectivity. Also, note that masked connectivity
             may be used to define a mesh consisting of different shaped faces.
@@ -944,7 +965,9 @@ class Transform:  # numpydoc ignore=PR01
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
         rgb : bool, default=False
-            Whether the data is an ``RGB`` or ``RGBA`` image.
+            Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
+            `data` is expected to have an extra dimension for the colour
+            channels (length ``3`` or ``4``).
         radius : float, optional
             The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -955,13 +978,14 @@ class Transform:  # numpydoc ignore=PR01
             :data:`~geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
-            and/or remove degenerate cells in the resultant mesh. Defaults to
+            and/or remove degenerate cells in the resultant mesh. See
+            :meth:`pyvista.PolyDataFilters.clean`. Defaults to
             :data:`BRIDGE_CLEAN`.
 
         Returns
         -------
         PolyData
-            The (M*N)-faced spherical mesh.
+            The ``(M*N)``-faced spherical mesh.
 
         Notes
         -----
@@ -1156,11 +1180,11 @@ class Transform:  # numpydoc ignore=PR01
         connectivity : ArrayLike or Shape, optional
             Defines the topology of each face in the unstructured mesh in terms
             of indices into the provided `xs` and `ys` mesh geometry
-            arrays. The `connectivity` is a 2-D (M, N) array, where ``M`` is
+            arrays. The `connectivity` is a 2-D ``(M, N)`` array, where ``M`` is
             the number of mesh faces, and ``N`` is the number of nodes per
-            face. Alternatively, an (M, N) tuple defining the connectivity
+            face. Alternatively, an ``(M, N)`` tuple defining the connectivity
             shape may be provided instead, given that the `xs` and `ys` define
-            M*N points (at most) in the mesh geometry. If no connectivity is
+            ``M*N`` points (at most) in the mesh geometry. If no connectivity is
             provided, and the `xs` and `ys` are 2-D, then their shape is used
             to determine the connectivity.  Also, note that masked connectivity
             may be used to define a mesh consisting of different shaped faces.
@@ -1185,7 +1209,8 @@ class Transform:  # numpydoc ignore=PR01
             :data:`~geovista.common.ZLEVEL_SCALE`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
-            and/or remove degenerate cells in the resultant mesh. Defaults to
+            and/or remove degenerate cells in the resultant mesh. See
+            :meth:`pyvista.PolyDataFilters.clean`. Defaults to
             :data:`BRIDGE_CLEAN`.
 
         Notes
