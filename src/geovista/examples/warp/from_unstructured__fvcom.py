@@ -13,7 +13,7 @@ This example demonstrates how to render a warped unstructured triangular mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude unstructured cell points.
+Creates a mesh from 1-D latitude and longitude unstructured data.
 
 The resulting mesh contains triangular cells. The connectivity is required to
 construct the cells from the unstructured points.

@@ -14,7 +14,7 @@ cubed-sphere mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude unstructured cell points.
+Creates a mesh from 1-D latitude and longitude unstructured data.
 
 The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
 cell points and connectivity.
@@ -22,11 +22,13 @@ cell points and connectivity.
 It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
 data.
 
-Note that, the data is located on the mesh nodes/points which results in mesh
-interpolation across the cell faces. The point surface altitudes are used to
-extrude the mesh to reveal the global surface topography. Also, Natural Earth
-coastlines are rendered, and the mesh is transformed to the Equidistant
-Cylindrical (Plate Carrée) conformal cylindrical projection.
+
+Note that the scalar elevation values are located on the mesh nodes/points
+which results in the rendered colours being interpolated across the cell faces.
+The same altitude values are also used to extrude the mesh, to reveal the
+global surface topography.
+The mesh is transformed onto an Equidistant Cylindrical (Plate Carrée)
+projection.
 
 .. tags:: Projection, Transform Mesh, Unstructured, Warp
 
