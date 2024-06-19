@@ -13,17 +13,25 @@ This example demonstrates how to render a warped unstructured triangular mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude unstructured data.
-
-The resulting mesh contains triangular cells. The connectivity is required to
-construct the cells from the unstructured points.
+Creates a mesh from 1-D latitude and longitude unstructured points and
+connectivity, warped to show the vertical profile.
 
 It uses an unstructured grid Finite Volume Community Ocean Model (FVCOM) mesh of
 sea floor depth below geoid data.
 
-Note that, the data is on the mesh faces/cells, but also on the nodes/points
-which can then be used to extrude the mesh to reveal the bathymetry of the
-Plymouth Sound and Tamar River in Cornwall, UK.
+The resulting mesh contains triangular cells. The connectivity is required to
+construct the cells from the unstructured points.
+
+Note that, the data is on the mesh faces/cells, but also on the nodes/points.
+
+A ``pyvista`` "warp" operation is used to extrude the mesh by the point depth
+values, to reveal the bathymetry of the Plymouth Sound and Tamar River in
+Cornwall, UK.
+
+The warp uses :meth:`~pyvista.PolyDataFilters.compute_normals` and
+:meth:`~pyvista.DataSetFilters.warp_by_scalar` :
+see `Computing Surface Normals <https://docs.pyvista.org/version/stable/examples/01-filter/compute-normals.htm>`_
+for more explanation.
 
 .. tags:: Unstructured, Warp
 

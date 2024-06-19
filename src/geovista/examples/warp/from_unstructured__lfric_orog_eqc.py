@@ -14,21 +14,27 @@ cubed-sphere mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude unstructured data.
-
-The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
-cell points and connectivity.
+Creates a mesh from 1-D latitude and longitude unstructured points and
+connectivity.
 
 It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
 data.
 
+The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
+cell points and connectivity.
+
+The mesh is transformed onto an Equidistant Cylindrical (Plate Carrée)
+projection.
 
 Note that the scalar elevation values are located on the mesh nodes/points
 which results in the rendered colours being interpolated across the cell faces.
-The same altitude values are also used to extrude the mesh, to reveal the
-global surface topography.
-The mesh is transformed onto an Equidistant Cylindrical (Plate Carrée)
-projection.
+A ``pyvista`` "warp" operation extrudes the mesh, using the same node altitude
+values, to highlight the global surface topography.
+
+The warp uses :meth:`~pyvista.PolyDataFilters.compute_normals` and
+:meth:`~pyvista.DataSetFilters.warp_by_scalar` :
+see `Computing Surface Normals <https://docs.pyvista.org/version/stable/examples/01-filter/compute-normals.htm>`_
+for more explanation.
 
 .. tags:: Projection, Transform Mesh, Unstructured, Warp
 
