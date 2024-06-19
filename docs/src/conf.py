@@ -437,6 +437,19 @@ extlinks = {
 }
 
 
+# -- numfig options ----------------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-numfig
+
+numfig = True
+
+numfig_format = {
+    "code-block": "Listing %s:",
+    "figure": "Figure %s:",
+    "section": "Section %s:",
+    "table": "Table %s:",
+}
+
+
 # -- pyvista options ---------------------------------------------------------
 
 # Manage errors
