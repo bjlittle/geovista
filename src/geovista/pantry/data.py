@@ -131,7 +131,7 @@ class SampleUnstructuredXY:
 
 
 def capitalise(title: str) -> str:
-    """Capitalise each word and replacing inappropriate characters.
+    """Capitalise each word and replace inappropriate characters.
 
     Parameters
     ----------
@@ -790,7 +790,7 @@ def nemo_orca2() -> SampleStructuredXY:
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def nemo_orca2_gradient() -> SampleStructuredXYZ:
-    """Download and cache cloud-point sample data.
+    """Download and cache point-cloud sample data.
 
     Load NEMO ORCA2 curvilinear mesh with gradient filter.
 
