@@ -49,7 +49,7 @@ the topography of Mount Fuji and its surrounding landscape.
 
 ----
 
-"""  # noqa: D205,D212,D400
+"""  # noqa: D212,D400
 
 from __future__ import annotations
 
