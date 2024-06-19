@@ -42,7 +42,7 @@ GEOVISTA_CACHEDIR: str = "GEOVISTA_CACHEDIR"
 """Environment variable to override :mod:`pooch` cache manager path."""
 
 GEOVISTA_DATA_VERSION: str = os.environ.get("GEOVISTA_DATA_VERSION", DATA_VERSION)
-"""Environment variable to override default ``geovista-data`` version."""
+"""Environment variable to override default :attr:`DATA_VERSION`."""
 
 RETRY_ATTEMPTS: int = 3
 """The number of retry attempts to download a resource."""
@@ -103,6 +103,8 @@ def pooch_mute(silent: bool = True) -> None:
 
 def reload_registry(fname: str | None = None) -> None:
     """Refresh the registry of the :data:`CACHE`.
+
+    See :meth:`pooch.Pooch.load_registry` for more details.
 
     Parameters
     ----------

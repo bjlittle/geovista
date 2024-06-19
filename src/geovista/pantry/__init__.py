@@ -71,7 +71,9 @@ def fetch_coastlines(resolution: str | None = None) -> pv.PolyData:
 def fetch_raster(fname: str) -> Path:
     """Download, uncompress and cache a raster file.
 
-    The asset will only be downloaded and uncompressed if it is not already available.
+    If the resource is not already available in the geovista
+    :data:`geovista.cache.CACHE`, then it will be downloaded from the
+    :data:`geovista.cache.BASE_URL`.
 
     Parameters
     ----------
