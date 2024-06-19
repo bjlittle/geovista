@@ -13,7 +13,7 @@ Notes
 -----
 .. versionadded:: 0.1.0
 
-:doc:`pyvista:user-guide/what-is-a-mesh`
+- :doc:`pyvista:user-guide/what-is-a-mesh`
 
 """
 
@@ -799,7 +799,7 @@ class Transform:  # numpydoc ignore=PR01
 
         >>> plotter = GeoPlotter()
         >>> _ = plotter.add_base_layer(texture=natural_earth_1())
-        >>> _ = plotter.add_coastlines()
+        >>> _ = plotter.add_coastlines(color="white")
         >>> _ = plotter.add_mesh(mesh, rgb=True)
         >>> plotter.view_poi()
         >>> plotter.camera.zoom(40)
@@ -926,7 +926,8 @@ class Transform:  # numpydoc ignore=PR01
         provided `xs` and `ys` mesh geometry.
 
         Note that any optional mesh `data` provided must be in the same order
-        as the mesh face `connectivity`.
+        as the mesh face `connectivity`, or in the same order as the points
+        described by `xs` & `ys` (data can be on points or on cells).
 
         Parameters
         ----------
