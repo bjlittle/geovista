@@ -798,9 +798,9 @@ class Transform:  # numpydoc ignore=PR01
         Plot the result!
 
         >>> plotter = GeoPlotter()
-        >>> plotter.add_base_layer(texture=natural_earth_1())
-        >>> plotter.add_coastlines()
-        >>> plotter.add_mesh(mesh, rgb=True)
+        >>> _ = plotter.add_base_layer(texture=natural_earth_1())
+        >>> _ = plotter.add_coastlines()
+        >>> _ = plotter.add_mesh(mesh, rgb=True)
         >>> plotter.view_poi()
         >>> plotter.camera.zoom(40)
         >>> plotter.show()
