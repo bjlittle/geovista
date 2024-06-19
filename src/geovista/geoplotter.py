@@ -100,7 +100,7 @@ GRATICULE_LABEL_FONT_SIZE: int = 9
 """The default font size for graticule labels."""
 
 GRATICULE_SHOW_LABELS: bool = True
-"""Whether to rendering graticule labels by default."""
+"""Whether to render graticule labels by default."""
 
 OPACITY_BLACKLIST = [
     ("llvmpipe (LLVM 7.0, 256 bits)", "3.3 (Core Profile) Mesa 18.3.4"),
@@ -163,8 +163,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         ----------
         *args : tuple, optional
             See :class:`pyvista.Plotter` for further details.
-        crs : str or CRSLike, optional
+        crs : CRSLike, optional
             The target CRS to render geolocated meshes added to the plotter.
+            May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`.
+            Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
         **kwargs : dict, optional
             See :class:`pyvista.Plotter` for further details.
 
@@ -308,8 +310,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     ) -> pv.Actor:
         """Generate a cubed-sphere base layer mesh and add to the plotter scene.
 
-        Optionally, a `mesh` may be provided, which better fits the
-        geometry of the surface mesh.
+        Optionally, a `mesh` may be provided (e.g. if one is available that
+        better fits the geometry of the surface mesh).
 
         Parameters
         ----------
@@ -326,9 +328,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         radius : float, optional
             The radius of the spherical mesh to generate as the base layer. Defaults
             to :data:`geovista.common.RADIUS`.
-        zlevel : int, default=-1
+        zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            Defaults to ``-1``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`BASE_ZLEVEL_SCALE`.
