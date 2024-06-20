@@ -135,9 +135,12 @@ source_suffix = {
 # The master toctree document.
 root_doc = "index"
 
-# If true, 'todo' and 'todoList' produce output, else they produce nothing.
-todo_include_todos = False
-
+# TODO @bjlittle: See https://github.com/bjlittle/geovista/issues/846
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-suppress_warnings
+suppress_warnings = [
+    # ignore missing gallery files for carousel when plot_gallery=False
+    "image.not_readable",
+]
 
 # -- Project information -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
@@ -194,7 +197,7 @@ tags_badge_colors = {
 }
 tags_create_tags = True
 tags_create_badges = True
-tags_index_head = "Gallery examples categorised by tag:"  # tags landing page intro text
+tags_index_head = "Gallery examples organised by tag:"  # tags landing page intro text
 tags_intro_text = "Tags:"  # prefix text for a tags list
 tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
 tags_output_dir = "tags"
@@ -444,7 +447,7 @@ numfig = True
 
 numfig_format = {
     "code-block": "Listing %s:",
-    "figure": "Figure %s:",
+    "figure": "Fig. %s:",
     "section": "Section %s:",
     "table": "Table %s:",
 }
@@ -581,6 +584,13 @@ def geovista_config(app: Sphinx) -> None:
     # sanitise the config options
     app.builder.config.plot_docstring = _bool_eval(app.builder.config.plot_docstring)
     autolog(f"plot_docstring={app.builder.config.plot_docstring}", section="GeoVista")
+    plot_gallery = _bool_eval(app.builder.config.plot_gallery)
+    autolog(f"{plot_gallery=}", section="GeoVista")
+    if plot_gallery:
+        # TODO @bjlittle: See https://github.com/bjlittle/geovista/issues/846
+        # https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#including-content-based-on-tags
+        # https://www.sphinx-doc.org/en/master/usage/configuration.html#conf-tags
+        tags.add("plot_carousel")  # noqa: F821
 
 
 def setup(app: Sphinx) -> None:

@@ -36,6 +36,8 @@ Simply put,
 
         "`GeoVista`_ is to `PyVista`_", as "`Cartopy`_ is to `Matplotlib`_"
 
+That's our aspiration.
+
 Akin to `Cartopy`_, we intend ``geovista`` to remain as flexible and
 open-ended as possible to the Scientific Python community. This means that
 ``geovista`` will remain agnostic to packages that specialize in preparing
@@ -51,15 +53,17 @@ Ecosystem
 of the GPU.
 
 .. figure:: _static/images/ecosystem.png
+    :align: center
+    :name: ecosystem-figure
 
     Ecosystem of ``geovista``
 
-As shown above, ``geovista`` is built upon a performant, established, feature
-rich and open-source `VTK`_ toolchain, which is supported and maintained by
-`Kitware`_.
+As shown above, ``geovista`` is built upon a performant, established, and
+feature rich `VTK`_ toolchain, which is supported and maintained by
+`Kitware`_ and the open-source community.
 
-This toolchain is enabled through `PyVista`_, which provides an intuitive
-Pythonic interface that exposes the powerful visualization backend of `VTK`_.
+This toolchain is enabled through `PyVista`_, which exposes the powerful
+visualization backend of `VTK`_ through an intuitive Pythonic interface.
 
 
 PyVista in a Nutshell
@@ -67,7 +71,8 @@ PyVista in a Nutshell
 
 .. figure:: _static/images/pyvista-examples.png
     :figclass: margin
-    :name: pyvista-banner
+    :target: https://docs.pyvista.org/version/stable/examples/
+    :name: pyvista-figure
 
     PyVista Examples
 
@@ -79,20 +84,20 @@ PyVista in a Nutshell
 - Batteries-included access to a rich suite of mesh `filtering algorithms`_
 - Visualization performance that scales with the GPU
 - Support for large and complex geometries
-- Interoperability with `ParaView`_ through `VTK`_
+- Interoperability with `ParaView`_ through `VTK`_ (see :numref:`ecosystem-figure`)
 - Integration with the modern `Jupyter`_ ecosystem
 
 
 Development Status
 ------------------
 
-It's still early days for ``geovista``, but already we're excited by the
+It's still early days for ``geovista``, but we're already excited about the
 potential and promise that it might offer to the Earth Science community.
 
-Our primary focus is to provision a stable API and core set of features ...
-but we're not there yet!
+Our primary focus at the moment is to provision a stable API and core set of
+features ... we're working hard on that, but we're not there yet!
 
-Thanks for your patience.
+Thanks for your patience 🙏
 
 
 .. comment

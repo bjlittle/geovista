@@ -1,6 +1,6 @@
-.. _gv-enrichment:
+.. _gv-explanation:
 
-🚧 :fa:`water` Enrichment
-=========================
+🚧 :fa:`water` Explanation
+==============================
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tincidunt mi vitae erat condimentum porttitor. Sed a.

@@ -3,6 +3,11 @@
 🚧 :fa:`circle-info` About
 ==========================
 
+.. note::
+    :class: margin
+
+    Content marked with 🚧 indicates it's still under construction.
+
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in consectetur orci. Nam convallis viverra dolor in.
 
 

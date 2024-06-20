@@ -3,6 +3,7 @@
     common URL resources in alphabetical order:
 
 .. _Cartopy: https://github.com/SciTools/cartopy
+.. _Diátaxis: https://diataxis.fr/
 .. _Discussions: https://github.com/bjlittle/geovista/discussions
 .. _GeoVista: https://github.com/bjlittle/geovista
 .. _Issue: https://github.com/bjlittle/geovista/issues
