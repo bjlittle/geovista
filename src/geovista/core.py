@@ -600,11 +600,11 @@ def slice_cells(
     antimeridian : bool, default=False
         Whether to flip the given `meridian` to use its anti-meridian instead.
     rtol : float, optional
-        The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
 
     Returns
     -------
@@ -900,11 +900,11 @@ def slice_mesh(
     mesh : :class:`~pyvista.PolyData`
         The mesh that requires to be sliced.
     rtol : float, optional
-        The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
 
     Returns
     -------

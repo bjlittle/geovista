@@ -94,7 +94,7 @@ BASE_ZLEVEL_SCALE: int = 1.0e-3
 """Proportional multiplier for z-axis levels/offsets of base-layer mesh."""
 
 COASTLINES_RTOL: float = 1.0e-8
-"""Coastlines relative tolerance for values close to longitudinal wrap base + period."""
+"""Coastlines relative tolerance for longitudes close to 'wrap meridian'."""
 
 GRATICULE_LABEL_FONT_SIZE: int = 9
 """The default font size for graticule labels."""
@@ -336,11 +336,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`BASE_ZLEVEL_SCALE`.
         rtol : float, optional
-            The relative tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` ``base + period``.
+            The relative tolerance for longitudes close to the 'wrap meridian' -
+            see :func:`geovista.common.wrap` for more.
         atol : float, optional
-            The absolute tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` ``base + period``.
+            The absolute tolerance for longitudes close to the 'wrap meridian' -
+            see :func:`geovista.common.wrap` for more.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -413,11 +413,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
         rtol : float, optional
-            The relative tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` ``base + period``.
+            The relative tolerance for longitudes close to the 'wrap meridian' -
+            see :func:`geovista.common.wrap` for more.
         atol : float, optional
-            The absolute tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` ``base + period``.
+            The absolute tolerance for longitudes close to the 'wrap meridian' -
+            see :func:`geovista.common.wrap` for more.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -581,11 +581,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
         rtol : float, optional
-            The relative tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` ``base + period``.
+            The relative tolerance for longitudes close to the 'wrap meridian' -
+            see :func:`geovista.common.wrap` for more.
         atol : float, optional
-            The absolute tolerance for values close to longitudinal
-            :func:`geovista.common.wrap` ``base + period``.
+            The absolute tolerance for longitudes close to the 'wrap meridian' -
+            see :func:`geovista.common.wrap` for more.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
