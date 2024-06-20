@@ -62,6 +62,7 @@ def transform_mesh(
         the given `tgt_crs`.
     tgt_crs : CRSLike
         The target coordinate reference system (CRS) of the transformation.
+        May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`.
     slice_connectivity : bool, default=True
         Slice the mesh prior to transformation in order to break mesh connectivity and
         create a seam in the mesh. Also see :func:`geovista.core.slice_mesh`.
@@ -201,16 +202,16 @@ def transform_point(
         :meth:`pyproj.crs.CRS.from_user_input`.
     x : ArrayLike
         The spatial point x-value, in canonical `src_crs` units, to be
-        transformed from the `src_crs` to the `tgt_crs`. May be scalar
-        or 1-D.
+        transformed from the `src_crs` to the `tgt_crs`. Must be scalar
+        (0-dimensional).
     y : ArrayLike
         The spatial point y-value, in canonical `src_crs` units, to be
-        transformed from the `src_crs` to the `tgt_crs`. May be scalar
-        or 1-D.
+        transformed from the `src_crs` to the `tgt_crs`. Must be scalar
+        (0-dimensional).
     z : ArrayLike, optional
         The spatial point z-value, in canonical `src_crs` units, to be
-        transformed from the `src_crs` to the `tgt_crs`. May be scalar
-        or 1-D.
+        transformed from the `src_crs` to the `tgt_crs`. Must be scalar
+        (0-dimensional).
     trap : bool, default=True
         Raise an exception if an error occurs during CRS transformation
         of the spatial point. Otherwise, ``inf`` will be returned for
