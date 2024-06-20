@@ -406,9 +406,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             :data:`geovista.common.COASTLINES_RESOLUTION`.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
-        zlevel : int, default=1
+        zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            Defaults to :data:`geovista.common.ZTRANSFORM_FACTOR`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -573,11 +574,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The mesh to add to the plotter.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
-        zlevel : int or ArrayLike, default=0
+        zlevel : int or ArrayLike, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius`/vertical by a proportional amount e.g.,
             ``radius * zlevel * zscale``. If `zlevel` is not a scalar, then its shape
             must match or broadcast with the shape of the ``mesh.points``.
+            Defaults to ``0``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -1100,11 +1102,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             or ``points_gaussian``. The ``points_gaussian`` option may be controlled
             with the ``emissive`` and ``render_points_as_spheres`` options in
             `kwargs`.
-        zlevel : int or ArrayLike, default=0
+        zlevel : int or ArrayLike, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
             If `zlevel` is not a scalar, then its shape must match or broadcast
-            with the shape of the `xs` and `ys`.
+            with the shape of the `xs` and `ys`. Defaults to ``0``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
