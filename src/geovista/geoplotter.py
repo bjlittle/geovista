@@ -481,7 +481,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         lon_stop : float, optional
             The last line of longitude (degrees). The graticule will include this
             meridian when it is a multiple of `lon_step`. Also see
-            ``closed_interval``. Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
+            ``closed_interval`` in :func:`~geovista.gridlines.create_meridians`.
+            Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
         lon_step : float, optional
             The delta (degrees) between neighbouring meridians. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
@@ -719,7 +720,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         lon : float
             The constant line of longitude (degrees) to generate.
         lat_step : float, optional
-            The delta (degrees) between neighbouring parallels. Defaults to
+            The delta (degrees) between neighbouring parallels. Sets the
+            frequency of the labels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
         n_samples : int, optional
             The number of points in a single line of longitude. Defaults to
@@ -782,13 +784,15 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
         stop : float, optional
             The last line of longitude (degrees). The graticule will include this
-            meridian when it is a multiple of `step`. Also see ``closed_interval``.
+            meridian when it is a multiple of `step`. Also see
+            ``closed_interval`` in :func:`~geovista.gridlines.create_meridians`.
             Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
         step : float, optional
             The delta (degrees) between neighbouring meridians. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
         lat_step : float, optional
-            The delta (degrees) between neighbouring parallels. Defaults to
+            The delta (degrees) between neighbouring parallels. Sets the
+            frequency of the labels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
         n_samples : int, optional
             The number of points in a single line of longitude. Defaults to
@@ -886,7 +890,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         lat : float
             The constant line of latitude (degrees) to generate.
         lon_step : float, optional
-            The delta (degrees) between neighbouring meridians. Defaults to
+            The delta (degrees) between neighbouring meridians. Sets the
+            frequency of the labels. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
         n_samples : int, optional
             The number of points in a single line of latitude. Defaults to
@@ -962,7 +967,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The delta (degrees) between neighbouring parallels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
         lon_step : float, optional
-            The delta (degrees) between neighbouring meridians. Defaults to
+            The delta (degrees) between neighbouring meridians. Sets the
+            frequency of the labels. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
         n_samples : int, optional
             The number of points in a single line of latitude. Defaults to
@@ -1067,8 +1073,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         Parameters
         ----------
         points : ArrayLike or PolyData, optional
-            Array of xyz points, in canonical `crs` units, or the points of the mesh
-            to be rendered.
+            Array of xyz points, or the points of the mesh to be rendered.
+            Passed to :meth:`pyvista.core.utilities.helpers.wrap` without any
+            cartographic transformation, i.e. ``0 0 0`` is centre of the globe
+            (the plot origin), ``0 0 1`` is the north pole.
         xs : ArrayLike, optional
             A 1-D, 2-D or 3-D array of point-cloud x-values, in canonical `crs` units.
             Must have the same shape as the `ys`.
@@ -1078,8 +1086,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         scalars : str or ArrayLike, optional
             Values used to color the points. Either, the string name of an array that is
             present on the `points` mesh or an array equal to the number of points.
-            Alternatively, an array of values equal to the number of points to be
-            rendered. If both `color` and `scalars` are ``None``, then the active
+            If both `color` (see `kwargs`) and `scalars` are ``None``, then the active
             scalars on the `points` mesh are used.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `points`, or `xs` and `ys`.
@@ -1089,9 +1096,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The radius of the mesh point-cloud. Defaults to
             :data:`geovista.common.RADIUS`.
         style : str, optional
-            Visualization style of the points to be rendered. Maybe either ``points``
-            or ``points_gaussian``. The ``points_gaussian`` option maybe controlled
-            with the ``emissive`` and ``render_points_as_spheres`` options.
+            Visualization style of the points to be rendered. May be either ``points``
+            or ``points_gaussian``. The ``points_gaussian`` option may be controlled
+            with the ``emissive`` and ``render_points_as_spheres`` options in
+            `kwargs`.
         zlevel : int or ArrayLike, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
