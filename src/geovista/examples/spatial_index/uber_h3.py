@@ -13,23 +13,33 @@ This example demonstrates the Uber ``H3`` hexagonal hierarchical spatial index.
 💼 Background
 ^^^^^^^^^^^^^
 
-The relationship between the ``H3`` **base icosahedron** Platonic solid and its
-**base resolution mesh** consisting of **110 hexagons** and **12 pentagons**
-defines the starting point of this hierarchical sequence of hexagonal meshes.
+A spatial index is a structured collection of shapes that allows you to
+approximately describe any region by simply taking a subset of shapes from that
+index. The ``H3`` library, developed by Uber as an open source project, uses
+hexagons to divide up the earth into cells. ``H3`` is hierarchical, meaning that
+there are multiple resolutions of hexagonal meshes dividing the earth. Depending on
+the resolution, these hexagonal cells range from **~1m^2** to **~4,000,000km^2**.
+
+The coarsest mesh in ``H3``, the **base resolution mesh**, consists of
+**110 hexagons** and **12 pentagons**, this is the starting point in a
+hierarchical sequence of hexagonal meshes. Its structure is built on top of a
+**base icosahedron**, the relationship between the **base icosahedron** and the
+**base resolution mesh** informs the structure of the meshes of the further
+meshes in the sequence.
 Note that, a spherical surface cannot be tessellated solely with hexagons;
 pentagons are also required.
 
-The **12 vertices** of the underlying **base icosahedron** anchors the center of
+The **12 vertices** of the underlying **base icosahedron** anchor the center of
 the **12 pentagon cells**, around which the **110 hexagon cells** are tessellated
-to form a fixed base mesh. Note that, all pentagons are located over ocean,
-which suits the business model of Uber, and incidentally are the locations of
-most projection distortion.
+to form a fixed base mesh. Note that the center of all pentagons are located over
+ocean, which suits the business model of Uber. Incidentally, these are the locations
+of most projection distortion.
 
 ``H3`` is a hierarchical geospatial index. Each cell has a unique 64-bit
 ``H3Index`` that identifies its geospatial location and position in the ``H3``
 hierarchy. Every parent hexagonal cell is subdivided into **7 child
 hexagonal cells**, and every parent pentagon cell is subdivided into **6 child
-cells**, one of which is a pentagon.
+cells**, precisely one of which is a pentagon.
 
 From the coarsest base resolution, consisting of **122 cells**, there are
 a further 15 increasingly higher resolution hierarchical child meshes.
