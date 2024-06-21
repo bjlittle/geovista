@@ -54,10 +54,7 @@ np = lazy.load("numpy")
 pv = lazy.load("pyvista")
 
 __all__ = [
-    "CUT_EAST",
-    "CUT_EXACT",
     "CUT_OFFSET",
-    "CUT_WEST",
     "MeridianSlice",
     "SPLINE_N_POINTS",
     "SliceBias",
@@ -69,17 +66,8 @@ __all__ = [
     "slice_mesh",
 ]
 
-CUT_EAST: str = "EAST"
-"""Preference for a slice to bias cells east of the chosen meridian."""
-
-CUT_EXACT: str = "EXACT"
-"""Preference for a slice to be true to the chosen meridian."""
-
 CUT_OFFSET: float = 1e-5
 """Cartesian west/east bias offset of a slice."""
-
-CUT_WEST: str = "WEST"
-"""Preference for a slice to bias cells west of the chosen meridian."""
 
 SPLINE_N_POINTS: int = 1
 """The default number of interpolation points along a spline."""
@@ -90,8 +78,13 @@ class SliceBias(Enum):
     """Enumerate meridian slice bias."""
 
     WEST = -1
+    """Preference for a slice to bias cells west of the chosen meridian."""
+
     EXACT = auto()
+    """Preference for a slice to be true to the chosen meridian."""
+
     EAST = auto()
+    """Preference for a slice to bias cells east of the chosen meridian."""
 
 
 class MeridianSlice:  # numpydoc ignore=PR01
@@ -149,11 +142,15 @@ class MeridianSlice:  # numpydoc ignore=PR01
         self.radius = distance(mesh)
         self.meridian = wrap(meridian)[0]
         self.offset = abs(CUT_OFFSET if offset is None else offset)
-        self.slices = {bias.name: self._intersection(bias) for bias in SliceBias}
+        self.slices = {bias: self._intersection(bias) for bias in SliceBias}
 
-        n_cells = self.slices[CUT_EXACT].n_cells
-        self.west_ids = set(self.slices[CUT_WEST][GV_CELL_IDS]) if n_cells else set()
-        self.east_ids = set(self.slices[CUT_EAST][GV_CELL_IDS]) if n_cells else set()
+        n_cells = self.slices[SliceBias.EXACT].n_cells
+        self.west_ids = (
+            set(self.slices[SliceBias.WEST][GV_CELL_IDS]) if n_cells else set()
+        )
+        self.east_ids = (
+            set(self.slices[SliceBias.EAST][GV_CELL_IDS]) if n_cells else set()
+        )
         self.split_ids = self.west_ids.intersection(self.east_ids)
 
     def _intersection(
@@ -201,7 +198,7 @@ class MeridianSlice:  # numpydoc ignore=PR01
 
     def extract(
         self,
-        bias: str | None = None,
+        bias: SliceBias | None = None,
         split_cells: bool | None = False,
         clip: bool | None = True,
     ) -> pv.PolyData:
@@ -212,15 +209,16 @@ class MeridianSlice:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        bias : str, optional
+        bias : SliceBias, optional
             Whether to extract the west, east or exact intersection cells.
-            Default to :data:`CUT_WEST`.
+            Defaults to :attr:`SliceBias.WEST`.
         split_cells : bool, default=False
-            Determine whether to return coincident whole cells or bisected
-            cells of the meridian.
+            Determine whether to return coincident whole cells (``=False``) or
+            bisected cells (``=True``) of the meridian.
         clip : bool, default=True
-            Determine whether to return the cells of intersection along the
-            meridian or the great circle passing through the meridian.
+            Determine whether to return the cells of intersection only along
+            the pole-to-pole meridian (``=True``) or along full great circle
+            for this meridian's longitude (``=False``).
 
         Returns
         -------
@@ -233,20 +231,13 @@ class MeridianSlice:  # numpydoc ignore=PR01
 
         """
         if bias is None:
-            bias = CUT_WEST
+            bias = SliceBias.WEST
 
-        if bias.upper() not in SliceBias.__members__:
-            options = [f"'{option.name.lower()}'" for option in SliceBias]
-            options = f"{', '.join(options[:-1])} or {options[-1]}"
-            emsg = f"Expected a slice bias of either {options}, got '{bias}'."
-            raise ValueError(emsg)
-
-        bias = bias.upper()
         mesh = pv.PolyData()
 
         # there is no intersection between the spline extruded in the
         # z-plane and the mesh
-        if self.slices[CUT_EXACT].n_cells == 0:
+        if self.slices[SliceBias.EXACT].n_cells == 0:
             return mesh
 
         if split_cells:
@@ -353,7 +344,8 @@ def combine(
         the resultant mesh.
     clean : bool, default=False
         Specify whether to merge duplicate points, remove unused points,
-        and/or remove degenerate cells in the resultant mesh.
+        and/or remove degenerate cells in the resultant mesh. See
+        :meth:`pyvista.PolyDataFilters.clean`.
 
     Returns
     -------
@@ -581,7 +573,7 @@ def slice_cells(
     rtol: float | None = None,
     atol: float | None = None,
 ) -> pv.PolyData:
-    """Cut the mesh along the `meridian`, breaking cell connectivity.
+    """Cut a cell-based mesh along a `meridian`, breaking cell connectivity.
 
     Create a seam along the `meridian` of the geolocated `mesh`, from the
     north-pole to the south-pole, breaking cell connectivity thus allowing
@@ -706,20 +698,20 @@ def slice_cells(
 def slice_lines(
     mesh: pv.PolyData, n_points: int | None = None, copy: bool | None = False
 ) -> pv.PolyData:
-    """Cut the line mesh along the antimeridian, breaking line connectivity.
+    """Cut a line-based mesh along the Antimeridian, breaking line connectivity.
 
-    The connectivity of any line segment in the mesh traversing the antimeridian will be
+    The connectivity of any line segment in the mesh traversing the Antimeridian will be
     broken. Each end-point of the segment will be connected to a new interior point,
-    located at the point of intersection between the line segment and the antimeridian
+    located at the point of intersection between the line segment and the Antimeridian
     i.e., the segment will be split into two separate, disjointed segments. If the
-    end-point of a segment lies on the antimeridian, then it is replaced with an
+    end-point of a segment lies on the Antimeridian, then it is replaced with an
     identical but distinct co-located point.
 
     This operation is typically performed prior to reprojection in order to create a
     seam in the line segments.
 
-    The mesh is sliced with a z-x plane formed by extruding a line on the x-axis along
-    the z-axis.
+    The mesh is sliced with a ``z-x`` plane formed by extruding a line on the
+    x-axis along the z-axis.
 
     Parameters
     ----------
@@ -732,12 +724,12 @@ def slice_lines(
         end-points and 1 mid-point. Defaults to :data:`SPLINE_N_POINTS`.
     copy : bool, default=False
         Return a deepcopy of the ``mesh`` when there are no points of intersection with
-        the antimeridian. Otherwise, the original ``mesh`` is returned.
+        the Antimeridian. Otherwise, the original ``mesh`` is returned.
 
     Returns
     -------
     :class:`~pyvista.PolyData`
-        The line mesh with a seam along the antimeridian, if bisected.
+        The line mesh with a seam along the Antimeridian, if bisected.
 
     Notes
     -----
@@ -887,13 +879,14 @@ def slice_mesh(
     rtol: float | None = None,
     atol: float | None = None,
 ) -> pv.PolyData:
-    """Cut the mesh along the antimeridian, breaking line connectivity.
+    """Cut a mesh along the Antimeridian, breaking connectivities.
 
     A point-cloud cannot be sliced as there are no cells or lines, and will be
     returned unaltered. Otherwise, a new instance of the mesh will be returned
     regardless of whether it has been bisected or not.
 
-    Also see :func:`slice_lines` and :func:`slice_cells` for further details.
+    Basically calls :func:`slice_cells` or :func:`slice_lines`, depending on
+    the mesh type.
 
     Parameters
     ----------
@@ -909,7 +902,7 @@ def slice_mesh(
     Returns
     -------
     :class:`~pyvista.PolyData`
-        The mesh with a seam along the antimeridian, if bisected.
+        The mesh with a seam along the Antimeridian, if bisected.
 
     Notes
     -----
