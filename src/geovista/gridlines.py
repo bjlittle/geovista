@@ -237,8 +237,8 @@ def create_meridians(
         The delta (degrees) between neighbouring meridians. Defaults to
         :data:`LONGITUDE_STEP`.
     lat_step : float, optional
-        The delta (degrees) between neighbouring parallels. Defaults to
-        :data:`LATITUDE_STEP`.
+        The delta (degrees) between neighbouring parallels. Sets the
+        frequency of the labels. Defaults to :data:`LATITUDE_STEP`.
     n_samples : int, optional
         The number of points in a single line of longitude. Defaults to
         :data:`LONGITUDE_N_SAMPLES`.
@@ -445,7 +445,8 @@ def create_parallels(
         The delta (degrees) between neighbouring parallels. Defaults to
         :data:`LATITUDE_STEP`.
     lon_step : float, optional
-        The delta (degrees) between neighbouring meridians. Defaults to
+        The delta (degrees) between neighbouring meridians. Sets the
+        frequency of the labels. Defaults to
         :data:`LONGITUDE_STEP`.
     n_samples : int, optional
         The number of points in a single line of latitude. Defaults to

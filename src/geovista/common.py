@@ -136,10 +136,10 @@ VTK_POINT_IDS: str = "vtkOriginalPointIds"
 """Name of the VTK point indices array."""
 
 WRAP_ATOL: float = 1.0e-8
-"""Absolute tolerance for values close to longitudinal wrap ``base + period``."""
+"""Absolute tolerance for longitudes close to 'wrap meridian'."""
 
 WRAP_RTOL: float = 1.0e-5
-"""Relative tolerance for values close to longitudinal wrap ``base + period``."""
+"""Relative tolerance for longitudes close to 'wrap meridian'."""
 
 ZLEVEL_SCALE: float = 1.0e-4
 """Proportional multiplier for z-axis levels/offsets."""
@@ -400,11 +400,11 @@ def from_cartesian(
         if the mesh has a seam at the 180th meridian and `closed_interval`
         is ``True``, then longitudes will be in the closed interval [-180, 180].
     rtol : float, optional
-        The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
 
     Returns
     -------
@@ -779,11 +779,11 @@ def to_lonlat(
     radius : float, optional
         The `radius` of the sphere. Defaults to :data:`RADIUS`.
     rtol : float, optional
-        The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
 
     Returns
     -------
@@ -834,11 +834,11 @@ def to_lonlats(
     stacked : bool, default=True
         Default the resultant shape to be ``(N, 2)``, otherwise ``(2, N)``.
     rtol : float, optional
-        The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
 
     Returns
     -------
@@ -963,11 +963,15 @@ def wrap(
         The end limit of the half-open interval expressed as a length
         from the `base`, in the same units. Defaults to :data:`PERIOD`.
     rtol : float, optional
-        The relative tolerance for values close to longitudinal wrap
-        ``base + period``. Defaults to :data:`WRAP_RTOL`.
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        that is ``base + period`` - to be considered equal to the wrap
+        meridian. Necessary to prevent cell smearing. See  `rtol` in
+        :func:`numpy.isclose`. Defaults to :data:`WRAP_RTOL`.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal wrap
-        ``base + period``. Defaults to :data:`WRAP_ATOL`.
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        that is ``base + period`` - to be considered equal to the wrap
+        meridian. Necessary to prevent cell smearing. See `atol` in
+        :func:`numpy.isclose`. Defaults to :data:`WRAP_ATOL`.
     dtype : data-type, default=float64
         The resultant longitude `dtype`.
 
@@ -979,6 +983,19 @@ def wrap(
     Notes
     -----
     .. versionadded:: 0.1.0
+
+    Examples
+    --------
+    >>> from geovista.common import wrap
+    >>> import numpy as np
+    >>> wrap([179.0, 179.999, 180.0, 181.0])
+    array([ 179., -180., -180., -179.])
+
+    >>> wrap([179, 180, 181], period=90)
+    array([ -91., -180., -179.])
+
+    >>> wrap([179, 180, 181], base=0, period=90)
+    array([89.,  0.,  1.])
 
     """
     if not isinstance(lons, Iterable):

@@ -88,11 +88,11 @@ def remesh(
         Whether to check the remeshed surface for bad cells and
         free edges.
     rtol : float, optional
-        The relative tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
     atol : float, optional
-        The absolute tolerance for values close to longitudinal
-        :func:`geovista.common.wrap` ``base + period``.
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
 
     Returns
     -------
