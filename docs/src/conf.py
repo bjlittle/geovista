@@ -363,7 +363,7 @@ html_theme_options = {
             "icon": "fa-brands fa-youtube",
         },
     ],
-    "max_navbar_depth": 2,
+    "max_navbar_depth": 3,
     "navigation_with_keys": False,
     "path_to_docs": "docs/src",
     "repository_branch": "main",
