@@ -1,7 +1,7 @@
 .. _gv-reference:
 
-🚧 :fa:`mountain` Reference
-===========================
+:fa:`mountain` Reference
+========================
 
 .. note::
     :class: margin

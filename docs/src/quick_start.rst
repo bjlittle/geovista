@@ -61,7 +61,7 @@ Examples
   `vtk.js <https://kitware.github.io/vtk-js/index.html>`_ backend does **not**
   support rendering text or points as spheres.
 
-Let's explore various atmospheric and oceanographic model data using
+Let's explore some atmospheric and oceanographic model data using
 ``geovista``, which makes it easy to visualize **rectilinear**,
 **curvilinear**, and **unstructured** meshes.
 
@@ -69,34 +69,25 @@ Let's explore various atmospheric and oceanographic model data using
 OISST AVHRR
 ^^^^^^^^^^^
 
-This example renders a `NOAA/NCEI Optimum Interpolation SST`_ (OISST) Advanced
+This example renders a 2-D data array with 1-D X and Y **rectilinear**
+coordinates as a :term:`mesh <Mesh>` of quadrilateral :term:`cells <Cell>` in
+3-D with coastlines.
+
+The data source is a `NOAA/NCEI Optimum Interpolation SST`_ (OISST) Advanced
 Very High Resolution Radiometer (AVHRR)
 :term:`rectilinear grid <Rectilinear Grid>` containing ``1,036,800``
-quadrilateral :term:`cells <Cell>` and ``1,038,961`` :term:`points <Point>`.
-The grid is created from the bounds of ``1-D`` geographic longitude and
+quadrilateral cells and ``1,038,961`` :term:`points <Point>`.
+
+The mesh is created from the bounds of 1-D geographic longitude and
 latitude coordinates using the :meth:`~geovista.bridge.Transform.from_1d`
-method.
+method. Each X and Y coordinate has 2 coordinate bounds describing
+a quadrilateral cell.
 
-A `threshold`_ is applied to the grid to remove ``345,650`` ``NaN``
-:term:`land mask <Land Mask>` cells, revealing a `NASA Blue Marble`_
-:term:`textured mapped <Texture Map>` :term:`base layer <Base Layer>`
-underneath.
-
-*Sea Surface Temperature* data located on the grid cells are rendered using
-the :term:`perceptually uniform <Perceptually Uniform Colormap>`
+A 2-D array of *Sea Surface Temperature* data located on the mesh cells
+are rendered using the
+:term:`perceptually uniform <Perceptually Uniform Colormap>`
 `cmocean balance`_ diverging colormap, along with
-`10m Natural Earth coastlines`_.
-
-The *grid*, *coastlines* and *base layer* are then transformed to the
-`Robinson`_ pseudo-cylindrical projection using the `ESRI spatial reference`_
-``ESRI:54030``.
-
-.. note::
-
-    Basic projection support is available within ``geovista`` for
-    **Cylindrical** and **Pseudo-Cylindrical** projections. As ``geovista``
-    matures, we'll aim to enrich that capability and complement it with
-    other classes of projections, such as **Azimuthal** and **Conic**.
+`10m Natural Earth coastlines`_. Note that, the land cells are masked.
 
 .. pyvista-plot::
     :context:
@@ -114,38 +105,42 @@ The *grid*, *coastlines* and *base layer* are then transformed to the
         data=sample.data
     )
 
-    # Remove cells from the mesh with NaN values.
-    mesh = mesh.threshold()
-
-    # Plot the mesh on a Robinson projection using an
-    # ESRI spatial reference identifier.
-    plotter = gv.GeoPlotter(crs="ESRI:54030")
+    # Plot the mesh with coastlines.
+    plotter = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}"}
     plotter.add_mesh(
         mesh,
         cmap="balance",
         scalar_bar_args=sargs
     )
-    plotter.add_base_layer(texture=gv.blue_marble())
     plotter.add_coastlines(color="white")
-    plotter.view_xy()
-    plotter.camera.zoom(1.4)
+    plotter.camera.zoom(1.2)
     plotter.show()
 
 
 NEMO ORCA2
 ^^^^^^^^^^
 
-This example renders a `Nucleus for European Modelling of the Ocean`_ (NEMO)
+This example renders a 2-D data array with 2-D X and Y **curvilinear**
+coordinates as a :term:`mesh <Mesh>` of quadilateral :term:`cells <Cell>` in
+3-D. A :term:`threshold <Threshold>` is applied to remove cells with masked
+data. Coastlines and a :term:`base layer <Base Layer>` are also added before
+the results are transformed to a flat 2-D surface with a `Plate Carrée`_
+projection.
+
+The data source is a `Nucleus for European Modelling of the Ocean`_ (NEMO)
 ORCA2 global ocean tripolar :term:`curvilinear grid <Curvilinear Grid>`
 containing ``26,640`` quadrilateral :term:`cells <Cell>` and ``106,560``
-:term:`points <Point>`. As the grid is curvilinear, it is created from
-the bounds of ``2-D`` geographic longitude and latitude coordinates using
-the :meth:`~geovista.bridge.Transform.from_2d` method.
+:term:`points <Point>`.
 
-As ORCA2 is an ocean model, we use a `threshold`_ to remove ``10,209`` ``NaN``
+As the grid is curvilinear, it is created from the bounds of 2-D geographic
+longitude and latitude coordinates using the
+:meth:`~geovista.bridge.Transform.from_2d` method. Each X and Y
+coordinate has 4 coordinate bounds describing a quadrilateral cell.
+
+As ORCA2 is an ocean model, we use a `threshold`_ to remove ``10,209`` ``nan``
 :term:`land mask <Land Mask>` cells , and :term:`texture map <Texture Map>`
-a :term:`base layer <Base Layer>` underneath with a `1:50m Natural Earth I`_
+a base layer underneath with a `1:50m Natural Earth I`_
 raster.
 
 A :term:`perceptually uniform <Perceptually Uniform Colormap>`
@@ -155,8 +150,15 @@ Temperature* data located on the grid cells, which is then complemented with
 
 Finally, a `cartopy`_ :term:`CRS <Coordinate Reference System>`
 is used to transform the :term:`actors <Actor>` in the scene to the
-`Equidistant Cylindrical`_ (`Plate Carrée`_) conformal cylindrical
+`Equidistant Cylindrical`_ (Plate Carrée`) conformal cylindrical
 projection.
+
+.. note::
+
+    Basic projection support is available within ``geovista`` for
+    **Cylindrical** and **Pseudo-Cylindrical** projections. As ``geovista``
+    matures, we'll aim to enrich that capability and complement it with
+    other classes of projections, such as **Azimuthal** and **Conic**.
 
 .. pyvista-plot::
     :context:
@@ -197,19 +199,20 @@ projection.
 WAVEWATCH III
 ^^^^^^^^^^^^^
 
-``geovista`` provides rich support for easily constructing a mesh surface from
-various unstructured Earth Science model data.
+``geovista`` provides rich support for easily constructing a
+:term:`mesh <Mesh>` surface from various unstructured Earth Science model
+data.
 
 To demonstrate this we create a `WAVEWATCH III`_ (WW3) unstructured
-triangular mesh from ``1-D`` :term:`points <Point>` and ``2-D``
+triangular mesh from 1-D X and Y **unstructured** coordinates and 2-D
 :term:`connectivity <Connectivity>` using the
 :meth:`~geovista.bridge.Transform.from_unstructured` method.
 
 The ``sample.connectivity``, with shape ``(30559, 3)``, is used to index into
-the ``16,160`` ``1-D`` geographical longitude and latitude points to create a
+the ``16,160`` 1-D geographical longitude and latitude points to create a
 mesh containing ``30,559`` triangular :term:`cells <Cell>`.
 
-The WAVEWATCH III *Sea Surface Wave Significant Height* data is located on
+A 1-D array of *Sea Surface Wave Significant Height* data is located on
 the mesh :term:`nodes <Node>`, which is then interpolated across the
 mesh :term:`cells <Cell>` and rendered with the
 :term:`perceptually uniform <Perceptually Uniform Colormap>`
@@ -220,8 +223,7 @@ As the WAVEWATCH III contains no land based cells, the
 :term:`texture mapped <Texture Map>` :term:`base layer <Base Layer>` is
 visible underneath without the need to `threshold`_ the mesh.
 
-Additionally, the render is finally decorated with
-`10m Natural Earth coastlines`_.
+Finally, the render is decorated with `10m Natural Earth coastlines`_.
 
 .. pyvista-plot::
     :context:
@@ -262,16 +264,17 @@ This final example showcases how `PyVista`_ can take visualization of Earth
 Science data to the next dimension, quite literally.
 
 We use `Finite Volume Community Ocean Model`_ (FVCOM) data to create an
-extruded mesh of the `Plymouth Sound and Tamar River`_ bathymetry.
+extruded :term:`mesh <Mesh>` of the `Plymouth Sound and Tamar River`_
+bathymetry in Cornwall, England.
 
 First the :meth:`~geovista.bridge.Transform.from_unstructured` method is used
-to create a triangular unstructured mesh of the region containing ``75,400``
-:term:`cells <Cell>`.
+to create a triangular mesh from 1-D X and Y **unstructured** coordinates and
+2-D :term:`connectivity <Connectivity>`.
 
-*Sea Floor Depth Below Geoid* data is added to the mesh cells, but also the
-mesh :term:`points <Point>`, which are then used to displace the mesh points
-by a proportionally scaled amount in the direction of the mesh surface
-normals.
+A 1-D array of *Sea Floor Depth Below Geoid* data is added to the mesh
+:term:`cells <Cell>`, but also the mesh :term:`points <Point>`, which
+are then used to displace the mesh points by a proportionally scaled amount
+in the direction of the mesh surface normals.
 
 This displacement or :term:`warping <Warp>` of the mesh reveals the relief of
 the river and sea floor bathymetry, which we are then free to explore

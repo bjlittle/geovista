@@ -87,7 +87,7 @@ consult the facts:
 
         Deeper understanding awaits.
 
-    .. grid-item-card:: 🚧 Reference
+    .. grid-item-card:: Reference
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-reference

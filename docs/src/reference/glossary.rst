@@ -1,7 +1,7 @@
 .. _gv-glossary:
 
-🚧 :fa:`spell-check` Glossary
-=============================
+:fa:`spell-check` Glossary
+==========================
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sodales ante vel eros luctus aliquet. Nam condimentum.
 
@@ -11,6 +11,9 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sodales ante vel er
         TBD
 
     Base Layer
+        TBD
+
+    Bounds
         TBD
 
     Cell
@@ -54,6 +57,9 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sodales ante vel er
         TBD
 
     Sea Mask
+        TBD
+
+    Threshold
         TBD
 
     Texture Map
