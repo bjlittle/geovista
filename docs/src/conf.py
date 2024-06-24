@@ -109,6 +109,7 @@ extensions = [
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx_tags",
+    "sphinx_togglebutton",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
 ]
@@ -203,6 +204,13 @@ tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
 tags_output_dir = "tags"
 tags_page_header = "Gallery examples:"  # tag sub-page, header text
 tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
+
+
+# sphinx-togglebutton options ------------------------------------------------
+# See https://github.com/executablebooks/sphinx-togglebutton
+
+togglebutton_hint = "Click to show"
+togglebutton_hint_hide = "Click to hide"
 
 
 # nitpicky options -----------------------------------------------------------
