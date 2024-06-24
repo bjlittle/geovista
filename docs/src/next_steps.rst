@@ -31,15 +31,18 @@ four distinct needs of documentation users (see :numref:`diátaxis-figure`).
 
     Diátaxis Axes of Needs
 
-Namely, acquiring *practical knowledge*, knowing *how*, through *working*:
+.. note::
+    :class: dropdown
 
-- **Tutorials** - A learning experience through practical lessons.
-- **How-To Guides** - Goal-focused practical guides on specific topics.
+    Namely, acquiring *practical knowledge*, knowing *how*, through *working*:
 
-Acquiring theoretical knowledge, knowing *that*, through *studying*:
+    - **Tutorials** - A learning experience through practical lessons.
+    - **How-To Guides** - Goal-focused practical guides on specific topics.
 
-- **Explanation** - Achieve understanding through discussion and reflection.
-- **Reference** - Succinct factual information laid bare.
+    Acquiring theoretical knowledge, knowing *that*, through *studying*:
+
+    - **Explanation** - Achieve understanding through discussion and reflection.
+    - **Reference** - Succinct factual information laid bare.
 
 So if you learn by *doing*, then explore our *hands-on* themed lessons or
 topic specific how-tos:

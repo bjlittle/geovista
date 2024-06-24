@@ -31,6 +31,7 @@ To view the manifest of registered resources:
     geovsita download --list
 
 .. note::
+    :class: dropdown
 
     Want to know more?
 
@@ -154,6 +155,7 @@ is used to transform the :term:`actors <Actor>` in the scene to the
 projection.
 
 .. note::
+    :class: dropdown
 
     Basic projection support is available within ``geovista`` for
     **Cylindrical** and **Pseudo-Cylindrical** projections. As ``geovista``

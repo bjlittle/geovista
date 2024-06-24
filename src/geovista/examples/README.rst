@@ -15,6 +15,7 @@ be run from the command line with:
     geovista examples --all --verbose
 
 .. note::
+    :class: dropdown
 
     Want to know more?
 
