@@ -37,7 +37,7 @@ quasi-unstructured Spherical Multi-Cell (SMC) grid.
 
 Bring your data alive with GeoVista! 🚀
 
-Keen to know more? Well, let's begin ...
+Tempted? Keen to know more? Well, let's begin ...
 
 ## Motivation
 
@@ -86,38 +86,6 @@ pip install geovista
 ```
 
 Checkout out our [PyPI Download Stats](https://pypistats.org/packages/geovista), if you like that kinda thing.
-
-### Developer
-
-If you simply can't wait for the next release to play with the latest hot features, then you can easily
-install the `main` development branch from GitHub:
-```shell
-pip install git+https://github.com/bjlittle/geovista@main
-```
-
-Alternatively, to configure a full developer environment, first clone the GeoVista GitHub repository:
-```shell
-git clone git@github.com:bjlittle/geovista.git
-```
-Change to the root directory:
-```shell
-cd geovista
-```
-Create the `geovista-dev` conda development environment:
-```shell
-conda env create --file requirements/geovista.yml
-```
-Now activate the environment and install the `main` development branch of GeoVista:
-```shell
-conda activate geovista-dev
-pip install --no-deps --editable .
-```
-Finally, you're good to roll 🥳
-
-And for extra credit, install our developer `pre-commit` git-hooks:
-```shell
-pre-commit install
-```
 
 ## Quick Start
 

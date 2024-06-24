@@ -1,21 +1,30 @@
 .. _gv-examples-gallery:
 
-****************
-Examples Gallery
-****************
+*********************
+:fa:`images` Examples
+*********************
 
 This interactive gallery highlights the growing capabilities and
 features of ``geovista``.
 
-.. role:: bash(code)
-    :language: bash
+It is generated from the ``geovista.examples``, which can also
+be run from the command line with:
 
-The gallery is generated from the ``geovista.examples``, which can also
-be run from the command line with :bash:`geovista examples --all --verbose`.
+.. code:: console
+
+    geovista examples --all --verbose
+
+.. note::
+
+    Want to know more?
+
+    .. code:: console
+
+        geovista examples --help
 
 .. note::
   :class: margin
 
-  The gallery **Interactive Scene**
+  The **Interactive Scene**
   `vtk.js <https://kitware.github.io/vtk-js/index.html>`_ backend does **not** support
-  text rendering or points as spheres.
+  rendering text or points as spheres.

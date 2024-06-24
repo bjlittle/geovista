@@ -956,9 +956,9 @@ def npoints(
     >>> from geovista.geodesic import npoints
     >>> import numpy as np
     >>> points = npoints(start_lon=-10, start_lat=20, end_lon=10, end_lat=30, npts=5)
-    >>> print(np.array(points, dtype=np.float16))
-    [[-6.887 -3.69  -0.41   2.963  6.43 ]
-     [21.84  23.62  25.34  26.98  28.53 ]]
+    >>> np.array(points, dtype=np.float16)
+    array([[-6.887, -3.69 , -0.41 ,  2.963,  6.43 ],
+           [21.84 , 23.62 , 25.34 , 26.98 , 28.53 ]], dtype=float16)
 
     """
     if geod is None:
@@ -1046,9 +1046,10 @@ def npoints_by_idx(
     >>> points = npoints_by_idx(
     ...     lons=[-10, 0, 10], lats=[20, 25, 30], start_idx=0, end_idx=1, npts=5
     ... )
-    >>> print(np.array(points, dtype=np.float16))
-    [[-8.38  -6.746 -5.09  -3.414 -1.718]
-     [20.88  21.73  22.58  23.4   24.22 ]]
+    >>> np.array(points, dtype=np.float16)
+    array([[-8.38 , -6.746, -5.09 , -3.414, -1.718],
+           [20.88 , 21.73 , 22.58 , 23.4  , 24.22 ]], dtype=float16)
+
 
     """
     if geod is None:

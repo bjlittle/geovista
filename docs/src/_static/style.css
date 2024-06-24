@@ -1,3 +1,7 @@
+.center {
+    text-align: center;
+}
+
 .sd-card-img-top {
     width: 15% !important;
     position: absolute !important;
