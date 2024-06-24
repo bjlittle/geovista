@@ -35,6 +35,7 @@ These packages may be installed with:
     pip install geovista[exam]
 
 .. note::
+    :class: dropdown
 
     `conda`_ users should also install `pip`_ into their `conda`_ environment.
 
@@ -105,5 +106,6 @@ And for extra credit, install our developer `pre-commit`_ git-hooks:
     pre-commit install
 
 .. note::
+    :class: dropdown
 
     Please ensure to install `pre-commit`_ into your environment first.
