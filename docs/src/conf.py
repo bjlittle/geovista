@@ -123,6 +123,7 @@ templates_path = ["_templates"]
 exclude_patterns = [
     "**.ipynb_checkpoints",
     ".DS_Store",
+    "_autoapi_templates",
     "_build",
     "Thumbs.db",
     "reference/generated/api/index.rst",
@@ -278,6 +279,7 @@ autoapi_dirs = [
     package_dir,
 ]
 autoapi_root = "reference/generated/api"
+autoapi_template_dir = "_autoapi_templates"
 autoapi_ignore = [
     str(package_dir / "geovista/_version.py"),
     str(package_dir / "geovista/__main__.py"),

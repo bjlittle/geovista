@@ -13,7 +13,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sed mi id leo volutp
 .. toctree::
     :maxdepth: 1
 
-    ⏏ API Reference <generated/api/geovista/index>
+    generated/api/geovista/index
     about
     changelog
     cli
