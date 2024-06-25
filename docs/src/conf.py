@@ -164,12 +164,16 @@ if release.endswith("+dirty"):
     release = release[: -len("+dirty")]
 
 # docs src directory
-src_dir = Path(__file__).absolute().parent
-root_dir = src_dir.parents[1]
-package_dir = root_dir / "src"
+docs_src_dir = Path(__file__).absolute().parent
+docs_images_dir = docs_src_dir / "_static" / "images"
+root_dir = docs_src_dir.parents[1]
+package_src_dir = root_dir / "src"
+package_dir = package_src_dir / "geovista"
 
-autolog(f"{src_dir=}", section="General")
+autolog(f"{docs_src_dir=}", section="General")
+autolog(f"{docs_images_dir=}", section="General")
 autolog(f"{root_dir=}", section="General")
+autolog(f"{package_src_dir=}", section="General")
 autolog(f"{package_dir=}", section="General")
 
 
@@ -276,15 +280,15 @@ autodoc_typehints_description_target = "documented"
 
 autoapi_type = "python"
 autoapi_dirs = [
-    package_dir,
+    package_src_dir,
 ]
 autoapi_root = "reference/generated/api"
 autoapi_template_dir = "_autoapi_templates"
 autoapi_ignore = [
-    str(package_dir / "geovista/_version.py"),
-    str(package_dir / "geovista/__main__.py"),
-    str(package_dir / "geovista/cli.py"),
-    str(package_dir / "geovista/examples/*"),
+    str(package_dir / "_version.py"),
+    str(package_dir / "__main__.py"),
+    str(package_dir / "cli.py"),
+    str(package_dir / "examples/*"),
 ]
 autoapi_member_order = "groupwise"
 autoapi_options = [
@@ -483,10 +487,10 @@ pyvista.BUILDING_GALLERY = True
 os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 
 # Save figures in specified directory
-images_dir = src_dir / "generated" / "images"
-pyvista.FIGURE_PATH = str(images_dir)
-if not images_dir.exists():
-    images_dir.mkdir(parents=True, exist_ok=True)
+pyvista_images_dir = docs_src_dir / "generated" / "images"
+pyvista.FIGURE_PATH = str(pyvista_images_dir)
+if not pyvista_images_dir.exists():
+    pyvista_images_dir.mkdir(parents=True, exist_ok=True)
 
 # We also need to start this on CI services and GitHub Actions has a CI env var
 if on_rtd or os.environ.get("CI"):
@@ -499,15 +503,16 @@ scraper = DynamicScraper()
 # See https://sphinx-gallery.github.io/stable/configuration.html
 
 sphinx_gallery_conf = {
+    "default_thumb_file": str(docs_images_dir / "gallery-thumb.png"),
     "filename_pattern": "/.*",
     "ignore_pattern": "(__init__)|(clouds)|(fesom)|(synthetic)",
-    "examples_dirs": "../../src/geovista/examples",
+    "examples_dirs": str(package_dir / "examples"),
     "gallery_dirs": "generated/gallery",
     "min_reported_time": 90,
     "matplotlib_animations": True,
     # see https://github.com/sphinx-gallery/sphinx-gallery/pull/195
     "plot_gallery": "'True'",
-    "doc_module": ("geovista"),
+    "doc_module": "geovista",
     "image_scrapers": (scraper, "matplotlib"),
     "download_all_examples": False,
     "remove_config_comments": True,
