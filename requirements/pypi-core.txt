@@ -1,12 +1,12 @@
-cartopy>=0.22
+cartopy >=0.22
 click
 click-default-group
 cmocean
 lazy_loader
 netCDF4
-numpy>=1.23
+numpy >=1.24
 platformdirs
 pooch
 pykdtree
-pyproj>=3.3
-pyvista>=0.43.1
+pyproj >=3.3
+pyvista >=0.43.1
