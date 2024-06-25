@@ -56,7 +56,7 @@ Examples
    pyvista.global_theme.anti_aliasing = 'fxaa'
 
 .. note::
-  :class: margin
+  :class: margin, dropdown, toggle-shown
 
   The **Interactive Scene**
   `vtk.js <https://kitware.github.io/vtk-js/index.html>`_ backend does **not**
