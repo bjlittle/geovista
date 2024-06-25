@@ -39,7 +39,7 @@ four distinct needs of documentation users (see :numref:`diátaxis-figure`).
     - **Tutorials** - A learning experience through practical lessons.
     - **How-To Guides** - Goal-focused practical guides on specific topics.
 
-    Acquiring theoretical knowledge, knowing *that*, through *studying*:
+    Acquiring *theoretical knowledge*, knowing *that*, through *studying*:
 
     - **Explanation** - Achieve understanding through discussion and reflection.
     - **Reference** - Succinct factual information laid bare.
@@ -118,7 +118,7 @@ similar gallery examples organised by specific features:
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        Gallery.
+        Peruse the Gallery.
 
     .. grid-item-card:: Tags
         :class-title: custom-title
@@ -133,7 +133,7 @@ similar gallery examples organised by specific features:
 
 
 However, if you're a developer and want to contribute, then
-we've curated some best practice, process and advice that'll help get you up
+we've curated some best practice, process and advice that'll help you get up
 and running in a snap:
 
 .. card:: 🚧 Contributing

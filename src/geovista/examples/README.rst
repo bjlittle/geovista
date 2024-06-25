@@ -10,6 +10,13 @@ features of ``geovista``.
 It is generated from the ``geovista.examples``, which can also
 be run from the command line with:
 
+.. note::
+  :class: margin
+
+  The **Interactive Scene**
+  `vtk.js <https://kitware.github.io/vtk-js/index.html>`_ backend does **not** support
+  rendering text or points as spheres.
+
 .. code:: console
 
     geovista examples --all --verbose
@@ -22,10 +29,3 @@ be run from the command line with:
     .. code:: console
 
         geovista examples --help
-
-.. note::
-  :class: margin
-
-  The **Interactive Scene**
-  `vtk.js <https://kitware.github.io/vtk-js/index.html>`_ backend does **not** support
-  rendering text or points as spheres.
