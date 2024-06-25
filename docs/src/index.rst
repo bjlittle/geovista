@@ -303,9 +303,9 @@ We'd 💛 to hear from you.
     :maxdepth: 1
     :hidden:
 
+    tutorials/index
     howtos/index
     explanation/index
-    tutorials/index
     reference/index
 
 
