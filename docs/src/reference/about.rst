@@ -23,12 +23,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque et tristiq
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum metus est, mollis vitae nunc eu, ultrices pretium.
 
 
-🚧 :fa:`square-plus` Diátaxis
------------------------------
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam at lectus et turpis imperdiet iaculis ultrices sit.
-
-
 🚧 :fa:`file-contract` License
 ------------------------------
 
