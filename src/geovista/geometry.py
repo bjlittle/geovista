@@ -101,13 +101,13 @@ def coastlines(
 def load_coastline_geometries(
     resolution: str | None = None,
 ) -> list[np.ndarray]:
-    """Fetch Natural Earth coastline shapefile for the required `resolution`.
+    """Download Natural Earth coastline shapefile for the required `resolution`.
 
     If the geometries are not already available within the cartopy cache, then
     they will be downloaded.
 
-    The 2-D longitude (φ) and latitude (λ) xy coastline geometries will be
-    unpacked as 3-D xy0 coordinates i.e., φλ0.
+    The 2-D longitude (``φ``) and latitude (``λ``) ``xy`` coastline geometries will be
+    unpacked as 3-D ``xy0`` coordinates i.e., ``φλ0``.
 
     Parameters
     ----------
@@ -118,8 +118,8 @@ def load_coastline_geometries(
 
     Returns
     -------
-    List[np.ndarray]
-        A list containing one or more coastline xy0 geometries.
+    list of np.ndarray
+        A list containing one or more coastline ``xy0`` geometries.
 
     Notes
     -----
@@ -198,6 +198,9 @@ def load_coastlines(
     Notes
     -----
     .. versionadded:: 0.1.0
+
+    Calls :func:`load_coastline_geometries` to download the original coastline
+    geometries.
 
     """
     if resolution is None:

@@ -6,7 +6,7 @@
 """Filters to analyse, transform and process geolocated meshes.
 
 These filters leverage and build upon the rich, powerful ecosystem of the
-Visualization Toolkit (VTK).
+`Visualization Toolkit (VTK) <https://vtk.org/>`_.
 
 Notes
 -----
@@ -52,17 +52,17 @@ __all__ = [
     "remesh",
 ]
 
-#: Marker for remesh filter eastern cell boundary point.
 REMESH_SEAM_EAST: int = REMESH_SEAM - 1
+"""Marker for remesh filter eastern cell boundary point."""
 
-#: vtkIntersectionPolyDataFilter bad triangle cell array name.
 VTK_BAD_TRIANGLE_MASK: str = "BadTriangle"
+"""``vtkIntersectionPolyDataFilter`` bad triangle cell array name."""
 
-#: vtkIntersectionPolyDataFilter intersection point array name.
 VTK_BOUNDARY_MASK: str = "BoundaryPoints"
+"""``vtkIntersectionPolyDataFilter`` intersection point array name."""
 
-#: vtkIntersectionPolyDataFilter free edge cell array name.
 VTK_FREE_EDGE_MASK: str = "FreeEdge"
+"""``vtkIntersectionPolyDataFilter`` free edge cell array name."""
 
 
 def remesh(
@@ -74,6 +74,10 @@ def remesh(
     atol: float | None = None,
 ) -> Remesh:
     """Slice `mesh` along `meridian` and triangulate any sliced cells.
+
+    See the
+    `vtkIntersectionPolyDataFilter <https://vtk.org/doc/nightly/html/classvtkIntersectionPolyDataFilter.html>`_
+    documentation for more.
 
     Parameters
     ----------
@@ -96,9 +100,9 @@ def remesh(
 
     Returns
     -------
-    Tuple of PolyData
-        The remeshed surface and the remeshed surface left/west of the
-        slice, along with the remeshed surface right/east of the slice.
+    tuple of PolyData
+        The remeshed surface, the remeshed surface left/west of the
+        slice, and the remeshed surface right/east of the slice.
 
     Notes
     -----
