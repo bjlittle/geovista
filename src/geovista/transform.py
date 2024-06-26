@@ -202,8 +202,8 @@ def transform_point(
         :meth:`pyproj.crs.CRS.from_user_input`.
     x : ArrayLike
         The spatial point x-value, in canonical `src_crs` units, to be
-        transformed from the `src_crs` to the `tgt_crs`. Must be scalar
-        (0-dimensional).
+        transformed from the `src_crs` to the `tgt_crs`. Must be a scalar
+        or a single valued 1-D array.
     y : ArrayLike
         The spatial point y-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. Must be scalar
