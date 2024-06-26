@@ -25,6 +25,7 @@ clean:
 	-rm -rf $(SOURCEDIR)/reference/generated
 	-rm -rf $(SOURCEDIR)/tags
 	-rm -f $(SOURCEDIR)/sg_execution_times.rst
+	-rm -f $(SOURCEDIR)/gallery-carousel.txt
 
 doctest:
 	@$(SPHINXBUILD) -b doctest -D plot_gallery=False -D plot_docstring=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/doctest"
