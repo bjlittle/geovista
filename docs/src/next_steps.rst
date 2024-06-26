@@ -6,9 +6,10 @@
 =========================
 
 .. note::
-    :class: margin
+    :class: margin, dropdown, toggle-shown
 
     Content marked with 🚧 indicates it's still under construction.
+
 
 After a brief :ref:`overview <gv-overview>` and
 :ref:`introduction <gv-quick-start>` to ``geovista``, hopefully you'll be keen

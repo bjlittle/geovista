@@ -6,7 +6,7 @@ GeoVista Documentation
 ======================
 
 .. note::
-    :class: margin
+    :class: margin, dropdown, toggle-shown
 
     Content marked with 🚧 indicates it's still under construction.
 
