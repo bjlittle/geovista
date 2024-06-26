@@ -32,6 +32,7 @@ from importlib.metadata import version as get_version
 import os
 from pathlib import Path
 import re
+import textwrap
 from typing import TYPE_CHECKING
 
 import pyvista
@@ -52,6 +53,7 @@ if TYPE_CHECKING:
         PythonProperty,
     )
     from sphinx.application import Sphinx
+    from sphinx.environment import BuildEnvironment
 
     # type aliases.
     Mapper = (
@@ -63,6 +65,10 @@ if TYPE_CHECKING:
         | PythonPackage
         | PythonProperty
     )
+
+
+GALLERY_DIRS: str = "generated/gallery"
+"""sphinx-gallery target output directory"""
 
 
 def autolog(message: str, section: str | None = None, color: str | None = None) -> None:
@@ -137,12 +143,6 @@ source_suffix = {
 # The master toctree document.
 root_doc = "index"
 
-# TODO @bjlittle: See https://github.com/bjlittle/geovista/issues/846
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-suppress_warnings
-suppress_warnings = [
-    # ignore missing gallery files for carousel when plot_gallery=False
-    "image.not_readable",
-]
 
 # -- Project information -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
@@ -507,7 +507,7 @@ sphinx_gallery_conf = {
     "filename_pattern": "/.*",
     "ignore_pattern": "(__init__)|(clouds)|(fesom)|(synthetic)",
     "examples_dirs": str(package_dir / "examples"),
-    "gallery_dirs": "generated/gallery",
+    "gallery_dirs": GALLERY_DIRS,
     "min_reported_time": 90,
     "matplotlib_animations": True,
     # see https://github.com/sphinx-gallery/sphinx-gallery/pull/195
@@ -552,7 +552,7 @@ def indent(block: str, amount: int = 3) -> str:
     )
 
 
-def skip_member(
+def geovista_skip_member(
     app: Sphinx,
     what: str,
     name: str,  # noqa: ARG001
@@ -595,6 +595,75 @@ def _bool_eval(arg: str | bool) -> bool:
     return bool(arg)
 
 
+def generate_carousel(
+    app: Sphinx,
+    fname: Path,
+    ncards: int | None = None,
+    margin: int | None = None,
+    width: int | None = None,
+) -> None:
+    """Generate and write the gallery carousel RST file."""
+    if ncards is None:
+        ncards = 3
+
+    if margin is None:
+        margin = 4
+
+    if width is None:
+        width = "25%"
+
+    base = Path(app.srcdir, *GALLERY_DIRS.split("/"))
+    cards = []
+
+    card = r""".. card::
+    :img-background: {image}
+    :link: {link}
+    :link-type: ref
+    :width: {width}
+    :margin: {margin}
+"""
+
+    for root, _, files in base.walk():
+        if root.name == "images":
+            root_relative = root.relative_to(app.srcdir)
+            link_relative = root.parent.relative_to(app.srcdir)
+
+            for file in files:
+                path = Path(file)
+                if path.suffix == ".png":
+                    # generate the card "img-background" filename
+                    image = root_relative / path
+
+                    # generate the card "link" reference
+                    # remove numeric gallery image index e.g., "001"
+                    parts = path.stem.split("_")[:-1]
+                    link = parts[:2] + list(link_relative.parts) + parts[2:]
+                    link = f"{'_'.join(link)}.py"
+
+                    kwargs = {
+                        "image": image,
+                        "link": link,
+                        "width": width,
+                        "margin": margin,
+                    }
+
+                    cards.append(card.format(**kwargs))
+
+    cards = textwrap.indent("\n".join(cards), prefix=" " * 4)
+    carousel = f""".. card-carousel:: {ncards}
+
+{cards}
+
+.. rst-class:: center
+
+    :fa:`images` Gallery Carousel
+
+"""
+
+    # finally, write the rst for the gallery carousel
+    Path(app.srcdir, fname).write_text(carousel)
+
+
 def geovista_config(app: Sphinx) -> None:
     """Configure geovista sphinx options."""
     # sanitise the config options
@@ -602,18 +671,34 @@ def geovista_config(app: Sphinx) -> None:
     autolog(f"plot_docstring={app.builder.config.plot_docstring}", section="GeoVista")
     plot_gallery = _bool_eval(app.builder.config.plot_gallery)
     autolog(f"{plot_gallery=}", section="GeoVista")
-    if plot_gallery:
-        # TODO @bjlittle: See https://github.com/bjlittle/geovista/issues/846
-        # https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#including-content-based-on-tags
-        # https://www.sphinx-doc.org/en/master/usage/configuration.html#conf-tags
-        tags.add("plot_carousel")  # noqa: F821
+
+
+def geovista_carousel(
+    app: Sphinx,
+    env: BuildEnvironment,  # noqa: ARG001
+    docnames: list[str],  # noqa: ARG001
+) -> None:
+    """Create the gallery carousel."""
+    # create empty or truncate existing file
+    fname = Path(app.srcdir, "gallery-carousel.txt")
+
+    with fname.open("w"):
+        pass
+
+    if _bool_eval(app.builder.config.plot_gallery):
+        # only generate the carousel if we have a gallery
+        generate_carousel(app, fname)
 
 
 def setup(app: Sphinx) -> None:
     """Configure sphinx application."""
+    # we require the output of this extension
+    app.setup_extension("sphinx_gallery.gen_gallery")
     # register geovista options
     app.add_config_value("plot_docstring", "True", "html")
     # early configuration of geovista options
     app.connect("builder-inited", geovista_config, priority=10)
-    # register the autoapi event
-    app.connect("autoapi-skip-member", skip_member)
+    # register callback for the autoapi event
+    app.connect("autoapi-skip-member", geovista_skip_member)
+    # register callback to generate gallery carousel
+    app.connect("env-before-read-docs", geovista_carousel)
