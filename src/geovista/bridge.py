@@ -795,14 +795,13 @@ class Transform:  # numpydoc ignore=PR01
         >>> fname = fetch_raster("bahamas_rgb.tif")
         >>> mesh = Transform.from_tiff(fname, rgb=True, sieve=True, extract=True)
 
-        Plot the result!
+        Now render the result:
 
         >>> plotter = GeoPlotter()
-        >>> _ = plotter.add_base_layer(texture=natural_earth_1())
-        >>> _ = plotter.add_coastlines(color="white")
         >>> _ = plotter.add_mesh(mesh, rgb=True)
         >>> plotter.view_poi()
-        >>> plotter.camera.zoom(40)
+        >>> _ = plotter.add_base_layer(texture=natural_earth_1(), zlevel=0)
+        >>> _ = plotter.add_coastlines(color="white")
         >>> plotter.show()
 
         """
