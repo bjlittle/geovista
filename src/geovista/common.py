@@ -289,7 +289,8 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
         The unstructured grid to be converted.
     clean : bool, default=False
         Specify whether to merge duplicate points, remove unused points,
-        and/or remove degenerate cells in the resultant mesh.
+        and/or remove degenerate cells in the resultant mesh. See
+        :meth:`pyvista.PolyDataFilters.clean`.
 
     Returns
     -------

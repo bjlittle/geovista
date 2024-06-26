@@ -4,9 +4,10 @@
 ==========================
 
 .. note::
-    :class: margin
+    :class: margin, dropdown, toggle-shown
 
     Content marked with 🚧 indicates it's still under construction.
+
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in consectetur orci. Nam convallis viverra dolor in.
 
@@ -21,12 +22,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque et tristiq
 ---------------------------------
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum metus est, mollis vitae nunc eu, ultrices pretium.
-
-
-🚧 :fa:`square-plus` Diátaxis
------------------------------
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam at lectus et turpis imperdiet iaculis ultrices sit.
 
 
 🚧 :fa:`file-contract` License

@@ -14,7 +14,7 @@ dependencies:
   - click
   - click-default-group
   - lazy_loader
-  - numpy >=1.23
+  - numpy >=1.24
   - platformdirs
   - pooch
   - pykdtree
@@ -57,6 +57,7 @@ dependencies:
   - sphinx-design
   - sphinx-gallery >=0.16
   - sphinx-tags
+  - sphinx-togglebutton
   - ipywidgets
   - jupyter-server-proxy
   - nest-asyncio

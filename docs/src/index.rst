@@ -6,7 +6,7 @@ GeoVista Documentation
 ======================
 
 .. note::
-    :class: margin
+    :class: margin, dropdown, toggle-shown
 
     Content marked with 🚧 indicates it's still under construction.
 
@@ -303,9 +303,9 @@ We'd 💛 to hear from you.
     :maxdepth: 1
     :hidden:
 
+    tutorials/index
     howtos/index
     explanation/index
-    tutorials/index
     reference/index
 
 

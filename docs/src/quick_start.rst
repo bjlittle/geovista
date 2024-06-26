@@ -31,6 +31,7 @@ To view the manifest of registered resources:
     geovsita download --list
 
 .. note::
+    :class: dropdown
 
     Want to know more?
 
@@ -55,7 +56,7 @@ Examples
    pyvista.global_theme.anti_aliasing = 'fxaa'
 
 .. note::
-  :class: margin
+  :class: margin, dropdown, toggle-shown
 
   The **Interactive Scene**
   `vtk.js <https://kitware.github.io/vtk-js/index.html>`_ backend does **not**
@@ -154,6 +155,7 @@ is used to transform the :term:`actors <Actor>` in the scene to the
 projection.
 
 .. note::
+    :class: dropdown
 
     Basic projection support is available within ``geovista`` for
     **Cylindrical** and **Pseudo-Cylindrical** projections. As ``geovista``

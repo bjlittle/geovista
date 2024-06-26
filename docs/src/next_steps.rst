@@ -6,9 +6,10 @@
 =========================
 
 .. note::
-    :class: margin
+    :class: margin, dropdown, toggle-shown
 
     Content marked with 🚧 indicates it's still under construction.
+
 
 After a brief :ref:`overview <gv-overview>` and
 :ref:`introduction <gv-quick-start>` to ``geovista``, hopefully you'll be keen
@@ -31,15 +32,18 @@ four distinct needs of documentation users (see :numref:`diátaxis-figure`).
 
     Diátaxis Axes of Needs
 
-Namely, acquiring *practical knowledge*, knowing *how*, through *working*:
+.. note::
+    :class: dropdown
 
-- **Tutorials** - A learning experience through practical lessons.
-- **How-To Guides** - Goal-focused practical guides on specific topics.
+    Namely, acquiring *practical knowledge*, knowing *how*, through *working*:
 
-Acquiring theoretical knowledge, knowing *that*, through *studying*:
+    - **Tutorials** - A learning experience through practical lessons.
+    - **How-To Guides** - Goal-focused practical guides on specific topics.
 
-- **Explanation** - Achieve understanding through discussion and reflection.
-- **Reference** - Succinct factual information laid bare.
+    Acquiring *theoretical knowledge*, knowing *that*, through *studying*:
+
+    - **Explanation** - Achieve understanding through discussion and reflection.
+    - **Reference** - Succinct factual information laid bare.
 
 So if you learn by *doing*, then explore our *hands-on* themed lessons or
 topic specific how-tos:
@@ -115,7 +119,7 @@ similar gallery examples organised by specific features:
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        Gallery.
+        Peruse the Gallery.
 
     .. grid-item-card:: Tags
         :class-title: custom-title
@@ -130,7 +134,7 @@ similar gallery examples organised by specific features:
 
 
 However, if you're a developer and want to contribute, then
-we've curated some best practice, process and advice that'll help get you up
+we've curated some best practice, process and advice that'll help you get up
 and running in a snap:
 
 .. card:: 🚧 Contributing
