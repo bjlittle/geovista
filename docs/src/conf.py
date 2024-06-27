@@ -623,7 +623,9 @@ def generate_carousel(
     :margin: {margin}
 """
 
-    for root, _, files in base.walk():
+    # TODO @bjlittle: use Path.walk when python >=3.12
+    for root, _, files in os.walk(str(base)):
+        root = Path(root)  # noqa: PLW2901
         if root.name == "images":
             root_relative = root.relative_to(app.srcdir)
             link_relative = root.parent.relative_to(app.srcdir)
