@@ -613,7 +613,7 @@ def generate_carousel(
         width = "25%"
 
     base = Path(app.srcdir, *GALLERY_DIRS.split("/"))
-    cards = []
+    cards_by_link = {}
 
     card = r""".. card::
     :img-background: {image}
@@ -647,9 +647,13 @@ def generate_carousel(
                         "margin": margin,
                     }
 
-                    cards.append(card.format(**kwargs))
+                    cards_by_link[link] = card.format(**kwargs)
 
+    # sort the cards by their link
+    cards = [cards_by_link[link] for link in sorted(cards_by_link.keys())]
     cards = textwrap.indent("\n".join(cards), prefix=" " * 4)
+
+    # now, create the card carousel
     carousel = f""".. card-carousel:: {ncards}
 
 {cards}
