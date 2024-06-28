@@ -19,7 +19,8 @@
         "maintenance",
         "infra",
         "doc",
-        "code"
+        "code",
+        "bug"
       ]
     }
   ]
