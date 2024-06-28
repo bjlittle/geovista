@@ -31,7 +31,7 @@ A huge thanks goes to all these worderful people (`Emoji Key ✨`_):
 
 ----
 
-.. include:: ../CONTRIBUTORS.md
+.. include:: ../../../CONTRIBUTORS.md
     :parser: myst_parser.sphinx_
 
 ----
