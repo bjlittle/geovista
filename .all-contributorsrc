@@ -1,19 +1,12 @@
 {
   "projectName": "geovista",
   "projectOwner": "bjlittle",
-  "repoType": "github",
-  "repoHost": "https://github.com",
   "files": [
     "CONTRIBUTORS.md"
   ],
-  "imageSize": 100,
-  "commit": true,
   "commitType": "docs",
-  "commitConvention": "none",
+  "commitConvention": "angular",
   "contributorsPerLine": 7,
-  "contributorsSortAlphabetically": false,
-  "linkToUsage": true,
-  "skipCi": true,
   "contributors": [
     {
       "login": "bjlittle",
