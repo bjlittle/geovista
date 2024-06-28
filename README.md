@@ -491,6 +491,18 @@ things GeoVista!
 GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/licenses/BSD-3-Clause.html) license.
 
 
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=bjlittle/geovista&type=Date)](https://star-history.com/#bjlittle/geovista&Date)
