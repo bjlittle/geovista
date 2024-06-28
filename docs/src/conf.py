@@ -118,6 +118,7 @@ extensions = [
     "sphinx_togglebutton",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
