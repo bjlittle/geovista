@@ -1,4 +1,21 @@
 {
   "projectName": "geovista",
-  "projectOwner": "bjlittle"
+  "projectOwner": "bjlittle",
+  "files": [
+    "README.md"
+  ],
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "contributors": [
+    {
+      "login": "bjlittle",
+      "name": "Bill Little",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2051656?v=4",
+      "profile": "https://github.com/bjlittle",
+      "contributions": [
+        "maintenance"
+      ]
+    }
+  ]
 }
