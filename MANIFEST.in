@@ -8,6 +8,7 @@ prune tests
 
 include .git_archival.txt
 include .gitattributes
+exclude .all-contributorsrc
 exclude .gitignore
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
