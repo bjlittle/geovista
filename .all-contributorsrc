@@ -9,6 +9,7 @@
   "commitConvention": "none",
   "contributorsPerLine": 7,
   "contributorsSortAlphabetically": true,
+  "linkToUsage": true,
   "contributors": [
     {
       "login": "bjlittle",
