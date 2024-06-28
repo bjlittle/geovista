@@ -14,7 +14,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/2051656?v=4",
       "profile": "https://github.com/bjlittle",
       "contributions": [
-        "maintenance"
+        "maintenance",
+        "infra",
+        "doc"
       ]
     }
   ]
