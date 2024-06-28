@@ -58,7 +58,6 @@ dependencies:
   - sphinx-design
   - sphinx-gallery >=0.16
   - sphinx-tags
-  - sphinx-tippy
   - sphinx-togglebutton
   - ipywidgets
   - jupyter-server-proxy
