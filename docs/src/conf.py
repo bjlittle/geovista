@@ -177,6 +177,25 @@ autolog(f"{package_src_dir=}", section="General")
 autolog(f"{package_dir=}", section="General")
 
 
+# sphinx-tippy options -------------------------------------------------------
+# See https://github.com/sphinx-extensions2/sphinx-tippy
+
+# optional dependency (unavailable on conda-forge)
+with contextlib.suppress(ModuleNotFoundError):
+    import sphinx_tippy  # noqa: F401
+
+    extensions.append("sphinx_tippy")
+
+tippy_enable_wikitips = False
+tippy_enable_doitips = False
+tippy_rtd_urls = [
+    "https://www.sphinx-doc.org/en/master/",
+]
+tippy_skip_anchor_classes = ("headerlink", "sd-stretched-link")
+tippy_anchor_parent_selector = "article.bd-article"
+tippy_props = {"maxWidth": 700, "placement": "top-start", "theme": "light"}
+
+
 # sphinx-tags options --------------------------------------------------------
 # See https://sphinx-tags.readthedocs.io/en/latest/index.html
 
