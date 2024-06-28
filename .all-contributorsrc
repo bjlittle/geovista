@@ -1,29 +1,4 @@
 {
   "projectName": "geovista",
-  "projectOwner": "bjlittle",
-  "repoType": "github",
-  "repoHost": "https://github.com",
-  "files": [
-    "CONTRIBUTORS.md"
-  ],
-  "imageSize": 100,
-  "commit": true,
-  "commitType": "docs",
-  "commitConvention": "none",
-  "contributorsPerLine": 7,
-  "contributorsSortAlphabetically": false,
-  "linkToUsage": true,
-  "skipCi": true,
-  "contributors": [
-    {
-      "login": "bjlittle",
-      "name": "Bill Little",
-      "avatar_url": "https://avatars.githubusercontent.com/u/2051656?v=4",
-      "profile": "https://github.com/bjlittle",
-      "contributions": [
-        "maintenance",
-        "infra"
-      ]
-    }
-  ]
+  "projectOwner": "bjlittle"
 }
