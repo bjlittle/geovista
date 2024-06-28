@@ -2,7 +2,7 @@
   "projectName": "geovista",
   "projectOwner": "bjlittle",
   "files": [
-    "README.md"
+    "CONTRIBUTORS.md"
   ],
   "commitType": "docs",
   "commitConvention": "angular",
