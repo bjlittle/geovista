@@ -29,8 +29,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum metus est, m
 
 A huge thanks goes to all these worderful people (`Emoji Key ✨`_):
 
-----
-
 .. include:: ../../../CONTRIBUTORS.md
     :parser: myst_parser.sphinx_
 
