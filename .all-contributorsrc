@@ -132,6 +132,15 @@
         "doc",
         "infra"
       ]
+    },
+    {
+      "login": "jamesp",
+      "name": "James Penn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22805?v=4",
+      "profile": "https://github.com/jamesp",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "commitType": "docs"
