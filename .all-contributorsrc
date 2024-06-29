@@ -188,6 +188,15 @@
       "contributions": [
         "userTesting"
       ]
+    },
+    {
+      "login": "stuartfox",
+      "name": "stuartfox",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2479875?v=4",
+      "profile": "https://github.com/stuartfox",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "commitType": "docs"
