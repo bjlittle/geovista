@@ -11,6 +11,9 @@
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/HGWright"><img src="https://avatars.githubusercontent.com/u/84939917?v=4?s=100" width="100px;" alt="Henry Wright"/><br /><sub><b>Henry Wright</b></sub></a><br /><a href="#doc-HGWright" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/pp-mo"><img src="https://avatars.githubusercontent.com/u/2089069?v=4?s=100" width="100px;" alt="Patrick Peglar"/><br /><sub><b>Patrick Peglar</b></sub></a><br /><a href="#doc-pp-mo" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/RichardScottOZ"><img src="https://avatars.githubusercontent.com/u/72196131?v=4?s=100" width="100px;" alt="RichardScottOZ"/><br /><sub><b>RichardScottOZ</b></sub></a><br /><a href="#doc-RichardScottOZ" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/stephenworsley"><img src="https://avatars.githubusercontent.com/u/49274989?v=4?s=100" width="100px;" alt="stephenworsley"/><br /><sub><b>stephenworsley</b></sub></a><br /><a href="#doc-stephenworsley" title="Documentation">📖</a></td>
+    </tr>
+    <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/tkknight"><img src="https://avatars.githubusercontent.com/u/2108488?v=4?s=100" width="100px;" alt="tkknight"/><br /><sub><b>tkknight</b></sub></a><br /><a href="#doc-tkknight" title="Documentation">📖</a> <a href="#infra-tkknight" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
     </tr>
   </tbody>
