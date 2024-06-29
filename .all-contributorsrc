@@ -41,6 +41,16 @@
         "doc",
         "infra"
       ]
+    },
+    {
+      "login": "andrewcoughtrie",
+      "name": "Andrew Coughtrie",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24609575?v=4",
+      "profile": "https://github.com/andrewcoughtrie",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ],
   "commitType": "docs"
