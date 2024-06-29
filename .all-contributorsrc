@@ -197,6 +197,15 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "user27182",
+      "name": "user27182",
+      "avatar_url": "https://avatars.githubusercontent.com/u/89109579?v=4",
+      "profile": "https://github.com/user27182",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "commitType": "docs"
