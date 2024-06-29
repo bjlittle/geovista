@@ -60,6 +60,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "pp-mo",
+      "name": "Patrick Peglar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2089069?v=4",
+      "profile": "https://github.com/pp-mo",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "commitType": "docs"
