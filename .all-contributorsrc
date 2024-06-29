@@ -169,6 +169,16 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "owenlamont",
+      "name": "Owen Lamont",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12672027?v=4",
+      "profile": "https://github.com/owenlamont",
+      "contributions": [
+        "bug",
+        "userTesting"
+      ]
     }
   ],
   "commitType": "docs"
