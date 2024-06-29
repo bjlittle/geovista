@@ -95,7 +95,9 @@
       "profile": "http://banesullivan.com",
       "contributions": [
         "code",
-        "test"
+        "test",
+        "infra",
+        "example"
       ]
     }
   ],
