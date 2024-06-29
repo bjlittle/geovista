@@ -99,6 +99,15 @@
         "infra",
         "example"
       ]
+    },
+    {
+      "login": "trexfeathers",
+      "name": "Martin Yeo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40734014?v=4",
+      "profile": "http://trexfeathers.github.io",
+      "contributions": [
+        "infra"
+      ]
     }
   ],
   "commitType": "docs"
