@@ -28,6 +28,7 @@
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/stephenworsley"><img src="https://avatars.githubusercontent.com/u/49274989?v=4?s=100" width="100px;" alt="stephenworsley"/><br /><sub><b>stephenworsley</b></sub></a><br /><a href="https://github.com/bjlittle/geovista/commits?author=stephenworsley" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/stuartfox"><img src="https://avatars.githubusercontent.com/u/2479875?v=4?s=100" width="100px;" alt="stuartfox"/><br /><sub><b>stuartfox</b></sub></a><br /><a href="#ideas-stuartfox" title="Ideas, Planning, & Feedback">🤔</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/tkknight"><img src="https://avatars.githubusercontent.com/u/2108488?v=4?s=100" width="100px;" alt="tkknight"/><br /><sub><b>tkknight</b></sub></a><br /><a href="https://github.com/bjlittle/geovista/commits?author=tkknight" title="Documentation">📖</a> <a href="#infra-tkknight" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/user27182"><img src="https://avatars.githubusercontent.com/u/89109579?v=4?s=100" width="100px;" alt="user27182"/><br /><sub><b>user27182</b></sub></a><br /><a href="https://github.com/bjlittle/geovista/issues?q=author%3Auser27182" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
   <tfoot>
