@@ -114,7 +114,8 @@
         "infra",
         "doc",
         "code",
-        "maintenance"
+        "maintenance",
+        "bug"
       ]
     },
     {
