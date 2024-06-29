@@ -224,6 +224,15 @@
       "contributions": [
         "question"
       ]
+    },
+    {
+      "login": "ChristmasZCY",
+      "name": "Christmas",
+      "avatar_url": "https://avatars.githubusercontent.com/u/61818189?v=4",
+      "profile": "https://github.com/ChristmasZCY",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "commitType": "docs"
