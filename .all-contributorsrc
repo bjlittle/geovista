@@ -100,7 +100,8 @@
         "code",
         "test",
         "infra",
-        "example"
+        "example",
+        "bug"
       ]
     },
     {
