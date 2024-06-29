@@ -22,7 +22,8 @@
         "infra",
         "doc",
         "code",
-        "bug"
+        "bug",
+        "review"
       ]
     },
     {
