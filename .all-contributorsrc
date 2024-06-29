@@ -107,7 +107,8 @@
       "profile": "http://trexfeathers.github.io",
       "contributions": [
         "infra",
-        "doc"
+        "doc",
+        "code"
       ]
     }
   ],
