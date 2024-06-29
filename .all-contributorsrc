@@ -4,7 +4,6 @@
   "files": [
     "CONTRIBUTORS.md"
   ],
-  "commitType": "docs",
   "commit": true,
   "commitConvention": "none",
   "contributorsPerLine": 7,
