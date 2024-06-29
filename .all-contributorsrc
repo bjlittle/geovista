@@ -78,6 +78,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "stephenworsley",
+      "name": "stephenworsley",
+      "avatar_url": "https://avatars.githubusercontent.com/u/49274989?v=4",
+      "profile": "https://github.com/stephenworsley",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "commitType": "docs"
