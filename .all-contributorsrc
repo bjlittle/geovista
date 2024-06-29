@@ -160,6 +160,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "PBrockmann",
+      "name": "Patrick Brockmann",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5402758?v=4",
+      "profile": "https://github.com/PBrockmann",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "commitType": "docs"
