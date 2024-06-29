@@ -150,6 +150,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "zklaus",
+      "name": "Klaus Zimmermann",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1185813?v=4",
+      "profile": "https://github.com/zklaus",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "commitType": "docs"
