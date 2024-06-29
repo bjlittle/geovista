@@ -122,7 +122,9 @@
         "code",
         "data",
         "example",
-        "ideas"
+        "ideas",
+        "doc",
+        "infra"
       ]
     }
   ],
