@@ -23,7 +23,11 @@
         "doc",
         "code",
         "bug",
-        "review"
+        "review",
+        "data",
+        "example",
+        "question",
+        "test"
       ]
     },
     {
