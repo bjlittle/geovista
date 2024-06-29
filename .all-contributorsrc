@@ -1,6 +1,8 @@
 {
   "projectName": "geovista",
   "projectOwner": "bjlittle",
+  "repoType": "github",
+  "repoHost": "https://github.com",
   "files": [
     "CONTRIBUTORS.md"
   ],
