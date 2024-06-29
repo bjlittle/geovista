@@ -25,6 +25,7 @@
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/giubonino"><img src="https://avatars.githubusercontent.com/u/58305314?v=4?s=100" width="100px;" alt="giubonino"/><br /><sub><b>giubonino</b></sub></a><br /><a href="#userTesting-giubonino" title="User Testing">📓</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/stephenworsley"><img src="https://avatars.githubusercontent.com/u/49274989?v=4?s=100" width="100px;" alt="stephenworsley"/><br /><sub><b>stephenworsley</b></sub></a><br /><a href="https://github.com/bjlittle/geovista/commits?author=stephenworsley" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/stuartfox"><img src="https://avatars.githubusercontent.com/u/2479875?v=4?s=100" width="100px;" alt="stuartfox"/><br /><sub><b>stuartfox</b></sub></a><br /><a href="#ideas-stuartfox" title="Ideas, Planning, & Feedback">🤔</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/tkknight"><img src="https://avatars.githubusercontent.com/u/2108488?v=4?s=100" width="100px;" alt="tkknight"/><br /><sub><b>tkknight</b></sub></a><br /><a href="https://github.com/bjlittle/geovista/commits?author=tkknight" title="Documentation">📖</a> <a href="#infra-tkknight" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
     </tr>
   </tbody>
