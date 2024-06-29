@@ -31,6 +31,17 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "tkknight",
+      "name": "tkknight",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2108488?v=4",
+      "profile": "https://github.com/tkknight",
+      "contributions": [
+        "doc",
+        "infra"
+      ]
     }
-  ]
+  ],
+  "commitType": "docs"
 }
