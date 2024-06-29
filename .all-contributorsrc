@@ -51,6 +51,15 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "ESadek-MO",
+      "name": "Elias",
+      "avatar_url": "https://avatars.githubusercontent.com/u/110238618?v=4",
+      "profile": "https://github.com/ESadek-MO",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "commitType": "docs"
