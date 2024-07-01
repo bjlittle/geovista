@@ -27,7 +27,8 @@
         "data",
         "example",
         "question",
-        "test"
+        "test",
+        "talk"
       ]
     },
     {
@@ -138,7 +139,10 @@
         "example",
         "ideas",
         "doc",
-        "infra"
+        "infra",
+        "tutorial",
+        "bug",
+        "question"
       ]
     },
     {
