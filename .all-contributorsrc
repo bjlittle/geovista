@@ -138,7 +138,10 @@
         "example",
         "ideas",
         "doc",
-        "infra"
+        "infra",
+        "tutorial",
+        "bug",
+        "question"
       ]
     },
     {
