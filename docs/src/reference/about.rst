@@ -1,21 +1,24 @@
 .. _gv-about:
 
-🚧 :fa:`circle-info` About
-==========================
+:fa:`circle-info` About
+=======================
 
-.. note::
-    :class: margin, dropdown, toggle-shown
-
-    Content marked with 🚧 indicates it's still under construction.
+Assorted package metadata about ``geovista``.
 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in consectetur orci. Nam convallis viverra dolor in.
+:fa:`feather-pointed` Citation
+------------------------------
 
+.. margin::
 
-🚧 :fa:`feather-pointed` Citation
----------------------------------
+    .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7608302.svg
+        :target: https://doi.org/10.5281/zenodo.7608302
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum metus est, mollis vitae nunc eu, ultrices pretium.
+If ``geovista`` has assisted with your academic research or work, then please
+remember to cite us:
+
+.. literalinclude:: ../../../CITATION.cff
+    :language: text
 
 
 :fa:`users-line` Contributors
@@ -24,34 +27,39 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum metus est, m
 .. tip::
     :class: margin, dropdown, toggle-shown
 
-    Anyone can use the `@all-contributors bot`_ 🤖 to automate acknowledging
-    other contributors.
+    Anyone can use the |icon| `all-contributors bot 🤖`_  to acknowledge
+    the efforts of others.
 
-A huge thanks goes to all these worderful people (`Emoji Key ✨`_):
-
-.. include:: ../../../CONTRIBUTORS.md
-    :parser: myst_parser.sphinx_
-
-----
-
-We follow the `all-contributors`_ specification. Contributions of
-**any** kind to ``geovista`` are welcome!
+We follow the |icon| `all-contributors`_ specification. Contributions of
+any kind to ``geovista`` are welcome!
 
 It's important that we recognise and acknowledge **all** our contributors, not
 just the ones who push code. So no matter how large or small, we're grateful
 for your contribution and caring enough to make a difference.
 
+A massive thank-you to all our awesome contributors (`Emoji Key ✨`_):
 
-🚧 :fa:`file-contract` License
-------------------------------
+.. include:: ../../../CONTRIBUTORS.md
+    :parser: myst_parser.sphinx_
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam augue purus, sodales eget porttitor at, tempus at.
+
+:fa:`file-contract` License
+---------------------------
+
+``geovista`` is an open-source package distributed under the terms of the
+`BSD-3-Clause`_ license.
+
+.. literalinclude:: ../../../LICENSE
+    :language: text
 
 
 .. comment
 
     Page link URL resources in alphabetical order:
 
-.. _@all-contributors bot: https://allcontributors.org/docs/en/bot/usage#all-contributors-add
+
+.. |icon| image:: https://raw.githubusercontent.com/all-contributors/all-contributors-cli/1b8533af435da9854653492b1327a23a4dbd0a10/assets/logo-small.svg
+.. _all-contributors bot 🤖: https://allcontributors.org/docs/en/bot/usage#all-contributors-add
+.. _BSD-3-Clause: https://spdx.org/licenses/BSD-3-Clause.html
 .. _Emoji Key ✨: https://allcontributors.org/docs/en/emoji-key
 .. _all-contributors: https://github.com/all-contributors/all-contributors

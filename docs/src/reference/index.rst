@@ -14,7 +14,7 @@ Consult our reference material for no fuss facts about ``geovista``.
 .. grid:: 1 1 2 2
     :gutter: 2
 
-    .. grid-item-card:: 🚧 About
+    .. grid-item-card:: About
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-about
