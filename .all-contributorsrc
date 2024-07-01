@@ -283,6 +283,16 @@
         "ideas",
         "promotion"
       ]
+    },
+    {
+      "login": "mgrover1",
+      "name": "Max Grover",
+      "avatar_url": "https://avatars.githubusercontent.com/u/26660300?v=4",
+      "profile": "http://blog.mgrover.dev",
+      "contributions": [
+        "ideas",
+        "promotion"
+      ]
     }
   ],
   "commitType": "docs"
