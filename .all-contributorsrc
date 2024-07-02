@@ -29,7 +29,10 @@
         "question",
         "test",
         "talk",
-        "video"
+        "video",
+        "eventOrganizing",
+        "mentoring",
+        "design"
       ]
     },
     {
