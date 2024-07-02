@@ -1,6 +1,6 @@
-.. _gv-quick-start:
-
 .. include:: common.txt
+
+.. _gv-quick-start:
 
 :fa:`truck-fast` Quick Start
 ============================
@@ -131,7 +131,7 @@ projection.
 
 The data source is a `Nucleus for European Modelling of the Ocean`_ (NEMO)
 ORCA2 global ocean tripolar :term:`curvilinear grid <Curvilinear Grid>`
-containing ``26,640`` quadrilateral :term:`cells <Cell>` and ``106,560``
+containing ``26,640`` quadrilateral cells and ``106,560``
 :term:`points <Point>`.
 
 As the grid is curvilinear, it is created from the bounds of 2-D geographic
@@ -216,7 +216,7 @@ mesh containing ``30,559`` triangular :term:`cells <Cell>`.
 
 A 1-D array of *Sea Surface Wave Significant Height* data is located on
 the mesh :term:`nodes <Node>`, which is then interpolated across the
-mesh :term:`cells <Cell>` and rendered with the
+mesh cells and rendered with the
 :term:`perceptually uniform <Perceptually Uniform Colormap>`
 `cmocean balance`_ divergent colormap.
 

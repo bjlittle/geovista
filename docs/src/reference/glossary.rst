@@ -1,15 +1,10 @@
 .. _gv-glossary:
 
-🚧 :fa:`spell-check` Glossary
-=============================
+:fa:`spell-check` Glossary
+==========================
 
-.. note::
-    :class: margin, dropdown, toggle-shown
+Say what you mean. Mean what you say.
 
-    Content marked with 🚧 indicates it's still under construction.
-
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sodales ante vel eros luctus aliquet. Nam condimentum.
 
 .. glossary::
 

@@ -1,6 +1,6 @@
-.. _gv-root:
-
 .. include:: common.txt
+
+.. _gv-root:
 
 GeoVista Documentation
 ======================

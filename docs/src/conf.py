@@ -191,6 +191,14 @@ tippy_enable_wikitips = False
 tippy_enable_doitips = False
 tippy_rtd_urls = [
     "https://www.sphinx-doc.org/en/master/",
+    "https://geovista.readthedocs.io/en/latest/",
+    "https://geovista.readthedocs.io/en/stable/",
+    "http://localhost:11000",
+    "http://0.0.0.0:11000",
+    "https://matplotlib.org/stable/",
+    "https://numpy.org/doc/stable/",
+    "https://platformdirs.readthedocs.io/en/stable/",
+    "https://rasterio.readthedocs.io/en/stable/",
 ]
 tippy_skip_anchor_classes = ("headerlink", "sd-stretched-link")
 tippy_anchor_parent_selector = "article.bd-article"
