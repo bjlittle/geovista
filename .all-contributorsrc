@@ -300,6 +300,15 @@
         "ideas",
         "promotion"
       ]
+    },
+    {
+      "login": "edsaac",
+      "name": "Edwin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/34405119?v=4",
+      "profile": "https://edsaac.github.io/",
+      "contributions": [
+        "plugin"
+      ]
     }
   ],
   "commitType": "docs"
