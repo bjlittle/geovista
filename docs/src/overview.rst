@@ -1,6 +1,6 @@
-.. _gv-overview:
-
 .. include:: common.txt
+
+.. _gv-overview:
 
 :fa:`panorama` Overview
 =======================

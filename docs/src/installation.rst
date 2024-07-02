@@ -1,6 +1,6 @@
-.. _gv-installation:
-
 .. include:: common.txt
+
+.. _gv-installation:
 
 :fa:`circle-down` Installation
 ==============================

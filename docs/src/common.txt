@@ -37,6 +37,8 @@
 .. _matplotlib: https://github.com/matplotlib/matplotlib
 .. _pip: https://pip.pypa.io/en/stable/index.html
 .. _pre-commit: https://pre-commit.com/
+.. _sphinx-gallery: https://github.com/sphinx-gallery/sphinx-gallery
+.. _tox: https://tox.wiki/en/stable/
 .. _xarray: https://github.com/pydata/xarray
 
 

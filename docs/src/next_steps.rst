@@ -1,6 +1,6 @@
-.. _gv-next-steps:
-
 .. include:: common.txt
+
+.. _gv-next-steps:
 
 :fa:`seedling` Next Steps
 =========================

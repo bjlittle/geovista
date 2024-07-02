@@ -25,7 +25,7 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Package metadata.
 
-    .. grid-item-card:: 🚧 Environment Variables
+    .. grid-item-card:: Environment Variables
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-environment
@@ -34,7 +34,7 @@ Consult our reference material for no fuss facts about ``geovista``.
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        High level controls.
+        Package controls.
 
     .. grid-item-card:: 🚧 CLI
         :class-title: custom-title
@@ -69,7 +69,7 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Behaviour and state docstrings.
 
-    .. grid-item-card:: 🚧 Glossary
+    .. grid-item-card:: Glossary
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-glossary
