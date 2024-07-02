@@ -8,8 +8,9 @@
   ],
   "commit": true,
   "commitConvention": "none",
-  "contributorsPerLine": 7,
+  "contributorsPerLine": 6,
   "contributorsSortAlphabetically": true,
+  "imageSize": 75,
   "linkToUsage": true,
   "contributors": [
     {
