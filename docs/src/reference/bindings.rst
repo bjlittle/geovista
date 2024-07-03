@@ -77,6 +77,16 @@ Primary keyboard and mouse bindings that control the rendered scene.
             +----------------------------------------+------------------------------------------------+--------------+
 
 
+.. comment
+
+    The FVCOM example (geovista.examples.warp.from_unstructured__fvcom) GIFs
+    used the following camera position:
+
+    cpos = [(0.652936947323311, -0.06686933227332881, 0.7722722989946459),
+            (0.638759454274243, -0.04909585033098298, 0.7656316102303734),
+            (0.29679655733036037, 0.5328351105797621, 0.7924635944258254)]
+
+
 .. |fvcom-s| image::  ../_static/images/fvcom-surface.png
     :scale: 30%
     :align: middle
@@ -92,32 +102,32 @@ Primary keyboard and mouse bindings that control the rendered scene.
 .. |fvcom-f| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-f.gif
     :scale: 30%
     :align: middle
-    :height: 480
     :width: 640
+    :height: 480
 
 .. |fvcom-3d| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-rotate-3d.gif
     :scale: 30%
     :align: middle
-    :height: 480
     :width: 640
+    :height: 480
 
 .. |fvcom-2d| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-rotate-2d.gif
     :scale: 30%
     :align: middle
-    :height: 480
     :width: 640
+    :height: 480
 
 .. |fvcom-pan| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-pan.gif
     :scale: 30%
     :align: middle
-    :height: 480
     :width: 640
+    :height: 480
 
 .. |fvcom-zoom| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-zoom.gif
     :scale: 30%
     :align: middle
-    :height: 480
     :width: 640
+    :height: 480
 
 
 .. comment
