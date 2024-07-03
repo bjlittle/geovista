@@ -47,7 +47,7 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Command line interface.
 
-    .. grid-item-card:: 🚧 Key Bindings
+    .. grid-item-card:: Key Bindings
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-bindings
