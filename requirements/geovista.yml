@@ -54,6 +54,7 @@ dependencies:
   - sphinx >=7.3
   - sphinx-autoapi
   - sphinx-book-theme >=1.1.3
+  - sphinx-click
   - sphinx-copybutton
   - sphinx-design
   - sphinx-gallery >=0.16
