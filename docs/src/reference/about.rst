@@ -14,6 +14,7 @@ Assorted package metadata about ``geovista``.
     .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7608302.svg
         :target: https://doi.org/10.5281/zenodo.7608302
 
+
 If ``geovista`` has assisted with your academic research or work, then please
 remember to cite us:
 
@@ -29,6 +30,7 @@ remember to cite us:
 
     Anyone can use the |icon| `all-contributors bot 🤖`_  to acknowledge
     the efforts of others.
+
 
 We follow the |icon| `all-contributors`_ specification. Contributions of
 any kind to ``geovista`` are welcome!
