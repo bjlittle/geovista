@@ -36,6 +36,7 @@ Simply put,
 
         "`GeoVista`_ is to `PyVista`_", as "`Cartopy`_ is to `Matplotlib`_"
 
+
 That's our aspiration.
 
 Akin to `Cartopy`_, we intend ``geovista`` to remain as flexible and
@@ -55,8 +56,10 @@ of the GPU.
 .. figure:: _static/images/ecosystem.png
     :align: center
     :name: ecosystem-figure
+    :alt: GeoVista Ecosystem
 
     Ecosystem of ``geovista``
+
 
 As shown above, ``geovista`` is built upon a performant, established, and
 feature rich `VTK`_ toolchain, which is supported and maintained by
@@ -73,8 +76,10 @@ PyVista in a Nutshell
     :figclass: margin
     :target: https://docs.pyvista.org/version/stable/examples/
     :name: pyvista-figure
+    :alt: PyVista Examples
 
     PyVista Examples
+
 
 `PyVista`_ is a powerful open-source 3-D visualization library built on
 `VTK`_, providing:

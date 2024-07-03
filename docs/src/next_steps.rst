@@ -29,8 +29,10 @@ four distinct needs of documentation users (see :numref:`diátaxis-figure`).
     :figclass: margin
     :target: https://diataxis.fr/
     :name: diátaxis-figure
+    :alt: Diátaxis Axis of Needs
 
     Diátaxis Axes of Needs
+
 
 .. note::
     :class: dropdown
@@ -44,6 +46,7 @@ four distinct needs of documentation users (see :numref:`diátaxis-figure`).
 
     - **Explanation** - Achieve understanding through discussion and reflection.
     - **Reference** - Succinct factual information laid bare.
+
 
 So if you learn by *doing*, then explore our *hands-on* themed lessons or
 topic specific how-tos:

@@ -8,6 +8,7 @@
 Now that you've :ref:`installed <gv-installation>` ``geovista``, let's take a
 quick tour to see some of the features and capabilities on offer.
 
+
 Resources
 ---------
 
@@ -24,11 +25,13 @@ following on the command line:
 
     geovista download --all
 
+
 To view the manifest of registered resources:
 
 .. code:: console
 
     geovsita download --list
+
 
 .. note::
     :class: dropdown
@@ -55,12 +58,14 @@ Examples
    pyvista.global_theme.axes.show = False
    pyvista.global_theme.anti_aliasing = 'fxaa'
 
+
 .. note::
   :class: margin, dropdown, toggle-shown
 
   The **Interactive Scene**
   `vtk.js <https://kitware.github.io/vtk-js/index.html>`_ backend does **not**
   support rendering text or points as spheres.
+
 
 Let's explore some atmospheric and oceanographic model data using
 ``geovista``, which makes it easy to visualize **rectilinear**,
@@ -161,6 +166,7 @@ projection.
     **Cylindrical** and **Pseudo-Cylindrical** projections. As ``geovista``
     matures, we'll aim to enrich that capability and complement it with
     other classes of projections, such as **Azimuthal** and **Conic**.
+
 
 .. pyvista-plot::
     :context:
