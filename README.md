@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://github.com/bjlittle/geovista#--------">
-    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.06.0/media/branding/logo/primary/geovistalogo.svg"
+    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/branding/logo/primary/geovistalogo.svg"
          alt="GeoVista"
          width="200"></a>
 </h1>
@@ -153,7 +153,7 @@ plotter.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.06.0/media/readme/ww3-tri.png" style="width: 75%; height: 75%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/ww3-tri.png" style="width: 75%; height: 75%"></p>
 
 #### Finite Volume Community Ocean Model
 
@@ -196,7 +196,7 @@ plotter.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.06.0/media/readme/tamar.png" style="width: 75%; height: 75%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/tamar.png" style="width: 75%; height: 75%"></p>
 
 #### CF UGRID
 
@@ -245,7 +245,7 @@ plotter.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.06.0/media/readme/lam-moll.png" style="width: 75%; height: 75%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lam-moll.png" style="width: 75%; height: 75%"></p>
 
 Using the same **unstructured** LAM data, reproject to
 [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a
@@ -289,7 +289,7 @@ plotter.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.06.0/media/readme/lam-eqc.png" style="width: 75%; height: 75%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lam-eqc.png" style="width: 75%; height: 75%"></p>
 
 #### LFRic Cube-Sphere
 
@@ -329,7 +329,7 @@ plotter.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.06.0/media/readme/lfric-robin.png" style="width: 75%; height: 75%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lfric-robin.png" style="width: 75%; height: 75%"></p>
 
 #### NEMO ORCA2
 
@@ -367,7 +367,7 @@ plotter.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.06.0/media/readme/nemo-orca.png" style="width: 75%; height: 75%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/nemo-orca.png" style="width: 75%; height: 75%"></p>
 
 #### OISST AVHRR
 
@@ -405,7 +405,7 @@ plotter.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.06.0/media/readme/oisst-avhrr.png" style="width: 75%; height: 75%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/oisst-avhrr.png" style="width: 75%; height: 75%"></p>
 
 #### DYNAMICO
 
@@ -440,7 +440,7 @@ plotter.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.06.0/media/readme/dynamico-icosahedral.png" style="width: 75%; height: 75%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/dynamico-icosahedral.png" style="width: 75%; height: 75%"></p>
 
 ## Further Examples
 

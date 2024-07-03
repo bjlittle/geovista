@@ -17,8 +17,10 @@
 .. _PyVista: https://github.com/pyvista/pyvista
 .. _PyVistaQt: https://github.com/pyvista/pyvistaqt
 .. _Python: https://www.python.org/
+.. _Qt: https://www.qt.io/
 .. _RTD (latest): https://geovista.readthedocs.io/en/latest
 .. _RTD (stable): https://geovista.readthedocs.io/en/stable
+.. _Trame: https://kitware.github.io/trame/
 .. _VTK: https://vtk.org/
 .. _Visualization Toolkit: https://vtk.org/
 .. _cartopy: https://github.com/SciTools/cartopy

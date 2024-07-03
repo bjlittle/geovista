@@ -13,9 +13,6 @@ Internal and external (third-party) environment variables for either a
 Internal
 --------
 
-.. role:: python(code)
-   :language: python
-
 Package environment variables that influence the behaviour of ``geovista``:
 
 .. table:: Internal Variables
