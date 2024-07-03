@@ -36,7 +36,7 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Package controls.
 
-    .. grid-item-card:: 🚧 CLI
+    .. grid-item-card:: CLI
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-cli
@@ -110,7 +110,7 @@ Consult our reference material for no fuss facts about ``geovista``.
 
     about
     environment
-    cli
+    cli/index
     bindings
     generated/api/geovista/index
     glossary

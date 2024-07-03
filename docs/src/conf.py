@@ -111,6 +111,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
+    "sphinx_click",
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
