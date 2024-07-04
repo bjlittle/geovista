@@ -320,6 +320,16 @@
         "bug",
         "ideas"
       ]
+    },
+    {
+      "login": "ukmo-ccbunney",
+      "name": "Chris Bunney",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48915820?v=4",
+      "profile": "https://www.metoffice.gov.uk/research/weather/ocean-forecasting",
+      "contributions": [
+        "ideas",
+        "userTesting"
+      ]
     }
   ],
   "commitType": "docs"
