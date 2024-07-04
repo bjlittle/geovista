@@ -161,9 +161,7 @@ if on_rtd:
     tags.add("on_rtd")  # noqa: F821
 
 # The full version, including alpha/beta/rc tags
-release = get_version("geovista")
-if release.endswith("+dirty"):
-    release = release[: -len("+dirty")]
+version = release = get_version("geovista")
 
 # docs src directory
 docs_src_dir = Path(__file__).absolute().parent
