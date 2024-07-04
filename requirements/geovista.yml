@@ -49,6 +49,7 @@ dependencies:
 
 # documentation dependencies (optional)
   - myst-parser
+  - nbsphinx
   - numpydoc
   - pydata-sphinx-theme >=0.15.3
   - sphinx >=7.3
