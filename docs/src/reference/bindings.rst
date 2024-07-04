@@ -5,6 +5,11 @@
 :fa:`keyboard` Key Bindings
 ===========================
 
+.. tip::
+    :class: margin, dropdown, toggle-shown
+
+    For further details also see the `pyvista keyboard bindings`_.
+
 Primary keyboard and mouse bindings that control the rendered scene.
 
 .. tab-set::
@@ -67,13 +72,15 @@ Primary keyboard and mouse bindings that control the rendered scene.
             +----------------------------------------+------------------------------------------------+--------------+
             | :guilabel:`w`                          | Render scene using ``wireframe`` style.        | |fvcom-w|    |
             +----------------------------------------+------------------------------------------------+--------------+
-            | :guilabel:`⌘-Click`                    | Rotate the rendered scene in 3-D.              | |fvcom-3d|   |
+            | :guilabel:`Click`                      | Rotate the rendered scene in 3-D.              | |fvcom-3d|   |
             +----------------------------------------+------------------------------------------------+--------------+
-            | :guilabel:`Ctrl + Click`               | Rotate the rendered scene in 2-D (view plane). | |fvcom-2d|   |
+            | :guilabel:`⌘ + Click` or               | Rotate the rendered scene in 2-D (view plane). | |fvcom-2d|   |
+            | :guilabel:`Ctrl + Click`               |                                                |              |
             +----------------------------------------+------------------------------------------------+--------------+
             | :guilabel:`Shift + Click`              | Pan the rendered scene.                        | |fvcom-pan|  |
             +----------------------------------------+------------------------------------------------+--------------+
-            | :guilabel:`Ctrl + Click`               | Continuously zoom the rendering scene.         | |fvcom-zoom| |
+            | :guilabel:`Mouse-Wheel` or             | Continuously zoom the rendering scene.         | |fvcom-zoom| |
+            | :guilabel:`R-Click`                    |                                                |              |
             +----------------------------------------+------------------------------------------------+--------------+
 
 
@@ -144,3 +151,4 @@ Primary keyboard and mouse bindings that control the rendered scene.
 
 
 .. _isometric camera: https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.view_isometric.html
+.. _pyvista keyboard bindings: https://docs.pyvista.org/version/stable/api/plotting/plotting.html#plotting
