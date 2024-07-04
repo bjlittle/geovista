@@ -310,6 +310,16 @@
       "contributions": [
         "plugin"
       ]
+    },
+    {
+      "login": "felixdellner",
+      "name": "Felix Dellner",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14889443?v=4",
+      "profile": "https://github.com/felixdellner",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
     }
   ],
   "commitType": "docs"
