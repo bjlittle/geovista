@@ -1,4 +1,5 @@
 myst-parser
+nbsphinx
 numpydoc
 sphinx >=7.3
 sphinx_design
