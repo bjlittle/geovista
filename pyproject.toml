@@ -52,6 +52,7 @@ requires-python = ">=3.10"
 [project.urls]
 Code = "https://github.com/bjlittle/geovista"
 Discussions = "https://github.com/bjlittle/geovista/discussions"
+Documentation = "https://geovista.readthedocs.io"
 Issues = "https://github.com/bjlittle/geovista/issues"
 
 
