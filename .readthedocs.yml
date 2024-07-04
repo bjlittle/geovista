@@ -9,9 +9,15 @@ build:
     - xvfb
   jobs:
     post_checkout:
+      # require full history for correct setuptools-scm version discovery
       - git fetch --unshallow
       - git fetch --all
+    pre_install:
+      # keep checkout untainted from RTD to ensure correct
+      # setuptools-scm version
+      - git stash
     post_install:
+      - git stash pop
       - geovista download --operational --decompress
 
 conda:
