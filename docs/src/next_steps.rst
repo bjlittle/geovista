@@ -54,7 +54,7 @@ topic specific how-tos:
 .. grid:: 1 1 2 2
     :gutter: 2
 
-    .. grid-item-card:: 🚧 Tutorials
+    .. grid-item-card:: Tutorials
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-tutorials

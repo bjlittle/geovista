@@ -80,6 +80,10 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Jargon buster.
 
+.. comment
+
+    # TBD @bjlittle: add these cards back
+
     .. grid-item-card:: 🚧 Changelog
         :class-title: custom-title
         :class-body: custom-body
@@ -114,5 +118,10 @@ Consult our reference material for no fuss facts about ``geovista``.
     bindings
     generated/api/geovista/index
     glossary
+
+.. comment
+
+    # TBD @bjlittle: add these sections back to the toc
+
     changelog
     whatsnew
