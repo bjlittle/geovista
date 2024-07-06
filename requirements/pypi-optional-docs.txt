@@ -1,6 +1,5 @@
 ipykernel
-myst-parser
-nbsphinx
+myst-nb
 numpydoc
 sphinx >=7.3
 sphinx_design
