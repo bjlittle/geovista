@@ -1230,8 +1230,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         ----------
         x : float, optional
             The spatial x-value point, in canonical `crs` units, of the POI.
+            Defaults to ``0`` if unspecified and `y` has been provided,
+            otherwise ``None``.
         y : float, optional
             The spatial y-value point, in canonical `crs` units, of the POI.
+            Defaults to ``0`` if unspecified and `x` has been provided,
+            otherwise ``None``.
         crs : CRSLike, optional
             The Coordinate Reference System of the POI. May be anything accepted by
             :meth:`pyproj.crs.CRS.from_user_input`. Defaults to ``EPSG:4326`` i.e.,
@@ -1278,9 +1282,16 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if crs is None:
             crs = WGS84
 
-        if not (use_mesh_poi := x is None and y is None) and (x is None or y is None):
-            emsg = "Point-of-interest (POI) requires both an 'x' and 'y' value."
-            raise ValueError(emsg)
+        use_mesh_poi = x is None and y is None
+
+        if not use_mesh_poi:
+            # at the very least x or y has been provided
+            # default any unset to 0, which allows the API to support the
+            # convenience "view_poi(x=30)" instead of "view_poi(x=30, y=0)"
+            if x is None:
+                x = 0
+            if y is None:
+                y = 0
 
         if use_mesh_poi:
             if self._poi is None:

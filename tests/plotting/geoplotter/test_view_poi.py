@@ -47,7 +47,27 @@ def test_lam_polar_offset(crs, plot_nodeid, lam_polar, verify_image_cache):
     plotter.add_mesh(lam_polar, show_edges=True, zlevel=10)
     plotter.view_poi(-90, 80)
     plotter.add_base_layer(texture=gv.natural_earth_1())
+    plotter.show()
 
+
+@pytest.mark.image()
+@pytest.mark.parametrize(
+    ("x", "y"),
+    [
+        (0, 0),
+        (30, None),
+        (-30, None),
+        (None, 30),
+        (None, 60),
+    ],
+)
+def test_lam_uk_defaults(x, y, plot_nodeid, lam_uk, verify_image_cache):
+    """Test UK LAM POI with spatial defaults."""
+    verify_image_cache.test_name = plot_nodeid
+    plotter = gv.GeoPlotter()
+    plotter.add_mesh(lam_uk, show_edges=True, zlevel=10)
+    plotter.add_base_layer(texture=gv.natural_earth_1())
+    plotter.view_poi(x=x, y=y)
     plotter.show()
 
 
