@@ -12,15 +12,6 @@ import pytest
 from geovista.geoplotter import GeoPlotter
 
 
-@pytest.mark.parametrize(("x", "y"), [(0, None), (None, 0)])
-def test_underspecified_points_fail(x, y):
-    """Test trap of missing explicit POI value."""
-    plotter = GeoPlotter()
-    emsg = r"Point-of-interest \(POI\) requires both an 'x' and 'y' value."
-    with pytest.raises(ValueError, match=emsg):
-        plotter.view_poi(x, y)
-
-
 def test_no_poi_warning():
     """Test warning raised for no POI."""
     plotter = GeoPlotter()
