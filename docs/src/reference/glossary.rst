@@ -1,3 +1,5 @@
+.. include:: ../common.txt
+
 .. _gv-glossary:
 
 :fa:`spell-check` Glossary
@@ -9,68 +11,89 @@ Say what you mean. Mean what you say.
 .. glossary::
 
     Actor
-        TBD
+        Represents an object (geometry and properties) in a rendered scene.
+        See `vtkActor`_.
 
     Base Layer
-        TBD
-
-    Bounds
-        TBD
+        A surface mesh that may be texture mapped, and lies beneath another
+        mesh typically to fill holes in that mesh.
 
     Cell
-        TBD
+        A cell is the geometry between points that defines the connectivity
+        or topology of a mesh. See `What is a Cell?`_
 
     Connectivity
-        TBD
+        An array of offsets that index into an array of points to define how
+        cells are constructed from those points.
 
     Coordinate Reference System
-        TBD. Abbreviated to CRS.
+        A Coordinate Reference System defines how your geo-referenced spatial
+        data relates to real locations on the Earth’s surface. Abbreviated to
+        CRS.
 
     Curvilinear Grid
-        TBD
+        For example, a qudrilateral-cell surface that can be created from an
+        array of 2-D ``x`` and ``y`` spatial points.
 
     Face
-        TBD
-
-    Grid
-        TBD
+        A polygonal cell in a mesh geometry. Also see :term:`Cell`.
 
     Land Mask
-        TBD
+        Typically a boolean array used to indicate the cells in a mesh that
+        represent land.
 
     Manifold
-        TBD
+        A water-tight, closed geometric structure e.g., a sphere.
 
     Mesh
-        TBD
+        A spatially referenced dataset that may be a surface or volume in 3-D
+        space. See `What is a Mesh?`_
 
     Node
-        TBD
+        Nodes are the vertices of a mesh. Also see :term:`Point`.
 
     Perceptually Uniform Colormap
         A colormap in which equal steps in data are perceived as equal steps
         in the color space.
 
     Point
-        TBD
+        Points are the vertices of the mesh, also referred to as the Cartesian
+        coordinates of the underlying structure. See `What is a Point?`_
 
     Rectilinear Grid
-        TBD
+        For example, a quadrilateral-cell surface that can be created from an
+        array of 1-D ``x`` and ``y`` spatial points.
 
     Sea Mask
-        TBD
-
-    Threshold
-        TBD
+        Typically a boolean array used to indicate the cells in a mesh that
+        represent water e.g., river, lake, sea, ocean.
 
     Texture Map
-        TBD
+        A graphical technique where a raster image is wrapped over the
+        surface of a geometric object.
+
+    Threshold
+        To remove the cells from a mesh based on criteria of data associated
+        with the mesh cells or points. See `PyVista threshold`_.
 
     Unstructured Mesh
-        TBD
+        A surface that is created from a geometry of points and a topology of
+        indices that define how cells are constructed from those points. See
+        :term:`Connectivity`.
 
     Warp
-        TBD
+        Extrude the points in a mesh by a proportional amount along the
+        surface normals. See `PyVista warp_by_scalar`_.
 
-    Warp Meridian
-        TBD
+
+.. comment
+
+    Page link URL resources in alphabetical order:
+
+
+.. _PyVista threshold: https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.DataSetFilters.threshold.html#pyvista.DataSetFilters.threshold
+.. _PyVista warp_by_scalar: https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.DataSetFilters.warp_by_scalar.html#pyvista.DataSetFilters.warp_by_scalar
+.. _What is a Cell?: https://docs.pyvista.org/version/stable/user-guide/what-is-a-mesh.html#what-is-a-cell
+.. _What is a Point?: https://docs.pyvista.org/version/stable/user-guide/what-is-a-mesh.html#what-is-a-point
+.. _What is a Mesh?: https://docs.pyvista.org/version/stable/user-guide/what-is-a-mesh.html#what-is-a-mesh
+.. _vtkActor: https://vtk.org/doc/nightly/html/classvtkActor.html#details
