@@ -13,18 +13,21 @@ GeoVista Documentation
 
 Welcome to the ``geovista`` documentation!
 
-We're busily crafting the structure and content of the documentation,
-so it's likely that some material will change, move around or even be removed.
-However, the dust will eventually settle and we'll have a stable foundation to
-build upon.  Thanks for your patience.
+``geovista`` is a pure `Python`_ package, built upon `PyVista`_ that offers
+performant, publication quality 3-D cartographic rendering of Earth Science
+data.
 
-In the meantime, your feedback is important to us.  So feel free to submit a
-:fab:`github` `Issue`_  or :fab:`github` `Pull-Request`_ to help elevate our
-documentation to the next level of awesome 🚀
+Our goal is to lower the bar for scientists, such that they can easily
+analyze, visualize, and explore their rectilinear, curvilinear and
+unstructured geospatial data interactively in 3-D.
 
-Alternatively, if it's easier, come share with us over on our
-:fab:`github` `Discussions`_.
+We're still busy crafting the documentation, which is incomplete and liable
+to change.  Thanks for your patience. However, your feedback is important
+to us.  So feel free to submit a :fab:`github` `Issue`_  or
+:fab:`github` `Pull-Request`_ to help elevate ``geovista`` to the next level
+of awesome 🚀
 
+Alternatively, come share with us over on our :fab:`github` `Discussions`_.
 We'd 💛 to hear from you.
 
 

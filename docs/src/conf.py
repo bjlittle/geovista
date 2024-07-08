@@ -456,6 +456,7 @@ html_css_files = [
 # See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
 
 linkcheck_ignore = [
+    "https://doi.org/10.5281/zenodo.7608302",
     "https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/",
     "region-manifold-extraction.html",
 ]
