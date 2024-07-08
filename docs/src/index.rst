@@ -22,7 +22,7 @@ analyze, visualize, and explore their rectilinear, curvilinear and
 unstructured geospatial data interactively in 3-D.
 
 We're still busy crafting the documentation, which is incomplete and liable
-to change.  So thanks for your patience. However, your feedback is important
+to change.  Thanks for your patience. However, your feedback is important
 to us.  So feel free to submit a :fab:`github` `Issue`_  or
 :fab:`github` `Pull-Request`_ to help elevate ``geovista`` to the next level
 of awesome 🚀
