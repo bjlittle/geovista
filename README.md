@@ -129,7 +129,7 @@ colormap.
 
 ```python
 import geovista as gv
-from geovista.pantry import ww3_global_tri
+from geovista.pantry.data import ww3_global_tri
 import geovista.theme
 
 # Load the sample data.
@@ -167,7 +167,7 @@ from an [FVCOM](https://www.fvcom.org/) **unstructured** mesh, as kindly provide
 
 ```python
 import geovista as gv
-from geovista.pantry import fvcom_tamar
+from geovista.pantry.data import fvcom_tamar
 import geovista.theme
 
 # Load the sample data.
@@ -218,7 +218,7 @@ base layer.
 
 ```python
 import geovista as gv
-from geovista.pantry import lam_pacific
+from geovista.pantry.data import lam_pacific
 import geovista.theme
 
 # Load the sample data.
@@ -262,7 +262,7 @@ base layer.
 import cartopy.crs as ccrs
 
 import geovista as gv
-from geovista.pantry import lam_pacific
+from geovista.pantry.data import lam_pacific
 import geovista.theme
 
 # Load the sample data.
@@ -304,7 +304,7 @@ Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/m
 
 ```python
 import geovista as gv
-from geovista.pantry import lfric_sst
+from geovista.pantry.data import lfric_sst
 import geovista.theme
 
 # Load the sample data.
@@ -343,7 +343,7 @@ using Nucleus for European Modelling of the Ocean (NEMO) ORCA2 Sea Water Potenti
 
 ```python
 import geovista as gv
-from geovista.pantry import nemo_orca2
+from geovista.pantry.data import nemo_orca2
 import geovista.theme
 
 # Load sample data.
@@ -381,7 +381,7 @@ Now let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.g
 
 ```python
 import geovista as gv
-from geovista.pantry import oisst_avhrr_sst
+from geovista.pantry.data import oisst_avhrr_sst
 import geovista.theme
 
 # Load sample data.
@@ -421,7 +421,7 @@ model uses hexagonal and pentagonal cells, and is a new dynamical core for
 
 ```python
 import geovista as gv
-from geovista.pantry import dynamico
+from geovista.pantry.data import dynamico
 import geovista.theme
 
 # Load sample data.
