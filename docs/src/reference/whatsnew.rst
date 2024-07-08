@@ -1,3 +1,5 @@
+:orphan:
+
 .. _gv-whatsnew:
 
 🚧 :fa:`wand-magic-sparkles` What's New

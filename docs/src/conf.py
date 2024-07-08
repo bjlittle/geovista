@@ -119,7 +119,7 @@ extensions = [
     "sphinx_togglebutton",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
-    "myst_parser",
+    "myst_nb",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -135,11 +135,13 @@ exclude_patterns = [
     "_build",
     "Thumbs.db",
     "reference/generated/api/index.rst",
+    "generated/gallery/**/*.ipynb",
 ]
 
 # The file extensions of source files.
 source_suffix = {
     ".rst": "restructuredtext",
+    ".ipynb": "myst-nb",
 }
 
 # The master toctree document.
@@ -194,6 +196,10 @@ tippy_rtd_urls = [
     "https://geovista.readthedocs.io/en/stable/",
     "http://localhost:11000",
     "http://0.0.0.0:11000",
+    "http://127.0.0.1:11000",
+    "http://localhost:8888",
+    "http://0.0.0.0:8888",
+    "http://127.0.0.1:8888",
     "https://matplotlib.org/stable/",
     "https://numpy.org/doc/stable/",
     "https://platformdirs.readthedocs.io/en/stable/",
@@ -243,6 +249,17 @@ tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag 
 
 togglebutton_hint = "Click to show"
 togglebutton_hint_hide = "Click to hide"
+
+
+# nbsphinx options -----------------------------------------------------------
+# See https://github.com/spatialaudio/nbsphinx/
+
+# TODO @bjlittle: investigate jupyter-cache mode
+nb_execution_mode = "auto"
+nb_execution_raise_on_error = True
+nb_execution_timeout = -1
+nb_number_source_lines = True
+nb_render_text_lexer = "python"
 
 
 # nitpicky options -----------------------------------------------------------
@@ -438,7 +455,10 @@ html_css_files = [
 # -- linkcheck builder options -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
 
-linkcheck_ignore = []
+linkcheck_ignore = [
+    "https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/",
+    "region-manifold-extraction.html",
+]
 linkcheck_retries = 3
 
 

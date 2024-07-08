@@ -54,7 +54,6 @@ __all__ = [
     "N_PANELS",
     "PANEL_BBOX_BY_IDX",
     "PANEL_IDX_BY_NAME",
-    "PANEL_IDX_BY_NAME",
     "PANEL_NAME_BY_IDX",
     "PREFERENCE",
     "line",
