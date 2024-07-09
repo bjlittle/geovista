@@ -1,0 +1,26 @@
+name: PR update
+
+on:
+  push:
+    branches:
+      - "main"
+jobs:
+  autoupdate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "generate token"
+        uses: tibdex/github-app-token@v2
+        id: generate-token
+        with:
+          app_id: ${{ secrets.AUTH_APP_ID }}
+          private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
+      - name: "automatically update PR"
+        uses: adRise/update-pr-branch@v0.7.2
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          base: "main"
+          required_approval_count: 1
+          require_passed_checks: false
+          sort: "created"
+          direction: "desc"
+          require_auto_merge_enabled: true
