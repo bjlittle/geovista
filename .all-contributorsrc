@@ -352,6 +352,15 @@
         "ideas",
         "userTesting"
       ]
+    },
+    {
+      "login": "Hedonical",
+      "name": "Phillip Post",
+      "avatar_url": "https://avatars.githubusercontent.com/u/91704211?v=4",
+      "profile": "https://github.com/Hedonical",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "commitType": "docs"
