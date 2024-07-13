@@ -53,21 +53,19 @@ def main() -> None:
     mesh = gv.Transform.from_1d(lons, lats, data=data, name=name)
 
     # Plot the rectilinear grid.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
     sargs = {"title": f"{name} / 1", "shadow": True}
-    plotter.add_mesh(
-        mesh, clim=clim, cmap="ice", scalar_bar_args=sargs, show_edges=True
-    )
-    plotter.add_coastlines()
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_mesh(mesh, clim=clim, cmap="ice", scalar_bar_args=sargs, show_edges=True)
+    p.add_coastlines()
+    p.add_axes()
+    p.add_text(
         "1-D Synthetic Face Data",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.camera.zoom(1.3)
-    plotter.show()
+    p.camera.zoom(1.3)
+    p.show()
 
 
 if __name__ == "__main__":

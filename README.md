@@ -141,15 +141,15 @@ mesh = gv.Transform.from_unstructured(
 )
 
 # Plot the mesh.
-plotter = gv.GeoPlotter()
+p = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
-plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
-plotter.add_coastlines()
-plotter.add_graticule()
-plotter.view_xy(negative=True)
-plotter.add_axes()
-plotter.show()
+p.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
+p.add_base_layer(texture=gv.natural_earth_hypsometric())
+p.add_coastlines()
+p.add_graticule()
+p.view_xy(negative=True)
+p.add_axes()
+p.show()
 ```
 </details>
 
@@ -188,11 +188,11 @@ mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
 mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 
 # Plot the mesh.
-plotter = gv.GeoPlotter()
+p = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(mesh, cmap="deep", scalar_bar_args=sargs)
-plotter.add_axes()
-plotter.show()
+p.add_mesh(mesh, cmap="deep", scalar_bar_args=sargs)
+p.add_axes()
+p.show()
 ```
 </details>
 
@@ -233,15 +233,15 @@ mesh = gv.Transform.from_unstructured(
 )
 
 # Plot the mesh on a mollweide projection using a Proj string.
-plotter = gv.GeoPlotter(crs="+proj=moll")
+p = gv.GeoPlotter(crs="+proj=moll")
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(mesh, scalar_bar_args=sargs)
-plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
-plotter.add_coastlines()
-plotter.add_graticule()
-plotter.add_axes()
-plotter.view_xy()
-plotter.show()
+p.add_mesh(mesh, scalar_bar_args=sargs)
+p.add_base_layer(texture=gv.natural_earth_hypsometric())
+p.add_coastlines()
+p.add_graticule()
+p.add_axes()
+p.view_xy()
+p.show()
 ```
 </details>
 
@@ -277,15 +277,15 @@ mesh = gv.Transform.from_unstructured(
 )
 
 # Plot the mesh on a Plate Carrée projection using a cartopy CRS.
-plotter = gv.GeoPlotter(crs=ccrs.PlateCarree(central_longitude=180))
+p = gv.GeoPlotter(crs=ccrs.PlateCarree(central_longitude=180))
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(mesh, scalar_bar_args=sargs)
-plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
-plotter.add_coastlines()
-plotter.add_graticule()
-plotter.add_axes()
-plotter.view_xy()
-plotter.show()
+p.add_mesh(mesh, scalar_bar_args=sargs)
+p.add_base_layer(texture=gv.natural_earth_hypsometric())
+p.add_coastlines()
+p.add_graticule()
+p.add_axes()
+p.view_xy()
+p.show()
 ```
 </details>
 
@@ -319,13 +319,13 @@ mesh = gv.Transform.from_unstructured(
 )
 
 # Plot the mesh on a Robinson projection using an ESRI spatial reference identifier.
-plotter = gv.GeoPlotter(crs="ESRI:54030")
+p = gv.GeoPlotter(crs="ESRI:54030")
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(mesh, cmap="thermal", show_edges=True, scalar_bar_args=sargs)
-plotter.add_coastlines()
-plotter.view_xy()
-plotter.add_axes()
-plotter.show()
+p.add_mesh(mesh, cmap="thermal", show_edges=True, scalar_bar_args=sargs)
+p.add_coastlines()
+p.view_xy()
+p.add_axes()
+p.show()
 ```
 </details>
 
@@ -356,14 +356,14 @@ mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)
 mesh = mesh.threshold()
 
 # Plot the mesh.
-plotter = gv.GeoPlotter()
+p = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
-plotter.add_base_layer(texture=gv.natural_earth_1())
-plotter.add_coastlines()
-plotter.view_xy()
-plotter.add_axes()
-plotter.show()
+p.add_mesh(mesh, show_edges=True, scalar_bar_args=sargs)
+p.add_base_layer(texture=gv.natural_earth_1())
+p.add_coastlines()
+p.view_xy()
+p.add_axes()
+p.show()
 ```
 </details>
 
@@ -394,14 +394,14 @@ mesh = gv.Transform.from_1d(sample.lons, sample.lats, data=sample.data)
 mesh = mesh.threshold()
 
 # Plot the mesh.
-plotter = gv.GeoPlotter()
+p = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(mesh, scalar_bar_args=sargs)
-plotter.add_base_layer(texture=gv.blue_marble())
-plotter.add_coastlines()
-plotter.view_xz()
-plotter.add_axes()
-plotter.show()
+p.add_mesh(mesh, scalar_bar_args=sargs)
+p.add_base_layer(texture=gv.blue_marble())
+p.add_coastlines()
+p.view_xz()
+p.add_axes()
+p.show()
 ```
 </details>
 
@@ -431,12 +431,12 @@ sample = dynamico()
 mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
 
 # Plot the mesh.
-plotter = gv.GeoPlotter()
+p = gv.GeoPlotter()
 sargs = {"title": f"{sample.name} / {sample.units}"}
-plotter.add_mesh(mesh, scalar_bar_args=sargs)
-plotter.add_coastlines()
-plotter.add_axes()
-plotter.show()
+p.add_mesh(mesh, scalar_bar_args=sargs)
+p.add_coastlines()
+p.add_axes()
+p.show()
 ```
 </details>
 

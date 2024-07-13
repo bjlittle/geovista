@@ -72,18 +72,18 @@ def main() -> None:
     mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 
     # Plot the unstructured mesh.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(mesh, cmap="deep", scalars="face", scalar_bar_args=sargs)
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_mesh(mesh, cmap="deep", scalars="face", scalar_bar_args=sargs)
+    p.add_axes()
+    p.add_text(
         "PML FVCOM Tamar",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.camera.zoom(1.2)
-    plotter.show()
+    p.camera.zoom(1.2)
+    p.show()
 
 
 if __name__ == "__main__":

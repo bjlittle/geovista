@@ -112,16 +112,16 @@ are rendered using the
     )
 
     # Plot the mesh with coastlines.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}"}
-    plotter.add_mesh(
+    p.add_mesh(
         mesh,
         cmap="balance",
         scalar_bar_args=sargs
     )
-    plotter.add_coastlines(color="white")
-    plotter.camera.zoom(1.2)
-    plotter.show()
+    p.add_coastlines(color="white")
+    p.camera.zoom(1.2)
+    p.show()
 
 
 NEMO ORCA2
@@ -190,18 +190,18 @@ projection.
     mesh = mesh.threshold()
 
     # Plot the mesh on a Plate Carrée projection using a cartopy CRS.
-    plotter = gv.GeoPlotter(crs=ccrs.PlateCarree())
+    p = gv.GeoPlotter(crs=ccrs.PlateCarree())
     sargs = {"title": f"{sample.name} / {sample.units}"}
-    plotter.add_mesh(
+    p.add_mesh(
         mesh,
         cmap="thermal",
         scalar_bar_args=sargs
     )
-    plotter.add_base_layer(texture=gv.natural_earth_1())
-    plotter.add_coastlines(color="white")
-    plotter.view_xy()
-    plotter.camera.zoom(1.4)
-    plotter.show()
+    p.add_base_layer(texture=gv.natural_earth_1())
+    p.add_coastlines(color="white")
+    p.view_xy()
+    p.camera.zoom(1.4)
+    p.show()
 
 
 WAVEWATCH III
@@ -251,18 +251,18 @@ Finally, the render is decorated with `10m Natural Earth coastlines`_.
     )
 
     # Plot the mesh.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}"}
-    plotter.add_mesh(
+    p.add_mesh(
         mesh,
         cmap="balance",
         scalar_bar_args=sargs
     )
-    plotter.add_coastlines(color="white")
-    plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
-    plotter.view_xy(negative=True)
-    plotter.camera.zoom(1.2)
-    plotter.show()
+    p.add_coastlines(color="white")
+    p.add_base_layer(texture=gv.natural_earth_hypsometric())
+    p.view_xy(negative=True)
+    p.camera.zoom(1.2)
+    p.show()
 
 
 Finite Volume Community Ocean Model
@@ -312,15 +312,15 @@ interactively.
     mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 
     # Plot the mesh.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}"}
-    plotter.add_mesh(
+    p.add_mesh(
         mesh,
         cmap="deep",
         scalar_bar_args=sargs
     )
-    plotter.view_poi()
-    plotter.show()
+    p.view_poi()
+    p.show()
 
 
 And Finally ...

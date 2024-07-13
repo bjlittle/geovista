@@ -72,9 +72,9 @@ def main() -> None:
 
     # Plot the points.
     crs = "+proj=wink1 +lon_0=180"
-    plotter = gv.GeoPlotter(crs=crs)
+    p = gv.GeoPlotter(crs=crs)
     sargs = {"title": "Magnitude", "shadow": True}
-    plotter.add_points(
+    p.add_points(
         xs=sample.lons,
         ys=sample.lats,
         cmap="fire_r",
@@ -84,19 +84,19 @@ def main() -> None:
         scalar_bar_args=sargs,
     )
     # Force zlevel alignment of coastlines and base layer.
-    plotter.add_base_layer(texture=gv.natural_earth_1(), zlevel=0)
-    plotter.add_graticule()
-    plotter.add_coastlines()
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_base_layer(texture=gv.natural_earth_1(), zlevel=0)
+    p.add_graticule()
+    p.add_coastlines()
+    p.add_axes()
+    p.add_text(
         f"USGS M2.5+ Earthquakes, 2000-2018 ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.view_xy()
-    plotter.camera.zoom(1.5)
-    plotter.show()
+    p.view_xy()
+    p.camera.zoom(1.5)
+    p.show()
 
 
 if __name__ == "__main__":

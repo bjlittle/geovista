@@ -53,21 +53,21 @@ def main() -> None:
     mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
 
     # Plot the unstructured mesh.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(mesh, scalar_bar_args=sargs)
-    plotter.add_coastlines()
-    plotter.add_graticule()
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_coastlines()
+    p.add_graticule()
+    p.add_axes()
+    p.add_text(
         "DYNAMICO Icosahedral (10m Coastlines)",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.view_xz(negative=True)
-    plotter.camera.zoom(1.3)
-    plotter.show()
+    p.view_xz(negative=True)
+    p.camera.zoom(1.3)
+    p.show()
 
 
 if __name__ == "__main__":
