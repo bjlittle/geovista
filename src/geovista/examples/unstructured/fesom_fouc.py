@@ -61,23 +61,23 @@ def main() -> None:
 
     # Plot the unstructured mesh.
     crs = "+proj=fouc"
-    plotter = gv.GeoPlotter(crs=crs)
+    p = gv.GeoPlotter(crs=crs)
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     # Require increased relative tolerance accuracy when cutting the mesh
     # at the anti-meridian due to its complex geometry.
-    plotter.add_mesh(mesh, scalar_bar_args=sargs, rtol=1e-8)
-    plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
-    plotter.add_coastlines()
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_mesh(mesh, scalar_bar_args=sargs, rtol=1e-8)
+    p.add_base_layer(texture=gv.natural_earth_hypsometric())
+    p.add_coastlines()
+    p.add_axes()
+    p.add_text(
         f"AWI-CM FESOM v1.4 ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.view_xy()
-    plotter.camera.zoom(1.5)
-    plotter.show()
+    p.view_xy()
+    p.camera.zoom(1.5)
+    p.show()
 
 
 if __name__ == "__main__":

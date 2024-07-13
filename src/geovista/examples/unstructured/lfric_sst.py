@@ -60,21 +60,21 @@ def main() -> None:
     mesh = mesh.threshold()
 
     # Plot the unstructured mesh.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(mesh, scalar_bar_args=sargs)
-    plotter.add_base_layer(texture=gv.natural_earth_1())
-    plotter.add_coastlines()
-    plotter.add_graticule()
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_base_layer(texture=gv.natural_earth_1())
+    p.add_coastlines()
+    p.add_graticule()
+    p.add_axes()
+    p.add_text(
         "LFRic C48 Unstructured Cube-Sphere (10m Coastlines)",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.camera.zoom(1.3)
-    plotter.show()
+    p.camera.zoom(1.3)
+    p.show()
 
 
 if __name__ == "__main__":

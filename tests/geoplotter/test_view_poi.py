@@ -14,7 +14,7 @@ from geovista.geoplotter import GeoPlotter
 
 def test_no_poi_warning():
     """Test warning raised for no POI."""
-    plotter = GeoPlotter()
+    p = GeoPlotter()
     wmsg = r"No point-of-interest \(POI\) is available or has been provided."
     with pytest.warns(UserWarning, match=wmsg):
-        plotter.view_poi()
+        p.view_poi()

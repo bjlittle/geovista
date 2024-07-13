@@ -797,12 +797,12 @@ class Transform:  # numpydoc ignore=PR01
 
         Now render the result:
 
-        >>> plotter = GeoPlotter()
-        >>> _ = plotter.add_mesh(mesh, rgb=True)
-        >>> plotter.view_poi()
-        >>> _ = plotter.add_base_layer(texture=natural_earth_1(), zlevel=0)
-        >>> _ = plotter.add_coastlines(color="white")
-        >>> plotter.show()
+        >>> p = GeoPlotter()
+        >>> _ = p.add_mesh(mesh, rgb=True)
+        >>> p.view_poi()
+        >>> _ = p.add_base_layer(texture=natural_earth_1(), zlevel=0)
+        >>> _ = p.add_coastlines(color="white")
+        >>> p.show()
 
         """
         try:

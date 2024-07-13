@@ -68,7 +68,7 @@ def main() -> None:
     fname = fetch_raster("fuji_dem.tif")
 
     # Plot the DEM data.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
 
     # Load the GeoTIFF image, which requires the optional package
     # dependency 'rasterio'.
@@ -79,10 +79,10 @@ def main() -> None:
     mesh.warp_by_scalar(inplace=True, factor=2e-7)
 
     sargs = {"fmt": "%.1f", "shadow": True}
-    plotter.add_mesh(mesh, cmap="speed_r", scalar_bar_args=sargs, smooth_shading=True)
-    plotter.add_logo_widget(fetch_raster("japan_map.png"), position=(0.8, 0.8))
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_mesh(mesh, cmap="speed_r", scalar_bar_args=sargs, smooth_shading=True)
+    p.add_logo_widget(fetch_raster("japan_map.png"), position=(0.8, 0.8))
+    p.add_axes()
+    p.add_text(
         "Mount Fuji, Digital Elevation Model GeoTIFF",
         position="upper_left",
         font_size=10,
@@ -96,7 +96,7 @@ def main() -> None:
         (-0.6616613958706443, 0.25045119061438004, 0.7067378568708134),
     ]
 
-    plotter.show(cpos=cpos)
+    p.show(cpos=cpos)
 
 
 if __name__ == "__main__":

@@ -57,21 +57,21 @@ def main() -> None:
     )
 
     # Plot the unstructured mesh.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(mesh, scalar_bar_args=sargs)
-    plotter.add_base_layer(texture=gv.natural_earth_hypsometric())
-    plotter.add_coastlines()
-    plotter.add_axes()
-    plotter.view_yz(negative=True)
-    plotter.add_text(
+    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_base_layer(texture=gv.natural_earth_hypsometric())
+    p.add_coastlines()
+    p.add_axes()
+    p.view_yz(negative=True)
+    p.add_text(
         "CF UGRID LAM (10m Coastlines)",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.camera.zoom(1.3)
-    plotter.show()
+    p.camera.zoom(1.3)
+    p.show()
 
 
 if __name__ == "__main__":

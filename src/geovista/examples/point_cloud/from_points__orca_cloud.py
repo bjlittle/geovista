@@ -60,28 +60,28 @@ def main() -> None:
     )
 
     # Plot the point cloud.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    plotter.add_mesh(
+    p.add_mesh(
         cloud,
         cmap="deep",
         point_size=5,
         scalar_bar_args=sargs,
         render_points_as_spheres=True,
     )
-    plotter.add_coastlines(color="black")
+    p.add_coastlines(color="black")
     # Force zlevel alignment of coastlines and base layer.
-    plotter.add_base_layer(texture=gv.natural_earth_1(), opacity=0.5, zlevel=0)
-    plotter.add_axes()
-    plotter.view_yz()
-    plotter.add_text(
+    p.add_base_layer(texture=gv.natural_earth_1(), opacity=0.5, zlevel=0)
+    p.add_axes()
+    p.view_yz()
+    p.add_text(
         "ORCA Point-Cloud (10m Coastlines)",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.camera.zoom(1.3)
-    plotter.show()
+    p.camera.zoom(1.3)
+    p.show()
 
 
 if __name__ == "__main__":

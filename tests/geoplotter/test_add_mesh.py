@@ -14,11 +14,11 @@ from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
 
 def test_no_opacity_kwarg(lfric, mocker):
     """Test with no opacity render request."""
-    plotter = GeoPlotter()
-    spy = mocker.spy(plotter, "_warn_opacity")
-    plotter.add_mesh(lfric)
+    p = GeoPlotter()
+    spy = mocker.spy(p, "_warn_opacity")
+    p.add_mesh(lfric)
     assert spy.call_count == 0
-    assert plotter._missing_opacity is False
+    assert p._missing_opacity is False
 
 
 @pytest.mark.parametrize("key", ["opacity", "nan_opacity"])
@@ -29,12 +29,12 @@ def test_gpu_opacity_available(lfric, mocker, key, value):
     version = mocker.sentinel.version
     minfo = mocker.MagicMock(renderer=renderer, version=version)
     _ = mocker.patch("pyvista.GPUInfo", return_value=minfo)
-    plotter = GeoPlotter()
-    spy = mocker.spy(plotter, "add_text")
+    p = GeoPlotter()
+    spy = mocker.spy(p, "add_text")
     kwargs = {key: value}
-    plotter.add_mesh(lfric, **kwargs)
+    p.add_mesh(lfric, **kwargs)
     assert spy.call_count == 0
-    assert plotter._missing_opacity is False
+    assert p._missing_opacity is False
 
 
 @pytest.mark.parametrize("key", ["opacity"])
@@ -44,13 +44,13 @@ def test_gpu_opacity_unavailable(lfric, mocker, key, value):
     renderer, version = OPACITY_BLACKLIST[0]
     minfo = mocker.MagicMock(renderer=renderer, version=version)
     _ = mocker.patch("pyvista.GPUInfo", return_value=minfo)
-    plotter = GeoPlotter()
-    spy = mocker.spy(plotter, "add_text")
+    p = GeoPlotter()
+    spy = mocker.spy(p, "add_text")
     kwargs = {key: value}
-    plotter.add_mesh(lfric, **kwargs)
+    p.add_mesh(lfric, **kwargs)
     if value is None:
         assert spy.call_count == 0
-        assert plotter._missing_opacity is False
+        assert p._missing_opacity is False
     else:
         assert spy.call_count == 1
         args = ("Requires GPU opacity support",)
@@ -61,4 +61,4 @@ def test_gpu_opacity_unavailable(lfric, mocker, key, value):
             "shadow": True,
         }
         spy.assert_called_once_with(*args, **kwargs)
-        assert plotter._missing_opacity is True
+        assert p._missing_opacity is True

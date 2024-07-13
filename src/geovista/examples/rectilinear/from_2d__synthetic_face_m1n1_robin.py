@@ -56,22 +56,20 @@ def main() -> None:
 
     # Plot the rectilinear grid.
     crs = "+proj=robin"
-    plotter = gv.GeoPlotter(crs=crs)
+    p = gv.GeoPlotter(crs=crs)
     sargs = {"title": f"{name} / 1", "shadow": True}
-    plotter.add_mesh(
-        mesh, clim=clim, cmap="tempo", scalar_bar_args=sargs, show_edges=True
-    )
-    plotter.add_coastlines()
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_mesh(mesh, clim=clim, cmap="tempo", scalar_bar_args=sargs, show_edges=True)
+    p.add_coastlines()
+    p.add_axes()
+    p.add_text(
         f"2-D Synthetic Face Data ({crs})",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.view_xy()
-    plotter.camera.zoom(1.5)
-    plotter.show()
+    p.view_xy()
+    p.camera.zoom(1.5)
+    p.show()
 
 
 if __name__ == "__main__":

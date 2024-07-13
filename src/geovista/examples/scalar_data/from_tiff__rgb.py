@@ -55,23 +55,23 @@ def main() -> None:
     fname = fetch_raster("bahamas_rgb.tif")
 
     # Plot the RGB image.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
 
     # Load the GeoTIFF image, which requires the optional package
     # dependency 'rasterio'.
     mesh = gv.Transform.from_tiff(fname, rgb=True, sieve=True, extract=True)
 
-    plotter.add_mesh(mesh, lighting=False, rgb=True)
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_mesh(mesh, lighting=False, rgb=True)
+    p.add_axes()
+    p.add_text(
         "Bahamas, RGB GeoTIFF",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.view_xz()
-    plotter.camera.zoom(1.3)
-    plotter.show()
+    p.view_xz()
+    p.camera.zoom(1.3)
+    p.show()
 
 
 if __name__ == "__main__":

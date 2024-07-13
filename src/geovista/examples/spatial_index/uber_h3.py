@@ -450,12 +450,12 @@ def main() -> None:
         surface.lons, surface.lats, connectivity=surface.connectivity
     )
 
-    plotter = geovista.GeoPlotter()
+    p = geovista.GeoPlotter()
     style = "wireframe"
-    actor_base_layer = plotter.add_base_layer(
+    actor_base_layer = p.add_base_layer(
         texture=geovista.natural_earth_hypsometric(), zlevel=0
     )
-    actor_resolution_0 = plotter.add_mesh(
+    actor_resolution_0 = p.add_mesh(
         mesh_resolution_0,
         style=style,
         line_width=4,
@@ -463,14 +463,14 @@ def main() -> None:
         zlevel=60,
         lighting=False,
     )
-    actor_icosahedron_edges = plotter.add_mesh(
+    actor_icosahedron_edges = p.add_mesh(
         generate_geodesic_edges(surface),
         line_width=4,
         color=color.icosahedron_edges,
         zlevel=60,
         lighting=False,
     )
-    actor_resolution_1 = plotter.add_mesh(
+    actor_resolution_1 = p.add_mesh(
         mesh_resolution_1,
         style=style,
         line_width=3,
@@ -478,7 +478,7 @@ def main() -> None:
         zlevel=10,
         lighting=False,
     )
-    actor_resolution_2 = plotter.add_mesh(
+    actor_resolution_2 = p.add_mesh(
         mesh_resolution_2,
         style=style,
         line_width=2,
@@ -486,7 +486,7 @@ def main() -> None:
         zlevel=5,
         lighting=False,
     )
-    actor_resolution_3 = plotter.add_mesh(
+    actor_resolution_3 = p.add_mesh(
         mesh_resolution_3,
         style=style,
         line_width=1,
@@ -494,7 +494,7 @@ def main() -> None:
         zlevel=1,
         lighting=False,
     )
-    actor_icosahedron = plotter.add_mesh(
+    actor_icosahedron = p.add_mesh(
         icosahedron, show_edges=True, color=color.icosahedron
     )
 
@@ -507,17 +507,17 @@ def main() -> None:
         resolution_3=actor_resolution_3,
         base_layer=actor_base_layer,
     )
-    add_checkboxes(plotter, color, actor)
+    add_checkboxes(p, color, actor)
 
-    plotter.add_text(
+    p.add_text(
         "Uber H3: Hexagonal Hierarchical Spatial Index",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.add_coastlines()
-    plotter.camera.zoom(1.5)
-    plotter.show()
+    p.add_coastlines()
+    p.camera.zoom(1.5)
+    p.show()
 
 
 if __name__ == "__main__":

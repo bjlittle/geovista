@@ -56,12 +56,12 @@ def main() -> None:
     mesh.set_active_vectors("vectors")
 
     # Plot the vectors.
-    plotter = gv.GeoPlotter()
-    plotter.add_base_layer(texture=gv.natural_earth_1(), zlevel=0, lighting=False)
-    plotter.add_mesh(mesh.arrows, lighting=False)
-    plotter.add_axes()
-    plotter.camera.zoom(1.3)
-    plotter.show()
+    p = gv.GeoPlotter()
+    p.add_base_layer(texture=gv.natural_earth_1(), zlevel=0, lighting=False)
+    p.add_mesh(mesh.arrows, lighting=False)
+    p.add_axes()
+    p.camera.zoom(1.3)
+    p.show()
 
 
 if __name__ == "__main__":

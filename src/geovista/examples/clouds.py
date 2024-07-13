@@ -71,7 +71,7 @@ def main() -> None:
     clim = (cmin := 0.3, 1.0)
 
     # Create the plotter.
-    plotter = gv.GeoPlotter()
+    p = gv.GeoPlotter()
 
     for i, cloud in enumerate(cmaps):
         # Load the sample data.
@@ -90,7 +90,7 @@ def main() -> None:
         # Remove cells from the mesh below the specified threshold.
         mesh = mesh.threshold(cmin)
 
-        plotter.add_mesh(
+        p.add_mesh(
             mesh,
             clim=clim,
             opacity=opacity,
@@ -100,17 +100,17 @@ def main() -> None:
         )
 
     # Force zlevel alignment of coastlines and base layer.
-    plotter.add_base_layer(texture=gv.natural_earth_1(), zlevel=0)
-    plotter.add_coastlines()
-    plotter.add_axes()
-    plotter.add_text(
+    p.add_base_layer(texture=gv.natural_earth_1(), zlevel=0)
+    p.add_coastlines()
+    p.add_axes()
+    p.add_text(
         "Low, Medium, High & Very High Cloud Amount",
         position="upper_left",
         font_size=10,
         shadow=True,
     )
-    plotter.camera.zoom(1.5)
-    plotter.show()
+    p.camera.zoom(1.5)
+    p.show()
 
 
 if __name__ == "__main__":

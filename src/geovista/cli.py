@@ -539,10 +539,10 @@ def examples(
 def plot(fname: str, axes: bool, base: bool) -> None:  # numpydoc ignore=PR01
     """Load and render a VTK mesh."""
     mesh = pv.read(fname)
-    plotter = GeoPlotter()
-    plotter.add_mesh(mesh)
+    p = GeoPlotter()
+    p.add_mesh(mesh)
     if base:
-        plotter.add_base_layer()
+        p.add_base_layer()
     if axes:
-        plotter.add_axes()
-    plotter.show()
+        p.add_axes()
+    p.show()

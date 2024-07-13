@@ -19,11 +19,11 @@ CRS = [None, "eqc", "moll", "poly"]
 def test_lam_polar(crs, plot_nodeid, lam_polar, verify_image_cache):
     """Test Polar LAM POI as first rendered mesh."""
     verify_image_cache.test_name = plot_nodeid
-    plotter = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
-    plotter.add_mesh(lam_polar, show_edges=True, zlevel=10)
-    plotter.view_poi()
-    plotter.add_base_layer(texture=gv.natural_earth_1())
-    plotter.show()
+    p = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
+    p.add_mesh(lam_polar, show_edges=True, zlevel=10)
+    p.view_poi()
+    p.add_base_layer(texture=gv.natural_earth_1())
+    p.show()
 
 
 @pytest.mark.image()
@@ -31,11 +31,11 @@ def test_lam_polar(crs, plot_nodeid, lam_polar, verify_image_cache):
 def test_lam_polar_post(crs, plot_nodeid, lam_polar, verify_image_cache):
     """Test Polar LAM POI as first rendered mesh."""
     verify_image_cache.test_name = plot_nodeid
-    plotter = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
-    plotter.add_base_layer(texture=gv.natural_earth_1())
-    plotter.add_mesh(lam_polar, show_edges=True, zlevel=10)
-    plotter.view_poi()
-    plotter.show()
+    p = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
+    p.add_base_layer(texture=gv.natural_earth_1())
+    p.add_mesh(lam_polar, show_edges=True, zlevel=10)
+    p.view_poi()
+    p.show()
 
 
 @pytest.mark.image()
@@ -43,11 +43,11 @@ def test_lam_polar_post(crs, plot_nodeid, lam_polar, verify_image_cache):
 def test_lam_polar_offset(crs, plot_nodeid, lam_polar, verify_image_cache):
     """Test Polar LAM POI offset."""
     verify_image_cache.test_name = plot_nodeid
-    plotter = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
-    plotter.add_mesh(lam_polar, show_edges=True, zlevel=10)
-    plotter.view_poi(-90, 80)
-    plotter.add_base_layer(texture=gv.natural_earth_1())
-    plotter.show()
+    p = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
+    p.add_mesh(lam_polar, show_edges=True, zlevel=10)
+    p.view_poi(-90, 80)
+    p.add_base_layer(texture=gv.natural_earth_1())
+    p.show()
 
 
 @pytest.mark.image()
@@ -64,11 +64,11 @@ def test_lam_polar_offset(crs, plot_nodeid, lam_polar, verify_image_cache):
 def test_lam_uk_defaults(x, y, plot_nodeid, lam_uk, verify_image_cache):
     """Test UK LAM POI with spatial defaults."""
     verify_image_cache.test_name = plot_nodeid
-    plotter = gv.GeoPlotter()
-    plotter.add_mesh(lam_uk, show_edges=True, zlevel=10)
-    plotter.add_base_layer(texture=gv.natural_earth_1())
-    plotter.view_poi(x=x, y=y)
-    plotter.show()
+    p = gv.GeoPlotter()
+    p.add_mesh(lam_uk, show_edges=True, zlevel=10)
+    p.add_base_layer(texture=gv.natural_earth_1())
+    p.view_poi(x=x, y=y)
+    p.show()
 
 
 @pytest.mark.image()
@@ -76,11 +76,11 @@ def test_lam_uk_defaults(x, y, plot_nodeid, lam_uk, verify_image_cache):
 def test_lam_uk(crs, plot_nodeid, lam_uk, verify_image_cache):
     """Test UK LAM POI as first rendered mesh."""
     verify_image_cache.test_name = plot_nodeid
-    plotter = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
-    plotter.add_mesh(lam_uk, show_edges=True, zlevel=10)
-    plotter.view_poi()
-    plotter.add_base_layer(texture=gv.natural_earth_1())
-    plotter.show()
+    p = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
+    p.add_mesh(lam_uk, show_edges=True, zlevel=10)
+    p.view_poi()
+    p.add_base_layer(texture=gv.natural_earth_1())
+    p.show()
 
 
 @pytest.mark.image()
@@ -88,8 +88,8 @@ def test_lam_uk(crs, plot_nodeid, lam_uk, verify_image_cache):
 def test_lam_uk_post(crs, plot_nodeid, lam_uk, verify_image_cache):
     """Test UK LAM POI as last rendered mesh."""
     verify_image_cache.test_name = plot_nodeid
-    plotter = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
-    plotter.add_base_layer(texture=gv.natural_earth_1())
-    plotter.add_mesh(lam_uk, show_edges=True, zlevel=10)
-    plotter.view_poi()
-    plotter.show()
+    p = gv.GeoPlotter(crs=f"+proj={crs}" if crs else crs)
+    p.add_base_layer(texture=gv.natural_earth_1())
+    p.add_mesh(lam_uk, show_edges=True, zlevel=10)
+    p.view_poi()
+    p.show()
