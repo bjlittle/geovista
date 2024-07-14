@@ -345,7 +345,7 @@ def create_meridians(
             mesh.point_data[GV_REMESH_POINT_IDS] = seam
             mesh.set_active_scalars(name=None)
 
-        blocks[f"{index},{lon!r}"] = mesh
+        blocks[f"{index},{lon}"] = mesh
 
     grid_points, grid_labels = [], []
     labels = create_meridian_labels(list(lons))
@@ -539,7 +539,7 @@ def create_parallels(
 
         mesh = pv.PolyData(xyz, lines=lines)
         to_wkt(mesh, WGS84)
-        blocks[f"{index},{lat!r}"] = mesh
+        blocks[f"{index},{lat}"] = mesh
         grid_lats.append(lat)
 
     grid_points, grid_labels = [], []
