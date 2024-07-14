@@ -29,6 +29,7 @@ if TYPE_CHECKING:
 pv = lazy.load("pyvista")
 
 __all__ = [
+    "black_marble",
     "blue_marble",
     "checkerboard",
     "natural_earth_1",
@@ -65,6 +66,32 @@ def _fetch_texture(fname: str, location: bool | None = False) -> TextureLike:
     if not location:
         resource = pv.read_texture(resource)
     return resource
+
+
+def black_marble(location: bool | None = False) -> TextureLike:
+    """Get the NASA Black Marble 'night lights' texture.
+
+    If the resource is not already available in the geovista
+    :data:`geovista.cache.CACHE`, then it will be downloaded from the
+    :data:`geovista.cache.BASE_URL`.
+
+    Parameters
+    ----------
+    location : bool, default=False
+        Determine whether the absolute path filename to the texture resource
+        location within the cache is returned, or the actual texture.
+
+    Returns
+    -------
+    str or Texture
+        The PyVista texture filename or the texture.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    return _fetch_texture("black_marble.jpg", location=location)
 
 
 def blue_marble(location: bool | None = False) -> TextureLike:

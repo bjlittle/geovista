@@ -2,6 +2,7 @@
 from .bridge import Transform
 from .geoplotter import GeoPlotter
 from .pantry.textures import (
+    black_marble,
     blue_marble,
     checkerboard,
     natural_earth_1,
@@ -13,6 +14,7 @@ __all__ = [
     "GeoPlotter",
     "Report",
     "Transform",
+    "black_marble",
     "blue_marble",
     "checkerboard",
     "natural_earth_1",
