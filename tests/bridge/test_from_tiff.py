@@ -13,6 +13,9 @@ import pytest
 from geovista.bridge import Transform
 from geovista.pantry import fetch_raster
 
+# skip tests if rasterio package unavailable
+pytest.importorskip("rasterio")
+
 # convert to string to exercise conversion back to Path
 fname: str = str(fetch_raster("bahamas_rgb.tif"))
 
