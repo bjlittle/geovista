@@ -39,7 +39,10 @@ def test(plot_nodeid, example, verify_image_cache):
         for attr, value in thresholds[example].items():
             setattr(verify_image_cache, attr, value)
 
-    # import the example module
-    module = importlib.import_module(f"geovista.examples.{example}")
-    # execute the example module for image testing
-    module.main()
+    try:
+        # import the example module
+        module = importlib.import_module(f"geovista.examples.{example}")
+        # execute the example module for image testing
+        module.main()
+    except ImportError:
+        pytest.skip("optional dependency missing")
