@@ -17,3 +17,5 @@ include *.md
 include CITATION.cff
 exclude codecov.yml
 exclude tox.ini
+recursive-exclude joss *.bib
+recursive-exclude joss *.md
