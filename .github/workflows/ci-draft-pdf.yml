@@ -1,5 +1,7 @@
 on: [push]
 
+name: ci-draft-pdf
+
 jobs:
   paper:
     runs-on: ubuntu-latest
