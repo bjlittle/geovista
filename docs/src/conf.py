@@ -148,7 +148,7 @@ source_suffix = {
 root_doc = "index"
 
 # Sphinx document translation with sphinx gettext feature uses these settings:
-locale_dirs = ['locale/']
+locale_dirs = ["locale/"]
 gettext_compact = False
 
 # -- Project information -----------------------------------------------------
