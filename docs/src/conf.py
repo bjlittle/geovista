@@ -147,6 +147,9 @@ source_suffix = {
 # The master toctree document.
 root_doc = "index"
 
+# Sphinx document translation with sphinx gettext feature uses these settings:
+locale_dirs = ["locale/"]
+gettext_compact = False
 
 # -- Project information -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
