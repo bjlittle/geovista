@@ -8,33 +8,22 @@ ci:
   autoupdate_commit_msg: "chore: update pre-commit hooks"
 
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.6.0"
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: "v0.18"
     hooks:
-    - id: check-added-large-files
-      exclude: "tests/plotting/image_cache"
-      # Prevent giant files from being committed.
-    - id: check-ast
-      # Check whether files parse as valid Python.
-    - id: check-case-conflict
-      # Check for file name conflicts on case-insensitive file-systems.
-    - id: check-merge-conflict
-      # Check for files that contain merge conflict strings.
-    - id: debug-statements
-      # Check for debugger imports and py37+ `breakpoint()` calls in Python source.
-    - id: check-toml
-      # Check TOML file syntax.
-    - id: check-yaml
-      # Check YAML file syntax.
-    - id: end-of-file-fixer
-      # Makes sure files end in a newline and only a newline.
-      exclude_types: [svg]
-    - id: mixed-line-ending
-      # Replaces or checks mixed line ending.
-    - id: no-commit-to-branch
-      # Don't commit to main branch.
-    - id: trailing-whitespace
-      # Trims trailing whitespace.
+      - id: validate-pyproject
+
+  - repo: https://github.com/adamchainz/blacken-docs
+    rev: "1.18.0"
+    hooks:
+      - id: blacken-docs
+        additional_dependencies: [black==24.*]
+
+  - repo: https://github.com/aio-libs/sort-all
+    rev: "v1.2.0"
+    hooks:
+      - id: sort-all
+        types: [file, python]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.5.2"
@@ -48,15 +37,56 @@ repos:
   - repo: https://github.com/codespell-project/codespell
     rev: "v2.3.0"
     hooks:
-    - id: codespell
-      types_or: [python, markdown, rst]
-      additional_dependencies: [tomli]
+      - id: codespell
+        types_or: [python, markdown, rst]
+        additional_dependencies: [tomli]
 
-  - repo: https://github.com/adamchainz/blacken-docs
-    rev: "1.18.0"
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.8.5
     hooks:
-      - id: blacken-docs
-        additional_dependencies: [black==24.*]
+      - id: nbqa-ruff
+        name: nbqa-ruff
+        entry: ruff check
+        language: python
+        additional_dependencies: [ruff]
+        require_serial: true
+        types_or: [jupyter]
+
+  - repo: https://github.com/numpy/numpydoc
+    rev: v1.7.0
+    hooks:
+      - id: numpydoc-validation
+        files: "^src/"
+        exclude: "^src/geovista/examples/"
+        types: [file, python]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v4.6.0"
+    hooks:
+      - id: check-added-large-files
+        exclude: "tests/plotting/image_cache"
+        # Prevent giant files from being committed.
+      - id: check-ast
+        # Check whether files parse as valid Python.
+      - id: check-case-conflict
+        # Check for file name conflicts on case-insensitive file-systems.
+      - id: check-merge-conflict
+        # Check for files that contain merge conflict strings.
+      - id: debug-statements
+        # Check for debugger imports and py37+ `breakpoint()` calls in Python source.
+      - id: check-toml
+        # Check TOML file syntax.
+      - id: check-yaml
+        # Check YAML file syntax.
+      - id: end-of-file-fixer
+        # Makes sure files end in a newline and only a newline.
+        exclude_types: [svg]
+      - id: mixed-line-ending
+        # Replaces or checks mixed line ending.
+      - id: no-commit-to-branch
+        # Don't commit to main branch.
+      - id: trailing-whitespace
+        # Trims trailing whitespace.
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -77,17 +107,6 @@ repos:
       - id: text-unicode-replacement-char
         # Forbid files which have a UTF-8 Unicode replacement character.
 
-  - repo: https://github.com/aio-libs/sort-all
-    rev: "v1.2.0"
-    hooks:
-      - id: sort-all
-        types: [file, python]
-
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "v0.18"
-    hooks:
-      - id: validate-pyproject
-
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.29.0
     hooks:
@@ -101,11 +120,3 @@ repos:
       - id: sp-repo-review
         additional_dependencies: ["repo-review[cli]"]
         args: ["--show=errskip"]
-
-  - repo: https://github.com/numpy/numpydoc
-    rev: v1.7.0
-    hooks:
-      - id: numpydoc-validation
-        files: "^src/"
-        exclude: "^src/geovista/examples/"
-        types: [file, python]
