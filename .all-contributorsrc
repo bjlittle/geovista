@@ -361,6 +361,16 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "wx4stg",
+      "name": "Sam Gardner",
+      "avatar_url": "https://avatars.githubusercontent.com/u/83480577?v=4",
+      "profile": "https://wx4stg.com",
+      "contributions": [
+        "ideas",
+        "promotion"
+      ]
     }
   ],
   "commitType": "docs"
