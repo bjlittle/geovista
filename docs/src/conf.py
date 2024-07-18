@@ -32,8 +32,10 @@ from importlib.metadata import version as get_version
 import os
 from pathlib import Path
 import re
+import subprocess
 import textwrap
 from typing import TYPE_CHECKING
+from urllib.parse import quote
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
@@ -158,7 +160,27 @@ project = "GeoVista"
 now = datetime.datetime.now(datetime.UTC)
 copyright_years = f"2021 - {now.year}"
 copyright = f"{copyright_years}, {project} Contributors"  # noqa: A001
-on_rtd = os.environ.get("READTHEDOCS")
+
+on_rtd = os.environ.get("READTHEDOCS") == "True"
+rtd_version = os.environ.get("READTHEDOCS_VERSION")
+
+if rtd_version is not None:
+    # Make rtd_version safe for use in shields.io badges.
+    rtd_version = rtd_version.replace("_", "__")
+    rtd_version = rtd_version.replace("-", "--")
+    rtd_version = quote(rtd_version)
+
+# branch, tag, external (for pull requests) or unknown.
+rtd_version_type = os.environ.get("READTHEDOCS_VERSION_TYPE")
+
+# get the short commit sha.
+rev_parse = subprocess.run(  # noqa: S603
+    ["git", "rev-parse", "--short", "HEAD"],  # noqa: S607
+    capture_output=True,
+    text=True,
+    check=True,
+)
+commit_sha = rev_parse.stdout.strip()
 
 if on_rtd:
     # https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#including-content-based-on-tags
@@ -394,6 +416,21 @@ html_context = {
     "github_repo": "geovista",
     "github_version": "main",
     "doc_path": "docs/src",
+    # sidebar-version
+    "on_rtd": on_rtd,
+    "rtd_version": rtd_version,
+    "rtd_version_type": rtd_version_type,
+    "commit_sha": commit_sha,
+}
+
+html_sidebars = {
+    "**": [
+        "navbar-logo.html",
+        "sidebar-version.html",
+        "icon-links.html",
+        "search-button-field.html",
+        "sbt-sidebar-nav.html",
+    ]
 }
 
 html_theme_options = {
@@ -442,6 +479,12 @@ html_theme_options = {
     "use_sidenotes": True,
     "use_source_button": False,
 }
+
+if on_rtd and rtd_version == "latest":
+    html_theme_options["announcement"] = """
+        ⚠️ This is the <b>latest</b> unreleased development version. The
+        <a href="https://geovista.readthedocs.io/en/stable/">stable</a> released
+        version is also available ⚠️"""
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
