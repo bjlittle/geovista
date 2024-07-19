@@ -484,7 +484,7 @@ if on_rtd and rtd_version == "latest":
     html_theme_options["announcement"] = """
         ⚠️ Viewing <b>latest</b> development version. Released
         <a href="https://geovista.readthedocs.io/en/stable/">stable</a>
-        version also available ⚠️"""
+        version also available."""
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
