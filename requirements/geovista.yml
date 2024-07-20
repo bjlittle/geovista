@@ -59,7 +59,7 @@ dependencies:
   - sphinx-copybutton
   - sphinx-design
   - sphinx-gallery >=0.16
-  - sphinx-tags
+  - sphinx-tags >=0.4
   - sphinx-togglebutton
   - ipywidgets
   - jupyter-server-proxy

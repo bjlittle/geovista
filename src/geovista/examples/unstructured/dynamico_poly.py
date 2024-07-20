@@ -26,7 +26,12 @@ System Model. The data targets the mesh faces/cells.
 Note that, a graticule and Natural Earth coastlines are rendered, and the
 mesh is also transformed to the Polyconic pseudo-conical projection.
 
-.. tags:: Coastlines, Graticule, Projection, Unstructured
+.. tags::
+
+    component: coastlines, component: graticule,
+    domain: meteorology,
+    load: unstructured,
+    projection: crs
 
 ----
 

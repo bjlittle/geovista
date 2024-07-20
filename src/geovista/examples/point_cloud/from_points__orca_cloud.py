@@ -24,7 +24,12 @@ area and pre-filtered for temperature gradients.
 Note that, Natural Earth coastlines are also rendered along with a Natural
 Earth base layer with opacity.
 
-.. tags:: Coastlines, Globe, Opacity, Point Cloud, Texture
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: oceanography,
+    load: points,
+    style: opacity
 
 ----
 

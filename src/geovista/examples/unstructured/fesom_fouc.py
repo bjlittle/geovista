@@ -26,7 +26,12 @@ Note that, a Natural Earth base layer is rendered along with Natural Earth
 coastlines, and the mesh is also transformed to the Foucaut pseudo-cylindrical
 projection.
 
-.. tags:: Coastlines, Projection, Unstructured, Texture
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: oceanography,
+    load: unstructured,
+    projection: crs
 
 ----
 

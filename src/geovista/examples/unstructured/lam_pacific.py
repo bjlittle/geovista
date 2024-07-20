@@ -24,7 +24,11 @@ temperature data located on the mesh faces/cells.
 Note that, a Natural Earth base layer is rendered along with Natural Earth
 coastlines.
 
-.. tags:: Coastlines, Globe, Texture, Unstructured
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: meteorology,
+    load: unstructured
 
 ----
 

@@ -25,7 +25,12 @@ A Natural Earth base layer is rendered along with Natural Earth coastlines,
 and the mesh is also transformed to the Hammer & Eckert-Greifendorff
 azimuthal projection.
 
-.. tags:: Coastlines, Projection, Unstructured, Texture
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: oceanography,
+    load: unstructured,
+    projection: crs
 
 ----
 

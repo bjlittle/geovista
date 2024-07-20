@@ -36,7 +36,12 @@ The warp uses :meth:`~pyvista.PolyDataFilters.compute_normals` and
 `Computing Surface Normals <https://docs.pyvista.org/version/stable/examples/01-filter/compute-normals.htm>`_
 for further details.
 
-.. tags:: Projection, Transform Mesh, Unstructured, Warp
+.. tags::
+
+    domain: orography,
+    filter: warp,
+    load: unstructured,
+    projection: crs, projection: transform
 
 ----
 

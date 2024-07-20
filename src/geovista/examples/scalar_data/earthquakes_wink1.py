@@ -45,7 +45,12 @@ for further details.
    Optional package dependencies `pandas <https://pandas.pydata.org/docs/>`_ and
    `fastparquet <https://fastparquet.readthedocs.io/en/stable>`_ are required.
 
-.. tags:: Coastlines, Graticule, Points, Projection, Texture
+.. tags::
+
+    component: coastlines, component: graticule, component: texture,
+    domain: seismology,
+    load: points,
+    projection: crs
 
 ----
 

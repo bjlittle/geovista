@@ -41,7 +41,14 @@ on the mesh nodes/points.
 The elevation data is used to extrude the mesh proportionally to reveal
 the topography of Mount Fuji and its surrounding landscape.
 
-.. tags:: DEM, GeoTIFF, Warp
+.. tags::
+
+    domain: orography,
+    filter: warp,
+    load: geotiff,
+    render: camera,
+    style: shading,
+    widget: logo
 
 .. attention:: Optional package dependency :mod:`rasterio` is required.
 
