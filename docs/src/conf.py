@@ -239,26 +239,16 @@ tippy_props = {"maxWidth": 700, "placement": "top-start", "theme": "light"}
 # See https://sphinx-tags.readthedocs.io/en/latest/index.html
 
 tags_badge_colors = {
-    "Coastlines": "primary",
-    "Curvilinear": "secondary",
-    "Extrude": "dark",
-    "Globe": "success",
-    "GeoTIFF": "secondary",
-    "Graticule": "primary",
-    "Lighting": "primary",
-    "Opacity": "primary",
-    "Points": "secondary",
-    "Point Cloud": "secondary",
-    "Projection": "success",
-    "RGB": "primary",
-    "Rectilinear": "secondary",
-    "Texture": "primary",
-    "Threshold": "primary",
-    "Transform Mesh": "warning",
-    "Unstructured": "secondary",
-    "Vectors": "warning",
-    "Warp": "dark",
+    "component:*": "primary",  # coastlines, graticule, manifold, texture, vectors
+    "domain:*": "secondary",  # oceanography, seismology, meteorology, orography
+    "filter:*": "success",  # extrude, threshold, warp
+    "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
+    "projection:*": "warning",  # crs, transform
+    "render": "danger",  # camera
+    "style:*": "light",  # colormap, lighting, opacity, shading
+    "widget:*": "info",  # checkbox, logo
 }
+
 tags_create_tags = True
 tags_create_badges = True
 tags_index_head = "Gallery examples organised by tag:"  # tags landing page intro text

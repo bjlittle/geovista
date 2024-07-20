@@ -28,7 +28,10 @@ Note that, the RGB image pixel data is located on the mesh nodes/points.
 The masked RGB pixels are then removed by extracting only mesh cells with no
 masked points.
 
-.. tags:: GeoTIFF, Lighting, RGB
+.. tags::
+
+    load: geotiff,
+    style: lighting
 
 .. attention:: Optional package dependency :mod:`rasterio` is required.
 

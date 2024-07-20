@@ -25,7 +25,13 @@ mesh is then transformed to the Mollweide pseudo-cylindrical projection
 and extruded to give depth to the projected surface. Finally, 10m
 resolution Natural Earth coastlines are also rendered.
 
-.. tags:: Coastlines, Curvilinear, Extrude, Projection, Threshold, Transform Mesh
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: oceanography,
+    filter: extrude, filter: threshold
+    load: curvilinear,
+    projection: crs, projection: transform
 
 ----
 

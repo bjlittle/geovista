@@ -70,7 +70,11 @@ the relationship between the geometric objects rendered in the scene.
 
 For further information see https://h3geo.org/.
 
-.. tags:: Coastlines, Globe, Texture, Unstructured
+.. tags::
+
+    component: coastlines, component: texture,
+    load: unstructured,
+    widget: checkbox
 
 ----
 

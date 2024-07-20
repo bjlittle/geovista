@@ -24,7 +24,12 @@ data located on the mesh faces/cells.
 Note that, a threshold is also applied to remove land ``NaN`` cells. A Natural Earth
 base layer is also rendered along with Natural Earth coastlines and a graticule.
 
-.. tags:: Coastlines, Globe, Graticule, Unstructured, Texture, Threshold
+.. tags::
+
+    component: coastlines, component: graticule, component: texture,
+    domain: oceanography,
+    filter: threshold,
+    load: unstructured
 
 ----
 

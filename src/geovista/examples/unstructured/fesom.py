@@ -25,7 +25,11 @@ mesh faces/cells.
 Note that, a Natural Earth base layer is rendered along with Natural Earth
 coastlines.
 
-.. tags:: Coastlines, Globe, Unstructured, Texture
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: oceanography,
+    load: unstructured
 
 ----
 

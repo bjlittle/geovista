@@ -26,7 +26,13 @@ Earth base layer with opacity. Additionally, the mesh is transformed to
 the Equidistant Cylindrical (Plate Carrée) conformal cylindrical
 projection.
 
-.. tags:: Coastlines, Point Cloud, Opacity, Projection, Texture
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: oceanography,
+    load: points,
+    projection: crs,
+    style: opacity
 
 ----
 

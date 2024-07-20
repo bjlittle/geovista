@@ -25,7 +25,11 @@ System Model. The data targets the mesh faces/cells.
 
 Note that, a graticule and Natural Earth coastlines are also rendered.
 
-.. tags:: Coastlines, Globe, Graticule, Unstructured
+.. tags::
+
+    component: coastlines, component: graticule,
+    domain: meteorology,
+    load: unstructured
 
 ----
 
