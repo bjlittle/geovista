@@ -80,6 +80,17 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Jargon buster.
 
+    .. grid-item-card:: Tags
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: tagoverview
+        :link-type: ref
+        :img-top: ../_static/images/icons/tags.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Themed content tags.
+
 .. comment
 
     # TBD @bjlittle: add these cards back
@@ -105,7 +116,6 @@ Consult our reference material for no fuss facts about ``geovista``.
         :class-card: sd-rounded-3
 
         Release highlights.
-
 
 
 .. toctree::

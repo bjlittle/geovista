@@ -251,11 +251,11 @@ tags_badge_colors = {
 
 tags_create_tags = True
 tags_create_badges = True
-tags_index_head = "Gallery examples organised by tag:"  # tags landing page intro text
+tags_index_head = "Themed content tags:"  # tags landing page intro text
 tags_intro_text = "Tags:"  # prefix text for a tags list
 tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
 tags_output_dir = "tags"
-tags_page_header = "Gallery examples:"  # tag sub-page, header text
+tags_page_header = "Tagged content:"  # tag sub-page, header text
 tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
 
 
