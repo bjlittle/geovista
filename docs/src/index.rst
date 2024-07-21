@@ -119,7 +119,6 @@ We'd 💛 to hear from you.
     :hidden:
 
     generated/gallery/index
-    tags/tagsindex
 
 
 .. toctree::
