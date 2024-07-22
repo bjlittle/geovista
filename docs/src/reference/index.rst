@@ -58,17 +58,6 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         GUI hot-keys.
 
-    .. grid-item-card:: API Reference
-        :class-title: custom-title
-        :class-body: custom-body
-        :link: gv-api
-        :link-type: ref
-        :img-top: ../_static/images/icons/api.svg
-        :class-img-top: dark-light
-        :class-card: sd-rounded-3
-
-        Behaviour and state docstrings.
-
     .. grid-item-card:: Glossary
         :class-title: custom-title
         :class-body: custom-body
@@ -90,10 +79,6 @@ Consult our reference material for no fuss facts about ``geovista``.
         :class-card: sd-rounded-3
 
         Themed content tags.
-
-.. comment
-
-    # TBD @bjlittle: add these cards back
 
     .. grid-item-card:: 🚧 Changelog
         :class-title: custom-title
@@ -117,6 +102,17 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Release highlights.
 
+    .. grid-item-card:: API Reference
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-api
+        :link-type: ref
+        :img-top: ../_static/images/icons/api.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Behaviour and state docstrings.
+
 
 .. toctree::
     :maxdepth: 1
@@ -126,12 +122,7 @@ Consult our reference material for no fuss facts about ``geovista``.
     environment
     cli/index
     bindings
-    generated/api/geovista/index
     glossary
-
-.. comment
-
-    # TBD @bjlittle: add these sections back to the toc
-
     changelog
     whatsnew
+    generated/api/geovista/index
