@@ -337,7 +337,6 @@ autodoc_typehints_description_target = "documented"
 #     https://github.com/readthedocs/sphinx-autoapi
 #
 
-autoapi_type = "python"
 autoapi_dirs = [
     package_src_dir,
 ]
