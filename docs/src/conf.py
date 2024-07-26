@@ -773,7 +773,7 @@ def geovista_carousel(
 ) -> None:
     """Create the gallery carousel."""
     # create empty or truncate existing file
-    fname = Path(app.srcdir, "gallery-carousel.txt")
+    fname = Path(app.srcdir, "gallery_carousel.txt")
 
     with fname.open("w"):
         pass

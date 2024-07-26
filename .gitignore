@@ -82,7 +82,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-docs/src/gallery-carousel.txt
+docs/src/gallery_carousel.txt
 docs/src/generated
 docs/src/reference/generated
 docs/src/tags

@@ -88,7 +88,7 @@ We'd 💛 to hear from you.
     knowledge discovery (`Diátaxis`_)
 
 
-.. include:: gallery-carousel.txt
+.. include:: gallery_carousel.txt
 
 
 .. toctree::
