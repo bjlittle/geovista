@@ -160,6 +160,10 @@ project = "GeoVista"
 now = datetime.datetime.now(datetime.UTC)
 copyright_years = f"2021 - {now.year}"
 copyright = f"{copyright_years}, {project} Contributors"  # noqa: A001
+# Explicitly unset to save rendering by sphinx as an additional line on the
+# page footer, thus minimising the footer footprint. Instead, append "author"
+# to "copyright".
+author = ""
 
 on_rtd = os.environ.get("READTHEDOCS") == "True"
 rtd_version = os.environ.get("READTHEDOCS_VERSION")
