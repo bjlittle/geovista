@@ -288,3 +288,82 @@ where = ["src"]
 write_to = "src/geovista/_version.py"
 local_scheme = "dirty-tag"
 version_scheme = "release-branch-semver"
+
+
+[tool.towncrier]
+package = "geovista"
+package_dir = "src"
+filename = "CHANGELOG.rst"
+directory = "changelog"
+title_format = "v{version} ({project_date})"
+template = "changelog/template.rst"
+
+#
+# the order here defines the rendered changelog order
+#
+[[tool.towncrier.type]]
+# Removals and backward incompatible breaking changes.
+directory = "breaking"
+name = "💣 Breaking Changes"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Declaration of removals and backward incompatible changes.
+directory = "deprecation"
+name = "🔥 Deprecations"
+showcontent = true
+
+[[tool.towncrier.type]]
+# New behaviours, capability, public API etc
+directory = "feature"
+name = "✨ New Features"
+showcontent = true
+
+[[tool.towncrier.type]]
+# New behaviours in existing features e.g., performance
+directory = "enhancement"
+name = "🚀 Enhancements"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Correction to undesired behaviours.
+directory = "bugfix"
+name = "🐛 Bug Fixes"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Package dependancy removals, additions, pins etc
+directory = "dependency"
+name = "🔗 Dependencies"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Notable changes to the documentation structure, content, render or build
+directory = "documentation"
+name = "📚 Documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Miscellaneos internal and maintentance changes.
+directory = "internal"
+name = "💼 Internal"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Celebrate our awesome community members.
+directory = "community"
+name = "🌱 Community"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Changes that affect contributors e.g., standards, conventions,
+# running tests, building docs, environments etc
+directory = "contributor"
+name = "🛠️ Contributor Infrastructure"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Catch all for items that don't fit elsewhere.
+directory = "misc"
+name = "🧰 Miscellaneous"
+showcontent = true

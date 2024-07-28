@@ -113,6 +113,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
+    "sphinx_changelog",
     "sphinx_click",
     "sphinx_copybutton",
     "sphinx_design",
@@ -152,6 +153,7 @@ root_doc = "index"
 # Sphinx document translation with sphinx gettext feature uses these settings:
 locale_dirs = ["locale/"]
 gettext_compact = False
+
 
 # -- Project information -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
@@ -537,8 +539,9 @@ doctest_global_setup = "import geovista"
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
-    "issue": ("https://github.com/bjlittle/geovista/issues/%s", "Issue #%s"),
-    "pull": ("https://github.com/bjlittle/geovista/pull/%s", "PR #%s"),
+    "issue": ("https://github.com/bjlittle/geovista/issues/%s", "#%s"),
+    "pull": ("https://github.com/bjlittle/geovista/pull/%s", "#%s"),
+    "user": ("https://github.com/%s", "@%s"),
 }
 
 
