@@ -1,0 +1,2 @@
+Added initial `towncrier <https://github.com/twisted/towncrier>`__ infrastructure
+to support the ``changelog``. (:user:`bjlittle`)
