@@ -1,0 +1,3 @@
+Enabled rendering a version badge in the primary sidebar, and a ``latest`` to
+``stable`` version banner announcement for documentation on ``readthedocs``.
+(:user:`bjlittle`)

@@ -1,0 +1,1 @@
+Added :user:`wx4stg` as a contributor for ``ideas`` and ``promotion``. (:user:`tkoyama010`)

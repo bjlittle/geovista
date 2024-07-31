@@ -320,7 +320,7 @@ name = "✨ New Features"
 showcontent = true
 
 [[tool.towncrier.type]]
-# New behaviours in existing features e.g., performance
+# Updates to existing behaviours, including performance etc
 directory = "enhancement"
 name = "🚀 Enhancements"
 showcontent = true
