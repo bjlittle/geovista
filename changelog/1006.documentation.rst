@@ -1,0 +1,1 @@
+Added ``sphinx`` `Internationalization <https://www.sphinx-doc.org/en/master/usage/advanced/intl.html#quick-guide>`__ support. (:user:`tkoyama010`)

@@ -1,0 +1,2 @@
+Introduced minimum pin ``sphinx-tags >=0.4`` for multi-line tags support.
+(:user:`bjlittle`)

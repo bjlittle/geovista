@@ -1,0 +1,1 @@
+Fixed unset ``author`` in page footer of documentation. (:user:`bjlittle`)

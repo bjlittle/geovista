@@ -1,0 +1,3 @@
+Updated the :doc:`Region Manifold Extraction </tutorials/region-manifold-extraction>`
+tutorial to correct typos and add a cross-reference to
+:meth:`pyvista.DataSetFilters.select_enclosed_points`. (:user:`bjlittle`)

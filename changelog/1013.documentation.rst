@@ -1,0 +1,2 @@
+Refactored structure of ``geovista.examples`` `sphinx-tags <https://github.com/melissawm/sphinx-tags>`__.
+Closes :issue:`823`. (:user:`bjlittle`)
