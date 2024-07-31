@@ -372,6 +372,15 @@
         "ideas",
         "promotion"
       ]
+    },
+    {
+      "login": "berndbecker",
+      "name": "berndbecker",
+      "avatar_url": "https://avatars.githubusercontent.com/u/68229540?v=4",
+      "profile": "https://github.com/berndbecker",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "commitType": "docs"
