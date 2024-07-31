@@ -71,6 +71,20 @@ ignore-words-list = "whet,projets"
 skip = ".git,*.ipynb,*.rst,CODE_OF_CONDUCT.md"
 
 
+[tool.gilesbot]
+    [tool.gilesbot.pull_requests]
+        enabled = true
+
+    [tool.gilesbot.towncrier_changelog]
+        enabled = true
+        verify_pr_number = true
+        changelog_skip_label = "skip changelog"
+        help_url = "https://github.com/bjlittle/geovista/blob/main/changelog/README.md"
+        changelog_missing_long = "Pull-request missing a `changelog` news fragment. Please add one to the `changelog` directory, see `changelog` [README](https://github.com/bjlittle/geovista/blob/main/changelog/README.md)."
+        type_incorrect_long = "The `changelog` news fragment has an invalid `type`. Please use one of the types from the `changelog` [README](https://github.com/bjlittle/geovista/blob/main/changelog/README.md)."
+        number_incorrect_long = "The `changelog` news fragment `number` does not match this pull-request number. Please rename the news fragment file."
+
+
 [tool.nbqa.addopts]
 "ruff check" = [
     "--ignore=D100,E402,INP001",
