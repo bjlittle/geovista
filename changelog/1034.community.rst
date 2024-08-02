@@ -1,0 +1,3 @@
+Opened the doors to the `🍬 Candy Store <https://github.com/bjlittle/geovista/discussions/1033>`__,
+a community space on `GH Discussions <https://github.com/bjlittle/geovista/discussions>`__
+to openly share and promote how ``geovista`` is being used. (:user:`bjlittle`)

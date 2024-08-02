@@ -460,6 +460,19 @@ geovista examples --help
 ```
 
 
+## 🍬 Candy Store
+
+We've opened the doors to the [🍬 Candy Store](https://github.com/bjlittle/geovista/discussions/1033).
+
+A community space where you can openly share and promote how you're using
+GeoVista for your work, research or pleasure!
+
+Showcase your most awesome GeoVista eye candy with undiluted pride and tell
+us more about your work.
+
+We'd 💚 to hear from you!
+
+
 ## Documentation
 
 The [documentation](https://geovista.readthedocs.io/en/latest/) is built by [Sphinx](https://www.sphinx-doc.org/en/master/) and hosted on [Read the Docs](https://docs.readthedocs.io/en/stable/).
@@ -472,6 +485,7 @@ check it out!
 
 It's aiming to provide `xarray DataArray accessors for PyVista to visualize datasets in 3D` for the
 [xarray](https://github.com/pydata/xarray) community, and will be building on top of GeoVista 🎉
+
 
 ## Support
 
