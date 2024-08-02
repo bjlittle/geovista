@@ -28,7 +28,7 @@ to us.  So feel free to submit a :fab:`github` `Issue`_  or
 of awesome 🚀
 
 Alternatively, come share with us over on our :fab:`github` `Discussions`_.
-We'd 💛 to hear from you.
+We'd 💚 to hear from you.
 
 
 ----
