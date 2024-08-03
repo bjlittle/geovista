@@ -1,0 +1,2 @@
+Adjusted the number of contributors rendered per line to better suit reduced
+footprint on mobile platforms. (:user:`bjlittle`)
