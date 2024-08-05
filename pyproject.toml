@@ -67,7 +67,7 @@ ignore = [
 
 
 [tool.codespell]
-ignore-words-list = "whet,projets"
+ignore-words-list = "whet,projets,AAS"
 skip = ".git,*.ipynb,*.rst,CODE_OF_CONDUCT.md"
 
 
