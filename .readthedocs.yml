@@ -21,7 +21,7 @@ build:
       - geovista download --operational --decompress
 
 conda:
-  environment: requirements/locks/rtd.yml
+  environment: requirements/geovista.yml
 
 sphinx:
   configuration: docs/src/conf.py
