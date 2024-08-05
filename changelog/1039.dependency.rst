@@ -1,0 +1,2 @@
+Introduced temporary maximum pin ``towncrier<24.7.0`` due to breaking change
+for ``sphinx-changelog``. (:user:`bjlittle`)
