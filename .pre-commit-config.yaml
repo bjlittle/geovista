@@ -26,7 +26,7 @@ repos:
         types: [file, python]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.5.5"
+    rev: "v0.5.6"
     hooks:
       - id: ruff
         types: [file, python]
@@ -42,7 +42,7 @@ repos:
         additional_dependencies: [tomli]
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.5
+    rev: 1.8.7
     hooks:
       - id: nbqa-ruff
         name: nbqa-ruff
