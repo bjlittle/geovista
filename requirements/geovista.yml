@@ -2,6 +2,7 @@ name: geovista-dev
 
 channels:
   - conda-forge
+  - nodefaults
 
 dependencies:
 
