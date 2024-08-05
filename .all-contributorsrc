@@ -383,6 +383,15 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "sit23",
+      "name": "Stephen Thomson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10164528?v=4",
+      "profile": "http://emps.exeter.ac.uk/mathematics/staff/sit204",
+      "contributions": [
+        "example"
+      ]
     }
   ],
   "commitType": "docs"
