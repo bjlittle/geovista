@@ -1,0 +1,2 @@
+Adopt ``nodefaults`` to explicitly ignore the conda ``defaults`` channel when
+building the ``conda`` lock files. (:user:`bjlittle`)
