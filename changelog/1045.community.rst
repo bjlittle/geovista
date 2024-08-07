@@ -1,0 +1,3 @@
+Added the ``Awesome`` badge and registered ``goevista`` with
+`Awesome Open Geoscience <https://github.com/softwareunderground/awesome-open-geoscience>`__
+for promotion within the Earth Science community. (:user:`tkoyama010`)
