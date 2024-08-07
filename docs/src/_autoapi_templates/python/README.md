@@ -1,5 +1,5 @@
 # ⚠️
-This directory contains templates copied from `sphinx-autoapi` 3.0.0, which have been customised for
+This directory contains templates copied from `sphinx-autoapi` 3.2.1, which have been customised for
 our own purposes.
 
 For further details, see:
