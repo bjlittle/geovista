@@ -68,7 +68,7 @@ ignore = [
 
 [tool.codespell]
 ignore-words-list = "whet,projets"
-skip = ".git,*.ipynb,*.rst,CODE_OF_CONDUCT.md"
+skip = ".git,*.css,*.ipynb,*.js,*.html,*.map,*.po,CODE_OF_CONDUCT.md"
 
 
 [tool.nbqa.addopts]
@@ -332,7 +332,7 @@ name = "🐛 Bug Fixes"
 showcontent = true
 
 [[tool.towncrier.type]]
-# Package dependancy removals, additions, pins etc
+# Package dependency removals, additions, pins etc
 directory = "dependency"
 name = "🔗 Dependencies"
 showcontent = true
@@ -344,7 +344,7 @@ name = "📚 Documentation"
 showcontent = true
 
 [[tool.towncrier.type]]
-# Miscellaneos internal and maintentance changes.
+# Miscellaneos internal and maintenance changes.
 directory = "internal"
 name = "💼 Internal"
 showcontent = true

@@ -1,3 +1,3 @@
-Moved the ``tags`` link from the primiary sidebar to a
+Moved the ``tags`` link from the primary sidebar to a
 `sphinx-design <https://github.com/executablebooks/sphinx-design>`__ card in
 the :ref:`gv-reference` section. (:user:`bjlittle`)
