@@ -1,0 +1,3 @@
+Updated the ``Region Manifold Extraction`` tutorial to include the approximate
+article reading time and also shorten links within margin notes for
+readability. (:user:`bjlittle`)
