@@ -6,9 +6,12 @@
 :fa:`file-lines` API Reference
 ******************************
 
+GeoVista
+========
+{% else %}
+:py:mod:`{{ obj.id }}`
+=========={{ "=" * obj.id|length }}
 {% endif %}
-{{ obj.id }}
-{{ "=" * obj.id|length }}
 
 .. py:module:: {{ obj.name }}
 
