@@ -12,6 +12,8 @@ of a prior ``<minor>`` release.
 
 ----
 
+.. _gv-changelog-latest:
+
 .. changelog::
     :towncrier: ../../../
     :towncrier-skip-if-empty:
