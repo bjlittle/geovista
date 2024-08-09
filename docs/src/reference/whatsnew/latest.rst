@@ -7,13 +7,13 @@ This is a **minor** release of ``geovista``.
 
 See the :ref:`changelog <gv-changelog-latest>` for full release details, and the
 :fab:`github` `Discussion <https://github.com/bjlittle/geovista/discussions/1004>`__
-for further details.
+for further information.
 
 
 📢 Announcements
 ^^^^^^^^^^^^^^^^
 
-* N/A
+* ``TBD`` prior to release.
 
 
 💎 Highlights
@@ -21,7 +21,7 @@ for further details.
 
 Notable changes in this **minor** release of ``geovista`` include:
 
-* N/A
+* ``TBD`` prior to release.
 
 
 .. note::
