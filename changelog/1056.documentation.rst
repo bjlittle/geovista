@@ -1,0 +1,1 @@
+Added the initial :ref:`gv-whatsnew` infrastructure. (:user:`bjlittle`)

@@ -196,6 +196,11 @@ if on_rtd:
 # The full version, including alpha/beta/rc tags
 version = release = get_version("geovista")
 
+rst_epilog = f"""
+.. |gv_version| replace:: v{version}
+.. |build_date| replace:: ({now.strftime('%Y-%m-%d')})
+"""
+
 # docs src directory
 docs_src_dir = Path(__file__).absolute().parent
 docs_images_dir = docs_src_dir / "_static" / "images"

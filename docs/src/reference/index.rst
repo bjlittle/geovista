@@ -3,12 +3,6 @@
 :fa:`mountain` Reference
 ========================
 
-.. note::
-    :class: margin, dropdown, toggle-shown
-
-    Content marked with 🚧 indicates it's still under construction.
-
-
 Consult our reference material for no fuss facts about ``geovista``.
 
 .. grid:: 1 1 2 2
@@ -102,7 +96,7 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Themed content tags.
 
-    .. grid-item-card:: 🚧 What's New
+    .. grid-item-card:: What's New
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-whatsnew
@@ -125,4 +119,4 @@ Consult our reference material for no fuss facts about ``geovista``.
     environment
     glossary
     bindings
-    whatsnew
+    whatsnew/index
