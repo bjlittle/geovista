@@ -1,10 +1,13 @@
 .. include:: ../../common.txt
 
-|gv_version| |build_date| [unreleased]
---------------------------------------
+|gv_version| |build_date|
+-------------------------
 
-This is a **major/minor** release of ``geovista``. See the
-:ref:`changelog <gv-changelog-latest>` for full release details.
+This is a **major/minor** release of ``geovista``.
+
+See the :ref:`changelog <gv-changelog-latest>` for full release details, and the
+:fab:`github` `Discussion <https://github.com/bjlittle/geovista/discussions/>`__
+for further details.
 
 
 📢 Announcements
@@ -17,6 +20,14 @@ This is a **major/minor** release of ``geovista``. See the
 ^^^^^^^^^^^^^
 
 Notable changes in this **major/minor** release of ``geovista`` include:
+
+* N/A
+
+
+🚧 Patches
+^^^^^^^^^^
+
+The patches for this **major/minor** release of ``geovista`` include:
 
 * N/A
 
