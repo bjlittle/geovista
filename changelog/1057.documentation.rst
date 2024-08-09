@@ -1,0 +1,2 @@
+Updated the :ref:`gv-whatsnew` to reference the associated release
+:fab:`github` Discussion. (:user:`bjlittle`)

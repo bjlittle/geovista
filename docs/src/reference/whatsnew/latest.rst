@@ -1,10 +1,13 @@
 .. include:: ../../common.txt
 
-|gv_version| |build_date| [unreleased]
---------------------------------------
+|gv_version| |build_date|
+-------------------------
 
-This is a **minor** release of ``geovista``. See the
-:ref:`changelog <gv-changelog-latest>` for full release details.
+This is a **minor** release of ``geovista``.
+
+See the :ref:`changelog <gv-changelog-latest>` for full release details, and the
+:fab:`github` `Discussion <https://github.com/bjlittle/geovista/discussions/1004>`__
+for further details.
 
 
 📢 Announcements
