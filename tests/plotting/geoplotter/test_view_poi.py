@@ -14,7 +14,7 @@ import geovista as gv
 CRS = [None, "eqc", "moll", "poly"]
 
 
-@pytest.mark.image()
+@pytest.mark.image
 @pytest.mark.parametrize("crs", CRS)
 def test_lam_polar(crs, plot_nodeid, lam_polar, verify_image_cache):
     """Test Polar LAM POI as first rendered mesh."""
@@ -26,7 +26,7 @@ def test_lam_polar(crs, plot_nodeid, lam_polar, verify_image_cache):
     p.show()
 
 
-@pytest.mark.image()
+@pytest.mark.image
 @pytest.mark.parametrize("crs", CRS)
 def test_lam_polar_post(crs, plot_nodeid, lam_polar, verify_image_cache):
     """Test Polar LAM POI as first rendered mesh."""
@@ -38,7 +38,7 @@ def test_lam_polar_post(crs, plot_nodeid, lam_polar, verify_image_cache):
     p.show()
 
 
-@pytest.mark.image()
+@pytest.mark.image
 @pytest.mark.parametrize("crs", CRS)
 def test_lam_polar_offset(crs, plot_nodeid, lam_polar, verify_image_cache):
     """Test Polar LAM POI offset."""
@@ -50,7 +50,7 @@ def test_lam_polar_offset(crs, plot_nodeid, lam_polar, verify_image_cache):
     p.show()
 
 
-@pytest.mark.image()
+@pytest.mark.image
 @pytest.mark.parametrize(
     ("x", "y"),
     [
@@ -71,7 +71,7 @@ def test_lam_uk_defaults(x, y, plot_nodeid, lam_uk, verify_image_cache):
     p.show()
 
 
-@pytest.mark.image()
+@pytest.mark.image
 @pytest.mark.parametrize("crs", CRS)
 def test_lam_uk(crs, plot_nodeid, lam_uk, verify_image_cache):
     """Test UK LAM POI as first rendered mesh."""
@@ -83,7 +83,7 @@ def test_lam_uk(crs, plot_nodeid, lam_uk, verify_image_cache):
     p.show()
 
 
-@pytest.mark.image()
+@pytest.mark.image
 @pytest.mark.parametrize("crs", CRS)
 def test_lam_uk_post(crs, plot_nodeid, lam_uk, verify_image_cache):
     """Test UK LAM POI as last rendered mesh."""

@@ -65,7 +65,7 @@ def degrees(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def radians(degrees):
     """Fixture for testing single value from cartesian to geographic radians."""
     return Convert(degrees.xyz, np.radians(degrees.expected))
@@ -77,7 +77,7 @@ def manydegrees(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def manyradians(manydegrees):
     """Fixture for testing multiple values from cartesian to geographic radians."""
     return Convert(manydegrees.xyz, np.radians(np.array(manydegrees.expected)))
