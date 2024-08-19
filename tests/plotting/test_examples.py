@@ -26,8 +26,8 @@ thresholds = {
 }
 
 
-@pytest.mark.example()
-@pytest.mark.image()
+@pytest.mark.example
+@pytest.mark.image
 @pytest.mark.parametrize("example", EXAMPLES)
 def test(plot_nodeid, example, verify_image_cache):
     """Image test the example scripts."""

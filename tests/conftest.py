@@ -24,7 +24,7 @@ from geovista.pantry.meshes import lfric as sample_lfric
 from geovista.pantry.meshes import lfric_sst as sample_lfric_sst
 
 
-@pytest.fixture()
+@pytest.fixture
 def plot_nodeid(request):
     """Fixture generates a dotted nodeid for plotting tests."""
     names = request.node.listnames()
@@ -51,7 +51,7 @@ def plot_nodeid(request):
     return name
 
 
-@pytest.fixture()
+@pytest.fixture
 def coastlines(request):
     """Fixture generates a coastlines line mesh."""
     # support indirect parameters for fixtures and also
@@ -61,7 +61,7 @@ def coastlines(request):
     return geometry_coastlines(resolution=resolution)
 
 
-@pytest.fixture()
+@pytest.fixture
 def lam_polar():
     """Fixture generates a Polar Local Area Model mesh with indexed faces and points."""
     mesh = sample_lam_polar()
@@ -71,7 +71,7 @@ def lam_polar():
     return mesh
 
 
-@pytest.fixture()
+@pytest.fixture
 def lam_uk():
     """Fixture generates a UK Local Area Model mesh with indexed faces and points."""
     mesh = sample_lam_uk()
@@ -96,7 +96,7 @@ def lam_uk_sample():
     return sample.lons[:], sample.lats[:]
 
 
-@pytest.fixture()
+@pytest.fixture
 def lfric(request):
     """Fixture to provide a cube-sphere mesh."""
     # support indirect parameters for fixtures and also
@@ -117,13 +117,13 @@ def lfric_sst():
     return mesh
 
 
-@pytest.fixture()
+@pytest.fixture
 def sphere():
     """Fixture to provide a pyvista sphere mesh."""
     return pv.Sphere()
 
 
-@pytest.fixture()
+@pytest.fixture
 def wgs84_wkt():
     """Fixture for generating WG284 CRS WKT as a string."""
     return WGS84.to_wkt()
