@@ -41,17 +41,6 @@ repos:
         types_or: [python, markdown, rst]
         additional_dependencies: [tomli]
 
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.7
-    hooks:
-      - id: nbqa-ruff
-        name: nbqa-ruff
-        entry: ruff check
-        language: python
-        additional_dependencies: [ruff]
-        require_serial: true
-        types_or: [jupyter]
-
   - repo: https://github.com/numpy/numpydoc
     rev: v1.8.0
     hooks:
