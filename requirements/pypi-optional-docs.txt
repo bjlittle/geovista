@@ -5,8 +5,8 @@ sphinx >=7.3
 sphinx_design
 sphinx-autoapi >=3.2.0
 sphinx-book-theme >=1.1.3
-sphinx-changelog
-towncrier <24.7.0
+sphinx-changelog >=1.6.0
+towncrier
 sphinx-click
 sphinx-copybutton
 sphinx-gallery >=0.16
