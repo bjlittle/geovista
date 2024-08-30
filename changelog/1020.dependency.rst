@@ -1,4 +1,4 @@
 Added the `sphinx-changelog <https://github.com/OpenAstronomy/sphinx-changelog>`__
 package dependency for rendering a ``changelog`` from news fragments using
 `towncrier <https://github.com/twisted/towncrier>`__ and generating a release
-``changelong``. (:user:`bjlittle`)
+``changelog``. (:user:`bjlittle`)

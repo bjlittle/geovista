@@ -295,7 +295,6 @@ package = "geovista"
 package_dir = "src"
 filename = "CHANGELOG.rst"
 directory = "changelog"
-title_format = "v{version} ({project_date})"
 template = "changelog/template.rst"
 
 #
@@ -344,7 +343,7 @@ name = "📚 Documentation"
 showcontent = true
 
 [[tool.towncrier.type]]
-# Miscellaneos internal and maintenance changes.
+# Miscellaneous internal and maintenance changes.
 directory = "internal"
 name = "💼 Internal"
 showcontent = true
