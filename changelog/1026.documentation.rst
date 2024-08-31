@@ -1,0 +1,2 @@
+Retro generated ``changelog`` entries for all relevant pull-request post 0.5.0
+release. (:user:`bjlittle`)

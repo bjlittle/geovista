@@ -1,0 +1,2 @@
+Fixed typos and extended the list of files to ``skip`` with ``codespell``.
+(:user:`bjlittle`)

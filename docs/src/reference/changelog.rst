@@ -1,14 +1,20 @@
-:orphan:
-
 .. _gv-changelog:
 
-🚧 :fa:`road` Changelog
-=======================
+:fa:`road` Changelog
+====================
 
-.. note::
-    :class: margin, dropdown, toggle-shown
+Release versions follow `Semantic Versioning <https://semver.org>`_
+i.e., ``<major>.<minor>.<patch>``.
 
-    Content marked with 🚧 indicates it's still under construction.
+Backward incompatible breaking changes will only be introduced in ``<major>``
+versions, with advance notice provided in the ``🔥 Deprecations`` section
+of a prior ``<minor>`` release.
 
+----
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum malesuada arcu sit amet porttitor ornare. Quisque ut.
+.. _gv-changelog-latest:
+
+.. changelog::
+    :towncrier: ../../../
+    :towncrier-skip-if-empty:
+    :changelog_file: ../../../CHANGELOG.rst

@@ -1,0 +1,1 @@
+Added `adRise/update-pr-branch <https://github.com/adRise/update-pr-branch>`__ GHA to automatically update stale ``auto-merge`` pull-requests. (:user:`tkoyama010`)

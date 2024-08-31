@@ -25,7 +25,12 @@ faces/cells.
 Note that, Natural Earth coastlines are also rendered, and the mesh is transformed
 to the Equidistant Cylindrical (Plate Carrée) conformal cylindrical projection.
 
-.. tags:: Coastlines, Projection, Unstructured
+.. tags::
+
+    component: coastlines,
+    load: unstructured,
+    projection: crs,
+    style: colormap
 
 ----
 

@@ -1,0 +1,2 @@
+Introduced minimum pin ``sphinx-autoapi >=3.0.0`` and purge use of obsolete
+``autoapi_type`` configuration option. (:user:`bjlittle`)

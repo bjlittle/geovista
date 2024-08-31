@@ -1,0 +1,1 @@
+Added :user:`Hedonical` as a contributor for ``ideas``. (:user:`tkoyama010`)

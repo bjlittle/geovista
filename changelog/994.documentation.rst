@@ -1,0 +1,1 @@
+Adopted the standard of naming the ``plotter`` as ``p`` throughout documentation, docs-strings and examples. (:user:`bjlittle`)

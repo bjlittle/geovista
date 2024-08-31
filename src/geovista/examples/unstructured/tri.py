@@ -24,7 +24,11 @@ mesh nodes/points, which are then interpolated across the mesh faces/cells.
 Finally, a Natural Earth base layer is rendered along with Natural Earth
 coastlines.
 
-.. tags:: Coastlines, Globe, Unstructured, Texture
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: oceanography,
+    load: unstructured
 
 ----
 

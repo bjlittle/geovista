@@ -24,7 +24,11 @@ faces/cells.
 
 Note that, Natural Earth coastlines are also rendered.
 
-.. tags:: Coastlines, Globe, Unstructured
+.. tags::
+
+    component: coastlines,
+    load: unstructured,
+    style: colormap
 
 ----
 

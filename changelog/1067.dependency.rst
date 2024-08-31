@@ -1,0 +1,2 @@
+Unpinned `towncrier <https://github.com/twisted/towncrier>`__ and introduced
+minimum pin ``sphinx-changelog >=1.6.0``. (:user:`bjlittle`)

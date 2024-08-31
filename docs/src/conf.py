@@ -32,8 +32,10 @@ from importlib.metadata import version as get_version
 import os
 from pathlib import Path
 import re
+import subprocess
 import textwrap
 from typing import TYPE_CHECKING
+from urllib.parse import quote
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
@@ -111,6 +113,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
+    "sphinx_changelog",
     "sphinx_click",
     "sphinx_copybutton",
     "sphinx_design",
@@ -151,6 +154,7 @@ root_doc = "index"
 locale_dirs = ["locale/"]
 gettext_compact = False
 
+
 # -- Project information -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
 
@@ -158,7 +162,31 @@ project = "GeoVista"
 now = datetime.datetime.now(datetime.UTC)
 copyright_years = f"2021 - {now.year}"
 copyright = f"{copyright_years}, {project} Contributors"  # noqa: A001
-on_rtd = os.environ.get("READTHEDOCS")
+# Explicitly unset to save rendering by sphinx as an additional line on the
+# page footer, thus minimising the footer footprint. Instead, append "author"
+# to "copyright".
+author = ""
+
+on_rtd = os.environ.get("READTHEDOCS") == "True"
+rtd_version = os.environ.get("READTHEDOCS_VERSION")
+
+if rtd_version is not None:
+    # Make rtd_version safe for use in shields.io badges.
+    rtd_version = rtd_version.replace("_", "__")
+    rtd_version = rtd_version.replace("-", "--")
+    rtd_version = quote(rtd_version)
+
+# branch, tag, external (for pull requests) or unknown.
+rtd_version_type = os.environ.get("READTHEDOCS_VERSION_TYPE")
+
+# get the short commit sha.
+rev_parse = subprocess.run(  # noqa: S603
+    ["git", "rev-parse", "--short", "HEAD"],  # noqa: S607
+    capture_output=True,
+    text=True,
+    check=True,
+)
+commit_sha = rev_parse.stdout.strip()
 
 if on_rtd:
     # https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#including-content-based-on-tags
@@ -167,6 +195,11 @@ if on_rtd:
 
 # The full version, including alpha/beta/rc tags
 version = release = get_version("geovista")
+
+rst_epilog = f"""
+.. |gv_version| replace:: v{version}
+.. |build_date| replace:: ({now.strftime('%Y-%m-%d')})
+"""
 
 # docs src directory
 docs_src_dir = Path(__file__).absolute().parent
@@ -217,33 +250,23 @@ tippy_props = {"maxWidth": 700, "placement": "top-start", "theme": "light"}
 # See https://sphinx-tags.readthedocs.io/en/latest/index.html
 
 tags_badge_colors = {
-    "Coastlines": "primary",
-    "Curvilinear": "secondary",
-    "Extrude": "dark",
-    "Globe": "success",
-    "GeoTIFF": "secondary",
-    "Graticule": "primary",
-    "Lighting": "primary",
-    "Opacity": "primary",
-    "Points": "secondary",
-    "Point Cloud": "secondary",
-    "Projection": "success",
-    "RGB": "primary",
-    "Rectilinear": "secondary",
-    "Texture": "primary",
-    "Threshold": "primary",
-    "Transform Mesh": "warning",
-    "Unstructured": "secondary",
-    "Vectors": "warning",
-    "Warp": "dark",
+    "component:*": "primary",  # coastlines, graticule, manifold, texture, vectors
+    "domain:*": "secondary",  # oceanography, seismology, meteorology, orography
+    "filter:*": "success",  # extrude, threshold, warp
+    "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
+    "projection:*": "warning",  # crs, transform
+    "render": "danger",  # camera
+    "style:*": "light",  # colormap, lighting, opacity, shading
+    "widget:*": "info",  # checkbox, logo
 }
+
 tags_create_tags = True
 tags_create_badges = True
-tags_index_head = "Gallery examples organised by tag:"  # tags landing page intro text
+tags_index_head = "Themed content tags:"  # tags landing page intro text
 tags_intro_text = "Tags:"  # prefix text for a tags list
 tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
 tags_output_dir = "tags"
-tags_page_header = "Gallery examples:"  # tag sub-page, header text
+tags_page_header = "Tagged content:"  # tag sub-page, header text
 tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
 
 
@@ -325,7 +348,6 @@ autodoc_typehints_description_target = "documented"
 #     https://github.com/readthedocs/sphinx-autoapi
 #
 
-autoapi_type = "python"
 autoapi_dirs = [
     package_src_dir,
 ]
@@ -394,6 +416,21 @@ html_context = {
     "github_repo": "geovista",
     "github_version": "main",
     "doc_path": "docs/src",
+    # sidebar-version
+    "on_rtd": on_rtd,
+    "rtd_version": rtd_version,
+    "rtd_version_type": rtd_version_type,
+    "commit_sha": commit_sha,
+}
+
+html_sidebars = {
+    "**": [
+        "navbar-logo.html",
+        "sidebar-version.html",
+        "icon-links.html",
+        "search-button-field.html",
+        "sbt-sidebar-nav.html",
+    ]
 }
 
 html_theme_options = {
@@ -442,6 +479,12 @@ html_theme_options = {
     "use_sidenotes": True,
     "use_source_button": False,
 }
+
+if on_rtd and rtd_version == "latest":
+    html_theme_options["announcement"] = """
+        ⚠️ Viewing <b>latest</b> development version. Released
+        <a href="https://geovista.readthedocs.io/en/stable/">stable</a>
+        version also available."""
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -501,8 +544,9 @@ doctest_global_setup = "import geovista"
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
-    "issue": ("https://github.com/bjlittle/geovista/issues/%s", "Issue #%s"),
-    "pull": ("https://github.com/bjlittle/geovista/pull/%s", "PR #%s"),
+    "issue": ("https://github.com/bjlittle/geovista/issues/%s", "#%s"),
+    "pull": ("https://github.com/bjlittle/geovista/pull/%s", "#%s"),
+    "user": ("https://github.com/%s", "@%s"),
 }
 
 
@@ -737,7 +781,7 @@ def geovista_carousel(
 ) -> None:
     """Create the gallery carousel."""
     # create empty or truncate existing file
-    fname = Path(app.srcdir, "gallery-carousel.txt")
+    fname = Path(app.srcdir, "gallery_carousel.txt")
 
     with fname.open("w"):
         pass

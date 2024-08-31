@@ -1,0 +1,3 @@
+Renamed the runtime generated examples gallery carousel from
+``gallery-carousel.rst`` to ``gallery_carousel.rst`` in order to comply with
+implicit documentation file naming convention. (:user:`bjlittle`)

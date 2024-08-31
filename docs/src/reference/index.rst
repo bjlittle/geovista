@@ -3,12 +3,6 @@
 :fa:`mountain` Reference
 ========================
 
-.. note::
-    :class: margin, dropdown, toggle-shown
-
-    Content marked with 🚧 indicates it's still under construction.
-
-
 Consult our reference material for no fuss facts about ``geovista``.
 
 .. grid:: 1 1 2 2
@@ -25,16 +19,27 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Package metadata.
 
-    .. grid-item-card:: Environment Variables
+    .. grid-item-card:: API Reference
         :class-title: custom-title
         :class-body: custom-body
-        :link: gv-environment
+        :link: gv-api
         :link-type: ref
-        :img-top: ../_static/images/icons/environment.svg
+        :img-top: ../_static/images/icons/api.svg
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        Package controls.
+        Behaviour and state docstrings.
+
+    .. grid-item-card:: Changelog
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-changelog
+        :link-type: ref
+        :img-top: ../_static/images/icons/changelog.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        In-depth release notes.
 
     .. grid-item-card:: CLI
         :class-title: custom-title
@@ -47,27 +52,16 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Command line interface.
 
-    .. grid-item-card:: Key Bindings
+    .. grid-item-card:: Environment Variables
         :class-title: custom-title
         :class-body: custom-body
-        :link: gv-bindings
+        :link: gv-environment
         :link-type: ref
-        :img-top: ../_static/images/icons/bindings.svg
+        :img-top: ../_static/images/icons/environment.svg
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        GUI hot-keys.
-
-    .. grid-item-card:: API Reference
-        :class-title: custom-title
-        :class-body: custom-body
-        :link: gv-api
-        :link-type: ref
-        :img-top: ../_static/images/icons/api.svg
-        :class-img-top: dark-light
-        :class-card: sd-rounded-3
-
-        Behaviour and state docstrings.
+        Package controls.
 
     .. grid-item-card:: Glossary
         :class-title: custom-title
@@ -80,22 +74,29 @@ Consult our reference material for no fuss facts about ``geovista``.
 
         Jargon buster.
 
-.. comment
-
-    # TBD @bjlittle: add these cards back
-
-    .. grid-item-card:: 🚧 Changelog
+    .. grid-item-card:: Key Bindings
         :class-title: custom-title
         :class-body: custom-body
-        :link: gv-changelog
+        :link: gv-bindings
         :link-type: ref
-        :img-top: ../_static/images/icons/changelog.svg
+        :img-top: ../_static/images/icons/bindings.svg
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        In depth release details.
+        GUI hot-keys.
 
-    .. grid-item-card:: 🚧 What's New
+    .. grid-item-card:: Tags
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: tagoverview
+        :link-type: ref
+        :img-top: ../_static/images/icons/tags.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Themed content tags.
+
+    .. grid-item-card:: What's New
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-whatsnew
@@ -107,21 +108,15 @@ Consult our reference material for no fuss facts about ``geovista``.
         Release highlights.
 
 
-
 .. toctree::
     :maxdepth: 1
     :hidden:
 
     about
-    environment
-    cli/index
-    bindings
     generated/api/geovista/index
-    glossary
-
-.. comment
-
-    # TBD @bjlittle: add these sections back to the toc
-
     changelog
-    whatsnew
+    cli/index
+    environment
+    glossary
+    bindings
+    whatsnew/index

@@ -1,0 +1,2 @@
+Bumped ``mambaforge`` from 22.9 to 23.11 for ``readthedocs`` and introduced
+minimum pin ``lazy_loader >=0.4``. (:user:`bjlittle`)

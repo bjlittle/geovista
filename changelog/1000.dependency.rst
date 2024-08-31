@@ -1,0 +1,2 @@
+Skip the ``tests.bridge.test_from_tiff`` tests if the `rasterio <https://github.com/rasterio/rasterio>`__
+optional package dependency is not installed. (:user:`bjlittle`)

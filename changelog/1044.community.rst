@@ -1,0 +1,2 @@
+Added :user:`sit23` as a contributor for ``example`` and ``video``.
+(:user:`tkoyama010`)

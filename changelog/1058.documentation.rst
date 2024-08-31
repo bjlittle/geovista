@@ -1,0 +1,2 @@
+Clarified pending unreleased :ref:`gv-whatsnew` details as *To Be Done*
+(``TBD``). (:user:`bjlittle`)

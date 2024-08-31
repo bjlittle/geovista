@@ -1,0 +1,4 @@
+Enabled the `nbQA <https://github.com/nbQA-dev/nbQA/tree/main>`__
+``pre-commit`` hook to ensure tutorial ``jupyter`` notebook quality assurance
+against `ruff <https://github.com/astral-sh/ruff>`__ rule compliance.
+(:user:`bjlittle`)

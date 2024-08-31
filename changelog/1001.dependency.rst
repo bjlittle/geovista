@@ -1,0 +1,2 @@
+Skip individual ``geovista.examples`` image tests if their optional package
+dependencies are not installed. (:user:`bjlittle`)

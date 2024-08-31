@@ -1,0 +1,2 @@
+Updated the `towncrier <https://github.com/twisted/towncrier>`__ ``changelog``
+template. (:user:`bjlittle`)

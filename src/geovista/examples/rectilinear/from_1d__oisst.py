@@ -18,13 +18,18 @@ Creates a mesh from 1-D latitude and longitude rectilinear cell bounds.
 The resulting mesh contains quad cells.
 
 The example uses NOAA/NECI 1/4° Daily Optimum Interpolation Sea Surface Temperature
-(OISST) v2.1 Advanced Very High Resolution Radiometer (AVHRR) gridded data
-(https://doi.org/10.25921/RE9P-PT57). The data targets the mesh faces/cells.
+(OISST) v2.1 Advanced Very High Resolution Radiometer (AVHRR) gridded data.
+The data targets the mesh faces/cells.
 
 Note that, a threshold is also applied to remove land ``NaN`` cells, and a
 NASA Blue Marble base layer is rendered along with Natural Earth coastlines.
 
-.. tags:: Coastlines, Globe, Rectilinear, Texture, Threshold
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: oceanography,
+    filter: threshold,
+    load: rectilinear
 
 ----
 

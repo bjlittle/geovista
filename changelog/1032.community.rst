@@ -1,0 +1,1 @@
+Added :user:`berndbecker` as a contributor for ``ideas``. (:user:`bjlittle`)

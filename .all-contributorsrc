@@ -8,7 +8,7 @@
   ],
   "commit": true,
   "commitConvention": "none",
-  "contributorsPerLine": 7,
+  "contributorsPerLine": 5,
   "contributorsSortAlphabetically": true,
   "imageSize": 100,
   "linkToUsage": true,
@@ -34,7 +34,8 @@
         "eventOrganizing",
         "mentoring",
         "design",
-        "tutorial"
+        "tutorial",
+        "promotion"
       ]
     },
     {
@@ -152,7 +153,9 @@
         "question",
         "eventOrganizing",
         "translation",
-        "review"
+        "review",
+        "promotion",
+        "mentoring"
       ]
     },
     {
@@ -172,7 +175,8 @@
       "contributions": [
         "bug",
         "promotion",
-        "ideas"
+        "ideas",
+        "talk"
       ]
     },
     {
@@ -370,6 +374,25 @@
       "contributions": [
         "ideas",
         "promotion"
+      ]
+    },
+    {
+      "login": "berndbecker",
+      "name": "berndbecker",
+      "avatar_url": "https://avatars.githubusercontent.com/u/68229540?v=4",
+      "profile": "https://github.com/berndbecker",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "sit23",
+      "name": "Stephen Thomson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10164528?v=4",
+      "profile": "http://emps.exeter.ac.uk/mathematics/staff/sit204",
+      "contributions": [
+        "example",
+        "video"
       ]
     }
   ],

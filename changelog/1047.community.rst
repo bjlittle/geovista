@@ -1,0 +1,2 @@
+Added :user:`tkoyama010` as a contributor for ``mentoring``.
+(:user:`tkoyama010`)

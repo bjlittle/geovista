@@ -31,7 +31,11 @@ The warp uses :meth:`~pyvista.PolyDataFilters.compute_normals` and
 `Computing Surface Normals <https://docs.pyvista.org/version/stable/examples/01-filter/compute-normals.htm>`_
 for further details.
 
-.. tags:: Globe, Unstructured, Warp
+.. tags::
+
+    domain: orography,
+    filter: warp,
+    load: unstructured
 
 ----
 
