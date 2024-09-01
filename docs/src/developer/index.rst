@@ -1,12 +1,18 @@
 .. _gv-developer:
 
-🚧 :fa:`handshake` Contributing
-===============================
+:fa:`handshake` Contributing
+============================
 
 .. note::
     :class: margin, dropdown, toggle-shown
 
-    Content marked with 🚧 indicates it's still under construction.
+    We've just started to bank content for the contributor material,
+    which will slowly grow and mature over time.
+
+    Thanks for your patience 🙏
 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut vitae velit condimentum, facilisis mi nec, rutrum velit.
+.. _gv-developer-changelog:
+
+.. include:: changelog.md
+    :parser: myst_parser.sphinx_
