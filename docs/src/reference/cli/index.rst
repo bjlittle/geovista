@@ -1,7 +1,7 @@
 .. _gv-cli:
 
-:fa:`terminal` CLI
-==================
+:fa:`code` CLI
+==============
 
 Once ``geovista`` has been :ref:`installed <gv-installation>`, a
 :ref:`console script <gv-cli-geovista>` [#]_ will be available with
