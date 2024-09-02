@@ -1,0 +1,2 @@
+Updated ``README.md`` with introduction for *Star History* section.
+(:user:`bjlittle`)

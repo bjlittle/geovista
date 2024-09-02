@@ -507,6 +507,11 @@ GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/l
 
 ## Star History
 
+Diggin' GeoVista? Then why not show it some 💚 with a GitHub ⭐!
+
+It's a simple click that means the world to us, and helps others discover our
+community too!
+
 [![Star History Chart](https://api.star-history.com/svg?repos=bjlittle/geovista&type=Date)](https://star-history.com/#bjlittle/geovista&Date)
 
 
