@@ -1,0 +1,1 @@
+Introduced ``CONTRIBUTING.md``. (:user:`bjlittle`)
