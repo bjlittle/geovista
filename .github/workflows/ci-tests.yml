@@ -50,7 +50,7 @@ jobs:
         posargs: ["--xvfb-backend xvfb --durations=10"]
         include:
           - version: "py312"
-            coverage: "--cov-report=xml --cov=geovista"
+            coverage: "--cov-report= --cov=geovista"
 
     steps:
     - uses: actions/checkout@v4
@@ -131,13 +131,13 @@ jobs:
     - name: "prepare coverage"
       if: ${{ matrix.coverage }}
       run: |
-        mv .coverage .coverage${{ strategy.job-index }}
+        mv .coverage ci-test-coverage${{ strategy.job-index }}
 
     - if: ${{ matrix.coverage }}
       uses: actions/upload-artifact@v4
       with:
         name: coverage-artifacts-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/.coverage*
+        path: ${{ github.workspace }}/ci-test-coverage*
 
 
   coverage:
@@ -169,7 +169,7 @@ jobs:
 
       - name: "create coverage report"
         run: |
-          coverage combine .coverage*
+          coverage combine ci-test-coverage*
           coverage xml --omit=*/_version.py
 
       - name: "upload coverage report"

@@ -140,7 +140,7 @@ However, if you're a developer and want to contribute, then
 we've curated some best practice, process and advice that'll help you get up
 and running in a snap:
 
-.. card:: 🚧 Contributing
+.. card:: Contributing
     :class-title: custom-title
     :class-body: custom-body
     :link: gv-developer
@@ -151,4 +151,4 @@ and running in a snap:
     :width: 50%
     :margin: 4 4 auto auto
 
-    Developer hub.
+    Guidelines for contributors.

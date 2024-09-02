@@ -1,0 +1,3 @@
+Applied fix to avoid breaking change behaviour to code coverage upload, as introduced by the
+`actions/upload-artifact v4.4.0 <https://github.com/actions/upload-artifact/releases/tag/v4.4.0>`__
+:fab:`github` CI Action. (:user:`bjlittle`)
