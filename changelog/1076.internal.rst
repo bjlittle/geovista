@@ -1,0 +1,1 @@
+Introduced ``SECURITY.md``. (:user:`bjlittle`)
