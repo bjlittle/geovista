@@ -21,7 +21,7 @@ Firstly, and most importantly, thank you for contributing! All contributions, no
 matter how small, are greatly appreciated and welcomed.
 
 Here we provide some guidelines to help get you started on your journey, and
-clarify the various steps involved in contributing to ``geovista``.
+clarify the various steps involved in how to contribute to ``geovista``.
 
 
 .. _gv-developer-changelog:

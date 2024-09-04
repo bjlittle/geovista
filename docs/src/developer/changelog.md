@@ -59,9 +59,14 @@ and `<TYPE>` is one of:
 * `contributor`: Changes that affect contributors such as standards, conventions, running tests, building docs, environments etc
 * `misc`: Catch all for items that don't fit elsewhere
 
-For example, ``123.feature.rst`` or ``456.bugfix.rst``.
+e.g., ``123.feature.rst`` or ``456.bugfix.rst``.
 
-If you are unsure what `<TYPE>` to use, then don't hesitate to ask in your
+For further details see the `[tool.towncrier]` section in the
+`pyproject.toml`. Note that the order of the `[[tool.towncrier.type]]` entries
+is significant, as it is mirrored in the final rendered
+{ref}`changelog <gv-changelog>`.
+
+If you're unsure what `<TYPE>` to use, then don't hesitate to ask in your
 pull-request.
 
 ````{tip}
@@ -73,9 +78,10 @@ which contain exactly the same content.
 ````
 
 [towncrier](https://github.com/twisted/towncrier) preserves multiple
-paragraphs in a news fragment file, however concise single paragraph
-entries are encouraged.
+paragraphs and formatting in a news fragment file, however concise single
+paragraph entries are encouraged.
 
 ```{tip}
-Run `towncrier --draft` to render a preview of the news fragments.
+Run `towncrier --draft` to render a preview of the news fragment files in the
+`changelog` directory.
 ```
