@@ -1,0 +1,75 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/actions/setup-python
+#   - https://github.com/jwalton/gh-find-current-pr
+#   - https://github.com/snnaplab/get-labels-action
+#   - https://github.com/jitterbit/get-changed-files (don't use - abandoned repo?)
+#   - https://github.com/dorny/paths-filter
+
+
+name: ci-changelog
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+  push:
+    branches:
+      - "main"
+      - "v*x"
+      - "!conda-lock-auto-update"
+      - "!pre-commit-ci-update-config"
+      - "!dependabot/*"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changelog:
+    name: 'validate changelog'
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 'get PR number'
+        uses: jwalton/gh-find-current-pr@v1.3.3
+        id: pr
+
+      - name: 'get PR labels'
+        uses: snnaplab/get-labels-action@v1
+
+      - name: 'filter changelog'
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            changelog:
+              - 'changelog/**'
+          list-files: 'csv'
+
+      - name: 'validate changelog'
+        if: ${{ ! contains(fromJSON(env.LABELS), 'skip changelog') }}
+        run: |
+          python -m pip install click towncrier
+          python -c "import sys; print(f'version = {sys.version}')"
+          towncrier --version
+          python ${SCRIPTS}/changelog.py "${PR}" "${CHANGELOG}"
+        env:
+          CHANGELOG: "${{ steps.changes.outputs.changelog_files }}"
+          PR: "${{ steps.pr.outputs.number }}"
+          SCRIPTS: "./.github/scripts"

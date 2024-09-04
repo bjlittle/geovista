@@ -1,0 +1,3 @@
+Added ``ci-changelog`` :fab:`github` Action to perform quality assurance on
+pull-request ``changelog`` news fragment/s. Closes :issue:`1031`.
+(:user:`bjlittle`)
