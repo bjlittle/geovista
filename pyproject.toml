@@ -71,14 +71,6 @@ ignore-words-list = "whet,projets"
 skip = ".git,*.css,*.ipynb,*.js,*.html,*.map,*.po,CODE_OF_CONDUCT.md"
 
 
-[tool.nbqa.addopts]
-"ruff check" = [
-    "--ignore=D100,E402,INP001",
-]
-[tool.nbqa.files]
-"ruff check" = "docs/src/tutorials/"
-
-
 [tool.numpydoc_validation]
 checks = [
     "all",  # Enable all numpydoc validation rules, apart from the following:
