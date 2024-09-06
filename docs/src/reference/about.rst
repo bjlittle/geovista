@@ -9,11 +9,10 @@ Assorted package metadata about ``geovista``.
 :fa:`feather-pointed` Citation
 ------------------------------
 
-.. margin::
+.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7608302.svg
+    :target: https://doi.org/10.5281/zenodo.7608302
 
-    .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7608302.svg
-        :target: https://doi.org/10.5281/zenodo.7608302
-
+|zenodo|
 
 If ``geovista`` has assisted with your academic research or work, then please
 remember to cite us:
@@ -24,6 +23,10 @@ remember to cite us:
 
 :fa:`users-line` Contributors
 -----------------------------
+
+.. |all-contributors| image:: https://img.shields.io/github/all-contributors/bjlittle/geovista?color=ee8449)
+
+|all-contributors|
 
 .. tip::
     :class: margin, dropdown, toggle-shown
@@ -47,6 +50,11 @@ A massive thank-you to all our awesome contributors (`Emoji Key ✨`_):
 
 :fa:`file-contract` License
 ---------------------------
+
+.. |bsd-3-clause| image:: https://img.shields.io/github/license/bjlittle/geovista
+    :target: https://github.com/bjlittle/geovista/blob/main/LICENSE
+
+|bsd-3-clause|
 
 ``geovista`` is an open-source package distributed under the terms of the
 `BSD-3-Clause`_ license.

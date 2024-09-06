@@ -16,7 +16,6 @@
 
 |Contributor Covenant|
 
-
 Firstly, and most importantly, thank you for contributing! All contributions, no
 matter how small, are greatly appreciated and welcomed.
 
