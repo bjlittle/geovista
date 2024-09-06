@@ -168,6 +168,7 @@ extend-exclude = [
 ]
 line-length = 88
 src = [
+    ".github/scripts",
     "src",
     "tests",
     "docs/src",
@@ -180,6 +181,8 @@ preview = false
 
 
 [tool.ruff.lint]
+# Allow information-source (U+2139) which could be confused for "i".
+allowed-confusables = ["ℹ"]
 ignore = [
     # NOTE: Non-permanent exclusions should be added to ".ruff.toml".
 
@@ -240,6 +243,12 @@ max-complexity = 26
 
 
 [tool.ruff.lint.per-file-ignores]
+".github/scripts/*.py" = [
+    # https://docs.astral.sh/ruff/rules/implicit-namespace-package/
+    "INP001",  # flake8-no-pep420: File is part of an implicit namespace package.
+    # https://docs.astral.sh/ruff/rules/print/
+    "T201",  # flake8-print: print found.
+]
 "src/geovista/cli.py" = [
     # https://docs.astral.sh/ruff/rules/print/
     "T201",  # flake8-print: print found.
