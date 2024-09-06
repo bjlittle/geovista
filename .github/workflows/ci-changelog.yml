@@ -15,7 +15,7 @@ on:
 
   push:
     branches:
-      - "main"
+      - "!main"
       - "v*x"
       - "!conda-lock-auto-update"
       - "!pre-commit-ci-update-config"
