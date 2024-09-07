@@ -1,0 +1,2 @@
+Reduced the ``all-contributors`` image size for better rendering on mobile
+platforms. (:user:`bjlittle`)
