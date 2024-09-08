@@ -63,7 +63,7 @@ jobs:
         env_name: ${{ env.ENV_NAME }}
 
     - name: "conda install"
-      uses: conda-incubator/setup-miniconda@v3
+      uses: conda-incubator/setup-miniconda@a4260408e20b96e80095f42ff7f1a15b27dd94ca
       with:
         miniforge-version: latest
         channels: conda-forge,defaults
@@ -96,7 +96,7 @@ jobs:
         lock_file: ${{ env.LOCK_FILE }}
 
     - name: "apt cache"
-      uses: awalsh128/cache-apt-pkgs-action@v1.4.2
+      uses: awalsh128/cache-apt-pkgs-action@a6c3917cc929dd0345bfb2d3feaf9101823370ad
       with:
         packages: libgl1-mesa-glx xvfb
         version: 1.0
