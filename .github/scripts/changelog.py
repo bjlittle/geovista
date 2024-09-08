@@ -78,8 +78,8 @@ def failure(msg: str | list[str], url: bool | None = True) -> None:
     if isinstance(msg, str):
         msg = [msg]
 
-    # report to the console
-    output("⚠️ See GHA Summary for changelog failure details.")
+    # report to the GHA runner console stdout
+    output('💥 Also see "GHA Summary" for these changelog failure details.\n')
 
     for part in msg:
         summary(f"❌ {part}")
@@ -184,9 +184,7 @@ def success(msg: str) -> None:
 
 
 def summary(msg: str) -> None:
-    """Write markdown message to GHA step summary stream.
-
-    If the stream is not available, then the message is written to stdout.
+    """Write markdown message to GHA step summary stream and stdout.
 
     Parameters
     ----------
@@ -201,8 +199,9 @@ def summary(msg: str) -> None:
     if GITHUB_STEP_SUMMARY:
         with Path(GITHUB_STEP_SUMMARY).open("a") as gha:
             gha.write(f"{msg}\n")
-    else:
-        output(msg)
+
+    # report to the GHA runner console stdout
+    output(msg)
 
 
 @click.command()
