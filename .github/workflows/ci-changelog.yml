@@ -47,14 +47,14 @@ jobs:
           python-version: '3.x'
 
       - name: 'get PR number'
-        uses: jwalton/gh-find-current-pr@v1.3.3
+        uses: jwalton/gh-find-current-pr@89ee5799558265a1e0e31fab792ebb4ee91c016b
         id: pr
 
       - name: 'get PR labels'
-        uses: snnaplab/get-labels-action@v1
+        uses: snnaplab/get-labels-action@f426df40304808ace3b5282d4f036515f7609576
 
       - name: 'filter changelog'
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
         id: changes
         with:
           filters: |

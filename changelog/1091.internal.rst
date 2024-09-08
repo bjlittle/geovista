@@ -1,0 +1,2 @@
+Use ``SHA`` checksums for 3rd party :fab:`github` Action versions.
+(:user:`bjlittle`)
