@@ -1,0 +1,2 @@
+Report to the console by default for the ``ci-changelog`` :fab:`github`
+Action. (:user:`bjlittle`)
