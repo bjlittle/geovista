@@ -135,6 +135,7 @@ jobs:
         labels: |
           new: pull request
           bot
+          skip changelog
 
     - name: "show pull-request"
       if: steps.cpr.outputs.pull-request-number != ''

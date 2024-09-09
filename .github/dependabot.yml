@@ -16,3 +16,4 @@ updates:
     labels:
       - "new: pull request"
       - "bot"
+      - "skip changelog"

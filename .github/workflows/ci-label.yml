@@ -23,6 +23,12 @@ jobs:
       - uses: actions/labeler@v5
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
+        if: github.actor == 'dependabot[bot]' || github.actor == 'geovista-ci[bot]' || github.actor == 'pre-commit-ci[bot]'
+        with:
+          github_token: ${{ github.token }}
+          labels: 'skip changelog'
+
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'breaking-change') || startsWith(github.event.pull_request.head.ref, 'breaking') || startsWith(github.event.pull_request.head.ref, 'break')
         with:
           github_token: ${{ github.token }}
@@ -69,12 +75,6 @@ jobs:
         with:
           github_token: ${{ github.token }}
           labels: 'type: performance'
-
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: github.actor == 'dependabot[bot]' || github.actor == 'geovista-ci[bot]' || github.actor == 'pre-commit-ci[bot]'
-        with:
-          github_token: ${{ github.token }}
-          labels: 'skip changelog'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'merge-back') || startsWith(github.event.pull_request.head.ref, 'mb')
