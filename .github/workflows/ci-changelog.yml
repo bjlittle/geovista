@@ -37,6 +37,7 @@ jobs:
       run:
         shell: bash -l {0}
 
+    if: github.actor != 'pre-commit-ci[bot]'
     steps:
       - uses: actions/checkout@v4
         with:

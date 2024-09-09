@@ -1,0 +1,2 @@
+Add the ``skip changelog`` label to ``dependabot`` and ``ci-locks`` :fab:`github`
+Action generated pull-requests. (:user:`bjlittle`)
