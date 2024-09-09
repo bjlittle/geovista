@@ -18,52 +18,52 @@ jobs:
     steps:
       - uses: actions/labeler@v5
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'breaking-change') || startsWith(github.event.pull_request.head.ref, 'breaking') || startsWith(github.event.pull_request.head.ref, 'break')
         with:
           labels: 'breaking-change'
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'bug') || startsWith(github.event.pull_request.head.ref, 'fix') || startsWith(github.event.pull_request.head.ref, 'patch')
         with:
           labels: 'type: bug'
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'debt')
         with:
           labels: 'type: tech debt'
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'doc') || startsWith(github.event.pull_request.head.ref, 'docs')
         with:
           labels: 'type: documentation'
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'feat') || startsWith(github.event.pull_request.head.ref, 'feature')
         with:
           labels: 'type: enhancement'
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'ex') || startsWith(github.event.pull_request.head.ref, 'example') || startsWith(github.event.pull_request.head.ref, 'examples')
         with:
           labels: 'type: examples'
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'nep') || startsWith(github.event.pull_request.head.ref, 'nep29')
         with:
           labels: 'type: nep-29'
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'perf') || startsWith(github.event.pull_request.head.ref, 'performance')
         with:
           labels: 'type: performance'
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: github.actor == 'dependabot[bot]' || github.actor == 'geovista-ci[bot]' || github.actor == 'pre-commit-ci[bot]'
         with:
           labels: 'skip changelog'
 
-      - uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8
+      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'merge-back') || startsWith(github.event.pull_request.head.ref, 'mb')
         with:
           labels: 'type: merge-back'
