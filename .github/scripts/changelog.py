@@ -223,7 +223,7 @@ def main(pr: str, changelog: str, verbose: bool) -> None:
         )
 
     try:
-        # locate and locate the towncrier configuration
+        # locate and parse the towncrier configuration
         base_directory, config = load_config_from_options(
             directory=None, config_path=None
         )
