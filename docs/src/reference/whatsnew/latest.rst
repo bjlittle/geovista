@@ -13,7 +13,7 @@ for further information.
 📢 Announcements
 ^^^^^^^^^^^^^^^^
 
-* ``TBD`` prior to release.
+* Welcome and congratulations to :user:`ukmo-ccbunney` who became a core collaborator 🎉
 
 
 💎 Highlights
