@@ -61,13 +61,13 @@ and `<TYPE>` is one of:
 
 e.g., ``123.feature.rst`` or ``456.bugfix.rst``.
 
-For further details see the `[tool.towncrier]` section in the
-`pyproject.toml`. Note that the order of the `[[tool.towncrier.type]]` entries
-is significant, as it is mirrored in the final rendered
-{ref}`changelog <gv-changelog>`.
+[towncrier](https://github.com/twisted/towncrier) is configured in the
+`pyproject.toml`. For further details see the `[tool.towncrier]` section.
+Note that the order of the `[[tool.towncrier.type]]` entries is significant,
+as it is mirrored in the final rendered {ref}`changelog <gv-changelog>`.
 
-If you're unsure what `<TYPE>` to use, then don't hesitate to ask in your
-pull-request.
+If you're unsure what news fragment `<TYPE>` to use, then don't hesitate to
+ask in your pull-request.
 
 ````{tip}
 If a change is associated with **more than one** pull-request, then create a
@@ -78,10 +78,40 @@ which contain exactly the same content.
 ````
 
 [towncrier](https://github.com/twisted/towncrier) preserves multiple
-paragraphs and formatting in a news fragment file, however concise single
-paragraph entries are encouraged.
+paragraphs and the formatting within a news fragment file, however concise
+single paragraph entries are encouraged.
 
 ```{tip}
 Run `towncrier --draft` to render a preview of the news fragment files in the
 `changelog` directory.
 ```
+
+## {fa}`road` Changelog Quality Assurance
+
+Quality assurance of `changelog` contributions is performed by the
+[ci-changelog](https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-changelog.yml)
+{fab}`github` Action.
+
+It performs the following automated checks on each pull-request:
+
+* Ensures that the pull-request includes a `changelog` news fragment
+* The news fragment file conforms with the expected `<PULL-REQUEST>.<TYPE>.rst` naming format i.e.,
+  * The `<PULL-REQUEST>` component is a valid integer and matches the pull-request number
+  * The `<TYPE>` matches a configured `[[tool.towncrier.type]]` entry in the `pyproject.toml`
+  * The `rst` extension is provided
+
+These quality assurance checks can be **skipped** by adding the
+`skip changelog` label to the pull-request. Note that a pull-request generated
+by the following bots or services will have the `skip changelog` label
+automatically applied:
+
+* [dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates) version updates
+* [pre-commit.ci](https://pre-commit.ci/) hook updates
+* [ci-locks](https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml) {fab}`github` Action
+
+Also, see the [ci-label](https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-label.yml)
+{fab}`github` Action for automated pull-request labelling.
+
+Removing the `skip changelog` label from a pull-request will trigger the
+[ci-changelog](https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-changelog.yml)
+{fab}`github` Action workflow.
