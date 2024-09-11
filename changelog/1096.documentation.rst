@@ -1,0 +1,2 @@
+Documented the ``changelog`` quality assurance performed by the
+``ci-changelog`` :fab:`github` Action. (:user:`bjlittle`)
