@@ -277,8 +277,8 @@ togglebutton_hint = "Click to show"
 togglebutton_hint_hide = "Click to hide"
 
 
-# nbsphinx options -----------------------------------------------------------
-# See https://github.com/spatialaudio/nbsphinx/
+# myst-nb options ------------------------------------------------------------
+# See https://myst-nb.readthedocs.io/en/latest/configuration.html
 
 # TODO @bjlittle: investigate jupyter-cache mode
 nb_execution_mode = "auto"
