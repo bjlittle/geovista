@@ -1,0 +1,1 @@
+Improved ``README.md`` accessibility. (:user:`bjlittle`)
