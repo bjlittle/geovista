@@ -23,7 +23,7 @@
 
 ## Rediscover Your Data
 
-[🎥 WW3 SMC time-series](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
+[WW3 SMC time-series 🎥](https://github.com/bjlittle/geovista/assets/2051656/876d877e-a6fa-42ff-8153-08c41ff8a19e)
 
 GeoVista is built on the shoulders of giants, namely [PyVista](https://docs.pyvista.org/version/stable/) and
 [VTK](https://vtk.org/documentation/), thus allowing it to easily leverage the power of the GPU.
@@ -124,8 +124,8 @@ First, let's render a [WAVEWATCH III](https://github.com/NOAA-EMC/WW3) (WW3) **u
 base layer, and the gorgeous perceptually uniform [cmocean balance](https://matplotlib.org/cmocean/#balance) diverging
 colormap.
 
-<details>
-<summary>🗒 click for code</summary>
+<details aria-expanded="false" aria-label="Click for code">
+<summary>🗒 Click for code ...</summary>
 
 ```python
 import geovista as gv
@@ -153,7 +153,11 @@ p.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/ww3-tri.png" style="width: 75%; height: 75%"></p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/ww3-tri.png"
+       alt="WAVEWATCH III Model, Unstructured Triangular Mesh of Sea Surface Wave Significant Height"
+       style="width: 75%; height: 75%">
+</p>
 
 #### Finite Volume Community Ocean Model
 
@@ -162,8 +166,8 @@ Now, let's visualise the bathymetry of the
 from an [FVCOM](https://www.fvcom.org/) **unstructured** mesh, as kindly provided by the
 [Plymouth Marine Laboratory](https://pml.ac.uk/) using the lush [cmocean deep](https://matplotlib.org/cmocean/#deep) colormap.
 
-<details>
-<summary>🗒 click for code</summary>
+<details aria-expanded="false" aria-label="Click for code">
+<summary>🗒 Click for code ...</summary>
 
 ```python
 import geovista as gv
@@ -196,7 +200,11 @@ p.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/tamar.png" style="width: 75%; height: 75%"></p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/tamar.png"
+       alt="Finite Volume Community Ocean Model, Unstructured Triangular Mesh of Sea Floor Below Geoid"
+       style="width: 75%; height: 75%">
+</p>
 
 #### CF UGRID
 
@@ -213,8 +221,8 @@ In the meantime, let's showcase our basic projection support with some high-reso
 [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
 base layer.
 
-<details>
-<summary>🗒 click for code</summary>
+<details aria-expanded="false" aria-label="Click for code">
+<summary>🗒 Click for code ...</summary>
 
 ```python
 import geovista as gv
@@ -245,7 +253,11 @@ p.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lam-moll.png" style="width: 75%; height: 75%"></p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lam-moll.png"
+       alt="CF UGRID Local Area Model, Unstructured Quadrilateral Mesh of Air Potential Temperature"
+       style="width: 75%; height: 75%">
+</p>
 
 Using the same **unstructured** LAM data, reproject to
 [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a
@@ -255,8 +267,8 @@ and a
 [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
 base layer.
 
-<details>
-<summary>🗒 click for code</summary>
+<details aria-expanded="false" aria-label="Click for code">
+<summary>🗒 Click for code ...</summary>
 
 ```python
 import cartopy.crs as ccrs
@@ -289,18 +301,22 @@ p.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lam-eqc.png" style="width: 75%; height: 75%"></p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lam-eqc.png"
+       alt="CF UGRID Local Area Model, Unstructured Quadrilateral Mesh of Air Potential Temperature in Plate Carrée Projection"
+       style="width: 75%; height: 75%">
+</p>
 
 #### LFRic Cube-Sphere
 
 Now render a [Met Office LFRic](https://www.metoffice.gov.uk/research/approach/modelling-systems/lfric) C48 cube-sphere
 **unstructured** mesh of Sea Surface Temperature data on a
-[Robinson](https://proj.org/operations/projections/robin.html) projection using an ESRI SRID, with
+[Robinson Projection](https://proj.org/operations/projections/robin.html) using an ESRI SRID, with
 [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
 [cmocean thermal](https://matplotlib.org/cmocean/#thermal) colormap.
 
-<details>
-<summary>🗒 click for code</summary>
+<details aria-expanded="false" aria-label="Click for code">
+<summary>🗒 Click for code ...</summary>
 
 ```python
 import geovista as gv
@@ -329,7 +345,11 @@ p.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lfric-robin.png" style="width: 75%; height: 75%"></p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lfric-robin.png"
+       alt="LFRic Model, Unstructured Cube Sphere of Surface Temperature in Robinson Projection"
+       style="width: 75%; height: 75%">
+</p>
 
 #### NEMO ORCA2
 
@@ -338,8 +358,8 @@ using Nucleus for European Modelling of the Ocean (NEMO) ORCA2 Sea Water Potenti
 [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
 [1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
 
-<details>
-<summary>🗒 click for code</summary>
+<details aria-expanded="false" aria-label="Click for code">
+<summary>🗒 Click for code ...</summary>
 
 ```python
 import geovista as gv
@@ -367,7 +387,11 @@ p.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/nemo-orca.png" style="width: 75%; height: 75%"></p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/nemo-orca.png"
+       alt="NEMO ORCA2 Model, Curvilinear Quadrilateral Mesh of Sea Water Potential Temperature"
+       style="width: 75%; height: 75%">
+</p>
 
 #### OISST AVHRR
 
@@ -376,8 +400,8 @@ Now let's render a [NOAA/NCEI Optimum Interpolation SST](https://www.ncei.noaa.g
 [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
 [NASA Blue Marble](https://visibleearth.nasa.gov/collection/1484/blue-marble) base layer.
 
-<details>
-<summary>🗒 click for code</summary>
+<details aria-expanded="false" aria-label="Click for code">
+<summary>🗒 Click for code ...</summary>
 
 ```python
 import geovista as gv
@@ -405,7 +429,11 @@ p.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/oisst-avhrr.png" style="width: 75%; height: 75%"></p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/oisst-avhrr.png"
+       alt="Optimum Interpolation Sea Surface Temperature Advanced Very High Resolution Radiometer Model, Rectilinear Quadrilateral Mesh"
+       style="width: 75%; height: 75%">
+</p>
 
 #### DYNAMICO
 
@@ -416,8 +444,8 @@ model uses hexagonal and pentagonal cells, and is a new dynamical core for
 [IPSL-CM](https://cmc.ipsl.fr/ipsl-climate-models/) Earth System Model. The render also contains
 [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/).
 
-<details>
-<summary>🗒 click for code</summary>
+<details aria-expanded="false" aria-label="Click for code">
+<summary>🗒 Click for code ...</summary>
 
 ```python
 import geovista as gv
@@ -440,7 +468,11 @@ p.show()
 ```
 </details>
 
-<p align="center"><img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/dynamico-icosahedral.png" style="width: 75%; height: 75%"></p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/dynamico-icosahedral.png"
+       alt="DYNAMICO Model, Unstructured Hexagonal Mesh of Surface Air Temperature"
+       style="width: 75%; height: 75%">
+</p>
 
 ## Further Examples
 
@@ -460,9 +492,9 @@ geovista examples --help
 ```
 
 
-## 🍬 Candy Store
+## Candy Store 🍬
 
-We've opened the doors to the [🍬 Candy Store](https://github.com/bjlittle/geovista/discussions/1033).
+We've opened the doors to the [Candy Store 🍬](https://github.com/bjlittle/geovista/discussions/1033).
 
 A community space where you can openly share and promote how you're using
 GeoVista for your work, research or pleasure!
@@ -532,5 +564,7 @@ community too!
 <a href="https://showyourstripes.info/s/globe">#ShowYourStripes</a> is distributed under a
 <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>
 <a href="https://creativecommons.org/licenses/by/4.0/">
-  <img src="https://i.creativecommons.org/l/by/4.0/80x15.png" alt="creative-commons-by" style="border-width:0"></a>
+  <img src="https://i.creativecommons.org/l/by/4.0/80x15.png"
+       alt="creative-commons-by" style="border-width:0">
+</a>
 </p>
