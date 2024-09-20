@@ -16,16 +16,14 @@ on:
   push:
     branches:
       - "!main"
-      - "v*x"
-      - "!conda-lock-auto-update"
-      - "!pre-commit-ci-update-config"
-      - "!dependabot/*"
+    tags:
+      - "!v*"
 
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   changelog:
