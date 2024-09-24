@@ -19,7 +19,6 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
@@ -46,7 +45,7 @@ keywords = [
 ]
 license.file = "LICENSE"
 name = "geovista"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 
 [project.urls]
