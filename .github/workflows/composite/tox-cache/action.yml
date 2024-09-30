@@ -10,7 +10,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       with:
         path: ${{ github.workspace }}/.tox
         key: ${{ runner.os }}-tox-${{ matrix.session }}-${{ matrix.version }}-${{ hashFiles(inputs.lock_file) }}
