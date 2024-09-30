@@ -80,7 +80,7 @@ jobs:
       working-directory: requirements/locks
       run: |
         python -c 'from sys import version_info as v; open("../geovista.yml", "a").write(f"\n  - python ={v.major}.{v.minor}\n${{ env.VTK_BUILD }}\n")'
-        conda-lock --mamba --channel conda-forge --kind explicit --file ../geovista.yml --platform linux-64 --filename-template "${{ matrix.version }}-{platform}.txt"
+        conda-lock --mamba --channel conda-forge --kind explicit --file ../geovista.yml --platform linux-64 --filename-template "${{ matrix.version }}-lock-{platform}.txt"
         python lock2yaml.py ${{ matrix.version }}
 
     - uses: actions/upload-artifact@v4
