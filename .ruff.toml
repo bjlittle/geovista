@@ -35,11 +35,6 @@ lint.ignore = [
     "ANN001",  # Missing type annotation for function argument.
     "ANN201",  # Missing return type annotation for public function.
 ]
-"requirements/locks/lock2yaml.py" = [
-    # flake8-use-pathlib (PTH)
-    # https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
-    "PTH123",  # open() should be replaced by Path.open()
-]
 "src/geovista/geoplotter.py" = [
     # flake8-annotations (ANN)
     # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
