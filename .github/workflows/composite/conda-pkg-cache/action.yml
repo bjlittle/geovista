@@ -12,7 +12,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       with:
         path: ~/conda_pkgs_dir
         key: ${{ runner.os }}-conda-pkg-${{ inputs.env_name }}-${{ inputs.cache_period }}

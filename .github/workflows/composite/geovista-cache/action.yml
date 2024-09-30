@@ -13,7 +13,7 @@ runs:
       run: |
         echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
 
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       id: geovista-cache
       with:
         path: ~/.cache/geovista

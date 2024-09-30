@@ -1,0 +1,3 @@
+Removed technical debt by migrating builtin ``open()`` usage to
+``pathlib.Path.open()`` since enforcing ``SPEC-0`` minimum
+``python>=3.11`` support. (:user:`bjlittle`)
