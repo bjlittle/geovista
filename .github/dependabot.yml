@@ -5,7 +5,9 @@ version: 2
 updates:
 
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/workflows/composite/*"
     schedule:
       # Check for updates to GitHub Actions every weekday
       interval: "daily"
@@ -17,3 +19,6 @@ updates:
       - "new: pull request"
       - "bot"
       - "skip changelog"
+    commit-message:
+      prefix: "ci: "
+      include: "scope"

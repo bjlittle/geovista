@@ -1,0 +1,2 @@
+Updated ``dependabot`` configuration to include :fab:`github` composite
+actions. (:user:`bjlittle`)
