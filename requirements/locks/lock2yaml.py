@@ -23,7 +23,7 @@ environment = Environment(
 template = environment.get_template("lock2yaml.txt")
 
 # default to linux-64 only
-env = sys.argv[1]
+env = f"{sys.argv[1]}-lock"
 lock = f"{env}-linux-64.txt"
 name = f"geovista-{env}"
 yaml = f"{env}-linux-64.yml"
