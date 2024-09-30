@@ -48,6 +48,8 @@ jobs:
         CACHE_WEEKS: 2
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+        echo "PY_MAJOR=$(echo -n ${{ matrix.version }} | tail -c 3 | head -c 1)" >> ${GITHUB_ENV}
+        echo "PY_MINOR=$(echo -n ${{ matrix.version }} | tail -c 2)" >> ${GITHUB_ENV}
 
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
@@ -59,9 +61,6 @@ jobs:
       uses: conda-incubator/setup-miniconda@v3
       with:
         miniforge-version: latest
-        channels: conda-forge,defaults
-        channel-priority: true
-        auto-update-conda: true
         activate-environment: ${{ env.ENV_NAME }}
         use-only-tar-bz2: false
 
@@ -70,21 +69,21 @@ jobs:
       with:
         cache_period: ${{ env.CACHE_PERIOD }}
         env_name: ${{ env.ENV_NAME }}
-        install_packages: "pip 'tox<4'"
+        install_packages: "conda-lock jinja2"
 
     - name: "conda info"
       run: |
         conda info
         conda list
 
-    - name: "tox cache"
-      uses: ./.github/workflows/composite/tox-cache
-
     - name: "lock (${{ matrix.version }})"
       env:
         VTK_BUILD: "  - vtk=*=qt_*"
+      working-directory: requirements/locks
       run: |
-        tox -e ${{ matrix.version }}-lock
+        python -c 'open("../geovista.yml", "a").write("\n  - python =${{ env.PY_MAJOR }}.${{ env.PY_MINOR }}\n${{ env.VTK_BUILD }}\n")'
+        conda-lock --mamba --channel conda-forge --kind explicit --file ../geovista.yml --platform linux-64 --filename-template "${{ matrix.version }}-lock-{platform}.txt"
+        python lock2yaml.py ${{ matrix.version }}
 
     - uses: actions/upload-artifact@v4
       with:
@@ -127,7 +126,7 @@ jobs:
         commit-message: "updated conda lock files"
         branch: conda-lock-auto-update
         delete-branch: true
-        title: "[geovista.ci] conda lock auto-update"
+        title: "chore: bump conda lock files"
         body: |
           🤖 Bleep! Bloop!
 
