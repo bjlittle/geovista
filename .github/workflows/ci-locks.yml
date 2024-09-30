@@ -48,6 +48,8 @@ jobs:
         CACHE_WEEKS: 2
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+        echo "PY_MAJOR=$(echo -n ${{ matrix.version }} | tail -c 3 | head -c 1)" >> ${GITHUB_ENV}
+        echo "PY_MINOR=$(echo -n ${{ matrix.version }} | tail -c 2)" >> ${GITHUB_ENV}
 
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
@@ -59,6 +61,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@a4260408e20b96e80095f42ff7f1a15b27dd94ca
       with:
         miniforge-version: latest
+        python-version: ${{ env.PY_MAJOR }}.${{ env.PY_MINOR }}
         activate-environment: ${{ env.ENV_NAME }}
         use-only-tar-bz2: false
 
