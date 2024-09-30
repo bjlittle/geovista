@@ -20,5 +20,5 @@ updates:
       - "bot"
       - "skip changelog"
     commit-message:
-      prefix: "ci: "
+      prefix: "chore: "
       include: "scope"

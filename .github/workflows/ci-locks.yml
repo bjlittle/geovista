@@ -59,9 +59,6 @@ jobs:
       uses: conda-incubator/setup-miniconda@a4260408e20b96e80095f42ff7f1a15b27dd94ca
       with:
         miniforge-version: latest
-        channels: conda-forge,defaults
-        channel-priority: true
-        auto-update-conda: true
         activate-environment: ${{ env.ENV_NAME }}
         use-only-tar-bz2: false
 
@@ -70,21 +67,21 @@ jobs:
       with:
         cache_period: ${{ env.CACHE_PERIOD }}
         env_name: ${{ env.ENV_NAME }}
-        install_packages: "pip 'tox<4'"
+        install_packages: "conda-lock jinja2"
 
     - name: "conda info"
       run: |
         conda info
         conda list
 
-    - name: "tox cache"
-      uses: ./.github/workflows/composite/tox-cache
-
     - name: "lock (${{ matrix.version }})"
       env:
         VTK_BUILD: "  - vtk=*=qt_*"
+      working-directory: requirements/locks
       run: |
-        tox -e ${{ matrix.version }}-lock
+        python -c 'from sys import version_info as v; open("../geovista.yml", "a").write(f"\n  - python ={v.major}.{v.minor}\n${{ env.VTK_BUILD }}\n")'
+        conda-lock --mamba --channel conda-forge --kind explicit --file ../geovista.yml --platform linux-64 --filename-template "${{ matrix.version }}-{platform}.txt"
+        python lock2yaml.py ${{ matrix.version }}
 
     - uses: actions/upload-artifact@v4
       with:
@@ -127,7 +124,7 @@ jobs:
         commit-message: "updated conda lock files"
         branch: conda-lock-auto-update
         delete-branch: true
-        title: "[geovista.ci] conda lock auto-update"
+        title: "chore: bump conda lock files"
         body: |
           🤖 Bleep! Bloop!
 

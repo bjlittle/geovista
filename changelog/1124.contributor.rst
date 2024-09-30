@@ -1,0 +1,4 @@
+Dropped the use of ``tox`` to render lock file updates within the ``ci-locks``
+:fab:`github` Action due to incompatibilites between the pinned
+`tox-conda <https://github.com/tox-dev/tox-conda>`__ plugin and the modern
+:fab:`github` runner environment. (:user:`bjlittle`)
