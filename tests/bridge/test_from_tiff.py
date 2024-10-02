@@ -44,7 +44,7 @@ def test_rgb_band_fail(mocker):
         _ = Transform.from_tiff(fname, rgb=True)
 
 
-@pytest.mark.parametrize("rgb", [True])
+@pytest.mark.parametrize("rgb", [True, False])
 @pytest.mark.parametrize("band", [1, 2, 3])
 @pytest.mark.parametrize("unit", ["m", None])
 def test_rgb_band(mocker, rgb, band, unit):
@@ -55,12 +55,14 @@ def test_rgb_band(mocker, rgb, band, unit):
     data = mocker.sentinel.data
     mocked_read = mocker.MagicMock(return_value=data)
     transform = mocker.sentinel.transform
-    height, width = 2, 3
+    height, width = pixels_shape = 2, 3
+    n_pixels = height * width
     kwargs = {
         "count": band,
         "crs": crs,
         "height": height,
         "read": mocked_read,
+        "shape": pixels_shape,
         "transform": transform,
         "units": [unit] * band,
         "width": width,
@@ -74,10 +76,13 @@ def test_rgb_band(mocker, rgb, band, unit):
             "numpy.dstack", return_value=mocker.MagicMock(reshape=mocked_reshape)
         )
 
-    cols, rows = mocker.sentinel.cols, mocker.sentinel.rows
+    cols_flatten = mocker.sentinel.cols_flatten
+    rows_flatten = mocker.sentinel.rows_flatten
+    cols = mocker.MagicMock(flatten=mocker.MagicMock(return_value=cols_flatten))
+    rows = mocker.MagicMock(flatten=mocker.MagicMock(return_value=rows_flatten))
     mocked_meshgrid = mocker.patch("numpy.meshgrid", return_value=(cols, rows))
 
-    xs, ys = mocker.sentinel.xs, mocker.sentinel.ys
+    xs, ys = np.arange(n_pixels), np.arange(n_pixels)
     mocked_xy = mocker.patch("rasterio.transform.xy", return_value=(xs, ys))
 
     expected = mocker.sentinel.mesh
@@ -102,19 +107,26 @@ def test_rgb_band(mocker, rgb, band, unit):
     assert len(args) == 2
     np.testing.assert_array_equal(args[0], np.arange(width))
     np.testing.assert_array_equal(args[1], np.arange(height))
+    assert mocked_meshgrid.call_args.kwargs == {"indexing": "xy"}
 
-    mocked_xy.assert_called_once_with(transform, rows, cols)
+    mocked_xy.assert_called_once_with(transform, rows_flatten, cols_flatten)
 
-    kwargs = {"radius": None, "zlevel": None, "zscale": None, "clean": None}
-    mocked_from_2d.assert_called_once_with(
-        xs,
-        ys,
-        data=data,
-        name=name.format(units=str(unit)),
-        crs=crs,
-        rgb=rgb,
-        **kwargs,
-    )
+    expected_kwargs = {
+        "data": data,
+        "name": name.format(units=str(unit)),
+        "crs": crs,
+        "rgb": rgb,
+        "radius": None,
+        "zlevel": None,
+        "zscale": None,
+        "clean": None,
+    }
+    mocked_from_2d.assert_called_once()
+    args = mocked_from_2d.call_args.args
+    assert len(args) == 2
+    assert args[0].shape == pixels_shape
+    assert args[1].shape == pixels_shape
+    assert mocked_from_2d.call_args.kwargs == expected_kwargs
 
 
 @pytest.mark.parametrize("sieve", [True])
@@ -122,7 +134,8 @@ def test_rgb_band(mocker, rgb, band, unit):
 @pytest.mark.parametrize("masked", [False, True])
 def test_extract(mocker, masked, rgb, sieve):
     """Test extract behaviour with and without image masking."""
-    height, width = 2, 3
+    pixels_shape = height, width = 2, 3
+    n_pixels = height * width
     band = 3 if rgb else 1
     crs = mocker.sentinel.crs
     dtypes = ["uint8"] * band
@@ -145,16 +158,20 @@ def test_extract(mocker, masked, rgb, sieve):
         "dtypes": dtypes,
         "height": height,
         "read": mocked_read,
+        "shape": pixels_shape,
         "transform": transform,
         "width": width,
     }
     dataset = mocker.MagicMock(**kwargs)
     mocker.patch("rasterio.open").return_value.__enter__.return_value = dataset
 
-    cols, rows = mocker.sentinel.cols, mocker.sentinel.rows
+    cols_flatten = mocker.sentinel.cols_flatten
+    rows_flatten = mocker.sentinel.rows_flatten
+    cols = mocker.MagicMock(flatten=mocker.MagicMock(return_value=cols_flatten))
+    rows = mocker.MagicMock(flatten=mocker.MagicMock(return_value=rows_flatten))
     mocked_meshgrid = mocker.patch("numpy.meshgrid", return_value=(cols, rows))
 
-    xs, ys = mocker.sentinel.xs, mocker.sentinel.ys
+    xs, ys = np.arange(n_pixels), np.arange(n_pixels)
     mocked_xy = mocker.patch("rasterio.transform.xy", return_value=(xs, ys))
 
     expected_mesh = mocker.sentinel.mesh
@@ -186,15 +203,14 @@ def test_extract(mocker, masked, rgb, sieve):
     assert len(args) == 2
     np.testing.assert_array_equal(args[0], np.arange(width))
     np.testing.assert_array_equal(args[1], np.arange(height))
+    assert mocked_meshgrid.call_args.kwargs == {"indexing": "xy"}
 
-    mocked_xy.assert_called_once_with(transform, rows, cols)
+    mocked_xy.assert_called_once_with(transform, rows_flatten, cols_flatten)
 
     if rgb:
         data = np.dstack(data).reshape(-1, band)
         mask = mask[0]
 
-    mocked_from_2d.assert_called_once()
-    assert mocked_from_2d.call_args.args == (xs, ys)
     expected_kwargs = {
         "name": None,
         "crs": crs,
@@ -204,6 +220,11 @@ def test_extract(mocker, masked, rgb, sieve):
         "zscale": None,
         "clean": None,
     }
+    mocked_from_2d.assert_called_once()
+    args = mocked_from_2d.call_args.args
+    assert len(args) == 2
+    assert args[0].shape == pixels_shape
+    assert args[1].shape == pixels_shape
     kwargs = mocked_from_2d.call_args.kwargs
     actual = kwargs.pop("data")
     assert kwargs == expected_kwargs
