@@ -867,7 +867,19 @@ class Transform:  # numpydoc ignore=PR01
             cols, rows = np.meshgrid(
                 np.arange(src.width), np.arange(src.height), indexing="xy"
             )
-            xs, ys = rio.transform.xy(src.transform, rows, cols)
+            # rasterio 1.4.0 (regression) expects 1-D arrays, fixed in 1.4.1
+            # see https://github.com/rasterio/rasterio/issues/3191
+            xs, ys = rio.transform.xy(src.transform, rows.flatten(), cols.flatten())
+
+            # ensure we have arrays, rather than a list of arrays
+            xs, ys = np.asanyarray(xs), np.asanyarray(ys)
+
+            # ensure shape is maintained (rasterio 1.4.1 regression)
+            if xs.shape != src.shape:
+                xs = xs.reshape(src.shape)
+
+            if ys.shape != src.shape:
+                ys = ys.reshape(src.shape)
 
             # create the geotiff mesh
             mesh = cls.from_2d(
