@@ -27,15 +27,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
   build-artifacts:
     name: "build pypi artifacts"
 
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        shell: bash -l {0}
 
     steps:
     - uses: actions/checkout@v4
@@ -63,10 +63,6 @@ jobs:
     name: "test wheel (${{ matrix.version }})"
 
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        shell: bash -l {0}
 
     env:
       ENV_NAME: "ci-wheels"

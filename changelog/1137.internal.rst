@@ -1,0 +1,2 @@
+Removed :fab:`github` Action duplication by migrating common job level
+``defaults`` definitions to the workflow level. (:user:`bjlittle`)
