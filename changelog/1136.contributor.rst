@@ -1,0 +1,3 @@
+Changed the frequency of the ``ci-locks`` :fab:`github` Action ``cron``
+to be every 2nd day to assist with earlier detection of breaking
+regressions in package dependencies, see :issue:`1131`. (:user:`bjlittle`)
