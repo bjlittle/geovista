@@ -1,0 +1,3 @@
+Added lock file artifact upload for ``ci-locks-test`` :fab:`github` Action
+to allow contributor reproducibility of any regression behaviour.
+(:user:`bjlittle`)
