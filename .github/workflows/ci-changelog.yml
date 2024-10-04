@@ -59,12 +59,12 @@ jobs:
 
       - name: 'validate changelog'
         if: ${{ ! contains(fromJSON(env.LABELS), 'skip changelog') }}
+        env:
+          CHANGELOG: "${{ steps.changes.outputs.changelog_files }}"
+          PR: "${{ steps.pr.outputs.number }}"
+          SCRIPTS: "./.github/scripts"
         run: |
           python -m pip install click towncrier
           python -c "import sys; print(f'version = {sys.version}')"
           towncrier --version
           python ${SCRIPTS}/changelog.py "${PR}" "${CHANGELOG}"
-        env:
-          CHANGELOG: "${{ steps.changes.outputs.changelog_files }}"
-          PR: "${{ steps.pr.outputs.number }}"
-          SCRIPTS: "./.github/scripts"
