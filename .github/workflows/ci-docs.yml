@@ -66,9 +66,6 @@ jobs:
       uses: conda-incubator/setup-miniconda@a4260408e20b96e80095f42ff7f1a15b27dd94ca
       with:
         miniforge-version: latest
-        channels: conda-forge,defaults
-        channel-priority: true
-        auto-update-conda: true
         activate-environment: ${{ env.ENV_NAME }}
         use-only-tar-bz2: false
 
