@@ -1,0 +1,2 @@
+Configured `setup-miniconda <https://github.com/conda-incubator/setup-miniconda>`__
+:fab:`github` Action to avoid using the ``defaults`` channel. (:user:`bjlittle`)
