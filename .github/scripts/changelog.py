@@ -164,7 +164,7 @@ def report(pr: str, provided: bool, bad: BadFragment) -> None:
     if emsgs:
         failure(emsgs)
 
-    success("Your changelog appears to be in an awesome condition. Great job! 👍")
+    success("Your changelog contribution looks good to me. Awesome job!")
 
 
 def success(msg: str) -> None:
@@ -180,7 +180,7 @@ def success(msg: str) -> None:
     .. versionadded:: 0.6.0
 
     """
-    summary(f"✔️ {msg}")
+    summary(f"🆗 {msg}")
 
 
 def summary(msg: str) -> None:
