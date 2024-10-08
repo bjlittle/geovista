@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum, auto
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
@@ -69,8 +69,7 @@ PANTRY_DATA: str = "pantry/data"
 """The registry key for the pantry data."""
 
 
-# TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class CloudPreference(MixinStrEnum, Enum):
+class CloudPreference(MixinStrEnum, StrEnum):
     """Enumeration of mesh types for cloud amount.
 
     Notes
@@ -79,11 +78,11 @@ class CloudPreference(MixinStrEnum, Enum):
 
     """
 
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    VERY_HIGH = "very_high"
-    MESH = "mesh"
+    LOW = auto()
+    MEDIUM = auto()
+    HIGH = auto()
+    VERY_HIGH = auto()
+    MESH = auto()
 
 
 @dataclass(frozen=True)

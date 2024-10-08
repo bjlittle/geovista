@@ -24,6 +24,11 @@ def test_members():
     assert tuple([member.value for member in SearchPreference]) == EXPECTED_VALUES
 
 
+def test_members___str__():
+    """Test expected enumeration members string."""
+    assert tuple([str(member) for member in SearchPreference]) == EXPECTED_VALUES
+
+
 def test_values():
     """Test expected enumeration member values."""
     assert SearchPreference.values() == EXPECTED_VALUES

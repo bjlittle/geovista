@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import Enum
+from enum import StrEnum, auto
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
@@ -64,8 +64,7 @@ KDTREE_PREFERENCE: str = "point"
 """The default search preference."""
 
 
-# TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class SearchPreference(MixinStrEnum, Enum):
+class SearchPreference(MixinStrEnum, StrEnum):
     """Enumeration of mesh geometry search preferences.
 
     Notes
@@ -74,8 +73,8 @@ class SearchPreference(MixinStrEnum, Enum):
 
     """
 
-    CENTER = "center"
-    POINT = "point"
+    CENTER = auto()
+    POINT = auto()
 
 
 class KDTree:  # numpydoc ignore=PR01
