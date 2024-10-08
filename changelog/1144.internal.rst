@@ -1,0 +1,5 @@
+Refactored ``Preference`` enums to use
+`enum.StrEnum <https://docs.python.org/3/library/enum.html#enum.StrEnum>`__ and
+`enum.auto <https://docs.python.org/3/library/enum.html#enum.auto>`__ as
+``py311`` is now the minimum supported version, see :pull:`1118`.
+(:user:`bjlittle`)
