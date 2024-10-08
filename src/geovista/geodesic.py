@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import Enum
+from enum import StrEnum, auto
 from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
@@ -123,8 +123,7 @@ PREFERENCE: str = "center"
 """The default bounding-box preference."""
 
 
-# TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class EnclosedPreference(MixinStrEnum, Enum):
+class EnclosedPreference(MixinStrEnum, StrEnum):
     """Enumeration of mesh geometry enclosed preferences.
 
     Notes
@@ -133,9 +132,9 @@ class EnclosedPreference(MixinStrEnum, Enum):
 
     """
 
-    CELL = "cell"
-    CENTER = "center"
-    POINT = "point"
+    CELL = auto()
+    CENTER = auto()
+    POINT = auto()
 
 
 class BBox:  # numpydoc ignore=PR01

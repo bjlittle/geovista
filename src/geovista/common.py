@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import Enum
+from enum import StrEnum, auto
 import importlib
 import pkgutil
 import sys
@@ -220,25 +220,8 @@ class MixinStrEnum:
         """
         return tuple([member.value for member in cls])
 
-    def __str__(self) -> str:
-        """Serialize enumeration name.
 
-        Returns
-        -------
-        str
-            The enumeration name.
-
-        Notes
-        -----
-        .. versionadded:: 0.3.0
-
-        """
-        # TODO @bjlittle: Remove when minimum supported python version is 3.11.
-        return f"{self.name.lower()}"
-
-
-# TODO @bjlittle: Use StrEnum and auto when minimum supported python version is 3.11.
-class Preference(MixinStrEnum, Enum):
+class Preference(MixinStrEnum, StrEnum):
     """Enumeration of common mesh geometry preferences.
 
     Notes
@@ -247,8 +230,8 @@ class Preference(MixinStrEnum, Enum):
 
     """
 
-    CELL = "cell"
-    POINT = "point"
+    CELL = auto()
+    POINT = auto()
 
 
 def active_kernel() -> bool:
