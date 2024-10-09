@@ -19,7 +19,8 @@ A collection of themed practical lessons to work though.
 
     .. grid-item-card::
         :text-align: center
-        :link: region-manifold-extraction.html
+        :link: gv-tutorials-region-manifold-extraction
+        :link-type: ref
 
         .. image:: ../_static/images/region-manifold-extraction.png
             :alt: Region Manifold Extraction
