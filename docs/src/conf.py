@@ -766,13 +766,28 @@ def generate_carousel(
     Path(app.srcdir, fname).write_text(carousel)
 
 
-def geovista_config(app: Sphinx) -> None:
+def geovista_builder_inited(app: Sphinx) -> None:
     """Configure geovista sphinx options."""
-    # sanitise the config options
-    app.builder.config.plot_docstring = _bool_eval(app.builder.config.plot_docstring)
-    autolog(f"plot_docstring={app.builder.config.plot_docstring}", section="GeoVista")
+    plot_docstring = _bool_eval(app.builder.config.plot_docstring)
     plot_gallery = _bool_eval(app.builder.config.plot_gallery)
+    plot_tutorial = _bool_eval(app.builder.config.plot_tutorial)
+
+    # overwrite the myst-nb sphinx configuration option that controls the
+    # notebook execution mode. this option has been pre-parsed by the sphinx
+    # state machine from this file (conf.py) or set by the default myst-nb app
+    # configuration. for further details see
+    # https://www.sphinx-doc.org/en/master/extdev/event_callbacks.html
+    if not plot_tutorial:
+        # https://myst-nb.readthedocs.io/en/latest/configuration.html#execution
+        app.config["nb_execution_mode"] = "off"
+
+    # sanitise the config option from str to bool
+    app.builder.config.plot_docstring = plot_docstring
+
+    # report diagnostics
+    autolog(f"{plot_docstring=}", section="GeoVista")
     autolog(f"{plot_gallery=}", section="GeoVista")
+    autolog(f"{plot_tutorial=}", section="GeoVista")
 
 
 def geovista_carousel(
@@ -797,9 +812,11 @@ def setup(app: Sphinx) -> None:
     # we require the output of this extension
     app.setup_extension("sphinx_gallery.gen_gallery")
     # register geovista options
-    app.add_config_value("plot_docstring", "True", "html")
-    # early configuration of geovista options
-    app.connect("builder-inited", geovista_config, priority=10)
+    app.add_config_value(name="plot_docstring", default="True", rebuild="html")
+    app.add_config_value(name="plot_tutorial", default="True", rebuild="html")
+    # early configuration of geovista options, see
+    # https://www.sphinx-doc.org/en/master/extdev/event_callbacks.html
+    app.connect("builder-inited", geovista_builder_inited, priority=10)
     # register callback for the autoapi event
     app.connect("autoapi-skip-member", geovista_skip_member)
     # register callback to generate gallery carousel
