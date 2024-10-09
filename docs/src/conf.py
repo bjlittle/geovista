@@ -280,8 +280,7 @@ togglebutton_hint_hide = "Click to hide"
 # myst-nb options ------------------------------------------------------------
 # See https://myst-nb.readthedocs.io/en/latest/configuration.html
 
-# TODO @bjlittle: investigate jupyter-cache mode
-nb_execution_mode = "auto"
+nb_execution_mode = "cache"
 nb_execution_raise_on_error = True
 nb_execution_timeout = -1
 nb_number_source_lines = True

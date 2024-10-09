@@ -17,15 +17,20 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: Makefile clean doctest help html-docstring html-gallery html-noplot html-tutorial linkcheck serve-html
+.PHONY: Makefile clean clean-cache clean-all doctest help html-docstring html-gallery html-noplot html-tutorial linkcheck serve-html
 
 clean:
-	-rm -rf $(BUILDDIR)
+	-rm -rf $(BUILDDIR)/*
 	-rm -rf $(SOURCEDIR)/generated
 	-rm -rf $(SOURCEDIR)/reference/generated
 	-rm -rf $(SOURCEDIR)/tags
 	-rm -f $(SOURCEDIR)/sg_execution_times.rst
 	-rm -f $(SOURCEDIR)/gallery_carousel.txt
+
+clean-cache:
+	-rm -rf $(BUILDDIR)/.jupyter_cache
+
+clean-all: clean-cache clean
 
 doctest:
 	@$(SPHINXBUILD) -b doctest -D plot_docstring=False -D plot_gallery=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/doctest"
