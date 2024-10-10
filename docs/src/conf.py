@@ -503,7 +503,7 @@ html_css_files = [
 linkcheck_ignore = [
     "https://doi.org/10.5281/zenodo.7608302",
     "https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/",
-    "region-manifold-extraction.html",
+    "https://www.usgs.gov/programs/earthquake-hazards",
     "https://www.ncei.noaa.gov/products/optimum-interpolation-sst",
 ]
 linkcheck_retries = 3
