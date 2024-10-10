@@ -434,6 +434,7 @@ html_sidebars = {
 
 html_theme_options = {
     "extra_footer": f'Made with ❤️ and ☕ on {now.strftime("%b %d %Y")}.',
+    "flyout_display": "attached",
     "icon_links": [
         {
             "name": "GitHub Discussions",
