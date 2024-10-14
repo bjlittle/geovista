@@ -30,6 +30,7 @@ jobs:
         shell: bash -l {0}
 
     permissions:
+      contents: read
       pull-requests: read
 
     if: github.actor != 'pre-commit-ci[bot]'
