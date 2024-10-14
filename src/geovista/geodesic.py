@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum, auto
+from enum import StrEnum
 from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
@@ -132,9 +132,9 @@ class EnclosedPreference(MixinStrEnum, StrEnum):
 
     """
 
-    CELL = auto()
-    CENTER = auto()
-    POINT = auto()
+    CELL = "cell"
+    CENTER = "center"
+    POINT = "point"
 
 
 class BBox:  # numpydoc ignore=PR01

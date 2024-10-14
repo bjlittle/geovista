@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum, auto
+from enum import StrEnum
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
@@ -78,11 +78,11 @@ class CloudPreference(MixinStrEnum, StrEnum):
 
     """
 
-    LOW = auto()
-    MEDIUM = auto()
-    HIGH = auto()
-    VERY_HIGH = auto()
-    MESH = auto()
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    VERY_HIGH = "very_high"
+    MESH = "mesh"
 
 
 @dataclass(frozen=True)
