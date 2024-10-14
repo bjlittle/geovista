@@ -29,21 +29,6 @@ jobs:
       run:
         shell: bash -l {0}
 
-    permissions:
-      actions: read
-      attestations: none
-      checks: read
-      contents: read
-      deployments: read
-      id-token: none
-      issues: read
-      packages: none
-      pages: none
-      pull-requests: read
-      repository-projects: none
-      security-events: none
-      statuses: none
-
     if: github.actor != 'pre-commit-ci[bot]'
     steps:
       - uses: actions/checkout@v4
