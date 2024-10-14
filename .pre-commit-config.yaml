@@ -14,7 +14,7 @@ repos:
       - id: validate-pyproject
 
   - repo: https://github.com/adamchainz/blacken-docs
-    rev: "1.18.0"
+    rev: "1.19.0"
     hooks:
       - id: blacken-docs
         additional_dependencies: [black==24.*]
@@ -97,7 +97,7 @@ repos:
         # Forbid files which have a UTF-8 Unicode replacement character.
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.3
+    rev: 0.29.4
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
