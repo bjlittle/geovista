@@ -1,0 +1,2 @@
+Reverted use of the `jwalton/gh-find-current-pr <https://github.com/jwalton/gh-find-current-pr>`__
+:fab:`github` Action within the ``ci-changelog`` :fab:`github` Action. (:user:`bjlittle`)
