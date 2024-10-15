@@ -1,9 +1,7 @@
 # Reference:
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/setup-python
-#   - https://github.com/jwalton/gh-find-current-pr
 #   - https://github.com/snnaplab/get-labels-action
-#   - https://github.com/jitterbit/get-changed-files (don't use - abandoned repo?)
 #   - https://github.com/dorny/paths-filter
 
 
@@ -41,10 +39,6 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: 'get PR number'
-        uses: jwalton/gh-find-current-pr@89ee5799558265a1e0e31fab792ebb4ee91c016b
-        id: pr
-
       - name: 'get PR labels'
         uses: snnaplab/get-labels-action@f426df40304808ace3b5282d4f036515f7609576
 
@@ -61,7 +55,7 @@ jobs:
         if: ${{ ! contains(fromJSON(env.LABELS), 'skip changelog') }}
         env:
           CHANGELOG: "${{ steps.changes.outputs.changelog_files }}"
-          PR: "${{ steps.pr.outputs.number }}"
+          PR: "${{ github.event.number }}"
           SCRIPTS: "./.github/scripts"
         run: |
           python -m pip install click towncrier
