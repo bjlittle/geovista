@@ -1,0 +1,4 @@
+Used explicit strings in
+`enum.StrEnum <https://docs.python.org/3/library/enum.html#enum.StrEnum>`__
+instances (instead of ``auto()``), thus making the documentation clearer.
+(:user:`trexfeathers`)

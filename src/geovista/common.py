@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum, auto
+from enum import StrEnum
 import importlib
 import pkgutil
 import sys
@@ -230,8 +230,8 @@ class Preference(MixinStrEnum, StrEnum):
 
     """
 
-    CELL = auto()
-    POINT = auto()
+    CELL = "cell"
+    POINT = "point"
 
 
 def active_kernel() -> bool:

@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum, auto
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
@@ -73,8 +73,8 @@ class SearchPreference(MixinStrEnum, StrEnum):
 
     """
 
-    CENTER = auto()
-    POINT = auto()
+    CENTER = "center"
+    POINT = "point"
 
 
 class KDTree:  # numpydoc ignore=PR01
