@@ -505,6 +505,7 @@ linkcheck_ignore = [
     "https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/",
     "https://www.usgs.gov/programs/earthquake-hazards",
     "https://www.ncei.noaa.gov/products/optimum-interpolation-sst",
+    "https://earthexplorer.usgs.gov",
 ]
 linkcheck_retries = 3
 
