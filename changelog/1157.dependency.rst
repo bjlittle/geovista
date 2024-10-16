@@ -1,0 +1,2 @@
+Introduced temporary minimum pin ``h3-py ==3.7.7`` to avoid breaking major
+release ``4.x`` behaviour. (:user:`bjlittle`)
