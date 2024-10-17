@@ -68,16 +68,16 @@ jobs:
       run: |
         pytest --xvfb-backend xvfb --fail_extra_image_cache --generated_image_dir test_images
 
-#    - name: "report failure"
-#      if: failure()
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#      run: |
-#        TITLE="chore: pypi test failure"
-#        BODY=$(cat <<EOL
-#        The \`${{ matrix.version }}\` tests for the latest resolved \`conda-lock\` environment have failed.
-#
-#        Please investigate GHA run-id [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-#        EOL
-#        )
-#        gh issue create --title "${TITLE}" --body "${BODY}" --label "bot" --label "new: issue" --repo "${{ github.repository }}"
+    - name: "report failure"
+      if: failure()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TITLE="chore: pypi test failure"
+        BODY=$(cat <<EOL
+        The \`py${{ matrix.version }}\` tests for the latest resolved \`pip\` environment have failed.
+
+        Please investigate GHA run-id [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        EOL
+        )
+        gh issue create --title "${TITLE}" --body "${BODY}" --label "bot" --label "new: issue" --repo "${{ github.repository }}"
