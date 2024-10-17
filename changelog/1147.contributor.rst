@@ -1,4 +1,4 @@
 Adopted caching of :ref:`tutorial <gv-tutorials>` ``jupyter notebook`` outputs
 when building the documentation. The cache will only be cleared with either
 the ``make clean-cache`` or ``make clean-all`` commands. The ``make clean``
-command will **not** clear the cache. (:user:`bjlittle`)
+command will **not** clear the cache. Closes :issue:`1018`. (:user:`bjlittle`)
