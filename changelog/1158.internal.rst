@@ -1,0 +1,3 @@
+Added ``ci-tests-pypi`` :fab:`github` Action to assist with early detection
+of breaking regressions in package dependencies by running nightly tests
+against the latest resolved PyPI environment. (:user:`bjlittle`)

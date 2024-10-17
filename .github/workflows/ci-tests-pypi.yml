@@ -6,11 +6,10 @@
 name: ci-tests-pypi
 
 on:
-  pull_request:
   workflow_dispatch:
   schedule:
-    # every day @ 00h03 except sunday (see ci-locks.yml)
-    - cron: "3 0 * * 1-6"
+    # every day @ 00h03
+    - cron: "3 0 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
