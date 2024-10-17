@@ -22,3 +22,20 @@ updates:
     commit-message:
       prefix: "chore: "
       include: "scope"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+    labels:
+      - "new: pull request"
+      - "bot"
+      - "skip changelog"
+    commit-message:
+      prefix: "chore: "
+      include: "scope"
