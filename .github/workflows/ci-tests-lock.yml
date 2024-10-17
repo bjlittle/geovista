@@ -4,7 +4,7 @@
 #   - https://github.com/conda-incubator/setup-miniconda
 #   - https://github.com/actions/upload-artifact
 
-name: ci-locks-test
+name: ci-tests-lock
 
 on:
   workflow_dispatch:
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ENV_NAME: "ci-locks-test"
+      ENV_NAME: "ci-tests-lock"
 
     strategy:
       fail-fast: false
