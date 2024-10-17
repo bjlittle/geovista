@@ -1,5 +1,5 @@
 Optimised the documentation building workflow by providing control of whether
 :ref:`tutorial <gv-tutorials>` ``jupyter notebook`` code cells are executed.
 By default, code cells will only be executed when building the documentation
-with either the ``make html`` or ``make html-tutorial`` commands.
-(:user:`bjlittle`)
+with either the ``make html`` or ``make html-tutorial`` commands. Closes
+:issue:`1030`. (:user:`bjlittle`)
