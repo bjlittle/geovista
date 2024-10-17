@@ -3,7 +3,7 @@
 #   - https://github.com/actions/setup-python
 #   - https://github.com/awalsh128/cache-apt-pkgs-action
 
-name: ci-pypi-test
+name: ci-tests-pypi
 
 on:
   pull_request:
@@ -54,6 +54,10 @@ jobs:
     - name: "pip install"
       run: |
         pip install -e .[test,exam,cmap]
+
+    - name: "pip freeze"
+      run: |
+        pip freeze
 
     - name: "download cartopy assets"
       run: |
