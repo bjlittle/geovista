@@ -1,0 +1,79 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/actions/setup-python
+#   - https://github.com/awalsh128/cache-apt-pkgs-action
+
+name: ci-pypi-test
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # every day @ 00h03 except sunday (see ci-locks.yml)
+    - cron: "3 0 * * 1-6"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+env:
+  CARTOPY_SHARE_DIR: ~/.local/share/cartopy
+  GEOVISTA_POOCH_MUTE: true
+  ALLOW_PLOTTING: true
+  SHELLOPTS: "errexit:pipefail"
+
+jobs:
+  test-pypi:
+    name: "test pypi (py${{ matrix.version }})"
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.version }}
+
+    - name: "apt cache"
+      uses: awalsh128/cache-apt-pkgs-action@a6c3917cc929dd0345bfb2d3feaf9101823370ad
+      with:
+        packages: libgl1-mesa-glx xvfb
+        version: 1.0
+
+    - name: "pip install"
+      run: |
+        pip install -e .[test,exam,cmap]
+
+    - name: "download cartopy assets"
+      run: |
+        mkdir -p ${CARTOPY_SHARE_DIR}
+        python -m cartopy.feature.download physical --output ${CARTOPY_SHARE_DIR} --no-warn
+
+    - name: "test pypi (py${{ matrix.version }})"
+      run: |
+        pytest --xvfb-backend xvfb --fail_extra_image_cache --generated_image_dir test_images
+
+#    - name: "report failure"
+#      if: failure()
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      run: |
+#        TITLE="chore: pypi test failure"
+#        BODY=$(cat <<EOL
+#        The \`${{ matrix.version }}\` tests for the latest resolved \`conda-lock\` environment have failed.
+#
+#        Please investigate GHA run-id [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+#        EOL
+#        )
+#        gh issue create --title "${TITLE}" --body "${BODY}" --label "bot" --label "new: issue" --repo "${{ github.repository }}"
