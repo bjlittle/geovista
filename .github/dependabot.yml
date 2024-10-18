@@ -9,10 +9,9 @@ updates:
       - "/"
       - "/.github/workflows/composite/*"
     schedule:
-      # Check for updates to GitHub Actions every weekday
       interval: "daily"
     groups:
-      dependencies:
+      gha:
         patterns:
           - "*"
     labels:
@@ -29,7 +28,7 @@ updates:
       interval: "weekly"
       day: "sunday"
     groups:
-      dependencies:
+      pip:
         patterns:
           - "*"
     labels:
