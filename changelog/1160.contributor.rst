@@ -1,0 +1,2 @@
+Updated ``dependabot`` to orchestrate updates for the ``pip``
+package-ecosystem. (:user:`bjlittle`)
