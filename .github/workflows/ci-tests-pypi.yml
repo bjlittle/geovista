@@ -72,7 +72,7 @@ jobs:
         pytest --xvfb-backend xvfb --fail_extra_image_cache --generated_image_dir test_images
 
     - name: "report failure"
-      if: failure()
+      if: failure() && github.event_name == 'schedule'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
