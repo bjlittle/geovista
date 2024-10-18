@@ -27,6 +27,7 @@ jobs:
 
     env:
       ENV_NAME: "ci-tests-lock"
+      PY_COLORS: "1"
 
     strategy:
       fail-fast: false
