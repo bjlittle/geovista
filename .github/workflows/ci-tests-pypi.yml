@@ -56,7 +56,7 @@ jobs:
 
     - name: "pip install"
       run: |
-        pip install -e .[test,exam,cmap]
+        pip install --no-cache-dir -e .[test,exam,cmap]
 
     - name: "pip freeze"
       run: |
