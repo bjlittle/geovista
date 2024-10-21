@@ -171,7 +171,7 @@ def generate_icosahedron_surface(resolution: int | None = 0) -> GeoSurface:
        icosahedron face connectivity.
 
     """
-    pairs = [h3.h3_to_geo(cell) for cell in sorted(h3.get_pentagon_indexes(resolution))]
+    pairs = [h3.cell_to_latlng(cell) for cell in sorted(h3.get_pentagons(resolution))]
     lats, lons = list(zip(*pairs, strict=True))
 
     # An icosahedron contains 20 equilateral triangle faces,
@@ -273,7 +273,7 @@ def to_children(h3indexes: H3Indexes) -> H3Indexes:
 
     """
     result = set()
-    children = [h3.h3_to_children(h3index) for h3index in h3indexes]
+    children = [h3.cell_to_children(h3index) for h3index in h3indexes]
     result.update(*children)
 
     return result
@@ -309,7 +309,7 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
 
     # Get the lat/lon vertices of each H3Index cell polygon.
     for h3index in h3indexes:
-        boundary = h3.h3_to_geo_boundary(h3index, geo_json=False)
+        boundary = h3.cell_to_boundary(h3index)
         boundary_lats, boundary_lons = zip(*boundary, strict=True)
         lats.extend(boundary_lats)
         lons.extend(boundary_lons)
@@ -406,7 +406,7 @@ def add_checkboxes(
 # **base icosahedron** surface and geodesic edges,
 # a Natural Earth base layer and coastlines.
 #
-# We also use the :func:`h3.get_res0_indexes` function to bootstrap the
+# We also use the :func:`h3.get_res0_cells` function to bootstrap the
 # Uber ``H3`` hierarchy by generating the ``H3Index`` strings for all
 # the cells participating in the base (coarsest) resolution .
 #
@@ -435,7 +435,7 @@ def main() -> None:
         base_layer="blue",
     )
 
-    indexes_resolution_0 = h3.get_res0_indexes()
+    indexes_resolution_0 = h3.get_res0_cells()
     mesh_resolution_0 = to_mesh(indexes_resolution_0)
     indexes_resolution_1 = to_children(indexes_resolution_0)
     mesh_resolution_1 = to_mesh(indexes_resolution_1)
