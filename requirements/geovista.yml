@@ -42,7 +42,7 @@ dependencies:
 
 # examples dependencies (optional)
   - fastparquet
-  - h3-py
+  - h3-py >=4.1
   - pandas
   - pyarrow
   - rasterio >=1.3
