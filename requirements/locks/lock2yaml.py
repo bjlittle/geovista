@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import sys
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -22,15 +23,14 @@ environment = Environment(
 template = environment.get_template("lock2yaml.txt")
 
 # default to linux-64 only
-env = sys.argv[1]
+env = f"{sys.argv[1]}-lock"
 lock = f"{env}-linux-64.txt"
 name = f"geovista-{env}"
 yaml = f"{env}-linux-64.yml"
 
-# TODO @bjlittle: use Path.open when >=py311 and remove .ruff.toml ignore
-with open(lock) as fin:
+with Path(lock).open(mode="r") as fin:
     content = template.render(file=fin, name=name)
 
-with open(yaml, mode="w", encoding="utf-8") as fout:
+with Path(yaml).open(mode="w", encoding="utf-8") as fout:
     fout.write(content)
     fout.write("\n")
