@@ -293,7 +293,7 @@ nb_render_text_lexer = "python"
 nitpicky = True
 nitpick_ignore_regex = [
     (r"py:.*", r"Corners"),  # TBD: geovista.geodesic.PANEL_BBOX_BY_IDX
-    (r"py:.*", r"h3.get_res0_indexes"),  # no uber/h3 sphinx docs available
+    (r"py:.*", r"h3.get_res0_cells"),  # no uber/h3 sphinx docs available
     (r"py:.*", r"scooby.Report"),  # no scooby sphinx docs available
     (r"py:.*", r"pv"),  # TBD: geovista.geoplotter, geovista.gridlines (lazy import)
     (r"py:class", r"numpy.typing.ArrayLike"),  # TBD: geovista.pantry.data (lazy import)
