@@ -1,0 +1,2 @@
+Merged back ``0.5.x`` release feature branch into ``main`` for ``0.5.3``.
+Closes :issue:`1156`. (:user:`bjlittle`)
