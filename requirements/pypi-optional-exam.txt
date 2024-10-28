@@ -1,5 +1,4 @@
 fastparquet
 h3 >=4.1
 pandas
-pyarrow
 rasterio >=1.3
