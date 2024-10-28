@@ -1,0 +1,2 @@
+Extended ``ci-locks`` :fab:`github` Action to support ``py313``.
+(:user:`bjlittle`)
