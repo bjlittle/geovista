@@ -1,0 +1,2 @@
+Dropped the optional ``pyarrow`` dependency as ``pandas >2.2.0`` no longer
+issues a ``DeprecationWarning``. (:user:`bjlittle`)
