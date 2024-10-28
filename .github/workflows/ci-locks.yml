@@ -34,7 +34,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        version: ["py311", "py312"]
+        version: ["py311", "py312", "py313"]
         session: ["lock"]
 
     steps:
