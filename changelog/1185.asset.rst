@@ -1,0 +1,4 @@
+Updated the ``geovista.cache`` to use ``geovista-data =2024.10.2``,
+which includes the corrected
+`NASA Blue Marble <https://visibleearth.nasa.gov/collection/1484/blue-marble>`__
+texture. (:user:`bjlittle`)

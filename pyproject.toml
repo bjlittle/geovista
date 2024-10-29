@@ -337,6 +337,12 @@ name = "🔗 Dependencies"
 showcontent = true
 
 [[tool.towncrier.type]]
+# Data, media and asset updates etc
+directory = "asset"
+name = "💽 Assets"
+showcontent = true
+
+[[tool.towncrier.type]]
 # Notable changes to the documentation structure, content, render or build
 directory = "documentation"
 name = "📚 Documentation"
