@@ -1,0 +1,2 @@
+Fixed :meth:`geovista.bridge.Transform.from_points` to create a mesh from
+scalar spatial points. (:user:`bjlittle`)
