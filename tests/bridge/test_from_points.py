@@ -67,3 +67,12 @@ def test_transform_points(lam_uk_sample, wgs84_wkt, proj):
     assert result[GV_FIELD_CRS] == wgs84_wkt
     expected = to_cartesian(lons, lats)
     np.testing.assert_array_almost_equal(result.points, expected)
+
+
+def test_scalar():
+    """Test scalar and single element mixture of xs/ys."""
+    expected = np.array([[0.0, 0.0, 1.0]])
+    np.testing.assert_array_equal(Transform.from_points(0, 90).points, expected)
+    np.testing.assert_array_equal(Transform.from_points(0, [90]).points, expected)
+    np.testing.assert_array_equal(Transform.from_points([0], 90).points, expected)
+    np.testing.assert_array_equal(Transform.from_points([0], [90]).points, expected)

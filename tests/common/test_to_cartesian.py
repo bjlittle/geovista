@@ -50,6 +50,15 @@ def test_zlevel_broadcast_fail():
         _ = to_cartesian(lons, lats, zlevel=zlevel)
 
 
+def test_scalar():
+    """Test scalar and single element mixture of lons/lats."""
+    expected = np.array([[0.0, 0.0, 1.0]])
+    np.testing.assert_array_equal(to_cartesian(0, 90), expected)
+    np.testing.assert_array_equal(to_cartesian(0, [90]), expected)
+    np.testing.assert_array_equal(to_cartesian([0], 90), expected)
+    np.testing.assert_array_equal(to_cartesian([0], [90]), expected)
+
+
 @pytest.mark.parametrize("stacked", [True, False])
 def test_defaults(lam_uk_sample, stacked):
     """Test expected defaults are honoured."""

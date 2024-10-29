@@ -703,8 +703,8 @@ def to_cartesian(
     .. versionadded:: 0.1.0
 
     """
-    lons = np.asanyarray(lons)
-    lats = np.asanyarray(lats)
+    lons = np.atleast_1d(lons)
+    lats = np.atleast_1d(lats)
 
     if (shape := lons.shape) != lats.shape:
         emsg = (
