@@ -1,0 +1,2 @@
+Adopted `sphinx-autoapi <https://github.com/readthedocs/sphinx-autoapi>`__
+``3.3.3`` templates. (:user:`bjlittle`)
