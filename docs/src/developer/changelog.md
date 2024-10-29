@@ -53,6 +53,7 @@ and `<TYPE>` is one of:
 * `enhancement`: Updates to existing behaviours or capability, including performance
 * `bugfix`: Correction to undesired behaviours or reported bugs
 * `dependency`: Package dependency removals, additions, pins etc
+* `asset`: Data, media and asset updates etc
 * `documentation`: Notable changes to the documentation structure, content, render or build
 * `internal`: Miscellaneous internal and maintenance changes
 * `community`: Celebrate our awesome community members and contributions
