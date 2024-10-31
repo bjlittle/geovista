@@ -1,0 +1,2 @@
+Introduced minimum pin ``rasterio >=1.4.2`` to support ``gdal >=3.10.0``.
+(:user:`bjlittle`)
