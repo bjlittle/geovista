@@ -1,4 +1,4 @@
 fastparquet
 h3 >=4.1
 pandas
-rasterio >=1.3
+rasterio >=1.4.2
