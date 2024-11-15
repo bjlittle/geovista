@@ -13,8 +13,10 @@ Notes
 
 from __future__ import annotations
 
+from functools import wraps
 import os
 from pathlib import Path
+from typing import IO, TYPE_CHECKING, TypeAlias
 
 import pooch
 
@@ -31,6 +33,13 @@ __all__ = [
     "pooch_mute",
     "reload_registry",
 ]
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+# type aliases
+FileLike: TypeAlias = str | IO
+"""Type alias for filename or file-like object."""
 
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
 """Base URL for :mod:`geovista` resources."""
@@ -66,19 +75,80 @@ CACHE: pooch.Pooch = pooch.create(
 )
 """Cache manager for :mod:`geovista` resources."""
 
-CACHE.load_registry(
-    (Path(__file__).parent / "registry.txt").open(
-        "r", encoding="utf-8", errors="strict"
-    )
-)
-
 GEOVISTA_POOCH_MUTE: bool = (
     os.environ.get("GEOVISTA_POOCH_MUTE", "false").lower() == "true"
 )
 """Verbosity status of the :mod:`pooch` cache manager logger."""
 
 
-def pooch_mute(silent: bool = True) -> None:
+# configure the cache with the registry
+CACHE.load_registry(
+    (Path(__file__).parent / "registry.txt").open(
+        "r", encoding="utf-8", errors="strict"
+    )
+)
+
+# maintain the original Pooch.fetch method prior to wrapping
+# with user-agent headers version
+CACHE._fetch = CACHE.fetch
+
+
+@wraps(CACHE._fetch)
+def _fetch(*args: str, **kwargs: bool | Callable) -> str:  # numpydoc ignore=GL08
+    # default to our http/s downloader with user-agent headers
+    kwargs.setdefault("downloader", _downloader)
+    return CACHE._fetch(*args, **kwargs)
+
+
+# override the original Pooch.fetch method with our
+# user-agent headers version
+CACHE.fetch = _fetch
+
+
+def _downloader(
+    url: str,
+    output_file: FileLike,
+    poocher: pooch.Pooch,
+    check_only: bool | None = False,
+) -> bool | None:
+    """Download the `url` asset over HTTP/S to the target file.
+
+    Uses :func:`requests.get` with ``User-Agent`` configured
+    within the request headers.
+
+    Parameters
+    ----------
+    url : str
+        The URL of the asset to be downloaded.
+    output_file : FileLike
+        The target file for the asset.
+    poocher : Pooch
+        The :class:`~pooch.Pooch` instance requesting the asset download.
+    check_only : bool, optional
+        If ``True``, will only check if the asset exists on the server
+        without downloading it. Will return ``True`` if the asset exists
+        and ``False`` otherwise.
+
+    Returns
+    -------
+    bool or None
+        If `check_only` is ``True``, returns a boolean indicating whether
+        the requested asset is available. Otherwise, returns ``None``.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    import geovista
+
+    # see https://github.com/readthedocs/readthedocs.org/issues/11763
+    headers = {"User-Agent": f"geovista ({geovista.__version__})"}
+    downloader = pooch.HTTPDownloader(headers=headers)
+    return downloader(url, output_file, poocher, check_only=check_only)
+
+
+def pooch_mute(silent: bool | None = True) -> None:
     """Control the :mod:`pooch` cache manager logger verbosity.
 
     Updates the status variable :data:`GEOVISTA_POOCH_MUTE`.
@@ -87,7 +157,7 @@ def pooch_mute(silent: bool = True) -> None:
     ----------
     silent : bool, optional
         Whether to silence or activate the :mod:`pooch` cache manager logger messages
-        to the console.
+        to the console. Defaults to ``True``.
 
     Notes
     -----
