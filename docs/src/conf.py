@@ -240,6 +240,7 @@ tippy_rtd_urls = [
     "https://numpy.org/doc/stable/",
     "https://platformdirs.readthedocs.io/en/stable/",
     "https://rasterio.readthedocs.io/en/stable/",
+    "https://requests.readthedocs.io/en/stable/",
 ]
 tippy_skip_anchor_classes = ("headerlink", "sd-stretched-link")
 tippy_anchor_parent_selector = "article.bd-article"
@@ -524,6 +525,7 @@ intersphinx_mapping = {
     "pyvista": ("https://docs.pyvista.org/version/stable/", None),
     "pyvistaqt": ("https://qtdocs.pyvista.org/", None),
     "rasterio": ("https://rasterio.readthedocs.io/en/stable/", None),
+    "requests": ("https://requests.readthedocs.io/en/stable/", None),
 }
 
 
