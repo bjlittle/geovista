@@ -1,0 +1,6 @@
+Configured bespoke ``User-Agent`` within :mod:`requests` header of
+:meth:`pooch.Pooch.fetch` to avoid flaky ``HTTP``
+`403 Forbidden <https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403>`__
+error responses when downloading assets from the
+`geovista-data <https://github.com/bjlittle/geovista-data>`__ :fab:`github`
+repository. (:user:`bjlittle`)
