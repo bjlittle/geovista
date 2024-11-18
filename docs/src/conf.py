@@ -452,9 +452,9 @@ html_theme_options = {
             "icon": "fa-brands fa-github-alt fa-fw",
         },
         {
-            "name": "X (formally Twitter)",
-            "url": "https://twitter.com/geovista_devs",
-            "icon": "fa-brands fa-twitter",
+            "name": "Bluesky",
+            "url": "https://bsky.app/profile/geovista.bsky.social",
+            "icon": "fa-brands fa-bluesky",
         },
         {
             "name": "YouTube",

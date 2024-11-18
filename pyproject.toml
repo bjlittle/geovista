@@ -355,7 +355,7 @@ name = "💼 Internal"
 showcontent = true
 
 [[tool.towncrier.type]]
-# Celebrate our awesome community members.
+# Celebrate our awesome community members, including social changes.
 directory = "community"
 name = "🌱 Community"
 showcontent = true
