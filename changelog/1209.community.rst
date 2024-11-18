@@ -1,0 +1,2 @@
+"So long ``X``, and thanks for all the fish". Migrated to
+``Bluesky``. (:user:`bjlittle`)

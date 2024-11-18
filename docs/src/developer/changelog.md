@@ -56,7 +56,7 @@ and `<TYPE>` is one of:
 * `asset`: Data, media and asset updates etc
 * `documentation`: Notable changes to the documentation structure, content, render or build
 * `internal`: Miscellaneous internal and maintenance changes
-* `community`: Celebrate our awesome community members and contributions
+* `community`: Celebrate our awesome community members and their contributions, including social changes
 * `contributor`: Changes that affect contributors such as standards, conventions, running tests, building docs, environments etc
 * `misc`: Catch all for items that don't fit elsewhere
 
