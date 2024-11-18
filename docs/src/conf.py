@@ -655,7 +655,7 @@ def geovista_skip_member(
     what: str,
     name: str,  # noqa: ARG001
     obj: Mapper,
-    skip: bool,
+    skip: bool,  # noqa: FBT001
     options: Iterable[str],  # noqa: ARG001
 ) -> bool:
     """Inject the ``pyvista-plot`` directive into the docstring.

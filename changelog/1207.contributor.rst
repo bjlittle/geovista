@@ -1,1 +1,2 @@
-Add `taplo <https://github.com/tamasfe/taplo>`__ pre-commit hook to format and sort toml files. (:user:`tkoyama010`)
+Added `taplo <https://github.com/tamasfe/taplo>`__ ``pre-commit`` hook to
+format and sort ``toml`` files. (:user:`tkoyama010`)

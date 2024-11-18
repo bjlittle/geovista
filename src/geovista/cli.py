@@ -91,7 +91,7 @@ def _download_group(
     width: int = len(str(n_fnames))
 
     status = GEOVISTA_POOCH_MUTE
-    pooch_mute(True)
+    pooch_mute(silent=True)
 
     click.echo(f"Downloading {n_fnames} {name}registered asset{_plural(n_fnames)}:")
     for i, fname in enumerate(fnames):

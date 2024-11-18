@@ -92,7 +92,10 @@ class Transform:  # numpydoc ignore=PR01
 
     @staticmethod
     def _as_compatible_data(
-        data: ArrayLike, n_points: int, n_cells: int, rgb: bool = False
+        data: ArrayLike,
+        n_points: int,
+        n_cells: int,
+        rgb: bool = False,  # noqa: FBT001
     ) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 

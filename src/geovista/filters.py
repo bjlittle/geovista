@@ -147,11 +147,11 @@ def remesh(
     alg.SetInputDataObject(0, poly0)
     alg.SetInputDataObject(1, poly1)
     # BoundaryPoints (points) mask array
-    alg.SetComputeIntersectionPointArray(True)
+    alg.SetComputeIntersectionPointArray(True)  # noqa: FBT003
     # BadTriangle and FreeEdge (cells) mask arrays
     alg.SetCheckMesh(check)
-    alg.SetSplitFirstOutput(True)
-    alg.SetSplitSecondOutput(False)
+    alg.SetSplitFirstOutput(True)  # noqa: FBT003
+    alg.SetSplitSecondOutput(False)  # noqa: FBT003
     alg.Update()
 
     remeshed: pv.PolyData = pv.core.filters._get_output(alg, oport=1)

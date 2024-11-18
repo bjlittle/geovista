@@ -165,6 +165,10 @@ ignore = [
   # https://docs.astral.sh/ruff/rules/undocumented-magic-method/
   "D105", # Missing docstring in magic method.
 
+  # flake8-boolean-trap (FBT)
+  # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
+  "FBT002", # Boolean default positional argument in function definition.
+
   # flake8-fixme (FIX)
   # https://docs.astral.sh/ruff/rules/line-contains-todo/
   "FIX002", # Line contains TODO, consider resolving the issue.
@@ -186,6 +190,10 @@ ignore = [
   # flake8-bandit (S)
   # https://docs.astral.sh/ruff/rules/assert/
   "S101", # Use of assert detected.
+
+  # flake8-todos (TD)
+  # https://docs.astral.sh/ruff/rules/#flake8-todos-td
+  "TD003", # Missing issue link on the line following this TODO.
 ]
 preview = false
 select = [
@@ -209,12 +217,16 @@ max-complexity = 26
 
 [tool.ruff.lint.per-file-ignores]
 ".github/scripts/*.py" = [
+  # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
+  "FBT001", # flake8-boolean-trap: Boolean-typed positional argument in function definition.
   # https://docs.astral.sh/ruff/rules/implicit-namespace-package/
   "INP001", # flake8-no-pep420: File is part of an implicit namespace package.
   # https://docs.astral.sh/ruff/rules/print/
   "T201", # flake8-print: print found.
 ]
 "src/geovista/cli.py" = [
+  # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
+  "FBT001", # flake8-boolean-trap: Boolean-typed positional argument in function definition.
   # https://docs.astral.sh/ruff/rules/print/
   "T201", # flake8-print: print found.
 ]
@@ -229,6 +241,10 @@ max-complexity = 26
 "src/geovista/examples/earthquakes_wink1.py" = [
   # https://docs.astral.sh/ruff/rules/line-too-long/
   "E501", # pycodestyle: Line too long.
+]
+"src/geovista/examples/spatial_index/uber_h3.py" = [
+  # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
+  "FBT001", # flake8-boolean-trap: Boolean-typed positional argument in function definition.
 ]
 
 

@@ -4,13 +4,6 @@ lint.ignore = [
   # NOTE: To find a rule code to fix, run:
   #       ruff --select="ALL" --statistics src/geovista/<subpackage>
 
-  # flake8-boolean-trap (FBT)
-  # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
-  # NOTE: A good thing to fix, but changes API.
-  "FBT001", # boolean-positional-arg-in-function-definition.
-  "FBT002", # boolean-default-value-in-function-definition.
-  "FBT003", # boolean-positional-value-in-function-call.
-
   # Pylint (PL)
   # https://docs.astral.sh/ruff/rules/#pylint-pl
   "PLR0912", # Too many branches.
@@ -22,10 +15,6 @@ lint.ignore = [
   # flake8-self (SLF)
   # https://docs.astral.sh/ruff/rules/#flake8-self-slf
   "SLF001", # Private member accessed.
-
-  # flake8-todos (TD)
-  # https://docs.astral.sh/ruff/rules/#flake8-todos-td
-  "TD003", # Missing issue link on the line following this TODO.
 ]
 
 [lint.extend-per-file-ignores]
