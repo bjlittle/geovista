@@ -1,47 +1,37 @@
 [build-system]
 # Defined by PEP 518
-requires = [
-    "setuptools>=64",
-    "setuptools_scm>=8",
-]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"
 
 
 [project]
-authors = [
-    {name = "GeoVista Contributors", email = "geovista.pub@gmail.com"}
-]
+authors = [{ name = "GeoVista Contributors", email = "geovista.pub@gmail.com" }]
 classifiers = [
-    "Development Status :: 1 - Planning",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Atmospheric Science",
+  "Development Status :: 1 - Planning",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: BSD License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 description = "Cartographic rendering and mesh analytics powered by PyVista"
-dynamic = [
-    "dependencies",
-    "optional-dependencies",
-    "readme",
-    "version",
-]
+dynamic = ["dependencies", "optional-dependencies", "readme", "version"]
 keywords = [
-    "cartography",
-    "curvilinear",
-    "earth-science",
-    "grid",
-    "mesh",
-    "python",
-    "pyvista",
-    "rectilinear",
-    "ugrid",
-    "unstructured",
-    "vtk",
+  "cartography",
+  "curvilinear",
+  "earth-science",
+  "grid",
+  "mesh",
+  "python",
+  "pyvista",
+  "rectilinear",
+  "ugrid",
+  "unstructured",
+  "vtk",
 ]
 license.file = "LICENSE"
 name = "geovista"
@@ -60,9 +50,7 @@ geovista = "geovista.cli:main"
 
 
 [tool.check-manifest]
-ignore = [
-    "src/geovista/_version.py",
-]
+ignore = ["src/geovista/_version.py"]
 
 
 [tool.codespell]
@@ -72,68 +60,61 @@ skip = ".git,*.css,*.ipynb,*.js,*.html,*.map,*.po,CODE_OF_CONDUCT.md"
 
 [tool.numpydoc_validation]
 checks = [
-    "all",  # Enable all numpydoc validation rules, apart from the following:
+  "all", # Enable all numpydoc validation rules, apart from the following:
 
-    # -> Docstring text (summary) should start in the line immediately
-    #    after the opening quotes (not in the same line, or leaving a
-    #    blank line in between)
-    "GL01",  # Permit summary line on same line as docstring opening quotes.
+  # -> Docstring text (summary) should start in the line immediately
+  #    after the opening quotes (not in the same line, or leaving a
+  #    blank line in between)
+  "GL01", # Permit summary line on same line as docstring opening quotes.
 
-    # -> Closing quotes should be placed in the line after the last text
-    #    in the docstring (do not close the quotes in the same line as
-    #    the text, or leave a blank line between the last text and the
-    #    quotes)
-    "GL02",  # Permit a blank line before docstring closing quotes.
+  # -> Closing quotes should be placed in the line after the last text
+  #    in the docstring (do not close the quotes in the same line as
+  #    the text, or leave a blank line between the last text and the
+  #    quotes)
+  "GL02", # Permit a blank line before docstring closing quotes.
 
-    # -> Double line break found; please use only one blank line to
-    #    separate sections or paragraphs, and do not leave blank lines
-    #    at the end of docstrings
-    "GL03",  # Ignoring.
+  # -> Double line break found; please use only one blank line to
+  #    separate sections or paragraphs, and do not leave blank lines
+  #    at the end of docstrings
+  "GL03", # Ignoring.
 
-    # -> See Also section not found
-    "SA01",  # Not all docstrings require a "See Also" section.
+  # -> See Also section not found
+  "SA01", # Not all docstrings require a "See Also" section.
 
-    # -> No extended summary found
-    "ES01",  # Not all docstrings require an "Extended Summary" section.
+  # -> No extended summary found
+  "ES01", # Not all docstrings require an "Extended Summary" section.
 
-    # -> No examples section found
-    "EX01",  # Not all docstrings require an "Examples" section.
+  # -> No examples section found
+  "EX01", # Not all docstrings require an "Examples" section.
 
-    # -> No Yields section found
-    "YD01",  # Not all docstrings require a "Yields" section.
+  # -> No Yields section found
+  "YD01", # Not all docstrings require a "Yields" section.
 ]
-exclude = [
-    '\.__eq__$',
-    '\.__ne__$',
-    '\.__repr__$',
-]
+exclude = ['\.__eq__$', '\.__ne__$', '\.__repr__$']
 
 
 [tool.pytest.ini_options]
 addopts = [
-    "--doctest-continue-on-failure",
-    "--doctest-modules",
-    "--import-mode=importlib",
-    "-rfEs",
-    "--strict-config",
-    "--strict-markers",
-    "-v",
+  "--doctest-continue-on-failure",
+  "--doctest-modules",
+  "--import-mode=importlib",
+  "--strict-config",
+  "--strict-markers",
+  "-rfEs",
+  "-v",
 ]
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
 filterwarnings = [
-    "error",
-    "ignore:numpy.ndarray size changed:RuntimeWarning",
-    "ignore:geovista unable to remesh 1 cell:UserWarning",
-    "ignore:pyvista test cache image dir:UserWarning",
-    "ignore:pyvista test generated image dir:UserWarning",
+  "error",
+  "ignore:geovista unable to remesh 1 cell:UserWarning",
+  "ignore:numpy.ndarray size changed:RuntimeWarning",
+  "ignore:pyvista test cache image dir:UserWarning",
+  "ignore:pyvista test generated image dir:UserWarning",
 ]
 image_cache_dir = "tests/plotting/image_cache"
 log_cli = "True"
 log_cli_level = "INFO"
-markers = [
-    "example: gallery image tests",
-    "image: plotting image tests",
-]
+markers = ["example: gallery image tests", "image: plotting image tests"]
 minversion = "6.0"
 required_plugins = "pytest-mock pytest_pyvista"
 testpaths = "tests"
@@ -142,28 +123,21 @@ xfail_strict = "True"
 
 [tool.repo-review]
 ignore = [
-    # https://learn.scientific-python.org/development/guides/style/#MY100
-    "MY100",  # Uses MyPy (pyproject config).
-    # https://learn.scientific-python.org/development/guides/style/#PC140
-    "PC140",  # Uses mypy.
-    # https://learn.scientific-python.org/development/guides/style/#PC180
-    "PC180",  # Uses prettier.
+  # https://learn.scientific-python.org/development/guides/style/#MY100
+  "MY100", # Uses MyPy (pyproject config).
+  # https://learn.scientific-python.org/development/guides/style/#PC140
+  "PC140", # Uses mypy.
+  # https://learn.scientific-python.org/development/guides/style/#PC180
+  "PC180", # Uses prettier.
 ]
 
 
 [tool.ruff]
 # Exclude the following, in addition to the standard set of exclusions.
 # See https://docs.astral.sh/ruff/settings/#exclude for defaults.
-extend-exclude = [
-    "docs/src/generated",
-]
+extend-exclude = ["docs/src/generated"]
 line-length = 88
-src = [
-    ".github/scripts",
-    "src",
-    "tests",
-    "docs/src",
-]
+src = [".github/scripts", "docs/src", "src", "tests"]
 
 
 [tool.ruff.format]
@@ -175,51 +149,51 @@ preview = false
 # Allow information-source (U+2139) which could be confused for "i".
 allowed-confusables = ["ℹ"]
 ignore = [
-    # NOTE: Non-permanent exclusions should be added to ".ruff.toml".
+  # NOTE: Non-permanent exclusions should be added to ".ruff.toml".
 
-    # flake8-annotations (ANN)
-    # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
-    "ANN101",  # Missing type annotation for 'self' in method.
-    "ANN102",  # Missing type annotation for 'cls' in classmethod.
+  # flake8-annotations (ANN)
+  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
+  "ANN101", # Missing type annotation for 'self' in method.
+  "ANN102", # Missing type annotation for 'cls' in classmethod.
 
-    # flake8-commas (COM)
-    # https://docs.astral.sh/ruff/rules/#flake8-commas-com
-    "COM812",  # Trailing comma missing.
-    "COM819",  # Trailing comma prohibited.
+  # flake8-commas (COM)
+  # https://docs.astral.sh/ruff/rules/#flake8-commas-com
+  "COM812", # Trailing comma missing.
+  "COM819", # Trailing comma prohibited.
 
-    # pydocstyle (D)
-    # https://docs.astral.sh/ruff/rules/undocumented-magic-method/
-    "D105",  # Missing docstring in magic method.
+  # pydocstyle (D)
+  # https://docs.astral.sh/ruff/rules/undocumented-magic-method/
+  "D105", # Missing docstring in magic method.
 
-    # flake8-fixme (FIX)
-    # https://docs.astral.sh/ruff/rules/line-contains-todo/
-    "FIX002",  # Line contains TODO, consider resolving the issue.
+  # flake8-fixme (FIX)
+  # https://docs.astral.sh/ruff/rules/line-contains-todo/
+  "FIX002", # Line contains TODO, consider resolving the issue.
 
-    # flake8-implicit-str-concat (ISC)
-    # https://docs.astral.sh/ruff/rules/single-line-implicit-string-concatenation/
-    # NOTE: This rule may cause conflicts when used with "ruff format".
-    "ISC001",  # Implicitly concatenate string literals on one line.
+  # flake8-implicit-str-concat (ISC)
+  # https://docs.astral.sh/ruff/rules/single-line-implicit-string-concatenation/
+  # NOTE: This rule may cause conflicts when used with "ruff format".
+  "ISC001", # Implicitly concatenate string literals on one line.
 
-    # pep8-naming
-    # https://docs.astral.sh/ruff/rules/#pep8-naming-n
-    "N806",  # Variable name in function should be lowercase.
-    "N999",  # Invalid module name.
+  # pep8-naming
+  # https://docs.astral.sh/ruff/rules/#pep8-naming-n
+  "N806", # Variable name in function should be lowercase.
+  "N999", # Invalid module name.
 
-    # pandas-vet (PD)
-    # https://docs.astral.sh/ruff/rules/#pandas-vet-pd
-    "PD",
+  # pandas-vet (PD)
+  # https://docs.astral.sh/ruff/rules/#pandas-vet-pd
+  "PD",
 
-    # flake8-bandit (S)
-    # https://docs.astral.sh/ruff/rules/assert/
-    "S101",  # Use of assert detected.
+  # flake8-bandit (S)
+  # https://docs.astral.sh/ruff/rules/assert/
+  "S101", # Use of assert detected.
 ]
 preview = false
 select = [
-    "ALL",
+  "ALL",
 
-    # pydocstyle (D)
-    # https://docs.astral.sh/ruff/rules/multi-line-summary-first-line/
-    "D212",  # Multi-line docstring summary should start at the first line
+  # pydocstyle (D)
+  # https://docs.astral.sh/ruff/rules/multi-line-summary-first-line/
+  "D212", # Multi-line docstring summary should start at the first line
 ]
 
 
@@ -235,26 +209,26 @@ max-complexity = 26
 
 [tool.ruff.lint.per-file-ignores]
 ".github/scripts/*.py" = [
-    # https://docs.astral.sh/ruff/rules/implicit-namespace-package/
-    "INP001",  # flake8-no-pep420: File is part of an implicit namespace package.
-    # https://docs.astral.sh/ruff/rules/print/
-    "T201",  # flake8-print: print found.
+  # https://docs.astral.sh/ruff/rules/implicit-namespace-package/
+  "INP001", # flake8-no-pep420: File is part of an implicit namespace package.
+  # https://docs.astral.sh/ruff/rules/print/
+  "T201", # flake8-print: print found.
 ]
 "src/geovista/cli.py" = [
-    # https://docs.astral.sh/ruff/rules/print/
-    "T201",  # flake8-print: print found.
+  # https://docs.astral.sh/ruff/rules/print/
+  "T201", # flake8-print: print found.
 ]
 "src/geovista/examples/*.py" = [
-    # https://docs.astral.sh/ruff/rules/typing-only-third-party-import/
-    "TCH002",  # flake8-type-checking: Move 3rd-party import into a type checking block.
+  # https://docs.astral.sh/ruff/rules/typing-only-third-party-import/
+  "TCH002", # flake8-type-checking: Move 3rd-party import into a type checking block.
 ]
 "src/geovista/examples/earthquakes.py" = [
-    # https://docs.astral.sh/ruff/rules/line-too-long/
-    "E501",  # pycodestyle: Line too long.
+  # https://docs.astral.sh/ruff/rules/line-too-long/
+  "E501", # pycodestyle: Line too long.
 ]
 "src/geovista/examples/earthquakes_wink1.py" = [
-    # https://docs.astral.sh/ruff/rules/line-too-long/
-    "E501",  # pycodestyle: Line too long.
+  # https://docs.astral.sh/ruff/rules/line-too-long/
+  "E501", # pycodestyle: Line too long.
 ]
 
 
@@ -268,15 +242,15 @@ zip-safe = false
 
 
 [tool.setuptools.dynamic]
-dependencies = {file = ["requirements/pypi-core.txt"]}
-readme = {file = "README.md", content-type = "text/markdown"}
+dependencies = { file = ["requirements/pypi-core.txt"] }
+readme = { file = "README.md", content-type = "text/markdown" }
 
 
 [tool.setuptools.dynamic.optional-dependencies]
-cmap = {file = ["requirements/pypi-optional-cmap.txt"]}
-docs = {file = ["requirements/pypi-optional-docs.txt"]}
-exam = {file = ["requirements/pypi-optional-exam.txt"]}
-test = {file = ["requirements/pypi-optional-test.txt"]}
+cmap = { file = ["requirements/pypi-optional-cmap.txt"] }
+docs = { file = ["requirements/pypi-optional-docs.txt"] }
+exam = { file = ["requirements/pypi-optional-exam.txt"] }
+test = { file = ["requirements/pypi-optional-test.txt"] }
 
 
 [tool.setuptools.packages.find]
@@ -285,16 +259,16 @@ where = ["src"]
 
 
 [tool.setuptools_scm]
-write_to = "src/geovista/_version.py"
 local_scheme = "dirty-tag"
 version_scheme = "release-branch-semver"
+write_to = "src/geovista/_version.py"
 
 
 [tool.towncrier]
+directory = "changelog"
+filename = "CHANGELOG.rst"
 package = "geovista"
 package_dir = "src"
-filename = "CHANGELOG.rst"
-directory = "changelog"
 template = "changelog/template.rst"
 
 #
