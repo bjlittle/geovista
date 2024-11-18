@@ -1,42 +1,42 @@
 extend = "pyproject.toml"
 
 lint.ignore = [
-    # NOTE: To find a rule code to fix, run:
-    #       ruff --select="ALL" --statistics src/geovista/<subpackage>
+  # NOTE: To find a rule code to fix, run:
+  #       ruff --select="ALL" --statistics src/geovista/<subpackage>
 
-    # Pylint (PL)
-    # https://docs.astral.sh/ruff/rules/#pylint-pl
-    "PLR0912",  # Too many branches.
-    "PLR0913",  # Too many arguments in function definition.
-    "PLR0915",  # Too many statements.
-    "PLR2004",  # Magic value used in comparison, consider replacing with a constant.
-    "PLW0603",  # Using the global statement to update is discouraged.
+  # Pylint (PL)
+  # https://docs.astral.sh/ruff/rules/#pylint-pl
+  "PLR0912", # Too many branches.
+  "PLR0913", # Too many arguments in function definition.
+  "PLR0915", # Too many statements.
+  "PLR2004", # Magic value used in comparison, consider replacing with a constant.
+  "PLW0603", # Using the global statement to update is discouraged.
 
-    # flake8-self (SLF)
-    # https://docs.astral.sh/ruff/rules/#flake8-self-slf
-    "SLF001",  # Private member accessed.
+  # flake8-self (SLF)
+  # https://docs.astral.sh/ruff/rules/#flake8-self-slf
+  "SLF001", # Private member accessed.
 ]
 
 [lint.extend-per-file-ignores]
 "conftest.py" = [
-    # flake8-annotations (ANN)
-    # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
-    "ANN001",  # Missing type annotation for function argument.
-    "ANN201",  # Missing return type annotation for public function.
+  # flake8-annotations (ANN)
+  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
+  "ANN001", # Missing type annotation for function argument.
+  "ANN201", # Missing return type annotation for public function.
 ]
 "src/geovista/geoplotter.py" = [
-    # flake8-annotations (ANN)
-    # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
-    "ANN401",  # Dynamically typed expressions (typing.Any).
+  # flake8-annotations (ANN)
+  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
+  "ANN401", # Dynamically typed expressions (typing.Any).
 ]
 "test_*.py" = [
-    # flake8-annotations (ANN)
-    # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
-    "ANN001",  # Missing type annotation for function argument.
-    "ANN201",  # Missing return type annotation for public funciton.
+  # flake8-annotations (ANN)
+  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
+  "ANN001", # Missing type annotation for function argument.
+  "ANN201", # Missing return type annotation for public funciton.
 ]
 "test_slice_lines.py" = [
-    # eradicate (ERA)
-    # https://docs.astral.sh/ruff/rules/#eradicate-era
-    "ERA001",  # Found commented-out code.
+  # eradicate (ERA)
+  # https://docs.astral.sh/ruff/rules/#eradicate-era
+  "ERA001", # Found commented-out code.
 ]
