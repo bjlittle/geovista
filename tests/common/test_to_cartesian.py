@@ -14,7 +14,7 @@ import pytest
 from geovista.common import RADIUS, ZLEVEL_SCALE, to_cartesian
 
 
-def _distance(pts: npt.ArrayLike, stacked: bool = True) -> float:
+def _distance(pts: npt.ArrayLike, stacked: bool = True) -> float:  # noqa: FBT001
     """Calculate the mean distance to the xyz-cartesian `pts` from the origin."""
     if np.ma.isMaskedArray(pts):
         pts = pts.data
