@@ -1,0 +1,2 @@
+Complied with `ruff <https://github.com/astral-sh/ruff>`__
+``flake8-annotations`` (``ANN``) rules. (:user:`bjlittle`)
