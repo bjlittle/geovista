@@ -18,22 +18,10 @@ lint.ignore = [
 ]
 
 [lint.extend-per-file-ignores]
-"conftest.py" = [
-  # flake8-annotations (ANN)
-  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
-  "ANN001", # Missing type annotation for function argument.
-  "ANN201", # Missing return type annotation for public function.
-]
 "src/geovista/geoplotter.py" = [
   # flake8-annotations (ANN)
   # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
   "ANN401", # Dynamically typed expressions (typing.Any).
-]
-"test_*.py" = [
-  # flake8-annotations (ANN)
-  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
-  "ANN001", # Missing type annotation for function argument.
-  "ANN201", # Missing return type annotation for public funciton.
 ]
 "test_slice_lines.py" = [
   # eradicate (ERA)
