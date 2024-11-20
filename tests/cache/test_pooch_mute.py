@@ -17,22 +17,25 @@ def test():
     logger = get_logger()
 
     # default silent kwarg
-    pooch_mute()
+    previous = pooch_mute()
     assert logger.getEffectiveLevel() == 30
     from geovista.cache import GEOVISTA_POOCH_MUTE
 
     assert GEOVISTA_POOCH_MUTE is True
+    assert previous is False
 
     # explicit verbose
-    pooch_mute(silent=False)
+    previous = pooch_mute(silent=False)
     assert logger.getEffectiveLevel() == 0
     from geovista.cache import GEOVISTA_POOCH_MUTE
 
     assert GEOVISTA_POOCH_MUTE is False
+    assert previous is True
 
     # explicit silence
-    pooch_mute(silent=True)
+    previous = pooch_mute(silent=True)
     assert logger.getEffectiveLevel() == 30
     from geovista.cache import GEOVISTA_POOCH_MUTE
 
     assert GEOVISTA_POOCH_MUTE is True
+    assert previous is False

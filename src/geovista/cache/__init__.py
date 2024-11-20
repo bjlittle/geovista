@@ -148,7 +148,7 @@ def _downloader(
     return downloader(url, output_file, poocher, check_only=check_only)
 
 
-def pooch_mute(silent: bool | None = True) -> None:
+def pooch_mute(silent: bool | None = True) -> bool:
     """Control the :mod:`pooch` cache manager logger verbosity.
 
     Updates the status variable :data:`GEOVISTA_POOCH_MUTE`.
@@ -159,16 +159,23 @@ def pooch_mute(silent: bool | None = True) -> None:
         Whether to silence or activate the :mod:`pooch` cache manager logger messages
         to the console. Defaults to ``True``.
 
+    Returns
+    -------
+    bool
+        The previous value of :data:`GEOVISTA_POOCH_MUTE`.
+
     Notes
     -----
     .. versionadded:: 0.5.0
 
     """
-    global GEOVISTA_POOCH_MUTE
+    global GEOVISTA_POOCH_MUTE  # noqa: PLW0603
 
     level = "WARNING" if silent else "NOTSET"
     pooch.utils.get_logger().setLevel(level)
+    original = GEOVISTA_POOCH_MUTE
     GEOVISTA_POOCH_MUTE = silent
+    return original
 
 
 def reload_registry(fname: str | None = None) -> None:

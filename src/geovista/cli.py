@@ -24,7 +24,7 @@ from click_default_group import DefaultGroup
 import lazy_loader as lazy
 
 from ._version import version as __version__
-from .cache import CACHE, GEOVISTA_POOCH_MUTE, pooch_mute
+from .cache import CACHE, pooch_mute
 from .common import get_modules
 from .config import resources
 from .geoplotter import GeoPlotter
@@ -90,8 +90,7 @@ def _download_group(
     n_fnames: int = len(fnames)
     width: int = len(str(n_fnames))
 
-    status = GEOVISTA_POOCH_MUTE
-    pooch_mute(silent=True)
+    previous = pooch_mute(silent=True)
 
     click.echo(f"Downloading {n_fnames} {name}registered asset{_plural(n_fnames)}:")
     for i, fname in enumerate(fnames):
@@ -111,7 +110,7 @@ def _download_group(
         click.secho(f"{CACHE.abspath}", fg=fg_colour)
         click.echo("👍 All done!")
 
-    pooch_mute(status)
+    _ = pooch_mute(silent=previous)
 
 
 def _groups() -> list[str]:
