@@ -13,7 +13,6 @@ exclude .all-contributorsrc
 exclude .gitignore
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
-exclude .ruff.toml
 include *.md
 exclude CHANGELOG.rst
 include CITATION.cff

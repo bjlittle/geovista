@@ -1,0 +1,4 @@
+Dropped the use of ``.ruff.toml`` to capture outstanding
+`ruff <https://github.com/astral-sh/ruff>`__ rule exceptions. Non-compliances
+have been addressed or moved to the ``pyproject.toml``.
+(:user:`bjlittle`)
