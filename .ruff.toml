@@ -1,11 +1,5 @@
 extend = "pyproject.toml"
 
-lint.ignore = [
-  # flake8-self (SLF)
-  # https://docs.astral.sh/ruff/rules/#flake8-self-slf
-  "SLF001", # Private member accessed.
-]
-
 [lint.extend-per-file-ignores]
 "src/geovista/geoplotter.py" = [
   # flake8-annotations (ANN)

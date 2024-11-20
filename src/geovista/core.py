@@ -375,7 +375,7 @@ def combine(
         common_point_data = set(first.point_data.keys())
         common_cell_data = set(first.cell_data.keys())
         common_field_data = set(first.field_data.keys())
-        active_scalars_info = {first.active_scalars_info._namedtuple}
+        active_scalars_info = {first.active_scalars_info._namedtuple}  # noqa: SLF001
 
     for i, mesh in enumerate(meshes):
         if not isinstance(mesh, pv.PolyData):
@@ -404,12 +404,12 @@ def combine(
 
         if n_points:
             # compute the number of vertices (N) for each face of the mesh
-            faces_n = np.diff(mesh._offset_array)
+            faces_n = np.diff(mesh._offset_array)  # noqa: SLF001
             # determine the N offset for each face within the faces array
             # a face entry consists of (N, v1, v2, ..., vN), where vN is the Nth
             # vertex offset (connectivity) for that face into the associated mesh
             # points array
-            faces_n_offset = mesh._offset_array + np.arange(mesh._offset_array.size)
+            faces_n_offset = mesh._offset_array + np.arange(mesh._offset_array.size)  # noqa: SLF001
             # offset the current mesh connectivity by the cumulative mesh points count
             faces += n_points
             # reinstate N for each face entry
@@ -425,7 +425,7 @@ def combine(
             common_cell_data &= set(mesh.cell_data.keys())
             common_field_data &= set(mesh.field_data.keys())
             if mesh.active_scalars_name:
-                active_scalars_info &= {mesh.active_scalars_info._namedtuple}
+                active_scalars_info &= {mesh.active_scalars_info._namedtuple}  # noqa: SLF001
 
     points = np.vstack(combined_points)
     faces = np.hstack(combined_faces)

@@ -90,14 +90,14 @@ CACHE.load_registry(
 
 # maintain the original Pooch.fetch method prior to wrapping
 # with user-agent headers version
-CACHE._fetch = CACHE.fetch
+CACHE._fetch = CACHE.fetch  # noqa: SLF001
 
 
-@wraps(CACHE._fetch)
+@wraps(CACHE._fetch)  # noqa: SLF001
 def _fetch(*args: str, **kwargs: bool | Callable) -> str:  # numpydoc ignore=GL08
     # default to our http/s downloader with user-agent headers
     kwargs.setdefault("downloader", _downloader)
-    return CACHE._fetch(*args, **kwargs)
+    return CACHE._fetch(*args, **kwargs)  # noqa: SLF001
 
 
 # override the original Pooch.fetch method with our
