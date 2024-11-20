@@ -149,8 +149,6 @@ preview = false
 # Allow information-source (U+2139) which could be confused for "i".
 allowed-confusables = ["ℹ"]
 ignore = [
-  # NOTE: Non-permanent exclusions should be added to ".ruff.toml".
-
   # flake8-annotations (ANN)
   # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
   "ANN101", # Missing type annotation for 'self' in method.
@@ -263,6 +261,11 @@ max-statements = 91
 "src/geovista/examples/spatial_index/uber_h3.py" = [
   # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
   "FBT001", # flake8-boolean-trap: Boolean-typed positional argument in function definition.
+]
+# TODO @bjlittle: resolve use of typing.Any
+"src/geovista/geoplotter.py" = [
+  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
+  "ANN401", # flake8-annotations: Dynamically typed expressions (typing.Any).
 ]
 "test_*.py" = [
   # flake8-annotations (ANN)
