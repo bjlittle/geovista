@@ -1,10 +1,6 @@
 extend = "pyproject.toml"
 
 lint.ignore = [
-  # Pylint (PL)
-  # https://docs.astral.sh/ruff/rules/#pylint-pl
-  "PLW0603", # Using the global statement to update is discouraged.
-
   # flake8-self (SLF)
   # https://docs.astral.sh/ruff/rules/#flake8-self-slf
   "SLF001", # Private member accessed.
@@ -15,9 +11,4 @@ lint.ignore = [
   # flake8-annotations (ANN)
   # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
   "ANN401", # Dynamically typed expressions (typing.Any).
-]
-"test_slice_lines.py" = [
-  # eradicate (ERA)
-  # https://docs.astral.sh/ruff/rules/#eradicate-era
-  "ERA001", # Found commented-out code.
 ]

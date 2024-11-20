@@ -87,6 +87,7 @@ def antimeridian_count(mesh: pv.PolyData) -> int:
     return np.sum(mask)
 
 
+# TODO @bjlittle: investigate this failing test - thread safety? side-effect?
 # @pytest.mark.parametrize(
 #     "coastlines, kind",
 #     [

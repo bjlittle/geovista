@@ -270,6 +270,11 @@ max-statements = 91
   "ANN001", # Missing type annotation for function argument.
   "ANN201", # Missing return type annotation for public funciton.
 ]
+# TODO @bjlittle: investigate behaviour of commented-out failing test
+"tests/core/test_slice_lines.py" = [
+  # https://docs.astral.sh/ruff/rules/#eradicate-era
+  "ERA001", # eradicate: Found commented-out code.
+]
 
 
 [tool.ruff.lint.pydocstyle]
