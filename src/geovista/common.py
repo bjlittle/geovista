@@ -291,10 +291,10 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
         raise TypeError(emsg)
 
     # see https://vtk.org/pipermail/vtkusers/2011-March/066506.html
-    alg = pv._vtk.vtkGeometryFilter()
+    alg = pv._vtk.vtkGeometryFilter()  # noqa: SLF001
     alg.AddInputData(mesh)
     alg.Update()
-    result = pv.core.filters._get_output(alg)
+    result = pv.core.filters._get_output(alg)  # noqa: SLF001
 
     if clean:
         result = result.clean()
@@ -898,7 +898,7 @@ def triangulated(surface: pv.PolyData) -> bool:
     .. versionadded:: 0.1.0
 
     """
-    return np.all(np.diff(surface._offset_array) == 3)
+    return np.all(np.diff(surface._offset_array) == 3)  # noqa: SLF001
 
 
 def vtk_warnings_off() -> None:

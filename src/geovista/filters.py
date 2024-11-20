@@ -143,7 +143,7 @@ def remesh(
     poly1.triangulate(inplace=True)
 
     # https://vtk.org/doc/nightly/html/classvtkIntersectionPolyDataFilter.html
-    alg = pv._vtk.vtkIntersectionPolyDataFilter()
+    alg = pv._vtk.vtkIntersectionPolyDataFilter()  # noqa: SLF001
     alg.SetInputDataObject(0, poly0)
     alg.SetInputDataObject(1, poly1)
     # BoundaryPoints (points) mask array
@@ -154,7 +154,7 @@ def remesh(
     alg.SetSplitSecondOutput(False)  # noqa: FBT003
     alg.Update()
 
-    remeshed: pv.PolyData = pv.core.filters._get_output(alg, oport=1)
+    remeshed: pv.PolyData = pv.core.filters._get_output(alg, oport=1)  # noqa: SLF001
 
     if remeshed.n_cells == 0:
         # no remeshing has been performed as the meridian does not intersect the mesh

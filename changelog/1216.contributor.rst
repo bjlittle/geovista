@@ -1,0 +1,2 @@
+Complied with `ruff <https://github.com/astral-sh/ruff>`__
+``flake8-self`` (``SLF``) rules. (:user:`bjlittle`)
