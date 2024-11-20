@@ -1,0 +1,2 @@
+Complied with `ruff <https://github.com/astral-sh/ruff>`__
+``pylint-refactor`` (``PLR``) rules. (:user:`bjlittle`)

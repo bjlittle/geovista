@@ -187,6 +187,10 @@ ignore = [
   # https://docs.astral.sh/ruff/rules/#pandas-vet-pd
   "PD",
 
+  # Pylint (PL)
+  # https://docs.astral.sh/ruff/rules/#pylint-pl
+  "PLR2004", # Magic value used in comparison, consider replacing with a constant.
+
   # flake8-bandit (S)
   # https://docs.astral.sh/ruff/rules/assert/
   "S101", # Use of assert detected.
@@ -212,7 +216,15 @@ required-imports = ["from __future__ import annotations"]
 
 
 [tool.ruff.lint.mccabe]
+# TODO @bjlittle: refactor to reduce the complexity, if possible
 max-complexity = 26
+
+
+[tool.ruff.lint.pylint]
+# TODO @bjlittle: refactor to reduce the complexity, if possible
+max-args = 14
+max-branches = 29
+max-statements = 91
 
 
 [tool.ruff.lint.per-file-ignores]

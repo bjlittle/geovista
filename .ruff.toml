@@ -1,15 +1,8 @@
 extend = "pyproject.toml"
 
 lint.ignore = [
-  # NOTE: To find a rule code to fix, run:
-  #       ruff --select="ALL" --statistics src/geovista/<subpackage>
-
   # Pylint (PL)
   # https://docs.astral.sh/ruff/rules/#pylint-pl
-  "PLR0912", # Too many branches.
-  "PLR0913", # Too many arguments in function definition.
-  "PLR0915", # Too many statements.
-  "PLR2004", # Magic value used in comparison, consider replacing with a constant.
   "PLW0603", # Using the global statement to update is discouraged.
 
   # flake8-self (SLF)
