@@ -42,6 +42,7 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import projected
 from .filters import remesh
 from .search import find_cell_neighbours
+import pyvista as pv
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -375,7 +376,7 @@ def combine(
         common_point_data = set(first.point_data.keys())
         common_cell_data = set(first.cell_data.keys())
         common_field_data = set(first.field_data.keys())
-        active_scalars_info = {first.active_scalars_info}
+        active_scalars_info = {pv.core.dataset.ActiveArrayInfoTuple(first.active_scalars_info)}
 
     for i, mesh in enumerate(meshes):
         if not isinstance(mesh, pv.PolyData):
@@ -425,7 +426,7 @@ def combine(
             common_cell_data &= set(mesh.cell_data.keys())
             common_field_data &= set(mesh.field_data.keys())
             if mesh.active_scalars_name:
-                active_scalars_info &= {mesh.active_scalars_info}
+                active_scalars_info &= {pv.core.dataset.ActiveArrayInfoTuple(mesh.active_scalars_info)}
 
     points = np.vstack(combined_points)
     faces = np.hstack(combined_faces)
