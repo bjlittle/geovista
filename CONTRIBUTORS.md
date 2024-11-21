@@ -54,7 +54,7 @@
       <td align="center" valign="top" width="20%"><a href="https://github.com/tkknight"><img src="https://avatars.githubusercontent.com/u/2108488?v=4?s=75" width="75px;" alt="tkknight"/><br /><sub><b>tkknight</b></sub></a><br /><a href="https://github.com/bjlittle/geovista/commits?author=tkknight" title="Documentation">📖</a> <a href="#infra-tkknight" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
     </tr>
     <tr>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/user27182"><img src="https://avatars.githubusercontent.com/u/89109579?v=4?s=75" width="75px;" alt="user27182"/><br /><sub><b>user27182</b></sub></a><br /><a href="https://github.com/bjlittle/geovista/issues?q=author%3Auser27182" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/user27182"><img src="https://avatars.githubusercontent.com/u/89109579?v=4?s=75" width="75px;" alt="user27182"/><br /><sub><b>user27182</b></sub></a><br /><a href="https://github.com/bjlittle/geovista/issues?q=author%3Auser27182" title="Bug reports">🐛</a> <a href="https://github.com/bjlittle/geovista/commits?author=user27182" title="Code">💻</a></td>
     </tr>
   </tbody>
   <tfoot>
