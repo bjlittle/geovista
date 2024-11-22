@@ -1,0 +1,2 @@
+Avoid using a `pyvista <https://github.com/pyvista/pyvista>`__ private attribute
+when gathering active scalars information. (:user:`user27182`)
