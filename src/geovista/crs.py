@@ -27,9 +27,9 @@ if TYPE_CHECKING:
 np = lazy.load("numpy")
 
 __all__ = [
+    "WGS84",
     "CRSLike",
     "PlateCarree",
-    "WGS84",
     "from_wkt",
     "get_central_meridian",
     "has_wkt",

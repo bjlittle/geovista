@@ -177,6 +177,6 @@ def test_field_data(coastlines):
     metadata = dict(coastlines.field_data.items())
     result = slice_lines(coastlines)
     assert set(result.field_data.keys()) == set(metadata.keys())
-    for key in metadata:
-        assert id(result.field_data[key]) != id(metadata[key])
-        np.testing.assert_array_equal(result.field_data[key], metadata[key])
+    for key, value in metadata.items():
+        assert id(result.field_data[key]) != id(value)
+        np.testing.assert_array_equal(result.field_data[key], value)
