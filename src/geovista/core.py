@@ -56,8 +56,8 @@ pv = lazy.load("pyvista")
 
 __all__ = [
     "CUT_OFFSET",
-    "MeridianSlice",
     "SPLINE_N_POINTS",
+    "MeridianSlice",
     "SliceBias",
     "add_texture_coords",
     "combine",

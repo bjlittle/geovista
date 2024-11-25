@@ -82,9 +82,9 @@ __all__ = [
     "COASTLINES_RTOL",
     "GRATICULE_LABEL_FONT_SIZE",
     "GRATICULE_SHOW_LABELS",
+    "OPACITY_BLACKLIST",
     "GeoPlotter",
     "GeoPlotterBase",
-    "OPACITY_BLACKLIST",
 ]
 
 ADD_POINTS_STYLE: list[str, str] = ["points", "points_gaussian"]

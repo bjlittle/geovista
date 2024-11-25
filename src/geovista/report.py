@@ -26,9 +26,9 @@ __all__ = [
     "NCOL",
     "PACKAGES_CORE",
     "PACKAGES_OPTIONAL",
+    "TEXT_WIDTH",
     "PackageLike",
     "Report",
-    "TEXT_WIDTH",
 ]
 
 # type aliases
