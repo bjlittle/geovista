@@ -1,0 +1,4 @@
+Dropped `sort-all <https://github.com/aio-libs/sort-all>`__ ``pre-commit`` hook, as
+`ruff 0.8.0 <https://github.com/astral-sh/ruff/releases/tag/0.8.0>`__ stabilized the
+`unsorted-dunder-all <https://docs.astral.sh/ruff/rules/unsorted-dunder-all/>`__
+(``RUF022``) preview rule. (:user:`bjlittle`)
