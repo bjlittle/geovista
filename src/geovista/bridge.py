@@ -54,8 +54,8 @@ __all__ = [
     "BRIDGE_CLEAN",
     "NAME_CELLS",
     "NAME_POINTS",
-    "PathLike",
     "RIO_SIEVE_SIZE",
+    "PathLike",
     "Shape",
     "Transform",
 ]

@@ -41,7 +41,6 @@ pv = lazy.load("pyvista")
 __all__ = [
     "GRATICULE_CLOSED_INTERVAL",
     "GRATICULE_ZLEVEL",
-    "GraticuleGrid",
     "LABEL_DEGREE",
     "LABEL_EAST",
     "LABEL_NORTH",
@@ -59,6 +58,7 @@ __all__ = [
     "LONGITUDE_STEP",
     "LONGITUDE_STEP_PERIOD",
     "LONGITUDE_STOP",
+    "GraticuleGrid",
     "create_meridian_labels",
     "create_meridians",
     "create_parallel_labels",

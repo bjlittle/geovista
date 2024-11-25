@@ -149,11 +149,6 @@ preview = false
 # Allow information-source (U+2139) which could be confused for "i".
 allowed-confusables = ["ℹ"]
 ignore = [
-  # flake8-annotations (ANN)
-  # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
-  "ANN101", # Missing type annotation for 'self' in method.
-  "ANN102", # Missing type annotation for 'cls' in classmethod.
-
   # flake8-commas (COM)
   # https://docs.astral.sh/ruff/rules/#flake8-commas-com
   "COM812", # Trailing comma missing.
