@@ -350,4 +350,4 @@ If so, then let's explore the :ref:`next steps <gv-next-steps>` on your
 .. _Plymouth Sound and Tamar River: https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365
 .. _Robinson: https://proj4.org/en/stable/operations/projections/robin.html
 .. _WAVEWATCH III: https://github.com/NOAA-EMC/WW3
-.. _threshold: https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.DataSetFilters.threshold.html#pyvista.DataSetFilters.threshold
+.. _threshold: https://docs.pyvista.org/api/core/_autosummary/pyvista.datasetfilters.threshold

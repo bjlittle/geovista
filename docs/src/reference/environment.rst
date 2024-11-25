@@ -122,5 +122,5 @@ Notable third-party environment variables that influence the behaviour of
 .. _SPEC 1: https://scientific-python.org/specs/spec-0001/
 .. _XDG Base Directory Specification: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 .. _lazy-loader: https://github.com/scientific-python/lazy-loader
-.. _GitHub Action: https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+.. _GitHub Action: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#default-environment-variables
 .. _Read the Docs: https://docs.readthedocs.io/en/stable/reference/environment-variables.html#envvar-READTHEDOCS
