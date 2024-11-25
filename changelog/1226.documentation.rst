@@ -1,0 +1,1 @@
+Resolved unnecessary ``linkcheck`` URL redirects. (:user:`bjlittle`)
