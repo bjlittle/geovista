@@ -30,7 +30,7 @@ Cornwall, UK.
 
 The warp uses :meth:`~pyvista.PolyDataFilters.compute_normals` and
 :meth:`~pyvista.DataSetFilters.warp_by_scalar`. See
-`Computing Surface Normals <https://docs.pyvista.org/version/stable/examples/01-filter/compute-normals.htm>`_
+`Computing Surface Normals <https://docs.pyvista.org/examples/01-filter/compute-normals>`_
 for further details.
 
 .. tags::

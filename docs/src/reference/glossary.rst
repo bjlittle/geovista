@@ -91,9 +91,9 @@ Say what you mean. Mean what you say.
     Page link URL resources in alphabetical order:
 
 
-.. _PyVista threshold: https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.DataSetFilters.threshold.html#pyvista.DataSetFilters.threshold
-.. _PyVista warp_by_scalar: https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.DataSetFilters.warp_by_scalar.html#pyvista.DataSetFilters.warp_by_scalar
-.. _What is a Cell?: https://docs.pyvista.org/version/stable/user-guide/what-is-a-mesh.html#what-is-a-cell
-.. _What is a Point?: https://docs.pyvista.org/version/stable/user-guide/what-is-a-mesh.html#what-is-a-point
-.. _What is a Mesh?: https://docs.pyvista.org/version/stable/user-guide/what-is-a-mesh.html#what-is-a-mesh
+.. _PyVista threshold: https://docs.pyvista.org/api/core/_autosummary/pyvista.datasetfilters.threshold
+.. _PyVista warp_by_scalar: https://docs.pyvista.org/api/core/_autosummary/pyvista.datasetfilters.warp_by_scalar
+.. _What is a Cell?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-cell
+.. _What is a Point?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-point
+.. _What is a Mesh?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-mesh
 .. _vtkActor: https://vtk.org/doc/nightly/html/classvtkActor.html#details

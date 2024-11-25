@@ -150,5 +150,5 @@ Primary keyboard and mouse bindings that control the rendered scene.
     Page link URL resources in alphabetical order:
 
 
-.. _isometric camera: https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.view_isometric.html
-.. _pyvista keyboard bindings: https://docs.pyvista.org/version/stable/api/plotting/plotting.html#plotting
+.. _isometric camera: https://docs.pyvista.org/api/plotting/_autosummary/pyvista.plotter.view_isometric
+.. _pyvista keyboard bindings: https://docs.pyvista.org/api/plotting/plotting.html#plotting

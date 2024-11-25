@@ -9,7 +9,7 @@ GeoTIFF RGB
 -----------
 
 This example demonstrates how to render an
-`OGC GeoTIFF <https://www.ogc.org/standard/geotiff/>`_ RGB image as a
+`OGC GeoTIFF <https://www.ogc.org/publications/standard/geotiff/>`_ RGB image as a
 geolocated mesh.
 
 📋 Summary

@@ -74,7 +74,7 @@ PyVista in a Nutshell
 
 .. figure:: _static/images/pyvista-examples.png
     :figclass: margin
-    :target: https://docs.pyvista.org/version/stable/examples/
+    :target: https://docs.pyvista.org/examples/
     :name: pyvista-figure
     :alt: PyVista Examples
 
@@ -110,6 +110,6 @@ Thanks for your patience 🙏
     Page link URL resources in alphabetical order:
 
 .. _Jupyter: https://jupyter.org/
-.. _Mesh data structures: https://docs.pyvista.org/version/stable/examples/index.html#mesh-creation
+.. _Mesh data structures: https://docs.pyvista.org/examples/index.html#mesh-creation
 .. _ParaView: https://www.paraview.org/
-.. _filtering algorithms: https://docs.pyvista.org/version/stable/examples/index.html#filtering
+.. _filtering algorithms: https://docs.pyvista.org/examples/index.html#filtering
