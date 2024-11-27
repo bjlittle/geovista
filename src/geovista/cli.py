@@ -23,7 +23,7 @@ import click
 from click_default_group import DefaultGroup
 import lazy_loader as lazy
 
-from ._version import version as __version__
+from . import __version__
 from .cache import CACHE, pooch_mute
 from .common import get_modules
 from .config import resources
