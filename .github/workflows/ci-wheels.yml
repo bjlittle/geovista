@@ -70,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["py311", "py312"]
+        version: ["py311", "py312", "py313"]
         session: ["env"]
 
     steps:

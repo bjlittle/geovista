@@ -42,7 +42,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        version: ["py312"]
+        version: ["py313"]
         session: ["doctest", "linkcheck"]
 
     steps:
