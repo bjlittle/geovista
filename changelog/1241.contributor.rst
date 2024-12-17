@@ -1,0 +1,3 @@
+Dropped use of ``latest`` tag and explicitly pinned to ``ubuntu-22.04``
+:fab:`github` Action `runner-image <https://github.com/actions/runner-images>`__.
+(:user:`bjlittle`)
