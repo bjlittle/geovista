@@ -98,7 +98,7 @@ jobs:
       uses: awalsh128/cache-apt-pkgs-action@a6c3917cc929dd0345bfb2d3feaf9101823370ad
       with:
         packages: libgl1-mesa-glx xvfb
-        version: 1.0
+        version: 2.0
 
     - name: "geovista cache"
       uses: ./.github/workflows/composite/geovista-cache
