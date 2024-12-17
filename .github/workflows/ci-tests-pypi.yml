@@ -33,7 +33,7 @@ env:
 jobs:
   test-pypi:
     name: "test pypi (py${{ matrix.version }})"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -53,7 +53,7 @@ jobs:
       uses: awalsh128/cache-apt-pkgs-action@a6c3917cc929dd0345bfb2d3feaf9101823370ad
       with:
         packages: libgl1-mesa-glx xvfb
-        version: 2.0
+        version: 1.0
 
     - name: "pip install"
       run: |
