@@ -27,7 +27,6 @@ concurrency:
 jobs:
   tests:
     name: "${{ matrix.session }} (${{ matrix.version }})"
-
     runs-on: ${{ matrix.os }}
 
     defaults:
@@ -41,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-22.04"]
         version: ["py312"]
         session: ["doctest", "linkcheck"]
 

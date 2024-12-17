@@ -23,7 +23,7 @@ defaults:
 jobs:
   test-lock:
     name: "test lock (${{ matrix.version }})"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     env:
       ENV_NAME: "ci-tests-lock"
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-22.04"]
         version: ["py312"]
 
     steps:
