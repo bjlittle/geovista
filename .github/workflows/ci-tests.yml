@@ -33,7 +33,6 @@ defaults:
 jobs:
   tests:
     name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
-
     runs-on: ${{ matrix.os }}
 
     env:
@@ -43,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-22.04"]
         version: ["py311", "py312"]
         session: ["tests"]
         marker: ["image", "not image"]
