@@ -1,1 +1,2 @@
-Enabled ``require_passed_checks`` for `adRise/update-pr-branch <https://github.com/adRise/update-pr-branch>`__ GHA. (:user:`bjlittle`)
+Enabled ``require_passed_checks`` for `adRise/update-pr-branch <https://github.com/adRise/update-pr-branch>`__
+:fab:`github` Action. (:user:`bjlittle`)
