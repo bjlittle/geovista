@@ -1,0 +1,2 @@
+Enabled ``sphinx.ext.duration`` to assist with identifying documentation building
+bottlenecks. (:user:`bjlittle`)

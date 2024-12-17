@@ -109,6 +109,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "autoapi.extension",
     "sphinx.ext.doctest",
+    "sphinx.ext.duration",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
