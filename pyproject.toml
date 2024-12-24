@@ -381,7 +381,7 @@ showcontent = true
 
 [[tool.towncrier.type]]
 # Changes that affect contributors e.g., standards, conventions,
-# running tests, building docs, environments etc
+# running tests, building docs, environments, security etc
 directory = "contributor"
 name = "🛠️ Contributor Infrastructure"
 showcontent = true

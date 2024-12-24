@@ -47,17 +47,21 @@ Each news fragment file **must** be named as `<PULL-REQUEST>.<TYPE>.rst`,
 where `<PULL-REQUEST>` is the {fab}`github` pull-request number,
 and `<TYPE>` is one of:
 
-* `breaking`: Removals and backward incompatible breaking changes that may affect user code
+* `breaking`: Removals and backward incompatible breaking changes that may affect user
+  code
 * `deprecation`: Declaration of removals and backward incompatible changes
 * `feature`: New user facing behaviours or capability
 * `enhancement`: Updates to existing behaviours or capability, including performance
 * `bugfix`: Correction to undesired behaviours or reported bugs
 * `dependency`: Package dependency removals, additions, pins etc
 * `asset`: Data, media and asset updates etc
-* `documentation`: Notable changes to the documentation structure, content, render or build
+* `documentation`: Notable changes to the documentation structure, content, render or
+  build
 * `internal`: Miscellaneous internal and maintenance changes
-* `community`: Celebrate our awesome community members and their contributions, including social changes
-* `contributor`: Changes that affect contributors such as standards, conventions, running tests, building docs, environments etc
+* `community`: Celebrate our awesome community members and their contributions,
+  including social changes
+* `contributor`: Changes that affect contributors such as standards, conventions,
+  running tests, building docs, environments, security etc
 * `misc`: Catch all for items that don't fit elsewhere
 
 e.g., ``123.feature.rst`` or ``456.bugfix.rst``.
