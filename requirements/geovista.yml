@@ -51,7 +51,7 @@ dependencies:
   - ipykernel
   - myst-nb
   - numpydoc
-  - pydata-sphinx-theme >=0.15.3
+  - pydata-sphinx-theme >=0.15.3,!=0.16.1
   - sphinx >=7.3
   - sphinx-autoapi >=3.2.0
   - sphinx-book-theme >=1.1.3
