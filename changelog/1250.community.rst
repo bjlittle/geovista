@@ -1,0 +1,1 @@
+Added :user:`tkoyama010` as a contributor for ``security``. (:user:`bjlittle`)
