@@ -1,0 +1,2 @@
+Updated the ``ci-label`` :fab:`github` Action to migrate from ``nep-29`` to
+``spec-0``. (:user:`bjlittle`)
