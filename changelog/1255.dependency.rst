@@ -1,0 +1,1 @@
+Avoid using ``pydata-sphinx-theme 0.16.1``, see :issue:`1247`. (:user:`bjlittle`)
