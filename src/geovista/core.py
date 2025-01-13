@@ -384,21 +384,20 @@ def combine(
         if not isinstance(mesh, pv.PolyData):
             emsg = (
                 f"Can only combine 'pyvista.PolyData' meshes, input mesh "
-                f"#{i+1} has type '{mesh.__class__.__name__}'."
+                f"#{i + 1} has type '{mesh.__class__.__name__}'."
             )
             raise TypeError(emsg)
 
         if mesh.n_lines:
             emsg = (
-                f"Can only combine meshes with cells, input mesh #{i+1} "
+                f"Can only combine meshes with cells, input mesh #{i + 1} "
                 "contains lines."
             )
             raise TypeError(emsg)
 
         if mesh.n_cells == 0:
             emsg = (
-                f"Can only combine meshes with cells, input mesh #{i+1} "
-                "has no cells."
+                f"Can only combine meshes with cells, input mesh #{i + 1} has no cells."
             )
             raise TypeError(emsg)
 

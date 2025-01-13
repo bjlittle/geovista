@@ -94,7 +94,7 @@ def _download_group(
 
     click.echo(f"Downloading {n_fnames} {name}registered asset{_plural(n_fnames)}:")
     for i, fname in enumerate(fnames):
-        click.echo(f"[{i+1:0{width}d}/{n_fnames}] Downloading ", nl=False)
+        click.echo(f"[{i + 1:0{width}d}/{n_fnames}] Downloading ", nl=False)
         click.secho(f"{fname} ", nl=False, fg=fg_colour)
         click.echo("... ", nl=False)
         processor = None
@@ -360,7 +360,7 @@ def download(
         unavailable = 0
         click.echo("Verifying remote availability of registered assets:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{width}d}/{n_fnames}] ", nl=False)
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
             click.secho(f"{fname} ", nl=False, fg=fg_colour)
             click.echo("is ... ", nl=False)
             status, status_fg_colour = (
@@ -396,14 +396,14 @@ def download(
     if dry_run:
         click.echo("URLs of registered assets:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{width}d}/{n_fnames}] ", nl=False)
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
             click.secho(f"{CACHE.get_url(fname)}", fg=fg_colour)
         click.echo("\n👍 All done!")
 
     if show:
         click.echo("Names of registered assets:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{width}d}/{n_fnames}] ", nl=False)
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
             click.secho(f"{fname}", fg=fg_colour)
         click.echo("\n👍 All done!")
 
@@ -478,7 +478,7 @@ def examples(
 
     if run_all:
         for i, script in enumerate(EXAMPLES[1:]):
-            msg = f"Running example {script!r} ({i+1} of {n_examples}) ..."
+            msg = f"Running example {script!r} ({i + 1} of {n_examples}) ..."
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")
             if verbose:
@@ -494,7 +494,7 @@ def examples(
         group = [script for script in EXAMPLES[1:] if script.startswith(run_group)]
         n_group = len(group)
         for i, script in enumerate(group):
-            msg = f"Running {run_group!r} example {script!r} ({i+1} of {n_group}) ..."
+            msg = f"Running {run_group!r} example {script!r} ({i + 1} of {n_group}) ..."
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")
             if verbose:

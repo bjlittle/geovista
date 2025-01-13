@@ -1130,7 +1130,7 @@ def panel(
         if idx not in range(N_PANELS):
             emsg = (
                 f"Panel index must be in the closed interval "
-                f"[0, {N_PANELS-1}], got '{idx}'."
+                f"[0, {N_PANELS - 1}], got '{idx}'."
             )
             raise ValueError(emsg)
 
