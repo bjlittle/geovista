@@ -358,9 +358,9 @@ def transform_points(
         ys = np.atleast_1d(ys)
         zs = np.zeros_like(xs) if zs is None else np.atleast_1d(zs)
 
-        assert (
-            xs.shape == ys.shape == zs.shape
-        ), "Cannot combine points, non-uniform shapes."
+        assert xs.shape == ys.shape == zs.shape, (
+            "Cannot combine points, non-uniform shapes."
+        )
 
         return np.vstack([xs, ys, zs]).T
 

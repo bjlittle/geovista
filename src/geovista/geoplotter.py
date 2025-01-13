@@ -1133,8 +1133,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if style not in ADD_POINTS_STYLE:
             options = "or ".join(f"{option!r}" for option in ADD_POINTS_STYLE)
             emsg = (
-                f"Invalid 'style' for 'add_points', expected {options}, "
-                f"got {style!r}."
+                f"Invalid 'style' for 'add_points', expected {options}, got {style!r}."
             )
             raise ValueError(emsg)
 

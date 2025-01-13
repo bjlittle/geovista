@@ -223,8 +223,7 @@ class Transform:  # numpydoc ignore=PR01
 
             if not np.allclose(left, right):
                 emsg = (
-                    f"The {kind} bounds array, shape '{bnds.shape}', is not "
-                    "contiguous."
+                    f"The {kind} bounds array, shape '{bnds.shape}', is not contiguous."
                 )
                 raise ValueError(emsg)
 

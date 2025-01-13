@@ -90,7 +90,7 @@ def autolog(message: str, section: str | None = None, color: str | None = None) 
         color = "brown"
 
     section = colorize(color, colorize("bold", f"[{section}] ")) if section else ""
-    msg = f'{colorize(color, section)}{colorize("darkblue", f"{message}")}'
+    msg = f"{colorize(color, section)}{colorize('darkblue', f'{message}')}"
     logger.info(msg)
 
 
@@ -199,7 +199,7 @@ version = release = get_version("geovista")
 
 rst_epilog = f"""
 .. |gv_version| replace:: v{version}
-.. |build_date| replace:: ({now.strftime('%Y-%m-%d')})
+.. |build_date| replace:: ({now.strftime("%Y-%m-%d")})
 """
 
 # docs src directory
@@ -435,7 +435,7 @@ html_sidebars = {
 }
 
 html_theme_options = {
-    "extra_footer": f'Made with ❤️ and ☕ on {now.strftime("%b %d %Y")}.',
+    "extra_footer": f"Made with ❤️ and ☕ on {now.strftime('%b %d %Y')}.",
     "icon_links": [
         {
             "name": "GitHub Discussions",
