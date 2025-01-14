@@ -1070,7 +1070,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     ) -> pv.Actor:
         """Add points to the plotter scene.
 
-        See :meth:`pyvista.Plotter.add_mesh`.
+        See :meth:`pyvista.Plotter.add_points`.
 
         Parameters
         ----------
