@@ -1,7 +1,7 @@
 .. _gv-changelog:
 
-:fa:`road` Changelog
-====================
+:fa:`road-circle-check` Changelog
+=================================
 
 Release versions follow `Semantic Versioning <https://semver.org>`_
 i.e., ``<major>.<minor>.<patch>``.
