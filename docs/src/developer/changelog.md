@@ -1,4 +1,4 @@
-# {fa}`road` Changelog
+# {fa}`road-circle-check` Changelog
 
 The {ref}`changelog <gv-changelog>` is managed and orchestrated with
 [towncrier](https://github.com/twisted/towncrier).
@@ -91,7 +91,7 @@ Run `towncrier --draft` to render a preview of the news fragment files in the
 `changelog` directory.
 ```
 
-## {fa}`road` Changelog Quality Assurance
+## {fa}`road-circle-exclamation` Changelog Quality Assurance
 
 Quality assurance of `changelog` contributions is performed by the
 [ci-changelog](https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-changelog.yml)
