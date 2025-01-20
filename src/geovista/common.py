@@ -778,7 +778,7 @@ def vectors_to_cartesian(
     .. versionadded:: 0.5.0
 
     """
-    # TODO: Argument checking ???
+    # TODO @pp-mo: consider checking for arrays with matching shapes here ?
     lons, lats = (np.deg2rad(arr) for arr in lons_lats)
     u, v, w = vectors_uvw
 

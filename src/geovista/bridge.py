@@ -669,8 +669,8 @@ class Transform:  # numpydoc ignore=PR01
             Specifies an alternate name for the points array to store the vectors.
             Also set as the active vectors name.   Defaults to "vectors".
         vectors_z_scaling : float, optional
-            scaling factor to apply to vertical vectors (i.e. relative to the eastward
-            and northward components).  Defaults to 1.0
+            Scaling factor to apply to vertical vectors (i.e. relative to the eastward
+            and northward components).  Defaults to 1.0.
 
         Returns
         -------
@@ -743,16 +743,12 @@ class Transform:  # numpydoc ignore=PR01
 
             vectors = [np.asanyarray(vecdata) for vecdata in vectors]
             xx, yy = vectors[:2]
-            if n_vecs > 2:
-                zz = vectors[2]
-            else:
-                zz = np.zeros_like(xx)
-
+            zz = vectors[2] if n_vecs > 2 else np.zeros_like(xx)
             if vectors_z_scaling is not None:
                 zz = zz * vectors_z_scaling
 
-            # TODO: should we pass flattened arrays here, and reshape as-per the inputs
-            #  (and xyz)?  not clear if multidimensional input is used or needed
+            # TODO @pp-mno: should we pass flattened arrays here, and reshape as-per the
+            #   inputs (and xyz)?  not clear if multidimensional input is used or needed
             xx, yy, zz = vectors_to_cartesian(
                 lons_lats=(xs, ys),
                 vectors_uvw=(xx, yy, zz),
