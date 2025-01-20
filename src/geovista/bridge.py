@@ -664,6 +664,8 @@ class Transform:  # numpydoc ignore=PR01
         -----
         .. versionadded:: 0.2.0
 
+        Another note here.
+
         """
         radius = RADIUS if radius is None else abs(float(radius))
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
