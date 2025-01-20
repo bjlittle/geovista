@@ -14,19 +14,22 @@ This example demonstrates how to display wind vector data.
 ^^^^^^^^^^
 
 The data source provides X and Y arrays containing plain longitude and
-latitude values, which is the most common case.  
+latitude values, which is the most common case.
 
 The wind information is provided in three separate field arrays, 'U, V and W'
- -- i.e. eastward, northward and vertical components.  
+ -- i.e. eastward, northward and vertical components.
 These values are coded for each location (X, Y), measured relative to the longitude,
 latitude and vertical directions at each point.
 
 There is no connectivity provided, so each location has a vector and is independent of
 the others.  Hence we use the ``geovista.Transform.from_points`` function, passing the
-winds to the ``vectors`` keyword. 
+winds to the ``vectors`` keyword.
 
 Initially, we can just show the horizontal winds, as this easier to interpret.
 """  # noqa: D205,D212,D400
+
+from __future__ import annotations
+
 import geovista as gv
 from geovista.pantry.data import lfric_winds
 
@@ -38,7 +41,7 @@ sample = lfric_winds()
 mesh = gv.Transform.from_points(
     sample.lons,
     sample.lats,
-    vectors = (sample.u, sample.v),
+    vectors=(sample.u, sample.v),
 )
 
 # Create a new mesh containing arrow glyphs, from the mesh vectors.
@@ -58,7 +61,7 @@ plotter.camera.zoom(1.3)  # adjusts the camera view angle
 selected_view = [
     (-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
     (-0.0037798285484313965, 0.005168497562408447, -0.0031679868698120117),
-    (-0.523382090763761, -0.11174892277533728, 0.8447386372874786)
+    (-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
 ]
 plotter.camera_position = selected_view
 plotter.show()
@@ -76,11 +79,11 @@ mesh = gv.Transform.from_points(
     sample.lons,
     sample.lats,
     # supply all three components
-    vectors = (sample.u, sample.v, sample.w),
+    vectors=(sample.u, sample.v, sample.w),
     # apply additional scaling to W values
-    vectors_z_scaling=1500.,
+    vectors_z_scaling=1500.0,
     # offset from surface so avoid downward-pointing arrows disappearing
-    radius=1.1
+    radius=1.1,
 )
 arrows = mesh.glyph(factor=0.02)
 
@@ -95,7 +98,7 @@ plotter.camera.zoom(1.3)
 selected_view = [
     (0.6917810912064826, -3.065688850990997, 0.4317999141924935),
     (0.41358279170396495, 0.07362917740509836, 0.5091223320854129),
-    (0.8088496364623022, 0.05726400555597287, 0.5852205560833343)
+    (0.8088496364623022, 0.05726400555597287, 0.5852205560833343),
 ]
 plotter.camera_position = selected_view
 plotter.show()
@@ -109,7 +112,7 @@ plotter.show()
 mesh = gv.Transform.from_points(
     sample.lons,
     sample.lats,
-    vectors = (sample.u, sample.v),
+    vectors=(sample.u, sample.v),
 )
 # Note: with no scaling, the basic arrows size is now rather different
 arrows = mesh.glyph(factor=0.1, scale=False)
@@ -125,7 +128,7 @@ plotter.camera.zoom(1.3)
 selected_view = [
     (-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
     (-0.0037798285484313965, 0.005168497562408447, -0.0031679868698120117),
-    (-0.523382090763761, -0.11174892277533728, 0.8447386372874786)
+    (-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
 ]
 plotter.camera_position = selected_view
 plotter.show()
