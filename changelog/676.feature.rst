@@ -1,0 +1,2 @@
+Added support for 3D vectors in :meth:`geovista.bridge.Transform.from_points`
+ (:user:`pp-mo`)
