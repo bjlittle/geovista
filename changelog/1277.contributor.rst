@@ -1,0 +1,1 @@
+Rationalised the use of ``sphinx`` cross-references. (:user:`bjlittle`)
