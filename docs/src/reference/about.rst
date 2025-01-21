@@ -1,4 +1,4 @@
-.. _gv-about:
+.. _gv-reference-about:
 
 :fa:`circle-info` About
 =======================

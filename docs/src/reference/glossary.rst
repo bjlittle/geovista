@@ -1,6 +1,6 @@
 .. include:: ../common.txt
 
-.. _gv-glossary:
+.. _gv-reference-glossary:
 
 :fa:`spell-check` Glossary
 ==========================

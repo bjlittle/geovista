@@ -1,4 +1,4 @@
-.. _gv-whatsnew:
+.. _gv-reference-whatsnew:
 
 :fa:`wand-magic-sparkles` What's New
 ====================================

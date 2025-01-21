@@ -1,2 +1,2 @@
 Cross-referenced module headings to improve primary sidebar readability
-for the :ref:`gv-api` section. (:user:`bjlittle`)
+for the :ref:`gv-reference-api` section. (:user:`bjlittle`)

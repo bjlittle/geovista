@@ -1,6 +1,6 @@
 .. include:: ../common.txt
 
-.. _gv-bindings:
+.. _gv-reference-bindings:
 
 :fa:`keyboard` Key Bindings
 ===========================

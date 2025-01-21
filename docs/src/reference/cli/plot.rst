@@ -1,4 +1,4 @@
-.. _gv-cli-plot:
+.. _gv-reference-cli-plot:
 
 .. click:: geovista.cli:plot
     :prog: geovista plot

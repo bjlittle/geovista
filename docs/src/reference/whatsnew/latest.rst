@@ -5,7 +5,7 @@
 
 This is a **minor** release of ``geovista``.
 
-See the :ref:`changelog <gv-changelog-latest>` for full release details, and the
+See the :ref:`changelog <gv-reference-changelog-latest>` for full release details, and the
 :fab:`github` `Discussion <https://github.com/bjlittle/geovista/discussions/1004>`__
 for further information.
 
