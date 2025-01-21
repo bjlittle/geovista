@@ -1,4 +1,4 @@
-.. _gv-cli-download:
+.. _gv-reference-cli-download:
 
 .. click:: geovista.cli:download
     :prog: geovista download

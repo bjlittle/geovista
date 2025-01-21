@@ -211,16 +211,10 @@ def summary(msg: str) -> None:
 def main(pr: str, changelog: str, verbose: bool) -> None:
     """Perform quality assurance on pull-request changelog news fragment/s."""
     debug(f"argument: pr=<{pr}>", verbose=verbose)
-    debug(f"argument: changes=<{changelog}>", verbose=verbose)
+    debug(f"argument: changelog=<{changelog}>", verbose=verbose)
 
     if not len(pr):
         failure("Unable to collect PR number.")
-
-    if not len(changelog):
-        failure(
-            "Please provide a **changelog news fragment file** for "
-            f"**[PR#{pr}]({PULL}/{pr})**."
-        )
 
     try:
         # locate and parse the towncrier configuration
@@ -248,6 +242,17 @@ def main(pr: str, changelog: str, verbose: bool) -> None:
         str(Path(fragment.strip()).relative_to(base)) for fragment in fragments
     ]
     debug(f"{fragments=}", verbose=verbose)
+
+    # detect and discard towncrier template from the candidate news fragments
+    template = Path(config.template).name
+    fragments = [fragment for fragment in fragments if fragment != template]
+    debug(f"{fragments=}", verbose=verbose)
+
+    if not len(fragments):
+        failure(
+            "Please provide a **changelog news fragment file** for "
+            f"**[PR#{pr}]({PULL}/{pr})**."
+        )
 
     # bad news fragment buckets
     bad = BadFragment()

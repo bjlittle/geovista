@@ -1,1 +1,1 @@
-Added buttons to the reference :ref:`gv-about` section. (:user:`bjlittle`)
+Added buttons to the reference :ref:`gv-reference-about` section. (:user:`bjlittle`)

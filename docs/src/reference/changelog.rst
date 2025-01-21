@@ -1,4 +1,4 @@
-.. _gv-changelog:
+.. _gv-reference-changelog:
 
 :fa:`road-circle-check` Changelog
 =================================
@@ -12,7 +12,7 @@ of a prior ``<minor>`` release.
 
 ----
 
-.. _gv-changelog-latest:
+.. _gv-reference-changelog-latest:
 
 .. changelog::
     :towncrier: ../../../
