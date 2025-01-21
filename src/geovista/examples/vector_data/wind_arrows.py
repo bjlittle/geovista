@@ -16,8 +16,9 @@ This example demonstrates how to display wind vector data.
 The data source provides X and Y arrays containing plain longitude and
 latitude values, which is the most common case.
 
-The wind information is provided in three separate field arrays, 'U, V and W'
- -- i.e. eastward, northward and vertical components.
+The wind information is provided in three separate field arrays, 'U, V and W',
+i.e. eastward, northward and vertical components.
+
 These values are coded for each location (X, Y), measured relative to the longitude,
 latitude and vertical directions at each point.
 
