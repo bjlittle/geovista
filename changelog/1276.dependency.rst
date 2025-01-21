@@ -1,0 +1,1 @@
+Introduced temporary maximum pin ``pydata-sphinx-theme <0.16.0``, see :issue:`1247`. (:user:`bjlittle`)
