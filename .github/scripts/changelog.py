@@ -26,7 +26,7 @@ EXT = "rst"
 GITHUB_STEP_SUMMARY = os.getenv("GITHUB_STEP_SUMMARY")
 PATTERN = re.compile(r"^\d+$")
 PULL = "https://github.com/bjlittle/geovista/pull"
-URL = "https://geovista.readthedocs.io/en/latest/developer/index.html#changelog"
+URL = "https://geovista.readthedocs.io/en/latest/developer/towncrier.html#changelog"
 
 
 @dataclass
