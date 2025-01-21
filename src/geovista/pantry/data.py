@@ -53,7 +53,6 @@ __all__ = [
     "lam_uk",
     "lfric_orog",
     "lfric_sst",
-    "lfric_sst",
     "nemo_orca2",
     "nemo_orca2_gradient",
     "oisst_avhrr_sst",
