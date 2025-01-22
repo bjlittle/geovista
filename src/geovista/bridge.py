@@ -625,6 +625,7 @@ class Transform:  # numpydoc ignore=PR01
         zscale: float | None = None,
         clean: bool | None = None,
         vectors: ArrayLike | tuple(ArrayLike) | None = None,
+        vectors_crs: CRSLike | None = None,
         vectors_array_name: str | None = None,
         vectors_z_scaling: float | None = None,
     ) -> pv.PolyData:
@@ -672,6 +673,10 @@ class Transform:  # numpydoc ignore=PR01
             converted to an [N, 3] array of 3-D vectors attached to the result as a
             points array ``mesh["vectors"]``.  This can be used to generate glyphs
             (such as arrows) and streamlines.
+        vectors_crs : CRSlike, optional
+            The Coordinate Reference System of the provided `vectors`. May be anything
+            accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults to the same
+            as 'crs'.
         vectors_array_name : str, optional
             Specifies an alternate name for the points array to store the vectors.
             Also set as the active vectors name.   Defaults to "vectors".
@@ -732,13 +737,13 @@ class Transform:  # numpydoc ignore=PR01
             if not isinstance(vectors, tuple) or not all(
                 isinstance(arr, np.ndarray) for arr in vectors
             ):
-                msg = 'Keyword "vectors" must be a tuple of array-like.'
+                msg = "Keyword 'vectors' must be a tuple of array-like."
                 raise ValueError(msg)
 
             n_vecs = len(vectors)
             if n_vecs not in (2, 3):
                 msg = (
-                    'Keyword "vectors" must be a tuple of 2 or 3 arrays : '
+                    "Keyword 'vectors' must be a tuple of 2 or 3 arrays : "
                     f"got {n_vecs}."
                 )
                 raise ValueError(msg)
@@ -749,10 +754,28 @@ class Transform:  # numpydoc ignore=PR01
             if vectors_z_scaling is not None:
                 zz = zz * vectors_z_scaling
 
+            if vectors_crs is None:
+                vectors_crs = crs
+
+            if vectors_crs is not None:
+                vectors_crs = pyproj.CRS.from_user_input(crs)
+                if vectors_crs == WGS84:
+                    vectors_crs = None
+
+            if vectors_crs is not None:
+                vecs_xyz = transform_points(
+                    src_crs=vectors_crs, tgt_crs=WGS84, xs=xx, ys=yy, zs=zz
+                )
+                xx, yy, zz = vecs_xyz[:, 0], vecs_xyz[:, 1], vecs_xyz[:, 2]
+
+            # ensure longitudes (degrees) are in half-closed interval [-180, 180)
+            xx = wrap(xx)
+
             # TODO @pp-mno: should we pass flattened arrays here, and reshape as-per the
             #   inputs (and xyz)?  not clear if multidimensional input is used or needed
             xx, yy, zz = vectors_to_cartesian(
-                lons_lats=(xs, ys),
+                lons=xs,
+                lats=ys,
                 vectors_uvw=(xx, yy, zz),
             )
             vectors = np.vstack((xx, yy, zz)).T
