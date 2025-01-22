@@ -100,6 +100,7 @@ We'd 💚 to hear from you.
     installation
     quick_start
     next_steps
+    reference/changelog
 
 
 .. toctree::
