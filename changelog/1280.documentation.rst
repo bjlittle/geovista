@@ -1,0 +1,2 @@
+Added a convenience link in the ``GeoVista 101`` sidebar to the ``changelog``.
+(:user:`bjlittle`)
