@@ -17,13 +17,28 @@
 |Contributor Covenant|
 
 Firstly, and most importantly, thank you for contributing! All contributions, no
-matter how small, are greatly appreciated and welcomed.
+matter how large or small are greatly appreciated and welcomed.
 
 Here we provide some guidelines to help get you started on your journey, and
 clarify the various steps involved in how to contribute to ``geovista``.
 
+.. grid:: 1 1 2 2
+    :gutter: 2
 
-.. _gv-developer-changelog:
+    .. grid-item-card:: Changelog
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-developer-towncrier
+        :link-type: ref
+        :img-top: ../_static/images/icons/changelog.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
 
-.. include:: changelog.md
-    :parser: myst_parser.sphinx_
+        Towncrier guidelines.
+
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+
+    towncrier
