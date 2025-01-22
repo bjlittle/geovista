@@ -620,7 +620,6 @@ class Transform:  # numpydoc ignore=PR01
         vectors: ArrayLike | tuple(ArrayLike) | None = None,
         vectors_crs: CRSLike | None = None,
         vectors_array_name: str | None = None,
-        vectors_z_scaling: float | None = None,
     ) -> pv.PolyData:
         """Build a point-cloud mesh from x-values, y-values and z-levels.
 
@@ -666,16 +665,13 @@ class Transform:  # numpydoc ignore=PR01
             converted to an [N, 3] array of 3-D vectors attached to the result as a
             points array ``mesh["vectors"]``.  This can be used to generate glyphs
             (such as arrows) and streamlines.
-        vectors_crs : CRSlike, optional
+        vectors_crs : CRSLike, optional
             The Coordinate Reference System of the provided `vectors`. May be anything
             accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults to the same
             as 'crs'.
         vectors_array_name : str, optional
             Specifies an alternate name for the points array to store the vectors.
-            Also set as the active vectors name.   Defaults to "vectors".
-        vectors_z_scaling : float, optional
-            Scaling factor to apply to vertical vectors (i.e. relative to the eastward
-            and northward components).  Defaults to 1.0.
+            Also set as the active vectors name.   Defaults to ``"vectors"``.
 
         Returns
         -------
@@ -751,8 +747,6 @@ class Transform:  # numpydoc ignore=PR01
             vectors = [np.asanyarray(vecdata) for vecdata in vectors]
             xx, yy = vectors[:2]
             zz = vectors[2] if n_vecs > 2 else np.zeros_like(xx)
-            if vectors_z_scaling is not None:
-                zz = zz * vectors_z_scaling
 
             if vectors_crs is None:
                 vectors_crs = crs
