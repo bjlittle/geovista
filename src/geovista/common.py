@@ -71,6 +71,7 @@ __all__ = [
     "to_lonlat",
     "to_lonlats",
     "triangulated",
+    "vectors_to_cartesian",
     "vtk_warnings_off",
     "vtk_warnings_on",
     "wrap",
@@ -761,7 +762,7 @@ def vectors_to_cartesian(
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
 ) -> (np.ndarray, np.ndarray, np.ndarray):
-    """Convert geographic-oriented vectors to cartesian ``xyz`` points.
+    """Transform geographic-oriented vector components to cartesian ``xyz`` components.
 
     Parameters
     ----------
@@ -773,12 +774,12 @@ def vectors_to_cartesian(
         All shapes must be the same as ``lons`` and ``lats``.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`RADIUS`.
-    zlevel : float  or :data:`~numpy.typing.ArrayLike`, default=0.0
+    zlevel : int  or :data:`~numpy.typing.ArrayLike`, default=0.0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-        Non-scalar `zlevel` is not actually supported, since it is planned to drop
-        support for this from :meth:`~geovista.bridge.Transform.from_points` anyway,
-        it will raise an error.
+        NOTE : non-scalar `zlevel` is not actually supported, since it is planned to
+        drop support for this from :meth:`~geovista.bridge.Transform.from_points`.
+        It will raise an error.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`ZLEVEL_SCALE`.
