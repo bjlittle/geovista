@@ -35,6 +35,11 @@ repos:
         types_or: [python, markdown, rst]
         additional_dependencies: [tomli]
 
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.14.1'
+    hooks:
+      - id: mypy
+
   - repo: https://github.com/numpy/numpydoc
     rev: v1.8.0
     hooks:
