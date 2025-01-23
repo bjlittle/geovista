@@ -67,7 +67,7 @@ def main() -> None:
     clim = (-114, 5176)
 
     p = gv.GeoPlotter()
-    sargs = {"title": f"{first_region.active_scalars_name} / m"}
+    sargs = {"title": f"{first_region.active_scalars_name} / m", "fmt": "%.1f"}
 
     # add the three wedges to the map
     p.add_mesh(first_region, show_edges=True, clim=clim, scalar_bar_args=sargs)
