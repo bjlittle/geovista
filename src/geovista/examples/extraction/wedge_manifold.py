@@ -36,11 +36,10 @@ unstructured cell points and connectivity.
 
 from __future__ import annotations
 
-import geovista.theme
 import geovista as gv
-from geovista.pantry.meshes import lfric, lfric_orog
 from geovista.geodesic import wedge
-
+from geovista.pantry.meshes import lfric_orog
+import geovista.theme
 
 
 def main() -> None:
