@@ -15,7 +15,7 @@ This example demonstrates how to extract a region from a mesh using a geodesic m
 Creates a mesh from 1-D latitude and longitude unstructured points and
 connectivity.
 
-Isolates wedges of this mesh and plots them onto natural earth base layer 
+Isolates wedges of this mesh and plots them onto natural earth base layer
 texture.
 
 It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
@@ -52,7 +52,6 @@ def main() -> None:
 
     """
     # Load the sample data.
-    c48 = lfric(resolution="c48")
     c48_orog = lfric_orog()
 
     # create the wedges
@@ -88,7 +87,6 @@ def main() -> None:
     p.camera.zoom(1.2)
     p.show_axes()
     p.show()
-
 
 
 if __name__ == "__main__":
