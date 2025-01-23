@@ -1,0 +1,2 @@
+Added a gallery example for regional manifold extraction.
+(:issue:`1285`, :user:`ESadek-MO`)
