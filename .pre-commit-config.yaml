@@ -39,6 +39,8 @@ repos:
     rev: 'v1.14.1'
     hooks:
       - id: mypy
+        # https://github.com/python/mypy/issues/13916
+        pass_filenames: false
 
   - repo: https://github.com/numpy/numpydoc
     rev: v1.8.0

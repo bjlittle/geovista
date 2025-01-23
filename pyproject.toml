@@ -59,12 +59,11 @@ skip = ".git,*.css,*.ipynb,*.js,*.html,*.map,*.po,CODE_OF_CONDUCT.md"
 
 
 [tool.mypy]
-strict = false
-ignore_missing_imports = true
-warn_unused_configs = true
-warn_unreachable = true
+strict = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 exclude = []
+files = ["src/geovista"]
+warn_unreachable = true
 
 
 [tool.numpydoc_validation]
