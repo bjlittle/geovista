@@ -165,6 +165,6 @@ jobs:
           coverage xml --omit=*/_version.py
 
       - name: "upload coverage report"
-        uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303
+        uses: codecov/codecov-action@5a605bd92782ce0810fa3b8acc235c921b497052
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
