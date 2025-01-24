@@ -19,6 +19,6 @@ and can be easily accessed through the geovista command line interface
 
 Notes
 -----
-.. versionadded:: 0.5.0
+.. versionadded:: 0.6.0
 
 """
