@@ -48,7 +48,7 @@ __all__ = ["resources"]
 
 # see https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 
-resources: dict = {
+resources: dict[str, Path] = {
     "cache_dir": Path(environ.get("XDG_CACHE_HOME", user_cache_dir())) / __package__
 }
 """Resources configuration dictionary."""

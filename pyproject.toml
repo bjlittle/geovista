@@ -60,10 +60,19 @@ skip = ".git,*.css,*.ipynb,*.js,*.html,*.map,*.po,CODE_OF_CONDUCT.md"
 
 [tool.mypy]
 strict = true
+# TODO: fix pyvistaqt
+disallow_subclassing_any = false
+# TODO: fix click?
+disallow_untyped_decorators = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 exclude = []
 files = ["src/geovista"]
 warn_unreachable = true
+#
+#
+#[[tool.mypy.overrides]]
+#module = "click"
+#no_implicit_reexport = false
 
 
 [tool.numpydoc_validation]

@@ -15,6 +15,7 @@ Notes
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
 from functools import lru_cache
 import os
 from typing import TYPE_CHECKING, Any
@@ -87,10 +88,10 @@ __all__ = [
     "GeoPlotterBase",
 ]
 
-ADD_POINTS_STYLE: list[str, str] = ["points", "points_gaussian"]
+ADD_POINTS_STYLE: tuple[str, str] = ("points", "points_gaussian")
 """The valid 'style' options for adding points."""
 
-BASE_ZLEVEL_SCALE: int = 1.0e-3
+BASE_ZLEVEL_SCALE: float = 1.0e-3
 """Proportional multiplier for z-axis levels/offsets of base-layer mesh."""
 
 COASTLINES_RTOL: float = 1.0e-8
@@ -199,7 +200,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         # status of gpu opacity support
         self._missing_opacity = False
         # cartesian (xyz) center of last mesh added to the plotter
-        self._poi = None
+        self._poi: list[float] | None = None
         super().__init__(*args, **kwargs)
 
     def _add_graticule_labels(
@@ -270,6 +271,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         # opinionated over-ride to disable label visibility filter
         point_labels_args["always_visible"] = False
 
+        self.add_point_labels: Callable[..., None]
         self.add_point_labels(xyz, graticule.labels, **point_labels_args)
 
     def _warn_opacity(self) -> None:
@@ -288,6 +290,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             renderer_version = info.renderer, info.version
 
             if renderer_version in OPACITY_BLACKLIST:
+                self.add_text: Callable[..., None]
                 self.add_text(
                     "Requires GPU opacity support",
                     position="lower_right",
@@ -701,7 +704,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             # POI cartesian xyz
             self._poi = mesh.center
 
-        return super().add_mesh(mesh, **kwargs)
+        return super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
 
     def add_meridian(
         self,
@@ -1276,6 +1279,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         >>> p.show()
 
         """
+        self.camera: pv.Plotter.camera
         camera = self.camera
 
         if crs is None:
@@ -1307,6 +1311,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 x, y, _ = self._poi
                 crs = self.crs
 
+        # Assertion to appease MyPy.
+        assert x is not None and y is not None
         if crs != self.crs:
             x, y, _ = transform_point(crs, self.crs, x, y)
 
@@ -1318,6 +1324,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             u_hat = xyz / np.linalg.norm(xyz)
             # set the new camera position at the same magnitude from the focal point
             camera.position = u_hat * np.linalg.norm(camera.position)
+            self.reset_camera: Callable[..., None]
             self.reset_camera(render=False)
             clip = camera.clipping_range
             # defensive: extend far clip range to ensure no accidental
