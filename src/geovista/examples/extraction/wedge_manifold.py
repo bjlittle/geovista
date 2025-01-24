@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# Copyright (c) 2025, GeoVista Contributors.
+# Copyright (c) 2021, GeoVista Contributors.
 #
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-Regional Manifold Extraction
-----------------------------
+Wedge Extraction
+----------------
 
 This example demonstrates how to extract a region from a mesh using a geodesic manifold.
 
@@ -26,8 +26,10 @@ unstructured cell points and connectivity.
 
 .. tags::
 
-    domain: orography,
+    component: coastlines,
+    component: manifold,
     component: texture,
+    domain: orography,
     load: unstructured
 
 ----
@@ -38,52 +40,65 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.geodesic import wedge
-from geovista.pantry.meshes import lfric_orog
+from geovista.pantry.data import lfric_orog
 import geovista.theme
 
 
 def main() -> None:
-    """Plot three wedge shaped orographies, each with a different enclosure method.
+    """Extract and plot 3 wedge regions, each using different enclosure methods.
 
     Notes
     -----
-    .. versionadded:: 0.1.0
+    .. versionadded:: 0.6.0
 
     """
     # Load the sample data.
-    c48_orog = lfric_orog()
+    sample = lfric_orog()
 
-    # create the wedges
-    first_bbox = wedge(-25, 25)
-    second_bbox = wedge(65, 115)
-    third_bbox = wedge(155, 205)
+    # Create the mesh from the sample data.
+    mesh = gv.Transform.from_unstructured(
+        sample.lons,
+        sample.lats,
+        connectivity=sample.connectivity,
+        data=sample.data,
+        name=sample.name,
+    )
 
-    # fill the wedges with orog plots, at three different preferences
-    first_region = first_bbox.enclosed(c48_orog, preference="cell")
-    second_region = second_bbox.enclosed(c48_orog, preference="point")
-    third_region = third_bbox.enclosed(c48_orog, preference="center")
-    clim = (-114, 5176)
+    # Calculate the sample data range.
+    clim = mesh.get_data_range()
+
+    # Create 3 different wedge geodesic bounding-box manifolds.
+    bbox_1 = wedge(-25, 25)
+    bbox_2 = wedge(65, 115)
+    bbox_3 = wedge(155, 205)
+
+    # Extract the underlying sample mesh within each manifold using a different
+    # preference which defines the criterion of sample mesh cell enclosure.
+    region_1 = bbox_1.enclosed(mesh, preference="cell")
+    region_2 = bbox_2.enclosed(mesh, preference="point")
+    region_3 = bbox_3.enclosed(mesh, preference="center")
 
     p = gv.GeoPlotter()
-    sargs = {"title": f"{first_region.active_scalars_name} / m", "fmt": "%.1f"}
+    sargs = {"title": f"{sample.name} / {sample.units}", "fmt": "%.1f"}
 
-    # add the three wedges to the map
-    p.add_mesh(first_region, clim=clim, scalar_bar_args=sargs)
-    p.add_mesh(second_region, clim=clim, scalar_bar_args=sargs)
-    p.add_mesh(third_region, clim=clim, scalar_bar_args=sargs)
+    # Add the 3 extracted regions.
+    p.add_mesh(region_1, clim=clim, scalar_bar_args=sargs)
+    p.add_mesh(region_2, clim=clim, scalar_bar_args=sargs)
+    p.add_mesh(region_3, clim=clim, scalar_bar_args=sargs)
 
-    # add an outline to each wedge
-    p.add_mesh(first_bbox.boundary(c48_orog), color="red", line_width=3)
-    p.add_mesh(second_bbox.boundary(c48_orog), color="purple", line_width=3)
-    p.add_mesh(third_bbox.boundary(c48_orog), color="orange", line_width=3)
+    # Add the surface boundary of each wedge region.
+    p.add_mesh(bbox_1.boundary(mesh), color="red", line_width=3)
+    p.add_mesh(bbox_2.boundary(mesh), color="purple", line_width=3)
+    p.add_mesh(bbox_3.boundary(mesh), color="orange", line_width=3)
 
-    # add coastlines and a basic globe to the background
+    # Add coastlines and a texture mapped base layer.
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_coastlines(resolution="10m")
 
-    camera_angle = (90, 90, 90)
-    p.view_vector(camera_angle)
+    # Define a specific camera position.
+    p.view_vector(vector=(1, 1, 1))
     p.camera.zoom(1.2)
+
     p.show_axes()
     p.show()
 
