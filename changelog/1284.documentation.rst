@@ -1,2 +1,2 @@
-Added a gallery example for regional manifold extraction.
-(:issue:`1285`, :user:`ESadek-MO`)
+Added a gallery example for region manifold extraction using :func:`geovista.geodesic.wedge`.
+Closes :issue:`1285`. (:user:`ESadek-MO`)
