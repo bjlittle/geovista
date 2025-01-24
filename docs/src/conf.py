@@ -508,6 +508,7 @@ linkcheck_ignore = [
     "https://www.usgs.gov/programs/earthquake-hazards",
     "https://www.ncei.noaa.gov/products/optimum-interpolation-sst",
     "https://earthexplorer.usgs.gov",
+    "https://www.fvcom.org",
 ]
 linkcheck_retries = 3
 
