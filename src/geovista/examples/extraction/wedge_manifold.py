@@ -68,9 +68,9 @@ def main() -> None:
     sargs = {"title": f"{first_region.active_scalars_name} / m", "fmt": "%.1f"}
 
     # add the three wedges to the map
-    p.add_mesh(first_region, show_edges=True, clim=clim, scalar_bar_args=sargs)
-    p.add_mesh(second_region, show_edges=True, clim=clim, scalar_bar_args=sargs)
-    p.add_mesh(third_region, show_edges=True, clim=clim, scalar_bar_args=sargs)
+    p.add_mesh(first_region, clim=clim, scalar_bar_args=sargs)
+    p.add_mesh(second_region, clim=clim, scalar_bar_args=sargs)
+    p.add_mesh(third_region, clim=clim, scalar_bar_args=sargs)
 
     # add an outline to each wedge
     p.add_mesh(first_bbox.boundary(c48_orog), color="red", line_width=3)
