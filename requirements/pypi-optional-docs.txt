@@ -13,7 +13,7 @@ sphinx-gallery >=0.16
 sphinx-tags >=0.4
 sphinx-tippy
 sphinx-togglebutton
-pydata-sphinx-theme <0.16.0
+pydata-sphinx-theme <0.17.0
 ipywidgets
 jupyter-server-proxy
 nest_asyncio
