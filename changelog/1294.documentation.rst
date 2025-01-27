@@ -1,2 +1,2 @@
 Updated the docstring of the region manifold extraction example.
-(:bjlittle:)
+(:user:`bjlittle`)
