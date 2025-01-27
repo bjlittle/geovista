@@ -29,7 +29,7 @@ manifold boundary.
 The **red boundary** contains only those cells where all points defining the face of a
 cell are within the manifold.
 
-The **purple boundary** contains only those cells where at least 1 point that defines
+The **purple boundary** contains only those cells where at least one point that defines
 the face of the cell is within the manifold.
 
 The **orange boundary** contains only those cells where the face cell center is within
