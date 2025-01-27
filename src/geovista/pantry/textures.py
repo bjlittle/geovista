@@ -13,7 +13,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TypeAlias, TYPE_CHECKING
 
 import lazy_loader as lazy
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     import pyvista as pv
 
     # type aliases
-    TextureLike = str | pv.Texture
+    TextureLike: TypeAlias = str | pv.Texture
 
 # lazy import third-party dependencies
 pv = lazy.load("pyvista")

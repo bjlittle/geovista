@@ -158,12 +158,12 @@ class MixinStrEnum:
     """
 
     @classmethod
-    def _missing_(cls, item: str | Preference) -> Preference | None:
+    def _missing_(cls, value: str | Preference) -> Preference | None:
         """Handle missing enumeration members.
 
         Parameters
         ----------
-        item : str or Preference
+        value : str or Preference
             The candidate preference enumeration member.
 
         Returns
@@ -177,9 +177,9 @@ class MixinStrEnum:
         .. versionadded:: 0.3.0
 
         """
-        item = str(item).lower()
+        value_string = str(value).lower()
         for member in cls:
-            if member.value == item:
+            if member.value == value_string:
                 return member
         return None
 

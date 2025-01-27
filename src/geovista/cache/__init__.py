@@ -16,7 +16,7 @@ from __future__ import annotations
 from functools import wraps
 import os
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, TypeAlias
+from typing import Any, AnyStr, IO, TYPE_CHECKING, TypeAlias
 
 import pooch
 
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 # type aliases
-FileLike: TypeAlias = str | IO
+FileLike: TypeAlias = str | IO[AnyStr]
 """Type alias for filename or file-like object."""
 
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
@@ -94,10 +94,12 @@ CACHE._fetch = CACHE.fetch  # noqa: SLF001
 
 
 @wraps(CACHE._fetch)  # noqa: SLF001
-def _fetch(*args: str, **kwargs: bool | Callable) -> str:  # numpydoc ignore=GL08
+def _fetch(*args: str, **kwargs: bool | Callable[..., Any]) -> str:  # numpydoc ignore=GL08
     # default to our http/s downloader with user-agent headers
     kwargs.setdefault("downloader", _downloader)
-    return CACHE._fetch(*args, **kwargs)  # noqa: SLF001
+    result = CACHE._fetch(*args, **kwargs)  # noqa: SLF001
+    assert isinstance(result, str)
+    return result
 
 
 # override the original Pooch.fetch method with our
@@ -107,7 +109,7 @@ CACHE.fetch = _fetch
 
 def _downloader(
     url: str,
-    output_file: FileLike,
+    output_file: FileLike[Any],
     poocher: pooch.Pooch,
     check_only: bool | None = False,
 ) -> bool | None:
@@ -144,20 +146,20 @@ def _downloader(
 
     # see https://github.com/readthedocs/readthedocs.org/issues/11763
     headers = {"User-Agent": f"geovista ({geovista.__version__})"}
-    downloader = pooch.HTTPDownloader(headers=headers)
+    downloader: Callable[..., bool | None] = pooch.HTTPDownloader(headers=headers)
     return downloader(url, output_file, poocher, check_only=check_only)
 
 
-def pooch_mute(silent: bool | None = True) -> bool:
+def pooch_mute(silent: bool = True) -> bool:
     """Control the :mod:`pooch` cache manager logger verbosity.
 
     Updates the status variable :data:`GEOVISTA_POOCH_MUTE`.
 
     Parameters
     ----------
-    silent : bool, optional
+    silent : bool, default=True
         Whether to silence or activate the :mod:`pooch` cache manager logger messages
-        to the console. Defaults to ``True``.
+        to the console.
 
     Returns
     -------
@@ -195,10 +197,10 @@ def reload_registry(fname: str | None = None) -> None:
 
     """
     if fname is None:
-        fname = (Path(__file__).parent / "registry.txt").open(
+        text_io = (Path(__file__).parent / "registry.txt").open(
             "r", encoding="utf-8", errors="strict"
         )
-    CACHE.load_registry(fname)
+    CACHE.load_registry(text_io)
 
 
 # configure the pooch cache manager logger verbosity
