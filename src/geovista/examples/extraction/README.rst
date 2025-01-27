@@ -1,2 +1,2 @@
-Region Manifold Extraction
-==========================
+Region Extraction
+=================
