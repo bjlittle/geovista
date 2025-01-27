@@ -32,7 +32,7 @@ cell are within the manifold.
 The **purple boundary** contains only those cells where at least one point that defines
 the face of the cell is within the manifold.
 
-The **orange boundary** contains only those cells where the face cell center is within
+The **orange boundary** contains only those cells where the center of the cell is within
 the manifold.
 
 Each of the extracted mesh regions contain quad cells and are constructed from CF UGRID
