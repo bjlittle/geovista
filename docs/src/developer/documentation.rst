@@ -17,14 +17,14 @@ The documentation is built using `sphinx`_ to parse and render `reStructuredText
 
 We also use `myst-parser`_, a ``sphinx`` and `docutils`_ extension to parse and convert
 :term:`MyST` to ``rst``, and `myst-nb`_ to execute and convert
-`Jupyter Notebooks <Jupyter>`_ into ``sphinx`` documents.
+`Jupyter Notebooks`_ into ``sphinx`` documents.
 
 .. seealso::
     :class: margin, dropdown, toggle-shown
 
     For configuration details see ``Makefile`` and ``conf.py``.
 
-The documentation is built using `sphinx-build`_ and the `GNU make <make>`_ tool.
+The documentation is built using `sphinx-build`_ and the `GNU make`_ tool.
 
 
 :fa:`pump-medical` Hygiene
@@ -93,12 +93,12 @@ How-to serve the rendered documentation for inspection in a local browser.
     :widths: 1 3
     :align: center
 
-    +------------------------+----------------------------------------------------------------------------------+
-    | Make Command           | Description                                                                      |
-    +========================+==================================================================================+
-    | :guilabel:`serve-html` | Start a local ``HTTP`` server to view the rendered documentation. This is        |
-    |                        | necessary to in order to support the interactive scenes.                         |
-    +------------------------+----------------------------------------------------------------------------------+
+    +------------------------+-------------------------------------------------------------------------------------+
+    | Make Command           | Description                                                                         |
+    +========================+=====================================================================================+
+    | :guilabel:`serve-html` | Start a local ``HTTP`` server on port ``11000`` to view the rendered documentation. |
+    |                        | This is necessary in order to support interactive scenes.                           |
+    +------------------------+-------------------------------------------------------------------------------------+
 
 
 :fa:`vial-circle-check` Test
@@ -125,5 +125,7 @@ Perform documentation quality assurance.
     Page link URL resources in alphabetical order:
 
 
+.. _GNU make: https://www.gnu.org/software/make/
+.. _Jupyter Notebooks: https://jupyter.org/
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _sphinx linkcheck builder: https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.linkcheck.CheckExternalLinksBuilder

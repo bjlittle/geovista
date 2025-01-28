@@ -9,7 +9,6 @@
 .. _GeoVista: https://github.com/bjlittle/geovista
 .. _Issue: https://github.com/bjlittle/geovista/issues
 .. _Issues: https://github.com/bjlittle/geovista/issues
-.. _Jupyter: https://jupyter.org/
 .. _Kitware: https://www.kitware.com/
 .. _Matplotlib: https://github.com/matplotlib/matplotlib
 .. _Natural Earth Features: https://www.naturalearthdata.com/features/
@@ -39,7 +38,6 @@
 .. _geovista-data: https://github.com/bjlittle/geovista-data
 .. _geovista-media: https://github.com/bjlittle/geovista-media
 .. _iris: https://github.com/scitools/iris
-.. _make: https://www.gnu.org/software/make/
 .. _matplotlib: https://github.com/matplotlib/matplotlib
 .. _myst-nb: https://github.com/executablebooks/MyST-NB
 .. _myst-parser: https://github.com/executablebooks/MyST-Parser
