@@ -668,7 +668,9 @@ class Transform:  # numpydoc ignore=PR01
         vectors_crs : CRSLike, optional
             The Coordinate Reference System of the provided `vectors`. May be anything
             accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults to the same
-            as 'crs'.
+            as 'crs'.  Note that `vectors_crs` only specifies **horizontal orientation**
+            of the vectors : their magnitudes are always spatial distance, and the Z
+            component is always radial (i.e. "upwards").
         vectors_array_name : str, optional
             Specifies an alternate name for the points array to store the vectors.
             Also set as the active vectors name.   Defaults to ``"vectors"``.
@@ -687,24 +689,30 @@ class Transform:  # numpydoc ignore=PR01
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
 
         if crs is not None:
+            # Handle specified input CRS
             crs = pyproj.CRS.from_user_input(crs)
             if crs == WGS84:
                 crs = None
 
-        if crs is not None:
+        if crs is None:
+            xs_latlon, ys_latlon = xs, ys
+        else:
+            # Input CRS is not plain lat-lon : convert to that, which is our reference
             transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
-            xs, ys = transformed[:, 0], transformed[:, 1]
+            xs_latlon, ys_latlon = transformed[:, 0], transformed[:, 1]
 
         # ensure longitudes (degrees) are in half-closed interval [-180, 180)
-        xs = wrap(xs)
+        xs_latlon = wrap(xs_latlon)
 
         # reduce any singularity points at the poles to a common longitude
-        poles = np.isclose(np.abs(ys), 90)
+        poles = np.isclose(np.abs(ys_latlon), 90)
         if np.any(poles):
-            xs[poles] = 0
+            xs_latlon[poles] = 0
 
         # convert lat/lon to cartesian xyz
-        xyz = to_cartesian(xs, ys, radius=radius, zlevel=zlevel, zscale=zscale)
+        xyz = to_cartesian(
+            xs_latlon, ys_latlon, radius=radius, zlevel=zlevel, zscale=zscale
+        )
 
         # create the point-cloud mesh
         mesh = pv.PolyData(xyz)
@@ -727,6 +735,7 @@ class Transform:  # numpydoc ignore=PR01
             mesh[name] = data
 
         if vectors is not None:
+            # TODO @pp-mo: this section is very long, consider refactor
             if vectors_array_name is None:
                 vectors_array_name = "vectors"
 
@@ -744,35 +753,105 @@ class Transform:  # numpydoc ignore=PR01
                 )
                 raise ValueError(msg)
 
-            vectors = [np.asanyarray(vecdata) for vecdata in vectors]
             xx, yy = vectors[:2]
             zz = vectors[2] if n_vecs > 2 else np.zeros_like(xx)
 
             if vectors_crs is None:
+                # Vectors crs defaults to main input CRS
+                # NOTE: vectors may have a different CRS than the input points.
+                # The only likely usage is for true-lat-lon winds with locations on a
+                # rotated grid or similar, but we probably do need to support that.
                 vectors_crs = crs
 
             if vectors_crs is not None:
-                vectors_crs = pyproj.CRS.from_user_input(crs)
+                vectors_crs = pyproj.CRS.from_user_input(vectors_crs)
                 if vectors_crs == WGS84:
+                    # As for main crs, "None" means plain-latlon crs
                     vectors_crs = None
 
-            if vectors_crs is not None:
-                vecs_xyz = transform_points(
-                    src_crs=vectors_crs, tgt_crs=WGS84, xs=xx, ys=yy, zs=zz
+            if vectors_crs is None:
+                vector_xs = xs_latlon
+                vector_ys = ys_latlon
+                post_rotate_matrix = None
+            else:
+                # Supplied vector xx/yy/zz are for a "different" orientation than
+                # standard lat-lon, so will need rotating afterwards.
+                # NOTE: we can only do this for specific CRS types where we know how to
+                # find **its** pole.
+                axis_names = [x.name for x in vectors_crs.axis_info]
+                if axis_names[:2] != ["Longitude", "Latitude"]:
+                    msg = (
+                        "Cannot determine wind directions : "
+                        f"Target CRS is not supported : {vectors_crs}."
+                    )
+                    raise ValueError(msg)
+
+                # For a CRS with longitude and latitude axes, we treat its coordinates
+                # as latitudes and longitudes and (0, 90) as its North Pole.
+                # This means we can calculate the xyz vectors for the input points in
+                # vector coordinates, and afterwards rotate them to the display.
+                # TODO @pp-mo: identify add support for other common cases as needed,
+                #  for example OSGB.  Sadly I think there is no general solution.
+
+                # Find the true-latlon position of this CRS' North pole point.
+                transformed = transform_points(
+                    src_crs=vectors_crs, tgt_crs=WGS84, xs=0.0, ys=90.0
                 )
-                xx, yy, zz = vecs_xyz[:, 0], vecs_xyz[:, 1], vecs_xyz[:, 2]
+                (
+                    pole_lon,
+                    pole_lat,
+                ) = transformed[:, 0][0], transformed[:, 1][0]
+                # We use this to program a "post-rotation" of the vectors.
+                from scipy.spatial.transform import Rotation
 
-            # ensure longitudes (degrees) are in half-closed interval [-180, 180)
-            xx = wrap(xx)
+                # NOTE: the axes orientation is odd -- see "vectors_to_cartesian"
+                rotmat_to_standard_pole = Rotation.from_euler(
+                    "xy",
+                    (
+                        180,
+                        -90,
+                    ),
+                    degrees=True,
+                ).as_matrix()
+                rotmat_from_vectors_pole = Rotation.from_euler(
+                    "zy", (pole_lon, -pole_lat), degrees=True
+                ).as_matrix()
+                # post-rotate = to_standard @ from_alternate @ vectors
+                post_rotate_matrix = rotmat_to_standard_pole @ rotmat_from_vectors_pole
 
-            # TODO @pp-mno: should we pass flattened arrays here, and reshape as-per the
+                # We also need points lons+lats **in the vector CRS** to calculate
+                # the vector components (i.e. oriented to its northward + eastward).
+                vector_xs = xs
+                vector_ys = ys
+                src_crs = crs or WGS84
+                if vectors_crs != src_crs:
+                    transformed = transform_points(
+                        src_crs=src_crs or WGS84, tgt_crs=vectors_crs, xs=xs, ys=ys
+                    )
+                    vector_xs, vector_ys = transformed[:, 0], transformed[:, 1]
+
+            # TODO @pp-mo: should we pass flattened arrays here, and reshape as-per the
             #   inputs (and xyz)?  not clear if multidimensional input is used or needed
             xx, yy, zz = vectors_to_cartesian(
-                lons=xs,
-                lats=ys,
+                lons=vector_xs,
+                lats=vector_ys,
                 vectors_uvw=(xx, yy, zz),
             )
             vectors = np.vstack((xx, yy, zz)).T
+
+            if post_rotate_matrix is not None:
+                # At this point, vectors are correct xyz's for the original points in
+                # 'vector_crs', but not ready for plotting since the "true" point
+                # locations are different : hence apply "post-rotation".
+
+                # Nasty hack if vectors are masked, as masked array multiply is bugged
+                vectors_is_masked = np.ma.isMaskedArray(vectors)
+                if vectors_is_masked:
+                    new_vectors, vecs_mask = np.array(vectors), vectors.mask
+                new_vectors = (post_rotate_matrix @ new_vectors.T).T
+                if vectors_is_masked:
+                    new_vectors = np.ma.masked_array(new_vectors, vecs_mask)
+                vectors = new_vectors
             mesh[vectors_array_name] = vectors
             mesh.set_active_vectors(vectors_array_name)
 
