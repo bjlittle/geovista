@@ -28,7 +28,7 @@ Consult our reference material for no fuss facts about ``geovista``.
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        Behaviour and state docstrings.
+        Behaviour & state docstrings.
 
     .. grid-item-card:: Changelog
         :class-title: custom-title

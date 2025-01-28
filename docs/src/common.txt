@@ -5,9 +5,11 @@
 .. _Cartopy: https://github.com/SciTools/cartopy
 .. _Diátaxis: https://diataxis.fr/
 .. _Discussions: https://github.com/bjlittle/geovista/discussions
+.. _Executable Books: https://github.com/executablebooks
 .. _GeoVista: https://github.com/bjlittle/geovista
 .. _Issue: https://github.com/bjlittle/geovista/issues
 .. _Issues: https://github.com/bjlittle/geovista/issues
+.. _Jupyter: https://jupyter.org/
 .. _Kitware: https://www.kitware.com/
 .. _Matplotlib: https://github.com/matplotlib/matplotlib
 .. _Natural Earth Features: https://www.naturalearthdata.com/features/
@@ -30,16 +32,26 @@
 .. _conda: https://docs.conda.io/projects/conda/en/latest/index.html
 .. _conda environment.yml file: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file
 .. _conda-forge: https://anaconda.org/conda-forge/geovista
+.. _docutils: https://github.com/docutils/docutils
 .. _feedstock: https://github.com/conda-forge/geovista-feedstock
 .. _geopandas: https://github.com/geopandas/geopandas
 .. _geovista: https://github.com/bjlittle/geovista
 .. _geovista-data: https://github.com/bjlittle/geovista-data
 .. _geovista-media: https://github.com/bjlittle/geovista-media
 .. _iris: https://github.com/scitools/iris
+.. _make: https://www.gnu.org/software/make/
 .. _matplotlib: https://github.com/matplotlib/matplotlib
+.. _myst-nb: https://github.com/executablebooks/MyST-NB
+.. _myst-parser: https://github.com/executablebooks/MyST-Parser
 .. _pip: https://pip.pypa.io/en/stable/index.html
 .. _pre-commit: https://pre-commit.com/
+.. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
+.. _sphinx: https://github.com/sphinx-doc/sphinx
+.. _sphinx-autoapi: https://github.com/readthedocs/sphinx-autoapi
+.. _sphinx-build: https://www.sphinx-doc.org/en/master/man/sphinx-build.html
 .. _sphinx-gallery: https://github.com/sphinx-gallery/sphinx-gallery
+.. _sphinx-tags: https://github.com/melissawm/sphinx-tags
+.. _sphinx.ext.doctest: https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html
 .. _tox: https://tox.wiki/en/stable/
 .. _xarray: https://github.com/pydata/xarray
 
