@@ -37,6 +37,7 @@ from geovista.pantry.data import lfric_winds
 # get sample data
 sample = lfric_winds()
 
+
 # Create a mesh of individual points, adding vectors at each point.
 # NOTE: this creates a mesh with 'mesh vectors' : a specific concept in PyVista.
 mesh = gv.Transform.from_points(
@@ -79,10 +80,8 @@ plotter.show()
 mesh = gv.Transform.from_points(
     sample.lons,
     sample.lats,
-    # supply all three components
-    vectors=(sample.u, sample.v, sample.w),
-    # apply additional scaling to W values
-    vectors_z_scaling=1500.0,
+    # supply all three components, N.B. additional scaling to W values
+    vectors=(sample.u, sample.v, 1500.0 * sample.w),
     # offset from surface so avoid downward-pointing arrows disappearing
     radius=1.1,
 )
