@@ -191,9 +191,6 @@ def create_meridian_labels(lons: list[float]) -> list[str]:
     """
     result = []
 
-    if not isinstance(lons, Iterable):
-        lons = [lons]
-
     for lon in lons:
         # TODO @bjlittle: Explicit truncation is performed, perhaps offer format
         #                 control when required.
@@ -396,9 +393,6 @@ def create_parallel_labels(
 
     if poles_parallel is None:
         poles_parallel = LATITUDE_POLES_PARALLEL
-
-    if not isinstance(lats, Iterable):
-        lats = [lats]
 
     for lat in lats:
         # explicit truncation, perhaps offer format control when required

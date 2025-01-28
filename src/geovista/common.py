@@ -180,7 +180,8 @@ class MixinStrEnum:
         value_string = str(value).lower()
         for member in cls:
             if member.value == value_string:
-                return member
+                result: Preference = member
+                return result
         return None
 
     @classmethod
@@ -221,7 +222,9 @@ class MixinStrEnum:
         return tuple([member.value for member in cls])
 
 
-class Preference(MixinStrEnum, StrEnum):
+# Type ignore because we type-hint MixinStrEnum - a good thing - but this
+#  makes it inconsistent with StrEnum.
+class Preference(MixinStrEnum, StrEnum):    # type: ignore[misc]
     """Enumeration of common mesh geometry preferences.
 
     Notes
@@ -536,7 +539,8 @@ def get_modules(root: str, base: bool | None = True) -> list[str]:
     .. versionadded:: 0.5.0
 
     """
-    modules, pkgs = [], []
+    modules: list[str] = []
+    pkgs: list[str] = []
 
     for info in pkgutil.iter_modules(importlib.import_module(root).__path__):
         name = f"{root}.{info.name}"
@@ -600,11 +604,12 @@ def point_cloud(mesh: pv.PolyData) -> bool:
     .. versionadded:: 0.2.0
 
     """
-    return (mesh.n_points == mesh.n_cells) and (mesh.n_lines == 0)
+    result: bool = (mesh.n_points == mesh.n_cells) and (mesh.n_lines == 0)
+    return result
 
 
 def sanitize_data(
-    *meshes: Iterable[pv.PolyData],
+    *meshes: pv.PolyData,
 ) -> None:
     """Purge standard VTK helper cell and point data index arrays.
 
@@ -898,7 +903,8 @@ def triangulated(surface: pv.PolyData) -> bool:
     .. versionadded:: 0.1.0
 
     """
-    return np.all(np.diff(surface._offset_array) == 3)  # noqa: SLF001
+    result: bool = np.all(np.diff(surface._offset_array) == 3)  # noqa: SLF001
+    return result
 
 
 def vtk_warnings_off() -> None:
