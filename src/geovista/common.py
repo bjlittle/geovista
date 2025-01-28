@@ -443,7 +443,7 @@ def from_cartesian(
             pole_submesh = mesh.extract_points(pole_pids)
             pole_pids = set(pole_pids)
             # get the cids (cell-indices) of mesh cells with polar vertices
-            pole_cids = np.unique(pole_submesh["vtkOriginalCellIds"])
+            pole_cids = np.unique(pole_submesh[VTK_CELL_IDS])
             for cid in pole_cids:
                 # get the pids (point-indices) of the polar cell points
                 # NOTE: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
@@ -496,8 +496,7 @@ def from_cartesian(
                     mesh.extract_points(poi_pids)
                 )
                 cell_pids = [
-                    mesh.get_cell(cid).point_ids
-                    for cid in poi_cells["vtkOriginalCellIds"]
+                    mesh.get_cell(cid).point_ids for cid in poi_cells[VTK_CELL_IDS]
                 ]
                 mask_positive = lons[cell_pids] > 0
                 if np.any(mask_positive):
