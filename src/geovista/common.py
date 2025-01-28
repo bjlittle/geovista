@@ -769,7 +769,7 @@ def vectors_to_cartesian(
     lons, lats : ArrayLike
         The longitude + latitude locations of the vectors (in degrees).
         Both shapes must be the same.
-    vectors_uvw : triple of ArrayLike
+    vectors_uvw : tuple of ArrayLike
         The eastward, northward and upward vector components.
         All shapes must be the same as ``lons`` and ``lats``.
     radius : float, optional
