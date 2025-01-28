@@ -5,10 +5,10 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-Wind Arrows Plot
-----------------
+Wind Directions
+---------------
 
-This example demonstrates how to display horizontal winds.
+This example demonstrates how to display equal-sized wind direction arrows.
 
 📋 Summary
 ^^^^^^^^^^
@@ -22,11 +22,8 @@ i.e. eastward, northward and vertical components.
 These values are coded for each location (X, Y), measured relative to the longitude,
 latitude and vertical directions at each point.
 
-There is no connectivity provided, so each location has a vector and is independent of
-the others.  Hence we use the ``geovista.Transform.from_points`` function, passing the
-winds to the ``vectors`` keyword.
-
-Here we show just horizontal winds (U, V), which are usually of the most interest.
+In this example we show how to display wind arrows ith a fixed length, showing
+direction only, but with scale colour still indicating mangitude.
 """  # noqa: D205,D212,D400
 
 from __future__ import annotations
@@ -37,29 +34,23 @@ from geovista.pantry.data import lfric_winds
 # get sample data
 sample = lfric_winds()
 
-# Create a mesh of individual points, adding vectors at each point.
-# NOTE: this creates a mesh with 'mesh vectors' : a specific concept in PyVista.
 mesh = gv.Transform.from_points(
     sample.lons,
     sample.lats,
     vectors=(sample.u, sample.v),
 )
+# Note: with "scale=False", the sizes don't changes and the basic size is now different,
+# so the visibly suitable 'factor' is also rather different.
+arrows = mesh.glyph(factor=0.1, scale=False)
 
-# Create a new mesh containing arrow glyphs, from the mesh vectors.
-# NOTE: apply an overall scaling factor to make the arrows a reasonable size.
-arrows = mesh.glyph(factor=0.02)
-
-# Add the arrows to a plotter with other aspects, and display
 plotter = gv.GeoPlotter()
-# Scale the base layer slightly to ensure it remains 'below' other elements.
-plotter.add_base_layer(radius=0.99)
-plotter.add_mesh(arrows, cmap="inferno")
+plotter.add_base_layer()
+plotter.add_mesh(arrows, cmap="magma")
 plotter.add_coastlines()
 plotter.add_graticule()
 plotter.add_axes()
 
-# Set up a nice default view
-plotter.camera.zoom(1.3)  # adjusts the camera view angle
+plotter.camera.zoom(1.3)
 selected_view = [
     (-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
     (-0.0037798285484313965, 0.005168497562408447, -0.0031679868698120117),
