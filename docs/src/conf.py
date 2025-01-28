@@ -509,6 +509,7 @@ linkcheck_ignore = [
     "https://www.ncei.noaa.gov/products/optimum-interpolation-sst",
     "https://earthexplorer.usgs.gov",
     "https://www.fvcom.org",
+    "https://www.gnu.org/software/make/",
 ]
 linkcheck_retries = 3
 
