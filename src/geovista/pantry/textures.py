@@ -13,7 +13,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import TypeAlias, TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeAlias
 
 import lazy_loader as lazy
 

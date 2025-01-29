@@ -45,8 +45,6 @@ from .filters import remesh
 from .search import find_cell_neighbours
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from numpy.typing import ArrayLike
     import pyvista as pv
 

@@ -92,7 +92,9 @@ def _download_group(
 
     previous = pooch_mute(silent=True)
 
-    click.echo(f"Downloading {n_fnames} {name_post}registered asset{_plural(n_fnames)}:")
+    click.echo(
+        f"Downloading {n_fnames} {name_post}registered asset{_plural(n_fnames)}:"
+    )
     for i, fname in enumerate(fnames):
         click.echo(f"[{i + 1:0{width}d}/{n_fnames}] Downloading ", nl=False)
         click.secho(f"{fname} ", nl=False, fg=fg_colour)
@@ -101,8 +103,7 @@ def _download_group(
         name_path = pathlib.Path(fname)
         if decompress and (suffix := name_path.suffix) in pooch.Decompress.extensions:
             processor = pooch.Decompress(
-                method="auto",
-                name=name_path.stem.removesuffix(suffix)
+                method="auto", name=name_path.stem.removesuffix(suffix)
             )
         CACHE.fetch(fname, processor=processor)
         click.secho("done!", fg="green")

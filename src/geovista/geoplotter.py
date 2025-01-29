@@ -15,7 +15,6 @@ Notes
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
 from functools import lru_cache
 import os
 from typing import TYPE_CHECKING, Any
@@ -67,6 +66,8 @@ from .raster import wrap_texture
 from .transform import transform_mesh, transform_point
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from numpy.typing import ArrayLike
     import pyvista as pv
 
@@ -1312,7 +1313,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 crs = self.crs
 
         # Assertion to appease MyPy.
-        assert x is not None and y is not None
+        assert x is not None
+        assert y is not None
         if crs != self.crs:
             x, y, _ = transform_point(crs, self.crs, x, y)
 

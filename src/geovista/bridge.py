@@ -409,7 +409,7 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        rgb: bool = False,
+        rgb: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -449,10 +449,10 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        rgb : bool, default=False
+        rgb : bool, optional
             Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
             `data` is expected to have an extra dimension for the colour
-            channels (length ``3`` or ``4``).
+            channels (length ``3`` or ``4``). Defaults to ``False``.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -477,6 +477,9 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
+        if rgb is None:
+            rgb = False
+
         xs, ys = cls._as_contiguous_1d(xs, ys)
         mxs, mys = np.meshgrid(xs, ys, indexing="xy")
         return Transform.from_2d(
@@ -500,7 +503,7 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        rgb: bool = False,
+        rgb: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -541,10 +544,10 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        rgb : bool, default=False
+        rgb : bool, optional
             Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
             `data` is expected to have an extra dimension for the colour
-            channels (length ``3`` or ``4``).
+            channels (length ``3`` or ``4``). Defaults to ``False``.
         radius : float, optional
             The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -719,7 +722,7 @@ class Transform:  # numpydoc ignore=PR01
         fname: Path,
         name: str | None = None,
         band: int = 1,
-        rgb: bool = False,
+        rgb: bool | None = None,
         sieve: bool | None = False,
         size: int | None = None,
         extract: bool | None = False,
@@ -745,9 +748,9 @@ class Transform:  # numpydoc ignore=PR01
         band : int, default=1
             The band index to read from the GeoTIFF. Note that, the `band`
             index is one-based.
-        rgb : bool, default=False
+        rgb : bool, optional
             Specify whether to read the GeoTIFF as an ``RGB`` or ``RGBA`` image.
-            When ``rgb=True``, the `band` index is ignored.
+            When ``rgb=True``, the `band` index is ignored. Defaults to ``False``.
         sieve : bool, default=False
             Specify whether to sieve the GeoTIFF mask to remove small connected
             regions. See :func:`rasterio.features.sieve` for more information.
@@ -814,6 +817,9 @@ class Transform:  # numpydoc ignore=PR01
                 "Use pip or conda to install."
             )
             raise ImportError(emsg) from None
+
+        if rgb is None:
+            rgb = False
 
         fname = fname.resolve(strict=True)
         band = -1 if rgb else band
@@ -922,7 +928,7 @@ class Transform:  # numpydoc ignore=PR01
         start_index: int | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        rgb: bool = False,
+        rgb: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -974,10 +980,10 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        rgb : bool, default=False
+        rgb : bool, optional
             Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
             `data` is expected to have an extra dimension for the colour
-            channels (length ``3`` or ``4``).
+            channels (length ``3`` or ``4``). Defaults to ``False``.
         radius : float, optional
             The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -1002,6 +1008,9 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
+        if rgb is None:
+            rgb = False
+
         xs, ys = np.asanyarray(xs), np.asanyarray(ys)
         shape = xs.shape
 

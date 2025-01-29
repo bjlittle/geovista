@@ -16,7 +16,7 @@ from __future__ import annotations
 from functools import wraps
 import os
 from pathlib import Path
-from typing import Any, AnyStr, IO, TYPE_CHECKING, TypeAlias
+from typing import IO, TYPE_CHECKING, Any, AnyStr, TypeAlias
 
 import pooch
 
@@ -94,7 +94,9 @@ CACHE._fetch = CACHE.fetch  # noqa: SLF001
 
 
 @wraps(CACHE._fetch)  # noqa: SLF001
-def _fetch(*args: str, **kwargs: bool | Callable[..., Any]) -> str:  # numpydoc ignore=GL08
+def _fetch(
+    *args: str, **kwargs: bool | Callable[..., Any]
+) -> str:  # numpydoc ignore=GL08
     # default to our http/s downloader with user-agent headers
     kwargs.setdefault("downloader", _downloader)
     result = CACHE._fetch(*args, **kwargs)  # noqa: SLF001
@@ -150,16 +152,16 @@ def _downloader(
     return downloader(url, output_file, poocher, check_only=check_only)
 
 
-def pooch_mute(silent: bool = True) -> bool:
+def pooch_mute(silent: bool | None = None) -> bool:
     """Control the :mod:`pooch` cache manager logger verbosity.
 
     Updates the status variable :data:`GEOVISTA_POOCH_MUTE`.
 
     Parameters
     ----------
-    silent : bool, default=True
+    silent : bool, optional
         Whether to silence or activate the :mod:`pooch` cache manager logger messages
-        to the console.
+        to the console. Defaults to ``True``.
 
     Returns
     -------
@@ -172,6 +174,9 @@ def pooch_mute(silent: bool = True) -> bool:
 
     """
     global GEOVISTA_POOCH_MUTE  # noqa: PLW0603
+
+    if silent is None:
+        silent = True
 
     level = "WARNING" if silent else "NOTSET"
     pooch.utils.get_logger().setLevel(level)

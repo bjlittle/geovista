@@ -13,7 +13,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import lazy_loader as lazy
 from pyproj import CRS
