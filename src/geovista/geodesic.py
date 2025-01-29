@@ -13,9 +13,8 @@ Notes
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from enum import StrEnum
-from typing import Sequence, TYPE_CHECKING, TypeAlias
+from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
 import lazy_loader as lazy
@@ -24,7 +23,7 @@ from .common import (
     GV_FIELD_RADIUS,
     RADIUS,
     ZLEVEL_SCALE,
-    MixinStrEnum,
+    StrEnumPlus,
     distance,
     to_cartesian,
     wrap,
@@ -124,9 +123,7 @@ PREFERENCE: str = "center"
 """The default bounding-box preference."""
 
 
-# Type ignore because we type-hint MixinStrEnum - a good thing - but this
-#  makes it inconsistent with StrEnum.
-class EnclosedPreference(MixinStrEnum, StrEnum):    # type: ignore[misc]
+class EnclosedPreference(StrEnumPlus):
     """Enumeration of mesh geometry enclosed preferences.
 
     Notes
@@ -406,14 +403,8 @@ class BBox:  # numpydoc ignore=PR01
 
             """
             assert row is not None or column is not None
-            if row is None:
-                row_slice = slice(None)
-            else:
-                row_slice = slice(row, row + 1)
-            if column is None:
-                column_slice = slice(None)
-            else:
-                column_slice = slice(column, column + 1)
+            row_slice = slice(None) if row is None else slice(row, row + 1)
+            column_slice = slice(None) if column is None else slice(column, column + 1)
 
             glons, glats = npoints_by_idx(
                 self._bbox_lons,

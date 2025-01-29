@@ -14,12 +14,11 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
-from .common import MixinStrEnum, to_cartesian
+from .common import StrEnumPlus, to_cartesian
 from .crs import WGS84, from_wkt
 from .transform import transform_points
 
@@ -64,9 +63,7 @@ KDTREE_PREFERENCE: str = "point"
 """The default search preference."""
 
 
-# Type ignore because we type-hint MixinStrEnum - a good thing - but this
-#  makes it inconsistent with StrEnum.
-class SearchPreference(MixinStrEnum, StrEnum):  # type: ignore[misc]
+class SearchPreference(StrEnumPlus):
     """Enumeration of mesh geometry search preferences.
 
     Notes
@@ -317,7 +314,8 @@ class KDTree:  # numpydoc ignore=PR01
         result = self._kdtree.query(
             xyz, k=k, eps=epsilon, distance_upper_bound=distance_upper_bound
         )
-        assert isinstance(result, tuple) and len(result) == 2
+        assert isinstance(result, tuple)
+        assert len(result) == 2
         return result
 
 

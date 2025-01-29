@@ -14,14 +14,13 @@ Notes
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
 from geovista.cache import CACHE
-from geovista.common import LRU_CACHE_SIZE, MixinStrEnum
+from geovista.common import LRU_CACHE_SIZE, StrEnumPlus
 
 if TYPE_CHECKING:
     import netCDF4 as nc  # noqa: N813
@@ -68,9 +67,7 @@ PANTRY_DATA: str = "pantry/data"
 """The registry key for the pantry data."""
 
 
-# Type ignore because we type-hint MixinStrEnum - a good thing - but this
-#  makes it inconsistent with StrEnum.
-class CloudPreference(MixinStrEnum, StrEnum):   # type: ignore[misc]
+class CloudPreference(StrEnumPlus):
     """Enumeration of mesh types for cloud amount.
 
     Notes

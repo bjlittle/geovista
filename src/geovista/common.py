@@ -56,8 +56,8 @@ __all__ = [
     "WRAP_RTOL",
     "ZLEVEL_SCALE",
     "ZTRANSFORM_FACTOR",
-    "MixinStrEnum",
     "Preference",
+    "StrEnumPlus",
     "active_kernel",
     "cast_UnstructuredGrid_to_PolyData",
     "distance",
@@ -148,28 +148,31 @@ ZTRANSFORM_FACTOR: int = 3
 """The zlevel scaling to be applied when transforming to a projection."""
 
 
-class MixinStrEnum:
-    """Convenience behaviour mixin for a string enumeration.
+class StrEnumPlus(StrEnum):
+    """Convenience behaviour for a string enumeration.
 
     Notes
     -----
-    .. versionadded:: 0.3.0
+    .. versionadded:: 0.6.0
+
+    Previously called MixinStrEnum.
 
     """
 
     @classmethod
-    def _missing_(cls, value: str | Preference) -> Preference | None:
+    def _missing_(cls, value: object) -> StrEnumPlus | None:
         """Handle missing enumeration members.
 
         Parameters
         ----------
-        value : str or Preference
-            The candidate preference enumeration member.
+        value : object
+            The candidate preference enumeration member. Expected to be str or
+            StrEnumPlus instance, but could be any object.
 
         Returns
         -------
-        Preference
-            The preference member or None if the member is not a valid
+        StrEnumPlus
+            The enum member or None if the member is not a valid
             enumeration member.
 
         Notes
@@ -180,12 +183,11 @@ class MixinStrEnum:
         value_string = str(value).lower()
         for member in cls:
             if member.value == value_string:
-                result: Preference = member
-                return result
+                return member
         return None
 
     @classmethod
-    def valid(cls, item: str | Preference) -> bool:
+    def valid(cls, item: str | StrEnumPlus) -> bool:
         """Determine whether the provided item is a valid enumeration member.
 
         Parameters
@@ -222,9 +224,7 @@ class MixinStrEnum:
         return tuple([member.value for member in cls])
 
 
-# Type ignore because we type-hint MixinStrEnum - a good thing - but this
-#  makes it inconsistent with StrEnum.
-class Preference(MixinStrEnum, StrEnum):    # type: ignore[misc]
+class Preference(StrEnumPlus):
     """Enumeration of common mesh geometry preferences.
 
     Notes
