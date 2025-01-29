@@ -441,44 +441,49 @@ def from_cartesian(
             lons[0] = lons[-1] = lons[1]
         else:
             pole_submesh = mesh.extract_points(pole_pids)
-            pole_pids = set(pole_pids)
-            # get the cids (cell-indices) of mesh cells with polar vertices
-            pole_cids = np.unique(pole_submesh[VTK_CELL_IDS])
-            for cid in pole_cids:
-                # get the pids (point-indices) of the polar cell points
-                # NOTE: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
-                cell_pids = np.array(mesh.get_cell(cid).point_ids)
-                # unfold polar quad-cells
-                if len(cell_pids) == 4:
-                    # identify the pids of the cell on the pole
-                    cell_pole_pids = pole_pids.intersection(cell_pids)
-                    # criterion of exactly two points from the quad-cell
-                    # at the pole to unfold the polar points longitudes
-                    if len(cell_pole_pids) == 2:
-                        # compute the relative offset of the polar points
-                        # within the polar cell connectivity
-                        offset = sorted(
-                            [np.where(cell_pids == pid)[0][0] for pid in cell_pole_pids]
-                        )
-                        if offset == [0, 1]:
-                            lhs = cell_pids[offset]
-                            rhs = cell_pids[[3, 2]]
-                        elif offset == [1, 2]:
-                            lhs = cell_pids[offset]
-                            rhs = cell_pids[[0, 3]]
-                        elif offset == [2, 3]:
-                            lhs = cell_pids[offset]
-                            rhs = cell_pids[[1, 0]]
-                        elif offset == [0, 3]:
-                            lhs = cell_pids[offset]
-                            rhs = cell_pids[[1, 2]]
-                        else:
-                            emsg = (
-                                "Failed to unfold a mesh polar quad-cell. Invalid "
-                                "polar points connectivity detected."
+            if pole_submesh.n_cells:
+                pole_pids = set(pole_pids)
+                # get the cids (cell-indices) of mesh cells with polar vertices
+                pole_cids = np.unique(pole_submesh[VTK_CELL_IDS])
+                for cid in pole_cids:
+                    # get the pids (point-indices) of the polar cell points
+                    # NOTE:
+                    # pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
+                    cell_pids = np.array(mesh.get_cell(cid).point_ids)
+                    # unfold polar quad-cells
+                    if len(cell_pids) == 4:
+                        # identify the pids of the cell on the pole
+                        cell_pole_pids = pole_pids.intersection(cell_pids)
+                        # criterion of exactly two points from the quad-cell
+                        # at the pole to unfold the polar points longitudes
+                        if len(cell_pole_pids) == 2:
+                            # compute the relative offset of the polar points
+                            # within the polar cell connectivity
+                            offset = sorted(
+                                [
+                                    np.where(cell_pids == pid)[0][0]
+                                    for pid in cell_pole_pids
+                                ]
                             )
-                            raise ValueError(emsg)
-                        lons[lhs] = lons[rhs]
+                            if offset == [0, 1]:
+                                lhs = cell_pids[offset]
+                                rhs = cell_pids[[3, 2]]
+                            elif offset == [1, 2]:
+                                lhs = cell_pids[offset]
+                                rhs = cell_pids[[0, 3]]
+                            elif offset == [2, 3]:
+                                lhs = cell_pids[offset]
+                                rhs = cell_pids[[1, 0]]
+                            elif offset == [0, 3]:
+                                lhs = cell_pids[offset]
+                                rhs = cell_pids[[1, 2]]
+                            else:
+                                emsg = (
+                                    "Failed to unfold a mesh polar quad-cell. Invalid "
+                                    "polar points connectivity detected."
+                                )
+                                raise ValueError(emsg)
+                            lons[lhs] = lons[rhs]
 
     if closed_interval:
         if GV_REMESH_POINT_IDS in mesh.point_data:

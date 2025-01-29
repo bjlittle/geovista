@@ -1,0 +1,2 @@
+Fixed :func:`geovista.common.from_cartesian` to handle polar points with
+no associated cell. (:user:`bjlittle`)
