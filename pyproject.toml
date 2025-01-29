@@ -128,7 +128,7 @@ filterwarnings = [
   "ignore:pyvista test cache image dir:UserWarning",
   "ignore:pyvista test generated image dir:UserWarning",
 ]
-image_cache_dir = "tests/plotting/image_cache"
+image_cache_dir = "tests/plotting/image_cache" # pytest-pyvista option
 log_cli = "True"
 log_cli_level = "INFO"
 markers = ["example: gallery image tests", "image: plotting image tests"]

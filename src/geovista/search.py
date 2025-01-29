@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
-from .common import StrEnumPlus, to_cartesian
+from .common import VTK_CELL_IDS, StrEnumPlus, to_cartesian
 from .crs import WGS84, from_wkt
 from .transform import transform_points
 
@@ -354,7 +354,7 @@ def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:
     # determine the unique points
     pids = np.unique(list(pids))
     # get the cell-ids of cells containing at least one common point
-    result = set(mesh.extract_points(pids)["vtkOriginalCellIds"])
+    result = set(mesh.extract_points(pids)[VTK_CELL_IDS])
     # remove the original cell/s
     result -= set(cid)
 
@@ -416,7 +416,7 @@ def find_nearest_cell(
 
     if poi_is_vertex:
         pid = pids[mask][0]
-        result = sorted(mesh.extract_points(pid)["vtkOriginalCellIds"])
+        result = sorted(mesh.extract_points(pid)[VTK_CELL_IDS])
     else:
         result = [cid]
 
