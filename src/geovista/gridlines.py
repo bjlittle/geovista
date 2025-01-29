@@ -13,6 +13,7 @@ Notes
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -169,7 +170,7 @@ def _step_period(lon: float, lat: float) -> tuple[float, float]:
     return (lon, lat)
 
 
-def create_meridian_labels(lons: list[float]) -> list[str]:
+def create_meridian_labels(lons: list[float] | float) -> list[str]:
     """Generate labels for the meridians.
 
     Parameters
@@ -189,6 +190,9 @@ def create_meridian_labels(lons: list[float]) -> list[str]:
 
     """
     result = []
+
+    if not isinstance(lons, Iterable):
+        lons = [lons]
 
     for lon in lons:
         # TODO @bjlittle: Explicit truncation is performed, perhaps offer format
@@ -365,7 +369,7 @@ def create_meridians(
 
 
 def create_parallel_labels(
-    lats: list[float], poles_parallel: bool | None = None
+    lats: list[float] | float, poles_parallel: bool | None = None
 ) -> list[str]:
     """Generate labels for the parallels.
 
@@ -392,6 +396,9 @@ def create_parallel_labels(
 
     if poles_parallel is None:
         poles_parallel = LATITUDE_POLES_PARALLEL
+
+    if not isinstance(lats, Iterable):
+        lats = [lats]
 
     for lat in lats:
         # explicit truncation, perhaps offer format control when required

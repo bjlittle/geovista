@@ -719,7 +719,7 @@ class Transform:  # numpydoc ignore=PR01
     @classmethod
     def from_tiff(
         cls,
-        fname: Path,
+        fname: Path | str,
         name: str | None = None,
         band: int = 1,
         rgb: bool | None = None,
@@ -738,7 +738,7 @@ class Transform:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        fname : Path
+        fname : Path or str
             The file path to the GeoTIFF.
         name : str, optional
             The name of the GeoTIFF data array to be attached to the mesh.
@@ -820,6 +820,9 @@ class Transform:  # numpydoc ignore=PR01
 
         if rgb is None:
             rgb = False
+
+        if isinstance(fname, str):
+            fname = Path(fname)
 
         fname = fname.resolve(strict=True)
         band = -1 if rgb else band

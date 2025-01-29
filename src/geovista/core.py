@@ -547,7 +547,7 @@ def resize(
             )
     else:
         new_radius = radius + radius * zlevel * zscale
-        update = new_radius is not None and not np.isclose(distance(mesh), new_radius)
+        update = bool(new_radius) and not np.isclose(distance(mesh), new_radius)
 
     if update:
         lonlat = from_cartesian(mesh)

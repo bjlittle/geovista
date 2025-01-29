@@ -403,8 +403,8 @@ class BBox:  # numpydoc ignore=PR01
 
             """
             assert row is not None or column is not None
-            row_slice = slice(None) if row is None else slice(row, row + 1)
-            column_slice = slice(None) if column is None else slice(column, column + 1)
+            row_slice = np.s_[:] if row is None else np.s_[row]
+            column_slice = np.s_[:] if column is None else np.s_[column]
 
             glons, glats = npoints_by_idx(
                 self._bbox_lons,
