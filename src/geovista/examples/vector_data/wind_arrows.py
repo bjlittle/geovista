@@ -39,36 +39,43 @@ from __future__ import annotations
 import geovista as gv
 from geovista.pantry.data import lfric_winds
 
-# get sample data
-sample = lfric_winds()
 
-# Create a mesh of individual points, adding vectors at each point.
-# NOTE: this creates a mesh with 'mesh vectors' : a specific concept in PyVista.
-mesh = gv.Transform.from_points(
-    sample.lons,
-    sample.lats,
-    vectors=(sample.u, sample.v),
-)
+def main() -> None:
+    """Demonstrate horizontal wind arrows plotting."""
+    # get sample data
+    sample = lfric_winds()
 
-# Create a new mesh containing arrow glyphs, from the mesh vectors.
-# NOTE: apply an overall scaling factor to make the arrows a reasonable size.
-arrows = mesh.glyph(factor=0.02)
+    # Create a mesh of individual points, adding vectors at each point.
+    # NOTE: this creates a mesh with 'mesh vectors' : a specific concept in PyVista.
+    mesh = gv.Transform.from_points(
+        sample.lons,
+        sample.lats,
+        vectors=(sample.u, sample.v),
+    )
 
-# Add the arrows to a plotter with other aspects, and display
-plotter = gv.GeoPlotter()
-# Scale the base layer slightly to ensure it remains 'below' other elements.
-plotter.add_base_layer(radius=0.99)
-plotter.add_mesh(arrows, cmap="inferno")
-plotter.add_coastlines()
-plotter.add_graticule()
-plotter.add_axes()
+    # Create a new mesh containing arrow glyphs, from the mesh vectors.
+    # NOTE: apply an overall scaling factor to make the arrows a reasonable size.
+    arrows = mesh.glyph(factor=0.02)
 
-# Set up a nice default view
-plotter.camera.zoom(1.3)  # adjusts the camera view angle
-selected_view = [
-    (-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
-    (-0.0037798285484313965, 0.005168497562408447, -0.0031679868698120117),
-    (-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
-]
-plotter.camera_position = selected_view
-plotter.show()
+    # Add the arrows to a Plotter with other aspects, and display
+    p = gv.GeoPlotter()
+    # Scale the base layer slightly to ensure it remains 'below' other elements.
+    p.add_base_layer(radius=0.99)
+    p.add_mesh(arrows, cmap="inferno")
+    p.add_coastlines()
+    p.add_graticule()
+    p.add_axes()
+
+    # Set up a nice default view
+    p.camera.zoom(1.3)  # adjusts the camera view angle
+    selected_view = [
+        (-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
+        (-0.0037798285484313965, 0.005168497562408447, -0.0031679868698120117),
+        (-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
+    ]
+    p.camera_position = selected_view
+    p.show()
+
+
+if __name__ == "__main__":
+    main()

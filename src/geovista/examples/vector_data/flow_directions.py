@@ -35,30 +35,36 @@ from __future__ import annotations
 import geovista as gv
 from geovista.pantry.data import lfric_winds
 
-# get sample data
-sample = lfric_winds()
 
-mesh = gv.Transform.from_points(
-    sample.lons,
-    sample.lats,
-    vectors=(sample.u, sample.v),
-)
-# Note: with "scale=False", the sizes don't changes and the basic size is now different,
-# so the visibly suitable 'factor' is also rather different.
-arrows = mesh.glyph(factor=0.1, scale=False)
+def main() -> None:
+    """Demonstrate a flow direction plot with fixed-length arrows."""
+    # get sample data
+    sample = lfric_winds()
 
-plotter = gv.GeoPlotter()
-plotter.add_base_layer()
-plotter.add_mesh(arrows, cmap="magma")
-plotter.add_coastlines()
-plotter.add_graticule()
-plotter.add_axes()
+    mesh = gv.Transform.from_points(
+        sample.lons,
+        sample.lats,
+        vectors=(sample.u, sample.v),
+    )
+    # Note: with "scale=False", arrow size is fixed and controlled by "factor".
+    arrows = mesh.glyph(factor=0.1, scale=False)
 
-plotter.camera.zoom(1.3)
-selected_view = [
-    (-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
-    (-0.0037798285484313965, 0.005168497562408447, -0.0031679868698120117),
-    (-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
-]
-plotter.camera_position = selected_view
-plotter.show()
+    p = gv.GeoPlotter()
+    p.add_base_layer()
+    p.add_mesh(arrows, cmap="magma")
+    p.add_coastlines()
+    p.add_graticule()
+    p.add_axes()
+
+    p.camera.zoom(1.3)
+    selected_view = [
+        (-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
+        (-0.0037798285484313965, 0.005168497562408447, -0.0031679868698120117),
+        (-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
+    ]
+    p.camera_position = selected_view
+    p.show()
+
+
+if __name__ == "__main__":
+    main()
