@@ -5,25 +5,29 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-Wind Directions
+Horizontal Flow
 ---------------
 
-This example demonstrates how to display equal-sized wind direction arrows.
+This example demonstrates how to display equal-sized flow direction arrows.
 
 📋 Summary
 ^^^^^^^^^^
 
 The data source provides X and Y arrays containing plain longitude and
-latitude values, which is the most common case.
+latitude values, with eastward- and northward-going flow components,
+which is the most common case.
 
-The wind information is provided in three separate field arrays, 'U, V and W',
-i.e. eastward, northward and vertical components.
+The sample flow data is actually provided in three separate surface-oriented
+component arrays, 'U, V and W', i.e. eastward, northward and vertical components,
+but we are only using the first two.  We use the :meth:`geovista.Transform.from_points`
+method, passing the winds to the ``vectors`` keyword, producing a mesh of scattered
+points with attached vectors.
 
-These values are coded for each location (X, Y), measured relative to the longitude,
-latitude and vertical directions at each point.
+The arrows themselves are created from this mesh via the
+:meth:`pyvista.DataSetFilters.glyph` method.
 
-In this example we show how to display wind arrows ith a fixed length, showing
-direction only, but with scale colour still indicating mangitude.
+In this example we display flow arrows of a fixed length, showing direction
+only, but with a colour scale indicating magnitude.
 """  # noqa: D205,D212,D400
 
 from __future__ import annotations

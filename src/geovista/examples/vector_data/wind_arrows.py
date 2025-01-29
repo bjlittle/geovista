@@ -22,9 +22,14 @@ i.e. eastward, northward and vertical components.
 These values are coded for each location (X, Y), measured relative to the longitude,
 latitude and vertical directions at each point.
 
-There is no connectivity provided, so each location has a vector and is independent of
-the others.  Hence we use the ``geovista.Transform.from_points`` function, passing the
-winds to the ``vectors`` keyword.
+There is no connectivity provided, so each point is a separate location in a mesh of
+scattered points, and each point has an associated vector value independent of
+the others.  We use the :meth:`geovista.Transform.from_points` method, passing the
+winds to the ``vectors`` keyword, producing a mesh of scattered points with attached
+vectors.
+
+The arrows themselves are created from this mesh via the
+:meth:`pyvista.DataSetFilters.glyph` method.
 
 Here we show just horizontal winds (U, V), which are usually of the most interest.
 """  # noqa: D205,D212,D400

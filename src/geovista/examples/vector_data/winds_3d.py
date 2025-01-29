@@ -16,15 +16,16 @@ This example demonstrates how to plot 3D wind vectors.
 The data source provides X and Y arrays containing plain longitude and
 latitude values, which is the most common case.
 
-The wind information is provided in three separate field arrays, 'U, V and W',
+3D wind components are provided in three separate field arrays, 'U, V and W',
 i.e. eastward, northward and vertical components.
 
-These values are coded for each location (X, Y), measured relative to the longitude,
-latitude and vertical directions at each point.
+There is no connectivity provided, so each location has its own attached vector, and is
+independent of the others.  We use the :meth:`geovista.Transform.from_points` method,
+passing the winds to the ``vectors`` keyword, producing a mesh of scattered points with
+attached vectors.
 
-There is no connectivity provided, so each location has a vector and is independent of
-the others.  Hence we use the ``geovista.Transform.from_points`` function, passing the
-winds to the ``vectors`` keyword.
+The arrows themselves are created from this mesh via the
+:meth:`pyvista.DataSetFilters.glyph` method.
 
 Here, we display 3-dimensional wind arrows.
 We have amplified the "W" components by a considerable factor, which is typical since
