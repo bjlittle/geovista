@@ -409,7 +409,7 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        rgb: bool | None = None,
+        rgb: bool | None = False,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -449,10 +449,10 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        rgb : bool, optional
+        rgb : bool, default=False
             Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
             `data` is expected to have an extra dimension for the colour
-            channels (length ``3`` or ``4``). Defaults to ``False``.
+            channels (length ``3`` or ``4``).
         radius : float, optional
             The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -503,7 +503,7 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        rgb: bool | None = None,
+        rgb: bool | None = False,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -544,10 +544,10 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        rgb : bool, optional
+        rgb : bool, default=False
             Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
             `data` is expected to have an extra dimension for the colour
-            channels (length ``3`` or ``4``). Defaults to ``False``.
+            channels (length ``3`` or ``4``).
         radius : float, optional
             The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
@@ -722,7 +722,7 @@ class Transform:  # numpydoc ignore=PR01
         fname: Path | str,
         name: str | None = None,
         band: int = 1,
-        rgb: bool | None = None,
+        rgb: bool | None = False,
         sieve: bool | None = False,
         size: int | None = None,
         extract: bool | None = False,
@@ -748,9 +748,9 @@ class Transform:  # numpydoc ignore=PR01
         band : int, default=1
             The band index to read from the GeoTIFF. Note that, the `band`
             index is one-based.
-        rgb : bool, optional
+        rgb : bool, default=False
             Specify whether to read the GeoTIFF as an ``RGB`` or ``RGBA`` image.
-            When ``rgb=True``, the `band` index is ignored. Defaults to ``False``.
+            When ``rgb=True``, the `band` index is ignored.
         sieve : bool, default=False
             Specify whether to sieve the GeoTIFF mask to remove small connected
             regions. See :func:`rasterio.features.sieve` for more information.
@@ -931,7 +931,7 @@ class Transform:  # numpydoc ignore=PR01
         start_index: int | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        rgb: bool | None = None,
+        rgb: bool | None = False,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -983,10 +983,10 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        rgb : bool, optional
+        rgb : bool, default=False
             Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
             `data` is expected to have an extra dimension for the colour
-            channels (length ``3`` or ``4``). Defaults to ``False``.
+            channels (length ``3`` or ``4``).
         radius : float, optional
             The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
         zlevel : int, default=0
