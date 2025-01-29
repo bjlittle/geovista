@@ -793,31 +793,17 @@ class Transform:  # numpydoc ignore=PR01
                 # TODO @pp-mo: identify add support for other common cases as needed,
                 #  for example OSGB.  Sadly I think there is no general solution.
 
-                # Find the true-latlon position of this CRS' North pole point.
-                transformed = transform_points(
-                    src_crs=vectors_crs, tgt_crs=WGS84, xs=0.0, ys=90.0
+                # post-rotate = post_rotate_matrix @ vectors
+                # transforming the equivalent of the x,y,z basis vectors
+                bases_x = np.array([0, 90, 0])
+                bases_y = np.array([0, 0, 90])
+                transformed_bases = transform_points(
+                    src_crs=rp, tgt_crs=pc, xs=bases_x, ys=bases_y
                 )
-                (
-                    pole_lon,
-                    pole_lat,
-                ) = transformed[:, 0][0], transformed[:, 1][0]
-                # We use this to program a "post-rotation" of the vectors.
-                from scipy.spatial.transform import Rotation
-
-                # NOTE: the axes orientation is odd -- see "vectors_to_cartesian"
-                rotmat_to_standard_pole = Rotation.from_euler(
-                    "zy",
-                    (
-                        180,
-                        -90,
-                    ),
-                    degrees=True,
-                ).as_matrix()
-                rotmat_from_vectors_pole = Rotation.from_euler(
-                    "zy", (pole_lon, -pole_lat), degrees=True
-                ).as_matrix()
-                # post-rotate = to_standard @ from_alternate @ vectors
-                post_rotate_matrix = rotmat_to_standard_pole @ rotmat_from_vectors_pole
+                cartesian_bases = to_cartesian(
+                    tranformed_bases[:, 0], transformed_bases[:, 1]
+                )
+                post_rotate_matrix = np.matrix(cartesian_bases).T
 
                 # We also need points lons+lats **in the vector CRS** to calculate
                 # the vector components (i.e. oriented to its northward + eastward).
