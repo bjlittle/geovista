@@ -116,7 +116,7 @@ similar gallery examples organised by specific features:
     .. grid-item-card:: Examples
         :class-title: custom-title
         :class-body: custom-body
-        :link: gv-examples-gallery
+        :link: gv-examples
         :link-type: ref
         :img-top: _static/images/icons/examples.svg
         :class-img-top: dark-light
