@@ -798,7 +798,7 @@ class Transform:  # numpydoc ignore=PR01
                 bases_x = np.array([0, 90, 0])
                 bases_y = np.array([0, 0, 90])
                 transformed_bases = transform_points(
-                    src_crs=rp, tgt_crs=pc, xs=bases_x, ys=bases_y
+                    src_crs=vectors_crs, tgt_crs=WGS84, xs=bases_x, ys=bases_y
                 )
                 cartesian_bases = to_cartesian(
                     tranformed_bases[:, 0], transformed_bases[:, 1]
