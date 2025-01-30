@@ -26,7 +26,7 @@ and `PyPI`_, and can be easily installed:
             pip install geovista
 
 Additional package dependencies will be required by some of the
-``geovista`` :ref:`Gallery Examples <gv-examples-gallery>`.
+``geovista`` :ref:`Gallery Examples <gv-examples>`.
 
 These packages may be installed with:
 

@@ -1,4 +1,4 @@
-.. _gv-examples-gallery:
+.. _gv-examples:
 
 *********************
 :fa:`images` Examples
