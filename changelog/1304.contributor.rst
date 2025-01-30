@@ -1,0 +1,2 @@
+Added ``sphinx`` cross-references to the :ref:`gv-examples`.
+(:user:`bjlittle`)
