@@ -19,9 +19,9 @@ which is the most common case.
 
 The sample flow data is actually provided in three separate surface-oriented
 component arrays, 'U, V and W', i.e. eastward, northward and vertical components,
-but we are only using the first two.  We use the :meth:`geovista.Transform.from_points`
-method, passing the winds to the ``vectors`` keyword, producing a mesh of scattered
-points with attached vectors.
+but we are only using the first two.  We use the
+:meth:`geovista.bridge.Transform.from_points` method, passing the winds to the
+``vectors`` keyword, producing a mesh of scattered points with attached vectors.
 
 The arrows themselves are created from this mesh via the
 :meth:`pyvista.DataSetFilters.glyph` method.

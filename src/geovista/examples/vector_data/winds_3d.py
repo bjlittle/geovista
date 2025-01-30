@@ -20,9 +20,9 @@ latitude values, which is the most common case.
 i.e. eastward, northward and vertical components.
 
 There is no connectivity provided, so each location has its own attached vector, and is
-independent of the others.  We use the :meth:`geovista.Transform.from_points` method,
-passing the winds to the ``vectors`` keyword, producing a mesh of scattered points with
-attached vectors.
+independent of the others.  We use the :meth:`geovista.bridge.Transform.from_points`
+method, passing the winds to the ``vectors`` keyword, producing a mesh of scattered
+points with attached vectors.
 
 The arrows themselves are created from this mesh via the
 :meth:`pyvista.DataSetFilters.glyph` method.
