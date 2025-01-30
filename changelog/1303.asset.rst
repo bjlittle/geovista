@@ -1,0 +1,2 @@
+Updated the ``geovista.cache`` to reference ``geovista-data =2025.1.4``,
+which includes new vector data assets. (:user:`bjlittle`)

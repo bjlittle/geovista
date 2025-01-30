@@ -22,6 +22,7 @@ from geovista.common import (
     to_cartesian,
     wrap,
 )
+from geovista.pantry.meshes import lfric_orog
 
 
 def test_defaults(lam_uk_sample, lam_uk):
@@ -125,3 +126,11 @@ def test_lines_closed_interval(closed_interval, lonlat, pids):
     mesh.lines = lines
     result = from_cartesian(mesh, closed_interval=closed_interval)
     assert np.all(np.isclose(result[:, :-1], lonlat)) == closed_interval
+
+
+def test_convert_edges_pole_cell_unfold():
+    """Test edges with no polar cell associated with polar point."""
+    mesh = lfric_orog()
+    _, edges = mesh.contour_banded(3)
+    result = from_cartesian(edges)
+    assert result.shape == (edges.n_points, 3)
