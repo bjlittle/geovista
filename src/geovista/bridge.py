@@ -801,7 +801,7 @@ class Transform:  # numpydoc ignore=PR01
                     src_crs=vectors_crs, tgt_crs=WGS84, xs=bases_x, ys=bases_y
                 )
                 cartesian_bases = to_cartesian(
-                    tranformed_bases[:, 0], transformed_bases[:, 1]
+                    transformed_bases[:, 0], transformed_bases[:, 1]
                 )
                 post_rotate_matrix = np.matrix(cartesian_bases).T
 
