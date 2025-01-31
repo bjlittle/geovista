@@ -1155,7 +1155,6 @@ class Transform:  # numpydoc ignore=PR01
             if not name:
                 size = data.size // data.shape[-1] if rgb else data.size
                 name = NAME_POINTS if size == mesh.n_points else NAME_CELLS
-            assert isinstance(name, str)
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data
