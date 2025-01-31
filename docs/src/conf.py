@@ -257,7 +257,8 @@ tags_badge_colors = {
     "filter:*": "success",  # extrude, threshold, warp
     "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
     "projection:*": "warning",  # crs, transform
-    "render": "danger",  # camera
+    "render:*": "danger",  # camera
+    "sample:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
     "style:*": "light",  # colormap, lighting, opacity, shading
     "widget:*": "info",  # checkbox, logo
 }
