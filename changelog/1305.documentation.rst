@@ -1,1 +1,1 @@
-Added a gallery example using :func:`pyvista.PolyDataFilters.contour_banded`. (:user:`HGWright`)
+Added a gallery example using :meth:`pyvista.PolyDataFilters.contour_banded`. (:user:`HGWright`)
