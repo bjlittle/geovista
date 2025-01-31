@@ -1,0 +1,3 @@
+Renamed the gallery examples ``Region Extraction`` section to ``Extraction`` to
+maintain the primary sidebar menu in alphabetical order.
+(:user:`bjlittle`)
