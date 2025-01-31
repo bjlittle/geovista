@@ -30,12 +30,9 @@ A Natural Earth base layer is also rendered along with the Natural Earth coastli
 
 .. tags::
 
-    component: coastlines,
-    component: texture,
+    component: coastlines, component: texture,
     domain: orography,
-    filter: cast,
-    filter: contour,
-    filter: threshold,
+    filter: cast, filter: contour, filter: threshold,
     sample: unstructured,
     style: colormap
 
