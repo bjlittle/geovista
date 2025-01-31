@@ -90,6 +90,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import partial
 from itertools import combinations
+from typing import TypeAlias
 
 try:
     import h3
@@ -119,7 +120,7 @@ import geovista.theme
 MDI = -1
 
 #: Type alias
-H3AssetLike = str | PolyData
+H3AssetLike: TypeAlias = str | PolyData
 H3Indexes = set[str]
 
 
@@ -276,7 +277,7 @@ def to_children(h3indexes: H3Indexes) -> H3Indexes:
         The children cell indexes.
 
     """
-    result = set()
+    result: set[str] = set()
     children = [h3.cell_to_children(h3index) for h3index in h3indexes]
     result.update(*children)
 
@@ -309,7 +310,9 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
         The H3 mesh surface.
 
     """
-    nverts, lats, lons = [], [], []
+    nverts: list[int] = []
+    lats: list[float] = []
+    lons: list[float] = []
 
     # Get the lat/lon vertices of each H3Index cell polygon.
     for h3index in h3indexes:

@@ -58,6 +58,26 @@ ignore-words-list = "whet,projets"
 skip = ".git,*.css,*.ipynb,*.js,*.html,*.map,*.po,CODE_OF_CONDUCT.md"
 
 
+[tool.mypy]
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+exclude = []
+files = ["src/geovista"]
+strict = true
+warn_unreachable = true
+
+
+[[tool.mypy.overrides]]
+# Problem caused by the click module - out of our control.
+disallow_untyped_decorators = false
+module = "geovista.cli"
+
+
+[[tool.mypy.overrides]]
+# Subclassing third-party classes - out of our control.
+disallow_subclassing_any = false
+module = ["geovista.geoplotter", "geovista.qt", "geovista.report"]
+
+
 [tool.numpydoc_validation]
 checks = [
   "all", # Enable all numpydoc validation rules, apart from the following:
@@ -123,10 +143,6 @@ xfail_strict = "True"
 
 [tool.repo-review]
 ignore = [
-  # https://learn.scientific-python.org/development/guides/style/#MY100
-  "MY100", # Uses MyPy (pyproject config).
-  # https://learn.scientific-python.org/development/guides/style/#PC140
-  "PC140", # Uses mypy.
   # https://learn.scientific-python.org/development/guides/style/#PC180
   "PC180", # Uses prettier.
 ]

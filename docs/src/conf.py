@@ -254,7 +254,7 @@ tippy_props = {"maxWidth": 700, "placement": "top-start", "theme": "light"}
 tags_badge_colors = {
     "component:*": "primary",  # coastlines, graticule, manifold, texture, vectors
     "domain:*": "secondary",  # oceanography, seismology, meteorology, orography
-    "filter:*": "success",  # extrude, threshold, warp
+    "filter:*": "success",  # cast, contour, extrude, threshold, triangulate, warp
     "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
     "projection:*": "warning",  # crs, transform
     "render:*": "danger",  # camera

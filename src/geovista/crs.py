@@ -13,7 +13,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import lazy_loader as lazy
 from pyproj import CRS
@@ -39,7 +39,7 @@ __all__ = [
 ]
 
 # type aliases
-CRSLike: TypeAlias = int | str | dict | CRS
+CRSLike: TypeAlias = int | str | dict[str, Any] | CRS
 """Type alias for a Coordinate Reference System."""
 
 # constants
@@ -109,8 +109,8 @@ def get_central_meridian(crs: CRS) -> float | None:
             filter(lambda param: param.code == EPSG_CENTRAL_MERIDIAN, params)
         )
         if len(cm_param) == 1:
-            (cm_param,) = cm_param
-            result = cm_param.value
+            (cm_param_single,) = cm_param
+            result = cm_param_single.value
 
     return result
 
@@ -161,6 +161,7 @@ def projected(mesh: pv.PolyData) -> bool:
     """
     crs = from_wkt(mesh)
 
+    result: bool
     if crs is None:
         xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
         xdelta, ydelta, zdelta = (xmax - xmin), (ymax - ymin), (zmax - zmin)

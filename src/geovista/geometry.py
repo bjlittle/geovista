@@ -34,7 +34,10 @@ from .pantry import fetch_coastlines
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+    import numpy as np
+    import pyvista as pv
     from shapely import LineString, MultiLineString
+    from shapely.geometry.base import GeometrySequence
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -139,7 +142,9 @@ def load_coastline_geometries(
     fname = shp.natural_earth(resolution=resolution, category=category, name=name)
     reader = shp.Reader(fname)
 
-    def unpack(geometries: Generator[LineString | MultiLineString]) -> None:
+    def unpack(
+        geometries: Generator[LineString | MultiLineString] | list[GeometrySequence],
+    ) -> None:
         """Unpack the geometries coordinates.
 
         Parameters
@@ -211,10 +216,10 @@ def load_coastlines(
     zlevel = 0 if zlevel is None else int(zlevel)
     radius += radius * zlevel * zscale
 
-    geoms = load_coastline_geometries(resolution=resolution)
-    npoints_per_geom = [geom.shape[0] for geom in geoms]
-    ngeoms = len(geoms)
-    geoms = np.concatenate(geoms)
+    geoms_list = load_coastline_geometries(resolution=resolution)
+    npoints_per_geom = [geom.shape[0] for geom in geoms_list]
+    ngeoms = len(geoms_list)
+    geoms = np.concatenate(geoms_list)
     nlines = geoms.shape[0] - ngeoms
 
     geoms = to_cartesian(geoms[:, 0], geoms[:, 1], radius=radius)

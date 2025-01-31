@@ -41,9 +41,7 @@ along with Natural Earth coastlines.
 
 .. tags::
 
-    component: coastlines,
-    component: manifold,
-    component: texture,
+    component: coastlines, component: manifold, component: texture,
     domain: orography,
     load: unstructured
 

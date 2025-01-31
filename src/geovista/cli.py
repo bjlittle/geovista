@@ -85,23 +85,26 @@ def _download_group(
     if fg_colour is None:
         fg_colour = FG_COLOUR
 
-    name: str = "" if name is None else f"{name} "
+    name_post: str = "" if name is None else f"{name} "
 
     n_fnames: int = len(fnames)
     width: int = len(str(n_fnames))
 
     previous = pooch_mute(silent=True)
 
-    click.echo(f"Downloading {n_fnames} {name}registered asset{_plural(n_fnames)}:")
+    click.echo(
+        f"Downloading {n_fnames} {name_post}registered asset{_plural(n_fnames)}:"
+    )
     for i, fname in enumerate(fnames):
         click.echo(f"[{i + 1:0{width}d}/{n_fnames}] Downloading ", nl=False)
         click.secho(f"{fname} ", nl=False, fg=fg_colour)
         click.echo("... ", nl=False)
         processor = None
-        name = pathlib.Path(fname)
-        if decompress and (suffix := name.suffix) in pooch.Decompress.extensions:
-            name = name.stem.removesuffix(suffix)
-            processor = pooch.Decompress(method="auto", name=name)
+        name_path = pathlib.Path(fname)
+        if decompress and (suffix := name_path.suffix) in pooch.Decompress.extensions:
+            processor = pooch.Decompress(
+                method="auto", name=name_path.stem.removesuffix(suffix)
+            )
         CACHE.fetch(fname, processor=processor)
         click.secho("done!", fg="green")
 
@@ -465,10 +468,10 @@ def examples(
 
     if groups:
         click.echo("Available example groups:")
-        groups = _groups()
-        n_groups = len(groups)
+        groups_new = _groups()
+        n_groups = len(groups_new)
         width = len(str(n_groups))
-        for i, group in enumerate(groups):
+        for i, group in enumerate(groups_new):
             click.echo(f"[{i + 1:0{width}d}/{n_groups}] ", nl=False)
             click.secho(f"{group}", fg="green")
         click.echo("\n👍 All done!")
@@ -491,9 +494,9 @@ def examples(
         return
 
     if run_group:
-        group = [script for script in EXAMPLES[1:] if script.startswith(run_group)]
-        n_group = len(group)
-        for i, script in enumerate(group):
+        filtered = [script for script in EXAMPLES[1:] if script.startswith(run_group)]
+        n_group = len(filtered)
+        for i, script in enumerate(filtered):
             msg = f"Running {run_group!r} example {script!r} ({i + 1} of {n_group}) ..."
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")

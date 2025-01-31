@@ -14,12 +14,11 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
-from .common import VTK_CELL_IDS, MixinStrEnum, to_cartesian
+from .common import VTK_CELL_IDS, StrEnumPlus, to_cartesian
 from .crs import WGS84, from_wkt
 from .transform import transform_points
 
@@ -64,7 +63,7 @@ KDTREE_PREFERENCE: str = "point"
 """The default search preference."""
 
 
-class SearchPreference(MixinStrEnum, StrEnum):
+class SearchPreference(StrEnumPlus):
     """Enumeration of mesh geometry search preferences.
 
     Notes
@@ -158,7 +157,7 @@ class KDTree:  # numpydoc ignore=PR01
             # TODO @bjlittle: Clarify zlevel preservation for non-WGS84 point-clouds.
             xyz = to_cartesian(transformed[:, 0], transformed[:, 1])
 
-        self._n_points = xyz.shape[0]
+        self._n_points: int = xyz.shape[0]
         self._mesh_type = mesh.__class__.__name__
         self._kdtree = pyKDTree(xyz, leafsize=leaf_size)
 
@@ -199,7 +198,9 @@ class KDTree:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        return self._kdtree.leafsize
+        result = self._kdtree.leafsize
+        assert isinstance(result, int)
+        return result
 
     @property
     def n_points(self) -> int:
@@ -310,9 +311,12 @@ class KDTree:  # numpydoc ignore=PR01
 
         xyz = to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
 
-        return self._kdtree.query(
+        result = self._kdtree.query(
             xyz, k=k, eps=epsilon, distance_upper_bound=distance_upper_bound
         )
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+        return result
 
 
 def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:

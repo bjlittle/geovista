@@ -14,14 +14,13 @@ Notes
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
 from geovista.cache import CACHE
-from geovista.common import LRU_CACHE_SIZE, MixinStrEnum
+from geovista.common import LRU_CACHE_SIZE, StrEnumPlus
 
 if TYPE_CHECKING:
     import netCDF4 as nc  # noqa: N813
@@ -68,7 +67,7 @@ PANTRY_DATA: str = "pantry/data"
 """The registry key for the pantry data."""
 
 
-class CloudPreference(MixinStrEnum, StrEnum):
+class CloudPreference(StrEnumPlus):
     """Enumeration of mesh types for cloud amount.
 
     Notes
@@ -90,10 +89,10 @@ class SampleStructuredXY:
 
     lons: ArrayLike
     lats: ArrayLike
-    data: ArrayLike = field(default=None)
-    name: str = field(default=None)
-    units: str = field(default=None)
-    steps: int = field(default=None)
+    data: ArrayLike | None = field(default=None)
+    name: str | None = field(default=None)
+    units: str | None = field(default=None)
+    steps: int | None = field(default=None)
     ndim: int = 2
 
 
@@ -104,10 +103,10 @@ class SampleStructuredXYZ:
     lons: ArrayLike
     lats: ArrayLike
     zlevel: ArrayLike
-    data: ArrayLike = field(default=None)
-    name: str = field(default=None)
-    units: str = field(default=None)
-    steps: int = field(default=None)
+    data: ArrayLike | None = field(default=None)
+    name: str | None = field(default=None)
+    units: str | None = field(default=None)
+    steps: int | None = field(default=None)
     ndim: int = 3
 
 
@@ -118,13 +117,13 @@ class SampleUnstructuredXY:
     lons: ArrayLike
     lats: ArrayLike
     connectivity: ArrayLike
-    data: ArrayLike = field(default=None)
-    face: ArrayLike = field(default=None)
-    node: ArrayLike = field(default=None)
-    start_index: int = field(default=None)
-    name: str = field(default=None)
-    units: str = field(default=None)
-    steps: int = field(default=None)
+    data: ArrayLike | None = field(default=None)
+    face: ArrayLike | None = field(default=None)
+    node: ArrayLike | None = field(default=None)
+    start_index: int | None = field(default=None)
+    name: str | None = field(default=None)
+    units: str | None = field(default=None)
+    steps: int | None = field(default=None)
     ndim: int = 2
 
 
@@ -147,9 +146,9 @@ def capitalise(title: str) -> str:
 
     """
     title = title.replace("_", " ")
-    title = title.split(" ")
+    title_list = title.split(" ")
 
-    return " ".join([word.capitalize() for word in title])
+    return " ".join([word.capitalize() for word in title_list])
 
 
 def _cloud_amount_dataset(fname: str | CloudPreference) -> nc.Dataset:

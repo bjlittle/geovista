@@ -1,0 +1,3 @@
+Added references to the new ``cast``, ``contour`` and ``triangulate``
+`sphinx-tags <https://github.com/melissawm/sphinx-tags>`__ for the
+``filter`` category. (:user:`bjlittle`)
