@@ -99,8 +99,7 @@ def _fetch(
 ) -> str:  # numpydoc ignore=GL08
     # default to our http/s downloader with user-agent headers
     kwargs.setdefault("downloader", _downloader)
-    result = CACHE._fetch(*args, **kwargs)  # noqa: SLF001
-    assert isinstance(result, str)
+    result: str = CACHE._fetch(*args, **kwargs)  # noqa: SLF001
     return result
 
 
