@@ -133,7 +133,7 @@ def load_natural_earth_geometries(
 
     Notes
     -----
-    .. versionadded:: 0.1.0 !TODO(chris): update version
+    .. versionadded:: 0.6.0
 
     """
     import cartopy.io.shapereader as shp
@@ -251,48 +251,23 @@ def load_coastlines(
     -----
     .. versionadded:: 0.1.0
 
-    Calls :func:`load_coastline_geometries` to download the original coastline
-    geometries.
-
+    Calls :load_natural_earth_feature: with the category="physical" and
+    name="coastline".
     """
     if resolution is None:
         resolution = COASTLINES_RESOLUTION
 
-    radius = RADIUS if radius is None else abs(float(radius))
-    zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
-    zlevel = 0 if zlevel is None else int(zlevel)
-    radius += radius * zlevel * zscale
-
-    geoms = load_coastline_geometries(resolution=resolution)
-    npoints_per_geom = [geom.shape[0] for geom in geoms]
-    ngeoms = len(geoms)
-    geoms = np.concatenate(geoms)
-    nlines = geoms.shape[0] - ngeoms
-
-    geoms = to_cartesian(geoms[:, 0], geoms[:, 1], radius=radius)
-
-    # convert geometries to a vtk line mesh
-    mesh = pv.PolyData()
-    mesh.points = geoms
-    lines = np.full((nlines, 3), 2, dtype=int)
-    pstart, lstart = 0, 0
-
-    for npoints in npoints_per_geom:
-        pend = pstart + npoints
-        lend = lstart + npoints - 1
-        lines[lstart:lend, 1] = np.arange(pstart, pend - 1, dtype=int)
-        lines[lstart:lend, 2] = np.arange(pstart + 1, pend, dtype=int)
-        pstart, lstart = pend, lend
-
-    mesh.lines = lines
-    mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
-    mesh.field_data[GV_FIELD_RESOLUTION] = np.array([resolution])
-    to_wkt(mesh, WGS84)
-
-    return mesh
+    return load_natural_earth_feature(
+        "physical",
+        "coastline",
+        resolution=resolution,
+        radius=radius,
+        zlevel=zlevel,
+        zscale=zscale,
+    )
 
 
-# @lru_cache(maxsize=LRU_CACHE_SIZE)
+# @lru_cache(maxsize=LRU_CACHE_SIZE) # TODO(Chris): Can't cache PolyData...
 def load_natural_earth_feature(
     category: str,
     name: str,
@@ -337,9 +312,9 @@ def load_natural_earth_feature(
 
     Notes
     -----
-    .. versionadded:: 0.1.0
+    .. versionadded:: 0.6.0
 
-    Calls :func:`load_coastline_geometries` to download the original coastline
+    Calls :func:`load_natural_earth_geometries` to download the original
     geometries.
 
     """
