@@ -325,7 +325,7 @@ def load_natural_earth_feature(
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
-    drape_over_mesh : PolyMesh, optional
+    drape_over_mesh : PolyData, optional
         A mesh to drape the feature over. Warning: can be computationally
         expensive; only use for small domains or low resolution features
         and/or meshes.
