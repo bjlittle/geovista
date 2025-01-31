@@ -12,26 +12,31 @@ This example demonstrates how to use banded contours.
 
 📋 Summary
 ^^^^^^^^^^
-Creates a mesh from 1-D latitude and longitude unstructured points.
-
-It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
+Uses an unstructured Met Office LFRic C48 cubed-sphere mesh of surface altitude
 data.
 
-We triangulate the mesh as this is the preferred format when using filters.
+First triangulate the mesh as this is the preferred geometry when using the contour
+filter.
 
-We use a threshold to make sure that all the land is contoured, while leaving the
-sea thresholded out and then cast this to cells rather than points.
+Then we threshold the surface altitude by height such that all sea-level cells
+are removed from the mesh.
 
-We set the number of contours to 13 as the color map we add (Set3) has 12 unique
-colours and we have number of contours -1 actual contours.
+The remaining land-based cells of the mesh are contoured and rendered using a
+qualitative colormap (``Set3``) containing 12 unique colours. We use the
+``contour_banded`` filter to generate 13 contours and the associated banded contour
+edges.
+
+A Natural Earth base layer is also rendered along with the Natural Earth coastlines.
 
 .. tags::
 
     component: coastlines,
     component: texture,
     domain: orography,
+    filter: cast,
+    filter: contour,
     filter: threshold,
-    load: unstructured,
+    sample: unstructured,
     style: colormap
 
 ----
@@ -47,7 +52,7 @@ import geovista.theme
 
 
 def main() -> None:
-    """Plot banded contours of surface altitude with a colormap.
+    """Plot banded contours of surface altitude with a qualitative colormap.
 
     Notes
     -----
