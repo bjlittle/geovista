@@ -75,7 +75,7 @@ module = "geovista.cli"
 [[tool.mypy.overrides]]
 # Subclassing third-party classes - out of our control.
 disallow_subclassing_any = false
-module = "geovista.report,geovista.geoplotter,geovista.qt"
+module = ["geovista.geoplotter", "geovista.qt", "geovista.report"]
 
 
 [tool.numpydoc_validation]
