@@ -477,9 +477,6 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        if rgb is None:
-            rgb = False
-
         xs, ys = cls._as_contiguous_1d(xs, ys)
         mxs, mys = np.meshgrid(xs, ys, indexing="xy")
         return Transform.from_2d(
@@ -817,9 +814,6 @@ class Transform:  # numpydoc ignore=PR01
                 "Use pip or conda to install."
             )
             raise ImportError(emsg) from None
-
-        if rgb is None:
-            rgb = False
 
         if isinstance(fname, str):
             fname = Path(fname)
