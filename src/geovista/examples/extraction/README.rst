@@ -1,4 +1,6 @@
 .. _gv-examples-extraction:
 
-Region Extraction
-=================
+Extraction
+==========
+
+Highlights various region :term:`manifold` extraction techniques available.
