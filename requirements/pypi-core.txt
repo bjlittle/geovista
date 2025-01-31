@@ -10,3 +10,4 @@ pooch
 pykdtree
 pyproj >=3.3
 pyvista >=0.43.1
+shapely <2.0.7
