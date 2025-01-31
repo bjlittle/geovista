@@ -19,7 +19,7 @@ Notes
 
 from __future__ import annotations
 
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
@@ -61,10 +61,10 @@ __all__ = [
 ]
 
 # type aliases
-PathLike: TypeAlias = str | PurePath
+PathLike: TypeAlias = str | Path
 """Type alias for an asset file path."""
 
-Shape: TypeAlias = tuple[int]
+Shape: TypeAlias = tuple[int, ...]
 """Type alias for a tuple of integers."""
 
 # constants
@@ -573,6 +573,7 @@ class Transform:  # numpydoc ignore=PR01
         cls._verify_2d(xs, ys)
         shape, ndim = xs.shape, xs.ndim
 
+        points_shape: tuple[int, int]
         if ndim == 2:
             # we have shape (M+1, N+1)
             rows, cols = points_shape = shape
@@ -702,8 +703,6 @@ class Transform:  # numpydoc ignore=PR01
 
             if not name:
                 name = NAME_POINTS
-            if not isinstance(name, str):
-                name = str(name)
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data
@@ -719,7 +718,7 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         fname: PathLike,
         name: str | None = None,
-        band: int | None = 1,
+        band: int = 1,
         rgb: bool | None = False,
         sieve: bool | None = False,
         size: int | None = None,
@@ -743,9 +742,9 @@ class Transform:  # numpydoc ignore=PR01
             Defaults to :data:`NAME_POINTS`. Note that, ``{units}`` may be
             used as a placeholder for the units of the data array e.g.,
             ``"Elevation / {units}"``.
-        band : int, optional
+        band : int, default=1
             The band index to read from the GeoTIFF. Note that, the `band`
-            index is one-based. Defaults to the first band i.e., ``band=1``.
+            index is one-based.
         rgb : bool, default=False
             Specify whether to read the GeoTIFF as an ``RGB`` or ``RGBA`` image.
             When ``rgb=True``, the `band` index is ignored.
@@ -820,7 +819,6 @@ class Transform:  # numpydoc ignore=PR01
             fname = Path(fname)
 
         fname = fname.resolve(strict=True)
-        band = None if rgb else band
 
         if size is None:
             size = RIO_SIEVE_SIZE
@@ -926,7 +924,7 @@ class Transform:  # numpydoc ignore=PR01
         start_index: int | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        rgb: bool | None = None,
+        rgb: bool | None = False,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -1006,6 +1004,9 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
+        if rgb is None:
+            rgb = False
+
         xs, ys = np.asanyarray(xs), np.asanyarray(ys)
         shape = xs.shape
 
@@ -1154,8 +1155,6 @@ class Transform:  # numpydoc ignore=PR01
             if not name:
                 size = data.size // data.shape[-1] if rgb else data.size
                 name = NAME_POINTS if size == mesh.n_points else NAME_CELLS
-            if not isinstance(name, str):
-                name = str(name)
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data

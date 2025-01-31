@@ -14,7 +14,6 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum
 from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
@@ -24,7 +23,7 @@ from .common import (
     GV_FIELD_RADIUS,
     RADIUS,
     ZLEVEL_SCALE,
-    MixinStrEnum,
+    StrEnumPlus,
     distance,
     to_cartesian,
     wrap,
@@ -33,8 +32,11 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import WGS84, to_wkt
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     import numpy as np
     from numpy.typing import ArrayLike
+    import pyproj
     import pyvista as pv
 
 # lazy import third-party dependencies
@@ -123,7 +125,7 @@ PREFERENCE: str = "center"
 """The default bounding-box preference."""
 
 
-class EnclosedPreference(MixinStrEnum, StrEnum):
+class EnclosedPreference(StrEnumPlus):
     """Enumeration of mesh geometry enclosed preferences.
 
     Notes
@@ -145,7 +147,7 @@ class BBox:  # numpydoc ignore=PR01
         lons: ArrayLike,
         lats: ArrayLike,
         ellps: str | None = ELLIPSE,
-        c: int | None = BBOX_C,
+        c: int = BBOX_C,
         triangulate: bool | None = False,
     ) -> None:
         """Create 3-D geodesic bounding-box to extract enclosed mesh, lines or point.
@@ -231,12 +233,12 @@ class BBox:  # numpydoc ignore=PR01
         self.c = c
         self.triangulate = triangulate
         # the resultant bounding-box mesh
-        self._mesh = None
+        self._mesh: pv.PolyData | None = None
         # cache prior surface radius, as an optimisation
-        self._surface_radius = None
+        self._surface_radius: float | None = None
 
-    def __eq__(self, other: BBox) -> bool:
-        result = NotImplemented
+    def __eq__(self, other: object) -> bool:
+        result: bool = NotImplemented
         if isinstance(other, BBox):
             result = False
             lhs = (self.ellps, self.c, self.triangulate)
@@ -247,7 +249,7 @@ class BBox:  # numpydoc ignore=PR01
                 result = np.allclose(self.lats, other.lats)
         return result
 
-    def __ne__(self, other: BBox) -> bool:
+    def __ne__(self, other: object) -> bool:
         result = self == other
         if result is not NotImplemented:
             result = not result
@@ -306,7 +308,8 @@ class BBox:  # numpydoc ignore=PR01
 
         """
         self._idx_map = np.empty((self.c + 1, self.c + 1), dtype=int)
-        self._bbox_lons, self._bbox_lats = [], []
+        self._bbox_lons: list[float] = []
+        self._bbox_lats: list[float] = []
         self._bbox_count = 0
         self._geod = pyproj.Geod(ellps=self.ellps)
         self._npts = self.c - 1
@@ -364,7 +367,7 @@ class BBox:  # numpydoc ignore=PR01
         # corner indices
         c1_idx, c2_idx, c3_idx, c4_idx = range(4)
 
-        def bbox_extend(lons: Iterable[float], lats: Iterable[float]) -> None:
+        def bbox_extend(lons: Sequence[float], lats: Sequence[float]) -> None:
             """Register the bounding box longitudes and latitudes.
 
             Parameters
@@ -403,10 +406,9 @@ class BBox:  # numpydoc ignore=PR01
 
             """
             assert row is not None or column is not None
-            if row is None:
-                row = slice(None)
-            if column is None:
-                column = slice(None)
+            row_slice = np.s_[:] if row is None else np.s_[row]
+            column_slice = np.s_[:] if column is None else np.s_[column]
+
             glons, glats = npoints_by_idx(
                 self._bbox_lons,
                 self._bbox_lats,
@@ -415,7 +417,7 @@ class BBox:  # numpydoc ignore=PR01
                 npts=self._npts,
                 geod=self._geod,
             )
-            self._idx_map[row, column] = [
+            self._idx_map[row_slice, column_slice] = [
                 idx1,
                 *(np.arange(self._npts) + self._bbox_count),
                 idx2,
@@ -431,8 +433,8 @@ class BBox:  # numpydoc ignore=PR01
 
         # register bbox inner indices and points
         for row_idx in range(1, self.c):
-            row = self._idx_map[row_idx]
-            bbox_update(row[0], row[-1], row=row_idx)
+            row_idx_map = self._idx_map[row_idx]
+            bbox_update(row_idx_map[0], row_idx_map[-1], row=row_idx)
 
     def _generate_bbox_mesh(
         self, surface: pv.PolyData | None = None, radius: float | None = None
@@ -595,6 +597,7 @@ class BBox:  # numpydoc ignore=PR01
         """
         self._generate_bbox_mesh(surface=surface, radius=radius)
 
+        assert isinstance(self._surface_radius, float)
         radius = self._surface_radius + self._surface_radius * ZLEVEL_SCALE
 
         edge_idxs = self._bbox_face_edge_idxs()
@@ -863,7 +866,8 @@ def line(
         )
         raise ValueError(emsg)
 
-    line_lons, line_lats = [], []
+    line_lons: list[float] = []
+    line_lats: list[float] = []
     geod = pyproj.Geod(ellps=ellps)
 
     for idx in range(n_lons - 1):
@@ -1070,7 +1074,7 @@ def npoints_by_idx(
 def panel(
     name: int | str,
     ellps: str | None = ELLIPSE,
-    c: int | None = BBOX_C,
+    c: int = BBOX_C,
     triangulate: bool | None = False,
 ) -> BBox:
     """Create boundary-box for specific cubed-sphere panel.
@@ -1085,8 +1089,8 @@ def panel(
         The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
         Defaults to :data:`ELLIPSE`.
     c : float, optional
-        The bounding-box face geometry will contain ``c**2`` cells. Defaults to
-        :data:`BBOX_C`.
+        The bounding-box face geometry will contain ``c**2`` cells. Defaults
+        to :data:`BBOX_C`.
     triangulate : bool, optional
         Specify whether the panel bounding-box faces are triangulated. Defaults to
         ``False``.
@@ -1143,7 +1147,7 @@ def wedge(
     lon1: float,
     lon2: float,
     ellps: str | None = ELLIPSE,
-    c: int | None = BBOX_C,
+    c: int = BBOX_C,
     triangulate: bool | None = False,
 ) -> BBox:
     """Create geodesic bounding-box manifold wedge from the north to the south pole.
@@ -1158,8 +1162,8 @@ def wedge(
         The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
         Defaults to :data:`ELLIPSE`.
     c : float, optional
-        The bounding-box face geometry will contain ``c**2`` cells. Defaults to
-        :data:`BBOX_C`.
+        The bounding-box face geometry will contain ``c**2`` cells. Defaults
+        to :data:`BBOX_C`.
     triangulate : bool, optional
         Specify whether the wedge bounding-box faces are triangulated. Defaults to
         ``False``.
