@@ -819,7 +819,6 @@ class Transform:  # numpydoc ignore=PR01
             fname = Path(fname)
 
         fname = fname.resolve(strict=True)
-        band = -1 if rgb else band
 
         if size is None:
             size = RIO_SIEVE_SIZE
