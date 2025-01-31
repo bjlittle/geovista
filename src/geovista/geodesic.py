@@ -13,7 +13,7 @@ Notes
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
@@ -32,6 +32,8 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import WGS84, to_wkt
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     import numpy as np
     from numpy.typing import ArrayLike
     import pyproj
@@ -168,8 +170,9 @@ class BBox:  # numpydoc ignore=PR01
         ellps : str, optional
             The ellipsoid for geodesic calculations. See
             :func:`pyproj.list.get_ellps_map`. Defaults to :data:`ELLIPSE`.
-        c : float, default=:data:`BBOX_C`
+        c : float, optional
             The bounding-box face geometry will contain ``c**2`` cells.
+            Defaults to :data:`BBOX_C`.
         triangulate : bool, optional
             Specify whether the bounding-box faces are triangulated. Defaults to
             ``False``.
@@ -1085,8 +1088,9 @@ def panel(
     ellps : str, optional
         The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
         Defaults to :data:`ELLIPSE`.
-    c : float, default=:data:`BBOX_C`
-        The bounding-box face geometry will contain ``c**2`` cells.
+    c : float, optional
+        The bounding-box face geometry will contain ``c**2`` cells. Defaults
+        to :data:`BBOX_C`.
     triangulate : bool, optional
         Specify whether the panel bounding-box faces are triangulated. Defaults to
         ``False``.
@@ -1157,8 +1161,9 @@ def wedge(
     ellps : str, optional
         The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
         Defaults to :data:`ELLIPSE`.
-    c : float, default=:data:`BBOX_C`
-        The bounding-box face geometry will contain ``c**2`` cells.
+    c : float, optional
+        The bounding-box face geometry will contain ``c**2`` cells. Defaults
+        to :data:`BBOX_C`.
     triangulate : bool, optional
         Specify whether the wedge bounding-box faces are triangulated. Defaults to
         ``False``.
