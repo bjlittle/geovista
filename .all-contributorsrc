@@ -99,7 +99,9 @@
       "contributions": [
         "doc",
         "review",
-        "code"
+        "code",
+        "data",
+        "example"
       ]
     },
     {
