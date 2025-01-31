@@ -781,20 +781,20 @@ class Transform:  # numpydoc ignore=PR01
                 axis_names = [x.name for x in vectors_crs.axis_info]
                 if axis_names[:2] != ["Longitude", "Latitude"]:
                     msg = (
-                        "Cannot determine wind directions : "
-                        f"Target CRS is not supported : {vectors_crs}."
+                        "Cannot determine wind directions : Target CRS type is not "
+                        f"supported for grid orientation decoding : {vectors_crs}."
                     )
                     raise ValueError(msg)
 
-                # For a CRS with longitude and latitude axes, we treat its coordinates
-                # as latitudes and longitudes and (0, 90) as its North Pole.
+                # For a CRS with longitude and latitude axes, its axes determine the
+                # east- and north-wards directions of surface-oriented vectors.
                 # This means we can calculate the xyz vectors for the input points in
                 # vector coordinates, and afterwards rotate them to the display.
-                # TODO @pp-mo: identify add support for other common cases as needed,
-                #  for example OSGB.  Sadly I think there is no general solution.
+                # TODO @pp-mo: support other common cases as needed, for example OSGB
+                #  or Mercator.  Sadly I think there is no general solution.
 
-                # post-rotate = post_rotate_matrix @ vectors
-                # transforming the equivalent of the x,y,z basis vectors
+                # calculate post-rotate matrix, so "vectors @= post_rotate_matrix"
+                # transform the equivalent of the x,y,z basis vectors
                 bases_x = np.array([0, 90, 0])
                 bases_y = np.array([0, 0, 90])
                 transformed_bases = transform_points(
@@ -805,8 +805,8 @@ class Transform:  # numpydoc ignore=PR01
                 )
                 post_rotate_matrix = np.matrix(cartesian_bases).T
 
-                # We also need points lons+lats **in the vector CRS** to calculate
-                # the vector components (i.e. oriented to its northward + eastward).
+                # We will also need points as lons+lats **in the vector CRS** to
+                # calculate the vectors (i.e. oriented to "its" northward + eastward).
                 vector_xs = xs
                 vector_ys = ys
                 src_crs = crs or WGS84
@@ -817,7 +817,7 @@ class Transform:  # numpydoc ignore=PR01
                     vector_xs, vector_ys = transformed[:, 0], transformed[:, 1]
 
             # TODO @pp-mo: should we pass flattened arrays here, and reshape as-per the
-            #   inputs (and xyz)?  not clear if multidimensional input is used or needed
+            #   inputs (and xyz)? Not clear if multidimensional input is used or needed
             xx, yy, zz = vectors_to_cartesian(
                 lons=vector_xs,
                 lats=vector_ys,
@@ -829,15 +829,10 @@ class Transform:  # numpydoc ignore=PR01
                 # At this point, vectors are correct xyz's for the original points in
                 # 'vector_crs', but not ready for plotting since the "true" point
                 # locations are different : hence apply "post-rotation".
+                # TODO @pp-mo: replace np.dot with a '@' if a masked-array multiply bug
+                #  gets fixed : see https://github.com/numpy/numpy/issues/14992
+                vectors = np.dot(post_rotate_matrix, vectors.T).T
 
-                # Nasty hack if vectors are masked, as masked array multiply is bugged
-                vectors_is_masked = np.ma.isMaskedArray(vectors)
-                if vectors_is_masked:
-                    new_vectors, vecs_mask = np.array(vectors), vectors.mask
-                new_vectors = (post_rotate_matrix @ new_vectors.T).T
-                if vectors_is_masked:
-                    new_vectors = np.ma.masked_array(new_vectors, vecs_mask)
-                vectors = new_vectors
             mesh[vectors_array_name] = vectors
             mesh.set_active_vectors(vectors_array_name)
 
