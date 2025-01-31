@@ -803,7 +803,7 @@ class Transform:  # numpydoc ignore=PR01
                 cartesian_bases = to_cartesian(
                     transformed_bases[:, 0], transformed_bases[:, 1]
                 )
-                post_rotate_matrix = np.matrix(cartesian_bases).T
+                post_rotate_matrix = np.array(cartesian_bases).T
 
                 # We will also need points as lons+lats **in the vector CRS** to
                 # calculate the vectors (i.e. oriented to "its" northward + eastward).
