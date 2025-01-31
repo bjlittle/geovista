@@ -19,7 +19,7 @@ Notes
 
 from __future__ import annotations
 
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
@@ -61,7 +61,7 @@ __all__ = [
 ]
 
 # type aliases
-PathLike: TypeAlias = str | PurePath
+PathLike: TypeAlias = str | Path
 """Type alias for an asset file path."""
 
 Shape: TypeAlias = tuple[int, ...]
@@ -716,7 +716,7 @@ class Transform:  # numpydoc ignore=PR01
     @classmethod
     def from_tiff(
         cls,
-        fname: Path | str,
+        fname: PathLike,
         name: str | None = None,
         band: int = 1,
         rgb: bool | None = False,
@@ -735,7 +735,7 @@ class Transform:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        fname : Path or str
+        fname : PathLike
             The file path to the GeoTIFF.
         name : str, optional
             The name of the GeoTIFF data array to be attached to the mesh.
