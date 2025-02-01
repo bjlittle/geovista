@@ -1,0 +1,2 @@
+Added :user:`HGWright` as a contributor for ``data`` and ``example``.
+(:user:`bjlittle`)
