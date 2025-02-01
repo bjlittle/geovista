@@ -1,0 +1,4 @@
+Added `trame <https://github.com/Kitware/trame>`__ admonition for open
+:fab:`github` issue regarding :meth:`~pyvista.PolyDataFilters.contour_banded`
+interactive scene rendering. See :ref:`gv-examples-contour`.
+(:user:`bjlittle`)
