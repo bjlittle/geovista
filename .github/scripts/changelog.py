@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
 # Copyright (c) 2021, GeoVista Contributors.
 #
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Perform quality assurance of pull-request changelog.
+"""Perform quality assurance of pull-request changelog news fragments.
 
 Notes
 -----
@@ -239,7 +240,9 @@ def main(pr: str, changelog: str, verbose: bool) -> None:
     # sanitise the csv news fragment file names
     fragments = changelog.split(",")
     fragments = [
-        str(Path(fragment.strip()).relative_to(base)) for fragment in fragments
+        str(Path(fragment.strip()).relative_to(base))
+        for fragment in fragments
+        if fragment
     ]
     debug(f"{fragments=}", verbose=verbose)
 
