@@ -26,8 +26,9 @@ We use the :meth:`geovista.bridge.Transform.from_points` method, passing the
 winds to the ``vectors`` keyword, and specifying the different coordinate reference
 systems of both the sample points (``crs``) and the vectors (``vectors_crs``).
 
-Please refer to other code examples, e.g. `wind_arrows <./wind_arrows.html>`_ for more
-details of the basic methods used.
+Please refer to other code examples, e.g.
+:ref:`Wind Arrows Plot <sphx_glr_generated_gallery_vector_data_wind_arrows.py>`
+for more details of the basic methods used.
 
 """  # noqa: D205,D212,D400
 
