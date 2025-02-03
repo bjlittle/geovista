@@ -757,11 +757,11 @@ def to_cartesian(
 def vectors_to_cartesian(
     lons: ArrayLike,
     lats: ArrayLike,
-    vectors_uvw: (ArrayLike, ArrayLike, ArrayLike),
+    vectors_uvw: tuple[ArrayLike, ArrayLike, ArrayLike],
     radius: float | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
-) -> (np.ndarray, np.ndarray, np.ndarray):
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Transform geographic-oriented vector components to cartesian ``xyz`` components.
 
     Parameters

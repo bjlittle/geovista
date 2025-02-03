@@ -136,9 +136,9 @@ class SampleVectorsXYUVW:
     u: ArrayLike
     v: ArrayLike
     w: ArrayLike = field(default=None)
-    name: str = field(default=None)
-    units: str = field(default=None)
-    steps: int = field(default=None)
+    name: str | None = field(default=None)
+    units: str | None = field(default=None)
+    steps: int | None = field(default=None)
     ndim: int = 1
 
 
@@ -987,7 +987,7 @@ def ww3_global_tri() -> SampleUnstructuredXY:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def lfric_winds() -> SampleStructuredXYZ:
+def lfric_winds() -> SampleVectorsXYUVW:
     """Download and cache unstructured 3D winds sample.
 
     This data is derived from the LFRic test suite.

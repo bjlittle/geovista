@@ -19,6 +19,7 @@ Notes
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeAlias
 import warnings
@@ -617,7 +618,9 @@ class Transform:  # numpydoc ignore=PR01
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
-        vectors: ArrayLike | tuple(ArrayLike) | None = None,
+        vectors: (
+            tuple[ArrayLike, ArrayLike, ArrayLike] | tuple[ArrayLike, ArrayLike] | None
+        ) = None,
         vectors_crs: CRSLike | None = None,
         vectors_array_name: str | None = None,
     ) -> pv.PolyData:
@@ -739,22 +742,17 @@ class Transform:  # numpydoc ignore=PR01
             if vectors_array_name is None:
                 vectors_array_name = "vectors"
 
-            if not isinstance(vectors, tuple) or not all(
-                isinstance(arr, np.ndarray) for arr in vectors
+            if (
+                not isinstance(vectors, Iterable)  # type: ignore[redundant-expr]
+                or len(vectors) not in (2, 3)
             ):
-                msg = "Keyword 'vectors' must be a tuple of array-like."
+                msg = "Keyword 'vectors' must be a tuple of 2 or 3 array-likes."
                 raise ValueError(msg)
 
-            n_vecs = len(vectors)
-            if n_vecs not in (2, 3):
-                msg = (
-                    "Keyword 'vectors' must be a tuple of 2 or 3 arrays : "
-                    f"got {n_vecs}."
-                )
-                raise ValueError(msg)
+            in_vectors = [np.asanyarray(arr) for arr in vectors]
 
-            xx, yy = vectors[:2]
-            zz = vectors[2] if n_vecs > 2 else np.zeros_like(xx)
+            xx, yy = in_vectors[:2]
+            zz = in_vectors[2] if len(in_vectors) == 3 else np.zeros_like(xx)
 
             if vectors_crs is None:
                 # Vectors crs defaults to main input CRS
@@ -778,8 +776,16 @@ class Transform:  # numpydoc ignore=PR01
                 # standard lat-lon, so will need rotating afterwards.
                 # NOTE: we can only do this for specific CRS types where we know how to
                 # find **its** pole.
-                axis_names = [x.name for x in vectors_crs.axis_info]
-                if axis_names[:2] != ["Longitude", "Latitude"]:
+                axis_info = getattr(vectors_crs, "axis_info", [])
+                ok = (
+                    isinstance(axis_info, list)
+                    and len(axis_info) >= 2
+                    and all(hasattr(x, "name") for x in axis_info)
+                )
+                if ok:
+                    axis_names = [x.name for x in axis_info]
+                    ok = axis_names[:2] == ["Longitude", "Latitude"]
+                if not ok:
                     msg = (
                         "Cannot determine wind directions : Target CRS type is not "
                         f"supported for grid orientation decoding : {vectors_crs}."
@@ -823,7 +829,7 @@ class Transform:  # numpydoc ignore=PR01
                 lats=vector_ys,
                 vectors_uvw=(xx, yy, zz),
             )
-            vectors = np.vstack((xx, yy, zz)).T
+            mesh_vectors = np.vstack((xx, yy, zz)).T
 
             if post_rotate_matrix is not None:
                 # At this point, vectors are correct xyz's for the original points in
@@ -831,9 +837,9 @@ class Transform:  # numpydoc ignore=PR01
                 # locations are different : hence apply "post-rotation".
                 # TODO @pp-mo: replace np.dot with a '@' if a masked-array multiply bug
                 #  gets fixed : see https://github.com/numpy/numpy/issues/14992
-                vectors = np.dot(post_rotate_matrix, vectors.T).T
+                mesh_vectors = np.dot(post_rotate_matrix, mesh_vectors.T).T
 
-            mesh[vectors_array_name] = vectors
+            mesh[vectors_array_name] = mesh_vectors
             mesh.set_active_vectors(vectors_array_name)
 
         # clean the mesh
