@@ -79,7 +79,7 @@ def test_scalar():
     np.testing.assert_array_equal(Transform.from_points([0], [90]).points, expected)
 
 
-class TestFromPointsVectors:
+class TestVectors:
     """Check calculations on attached vectors.
 
     Mostly testing against previously-obtained results, but we do have examples proving
@@ -104,6 +104,23 @@ class TestFromPointsVectors:
         """Check basic operation on true-latlon uvw vectors."""
         mesh = Transform.from_points(
             xs=self.lons, ys=self.lats, vectors=(self.u, self.v, self.w)
+        )
+        result = mesh["vectors"].T
+        expected = np.array(
+            [
+                [10.385, -29.006, -6.416, -41.658],
+                [10.947, -1.769, -13.627, -54.169],
+                [22.301, 21.668, -3.759, -4.515],
+            ]
+        )
+        assert np.allclose(result, expected, atol=0.001)
+
+    def test_nonarrays(self):
+        """Check basic operation with lists of numbers in place of array vectors."""
+        mesh = Transform.from_points(
+            xs=self.lons,
+            ys=self.lats,
+            vectors=(list(self.u), list(self.v), list(self.w)),
         )
         result = mesh["vectors"].T
         expected = np.array(
