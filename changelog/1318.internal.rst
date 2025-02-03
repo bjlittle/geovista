@@ -1,0 +1,2 @@
+Added a ``py.typed`` file in compliance with
+`PEP 561 <https://peps.python.org/pep-0561/>`__. (:user:`trexfeathers`)
