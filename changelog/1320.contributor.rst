@@ -1,0 +1,3 @@
+Added optional extra validations from ``SchemaStore`` for the
+`validate-pyproject <https://github.com/abravalheri/validate-pyproject>`__
+``pre-commit`` hook. (:user:`bjlittle`)
