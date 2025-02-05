@@ -12,6 +12,8 @@ repos:
     rev: "v0.23"
     hooks:
       - id: validate-pyproject
+        # Optional extra validations from SchemaStore:
+        additional_dependencies: ["validate-pyproject-schema-store[all]"]
 
   - repo: https://github.com/adamchainz/blacken-docs
     rev: "1.19.1"
