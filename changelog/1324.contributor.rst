@@ -1,0 +1,3 @@
+Configured the ``conda-remove-defaults = true`` option for the
+`setup-miniconda <https://github.com/conda-incubator/setup-miniconda>`__
+:fab:`github` Action. (:user:`bjlittle`)
