@@ -166,9 +166,9 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
-        skip_existing: true
-        print_hash: true
+        repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
+        print-hash: true
 
 
   publish-artifacts-pypi:
@@ -188,4 +188,4 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
-        print_hash: true
+        print-hash: true
