@@ -76,6 +76,7 @@ jobs:
         miniforge-version: latest
         activate-environment: ${{ env.ENV_NAME }}
         use-only-tar-bz2: false
+        conda-remove-defaults: true
 
     - name: "conda environment cache"
       uses: ./.github/workflows/composite/conda-env-cache
