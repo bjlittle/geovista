@@ -395,7 +395,6 @@ def add_checkboxes(
             title,
             position=(x_offset, y_offset),
             font_size=8,
-            shadow=True,
             color=getattr(colors, slot),
         )
 
@@ -520,7 +519,6 @@ def main() -> None:
         "Uber H3: Hexagonal Hierarchical Spatial Index",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.add_coastlines()
     p.camera.zoom(1.5)

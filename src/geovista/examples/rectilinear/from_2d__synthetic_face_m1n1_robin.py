@@ -57,7 +57,7 @@ def main() -> None:
     # Plot the rectilinear grid.
     crs = "+proj=robin"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{name} / 1", "shadow": True}
+    sargs = {"title": f"{name} / 1"}
     p.add_mesh(mesh, clim=clim, cmap="tempo", scalar_bar_args=sargs, show_edges=True)
     p.add_coastlines()
     p.add_axes()
@@ -65,7 +65,6 @@ def main() -> None:
         f"2-D Synthetic Face Data ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

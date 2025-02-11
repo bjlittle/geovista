@@ -70,7 +70,6 @@ def main() -> None:
         "Bahamas, RGB GeoTIFF",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xz()
     p.camera.zoom(1.3)

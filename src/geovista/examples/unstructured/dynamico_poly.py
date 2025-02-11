@@ -61,7 +61,7 @@ def main() -> None:
     # Plot the unstructured mesh.
     crs = "+proj=poly"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
+    sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(mesh, scalar_bar_args=sargs)
     p.add_coastlines()
     p.add_graticule()
@@ -70,7 +70,6 @@ def main() -> None:
         f"DYNAMICO Icosahedral ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.2)

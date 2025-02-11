@@ -67,7 +67,7 @@ def main() -> None:
     # Plot the unstructured mesh.
     crs = "+proj=fouc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
+    sargs = {"title": f"{sample.name} / {sample.units}"}
     # Require increased relative tolerance accuracy when cutting the mesh
     # at the anti-meridian due to its complex geometry.
     p.add_mesh(mesh, scalar_bar_args=sargs, rtol=1e-8)
@@ -78,7 +78,6 @@ def main() -> None:
         f"AWI-CM FESOM v1.4 ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

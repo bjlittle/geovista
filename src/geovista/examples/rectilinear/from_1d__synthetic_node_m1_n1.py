@@ -54,7 +54,7 @@ def main() -> None:
 
     # Plot the rectilinear grid.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{name} / 1", "shadow": True}
+    sargs = {"title": f"{name} / 1"}
     p.add_mesh(mesh, clim=clim, cmap="ice", scalar_bar_args=sargs, show_edges=True)
     p.add_coastlines()
     p.add_axes()
@@ -62,7 +62,6 @@ def main() -> None:
         "1-D Synthetic Node Data",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.3)
     p.show()

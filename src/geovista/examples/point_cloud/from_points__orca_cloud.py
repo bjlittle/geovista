@@ -66,7 +66,7 @@ def main() -> None:
 
     # Plot the point cloud.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
+    sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(
         cloud,
         cmap="deep",
@@ -83,7 +83,6 @@ def main() -> None:
         "ORCA Point-Cloud (10m Coastlines)",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.3)
     p.show()
