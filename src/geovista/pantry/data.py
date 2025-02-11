@@ -127,6 +127,21 @@ class SampleUnstructuredXY:
     ndim: int = 2
 
 
+@dataclass(frozen=True)
+class SampleVectorsXYUVW:
+    """Data container for vector information on unconnected points."""
+
+    lons: ArrayLike
+    lats: ArrayLike
+    u: ArrayLike
+    v: ArrayLike
+    w: ArrayLike = field(default=None)
+    name: str | None = field(default=None)
+    units: str | None = field(default=None)
+    steps: int | None = field(default=None)
+    ndim: int = 1
+
+
 def capitalise(title: str) -> str:
     """Capitalise each word and replace inappropriate characters.
 
@@ -969,3 +984,38 @@ def ww3_global_tri() -> SampleUnstructuredXY:
         name=name,
         units=units,
     )
+
+
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def lfric_winds() -> SampleVectorsXYUVW:
+    """Download and cache unstructured 3D winds sample.
+
+    This data is derived from the LFRic test suite.
+
+    Returns
+    -------
+    SampleStructuredXYUV
+        Data payload with XY spatial coordinates and UVW wind components.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
+    fname = "lfric_winds_sample.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
+    dataset = nc.Dataset(resource)
+
+    # load the lon/lat/zlevel points
+    lons = dataset.variables["Mesh2d_face_x"][:]
+    lats = dataset.variables["Mesh2d_face_y"][:]
+    # NOTE: for now, take first time and depth.
+    # This effectively 'pretends' U and V are on same levels as W -- which they aren't!
+    units = dataset.variables["u_in_w3"].units
+    u = dataset.variables["u_in_w3"][0, 0]
+    v = dataset.variables["v_in_w3"][0, 0]
+    w = dataset.variables["w_in_wth"][0, 0]
+    name = "Wind"
+
+    return SampleVectorsXYUVW(lons, lats, u, v, w, name=name, units=units)

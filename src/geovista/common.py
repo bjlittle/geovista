@@ -71,6 +71,7 @@ __all__ = [
     "to_lonlat",
     "to_lonlats",
     "triangulated",
+    "vectors_to_cartesian",
     "vtk_warnings_off",
     "vtk_warnings_on",
     "wrap",
@@ -751,6 +752,90 @@ def to_cartesian(
     xyz = [x, y, z]
 
     return np.vstack(xyz).T if stacked else np.array(xyz)
+
+
+def vectors_to_cartesian(
+    lons: ArrayLike,
+    lats: ArrayLike,
+    vectors_uvw: tuple[ArrayLike, ArrayLike, ArrayLike],
+    radius: float | None = None,
+    zlevel: float | ArrayLike | None = None,
+    zscale: float | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transform geographic-oriented vector components to cartesian ``xyz`` components.
+
+    Parameters
+    ----------
+    lons, lats : ArrayLike
+        The longitude + latitude locations of the vectors (in degrees).
+        Both shapes must be the same.
+    vectors_uvw : tuple of ArrayLike
+        The eastward, northward and upward vector components.
+        All shapes must be the same as ``lons`` and ``lats``.
+    radius : float, optional
+        The radius of the sphere. Defaults to :data:`RADIUS`.
+    zlevel : int  or :data:`~numpy.typing.ArrayLike`, default=0.0
+        The z-axis level. Used in combination with the `zscale` to offset the
+        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        NOTE : non-scalar `zlevel` is not actually supported, since it is planned to
+        drop support for this from :meth:`~geovista.bridge.Transform.from_points`.
+        It will raise an error.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`ZLEVEL_SCALE`.
+
+    Returns
+    -------
+    (ndarray, ndarray, ndarray)
+        The corresponding ``xyz`` cartesian vector components.
+
+    Notes
+    -----
+    .. versionadded:: 0.5.0
+
+    """
+    radius = RADIUS if radius is None else abs(float(radius))
+    zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
+    # cast as float here, as from_cartesian use-case results in float zlevels
+    # that should be dtype preserved for the purpose of precision
+    if zlevel is None:
+        zlevel = 0
+    zlevel = np.atleast_1d(zlevel).astype(float)
+    if zlevel.size > 1:
+        # TODO @pp-mo: remove multiple zlevel, when removed from "from_points".
+        msg = f"'zlevel' may not be multiple, has shape {zlevel.shape}."
+        raise ValueError(msg)
+
+    radius += radius * zlevel * zscale
+
+    if lons.shape != lats.shape:
+        msg = f"'lons' and 'lats' do not have same shape: {lons.shape} != {lats.shape}."
+        raise ValueError(msg)
+
+    if any(x.shape != lons.shape for x in vectors_uvw):
+        msg = (
+            "some of 'vectors_uvw' do not have same shape as lons : "
+            f"{(x.shape for x in vectors_uvw)} != {lons.shape}."
+        )
+        raise ValueError(msg)
+
+    lons, lats = (np.deg2rad(arr) for arr in (lons, lats))
+    u, v, w = vectors_uvw
+
+    coslons = np.cos(lons)
+    sinlons = np.sin(lons)
+    coslats = np.cos(lats)
+    sinlats = np.sin(lats)
+    # N.B. the term signs are slightly unexpected here, because the viewing coord system
+    # is not quite what you may expect :  The "Y" axis goes to the right, and the "X"
+    # axis points out of the screen, towards the viewer.
+    z_factor = w * coslats - v * sinlats
+    wy = coslons * u + sinlons * z_factor
+    wx = -sinlons * u + coslons * z_factor
+    wz = v * coslats + w * sinlats
+    # NOTE: for better efficiency, we *COULD* handle the w=0 special case separately.
+    # Right now, for simplicity, we just don't bother.
+    return (radius * wx, radius * wy, radius * wz)
 
 
 def to_lonlat(
