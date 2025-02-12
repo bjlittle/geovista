@@ -65,7 +65,7 @@ def main() -> None:
     # Plot the rectilinear grid.
     crs = "+proj=eqc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
+    sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(mesh, scalar_bar_args=sargs)
     p.add_base_layer(texture=gv.blue_marble())
     p.add_coastlines()
@@ -74,7 +74,6 @@ def main() -> None:
         f"NOAA/NCEI OISST AVHRR ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

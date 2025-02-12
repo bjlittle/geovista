@@ -107,7 +107,6 @@ def main() -> None:
         "Low, Medium, High & Very High Cloud Amount",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.5)
     p.show()

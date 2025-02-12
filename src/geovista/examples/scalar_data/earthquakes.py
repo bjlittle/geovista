@@ -75,7 +75,7 @@ def main() -> None:
 
     # Plot the points.
     p = gv.GeoPlotter()
-    sargs = {"title": "Magnitude", "shadow": True}
+    sargs = {"title": "Magnitude"}
     p.add_points(
         xs=sample.lons,
         ys=sample.lats,
@@ -94,7 +94,6 @@ def main() -> None:
         "USGS M2.5+ Earthquakes, 2000-2018",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xz(negative=True)
     p.camera.zoom(1.3)

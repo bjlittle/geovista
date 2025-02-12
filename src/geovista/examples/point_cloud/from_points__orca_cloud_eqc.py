@@ -70,7 +70,7 @@ def main() -> None:
     # Plot the projected point cloud.
     crs = "+proj=eqc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
+    sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(
         cloud,
         cmap="deep",
@@ -87,7 +87,6 @@ def main() -> None:
         f"ORCA Point-Cloud ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.5)
     p.show()

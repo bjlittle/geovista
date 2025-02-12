@@ -108,7 +108,6 @@ def main() -> None:
         f"Low, Medium, High & Very High Cloud Amount ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

@@ -62,7 +62,7 @@ def main() -> None:
     # Plot the unstructured mesh.
     crs = "+proj=eqc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
+    sargs = {"title": f"{sample.name} / {sample.units}"}
     cmap = mpl.colormaps.get_cmap("cet_CET_L17").resampled(lutsize=9)
     p.add_mesh(mesh, cmap=cmap, scalar_bar_args=sargs)
     p.add_coastlines()
@@ -71,7 +71,6 @@ def main() -> None:
         f"ICON 160km Resolution Triangular Mesh ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

@@ -74,14 +74,13 @@ def main() -> None:
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
+    sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(mesh, scalar_bar_args=sargs)
     p.add_axes()
     p.add_text(
         "LFRic C48 Unstructured Cube-Sphere",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.3)
     p.show()
