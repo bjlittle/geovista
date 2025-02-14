@@ -72,7 +72,7 @@ jobs:
         activate-environment: ${{ env.ENV_NAME }}
         environment-file: requirements/conda-linux-64.lock
         use-only-tar-bz2: false
-        conda-remove-defaults: false
+        conda-remove-defaults: true
 
     - name: "conda info"
       run: |
