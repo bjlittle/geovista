@@ -12,10 +12,8 @@ This example demonstrates how to extract a region using a geodesic wedge manifol
 
 📋 Summary
 ^^^^^^^^^^
-Creates a mesh from 1-D latitude and longitude unstructured points and
-connectivity.
 
-It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
+Uses an unstructured Met Office LFRic C48 cubed-sphere mesh of surface altitude
 data.
 
 Three separate geodesic wedge manifolds are constructed to extract the cells of the
@@ -43,7 +41,7 @@ along with Natural Earth coastlines.
 
     component: coastlines, component: manifold, component: texture,
     domain: orography,
-    load: unstructured
+    sample: unstructured
 
 ----
 
@@ -53,7 +51,7 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.geodesic import wedge
-from geovista.pantry.data import lfric_orog
+from geovista.pantry.meshes import lfric_orog
 import geovista.theme
 
 
@@ -65,17 +63,8 @@ def main() -> None:
     .. versionadded:: 0.6.0
 
     """
-    # Load the sample data.
-    sample = lfric_orog()
-
-    # Create the mesh from the sample data.
-    mesh = gv.Transform.from_unstructured(
-        sample.lons,
-        sample.lats,
-        connectivity=sample.connectivity,
-        data=sample.data,
-        name=sample.name,
-    )
+    # Load the sample mesh.
+    mesh = lfric_orog()
 
     # Calculate the sample data range.
     clim = mesh.get_data_range()
@@ -92,7 +81,7 @@ def main() -> None:
     region_3 = bbox_3.enclosed(mesh, preference="center")
 
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}", "fmt": "%.1f"}
+    sargs = {"title": "Surface Altitude / m", "fmt": "%.0f"}
 
     # Add the 3 extracted regions.
     p.add_mesh(region_1, clim=clim, scalar_bar_args=sargs)

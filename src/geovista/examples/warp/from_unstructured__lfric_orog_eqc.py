@@ -14,14 +14,11 @@ cubed-sphere mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude unstructured points and
-connectivity.
-
-It uses an unstructured Met Office LFRic C48 cubed-sphere of surface altitude
+Uses an unstructured Met Office LFRic C48 cubed-sphere mesh of surface altitude
 data.
 
-The resulting mesh contains quad cells and is constructed from CF UGRID unstructured
-cell points and connectivity.
+The mesh contains quad cells and is constructed from CF UGRID unstructured cell
+points and connectivity.
 
 The mesh is transformed onto an Equidistant Cylindrical (Plate Carrée)
 projection.
@@ -40,7 +37,7 @@ for further details.
 
     domain: orography,
     filter: warp,
-    load: unstructured,
+    sample: unstructured,
     projection: crs, projection: transform
 
 ----
@@ -50,7 +47,7 @@ for further details.
 from __future__ import annotations
 
 import geovista as gv
-from geovista.pantry.data import lfric_orog
+from geovista.pantry.meshes import lfric_orog
 import geovista.theme
 from geovista.transform import transform_mesh
 
@@ -63,28 +60,19 @@ def main() -> None:
     .. versionadded:: 0.1.0
 
     """
-    # Load the sample data.
-    sample = lfric_orog()
-
-    # Create the mesh from the sample data.
-    mesh = gv.Transform.from_unstructured(
-        sample.lons,
-        sample.lats,
-        connectivity=sample.connectivity,
-        data=sample.data,
-        name=sample.name,
-    )
+    # Load the sample mesh.
+    mesh = lfric_orog()
 
     # Transform the mesh to the Plate Carrée projection.
     mesh = transform_mesh(mesh, crs := "esri:54001")
 
     # Warp the mesh nodes by the surface altitude.
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
-    mesh.warp_by_scalar(scalars=sample.name, inplace=True, factor=200)
+    mesh.warp_by_scalar(inplace=True, factor=200)
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}"}
+    sargs = {"title": "Surface Altitude / m", "fmt": "%.0f"}
     p.add_mesh(mesh, scalar_bar_args=sargs)
     p.add_axes()
     p.add_text(
