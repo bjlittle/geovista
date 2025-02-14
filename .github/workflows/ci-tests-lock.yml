@@ -40,10 +40,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
-
     - name: "environment configure"
       env:
         # Maximum cache period (in weeks) before forcing a cache refresh.
@@ -58,9 +54,9 @@ jobs:
       env:
         VTK_BUILD: "  - vtk=*=qt_*"
       run: |
-        python -m pip install conda-lock
+        conda update -n base --all
         python -c 'open("geovista.yml", "a").write("\n  - python =${{ env.PY_MAJOR }}.${{ env.PY_MINOR }}\n${{ env.VTK_BUILD }}\n")'
-        conda-lock --channel conda-forge --kind explicit --file geovista.yml --platform linux-64
+        pipx run conda-lock --channel conda-forge --kind explicit --file geovista.yml --platform linux-64
 
     - name: "upload lock artifact"
       uses: actions/upload-artifact@v4
