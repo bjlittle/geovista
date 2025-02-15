@@ -12,6 +12,7 @@ This example demonstrates how to use banded contours.
 
 📋 Summary
 ^^^^^^^^^^
+
 Uses an unstructured Met Office LFRic C48 cubed-sphere mesh of surface altitude
 data.
 

@@ -10,17 +10,15 @@ from .pantry.textures import (
 )
 from .report import Report
 
-
 __version__: str
 GEOVISTA_IMAGE_TESTING: bool
 
-
 __all__ = [
-    "__version__",
-    "GeoPlotter",
     "GEOVISTA_IMAGE_TESTING",
+    "GeoPlotter",
     "Report",
     "Transform",
+    "__version__",
     "black_marble",
     "blue_marble",
     "checkerboard",
