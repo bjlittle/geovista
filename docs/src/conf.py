@@ -526,7 +526,7 @@ intersphinx_mapping = {
     "pooch": ("https://www.fatiando.org/pooch/latest/", None),
     "pyproj": ("https://pyproj4.github.io/pyproj/stable/", None),
     "python": ("https://docs.python.org/3/", None),
-    "pyvista": ("https://docs.pyvista.org/version/stable/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
     "pyvistaqt": ("https://qtdocs.pyvista.org/", None),
     "rasterio": ("https://rasterio.readthedocs.io/en/stable/", None),
     "requests": ("https://requests.readthedocs.io/en/stable/", None),
