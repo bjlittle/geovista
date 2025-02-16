@@ -350,7 +350,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/mdit-py-plugins-0.4.2-pyhd8ed1ab_1.conda#af2060041d4f3250a7eb6ab3ec0e549b
   - https://conda.anaconda.org/conda-forge/linux-64/numpy-2.2.3-py311h5d046bc_0.conda#6de29798b2e278c56f1e87b7d6e693bb
   - https://conda.anaconda.org/conda-forge/linux-64/pillow-11.1.0-py311h1322bbf_0.conda#9f4f5593335f76c1dbf7381c11fe7155
-  - https://conda.anaconda.org/conda-forge/linux-64/pyproj-3.7.0-py311h0f98d5a_0.conda#22531205a97c116251713008d65dfefd
+  - https://conda.anaconda.org/conda-forge/linux-64/pyproj-3.7.1-py311h0f98d5a_0.conda#2c17ffd168aafaa12be759e300133e1c
   - https://conda.anaconda.org/conda-forge/noarch/pytest-cov-6.0.0-pyhd8ed1ab_1.conda#79963c319d1be62c8fd3e34555816e01
   - https://conda.anaconda.org/conda-forge/noarch/pytest-mock-3.14.0-pyhd8ed1ab_1.conda#1ca25f3fdf32ebd8a51ee9efa97c9a45
   - https://conda.anaconda.org/conda-forge/noarch/setuptools-scm-8.1.0-pyhd8ed1ab_1.conda#ac738a7f524d1b157e53fb9734f85e0e
