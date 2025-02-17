@@ -51,7 +51,7 @@ dependencies:
   - ipykernel
   - myst-nb
   - numpydoc
-  - pydata-sphinx-theme <0.16.0
+  - pydata-sphinx-theme !=0.16.0,!=0.16.1 # https://github.com/bjlittle/geovista/issues/1247
   - sphinx >=7.3
   - sphinx-autoapi >=3.2.0
   - sphinx-book-theme >=1.1.3
