@@ -54,6 +54,8 @@ jobs:
       env:
         VTK_BUILD: "  - vtk=*=qt_*"
       run: |
+        conda config --add channels conda-forge
+        conda config --remove channels defaults
         conda update -n base --all
         conda info
         conda list
