@@ -4,9 +4,9 @@ click-default-group <1.2.5
 cmocean <4.0.4
 lazy_loader <0.4.1
 netCDF4 <1.7.3
-numpy >=1.25,<2.2.3
+numpy >=1.25,<2.2.4
 platformdirs <4.3.7
 pooch <1.8.3
 pykdtree <1.4.2
-pyproj >=3.3,<3.7.1
+pyproj >=3.3,<3.7.2
 pyvista >=0.43.1,<0.44.3
