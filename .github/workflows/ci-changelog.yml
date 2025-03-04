@@ -56,9 +56,9 @@ jobs:
         env:
           CHANGELOG: "${{ steps.changes.outputs.changelog_files }}"
           PR: "${{ github.event.number }}"
-          SCRIPTS: "./.github/scripts"
+        working-directory: .github/scripts
         run: |
           python -m pip install click towncrier
           python -c "import sys; print(f'version = {sys.version}')"
           towncrier --version
-          python ${SCRIPTS}/changelog.py "${PR}" "${CHANGELOG}"
+          ./changelog.py "${PR}" "${CHANGELOG}"

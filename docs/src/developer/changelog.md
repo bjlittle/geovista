@@ -100,10 +100,12 @@ Quality assurance of `changelog` contributions is performed by the
 It performs the following automated checks on each pull-request:
 
 * Ensures that the pull-request includes a `changelog` news fragment
-* The news fragment file conforms with the expected `<PULL-REQUEST>.<TYPE>.rst` naming format i.e.,
+* The news fragment file conforms with the expected `<PULL-REQUEST>.<TYPE>.rst` naming convention i.e.,
   * The `<PULL-REQUEST>` component is a valid integer and matches the pull-request number
   * The `<TYPE>` matches a configured `[[tool.towncrier.type]]` entry in the `pyproject.toml`
   * The `rst` extension is provided
+* The news fragment contains at least one author attribution e.g., ```(:user:`bjlittle`)```,
+  as the final entry
 
 These quality assurance checks can be **skipped** by adding the
 `skip changelog` label to the pull-request. Note that a pull-request generated

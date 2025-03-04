@@ -1,0 +1,2 @@
+Detect missing author ``:user:`` directive within a ``changelog`` news fragment.
+(:user:`bjlittle`)
