@@ -257,9 +257,9 @@ max-statements = 91
   # https://docs.astral.sh/ruff/rules/print/
   "T201", # flake8-print: print found.
 ]
-"src/geovista/examples/*.py" = [
+"src/geovista/examples/**/*.py" = [
   # https://docs.astral.sh/ruff/rules/typing-only-third-party-import/
-  "TCH002", # flake8-type-checking: Move 3rd-party import into a type checking block.
+  "TC002", # flake8-type-checking: Move 3rd-party import into a type checking block.
 ]
 "src/geovista/examples/earthquakes.py" = [
   # https://docs.astral.sh/ruff/rules/line-too-long/
