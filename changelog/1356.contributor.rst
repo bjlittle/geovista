@@ -1,0 +1,3 @@
+Extended the `validate-project <https://github.com/abravalheri/validate-pyproject>`__
+``pre-commit`` hook to use additional schema compliance checks for
+``pyproject.toml``. (:user:`bjlittle`)
