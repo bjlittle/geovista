@@ -1,0 +1,4 @@
+Enabled tooltips for the :ref:`tippy-gv-tutorials` and ``README.md`` gallery carousel,
+and disabled `sphinx-tippy <https://github.com/sphinx-extensions2/sphinx-tippy>`__
+tooltips for the gallery :ref:`tippy-gv-examples` and :ref:`tagoverview`.
+(:user:`bjlittle`)
