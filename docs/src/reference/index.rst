@@ -1,4 +1,5 @@
 .. _gv-reference:
+.. _tippy-gv-reference:
 
 :fa:`mountain` Reference
 ========================

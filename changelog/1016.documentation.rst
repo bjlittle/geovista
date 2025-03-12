@@ -1,2 +1,2 @@
 Added ``changelog`` and ``whatsnew`` `sphinx-design <https://github.com/executablebooks/sphinx-design>`__
-cards to the :ref:`gv-reference` section. (:user:`bjlittle`)
+cards to the :ref:`tippy-gv-reference` section. (:user:`bjlittle`)

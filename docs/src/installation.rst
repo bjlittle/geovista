@@ -1,6 +1,7 @@
 .. include:: common.txt
 
 .. _gv-installation:
+.. _tippy-gv-installation:
 
 :fa:`circle-down` Installation
 ==============================
@@ -26,7 +27,7 @@ and `PyPI`_, and can be easily installed:
             pip install geovista
 
 Additional package dependencies will be required by some of the
-``geovista`` :ref:`Gallery Examples <gv-examples>`.
+``geovista`` :ref:`Gallery Examples <tippy-gv-examples>`.
 
 These packages may be installed with:
 

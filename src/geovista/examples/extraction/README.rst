@@ -1,4 +1,5 @@
 .. _gv-examples-extraction:
+.. _tippy-gv-examples-extraction:
 
 Extraction
 ==========

@@ -1,6 +1,7 @@
 .. include:: common.txt
 
 .. _gv-root:
+.. _tippy-gv-root:
 
 GeoVista Documentation
 ======================

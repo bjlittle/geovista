@@ -1,4 +1,5 @@
 .. _gv-examples:
+.. _tippy-gv-examples:
 
 *********************
 :fa:`images` Examples

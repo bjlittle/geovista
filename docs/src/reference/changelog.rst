@@ -1,4 +1,5 @@
 .. _gv-reference-changelog:
+.. _tippy-gv-reference-changelog:
 
 :fa:`road-circle-check` Changelog
 =================================
@@ -13,6 +14,7 @@ of a prior ``<minor>`` release.
 ----
 
 .. _gv-reference-changelog-latest:
+.. _tippy-gv-reference-changelog-latest:
 
 .. changelog::
     :towncrier: ../../../

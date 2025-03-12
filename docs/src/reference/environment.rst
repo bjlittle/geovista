@@ -1,6 +1,7 @@
 .. include:: ../common.txt
 
 .. _gv-reference-environment:
+.. _tippy-gv-reference-environment:
 
 :fab:`envira` Environment Variables
 ===================================

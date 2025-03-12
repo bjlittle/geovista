@@ -25,7 +25,7 @@ from towncrier._settings import ConfigError, load_config_from_options
 
 EXT = "rst"
 GITHUB_STEP_SUMMARY = os.getenv("GITHUB_STEP_SUMMARY")
-PATTERN_AUTHOR = re.compile(r"\(:user:`.+`\)\s+$", flags=re.MULTILINE)
+PATTERN_AUTHOR = re.compile(r"\(:user:`.+`\)\s*$", flags=re.MULTILINE)
 PATTERN_PR = re.compile(r"^\d+$")
 PULL = "https://github.com/bjlittle/geovista/pull"
 URL = "https://geovista.readthedocs.io/en/latest/developer/towncrier.html#changelog"

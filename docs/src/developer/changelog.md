@@ -1,6 +1,6 @@
 # {fa}`road-circle-check` Changelog
 
-The {ref}`changelog <gv-reference-changelog>` is managed and orchestrated with
+The {ref}`changelog <tippy-gv-reference-changelog>` is managed and orchestrated with
 [towncrier](https://github.com/twisted/towncrier).
 
 The root level `changelog` directory contains [ReStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html)
@@ -69,7 +69,7 @@ e.g., ``123.feature.rst`` or ``456.bugfix.rst``.
 [towncrier](https://github.com/twisted/towncrier) is configured in the
 `pyproject.toml`. For further details see the `[tool.towncrier]` section.
 Note that the order of the `[[tool.towncrier.type]]` entries is significant,
-as it is mirrored in the final rendered {ref}`changelog <gv-reference-changelog>`.
+as it is mirrored in the final rendered {ref}`changelog <tippy-gv-reference-changelog>`.
 
 If you're unsure what news fragment `<TYPE>` to use, then don't hesitate to
 ask in your pull-request.
