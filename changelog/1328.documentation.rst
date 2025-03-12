@@ -1,4 +1,4 @@
-Removed use of the ``shadow`` option from all :ref:`gv-examples` titles
+Removed use of the ``shadow`` option from all :ref:`tippy-gv-examples` titles
 and scalar bars, as shadowed text does not render correctly with
 `trame <https://github.com/Kitware/trame>`__ in the ``Interactive Scene``
 on ``readthedocs``. (:user:`bjlittle`)

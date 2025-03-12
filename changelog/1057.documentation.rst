@@ -1,2 +1,2 @@
-Updated the :ref:`gv-reference-whatsnew` to reference the associated release
+Updated the :ref:`tippy-gv-reference-whatsnew` to reference the associated release
 :fab:`github` Discussion. (:user:`bjlittle`)

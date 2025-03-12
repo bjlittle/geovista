@@ -1,4 +1,5 @@
 .. _gv-developer:
+.. _tippy-gv-developer:
 
 :fa:`handshake` Contributing
 ============================

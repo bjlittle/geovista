@@ -1,6 +1,7 @@
 .. include:: common.txt
 
 .. _gv-overview:
+.. _tippy-gv-overview:
 
 :fa:`panorama` Overview
 =======================

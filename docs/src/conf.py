@@ -28,9 +28,11 @@ from __future__ import annotations
 import ast
 import contextlib
 import datetime
+import importlib
 from importlib.metadata import version as get_version
 import os
 from pathlib import Path
+import pkgutil
 import re
 import subprocess
 import textwrap
@@ -92,6 +94,44 @@ def autolog(message: str, section: str | None = None, color: str | None = None) 
     section = colorize(color, colorize("bold", f"[{section}] ")) if section else ""
     msg = f"{colorize(color, section)}{colorize('darkblue', f'{message}')}"
     logger.info(msg)
+
+
+def sphx_glr(root: str) -> list[str]:
+    """Generate ``sphinx-gallery`` thumbnail URLs relative to the `root` package.
+
+    Recursively searches down from the `root` to find all child (leaf) modules.
+
+    Parameters
+    ----------
+    root : str
+        The name (dot notation) of the top level package to search under.
+        e.g., ``geovista.examples``.
+
+    Returns
+    -------
+    list of str
+        The list of thumbnail URLs, relative to the `root` and submodules.
+
+    """
+    mods: list[str] = []
+    pkgs: list[str] = []
+
+    for info in pkgutil.iter_modules(importlib.import_module(root).__path__):
+        name = f"{root}.{info.name}"
+        if info.ispkg:
+            container = pkgs
+        else:
+            container = mods
+            name = f"{name}.html#sphx-glr-generated-gallery-.*-py"
+        container.append(name)
+
+    mods.extend(f"{pkg}/.*html#sphx-glr-generated-gallery-.*-py" for pkg in pkgs)
+    mods = [name.split(f"{root}.")[1] for name in mods]
+
+    for pkg in pkgs:
+        mods.extend(sphx_glr(pkg))
+
+    return mods
 
 
 logger = logging.getLogger("sphinx-geovista")
@@ -216,6 +256,31 @@ autolog(f"{package_src_dir=}", section="General")
 autolog(f"{package_dir=}", section="General")
 
 
+# sphinx-tags options --------------------------------------------------------
+# See https://sphinx-tags.readthedocs.io/en/latest/index.html
+
+tags_badge_colors = {
+    "component:*": "primary",  # coastlines, graticule, manifold, texture, vectors
+    "domain:*": "secondary",  # oceanography, seismology, meteorology, orography
+    "filter:*": "success",  # cast, contour, extrude, threshold, triangulate, warp
+    "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
+    "projection:*": "warning",  # crs, transform
+    "render:*": "danger",  # camera
+    "sample:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
+    "style:*": "light",  # colormap, lighting, opacity, shading
+    "widget:*": "info",  # checkbox, logo
+}
+
+tags_create_tags = True
+tags_create_badges = True
+tags_index_head = "Themed content tags:"  # tags landing page intro text
+tags_intro_text = "Tags:"  # prefix text for a tags list
+tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
+tags_output_dir = "tags"
+tags_page_header = "Tagged content:"  # tag sub-page, header text
+tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
+
+
 # sphinx-tippy options -------------------------------------------------------
 # See https://github.com/sphinx-extensions2/sphinx-tippy
 
@@ -243,34 +308,19 @@ tippy_rtd_urls = [
     "https://rasterio.readthedocs.io/en/stable/",
     "https://requests.readthedocs.io/en/stable/",
 ]
-tippy_skip_anchor_classes = ("headerlink", "sd-stretched-link")
+tippy_skip_anchor_classes = ("headerlink",)
+tippy_skip_urls = [
+    ".*#gv-.*",
+    ".*#tagoverview",
+]
 tippy_anchor_parent_selector = "article.bd-article"
-tippy_props = {"maxWidth": 700, "placement": "top-start", "theme": "light"}
+tippy_props = {"theme": "light"}
 
+# skip generating tooltips for the sphinx-tags
+tippy_skip_urls.extend(f"{item.split(':')[0]}-.*" for item in tags_badge_colors)
 
-# sphinx-tags options --------------------------------------------------------
-# See https://sphinx-tags.readthedocs.io/en/latest/index.html
-
-tags_badge_colors = {
-    "component:*": "primary",  # coastlines, graticule, manifold, texture, vectors
-    "domain:*": "secondary",  # oceanography, seismology, meteorology, orography
-    "filter:*": "success",  # cast, contour, extrude, threshold, triangulate, warp
-    "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
-    "projection:*": "warning",  # crs, transform
-    "render:*": "danger",  # camera
-    "sample:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
-    "style:*": "light",  # colormap, lighting, opacity, shading
-    "widget:*": "info",  # checkbox, logo
-}
-
-tags_create_tags = True
-tags_create_badges = True
-tags_index_head = "Themed content tags:"  # tags landing page intro text
-tags_intro_text = "Tags:"  # prefix text for a tags list
-tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
-tags_output_dir = "tags"
-tags_page_header = "Tagged content:"  # tag sub-page, header text
-tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
+# skip generating tooltips for the sphinx-gallery thumbnails
+tippy_skip_urls.extend(sphx_glr("geovista.examples"))
 
 
 # sphinx-togglebutton options ------------------------------------------------

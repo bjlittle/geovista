@@ -2,6 +2,7 @@
    {% if is_own_page %}
 {% if obj.type is equalto("package") and obj.name is equalto("geovista") %}
 .. _gv-reference-api:
+.. _tippy-gv-reference-api:
 
 :fa:`file-lines` API Reference
 ******************************

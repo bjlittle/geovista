@@ -1,4 +1,5 @@
 .. _gv-tutorials:
+.. _tippy-gv-tutorials:
 
 :fa:`water` Tutorials
 =====================
@@ -19,7 +20,7 @@ A collection of themed practical lessons to work though.
 
     .. grid-item-card::
         :text-align: center
-        :link: gv-tutorials-region-manifold-extraction
+        :link: tippy-gv-tutorials-region-manifold-extraction
         :link-type: ref
 
         .. image:: ../_static/images/region-manifold-extraction.png

@@ -1,4 +1,5 @@
 .. _gv-howtos:
+.. _tippy-gv-howtos:
 
 🚧 :fa:`fire` How-To Guides
 ===========================

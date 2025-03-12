@@ -1,2 +1,2 @@
-Clarified pending unreleased :ref:`gv-reference-whatsnew` details as *To Be Done*
+Clarified pending unreleased :ref:`tippy-gv-reference-whatsnew` details as *To Be Done*
 (``TBD``). (:user:`bjlittle`)

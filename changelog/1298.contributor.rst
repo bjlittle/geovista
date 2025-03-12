@@ -1,1 +1,1 @@
-Added :ref:`gv-developer-documentation` guidelines. (:user:`bjlittle`)
+Added :ref:`tippy-gv-developer-documentation` guidelines. (:user:`bjlittle`)

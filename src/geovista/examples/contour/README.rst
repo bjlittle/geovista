@@ -1,4 +1,5 @@
 .. _gv-examples-contour:
+.. _tippy-gv-examples-contour:
 
 Contour
 =======

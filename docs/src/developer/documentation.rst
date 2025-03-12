@@ -1,6 +1,7 @@
 .. include:: ../common.txt
 
 .. _gv-developer-documentation:
+.. _tippy-gv-developer-documentation:
 
 :fa:`square-pen` Documentation
 ==============================

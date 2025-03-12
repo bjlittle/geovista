@@ -1,6 +1,7 @@
 .. include:: ../common.txt
 
 .. _gv-reference-glossary:
+.. _tippy-gv-reference-glossary:
 
 :fa:`spell-check` Glossary
 ==========================
