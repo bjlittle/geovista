@@ -308,7 +308,7 @@ tippy_rtd_urls = [
     "https://rasterio.readthedocs.io/en/stable/",
     "https://requests.readthedocs.io/en/stable/",
 ]
-tippy_skip_anchor_classes = ("headerlink",)
+tippy_skip_anchor_classes = ("headerlink", "sd-sphinx-override")
 tippy_skip_urls = [
     ".*#gv-.*",
     ".*#tagoverview",
