@@ -33,7 +33,7 @@ import geovista.theme
 
 
 def main() -> None:
-    """TBD.
+    """Plot a cubed-sphere panel manifold and extracted region.
 
     Notes
     -----
@@ -46,17 +46,27 @@ def main() -> None:
     # Calculate the sample data range.
     clim = mesh.get_data_range()
 
+    # Generate the geodesic bounding-box manifold for the antarctic
+    # cubed-sphere panel.
     bbox = panel("antarctic")
 
+    # Extract the sample mesh enclosed within the manifold.
     region = bbox.enclosed(mesh, preference="center")
+
+    # Determine the boundary where the manifold intersects the surface
+    # of the sample data mesh.
     boundary = bbox.boundary(mesh)
 
+    # Create a plotter containing three subplots, containing two columns
+    # with two rows in the first column and one row in the second column.
     p = gv.GeoPlotter(shape="2|1")
     sargs = {"title": "Surface Temperature / K", "fmt": "%.0f"}
 
     # Extract the edges of the bounding-box manifold.
     bbox_edge = bbox.mesh.extract_feature_edges()
 
+    # First subplot: render the sample data with a transparent
+    # manifold, highlighting the manifold edges and boundary.
     p.subplot(0)
     p.add_mesh(mesh, show_scalar_bar=False)
     p.add_mesh(boundary, color="pink", line_width=3)
@@ -64,6 +74,8 @@ def main() -> None:
     p.add_mesh(bbox_edge, color="yellow", line_width=3)
     p.add_text("0", position="upper_right", font_size=10, color="red")
 
+    # Second subplot: now render a transparent sample data mesh with a
+    # solid manifold, again highlighting the manifold edges and boundary.
     p.subplot(1)
     p.add_mesh(mesh, opacity=0.5, show_scalar_bar=False)
     p.add_mesh(boundary, color="pink", line_width=3)
@@ -71,6 +83,8 @@ def main() -> None:
     p.add_mesh(bbox_edge, color="yellow", line_width=3)
     p.add_text("1", position="upper_right", font_size=10, color="red")
 
+    # Third subplot: render the extracted antarctic region of sample data
+    # along with the boundary and coastlines on a texture mapped base layer.
     p.subplot(2)
     p.add_mesh(region.threshold(), clim=clim, scalar_bar_args=sargs)
     p.add_mesh(boundary, color="pink", line_width=3)
