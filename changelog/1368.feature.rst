@@ -1,0 +1,3 @@
+Added the :attr:`geovista.geodesic.BBox.outline` property to provide the
+outline edges of the geometry defining the associated geodesic bounding-box
+manifold. (:user:`bjlittle`)
