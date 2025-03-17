@@ -13,7 +13,22 @@ This example demonstrates how to extract a cubed-sphere panel using a geodesic m
 📋 Summary
 ^^^^^^^^^^
 
-TBD.
+This example uses an unstructured Met Office LFRic C48 cubed-sphere mesh of
+surface temperature data located on the mesh faces/cells.
+
+A geodesic cubed-sphere manifold is constructed for the Antarctic panel to
+extract the cells of the surface temperature mesh contained within it. Note
+that the extracted region contains only those cells where the center of the
+cell is within the manifold.
+
+The relationship between the manifold and the mesh is highlighted in the
+first two subplots. Note that the boundary where the manifold intersects the
+surface of the mesh being sampled is rendered in pink.
+
+The cells extracted from the surface temperature mesh are rendered along with
+a Natural Earth base layer and Natural Earth coastlines in the third subplot.
+Again, the boundary of intersection between the manifold and mesh is rendered
+in pink.
 
 .. tags::
 
@@ -53,15 +68,16 @@ def main() -> None:
     # cubed-sphere panel.
     bbox = panel("antarctic")
 
-    # Extract the sample mesh enclosed within the manifold.
+    # Extract only cells from the sample mesh that have cell centers
+    # enclosed within the manifold.
     region = bbox.enclosed(mesh, preference="center")
 
     # Determine the boundary where the manifold intersects the surface
     # of the sample data mesh.
     boundary = bbox.boundary(mesh)
 
-    # Create a plotter containing three subplots, containing two columns
-    # with two rows in the first column and one row in the second column.
+    # Create a plotter containing three subplots in two columns, where
+    # the first column has two rows, and the second column has only one.
     p = gv.GeoPlotter(shape="2|1")
     sargs = {"title": "Surface Temperature / K", "fmt": "%.0f"}
 

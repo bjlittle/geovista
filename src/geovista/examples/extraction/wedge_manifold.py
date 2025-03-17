@@ -13,29 +13,29 @@ This example demonstrates how to extract a region using a geodesic wedge manifol
 📋 Summary
 ^^^^^^^^^^
 
-Uses an unstructured Met Office LFRic C48 cubed-sphere mesh of surface altitude
-data.
+This example uses an unstructured Met Office LFRic C48 cubed-sphere mesh of
+surface altitude data.
 
-Three separate geodesic wedge manifolds are constructed to extract the cells of the
-mesh contained within the wedge. Each wedge uses a different enclosure preference to
-extract the cells.
+Three separate geodesic wedge manifolds are constructed to extract the cells
+of the mesh contained within the wedge. Each wedge uses a different enclosure
+preference to extract the cells.
 
-The regions extracted by each wedge are rendered along with the boundary where the
-manifold intersects the surface of the mesh. A different colour is used for each
-manifold boundary.
+The regions extracted by each wedge are rendered along with the boundary where
+the manifold intersects the surface of the mesh. A different colour is used
+for each manifold boundary.
 
-The **red boundary** contains only those cells where all points defining the face of a
-cell are within the manifold.
+The **red boundary** contains only those cells where all points defining the
+face of a cell are within the manifold.
 
-The **purple boundary** contains only those cells where at least one point that defines
-the face of the cell is within the manifold.
+The **purple boundary** contains only those cells where at least one point
+that defines the face of the cell is within the manifold.
 
-The **orange boundary** contains only those cells where the center of the cell is within
-the manifold.
+The **orange boundary** contains only those cells where the center of the
+cell is within the manifold.
 
-Each of the extracted mesh regions contain quad cells and are constructed from CF UGRID
-unstructured cell points and connectivity. A Natural Earth base layer is also rendered
-along with Natural Earth coastlines.
+Each of the extracted mesh regions contain quad cells and are constructed from
+CF UGRID unstructured cell points and connectivity. A Natural Earth base layer
+is also rendered along with Natural Earth coastlines.
 
 .. tags::
 
