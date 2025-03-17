@@ -18,7 +18,10 @@ TBD.
 .. tags::
 
     component: coastlines, component: manifold, component: texture,
-    sample: unstructured
+    filter: threshold,
+    render: camera, render: subplots,
+    sample: unstructured,
+    style: opacity
 
 ----
 
