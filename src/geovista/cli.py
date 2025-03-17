@@ -189,14 +189,12 @@ def _plural(quantity: int) -> str:
 def main(version: bool, report: bool, cache: bool) -> None:  # numpydoc ignore=PR01
     """To get help for geovista commands, simply use "geovista COMMAND --help"."""
     if version:
-        click.echo("version ", nl=False)
         click.secho(f"{__version__}", fg=FG_COLOUR)
 
     if report:
         click.echo(Report())
 
     if cache:
-        click.echo("cache directory ", nl=False)
         click.secho(f"{CACHE.abspath}", fg=FG_COLOUR)
 
 
