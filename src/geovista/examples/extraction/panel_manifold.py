@@ -17,8 +17,8 @@ This example uses an unstructured Met Office LFRic C48 cubed-sphere mesh of
 Sea Surface Temperature (SST) data located on the mesh faces/cells.
 
 A geodesic cubed-sphere manifold is constructed for the Antarctic panel to
-extract the cells of the cubed-sphere mesh contained within it. Note
-that the extracted region contains only those cells where the center of the
+extract the Sea Surface Temperature cells contained within it. Note that
+the extracted region contains only those cells where the center of the
 cell is within the manifold.
 
 The relationship between the manifold and the mesh is highlighted in the
@@ -26,7 +26,7 @@ first two subplots. Note that the boundary where the manifold intersects the
 surface of the mesh being sampled is rendered in pink.
 
 The Sea Surface Temperature cells extracted from the mesh are rendered along
-with a Natureal Earth coastlines and a texture mapped Natural Earth base layer
+with Natural Earth coastlines and a texture mapped Natural Earth base layer
 in the third subplot. Again, the boundary of intersection between the manifold
 and mesh is rendered in pink.
 
