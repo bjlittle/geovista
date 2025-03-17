@@ -14,21 +14,21 @@ This example demonstrates how to extract a cubed-sphere panel using a geodesic m
 ^^^^^^^^^^
 
 This example uses an unstructured Met Office LFRic C48 cubed-sphere mesh of
-surface temperature data located on the mesh faces/cells.
+Sea Surface Temperature (SST) data located on the mesh faces/cells.
 
 A geodesic cubed-sphere manifold is constructed for the Antarctic panel to
-extract the cells of the surface temperature mesh contained within it. Note
-that the extracted region contains only those cells where the center of the
+extract the Sea Surface Temperature cells contained within it. Note that
+the extracted region contains only those cells where the center of the
 cell is within the manifold.
 
 The relationship between the manifold and the mesh is highlighted in the
 first two subplots. Note that the boundary where the manifold intersects the
 surface of the mesh being sampled is rendered in pink.
 
-The cells extracted from the surface temperature mesh are rendered along with
-a Natural Earth base layer and Natural Earth coastlines in the third subplot.
-Again, the boundary of intersection between the manifold and mesh is rendered
-in pink.
+The Sea Surface Temperature cells extracted from the mesh are rendered along
+with Natural Earth coastlines and a texture mapped Natural Earth base layer
+in the third subplot. Again, the boundary of intersection between the manifold
+and mesh is rendered in pink.
 
 .. tags::
 
@@ -81,16 +81,13 @@ def main() -> None:
     p = gv.GeoPlotter(shape="2|1")
     sargs = {"title": "Surface Temperature / K", "fmt": "%.0f"}
 
-    # Extract the edges of the bounding-box manifold.
-    bbox_edge = bbox.mesh.extract_feature_edges()
-
     # First subplot: render the sample data with a transparent
     # manifold, highlighting the manifold edges and boundary.
     p.subplot(0)
     p.add_mesh(mesh, show_scalar_bar=False)
     p.add_mesh(boundary, color="pink", line_width=3)
     p.add_mesh(bbox.mesh, color="orange", opacity=0.5)
-    p.add_mesh(bbox_edge, color="yellow", line_width=3)
+    p.add_mesh(bbox.outline, color="yellow", line_width=3)
     p.add_text("0", position="upper_right", font_size=10, color="red")
 
     # Second subplot: now render a transparent sample data mesh with a
@@ -99,7 +96,7 @@ def main() -> None:
     p.add_mesh(mesh, opacity=0.5, show_scalar_bar=False)
     p.add_mesh(boundary, color="pink", line_width=3)
     p.add_mesh(bbox.mesh, color="orange")
-    p.add_mesh(bbox_edge, color="yellow", line_width=3)
+    p.add_mesh(bbox.outline, color="yellow", line_width=3)
     p.add_text("1", position="upper_right", font_size=10, color="red")
 
     # Third subplot: render the extracted antarctic region of sample data
