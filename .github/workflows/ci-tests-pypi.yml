@@ -51,7 +51,7 @@ jobs:
         python-version: ${{ matrix.version }}
 
     - name: "apt cache"
-      uses: awalsh128/cache-apt-pkgs-action@5902b33ae29014e6ca012c5d8025d4346556bd40
+      uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
       with:
         packages: libgl1-mesa-glx xvfb
         version: 1.0
