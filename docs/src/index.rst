@@ -49,7 +49,7 @@ We'd 💚 to hear from you.
 
         Topic driven themed lessons.
 
-    .. grid-item-card:: 🚧 How-To Guides
+    .. grid-item-card:: How-To Guides 🚧
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-howtos
@@ -60,7 +60,7 @@ We'd 💚 to hear from you.
 
         Treasure trove of focused guides.
 
-    .. grid-item-card:: 🚧 Explanation
+    .. grid-item-card:: Explanation 🚧
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-explanation
