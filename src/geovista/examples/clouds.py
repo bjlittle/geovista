@@ -8,7 +8,7 @@
 Clouds
 ------
 
-This example demonstrates how to render stratified unstructured meshes.
+This example demonstrates how to render stratified cloud meshes.
 
 📋 Summary
 ^^^^^^^^^^
@@ -37,6 +37,7 @@ coastlines.
 from __future__ import annotations
 
 import cmocean
+from cmocean.tools import crop_by_percent
 from matplotlib.colors import LinearSegmentedColormap
 
 import geovista as gv
@@ -51,10 +52,10 @@ ZLEVEL_FACTOR: int = 75
 
 
 cmaps: dict[str, LinearSegmentedColormap] = {
-    "low": cmocean.tools.crop_by_percent(CMAP, 10, which="both"),
-    "medium": cmocean.tools.crop_by_percent(CMAP, 30, which="both"),
-    "high": cmocean.tools.crop_by_percent(CMAP, 40, which="min"),
-    "very_high": cmocean.tools.crop_by_percent(CMAP, 50, which="min"),
+    "low": crop_by_percent(CMAP, 10, which="both"),
+    "medium": crop_by_percent(CMAP, 30, which="both"),
+    "high": crop_by_percent(CMAP, 40, which="min"),
+    "very_high": crop_by_percent(CMAP, 50, which="min"),
 }
 
 
