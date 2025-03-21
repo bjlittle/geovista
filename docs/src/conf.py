@@ -657,7 +657,7 @@ scraper = DynamicScraper()
 sphinx_gallery_conf = {
     "default_thumb_file": str(docs_images_dir / "gallery-thumb.png"),
     "filename_pattern": "/.*",
-    "ignore_pattern": "(__init__)|(clouds)|(fesom)|(synthetic)",
+    "ignore_pattern": "(__init__)|(fesom)|(synthetic)",
     "examples_dirs": str(package_dir / "examples"),
     "gallery_dirs": GALLERY_DIRS,
     "min_reported_time": 90,

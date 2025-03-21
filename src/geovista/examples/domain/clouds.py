@@ -5,10 +5,10 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-Clouds (Projected)
-------------------
+Clouds
+------
 
-This example demonstrates how to render projected stratified cloud meshes.
+This example demonstrates how to render stratified cloud meshes.
 
 📋 Summary
 ^^^^^^^^^^
@@ -29,6 +29,14 @@ with increased altitude.
 
 A Natural Earth base layer is also rendered along with Natural Earth
 coastlines.
+
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: meteorology,
+    filter: threshold,
+    load: unstructured,
+    style: opacity
 
 ----
 
@@ -60,7 +68,7 @@ cmaps: dict[str, LinearSegmentedColormap] = {
 
 
 def main() -> None:
-    """Plot projected stratified unstructured meshes.
+    """Plot stratified unstructured meshes.
 
     Notes
     -----
@@ -72,8 +80,7 @@ def main() -> None:
     clim = (cmin := 0.3, 1.0)
 
     # Create the plotter.
-    crs = "+proj=robin"
-    p = gv.GeoPlotter(crs=crs)
+    p = gv.GeoPlotter()
 
     for i, cloud in enumerate(cmaps):
         # Load the sample data.
@@ -106,11 +113,10 @@ def main() -> None:
     p.add_coastlines()
     p.add_axes()
     p.add_text(
-        f"Low, Medium, High & Very High Cloud Amount ({crs})",
+        "Low, Medium, High & Very High Cloud Amount",
         position="upper_left",
         font_size=10,
     )
-    p.view_xy()
     p.camera.zoom(1.5)
     p.show()
 
