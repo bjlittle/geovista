@@ -38,6 +38,7 @@ coastlines.
     filter: threshold,
     load: unstructured,
     projection: crs,
+    resolution: high,
     style: opacity
 
 ----

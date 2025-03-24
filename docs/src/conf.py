@@ -266,6 +266,7 @@ tags_badge_colors = {
     "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
     "projection:*": "warning",  # crs, transform
     "render:*": "danger",  # camera, subplots
+    "resolution:*": "danger",  # high
     "sample:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
     "style:*": "light",  # colormap, lighting, opacity, shading
     "widget:*": "info",  # checkbox, logo
