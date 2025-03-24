@@ -49,6 +49,7 @@ dependencies:
 
 # documentation dependencies (optional)
   - ipykernel
+  - joblib
   - myst-nb
   - numpydoc
   - pydata-sphinx-theme !=0.16.0,!=0.16.1 # https://github.com/bjlittle/geovista/issues/1247
