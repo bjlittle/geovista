@@ -5,10 +5,10 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-Clouds
-------
+Clouds (Projected)
+------------------
 
-This example demonstrates how to render stratified cloud meshes.
+This example demonstrates how to render projected stratified cloud meshes.
 
 📋 Summary
 ^^^^^^^^^^
@@ -20,7 +20,8 @@ unstructured cell points and connectivity.
 
 It uses an unstructured Met Office high-resolution LFRic C768 cubed-sphere
 of low, medium, high and very high cloud amount located on the mesh
-faces/cells.
+faces/cells. The meshes are transformed to the Robinson pseudocylindrical
+projection.
 
 Note that, a threshold is applied to remove lower cloud amount cells,
 and a linear opacity transfer function is applied to a custom cropped
@@ -29,6 +30,15 @@ with increased altitude.
 
 A Natural Earth base layer is also rendered along with Natural Earth
 coastlines.
+
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: meteorology,
+    filter: threshold,
+    load: unstructured,
+    projection: crs,
+    style: opacity
 
 ----
 
@@ -60,7 +70,7 @@ cmaps: dict[str, LinearSegmentedColormap] = {
 
 
 def main() -> None:
-    """Plot stratified unstructured meshes.
+    """Plot projected stratified unstructured meshes.
 
     Notes
     -----
@@ -72,7 +82,8 @@ def main() -> None:
     clim = (cmin := 0.3, 1.0)
 
     # Create the plotter.
-    p = gv.GeoPlotter()
+    crs = "+proj=robin"
+    p = gv.GeoPlotter(crs=crs)
 
     for i, cloud in enumerate(cmaps):
         # Load the sample data.
@@ -105,10 +116,11 @@ def main() -> None:
     p.add_coastlines()
     p.add_axes()
     p.add_text(
-        "Low, Medium, High & Very High Cloud Amount",
+        f"Low, Medium, High & Very High Cloud Amount ({crs})",
         position="upper_left",
         font_size=10,
     )
+    p.view_xy()
     p.camera.zoom(1.5)
     p.show()
 

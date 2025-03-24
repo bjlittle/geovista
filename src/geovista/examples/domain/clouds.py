@@ -5,10 +5,10 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-Clouds (Projected)
-------------------
+Clouds
+------
 
-This example demonstrates how to render projected stratified cloud meshes.
+This example demonstrates how to render stratified cloud meshes.
 
 📋 Summary
 ^^^^^^^^^^
@@ -23,12 +23,18 @@ of low, medium, high and very high cloud amount located on the mesh
 faces/cells.
 
 Note that, a threshold is applied to remove lower cloud amount cells,
-and a linear opacity transfer function is applied to a custom cropped
-colormap of each cloud amount type mesh i.e., the colormaps get lighter
-with increased altitude.
+and a custom cropped colormap is applied to each type of cloud amount
+mesh i.e., the colormaps get lighter with increased altitude.
 
 A Natural Earth base layer is also rendered along with Natural Earth
 coastlines.
+
+.. tags::
+
+    component: coastlines, component: texture,
+    domain: meteorology,
+    filter: threshold,
+    load: unstructured,
 
 ----
 
@@ -52,28 +58,26 @@ ZLEVEL_FACTOR: int = 75
 
 
 cmaps: dict[str, LinearSegmentedColormap] = {
-    "low": crop_by_percent(CMAP, 10, which="both"),
-    "medium": crop_by_percent(CMAP, 30, which="both"),
+    "low": crop_by_percent(CMAP, 30, which="min"),
+    "medium": crop_by_percent(CMAP, 35, which="min"),
     "high": crop_by_percent(CMAP, 40, which="min"),
     "very_high": crop_by_percent(CMAP, 50, which="min"),
 }
 
 
 def main() -> None:
-    """Plot projected stratified unstructured meshes.
+    """Plot stratified unstructured meshes.
 
     Notes
     -----
     .. versionadded:: 0.4.0
 
     """
-    # Use the pyvista linear opacity transfer function.
-    opacity = "linear"
+    # Define the data range.
     clim = (cmin := 0.3, 1.0)
 
     # Create the plotter.
-    crs = "+proj=robin"
-    p = gv.GeoPlotter(crs=crs)
+    p = gv.GeoPlotter()
 
     for i, cloud in enumerate(cmaps):
         # Load the sample data.
@@ -95,7 +99,6 @@ def main() -> None:
         p.add_mesh(
             mesh,
             clim=clim,
-            opacity=opacity,
             cmap=cmaps[cloud],
             show_scalar_bar=False,
             zlevel=(i + 1) * ZLEVEL_FACTOR,
@@ -106,11 +109,10 @@ def main() -> None:
     p.add_coastlines()
     p.add_axes()
     p.add_text(
-        f"Low, Medium, High & Very High Cloud Amount ({crs})",
+        "Low, Medium, High & Very High Cloud Amount",
         position="upper_left",
         font_size=10,
     )
-    p.view_xy()
     p.camera.zoom(1.5)
     p.show()
 
