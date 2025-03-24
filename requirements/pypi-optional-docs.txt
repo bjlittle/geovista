@@ -1,4 +1,5 @@
 ipykernel <6.29.6
+joblib <1.4.3
 myst-nb <1.2.1
 numpydoc <1.8.1
 sphinx >=7.3,<8.2.4

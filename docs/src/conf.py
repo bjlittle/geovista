@@ -672,6 +672,7 @@ sphinx_gallery_conf = {
     "reference_url": {
         "geovista": None,
     },
+    "parallel": True,
 }
 
 

@@ -8,7 +8,7 @@ export PYDEVD_DISABLE_FILE_VALIDATION := 1
 # from the environment for the first two.
 #
 # -W  Warnings promoted to errors
-SPHINXOPTS    ?= -W --keep-going
+SPHINXOPTS    ?= -W --keep-going --jobs auto
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = src
 BUILDDIR      = _build
