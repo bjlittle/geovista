@@ -132,13 +132,13 @@ filterwarnings = [
   "ignore:pyvista test generated image dir:UserWarning",
 ]
 image_cache_dir = "tests/plotting/image_cache" # pytest-pyvista option
-log_cli = "True"
+log_cli = true
 log_cli_level = "INFO"
 markers = ["example: gallery image tests", "image: plotting image tests"]
 minversion = "6.0"
 required_plugins = "pytest-mock pytest_pyvista"
 testpaths = "tests"
-xfail_strict = "True"
+xfail_strict = true
 
 
 [tool.repo-review]
