@@ -8,23 +8,22 @@
 Clouds
 ------
 
-This example demonstrates how to render stratified cloud meshes.
+This example demonstrates how to render an unstructured cloud mesh.
 
 📋 Summary
 ^^^^^^^^^^
 
-Creates meshes from 1-D latitude and longitude unstructured cell points.
+Creates a mesh from 1-D latitude and longitude unstructured cell points.
 
-The resulting meshes contain quad cells and are constructed from CF UGRID
+The resulting mesh contains quad cells and is constructed from CF UGRID
 unstructured cell points and connectivity.
 
 It uses an unstructured Met Office high-resolution LFRic C768 cubed-sphere
-of low, medium, high and very high cloud amount located on the mesh
-faces/cells.
+of High Cloud Amount located on the mesh faces/cells.
 
-Note that, a threshold is applied to remove lower cloud amount cells,
-and a custom cropped colormap is applied to each type of cloud amount
-mesh i.e., the colormaps get lighter with increased altitude.
+Note that, a threshold is applied to remove low-valued Cloud Amount cells,
+and a custom colormap is applied to the mesh to crop out unwanted darker
+shades.
 
 A Natural Earth base layer is also rendered along with Natural Earth
 coastlines.
@@ -45,29 +44,17 @@ from __future__ import annotations
 
 import cmocean
 from cmocean.tools import crop_by_percent
-from matplotlib.colors import LinearSegmentedColormap
 
 import geovista as gv
 from geovista.pantry.data import cloud_amount
 import geovista.theme
 
-#: The colormap to render the clouds.
-CMAP = cmocean.cm.gray
-
 #: Multiplication factor of the zlevel for cloud surface stratification.
 ZLEVEL_FACTOR: int = 75
 
 
-cmaps: dict[str, LinearSegmentedColormap] = {
-    "low": crop_by_percent(CMAP, 30, which="min"),
-    "medium": crop_by_percent(CMAP, 35, which="min"),
-    "high": crop_by_percent(CMAP, 40, which="min"),
-    "very_high": crop_by_percent(CMAP, 50, which="min"),
-}
-
-
 def main() -> None:
-    """Plot stratified unstructured meshes.
+    """Plot an unstructured cloud mesh.
 
     Notes
     -----
@@ -77,40 +64,41 @@ def main() -> None:
     # Define the data range.
     clim = (cmin := 0.3, 1.0)
 
+    # Customise the colormap.
+    cmap = crop_by_percent(cmocean.cm.gray, 40, which="min")
+
     # Create the plotter.
     p = gv.GeoPlotter()
 
-    for i, cloud in enumerate(cmaps):
-        # Load the sample data.
-        sample = cloud_amount(cloud)
+    # Load the sample data.
+    sample = cloud_amount("high")
 
-        # Create the mesh from the sample data.
-        mesh = gv.Transform.from_unstructured(
-            sample.lons,
-            sample.lats,
-            sample.connectivity,
-            data=sample.data,
-            start_index=sample.start_index,
-            name=cloud,
-        )
+    # Create the mesh from the sample data.
+    mesh = gv.Transform.from_unstructured(
+        sample.lons,
+        sample.lats,
+        sample.connectivity,
+        data=sample.data,
+        start_index=sample.start_index,
+    )
 
-        # Remove cells from the mesh below the specified threshold.
-        mesh = mesh.threshold(cmin)
+    # Remove cells from the mesh below the specified threshold.
+    mesh = mesh.threshold(cmin)
 
-        p.add_mesh(
-            mesh,
-            clim=clim,
-            cmap=cmaps[cloud],
-            show_scalar_bar=False,
-            zlevel=(i + 1) * ZLEVEL_FACTOR,
-        )
+    p.add_mesh(
+        mesh,
+        clim=clim,
+        cmap=cmap,
+        show_scalar_bar=False,
+        zlevel=ZLEVEL_FACTOR,
+    )
 
     # Force zlevel alignment of coastlines and base layer.
     p.add_base_layer(texture=gv.natural_earth_1(), zlevel=0)
     p.add_coastlines()
     p.add_axes()
     p.add_text(
-        "Low, Medium, High & Very High Cloud Amount",
+        "High Cloud Amount",
         position="upper_left",
         font_size=10,
     )
