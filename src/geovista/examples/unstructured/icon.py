@@ -59,7 +59,12 @@ def main() -> None:
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}"}
+    sargs = {
+        "title": f"{sample.name} / {sample.units}",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
     cmap = mpl.colormaps.get_cmap("cet_CET_L17").resampled(lutsize=9)
     p.add_mesh(mesh, cmap=cmap, scalar_bar_args=sargs)
     p.add_coastlines()

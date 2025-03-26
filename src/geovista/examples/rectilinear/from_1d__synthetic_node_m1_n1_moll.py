@@ -56,7 +56,12 @@ def main() -> None:
     # Plot the rectilinear grid.
     crs = "+proj=moll"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{name} / 1"}
+    sargs = {
+        "title": f"{name} / 1",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
     p.add_mesh(mesh, clim=clim, cmap="ice", scalar_bar_args=sargs, show_edges=True)
     p.add_coastlines()
     p.add_axes()

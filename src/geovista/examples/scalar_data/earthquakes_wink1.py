@@ -78,7 +78,12 @@ def main() -> None:
     # Plot the points.
     crs = "+proj=wink1 +lon_0=180"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": "Magnitude"}
+    sargs = {
+        "title": "Magnitude",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
     p.add_points(
         xs=sample.lons,
         ys=sample.lats,

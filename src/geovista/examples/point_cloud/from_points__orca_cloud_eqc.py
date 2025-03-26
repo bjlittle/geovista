@@ -70,7 +70,12 @@ def main() -> None:
     # Plot the projected point cloud.
     crs = "+proj=eqc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}"}
+    sargs = {
+        "title": f"{sample.name} / {sample.units}",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
     p.add_mesh(
         cloud,
         cmap="deep",
