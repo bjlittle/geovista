@@ -85,7 +85,12 @@ def main() -> None:
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
     mesh.warp_by_scalar(inplace=True, factor=2e-7)
 
-    sargs = {"fmt": "%.1f"}
+    sargs = {
+        "fmt": "%.1f",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
     p.add_mesh(mesh, cmap="speed_r", scalar_bar_args=sargs, smooth_shading=True)
     p.add_logo_widget(fetch_raster("japan_map.png"), position=(0.8, 0.8))
     p.add_axes()

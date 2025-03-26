@@ -81,7 +81,13 @@ def main() -> None:
     region_3 = bbox_3.enclosed(mesh, preference="center")
 
     p = gv.GeoPlotter()
-    sargs = {"title": "Surface Altitude / m", "fmt": "%.0f"}
+    sargs = {
+        "title": "Surface Altitude / m",
+        "fmt": "%.0f",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
 
     # Add the 3 extracted regions.
     p.add_mesh(region_1, clim=clim, scalar_bar_args=sargs)

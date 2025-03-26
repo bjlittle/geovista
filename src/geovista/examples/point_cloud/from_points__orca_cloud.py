@@ -66,7 +66,12 @@ def main() -> None:
 
     # Plot the point cloud.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}"}
+    sargs = {
+        "title": f"{sample.name} / {sample.units}",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
     p.add_mesh(
         cloud,
         cmap="deep",

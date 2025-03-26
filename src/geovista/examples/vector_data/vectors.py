@@ -61,7 +61,12 @@ def main() -> None:
     # Plot the vectors.
     p = gv.GeoPlotter()
     p.add_base_layer(texture=gv.natural_earth_1(), zlevel=0, lighting=False)
-    p.add_mesh(mesh.arrows, lighting=False)
+    sargs = {
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
+    p.add_mesh(mesh.arrows, lighting=False, scalar_bar_args=sargs)
     p.add_axes()
     p.camera.zoom(1.3)
     p.show()

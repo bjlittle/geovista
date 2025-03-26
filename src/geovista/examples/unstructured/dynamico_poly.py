@@ -61,7 +61,12 @@ def main() -> None:
     # Plot the unstructured mesh.
     crs = "+proj=poly"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}"}
+    sargs = {
+        "title": f"{sample.name} / {sample.units}",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
     p.add_mesh(mesh, scalar_bar_args=sargs)
     p.add_coastlines()
     p.add_graticule()

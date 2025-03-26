@@ -69,7 +69,12 @@ def main() -> None:
     # Plot the unstructured mesh.
     crs = "+proj=bonne +lat_1=10 +lon_0=180"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}"}
+    sargs = {
+        "title": f"{sample.name} / {sample.units}",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
     p.add_mesh(mesh, scalar_bar_args=sargs)
     p.add_base_layer(texture=gv.natural_earth_1())
     p.add_coastlines()

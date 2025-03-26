@@ -20,8 +20,12 @@ from . import GEOVISTA_IMAGE_TESTING
 theme = pv.themes.Theme()
 theme.name = "geovista"
 theme.background = (1.0, 1.0, 1.0)
-theme.color = "lightgray"
 theme.cmap = "balance"
+theme.color = "lightgray"
+theme.colorbar_horizontal.width = 0.4
+theme.colorbar_horizontal.height = 0.06
+theme.colorbar_horizontal.position_x = 0.59
+theme.colorbar_horizontal.position_y = 0.01
 theme.edge_color = "gray"
 theme.font.color = (0.0, 0.0, 0.0)
 theme.outline_color = (0.0, 0.0, 0.0)

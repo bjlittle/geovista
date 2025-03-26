@@ -1,0 +1,3 @@
+Updated gallery :ref:`tippy-gv-examples` to use an outlined and filled
+scalar bar to aid readability. The scalar bar is also repositioned and
+resized by :mod:`geovista.theme`. (:user:`bjlittle`)

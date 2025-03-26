@@ -79,7 +79,13 @@ def main() -> None:
     # Create a plotter containing three subplots in two columns, where
     # the first column has two rows, and the second column has only one.
     p = gv.GeoPlotter(shape="2|1")
-    sargs = {"title": "Surface Temperature / K", "fmt": "%.0f"}
+    sargs = {
+        "title": "Surface Temperature / K",
+        "fmt": "%.0f",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
 
     # First subplot: render the sample data with a transparent
     # manifold, highlighting the manifold edges and boundary.

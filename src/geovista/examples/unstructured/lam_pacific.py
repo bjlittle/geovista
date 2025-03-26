@@ -62,7 +62,12 @@ def main() -> None:
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}"}
+    sargs = {
+        "title": f"{sample.name} / {sample.units}",
+        "outline": True,
+        "background_color": "white",
+        "fill": True,
+    }
     p.add_mesh(mesh, scalar_bar_args=sargs)
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_coastlines()
