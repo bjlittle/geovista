@@ -58,7 +58,12 @@ def main() -> None:
     sample = nemo_orca2()
 
     # Create the mesh from the sample data.
-    mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)
+    mesh = gv.Transform.from_2d(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
+    )
 
     # Remove cells from the mesh with NaN values.
     mesh = cast(mesh.threshold())
@@ -69,13 +74,7 @@ def main() -> None:
 
     # Plot the curvilinear mesh.
     p = gv.GeoPlotter(crs=crs)
-    sargs = {
-        "title": f"{sample.name} / {sample.units}",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_coastlines(color="black")
     p.add_axes()
     p.add_text(

@@ -72,13 +72,7 @@ def main() -> None:
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter(crs=crs)
-    sargs = {
-        "title": "Surface Altitude / m",
-        "fmt": "%.0f",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
+    sargs = {"title": "Surface Altitude / m", "fmt": "%.0f"}
     p.add_mesh(mesh, scalar_bar_args=sargs)
     p.add_axes()
     p.add_text(

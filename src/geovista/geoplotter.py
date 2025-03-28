@@ -705,6 +705,24 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             # POI cartesian xyz
             self._poi = mesh.center
 
+        # Extend the geovista theme for scalar bar options.
+        scalar_bar_args = (
+            {
+                "outline": True,
+                "background_color": self.background_color,  # type: ignore[attr-defined]
+                "fill": True,
+            }
+            if pv.global_theme.name == "geovista"
+            else {}
+        )
+
+        # Always honour any requested scalar bar options.
+        if "scalar_bar_args" in kwargs:
+            scalar_bar_args.update(kwargs["scalar_bar_args"])  # type: ignore[arg-type]
+
+        if scalar_bar_args:
+            kwargs["scalar_bar_args"] = scalar_bar_args
+
         return super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
 
     def add_meridian(
