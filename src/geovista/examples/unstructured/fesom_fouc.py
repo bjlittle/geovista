@@ -61,21 +61,16 @@ def main() -> None:
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
+        name=f"{sample.name} / {sample.units}",
         clean=True,
     )
 
     # Plot the unstructured mesh.
     crs = "+proj=fouc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {
-        "title": f"{sample.name} / {sample.units}",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
     # Require increased relative tolerance accuracy when cutting the mesh
     # at the anti-meridian due to its complex geometry.
-    p.add_mesh(mesh, scalar_bar_args=sargs, rtol=1e-8)
+    p.add_mesh(mesh, rtol=1e-8)
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_coastlines()
     p.add_axes()

@@ -54,17 +54,16 @@ def main() -> None:
     sample = dynamico()
 
     # Create the mesh from the sample data.
-    mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
+    mesh = gv.Transform.from_unstructured(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
+    )
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {
-        "title": f"{sample.name} / {sample.units}",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_coastlines()
     p.add_graticule()
     p.add_axes()

@@ -56,7 +56,12 @@ def main() -> None:
     sample = ww3_global_smc()
 
     # Create the mesh from the sample data.
-    mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
+    mesh = gv.Transform.from_unstructured(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
+    )
 
     # Threshold the mesh of NaNs.
     mesh = mesh.threshold()
@@ -64,13 +69,7 @@ def main() -> None:
     # Plot the unstructured mesh.
     crs = "+proj=sinu"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {
-        "title": f"{sample.name} / {sample.units}",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_coastlines()
     p.add_axes()

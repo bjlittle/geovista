@@ -77,12 +77,7 @@ def main() -> None:
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {
-        "title": f"{sample.name} / {sample.units}",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
+    sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(mesh, cmap="deep", scalars="face", scalar_bar_args=sargs)
     p.add_axes()
     p.add_text(

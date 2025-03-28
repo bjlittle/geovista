@@ -59,6 +59,7 @@ def main() -> None:
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
+        name=f"{sample.name} / {sample.units}",
     )
 
     # Remove cells from the mesh with NaN values.
@@ -66,13 +67,7 @@ def main() -> None:
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {
-        "title": f"{sample.name} / {sample.units}",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.natural_earth_1())
     p.add_coastlines()
     p.add_graticule()

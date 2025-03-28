@@ -79,13 +79,6 @@ def main() -> None:
     # Create a plotter containing three subplots in two columns, where
     # the first column has two rows, and the second column has only one.
     p = gv.GeoPlotter(shape="2|1")
-    sargs = {
-        "title": "Surface Temperature / K",
-        "fmt": "%.0f",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
 
     # First subplot: render the sample data with a transparent
     # manifold, highlighting the manifold edges and boundary.
@@ -108,6 +101,7 @@ def main() -> None:
     # Third subplot: render the extracted antarctic region of sample data
     # along with the boundary and coastlines on a texture mapped base layer.
     p.subplot(2)
+    sargs = {"title": "Surface Temperature / K", "fmt": "%.0f"}
     p.add_mesh(region.threshold(), clim=clim, scalar_bar_args=sargs)
     p.add_mesh(boundary, color="pink", line_width=3)
     p.add_base_layer(texture=gv.natural_earth_1())

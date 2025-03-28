@@ -51,19 +51,12 @@ def main() -> None:
     data = np.linspace(*clim, num=M * N)
 
     # Create the mesh from the synthetic data.
-    name = "Synthetic Cells"
-    mesh = gv.Transform.from_2d(mlons, mlats, data=data, name=name)
+    mesh = gv.Transform.from_2d(mlons, mlats, data=data, name="Synthetic Cells")
 
     # Plot the rectilinear grid.
     crs = "+proj=robin"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {
-        "title": f"{name} / 1",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
-    p.add_mesh(mesh, clim=clim, cmap="tempo", scalar_bar_args=sargs, show_edges=True)
+    p.add_mesh(mesh, clim=clim, cmap="tempo", show_edges=True)
     p.add_coastlines()
     p.add_axes()
     p.add_text(

@@ -78,19 +78,15 @@ def main() -> None:
     p = gv.GeoPlotter()
 
     # Load the GeoTIFF image, which requires the optional package
-    # dependency 'rasterio'.
+    # dependency 'rasterio'. Note that as a convenience the unit
+    # encoded within the GeoTIFF will populate the placeholder.
     mesh = gv.Transform.from_tiff(fname, extract=True, name="Elevation / {units}")
 
     # Warp the mesh nodes by the elevation.
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
     mesh.warp_by_scalar(inplace=True, factor=2e-7)
 
-    sargs = {
-        "fmt": "%.1f",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
+    sargs = {"fmt": "%.1f"}
     p.add_mesh(mesh, cmap="speed_r", scalar_bar_args=sargs, smooth_shading=True)
     p.add_logo_widget(fetch_raster("japan_map.png"), position=(0.8, 0.8))
     p.add_axes()

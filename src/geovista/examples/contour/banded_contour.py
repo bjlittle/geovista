@@ -74,13 +74,7 @@ def main() -> None:
 
     p = geovista.GeoPlotter()
 
-    sargs = {
-        "title": "Surface Altitude / m",
-        "fmt": "%.0f",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
+    sargs = {"title": "Surface Altitude / m", "fmt": "%.0f"}
     p.add_mesh(contours, cmap="Set3", n_colors=n_contours - 1, scalar_bar_args=sargs)
     p.add_mesh(edges, color="black", zlevel=1)
 

@@ -57,7 +57,12 @@ def main() -> None:
     sample = oisst_avhrr_sst()
 
     # Create the mesh from the sample data.
-    mesh = gv.Transform.from_1d(sample.lons, sample.lats, data=sample.data)
+    mesh = gv.Transform.from_1d(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
+    )
 
     # Remove cells from the mesh with NaN values.
     mesh = mesh.threshold()
@@ -65,13 +70,7 @@ def main() -> None:
     # Plot the rectilinear grid.
     crs = "+proj=eqc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {
-        "title": f"{sample.name} / {sample.units}",
-        "outline": True,
-        "background_color": "white",
-        "fill": True,
-    }
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.blue_marble())
     p.add_coastlines()
     p.add_axes()
