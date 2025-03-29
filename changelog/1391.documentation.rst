@@ -1,0 +1,2 @@
+Enabled ``sphinx-build`` optimisation to distribute its workload automatically
+across the number of available CPUs. (:user:`bjlittle`)
