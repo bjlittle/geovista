@@ -34,7 +34,8 @@ coastlines.
     domain: meteorology,
     filter: threshold,
     load: unstructured,
-    resolution: high
+    resolution: high,
+    style: colormap
 
 ----
 

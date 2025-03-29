@@ -37,7 +37,7 @@ coastlines.
     filter: threshold,
     load: unstructured,
     resolution: high,
-    style: opacity
+    style: colormap, style: opacity
 
 ----
 
