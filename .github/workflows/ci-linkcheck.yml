@@ -1,0 +1,62 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/lycheeverse/lychee-action
+#   - https://github.com/peter-evans/create-issue-from-file
+
+name: ci-linkcheck
+
+on:
+  schedule:
+    # every day @ 00h05
+    - cron: "5 0 * * *"
+
+  workflow_dispatch:
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+
+jobs:
+  linkcheck:
+    name: "linkcheck"
+    runs-on: "ubuntu-22.04"
+
+    permissions:
+      issues: write  # required for peter-evans/create-issue-from-file
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "linkcheck"
+        id: lychee
+        uses: lycheeverse/lychee-action@1d97d84f0bc547f7b25f4c2170d87d810dc2fb2c
+        with:
+          args: "--no-progress --verbose './docs/src/**/*.md ./docs/src/**/*.rst ./docs/src/**/*.txt ./changelog/*.rst ./src/**/*.py'"
+          checkbox: true
+          fail: false
+          jobSummary: true
+
+      - name: "report failure"
+        if: failure()
+        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd
+        with:
+          title: "chore: linkcheck failure"
+          content-filepath: ./lychee/out.md
+          labels: |
+            bot
+            new: issue
+            type: documentation
+
+      - name: "exit action"
+        if: steps.lychee.outputs.exit_code != 0
+        run:
+          exit {{ steps.lychee.outputs.exit_code }}

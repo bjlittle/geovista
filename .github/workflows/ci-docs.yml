@@ -42,7 +42,7 @@ jobs:
       matrix:
         os: ["ubuntu-22.04"]
         version: ["py312"]
-        session: ["doctest", "linkcheck"]
+        session: ["doctest"]
 
     steps:
     - uses: actions/checkout@v4

@@ -11,6 +11,7 @@ include .git_archival.txt
 include .gitattributes
 exclude .all-contributorsrc
 exclude .gitignore
+exclude .lycheeignore
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
 include *.md
