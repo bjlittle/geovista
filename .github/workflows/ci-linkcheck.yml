@@ -18,9 +18,9 @@ concurrency:
   cancel-in-progress: true
 
 
-#defaults:
-#  run:
-#    shell: bash -l {0}
+defaults:
+  run:
+    shell: bash -l {0}
 
 
 jobs:
@@ -43,16 +43,16 @@ jobs:
           args: "--no-progress --verbose './docs/src/**/*.md' './docs/src/**/*.rst' './docs/src/**/*.txt' './changelog/*.rst' './src/**/*.py'"
           fail: false
 
-#      - name: "report failure"
-#        if: failure()
-#        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd
-#        with:
-#          title: "chore: linkcheck failure"
-#          content-filepath: ./lychee/out.md
-#          labels: |
-#            bot
-#            new: issue
-#            type: documentation
+      - name: "report failure"
+        if: failure()
+        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd
+        with:
+          title: "chore: linkcheck failure"
+          content-filepath: ./lychee/out.md
+          labels: |
+            bot
+            new: issue
+            type: documentation
 
       - name: "exit action"
         if: steps.lychee.outputs.exit_code != 0
