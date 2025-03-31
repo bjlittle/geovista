@@ -675,6 +675,12 @@ sphinx_gallery_conf = {
     },
 }
 
+if os.environ.get("GEOVISTA_SPHX_GLR_SERIAL") is None:
+    with contextlib.suppress(ModuleNotFoundError):
+        import joblib  # noqa: F401
+
+        sphinx_gallery_conf["parallel"] = True
+
 
 # -- pyvista-plot directive options ------------------------------------------
 
