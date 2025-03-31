@@ -40,7 +40,7 @@ jobs:
         id: lychee
         uses: lycheeverse/lychee-action@f613c4a64e50d792e0b31ec34bbcbba12263c6a6
         with:
-          args: "--no-progress --verbose './docs/src/**/*.md ./docs/src/**/*.rst ./docs/src/**/*.txt ./changelog/*.rst ./src/**/*.py'"
+          args: "--no-progress --verbose './docs/src/**/*.md' './docs/src/**/*.rst' './docs/src/**/*.txt' './changelog/*.rst' './src/**/*.py'"
           fail: false
 
 #      - name: "report failure"
