@@ -15,7 +15,7 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: Makefile clean clean-cache clean-all doctest help html-docstring html-gallery html-noplot html-tutorial linkcheck serve-html
+.PHONY: Makefile clean clean-cache clean-all doctest help html-docstring html-gallery html-noplot html-tutorial serve-html
 
 clean:
 	-rm -rf $(BUILDDIR)/*
@@ -44,9 +44,6 @@ html-noplot:
 
 html-tutorial:
 	@$(SPHINXBUILD) -b html -D plot_docstring=False -D plot_gallery=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
-
-linkcheck:
-	@$(SPHINXBUILD) -b linkcheck -D plot_docstring=False -D plot_gallery=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/linkcheck"
 
 # Spin up a local http server to view the rendered documentation.
 # This is required for interactive examples to work.
