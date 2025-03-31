@@ -68,7 +68,7 @@ The visibility of each actor, apart from the coastlines, can be toggled
 interactively via checkbox buttons, allowing the viewer to easily explore
 the relationship between the geometric objects rendered in the scene.
 
-For further information see https://h3geo.org/.
+For further information see https://github.com/uber/h3.
 
 .. tags::
 
