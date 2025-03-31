@@ -1,0 +1,4 @@
+Enabled `sphinx-gallery <https://github.com/sphinx-gallery/sphinx-gallery>`__
+to distribute its workload automatically across the number of available
+CPUs. Disable by setting the ``GEOVISTA_SPHX_GLR_SERIAL`` environment
+variable. (:user:`bjlittle`)

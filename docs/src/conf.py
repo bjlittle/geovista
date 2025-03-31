@@ -429,9 +429,9 @@ autoapi_python_class_content = "both"
 autoapi_keep_files = True
 autoapi_add_toctree_entry = False
 
-autolog(f"{autoapi_dirs=}", section="AutoAPI")
-autolog(f"{autoapi_ignore=}", section="AutoAPI")
-autolog(f"{autoapi_root=}", section="AutoAPI")
+autolog(f"{autoapi_dirs=}", section="autoapi")
+autolog(f"{autoapi_ignore=}", section="autoapi")
+autolog(f"{autoapi_root=}", section="autoapi")
 
 
 # -- internationalization options --------------------------------------------
@@ -674,6 +674,18 @@ sphinx_gallery_conf = {
         "geovista": None,
     },
 }
+
+if os.environ.get("GEOVISTA_SPHX_GLR_SERIAL") is None:
+    with contextlib.suppress(ModuleNotFoundError):
+        import joblib  # noqa: F401
+
+        sphinx_gallery_conf["parallel"] = True
+
+        msg = "parallel build configured"
+else:
+    msg = "serial build configured"
+
+autolog(msg, section="sphinx-gallery")
 
 
 # -- pyvista-plot directive options ------------------------------------------
