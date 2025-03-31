@@ -900,7 +900,7 @@ class Transform:  # numpydoc ignore=PR01
                     from rasterio.features import sieve as riosieve
 
                     # convert boolean mask to conform to GDAL RFC 15 for sieve
-                    # see https://trac.osgeo.org/gdal/wiki/rfc15_nodatabitmask
+                    # see https://gdal.org/en/stable/development/rfc/rfc15_nodatabitmask.html
                     dtype = np.dtype(src.dtypes[0])
                     muint = 2 ** (dtype.itemsize * 8) - 1
                     mask = (~mask * muint).astype(dtype)

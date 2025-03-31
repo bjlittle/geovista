@@ -551,21 +551,6 @@ html_css_files = [
 ]
 
 
-# -- linkcheck builder options -----------------------------------------------
-# See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
-
-linkcheck_ignore = [
-    "https://doi.org/10.5281/zenodo.7608302",
-    "https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/",
-    "https://www.usgs.gov/programs/earthquake-hazards",
-    "https://www.ncei.noaa.gov/products/optimum-interpolation-sst",
-    "https://earthexplorer.usgs.gov",
-    "https://www.fvcom.org",
-    "https://www.gnu.org/software/make/",
-]
-linkcheck_retries = 3
-
-
 # -- intersphinx options -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 
