@@ -116,10 +116,10 @@ import geovista.theme
 # container holds the various VTK actors that will be rendered within
 # the scene.
 
-#: Missing Data Indicator
+# Missing Data Indicator
 MDI = -1
 
-#: Type alias
+# Type alias
 H3AssetLike: TypeAlias = str | PolyData
 H3Indexes = set[str]
 
