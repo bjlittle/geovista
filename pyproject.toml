@@ -54,7 +54,7 @@ ignore = ["src/geovista/_version.py"]
 
 
 [tool.codespell]
-ignore-words-list = "whet,projets"
+ignore-words-list = "whet,projets,AAS"
 skip = ".git,*.css,*.ipynb,*.js,*.html,*.map,*.po,CODE_OF_CONDUCT.md"
 
 
