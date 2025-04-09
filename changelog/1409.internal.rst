@@ -1,0 +1,3 @@
+Added missing optional packages `h3-py <https://github.com/uber/h3-py>`__ and
+`rasterio <https://github.com/rasterio/rasterio>`__ to the
+:mod:`geovista.report`. (:user:`bjlittle`)
