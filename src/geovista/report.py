@@ -31,7 +31,7 @@ __all__ = [
     "Report",
 ]
 
-# type aliases
+# this is a type alias
 PackageLike: TypeAlias = ModuleType | str
 """Type alias for a package module or package name."""
 

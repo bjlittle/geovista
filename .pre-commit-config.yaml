@@ -89,6 +89,12 @@ repos:
       - id: python-check-mock-methods
         # Prevent common mistakes of assert mck.not_called(), assert
         # mck.called_once_with(...) and mck.assert_called.
+      - id: python-no-eval
+        # A quick check for the eval() built-in function
+      - id: python-no-log-warn
+        # A quick check for the deprecated .warn() method of python loggers
+      - id: python-use-type-annotations
+        # Enforce that python3.6+ type annotations are used instead of type comments
       - id: rst-backticks
         # Detect common mistake of using single backticks when writing rst.
       - id: rst-directive-colons

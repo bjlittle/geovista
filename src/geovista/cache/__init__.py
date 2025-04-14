@@ -37,7 +37,7 @@ __all__ = [
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-# type aliases
+# this is a type alias
 FileLike: TypeAlias = str | IO[AnyStr]
 """Type alias for filename or file-like object."""
 

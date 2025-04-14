@@ -60,7 +60,7 @@ __all__ = [
     "Transform",
 ]
 
-# type aliases
+# this is a type alias
 PathLike: TypeAlias = str | Path
 """Type alias for an asset file path."""
 

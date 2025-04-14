@@ -22,7 +22,7 @@ from geovista.cache import CACHE
 if TYPE_CHECKING:
     import pyvista as pv
 
-    # type aliases
+    # this is a type alias
     TextureLike: TypeAlias = str | pv.Texture
 
 # lazy import third-party dependencies

@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     NearestNeighbours = tuple[ArrayLike, ArrayLike]
     """Type alias for a tuple of nearest neighbour distances and indices.""" ""
 
-    # type aliases
+    # these are type aliases
     CellIDs = list[int]
     CellIDLike = int | CellIDs
 

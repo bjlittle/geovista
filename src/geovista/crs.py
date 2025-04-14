@@ -38,7 +38,7 @@ __all__ = [
     "to_wkt",
 ]
 
-# type aliases
+# this is a type alias
 CRSLike: TypeAlias = int | str | dict[str, Any] | CRS
 """Type alias for a Coordinate Reference System."""
 
