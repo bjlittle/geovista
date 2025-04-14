@@ -59,7 +59,7 @@ if TYPE_CHECKING:
     from sphinx.application import Sphinx
     from sphinx.environment import BuildEnvironment
 
-    # type aliases.
+    # this is a type alias
     Mapper = (
         PythonAttribute
         | PythonData

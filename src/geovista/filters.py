@@ -37,7 +37,7 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 if TYPE_CHECKING:
     import pyvista as pv
 
-    # type aliases.
+    # this is a type alias
     Remesh = tuple[pv.PolyData, pv.PolyData, pv.PolyData]
 
 # lazy import third-party dependencies

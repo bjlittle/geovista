@@ -65,7 +65,7 @@ __all__ = [
     "wedge",
 ]
 
-# type aliases
+# this is a type alias
 Corners: TypeAlias = tuple[float, float, float, float]
 """Type alias for the corners of a bounding-box."""
 
