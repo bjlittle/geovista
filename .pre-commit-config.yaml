@@ -55,7 +55,7 @@ repos:
     rev: "v5.0.0"
     hooks:
       - id: check-added-large-files
-        exclude: "tests/plotting/image_cache"
+        exclude: "pixi.lock"
         # Prevent giant files from being committed.
       - id: check-ast
         # Check whether files parse as valid Python.
