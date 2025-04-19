@@ -501,6 +501,11 @@ trame-vuetify = ">=2.3.1,<3.0.1"
 [tool.pixi.feature.docs.pypi-dependencies]
 sphinx-tippy = "<0.4.4"
 
+[tool.pixi.feature.docs.tasks.make]
+args = [{ "arg" = "option", "default" = "html-noplot" }]
+cmd = "make {{ option }}"
+cwd = "docs"
+
 [tool.pixi.feature.py311.dependencies]
 pip = "<25.0.2"
 python = "3.11.*"

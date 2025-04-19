@@ -6999,8 +6999,8 @@ packages:
   timestamp: 1739974781272
 - pypi: .
   name: geovista
-  version: 0.6.0.dev374+dirty
-  sha256: 95a9eb8c09323272e80f5c574bdc13290ca1706835fccaabac6ab68fa2107c05
+  version: 0.6.0.dev375+dirty
+  sha256: 0ff1f9146758154792376020784f04475eee1cea26c004b844c9e79396fab79c
   requires_dist:
   - cartopy>=0.22,<0.24.2
   - click<8.1.9
