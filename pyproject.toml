@@ -1,6 +1,6 @@
 [build-system]
 # Defined by PEP 518
-requires = ["setuptools>=64", "setuptools_scm>=8"]
+requires = ["setuptools>=77.0.3", "setuptools_scm>=8"]
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"
 
@@ -10,7 +10,6 @@ authors = [{ name = "GeoVista Contributors", email = "geovista.pub@gmail.com" }]
 classifiers = [
   "Development Status :: 1 - Planning",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: BSD License",
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
@@ -33,7 +32,8 @@ keywords = [
   "unstructured",
   "vtk",
 ]
-license.file = "LICENSE"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 name = "geovista"
 requires-python = ">=3.11"
 
@@ -298,7 +298,6 @@ convention = "numpy"
 
 
 [tool.setuptools]
-license-files = ["LICENSE"]
 zip-safe = false
 
 

@@ -7,7 +7,7 @@ channels:
 dependencies:
 
 # setup dependencies (core)
-  - setuptools >=64
+  - setuptools >=77.0.3
   - setuptools-scm >=8
 
 # core dependencies
@@ -20,7 +20,8 @@ dependencies:
   - pooch
   - pykdtree
   - pyproj >=3.3
-  - pyvista >=0.43.1
+  - pyvista >=0.43.1,<0.44.3
+  - vtk <9.4
 
 # pantry dependencies (core)
   - netcdf4
