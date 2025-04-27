@@ -23,7 +23,7 @@ import click
 from click_default_group import DefaultGroup
 import lazy_loader as lazy
 
-from ._version import version as __version__
+from . import __version__
 from .cache import CACHE, pooch_mute
 from .common import get_modules
 from .config import resources
@@ -85,23 +85,26 @@ def _download_group(
     if fg_colour is None:
         fg_colour = FG_COLOUR
 
-    name: str = "" if name is None else f"{name} "
+    name_post: str = "" if name is None else f"{name} "
 
     n_fnames: int = len(fnames)
     width: int = len(str(n_fnames))
 
     previous = pooch_mute(silent=True)
 
-    click.echo(f"Downloading {n_fnames} {name}registered asset{_plural(n_fnames)}:")
+    click.echo(
+        f"Downloading {n_fnames} {name_post}registered asset{_plural(n_fnames)}:"
+    )
     for i, fname in enumerate(fnames):
-        click.echo(f"[{i+1:0{width}d}/{n_fnames}] Downloading ", nl=False)
+        click.echo(f"[{i + 1:0{width}d}/{n_fnames}] Downloading ", nl=False)
         click.secho(f"{fname} ", nl=False, fg=fg_colour)
         click.echo("... ", nl=False)
         processor = None
-        name = pathlib.Path(fname)
-        if decompress and (suffix := name.suffix) in pooch.Decompress.extensions:
-            name = name.stem.removesuffix(suffix)
-            processor = pooch.Decompress(method="auto", name=name)
+        name_path = pathlib.Path(fname)
+        if decompress and (suffix := name_path.suffix) in pooch.Decompress.extensions:
+            processor = pooch.Decompress(
+                method="auto", name=name_path.stem.removesuffix(suffix)
+            )
         CACHE.fetch(fname, processor=processor)
         click.secho("done!", fg="green")
 
@@ -186,14 +189,12 @@ def _plural(quantity: int) -> str:
 def main(version: bool, report: bool, cache: bool) -> None:  # numpydoc ignore=PR01
     """To get help for geovista commands, simply use "geovista COMMAND --help"."""
     if version:
-        click.echo("version ", nl=False)
         click.secho(f"{__version__}", fg=FG_COLOUR)
 
     if report:
         click.echo(Report())
 
     if cache:
-        click.echo("cache directory ", nl=False)
         click.secho(f"{CACHE.abspath}", fg=FG_COLOUR)
 
 
@@ -360,7 +361,7 @@ def download(
         unavailable = 0
         click.echo("Verifying remote availability of registered assets:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{width}d}/{n_fnames}] ", nl=False)
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
             click.secho(f"{fname} ", nl=False, fg=fg_colour)
             click.echo("is ... ", nl=False)
             status, status_fg_colour = (
@@ -396,14 +397,14 @@ def download(
     if dry_run:
         click.echo("URLs of registered assets:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{width}d}/{n_fnames}] ", nl=False)
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
             click.secho(f"{CACHE.get_url(fname)}", fg=fg_colour)
         click.echo("\n👍 All done!")
 
     if show:
         click.echo("Names of registered assets:")
         for i, fname in enumerate(fnames):
-            click.echo(f"[{i+1:0{width}d}/{n_fnames}] ", nl=False)
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
             click.secho(f"{fname}", fg=fg_colour)
         click.echo("\n👍 All done!")
 
@@ -465,10 +466,10 @@ def examples(
 
     if groups:
         click.echo("Available example groups:")
-        groups = _groups()
-        n_groups = len(groups)
+        groups_new = _groups()
+        n_groups = len(groups_new)
         width = len(str(n_groups))
-        for i, group in enumerate(groups):
+        for i, group in enumerate(groups_new):
             click.echo(f"[{i + 1:0{width}d}/{n_groups}] ", nl=False)
             click.secho(f"{group}", fg="green")
         click.echo("\n👍 All done!")
@@ -478,7 +479,7 @@ def examples(
 
     if run_all:
         for i, script in enumerate(EXAMPLES[1:]):
-            msg = f"Running example {script!r} ({i+1} of {n_examples}) ..."
+            msg = f"Running example {script!r} ({i + 1} of {n_examples}) ..."
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")
             if verbose:
@@ -491,10 +492,10 @@ def examples(
         return
 
     if run_group:
-        group = [script for script in EXAMPLES[1:] if script.startswith(run_group)]
-        n_group = len(group)
-        for i, script in enumerate(group):
-            msg = f"Running {run_group!r} example {script!r} ({i+1} of {n_group}) ..."
+        filtered = [script for script in EXAMPLES[1:] if script.startswith(run_group)]
+        n_group = len(filtered)
+        for i, script in enumerate(filtered):
+            msg = f"Running {run_group!r} example {script!r} ({i + 1} of {n_group}) ..."
             click.secho(msg, fg="green")
             module = importlib.import_module(f"geovista.examples.{script}")
             if verbose:

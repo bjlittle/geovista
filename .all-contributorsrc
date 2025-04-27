@@ -75,7 +75,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/110238618?v=4",
       "profile": "https://github.com/ESadek-MO",
       "contributions": [
-        "code"
+        "code",
+        "example",
+        "data",
+        "review"
       ]
     },
     {
@@ -94,7 +97,11 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/84939917?v=4",
       "profile": "https://github.com/HGWright",
       "contributions": [
-        "doc"
+        "doc",
+        "review",
+        "code",
+        "data",
+        "example"
       ]
     },
     {
@@ -157,7 +164,8 @@
         "translation",
         "review",
         "promotion",
-        "mentoring"
+        "mentoring",
+        "security"
       ]
     },
     {
@@ -178,7 +186,8 @@
         "bug",
         "promotion",
         "ideas",
-        "talk"
+        "talk",
+        "example"
       ]
     },
     {
@@ -397,6 +406,15 @@
         "example",
         "video",
         "promotion"
+      ]
+    },
+    {
+      "login": "kuchaale",
+      "name": "Ales Kuchar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6815953?v=4",
+      "profile": "https://github.com/kuchaale",
+      "contributions": [
+        "example"
       ]
     }
   ],

@@ -1,0 +1,3 @@
+Made the entire code base `mypy <https://github.com/python/mypy>`__ compliant.
+This should make development faster and more intuitive for anyone using an IDE
+and/or any sort of type-checking. (:user:`trexfeathers`)

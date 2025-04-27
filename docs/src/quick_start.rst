@@ -1,11 +1,12 @@
 .. include:: common.txt
 
 .. _gv-quick-start:
+.. _tippy-gv-quick-start:
 
 :fa:`truck-fast` Quick Start
 ============================
 
-Now that you've :ref:`installed <gv-installation>` ``geovista``, let's take a
+Now that you've :ref:`installed <tippy-gv-installation>` ``geovista``, let's take a
 quick tour to see some of the features and capabilities on offer.
 
 
@@ -329,7 +330,7 @@ And Finally ...
 Hopefully this whirlwind tour of ``geovista`` has whet your appetite for much
 more!
 
-If so, then let's explore the :ref:`next steps <gv-next-steps>` on your
+If so, then let's explore the :ref:`next steps <tippy-gv-next-steps>` on your
 ``geovista`` journey.
 
 

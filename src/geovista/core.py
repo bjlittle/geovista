@@ -45,8 +45,6 @@ from .filters import remesh
 from .search import find_cell_neighbours
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from numpy.typing import ArrayLike
     import pyvista as pv
 
@@ -322,7 +320,7 @@ def add_texture_coords(
 
 
 def combine(
-    *meshes: Iterable[pv.PolyData],
+    *meshes: pv.PolyData,
     data: bool | None = True,
     clean: bool | None = False,
 ) -> pv.PolyData:
@@ -384,21 +382,20 @@ def combine(
         if not isinstance(mesh, pv.PolyData):
             emsg = (
                 f"Can only combine 'pyvista.PolyData' meshes, input mesh "
-                f"#{i+1} has type '{mesh.__class__.__name__}'."
+                f"#{i + 1} has type '{mesh.__class__.__name__}'."
             )
             raise TypeError(emsg)
 
         if mesh.n_lines:
             emsg = (
-                f"Can only combine meshes with cells, input mesh #{i+1} "
+                f"Can only combine meshes with cells, input mesh #{i + 1} "
                 "contains lines."
             )
             raise TypeError(emsg)
 
         if mesh.n_cells == 0:
             emsg = (
-                f"Can only combine meshes with cells, input mesh #{i+1} "
-                "has no cells."
+                f"Can only combine meshes with cells, input mesh #{i + 1} has no cells."
             )
             raise TypeError(emsg)
 
@@ -550,7 +547,7 @@ def resize(
             )
     else:
         new_radius = radius + radius * zlevel * zscale
-        update = new_radius and not np.isclose(distance(mesh), new_radius)
+        update = bool(new_radius) and not np.isclose(distance(mesh), new_radius)
 
     if update:
         lonlat = from_cartesian(mesh)
@@ -629,6 +626,7 @@ def slice_cells(
         meridian += 180
 
     meridian = wrap(meridian)[0]
+    assert isinstance(meridian, float)
 
     info = mesh.active_scalars_info
     slicer = MeridianSlice(mesh, meridian)
@@ -674,8 +672,8 @@ def slice_cells(
                 cxpts = neighbours.get_cell(cid).points[:, 0]
                 cxmin, cxmax = cxpts.min(), cxpts.max()
                 xdelta.append(cxmax - cxmin)
-            xdelta = np.array(xdelta)
-            bad = np.where(xdelta > 270)[0]
+            xdelta_array = np.array(xdelta)
+            bad = np.where(xdelta_array > 270)[0]
             if bad.size:
                 bad_cids = np.unique(neighbours[GV_CELL_IDS][bad])
                 plural = "s" if (n_cells := bad_cids.size) > 1 else ""

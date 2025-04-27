@@ -23,8 +23,7 @@ def test_cloud_amount(preference):
 def test_cloud_amount__preference_bad():
     """Test bad preference for cloud amount mesh."""
     emsg = (
-        "Expected a preference of 'low' or 'medium' or 'high' or 'very_high' "
-        "or 'mesh'."
+        "Expected a preference of 'low' or 'medium' or 'high' or 'very_high' or 'mesh'."
     )
     with pytest.raises(ValueError, match=emsg):
         _ = meshes.cloud_amount(preference="bad")

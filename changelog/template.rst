@@ -1,4 +1,5 @@
-.. _gv-changelog-{{ versiondata.date }}:
+.. _gv-reference-changelog-{{ versiondata.date }}:
+.. _tippy-gv-reference-changelog-{{ versiondata.date }}:
 
 {% if render_title %}
 v{{ versiondata.version }} ({{ versiondata.date }})

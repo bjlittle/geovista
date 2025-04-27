@@ -49,20 +49,17 @@ def main() -> None:
     data = np.linspace(*clim, num=M * N)
 
     # Create the mesh from the synthetic data.
-    name = "Synthetic Cells"
-    mesh = gv.Transform.from_1d(lons, lats, data=data, name=name)
+    mesh = gv.Transform.from_1d(lons, lats, data=data, name="Synthetic Cells / 1")
 
     # Plot the rectilinear grid.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{name} / 1", "shadow": True}
-    p.add_mesh(mesh, clim=clim, cmap="ice", scalar_bar_args=sargs, show_edges=True)
+    p.add_mesh(mesh, clim=clim, cmap="ice", show_edges=True)
     p.add_coastlines()
     p.add_axes()
     p.add_text(
         "1-D Synthetic Face Data",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.3)
     p.show()

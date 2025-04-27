@@ -33,7 +33,6 @@ defaults:
 jobs:
   tests:
     name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
-
     runs-on: ${{ matrix.os }}
 
     env:
@@ -72,11 +71,12 @@ jobs:
         env_name: ${{ env.ENV_NAME }}
 
     - name: "conda install"
-      uses: conda-incubator/setup-miniconda@d2e6a045a86077fb6cad6f5adf368e9076ddaa8d
+      uses: conda-incubator/setup-miniconda@505e6394dae86d6a5c7fbb6e3fb8938e3e863830
       with:
         miniforge-version: latest
         activate-environment: ${{ env.ENV_NAME }}
         use-only-tar-bz2: false
+        conda-remove-defaults: true
 
     - name: "conda environment cache"
       uses: ./.github/workflows/composite/conda-env-cache
@@ -102,7 +102,7 @@ jobs:
         lock_file: ${{ env.LOCK_FILE }}
 
     - name: "apt cache"
-      uses: awalsh128/cache-apt-pkgs-action@a6c3917cc929dd0345bfb2d3feaf9101823370ad
+      uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
       with:
         packages: libgl1-mesa-glx xvfb
         version: 1.0
@@ -166,6 +166,6 @@ jobs:
           coverage xml --omit=*/_version.py
 
       - name: "upload coverage report"
-        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
+        uses: codecov/codecov-action@ad3126e916f78f00edff4ed0317cf185271ccc2d
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

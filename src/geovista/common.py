@@ -56,8 +56,8 @@ __all__ = [
     "WRAP_RTOL",
     "ZLEVEL_SCALE",
     "ZTRANSFORM_FACTOR",
-    "MixinStrEnum",
     "Preference",
+    "StrEnumPlus",
     "active_kernel",
     "cast_UnstructuredGrid_to_PolyData",
     "distance",
@@ -148,28 +148,31 @@ ZTRANSFORM_FACTOR: int = 3
 """The zlevel scaling to be applied when transforming to a projection."""
 
 
-class MixinStrEnum:
-    """Convenience behaviour mixin for a string enumeration.
+class StrEnumPlus(StrEnum):
+    """Convenience behaviour for a string enumeration.
 
     Notes
     -----
-    .. versionadded:: 0.3.0
+    .. versionadded:: 0.6.0
+
+    Previously called MixinStrEnum.
 
     """
 
     @classmethod
-    def _missing_(cls, item: str | Preference) -> Preference | None:
+    def _missing_(cls, value: object) -> StrEnumPlus | None:
         """Handle missing enumeration members.
 
         Parameters
         ----------
-        item : str or Preference
-            The candidate preference enumeration member.
+        value : object
+            The candidate preference enumeration member. Expected to be str or
+            StrEnumPlus instance, but could be any object.
 
         Returns
         -------
-        Preference
-            The preference member or None if the member is not a valid
+        StrEnumPlus
+            The enum member or None if the member is not a valid
             enumeration member.
 
         Notes
@@ -177,14 +180,14 @@ class MixinStrEnum:
         .. versionadded:: 0.3.0
 
         """
-        item = str(item).lower()
+        value_string = str(value).lower()
         for member in cls:
-            if member.value == item:
+            if member.value == value_string:
                 return member
         return None
 
     @classmethod
-    def valid(cls, item: str | Preference) -> bool:
+    def valid(cls, item: str | StrEnumPlus) -> bool:
         """Determine whether the provided item is a valid enumeration member.
 
         Parameters
@@ -221,7 +224,7 @@ class MixinStrEnum:
         return tuple([member.value for member in cls])
 
 
-class Preference(MixinStrEnum, StrEnum):
+class Preference(StrEnumPlus):
     """Enumeration of common mesh geometry preferences.
 
     Notes
@@ -441,44 +444,49 @@ def from_cartesian(
             lons[0] = lons[-1] = lons[1]
         else:
             pole_submesh = mesh.extract_points(pole_pids)
-            pole_pids = set(pole_pids)
-            # get the cids (cell-indices) of mesh cells with polar vertices
-            pole_cids = np.unique(pole_submesh["vtkOriginalCellIds"])
-            for cid in pole_cids:
-                # get the pids (point-indices) of the polar cell points
-                # NOTE: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
-                cell_pids = np.array(mesh.get_cell(cid).point_ids)
-                # unfold polar quad-cells
-                if len(cell_pids) == 4:
-                    # identify the pids of the cell on the pole
-                    cell_pole_pids = pole_pids.intersection(cell_pids)
-                    # criterion of exactly two points from the quad-cell
-                    # at the pole to unfold the polar points longitudes
-                    if len(cell_pole_pids) == 2:
-                        # compute the relative offset of the polar points
-                        # within the polar cell connectivity
-                        offset = sorted(
-                            [np.where(cell_pids == pid)[0][0] for pid in cell_pole_pids]
-                        )
-                        if offset == [0, 1]:
-                            lhs = cell_pids[offset]
-                            rhs = cell_pids[[3, 2]]
-                        elif offset == [1, 2]:
-                            lhs = cell_pids[offset]
-                            rhs = cell_pids[[0, 3]]
-                        elif offset == [2, 3]:
-                            lhs = cell_pids[offset]
-                            rhs = cell_pids[[1, 0]]
-                        elif offset == [0, 3]:
-                            lhs = cell_pids[offset]
-                            rhs = cell_pids[[1, 2]]
-                        else:
-                            emsg = (
-                                "Failed to unfold a mesh polar quad-cell. Invalid "
-                                "polar points connectivity detected."
+            if pole_submesh.n_cells:
+                pole_pids = set(pole_pids)
+                # get the cids (cell-indices) of mesh cells with polar vertices
+                pole_cids = np.unique(pole_submesh[VTK_CELL_IDS])
+                for cid in pole_cids:
+                    # get the pids (point-indices) of the polar cell points
+                    # NOTE:
+                    # pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
+                    cell_pids = np.array(mesh.get_cell(cid).point_ids)
+                    # unfold polar quad-cells
+                    if len(cell_pids) == 4:
+                        # identify the pids of the cell on the pole
+                        cell_pole_pids = pole_pids.intersection(cell_pids)
+                        # criterion of exactly two points from the quad-cell
+                        # at the pole to unfold the polar points longitudes
+                        if len(cell_pole_pids) == 2:
+                            # compute the relative offset of the polar points
+                            # within the polar cell connectivity
+                            offset = sorted(
+                                [
+                                    np.where(cell_pids == pid)[0][0]
+                                    for pid in cell_pole_pids
+                                ]
                             )
-                            raise ValueError(emsg)
-                        lons[lhs] = lons[rhs]
+                            if offset == [0, 1]:
+                                lhs = cell_pids[offset]
+                                rhs = cell_pids[[3, 2]]
+                            elif offset == [1, 2]:
+                                lhs = cell_pids[offset]
+                                rhs = cell_pids[[0, 3]]
+                            elif offset == [2, 3]:
+                                lhs = cell_pids[offset]
+                                rhs = cell_pids[[1, 0]]
+                            elif offset == [0, 3]:
+                                lhs = cell_pids[offset]
+                                rhs = cell_pids[[1, 2]]
+                            else:
+                                emsg = (
+                                    "Failed to unfold a mesh polar quad-cell. Invalid "
+                                    "polar points connectivity detected."
+                                )
+                                raise ValueError(emsg)
+                            lons[lhs] = lons[rhs]
 
     if closed_interval:
         if GV_REMESH_POINT_IDS in mesh.point_data:
@@ -496,8 +504,7 @@ def from_cartesian(
                     mesh.extract_points(poi_pids)
                 )
                 cell_pids = [
-                    mesh.get_cell(cid).point_ids
-                    for cid in poi_cells["vtkOriginalCellIds"]
+                    mesh.get_cell(cid).point_ids for cid in poi_cells[VTK_CELL_IDS]
                 ]
                 mask_positive = lons[cell_pids] > 0
                 if np.any(mask_positive):
@@ -536,7 +543,8 @@ def get_modules(root: str, base: bool | None = True) -> list[str]:
     .. versionadded:: 0.5.0
 
     """
-    modules, pkgs = [], []
+    modules: list[str] = []
+    pkgs: list[str] = []
 
     for info in pkgutil.iter_modules(importlib.import_module(root).__path__):
         name = f"{root}.{info.name}"
@@ -600,11 +608,12 @@ def point_cloud(mesh: pv.PolyData) -> bool:
     .. versionadded:: 0.2.0
 
     """
-    return (mesh.n_points == mesh.n_cells) and (mesh.n_lines == 0)
+    result: bool = (mesh.n_points == mesh.n_cells) and (mesh.n_lines == 0)
+    return result
 
 
 def sanitize_data(
-    *meshes: Iterable[pv.PolyData],
+    *meshes: pv.PolyData,
 ) -> None:
     """Purge standard VTK helper cell and point data index arrays.
 
@@ -898,7 +907,8 @@ def triangulated(surface: pv.PolyData) -> bool:
     .. versionadded:: 0.1.0
 
     """
-    return np.all(np.diff(surface._offset_array) == 3)  # noqa: SLF001
+    result: bool = np.all(np.diff(surface._offset_array) == 3)  # noqa: SLF001
+    return result
 
 
 def vtk_warnings_off() -> None:

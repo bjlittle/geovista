@@ -1,0 +1,1 @@
+Restructured the :ref:`tippy-gv-developer` guidelines. (:user:`bjlittle`)

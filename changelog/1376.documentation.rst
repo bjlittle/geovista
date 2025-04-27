@@ -1,0 +1,4 @@
+Added the :ref:`tippy-gv-examples-domain` gallery section,
+including the :ref:`sphx_glr_generated_gallery_domain_clouds.py` and
+:ref:`sphx_glr_generated_gallery_domain_clouds_robin.py` examples.
+(:user:`bjlittle`)

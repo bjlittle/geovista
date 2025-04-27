@@ -1,0 +1,1 @@
+Added the ``clouds_stratify`` CLI example. (:user:`bjlittle`)

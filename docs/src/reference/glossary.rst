@@ -1,6 +1,7 @@
 .. include:: ../common.txt
 
-.. _gv-glossary:
+.. _gv-reference-glossary:
+.. _tippy-gv-reference-glossary:
 
 :fa:`spell-check` Glossary
 ==========================
@@ -48,6 +49,11 @@ Say what you mean. Mean what you say.
     Mesh
         A spatially referenced dataset that may be a surface or volume in 3-D
         space. See `What is a Mesh?`_
+
+    MyST
+        *Markedly Structured Text* is a rich and extensible flavour of ``Markdown``
+        for authoring technical and scientific documents. See `myst-nb`_ and
+        `myst-parser`_ from the `Executable Books`_ organisation.
 
     Node
         Nodes are the vertices of a mesh. Also see :term:`Point`.

@@ -1,0 +1,1 @@
+Added :user:`ESadek-MO` as a contributor for ``code``, ``example``, and ``data``. (:user:`bjlittle`)

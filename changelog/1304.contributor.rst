@@ -1,0 +1,2 @@
+Added ``sphinx`` cross-references to the :ref:`tippy-gv-examples`.
+(:user:`bjlittle`)

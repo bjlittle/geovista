@@ -99,11 +99,12 @@ jobs:
         env_name: ${{ env.ENV_NAME }}
 
     - name: "conda install"
-      uses: conda-incubator/setup-miniconda@d2e6a045a86077fb6cad6f5adf368e9076ddaa8d
+      uses: conda-incubator/setup-miniconda@505e6394dae86d6a5c7fbb6e3fb8938e3e863830
       with:
         miniforge-version: latest
         activate-environment: ${{ env.ENV_NAME }}
         use-only-tar-bz2: false
+        conda-remove-defaults: true
 
     - name: "conda environment cache"
       uses: ./.github/workflows/composite/conda-env-cache
@@ -161,13 +162,13 @@ jobs:
         path: ${{ github.workspace }}/dist
         merge-multiple: true
 
-    - uses: pypa/gh-action-pypi-publish@15c56dba361d8335944d31a2ecd17d700fc7bcbc
+    - uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
       with:
         user: __token__
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
-        skip_existing: true
-        print_hash: true
+        repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
+        print-hash: true
 
 
   publish-artifacts-pypi:
@@ -183,8 +184,8 @@ jobs:
         path: ${{ github.workspace }}/dist
         merge-multiple: true
 
-    - uses: pypa/gh-action-pypi-publish@15c56dba361d8335944d31a2ecd17d700fc7bcbc
+    - uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
-        print_hash: true
+        print-hash: true

@@ -1,6 +1,7 @@
 .. include:: ../common.txt
 
-.. _gv-bindings:
+.. _gv-reference-bindings:
+.. _tippy-gv-reference-bindings:
 
 :fa:`keyboard` Key Bindings
 ===========================

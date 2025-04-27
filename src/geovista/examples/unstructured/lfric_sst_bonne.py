@@ -61,6 +61,7 @@ def main() -> None:
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
+        name=f"{sample.name} / {sample.units}",
     )
 
     # Remove cells from the mesh with NaN values.
@@ -69,8 +70,7 @@ def main() -> None:
     # Plot the unstructured mesh.
     crs = "+proj=bonne +lat_1=10 +lon_0=180"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.natural_earth_1())
     p.add_coastlines()
     p.add_graticule()
@@ -79,7 +79,6 @@ def main() -> None:
         f"LFRic C48 Unstructured Cube-Sphere ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

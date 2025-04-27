@@ -1,2 +1,2 @@
-Updated the :ref:`gv-developer-changelog` contributor guidelines.
+Updated the :ref:`tippy-gv-developer-towncrier` contributor guidelines.
 (:user:`bjlittle`)

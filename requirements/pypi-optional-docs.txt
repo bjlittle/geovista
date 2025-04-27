@@ -1,24 +1,25 @@
-ipykernel
-myst-nb
-numpydoc
-sphinx >=7.3
-sphinx_design
-sphinx-autoapi >=3.2.0
-sphinx-book-theme >=1.1.3
-sphinx-changelog >=1.6.0
-towncrier
-sphinx-click
-sphinx-copybutton
-sphinx-gallery >=0.16
-sphinx-tags >=0.4
-sphinx-tippy
-sphinx-togglebutton
-pydata-sphinx-theme >=0.15.3
-ipywidgets
-jupyter-server-proxy
-nest_asyncio
-trame
-trame-client
-trame-server
-trame-vtk
-trame-vuetify
+ipykernel <6.29.6
+joblib <1.4.3
+myst-nb <1.2.1
+numpydoc <1.8.1
+sphinx >=7.3,<8.2.4
+sphinx_design <0.6.2
+sphinx-autoapi >=3.2.0,<3.6.1
+sphinx-book-theme >=1.1.3,<1.1.5
+sphinx-changelog >=1.6.0,<1.6.1
+towncrier <24.8.1
+sphinx-click <6.0.1
+sphinx-copybutton <0.5.3
+sphinx-gallery >=0.17,<0.19.1
+sphinx-tags >=0.4,<0.4.1
+sphinx-tippy <0.4.4
+sphinx-togglebutton <0.3.3
+pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2 # https://github.com/bjlittle/geovista/issues/1247
+ipywidgets <8.1.7
+jupyter-server-proxy <4.4.1
+nest_asyncio <1.6.1
+trame >=2.5.2,<3.8.3
+trame-client >=2.12.7,<3.7.2
+trame-server >=2.11.7,<3.4.1
+trame-vtk >=2.5.8,<2.8.16
+trame-vuetify >=2.3.1,<3.0.1

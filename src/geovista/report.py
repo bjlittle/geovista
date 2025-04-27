@@ -31,7 +31,7 @@ __all__ = [
     "Report",
 ]
 
-# type aliases
+# this is a type alias
 PackageLike: TypeAlias = ModuleType | str
 """Type alias for a package module or package name."""
 
@@ -63,6 +63,7 @@ PACKAGES_OPTIONAL: list[str] = [
     "IPython",
     "PyQt5",
     "fastparquet",
+    "h3",
     "imageio",
     "ipywidgets",
     "jupyter_server_proxy",
@@ -71,6 +72,7 @@ PACKAGES_OPTIONAL: list[str] = [
     "nest_asyncio",
     "pandas",
     "pyvistaqt",
+    "rasterio",
     "scipy",
     "trame",
     "trame_client",

@@ -58,6 +58,26 @@ ignore-words-list = "whet,projets"
 skip = ".git,*.css,*.ipynb,*.js,*.html,*.map,*.po,CODE_OF_CONDUCT.md"
 
 
+[tool.mypy]
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+exclude = []
+files = ["src/geovista"]
+strict = true
+warn_unreachable = true
+
+
+[[tool.mypy.overrides]]
+# Problem caused by the click module - out of our control.
+disallow_untyped_decorators = false
+module = "geovista.cli"
+
+
+[[tool.mypy.overrides]]
+# Subclassing third-party classes - out of our control.
+disallow_subclassing_any = false
+module = ["geovista.geoplotter", "geovista.qt", "geovista.report"]
+
+
 [tool.numpydoc_validation]
 checks = [
   "all", # Enable all numpydoc validation rules, apart from the following:
@@ -111,22 +131,18 @@ filterwarnings = [
   "ignore:pyvista test cache image dir:UserWarning",
   "ignore:pyvista test generated image dir:UserWarning",
 ]
-image_cache_dir = "tests/plotting/image_cache"
-log_cli = "True"
+image_cache_dir = "tests/plotting/image_cache" # pytest-pyvista option
+log_cli = true
 log_cli_level = "INFO"
 markers = ["example: gallery image tests", "image: plotting image tests"]
 minversion = "6.0"
 required_plugins = "pytest-mock pytest_pyvista"
 testpaths = "tests"
-xfail_strict = "True"
+xfail_strict = true
 
 
 [tool.repo-review]
 ignore = [
-  # https://learn.scientific-python.org/development/guides/style/#MY100
-  "MY100", # Uses MyPy (pyproject config).
-  # https://learn.scientific-python.org/development/guides/style/#PC140
-  "PC140", # Uses mypy.
   # https://learn.scientific-python.org/development/guides/style/#PC180
   "PC180", # Uses prettier.
 ]
@@ -241,9 +257,9 @@ max-statements = 91
   # https://docs.astral.sh/ruff/rules/print/
   "T201", # flake8-print: print found.
 ]
-"src/geovista/examples/*.py" = [
+"src/geovista/examples/**/*.py" = [
   # https://docs.astral.sh/ruff/rules/typing-only-third-party-import/
-  "TCH002", # flake8-type-checking: Move 3rd-party import into a type checking block.
+  "TC002", # flake8-type-checking: Move 3rd-party import into a type checking block.
 ]
 "src/geovista/examples/earthquakes.py" = [
   # https://docs.astral.sh/ruff/rules/line-too-long/
@@ -381,7 +397,7 @@ showcontent = true
 
 [[tool.towncrier.type]]
 # Changes that affect contributors e.g., standards, conventions,
-# running tests, building docs, environments etc
+# running tests, building docs, environments, security etc
 directory = "contributor"
 name = "🛠️ Contributor Infrastructure"
 showcontent = true

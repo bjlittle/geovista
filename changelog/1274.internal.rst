@@ -1,0 +1,2 @@
+Removed a ``__all__`` duplicate entry in ``geovista.pantry.data``.
+(:user:`HGWright`)

@@ -1,0 +1,3 @@
+Dropped the use of ``setup.py``,  given the already configured
+`PEP 517 <https://peps.python.org/pep-0517/>`__ ``build-backend`` with
+`setuptools <https://github.com/pypa/setuptools>`__. (:user:`bjlittle`)

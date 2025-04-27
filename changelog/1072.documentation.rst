@@ -1,1 +1,1 @@
-Added developer :ref:`changelog <gv-developer-changelog>` notes. (:user:`bjlittle`)
+Added :ref:`tippy-gv-developer-towncrier` contributor guidelines. (:user:`bjlittle`)

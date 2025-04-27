@@ -1,0 +1,1 @@
+Added :user:`HGWright` as a contributor for ``code``. (:user:`bjlittle`)

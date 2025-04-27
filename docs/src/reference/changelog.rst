@@ -1,7 +1,8 @@
-.. _gv-changelog:
+.. _gv-reference-changelog:
+.. _tippy-gv-reference-changelog:
 
-:fa:`road` Changelog
-====================
+:fa:`road-circle-check` Changelog
+=================================
 
 Release versions follow `Semantic Versioning <https://semver.org>`_
 i.e., ``<major>.<minor>.<patch>``.
@@ -12,7 +13,8 @@ of a prior ``<minor>`` release.
 
 ----
 
-.. _gv-changelog-latest:
+.. _gv-reference-changelog-latest:
+.. _tippy-gv-reference-changelog-latest:
 
 .. changelog::
     :towncrier: ../../../

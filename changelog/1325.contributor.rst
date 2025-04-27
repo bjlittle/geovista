@@ -1,0 +1,3 @@
+Converted `pypi-publish <https://github.com/pypa/gh-action-pypi-publish>`__
+:fab:`github` Action options from ``snake_case`` to ``kebab-case``.
+(:user:`bjlittle`)

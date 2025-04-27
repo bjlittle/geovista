@@ -1,0 +1,2 @@
+Updated the `pygrep-hooks <https://github.com/pre-commit/pygrep-hooks>`__
+``pre-commit`` hook to include additional coverage. (:user:`bjlittle`)

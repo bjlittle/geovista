@@ -50,21 +50,18 @@ def main() -> None:
     data = np.linspace(*clim, num=(M + 1) * (N + 1))
 
     # Create the mesh from the synthetic data.
-    name = "Synthetic Points"
-    mesh = gv.Transform.from_1d(lons, lats, data=data, name=name)
+    mesh = gv.Transform.from_1d(lons, lats, data=data, name="Synthetic Points")
 
     # Plot the rectilinear grid.
     crs = "+proj=moll"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{name} / 1", "shadow": True}
-    p.add_mesh(mesh, clim=clim, cmap="ice", scalar_bar_args=sargs, show_edges=True)
+    p.add_mesh(mesh, clim=clim, cmap="ice", show_edges=True)
     p.add_coastlines()
     p.add_axes()
     p.add_text(
         f"1-D Synthetic Node Data ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

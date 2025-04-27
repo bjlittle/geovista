@@ -1,4 +1,5 @@
-.. _gv-about:
+.. _gv-reference-about:
+.. _tippy-gv-reference-about:
 
 :fa:`circle-info` About
 =======================

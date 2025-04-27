@@ -1,1 +1,2 @@
-Added the initial :ref:`gv-whatsnew` infrastructure. (:user:`bjlittle`)
+Added the initial :ref:`tippy-gv-reference-whatsnew` infrastructure.
+(:user:`bjlittle`)

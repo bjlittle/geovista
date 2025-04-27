@@ -1,0 +1,4 @@
+Migrated from ``sphinx-linkcheck`` builder to cron activated
+`lychee <https://github.com/lycheeverse/lychee-action>`__ :fab:`github` Action.
+The link check workflow is no longer performed as part of a pull-request.
+(:user:`bjlittle`)

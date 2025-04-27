@@ -27,7 +27,7 @@ Natural Earth base layer is rendered along with Natural Earth coastlines.
 
     component: coastlines, component: texture,
     domain: oceanography,
-    filter: threshold
+    filter: threshold,
     load: curvilinear
 
 ----
@@ -53,15 +53,19 @@ def main() -> None:
     sample = nemo_orca2()
 
     # Create the mesh from the sample data.
-    mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)
+    mesh = gv.Transform.from_2d(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
+    )
 
     # Remove cells from the mesh with NaN values.
     mesh = mesh.threshold()
 
     # Plot the curvilinear grid.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.natural_earth_1())
     p.add_coastlines()
     p.add_axes()
@@ -69,7 +73,6 @@ def main() -> None:
         "ORCA (10m Coastlines)",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.3)
     p.show()

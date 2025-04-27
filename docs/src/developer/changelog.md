@@ -1,6 +1,6 @@
-# {fa}`road` Changelog
+# {fa}`road-circle-check` Changelog
 
-The {ref}`changelog <gv-changelog>` is managed and orchestrated with
+The {ref}`changelog <tippy-gv-reference-changelog>` is managed and orchestrated with
 [towncrier](https://github.com/twisted/towncrier).
 
 The root level `changelog` directory contains [ReStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html)
@@ -47,17 +47,21 @@ Each news fragment file **must** be named as `<PULL-REQUEST>.<TYPE>.rst`,
 where `<PULL-REQUEST>` is the {fab}`github` pull-request number,
 and `<TYPE>` is one of:
 
-* `breaking`: Removals and backward incompatible breaking changes that may affect user code
+* `breaking`: Removals and backward incompatible breaking changes that may affect user
+  code
 * `deprecation`: Declaration of removals and backward incompatible changes
 * `feature`: New user facing behaviours or capability
 * `enhancement`: Updates to existing behaviours or capability, including performance
 * `bugfix`: Correction to undesired behaviours or reported bugs
 * `dependency`: Package dependency removals, additions, pins etc
 * `asset`: Data, media and asset updates etc
-* `documentation`: Notable changes to the documentation structure, content, render or build
+* `documentation`: Notable changes to the documentation structure, content, render or
+  build
 * `internal`: Miscellaneous internal and maintenance changes
-* `community`: Celebrate our awesome community members and their contributions, including social changes
-* `contributor`: Changes that affect contributors such as standards, conventions, running tests, building docs, environments etc
+* `community`: Celebrate our awesome community members and their contributions,
+  including social changes
+* `contributor`: Changes that affect contributors such as standards, conventions,
+  running tests, building docs, environments, security etc
 * `misc`: Catch all for items that don't fit elsewhere
 
 e.g., ``123.feature.rst`` or ``456.bugfix.rst``.
@@ -65,7 +69,7 @@ e.g., ``123.feature.rst`` or ``456.bugfix.rst``.
 [towncrier](https://github.com/twisted/towncrier) is configured in the
 `pyproject.toml`. For further details see the `[tool.towncrier]` section.
 Note that the order of the `[[tool.towncrier.type]]` entries is significant,
-as it is mirrored in the final rendered {ref}`changelog <gv-changelog>`.
+as it is mirrored in the final rendered {ref}`changelog <tippy-gv-reference-changelog>`.
 
 If you're unsure what news fragment `<TYPE>` to use, then don't hesitate to
 ask in your pull-request.
@@ -87,7 +91,7 @@ Run `towncrier --draft` to render a preview of the news fragment files in the
 `changelog` directory.
 ```
 
-## {fa}`road` Changelog Quality Assurance
+## {fa}`road-circle-exclamation` Changelog Quality Assurance
 
 Quality assurance of `changelog` contributions is performed by the
 [ci-changelog](https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-changelog.yml)
@@ -96,10 +100,12 @@ Quality assurance of `changelog` contributions is performed by the
 It performs the following automated checks on each pull-request:
 
 * Ensures that the pull-request includes a `changelog` news fragment
-* The news fragment file conforms with the expected `<PULL-REQUEST>.<TYPE>.rst` naming format i.e.,
+* The news fragment file conforms with the expected `<PULL-REQUEST>.<TYPE>.rst` naming convention i.e.,
   * The `<PULL-REQUEST>` component is a valid integer and matches the pull-request number
   * The `<TYPE>` matches a configured `[[tool.towncrier.type]]` entry in the `pyproject.toml`
   * The `rst` extension is provided
+* The news fragment contains at least one author attribution e.g., ```(:user:`bjlittle`)```,
+  as the final entry
 
 These quality assurance checks can be **skipped** by adding the
 `skip changelog` label to the pull-request. Note that a pull-request generated

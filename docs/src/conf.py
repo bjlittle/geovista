@@ -28,9 +28,11 @@ from __future__ import annotations
 import ast
 import contextlib
 import datetime
+import importlib
 from importlib.metadata import version as get_version
 import os
 from pathlib import Path
+import pkgutil
 import re
 import subprocess
 import textwrap
@@ -57,7 +59,7 @@ if TYPE_CHECKING:
     from sphinx.application import Sphinx
     from sphinx.environment import BuildEnvironment
 
-    # type aliases.
+    # this is a type alias
     Mapper = (
         PythonAttribute
         | PythonData
@@ -90,8 +92,46 @@ def autolog(message: str, section: str | None = None, color: str | None = None) 
         color = "brown"
 
     section = colorize(color, colorize("bold", f"[{section}] ")) if section else ""
-    msg = f'{colorize(color, section)}{colorize("darkblue", f"{message}")}'
+    msg = f"{colorize(color, section)}{colorize('darkblue', f'{message}')}"
     logger.info(msg)
+
+
+def sphx_glr(root: str) -> list[str]:
+    """Generate ``sphinx-gallery`` thumbnail URLs relative to the `root` package.
+
+    Recursively searches down from the `root` to find all child (leaf) modules.
+
+    Parameters
+    ----------
+    root : str
+        The name (dot notation) of the top level package to search under.
+        e.g., ``geovista.examples``.
+
+    Returns
+    -------
+    list of str
+        The list of thumbnail URLs, relative to the `root` and submodules.
+
+    """
+    mods: list[str] = []
+    pkgs: list[str] = []
+
+    for info in pkgutil.iter_modules(importlib.import_module(root).__path__):
+        name = f"{root}.{info.name}"
+        if info.ispkg:
+            container = pkgs
+        else:
+            container = mods
+            name = f"{name}.html#sphx-glr-generated-gallery-.*-py"
+        container.append(name)
+
+    mods.extend(f"{pkg}/.*html#sphx-glr-generated-gallery-.*-py" for pkg in pkgs)
+    mods = [name.split(f"{root}.")[1] for name in mods]
+
+    for pkg in pkgs:
+        mods.extend(sphx_glr(pkg))
+
+    return mods
 
 
 logger = logging.getLogger("sphinx-geovista")
@@ -109,6 +149,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "autoapi.extension",
     "sphinx.ext.doctest",
+    "sphinx.ext.duration",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
@@ -198,7 +239,7 @@ version = release = get_version("geovista")
 
 rst_epilog = f"""
 .. |gv_version| replace:: v{version}
-.. |build_date| replace:: ({now.strftime('%Y-%m-%d')})
+.. |build_date| replace:: ({now.strftime("%Y-%m-%d")})
 """
 
 # docs src directory
@@ -213,6 +254,32 @@ autolog(f"{docs_images_dir=}", section="General")
 autolog(f"{root_dir=}", section="General")
 autolog(f"{package_src_dir=}", section="General")
 autolog(f"{package_dir=}", section="General")
+
+
+# sphinx-tags options --------------------------------------------------------
+# See https://sphinx-tags.readthedocs.io/en/latest/index.html
+
+tags_badge_colors = {
+    "component:*": "primary",  # coastlines, graticule, manifold, texture, vectors
+    "domain:*": "secondary",  # oceanography, seismology, meteorology, orography
+    "filter:*": "success",  # cast, contour, extrude, threshold, triangulate, warp
+    "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
+    "projection:*": "warning",  # crs, transform
+    "render:*": "danger",  # camera, subplots
+    "resolution:*": "danger",  # high
+    "sample:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
+    "style:*": "light",  # colormap, lighting, opacity, shading
+    "widget:*": "info",  # checkbox, logo
+}
+
+tags_create_tags = True
+tags_create_badges = True
+tags_index_head = "Themed content tags:"  # tags landing page intro text
+tags_intro_text = "Tags:"  # prefix text for a tags list
+tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
+tags_output_dir = "tags"
+tags_page_header = "Tagged content:"  # tag sub-page, header text
+tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
 
 
 # sphinx-tippy options -------------------------------------------------------
@@ -242,33 +309,19 @@ tippy_rtd_urls = [
     "https://rasterio.readthedocs.io/en/stable/",
     "https://requests.readthedocs.io/en/stable/",
 ]
-tippy_skip_anchor_classes = ("headerlink", "sd-stretched-link")
+tippy_skip_anchor_classes = ("headerlink", "sd-sphinx-override")
+tippy_skip_urls = [
+    ".*#gv-.*",
+    ".*#tagoverview",
+]
 tippy_anchor_parent_selector = "article.bd-article"
-tippy_props = {"maxWidth": 700, "placement": "top-start", "theme": "light"}
+tippy_props = {"theme": "light"}
 
+# skip generating tooltips for the sphinx-tags
+tippy_skip_urls.extend(f"{item.split(':')[0]}-.*" for item in tags_badge_colors)
 
-# sphinx-tags options --------------------------------------------------------
-# See https://sphinx-tags.readthedocs.io/en/latest/index.html
-
-tags_badge_colors = {
-    "component:*": "primary",  # coastlines, graticule, manifold, texture, vectors
-    "domain:*": "secondary",  # oceanography, seismology, meteorology, orography
-    "filter:*": "success",  # extrude, threshold, warp
-    "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
-    "projection:*": "warning",  # crs, transform
-    "render": "danger",  # camera
-    "style:*": "light",  # colormap, lighting, opacity, shading
-    "widget:*": "info",  # checkbox, logo
-}
-
-tags_create_tags = True
-tags_create_badges = True
-tags_index_head = "Themed content tags:"  # tags landing page intro text
-tags_intro_text = "Tags:"  # prefix text for a tags list
-tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
-tags_output_dir = "tags"
-tags_page_header = "Tagged content:"  # tag sub-page, header text
-tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
+# skip generating tooltips for the sphinx-gallery thumbnails
+tippy_skip_urls.extend(sphx_glr("geovista.examples"))
 
 
 # sphinx-togglebutton options ------------------------------------------------
@@ -376,9 +429,9 @@ autoapi_python_class_content = "both"
 autoapi_keep_files = True
 autoapi_add_toctree_entry = False
 
-autolog(f"{autoapi_dirs=}", section="AutoAPI")
-autolog(f"{autoapi_ignore=}", section="AutoAPI")
-autolog(f"{autoapi_root=}", section="AutoAPI")
+autolog(f"{autoapi_dirs=}", section="autoapi")
+autolog(f"{autoapi_ignore=}", section="autoapi")
+autolog(f"{autoapi_root=}", section="autoapi")
 
 
 # -- internationalization options --------------------------------------------
@@ -434,7 +487,7 @@ html_sidebars = {
 }
 
 html_theme_options = {
-    "extra_footer": f'Made with ❤️ and ☕ on {now.strftime("%b %d %Y")}.',
+    "extra_footer": f"Made with ❤️ and ☕ on {now.strftime('%b %d %Y')}.",
     "icon_links": [
         {
             "name": "GitHub Discussions",
@@ -498,19 +551,6 @@ html_css_files = [
 ]
 
 
-# -- linkcheck builder options -----------------------------------------------
-# See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
-
-linkcheck_ignore = [
-    "https://doi.org/10.5281/zenodo.7608302",
-    "https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/",
-    "https://www.usgs.gov/programs/earthquake-hazards",
-    "https://www.ncei.noaa.gov/products/optimum-interpolation-sst",
-    "https://earthexplorer.usgs.gov",
-]
-linkcheck_retries = 3
-
-
 # -- intersphinx options -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 
@@ -522,7 +562,7 @@ intersphinx_mapping = {
     "pooch": ("https://www.fatiando.org/pooch/latest/", None),
     "pyproj": ("https://pyproj4.github.io/pyproj/stable/", None),
     "python": ("https://docs.python.org/3/", None),
-    "pyvista": ("https://docs.pyvista.org/version/stable/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
     "pyvistaqt": ("https://qtdocs.pyvista.org/", None),
     "rasterio": ("https://rasterio.readthedocs.io/en/stable/", None),
     "requests": ("https://requests.readthedocs.io/en/stable/", None),
@@ -603,7 +643,7 @@ scraper = DynamicScraper()
 sphinx_gallery_conf = {
     "default_thumb_file": str(docs_images_dir / "gallery-thumb.png"),
     "filename_pattern": "/.*",
-    "ignore_pattern": "(__init__)|(clouds)|(fesom)|(synthetic)",
+    "ignore_pattern": "(__init__)|(clouds_stratify)|(fesom)|(synthetic)",
     "examples_dirs": str(package_dir / "examples"),
     "gallery_dirs": GALLERY_DIRS,
     "min_reported_time": 90,
@@ -619,6 +659,18 @@ sphinx_gallery_conf = {
         "geovista": None,
     },
 }
+
+if os.environ.get("GEOVISTA_SPHX_GLR_SERIAL") is None:
+    with contextlib.suppress(ModuleNotFoundError):
+        import joblib  # noqa: F401
+
+        sphinx_gallery_conf["parallel"] = True
+
+        msg = "parallel build configured"
+else:
+    msg = "serial build configured"
+
+autolog(msg, section="sphinx-gallery")
 
 
 # -- pyvista-plot directive options ------------------------------------------

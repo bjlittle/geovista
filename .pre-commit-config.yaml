@@ -9,9 +9,10 @@ ci:
 
 repos:
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "v0.23"
+    rev: "v0.24.1"
     hooks:
       - id: validate-pyproject
+        additional_dependencies: ["validate-pyproject-schema-store[all]"]
 
   - repo: https://github.com/adamchainz/blacken-docs
     rev: "1.19.1"
@@ -20,7 +21,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.8.0"
+    rev: "v0.11.6"
     hooks:
       - id: ruff
         types: [file, python]
@@ -29,11 +30,18 @@ repos:
         types: [file, python]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: "v2.3.0"
+    rev: "v2.4.1"
     hooks:
       - id: codespell
         types_or: [python, markdown, rst]
         additional_dependencies: [tomli]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.15.0'
+    hooks:
+      - id: mypy
+        # https://github.com/python/mypy/issues/13916
+        pass_filenames: false
 
   - repo: https://github.com/numpy/numpydoc
     rev: v1.8.0
@@ -81,6 +89,12 @@ repos:
       - id: python-check-mock-methods
         # Prevent common mistakes of assert mck.not_called(), assert
         # mck.called_once_with(...) and mck.assert_called.
+      - id: python-no-eval
+        # A quick check for the eval() built-in function
+      - id: python-no-log-warn
+        # A quick check for the deprecated .warn() method of python loggers
+      - id: python-use-type-annotations
+        # Enforce that python3.6+ type annotations are used instead of type comments
       - id: rst-backticks
         # Detect common mistake of using single backticks when writing rst.
       - id: rst-directive-colons
@@ -91,14 +105,14 @@ repos:
         # Forbid files which have a UTF-8 Unicode replacement character.
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.4
+    rev: 0.33.0
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
       - id: check-readthedocs
 
   - repo: https://github.com/scientific-python/cookie
-    rev: 2024.08.19
+    rev: 2025.01.22
     hooks:
       - id: sp-repo-review
         additional_dependencies: ["repo-review[cli]"]

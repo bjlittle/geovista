@@ -1,15 +1,17 @@
-.. _gv-cli:
+.. _gv-reference-cli:
+.. _tippy-gv-reference-cli:
 
 :fa:`code` CLI
 ==============
 
-Once ``geovista`` has been :ref:`installed <gv-installation>`, a
-:ref:`console script <gv-cli-geovista>` [#]_ will be available with
+Once ``geovista`` has been :ref:`installed <tippy-gv-installation>`, a
+:ref:`console script <tippy-gv-reference-cli-geovista>` [#]_ will be available with
 several convenience commands to assist with the management of ``geovista``
 and its resources.
 
 
-.. _gv-cli-geovista:
+.. _gv-reference-cli-geovista:
+.. _tippy-gv-reference-cli-geovista:
 
 .. click:: geovista.cli:main
     :prog: geovista
@@ -20,7 +22,7 @@ and its resources.
 Commands
 --------
 
-The following :ref:`geovista console script <gv-cli-geovista>` commands are
+The following :ref:`geovista console script <tippy-gv-reference-cli-geovista>` commands are
 available:
 
 .. toctree::

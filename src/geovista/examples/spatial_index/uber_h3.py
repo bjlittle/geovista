@@ -68,7 +68,7 @@ The visibility of each actor, apart from the coastlines, can be toggled
 interactively via checkbox buttons, allowing the viewer to easily explore
 the relationship between the geometric objects rendered in the scene.
 
-For further information see https://h3geo.org/.
+For further information see https://github.com/uber/h3.
 
 .. tags::
 
@@ -90,6 +90,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import partial
 from itertools import combinations
+from typing import TypeAlias
 
 try:
     import h3
@@ -115,11 +116,11 @@ import geovista.theme
 # container holds the various VTK actors that will be rendered within
 # the scene.
 
-#: Missing Data Indicator
+# Missing Data Indicator
 MDI = -1
 
-#: Type alias
-H3AssetLike = str | PolyData
+# Type alias
+H3AssetLike: TypeAlias = str | PolyData
 H3Indexes = set[str]
 
 
@@ -276,7 +277,7 @@ def to_children(h3indexes: H3Indexes) -> H3Indexes:
         The children cell indexes.
 
     """
-    result = set()
+    result: set[str] = set()
     children = [h3.cell_to_children(h3index) for h3index in h3indexes]
     result.update(*children)
 
@@ -309,7 +310,9 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
         The H3 mesh surface.
 
     """
-    nverts, lats, lons = [], [], []
+    nverts: list[int] = []
+    lats: list[float] = []
+    lons: list[float] = []
 
     # Get the lat/lon vertices of each H3Index cell polygon.
     for h3index in h3indexes:
@@ -392,7 +395,6 @@ def add_checkboxes(
             title,
             position=(x_offset, y_offset),
             font_size=8,
-            shadow=True,
             color=getattr(colors, slot),
         )
 
@@ -517,7 +519,6 @@ def main() -> None:
         "Uber H3: Hexagonal Hierarchical Spatial Index",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.add_coastlines()
     p.camera.zoom(1.5)

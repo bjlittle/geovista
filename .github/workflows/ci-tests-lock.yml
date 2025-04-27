@@ -23,7 +23,7 @@ defaults:
 jobs:
   test-lock:
     name: "test lock (${{ matrix.version }})"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     env:
       ENV_NAME: "ci-tests-lock"
@@ -54,6 +54,8 @@ jobs:
       env:
         VTK_BUILD: "  - vtk=*=qt_*"
       run: |
+        conda update -n base --all
+        conda info
         python -c 'open("geovista.yml", "a").write("\n  - python =${{ env.PY_MAJOR }}.${{ env.PY_MINOR }}\n${{ env.VTK_BUILD }}\n")'
         pipx run conda-lock --channel conda-forge --kind explicit --file geovista.yml --platform linux-64
 
@@ -65,12 +67,13 @@ jobs:
           ${{ github.workspace }}/requirements/conda-linux-64.lock
 
     - name: "conda install"
-      uses: conda-incubator/setup-miniconda@d2e6a045a86077fb6cad6f5adf368e9076ddaa8d
+      uses: conda-incubator/setup-miniconda@505e6394dae86d6a5c7fbb6e3fb8938e3e863830
       with:
         miniforge-version: latest
         activate-environment: ${{ env.ENV_NAME }}
         environment-file: requirements/conda-linux-64.lock
         use-only-tar-bz2: false
+        conda-remove-defaults: true
 
     - name: "conda info"
       run: |
@@ -84,7 +87,7 @@ jobs:
         env_name: ${{ env.ENV_NAME }}
 
     - name: "apt cache"
-      uses: awalsh128/cache-apt-pkgs-action@a6c3917cc929dd0345bfb2d3feaf9101823370ad
+      uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
       with:
         packages: libgl1-mesa-glx xvfb
         version: 1.0

@@ -1,6 +1,7 @@
 .. include:: common.txt
 
 .. _gv-next-steps:
+.. _tippy-gv-next-steps:
 
 :fa:`seedling` Next Steps
 =========================
@@ -11,8 +12,8 @@
     Content marked with 🚧 indicates it's still under construction.
 
 
-After a brief :ref:`overview <gv-overview>` and
-:ref:`introduction <gv-quick-start>` to ``geovista``, hopefully you'll be keen
+After a brief :ref:`overview <tippy-gv-overview>` and
+:ref:`introduction <tippy-gv-quick-start>` to ``geovista``, hopefully you'll be keen
 to explore and learn more.
 
 The next step you choose to take is a personal one. It depends on how you
@@ -116,7 +117,7 @@ similar gallery examples organised by specific features:
     .. grid-item-card:: Examples
         :class-title: custom-title
         :class-body: custom-body
-        :link: gv-examples-gallery
+        :link: gv-examples
         :link-type: ref
         :img-top: _static/images/icons/examples.svg
         :class-img-top: dark-light
