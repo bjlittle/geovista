@@ -19,7 +19,7 @@ def test_fetch():
     asset = Path("pantry/data/lams/london.nc.bz2")
     asset_cache = CACHE.abspath / asset
     asset_cache.unlink(missing_ok=True)
-    actual = CACHE.fetch(str(asset))
+    actual = CACHE.fetch(asset.as_posix())
     assert asset.name == Path(actual).name
 
 

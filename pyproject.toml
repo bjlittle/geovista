@@ -126,6 +126,7 @@ addopts = [
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS NUMBER"
 filterwarnings = [
   "error",
+  "ignore::cartopy.io.DownloadWarning",
   "ignore:geovista unable to remesh 1 cell:UserWarning",
   "ignore:numpy.ndarray size changed:RuntimeWarning",
   "ignore:pyvista test cache image dir:UserWarning",
