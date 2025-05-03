@@ -1,0 +1,1 @@
+Fixed :mod:`geovista.cache` tests for ``Windows`` platform. (:user:`beroda`)
