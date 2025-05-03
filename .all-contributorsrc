@@ -416,6 +416,16 @@
       "contributions": [
         "example"
       ]
+    },
+    {
+      "login": "beroda",
+      "name": "beroda",
+      "avatar_url": "https://avatars.githubusercontent.com/u/117822458?v=4",
+      "profile": "https://github.com/beroda",
+      "contributions": [
+        "test",
+        "code"
+      ]
     }
   ],
   "commitType": "docs"
