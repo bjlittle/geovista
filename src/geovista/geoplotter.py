@@ -257,7 +257,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         to_wkt(mesh, WGS84)
         # the point-cloud won't be sliced, however it's important that the
         # central-meridian rotation is performed here
-        mesh = transform_mesh(mesh, self.crs, zlevel=zlevel, inplace=True)
+        mesh = transform_mesh(mesh, tgt_crs=self.crs, zlevel=zlevel, inplace=True)
         xyz = mesh.points
 
         if "show_points" in point_labels_args:
@@ -1334,7 +1334,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         assert x is not None
         assert y is not None
         if crs != self.crs:
-            x, y, _ = transform_point(crs, self.crs, x, y)
+            x, y, _ = transform_point(src_crs=crs, tgt_crs=self.crs, x=x, y=y)
 
         if self.crs.is_geographic:
             camera.focal_point = (0, 0, 0)
