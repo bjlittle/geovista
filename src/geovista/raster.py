@@ -30,7 +30,7 @@ __all__ = ["wrap_texture"]
 
 
 def wrap_texture(
-    texture: pv.Texture, central_meridian: float | None = None
+    texture: pv.Texture, /, *, central_meridian: float | None = None
 ) -> pv.Texture:
     """Re-center and wrap texture about the specified central meridian.
 
