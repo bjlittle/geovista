@@ -73,13 +73,13 @@ def main() -> None:
     p = gv.GeoPlotter(crs=crs)
 
     # Load the sample data.
-    sample = cloud_amount("high")
+    sample = cloud_amount(preference="high")
 
     # Create the mesh from the sample data.
     mesh = gv.Transform.from_unstructured(
         sample.lons,
         sample.lats,
-        sample.connectivity,
+        connectivity=sample.connectivity,
         data=sample.data,
         start_index=sample.start_index,
     )

@@ -135,7 +135,7 @@ def test_xs_ys(mocker):
     from geovista.bridge import Transform
 
     Transform.from_points.assert_called_once_with(
-        xs=xs, ys=ys, crs=crs, radius=radius, zlevel=zlevel, zscale=zscale
+        xs, ys, crs=crs, radius=radius, zlevel=zlevel, zscale=zscale
     )
     p.add_mesh.assert_called_once_with(mesh, style="points", scalars=scalars)
 

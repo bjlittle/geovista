@@ -177,6 +177,7 @@ def _cloud_amount_dataset(fname: str | CloudPreference) -> nc.Dataset:
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def cloud_amount(
+    *,
     preference: str | CloudPreference | None = None,
 ) -> SampleUnstructuredXY:
     """Download and cache unstructured cloud amount data.
@@ -280,7 +281,7 @@ def dynamico() -> SampleUnstructuredXY:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def fesom(step: int | None = None) -> SampleUnstructuredXY:
+def fesom(*, step: int | None = None) -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
     Load AWI-CM FESOM 1.4 unstructured mesh.
@@ -862,7 +863,7 @@ def usgs_earthquakes() -> SampleStructuredXYZ:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def ww3_global_smc(step: int | None = None) -> SampleUnstructuredXY:
+def ww3_global_smc(*, step: int | None = None) -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
     Load the WAVEWATCH III (WW3) unstructured Spherical Multi-Cell (SMC) mesh.

@@ -87,13 +87,13 @@ def main() -> None:
 
     for i, cloud in enumerate(cmaps):
         # Load the sample data.
-        sample = cloud_amount(cloud)
+        sample = cloud_amount(preference=cloud)
 
         # Create the mesh from the sample data.
         mesh = gv.Transform.from_unstructured(
             sample.lons,
             sample.lats,
-            sample.connectivity,
+            connectivity=sample.connectivity,
             data=sample.data,
             start_index=sample.start_index,
         )
