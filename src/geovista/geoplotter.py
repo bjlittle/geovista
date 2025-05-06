@@ -1217,8 +1217,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 warn(wmsg, stacklevel=2)
 
             mesh = Transform.from_points(
-                xs=xs,
-                ys=ys,
+                xs,
+                ys,
                 crs=crs,
                 radius=radius,
                 zlevel=zlevel,

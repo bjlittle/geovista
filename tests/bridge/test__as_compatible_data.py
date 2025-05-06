@@ -19,9 +19,7 @@ N_CELLS: int = 16
 
 def test_none_data():
     """Test no-op on None data i.e., is passed-thru."""
-    assert (
-        Transform._as_compatible_data(None, n_points=N_POINTS, n_cells=N_CELLS) is None
-    )
+    assert Transform._as_compatible_data(None, N_POINTS, N_CELLS) is None
 
 
 def test_data_size_mismatch():
@@ -29,7 +27,7 @@ def test_data_size_mismatch():
     data = np.arange(10)
     emsg = f"Require mesh data with either '{N_POINTS}' points or '{N_CELLS}'"
     with pytest.raises(ValueError, match=emsg):
-        _ = Transform._as_compatible_data(data, n_points=N_POINTS, n_cells=N_CELLS)
+        _ = Transform._as_compatible_data(data, N_POINTS, N_CELLS)
 
 
 @pytest.mark.parametrize("nans", [False, True])
@@ -43,7 +41,7 @@ def test_data_size_match(size, nans):
     else:
         data = np.arange(size)
         count = 0
-    result = Transform._as_compatible_data(data, n_points=N_POINTS, n_cells=N_CELLS)
+    result = Transform._as_compatible_data(data, N_POINTS, N_CELLS)
     assert result.size == size
     assert np.sum(np.isnan(result)) == count
 
@@ -53,6 +51,6 @@ def test_data_ravel(square):
     """Test the data is flattened."""
     size = square**2
     data = np.arange(size).reshape(square, square)
-    result = Transform._as_compatible_data(data, n_points=N_POINTS, n_cells=N_CELLS)
+    result = Transform._as_compatible_data(data, N_POINTS, N_CELLS)
     assert result.ndim == 1
     assert result.shape == (size,)

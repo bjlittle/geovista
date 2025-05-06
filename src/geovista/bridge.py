@@ -95,7 +95,9 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike,
         n_points: int,
         n_cells: int,
-        rgb: bool = False,  # noqa: FBT001
+        /,
+        *,
+        rgb: bool = False,
     ) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 
@@ -406,6 +408,8 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
@@ -497,6 +501,8 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
@@ -609,6 +615,8 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
@@ -717,6 +725,8 @@ class Transform:  # numpydoc ignore=PR01
     def from_tiff(
         cls,
         fname: PathLike,
+        /,
+        *,
         name: str | None = None,
         band: int = 1,
         rgb: bool | None = False,
@@ -919,6 +929,8 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         connectivity: ArrayLike | Shape | None = None,
         data: ArrayLike | None = None,
         start_index: int | None = None,
@@ -1153,7 +1165,7 @@ class Transform:  # numpydoc ignore=PR01
 
         # attach any optional data to the mesh
         if data is not None:
-            data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells, rgb)
+            data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells, rgb=rgb)
             if not name:
                 size = data.size // data.shape[-1] if rgb else data.size
                 name = NAME_POINTS if size == mesh.n_points else NAME_CELLS
@@ -1171,6 +1183,8 @@ class Transform:  # numpydoc ignore=PR01
         self,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         connectivity: ArrayLike | Shape | None = None,
         start_index: int | None = None,
         crs: CRSLike | None = None,
@@ -1274,7 +1288,7 @@ class Transform:  # numpydoc ignore=PR01
         self._n_cells = mesh.n_cells
 
     def __call__(
-        self, data: ArrayLike | None = None, name: str | None = None
+        self, *, data: ArrayLike | None = None, name: str | None = None
     ) -> pv.PolyData:
         """Build the mesh and attach the provided `data` to faces or nodes.
 
