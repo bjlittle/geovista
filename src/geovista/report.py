@@ -100,6 +100,7 @@ class Report(scooby.Report):  # numpydoc ignore=PR01
 
     def __init__(
         self,
+        *,
         additional: PackageLike | list[PackageLike] | None = None,
         ncol: int | None = None,
         text_width: int | None = None,
