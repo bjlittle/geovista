@@ -369,7 +369,7 @@ def create_meridians(
 
 
 def create_parallel_labels(
-    lats: list[float] | float, poles_parallel: bool | None = None
+    lats: list[float] | float, *, poles_parallel: bool | None = None
 ) -> list[str]:
     """Generate labels for the parallels.
 
