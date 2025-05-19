@@ -50,11 +50,23 @@ jobs:
       with:
         python-version: ${{ matrix.version }}
 
+    - name: "environment configure"
+      env:
+        # Maximum cache period (in weeks) before forcing a cache refresh.
+        CACHE_WEEKS: 2
+      run: |
+        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+
     - name: "apt cache"
       uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
       with:
         packages: libgl1-mesa-glx xvfb
         version: 1.0
+
+    - name: "geovista cache"
+      uses: ./.github/workflows/composite/geovista-cache
+      with:
+        cache_period: ${{ env.CACHE_PERIOD }}
 
     - name: "pip install"
       run: |
