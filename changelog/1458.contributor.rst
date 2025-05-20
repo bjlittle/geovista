@@ -1,0 +1,3 @@
+Enabled `sphinx-lint <https://github.com/sphinx-contrib/sphinx-lint>`__
+``pre-commit`` hook to quality check ``.rst`` and ``.py`` files.
+(:user:`bjlittle`)
