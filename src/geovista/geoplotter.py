@@ -112,6 +112,7 @@ OPACITY_BLACKLIST = [
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def _lfric_mesh(
+    *,
     resolution: str | None = None,
     radius: float | None = None,
 ) -> pv.PolyData:
@@ -207,6 +208,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     def _add_graticule_labels(
         self,
         graticule: GraticuleGrid,
+        /,
+        *,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -303,6 +306,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     def add_base_layer(
         self,
+        *,
         mesh: pv.PolyData | None = None,
         resolution: str | None = None,
         radius: float | None = None,
@@ -392,6 +396,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     def add_coastlines(
         self,
+        *,
         resolution: str | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
@@ -458,6 +463,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     def add_graticule(
         self,
+        *,
         lon_start: float | None = None,
         lon_stop: float | None = None,
         lon_step: float | None = None,
@@ -561,6 +567,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     def add_mesh(
         self,
         mesh: Any,
+        /,
+        *,
         radius: float | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
@@ -728,6 +736,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     def add_meridian(
         self,
         lon: float,
+        /,
+        *,
         lat_step: float | None = None,
         n_samples: int | None = None,
         show_labels: bool | None = None,
@@ -787,6 +797,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     def add_meridians(
         self,
+        *,
         start: float | None = None,
         stop: float | None = None,
         step: float | None = None,
@@ -897,6 +908,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     def add_parallel(
         self,
         lat: float,
+        /,
+        *,
         lon_step: float | None = None,
         n_samples: int | None = None,
         poles_parallel: bool | None = None,
@@ -961,6 +974,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     def add_parallels(
         self,
+        *,
         start: float | None = None,
         stop: float | None = None,
         step: float | None = None,
@@ -1080,6 +1094,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     def add_points(
         self,
         points: ArrayLike | pv.PolyData | None = None,
+        *,
         xs: ArrayLike | None = None,
         ys: ArrayLike | None = None,
         scalars: str | ArrayLike | None = None,
@@ -1235,6 +1250,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         self,
         x: float | None = None,
         y: float | None = None,
+        *,
         crs: CRSLike | None = None,
     ) -> None:
         """Center the camera at a point-of-interest (POI).
