@@ -146,6 +146,7 @@ class BBox:  # numpydoc ignore=PR01
         self,
         lons: ArrayLike,
         lats: ArrayLike,
+        *,
         ellps: str | None = ELLIPSE,
         c: int = BBOX_C,
         triangulate: bool | None = False,
@@ -451,8 +452,8 @@ class BBox:  # numpydoc ignore=PR01
             glons, glats = npoints_by_idx(
                 self._bbox_lons,
                 self._bbox_lats,
-                idx1,
-                idx2,
+                start_idx=idx1,
+                end_idx=idx2,
                 npts=self._npts,
                 geod=self._geod,
             )
@@ -476,7 +477,7 @@ class BBox:  # numpydoc ignore=PR01
             bbox_update(row_idx_map[0], row_idx_map[-1], row=row_idx)
 
     def _generate_bbox_mesh(
-        self, surface: pv.PolyData | None = None, radius: float | None = None
+        self, surface: pv.PolyData | None = None, *, radius: float | None = None
     ) -> None:
         """Construct 3-D geodetic bounding-box extruded surface defined by corners.
 
@@ -586,7 +587,7 @@ class BBox:  # numpydoc ignore=PR01
         return np.hstack([faces_n, faces_c1, faces_c2, faces_c3, faces_c4])
 
     def boundary(
-        self, surface: pv.PolyData | None = None, radius: float | None = None
+        self, surface: pv.PolyData | None = None, *, radius: float | None = None
     ) -> pv.PolyData:
         """Footprint of bounding-box intersecting on the provided mesh surface.
 
@@ -653,6 +654,8 @@ class BBox:  # numpydoc ignore=PR01
     def enclosed(
         self,
         surface: pv.PolyData,
+        /,
+        *,
         tolerance: float | None = BBOX_TOLERANCE,
         outside: bool | None = False,
         preference: str | EnclosedPreference | None = None,
@@ -777,6 +780,7 @@ class BBox:  # numpydoc ignore=PR01
 def line(
     lons: ArrayLike,
     lats: ArrayLike,
+    *,
     surface: pv.PolyData | None = None,
     radius: float | None = None,
     npts: int | None = None,
@@ -843,7 +847,7 @@ def line(
     >>> from geovista.geodesic import line
     >>> p = geovista.GeoPlotter()
     >>> _ = p.add_base_layer(texture=geovista.natural_earth_1())
-    >>> meridian = line(-180, [90, 0, -90])
+    >>> meridian = line(lons=-180, lats=[90, 0, -90])
     >>> _ = p.add_mesh(meridian, color="orange", line_width=3)
     >>> p.view_yz(negative=True)
     >>> p.show()
@@ -941,6 +945,7 @@ def npoints(
     start_lat: float,
     end_lon: float,
     end_lat: float,
+    *,
     npts: int | None = GEODESIC_NPTS,
     radians: bool | None = False,
     include_start: bool | None = False,
@@ -1029,6 +1034,7 @@ def npoints_by_idx(
     lats: ArrayLike,
     start_idx: int,
     end_idx: int,
+    *,
     npts: int | None = GEODESIC_NPTS,
     radians: bool | None = False,
     include_start: bool | None = False,
@@ -1112,6 +1118,8 @@ def npoints_by_idx(
 
 def panel(
     name: int | str,
+    /,
+    *,
     ellps: str | None = ELLIPSE,
     c: int = BBOX_C,
     triangulate: bool | None = False,
@@ -1185,6 +1193,7 @@ def panel(
 def wedge(
     lon1: float,
     lon2: float,
+    *,
     ellps: str | None = ELLIPSE,
     c: int = BBOX_C,
     triangulate: bool | None = False,
