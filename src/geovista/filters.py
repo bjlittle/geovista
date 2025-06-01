@@ -67,7 +67,9 @@ VTK_FREE_EDGE_MASK: str = "FreeEdge"
 
 def remesh(
     mesh: pv.PolyData,
+    /,
     meridian: float,
+    *,
     boundary: bool | None = False,
     check: bool | None = False,
     rtol: float | None = None,

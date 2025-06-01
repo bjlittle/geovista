@@ -650,7 +650,7 @@ def slice_cells(
 
     if mesh_split.n_cells:
         remeshed, remeshed_west, remeshed_east = remesh(
-            mesh_split, meridian, rtol=rtol, atol=atol
+            mesh_split, meridian=meridian, rtol=rtol, atol=atol
         )
         meshes.extend([remeshed_west, remeshed_east])
         remeshed_ids = np.hstack([remeshed_ids, remeshed[GV_CELL_IDS]])
