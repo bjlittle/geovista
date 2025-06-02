@@ -25,7 +25,7 @@ jobs:
           private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
 
       - name: "automatically update PR"
-        uses: adRise/update-pr-branch@3576c22e28fb6f665417bfe3a83f9da7ca5363e2
+        uses: adRise/update-pr-branch@1982757e254dab9d5bbb8478b35a2b20411270d9
         with:
           token: ${{ steps.generate-token.outputs.token }}
           base: "main"
