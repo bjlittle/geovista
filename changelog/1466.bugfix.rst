@@ -1,0 +1,2 @@
+Ensured to close the :class:`pooch.Pooch` cache registry after configuration.
+(:user:`bjlittle`)
