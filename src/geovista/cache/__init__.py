@@ -82,11 +82,10 @@ GEOVISTA_POOCH_MUTE: bool = (
 
 
 # configure the cache with the registry
-CACHE.load_registry(
-    (Path(__file__).parent / "registry.txt").open(
-        "r", encoding="utf-8", errors="strict"
-    )
-)
+with (Path(__file__).parent / "registry.txt").open(
+    "r", encoding="utf-8", errors="strict"
+) as text_io:
+    CACHE.load_registry(text_io)
 
 # maintain the original Pooch.fetch method prior to wrapping
 # with user-agent headers version
