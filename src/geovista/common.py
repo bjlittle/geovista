@@ -265,6 +265,8 @@ def active_kernel() -> bool:
 
 def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
     mesh: pv.UnstructuredGrid,
+    /,
+    *,
     clean: bool | None = False,
 ) -> pv.PolyData:
     """Convert a :class:`~pyvista.UnstructuredGrid` to a :class:`~pyvista.PolyData`.
@@ -307,6 +309,8 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
 
 def distance(
     mesh: pv.PolyData,
+    /,
+    *,
     origin: ArrayLike | None = None,
     mean: bool | None = True,
 ) -> float | np.ndarray:
@@ -367,6 +371,8 @@ def distance(
 
 def from_cartesian(
     mesh: pv.PolyData,
+    /,
+    *,
     stacked: bool | None = True,
     closed_interval: bool | None = False,
     rtol: float | None = None,
@@ -517,7 +523,7 @@ def from_cartesian(
     return np.vstack(data).T if stacked else np.array(data)
 
 
-def get_modules(root: str, base: bool | None = True) -> list[str]:
+def get_modules(root: str, /, *, base: bool | None = True) -> list[str]:
     """Find all submodule names relative to the `root` package.
 
     Recursively searches down from the `root` to find all child (leaf) modules.
@@ -639,7 +645,7 @@ def sanitize_data(
             del mesh.point_data[VTK_POINT_IDS]
 
 
-def set_jupyter_backend(backend: str | None = None) -> bool:
+def set_jupyter_backend(*, backend: str | None = None) -> bool:
     """Configure the jupyter plotting backend for pyvista.
 
     Parameters
@@ -675,6 +681,7 @@ def set_jupyter_backend(backend: str | None = None) -> bool:
 def to_cartesian(
     lons: ArrayLike,
     lats: ArrayLike,
+    *,
     radius: float | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
@@ -757,6 +764,8 @@ def to_cartesian(
 
 def to_lonlat(
     xyz: ArrayLike,
+    /,
+    *,
     radians: bool | None = False,
     radius: float | None = None,
     rtol: float | None = None,
@@ -807,6 +816,8 @@ def to_lonlat(
 
 def to_lonlats(
     xyz: ArrayLike,
+    /,
+    *,
     radians: bool | None = False,
     radius: float | ArrayLike | None = None,
     stacked: bool | None = True,
@@ -941,6 +952,7 @@ def vtk_warnings_on() -> None:
 
 def wrap(
     lons: ArrayLike,
+    *,
     base: float | None = None,
     period: float | None = None,
     rtol: float | None = None,
