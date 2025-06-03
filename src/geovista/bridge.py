@@ -1041,20 +1041,10 @@ class Transform:  # numpydoc ignore=PR01
             # default to the shape of the points
             connectivity = shape
 
-            # generate connectivity from masked points
-            if (
-                np.ma.is_masked(xs)
-                and np.ma.is_masked(ys)
-                and np.array_equal(xs.mask, ys.mask)
-            ):
-                connectivity = np.ma.arange(np.ma.prod(shape), dtype=np.uint32).reshape(
-                    shape
-                )
-                connectivity.mask = xs.mask
-
         if isinstance(connectivity, tuple):
-            cls._verify_connectivity(connectivity)
+            ignore_start_index = True
             npts = np.prod(connectivity)
+            dtype = np.uint32
 
             if npts != xs.size:
                 emsg = (
@@ -1064,18 +1054,28 @@ class Transform:  # numpydoc ignore=PR01
                 )
                 raise ValueError(emsg)
 
-            connectivity = np.arange(npts, dtype=np.uint32).reshape(connectivity)
-            ignore_start_index = True
+            # generate connectivity array
+            if (
+                np.ma.is_masked(xs)
+                and np.ma.is_masked(ys)
+                and np.array_equal(xs.mask, ys.mask)
+            ):
+                connectivity_array = np.ma.arange(npts, dtype=dtype).reshape(
+                    connectivity
+                )
+                connectivity_array.mask = np.copy(xs.mask)
+            else:
+                connectivity_array = np.arange(npts, dtype=dtype).reshape(connectivity)
         else:
-            # require to copy connectivity, otherwise results in a memory
-            # corruption within vtk
-            connectivity = np.asanyarray(connectivity).copy()
-            cls._verify_connectivity(connectivity.shape)
             ignore_start_index = False
+            # copy connectivity to avoid memory corruption within vtk
+            connectivity_array = np.asanyarray(connectivity).copy()
+
+        cls._verify_connectivity(connectivity_array.shape)
 
         if not ignore_start_index:
             if start_index is None:
-                start_index = connectivity.min()
+                start_index = connectivity_array.min()
 
             if start_index not in [0, 1]:
                 emsg = (
@@ -1085,7 +1085,7 @@ class Transform:  # numpydoc ignore=PR01
                 raise ValueError(emsg)
 
             if start_index:
-                connectivity -= start_index
+                connectivity_array -= start_index
 
         # reduce any singularity points at the poles to a common longitude
         poles = np.isclose(np.abs(ys), 90)
@@ -1100,16 +1100,16 @@ class Transform:  # numpydoc ignore=PR01
         # convert lat/lon to cartesian xyz
         geometry = to_cartesian(xs, ys, radius=radius)
 
-        if np.ma.is_masked(connectivity):
+        if np.ma.is_masked(connectivity_array):
             # create face connectivity from masked vertex indices, thus
             # supporting varied mesh face geometry e.g., triangular, quad,
             # pentagon (et al) cells within a single mesh.
-            connectivity = np.atleast_2d(connectivity)
-            if (ndim := connectivity.ndim) > 2:
+            connectivity_array = np.atleast_2d(connectivity_array)
+            if (ndim := connectivity_array.ndim) > 2:
                 emsg = f"Masked connectivity must be at most 2-D, got {ndim}-D."
                 raise ValueError(emsg)
-            n_faces = connectivity.shape[0]
-            n_vertices = np.ma.sum(~connectivity.mask, axis=1)
+            n_faces = connectivity_array.shape[0]
+            n_vertices = np.ma.sum(~connectivity_array.mask, axis=1)
             # ensure at least three vertices per face
             valid_faces_mask = n_vertices > 2
             if not np.all(valid_faces_mask):
@@ -1121,8 +1121,10 @@ class Transform:  # numpydoc ignore=PR01
                 )
                 warnings.warn(wmsg, stacklevel=2)
                 n_vertices = n_vertices[valid_faces_mask]
-                connectivity = connectivity[valid_faces_mask]
-            faces = np.ma.hstack([n_vertices.reshape(-1, 1), connectivity]).ravel()
+                connectivity_array = connectivity_array[valid_faces_mask]
+            faces = np.ma.hstack(
+                [n_vertices.reshape(-1, 1), connectivity_array]
+            ).ravel()
             faces = faces[~faces.mask].data
         else:
             # create face connectivity serialization e.g., for a quad-mesh,
@@ -1130,13 +1132,13 @@ class Transform:  # numpydoc ignore=PR01
             # of vertices defining the face, followed by the four indices (Vn)
             # specifying each of the face vertices in an anti-clockwise order
             # into the mesh geometry.
-            n_faces, n_vertices = connectivity.shape
+            n_faces, n_vertices = connectivity_array.shape
             faces = np.hstack(
                 [
                     np.broadcast_to(
                         np.array([n_vertices], dtype=np.int8), (n_faces, 1)
                     ),
-                    connectivity,
+                    connectivity_array,
                 ]
             )
 

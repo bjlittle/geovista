@@ -730,18 +730,20 @@ def to_cartesian(
     zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
     # cast as float here, as from_cartesian use-case results in float zlevels
     # that should be dtype preserved for the purpose of precision
-    zlevel = np.array([0.0]) if zlevel is None else np.atleast_1d(zlevel).astype(float)
+    zlevel_array = (
+        np.array([0.0]) if zlevel is None else np.atleast_1d(zlevel).astype(float)
+    )
 
     try:
-        _ = np.broadcast_shapes(zshape := zlevel.shape, shape)
+        _ = np.broadcast_shapes(zlevel_array.shape, shape)
     except ValueError as err:
         emsg = (
-            f"Cannot broadcast zlevel with shape {zshape} to longitude/latitude"
-            f"shape {shape}."
+            f"Cannot broadcast zlevel with shape {zlevel_array.shape} to "
+            f"longitude/latitude shape {shape}."
         )
         raise ValueError(emsg) from err
 
-    radius += radius * zlevel * zscale
+    radius += radius * zlevel_array * zscale
 
     x_rad = np.radians(lons)
     y_rad = np.radians(90.0 - lats)
@@ -855,14 +857,14 @@ def to_lonlats(
     if radius is None:
         radius = RADIUS
 
-    radius = np.abs(np.atleast_1d(radius).astype(float))
+    radius_array = np.abs(np.atleast_1d(radius).astype(float))
 
-    if radius.shape != (1,) and (
-        radius.ndim != 1 or radius.shape[0] != points.shape[0]
+    if radius_array.shape != (1,) and (
+        radius_array.ndim != 1 or radius_array.shape[0] != points.shape[0]
     ):
         emsg = (
-            f"Require a 1-D array of radii, got a {radius.ndim}-D array with shape "
-            f"{radius.shape}."
+            f"Require a 1-D array of radii, got a {radius_array.ndim}-D array "
+            f"with shape {radius_array.shape}."
         )
         raise ValueError(emsg)
 
@@ -873,7 +875,7 @@ def to_lonlats(
         lons = np.degrees(lons)
     lons = wrap(lons, base=base, period=period, rtol=rtol, atol=atol)
 
-    z_radius = points[:, 2] / radius
+    z_radius = points[:, 2] / radius_array
     # NOTE: defensive clobber of values outside arcsin domain [-1, 1]
     #       which is the result of floating point inaccuracies at the extremes
     if indices := np.where(z_radius > 1):
