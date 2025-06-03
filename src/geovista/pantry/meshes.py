@@ -109,6 +109,7 @@ def _lfric_sample_to_mesh(
 
 
 def cloud_amount(
+    *,
     preference: str | geovista.pantry.data.CloudPreference | None = None,
 ) -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry.data` sample data.
@@ -145,7 +146,7 @@ def cloud_amount(
 
     preference = geovista.pantry.data.CloudPreference(preference)
 
-    sample = geovista.pantry.data.cloud_amount(preference)
+    sample = geovista.pantry.data.cloud_amount(preference=preference)
     mesh = _lfric_sample_to_mesh(sample)
 
     if preference != geovista.pantry.data.CloudPreference.MESH:
@@ -179,10 +180,15 @@ def dynamico() -> pv.PolyData:
     )
 
 
-def fesom() -> pv.PolyData:
+def fesom(*, step: int | None = None) -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry.data` sample data.
 
     Generate a AWI-CM FESOM 1.4 mesh with Sea Surface Temperature data.
+
+    Parameters
+    ----------
+    step : int, default=0
+        The time-series offset.
 
     Returns
     -------
@@ -194,7 +200,7 @@ def fesom() -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = geovista.pantry.data.fesom()
+    sample = geovista.pantry.data.fesom(step=step)
 
     return Transform.from_unstructured(
         sample.lons,
@@ -206,6 +212,7 @@ def fesom() -> pv.PolyData:
 
 
 def fvcom_tamar(
+    *,
     preference: str | Preference | None = None,
     warp: bool | None = False,
     factor: float | None = None,
@@ -440,7 +447,7 @@ def lam_uk() -> pv.PolyData:
     return _lfric_sample_to_mesh(geovista.pantry.data.lam_uk())
 
 
-def lfric(resolution: str | None = None) -> pv.PolyData:
+def lfric(*, resolution: str | None = None) -> pv.PolyData:
     """Load a pre-defined LFRic mesh available from the :obj:`~geovista.cache.CACHE`.
 
     Get the LFRic model unstructured cubed-sphere at the specified `resolution`.
@@ -483,7 +490,9 @@ def lfric(resolution: str | None = None) -> pv.PolyData:
     return pv.read(resource)
 
 
-def lfric_orog(warp: bool | None = False, factor: float | None = None) -> pv.PolyData:
+def lfric_orog(
+    *, warp: bool | None = False, factor: float | None = None
+) -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry.data` sample data.
 
     Generate a global surface altitude mesh.
@@ -577,7 +586,7 @@ def nemo_orca2() -> pv.PolyData:
     )
 
 
-def nemo_orca2_cloud(zscale: float | None = None) -> pv.PolyData:
+def nemo_orca2_cloud(*, zscale: float | None = None) -> pv.PolyData:
     """Create a point-cloud mesh from :mod:`geovista.pantry.data` sample data.
 
     Generate an ORCA2 point-cloud of Sea Water Potential Temperature gradients.
@@ -638,6 +647,7 @@ def oisst_avhrr_sst() -> pv.PolyData:
 
 
 def regular_grid(
+    *,
     resolution: str | None = None,
     radius: float | None = None,
 ) -> pv.PolyData:
@@ -691,7 +701,7 @@ def regular_grid(
     return Transform.from_1d(lons, lats, radius=radius)
 
 
-def ww3_global_smc(step: int | None = None) -> pv.PolyData:
+def ww3_global_smc(*, step: int | None = None) -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry.data` sample data.
 
     Generate a global Sea Surface Wave Significant Height WAVEWATCH III (WW3)

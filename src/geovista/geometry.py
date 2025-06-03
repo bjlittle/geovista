@@ -52,6 +52,7 @@ __all__ = [
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def coastlines(
+    *,
     resolution: str | None = None,
     radius: float | None = None,
     zlevel: int | None = None,
@@ -101,9 +102,7 @@ def coastlines(
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def load_coastline_geometries(
-    resolution: str | None = None,
-) -> list[np.ndarray]:
+def load_coastline_geometries(*, resolution: str | None = None) -> list[np.ndarray]:
     """Download Natural Earth coastline shapefile for the required `resolution`.
 
     If the geometries are not already available within the cartopy cache, then
@@ -173,6 +172,7 @@ def load_coastline_geometries(
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def load_coastlines(
+    *,
     resolution: str | None = None,
     radius: float | None = None,
     zlevel: int | None = None,

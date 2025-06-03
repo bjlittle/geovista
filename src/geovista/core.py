@@ -98,7 +98,9 @@ class MeridianSlice:  # numpydoc ignore=PR01
     def __init__(
         self,
         mesh: pv.PolyData,
+        /,
         meridian: float,
+        *,
         offset: float | None = None,
     ) -> None:
         """Create a `meridian` seam in the `mesh`.
@@ -197,6 +199,7 @@ class MeridianSlice:  # numpydoc ignore=PR01
 
     def extract(
         self,
+        *,
         bias: SliceBias | None = None,
         split_cells: bool | None = False,
         clip: bool | None = True,
@@ -262,6 +265,8 @@ class MeridianSlice:  # numpydoc ignore=PR01
 
 def add_texture_coords(
     mesh: pv.PolyData,
+    /,
+    *,
     meridian: float | None = None,
     antimeridian: bool | None = False,
 ) -> pv.PolyData:
@@ -479,6 +484,8 @@ def combine(
 
 def resize(
     mesh: pv.PolyData,
+    /,
+    *,
     radius: float | None = None,
     zlevel: int | None = None,
     zscale: float | None = None,
@@ -570,6 +577,8 @@ def resize(
 
 def slice_cells(
     mesh: pv.PolyData,
+    /,
+    *,
     meridian: float | None = None,
     antimeridian: bool | None = False,
     rtol: float | None = None,
@@ -629,7 +638,7 @@ def slice_cells(
     assert isinstance(meridian, float)
 
     info = mesh.active_scalars_info
-    slicer = MeridianSlice(mesh, meridian)
+    slicer = MeridianSlice(mesh, meridian=meridian)
     mesh_whole = slicer.extract(split_cells=False)
     mesh_split = slicer.extract(split_cells=True)
     result: pv.PolyData = mesh.copy(deep=True)
@@ -650,7 +659,7 @@ def slice_cells(
 
     if mesh_split.n_cells:
         remeshed, remeshed_west, remeshed_east = remesh(
-            mesh_split, meridian, rtol=rtol, atol=atol
+            mesh_split, meridian=meridian, rtol=rtol, atol=atol
         )
         meshes.extend([remeshed_west, remeshed_east])
         remeshed_ids = np.hstack([remeshed_ids, remeshed[GV_CELL_IDS]])
@@ -699,7 +708,11 @@ def slice_cells(
 
 
 def slice_lines(
-    mesh: pv.PolyData, n_points: int | None = None, copy: bool | None = False
+    mesh: pv.PolyData,
+    /,
+    *,
+    n_points: int | None = None,
+    copy: bool | None = False,
 ) -> pv.PolyData:
     """Cut a line-based mesh along the Antimeridian, breaking line connectivity.
 
@@ -879,6 +892,8 @@ def slice_lines(
 
 def slice_mesh(
     mesh: pv.PolyData,
+    /,
+    *,
     rtol: float | None = None,
     atol: float | None = None,
 ) -> pv.PolyData:

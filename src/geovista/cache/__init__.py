@@ -111,6 +111,8 @@ def _downloader(
     url: str,
     output_file: FileLike[Any],
     poocher: pooch.Pooch,
+    /,
+    *,
     check_only: bool | None = False,
 ) -> bool | None:
     """Download the `url` asset over HTTP/S to the target file.
@@ -150,7 +152,7 @@ def _downloader(
     return downloader(url, output_file, poocher, check_only=check_only)
 
 
-def pooch_mute(silent: bool | None = None) -> bool:
+def pooch_mute(*, silent: bool | None = None) -> bool:
     """Control the :mod:`pooch` cache manager logger verbosity.
 
     Updates the status variable :data:`GEOVISTA_POOCH_MUTE`.
@@ -207,4 +209,4 @@ def reload_registry(fname: str | None = None) -> None:
 
 
 # configure the pooch cache manager logger verbosity
-pooch_mute(GEOVISTA_POOCH_MUTE)
+pooch_mute(silent=GEOVISTA_POOCH_MUTE)

@@ -90,6 +90,8 @@ class KDTree:  # numpydoc ignore=PR01
     def __init__(
         self,
         mesh: pv.PolyData,
+        /,
+        *,
         leaf_size: int | None = None,
         preference: str | SearchPreference | None = None,
     ) -> None:
@@ -256,6 +258,8 @@ class KDTree:  # numpydoc ignore=PR01
         self,
         lons: float | ArrayLike,
         lats: float | ArrayLike,
+        /,
+        *,
         k: int | None = None,
         epsilon: float | None = None,
         distance_upper_bound: float | None = None,
@@ -363,9 +367,11 @@ def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:
 
 def find_nearest_cell(
     mesh: pv.PolyData,
+    /,
     x: float,
     y: float,
     z: float | None = 0,
+    *,
     single: bool | None = False,
 ) -> CellIDLike:
     """Find the cell in the `mesh` that is closest to the point-of-interest (POI).
