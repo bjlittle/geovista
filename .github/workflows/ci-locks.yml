@@ -1,9 +1,9 @@
 # Reference:
-#   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
-#   - https://github.com/actions/download-artifact
-#   - https://github.com/actions/upload-artifact
-#   - https://github.com/conda-incubator/setup-miniconda
+#   - https://github.com/prefix-dev/setup-pixi
+#   - https://github.com/pavelzw/pixi-diff-to-markdown
+#   - https://github.com/tibdex/github-app-token
+#   - https://github.com/peter-evans/create-pull-request
 
 name: ci-locks
 
@@ -17,133 +17,89 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NAME: "geovista"
+  SHELLOPTS: "errexit:pipefail"
+  VERSION: "py312"
+
 defaults:
   run:
     shell: bash -l {0}
 
 jobs:
-  build-locks:
-    name: "${{ matrix.session }} (${{ matrix.version }})"
-
+  pixi-update:
+    name: "pixi update"
     runs-on: ubuntu-latest
 
-    env:
-      ENV_NAME: "ci-locks"
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest"]
-        version: ["py311", "py312", "py313"]
-        session: ["lock"]
-
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: "environment configure"
-      env:
-        # Maximum cache period (in weeks) before forcing a cache refresh.
-        CACHE_WEEKS: 2
-      run: |
-        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-        echo "PY_MAJOR=$(echo -n ${{ matrix.version }} | tail -c 3 | head -c 1)" >> ${GITHUB_ENV}
-        echo "PY_MINOR=$(echo -n ${{ matrix.version }} | tail -c 2)" >> ${GITHUB_ENV}
+      - name: "environment configure"
+        run: |
+          echo "ENV_NAME=${{ env.NAME }}-${{ env.VERSION }}" >> ${GITHUB_ENV}
 
-    - name: "conda package cache"
-      uses: ./.github/workflows/composite/conda-pkg-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@19eac09b398e3d0c747adc7921926a6d802df4da
+        with:
+          run-install: false
 
-    - name: "conda install"
-      uses: conda-incubator/setup-miniconda@505e6394dae86d6a5c7fbb6e3fb8938e3e863830
-      with:
-        miniforge-version: latest
-        activate-environment: ${{ env.ENV_NAME }}
-        use-only-tar-bz2: false
-        conda-remove-defaults: true
+      - name: "refresh pixi manifest"
+        run: |
+          pixi update --json | pixi exec pixi-diff-to-markdown > diff.md
+          if [ $(wc -c < diff.md) -lt 10 ]; then
+            rm -f diff.md
+          fi
 
-    - name: "conda environment cache"
-      uses: ./.github/workflows/composite/conda-env-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
-        install_packages: "conda-lock jinja2"
+      - name: "refresh lock and yml"
+        if: ${{ hashFiles('diff.md') }}
+        run: |
+          pixi workspace export conda-explicit-spec --environment ${{ env.ENV_NAME }} --frozen --ignore-pypi-errors requirements/locks
+          pixi workspace export conda-environment --environment ${{ env.ENV_NAME }} requirements/geovista.yml
 
-    - name: "conda info"
-      run: |
-        conda info
-        conda list
+      - name: "convert lock"
+        if: ${{ hashFiles('diff.md') }}
+        working-directory: requirements/locks
+        run: |
+          python lock2yaml.py ${{ env.VERSION }}
 
-    - name: "lock (${{ matrix.version }})"
-      env:
-        VTK_BUILD: "  - vtk=*=qt_*"
-      working-directory: requirements/locks
-      run: |
-        python -c 'open("../geovista.yml", "a").write("\n  - python =${{ env.PY_MAJOR }}.${{ env.PY_MINOR }}\n${{ env.VTK_BUILD }}\n")'
-        conda-lock --mamba --channel conda-forge --kind explicit --file ../geovista.yml --platform linux-64 --filename-template "${{ matrix.version }}-lock-{platform}.txt"
-        python lock2yaml.py ${{ matrix.version }}
+      - name: "generate token"
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
+        id: generate-token
+        with:
+          app_id: ${{ secrets.AUTH_APP_ID }}
+          private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
-        path: |
-          ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.txt
-          ${{ github.workspace }}/requirements/locks/${{ matrix.version }}*.yml
+      - name: "create pull-request"
+        id: cpr
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          add-paths: |
+            ${{ github.workspace }}/pixi.lock
+            ${{ github.workspace }}/requirements/geovista.yml
+            ${{ github.workspace }}/requirements/locks/*_conda_spec.txt
+            ${{ github.workspace }}/requirements/locks/*_conda_spec.yml
+          commit-message: "updated manifest and lockfiles"
+          branch: pixi-auto-update
+          base: pixi
+          delete-branch: true
+          title: "chore: pixi updated manifest and lockfiles"
+          body-path: ${{ github.workspace }}/diff.md
+          labels: |
+            new: pull request
+            bot
+            pixi
+            skip changelog
 
-
-  create-pr:
-    needs: build-locks
-    name: "create pull-request"
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: lock-artifacts-*
-        path: ${{ github.workspace }}/requirements/locks
-        merge-multiple: true
-
-    - name: "generate token"
-      uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
-      id: generate-token
-      with:
-        app_id: ${{ secrets.AUTH_APP_ID }}
-        private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
-
-    - name: "generate pull-request"
-      id: cpr
-      uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
-      with:
-        token: ${{ steps.generate-token.outputs.token }}
-        add-paths: |
-          ${{ github.workspace }}/requirements/locks/*.txt
-          ${{ github.workspace }}/requirements/locks/*.yml
-        commit-message: "updated conda lock files"
-        branch: conda-lock-auto-update
-        delete-branch: true
-        title: "chore: bump conda lock files"
-        body: |
-          🤖 Bleep! Bloop!
-
-          Conda lock files for `linux-64` auto-updated to latest resolved environment of `geovista` dependencies.
-        labels: |
-          new: pull request
-          bot
-          skip changelog
-
-    - name: "show pull-request"
-      if: steps.cpr.outputs.pull-request-number != ''
-      run: |
-        echo "### :rocket: Pull-Request Summary" >> ${GITHUB_STEP_SUMMARY}
-        echo "" >> ${GITHUB_STEP_SUMMARY}
-        echo "The following locks pull-request has been auto-generated:" >> ${GITHUB_STEP_SUMMARY}
-        echo "- **PR** #${{ steps.cpr.outputs.pull-request-number }}" >> ${GITHUB_STEP_SUMMARY}
-        echo "- **URL** ${{ steps.cpr.outputs.pull-request-url }}" >> ${GITHUB_STEP_SUMMARY}
-        echo "- **Operation** [${{ steps.cpr.outputs.pull-request-operation }}]" >> ${GITHUB_STEP_SUMMARY}
-        echo "- **SHA** ${{ steps.cpr.outputs.pull-request-head-sha }}" >> ${GITHUB_STEP_SUMMARY}
+      - name: "show pull-request"
+        if: ${{ hashFiles('diff.md') }}
+        run: |
+          echo "### :rocket: Pull-Request Summary" >> ${GITHUB_STEP_SUMMARY}
+          echo "" >> ${GITHUB_STEP_SUMMARY}
+          echo "The following locks pull-request has been auto-generated:" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **PR** #${{ steps.cpr.outputs.pull-request-number }}" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **URL** ${{ steps.cpr.outputs.pull-request-url }}" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **Operation** [${{ steps.cpr.outputs.pull-request-operation }}]" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **SHA** ${{ steps.cpr.outputs.pull-request-head-sha }}" >> ${GITHUB_STEP_SUMMARY}
