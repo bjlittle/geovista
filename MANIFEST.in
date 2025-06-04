@@ -18,4 +18,5 @@ include *.md
 exclude CHANGELOG.rst
 include CITATION.cff
 exclude codecov.yml
+exclude pixi.lock
 exclude tox.ini
