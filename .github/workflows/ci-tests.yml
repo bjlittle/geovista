@@ -16,7 +16,7 @@ on:
     branches:
       - "main"
       - "v*x"
-      - "!conda-lock-auto-update"
+      - "!pixi-auto-update"
       - "!pre-commit-ci-update-config"
       - "!dependabot/*"
     tags:
