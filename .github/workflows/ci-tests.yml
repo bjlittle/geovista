@@ -46,95 +46,70 @@ jobs:
         version: ["py311", "py312"]
         session: ["tests"]
         marker: ["image", "not image"]
-        posargs: ["--xvfb-backend xvfb --durations=10"]
+        posargs: ["--fail_extra_image_cache --generated_image_dir test_images --xvfb-backend xvfb --durations=10"]
         include:
           - version: "py312"
             coverage: "--cov-report= --cov=geovista"
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: "environment configure"
-      env:
-        # Maximum cache period (in weeks) before forcing a cache refresh.
-        CACHE_WEEKS: 2
-      run: |
-        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-        echo "LOCK_FILE=requirements/locks/${{ matrix.version }}-lock-linux-64.txt" >> ${GITHUB_ENV}
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
 
-    - name: "conda package cache"
-      uses: ./.github/workflows/composite/conda-pkg-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
+      - name: "apt cache"
+        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
+        with:
+          packages: libgl1-mesa-glx xvfb
+          version: 1.0
 
-    - name: "conda install"
-      uses: conda-incubator/setup-miniconda@835234971496cad1653abb28a638a281cf32541f
-      with:
-        miniforge-version: latest
-        activate-environment: ${{ env.ENV_NAME }}
-        use-only-tar-bz2: false
-        conda-remove-defaults: true
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@19eac09b398e3d0c747adc7921926a6d802df4da
+        with:
+          environments: "test-${{ matrix.version }}"
+          frozen: true
+          activate-environment: true
 
-    - name: "conda environment cache"
-      uses: ./.github/workflows/composite/conda-env-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
-        install_packages: "cartopy pip 'tox<4'"
+#      - name: "cartopy cache"
+#        uses: ./.github/workflows/composite/cartopy-cache
+#        with:
+#          cache_period: ${{ env.CACHE_PERIOD }}
+#          env_name: ${{ env.ENV_NAME }}
+#
+#      - name: "geovista cache"
+#        uses: ./.github/workflows/composite/geovista-cache
+#        with:
+#          cache_period: ${{ env.CACHE_PERIOD }}
 
-    - name: "conda info"
-      run: |
-        conda info
-        conda list
+      - name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
+        env:
+          PY_COLORS: "1"
+        run: |
+          pixi run --frozen pytest -m "${{ matrix.marker }}" ${{ matrix.posargs }} ${{ matrix.coverage }}
 
-    - name: "cartopy cache"
-      uses: ./.github/workflows/composite/cartopy-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
+      - name: "upload test images"
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-images-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/test_images
 
-    - name: "tox cache"
-      uses: ./.github/workflows/composite/tox-cache
-      with:
-        lock_file: ${{ env.LOCK_FILE }}
+      - name: "prepare coverage"
+        if: ${{ matrix.coverage }}
+        run: |
+          mv .coverage ci-test-coverage${{ strategy.job-index }}
 
-    - name: "apt cache"
-      uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
-      with:
-        packages: libgl1-mesa-glx xvfb
-        version: 1.0
-
-    - name: "geovista cache"
-      uses: ./.github/workflows/composite/geovista-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-
-    - name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
-      env:
-        PY_COLORS: "1"
-      run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }} -- -m "${{ matrix.marker }}" ${{ matrix.coverage }} ${{ matrix.posargs }}
-
-    - name: "upload test images"
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-images-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/test_images
-
-    - name: "prepare coverage"
-      if: ${{ matrix.coverage }}
-      run: |
-        mv .coverage ci-test-coverage${{ strategy.job-index }}
-
-    - if: ${{ matrix.coverage }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-artifacts-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/ci-test-coverage*
+      - if: ${{ matrix.coverage }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-artifacts-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/ci-test-coverage*
 
 
   coverage:
