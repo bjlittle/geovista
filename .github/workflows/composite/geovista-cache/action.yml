@@ -22,4 +22,4 @@ runs:
     - if: steps.geovista-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        echo "GEOVISTA_DOWNLOAD=geovista download --all --decompress" >> ${GITHUB_ENV}
+        pixi run --frozen geovista download --all --decompress

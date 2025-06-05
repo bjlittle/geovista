@@ -1,10 +1,6 @@
 name: "cartopy-cache"
 description: "create and cache cartopy assets"
 
-#
-# Assumes the environment contains the following variables:
-#   - CONDA
-#
 inputs:
   cache_period:
     description: "conda environment cache timestamp"
