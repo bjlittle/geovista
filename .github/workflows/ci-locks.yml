@@ -1,9 +1,9 @@
 # Reference:
 #   - https://github.com/actions/checkout
-#   - https://github.com/prefix-dev/setup-pixi
 #   - https://github.com/pavelzw/pixi-diff-to-markdown
-#   - https://github.com/tibdex/github-app-token
 #   - https://github.com/peter-evans/create-pull-request
+#   - https://github.com/prefix-dev/setup-pixi
+#   - https://github.com/tibdex/github-app-token
 
 name: ci-locks
 
@@ -29,7 +29,7 @@ defaults:
 jobs:
   pixi-update:
     name: "pixi update"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-22.04"
 
     steps:
       - uses: actions/checkout@v4
