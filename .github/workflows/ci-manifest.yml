@@ -25,7 +25,6 @@ concurrency:
 jobs:
   manifest:
     name: "check-manifest"
-
     runs-on: ubuntu-latest
 
     defaults:
