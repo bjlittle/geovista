@@ -27,7 +27,7 @@ concurrency:
 jobs:
   tests:
     name: "${{ matrix.session }} (${{ matrix.version }})"
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ matrix.os }}"
 
     defaults:
       run:

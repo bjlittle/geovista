@@ -33,7 +33,7 @@ defaults:
 jobs:
   tests:
     name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ matrix.os }}"
 
     env:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -113,9 +113,9 @@ jobs:
 
 
   coverage:
+    needs: [tests]
     name: "upload coverage"
-    needs: tests
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
 
     steps:
       - uses: actions/checkout@v4

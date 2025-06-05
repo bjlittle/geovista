@@ -33,7 +33,7 @@ defaults:
 jobs:
   build-artifacts:
     name: "build pypi artifacts"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
 
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
   test-artifacts:
     needs: [build-artifacts]
     name: "test wheel (${{ matrix.version }})"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
 
     env:
       ENV_NAME: "ci-wheels"
@@ -97,7 +97,8 @@ jobs:
   show-artifacts:
     needs: [build-artifacts]
     name: "show artifacts"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
+
     steps:
     - uses: actions/download-artifact@v4
       with:
@@ -113,7 +114,8 @@ jobs:
   publish-artifacts-test-pypi:
     needs: [test-artifacts]
     name: "Publish to Test PyPI"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
+
     # upload to Test PyPI for every commit on main branch
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
     steps:
@@ -135,7 +137,8 @@ jobs:
   publish-artifacts-pypi:
     needs: [test-artifacts]
     name: "Publish to PyPI"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
+
     # upload to PyPI for every tag starting with 'v'
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     steps:
