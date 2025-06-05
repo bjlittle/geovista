@@ -39,11 +39,6 @@ Package environment variables that influence the behaviour of ``geovista``:
     |                                      |               | :data:`~geovista.cache.DATA_VERSION` bundled with the     |
     |                                      |               | version of ``geovista``.                                  |
     +--------------------------------------+---------------+-----------------------------------------------------------+
-    | :guilabel:`GEOVISTA_DOWNLOAD`        | ``Developer`` | Set within the ``tests``, ``linkcheck`` and ``doctest``   |
-    |                                      |               | GitHub Action runners with the required command for       |
-    |                                      |               | `tox`_ to download, decompress and cache ``geovista``     |
-    |                                      |               | resources.                                                |
-    +--------------------------------------+---------------+-----------------------------------------------------------+
     | :guilabel:`GEOVISTA_IMAGE_TESTING`   | ``Developer`` | When set, the :mod:`geovista.theme` will not be loaded    |
     |                                      |               | and :mod:`geovista.gridlines` will not show labels.       |
     |                                      |               |                                                           |
