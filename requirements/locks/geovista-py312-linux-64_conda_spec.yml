@@ -121,7 +121,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/sphinx-autoapi-3.5.0-pyhd8ed1ab_0.conda#4af8365e4d7c635be6fd398096e88893
   - https://conda.anaconda.org/conda-forge/noarch/setuptools-80.9.0-pyhff2d567_0.conda#4de79c071274a53dcaf2a8c749d1499e
   - https://conda.anaconda.org/conda-forge/noarch/setuptools-scm-8.3.1-pyhd8ed1ab_0.conda#996376098e3648237b3efb0e0ad460c1
-  - https://conda.anaconda.org/conda-forge/linux-64/ruff-0.11.12-py312h1d08497_0.conda#0731d0ce2209c306e61ba3617728686d
+  - https://conda.anaconda.org/conda-forge/linux-64/ruff-0.11.13-py312h1d08497_0.conda#8e7c909d4f48865c8c5241d83649fc66
   - https://conda.anaconda.org/conda-forge/noarch/pyparsing-3.2.3-pyhd8ed1ab_1.conda#513d3c262ee49b54a8fec85c5bc99764
   - https://conda.anaconda.org/conda-forge/linux-64/libgfortran5-15.1.0-hcea5267_2.conda#01de444988ed960031dbe84cf4f9b1fc
   - https://conda.anaconda.org/conda-forge/linux-64/libgfortran-15.1.0-h69a702a_2.conda#f92e6e0a3c0c0c85561ef61aa59d555d
