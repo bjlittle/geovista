@@ -83,7 +83,7 @@ jobs:
             ${{ github.workspace }}/requirements/locks/*_conda_spec.yml
           commit-message: "updated manifest and lockfiles"
           branch: pixi-auto-update
-          base: pixi
+          base: main
           delete-branch: true
           title: "chore: pixi manifest update"
           body-path: ${{ github.workspace }}/diff.md
