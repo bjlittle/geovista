@@ -73,6 +73,7 @@ jobs:
 
       - name: "create pull-request"
         id: cpr
+        if: ${{ hashFiles('diff.md') }}
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
           token: ${{ steps.generate-token.outputs.token }}
