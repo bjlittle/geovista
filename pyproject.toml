@@ -502,12 +502,17 @@ trame-vuetify = "==3.0.1"
 [tool.pixi.feature.docs.pypi-dependencies]
 sphinx-tippy = ">=0.4.3,<0.5"
 
+[tool.pixi.feature.docs.tasks.clean]
+cmd = "make clean"
+cwd = "docs"
+
 [tool.pixi.feature.docs.tasks.make]
 args = [{ "arg" = "option", "default" = "html-noplot" }]
 cmd = "make {{ option }}"
 cwd = "docs"
+depends-on = [{ "task" = "clean" }]
 
-[tool.pixi.feature.docs.tasks.serve]
+[tool.pixi.feature.docs.tasks.serve-html]
 args = [{ "arg" = "option", "default" = "html-noplot" }]
 cmd = "make serve-html"
 cwd = "docs"
