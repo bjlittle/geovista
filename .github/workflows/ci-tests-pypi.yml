@@ -24,7 +24,6 @@ defaults:
     shell: bash -l {0}
 
 env:
-  ALLOW_PLOTTING: "true"
   CARTOPY_SHARE_DIR: ~/.local/share/cartopy
   GEOVISTA_POOCH_MUTE: true
   PY_COLORS: "1"

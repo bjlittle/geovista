@@ -13,8 +13,7 @@ concurrency:
 jobs:
   auto-approve:
     name: "auto-approve"
-
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
 
     permissions:
       pull-requests: write

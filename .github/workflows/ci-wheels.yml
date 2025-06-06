@@ -1,9 +1,8 @@
 # Reference:
-#   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/download-artifact
 #   - https://github.com/actions/upload-artifact
-#   - https://github.com/conda-incubator/setup-miniconda
+#   - https://github.com/prefix-dev/setup-pixi
 #   - https://github.com/pypa/build
 #   - https://github.com/pypa/gh-action-pypi-publish
 #   - https://test.pypi.org/help/#apitoken
@@ -17,7 +16,7 @@ on:
     branches:
       - "main"
       - "v*x"
-      - "!conda-lock-auto-update"
+      - "!pixi-auto-update"
       - "!pre-commit-ci-update-config"
       - "!dependabot/*"
     tags:
@@ -34,35 +33,32 @@ defaults:
 jobs:
   build-artifacts:
     name: "build pypi artifacts"
-
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: "build sdist and wheel"
-      run: |
-        # geovista is a pure python package, so simply use pypa/build
-        pipx run build
+      - name: "build sdist and wheel"
+        run: |
+          # geovista is a pure python package, so simply use pypa/build
+          pipx run build
 
-    - name: "show sdist and wheel"
-      run: |
-        ls -l ${{ github.workspace }}/dist
+      - name: "show sdist and wheel"
+        run: |
+          ls -l ${{ github.workspace }}/dist
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: pypi-artifacts-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pypi-artifacts-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/dist
 
 
   test-artifacts:
     needs: [build-artifacts]
-
     name: "test wheel (${{ matrix.version }})"
-
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
 
     env:
       ENV_NAME: "ci-wheels"
@@ -71,72 +67,38 @@ jobs:
       fail-fast: false
       matrix:
         version: ["py311", "py312"]
-        session: ["env"]
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: pypi-artifacts-*
-        path: ${{ github.workspace }}/dist
-        merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pypi-artifacts-*
+          path: ${{ github.workspace }}/dist
+          merge-multiple: true
 
-    - name: "environment configure"
-      env:
-        # Maximum cache period (in weeks) before forcing a cache refresh.
-        CACHE_WEEKS: 2
-      run: |
-        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-        echo "LOCK_FILE=requirements/locks/${{ matrix.version }}-lock-linux-64.txt" >> ${GITHUB_ENV}
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@19eac09b398e3d0c747adc7921926a6d802df4da
+        with:
+          cache-write: false
+          environments: "${{ matrix.version }}"
+          frozen: true
+          activate-environment: true
 
-    - name: "conda package cache"
-      uses: ./.github/workflows/composite/conda-pkg-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
-
-    - name: "conda install"
-      uses: conda-incubator/setup-miniconda@835234971496cad1653abb28a638a281cf32541f
-      with:
-        miniforge-version: latest
-        activate-environment: ${{ env.ENV_NAME }}
-        use-only-tar-bz2: false
-        conda-remove-defaults: true
-
-    - name: "conda environment cache"
-      uses: ./.github/workflows/composite/conda-env-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
-        install_packages: "pip 'tox<4'"
-
-    - name: "conda info"
-      run: |
-        conda info
-        conda list
-
-    - name: "tox cache"
-      uses: ./.github/workflows/composite/tox-cache
-      with:
-        lock_file: ${{ env.LOCK_FILE }}
-
-    - name: "test wheel (${{ matrix.version }})"
-      env:
-        TESTENV: "${{ matrix.version }}-${{ matrix.session }}"
-      run: |
-        WHEEL=$(ls -1 dist/*.whl)
-        tox -e ${{ env.TESTENV }} --run-command "python -m pip uninstall --yes ${WHEEL}"
-        tox -e ${{ env.TESTENV }} --run-command "python -m pip install --no-deps ${WHEEL}"
-        tox -e ${{ env.TESTENV }} --run-command "python -c 'import geovista; print(geovista.__version__)'"
+      - name: "test wheel (${{ matrix.version }})"
+        run: |
+          WHEEL=$(ls -1 dist/*.whl)
+          pixi run --frozen python -m pip install --no-deps ${WHEEL}
+          pixi run --frozen python -c 'import geovista; print(geovista.__version__)'
 
 
   show-artifacts:
     needs: [build-artifacts]
     name: "show artifacts"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
+
     steps:
     - uses: actions/download-artifact@v4
       with:
@@ -152,7 +114,8 @@ jobs:
   publish-artifacts-test-pypi:
     needs: [test-artifacts]
     name: "Publish to Test PyPI"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
+
     # upload to Test PyPI for every commit on main branch
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
     steps:
@@ -174,7 +137,8 @@ jobs:
   publish-artifacts-pypi:
     needs: [test-artifacts]
     name: "Publish to PyPI"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
+
     # upload to PyPI for every tag starting with 'v'
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     steps:

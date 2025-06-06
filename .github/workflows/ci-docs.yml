@@ -1,7 +1,7 @@
 # Reference:
 #   - https://github.com/actions/checkout
 #   - https://github.com/awalsh128/cache-apt-pkgs-action
-#   - https://github.com/conda-incubator/setup-miniconda
+#   - https://github.com/prefix-dev/setup-pixi
 
 name: ci-docs
 
@@ -12,7 +12,7 @@ on:
     branches:
       - "main"
       - "v*x"
-      - "!conda-lock-auto-update"
+      - "!pixi-auto-update"
       - "!pre-commit-ci-update-config"
       - "!dependabot/*"
     tags:
@@ -27,14 +27,13 @@ concurrency:
 jobs:
   tests:
     name: "${{ matrix.session }} (${{ matrix.version }})"
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ matrix.os }}"
 
     defaults:
       run:
         shell: bash -l {0}
 
     env:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       ENV_NAME: "ci-docs"
 
     strategy:
@@ -45,66 +44,41 @@ jobs:
         session: ["doctest"]
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: "environment configure"
-      env:
-        # Maximum cache period (in weeks) before forcing a cache refresh.
-        CACHE_WEEKS: 2
-      run: |
-        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-        echo "LOCK_FILE=requirements/locks/${{ matrix.version }}-lock-linux-64.txt" >> ${GITHUB_ENV}
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
 
-    - name: "conda package cache"
-      uses: ./.github/workflows/composite/conda-pkg-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
+      - name: "apt cache"
+        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
+        with:
+          packages: libgl1-mesa-glx xvfb
+          version: 1.0
 
-    - name: "conda install"
-      uses: conda-incubator/setup-miniconda@835234971496cad1653abb28a638a281cf32541f
-      with:
-        miniforge-version: latest
-        activate-environment: ${{ env.ENV_NAME }}
-        use-only-tar-bz2: false
-        conda-remove-defaults: true
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@19eac09b398e3d0c747adc7921926a6d802df4da
+        with:
+          environments: "docs-${{ matrix.version }}"
+          frozen: true
+          activate-environment: true
 
-    - name: "conda environment cache"
-      uses: ./.github/workflows/composite/conda-env-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
-        install_packages: "cartopy pip 'tox<4'"
+      - name: "cartopy cache"
+        uses: ./.github/workflows/composite/cartopy-cache
+        with:
+          cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
 
-    - name: "conda info"
-      run: |
-        conda info
-        conda list
+      - name: "geovista cache"
+        uses: ./.github/workflows/composite/geovista-cache
+        with:
+          cache_period: ${{ env.CACHE_PERIOD }}
 
-    - name: "cartopy cache"
-      uses: ./.github/workflows/composite/cartopy-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
-
-    - name: "tox cache"
-      uses: ./.github/workflows/composite/tox-cache
-      with:
-        lock_file: ${{ env.LOCK_FILE }}
-
-    - name: "apt cache"
-      uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
-      with:
-        packages: libgl1-mesa-glx xvfb
-        version: 1.0
-
-    - name: "geovista cache"
-      uses: ./.github/workflows/composite/geovista-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-
-    - name: "${{ matrix.session }} (${{ matrix.version }})"
-      run: |
-        tox -e ${{ matrix.version }}-${{ matrix.session }}
+      - name: "${{ matrix.session }} (${{ matrix.version }})"
+        run: |
+          pixi run --frozen make ${{ matrix.session }}
