@@ -80,7 +80,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-htmlhelp-2.1.0-pyhd8ed1ab_1.conda#e9fb3fe8a5b758b4aff187d434f94f03
   - https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-applehelp-2.0.0-pyhd8ed1ab_1.conda#16e3f039c0aa6446513e94ab18a8784b
   - https://conda.anaconda.org/conda-forge/noarch/tomli-2.2.1-pyhd8ed1ab_1.conda#ac944244f1fed2eb49bae07193ae8215
-  - https://conda.anaconda.org/conda-forge/noarch/zipp-3.22.0-pyhd8ed1ab_0.conda#234be740b00b8e41567e5b0ed95aaba9
+  - https://conda.anaconda.org/conda-forge/noarch/zipp-3.23.0-pyhd8ed1ab_0.conda#df5e78d904988eb55042c0c97446079f
   - https://conda.anaconda.org/conda-forge/noarch/importlib_resources-6.5.2-pyhd8ed1ab_0.conda#c85c76dc67d75619a92f51dfbce06992
   - https://conda.anaconda.org/conda-forge/noarch/importlib-resources-6.5.2-pyhd8ed1ab_0.conda#e376ea42e9ae40f3278b0f79c9bf9826
   - https://conda.anaconda.org/conda-forge/noarch/importlib-metadata-8.7.0-pyhe01879c_1.conda#63ccfdc3a3ce25b027b8767eb722fca8
@@ -129,7 +129,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/linux-64/libblas-3.9.0-31_h59b9bed_openblas.conda#728dbebd0f7a20337218beacffd37916
   - https://conda.anaconda.org/conda-forge/linux-64/liblapack-3.9.0-31_h7ac8fdf_openblas.conda#452b98eafe050ecff932f0ec832dd03f
   - https://conda.anaconda.org/conda-forge/linux-64/libcblas-3.9.0-31_he106b2a_openblas.conda#abb32c727da370c481a1c206f5159ce9
-  - https://conda.anaconda.org/conda-forge/linux-64/numpy-2.2.6-py312h72c5963_0.conda#17fac9db62daa5c810091c2882b28f45
+  - https://conda.anaconda.org/conda-forge/linux-64/numpy-2.3.0-py312h6cf2f7f_0.conda#8b4095ed29d1072f7e4badfbaf9e5851
   - https://conda.anaconda.org/conda-forge/noarch/snuggs-1.4.7-pyhd8ed1ab_2.conda#9aa358575bbd4be126eaa5e0039f835c
   - https://conda.anaconda.org/conda-forge/linux-64/sqlite-3.50.1-h9eae976_0.conda#e12789602c09a875957c1c78ff47cdf6
   - https://conda.anaconda.org/conda-forge/linux-64/libssh2-1.11.1-hcf80075_0.conda#eecce068c7e4eddeb169591baac20ac4
@@ -213,7 +213,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/linux-64/wayland-1.23.1-h3e06ad9_1.conda#a37843723437ba75f42c9270ffe800b1
   - https://conda.anaconda.org/conda-forge/linux-64/mysql-common-9.2.0-h266115a_0.conda#db22a0962c953e81a2a679ecb1fc6027
   - https://conda.anaconda.org/conda-forge/linux-64/mysql-libs-9.2.0-he0572af_0.conda#93340b072c393d23c4700a1d40565dca
-  - https://conda.anaconda.org/conda-forge/linux-64/xkeyboard-config-2.44-hb9d3cd8_0.conda#7c91bfc90672888259675ad2ad28af9c
+  - https://conda.anaconda.org/conda-forge/linux-64/xkeyboard-config-2.45-hb9d3cd8_0.conda#397a013c2dc5145a70737871aaa87e98
   - https://conda.anaconda.org/conda-forge/linux-64/libxkbcommon-1.10.0-h65c71a3_0.conda#fedf6bfe5d21d21d2b1785ec00a8889a
   - https://conda.anaconda.org/conda-forge/linux-64/libntlm-1.8-hb9d3cd8_0.conda#7c7927b404672409d9917d49bff5f2d6
   - https://conda.anaconda.org/conda-forge/linux-64/cyrus-sasl-2.1.27-h54b06d7_7.conda#dce22f70b4e5a407ce88f2be046f4ceb
