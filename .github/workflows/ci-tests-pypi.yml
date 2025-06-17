@@ -1,4 +1,5 @@
 # Reference:
+#   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/setup-python
 #   - https://github.com/awalsh128/cache-apt-pkgs-action
@@ -25,6 +26,7 @@ defaults:
 
 env:
   CARTOPY_SHARE_DIR: ~/.local/share/cartopy
+  ENV_NAME: "ci-tests-pypi"
   GEOVISTA_POOCH_MUTE: true
   PY_COLORS: "1"
   SHELLOPTS: "errexit:pipefail"
@@ -55,17 +57,13 @@ jobs:
         CACHE_WEEKS: 2
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+        echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
 
     - name: "apt cache"
       uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
       with:
         packages: libgl1-mesa-glx xvfb
         version: 1.0
-
-    - name: "geovista cache"
-      uses: ./.github/workflows/composite/geovista-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
 
     - name: "pip install"
       run: |
@@ -75,10 +73,28 @@ jobs:
       run: |
         pip freeze
 
-    - name: "download cartopy assets"
+    - uses: actions/cache@v4
+      id: geovista-cache
+      with:
+        path: ~/.cache/geovista
+        key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ env.CACHE_PERIOD }}
+
+    - if: steps.geovista-cache.outputs.cache-hit != 'true'
+      run: |
+        geovista download --all --decompress
+
+    - uses: actions/cache@v4
+      id: cartopy-cache
+      with:
+        path: ~/.local/share/cartopy
+        key: ${{ runner.os }}-cartopy-${{ env.ENV_NAME }}-${{ env.CACHE_PERIOD }}
+
+    - if: steps.cartopy-cache.outputs.cache-hit != 'true'
+      env:
+        CARTOPY_SHARE_DIR: ~/.local/share/cartopy
       run: |
         mkdir -p ${CARTOPY_SHARE_DIR}
-        python -m cartopy.feature.download physical --output ${CARTOPY_SHARE_DIR} --no-warn
+        cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
 
     - name: "test pypi (py${{ matrix.version }})"
       run: |
