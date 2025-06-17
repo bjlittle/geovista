@@ -24,4 +24,4 @@ runs:
       shell: bash
       run: |
         mkdir -p ${CARTOPY_SHARE_DIR}
-        pixi run --frozen python cartopy_feature_download.py physical --output ${CARTOPY_SHARE_DIR} --no-warn
+        pixi run --frozen cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
