@@ -453,10 +453,10 @@ platformdirs = ">=4.3.8,<5"
 pooch = ">=1.8.2,<2"
 pykdtree = ">=1.4.1,<2"
 pyproj = ">=3.7.1,<4"
-pyvista = ">=0.43.1,<0.44.3"
+pyvista = ">=0.45.0,<0.46.0"
 setuptools = ">=80.9.0,<81"
 setuptools-scm = ">=8.3.1,<9"
-vtk = "<9.4"
+vtk = ">=9.4.2,<9.5.0"
 
 [tool.pixi.feature.dev.dependencies]
 fastparquet = ">=2024.11.0,<2025"
