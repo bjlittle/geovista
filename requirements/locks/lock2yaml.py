@@ -25,7 +25,7 @@ template = environment.get_template("lock2yaml.txt")
 # default to linux-64 only
 env = f"geovista-{sys.argv[1]}"
 lock = f"{env}_linux-64_conda_spec.txt"
-yaml = f"{env}-linux-64_conda_spec.yml"
+yaml = f"{env}_linux-64_conda_spec.yml"
 
 with Path(lock).open(mode="r") as fin:
     content = template.render(file=fin, name=env)

@@ -117,6 +117,7 @@ exclude = ['\.__eq__$', '\.__ne__$', '\.__repr__$']
 addopts = [
   "--doctest-continue-on-failure",
   "--doctest-modules",
+  "--durations=10",
   "--import-mode=importlib",
   "--strict-config",
   "--strict-markers",
@@ -453,10 +454,10 @@ platformdirs = ">=4.3.8,<5"
 pooch = ">=1.8.2,<2"
 pykdtree = ">=1.4.1,<2"
 pyproj = ">=3.7.1,<4"
-pyvista = ">=0.43.1,<0.44.3"
+pyvista = ">=0.45.0,<0.46.0"
 setuptools = ">=80.9.0,<81"
 setuptools-scm = ">=8.3.1,<9"
-vtk = "<9.4"
+vtk = ">=9.4.2,<9.5.0"
 
 [tool.pixi.feature.dev.dependencies]
 fastparquet = ">=2024.11.0,<2025"
@@ -532,4 +533,3 @@ pytest = ">=8.4.0,<9"
 pytest-cov = ">=6.1.1,<7"
 pytest-mock = ">=3.14.1,<4"
 pytest-pyvista = ">=0.1.9,<0.2"
-pytest-xvfb = ">=3.1.1,<4"
