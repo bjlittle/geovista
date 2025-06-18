@@ -33,9 +33,6 @@ jobs:
       run:
         shell: bash -l {0}
 
-    env:
-      ENV_NAME: "ci-docs"
-
     strategy:
       fail-fast: false
       matrix:
@@ -72,7 +69,6 @@ jobs:
         uses: ./.github/workflows/composite/cartopy-cache
         with:
           cache_period: ${{ env.CACHE_PERIOD }}
-          env_name: ${{ env.ENV_NAME }}
 
       - name: "geovista cache"
         uses: ./.github/workflows/composite/geovista-cache

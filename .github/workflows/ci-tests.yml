@@ -38,7 +38,6 @@ jobs:
     env:
       ALLOW_PLOTTING: true
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      ENV_NAME: "ci-tests"
 
     strategy:
       fail-fast: false
@@ -76,7 +75,6 @@ jobs:
         uses: ./.github/workflows/composite/cartopy-cache
         with:
           cache_period: ${{ env.CACHE_PERIOD }}
-          env_name: ${{ env.ENV_NAME }}
 
       - name: "geovista cache"
         uses: ./.github/workflows/composite/geovista-cache
