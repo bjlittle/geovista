@@ -1,0 +1,2 @@
+Consolidated ``cartopy-cache`` composite :fab:`github` Action to use a single
+common cache for all :fab:`github` Actions. (:user:`bjlittle`)
