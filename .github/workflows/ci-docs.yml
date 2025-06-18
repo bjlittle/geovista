@@ -58,7 +58,7 @@ jobs:
       - name: "apt cache"
         uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
         with:
-          packages: libgl1-mesa-glx xvfb
+          packages: libgl1-mesa-glx
           version: 1.0
 
       - name: "setup pixi"

@@ -2,7 +2,7 @@
 #   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/setup-python
-#   - https://github.com/awalsh128/cache-apt-pkgs-action
+#   - https://github.com/pyvista/setup-headless-display-action
 
 name: ci-tests-pypi
 
@@ -25,6 +25,7 @@ defaults:
     shell: bash -l {0}
 
 env:
+  ALLOW_PLOTTING: true
   CARTOPY_SHARE_DIR: ~/.local/share/cartopy
   ENV_NAME: "ci-tests-pypi"
   GEOVISTA_POOCH_MUTE: true
@@ -59,11 +60,7 @@ jobs:
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
         echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
 
-    - name: "apt cache"
-      uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d
-      with:
-        packages: libgl1-mesa-glx xvfb
-        version: 1.0
+    - uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19
 
     - name: "pip install"
       run: |
@@ -98,7 +95,7 @@ jobs:
 
     - name: "test pypi (py${{ matrix.version }})"
       run: |
-        pytest --xvfb-backend xvfb --fail_extra_image_cache --generated_image_dir test_images
+        xvfb-run -a pytest --fail_extra_image_cache --generated_image_dir test_images
 
     - name: "report failure"
       if: failure() && github.event_name == 'schedule'
