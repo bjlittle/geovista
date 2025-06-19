@@ -1,0 +1,1 @@
+Extended distribution support to cover ``py313``. (:user:`bjlittle`)
