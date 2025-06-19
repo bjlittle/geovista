@@ -441,6 +441,17 @@ geovista-py312 = { features = [
 py312 = { features = ["py312"], solve-group = "py312" }
 test-py312 = { features = ["dev", "py312", "test"], solve-group = "py312" }
 
+dev-py313 = { features = ["dev", "py313"], solve-group = "py313" }
+docs-py313 = { features = ["dev", "docs", "py313"], solve-group = "py313" }
+geovista-py313 = { features = [
+  "dev",
+  "docs",
+  "py313",
+  "test",
+], solve-group = "py313" }
+py313 = { features = ["py313"], solve-group = "py313" }
+test-py313 = { features = ["dev", "py313", "test"], solve-group = "py313" }
+
 [tool.pixi.dependencies]
 cartopy = ">=0.24.0,<0.25"
 click = ">=8.2.1,<9"
@@ -526,6 +537,10 @@ python = "3.11.*"
 [tool.pixi.feature.py312.dependencies]
 pip = ">=25.1.1,<26"
 python = "3.12.*"
+
+[tool.pixi.feature.py313.dependencies]
+pip = ">=25.1.1,<26"
+python = "3.13.*"
 
 [tool.pixi.feature.test.dependencies]
 codecov = ">=2.1.13,<3"

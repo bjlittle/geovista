@@ -43,11 +43,11 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04"]
-        version: ["py311", "py312"]
+        version: ["py311", "py312", "py313"]
         session: ["tests"]
         marker: ["image", "not image"]
         include:
-          - version: "py312"
+          - version: "py313"
             coverage: "--cov-report= --cov=geovista"
 
     steps:
@@ -118,7 +118,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.x"
 
       - run: |
           python -m pip install --upgrade pip

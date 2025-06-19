@@ -20,7 +20,7 @@ concurrency:
 env:
   NAME: "geovista"
   SHELLOPTS: "errexit:pipefail"
-  VERSION: "py312"
+  VERSION: "py313"
 
 defaults:
   run:
