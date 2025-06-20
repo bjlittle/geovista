@@ -40,7 +40,6 @@ jobs:
 
     env:
       ALLOW_PLOTTING: true
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     strategy:
       fail-fast: false
