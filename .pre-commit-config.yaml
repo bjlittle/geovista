@@ -130,3 +130,8 @@ repos:
     hooks:
       - id: sphinx-lint
         args: [--ignore, ".pixi", --ignore, "changelog/template.rst"]
+
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.9.0
+    hooks:
+      - id: zizmor
