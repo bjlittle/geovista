@@ -26,6 +26,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  id-token: none
+
 defaults:
   run:
     shell: bash -l {0}
@@ -54,6 +57,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: "environment configure"
         env:
@@ -96,8 +100,10 @@ jobs:
 
       - name: "prepare coverage"
         if: ${{ matrix.coverage }}
+        env:
+          COVERAGE_FILE: ci-test-coverage${{ strategy.job-index }}
         run: |
-          mv .coverage ci-test-coverage${{ strategy.job-index }}
+          mv .coverage ${COVERAGE_FILE}
 
       - if: ${{ matrix.coverage }}
         uses: actions/upload-artifact@v4
@@ -115,6 +121,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:

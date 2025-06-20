@@ -9,17 +9,18 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: "environment configure"
+    - name: "get geovista-data version"
       shell: bash
+      id: geovista-data
       run: |
-        echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
+        echo "version=$(geovista --data-version)" >> ${GITHUB_OUTPUT}
 
     - name: "check geovista cache"
       uses: actions/cache@v4
       id: geovista-cache
       with:
         path: ~/.cache/geovista
-        key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ inputs.cache_period }}
+        key: ${{ runner.os }}-geovista-data-${{ steps.geovista-data.outputs.version }}-${{ inputs.cache_period }}
 
     - name: "refresh geovista cache"
       if: steps.geovista-cache.outputs.cache-hit != 'true'

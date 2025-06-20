@@ -5,12 +5,15 @@
 name: ci-label
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, edited, reopened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  id-token: none
 
 jobs:
   triage:
@@ -20,65 +23,75 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: "generate token"
+        uses: actions/create-github-app-token@v2
+        id: generate-token
+        with:
+          app-id: ${{ secrets.AUTH_APP_ID }}
+          private-key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
 
       - uses: actions/labeler@v5
+        with:
+          repo-token: ${{ steps.generate-token.outputs.token }}
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: github.actor == 'dependabot[bot]' || github.actor == 'geovista-ci[bot]' || github.actor == 'pre-commit-ci[bot]'
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'skip changelog'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'breaking-change') || startsWith(github.event.pull_request.head.ref, 'breaking') || startsWith(github.event.pull_request.head.ref, 'break')
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'breaking-change'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'bug') || startsWith(github.event.pull_request.head.ref, 'fix') || startsWith(github.event.pull_request.head.ref, 'patch')
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'type: bug'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'debt')
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'type: tech debt'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'doc') || startsWith(github.event.pull_request.head.ref, 'docs')
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'type: documentation'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'feat') || startsWith(github.event.pull_request.head.ref, 'feature')
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'type: enhancement'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'ex') || startsWith(github.event.pull_request.head.ref, 'example') || startsWith(github.event.pull_request.head.ref, 'examples')
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'type: examples'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'spec') || startsWith(github.event.pull_request.head.ref, 'spec0')
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'type: spec-0'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'perf') || startsWith(github.event.pull_request.head.ref, 'performance')
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'type: performance'
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: startsWith(github.event.pull_request.head.ref, 'merge-back') || startsWith(github.event.pull_request.head.ref, 'mb')
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           labels: 'type: merge-back'
