@@ -1,0 +1,4 @@
+Created the PyPI optional dependencies ``devs`` group and renamed the ``pixi``
+feature ``dev`` to ``devs``. Also included the
+`zizmor <https://github.com/zizmorcore/zizmor>`__ package to ``devs``.
+(:user:`bjlittle`)
