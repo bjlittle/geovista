@@ -1,5 +1,5 @@
 # Reference:
-#   - https://github.com/tibdex/github-app-token
+#   - https://github.com/actions/create-github-app-token
 #   - https://github.com/adRise/update-pr-branch
 
 name: ci-update
@@ -19,11 +19,11 @@ jobs:
 
     steps:
       - name: "generate token"
-        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
+        uses: actions/create-github-app-token@v2
         id: generate-token
         with:
-          app_id: ${{ secrets.AUTH_APP_ID }}
-          private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.AUTH_APP_ID }}
+          private-key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
 
       - name: "automatically update PR"
         uses: adRise/update-pr-branch@1982757e254dab9d5bbb8478b35a2b20411270d9

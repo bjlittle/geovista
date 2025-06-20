@@ -1,9 +1,9 @@
 # Reference:
 #   - https://github.com/actions/checkout
+#   - https://github.com/actions/create-github-app-token
 #   - https://github.com/pavelzw/pixi-diff-to-markdown
 #   - https://github.com/peter-evans/create-pull-request
 #   - https://github.com/prefix-dev/setup-pixi
-#   - https://github.com/tibdex/github-app-token
 
 name: ci-locks
 
@@ -65,11 +65,11 @@ jobs:
           python lock2yaml.py ${{ env.VERSION }}
 
       - name: "generate token"
-        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
+        uses: actions/create-github-app-token@v2
         id: generate-token
         with:
-          app_id: ${{ secrets.AUTH_APP_ID }}
-          private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.AUTH_APP_ID }}
+          private-key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
 
       - name: "create pull-request"
         id: cpr
