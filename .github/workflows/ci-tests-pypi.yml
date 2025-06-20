@@ -63,34 +63,38 @@ jobs:
 
     - name: "pip install"
       run: |
-        pip install --no-cache-dir -e .[test,exam,cmap]
+        pip install --no-cache-dir -e .[test,exam]
 
     - name: "pip freeze"
       run: |
         pip freeze
 
-    - uses: actions/cache@v4
-      id: geovista-cache
-      with:
-        path: ~/.cache/geovista
-        key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ env.CACHE_PERIOD }}
-
-    - if: steps.geovista-cache.outputs.cache-hit != 'true'
-      run: |
-        geovista download --all --decompress
-
-    - uses: actions/cache@v4
+    - name: "check cartopy cache"
+      uses: actions/cache@v4
       id: cartopy-cache
       with:
         path: ~/.local/share/cartopy
         key: ${{ runner.os }}-cartopy-data-${{ env.CACHE_PERIOD }}
 
-    - if: steps.cartopy-cache.outputs.cache-hit != 'true'
+    - name: "refresh cartopy cache"
+      if: steps.cartopy-cache.outputs.cache-hit != 'true'
       env:
         CARTOPY_SHARE_DIR: ~/.local/share/cartopy
       run: |
         mkdir -p ${CARTOPY_SHARE_DIR}
         cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
+
+    - name: "check geovista cache"
+      uses: actions/cache@v4
+      id: geovista-cache
+      with:
+        path: ~/.cache/geovista
+        key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ env.CACHE_PERIOD }}
+
+    - name: "refresh geovista cache"
+      if: steps.geovista-cache.outputs.cache-hit != 'true'
+      run: |
+        geovista download --all --decompress
 
     - name: "test pypi (py${{ matrix.version }})"
       run: |

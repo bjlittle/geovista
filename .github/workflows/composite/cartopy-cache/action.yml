@@ -9,13 +9,15 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v4
+    - name: "check cartopy cache"
+      uses: actions/cache@v4
       id: cartopy-cache
       with:
         path: ~/.local/share/cartopy
         key: ${{ runner.os }}-cartopy-data-${{ inputs.cache_period }}
 
-    - if: steps.cartopy-cache.outputs.cache-hit != 'true'
+    - name: "refresh cartopy cache"
+      if: steps.cartopy-cache.outputs.cache-hit != 'true'
       env:
         CARTOPY_SHARE_DIR: ~/.local/share/cartopy
       shell: bash
