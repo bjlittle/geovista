@@ -1,0 +1,3 @@
+Added the ``geovista --data-version`` option to the command line interface
+(CLI) to show the configured `geovista-data <https://github.com/bjlittle/geovista-data>`__
+version. (:user:`bjlittle`)

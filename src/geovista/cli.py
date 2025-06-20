@@ -175,6 +175,12 @@ def _plural(quantity: int) -> str:
     help="Show geovista cache directory.",
 )
 @click.option(
+    "-d",
+    "--data-version",
+    is_flag=True,
+    help="Show geovista data version.",
+)
+@click.option(
     "-r",
     "--report",
     is_flag=True,
@@ -186,13 +192,18 @@ def _plural(quantity: int) -> str:
     is_flag=True,
     help="Show geovista package version.",
 )
-def main(version: bool, report: bool, cache: bool) -> None:  # numpydoc ignore=PR01
+def main(
+    version: bool, report: bool, data_version: bool, cache: bool
+) -> None:  # numpydoc ignore=PR01
     """To get help for geovista commands, simply use "geovista COMMAND --help"."""
     if version:
         click.secho(f"{__version__}", fg=FG_COLOUR)
 
     if report:
         click.echo(Report())
+
+    if data_version:
+        click.secho(f"{CACHE.abspath.name}", fg=FG_COLOUR)
 
     if cache:
         click.secho(f"{CACHE.abspath}", fg=FG_COLOUR)
