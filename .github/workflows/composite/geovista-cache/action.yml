@@ -9,17 +9,20 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - shell: bash
+    - name: "environment configure"
+      shell: bash
       run: |
         echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
 
-    - uses: actions/cache@v4
+    - name: "check geovista cache"
+      uses: actions/cache@v4
       id: geovista-cache
       with:
         path: ~/.cache/geovista
         key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ inputs.cache_period }}
 
-    - if: steps.geovista-cache.outputs.cache-hit != 'true'
+    - name: "refresh geovista cache"
+      if: steps.geovista-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         pixi run --frozen geovista download --all --decompress
