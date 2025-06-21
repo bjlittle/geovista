@@ -55,14 +55,6 @@ jobs:
       with:
         python-version: ${{ matrix.version }}
 
-    - name: "environment configure"
-      env:
-        # Maximum cache period (in weeks) before forcing a cache refresh.
-        CACHE_WEEKS: 2
-      run: |
-        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-        echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
-
     - uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19
 
     - name: "pip install"
@@ -72,6 +64,14 @@ jobs:
     - name: "pip freeze"
       run: |
         pip freeze
+
+    - name: "environment configure"
+      env:
+        # Maximum cache period (in weeks) before forcing a cache refresh.
+        CACHE_WEEKS: 2
+      run: |
+        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+        echo "DATA_VERSION=$(geovista --data-version)" >> ${GITHUB_ENV}
 
     - name: "check cartopy cache"
       uses: actions/cache@v4
