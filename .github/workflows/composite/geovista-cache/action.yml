@@ -13,7 +13,7 @@ runs:
       shell: bash
       id: geovista-data
       run: |
-        echo "version=$(geovista --data-version)" >> ${GITHUB_OUTPUT}
+        echo "version=$(pixi run --frozen geovista --data-version)" >> ${GITHUB_OUTPUT}
 
     - name: "check geovista cache"
       uses: actions/cache@v4
