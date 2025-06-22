@@ -6,6 +6,7 @@
 #   - https://github.com/pypa/build
 #   - https://github.com/pypa/gh-action-pypi-publish
 #   - https://test.pypi.org/help/#apitoken
+#   - https://docs.pypi.org/trusted-publishers/
 
 name: ci-wheels
 
@@ -120,6 +121,9 @@ jobs:
     needs: [test-artifacts]
     name: "Publish to Test PyPI"
     runs-on: "ubuntu-latest"
+    permissions:
+      id-token: write  # Mandatory for PyPI Trusted Publishing OpenID Connect (OIDC)
+    environment: test-pypi
 
     # upload to Test PyPI for every commit on main branch
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
@@ -132,8 +136,6 @@ jobs:
 
     - uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
       with:
-        user: __token__
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
         repository-url: https://test.pypi.org/legacy/
         skip-existing: true
         print-hash: true
@@ -143,6 +145,9 @@ jobs:
     needs: [test-artifacts]
     name: "Publish to PyPI"
     runs-on: "ubuntu-latest"
+    permissions:
+      id-token: write  # Mandatory for PyPI Trusted Publishing OpenID Connect (OIDC)
+    environment: pypi
 
     # upload to PyPI for every tag starting with 'v'
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
@@ -155,6 +160,4 @@ jobs:
 
     - uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
       with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
         print-hash: true
