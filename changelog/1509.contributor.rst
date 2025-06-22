@@ -1,0 +1,4 @@
+Adopted publishing binary wheels to PyPI with a
+`Trusted Publisher <https://docs.pypi.org/trusted-publishers/>`__ via the
+`OpenID Connect (OIDC) <https://openid.net/developers/how-connect-works/>`__
+Standard. (:user:`bjlittle`)
