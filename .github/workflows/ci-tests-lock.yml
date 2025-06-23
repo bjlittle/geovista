@@ -81,6 +81,7 @@ jobs:
         uses: ./.github/workflows/composite/geovista-cache
         with:
           cache_period: ${{ env.CACHE_PERIOD }}
+          pixi_environment: ${{ env.NAME }}
 
       - name: "test lock (${{ matrix.version }})"
         run: |
