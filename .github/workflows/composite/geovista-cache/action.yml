@@ -5,6 +5,11 @@ inputs:
   cache_period:
     description: "geovista assets cache timestamp"
     required: true
+  pixi_environment:
+    description: "pixi environment to use for geovista"
+    required: false
+    default: ""
+
 
 runs:
   using: "composite"
@@ -12,8 +17,16 @@ runs:
     - name: "get geovista-data version"
       shell: bash
       id: geovista-data
+      env:
+        INPUTS_PIXI_ENVIRONMENT: "${{ inputs.pixi_environment }}"
       run: |
-        echo "version=$(pixi run --frozen geovista --data-version)" >> ${GITHUB_OUTPUT}
+        if [ -z "${INPUTS_PIXI_ENVIRONMENT}" ]; then
+          # Use the active pixi environment if none is specified
+          echo "version=$(pixi run --frozen geovista --data-version)" >> ${GITHUB_OUTPUT}
+        else
+          # Use the specified pixi environment
+          echo "version=$(pixi run --frozen --environment ${INPUTS_PIXI_ENVIRONMENT} geovista --data-version )" >> ${GITHUB_OUTPUT}
+        fi
 
     - name: "check geovista cache"
       uses: actions/cache@v4
