@@ -1,0 +1,1 @@
+Introduced minimum pin ``ruff >=0.12.0``. (:user:`bjlittle`)

@@ -1,7 +1,7 @@
 ipykernel <6.29.6
 joblib <1.5.2
 myst-nb <1.2.1
-numpydoc <1.8.1
+numpydoc <1.9.1
 sphinx >=7.3,<8.2.4
 sphinx_design <0.6.2
 sphinx-autoapi >=3.2.0,<3.6.1
