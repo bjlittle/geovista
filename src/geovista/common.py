@@ -253,7 +253,7 @@ def active_kernel() -> bool:
     result = True
 
     try:
-        from IPython import get_ipython
+        from IPython import get_ipython  # noqa: PLC0415
 
         # the following statement may or may not raise an exception
         _ = get_ipython().kernel

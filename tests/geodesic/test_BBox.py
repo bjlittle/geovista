@@ -128,3 +128,20 @@ def test_boundary_field_data(name):
     assert from_wkt(result) == WGS84
     expected = RADIUS + RADIUS * ZLEVEL_SCALE
     assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
+
+
+def test___hash__():
+    """Test that BBox is hashable."""
+    bbox = panel("antarctic")
+    actual = hash(bbox)
+    assert isinstance(actual, int)
+    expected = hash(
+        (
+            bbox.ellps,
+            bbox.c,
+            bbox.triangulate,
+            bbox.lons.tobytes(),
+            bbox.lats.tobytes(),
+        )
+    )
+    assert actual == expected

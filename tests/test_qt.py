@@ -20,14 +20,14 @@ def test_pyvistaqt_import():
 
     """
     try:
-        import pyvistaqt
+        import pyvistaqt  # noqa: PLC0415
     except ModuleNotFoundError:
         pyvistaqt = False
 
     if not pyvistaqt:
         emsg = 'please install the "pyvistaqt" and "pyqt" packages'
         with pytest.raises(ModuleNotFoundError, match=emsg):
-            import geovista.qt  # noqa: F401
+            import geovista.qt  # noqa: F401, PLC0415
 
 
 def test_pyvistaqt_mixin(mocker):
@@ -49,7 +49,7 @@ def test_pyvistaqt_mixin(mocker):
         MultiPlotter=MultiPlotter,
     )
     mocker.patch.dict("sys.modules", pyvistaqt=module)
-    import geovista.qt
+    import geovista.qt  # noqa: PLC0415
 
     assert geovista.qt.GeoBackgroundPlotter().dummy == slot
     assert geovista.qt.GeoMultiPlotter().dummy == slot

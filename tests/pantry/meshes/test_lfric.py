@@ -25,10 +25,10 @@ def test_resolution_warning(mocker):
     with pytest.warns(UserWarning, match=wmsg):
         result = lfric(resolution=bad)
 
-    import pooch
-    import pyvista as pv
+    import pooch  # noqa: PLC0415
+    import pyvista as pv  # noqa: PLC0415
 
-    from geovista.cache import CACHE
+    from geovista.cache import CACHE  # noqa: PLC0415
 
     fname = f"lfric_{LFRIC_RESOLUTION}.vtk"
     pooch.Decompress.assert_called_once_with(method="auto", name=fname)
