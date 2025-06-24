@@ -19,20 +19,20 @@ def test():
     # default silent kwarg
     _ = pooch_mute()
     assert logger.getEffectiveLevel() == 30
-    from geovista.cache import GEOVISTA_POOCH_MUTE
+    from geovista.cache import GEOVISTA_POOCH_MUTE  # noqa: PLC0415
 
     assert GEOVISTA_POOCH_MUTE is True
 
     # explicit verbose
     _ = pooch_mute(silent=False)
     assert logger.getEffectiveLevel() == 0
-    from geovista.cache import GEOVISTA_POOCH_MUTE
+    from geovista.cache import GEOVISTA_POOCH_MUTE  # noqa: PLC0415
 
     assert GEOVISTA_POOCH_MUTE is False
 
     # explicit silence
     _ = pooch_mute(silent=True)
     assert logger.getEffectiveLevel() == 30
-    from geovista.cache import GEOVISTA_POOCH_MUTE
+    from geovista.cache import GEOVISTA_POOCH_MUTE  # noqa: PLC0415
 
     assert GEOVISTA_POOCH_MUTE is True

@@ -17,6 +17,7 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
+from pykdtree.kdtree import KDTree as pyKDTree
 
 from .common import VTK_CELL_IDS, StrEnumPlus, to_cartesian
 from .crs import WGS84, from_wkt
@@ -126,8 +127,6 @@ class KDTree:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        from pykdtree.kdtree import KDTree as pyKDTree
-
         if leaf_size is None:
             leaf_size = KDTREE_LEAF_SIZE
 

@@ -40,8 +40,10 @@ if TYPE_CHECKING:
     from shapely.geometry.base import GeometrySequence
 
 # lazy import third-party dependencies
+cartopy = lazy.load("cartopy")
 np = lazy.load("numpy")
 pv = lazy.load("pyvista")
+shapely = lazy.load("shapely")
 
 __all__ = [
     "coastlines",
@@ -128,9 +130,6 @@ def load_coastline_geometries(*, resolution: str | None = None) -> list[np.ndarr
     .. versionadded:: 0.1.0
 
     """
-    import cartopy.io.shapereader as shp
-    from shapely import MultiLineString
-
     if resolution is None:
         resolution = COASTLINES_RESOLUTION
 
@@ -138,8 +137,10 @@ def load_coastline_geometries(*, resolution: str | None = None) -> list[np.ndarr
     category, name = "physical", "coastline"
 
     # load in the shapefiles
-    fname = shp.natural_earth(resolution=resolution, category=category, name=name)
-    reader = shp.Reader(fname)
+    fname = cartopy.io.shapereader.natural_earth(
+        resolution=resolution, category=category, name=name
+    )
+    reader = cartopy.io.shapereader.Reader(fname)
 
     def unpack(
         geometries: Generator[LineString | MultiLineString] | list[GeometrySequence],
@@ -153,7 +154,7 @@ def load_coastline_geometries(*, resolution: str | None = None) -> list[np.ndarr
 
         """
         for geometry in geometries:
-            if isinstance(geometry, MultiLineString):
+            if isinstance(geometry, shapely.MultiLineString):
                 multi_lines.extend(list(geometry.geoms))
             else:
                 xy = np.array(geometry.coords[:], dtype=np.float32)

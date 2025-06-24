@@ -252,6 +252,17 @@ class BBox:  # numpydoc ignore=PR01
                 result = np.allclose(self.lats, other.lats)
         return result
 
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.ellps,
+                self.c,
+                self.triangulate,
+                self.lons.tobytes(),
+                self.lats.tobytes(),
+            )
+        )
+
     def __ne__(self, other: object) -> bool:
         result = self == other
         if result is not NotImplemented:

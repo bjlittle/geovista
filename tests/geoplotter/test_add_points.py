@@ -132,7 +132,7 @@ def test_xs_ys(mocker):
         zscale=zscale,
     )
     assert result == actor
-    from geovista.bridge import Transform
+    from geovista.bridge import Transform  # noqa: PLC0415
 
     Transform.from_points.assert_called_once_with(
         xs, ys, crs=crs, radius=radius, zlevel=zlevel, zscale=zscale

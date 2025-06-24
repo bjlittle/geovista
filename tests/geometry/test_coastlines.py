@@ -18,9 +18,13 @@ def test_defaults(mocker):
     _ = mocker.patch("geovista.geometry.resize")
     result = coastlines()
     assert result == mesh
-    from geovista.geometry import fetch_coastlines, resize
+
+    from geovista.geometry import fetch_coastlines  # noqa: PLC0415
 
     fetch_coastlines.assert_called_once_with(resolution=COASTLINES_RESOLUTION)
+
+    from geovista.geometry import resize  # noqa: PLC0415
+
     resize.assert_called_once_with(
         mesh, radius=None, zlevel=1, zscale=None, inplace=True
     )
@@ -38,9 +42,13 @@ def test_resize_kwarg_pass_thru(mocker):
     kwargs = {"radius": radius, "zscale": zscale, "zlevel": zlevel}
     result = coastlines(resolution=resolution, **kwargs)
     assert result == mesh
-    from geovista.geometry import fetch_coastlines, resize
+
+    from geovista.geometry import fetch_coastlines  # noqa: PLC0415
 
     fetch_coastlines.assert_called_once_with(resolution=resolution)
+
+    from geovista.geometry import resize  # noqa: PLC0415
+
     resize.assert_called_once_with(mesh, **kwargs, inplace=True)
 
 
@@ -52,8 +60,15 @@ def test_fetch_exception(mocker):
     _ = mocker.patch("geovista.geometry.resize")
     result = coastlines()
     assert result == mesh
-    from geovista.geometry import fetch_coastlines, load_coastlines, resize
+
+    from geovista.geometry import fetch_coastlines  # noqa: PLC0415
 
     assert fetch_coastlines.call_count == 1
-    assert resize.call_count == 1
+
+    from geovista.geometry import load_coastlines  # noqa: PLC0415
+
     load_coastlines.assert_called_once_with(resolution=COASTLINES_RESOLUTION)
+
+    from geovista.geometry import resize  # noqa: PLC0415
+
+    assert resize.call_count == 1

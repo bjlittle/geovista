@@ -144,7 +144,7 @@ def _downloader(
     .. versionadded:: 0.6.0
 
     """
-    import geovista
+    import geovista  # noqa: PLC0415
 
     # see https://github.com/readthedocs/readthedocs.org/issues/11763
     headers = {"User-Agent": f"geovista ({geovista.__version__})"}

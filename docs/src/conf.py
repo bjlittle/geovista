@@ -221,7 +221,7 @@ if rtd_version is not None:
 rtd_version_type = os.environ.get("READTHEDOCS_VERSION_TYPE")
 
 # get the short commit sha.
-rev_parse = subprocess.run(  # noqa: S603
+rev_parse = subprocess.run(
     ["git", "rev-parse", "--short", "HEAD"],  # noqa: S607
     capture_output=True,
     text=True,
@@ -736,7 +736,7 @@ def geovista_skip_member(
     return skip
 
 
-def _bool_eval(arg: str | bool) -> bool:
+def _bool_eval(*, arg: str | bool) -> bool:
     """Sanitise to a boolean only configuration."""
     if isinstance(arg, str):
         with contextlib.suppress(TypeError):
@@ -822,9 +822,9 @@ def generate_carousel(
 
 def geovista_builder_inited(app: Sphinx) -> None:
     """Configure geovista sphinx options."""
-    plot_docstring = _bool_eval(app.builder.config.plot_docstring)
-    plot_gallery = _bool_eval(app.builder.config.plot_gallery)
-    plot_tutorial = _bool_eval(app.builder.config.plot_tutorial)
+    plot_docstring = _bool_eval(arg=app.builder.config.plot_docstring)
+    plot_gallery = _bool_eval(arg=app.builder.config.plot_gallery)
+    plot_tutorial = _bool_eval(arg=app.builder.config.plot_tutorial)
 
     # overwrite the myst-nb sphinx configuration option that controls the
     # notebook execution mode. this option has been pre-parsed by the sphinx
@@ -856,7 +856,7 @@ def geovista_carousel(
     with fname.open("w"):
         pass
 
-    if _bool_eval(app.builder.config.plot_gallery):
+    if _bool_eval(arg=app.builder.config.plot_gallery):
         # only generate the carousel if we have a gallery
         generate_carousel(app, fname)
 

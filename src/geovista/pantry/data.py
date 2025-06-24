@@ -833,8 +833,8 @@ def usgs_earthquakes() -> SampleStructuredXYZ:
 
     """
     try:
-        import fastparquet  # noqa: F401
-        import pandas as pd
+        import fastparquet  # noqa: F401, PLC0415
+        import pandas as pd  # noqa: PLC0415
     except ImportError:
         emsg = (
             "Optional dependencies 'fastparquet' and 'pandas' are required "

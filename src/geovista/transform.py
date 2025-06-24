@@ -96,7 +96,7 @@ def transform_mesh(
     .. versionadded:: 0.3.0
 
     """
-    from .core import slice_mesh
+    from .core import slice_mesh  # noqa: PLC0415
 
     src_crs = from_wkt(mesh)
 

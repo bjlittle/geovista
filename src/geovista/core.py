@@ -438,7 +438,7 @@ def combine(
     faces = np.hstack(combined_faces)
     combined = pv.PolyData(points, faces=faces)
 
-    def combine_data(names: set[str], field: bool | None = False) -> None:
+    def combine_data(names: set[str], *, field: bool | None = False) -> None:
         """Combine point, cell or field data from the meshes onto a single mesh.
 
         Parameters

@@ -817,7 +817,7 @@ class Transform:  # numpydoc ignore=PR01
 
         """
         try:
-            import rasterio as rio
+            import rasterio as rio  # noqa: PLC0415
         except ImportError:
             emsg = (
                 "Optional dependency 'rasterio' is required to read GeoTIFF files. "
@@ -907,7 +907,7 @@ class Transform:  # numpydoc ignore=PR01
 
             if extract:
                 if sieve:
-                    from rasterio.features import sieve as riosieve
+                    from rasterio.features import sieve as riosieve  # noqa: PLC0415
 
                     # convert boolean mask to conform to GDAL RFC 15 for sieve
                     # see https://gdal.org/en/stable/development/rfc/rfc15_nodatabitmask.html

@@ -854,7 +854,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        from . import GEOVISTA_IMAGE_TESTING
+        from . import GEOVISTA_IMAGE_TESTING  # noqa: PLC0415
 
         if show_labels is None:
             show_labels = False if GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
@@ -1040,7 +1040,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        from . import GEOVISTA_IMAGE_TESTING
+        from . import GEOVISTA_IMAGE_TESTING  # noqa: PLC0415
 
         if show_labels is None:
             show_labels = False if GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
