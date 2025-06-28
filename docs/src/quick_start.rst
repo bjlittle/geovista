@@ -98,6 +98,7 @@ are rendered using the
 
 .. pyvista-plot::
     :context:
+    :optional:
 
     import geovista as gv
     from geovista.pantry.data import oisst_avhrr_sst
@@ -171,6 +172,7 @@ projection.
 
 .. pyvista-plot::
     :context:
+    :optional:
 
     import cartopy.crs as ccrs
 
@@ -236,6 +238,7 @@ Finally, the render is decorated with `10m Natural Earth coastlines`_.
 
 .. pyvista-plot::
     :context:
+    :optional:
 
     import geovista as gv
     from geovista.pantry.data import ww3_global_tri
@@ -291,6 +294,7 @@ interactively.
 
 .. pyvista-plot::
     :context:
+    :optional:
 
     import geovista as gv
     from geovista.pantry.data import fvcom_tamar

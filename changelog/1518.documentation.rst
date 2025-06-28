@@ -1,0 +1,4 @@
+Added support for optional `pyvista <https://github.com/pyvista/pyvista>`__
+plot directives of inline documentation to streamline building execution time.
+Includes the new ``make html-inline`` command. Closes :issue:`1150`.
+(:user:`bjlittle`)

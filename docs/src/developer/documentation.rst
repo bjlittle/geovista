@@ -73,9 +73,8 @@ static images and interactive scenes can be resource hungry and time consuming.
     |                            |                     | `sphinx-gallery`_ images and scenes, which also includes the |
     |                            |                     | carousel.                                                    |
     +----------------------------+---------------------+--------------------------------------------------------------+
-    | :guilabel:`html-inline`    | :fas:`square-xmark` | Build the full suite of documentation and only inline        |
-    |                            |                     | documentation images and scenes. See :far:`circle-dot`       |
-    |                            |                     | :issue:`1150`.                                               |
+    | :guilabel:`html-inline`    | :fas:`square-check` | Build the full suite of documentation and only inline        |
+    |                            |                     | documentation images and scenes.                             |
     +----------------------------+---------------------+--------------------------------------------------------------+
     | :guilabel:`html-noplot`    | :fas:`square-check` | Build the full suite of documentation with no static images  |
     |                            |                     | and no interactive scenes.                                   |
@@ -115,9 +114,6 @@ Perform documentation quality assurance.
     | Make Command          | Description                                                                      |
     +=======================+==================================================================================+
     | :guilabel:`doctest`   | Execute `sphinx.ext.doctest`_ to test snippets within the documentation.         |
-    +-----------------------+----------------------------------------------------------------------------------+
-    | :guilabel:`linkcheck` | Check the integrity of all external links referenced within the documentation    |
-    |                       | using the `sphinx linkcheck builder`_.                                           |
     +-----------------------+----------------------------------------------------------------------------------+
 
 
