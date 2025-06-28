@@ -57,6 +57,7 @@ if TYPE_CHECKING:
         PythonProperty,
     )
     from sphinx.application import Sphinx
+    from sphinx.config import Config
     from sphinx.environment import BuildEnvironment
 
     # this is a type alias
@@ -683,12 +684,13 @@ PATTERN = r"""(?P<prefix>.*)
               (?P<postfix>(\.\.\ rubric::)?.*)"""
 REGEX = re.compile(PATTERN, flags=re.DOTALL | re.MULTILINE | re.VERBOSE)
 
-plot_setup = """
+pyvista_plot_setup = """
 from pyvista import set_plot_theme as __s_p_t
-__s_p_t('document')
+__s_p_t('document_build')
 del __s_p_t
 """
-plot_cleanup = plot_setup
+pyvista_plot_cleanup = pyvista_plot_setup
+pyvista_plot_skip_optional = False
 
 
 def indent(block: str, amount: int = 3) -> str:
@@ -824,6 +826,7 @@ def geovista_builder_inited(app: Sphinx) -> None:
     """Configure geovista sphinx options."""
     plot_docstring = _bool_eval(arg=app.builder.config.plot_docstring)
     plot_gallery = _bool_eval(arg=app.builder.config.plot_gallery)
+    plot_inline = _bool_eval(arg=app.builder.config.plot_inline)
     plot_tutorial = _bool_eval(arg=app.builder.config.plot_tutorial)
 
     # overwrite the myst-nb sphinx configuration option that controls the
@@ -841,6 +844,7 @@ def geovista_builder_inited(app: Sphinx) -> None:
     # report diagnostics
     autolog(f"{plot_docstring=}", section="GeoVista")
     autolog(f"{plot_gallery=}", section="GeoVista")
+    autolog(f"{plot_inline=}", section="GeoVista")
     autolog(f"{plot_tutorial=}", section="GeoVista")
 
 
@@ -861,16 +865,28 @@ def geovista_carousel(
         generate_carousel(app, fname)
 
 
+def geovista_plot_inline(
+    app: Sphinx,  # noqa: ARG001
+    config: Config,
+) -> None:
+    """Configure the pyvista plot directive skip optional option."""
+    plot_inline = _bool_eval(arg=config.plot_inline)
+    config["pyvista_plot_skip_optional"] = not plot_inline
+
+
 def setup(app: Sphinx) -> None:
     """Configure sphinx application."""
     # we require the output of this extension
     app.setup_extension("sphinx_gallery.gen_gallery")
     # register geovista options
     app.add_config_value(name="plot_docstring", default="True", rebuild="html")
+    app.add_config_value(name="plot_inline", default="True", rebuild="html")
     app.add_config_value(name="plot_tutorial", default="True", rebuild="html")
     # early configuration of geovista options, see
     # https://www.sphinx-doc.org/en/master/extdev/event_callbacks.html
     app.connect("builder-inited", geovista_builder_inited, priority=10)
+    # register callback to configure the pyvista plot directive
+    app.connect("config-inited", geovista_plot_inline)
     # register callback for the autoapi event
     app.connect("autoapi-skip-member", geovista_skip_member)
     # register callback to generate gallery carousel
