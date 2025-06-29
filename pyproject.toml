@@ -469,7 +469,6 @@ pyproj = ">=3.7.1,<4"
 pyvista = ">=0.45.0,<0.46.0"
 setuptools = ">=80.9.0,<81"
 setuptools-scm = ">=8.3.1,<9"
-vtk = ">=9.4.2,<9.5.0"
 
 [tool.pixi.feature.devs.dependencies]
 fastparquet = ">=2024.11.0,<2025"
