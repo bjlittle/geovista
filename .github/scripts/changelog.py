@@ -300,7 +300,7 @@ def main(pr: str, changelog: str, verbose: bool) -> None:
     fragments = [fragment for fragment in fragments if fragment != template]
     debug(f"{fragments=}", verbose=verbose)
 
-    if not len(fragments):
+    if not fragments:
         failure(
             "Please provide a **changelog news fragment file** for "
             f"**[PR#{pr}]({PULL}/{pr})**."
