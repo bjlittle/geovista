@@ -58,9 +58,11 @@ jobs:
 
       - name: "refresh lock and yml"
         if: ${{ hashFiles('diff.md') }}
+        env:
+          ENV_NAME: ${{ env.ENV_NAME }}
         run: |
-          pixi workspace export conda-explicit-spec --environment ${{ env.ENV_NAME }} --frozen --ignore-pypi-errors requirements/locks
-          pixi workspace export conda-environment --environment ${{ env.ENV_NAME }} requirements/geovista.yml
+          pixi workspace export conda-explicit-spec --environment ${ENV_NAME} --frozen --ignore-pypi-errors requirements/locks
+          pixi workspace export conda-environment --environment ${ENV_NAME} requirements/geovista.yml
 
       - name: "convert lock"
         if: ${{ hashFiles('diff.md') }}
