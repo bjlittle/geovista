@@ -29,7 +29,7 @@ jobs:
       - uses: actions/labeler@v5
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: github.actor == 'dependabot[bot]' || github.actor == 'geovista-ci[bot]' || github.actor == 'pre-commit-ci[bot]'
+        if: github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'geovista-ci[bot]' || github.event.pull_request.user.login == 'pre-commit-ci[bot]'
         with:
           labels: 'skip changelog'
 
