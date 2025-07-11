@@ -3,4 +3,4 @@ pre-commit <4.2.1
 pytest >=6.0,<8.4.2
 pytest-cov <6.2.2
 pytest-mock <3.14.2
-pytest-pyvista <0.1.10
+pytest-pyvista <0.2.1

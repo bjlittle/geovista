@@ -88,7 +88,7 @@ jobs:
         env:
           PY_COLORS: "1"
         run: |
-          xvfb-run -a pixi run --frozen pytest -m "${{ matrix.marker }}" --fail_extra_image_cache --generated_image_dir test_images ${{ matrix.coverage }}
+          xvfb-run -a pixi run --frozen pytest -m "${{ matrix.marker }}" --generated_image_dir test_images ${{ matrix.coverage }}
 
       - name: "upload test images"
         if: ${{ failure() }}
