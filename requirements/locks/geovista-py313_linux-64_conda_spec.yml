@@ -30,10 +30,10 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-h4bc722e_7.conda#62ee74e96c5ebb0af99386de58cf9553
   - https://conda.anaconda.org/conda-forge/linux-64/python-3.13.5-hec9711d_102_cp313.conda#89e07d92cf50743886f41638d58c4328
   - https://conda.anaconda.org/conda-forge/linux-64/zizmor-1.11.0-py313h920b4c0_0.conda#17a8b47b2675beb4b4f46a3787e8809b
-  - https://conda.anaconda.org/conda-forge/noarch/trame-common-0.2.0-pyhd8ed1ab_0.conda#143b1d39d444a52474c009ab0094b41b
+  - https://conda.anaconda.org/conda-forge/noarch/trame-common-1.0.0-pyhd8ed1ab_0.conda#b1e353c37aa10249872504c07a01770e
   - https://conda.anaconda.org/conda-forge/noarch/trame-client-3.9.1-pyhd8ed1ab_0.conda#f230cfa783e5f7e06fb39264f49d3322
   - https://conda.anaconda.org/conda-forge/noarch/trame-vuetify-3.0.1-pyhd8ed1ab_0.conda#77336d2509af8aa0277a6e1fd547708d
-  - https://conda.anaconda.org/conda-forge/noarch/trame-vtk-2.8.15-pyhb419c8b_0.conda#6500a3161fbef4555a542ea45b691ef9
+  - https://conda.anaconda.org/conda-forge/noarch/trame-vtk-2.9.0-pyhb419c8b_0.conda#ab37d4a44ca853d2c9a2f79e71f52c84
   - https://conda.anaconda.org/conda-forge/linux-64/msgpack-python-1.1.1-py313h33d0bda_0.conda#009fb5ad03d4506be5f1e5c2f875f1c2
   - https://conda.anaconda.org/conda-forge/linux-64/propcache-0.3.1-py313h8060acc_0.conda#b62867739241368f43f164889b45701b
   - https://conda.anaconda.org/conda-forge/linux-64/multidict-6.6.3-py313h8060acc_0.conda#0cabb3f2ba71300370fcebe973d9ae38
@@ -50,7 +50,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/trame-server-3.5.0-pyhd8ed1ab_0.conda#0ca157834d727b8538e2e4f185587a48
   - https://conda.anaconda.org/conda-forge/linux-64/yaml-0.2.5-h7f98852_2.tar.bz2#4cb3ad778ec2d5a7acbdf254eb1c42ae
   - https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.2-py313h8060acc_2.conda#50992ba61a8a1f8c2d346168ae1c86df
-  - https://conda.anaconda.org/conda-forge/noarch/trame-3.9.0-pyhd8ed1ab_1.conda#a688b8433c56dd08af535040cdaf33bb
+  - https://conda.anaconda.org/conda-forge/noarch/trame-3.10.2-pyhd8ed1ab_0.conda#54cfe53f959b3a502ce2e8415b7eb096
   - https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-jsmath-1.0.1-pyhd8ed1ab_1.conda#fa839b5ff59e192f411ccc7dae6588bb
   - https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-devhelp-2.0.0-pyhd8ed1ab_1.conda#910f28a05c178feba832f842155cbfff
   - https://conda.anaconda.org/conda-forge/noarch/snowballstemmer-3.0.1-pyhd8ed1ab_0.conda#755cf22df8693aa0d1aec1c123fa5863
