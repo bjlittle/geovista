@@ -120,7 +120,7 @@ https://conda.anaconda.org/conda-forge/linux-64/astroid-3.3.10-py313h78bf25f_0.c
 https://conda.anaconda.org/conda-forge/noarch/sphinx-autoapi-3.5.0-pyhd8ed1ab_0.conda#4af8365e4d7c635be6fd398096e88893
 https://conda.anaconda.org/conda-forge/noarch/setuptools-80.9.0-pyhff2d567_0.conda#4de79c071274a53dcaf2a8c749d1499e
 https://conda.anaconda.org/conda-forge/noarch/setuptools-scm-8.3.1-pyhd8ed1ab_0.conda#996376098e3648237b3efb0e0ad460c1
-https://conda.anaconda.org/conda-forge/linux-64/ruff-0.12.2-hcc1af86_0.conda#9160006765c4c01ec0bb48d40c1c6b6e
+https://conda.anaconda.org/conda-forge/linux-64/ruff-0.12.3-hf9daec2_0.conda#5fc0af4edc944829a128fc0c2715dfc3
 https://conda.anaconda.org/conda-forge/noarch/pyparsing-3.2.3-pyhd8ed1ab_1.conda#513d3c262ee49b54a8fec85c5bc99764
 https://conda.anaconda.org/conda-forge/linux-64/libgfortran5-15.1.0-hcea5267_3.conda#530566b68c3b8ce7eec4cd047eae19fe
 https://conda.anaconda.org/conda-forge/linux-64/libgfortran-15.1.0-h69a702a_3.conda#bfbca721fd33188ef923dfe9ba172f29
