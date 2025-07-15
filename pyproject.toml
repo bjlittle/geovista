@@ -511,7 +511,7 @@ towncrier = ">=24.8.0,<25"
 trame = "==3.10.2"
 trame-client = ">=3.9.0,<4"
 trame-server = ">=3.4.0,<4"
-trame-vtk = "==2.9.0"
+trame-vtk = "==2.8.15"
 trame-vuetify = "==3.0.1"
 
 [tool.pixi.feature.docs.pypi-dependencies]
