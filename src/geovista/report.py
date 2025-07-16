@@ -76,6 +76,7 @@ PACKAGES_OPTIONAL: list[str] = [
     "scipy",
     "trame",
     "trame_client",
+    "trame_common",
     "trame_jupyter_extension",
     "trame_server",
     "trame_vtk",
