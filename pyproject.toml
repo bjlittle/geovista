@@ -311,6 +311,7 @@ readme = { file = "README.md", content-type = "text/markdown" }
 
 
 [tool.setuptools.dynamic.optional-dependencies]
+all = { file = ["requirements/pypi-optional-all.txt"] }
 devs = { file = ["requirements/pypi-optional-devs.txt"] }
 docs = { file = ["requirements/pypi-optional-docs.txt"] }
 exam = { file = ["requirements/pypi-optional-exam.txt"] }
