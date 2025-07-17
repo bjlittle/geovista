@@ -18,95 +18,136 @@ and `PyPI`_, and can be easily installed:
 
         .. code:: console
 
-            conda install -c conda-forge geovista
+            conda create --name myenv --channel conda-forge geovista
 
-    .. tab-item:: PyPI
+    .. tab-item:: pip
 
         .. code:: console
 
             pip install geovista
 
+    .. tab-item:: pixi
+        :selected:
+
+        .. code:: console
+
+            pixi init myenv
+            cd myenv
+            pixi add geovista
+
 Additional package dependencies will be required by some of the
-``geovista`` :ref:`Gallery Examples <tippy-gv-examples>`.
+``geovista`` :ref:`examples <tippy-gv-examples>`. If these are required
+then instead install the latest **stable release** as follows:
 
-These packages may be installed with:
+.. tab-set::
 
-.. code:: console
+    .. tab-item:: conda-forge
 
-    pip install geovista[exam]
+        .. code:: console
+
+            conda create --name myenv --channel conda-forge geovista pip
+            conda activate myenv
+            pip install geovista[exam]
+
+    .. tab-item:: pip
+
+        .. code:: console
+
+            pip install geovista[exam]
+
+    .. tab-item:: pixi
+        :selected:
+
+        .. code:: console
+
+            pixi init myenv
+            cd myenv
+            pixi add python
+            pixi add --pypi geovista[exam]
 
 .. note::
     :class: dropdown
 
-    `conda`_ users should also install `pip`_ into their `conda`_ environment.
+    `conda`_ users must also install `pip`_ into their environment.
 
 
 Development
 -----------
 
 If you simply can't wait for the next **stable release** of ``geovista``, then
-install the latest **development version** from the ``main`` development branch
-of :fab:`github`:
+install the latest **development version** from the :fab:`github` ``main``
+branch:
 
 .. tab-set::
 
     .. tab-item:: conda
 
-        Include the following in your `conda environment.yml file`_:
+        .. code:: console
 
-        .. code:: yaml
-
-            - pip
-            - pip:
-              - git+https://github.com/bjlittle/geovista@main
+            conda create --name myenv --channel conda-forge pip
+            conda activate myenv
+            pip install git+https://github.com/bjlittle/geovista.git@main
 
     .. tab-item:: pip
 
         .. code:: console
 
-            pip install git+https://github.com/bjlittle/geovista@main
+            pip install git+https://github.com/bjlittle/geovista.git@main
+
+    .. tab-item:: pixi
+        :selected:
+
+        .. code:: console
+
+            pixi init myenv
+            cd myenv
+            pixi add python
+            pixi add --git https://github.com/bjlittle/geovista.git geovista --branch main --pypi
 
 
 Developer
 ^^^^^^^^^
 
-To configure a full **developer environment**, first clone the ``geovista``
-repository from :fab:`github`:
+To configure a full **developer environment**, first clone the :fab:`github`
+``geovista`` repository:
 
 .. code:: console
 
     git clone git@github.com:bjlittle/geovista.git
 
-Change to the root directory of cloned repository:
+Change to the root directory of the cloned repository:
 
 .. code:: console
 
     cd geovista
 
-Create the ``geovista-dev`` `conda`_ environment:
+Now install ``geovista`` and all its dependencies:
 
-.. code:: console
+.. tab-set::
 
-    conda env create --file requirements/geovista.yml
+    .. tab-item:: conda
 
+        .. code:: console
 
-Now **activate** the environment and **install** the ``main`` development
-branch of ``geovista``:
+            conda env create --file requirements/geovista.yml
 
-.. code:: console
+    .. tab-item:: pip
 
-    conda activate geovista-dev
-    pip install --no-deps --editable .
+        .. code:: console
 
-Finally, you're good to roll 🥳
+            pip install --editable .[all]
 
-And for extra credit, install our developer `pre-commit`_ git-hooks:
+    .. tab-item:: pixi
+        :selected:
+
+        .. code:: console
+
+            pixi shell --environment geovista
+
+For extra credit, install our developer `pre-commit`_ git-hooks:
 
 .. code:: console
 
     pre-commit install
 
-.. note::
-    :class: dropdown
-
-    Please ensure to install `pre-commit`_ into your environment first.
+Finally, you're good to roll 🥳

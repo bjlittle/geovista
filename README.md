@@ -65,17 +65,16 @@ Simply put, "*[GeoVista](https://geovista.readthedocs.io/) is to
 
 GeoVista is available on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/).
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/index.html) to install GeoVista 👍
-
 ### Conda
 
 GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with
 [conda](https://docs.conda.io/projects/conda/en/latest/index.html):
+
 ```shell
-conda install -c conda-forge geovista
+conda create --name myenv --channel conda-forge geovista
 ```
-For more information see our [conda-forge feedstock](https://github.com/conda-forge/geovista-feedstock) and
-[prefix.dev dashboard](https://prefix.dev/channels/conda-forge/packages/geovista).
+
+Also see our [conda-forge feedstock](https://github.com/conda-forge/geovista-feedstock).
 
 ### Pip
 
@@ -86,6 +85,18 @@ pip install geovista
 ```
 
 Checkout out our [PyPI Download Stats](https://pypistats.org/packages/geovista), if you like that kinda thing.
+
+### Pixi 🧚
+
+Alternatively, install GeoVista with [pixi](https://pixi.sh/):
+
+```shell
+pixi init myenv
+cd myenv
+pixi add geovista
+````
+
+For more information visit our [prefix.dev dashboard](https://prefix.dev/channels/conda-forge/packages/geovista).
 
 ## Quick Start
 

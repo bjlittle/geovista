@@ -7398,8 +7398,8 @@ packages:
   timestamp: 1742402413139
 - pypi: ./
   name: geovista
-  version: 0.6.0.dev450
-  sha256: 497d693f53114823d4d8ab5e372176d21e780161827738025ae6fa97ca809b79
+  version: 0.6.0.dev454+dirty
+  sha256: 6cfb5f6dadc92ca779231607479019c160a5b207bc39e49edd6926884d1ecf4a
   requires_dist:
   - cartopy>=0.22,<0.24.2
   - click<8.2.2
@@ -7414,6 +7414,7 @@ packages:
   - pykdtree<1.4.3
   - pyproj>=3.3,<3.7.2
   - pyvista>=0.45.0,<0.45.3
+  - geovista[devs,docs,exam,test] ; extra == 'all'
   - pre-commit>=4.2.0,<4.2.1 ; extra == 'devs'
   - ruff>=0.12.0,<0.12.4 ; extra == 'devs'
   - zizmor>=1.9.0,<1.11.1 ; extra == 'devs'
