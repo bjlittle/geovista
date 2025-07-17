@@ -57,31 +57,28 @@ Build the documentation along with various controls to limit image creation. Not
 static images and interactive scenes can be resource hungry and time consuming.
 
 .. table:: Build Commands
-    :widths: 2 1 3
+    :widths: 1 3
     :align: center
 
-    +----------------------------+---------------------+--------------------------------------------------------------+
-    | Make Command               | Status              | Description                                                  |
-    +============================+=====================+==============================================================+
-    | :guilabel:`html`           | :fas:`square-check` | Build the full suite of documentation including all images   |
-    |                            |                     | and scenes.                                                  |
-    +----------------------------+---------------------+--------------------------------------------------------------+
-    | :guilabel:`html-docstring` | :fas:`square-check` | Build the full suite of documentation and only the           |
-    |                            |                     | ``docstring`` images and scenes.                             |
-    +----------------------------+---------------------+--------------------------------------------------------------+
-    | :guilabel:`html-gallery`   | :fas:`square-check` | Build the full suite of documentation and only the           |
-    |                            |                     | `sphinx-gallery`_ images and scenes, which also includes the |
-    |                            |                     | carousel.                                                    |
-    +----------------------------+---------------------+--------------------------------------------------------------+
-    | :guilabel:`html-inline`    | :fas:`square-check` | Build the full suite of documentation and only inline        |
-    |                            |                     | documentation images and scenes.                             |
-    +----------------------------+---------------------+--------------------------------------------------------------+
-    | :guilabel:`html-noplot`    | :fas:`square-check` | Build the full suite of documentation with no static images  |
-    |                            |                     | and no interactive scenes.                                   |
-    +----------------------------+---------------------+--------------------------------------------------------------+
-    | :guilabel:`html-tutorial`  | :fas:`square-check` | Build the full suite of documentation and only the tutorial  |
-    |                            |                     | notebooks.                                                   |
-    +----------------------------+---------------------+--------------------------------------------------------------+
+    +----------------------------+-------------------------------------------------------------------------+
+    | Make Command               | Description                                                             |
+    +============================+=========================================================================+
+    | :guilabel:`html`           | Build the full suite of documentation including all images and scenes.  |
+    +----------------------------+-------------------------------------------------------------------------+
+    | :guilabel:`html-docstring` | Build the full suite of documentation and only the ``docstring`` images |
+    |                            | and scenes.                                                             |
+    +----------------------------+-------------------------------------------------------------------------+
+    | :guilabel:`html-gallery`   | Build the full suite of documentation and only the `sphinx-gallery`_    |
+    |                            | images and scenes, which also includes the carousel.                    |
+    +----------------------------+-------------------------------------------------------------------------+
+    | :guilabel:`html-inline`    | Build the full suite of documentation and only inline documentation     |
+    |                            | images and scenes.                                                      |
+    +----------------------------+-------------------------------------------------------------------------+
+    | :guilabel:`html-noplot`    | Build the full suite of documentation with no static images and no      |
+    |                            | interactive scenes.                                                     |
+    +----------------------------+-------------------------------------------------------------------------+
+    | :guilabel:`html-tutorial`  | Build the full suite of documentation and only the tutorial notebooks.  |
+    +----------------------------+-------------------------------------------------------------------------+
 
 
 :fab:`readme` Render
