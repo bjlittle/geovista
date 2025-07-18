@@ -1,0 +1,2 @@
+Added `pytest-pretty <https://github.com/samuelcolvin/pytest-pretty>`__ plugin
+for pretty printing of the ``pytest`` summary. (:user:`bjlittle`)

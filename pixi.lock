@@ -7416,8 +7416,8 @@ packages:
   timestamp: 1742402413139
 - pypi: ./
   name: geovista
-  version: 0.6.0.dev456+dirty
-  sha256: 581255086e12c2dc8a69c0cc0755435d571fb81f2da0d44842c5560f91bb18b3
+  version: 0.6.0.dev457
+  sha256: c0fb1f16dffc83e32f9d985156b8d829ab2e50f8ae686080f1c8af621b7f68fa
   requires_dist:
   - cartopy>=0.22,<0.24.2
   - click<8.2.2
@@ -7470,6 +7470,7 @@ packages:
   - pytest>=6.0,<8.4.2 ; extra == 'test'
   - pytest-cov<6.2.2 ; extra == 'test'
   - pytest-mock<3.14.2 ; extra == 'test'
+  - pytest-pretty<1.3.1 ; extra == 'test'
   - pytest-pyvista<0.2.1 ; extra == 'test'
   requires_python: '>=3.11'
   editable: true
