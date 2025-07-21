@@ -159,7 +159,7 @@ the ``docs`` directory, unlike the above ``make`` commands.
 .. note::
     :class: dropdown
 
-    Alternatively use the ``--frozen`` argument to avoid `pixi`_ checking and updating the ``pixi.lock`` file.
+    Alternatively, apply the ``--frozen`` option to avoid `pixi`_ checking and updating the ``pixi.lock`` file.
     For example, to render and only build the gallery:
 
     .. code:: console
