@@ -25,7 +25,8 @@ We also use `myst-parser`_, a ``sphinx`` and `docutils`_ extension to parse and 
 
     For configuration details see ``Makefile`` and ``conf.py``.
 
-The documentation is built using `sphinx-build`_ and the `GNU make`_ tool.
+The documentation is built using `sphinx-build`_ and the `GNU make`_ tool from within
+the ``docs`` directory.
 
 
 :fa:`pump-medical` Hygiene
@@ -112,6 +113,58 @@ Perform documentation quality assurance.
     +=======================+==================================================================================+
     | :guilabel:`doctest`   | Execute `sphinx.ext.doctest`_ to test snippets within the documentation.         |
     +-----------------------+----------------------------------------------------------------------------------+
+
+
+.. _gv-developer-documentation-pixi-workflow:
+.. _tippy-gv-developer-documentation-pixi-workflow:
+
+:fa:`share-nodes` Pixi Workflow
+-------------------------------
+
+The documentation may be built and rendered using the following ``docs`` feature
+`pixi run <https://pixi.sh/latest/reference/cli/pixi/run>`__ tasks, all of which do not require to be run within
+the ``docs`` directory, unlike the above ``make`` commands.
+
+.. table:: Pixi Commands
+    :widths: 1 3
+    :align: center
+
+    +-------------------------+----------------------------------------------------------------------------------+
+    | Pixi Task               | Description                                                                      |
+    +=========================+==================================================================================+
+    | :guilabel:`clean`       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_, `sphinx-tags`_, carousel, and    |
+    |                         | other `sphinx-build`_ artifacts.                                                 |
+    +-------------------------+----------------------------------------------------------------------------------+
+    | :guilabel:`clean-all`   | Perform both a ``clean`` and ``clean-cache`` tasks.                              |
+    +-------------------------+----------------------------------------------------------------------------------+
+    | :guilabel:`clean-cache` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_                 |
+    |                         | for further details.                                                             |
+    +-------------------------+----------------------------------------------------------------------------------+
+    | :guilabel:`doctest`     | Execute `sphinx.ext.doctest`_ to test snippets within the documentation. Note    |
+    |                         | that the ``clean`` task is called prior to running this task.                    |
+    +-------------------------+----------------------------------------------------------------------------------+
+    | :guilabel:`make`        | Build the documentation using ``html-noplot`` by default. Pass either ``html``,  |
+    |                         | ``html-docstring``, ``html-gallery``, ``html-inline`` or ``html-tutorial`` as an |
+    |                         | argument to override the default behaviour. Note that the ``clean`` task is      |
+    |                         | called prior to running this task.                                               |
+    +-------------------------+----------------------------------------------------------------------------------+
+    | :guilabel:`serve-html`  | Build the documentation using ``html-noplot`` by default and start a local       |
+    |                         | ``HTTP`` server on port ``11000`` to view the rendered documentation. This is    |
+    |                         | necessary in order to support interactive scenes. Pass either ``html``,          |
+    |                         | ``html-docstring``, ``html-gallery``, ``html-inline`` or ``html-tutorial`` as an |
+    |                         | argument to override the default behaviour. Note that the ``clean`` and ``make`` |
+    |                         | tasks are called prior to running this task.                                     |
+    +-------------------------+----------------------------------------------------------------------------------+
+
+.. note::
+    :class: dropdown
+
+    Alternatively, apply the ``--frozen`` option to avoid `pixi`_ checking and updating the ``pixi.lock`` file.
+    For example, to render and only build the gallery:
+
+    .. code:: console
+
+        pixi run --frozen serve-html html-gallery
 
 
 .. comment

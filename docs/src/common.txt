@@ -42,6 +42,7 @@
 .. _myst-nb: https://github.com/executablebooks/MyST-NB
 .. _myst-parser: https://github.com/executablebooks/MyST-Parser
 .. _pip: https://pip.pypa.io/en/stable/index.html
+.. _pixi: https://github.com/prefix-dev/pixi
 .. _pre-commit: https://pre-commit.com/
 .. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
 .. _sphinx: https://github.com/sphinx-doc/sphinx
