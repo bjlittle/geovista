@@ -115,6 +115,9 @@ Perform documentation quality assurance.
     +-----------------------+----------------------------------------------------------------------------------+
 
 
+.. _gv-developer-documentation-pixi-workflow:
+.. _tippy-gv-developer-documentation-pixi-workflow:
+
 :fa:`share-nodes` Pixi Workflow
 -------------------------------
 
