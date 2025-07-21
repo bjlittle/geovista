@@ -523,6 +523,20 @@ sphinx-tippy = ">=0.4.3,<0.5"
 cmd = "make clean"
 cwd = "docs"
 
+[tool.pixi.feature.docs.tasks.clean-all]
+cmd = "make clean-all"
+cwd = "docs"
+depends-on = [{ "task" = "clean" }, { "task" = "clean-cache" }]
+
+[tool.pixi.feature.docs.tasks.clean-cache]
+cmd = "make clean-cache"
+cwd = "docs"
+
+[tool.pixi.feature.docs.tasks.doctest]
+cmd = "make doctest"
+cwd = "docs"
+depends-on = [{ "task" = "clean" }]
+
 [tool.pixi.feature.docs.tasks.make]
 args = [{ "arg" = "option", "default" = "html-noplot" }]
 cmd = "make {{ option }}"
