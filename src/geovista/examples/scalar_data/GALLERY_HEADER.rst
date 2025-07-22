@@ -3,3 +3,5 @@
 
 Scalar Data
 ===========
+
+Examples of various scalar data visualization techniques.

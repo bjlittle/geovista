@@ -4,6 +4,8 @@
 Contour
 =======
 
+Showcases various contouring examples.
+
 .. attention::
   :class: margin, dropdown
 

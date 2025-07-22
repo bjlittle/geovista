@@ -3,3 +3,5 @@
 
 Curvilinear Grid
 ================
+
+Demonstrates support for 2-D curvilinear grid surfaces.

@@ -3,3 +3,5 @@
 
 Spatial Index
 =============
+
+Demonstrates visualization of Discrete Global Grid Systems (DGGS) and spatial indexing techniques.

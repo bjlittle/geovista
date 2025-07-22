@@ -3,3 +3,5 @@
 
 Point Cloud
 ===========
+
+Examples of 3-D cartographic point clouds.
