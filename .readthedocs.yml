@@ -11,8 +11,8 @@ build:
     post_checkout:
       # require full history for correct setuptools-scm version discovery
       - |
-        git fetch --unshallow
-        git fetch --all
+        git fetch --unshallow;
+        git fetch --all;
         #
         # https://docs.readthedocs.com/platform/stable/build-customization.html#cancel-build-based-on-a-condition
         # https://docs.readthedocs.com/platform/stable/reference/environment-variables.html#envvar-READTHEDOCS_VERSION_TYPE
@@ -28,8 +28,8 @@ build:
       - git stash
     post_install:
       - |
-        git stash pop
-        geovista download --operational --decompress
+        git stash pop;
+        geovista download --operational --decompress;
 
 conda:
   environment: requirements/locks/rtd.yml
