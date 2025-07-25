@@ -1,3 +1,0 @@
-Optimised the :fab:`github` pull-request workflow by auto-detecting whether to
-skip or build ``readthedocs`` documentation based on the file/s changed
-within the specific pull-request. (:user:`bjlittle`)
