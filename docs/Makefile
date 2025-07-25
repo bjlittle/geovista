@@ -6,7 +6,7 @@ export PYDEVD_DISABLE_FILE_VALIDATION := 1
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
-SPHINXOPTS    ?= --fail-on-warning --keep-going --jobs auto
+SPHINXOPTS    ?= --show-traceback --fail-on-warning --keep-going --jobs auto
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = src
 BUILDDIR      = _build
