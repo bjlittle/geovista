@@ -5,7 +5,7 @@ cmocean <4.0.4
 colorcet <3.1.1
 lazy_loader >=0.4,<0.4.1
 netCDF4 <1.7.3
-numpy >=1.25,<2.3.2
+numpy >=1.25,<2.3.3
 platformdirs <4.3.9
 pooch <1.8.3
 pykdtree <1.4.3
