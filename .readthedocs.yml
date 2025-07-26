@@ -26,7 +26,7 @@ build:
       - pixi run --frozen --environment docs geovista download --operational --decompress
     build:
       html:
-        - pixi run --frozen --environment docs sphinx-build -T -b html -d _build/doctrees docs/src $READTHEDOCS_OUTPUT/html
+        - pixi run --frozen --environment docs sphinx-build -T -b html docs/src $READTHEDOCS_OUTPUT/html
 
 sphinx:
   configuration: docs/src/conf.py
