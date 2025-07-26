@@ -1,0 +1,2 @@
+Migrated ``readthedocs`` to build with
+`pixi <https://github.com/prefix-dev/pixi>`__ 🧚. (:user:`bjlittle`)
