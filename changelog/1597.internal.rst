@@ -1,0 +1,1 @@
+Added ``nodefaults`` channel to ``lock2yaml`` template. (:user:`bjlittle`)
