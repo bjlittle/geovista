@@ -32,4 +32,4 @@ be run from the command line with:
 
     .. code:: console
 
-        geovista examples --help
+        $ geovista examples --help
