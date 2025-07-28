@@ -45,7 +45,7 @@ jobs:
           echo "ENV_NAME=${{ env.NAME }}-${{ env.VERSION }}" >> ${GITHUB_ENV}
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@b1ab8f237b57292b58384631d89ce0b0863766bc
+        uses: prefix-dev/setup-pixi@8ca4608ef7f4daeb54f5205b20d0b7cb42f11143
         with:
           run-install: false
 
