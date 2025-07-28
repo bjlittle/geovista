@@ -22,7 +22,7 @@ be run from the command line with:
 
 .. code:: console
 
-    geovista examples --all --verbose
+    $ geovista examples --all --verbose
 
 
 .. note::
