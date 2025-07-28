@@ -18,22 +18,22 @@ and `PyPI`_, and can be easily installed:
 
         .. code:: console
 
-            conda create --name myenv --channel conda-forge geovista
+            $ conda create --name myenv --channel conda-forge geovista
 
     .. tab-item:: pip
 
         .. code:: console
 
-            pip install geovista
+            $ pip install geovista
 
     .. tab-item:: pixi
         :selected:
 
         .. code:: console
 
-            pixi init myenv
-            cd myenv
-            pixi add geovista
+            $ pixi init myenv
+            $ cd myenv
+            $ pixi add geovista
 
 Additional package dependencies will be required by some of the
 ``geovista`` :ref:`examples <tippy-gv-examples>`. If these are required
@@ -45,25 +45,25 @@ then instead install the latest **stable release** as follows:
 
         .. code:: console
 
-            conda create --name myenv --channel conda-forge geovista pip
-            conda activate myenv
-            pip install geovista[exam]
+            $ conda create --name myenv --channel conda-forge geovista pip
+            $ conda activate myenv
+            $ pip install geovista[exam]
 
     .. tab-item:: pip
 
         .. code:: console
 
-            pip install geovista[exam]
+            $ pip install geovista[exam]
 
     .. tab-item:: pixi
         :selected:
 
         .. code:: console
 
-            pixi init myenv
-            cd myenv
-            pixi add python
-            pixi add --pypi geovista[exam]
+            $ pixi init myenv
+            $ cd myenv
+            $ pixi add python
+            $ pixi add --pypi geovista[exam]
 
 .. note::
     :class: dropdown
@@ -84,25 +84,25 @@ branch:
 
         .. code:: console
 
-            conda create --name myenv --channel conda-forge pip
-            conda activate myenv
-            pip install git+https://github.com/bjlittle/geovista.git@main
+            $ conda create --name myenv --channel conda-forge pip
+            $ conda activate myenv
+            $ pip install git+https://github.com/bjlittle/geovista.git@main
 
     .. tab-item:: pip
 
         .. code:: console
 
-            pip install git+https://github.com/bjlittle/geovista.git@main
+            $ pip install git+https://github.com/bjlittle/geovista.git@main
 
     .. tab-item:: pixi
         :selected:
 
         .. code:: console
 
-            pixi init myenv
-            cd myenv
-            pixi add python
-            pixi add --git https://github.com/bjlittle/geovista.git geovista --branch main --pypi
+            $ pixi init myenv
+            $ cd myenv
+            $ pixi add python
+            $ pixi add --git https://github.com/bjlittle/geovista.git geovista --branch main --pypi
 
 
 Developer
@@ -113,13 +113,13 @@ To configure a full **developer environment**, first clone the :fab:`github`
 
 .. code:: console
 
-    git clone git@github.com:bjlittle/geovista.git
+    $ git clone git@github.com:bjlittle/geovista.git
 
 Change to the root directory of the cloned repository:
 
 .. code:: console
 
-    cd geovista
+    $ cd geovista
 
 Now install ``geovista`` and all its dependencies:
 
@@ -129,25 +129,25 @@ Now install ``geovista`` and all its dependencies:
 
         .. code:: console
 
-            conda env create --file requirements/geovista.yml
+            $ conda env create --file requirements/geovista.yml
 
     .. tab-item:: pip
 
         .. code:: console
 
-            pip install --editable .[all]
+            $ pip install --editable .[all]
 
     .. tab-item:: pixi
         :selected:
 
         .. code:: console
 
-            pixi shell --environment geovista
+            $ pixi shell --environment geovista
 
 For extra credit, install our developer `pre-commit`_ git-hooks:
 
 .. code:: console
 
-    pre-commit install
+    $ pre-commit install
 
 Finally, you're good to roll 🥳

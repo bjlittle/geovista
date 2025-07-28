@@ -160,11 +160,12 @@ the ``docs`` directory, unlike the above ``make`` commands.
     :class: dropdown
 
     Alternatively, apply the ``--frozen`` option to avoid `pixi`_ checking and updating the ``pixi.lock`` file.
-    For example, to render and only build the gallery:
+
+    For example, to build and only render the ``Gallery``:
 
     .. code:: console
 
-        pixi run --frozen serve-html html-gallery
+        $ pixi run --frozen serve-html html-gallery
 
 
 .. comment
