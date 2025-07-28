@@ -24,14 +24,14 @@ following on the command line:
 
 .. code:: console
 
-    geovista download --all
+    $ geovista download --all
 
 
 To view the manifest of registered resources:
 
 .. code:: console
 
-    geovsita download --list
+    $ geovsita download --list
 
 
 .. note::
@@ -41,7 +41,7 @@ To view the manifest of registered resources:
 
     .. code:: console
 
-        geovista download --help
+        $ geovista download --help
 
 
 Examples
