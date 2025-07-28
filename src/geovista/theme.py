@@ -18,6 +18,7 @@ import pyvista as pv
 from . import GEOVISTA_IMAGE_TESTING
 
 theme = pv.themes.Theme()
+"""Customised plotting :class:`~pyvista.plotting.themes.Theme` for geovista."""
 theme.name = "geovista"
 theme.background = (1.0, 1.0, 1.0)
 theme.cmap = "balance"

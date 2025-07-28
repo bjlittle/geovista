@@ -139,19 +139,27 @@ class MeridianSlice:  # numpydoc ignore=PR01
             self._info.name, preference=self._info.association.name.lower()
         )
         self.mesh = mesh
+        """The mesh to be sliced along the meridian."""
         self.radius = distance(mesh)
+        """The radius of the mesh."""
         self.meridian = wrap(meridian)[0]
+        """The meridian (degrees longitude) along which to slice the mesh."""
         self.offset = abs(CUT_OFFSET if offset is None else offset)
+        """The bias offset around the meridian, used to determine coincident cells."""
         self.slices = {bias: self._intersection(bias) for bias in SliceBias}
+        """The intersection of the mesh cells along the meridian and east/west bias."""
 
         n_cells = self.slices[SliceBias.EXACT].n_cells
         self.west_ids = (
             set(self.slices[SliceBias.WEST][GV_CELL_IDS]) if n_cells else set()
         )
+        """The set of cell ids that are bisected west of the meridian."""
         self.east_ids = (
             set(self.slices[SliceBias.EAST][GV_CELL_IDS]) if n_cells else set()
         )
+        """The set of cell ids that are bisected east of the meridian."""
         self.split_ids = self.west_ids.intersection(self.east_ids)
+        """The set of cell ids that are bisected by the meridian."""
 
     def _intersection(
         self, bias: SliceBias, n_points: float | None = None

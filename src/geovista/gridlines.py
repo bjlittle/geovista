@@ -134,9 +134,13 @@ class GraticuleGrid:
     """
 
     blocks: pv.MultiBlock
+    """Meridian/Parallel meshes in a multi-block dataset."""
     lonlat: ArrayLike
+    """The longitude/latitude points for the meridian/parallel labels."""
     labels: list[str]
-    mask: ArrayLike = None
+    """The labels for the meridian/parallel lines."""
+    mask: ArrayLike | None = None
+    """A mask for closed interval meridians, if applicable."""
 
 
 def _step_period(lon: float, lat: float) -> tuple[float, float]:

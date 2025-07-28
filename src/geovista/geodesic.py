@@ -135,8 +135,11 @@ class EnclosedPreference(StrEnumPlus):
     """
 
     CELL = "cell"
+    """Enclosed if all cell vertices within bounding-box manifold."""
     CENTER = "center"
+    """Enclosed if cell center within bounding-box manifold."""
     POINT = "point"
+    """Enclosed if at least one cell vertex within bounding-box manifold."""
 
 
 class BBox:  # numpydoc ignore=PR01
@@ -229,10 +232,15 @@ class BBox:  # numpydoc ignore=PR01
                 lons, lats = lons[:-1], lats[:-1]
 
         self.lons = lons
+        """The longitudes of the bounding-box."""
         self.lats = lats
+        """The latitudes of the bounding-box."""
         self.ellps = ellps
+        """The ellipsoid defining the geodesic surface."""
         self.c = c
+        """The number of cells that define the bounding-box face geometry i.e., c^2."""
         self.triangulate = triangulate
+        """Whether the bounding-box faces are triangulated."""
         # the resultant bounding-box mesh
         self._mesh: pv.PolyData | None = None
         # the bounding-box mesh edges
