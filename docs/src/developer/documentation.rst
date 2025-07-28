@@ -161,7 +161,7 @@ the ``docs`` directory, unlike the above ``make`` commands.
 
     Alternatively, apply the ``--frozen`` option to avoid `pixi`_ checking and updating the ``pixi.lock`` file.
 
-    For example, to build and only render the Examples Gallery:
+    For example, to build and only render the ``Gallery``:
 
     .. code:: console
 

@@ -1,0 +1,4 @@
+Registered the console prompt (``$``) with
+`sphinx-copybutton <https://github.com/executablebooks/sphinx-copybutton>`__
+to automatically excluded it when copying ``console`` code blocks.
+(:user:`bjlittle`)
