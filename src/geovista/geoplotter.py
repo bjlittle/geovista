@@ -198,6 +198,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 raise ValueError(emsg)
 
         self.crs = pyproj.CRS.from_user_input(crs) if crs is not None else WGS84
+        """The Coordinate Reference System (CRS) for the plotter."""
 
         # status of gpu opacity support
         self._missing_opacity = False

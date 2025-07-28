@@ -74,7 +74,9 @@ class SearchPreference(StrEnumPlus):
     """
 
     CENTER = "center"
+    """Preference to search the cell centers."""
     POINT = "point"
+    """Preference to search the mesh points."""
 
 
 class KDTree:  # numpydoc ignore=PR01

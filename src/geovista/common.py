@@ -234,7 +234,9 @@ class Preference(StrEnumPlus):
     """
 
     CELL = "cell"
+    """Preference for cell geometry."""
     POINT = "point"
+    """Preference for point geometry."""
 
 
 def active_kernel() -> bool:
