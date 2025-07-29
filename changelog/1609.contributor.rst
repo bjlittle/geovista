@@ -1,0 +1,2 @@
+Added the `direnv <https://github.com/direnv/direnv>`__ ``.envrc`` configuration
+file to ``.gitignore``. (:user:`bjlittle`)
