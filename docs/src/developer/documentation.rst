@@ -9,6 +9,8 @@
 Here we provide some high-level guidelines and best practice advice for authors and
 contributors wishing to build and render the documentation.
 
+.. _gv-developer-documentation-building:
+.. _tippy-gv-developer-documentation-building:
 
 :fa:`screwdriver-wrench` Building
 ---------------------------------
@@ -39,9 +41,9 @@ The following sections describe the ``make`` tasks that are available.
 :fa:`pump-medical` Hygiene
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Start afresh by performing documentation hygiene to purge various build artifacts.
+Start afresh with confidence by performing documentation hygiene to purge various build artifacts.
 
-.. table:: Housekeeping Commands
+.. table:: Housekeeping Tasks
     :widths: 1 3
     :align: center
 
@@ -64,7 +66,7 @@ Start afresh by performing documentation hygiene to purge various build artifact
 Build the documentation along with various controls to limit image creation. Note that building the documentation
 static images and interactive scenes can be resource hungry and time consuming.
 
-.. table:: Build Commands
+.. table:: Build Tasks
     :widths: 1 3
     :align: center
 
@@ -94,7 +96,7 @@ static images and interactive scenes can be resource hungry and time consuming.
 
 How-to serve the rendered documentation for inspection in a local browser.
 
-.. table:: Render Commands
+.. table:: Render Tasks
     :widths: 1 3
     :align: center
 
@@ -111,7 +113,7 @@ How-to serve the rendered documentation for inspection in a local browser.
 
 Perform documentation quality assurance.
 
-.. table:: Test Commands
+.. table:: Test Tasks
     :widths: 1 3
     :align: center
 
@@ -129,13 +131,14 @@ Perform documentation quality assurance.
 -------------------------------
 
 Alternatively, the documentation may be built and rendered using `pixi run <https://pixi.sh/latest/reference/cli/pixi/run>`__
-tasks, all of which do not require to be run within the ``docs`` directory, unlike the above ``make`` commands e.g.,
+tasks, all of which do not require to be run within the ``docs`` directory, unlike the above
+:ref:`tippy-gv-developer-documentation-building` ``make`` tasks e.g.,
 
 .. code:: console
 
     $ pixi run <pixi-task>
 
-.. table:: Pixi Commands
+.. table:: Pixi Tasks
     :widths: 1 3
     :align: center
 
@@ -166,12 +169,12 @@ tasks, all of which do not require to be run within the ``docs`` directory, unli
     |                         | ``clean`` and ``make`` tasks are called prior to running this task.              |
     +-------------------------+----------------------------------------------------------------------------------+
 
-.. note::
+.. tip::
     :class: dropdown
 
     Apply the ``--frozen`` option to avoid `pixi`_ checking and updating the ``pixi.lock`` file.
 
-    For example, to only build and render the ``Gallery``:
+    e.g., To only build the ``Gallery`` examples and serve the rendered documentation:
 
     .. code:: console
 
