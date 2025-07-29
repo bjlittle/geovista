@@ -498,12 +498,12 @@ html_theme_options = {
         {
             "name": "GitHub Issues",
             "url": "https://github.com/bjlittle/geovista/issues",
-            "icon": "fa-brands fa-square-github fa-fw",
+            "icon": "far fa-circle-dot fa-fw",
         },
         {
-            "name": "GitHub Pulls",
+            "name": "GitHub PRs",
             "url": "https://github.com/bjlittle/geovista/pulls",
-            "icon": "fa-brands fa-github-alt fa-fw",
+            "icon": "fa fa-code-pull-request fa-fw",
         },
         {
             "name": "Bluesky",
