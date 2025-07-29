@@ -1,0 +1,2 @@
+Added developer :ref:`tippy-gv-developer-documentation-cross-references`
+guidelines. (:user:`bjlittle`)
