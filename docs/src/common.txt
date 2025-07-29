@@ -50,6 +50,7 @@
 .. _sphinx-build: https://www.sphinx-doc.org/en/master/man/sphinx-build.html
 .. _sphinx-gallery: https://github.com/sphinx-gallery/sphinx-gallery
 .. _sphinx-tags: https://github.com/melissawm/sphinx-tags
+.. _sphinx-tippy: https://github.com/sphinx-extensions2/sphinx-tippy
 .. _sphinx.ext.doctest: https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html
 .. _tox: https://tox.wiki/en/stable/
 .. _xarray: https://github.com/pydata/xarray
