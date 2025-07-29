@@ -26,7 +26,14 @@ We also use `myst-parser`_, a ``sphinx`` and `docutils`_ extension to parse and 
     For configuration details see ``Makefile`` and ``conf.py``.
 
 The documentation is built using `sphinx-build`_ and the `GNU make`_ tool from within
-the ``docs`` directory.
+the ``docs`` directory e.g.,
+
+.. code:: console
+
+    $ cd docs
+    $ make <make-task>
+
+The following sections describe the ``make`` tasks that are available.
 
 
 :fa:`pump-medical` Hygiene
@@ -39,7 +46,7 @@ Start afresh by performing documentation hygiene to purge various build artifact
     :align: center
 
     +-------------------------+----------------------------------------------------------------------------------+
-    | Make Command            | Description                                                                      |
+    | Make Task               | Description                                                                      |
     +=========================+==================================================================================+
     | :guilabel:`clean`       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_, `sphinx-tags`_, carousel, and    |
     |                         | other `sphinx-build`_ artifacts.                                                 |
@@ -62,7 +69,7 @@ static images and interactive scenes can be resource hungry and time consuming.
     :align: center
 
     +----------------------------+-------------------------------------------------------------------------+
-    | Make Command               | Description                                                             |
+    | Make Task                  | Description                                                             |
     +============================+=========================================================================+
     | :guilabel:`html`           | Build the full suite of documentation including all images and scenes.  |
     +----------------------------+-------------------------------------------------------------------------+
@@ -92,7 +99,7 @@ How-to serve the rendered documentation for inspection in a local browser.
     :align: center
 
     +------------------------+-------------------------------------------------------------------------------------+
-    | Make Command           | Description                                                                         |
+    | Make Task              | Description                                                                         |
     +========================+=====================================================================================+
     | :guilabel:`serve-html` | Start a local ``HTTP`` server on port ``11000`` to view the rendered documentation. |
     |                        | This is necessary in order to support interactive scenes.                           |
@@ -109,7 +116,7 @@ Perform documentation quality assurance.
     :align: center
 
     +-----------------------+----------------------------------------------------------------------------------+
-    | Make Command          | Description                                                                      |
+    | Make Task             | Description                                                                      |
     +=======================+==================================================================================+
     | :guilabel:`doctest`   | Execute `sphinx.ext.doctest`_ to test snippets within the documentation.         |
     +-----------------------+----------------------------------------------------------------------------------+
@@ -121,9 +128,12 @@ Perform documentation quality assurance.
 :fa:`share-nodes` Pixi Workflow
 -------------------------------
 
-The documentation may be built and rendered using the following ``docs`` feature
-`pixi run <https://pixi.sh/latest/reference/cli/pixi/run>`__ tasks, all of which do not require to be run within
-the ``docs`` directory, unlike the above ``make`` commands.
+Alternatively, the documentation may be built and rendered using `pixi run <https://pixi.sh/latest/reference/cli/pixi/run>`__
+tasks, all of which do not require to be run within the ``docs`` directory, unlike the above ``make`` commands e.g.,
+
+.. code:: console
+
+    $ pixi run <pixi-task>
 
 .. table:: Pixi Commands
     :widths: 1 3
@@ -145,23 +155,23 @@ the ``docs`` directory, unlike the above ``make`` commands.
     +-------------------------+----------------------------------------------------------------------------------+
     | :guilabel:`make`        | Build the documentation using ``html-noplot`` by default. Pass either ``html``,  |
     |                         | ``html-docstring``, ``html-gallery``, ``html-inline`` or ``html-tutorial`` as an |
-    |                         | argument to override the default behaviour. Note that the ``clean`` task is      |
-    |                         | called prior to running this task.                                               |
+    |                         | argument to override the default ``html-noplot`` behaviour. Note that the        |
+    |                         | ``clean`` task is called prior to running this task.                             |
     +-------------------------+----------------------------------------------------------------------------------+
     | :guilabel:`serve-html`  | Build the documentation using ``html-noplot`` by default and start a local       |
     |                         | ``HTTP`` server on port ``11000`` to view the rendered documentation. This is    |
     |                         | necessary in order to support interactive scenes. Pass either ``html``,          |
     |                         | ``html-docstring``, ``html-gallery``, ``html-inline`` or ``html-tutorial`` as an |
-    |                         | argument to override the default behaviour. Note that the ``clean`` and ``make`` |
-    |                         | tasks are called prior to running this task.                                     |
+    |                         | argument to override the default ``html-noplot`` behaviour. Note that the        |
+    |                         | ``clean`` and ``make`` tasks are called prior to running this task.              |
     +-------------------------+----------------------------------------------------------------------------------+
 
 .. note::
     :class: dropdown
 
-    Alternatively, apply the ``--frozen`` option to avoid `pixi`_ checking and updating the ``pixi.lock`` file.
+    Apply the ``--frozen`` option to avoid `pixi`_ checking and updating the ``pixi.lock`` file.
 
-    For example, to build and only render the ``Gallery``:
+    For example, to only build and render the ``Gallery``:
 
     .. code:: console
 
