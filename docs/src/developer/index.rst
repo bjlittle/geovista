@@ -1,8 +1,8 @@
 .. _gv-developer:
 .. _tippy-gv-developer:
 
-:fa:`handshake` Contributing
-============================
+:fa:`retweet` Contributing
+==========================
 
 .. note::
     :class: margin, dropdown, toggle-shown
