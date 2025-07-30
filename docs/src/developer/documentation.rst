@@ -161,7 +161,7 @@ For consistency, the following structure is recommended for our labels:
     A label prefixed with ``tippy-gv-`` instead of ``gv-`` will have a
     `sphinx-tippy`_ tooltip rendered for each of its cross-reference links e.g.,
     :fa:`arrow-pointer` :fa:`computer-mouse` hover over this
-    :ref:`tippy-gv-developer-documentation-cross-references` reference.
+    :ref:`tippy-gv-developer-documentation-cross-references` tooltip enabled link.
 
 A top-level label **must** be present on the **first line** of a document.
 
