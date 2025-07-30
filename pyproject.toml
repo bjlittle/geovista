@@ -418,11 +418,16 @@ channels = ["conda-forge"]
 platforms = ["linux-64"]
 
 [tool.pixi.environments]
-default = { features = [], solve-group = "default" }
-devs = { features = ["devs"], solve-group = "default" }
-docs = { features = ["devs", "docs"], solve-group = "default" }
-geovista = { features = ["devs", "docs", "test"], solve-group = "default" }
-test = { features = ["devs", "test"], solve-group = "default" }
+default = { features = ["py313"], solve-group = "default" }
+devs = { features = ["devs", "py313"], solve-group = "default" }
+docs = { features = ["devs", "docs", "py313"], solve-group = "default" }
+geovista = { features = [
+  "devs",
+  "docs",
+  "py313",
+  "test",
+], solve-group = "default" }
+test = { features = ["devs", "py313", "test"], solve-group = "default" }
 
 devs-py311 = { features = ["devs", "py311"], solve-group = "py311" }
 docs-py311 = { features = ["devs", "docs", "py311"], solve-group = "py311" }
