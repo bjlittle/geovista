@@ -1,0 +1,2 @@
+Updated the ``ci-label`` :fab:`github` Action to auto-label ``pixi`` branches.
+(:user:`bjlittle`)
