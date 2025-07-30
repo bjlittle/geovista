@@ -12,6 +12,12 @@ Stable
 The latest **stable release** of ``geovista`` is available on `conda-forge`_
 and `PyPI`_, and can be easily installed:
 
+.. tip::
+  :class: margin, dropdown, toggle-shown
+
+  Also see the ``pixi``
+  `installation instructions <https://pixi.sh/latest/installation/>`_.
+
 .. tab-set::
 
     .. tab-item:: conda-forge
@@ -36,7 +42,7 @@ and `PyPI`_, and can be easily installed:
             $ pixi add geovista
 
 Additional package dependencies will be required by some of the
-``geovista`` :ref:`examples <tippy-gv-examples>`. If these are required
+``geovista`` gallery :ref:`tippy-gv-examples`. If these are required
 then instead install the latest **stable release** as follows:
 
 .. tab-set::

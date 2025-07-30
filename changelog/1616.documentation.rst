@@ -1,0 +1,2 @@
+Added reference to `pixi <https://github.com/prefix-dev/pixi>`__ 🧚 install
+instructions. (:user:`bjlittle`)
