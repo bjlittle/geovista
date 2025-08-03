@@ -122,6 +122,11 @@ Developer
    :class: only-dark
 
 
+.. raw:: html
+
+   <hr>
+
+
 To configure a full **developer environment**, first clone the :fab:`github`
 ``geovista`` repository:
 
