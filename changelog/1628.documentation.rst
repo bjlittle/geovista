@@ -1,0 +1,3 @@
+Added an :ref:`tippy-gv-installation` `VHS tape <https://github.com/charmbracelet/vhs>`__
+showing a developer install using `pixi <https://github.com/prefix-dev/pixi>`__ 🧚.
+(:user:`bjlittle`)
