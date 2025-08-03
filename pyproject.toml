@@ -463,7 +463,7 @@ py313 = { features = ["py313"], solve-group = "py313" }
 test-py313 = { features = ["devs", "py313", "test"], solve-group = "py313" }
 
 [tool.pixi.dependencies]
-cartopy = ">=0.24.0,<0.25"
+cartopy = ">=0.24.0,<0.26"
 click = ">=8.2.1,<9"
 click-default-group = ">=1.2.4,<2"
 cmocean = ">=4.0.3,<5"
