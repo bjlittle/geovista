@@ -12,12 +12,6 @@ Stable
 The latest **stable release** of ``geovista`` is available on `conda-forge`_
 and `PyPI`_, and can be easily installed:
 
-.. tip::
-  :class: margin, dropdown, toggle-shown
-
-  Also see the ``pixi``
-  `installation instructions <https://pixi.sh/latest/installation/>`_.
-
 .. tab-set::
 
     .. tab-item:: conda-forge
@@ -26,11 +20,17 @@ and `PyPI`_, and can be easily installed:
 
             $ conda create --name myenv --channel conda-forge geovista
 
+        ℹ️ Consult the ``conda``
+        `installation instructions <https://docs.conda.io/projects/conda/en/stable/>`__.
+
     .. tab-item:: pip
 
         .. code:: console
 
             $ pip install geovista
+
+        ℹ️ Consult the ``pip``
+        `installation instructions <https://pip.pypa.io/en/stable/installation/#>`__.
 
     .. tab-item:: pixi
         :selected:
@@ -40,6 +40,9 @@ and `PyPI`_, and can be easily installed:
             $ pixi init myenv
             $ cd myenv
             $ pixi add geovista
+
+        ℹ️ Consult the ``pixi``
+        `installation instructions <https://pixi.sh/latest/installation/>`__.
 
 Additional package dependencies will be required by some of the
 ``geovista`` gallery :ref:`tippy-gv-examples`. If these are required
@@ -54,6 +57,8 @@ then instead install the latest **stable release** as follows:
             $ conda create --name myenv --channel conda-forge geovista pip
             $ conda activate myenv
             $ pip install geovista[exam]
+
+        ℹ️ `conda`_ users must also install `pip`_ into their environment.
 
     .. tab-item:: pip
 
@@ -71,14 +76,9 @@ then instead install the latest **stable release** as follows:
             $ pixi add python
             $ pixi add --pypi geovista[exam]
 
-.. note::
-    :class: dropdown
 
-    `conda`_ users must also install `pip`_ into their environment.
-
-
-Development
------------
+Latest
+------
 
 If you simply can't wait for the next **stable release** of ``geovista``, then
 install the latest **development version** from the :fab:`github` ``main``
@@ -112,7 +112,15 @@ branch:
 
 
 Developer
-^^^^^^^^^
+---------
+
+.. image:: https://vhs.charm.sh/vhs-6tXpDhss6UKkT7lTOb1MDp.gif
+   :class: only-light
+
+
+.. image:: https://vhs.charm.sh/vhs-4uiTU9kKjpOVIOagaTNEQl.gif
+   :class: only-dark
+
 
 To configure a full **developer environment**, first clone the :fab:`github`
 ``geovista`` repository:

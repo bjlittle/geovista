@@ -1,0 +1,10 @@
+[workspace]
+channels = ["https://prefix.dev/conda-forge"]
+platforms = ["linux-64"]
+
+[tasks]
+
+[dependencies]
+ffmpeg = ">=7.1.1,<8"
+ttyd = ">=1.7.7,<2"
+vhs = ">=0.10.0,<0.11"
