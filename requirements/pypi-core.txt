@@ -1,5 +1,5 @@
 cartopy >=0.22,<0.25.1
-click <8.2.2
+click <8.2.3
 click-default-group <1.2.5
 cmocean <4.0.4
 colorcet <3.1.1
