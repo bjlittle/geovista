@@ -270,7 +270,7 @@ class Transform:  # numpydoc ignore=PR01
         ..versionadded:: 0.1.0
 
         For VTK Quadrilateral cell type node ordering see
-        https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
+        https://examples.vtk.org/site/VTKBook/05Chapter5/#54-cell-types.
 
         """
         # sanity check - internally this should always be the case
@@ -315,7 +315,7 @@ class Transform:  # numpydoc ignore=PR01
         ..versionadded:: 0.1.0
 
         For VTK Quadrilateral cell type node ordering see
-        https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
+        https://examples.vtk.org/site/VTKBook/05Chapter5/#54-cell-types.
 
         """
         # sanity check - internally this should always be the case
