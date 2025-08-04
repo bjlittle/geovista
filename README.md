@@ -96,6 +96,14 @@ cd myenv
 pixi add geovista
 ````
 
+<!--- https://github.blog/developer-skills/how-to-make-your-images-in-markdown-on-github-adjust-for-dark-mode-and-light-mode --->
+
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="https://vhs.charm.sh/vhs-yd17Xp4J6XrEpKcSjvJZ2.gif">
+  <source media="(prefers-color-scheme: dark)" srcset="https://vhs.charm.sh/vhs-7beUyABBzxlzwVcLljsroC.gif">
+  <img src="https://vhs.charm.sh/vhs-yd17Xp4J6XrEpKcSjvJZ2.gif">
+</picture>
+
 For more information visit our [prefix.dev dashboard](https://prefix.dev/channels/conda-forge/packages/geovista).
 
 ## Quick Start

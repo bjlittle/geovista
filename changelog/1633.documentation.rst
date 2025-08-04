@@ -1,0 +1,4 @@
+Added a `VHS tape recording <https://github.com/charmbracelet/vhs>`__ to
+the ``README.md`` showing how to create a new
+`pixi <https://github.com/prefix-dev/pixi>`__ 🧚 project, install, activate
+then ``import geovista``. (:user:`bjlittle`)
