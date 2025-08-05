@@ -48,6 +48,16 @@ clarify the various steps involved in how to contribute to ``geovista``.
 
         Author & build guidelines.
 
+    .. grid-item-card:: Packaging
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-developer-packaging
+        :link-type: ref
+        :img-top: ../_static/images/icons/package.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Packaging guidelines.
 
 .. toctree::
     :maxdepth: 1
@@ -55,3 +65,4 @@ clarify the various steps involved in how to contribute to ``geovista``.
 
     towncrier
     documentation
+    packaging

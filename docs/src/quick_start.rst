@@ -94,7 +94,7 @@ A 2-D array of *Sea Surface Temperature* data located on the mesh cells
 are rendered using the
 :term:`perceptually uniform <Perceptually Uniform Colormap>`
 `cmocean balance`_ diverging colormap, along with
-`10m Natural Earth coastlines`_. Note that, the land cells are masked.
+`10m Natural Earth coastlines`_. Note that the land cells are masked.
 
 .. pyvista-plot::
     :context:
