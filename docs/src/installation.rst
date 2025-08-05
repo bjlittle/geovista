@@ -21,7 +21,8 @@ and `PyPI`_, and can be easily installed:
             $ conda create --name myenv --channel conda-forge geovista
 
         ℹ️ Consult the ``conda``
-        `installation instructions <https://docs.conda.io/projects/conda/en/stable/>`__.
+        `Installation <https://docs.conda.io/projects/conda/en/stable/>`__
+        instructions.
 
     .. tab-item:: pip
 
@@ -30,7 +31,8 @@ and `PyPI`_, and can be easily installed:
             $ pip install geovista
 
         ℹ️ Consult the ``pip``
-        `installation instructions <https://pip.pypa.io/en/stable/installation/#>`__.
+        `Installation <https://pip.pypa.io/en/stable/installation/#>`__
+        instructions.
 
     .. tab-item:: pixi
         :selected:
@@ -42,7 +44,8 @@ and `PyPI`_, and can be easily installed:
             $ pixi add geovista
 
         ℹ️ Consult the ``pixi``
-        `installation instructions <https://pixi.sh/latest/installation/>`__.
+        `Installation <https://pixi.sh/latest/installation/>`__
+        instructions.
 
 Additional package dependencies will be required by some of the
 ``geovista`` gallery :ref:`tippy-gv-examples`. If these are required
