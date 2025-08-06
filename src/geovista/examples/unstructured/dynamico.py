@@ -23,7 +23,7 @@ for the Laboratoire de Météorologie Dynamique (LMD-Z), the atmospheric General
 Circulation Model (GCM) part of Institut Pierre-Simon Laplace (IPSL-CM) Earth
 System Model. The data targets the mesh faces/cells.
 
-Note that, a graticule and Natural Earth coastlines are also rendered.
+Note that a graticule and Natural Earth coastlines are also rendered.
 
 .. tags::
 

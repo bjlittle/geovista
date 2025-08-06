@@ -167,7 +167,7 @@ class BBox:  # numpydoc ignore=PR01
         ----------
         lons : ArrayLike
             The longitudes (degrees) of the bounding-box, in the half-closed interval
-            ``[-180, 180)``. Note that, longitudes will be wrapped to this interval.
+            ``[-180, 180)``. Note that longitudes will be wrapped to this interval.
         lats : ArrayLike
             The latitudes (degrees) of the bounding-box, in the closed interval
             ``[-90, 90]``.
@@ -508,7 +508,7 @@ class BBox:  # numpydoc ignore=PR01
         a third-party mesh are contained/enclosed within the bounding-box
         manifold.
 
-        Note that, the bounding-box inner surface and outer surface are
+        Note that the bounding-box inner surface and outer surface are
         congruent.
 
         Parameters
@@ -517,7 +517,7 @@ class BBox:  # numpydoc ignore=PR01
             The surface that the bounding-box will be enclosing.
         radius : float, optional
             The radius of the surface that the bounding-box will be enclosing.
-            Note that, the `radius` is only used when the `surface` is not
+            Note that the `radius` is only used when the `surface` is not
             provided. Defaults to :data:`geovista.common.RADIUS`.
 
         Notes
@@ -621,7 +621,7 @@ class BBox:  # numpydoc ignore=PR01
         radius : float, optional
             The radius of the spherical mesh that will be enclosed by the
             bounding-box
-            boundary. Note that, the `radius` is only used when the `surface`
+            boundary. Note that the `radius` is only used when the `surface`
             is not provided. Defaults to :data:`geovista.common.RADIUS`.
 
         Returns
@@ -681,7 +681,7 @@ class BBox:  # numpydoc ignore=PR01
     ) -> pv.PolyData:
         """Extract region of the `surface` contained within the bounding-box.
 
-        Note that, points that are on the surface of the bounding-box manifold are not
+        Note that points that are on the surface of the bounding-box manifold are not
         considered within the bounding-box. See the `preference` and `tolerance`
         options.
 
@@ -810,7 +810,7 @@ def line(
 ) -> pv.PolyData:
     """Geodesic line consisting of one or more connected geodesic line segments.
 
-    Note that, as a convenience, if a single value is provided for `lons` and ``N``
+    Note that as a convenience, if a single value is provided for `lons` and ``N``
     values are provided for `lats`, then the longitude value will be automatically
     repeated ``N`` times, and vice versa, providing ``N >= 2``.
 
@@ -818,7 +818,7 @@ def line(
     ----------
     lons : ArrayLike
         The longitudes (degrees) of the geodesic line segments, in the half-closed
-        interval ``[-180, 180)``. Note that, longitudes will be wrapped to this
+        interval ``[-180, 180)``. Note that longitudes will be wrapped to this
         interval.
     lats : ArrayLike
         The latitudes (degrees) of the geodesic line segments, in the closed
@@ -828,7 +828,7 @@ def line(
     radius : float, optional
         The radius of the spherical surface that the geodesic line will be
         rendered over.
-        Note that, the `radius` is only used when the `surface` is not
+        Note that the `radius` is only used when the `surface` is not
         provided. Defaults to :data:`geovista.common.RADIUS`.
     npts : float, optional
         The number of equally spaced geodesic points in a line segment, excluding
@@ -977,7 +977,7 @@ def npoints(
     intermediate longitude and latitude `npts` points along the geodesic line
     that spans between the start and end points.
 
-    Note that, longitudes (degrees) will be wrapped to the half-closed interval
+    Note that longitudes (degrees) will be wrapped to the half-closed interval
     ``[-180, 180)``.
 
     Parameters
@@ -1066,7 +1066,7 @@ def npoints_by_idx(
     spaced intermediate longitude and latitude `npts` points along the geodesic
     line that spans between the start and end points.
 
-    Note that, longitudes (degrees) will be wrapped to the half-closed interval
+    Note that longitudes (degrees) will be wrapped to the half-closed interval
     ``[-180, 180)``.
 
     Parameters

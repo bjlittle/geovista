@@ -101,7 +101,7 @@ class Transform:  # numpydoc ignore=PR01
     ) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 
-        Note that, masked values will be filled with NaNs.
+        Note that masked values will be filled with NaNs.
 
         Parameters
         ----------
@@ -627,7 +627,7 @@ class Transform:  # numpydoc ignore=PR01
     ) -> pv.PolyData:
         """Build a point-cloud mesh from x-values, y-values and z-levels.
 
-        Note that, any optional mesh `data` provided must be in the same order as the
+        Note that any optional mesh `data` provided must be in the same order as the
         spatial points.
 
         Parameters
@@ -740,7 +740,7 @@ class Transform:  # numpydoc ignore=PR01
     ) -> pv.PolyData:
         """Build a quad-faced mesh from the GeoTIFF.
 
-        Note that, the GeoTIFF data will be located on the ``points``
+        Note that the GeoTIFF data will be located on the ``points``
         of the resultant mesh.
 
         Parameters
@@ -749,11 +749,11 @@ class Transform:  # numpydoc ignore=PR01
             The file path to the GeoTIFF.
         name : str, optional
             The name of the GeoTIFF data array to be attached to the mesh.
-            Defaults to :data:`NAME_POINTS`. Note that, ``{units}`` may be
+            Defaults to :data:`NAME_POINTS`. Note that ``{units}`` may be
             used as a placeholder for the units of the data array e.g.,
             ``"Elevation / {units}"``.
         band : int, default=1
-            The band index to read from the GeoTIFF. Note that, the `band`
+            The band index to read from the GeoTIFF. Note that the `band`
             index is one-based.
         rgb : bool, default=False
             Specify whether to read the GeoTIFF as an ``RGB`` or ``RGBA`` image.

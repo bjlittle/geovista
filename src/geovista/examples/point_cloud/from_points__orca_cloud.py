@@ -21,7 +21,7 @@ Based on a curvilinear ORCA2 global ocean with tri-polar model grid of
 sea water potential temperature data, which has been reduced to a limited
 area and pre-filtered for temperature gradients.
 
-Note that, Natural Earth coastlines are also rendered along with a Natural
+Note that Natural Earth coastlines are also rendered along with a Natural
 Earth base layer with opacity.
 
 .. tags::

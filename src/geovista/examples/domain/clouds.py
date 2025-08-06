@@ -21,7 +21,7 @@ unstructured cell points and connectivity.
 It uses an unstructured Met Office high-resolution LFRic C768 cubed-sphere
 of High Cloud Amount located on the mesh faces/cells.
 
-Note that, a threshold is applied to remove low-valued Cloud Amount cells,
+Note that a threshold is applied to remove low-valued Cloud Amount cells,
 and a custom colormap is applied to the mesh to crop out unwanted darker
 shades.
 

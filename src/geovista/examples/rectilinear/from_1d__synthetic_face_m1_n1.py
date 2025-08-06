@@ -19,7 +19,7 @@ The resulting mesh contains quad cells.
 
 The data is synthetically generated and targets the mesh faces/cells.
 
-Note that, Natural Earth coastlines are also rendered.
+Note that Natural Earth coastlines are also rendered.
 
 ----
 

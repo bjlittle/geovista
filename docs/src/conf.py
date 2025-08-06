@@ -718,7 +718,7 @@ def geovista_skip_member(
     and the associated text block of the rubric, which itself will be indented
     appropriately to belong to the scope of the injected directive.
 
-    Note that, the directive will be at the same level as the rubric.
+    Note that the directive will be at the same level as the rubric.
 
     """
     plot_docstring = app.builder.config.plot_docstring

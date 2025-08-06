@@ -22,7 +22,7 @@ It uses a AWI Climate Model (AWI-CI) Finite Element Sea ice-Ocean Model (FESOM)
 v1.4 unstructured mesh of surface sea temperature data. The data targets the
 mesh faces/cells.
 
-Note that, a Natural Earth base layer is rendered along with Natural Earth
+Note that a Natural Earth base layer is rendered along with Natural Earth
 coastlines.
 
 .. tags::

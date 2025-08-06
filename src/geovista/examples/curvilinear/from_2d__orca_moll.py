@@ -20,7 +20,7 @@ The resulting mesh contains quad cells.
 It uses an ORCA2 global ocean with tri-polar model grid with sea water
 potential temperature data. The data targets the mesh faces/cells.
 
-Note that, a threshold is applied to remove land ``NaN`` cells, before the
+Note that a threshold is applied to remove land ``NaN`` cells, before the
 mesh is then transformed to the Mollweide pseudo-cylindrical projection
 and extruded to give depth to the projected surface. Finally, 10m
 resolution Natural Earth coastlines are also rendered.
