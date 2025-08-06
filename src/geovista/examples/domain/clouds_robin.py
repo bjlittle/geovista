@@ -22,7 +22,7 @@ It uses an unstructured Met Office high-resolution LFRic C768 cubed-sphere
 of High Cloud Amount located on the mesh faces/cells. The mesh is transformed
 to the Robinson pseudocylindrical projection.
 
-Note that, a threshold is applied to remove low-valued Cloud Amount cells,
+Note that a threshold is applied to remove low-valued Cloud Amount cells,
 and a linear opacity transfer function is applied to give a cloud-like effect.
 
 A Natural Earth base layer is also rendered along with Natural Earth

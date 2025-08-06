@@ -279,7 +279,7 @@ def add_texture_coords(
 ) -> pv.PolyData:
     """Compute and attach texture coordinates, in UV space, to the mesh.
 
-    Note that, the mesh will be sliced along the `meridian` to ensure that
+    Note that the mesh will be sliced along the `meridian` to ensure that
     cell connectivity is appropriately disconnected prior to texture mapping.
 
     Parameters
@@ -341,7 +341,7 @@ def combine(
     Only meshes with cells will be combined. Support is not yet provided for combining
     meshes that consist of only points or lines.
 
-    Note that, no check is performed to ensure that mesh cells do not overlap.
+    Note that no check is performed to ensure that mesh cells do not overlap.
     However, meshes may share coincident points. Coincident point data from the
     first input mesh will overwrite all other mesh data sharing the same
     coincident point in the resultant mesh.

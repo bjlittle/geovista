@@ -8,7 +8,7 @@
 Each example is importable and runnable as a standalone script from the command
 line.
 
-Note that, the examples are installed as part of the geovista package
+Note that the examples are installed as part of the geovista package
 and can be easily accessed through the geovista command line interface
 (CLI) entry-point.
 

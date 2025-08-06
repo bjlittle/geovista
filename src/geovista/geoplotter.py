@@ -1259,7 +1259,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         If no POI is provided, then the center of the previous mesh added to the scene
         is used, if available.
 
-        Note that, the camera will be positioned at the POI to view **all** the actors
+        Note that the camera will be positioned at the POI to view **all** the actors
         added to the scene so far; order is important. The point at which
         :meth:`~geovista.geoplotter.GeoPlotterBase.view_poi` is called relative to the
         other actors influences the final rendered scene.
@@ -1295,7 +1295,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         ... )
 
         Now add the ``bahamas`` mesh to a ``plotter`` **before** adding a texture mapped
-        base layer. Note that, the camera is centered over the ``bahamas`` mesh, which
+        base layer. Note that the camera is centered over the ``bahamas`` mesh, which
         is the primary focus of the scene.
 
         >>> p = geovista.GeoPlotter()

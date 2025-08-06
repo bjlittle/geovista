@@ -100,7 +100,7 @@ class KDTree:  # numpydoc ignore=PR01
     ) -> None:
         """Construct kd-tree for nearest neighbour search of mesh points/cell centers.
 
-        Note that, the cell centers will be calculated from the mesh geometry and do not
+        Note that the cell centers will be calculated from the mesh geometry and do not
         require to be provided.
 
         The geolocated mesh data points are converted to cartesian coordinates on a S2

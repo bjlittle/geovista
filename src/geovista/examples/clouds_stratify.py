@@ -22,7 +22,7 @@ It uses an unstructured Met Office high-resolution LFRic C768 cubed-sphere
 of Low, Medium, High and Very High Cloud Amount located on the mesh
 faces/cells.
 
-Note that, a threshold is applied to remove low-valued Cloud Amount cells,
+Note that a threshold is applied to remove low-valued Cloud Amount cells,
 and a linear opacity transfer function is applied to a custom cropped
 colormap for each mesh which gets lighter with increased altitude. This
 combination renders a cloud-like effect.

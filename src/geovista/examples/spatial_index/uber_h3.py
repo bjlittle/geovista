@@ -26,7 +26,7 @@ hierarchical sequence of hexagonal meshes. Its structure is built on top of a
 **base icosahedron**, the relationship between the **base icosahedron** and the
 **base resolution mesh** informs the structure of the meshes of the further
 meshes in the sequence.
-Note that, a spherical surface cannot be tessellated solely with hexagons;
+Note that a spherical surface cannot be tessellated solely with hexagons;
 pentagons are also required.
 
 The **12 vertices** of the underlying **base icosahedron** anchor the center of
@@ -53,7 +53,7 @@ hexagonal cell is **~0.895 m^2**.
 
 Given a ``H3Index``, it is trivial to calculate the resolution, location
 and neighbours of a cell, as well as all its child cells and parent cell.
-Note that, the neighbours of a hexagon or a pentagon cell in a tessellated
+Note that the neighbours of a hexagon or a pentagon cell in a tessellated
 mesh are equidistant, unlike a mesh consisting of triangular or rectangular
 cells.
 
@@ -261,7 +261,7 @@ def to_children(h3indexes: H3Indexes) -> H3Indexes:
     The child hexagon/pentagon cells will be at the next
     resolution (finer) of the parent cell resolution (coarser).
 
-    Note that, a hexagon parent has 7 children, whereas a pentagon
+    Note that a hexagon parent has 7 children, whereas a pentagon
     parent only has 6 children. A pentagon parent will always
     contain a pentagon child. A hexagon parent will never contain
     a pentagon child.
@@ -323,7 +323,7 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
         nverts.append(len(boundary_lats))
 
     # Create an empty cell connectivity for the mesh filled
-    # with MDI. Note that, each cell may contain a variable
+    # with MDI. Note that each cell may contain a variable
     # number of vertices.
     shape = (len(nverts), np.max(nverts))
     connectivity = np.ones(shape, dtype=int) * MDI

@@ -177,7 +177,7 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
 
     The natural origin is also known as the central meridian.
 
-    Note that, the `crs` is immutable, therefore a new instance will be
+    Note that the `crs` is immutable, therefore a new instance will be
     returned with the specified central meridian.
 
     Parameters

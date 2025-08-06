@@ -318,7 +318,7 @@ def distance(
 ) -> float | np.ndarray:
     """Calculate the mean distance from the `origin` to the points of the `mesh`.
 
-    Note that, given a spherical `mesh` the distance calculated is the radius.
+    Note that given a spherical `mesh` the distance calculated is the radius.
 
     Parameters
     ----------

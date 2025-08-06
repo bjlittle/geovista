@@ -22,7 +22,7 @@ resolution soil type data, as developed by the Deutscher Wetterdienst (DWD) and
 the Max-Planck-Institut für Meteorologie (MPI-M). The data targets the mesh
 faces/cells.
 
-Note that, Natural Earth coastlines are also rendered, and the mesh is transformed
+Note that Natural Earth coastlines are also rendered, and the mesh is transformed
 to the Equidistant Cylindrical (Plate Carrée) conformal cylindrical projection.
 
 .. tags::

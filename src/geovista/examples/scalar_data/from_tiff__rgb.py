@@ -23,7 +23,7 @@ The GeoTIFF RGB image is first pre-processed using :func:`rasterio.features.siev
 to remove several unwanted masked regions within the interior of the image, which
 are due to a lack of dynamic range in the ``uint8`` image data.
 
-Note that, the RGB image pixel data is located on the mesh nodes/points.
+Note that the RGB image pixel data is located on the mesh nodes/points.
 
 The masked RGB pixels are then removed by extracting only mesh cells with no
 masked points.

@@ -22,7 +22,7 @@ sea floor depth below geoid data.
 The resulting mesh contains triangular cells. The connectivity is required to
 construct the cells from the unstructured points.
 
-Note that, the data is on the mesh faces/cells, but also on the nodes/points.
+Note that the data is on the mesh faces/cells, but also on the nodes/points.
 
 A ``pyvista`` "warp" operation is used to extrude the mesh by the point depth
 values, to reveal the bathymetry of the Plymouth Sound and Tamar River in
