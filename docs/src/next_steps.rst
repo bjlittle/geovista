@@ -152,4 +152,4 @@ and running in a snap:
     :width: 50%
     :margin: 4 4 auto auto
 
-    Guidelines for contributors.
+    Developer guidelines.
