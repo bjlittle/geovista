@@ -189,11 +189,9 @@ The `ci-locks.yml`_ workflow regularly schedules ``pixi`` to refresh the
 latest package versions available from the ``conda`` and ``PyPI`` ecosystems.
 
 Only the **latest** :guilabel:`geovista-py3xx` environment will be exported to
-a ``conda`` explicit specification file (``*.txt``) and converted to an explicit
-equivalent environment YAML file (``*.yml``). These resources are available in
-the `requirements/locks`_ directory.
+a ``conda`` explicit specification file (``*.txt``) and converted to an equivalent explicit environment YAML file (``*.yml``). These resources are available in the `requirements/locks`_ directory.
 
-The :guilabel:`geovista-py3xx` environment will be exported to the ``conda``
+The :guilabel:`geovista-py3xx` environment will also be exported to the ``conda``
 environment YAML file `requirements/geovista.yml`_ containing only the top-level
 dependencies of the environment, as defined by its features.
 
