@@ -79,7 +79,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           pattern: pypi-artifacts-*
           path: ${{ github.workspace }}/dist
@@ -106,7 +106,7 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         pattern: pypi-artifacts-*
         path: ${{ github.workspace }}/dist
@@ -128,7 +128,7 @@ jobs:
     # upload to Test PyPI for every commit on main branch
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         pattern: pypi-artifacts-*
         path: ${{ github.workspace }}/dist
@@ -152,7 +152,7 @@ jobs:
     # upload to PyPI for every tag starting with 'v'
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         pattern: pypi-artifacts-*
         path: ${{ github.workspace }}/dist
