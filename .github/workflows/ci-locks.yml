@@ -35,7 +35,7 @@ jobs:
     runs-on: "ubuntu-22.04"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -45,7 +45,7 @@ jobs:
           echo "ENV_NAME=${{ env.NAME }}-${{ env.VERSION }}" >> ${GITHUB_ENV}
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@8ca4608ef7f4daeb54f5205b20d0b7cb42f11143
+        uses: prefix-dev/setup-pixi@fef5c9568ca6c4ff7707bf840ab0692ba3f08293
         with:
           run-install: false
 
