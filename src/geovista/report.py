@@ -13,7 +13,7 @@ Notes
 
 from __future__ import annotations
 
-from types import ModuleType
+import types
 from typing import TypeAlias
 
 import lazy_loader as lazy
@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 # this is a type alias
-PackageLike: TypeAlias = ModuleType | str
+PackageLike: TypeAlias = str | types.ModuleType
 """Type alias for a package module or package name."""
 
 # constants
