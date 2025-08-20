@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import lazy_loader as lazy
+import pyproj
 from pyproj import CRS
 
 from .common import GV_FIELD_CRS
@@ -39,7 +40,7 @@ __all__ = [
 ]
 
 # this is a type alias
-CRSLike: TypeAlias = int | str | dict[str, Any] | CRS
+CRSLike: TypeAlias = int | str | dict[str, Any] | pyproj.crs.crs.CRS
 """Type alias for a Coordinate Reference System."""
 
 # constants

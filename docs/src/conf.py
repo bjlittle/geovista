@@ -382,7 +382,6 @@ numpydoc_xref_aliases = {
     "Path": "pathlib.Path",
     "Preference": "geovista.common.Preference",
     "PolyData": "pyvista.PolyData",
-    "Shape": "geovista.bridge.Shape",
     "Texture": "pyvista.Texture",
 }
 numpydoc_xref_ignore = {"optional", "default", "of"}

@@ -19,7 +19,7 @@ Notes
 
 from __future__ import annotations
 
-from pathlib import Path
+import pathlib
 from typing import TYPE_CHECKING, TypeAlias
 import warnings
 
@@ -61,7 +61,7 @@ __all__ = [
 ]
 
 # this is a type alias
-PathLike: TypeAlias = str | Path
+PathLike: TypeAlias = str | pathlib.Path
 """Type alias for an asset file path."""
 
 Shape: TypeAlias = tuple[int, ...]
@@ -826,7 +826,7 @@ class Transform:  # numpydoc ignore=PR01
             raise ImportError(emsg) from None
 
         if isinstance(fname, str):
-            fname = Path(fname)
+            fname = pathlib.Path(fname)
 
         fname = fname.resolve(strict=True)
 
