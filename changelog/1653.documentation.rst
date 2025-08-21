@@ -1,0 +1,2 @@
+Rebranded the ``geovista`` title using `La Machine Company <https://www.dafont.com/la-machine-company.font>`__
+True Type Font. (:user:`bjlittle`)
