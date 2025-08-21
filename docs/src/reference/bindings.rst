@@ -110,35 +110,35 @@ Primary keyboard and mouse bindings that control the rendered scene.
     :align: middle
     :alt: FVCOM points
 
-.. |fvcom-f| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-f.gif
+.. |fvcom-f| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2025.08.0/media/docs/fvcom-f.gif
     :scale: 30%
     :align: middle
     :width: 640
     :height: 480
     :alt: Camera Follow
 
-.. |fvcom-3d| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-rotate-3d.gif
+.. |fvcom-3d| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2025.08.0/media/docs/fvcom-rotate-3d.gif
     :scale: 30%
     :align: middle
     :width: 640
     :height: 480
     :alt: Rotate 3-D
 
-.. |fvcom-2d| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-rotate-2d.gif
+.. |fvcom-2d| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2025.08.0/media/docs/fvcom-rotate-2d.gif
     :scale: 30%
     :align: middle
     :width: 640
     :height: 480
     :alt: Rotate 2-D
 
-.. |fvcom-pan| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-pan.gif
+.. |fvcom-pan| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2025.08.0/media/docs/fvcom-pan.gif
     :scale: 30%
     :align: middle
     :width: 640
     :height: 480
     :alt: Camera Pan
 
-.. |fvcom-zoom| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/docs/fvcom-zoom.gif
+.. |fvcom-zoom| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2025.08.0/media/docs/fvcom-zoom.gif
     :scale: 30%
     :align: middle
     :width: 640
