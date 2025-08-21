@@ -461,7 +461,7 @@ pygments_style = "friendly"
 # a list of builtin themes.
 
 html_theme = "sphinx_book_theme"
-html_logo = "_static/logo.png"
+html_logo = "_static/geovista-title.svg"
 
 html_context = {
     "github_url": "https://github.com",
