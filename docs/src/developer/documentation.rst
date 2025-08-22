@@ -124,6 +124,37 @@ Perform documentation quality assurance.
     +-----------------------+----------------------------------------------------------------------------------+
 
 
+.. _gv-developer-documentation-branding:
+.. _tippy-gv-developer-documentation-branding:
+
+:fa:`heart-circle-check` Branding
+---------------------------------
+
+Our icons are provided by `Font Awesome`_. Font Awesome (Free) is licensed under the
+`Creative Commons Attribution 4.0 International License`_ (CC BY 4.0).
+
+Static icon assets are located in the ``docs/src/_static/images/icons`` directory,
+along with the Font Awesome ``LICENSE.txt`` file. Refer to the ``docs/src/conf.py``
+for asset configuration details.
+
+Other branding assets are available from the `geovista-media`_ repository.
+
+The branding RGB colour is ``#80d050``.
+
+
+:fa:`pencil` Logo Font
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../_static/geovista-title.svg
+    :align: center
+    :alt: GeoVista Logo Title
+    :width: 25%
+
+    GeoVista Logo Title
+
+The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType font.
+
+
 .. _gv-developer-documentation-cross-references:
 .. _tippy-gv-developer-documentation-cross-references:
 
@@ -251,8 +282,11 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
     Page link URL resources in alphabetical order:
 
 
+.. _Creative Commons Attribution 4.0 International License: https://creativecommons.org/licenses/by/4.0/
+.. _Font Awesome: https://fontawesome.com/
 .. _GNU make: https://www.gnu.org/software/make/
 .. _Jupyter Notebooks: https://jupyter.org/
+.. _La Machine Company: https://www.dafont.com/la-machine-company.font
+.. _include directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#include-directive
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _sphinx linkcheck builder: https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.linkcheck.CheckExternalLinksBuilder
-.. _include directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#include-directive
