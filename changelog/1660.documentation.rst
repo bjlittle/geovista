@@ -1,0 +1,3 @@
+Updated the :ref:`tippy-gv-installation` section to include
+`uv <https://github.com/astral-sh/uv>`__ instructions.
+(:user:`bjlittle`)
