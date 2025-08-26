@@ -14,11 +14,12 @@ and `PyPI`_, and can be easily installed:
 
 .. tab-set::
 
-    .. tab-item:: conda-forge
+    .. tab-item:: conda
 
         .. code:: console
 
             $ conda create --name myenv --channel conda-forge geovista
+            $ conda activate myenv
 
         ℹ️ Consult the ``conda``
         `Installation <https://docs.conda.io/projects/conda/en/stable/>`__
@@ -47,13 +48,23 @@ and `PyPI`_, and can be easily installed:
         `Installation <https://pixi.sh/latest/installation/>`__
         instructions.
 
+    .. tab-item:: uv
+
+        .. code:: console
+
+            $ uv pip install geovista
+
+        ℹ️ Consult the ``uv``
+        `Installation <https://docs.astral.sh/uv/getting-started/installation/>`__
+        instructions.
+
 Additional package dependencies will be required by some of the
 ``geovista`` gallery :ref:`tippy-gv-examples`. If these are required
 then instead install the latest **stable release** as follows:
 
 .. tab-set::
 
-    .. tab-item:: conda-forge
+    .. tab-item:: conda
 
         .. code:: console
 
@@ -78,6 +89,12 @@ then instead install the latest **stable release** as follows:
             $ cd myenv
             $ pixi add python
             $ pixi add --pypi geovista[exam]
+
+    .. tab-item:: uv
+
+        .. code:: console
+
+            $ uv pip install "geovista[exam]"
 
 
 Latest
@@ -112,6 +129,12 @@ branch:
             $ cd myenv
             $ pixi add python
             $ pixi add --git https://github.com/bjlittle/geovista.git geovista --branch main --pypi
+
+    .. tab-item:: uv
+
+        .. code:: console
+
+            $ uv pip install "git+https://github.com/bjlittle/geovista.git@main"
 
 
 Developer
@@ -152,6 +175,7 @@ Now install ``geovista`` and all its dependencies:
         .. code:: console
 
             $ conda env create --file requirements/geovista.yml
+            $ conda activate myenv
 
     .. tab-item:: pip
 
@@ -165,6 +189,12 @@ Now install ``geovista`` and all its dependencies:
         .. code:: console
 
             $ pixi shell --environment geovista
+
+    .. tab-item:: uv
+
+        .. code:: console
+
+            $ uv pip install --editable ".[all]"
 
 For extra credit, install our developer `pre-commit`_ git-hooks:
 
