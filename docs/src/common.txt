@@ -45,6 +45,7 @@
 .. _pixi: https://github.com/prefix-dev/pixi
 .. _pre-commit: https://pre-commit.com/
 .. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
+.. _ruff: https://github.com/astral-sh/ruff
 .. _sphinx: https://github.com/sphinx-doc/sphinx
 .. _sphinx-autoapi: https://github.com/readthedocs/sphinx-autoapi
 .. _sphinx-build: https://www.sphinx-doc.org/en/master/man/sphinx-build.html
