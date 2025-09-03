@@ -21,12 +21,12 @@ def test_member_count():
 
 def test_members():
     """Test expected enumeration members."""
-    assert tuple([member.value for member in EnclosedPreference]) == EXPECTED_VALUES
+    assert tuple(member.value for member in EnclosedPreference) == EXPECTED_VALUES
 
 
 def test_members___str__():
     """Test expected enumeration members string."""
-    assert tuple([str(member) for member in EnclosedPreference]) == EXPECTED_VALUES
+    assert tuple(str(member) for member in EnclosedPreference) == EXPECTED_VALUES
 
 
 def test_values():

@@ -221,7 +221,7 @@ class StrEnumPlus(StrEnum):
         .. versionadded:: 0.3.0
 
         """
-        return tuple([member.value for member in cls])
+        return tuple(member.value for member in cls)
 
 
 class Preference(StrEnumPlus):

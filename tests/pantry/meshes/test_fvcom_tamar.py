@@ -29,7 +29,7 @@ def test_preference_fail(preference):
 
 @pytest.mark.parametrize(
     "preference",
-    PREFERENCES + tuple([Preference(preference) for preference in PREFERENCES]),
+    PREFERENCES + tuple(Preference(preference) for preference in PREFERENCES),
 )
 def test_preference(preference):
     """Test mesh geometry preference."""

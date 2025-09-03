@@ -169,6 +169,8 @@ preview = false
 [tool.ruff.lint]
 # Allow information-source (U+2139) which could be confused for "i".
 allowed-confusables = ["ℹ"]
+explicit-preview-rules = true
+extend-select = ["CPY001"]
 ignore = [
   # flake8-commas (COM)
   # https://docs.astral.sh/ruff/rules/#flake8-commas-com
@@ -213,7 +215,7 @@ ignore = [
   # https://docs.astral.sh/ruff/rules/#flake8-todos-td
   "TD003", # Missing issue link on the line following this TODO.
 ]
-preview = false
+preview = true
 select = [
   "ALL",
 
@@ -222,6 +224,14 @@ select = [
   "D212", # Multi-line docstring summary should start at the first line
 ]
 
+
+[tool.ruff.lint.flake8-copyright]
+notice-rgx = '''
+# Copyright \(c\) 2021, GeoVista Contributors\.
+#
+# This file is part of GeoVista and is distributed under the 3-Clause BSD license\.
+# See the LICENSE file in the package root directory for licensing details\.
+'''
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
@@ -255,6 +265,11 @@ max-statements = 91
   # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
   "ANN001", # Missing type annotation for function argument.
   "ANN201", # Missing return type annotation for public function.
+]
+"docs/src/tutorials/region-manifold-extraction.ipynb" = [
+  # flake8-copyright (CPY)
+  # https://docs.astral.sh/ruff/rules/#flake8-copyright-cpy
+  "CPY001", # Missing copyright notice at top of file.
 ]
 "src/geovista/cli.py" = [
   # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt

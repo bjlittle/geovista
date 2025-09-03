@@ -1,0 +1,3 @@
+Enabled `ruff <https://github.com/astral-sh/ruff>`__ ``flake8-copyright``
+preview rule (``CPY001``) to enforce file copyright preamble.
+(:user:`bjlittle`)
