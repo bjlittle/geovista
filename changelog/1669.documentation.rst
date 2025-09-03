@@ -1,0 +1,2 @@
+Updated the ``intersphinx`` mapping for ``cartopy``, which is now hosted
+on ``readthedocs``. (:user:`bjlittle`)
