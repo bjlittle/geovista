@@ -220,6 +220,9 @@ Otherwise, the top-level label **must** follow the `include directive`_ e.g., th
     ==============================
 
 
+.. _gv-developer-documentation-copyright-and-license:
+.. _tippy-gv-developer-documentation-copyright-and-license:
+
 :fa:`file-contract` Copyright & License
 ---------------------------------------
 
