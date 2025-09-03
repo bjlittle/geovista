@@ -1,0 +1,2 @@
+Added developer :ref:`tippy-gv-developer-documentation-copyright-and-license`
+guidelines. (:user:`bjlittle`)

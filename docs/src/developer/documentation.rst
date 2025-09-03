@@ -220,6 +220,32 @@ Otherwise, the top-level label **must** follow the `include directive`_ e.g., th
     ==============================
 
 
+.. _gv-developer-documentation-copyright-and-license:
+.. _tippy-gv-developer-documentation-copyright-and-license:
+
+:fa:`file-contract` Copyright & License
+---------------------------------------
+
+Source code must contain the following copyright and license preamble at the top of the file:
+
+.. code::
+
+    # Copyright (c) 2021, GeoVista Contributors.
+    #
+    # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
+    # See the LICENSE file in the package root directory for licensing details.
+
+Quality assurance of preamble compliance is provided by the `ruff`_ preview rule
+`CPY001`_ (``flake8-copyright``).
+
+Configuration of this `single preview rule`_ is defined in the ``pyproject.toml`` file.
+For further details refer to the following TOML tables:
+
+* ``[tool.ruff.lint]``
+* ``[tool.ruff.lint.flake8-copyright]``
+* ``[tool.ruff.lint.per-file-ignores]``
+
+
 .. _gv-developer-documentation-pixi-workflow:
 .. _tippy-gv-developer-documentation-pixi-workflow:
 
@@ -282,6 +308,7 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
     Page link URL resources in alphabetical order:
 
 
+.. _CPY001: ` <https://docs.astral.sh/ruff/rules/missing-copyright-notice/
 .. _Creative Commons Attribution 4.0 International License: https://creativecommons.org/licenses/by/4.0/
 .. _Font Awesome: https://fontawesome.com/
 .. _GNU make: https://www.gnu.org/software/make/
@@ -289,4 +316,5 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
 .. _La Machine Company: https://www.dafont.com/la-machine-company.font
 .. _include directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#include-directive
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
+.. _single preview rule: https://docs.astral.sh/ruff/preview/#selecting-single-preview-rules
 .. _sphinx linkcheck builder: https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.linkcheck.CheckExternalLinksBuilder
