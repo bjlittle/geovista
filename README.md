@@ -58,7 +58,7 @@ Scientific Python community.
 
 Simply put, "*[GeoVista](https://geovista.readthedocs.io/) is to
 [PyVista](https://docs.pyvista.org/)*", as
-"*[Cartopy](https://scitools.org.uk/cartopy/docs/latest/) is to
+"*[Cartopy](https://cartopy.readthedocs.io/stable/) is to
 [Matplotlib](https://matplotlib.org/)*". Well, that's the aspiration.
 
 ## Installation
@@ -279,7 +279,7 @@ p.show()
 
 Using the same **unstructured** LAM data, reproject to
 [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a
-[Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree),
+[Cartopy Plate Carrée CRS](https://cartopy.readthedocs.io/stable/reference/projections.html#cartopy.crs.PlateCarree),
 also with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/)
 and a
 [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
