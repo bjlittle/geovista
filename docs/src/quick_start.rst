@@ -351,7 +351,7 @@ If so, then let's explore the :ref:`next steps <tippy-gv-next-steps>` on your
 .. _NASA Blue Marble: https://visibleearth.nasa.gov/collection/1484/blue-marble
 .. _NOAA/NCEI Optimum Interpolation SST: https://www.ncei.noaa.gov/products/optimum-interpolation-sst
 .. _Nucleus for European Modelling of the Ocean: https://forge.nemo-ocean.eu/nemo/nemo/-/wikis/home
-.. _Plate Carrée: https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree
+.. _Plate Carrée: https://cartopy.readthedocs.io/stable/reference/projections.html#cartopy.crs.PlateCarree
 .. _Plymouth Sound and Tamar River: https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365
 .. _Robinson: https://proj4.org/en/stable/operations/projections/robin.html
 .. _WAVEWATCH III: https://github.com/NOAA-EMC/WW3
