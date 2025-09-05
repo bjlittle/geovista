@@ -26,7 +26,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/labeler@v5
+      - uses: actions/labeler@v6
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'geovista-ci[bot]' || github.event.pull_request.user.login == 'pre-commit-ci[bot]'
