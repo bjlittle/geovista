@@ -1,0 +1,2 @@
+Updated ``README.md`` with latest static renders of plotting examples.
+(:user:`bjlittle`)
