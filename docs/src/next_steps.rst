@@ -108,8 +108,8 @@ consult the facts:
 
 
 If you're visually motivated and simply want to see some eye-candy, then why
-not dive straight into our gallery. Alternatively, use our tags to navigate to
-similar gallery examples organised by specific features:
+not dive straight into our gallery. Alternatively, use our topic based tags to navigate
+your way to gallery examples organised by specific features:
 
 .. grid:: 1 1 2 2
     :gutter: 2
