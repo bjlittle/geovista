@@ -1,0 +1,3 @@
+Refreshed :ref:`tippy-gv-tutorials` card image for
+:ref:`tippy-gv-tutorials-region-manifold-extraction`.
+(:user:`bjlittle`)
