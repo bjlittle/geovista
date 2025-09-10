@@ -13,7 +13,7 @@
     Thanks for your patience 🙏
 
 
-A collection of themed practical lessons to work though.
+A collection of themed practical lessons to work through.
 
 .. grid:: 1 2 3 3
     :gutter: 2
