@@ -13,6 +13,15 @@
 
 |Pixi| |SPEC0|
 
+.. image:: ../_static/images/pixi-banner.svg
+   :align: center
+   :target: https://pixi.sh
+   :alt: Pixi
+
+.. raw:: html
+
+   <hr>
+
 .. tip::
   :class: margin, dropdown, toggle-shown
 
