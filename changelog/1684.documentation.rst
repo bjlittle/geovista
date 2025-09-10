@@ -1,0 +1,2 @@
+Refreshed :ref:`tippy-gv-reference-bindings` GIFs and static images.
+(:user:`bjlittle`)

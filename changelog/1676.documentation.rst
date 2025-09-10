@@ -1,2 +1,2 @@
-Refreshed ``README.md`` with latest static renders for plotting examples.
+Refreshed ``README.md`` plotting example images.
 (:user:`bjlittle`)
