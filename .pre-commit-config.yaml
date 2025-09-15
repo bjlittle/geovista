@@ -21,7 +21,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.12.12"
+    rev: "v0.13.0"
     hooks:
       - id: ruff
         types: [file, python]
@@ -37,7 +37,7 @@ repos:
         additional_dependencies: [tomli]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.17.1'
+    rev: 'v1.18.1'
     hooks:
       - id: mypy
         # https://github.com/python/mypy/issues/13916
@@ -132,6 +132,6 @@ repos:
         args: [--ignore, ".pixi", --ignore, "changelog/template.rst"]
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.12.1
+    rev: v1.13.0
     hooks:
       - id: zizmor
