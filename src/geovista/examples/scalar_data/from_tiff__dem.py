@@ -46,7 +46,7 @@ the topography of Mount Fuji and its surrounding landscape.
     domain: orography,
     filter: warp,
     load: geotiff,
-    render: camera,
+    plot: camera,
     style: shading,
     widget: logo
 
