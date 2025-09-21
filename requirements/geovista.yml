@@ -8,7 +8,7 @@ dependencies:
 - pandas >=2.2.3,<3
 - pre-commit >=4.2.0,<5
 - rasterio >=1.4.3,<2
-- ruff >=0.12.0,<0.13
+- ruff >=0.12.0,<0.14
 - zizmor >=1.9.0,<2
 - ipykernel >=6.29.5,<7
 - ipywidgets >=8.1.7,<9
