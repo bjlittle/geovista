@@ -21,7 +21,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.13.0"
+    rev: "v0.13.1"
     hooks:
       - id: ruff
         types: [file, python]
@@ -37,7 +37,7 @@ repos:
         additional_dependencies: [tomli]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.18.1'
+    rev: 'v1.18.2'
     hooks:
       - id: mypy
         # https://github.com/python/mypy/issues/13916
@@ -105,7 +105,7 @@ repos:
         # Forbid files which have a UTF-8 Unicode replacement character.
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.3
+    rev: 0.34.0
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
