@@ -261,23 +261,25 @@ autolog(f"{package_dir=}", section="General")
 # See https://sphinx-tags.readthedocs.io/en/latest/index.html
 
 tags_badge_colors = {
-    "component:*": "primary",  # coastlines, graticule, manifold, texture, vectors
-    "domain:*": "secondary",  # oceanography, seismology, meteorology, orography
-    "filter:*": "success",  # cast, contour, extrude, threshold, triangulate, warp
-    "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
-    "projection:*": "warning",  # crs, transform
-    "render:*": "danger",  # camera, subplots
-    "resolution:*": "danger",  # high
-    "sample:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
-    "style:*": "light",  # colormap, lighting, opacity, shading
-    "widget:*": "info",  # checkbox, logo
+    "component:*": "primary",
+    "domain:*": "secondary",
+    "filter:*": "success",
+    "load:*": "dark",
+    "plot:*": "danger",
+    "projection:*": "warning",
+    "resolution:*": "danger",
+    "sample:*": "dark",
+    "style:*": "light",
+    "widget:*": "info",
 }
 
 tags_create_tags = True
 tags_create_badges = True
 tags_index_head = "Themed content tags:"  # tags landing page intro text
 tags_intro_text = "Tags:"  # prefix text for a tags list
-tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
+tags_overview_title = r""".. _tippy-gv-tagoverview:
+
+:fa:`tags` Tags"""  # title for the tags landing page
 tags_output_dir = "tags"
 tags_page_header = "Tagged content:"  # tag sub-page, header text
 tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name

@@ -155,6 +155,32 @@ The branding RGB colour is ``#80d050``.
 The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType font.
 
 
+.. _gv-developer-documentation-copyright-and-license:
+.. _tippy-gv-developer-documentation-copyright-and-license:
+
+:fa:`file-contract` Copyright & License
+---------------------------------------
+
+Source code must contain the following copyright and license preamble at the top of the file:
+
+.. code::
+
+    # Copyright (c) 2021, GeoVista Contributors.
+    #
+    # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
+    # See the LICENSE file in the package root directory for licensing details.
+
+Quality assurance of preamble compliance is provided by the `ruff`_ preview rule
+`CPY001`_ (``flake8-copyright``).
+
+Configuration of this `single preview rule`_ is defined in the ``pyproject.toml`` file.
+For further details refer to the following TOML tables:
+
+* ``[tool.ruff.lint]``
+* ``[tool.ruff.lint.flake8-copyright]``
+* ``[tool.ruff.lint.per-file-ignores]``
+
+
 .. _gv-developer-documentation-cross-references:
 .. _tippy-gv-developer-documentation-cross-references:
 
@@ -220,32 +246,6 @@ Otherwise, the top-level label **must** follow the `include directive`_ e.g., th
     ==============================
 
 
-.. _gv-developer-documentation-copyright-and-license:
-.. _tippy-gv-developer-documentation-copyright-and-license:
-
-:fa:`file-contract` Copyright & License
----------------------------------------
-
-Source code must contain the following copyright and license preamble at the top of the file:
-
-.. code::
-
-    # Copyright (c) 2021, GeoVista Contributors.
-    #
-    # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
-    # See the LICENSE file in the package root directory for licensing details.
-
-Quality assurance of preamble compliance is provided by the `ruff`_ preview rule
-`CPY001`_ (``flake8-copyright``).
-
-Configuration of this `single preview rule`_ is defined in the ``pyproject.toml`` file.
-For further details refer to the following TOML tables:
-
-* ``[tool.ruff.lint]``
-* ``[tool.ruff.lint.flake8-copyright]``
-* ``[tool.ruff.lint.per-file-ignores]``
-
-
 .. _gv-developer-documentation-pixi-workflow:
 .. _tippy-gv-developer-documentation-pixi-workflow:
 
@@ -303,6 +303,100 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
         $ pixi run --frozen serve-html html-gallery
 
 
+.. _gv-developer-documentation-tagging:
+.. _tippy-gv-developer-documentation-tagging:
+
+:fa:`tags` Tagging
+------------------
+
+.. note::
+  :class: margin, dropdown, toggle-shown
+
+  Tags are configured in the ``docs/src/conf.py`` file.
+
+Themed content :ref:`tippy-gv-tagoverview` are supported using `sphinx-tags`_.
+
+Tags provide a simple and intuitive way to group and filter content, improving
+discoverability and browsing. This allows users to easily explore or quickly
+find related topics and content.
+
+:ref:`Gallery Examples <tippy-gv-examples>` must contain one or more content
+tags using the ``tags`` directive to highlight noteworthy topics demonstrated
+within the example e.g.,
+
+.. code:: rst
+
+    .. tags::
+
+        component: manifold, filter: contour
+
+A tag consists of a lower-case ``category: topic`` pair, where:
+
+* ``category`` is a domain area of interest,
+* ``topic`` is a specific subject within that domain, and
+* a colon (``:``) separates each of the above tag components
+
+Single word tags are preferred. However, consider using a hyphen (``-``) to
+separate a multi-word ``category`` or ``topic`` within a tag e.g.,
+``data-type: point-cloud``.
+
+Endeavour to group tags of the same ``category`` on the same line, ordered
+alphabetically by ``topic``. Note that multiple tags must be separated by a
+comma (``,``).
+
+Tags may span multiple contiguous lines, ordered alphabetically by ``category``
+e.g.,
+
+.. code:: rst
+
+    .. tags::
+
+        component: coastlines, component: manifold, component: texture,
+        filter: threshold,
+        render: camera, render: subplots,
+        sample: unstructured,
+        style: opacity
+
+.. table:: Content Tags
+    :widths: 1 2 2
+    :align: center
+
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | Category               | Topic                                              | Description                                    |
+    +========================+====================================================+================================================+
+    | :guilabel:`component`  | ``coastlines``, ``graticule``, ``manifold``,       | Content that demonstrates the use of a         |
+    |                        | ``texture``, ``vectors``                           | specific feature.                              |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | :guilabel:`domain`     | ``oceanography``, ``seismology``, ``meteorology``, | Content that is relevant to a specific         |
+    |                        | ``orography``                                      | scientific domain or discipline.               |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | :guilabel:`filter`     | ``cast``, ``contour``, ``extrude``, ``threshold``, | Content that demonstrates the use of           |
+    |                        | ``triangulate``, ``warp``                          | specific `filtering`_ techniques.              |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | :guilabel:`load`       | ``curvilinear``, ``geotiff``, ``points``,          | Demonstrates use of the :mod:`geovista.bridge` |
+    |                        | ``rectilinear``, ``unstructured``                  | to load various types of geospatial data.      |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | :guilabel:`plot`       | ``camera``, ``subplots``                           | Content that showcases various `plotting`_     |
+    |                        |                                                    | techniques.                                    |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | :guilabel:`projection` | ``crs``, ``transform``                             | Content that demonstrates the use of           |
+    |                        |                                                    | geospatial projections or transformations.     |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | :guilabel:`resolution` | ``high``                                           | Content using high-resolution or high-volume   |
+    |                        |                                                    | geospatial data.                               |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | :guilabel:`sample`     | ``curvilinear``, ``geotiff``, ``points``,          | Content that leverages the convenience of      |
+    |                        | ``rectilinear``, ``unstructured``                  | pre-canned geospatial sample data available    |
+    |                        |                                                    | from the :mod:`geovista.pantry`.               |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | :guilabel:`style`      | ``colormap``, ``lighting``, ``opacity``,           | Content that includes customization of         |
+    |                        | ``shading``                                        | various render styles and aesthetics.          |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+    | :guilabel:`widget`     | ``checkbox``, ``logo``                             | Content that demonstrates the use of           |
+    |                        |                                                    | interactive `widgets`_.                        |
+    +------------------------+----------------------------------------------------+------------------------------------------------+
+
+
 .. comment
 
     Page link URL resources in alphabetical order:
@@ -314,7 +408,10 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
 .. _GNU make: https://www.gnu.org/software/make/
 .. _Jupyter Notebooks: https://jupyter.org/
 .. _La Machine Company: https://www.dafont.com/la-machine-company.font
+.. _filtering: https://docs.geovista.org/en/latest/api/geovista.filters.html
 .. _include directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#include-directive
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
+.. _plotting: https://docs.pyvista.org/examples/02-plot/#
 .. _single preview rule: https://docs.astral.sh/ruff/preview/#selecting-single-preview-rules
 .. _sphinx linkcheck builder: https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.linkcheck.CheckExternalLinksBuilder
+.. _widgets: https://docs.pyvista.org/examples/03-widgets/

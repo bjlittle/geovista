@@ -34,7 +34,7 @@ and mesh is rendered in pink.
 
     component: coastlines, component: manifold, component: texture,
     filter: threshold,
-    render: camera, render: subplots,
+    plot: camera, plot: subplots,
     sample: unstructured,
     style: opacity
 
