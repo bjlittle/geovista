@@ -55,7 +55,7 @@ jobs:
       - uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@fef5c9568ca6c4ff7707bf840ab0692ba3f08293
+        uses: prefix-dev/setup-pixi@194d461b21b6c5717c722ffc597fa91ed2ff29fa
         with:
           cache-write: false
           run-install: false
