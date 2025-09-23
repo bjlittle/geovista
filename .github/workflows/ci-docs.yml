@@ -63,7 +63,7 @@ jobs:
           version: 1.0
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@fef5c9568ca6c4ff7707bf840ab0692ba3f08293
+        uses: prefix-dev/setup-pixi@194d461b21b6c5717c722ffc597fa91ed2ff29fa
         with:
           environments: "docs-${{ matrix.version }}"
           frozen: true
