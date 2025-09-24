@@ -408,7 +408,7 @@ e.g.,
 .. _GNU make: https://www.gnu.org/software/make/
 .. _Jupyter Notebooks: https://jupyter.org/
 .. _La Machine Company: https://www.dafont.com/la-machine-company.font
-.. _filtering: https://docs.geovista.org/en/latest/api/geovista.filters.html
+.. _filtering: https://docs.pyvista.org/examples/01-filter/
 .. _include directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#include-directive
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _plotting: https://docs.pyvista.org/examples/02-plot/#
