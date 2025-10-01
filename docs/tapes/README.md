@@ -7,7 +7,6 @@ The ``tape`` scripts are self-packaged with ``pixi`` and may be run directly
 on the command line e.g.,
 
 ```shell
-
 $ ./pixi_shell_geovista_dark.tape
 ```
 
