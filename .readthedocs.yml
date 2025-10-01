@@ -8,6 +8,7 @@ build:
     - libgl1-mesa-dev
     - xvfb
   jobs:
+    # https://docs.readthedocs.com/platform/stable/build-customization.html#install-dependencies-with-pixi
     create_environment:
       - asdf plugin add pixi
       - asdf install pixi latest
