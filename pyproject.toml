@@ -604,7 +604,7 @@ pytest-pyvista = ">=0.3.1,<0.4"
 
 [tool.pixi.feature.test.tasks.tests-clean]
 cmd = "rm -rf docs/image_cache tests/plotting/unit_image_cache test_images test_images_failed"
-description = "Purge all documentation and unit image test caches"
+description = "Purge all documentation and image unit test caches"
 
 [tool.pixi.feature.test.tasks.tests-unit]
 args = [{ "arg" = "option", "default" = "" }]

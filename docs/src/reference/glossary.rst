@@ -42,8 +42,8 @@ Say what you mean. Mean what you say.
         configurations and tasks. Environments can be installed and
         activated to run :term:`tasks <Task>`. Our environments are
         defined under the ``[tool.pixi.environments]`` table in the
-        ``pyproject.toml`` manifest file. See these `design considerations`_
-        for further details.
+        ``pyproject.toml`` manifest. See these `design considerations`_ for
+        further details.
 
     Face
         A polygonal cell in a mesh geometry. Also see :term:`Cell`.
@@ -53,7 +53,7 @@ Say what you mean. Mean what you say.
         :term:`environment <Environment>` and may contain ``dependencies``,
         ``platforms``, ``channels``, ``tasks`` and various other configurations.
         Our features are defined under ``[tools.pixi.feature.<feature-name>.*]``
-        tables in the ``pyproject.toml`` manifest file. See these
+        tables in the ``pyproject.toml`` manifest. See these
         `design considerations`_ for further details.
 
     GHA
@@ -101,7 +101,7 @@ Say what you mean. Mean what you say.
         to perform a cross-platform workflow command within an
         :term:`environment <Environment>`. Tasks are defined under the
         ``[tool.pixi.feature.<feature-name>.tasks.<task-name>]`` table in the
-        ``pyproject.toml`` manifest file. See the `tasks documentation`_.
+        ``pyproject.toml`` manifest. See the `tasks documentation`_ for
         for further details.
 
     Texture Map
