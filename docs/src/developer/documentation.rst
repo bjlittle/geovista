@@ -6,6 +6,13 @@
 :fa:`square-pen` Documentation
 ==============================
 
+.. |ci-tests| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg
+    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml
+.. |rtd| image:: https://readthedocs.org/projects/geovista/badge/?version=latest
+    :target: https://geovista.readthedocs.io/en/latest/?badge=latest
+
+|ci-tests| |rtd|
+
 Here we provide some high-level guidelines and best practice advice for authors and
 contributors wishing to build and render the documentation.
 
@@ -251,6 +258,12 @@ Otherwise, the top-level label **must** follow the `include directive`_ e.g., th
 
 :fa:`share-nodes` Pixi Workflow
 -------------------------------
+
+.. admonition:: Pixi Environment
+
+    For documentation use the :guilabel:`docs`, :guilabel:`geovista` or
+    :guilabel:`py3xx` variant of those ``pixi`` environments e.g., :guilabel:`geovista-py313`.
+    See :ref:`tippy-gv-developer-packaging` for further details.
 
 The documentation may be built and rendered using `pixi run <https://pixi.sh/latest/reference/cli/pixi/run>`__
 tasks, all of which do not require to be executed within the ``docs`` directory, unlike the above

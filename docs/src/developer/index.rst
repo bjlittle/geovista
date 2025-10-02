@@ -4,14 +4,6 @@
 :fa:`retweet` Contributing
 ==========================
 
-.. note::
-    :class: margin, dropdown, toggle-shown
-
-    We've just started to bank content for the contributor material,
-    which will slowly grow and mature over time.
-
-    Thanks for your patience 🙏
-
 .. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
    :target: https://github.com/bjlittle/geovista/blob/main/CODE_OF_CONDUCT.md
 
@@ -20,7 +12,7 @@
 Firstly, and most importantly, thanks for contributing! All contributions, no
 matter how large or small are greatly appreciated and welcomed.
 
-Here we provide some guidelines to help get you started on your journey, and
+Here we provide some guidelines to help you get started on your journey, and
 clarify the various steps involved in how to contribute to ``geovista``.
 
 .. grid:: 1 1 2 2
@@ -59,6 +51,18 @@ clarify the various steps involved in how to contribute to ``geovista``.
 
         Packaging guidelines.
 
+    .. grid-item-card:: Testing
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-developer-testing
+        :link-type: ref
+        :img-top: ../_static/images/icons/testing.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Testing guidelines.
+
+
 .. toctree::
     :maxdepth: 1
     :hidden:
@@ -66,3 +70,4 @@ clarify the various steps involved in how to contribute to ``geovista``.
     towncrier
     documentation
     packaging
+    testing
