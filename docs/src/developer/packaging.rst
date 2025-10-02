@@ -32,14 +32,14 @@
 Package management is orchestrated and performed by `pixi`_.
 
 Our ``pixi`` :term:`environments <Environment>`, :term:`features <Feature>`,
-and :term:`tasks <Task>` are defined within the ``pyproject.toml`` manifest file.
+and :term:`tasks <Task>` are defined within the ``pyproject.toml`` manifest.
 
 ``pixi`` offers `fast`_, reproducible, cross-platform environment management that
 enables us to `resolve`_ and provision robust, consistent environments
 blended with packages from both ``conda`` and ``PyPI`` ecosystems.
 
 We offer several similar **collections** of ``pixi`` environments for each
-supported version of ``python``. Each environment within a collection belongs
+supported distribution of ``python``. Each environment within a collection belongs
 to the same `solve-group`_ i.e., environments within the **same** solve-group
 have their **dependencies resolved at the same time**, which means that all
 those environments share the exact same dependencies but may also include
@@ -65,12 +65,12 @@ additional dependencies compatible within the solve-group.
 
 Our ``pixi`` **environments** are organized into collections by `solve-group`_.
 See the ``[tool.pixi.environments]`` table defined in the ``pyproject.toml``
-manifest file.
+manifest.
 
 The **primary** solve-group is called :guilabel:`&d&e&f&a&u&l&t` and will always
-contain the **latest** supported version of ``python``. This is denoted by the
-``{py}`` feature which represents the **latest** version of ``python`` as recommended
-by `SPEC 0`_.
+contain the **latest** supported distribution of ``python``. This is denoted by
+the ``{py}`` feature which represents the **latest** distribution of ``python``
+as recommended by `SPEC 0`_.
 
 .. table:: Pixi :guilabel:`&d&e&f&a&u&l&t` Solve-Group
    :align: center
@@ -81,9 +81,9 @@ by `SPEC 0`_.
    +======================+=============================+==================================================+
    | :guilabel:`default`  | ``{default}``, ``{py}``     | This environment contains the **core**           |
    |                      |                             | dependencies of ``geovista`` along with the      |
-   |                      |                             | **latest** supported version of ``python``. See  |
-   |                      |                             | the ``[tool.pixi.dependencies]`` table in the    |
-   |                      |                             | ``pyproject.toml`` manifest file.                |
+   |                      |                             | **latest** supported distribution of ``python``. |
+   |                      |                             | See the ``[tool.pixi.dependencies]`` table in    |
+   |                      |                             | the ``pyproject.toml`` manifest.                 |
    +----------------------+-----------------------------+--------------------------------------------------+
    | :guilabel:`devs`     | ``{default}``, ``{devs}``,  | As per the :guilabel:`default` environment plus  |
    |                      | ``{py}``                    | additional **development** dependencies.         |
@@ -143,15 +143,15 @@ inheritance relationship between its environments:
    environment instead.
 
 Several **secondary** solve-groups are available, each of which are named
-after the version of ``python`` that they support e.g., :guilabel:`&p&y&3&1&3`.
+after the distribution of ``python`` that they support e.g., :guilabel:`&p&y&3&1&3`.
 
-The number of ``python`` versioned solve-groups on offer at any given
-time is dictated by `SPEC 0`_.
+The number of different ``python`` distribution solve-groups on offer at any
+given time is dictated by `SPEC 0`_.
 
 The generic :guilabel:`&p&y&3&x&x` solve-group is used here as a convenience to
-represent each of the ``python`` versioned solve-groups available, all of which
-are **identical** in structure and content apart from the specific version of
-``python`` that they support.
+represent each of the different ``python`` distribution solve-groups available,
+all of which are **identical** in structure and content apart from the specific
+distribution of ``python`` that they support.
 
 Also note that each :guilabel:`&p&y&3&x&x` solve-group will always contain the
 similarly named ``{py3xx}`` feature e.g., the :guilabel:`&p&y&3&1&3` solve-group
@@ -178,7 +178,8 @@ dependency to be included in all ``py313`` environments.
    +----------------------------+-----------------------------+-----------------------------------------------+
    | :guilabel:`py3xx`          | ``{default}``, ``{py3xx}``  | This environment contains the **core**        |
    |                            |                             | dependencies of ``geovista`` along with       |
-   |                            |                             | ``python`` version ``py3xx`` e.g., ``py313``. |
+   |                            |                             | ``python`` distribution ``py3xx`` e.g.,       |
+   |                            |                             | ``py313``.                                    |
    +----------------------------+-----------------------------+-----------------------------------------------+
    | :guilabel:`test-py3xx`     | ``{default}``, ``{devs}``,  | As per the :guilabel:`devs-py3xx` environment |
    |                            | ``{py3xx}``, ``{test}``     | plus additional **test** dependencies.        |
@@ -227,7 +228,7 @@ more :term:`features <Feature>`. For further details see this ``pixi`` `tutorial
 on how to create and use features in a multi-environment scenario.
 
 Our features are defined under the ``[tool.pixi.feature.{feature-name}.*]``
-tables in the ``pyproject.toml`` manifest file.
+tables in the ``pyproject.toml`` manifest.
 
 Each named `feature table`_ e.g., ``[tool.pixi.feature.devs]``, may contain
 various fields, such as ``dependencies``, ``pypi-dependencies``,
@@ -260,11 +261,12 @@ various fields, such as ``dependencies``, ``pypi-dependencies``,
    | ``{geovista}`` | ``tool.pixi.feature.geovista.*]`` | This feature is only used to define ``tasks``.  |
    +----------------+-----------------------------------+-------------------------------------------------+
    | ``{py3xx}``    | ``[tools.pixi.feature.py3xx.*]``  | This feature is used to explicitly define the   |
-   |                |                                   | version of ``python`` supported e.g.,           |
+   |                |                                   | distribution of ``python`` supported e.g.,      |
    |                |                                   | ``py313``. Note that the ``dependencies`` of    |
    |                |                                   | this feature additionally includes the ``pip``  |
-   |                |                                   | package. The number of ``python`` versions      |
-   |                |                                   | supported is governed by `SPEC 0`_.             |
+   |                |                                   | package. The number of different ``python``     |
+   |                |                                   | distributions supported is governed by          |
+   |                |                                   | `SPEC 0`_.                                      |
    +----------------+-----------------------------------+-------------------------------------------------+
    | ``{test}``     | ``[tool.pixi.feature.test.*]``    | This feature is used to define the **test**     |
    |                |                                   | ``dependencies`` and ``tasks``.                 |
@@ -281,7 +283,7 @@ A ``pixi`` :term:`task <Task>` is a custom `cross-platform workflow command`_
 that is defined as part of a :term:`feature <Feature>` within an
 :term:`environment <Environment>`.
 
-All our tasks are defined within the ``pyproject.toml`` manifest file.
+All our tasks are defined within the ``pyproject.toml`` manifest.
 
 Tasks expose a convenient and easy to use entry-point to commands that allow
 streamlined and automated custom workflows.
@@ -310,7 +312,7 @@ The following tasks are defined for each of our features:
    |                |                 | See ``geovista download --help`` for further details.               |
    +----------------+-----------------+---------------------------------------------------------------------+
    | ``{docs}``     | ``clean``       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_ `sphinx-tags`_,      |
-   |                |                 | carousel, and other `sphinx-build`_ artifacts i.e.,                 |
+   |                |                 | carousel, and other `sphinx-build`_ artifacts e.g.,                 |
    |                |                 |                                                                     |
    |                |                 | .. code:: console                                                   |
    |                |                 |                                                                     |
@@ -318,7 +320,7 @@ The following tasks are defined for each of our features:
    |                |                 |                                                                     |
    |                |                 | This task is an alias for the ``make clean`` command.               |
    |                +-----------------+---------------------------------------------------------------------+
-   |                | ``clean-all``   | Perform both the ``clean`` and ``clean-cache`` tasks i.e.,          |
+   |                | ``clean-all``   | Perform both the ``clean`` and ``clean-cache`` tasks e.g.,          |
    |                |                 |                                                                     |
    |                |                 | .. code:: console                                                   |
    |                |                 |                                                                     |
@@ -327,7 +329,7 @@ The following tasks are defined for each of our features:
    |                |                 | This task is an alias for the ``make clean-all`` command.           |
    |                +-----------------+---------------------------------------------------------------------+
    |                | ``clean-cache`` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_    |
-   |                |                 | for further details i.e.,                                           |
+   |                |                 | for further details e.g.,                                           |
    |                |                 |                                                                     |
    |                |                 | .. code:: console                                                   |
    |                |                 |                                                                     |
@@ -378,7 +380,7 @@ The following tasks are defined for each of our features:
    |                |                 | This task is an alias for the ``make serve-html`` command.          |
    +----------------+-----------------+---------------------------------------------------------------------+
    | ``{geovista}`` | ``tests-docs``  | Perform documentation image tests of ``pyvista-plot`` directive     |
-   |                |                 | static scenes i.e.,                                                 |
+   |                |                 | static scenes e.g.,                                                 |
    |                |                 |                                                                     |
    |                |                 | .. code:: console                                                   |
    |                |                 |                                                                     |
@@ -387,7 +389,7 @@ The following tasks are defined for each of our features:
    |                |                 | This task calls ``pytest --doc_mode`` to perform the documentation  |
    |                |                 | image tests using the `pytest-pyvista`_ plugin. Refer to the        |
    |                |                 | ``[tool.pytest.ini_options]`` table entry in the                    |
-   |                |                 | ``pyproject.toml`` manifest file for default configuration options. |
+   |                |                 | ``pyproject.toml`` manifest for default configuration options.      |
    |                |                 |                                                                     |
    |                |                 | Note that the ``download doc-images`` and                           |
    |                |                 | ``make html-docstring-inline`` tasks are called prior to running    |
@@ -396,7 +398,8 @@ The following tasks are defined for each of our features:
    |                |                 | This task is only available in the :guilabel:`geovista` and         |
    |                |                 | :guilabel:`geovista-py3xx` environments.                            |
    +----------------+-----------------+---------------------------------------------------------------------+
-   | ``{test}``     | ``tests-clean`` | Purge all documentation and unit image test caches i.e.,            |
+   | ``{test}``     | ``tests-clean`` | Purge both the documentation and unit test image caches, along with |
+   |                |                 | any images generated from previous test sessions e.g.,              |
    |                |                 |                                                                     |
    |                |                 | .. code:: console                                                   |
    |                |                 |                                                                     |
@@ -405,12 +408,12 @@ The following tasks are defined for each of our features:
    |                +-----------------+---------------------------------------------------------------------+
    |                | ``tests-unit``  | Perform unit tests.                                                 |
    |                |                 |                                                                     |
-   |                |                 | This task calls the ``pytest`` command. Defaults to running all the |
-   |                |                 | unit tests discoverable by ``pytest``.                              |
+   |                |                 | This task calls the ``pytest`` command. Defaults to executing all   |
+   |                |                 | unit tests discoverable from the ``geovista`` root directory.       |
    |                |                 |                                                                     |
-   |                |                 | Accepts a valid ``pytest`` marker as an optional argument. Refer to |
-   |                |                 | the ``[tool.pytest.ini_options]`` table entry in the                |
-   |                |                 | ``pyproject.toml`` manifest file for configured ``markers`` e.g.,   |
+   |                |                 | Accepts a valid ``pytest`` marker expression as an optional         |
+   |                |                 | argument. Refer to the ``[tool.pytest.ini_options]`` table entry in |
+   |                |                 | the ``pyproject.toml`` manifest for configured ``markers`` e.g.,    |
    |                |                 |                                                                     |
    |                |                 | .. code:: console                                                   |
    |                |                 |                                                                     |
@@ -423,10 +426,13 @@ The following tasks are defined for each of our features:
 .. seealso::
    :class: dropdown, toggle-shown
 
-   The ``pixi task list`` command describes each of the tasks available within the workspace.
+   The ``pixi task list`` command describes each task available within the workspace.
 
    Whereas ``pixi task list --summary`` enumerates the tasks available per environment.
 
+
+.. _gv-developer-packaging-continuous-integration:
+.. _tippy-gv-developer-packaging-continuous-integration:
 
 :fab:`github` Continuous Integration
 ------------------------------------
@@ -473,11 +479,14 @@ The following packaging workflows are available:
    +-------------+-------------------------------------------------------------------------------------+
 
 
+.. _gv-developer-packaging-python-package-index:
+.. _tippy-gv-developer-packaging-python-package-index:
+
 :fab:`python` Python Package Index
 ----------------------------------
 
 ``PyPI`` package dependencies are configured in the ``pyproject.toml`` manifest
-file under the ``[tool.setuptools.dynamic]`` and
+under the ``[tool.setuptools.dynamic]`` and
 ``[tool.setuptools.dynamic.optional-dependencies]`` table entries.
 
 Version management of our ``PyPI`` dependencies is orchestrated by :fab:`github`
@@ -500,11 +509,8 @@ updates within the ``PyPI`` ecosystem.
    `dependabot/dependabot-core issue#2227`_ 🤞
 
 
-.. _Dependabot: https://docs.github.com/en/code-security/getting-started/dependabot-quickstart-guide
 .. _OpenID Connect (OIDC): https://openid.net/developers/how-connect-works/
 .. _PyPI Trusted Publishing: https://docs.pypi.org/trusted-publishers/
-.. _SPEC: https://scientific-python.org/specs/
-.. _SPEC 0: https://scientific-python.org/specs/spec-0000/
 .. _.github/dependabot.yml: https://github.com/bjlittle/geovista/blob/main/.github/dependabot.yml
 .. _automatically included: https://pixi.sh/latest/tutorials/multi_environment/#default
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml

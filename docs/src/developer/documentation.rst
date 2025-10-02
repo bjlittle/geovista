@@ -177,7 +177,7 @@ The following documentation workflows are available:
 
 .. table:: Documentation Workflows
     :align: center
-    :widths: 1 2
+    :widths: 1 3
 
     +-------------+----------------------------------------------------------------------------------+
     | Workflow    | Description                                                                      |
@@ -325,9 +325,17 @@ its :ref:`tippy-gv-overview-ecosystem` section:
 :fa:`lines-leaning` Pixi Workflow
 ---------------------------------
 
-The documentation may be built and rendered using `pixi run <https://pixi.sh/latest/reference/cli/pixi/run/>`__
-tasks, all of which do not require to be executed within the ``docs`` directory, unlike the above
-:ref:`tippy-gv-developer-documentation-building` ``make`` tasks e.g.,
+.. admonition:: Pixi Environment
+
+    Documentation ``pixi`` :term:`tasks <Task>` are available in the
+    :guilabel:`docs`, :guilabel:`geovista` and :guilabel:`py3xx` variant of
+    those ``pixi`` environments e.g., :guilabel:`geovista-py313`. See
+    :ref:`tippy-gv-developer-packaging` for further details.
+
+The documentation may be built and rendered using
+`pixi run <https://pixi.sh/latest/reference/cli/pixi/run/>`__ tasks, all of
+which **do not** require to be executed from within the ``docs`` directory, unlike
+the above :ref:`tippy-gv-developer-documentation-building` ``make`` tasks e.g.,
 
 .. code:: console
 

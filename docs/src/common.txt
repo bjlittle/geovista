@@ -3,6 +3,7 @@
     common URL resources in alphabetical order:
 
 .. _Cartopy: https://github.com/SciTools/cartopy
+.. _Dependabot: https://docs.github.com/en/code-security/getting-started/dependabot-quickstart-guide
 .. _Diátaxis: https://diataxis.fr/
 .. _Discussions: https://github.com/bjlittle/geovista/discussions
 .. _Executable Books: https://github.com/executablebooks
@@ -22,6 +23,8 @@
 .. _Qt: https://www.qt.io/
 .. _RTD (latest): https://geovista.readthedocs.io/en/latest/
 .. _RTD (stable): https://geovista.readthedocs.io/en/stable/
+.. _SPEC: https://scientific-python.org/specs/
+.. _SPEC 0: https://scientific-python.org/specs/spec-0000/
 .. _Test PyPI: https://test.pypi.org/project/geovista/
 .. _Trame: https://kitware.github.io/trame/
 .. _VTK: https://vtk.org/
@@ -47,6 +50,7 @@
 .. _pixi: https://github.com/prefix-dev/pixi
 .. _pre-commit: https://pre-commit.com/
 .. _pytest-pyvista: https://github.com/pyvista/pytest-pyvista
+.. _pyvista: https://github.com/pyvista/pyvista
 .. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
 .. _ruff: https://github.com/astral-sh/ruff
 .. _sphinx: https://github.com/sphinx-doc/sphinx
