@@ -305,6 +305,13 @@ Otherwise, the top-level label **must** follow the `include directive`_ e.g., th
 :fa:`lines-leaning` Pixi Workflow
 ---------------------------------
 
+.. admonition:: Pixi Environment
+
+    Documentation ``pixi`` tasks are available in the :guilabel:`docs`,
+    :guilabel:`geovista` or :guilabel:`py3xx` variant of those ``pixi``
+    environments e.g., :guilabel:`geovista-py313`. See
+    :ref:`tippy-gv-developer-packaging` for further details.
+
 The documentation may be built and rendered using `pixi run <https://pixi.sh/latest/reference/cli/pixi/run/>`__
 tasks, all of which do not require to be executed within the ``docs`` directory, unlike the above
 :ref:`tippy-gv-developer-documentation-building` ``make`` tasks e.g.,
