@@ -21,6 +21,7 @@
 .. _Qt: https://www.qt.io/
 .. _RTD (latest): https://geovista.readthedocs.io/en/latest
 .. _RTD (stable): https://geovista.readthedocs.io/en/stable
+.. _Test PyPI: https://test.pypi.org/project/geovista/
 .. _Trame: https://kitware.github.io/trame/
 .. _VTK: https://vtk.org/
 .. _Visualization Toolkit: https://vtk.org/
