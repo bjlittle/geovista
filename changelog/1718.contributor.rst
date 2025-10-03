@@ -1,0 +1,2 @@
+Updated developer :ref:`tippy-gv-developer-packaging` guidelines.
+(:user:`bjlittle`)
