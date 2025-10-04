@@ -22,11 +22,12 @@
 
    <hr>
 
-.. seealso::
+.. note::
   :class: margin, dropdown, toggle-shown
 
-  See the ``pixi``
-  `Installation <https://pixi.sh/latest/installation/>`_ instructions.
+  We follow *Scientific Python Ecosystem Coordination* (`SPEC`_)
+  recommendation for *Minimum Supported Dependencies* (`SPEC 0`_), and
+  typically support the latest **2-3** distributions of ``python``.
 
 Package management is orchestrated and performed by `pixi`_.
 
@@ -36,14 +37,7 @@ manifest file.
 
 ``pixi`` offers `fast`_, reproducible, cross-platform environment management that
 enables us to `resolve`_ and provision robust, consistent environments
-blended from both ``conda`` and ``PyPI`` ecosystems.
-
-.. note::
-  :class: margin, dropdown, toggle-shown
-
-  We follow *Scientific Python Ecosystem Coordination* (`SPEC`_)
-  recommendation for *Minimum Supported Dependencies* (`SPEC 0`_), and
-  typically support the latest **2-3** distributions of ``python``.
+blended with packages from both ``conda`` and ``PyPI`` ecosystems.
 
 We offer several similar **collections** of ``pixi`` environments for each
 supported version of ``python``. Each environment within a collection belongs
@@ -115,18 +109,6 @@ represent each of the ``python`` versioned solve-groups available, all of which
 are identical in structure and content apart from the version of ``python`` that
 they support.
 
-.. attention::
-   :class: dropdown, toggle-shown
-
-   The generic :guilabel:`&p&y&3&x&x` solve-group does **not** exist.
-
-.. note::
-   :class: dropdown, toggle-shown
-
-   The :guilabel:`&d&e&f&a&u&l&t` solve-group will always mirror the
-   :guilabel:`&p&y&3&x&x` solve-group by containing the **latest** supported
-   version of ``python``.
-
 .. table:: Pixi :guilabel:`&p&y&3&x&x` Solve-Groups
    :widths: 2 2 6
    :align: center
@@ -153,16 +135,21 @@ they support.
    |                            | ``{py3xx}``, ``{test}``    | plus additional **test** dependencies.        |
    +----------------------------+----------------------------+-----------------------------------------------+
 
+.. attention::
+   :class: dropdown, toggle-shown
+
+   The generic :guilabel:`&p&y&3&x&x` solve-group does **not** exist.
+
 
 :fa:`puzzle-piece` Pixi Features
 --------------------------------
 
-A ``pixi`` environment is defined by combining one or more :term:`features <Feature>`.
+A ``pixi`` **environment** is defined by combining one or more :term:`features <Feature>`.
 For further details see this ``pixi`` `tutorial`_ on how to create and use
 features in a multi-environment scenario.
 
 Our features are defined under the ``[tool.pixi.feature.{feature-name}.*]``
-table in the ``pyproject.toml`` manifest file.
+tables in the ``pyproject.toml`` manifest file.
 
 Each named `feature table`_ e.g., ``[tool.pixi.feature.devs]``, may contain
 various fields, such as ``dependencies``, ``pypi-dependencies``,
@@ -196,7 +183,8 @@ various fields, such as ``dependencies``, ``pypi-dependencies``,
    |               |                                  | version of ``python`` supported e.g.,          |
    |               |                                  | ``py313``. Note that the ``dependencies`` of   |
    |               |                                  | this feature additionally includes the ``pip`` |
-   |               |                                  | package.                                       |
+   |               |                                  | package. The number of ``python`` versions     |
+   |               |                                  | supported is governed by `SPEC 0`_.            |
    +---------------+----------------------------------+------------------------------------------------+
    | ``{test}``    | ``[tool.pixi.feature.test.*]``   | This feature is used to define the **test**    |
    |               |                                  | ``dependencies`` and ``tasks``.                |
