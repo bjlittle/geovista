@@ -227,7 +227,7 @@ The following packaging :fab:`github` workflows are available:
    |             | (``sdist``) and binary ``wheel`` of ``geovista``.                                   |
    |             |                                                                                     |
    |             | Note that we have adopted `PyPI Trusted Publishing`_ with `OpenID Connect (OIDC)`_  |
-   |             | for secure `deployments`_.                                                          |
+   |             | for secure deployments.                                                             |
    |             |                                                                                     |
    |             | The ``sdist`` and ``wheel`` assets are automatically published to `Test PyPI`_      |
    |             | for each ``pull-request`` merged to the ``main`` branch, and `PyPI`_ for each       |
@@ -272,7 +272,6 @@ updates within the ``PyPI`` ecosystem.
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml
 .. _ci-wheels.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-wheels.yml
 .. _dependabot/dependabot-core issue#2227: https://github.com/dependabot/dependabot-core/issues/2227#issuecomment-1709069470
-.. _deployments: https://github.com/bjlittle/geovista/deployments
 .. _fast: https://prefix.dev/blog/sharded_repodata
 .. _feature table: https://pixi.sh/latest/reference/pixi_manifest/#the-feature-table
 .. _requirements/geovista.yml: https://github.com/bjlittle/geovista/blob/main/requirements/geovista.yml
