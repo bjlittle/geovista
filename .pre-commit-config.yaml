@@ -21,9 +21,9 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.13.2"
+    rev: "v0.13.3"
     hooks:
-      - id: ruff
+      - id: ruff-check
         types: [file, python]
         args: [--fix, --show-fixes]
       - id: ruff-format
@@ -112,7 +112,7 @@ repos:
       - id: check-readthedocs
 
   - repo: https://github.com/scientific-python/cookie
-    rev: 2025.05.02
+    rev: 2025.10.01
     hooks:
       - id: sp-repo-review
         additional_dependencies: ["repo-review[cli]"]
