@@ -56,6 +56,11 @@ Say what you mean. Mean what you say.
         tables in the ``pyproject.toml`` manifest file. See these
         `design considerations`_ for further details.
 
+    GHA
+        Acronym for **GitHub Action**. A feature offered by `GitHub`_ that provides
+        Continuous Integration (CI), Continuous Deployment (CD) and task automation
+        workflows within a GitHub repository.
+
     Land Mask
         Typically a boolean array used to indicate the cells in a mesh that
         represent land.
