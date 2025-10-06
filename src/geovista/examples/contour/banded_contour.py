@@ -46,7 +46,6 @@ from __future__ import annotations
 import geovista
 from geovista.common import cast_UnstructuredGrid_to_PolyData as cast
 from geovista.pantry.meshes import lfric_orog
-import geovista.theme
 
 
 def main() -> None:
