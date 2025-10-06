@@ -199,7 +199,7 @@ various fields, such as ``dependencies``, ``pypi-dependencies``,
 .. |ci-wheels| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg
    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml
 
-The following packaging :fab:`github` workflows are available:
+The following packaging workflows are available:
 
 .. table:: Packaging Workflows
    :widths: 1 2
@@ -208,9 +208,10 @@ The following packaging :fab:`github` workflows are available:
    +-------------+-------------------------------------------------------------------------------------+
    | Workflow    | Description                                                                         |
    +=============+=====================================================================================+
-   | |ci-locks|  | The `ci-locks.yml`_ ``cron`` based workflow regularly schedules ``pixi`` to refresh |
-   |             | the ``pixi.lock`` file based on the ``pyproject.toml`` manifest and the             |
-   |             | latest package versions available from the ``conda`` and ``PyPI`` ecosystems.       |
+   | |ci-locks|  | The `ci-locks.yml`_ ``cron`` based :term:`GHA workflow <GHA>` regularly schedules   |
+   |             | ``pixi`` to refresh the ``pixi.lock`` file based on the ``pyproject.toml`` manifest |
+   |             | and the latest package versions available from the ``conda`` and ``PyPI``           |
+   |             | ecosystems.                                                                         |
    |             |                                                                                     |
    |             | Only the **latest** ``python`` variant of the :guilabel:`geovista-py3xx`            |
    |             | environment e.g., :guilabel:`geovista-py313`, will be exported to a ``conda``       |
@@ -223,15 +224,15 @@ The following packaging :fab:`github` workflows are available:
    |             | only the top-level dependencies of that environment, as defined by its              |
    |             | :ref:`features <tippy-gv-developer-packaging-pixi-solve-groups>`.                   |
    +-------------+-------------------------------------------------------------------------------------+
-   | |ci-wheels| | The `ci-wheels.yml`_ workflow builds, tests and publishes the source distribution   |
-   |             | (``sdist``) and binary ``wheel`` of ``geovista``.                                   |
+   | |ci-wheels| | The `ci-wheels.yml`_ :term:`GHA workflow <GHA>` builds, tests and publishes the     |
+   |             | source distribution (``sdist``) and binary ``wheel`` of ``geovista``.               |
    |             |                                                                                     |
-   |             | Note that we have adopted `PyPI Trusted Publishing`_ with `OpenID Connect (OIDC)`_  |
-   |             | for secure deployments.                                                             |
+   |             | We have adopted `PyPI Trusted Publishing`_ with `OpenID Connect (OIDC)`_ for secure |
+   |             | deployments of assets.                                                              |
    |             |                                                                                     |
-   |             | The ``sdist`` and ``wheel`` assets are automatically published to `Test PyPI`_      |
-   |             | for each ``pull-request`` merged to the ``main`` branch, and `PyPI`_ for each       |
-   |             | release ``tag``.                                                                    |
+   |             | Note that the ``sdist`` and ``wheel`` assets are automatically published to         |
+   |             | `Test PyPI`_ for each ``pull-request`` merged to the ``main`` branch, and `PyPI`_   |
+   |             | for each ``tag`` release.                                                           |
    +-------------+-------------------------------------------------------------------------------------+
 
 

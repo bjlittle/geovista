@@ -120,7 +120,7 @@ Perform documentation quality assurance.
     +-----------------------+----------------------------------------------------------------------------------+
     | Make Task             | Description                                                                      |
     +=======================+==================================================================================+
-    | :guilabel:`doctest`   | Execute `sphinx.ext.doctest`_ to test snippets within the documentation.         |
+    | :guilabel:`doctest`   | Execute `sphinx.ext.doctest`_ to test code snippets within the documentation.    |
     +-----------------------+----------------------------------------------------------------------------------+
 
 
@@ -153,6 +153,41 @@ The branding RGB colour is ``#80d050``.
     GeoVista Logo Title
 
 The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType font.
+
+
+:fab:`github` Continuous Integration
+------------------------------------
+
+.. |ci-docs| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg
+    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml
+.. |rtd| image:: https://readthedocs.org/projects/geovista/badge/?version=latest
+    :target: https://geovista.readthedocs.io/en/latest/?badge=latest
+
+The following documentation workflows are available:
+
+.. table:: Documentation Workflows
+    :widths: 1 2
+    :align: center
+
+    +-----------+----------------------------------------------------------------------------------+
+    | Workflow  | Description                                                                      |
+    +===========+==================================================================================+
+    | |ci-docs| | The `ci-docs.yml`_ :term:`GHA workflow <GHA>` executes `sphinx.ext.doctest`_ to  |
+    |           | test code snippets within the documentation.                                     |
+    |           |                                                                                  |
+    |           | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` |
+    |           | :guilabel:`doctest` task.                                                        |
+    +-----------+----------------------------------------------------------------------------------+
+    | |rtd|     | The `.readthedocs.yml`_ workflow builds and publishes our documentation on the   |
+    |           | `ReadtheDocs`_ (RTD) platform.                                                   |
+    |           |                                                                                  |
+    |           | See the `Versions`_ section for each ``tag`` release of the documentation hosted |
+    |           | on RTD along with the :guilabel:`latest` render of the ``main`` branch, and a    |
+    |           | :guilabel:`stable` render of the latest ``tag`` release.                         |
+    |           |                                                                                  |
+    |           | Refer to the `Builds`_ section for a render of the documentation for each        |
+    |           | ``pull-request``.                                                                |
+    +-----------+----------------------------------------------------------------------------------+
 
 
 .. _gv-developer-documentation-copyright-and-license:
@@ -263,6 +298,7 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
 .. table:: Pixi Tasks
     :widths: 1 3
     :align: center
+    :name: documentation-pixi-workflow
 
     +-------------------------+----------------------------------------------------------------------------------+
     | Pixi Task               | Description                                                                      |
@@ -275,8 +311,8 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
     | :guilabel:`clean-cache` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_                 |
     |                         | for further details.                                                             |
     +-------------------------+----------------------------------------------------------------------------------+
-    | :guilabel:`doctest`     | Execute `sphinx.ext.doctest`_ to test snippets within the documentation. Note    |
-    |                         | that the ``clean`` task is called prior to running this task.                    |
+    | :guilabel:`doctest`     | Execute `sphinx.ext.doctest`_ to test code snippets within the documentation.    |
+    |                         | Note that the ``clean`` task is called prior to running this task.               |
     +-------------------------+----------------------------------------------------------------------------------+
     | :guilabel:`make`        | Build the documentation using ``html-noplot`` by default. Pass either ``html``,  |
     |                         | ``html-docstring``, ``html-gallery``, ``html-inline`` or ``html-tutorial`` as an |
@@ -402,16 +438,21 @@ e.g.,
     Page link URL resources in alphabetical order:
 
 
-.. _CPY001: ` <https://docs.astral.sh/ruff/rules/missing-copyright-notice/
+.. _Builds: https://app.readthedocs.org/projects/geovista/builds/
+.. _CPY001: https://docs.astral.sh/ruff/rules/missing-copyright-notice/
 .. _Creative Commons Attribution 4.0 International License: https://creativecommons.org/licenses/by/4.0/
 .. _Font Awesome: https://fontawesome.com/
 .. _GNU make: https://www.gnu.org/software/make/
 .. _Jupyter Notebooks: https://jupyter.org/
 .. _La Machine Company: https://www.dafont.com/la-machine-company.font
+.. _ReadtheDocs: https://app.readthedocs.org/projects/geovista/
+.. _Versions: https://app.readthedocs.org/projects/geovista/
+.. _ci-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-docs.yml
 .. _filtering: https://docs.pyvista.org/examples/01-filter/
 .. _include directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#include-directive
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _plotting: https://docs.pyvista.org/examples/02-plot/#
+.. _.readthedocs.yml: https://github.com/bjlittle/geovista/blob/main/.readthedocs.yml
 .. _single preview rule: https://docs.astral.sh/ruff/preview/#selecting-single-preview-rules
 .. _sphinx linkcheck builder: https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.linkcheck.CheckExternalLinksBuilder
 .. _widgets: https://docs.pyvista.org/examples/03-widgets/
