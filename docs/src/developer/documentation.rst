@@ -160,7 +160,7 @@ The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType
 
 .. |ci-docs| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml
-.. |rtd| image:: https://readthedocs.org/projects/geovista/badge/?version=latest
+.. |ci-rtd| image:: https://readthedocs.org/projects/geovista/badge/?version=latest
     :target: https://geovista.readthedocs.io/en/latest/?badge=latest
 
 The following documentation workflows are available:
@@ -178,7 +178,7 @@ The following documentation workflows are available:
     |           | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` |
     |           | :guilabel:`doctest` task.                                                        |
     +-----------+----------------------------------------------------------------------------------+
-    | |rtd|     | The `.readthedocs.yml`_ workflow builds and publishes our documentation on the   |
+    | |ci-rtd|  | The `.readthedocs.yml`_ workflow builds and publishes our documentation on the   |
     |           | `ReadtheDocs`_ (RTD) platform.                                                   |
     |           |                                                                                  |
     |           | See the `Versions`_ section for each ``tag`` release of the documentation hosted |
