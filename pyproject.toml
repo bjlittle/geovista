@@ -132,6 +132,7 @@ filterwarnings = [
   "error",
   "ignore::cartopy.io.DownloadWarning",
   "ignore:geovista unable to remesh 1 cell:UserWarning",
+  "ignore:importing 'Const' from 'astroid' is deprecated and will be removed in v5, import it from 'astroid.nodes' instead:DeprecationWarning",
   "ignore:numpy.ndarray size changed:RuntimeWarning",
   "ignore:pyvista test cache image dir:UserWarning",
   "ignore:pyvista test generated image dir:UserWarning",
