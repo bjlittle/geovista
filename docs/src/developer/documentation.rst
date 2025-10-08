@@ -160,7 +160,7 @@ The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType
 
 .. |ci-docs| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml
-.. |ci-rtd| image:: https://readthedocs.org/projects/geovista/badge/?version=latest
+.. |ci-rtd| image:: https://img.shields.io/badge/docs-passing-4BC51D
     :target: https://geovista.readthedocs.io/en/latest/?badge=latest
 
 The following documentation workflows are available:
