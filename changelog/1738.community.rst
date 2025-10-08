@@ -1,0 +1,2 @@
+Added :user:`changliao1025` as a contributor for ``bug``.
+(:user:`bjlittle`)
