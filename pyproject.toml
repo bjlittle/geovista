@@ -501,7 +501,7 @@ h3-py = ">=4.2.2,<5"
 pandas = ">=2.2.3,<3"
 pre-commit = ">=4.2.0,<5"
 rasterio = ">=1.4.3,<2"
-ruff = ">=0.12.0,<0.14"
+ruff = ">=0.12.0,<0.15"
 zizmor = ">=1.9.0,<2"
 
 [tool.pixi.feature.devs.pypi-dependencies]
