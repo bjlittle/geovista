@@ -90,7 +90,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import partial
 from itertools import combinations
-from typing import TypeAlias
 
 try:
     import h3
@@ -119,9 +118,9 @@ import geovista.theme  # noqa: F401
 # Missing Data Indicator
 MDI = -1
 
-# Type alias
-H3AssetLike: TypeAlias = str | PolyData
-H3Indexes = set[str]
+# Convenient type aliases
+type H3AssetLike = str | PolyData
+type H3Indexes = set[str]
 
 
 @dataclass(slots=True)

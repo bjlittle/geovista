@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 import warnings
 
 import lazy_loader as lazy
@@ -66,7 +66,7 @@ __all__ = [
 ]
 
 # this is a type alias
-Corners: TypeAlias = tuple[float, float, float, float]
+type Corners = tuple[float, float, float, float]
 """Type alias for the corners of a bounding-box."""
 
 # constants

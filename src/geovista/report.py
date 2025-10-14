@@ -14,7 +14,6 @@ Notes
 from __future__ import annotations
 
 import types
-from typing import TypeAlias
 
 import lazy_loader as lazy
 import scooby
@@ -32,7 +31,7 @@ __all__ = [
 ]
 
 # this is a type alias
-PackageLike: TypeAlias = str | types.ModuleType
+type PackageLike = str | types.ModuleType
 """Type alias for a package module or package name."""
 
 # constants

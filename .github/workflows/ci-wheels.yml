@@ -71,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["py311", "py312", "py313"]
+        version: ["py312", "py313"]
 
     steps:
       - uses: actions/checkout@v5

@@ -13,7 +13,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any
 
 import lazy_loader as lazy
 import pyproj
@@ -39,8 +39,7 @@ __all__ = [
     "to_wkt",
 ]
 
-# this is a type alias
-CRSLike: TypeAlias = int | str | dict[str, Any] | pyproj.crs.crs.CRS
+type CRSLike = int | str | dict[str, Any] | pyproj.crs.crs.CRS
 """Type alias for a Coordinate Reference System."""
 
 # constants
