@@ -521,7 +521,7 @@ nest-asyncio = ">=1.6.0,<2"
 numpydoc = ">=1.8.0,<2"
 pydata-sphinx-theme = "!=0.16.0,!=0.16.1,<0.16.2" # https://github.com/bjlittle/geovista/issues/1247
 sphinx = ">=8.2.3,<9"
-#sphinx-autoapi = ">=3.5.0,<4" # https://github.com/conda-forge/sphinx-autoapi-feedstock/pull/50
+sphinx-autoapi = ">=3.5.0,<4"
 sphinx-book-theme = ">=1.1.3,<2"
 sphinx-click = ">=6.0.0,<7"
 sphinx-copybutton = ">=0.5.2,<0.6"
@@ -538,7 +538,6 @@ trame-vtk = "==2.9.1"
 trame-vuetify = "==3.0.1"
 
 [tool.pixi.feature.docs.pypi-dependencies]
-sphinx-autoapi = ">=3.5.0,<4" # https://github.com/conda-forge/sphinx-autoapi-feedstock/pull/50
 sphinx-tippy = ">=0.4.3,<0.5"
 
 [tool.pixi.feature.docs.tasks.clean]
