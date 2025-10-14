@@ -45,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04"]
-        version: ["py311", "py312", "py313"]
+        version: ["py312", "py313"]
         session: ["tests"]
         marker: ["image", "not image"]
         include:

@@ -36,7 +36,7 @@ keywords = [
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 name = "geovista"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 
 [project.urls]
@@ -445,17 +445,6 @@ geovista = { features = [
 ], solve-group = "default" }
 test = { features = ["devs", "py313", "test"], solve-group = "default" }
 
-devs-py311 = { features = ["devs", "py311"], solve-group = "py311" }
-docs-py311 = { features = ["devs", "docs", "py311"], solve-group = "py311" }
-geovista-py311 = { features = [
-  "devs",
-  "docs",
-  "py311",
-  "test",
-], solve-group = "py311" }
-py311 = { features = ["py311"], solve-group = "py311" }
-test-py311 = { features = ["devs", "py311", "test"], solve-group = "py311" }
-
 devs-py312 = { features = ["devs", "py312"], solve-group = "py312" }
 docs-py312 = { features = ["devs", "docs", "py312"], solve-group = "py312" }
 geovista-py312 = { features = [
@@ -569,10 +558,6 @@ args = [{ "arg" = "option", "default" = "html-noplot" }]
 cmd = "make serve-html"
 cwd = "docs"
 depends-on = [{ "task" = "make", "args" = ["{{ option }}"] }]
-
-[tool.pixi.feature.py311.dependencies]
-pip = ">=25.1.1,<26"
-python = "3.11.*"
 
 [tool.pixi.feature.py312.dependencies]
 pip = ">=25.1.1,<26"
