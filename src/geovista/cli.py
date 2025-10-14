@@ -52,70 +52,6 @@ FG_COLOUR: str = "cyan"
 EXAMPLES: list[str] = [ALL, *get_modules("geovista.examples")]
 
 
-def _download_group(
-    fnames: list[str],
-    decompress: bool | None = False,
-    name: str | None = None,
-    fg_colour: str | None = None,
-    summary: bool | None = True,
-) -> None:
-    """Download and populate the geovista cache with requested assets.
-
-    Only assets which are not in the cache will be downloaded and verified via
-    :mod:`pooch`.
-
-    Parameters
-    ----------
-    fnames : list of str
-        The list of assets to be downloaded.
-    decompress : bool, default=False
-        Decompress the downloaded assets.
-    name : str, optional
-        The name of the asset collection within the cache e.g., raster or pantry.
-    fg_colour : str, default="cyan"
-        Foreground colour to highlight the asset name during download.
-    summary : bool, default=True
-        Whether to provide a download summary to the user.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
-    if fg_colour is None:
-        fg_colour = FG_COLOUR
-
-    name_post: str = "" if name is None else f"{name} "
-
-    n_fnames: int = len(fnames)
-    width: int = len(str(n_fnames))
-
-    previous = pooch_mute(silent=True)
-
-    click.echo(
-        f"Downloading {n_fnames} {name_post}registered asset{_plural(n_fnames)}:"
-    )
-    for i, fname in enumerate(fnames):
-        click.echo(f"[{i + 1:0{width}d}/{n_fnames}] Downloading ", nl=False)
-        click.secho(f"{fname} ", nl=False, fg=fg_colour)
-        click.echo("... ", nl=False)
-        processor = None
-        name_path = pathlib.Path(fname)
-        if decompress and (suffix := name_path.suffix) in pooch.Decompress.extensions:
-            processor = pooch.Decompress(
-                method="auto", name=name_path.stem.removesuffix(suffix)
-            )
-        CACHE.fetch(fname, processor=processor)
-        click.secho("done!", fg="green")
-
-    if summary:
-        click.echo("\nAssets are available in the cache directory ", nl=False)
-        click.secho(f"{CACHE.abspath}", fg=fg_colour)
-        click.echo("👍 All done!")
-
-    _ = pooch_mute(silent=previous)
-
-
 def _groups() -> list[str]:
     """Filter examples for unique group names.
 
@@ -140,25 +76,272 @@ def _groups() -> list[str]:
     return sorted(result)
 
 
-def _plural(quantity: int) -> str:
-    """Determine whether the provided `quantity`` is textually plural.
-
-    Parameters
-    ----------
-    quantity : int
-        The quantity under consideration.
-
-    Returns
-    -------
-    str
-        A "s" for a plural quantity, otherwise an empty string.
+class Downloader:
+    """Asset downloader and manager.
 
     Notes
     -----
-    .. versionadded:: 0.1.0
+    .. versionadded:: 0.6.0
 
     """
-    return "s" if (quantity == 0 or quantity > 1) else ""
+
+    def __init__(self) -> None:
+        """Asset downloader and manager.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        self.fnames: list[str] = sorted(CACHE.registry_files)
+
+    @staticmethod
+    def plural(quantity: int) -> str:
+        """Determine whether the provided `quantity`` is textually plural.
+
+        Parameters
+        ----------
+        quantity : int
+            The quantity under consideration.
+
+        Returns
+        -------
+        str
+            A "s" for a plural quantity, otherwise an empty string.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        return "s" if (quantity == 0 or quantity > 1) else ""
+
+    def clean(self) -> None:
+        """Remove all cached assets.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        msg = "Are you sure you want to delete all cached geovista assets"
+        if click.confirm(f"\n{msg}?", abort=True):
+            target = resources["cache_dir"]
+
+            if target.exists():
+                if target.is_symlink():
+                    rmtree(target.readlink())
+                    target.unlink()
+                else:
+                    rmtree(target)
+
+                click.echo("\nDeleted the cache directory ", nl=False)
+                click.secho(f"{target}", fg=FG_COLOUR)
+                click.echo("👍 All done!")
+            else:
+                click.echo("\nThere are no cached assets to delete.")
+
+    def collect(self, prefix: str, /, *, invert: bool = False) -> list[str]:
+        """Filter the asset names by the starting `prefix`.
+
+        Parameters
+        ----------
+        prefix : str
+            The `prefix` to filter the asset names.
+        invert : bool, default=False
+            Negate the `prefix` match i.e., filter the asset names that do not
+            match the `prefix`.
+
+        Returns
+        -------
+        list of str
+            The sorted list of assets with matching `prefix`. Also see `invert`.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        result = list(filter(lambda item: item.startswith(prefix), self.fnames))
+        if invert:
+            result = list(set(self.fnames) - set(result))
+        return sorted(result)
+
+    def download(
+        self,
+        /,
+        fnames: list[str] | None = None,
+        *,
+        decompress: bool | None = False,
+        name: str | None = None,
+        fg_colour: str | None = FG_COLOUR,
+        summary: bool | None = True,
+    ) -> None:
+        """Download and populate the geovista cache with requested assets.
+
+        Only assets which are not in the cache will be downloaded and verified via
+        :mod:`pooch`.
+
+        Parameters
+        ----------
+        fnames : list of str, optional
+            The list of assets to be downloaded. Defaults to the ``CACHE``
+            registry filenames.
+        decompress : bool, default=False
+            Decompress the downloaded assets.
+        name : str, optional
+            The name of the asset collection within the cache e.g., raster or pantry.
+        fg_colour : str, default="cyan"
+            Foreground colour to highlight the asset name during download.
+        summary : bool, default=True
+            Whether to provide a download summary to the user.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        if fnames is None:
+            fnames = self.fnames
+
+        name_post: str = "" if name is None else f"{name} "
+        n_fnames: int = len(fnames)
+        width: int = len(str(n_fnames))
+        count = 0
+        previous = pooch_mute(silent=True)
+        if n_fnames:
+            click.echo(
+                f"Downloading {n_fnames} {name_post}"
+                f"registered asset{self.plural(n_fnames)}:"
+            )
+        else:
+            click.echo(f"There are no {name_post}registered assets.")
+
+        for i, fname in enumerate(fnames):
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] Downloading ", nl=False)
+            click.secho(f"{fname} ", nl=False, fg=fg_colour)
+            click.echo("... ", nl=False)
+            processor = None
+            name_path = pathlib.Path(fname)
+
+            if (
+                decompress
+                and (suffix := name_path.suffix) in pooch.Decompress.extensions
+            ):
+                processor = pooch.Decompress(
+                    method="auto", name=name_path.stem.removesuffix(suffix)
+                )
+            CACHE.fetch(fname, processor=processor)
+            click.secho("done!", fg="green")
+            count += 1
+
+        if summary:
+            if count:
+                click.echo("\nAssets are available in the cache directory ", nl=False)
+                click.secho(f"{CACHE.abspath}", fg=fg_colour)
+            else:
+                click.echo("\nNo assets were downloaded.")
+            click.echo("👍 All done!")
+
+        _ = pooch_mute(silent=previous)
+
+    def dry_run(self, /, *, fg_colour: str | None = FG_COLOUR) -> None:
+        """Show the URLs of all registered assets.
+
+        Parameters
+        ----------
+        fg_colour : str, default="cyan"
+            Foreground colour to highlight the asset URL.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        n_fnames: int = len(self.fnames)
+        width: int = len(str(n_fnames))
+        click.echo("URLs of registered assets:")
+
+        for i, fname in enumerate(self.fnames):
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
+            click.secho(f"{CACHE.get_url(fname)}", fg=fg_colour)
+
+        click.echo("\n👍 All done!")
+
+    def show(self, /, *, fg_colour: str | None = FG_COLOUR) -> None:
+        """Show the names of all registered assets.
+
+        Parameters
+        ----------
+        fg_colour : str, default="cyan"
+            Foreground colour to highlight the asset URL.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        n_fnames: int = len(self.fnames)
+        width: int = len(str(n_fnames))
+        click.echo("Names of registered assets:")
+
+        for i, fname in enumerate(self.fnames):
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
+            click.secho(f"{fname}", fg=fg_colour)
+
+        click.echo("\n👍 All done!")
+
+    def verify(self, /, *, fg_colour: str | None = FG_COLOUR) -> None:
+        """Check the remote availability of each registered asset.
+
+        Parameters
+        ----------
+        fg_colour : str, default="cyan"
+            Foreground colour to highlight the asset URL.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
+        n_fnames: int = len(self.fnames)
+        width: int = len(str(n_fnames))
+        unavailable = 0
+        click.echo("Verifying availability of registered assets:")
+
+        for i, fname in enumerate(self.fnames):
+            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
+            click.secho(f"{fname} ", nl=False, fg=fg_colour)
+            click.echo("is ... ", nl=False)
+            status, status_fg_colour = (
+                ("available!", "green")
+                if (available := CACHE.is_available(fname))
+                else ("unavailable!", "red")
+            )
+            if not available:
+                unavailable += 1
+            click.secho(status, fg=status_fg_colour)
+
+        if not unavailable:
+            click.echo(f"\n{n_fnames} asset{self.plural(n_fnames)} ", nl=False)
+            click.secho("available", fg="green", nl=False)
+            click.echo(".")
+            click.echo("👍 All done!")
+        else:
+            click.echo("\n💥 ", nl=False)
+            if unavailable == n_fnames:
+                click.echo(f"{n_fnames} asset{self.plural(n_fnames)} ", nl=False)
+                click.secho("unavailable", fg="red", nl=False)
+                click.echo(". Nuts!")
+            else:
+                available = n_fnames - unavailable
+                click.echo(f"{available} asset{self.plural(available)} ", nl=False)
+                click.secho("available", fg="green", nl=False)
+                click.echo(
+                    f", but {unavailable} asset{self.plural(unavailable)} ", nl=False
+                )
+                click.secho("unavailable", fg="red", nl=False)
+                click.echo(". Dang!")
 
 
 @click.group(
@@ -230,17 +413,20 @@ def main(
     help="Decompress all cached assets.",
 )
 @click.option(
+    "--doc-images", is_flag=True, help="Download documentation test image assets."
+)
+@click.option(
     "--dry-run",
     is_flag=True,
-    help="Show URLs of registered assets.",
+    help="Show URLs of registered assets (no download).",
 )
-@click.option("-i", "--image", is_flag=True, help="Download image test assets.")
+@click.option("-i", "--images", is_flag=True, help="Download all test image assets.")
 @click.option(
     "-l",
     "--list",
     "show",
     is_flag=True,
-    help="Show names of registered assets.",
+    help="Show names of registered assets (no download).",
 )
 @click.option(
     "-ne",
@@ -255,7 +441,7 @@ def main(
 @click.option("-p", "--pantry", is_flag=True, help="Download sample data assets.")
 @click.option(
     "-r",
-    "--raster",
+    "--rasters",
     is_flag=True,
     help="Download raster assets.",
 )
@@ -265,6 +451,7 @@ def main(
     type=click.Path(file_okay=False, resolve_path=True, path_type=pathlib.Path),
     help=f"Download target directory (default: {CACHE.abspath})",
 )
+@click.option("--unit-images", is_flag=True, help="Download unit test image assets.")
 @click.option(
     "-v",
     "--verify",
@@ -275,79 +462,72 @@ def download(
     pull: bool,
     clean: bool,
     decompress: bool,
+    doc_images: bool,
     dry_run: bool,
-    image: bool,
+    images: bool,
     show: bool,
     natural_earth: Iterable[str],
     operational: bool,
     pantry: bool,
-    raster: bool,
+    rasters: bool,
     target: pathlib.Path | None,
+    unit_images: bool,
     verify: bool,
 ) -> None:  # numpydoc ignore=PR01
     """Download and cache geovista assets (offline support)."""
-    fnames: list[str] = sorted(CACHE.registry_files)
-
-    if not fnames:
+    if not CACHE.registry_files:
         click.secho("No assets are registered with geovista.", fg="red")
         return
 
-    n_fnames: int = len(fnames)
-    width: int = len(str(n_fnames))
-    fg_colour: str = FG_COLOUR
+    downloader = Downloader()
+
+    if dry_run:
+        downloader.dry_run()
+        return
+
+    if show:
+        downloader.show()
+        return
+
+    if verify:
+        downloader.verify()
+        return
 
     if clean:
-        msg = "Are you sure you want to delete all cached geovista assets"
-        if click.confirm(f"\n{msg}?", abort=True):
-            target = resources["cache_dir"]
-
-            if target.exists():
-                if target.is_symlink():
-                    rmtree(target.readlink())
-                    target.unlink()
-                else:
-                    rmtree(target)
-
-                click.echo("\nDeleted the cache directory ", nl=False)
-                click.secho(f"{target}", fg=FG_COLOUR)
-                click.echo("👍 All done!")
-            else:
-                click.echo("\nThere are no cached assets to delete.")
+        downloader.clean()
+        return
 
     if target:
         target.mkdir(exist_ok=True)
         previous_path = CACHE.path
         CACHE.path = target
 
-    def collect(prefix: str) -> list[str]:
-        """Filter the asset names with the provided `prefix`.
-
-        Parameters
-        ----------
-        prefix : str
-            The `prefix` to filter the asset names.
-
-        Returns
-        -------
-        list of str
-            The list of assets with the provided `prefix`.
-
-        """
-        return list(filter(lambda item: item.startswith(prefix), fnames))
-
     if pull:
-        _download_group(fnames, decompress=decompress)
+        downloader.download(decompress=decompress)
     elif operational:
-        names = sorted(set(fnames) - set(collect("tests")))
-        _download_group(names, decompress=decompress, name="operational")
+        assets = downloader.collect("tests", invert=True)
+        downloader.download(assets, decompress=decompress, name="operational")
     else:
-        if image:
-            name = "images"
-            _download_group(collect(f"tests/{name}"), decompress=decompress, name=name)
+        if images:
+            assets = downloader.collect("tests")
+            downloader.download(assets, decompress=decompress, name="test image")
+        else:
+            if doc_images:
+                assets = downloader.collect("tests/docs")
+                downloader.download(
+                    assets, decompress=decompress, name="documentation test image"
+                )
+
+            if unit_images:
+                assets = downloader.collect("tests/unit")
+                downloader.download(
+                    assets, decompress=decompress, name="unit test image"
+                )
 
         if pantry:
             name = "pantry"
-            _download_group(collect(name), decompress=decompress, name=name)
+            assets = downloader.collect(name)
+            downloader.download(assets, decompress=decompress, name=name)
 
         if natural_earth:
             if ALL in natural_earth:
@@ -357,67 +537,18 @@ def download(
             for i, group in enumerate(natural_earth):
                 prefix = f"{NE_ROOT}/{group}"
                 name = f"Natural Earth {group}"
-                _download_group(
-                    collect(prefix),
+                assets = downloader.collect(prefix)
+                downloader.download(
+                    assets,
                     decompress=decompress,
                     name=name,
                     summary=(i + 1 == n_groups),
                 )
 
-        if raster:
+        if rasters:
             name = "raster"
-            _download_group(collect(name), decompress=decompress, name=name)
-
-    if verify:
-        unavailable = 0
-        click.echo("Verifying remote availability of registered assets:")
-        for i, fname in enumerate(fnames):
-            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
-            click.secho(f"{fname} ", nl=False, fg=fg_colour)
-            click.echo("is ... ", nl=False)
-            status, status_fg_colour = (
-                ("available!", "green")
-                if (available := CACHE.is_available(fname))
-                else ("unavailable!", "red")
-            )
-            if not available:
-                unavailable += 1
-            click.secho(status, fg=status_fg_colour)
-
-        if not unavailable:
-            click.echo(f"\n{n_fnames} asset{_plural(n_fnames)} ", nl=False)
-            click.secho("available", fg="green", nl=False)
-            click.echo(".")
-            click.echo("👍 All done!")
-        else:
-            click.echo("\n💥 ", nl=False)
-            if unavailable == n_fnames:
-                click.echo(f"{n_fnames} asset{_plural(n_fnames)} ", nl=False)
-                click.secho("unavailable", fg="red", nl=False)
-                click.echo(". Nuts!")
-            else:
-                available = n_fnames - unavailable
-                click.echo(f"{available} asset{_plural(available)} ", nl=False)
-                click.secho("available", fg="green", nl=False)
-                click.echo(
-                    f", but {unavailable} asset{_plural(unavailable)} ", nl=False
-                )
-                click.secho("unavailable", fg="red", nl=False)
-                click.echo(". Dang!")
-
-    if dry_run:
-        click.echo("URLs of registered assets:")
-        for i, fname in enumerate(fnames):
-            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
-            click.secho(f"{CACHE.get_url(fname)}", fg=fg_colour)
-        click.echo("\n👍 All done!")
-
-    if show:
-        click.echo("Names of registered assets:")
-        for i, fname in enumerate(fnames):
-            click.echo(f"[{i + 1:0{width}d}/{n_fnames}] ", nl=False)
-            click.secho(f"{fname}", fg=fg_colour)
-        click.echo("\n👍 All done!")
+            assets = downloader.collect(name)
+            downloader.download(assets, decompress=decompress, name=name)
 
     if target:
         CACHE.path = previous_path

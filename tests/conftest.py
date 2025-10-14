@@ -45,7 +45,7 @@ def plot_nodeid(request):
     # ensure cache is populated with *existing* baseline image
     with suppress(ValueError):
         # pyvista-pytest removes the "test_" prefix from baseline image
-        baseline = f"tests/images/{name.removeprefix('test_')}.png"
+        baseline = f"tests/unit/{name.removeprefix('test_')}.png"
         _ = CACHE.fetch(baseline)
 
     return name

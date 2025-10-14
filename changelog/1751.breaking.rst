@@ -1,0 +1,3 @@
+Renamed the following ``geovista download`` command line interface (CLI) flags
+``--image`` to ``--images``, and ``--raster`` to ``--rasters``.
+(:user:`bjlittle`)

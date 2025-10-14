@@ -16,7 +16,7 @@ import pyvista as pv
 import geovista as gv
 from geovista.cache import CACHE
 
-BASE_DIR: Path = CACHE.abspath / "tests" / "images"
+BASE_DIR: Path = CACHE.abspath / "tests" / "unit"
 
 # determine whether executing on a GHA runner
 # https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
