@@ -1,0 +1,4 @@
+Added the ``--doc-images`` and ``--unit-images`` flags to the
+``geovista download`` command line interface (CLI) to download
+documentation test and unit test assets separately.
+(:user:`bjlittle`)
