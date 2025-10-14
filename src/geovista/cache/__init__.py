@@ -16,7 +16,7 @@ from __future__ import annotations
 from functools import wraps
 import os
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, AnyStr, TypeAlias
+from typing import IO, TYPE_CHECKING, Any
 
 import pooch
 
@@ -37,8 +37,7 @@ __all__ = [
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-# this is a type alias
-FileLike: TypeAlias = str | IO[AnyStr]
+type FileLike = str | IO[str] | IO[bytes]
 """Type alias for filename or file-like object."""
 
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
@@ -109,7 +108,7 @@ CACHE.fetch = _fetch
 
 def _downloader(
     url: str,
-    output_file: FileLike[Any],
+    output_file: FileLike,
     poocher: pooch.Pooch,
     /,
     *,

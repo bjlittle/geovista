@@ -28,8 +28,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     import pyvista as pv
 
-    # Type aliases
-    NearestNeighbours = tuple[ArrayLike, ArrayLike]
+    type NearestNeighbours = tuple[ArrayLike, ArrayLike]
     """Type alias for a tuple of nearest neighbour distances and indices.""" ""
 
     # these are type aliases

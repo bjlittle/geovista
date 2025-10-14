@@ -20,7 +20,7 @@ Notes
 from __future__ import annotations
 
 import pathlib
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 import warnings
 
 import lazy_loader as lazy
@@ -60,11 +60,10 @@ __all__ = [
     "Transform",
 ]
 
-# this is a type alias
-PathLike: TypeAlias = str | pathlib.Path
+type PathLike = str | pathlib.Path
 """Type alias for an asset file path."""
 
-Shape: TypeAlias = tuple[int, ...]
+type Shape = tuple[int, ...]
 """Type alias for a tuple of integers."""
 
 # constants
