@@ -33,7 +33,7 @@ gv.GEOVISTA_IMAGE_TESTING = True
 
 # prepare to download image cache for each image test
 # also see reference in pyproject.toml
-cache_dir = Path(__file__).parent.resolve() / "image_cache"
+cache_dir = Path(__file__).parent.resolve() / "unit_image_cache"
 if cache_dir.is_dir() and not cache_dir.is_symlink():
     # remove directory which may have been created by pytest-pyvista
     # when plugin is bootstrapped by pytest

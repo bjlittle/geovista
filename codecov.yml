@@ -8,10 +8,11 @@ coverage:
     patch: off
 
 ignore:
+  - "**/cache/registry.txt"
   - "**/cli.py"
+  - "**/doc_image_cache"
   - "**/geoplotter.py"
-  - "**/image_cache"
   - "**/pantry/data.py"
   - "**/pantry/meshes.py"
-  - "**/cache/registry.txt"
   - "**/report.py"
+  - "**/unit_image_cache"
