@@ -927,7 +927,7 @@ def triangulated(surface: pv.PolyData) -> bool:
 
 
 def vtk_warnings_off() -> None:
-    """Disable :mod:`vtk` warning messages.
+    """Disable :vtk:`vtkLogger` warning messages.
 
     Notes
     -----
@@ -940,7 +940,7 @@ def vtk_warnings_off() -> None:
 
 
 def vtk_warnings_on() -> None:
-    """Enable :mod:`vtk` warning messages.
+    """Enable :vtk:`vtkLogger` warning messages.
 
     Notes
     -----
