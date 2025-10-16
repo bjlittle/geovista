@@ -62,3 +62,4 @@ dependencies:
 - pip:
   - -e .
   - sphinx-tippy>=0.4.3, <0.5
+  - vtk-xref>=0.1.1, <0.2
