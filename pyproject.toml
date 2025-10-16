@@ -533,6 +533,7 @@ trame-vuetify = "==3.1.0"
 
 [tool.pixi.feature.docs.pypi-dependencies]
 sphinx-tippy = ">=0.4.3,<0.5"
+vtk-xref = ">=0.1.1,<0.2"
 
 [tool.pixi.feature.docs.tasks.clean]
 cmd = "make clean"
