@@ -165,6 +165,7 @@ extensions = [
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
     "myst_nb",
+    "vtk_xref",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -357,7 +358,6 @@ nitpick_ignore_regex = [
     (r"py:class", r"ArrayLike"),  # TBD: geovista.search (use of type)
     (r"py:mod", r"pyvista"),  # see https://github.com/pyvista/pyvista/issues/5663
     (r"py:mod", r"pyvistaqt"),  # no :mod:`pyvistaqt` inventory entry available
-    (r"py:mod", r"vtk"),  # no :mod:`vtk` inventory entry available
 ]
 
 

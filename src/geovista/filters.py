@@ -77,9 +77,7 @@ def remesh(
 ) -> Remesh:
     """Slice `mesh` along `meridian` and triangulate any sliced cells.
 
-    See the
-    `vtkIntersectionPolyDataFilter <https://vtk.org/doc/nightly/html/classvtkIntersectionPolyDataFilter.html>`_
-    documentation for more.
+    See :vtk:`vtkIntersectionPolyDataFilter` for more details.
 
     Parameters
     ----------

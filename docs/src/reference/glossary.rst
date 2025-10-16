@@ -13,7 +13,7 @@ Say what you mean. Mean what you say.
 
     Actor
         Represents an object (geometry and properties) in a rendered scene.
-        See `vtkActor`_.
+        See :vtk:`vtkActor`.
 
     Base Layer
         A surface mesh that may be texture mapped, and lies beneath another
