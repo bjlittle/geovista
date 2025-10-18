@@ -145,11 +145,11 @@ required_plugins = "pytest-mock pytest_pyvista"
 testpaths = "tests"
 xfail_strict = true
 # pytest-pyvista options
-doc_image_cache_dir = "tests/plotting/doc_image_cache"
+doc_image_cache_dir = "docs/image_cache"
 doc_images_dir = "docs/_build/plot_directive"
 image_cache_dir = "tests/plotting/unit_image_cache"
 image_format = "png"
-max_image_size = 450                                   # pixels
+max_image_size = 450
 
 
 [tool.repo-review]
