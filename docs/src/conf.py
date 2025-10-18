@@ -618,12 +618,10 @@ pyvista.set_error_output_file("errors.txt")
 pyvista.OFF_SCREEN = True
 
 # Preferred plotting style for documentation
-pyvista.set_plot_theme("document")
-pyvista.global_theme.window_size = [1024, 768]
-pyvista.global_theme.font.size = 22
-pyvista.global_theme.font.label_size = 22
-pyvista.global_theme.font.title_size = 22
-pyvista.global_theme.return_cpos = False
+pyvista.set_plot_theme("document_build")
+pyvista.set_jupyter_backend(None)
+
+# Necessary when building the sphinx gallery
 pyvista.BUILDING_GALLERY = True
 os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 

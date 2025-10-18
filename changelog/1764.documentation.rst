@@ -1,0 +1,3 @@
+Adopted the `pyvista <https://github.com/pyvista/pyvista>`__ ``document_build``
+:func:`plotting theme <pyvista.set_plot_theme>` style for our documentation.
+(:user:`bjlittle`)
