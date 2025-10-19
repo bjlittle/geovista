@@ -506,7 +506,7 @@ fmt = "ruff format"
 lint = "ruff check"
 
 [tool.pixi.feature.docs.dependencies]
-ipykernel = ">=6.29.5,<7"
+ipykernel = ">=6.29.5,<8"
 ipywidgets = ">=8.1.7,<9"
 joblib = ">=1.5.1,<2"
 jupyter-server-proxy = ">=4.4.0,<5"
