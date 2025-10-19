@@ -49,7 +49,7 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
-doc_image_cache
+image_cache
 unit_image_cache
 test_images
 .tox/
