@@ -1,0 +1,2 @@
+Added :user:`mo-ijadav` as a contributor for ``promotion``.
+(:user:`bjlittle`)
