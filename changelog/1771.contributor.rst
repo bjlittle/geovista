@@ -1,0 +1,4 @@
+Building documentation will now automatically check, verify and create the
+``docs/image_cache`` symbolic link the appropriate :class:`pooch.Pooch`
+documentation reference test images cache.
+(:user:`bjlittle`)
