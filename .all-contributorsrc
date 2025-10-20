@@ -437,6 +437,15 @@
       "contributions": [
         "review"
       ]
+    },
+    {
+      "login": "mo-ijadav",
+      "name": "Isaac Jadav",
+      "avatar_url": "https://avatars.githubusercontent.com/u/144328875?v=4",
+      "profile": "https://github.com/mo-ijadav",
+      "contributions": [
+        "promotion"
+      ]
     }
   ],
   "commitType": "docs"
