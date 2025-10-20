@@ -60,6 +60,9 @@ Start afresh with confidence by performing documentation hygiene to purge variou
     +-------------------------+----------------------------------------------------------------------------------+
 
 
+.. _gv-developer-documentation-build:
+.. _tippy-gv-developer-documentation-build:
+
 :fa:`pen-to-square` Build
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

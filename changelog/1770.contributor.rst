@@ -1,0 +1,4 @@
+Added the ``html-docstring-inline`` task as a documentation
+:ref:`tippy-gv-developer-documentation-build` option to build and render only
+``docstring`` and ``inline`` images and scenes within the documentation.
+(:user:`bjlittle`)
