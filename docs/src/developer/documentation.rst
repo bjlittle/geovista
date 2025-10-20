@@ -53,7 +53,7 @@ Start afresh with confidence by performing documentation hygiene to purge variou
     | :guilabel:`clean`       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_, `sphinx-tags`_, carousel, and    |
     |                         | other `sphinx-build`_ artifacts.                                                 |
     +-------------------------+----------------------------------------------------------------------------------+
-    | :guilabel:`clean-all`   | Perform both a ``clean`` and ``clean-cache``.                                    |
+    | :guilabel:`clean-all`   | Perform both the :guilabel:`clean` and :guilabel:`clean-cache` tasks.            |
     +-------------------------+----------------------------------------------------------------------------------+
     | :guilabel:`clean-cache` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_                 |
     |                         | for further details.                                                             |
@@ -70,25 +70,30 @@ static images and interactive scenes can be resource hungry and time consuming.
     :widths: 1 3
     :align: center
 
-    +----------------------------+-------------------------------------------------------------------------+
-    | Make Task                  | Description                                                             |
-    +============================+=========================================================================+
-    | :guilabel:`html`           | Build the full suite of documentation including all images and scenes.  |
-    +----------------------------+-------------------------------------------------------------------------+
-    | :guilabel:`html-docstring` | Build the full suite of documentation and only the ``docstring`` images |
-    |                            | and scenes.                                                             |
-    +----------------------------+-------------------------------------------------------------------------+
-    | :guilabel:`html-gallery`   | Build the full suite of documentation and only the `sphinx-gallery`_    |
-    |                            | images and scenes, which also includes the carousel.                    |
-    +----------------------------+-------------------------------------------------------------------------+
-    | :guilabel:`html-inline`    | Build the full suite of documentation and only inline documentation     |
-    |                            | images and scenes.                                                      |
-    +----------------------------+-------------------------------------------------------------------------+
-    | :guilabel:`html-noplot`    | Build the full suite of documentation with no static images and no      |
-    |                            | interactive scenes.                                                     |
-    +----------------------------+-------------------------------------------------------------------------+
-    | :guilabel:`html-tutorial`  | Build the full suite of documentation and only the tutorial notebooks.  |
-    +----------------------------+-------------------------------------------------------------------------+
+    +-----------------------------------+--------------------------------------------------------------------------+
+    | Make Task                         | Description                                                              |
+    +===================================+==========================================================================+
+    | :guilabel:`html`                  | Build the full suite of documentation including all images and scenes.   |
+    +-----------------------------------+--------------------------------------------------------------------------+
+    | :guilabel:`html-docstring`        | Build the full suite of documentation with only the ``docstring`` images |
+    |                                   | and scenes.                                                              |
+    +-----------------------------------+--------------------------------------------------------------------------+
+    | :guilabel:`html-docstring-inline` | Build the full suite of documentation with only the ``docstring`` and    |
+    |                                   | inline images and scenes. See :guilabel:`html-docstring` and             |
+    |                                   | :guilabel:`html-inline` tasks.                                           |
+    +-----------------------------------+--------------------------------------------------------------------------+
+    | :guilabel:`html-gallery`          | Build the full suite of documentation with only the `sphinx-gallery`_    |
+    |                                   | images and scenes, which also includes the carousel.                     |
+    +-----------------------------------+--------------------------------------------------------------------------+
+    | :guilabel:`html-inline`           | Build the full suite of documentation with only inline documentation     |
+    |                                   | images and scenes.                                                       |
+    +-----------------------------------+--------------------------------------------------------------------------+
+    | :guilabel:`html-noplot`           | Build the full suite of documentation with no static images and no       |
+    |                                   | interactive scenes.                                                      |
+    +-----------------------------------+--------------------------------------------------------------------------+
+    | :guilabel:`html-tutorial`         | Build the full suite of documentation with only the tutorial notebooks.  |
+    |                                   | images and scenes.                                                       |
+    +-----------------------------------+--------------------------------------------------------------------------+
 
 
 :fab:`readme` Render
@@ -306,25 +311,27 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
     | :guilabel:`clean`       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_, `sphinx-tags`_, carousel, and    |
     |                         | other `sphinx-build`_ artifacts.                                                 |
     +-------------------------+----------------------------------------------------------------------------------+
-    | :guilabel:`clean-all`   | Perform both a ``clean`` and ``clean-cache`` tasks.                              |
+    | :guilabel:`clean-all`   | Perform both the :guilabel:`clean` and :guilabel:`clean-cache` tasks.            |
     +-------------------------+----------------------------------------------------------------------------------+
     | :guilabel:`clean-cache` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_                 |
     |                         | for further details.                                                             |
     +-------------------------+----------------------------------------------------------------------------------+
     | :guilabel:`doctest`     | Execute `sphinx.ext.doctest`_ to test code snippets within the documentation.    |
-    |                         | Note that the ``clean`` task is called prior to running this task.               |
+    |                         | Note that the :guilabel:`clean` task is called prior to running this task.       |
     +-------------------------+----------------------------------------------------------------------------------+
     | :guilabel:`make`        | Build the documentation using ``html-noplot`` by default. Pass either ``html``,  |
-    |                         | ``html-docstring``, ``html-gallery``, ``html-inline`` or ``html-tutorial`` as an |
-    |                         | argument to override the default ``html-noplot`` behaviour. Note that the        |
-    |                         | ``clean`` task is called prior to running this task.                             |
+    |                         | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline`` |
+    |                         | or ``html-tutorial`` as an argument to override the default ``html-noplot``      |
+    |                         | behaviour. Note that the :guilabel:`clean` task is called prior to running this  |
+    |                         | task.                                                                            |
     +-------------------------+----------------------------------------------------------------------------------+
     | :guilabel:`serve-html`  | Build the documentation using ``html-noplot`` by default and start a local       |
     |                         | ``HTTP`` server on port ``11000`` to view the rendered documentation. This is    |
     |                         | necessary in order to support interactive scenes. Pass either ``html``,          |
-    |                         | ``html-docstring``, ``html-gallery``, ``html-inline`` or ``html-tutorial`` as an |
-    |                         | argument to override the default ``html-noplot`` behaviour. Note that the        |
-    |                         | ``clean`` and ``make`` tasks are called prior to running this task.              |
+    |                         | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline`` |
+    |                         | or ``html-tutorial`` as an argument to override the default ``html-noplot``      |
+    |                         | behaviour. Note that the :guilabel:`clean` and :guilabel:`make` tasks are called |
+    |                         | prior to running this task.                                                      |
     +-------------------------+----------------------------------------------------------------------------------+
 
 .. tip::
