@@ -15,7 +15,7 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: Makefile clean clean-cache clean-all doctest help html-docstring html-gallery html-inline html-noplot html-tutorial serve-html
+.PHONY: Makefile clean clean-cache clean-all doctest help html-docstring html-docstring-inline html-gallery html-inline html-noplot html-tutorial serve-html
 
 clean:
 	-rm -rf $(BUILDDIR)/*
@@ -35,6 +35,9 @@ doctest:
 
 html-docstring:
 	@$(SPHINXBUILD) -b html -D plot_gallery=False -D plot_inline=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
+
+html-docstring-inline:
+	@$(SPHINXBUILD) -b html -D plot_gallery=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
 html-gallery:
 	@$(SPHINXBUILD) -b html -D plot_docstring=False -D plot_inline=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
