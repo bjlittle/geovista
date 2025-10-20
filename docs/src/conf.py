@@ -34,6 +34,7 @@ import os
 from pathlib import Path
 import pkgutil
 import re
+import shutil
 import subprocess
 import textwrap
 from typing import TYPE_CHECKING
@@ -43,6 +44,8 @@ import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 from sphinx.util import logging
 from sphinx.util.console import colorize
+
+from geovista.cache import CACHE
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -71,6 +74,9 @@ if TYPE_CHECKING:
         | PythonProperty
     )
 
+
+CACHE_BASE_DIR: Path = CACHE.abspath / "tests" / "docs"
+"""Target directory containing documentation reference image cache"""
 
 GALLERY_DIRS: str = "generated/gallery"
 """sphinx-gallery target output directory"""
@@ -245,13 +251,32 @@ rst_epilog = f"""
 """
 
 # docs src directory
-docs_src_dir = Path(__file__).absolute().parent
+docs_src_dir = Path(__file__).resolve().parent
+docs_cache_dir = docs_src_dir.parent / "image_cache"
 docs_images_dir = docs_src_dir / "_static" / "images"
 root_dir = docs_src_dir.parents[1]
 package_src_dir = root_dir / "src"
 package_dir = package_src_dir / "geovista"
 
+# prepare to download image cache for each image test
+if docs_cache_dir.is_dir() and not docs_cache_dir.is_symlink():
+    # remove directory which may have been created by pytest-pyvista
+    # when plugin is bootstrapped by pytest
+    shutil.rmtree(str(docs_cache_dir))
+
+if docs_cache_dir.is_symlink() and (
+    not docs_cache_dir.exists() or docs_cache_dir.readlink() != CACHE_BASE_DIR
+):
+    # detected a broken symlink or non-latest version of cache
+    docs_cache_dir.unlink()
+
+if not docs_cache_dir.exists():
+    CACHE_BASE_DIR.mkdir(parents=True, exist_ok=True)
+    # create the symbolic link to the pooch cache
+    docs_cache_dir.symlink_to(CACHE_BASE_DIR)
+
 autolog(f"{docs_src_dir=}", section="General")
+autolog(f"{docs_cache_dir=}", section="General")
 autolog(f"{docs_images_dir=}", section="General")
 autolog(f"{root_dir=}", section="General")
 autolog(f"{package_src_dir=}", section="General")
