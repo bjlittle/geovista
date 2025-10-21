@@ -1,0 +1,4 @@
+Added the ``doc-images`` `pixi <https://github.com/prefix-dev/pixi>`__ 🧚
+task to the ``docs`` feature which performs documentation image testing
+of ``pyvista-plot`` directive static scenes.
+(:user:`bjlittle`)
