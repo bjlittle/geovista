@@ -309,7 +309,7 @@ class BBox:  # numpydoc ignore=PR01
         >>> from geovista.geodesic import BBox
         >>> p = geovista.GeoPlotter()
         >>> _ = p.add_base_layer(
-        ...     texture=geovista.natural_earth_hypsometric(), style="wireframe"
+        ...     texture=geovista.natural_earth_hypsometric(), opacity=0.5
         ... )
         >>> bbox = BBox(lons=[-15, 20, 25, -15], lats=[-25, -20, 15, 10], c=32)
         >>> _ = p.add_mesh(bbox.mesh, color="white")
@@ -868,7 +868,7 @@ def line(
     >>> _ = p.add_base_layer(texture=geovista.natural_earth_1())
     >>> meridian = line(lons=-180, lats=[90, 0, -90])
     >>> _ = p.add_mesh(meridian, color="orange", line_width=3)
-    >>> p.view_yz(negative=True)
+    >>> p.view_xy()
     >>> p.show()
 
     """
@@ -1181,8 +1181,8 @@ def panel(
     >>> from geovista.geodesic import panel
     >>> p = geovista.GeoPlotter()
     >>> _ = p.add_base_layer(texture=geovista.natural_earth_hypsometric(), opacity=0.5)
-    >>> bbox = panel("americas", c=8)
-    >>> _ = p.add_mesh(bbox.mesh, color="orange", style="wireframe")
+    >>> bbox = panel("americas", c=5, triangulate=True)
+    >>> _ = p.add_mesh(bbox.mesh, color="orange", show_edges=True)
     >>> p.view_xz()
     >>> p.show()
 
@@ -1253,8 +1253,8 @@ def wedge(
     >>> from geovista.geodesic import wedge
     >>> p = geovista.GeoPlotter()
     >>> _ = p.add_base_layer(texture=geovista.blue_marble(), opacity=0.5)
-    >>> bbox = wedge(-30, 30, c=8)
-    >>> _ = p.add_mesh(bbox.mesh, color="orange", style="wireframe")
+    >>> bbox = wedge(-30, 30, c=5)
+    >>> _ = p.add_mesh(bbox.mesh, color="orange", show_edges=True)
     >>> p.view_yz()
     >>> p.show()
 

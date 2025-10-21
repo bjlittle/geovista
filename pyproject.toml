@@ -535,6 +535,10 @@ trame-vuetify = "==3.1.0"
 sphinx-tippy = ">=0.4.3,<0.5"
 vtk-xref = ">=0.1.1,<0.2"
 
+[tool.pixi.tasks.download]
+args = [{ "arg" = "option", "default" = "all" }]
+cmd = "geovista download --{{ option }}"
+
 [tool.pixi.feature.docs.tasks.clean]
 cmd = "make clean"
 cwd = "docs"
@@ -565,6 +569,17 @@ cmd = "make serve-html"
 cwd = "docs"
 depends-on = [{ "task" = "make", "args" = ["{{ option }}"] }]
 
+[tool.pixi.feature.docs.tasks.doc-images]
+cmd = "pytest --doc_mode"
+depends-on = [
+  { "task" = "download", "args" = [
+    "doc-images",
+  ] },
+  { "task" = "make", "args" = [
+    "html-docstring-inline",
+  ] },
+]
+
 [tool.pixi.feature.py312.dependencies]
 pip = ">=25.1.1,<26"
 python = "3.12.*"
@@ -582,7 +597,7 @@ pytest-pretty = ">=1.3.0,<2"
 pytest-pyvista = ">=0.3.1,<0.4"
 
 [tool.pixi.feature.test.tasks.test-clean]
-cmd = "rm -rf tests/plotting/doc_image_cache tests/plotting/unit_image_cache test_images"
+cmd = "rm -rf tests/plotting/unit_image_cache test_images"
 
 [tool.pixi.feature.test.tasks.test]
 args = [{ "arg" = "option", "default" = "" }]
