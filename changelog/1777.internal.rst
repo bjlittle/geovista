@@ -1,0 +1,4 @@
+Added ``ci-tests-docs`` :fab:`github` Action to perform
+`pytest-pyvista <https://github.com/pyvista/pytest-pyvista>`__ documentation
+image testing of ``pyvista-plot`` directive static scenes.
+(:user:`bjlittle`)
