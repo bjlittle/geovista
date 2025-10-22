@@ -67,7 +67,7 @@ jobs:
       - name: "upload artifacts"
         uses: actions/upload-artifact@v4
         with:
-          name: lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
+          name: ci-tests-lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
           path: |
             ${{ github.workspace }}/diff.md
             ${{ github.workspace }}/pixi.lock
@@ -90,7 +90,7 @@ jobs:
           xvfb-run -a pixi run --frozen --environment ${NAME} pytest --generated_image_dir test_images
 
       - name: "report failure"
-        if: failure()
+        if: ${{ failure() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NAME: ${{ env.NAME }}

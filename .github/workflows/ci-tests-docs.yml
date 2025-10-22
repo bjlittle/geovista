@@ -81,3 +81,10 @@ jobs:
       - name: "test images (${{ matrix.version }})"
         run: |
           pixi run --frozen doc-images
+
+      - name: "upload test images"
+        if: ${{ failure() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-tests-docs-test-images-failure-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/test_images_failed

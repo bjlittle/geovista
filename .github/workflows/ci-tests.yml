@@ -94,7 +94,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: test-images-${{ github.job }}-${{ strategy.job-index }}
+          name: ci-tests-test-images-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/test_images
 
       - name: "prepare coverage"
