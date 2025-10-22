@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   tests:
-    name: "test images"
+    name: "test images (${{ matrix.version }})"
     runs-on: "${{ matrix.os }}"
 
     defaults:
@@ -40,6 +40,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04"]
+        version: ["py313"]
 
     steps:
       - uses: actions/checkout@v5
@@ -63,7 +64,7 @@ jobs:
       - name: "setup pixi"
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          environments: "geovista"
+          environments: "geovista-${{ matrix.version }}"
           frozen: true
           activate-environment: true
 
@@ -77,6 +78,6 @@ jobs:
         with:
           cache_period: ${{ env.CACHE_PERIOD }}
 
-      - name: "test images"
+      - name: "test images (${{ matrix.version }})"
         run: |
           pixi run --frozen doc-images
