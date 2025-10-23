@@ -168,6 +168,8 @@ The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType
 
 .. |ci-docs| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml
+.. |ci-images| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml/badge.svg
+    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml
 .. |ci-rtd| image:: https://img.shields.io/badge/docs-passing-4BC51D
     :target: https://geovista.readthedocs.io/en/latest/?badge=latest
 
@@ -177,25 +179,33 @@ The following documentation workflows are available:
     :widths: 1 2
     :align: center
 
-    +-----------+----------------------------------------------------------------------------------+
-    | Workflow  | Description                                                                      |
-    +===========+==================================================================================+
-    | |ci-docs| | The `ci-docs.yml`_ :term:`GHA workflow <GHA>` executes `sphinx.ext.doctest`_ to  |
-    |           | test code snippets within the documentation.                                     |
-    |           |                                                                                  |
-    |           | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` |
-    |           | :guilabel:`doctest` task.                                                        |
-    +-----------+----------------------------------------------------------------------------------+
-    | |ci-rtd|  | The `.readthedocs.yml`_ workflow builds and publishes our documentation on the   |
-    |           | `ReadtheDocs`_ (RTD) platform.                                                   |
-    |           |                                                                                  |
-    |           | See the `Versions`_ section for each ``tag`` release of the documentation hosted |
-    |           | on RTD along with the :guilabel:`latest` render of the ``main`` branch, and a    |
-    |           | :guilabel:`stable` render of the latest ``tag`` release.                         |
-    |           |                                                                                  |
-    |           | Refer to the `Builds`_ section for a render of the documentation for each        |
-    |           | ``pull-request``.                                                                |
-    +-----------+----------------------------------------------------------------------------------+
+    +-------------+----------------------------------------------------------------------------------+
+    | Workflow    | Description                                                                      |
+    +=============+==================================================================================+
+    | |ci-docs|   | The `ci-docs.yml`_ :fab:`github` Action executes                                 |
+    |             | `sphinx.ext.doctest`_ to test *doctest-style* and *code-output-style* blocks     |
+    |             | within the documentation.                                                        |
+    |             |                                                                                  |
+    |             | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` |
+    |             | :guilabel:`doctest` task.                                                        |
+    +-------------+----------------------------------------------------------------------------------+
+    | |ci-images| | The `ci-tests-docs.yml`_ :fab:`github` Action builds the documentation using the |
+    |             | ``make`` task :guilabel:`html-docstring-inline` and then performs                |
+    |             | image testing of ``pyvista-plot`` directive static scenes.                       |
+    |             |                                                                                  |
+    |             | Also see the :ref:`make build tasks <tippy-gv-developer-documentation-build>`    |
+    |             | for further details.                                                             |
+    +-------------+----------------------------------------------------------------------------------+
+    | |ci-rtd|    | The `.readthedocs.yml`_ workflow builds and publishes our documentation on the   |
+    |             | `ReadtheDocs`_ (RTD) platform.                                                   |
+    |             |                                                                                  |
+    |             | See the `Versions`_ section for each ``tag`` release of the documentation hosted |
+    |             | on RTD along with the :guilabel:`latest` render of the ``main`` branch, and a    |
+    |             | :guilabel:`stable` render of the latest ``tag`` release.                         |
+    |             |                                                                                  |
+    |             | Refer to the `Builds`_ section for a render of the documentation for each        |
+    |             | ``pull-request``.                                                                |
+    +-------------+----------------------------------------------------------------------------------+
 
 
 .. _gv-developer-documentation-copyright-and-license:
@@ -458,6 +468,7 @@ e.g.,
 .. _ReadtheDocs: https://app.readthedocs.org/projects/geovista/
 .. _Versions: https://app.readthedocs.org/projects/geovista/
 .. _ci-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-docs.yml
+.. _ci-tests-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-docs.yml
 .. _filtering: https://docs.pyvista.org/examples/01-filter/
 .. _include directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#include-directive
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
