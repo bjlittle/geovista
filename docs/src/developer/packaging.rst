@@ -68,77 +68,84 @@ See the ``[tool.pixi.environments]`` table defined in the ``pyproject.toml``
 manifest file.
 
 The **primary** solve-group is called :guilabel:`&d&e&f&a&u&l&t` and will always
-contain the **latest** supported version of ``python``.
-
-Several **secondary** solve-groups are available, each of which are named
-after the version of ``python`` that they support e.g., :guilabel:`&p&y&3&1&1`,
-:guilabel:`&p&y&3&1&2`, and :guilabel:`&p&y&3&1&3`.
-
-The number of ``python`` versioned solve-groups on offer at any given
-time is dictated by `SPEC 0`_.
+contain the **latest** supported version of ``python``. This is denoted by the
+``{py}`` feature which represents the **latest** version of ``python`` as recommended
+by `SPEC 0`_.
 
 .. table:: Pixi :guilabel:`&d&e&f&a&u&l&t` Solve-Group
    :widths: 1 2 5
    :align: center
 
-   +----------------------+----------------------------+--------------------------------------------------+
-   | Environment          | Features                   | Description                                      |
-   +======================+============================+==================================================+
-   | :guilabel:`default`  | ``{default}``, ``{py3xx}`` | This environment contains the **core**           |
-   |                      |                            | dependencies of ``geovista`` along with the      |
-   |                      |                            | **latest** version of ``python``. See the        |
-   |                      |                            | ``[tool.pixi.dependencies]`` table in the        |
-   |                      |                            | ``pyproject.toml`` manifest file.                |
-   +----------------------+----------------------------+--------------------------------------------------+
-   | :guilabel:`devs`     | ``{default}``, ``{devs}``, | As per the :guilabel:`default` environment plus  |
-   |                      | ``{py3xx}``                | additional **development** dependencies.         |
-   +----------------------+----------------------------+--------------------------------------------------+
-   | :guilabel:`docs`     | ``{default}``, ``{devs}``, | As per the :guilabel:`devs` environment plus     |
-   |                      | ``{docs}``, ``{py3xx}``    | additional **documentation** dependencies.       |
-   +----------------------+----------------------------+--------------------------------------------------+
-   | :guilabel:`geovista` | ``{default}``, ``{devs}``, | This environment is the **union** of all         |
-   |                      | ``{docs}``, ``{py3xx}``,   | environments in the :guilabel:`&d&e&f&a&u&l&t`   |
-   |                      | ``{test}``                 | solve-group.                                     |
-   +----------------------+----------------------------+--------------------------------------------------+
-   | :guilabel:`test`     | ``{default}``, ``{devs}``, | As per the :guilabel:`devs` environment plus     |
-   |                      | ``{py3xx}``, ``{test}``    | additional **test** dependencies.                |
-   +----------------------+----------------------------+--------------------------------------------------+
+   +----------------------+-----------------------------+--------------------------------------------------+
+   | Environment          | Features                    | Description                                      |
+   +======================+=============================+==================================================+
+   | :guilabel:`default`  | ``{default}``, ``{py}``     | This environment contains the **core**           |
+   |                      |                             | dependencies of ``geovista`` along with the      |
+   |                      |                             | **latest** supported version of ``python``. See  |
+   |                      |                             | the ``[tool.pixi.dependencies]`` table in the    |
+   |                      |                             | ``pyproject.toml`` manifest file.                |
+   +----------------------+-----------------------------+--------------------------------------------------+
+   | :guilabel:`devs`     | ``{default}``, ``{devs}``,  | As per the :guilabel:`default` environment plus  |
+   |                      | ``{py}``                    | additional **development** dependencies.         |
+   +----------------------+-----------------------------+--------------------------------------------------+
+   | :guilabel:`docs`     | ``{default}``, ``{devs}``,  | As per the :guilabel:`devs` environment plus     |
+   |                      | ``{docs}``, ``{py}``        | additional **documentation** dependencies.       |
+   +----------------------+-----------------------------+--------------------------------------------------+
+   | :guilabel:`geovista` | ``{default}``, ``{devs}``,  | This environment is the **union** of all         |
+   |                      | ``{docs}``, ``{geovista}``, | environments in the :guilabel:`&d&e&f&a&u&l&t`   |
+   |                      | ``{py}``, ``{test}``        | solve-group.                                     |
+   +----------------------+-----------------------------+--------------------------------------------------+
+   | :guilabel:`test`     | ``{default}``, ``{devs}``,  | As per the :guilabel:`devs` environment plus     |
+   |                      | ``{py}``, ``{test}``        | additional **test** dependencies.                |
+   +----------------------+-----------------------------+--------------------------------------------------+
+
+Several **secondary** solve-groups are available, each of which are named
+after the version of ``python`` that they support e.g., :guilabel:`&p&y&3&1&3`.
+
+The number of ``python`` versioned solve-groups on offer at any given
+time is dictated by `SPEC 0`_.
 
 The generic :guilabel:`&p&y&3&x&x` solve-group is used here as a convenience to
 represent each of the ``python`` versioned solve-groups available, all of which
-are identical in structure and content apart from the version of ``python`` that
-they support.
+are **identical** in structure and content apart from the specific version of
+``python`` that they support.
+
+Also note that each :guilabel:`&p&y&3&x&x` solve-group will always contain the
+similarly named ``{py3xx}`` feature e.g., the :guilabel:`&p&y&3&1&3` solve-group
+will contain the ``{py313}`` feature which in turn defines the ``python=3.13``
+dependency to be included in all ``py313`` environments.
 
 .. table:: Pixi :guilabel:`&p&y&3&x&x` Solve-Groups
    :widths: 2 2 6
    :align: center
 
-   +----------------------------+----------------------------+-----------------------------------------------+
-   | Environment                | Features                   | Description                                   |
-   +============================+============================+===============================================+
-   | :guilabel:`devs-py3xx`     | ``{default}``, ``{devs}``, | As per the :guilabel:`py3xx` environment      |
-   |                            | ``{py3xx}``                | plus additional **development** dependencies. |
-   +----------------------------+----------------------------+-----------------------------------------------+
-   | :guilabel:`docs-py3xx`     | ``{default}``, ``{devs}``, | As per the :guilabel:`devs-py3xx` environment |
-   |                            | ``{docs}`` , ``{py3xx}``   | plus additional **documentation**             |
-   |                            |                            | dependencies.                                 |
-   +----------------------------+----------------------------+-----------------------------------------------+
-   | :guilabel:`geovista-py3xx` | ``{default}``, ``{devs}``, | This environment is the **union** of all      |
-   |                            | ``{docs}``, ``{py3xx}``,   | environments in the same                      |
-   |                            | ``{test}``                 | :guilabel:`&p&y&3&x&x` solve-group.           |
-   +----------------------------+----------------------------+-----------------------------------------------+
-   | :guilabel:`py3xx`          | ``{default}``, ``{py3xx}`` | This environment contains the **core**        |
-   |                            |                            | dependencies of ``geovista`` along with       |
-   |                            |                            | ``python`` version ``py3xx`` e.g., ``py313``. |
-   +----------------------------+----------------------------+-----------------------------------------------+
-   | :guilabel:`test-py3xx`     | ``{default}``, ``{devs}``, | As per the :guilabel:`devs-py3xx` environment |
-   |                            | ``{py3xx}``, ``{test}``    | plus additional **test** dependencies.        |
-   +----------------------------+----------------------------+-----------------------------------------------+
+   +----------------------------+-----------------------------+-----------------------------------------------+
+   | Environment                | Features                    | Description                                   |
+   +============================+=============================+===============================================+
+   | :guilabel:`devs-py3xx`     | ``{default}``, ``{devs}``,  | As per the :guilabel:`py3xx` environment      |
+   |                            | ``{py3xx}``                 | plus additional **development** dependencies. |
+   +----------------------------+-----------------------------+-----------------------------------------------+
+   | :guilabel:`docs-py3xx`     | ``{default}``, ``{devs}``,  | As per the :guilabel:`devs-py3xx` environment |
+   |                            | ``{docs}`` , ``{py3xx}``    | plus additional **documentation**             |
+   |                            |                             | dependencies.                                 |
+   +----------------------------+-----------------------------+-----------------------------------------------+
+   | :guilabel:`geovista-py3xx` | ``{default}``, ``{devs}``,  | This environment is the **union** of all      |
+   |                            | ``{docs}``, ``{geovista}``, | environments in the same                      |
+   |                            | ``{py3xx}``, ``{test}``     | :guilabel:`&p&y&3&x&x` solve-group.           |
+   +----------------------------+-----------------------------+-----------------------------------------------+
+   | :guilabel:`py3xx`          | ``{default}``, ``{py3xx}``  | This environment contains the **core**        |
+   |                            |                             | dependencies of ``geovista`` along with       |
+   |                            |                             | ``python`` version ``py3xx`` e.g., ``py313``. |
+   +----------------------------+-----------------------------+-----------------------------------------------+
+   | :guilabel:`test-py3xx`     | ``{default}``, ``{devs}``,  | As per the :guilabel:`devs-py3xx` environment |
+   |                            | ``{py3xx}``, ``{test}``     | plus additional **test** dependencies.        |
+   +----------------------------+-----------------------------+-----------------------------------------------+
 
 .. attention::
    :class: dropdown, toggle-shown
 
-   The generic :guilabel:`&p&y&3&x&x` solve-group does **not** exist.
+   The generic :guilabel:`&p&y&3&x&x` solve-group does **not** exist, neither does
+   the generic ``{py3xx}`` feature.
 
 
 :fa:`puzzle-piece` Pixi Features
@@ -160,35 +167,37 @@ various fields, such as ``dependencies``, ``pypi-dependencies``,
    :widths: 1 2 6
    :align: center
 
-   +---------------+----------------------------------+------------------------------------------------+
-   | Feature       | TOML Table                       | Description                                    |
-   +===============+==================================+================================================+
-   | ``{default}`` | ``[tool.pixi.dependencies]``     | This feature is used to define the **core**    |
-   |               |                                  | dependencies of ``geovista``. Note that the    |
-   |               |                                  | ``{default}`` feature is                       |
-   |               |                                  | `automatically included`_ in all environments  |
-   |               |                                  | by ``pixi``.                                   |
-   +---------------+----------------------------------+------------------------------------------------+
-   | ``{devs}``    | ``[tool.pixi.feature.devs.*]``   | This feature is used to define the             |
-   |               |                                  | **development** ``dependencies``,              |
-   |               |                                  | ``pypi-dependencies`` and ``tasks``. Note      |
-   |               |                                  | that an **editable** install of ``geovista``   |
-   |               |                                  | is performed by the ``{devs}`` feature.        |
-   +---------------+----------------------------------+------------------------------------------------+
-   | ``{docs}``    | ``[tool.pixi.feature.docs.*]``   | This feature is used to define the             |
-   |               |                                  | **documentation** ``dependencies``,            |
-   |               |                                  | ``pypi-dependencies`` and ``tasks``.           |
-   +---------------+----------------------------------+------------------------------------------------+
-   | ``{py3xx}``   | ``[tools.pixi.feature.py3xx.*]`` | This feature is used to explicitly define the  |
-   |               |                                  | version of ``python`` supported e.g.,          |
-   |               |                                  | ``py313``. Note that the ``dependencies`` of   |
-   |               |                                  | this feature additionally includes the ``pip`` |
-   |               |                                  | package. The number of ``python`` versions     |
-   |               |                                  | supported is governed by `SPEC 0`_.            |
-   +---------------+----------------------------------+------------------------------------------------+
-   | ``{test}``    | ``[tool.pixi.feature.test.*]``   | This feature is used to define the **test**    |
-   |               |                                  | ``dependencies`` and ``tasks``.                |
-   +---------------+----------------------------------+------------------------------------------------+
+   +----------------+-----------------------------------+------------------------------------------------+
+   | Feature        | TOML Table                        | Description                                    |
+   +================+===================================+================================================+
+   | ``{default}``  | ``[tool.pixi.dependencies]``      | This feature is used to define the **core**    |
+   |                |                                   | dependencies of ``geovista``. Note that the    |
+   |                |                                   | ``{default}`` feature is                       |
+   |                |                                   | `automatically included`_ in all environments  |
+   |                |                                   | by ``pixi``.                                   |
+   +----------------+-----------------------------------+------------------------------------------------+
+   | ``{devs}``     | ``[tool.pixi.feature.devs.*]``    | This feature is used to define the             |
+   |                |                                   | **development** ``dependencies``,              |
+   |                |                                   | ``pypi-dependencies`` and ``tasks``. Note      |
+   |                |                                   | that an **editable** install of ``geovista``   |
+   |                |                                   | is performed by the ``{devs}`` feature.        |
+   +----------------+-----------------------------------+------------------------------------------------+
+   | ``{docs}``     | ``[tool.pixi.feature.docs.*]``    | This feature is used to define the             |
+   |                |                                   | **documentation** ``dependencies``,            |
+   |                |                                   | ``pypi-dependencies`` and ``tasks``.           |
+   +----------------+-----------------------------------+------------------------------------------------+
+   | ``{geovista}`` | ``tool.pixi.feature.geovista.*]`` | This feature is only used to define ``tasks``. |
+   +----------------+-----------------------------------+------------------------------------------------+
+   | ``{py3xx}``    | ``[tools.pixi.feature.py3xx.*]``  | This feature is used to explicitly define the  |
+   |                |                                   | version of ``python`` supported e.g.,          |
+   |                |                                   | ``py313``. Note that the ``dependencies`` of   |
+   |                |                                   | this feature additionally includes the ``pip`` |
+   |                |                                   | package. The number of ``python`` versions     |
+   |                |                                   | supported is governed by `SPEC 0`_.            |
+   +----------------+-----------------------------------+------------------------------------------------+
+   | ``{test}``     | ``[tool.pixi.feature.test.*]``    | This feature is used to define the **test**    |
+   |                |                                   | ``dependencies`` and ``tasks``.                |
+   +----------------+-----------------------------------+------------------------------------------------+
 
 
 :fab:`github` Continuous Integration
