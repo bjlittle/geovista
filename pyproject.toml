@@ -446,6 +446,7 @@ docs = { features = ["devs", "docs", "py313"], solve-group = "default" }
 geovista = { features = [
   "devs",
   "docs",
+  "geovista",
   "py313",
   "test",
 ], solve-group = "default" }
@@ -456,6 +457,7 @@ docs-py312 = { features = ["devs", "docs", "py312"], solve-group = "py312" }
 geovista-py312 = { features = [
   "devs",
   "docs",
+  "geovista",
   "py312",
   "test",
 ], solve-group = "py312" }
@@ -467,6 +469,7 @@ docs-py313 = { features = ["devs", "docs", "py313"], solve-group = "py313" }
 geovista-py313 = { features = [
   "devs",
   "docs",
+  "geovista",
   "py313",
   "test",
 ], solve-group = "py313" }
@@ -536,10 +539,6 @@ trame-vuetify = "==3.1.0"
 sphinx-tippy = ">=0.4.3,<0.5"
 vtk-xref = ">=0.1.1,<0.2"
 
-[tool.pixi.tasks.download]
-args = [{ "arg" = "option", "default" = "all" }]
-cmd = "geovista download --{{ option }}"
-
 [tool.pixi.feature.docs.tasks.clean]
 cmd = "make clean"
 cwd = "docs"
@@ -570,7 +569,7 @@ cmd = "make serve-html"
 cwd = "docs"
 depends-on = [{ "task" = "make", "args" = ["{{ option }}"] }]
 
-[tool.pixi.feature.docs.tasks.doc-images]
+[tool.pixi.feature.geovista.tasks.doc-images]
 cmd = "pytest --doc_mode"
 depends-on = [
   { "task" = "download", "args" = [
@@ -597,10 +596,14 @@ pytest-mock = ">=3.14.1,<4"
 pytest-pretty = ">=1.3.0,<2"
 pytest-pyvista = ">=0.3.1,<0.4"
 
-[tool.pixi.feature.test.tasks.test-clean]
+[tool.pixi.feature.test.tasks.tests-clean]
 cmd = "rm -rf tests/plotting/unit_image_cache test_images test_images_failed"
 
-[tool.pixi.feature.test.tasks.test]
+[tool.pixi.feature.test.tasks.tests]
 args = [{ "arg" = "option", "default" = "" }]
 cmd = "pytest {% if option | length %}-m '{{ option }}' {% endif %}--generated_image_dir test_images"
-depends-on = [{ "task" = "test-clean" }]
+depends-on = [{ "task" = "tests-clean" }]
+
+[tool.pixi.tasks.download]
+args = [{ "arg" = "option", "default" = "all" }]
+cmd = "geovista download --{{ option }}"
