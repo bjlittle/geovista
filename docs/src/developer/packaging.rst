@@ -60,8 +60,8 @@ additional dependencies compatible within the solve-group.
 .. _gv-developer-packaging-pixi-solve-groups:
 .. _tippy-gv-developer-packaging-pixi-solve-groups:
 
-:fa:`circle-nodes` Pixi Solve-Groups
-------------------------------------
+:fa:`group-arrows-rotate` Pixi Solve-Groups
+-------------------------------------------
 
 Our ``pixi`` **environments** are organized into collections by `solve-group`_.
 See the ``[tool.pixi.environments]`` table defined in the ``pyproject.toml``
