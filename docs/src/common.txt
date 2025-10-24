@@ -46,6 +46,7 @@
 .. _pip: https://pip.pypa.io/en/stable/index.html
 .. _pixi: https://github.com/prefix-dev/pixi
 .. _pre-commit: https://pre-commit.com/
+.. _pytest-pyvista: https://github.com/pyvista/pytest-pyvista
 .. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
 .. _ruff: https://github.com/astral-sh/ruff
 .. _sphinx: https://github.com/sphinx-doc/sphinx
