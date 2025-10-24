@@ -302,8 +302,8 @@ Otherwise, the top-level label **must** follow the `include directive`_ e.g., th
 .. _gv-developer-documentation-pixi-workflow:
 .. _tippy-gv-developer-documentation-pixi-workflow:
 
-:fa:`share-nodes` Pixi Workflow
--------------------------------
+:fa:`lines-leaning` Pixi Workflow
+---------------------------------
 
 The documentation may be built and rendered using `pixi run <https://pixi.sh/latest/reference/cli/pixi/run>`__
 tasks, all of which do not require to be executed within the ``docs`` directory, unlike the above
