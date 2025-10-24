@@ -505,10 +505,6 @@ zizmor = ">=1.9.0,<2"
 [tool.pixi.feature.devs.pypi-dependencies]
 geovista = { path = ".", editable = true }
 
-[tool.pixi.feature.devs.tasks]
-fmt = "ruff format"
-lint = "ruff check"
-
 [tool.pixi.feature.docs.dependencies]
 ipykernel = ">=6.29.5,<8"
 ipywidgets = ">=8.1.7,<9"
@@ -569,7 +565,7 @@ cmd = "make serve-html"
 cwd = "docs"
 depends-on = [{ "task" = "make", "args" = ["{{ option }}"] }]
 
-[tool.pixi.feature.geovista.tasks.doc-images]
+[tool.pixi.feature.geovista.tasks.tests-docs]
 cmd = "pytest --doc_mode"
 depends-on = [
   { "task" = "download", "args" = [
@@ -597,9 +593,9 @@ pytest-pretty = ">=1.3.0,<2"
 pytest-pyvista = ">=0.3.1,<0.4"
 
 [tool.pixi.feature.test.tasks.tests-clean]
-cmd = "rm -rf tests/plotting/unit_image_cache test_images test_images_failed"
+cmd = "rm -rf docs/image_cache tests/plotting/unit_image_cache test_images test_images_failed"
 
-[tool.pixi.feature.test.tasks.tests]
+[tool.pixi.feature.test.tasks.tests-unit]
 args = [{ "arg" = "option", "default" = "" }]
 cmd = "pytest {% if option | length %}-m '{{ option }}' {% endif %}--generated_image_dir test_images"
 depends-on = [{ "task" = "tests-clean" }]

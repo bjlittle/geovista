@@ -80,7 +80,7 @@ jobs:
 
       - name: "test images (${{ matrix.version }})"
         run: |
-          pixi run --frozen doc-images
+          pixi run --frozen tests-docs
 
       - name: "upload test images"
         if: ${{ failure() && !cancelled() }}

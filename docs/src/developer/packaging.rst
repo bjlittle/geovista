@@ -31,9 +31,8 @@
 
 Package management is orchestrated and performed by `pixi`_.
 
-Our ``pixi`` :term:`features <Feature>`, :term:`tasks <Task>` and
-:term:`environments <Environment>` are defined within the ``pyproject.toml``
-manifest file.
+Our ``pixi`` :term:`environments <Environment>`, :term:`features <Feature>`,
+and :term:`tasks <Task>` are defined within the ``pyproject.toml`` manifest file.
 
 ``pixi`` offers `fast`_, reproducible, cross-platform environment management that
 enables us to `resolve`_ and provision robust, consistent environments
@@ -49,11 +48,12 @@ additional dependencies compatible within the solve-group.
 .. tip::
   :class: dropdown, toggle-shown
 
-  We've adopted the following convention to help clarify each type of ``pixi``
-  component:
+  We've adopted the following format convention to help clarify each type of
+  ``pixi`` component:
 
   - :guilabel:`environment-name`
   - ``{feature-name}``
+  - ``task-name``
   - :guilabel:`&s&o&l&v&e&-&g&r&o&u&p&-&n&a&m&e`
 
 
@@ -120,7 +120,7 @@ dependency to be included in all ``py313`` environments.
    :align: center
 
    +----------------------------+-----------------------------+-----------------------------------------------+
-   | Environment                | Features                    | Description                                   |
+   | Environment                | Feature                     | Description                                   |
    +============================+=============================+===============================================+
    | :guilabel:`devs-py3xx`     | ``{default}``, ``{devs}``,  | As per the :guilabel:`py3xx` environment      |
    |                            | ``{py3xx}``                 | plus additional **development** dependencies. |
@@ -151,9 +151,9 @@ dependency to be included in all ``py313`` environments.
 :fa:`puzzle-piece` Pixi Features
 --------------------------------
 
-A ``pixi`` **environment** is defined by combining one or more :term:`features <Feature>`.
-For further details see this ``pixi`` `tutorial`_ on how to create and use
-features in a multi-environment scenario.
+A ``pixi`` :term:`environment <Environment>` is defined by combining one or
+more :term:`features <Feature>`. For further details see this ``pixi`` `tutorial`_
+on how to create and use features in a multi-environment scenario.
 
 Our features are defined under the ``[tool.pixi.feature.{feature-name}.*]``
 tables in the ``pyproject.toml`` manifest file.
@@ -167,37 +167,191 @@ various fields, such as ``dependencies``, ``pypi-dependencies``,
    :widths: 1 2 6
    :align: center
 
-   +----------------+-----------------------------------+------------------------------------------------+
-   | Feature        | TOML Table                        | Description                                    |
-   +================+===================================+================================================+
-   | ``{default}``  | ``[tool.pixi.dependencies]``      | This feature is used to define the **core**    |
-   |                |                                   | dependencies of ``geovista``. Note that the    |
-   |                |                                   | ``{default}`` feature is                       |
-   |                |                                   | `automatically included`_ in all environments  |
-   |                |                                   | by ``pixi``.                                   |
-   +----------------+-----------------------------------+------------------------------------------------+
-   | ``{devs}``     | ``[tool.pixi.feature.devs.*]``    | This feature is used to define the             |
-   |                |                                   | **development** ``dependencies``,              |
-   |                |                                   | ``pypi-dependencies`` and ``tasks``. Note      |
-   |                |                                   | that an **editable** install of ``geovista``   |
-   |                |                                   | is performed by the ``{devs}`` feature.        |
-   +----------------+-----------------------------------+------------------------------------------------+
-   | ``{docs}``     | ``[tool.pixi.feature.docs.*]``    | This feature is used to define the             |
-   |                |                                   | **documentation** ``dependencies``,            |
-   |                |                                   | ``pypi-dependencies`` and ``tasks``.           |
-   +----------------+-----------------------------------+------------------------------------------------+
-   | ``{geovista}`` | ``tool.pixi.feature.geovista.*]`` | This feature is only used to define ``tasks``. |
-   +----------------+-----------------------------------+------------------------------------------------+
-   | ``{py3xx}``    | ``[tools.pixi.feature.py3xx.*]``  | This feature is used to explicitly define the  |
-   |                |                                   | version of ``python`` supported e.g.,          |
-   |                |                                   | ``py313``. Note that the ``dependencies`` of   |
-   |                |                                   | this feature additionally includes the ``pip`` |
-   |                |                                   | package. The number of ``python`` versions     |
-   |                |                                   | supported is governed by `SPEC 0`_.            |
-   +----------------+-----------------------------------+------------------------------------------------+
-   | ``{test}``     | ``[tool.pixi.feature.test.*]``    | This feature is used to define the **test**    |
-   |                |                                   | ``dependencies`` and ``tasks``.                |
-   +----------------+-----------------------------------+------------------------------------------------+
+   +----------------+-----------------------------------+-------------------------------------------------+
+   | Feature        | TOML Table                        | Description                                     |
+   +================+===================================+=================================================+
+   | ``{default}``  | ``[tool.pixi.dependencies]``      | This feature is used to define the **core**     |
+   |                |                                   | ``dependencies`` and ``tasks`` of ``geovista``. |
+   |                |                                   | Note that the ``{default}`` feature is          |
+   |                |                                   | `automatically included`_ in all environments   |
+   |                |                                   | by ``pixi``.                                    |
+   +----------------+-----------------------------------+-------------------------------------------------+
+   | ``{devs}``     | ``[tool.pixi.feature.devs.*]``    | This feature is used to define the              |
+   |                |                                   | **development** ``dependencies``, and           |
+   |                |                                   | ``pypi-dependencies``. Note that an             |
+   |                |                                   | **editable** install of ``geovista`` is         |
+   |                |                                   | performed by the ``{devs}`` feature.            |
+   +----------------+-----------------------------------+-------------------------------------------------+
+   | ``{docs}``     | ``[tool.pixi.feature.docs.*]``    | This feature is used to define the              |
+   |                |                                   | **documentation** ``dependencies``,             |
+   |                |                                   | ``pypi-dependencies`` and ``tasks``.            |
+   +----------------+-----------------------------------+-------------------------------------------------+
+   | ``{geovista}`` | ``tool.pixi.feature.geovista.*]`` | This feature is only used to define ``tasks``.  |
+   +----------------+-----------------------------------+-------------------------------------------------+
+   | ``{py3xx}``    | ``[tools.pixi.feature.py3xx.*]``  | This feature is used to explicitly define the   |
+   |                |                                   | version of ``python`` supported e.g.,           |
+   |                |                                   | ``py313``. Note that the ``dependencies`` of    |
+   |                |                                   | this feature additionally includes the ``pip``  |
+   |                |                                   | package. The number of ``python`` versions      |
+   |                |                                   | supported is governed by `SPEC 0`_.             |
+   +----------------+-----------------------------------+-------------------------------------------------+
+   | ``{test}``     | ``[tool.pixi.feature.test.*]``    | This feature is used to define the **test**     |
+   |                |                                   | ``dependencies`` and ``tasks``.                 |
+   +----------------+-----------------------------------+-------------------------------------------------+
+
+
+:fa:`clapperboard` Pixi Tasks
+-----------------------------
+
+A ``pixi`` :term:`task <Task>` is a custom `cross-platform workflow command`_
+that is defined as part of a :term:`feature <Feature>` within an
+:term:`environment <Environment>`.
+
+All our tasks are defined within the ``pyproject.toml`` manifest file.
+
+Tasks expose a convenient and easy to use entry-point to commands that allow
+streamlined and automated custom workflows.
+
+The following tasks are defined for each of our features:
+
+.. table:: Pixi Tasks
+   :widths: 1 1 6
+   :align: center
+
+   +----------------+-----------------+---------------------------------------------------------------------+
+   | Feature        | Task            | Description                                                         |
+   +================+=================+=====================================================================+
+   | ``{default}``  | ``download``    | Download and cache offline assets.                                  |
+   |                |                 |                                                                     |
+   |                |                 | This task calls the ``geovista download`` command. Provide optional |
+   |                |                 | argument ``all``, ``clean``, ``doc-images``, ``dry-run``,           |
+   |                |                 | ``images``, ``list``, ``natural-earth``, ``operational``,           |
+   |                |                 | ``pantry``, ``rasters``, ``unit-images`` or ``verify``. Defaults to |
+   |                |                 | ``all`` e.g.,                                                       |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run download operational                                 |
+   |                |                 |                                                                     |
+   |                |                 | See ``geovista download --help`` for further details.               |
+   +----------------+-----------------+---------------------------------------------------------------------+
+   | ``{docs}``     | ``clean``       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_ `sphinx-tags`_,      |
+   |                |                 | carousel, and other `sphinx-build`_ artifacts i.e.,                 |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run clean                                                |
+   |                |                 |                                                                     |
+   |                |                 | This task is an alias for the ``make clean`` command.               |
+   |                +-----------------+---------------------------------------------------------------------+
+   |                | ``clean-all``   | Perform both the ``clean`` and ``clean-cache`` tasks i.e.,          |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run clean-all                                            |
+   |                |                 |                                                                     |
+   |                |                 | This task is an alias for the ``make clean-all`` command.           |
+   |                +-----------------+---------------------------------------------------------------------+
+   |                | ``clean-cache`` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_    |
+   |                |                 | for further details i.e.,                                           |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run clean-cache                                          |
+   |                |                 |                                                                     |
+   |                |                 | This task is an alias for the ``make clean-cache`` command.         |
+   |                +-----------------+---------------------------------------------------------------------+
+   |                | ``doctest``     | Execute `sphinx.ext.doctest`_ to test code snippets within the      |
+   |                |                 | documentation i.e.,                                                 |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run doctest                                              |
+   |                |                 |                                                                     |
+   |                |                 | Note that the ``clean`` task is called prior to running this task.  |
+   |                |                 |                                                                     |
+   |                |                 | This task is an alias for the ``make doctest`` command.             |
+   |                +-----------------+---------------------------------------------------------------------+
+   |                | ``make``        | Build the documentation.                                            |
+   |                |                 |                                                                     |
+   |                |                 | Provide optional argument ``html``, ``html-docstring``,             |
+   |                |                 | ``html-docstring-inline``, ``html-gallery``, ``html-inline`` or     |
+   |                |                 | ``html-noplot``. Defaults to ``html-noplot`` e.g.,                  |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run make html-gallery                                    |
+   |                |                 |                                                                     |
+   |                |                 | Note that the ``clean`` task is called prior to running this task.  |
+   |                |                 |                                                                     |
+   |                |                 | This task is an alias for the ``make`` command.                     |
+   |                +-----------------+---------------------------------------------------------------------+
+   |                | ``serve-html``  | Build the documentation and start a local ``HTTP`` server on port   |
+   |                |                 | ``11000`` to view the rendered documentation. This is necessary in  |
+   |                |                 | order to support interactive scenes.                                |
+   |                |                 |                                                                     |
+   |                |                 | Note that the ``clean`` and ``make`` tasks are called prior to      |
+   |                |                 | running this task.                                                  |
+   |                |                 |                                                                     |
+   |                |                 | Defaults to passing ``html-noplot`` to the ``make`` task. Override  |
+   |                |                 | this behaviour by providing an alternative optional argument as     |
+   |                |                 | per the ``make`` task e.g.,                                         |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run serve-html html                                      |
+   |                |                 |                                                                     |
+   |                |                 | This task is an alias for the ``make serve-html`` command.          |
+   +----------------+-----------------+---------------------------------------------------------------------+
+   | ``{geovista}`` | ``tests-docs``  | Perform documentation image tests of ``pyvista-plot`` directive     |
+   |                |                 | static scenes i.e.,                                                 |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run tests-docs                                           |
+   |                |                 |                                                                     |
+   |                |                 | This task calls ``pytest --doc_mode`` to perform the documentation  |
+   |                |                 | image tests using the `pytest-pyvista`_ plugin. Refer to the        |
+   |                |                 | ``[tool.pytest.ini_options]`` table entry in the                    |
+   |                |                 | ``pyproject.toml`` manifest file for default configuration options. |
+   |                |                 |                                                                     |
+   |                |                 | Note that the ``download doc-images`` and                           |
+   |                |                 | ``make html-docstring-inline`` tasks are called prior to running    |
+   |                |                 | this task.                                                          |
+   |                |                 |                                                                     |
+   |                |                 | This task is only available in the :guilabel:`geovista` and         |
+   |                |                 | :guilabel:`geovista-py3xx` environments.                            |
+   +----------------+-----------------+---------------------------------------------------------------------+
+   | ``{test}``     | ``tests-clean`` | Purge all documentation and unit image test caches i.e.,            |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run tests-clean                                          |
+   |                |                 |                                                                     |
+   |                +-----------------+---------------------------------------------------------------------+
+   |                | ``tests-unit``  | Perform unit tests.                                                 |
+   |                |                 |                                                                     |
+   |                |                 | This task calls the ``pytest`` command. Defaults to running all the |
+   |                |                 | unit tests discoverable by ``pytest``.                              |
+   |                |                 |                                                                     |
+   |                |                 | Accepts a valid ``pytest`` marker as an optional argument. Refer to |
+   |                |                 | the ``[tool.pytest.ini_options]`` table entry in the                |
+   |                |                 | ``pyproject.toml`` manifest file for configured ``markers`` e.g.,   |
+   |                |                 |                                                                     |
+   |                |                 | .. code:: console                                                   |
+   |                |                 |                                                                     |
+   |                |                 |     $ pixi run tests-unit "not image"                               |
+   |                |                 |                                                                     |
+   |                |                 | Note that the ``tests-clean`` task is called prior to running this  |
+   |                |                 | task.                                                               |
+   +----------------+-----------------+---------------------------------------------------------------------+
+
+.. seealso::
+   :class: dropdown, toggle-shown
+
+   The ``pixi task list`` command describes each of the tasks available within the workspace.
+
+   Whereas ``pixi task list --summary`` enumerates the tasks available per environment.
 
 
 :fab:`github` Continuous Integration
@@ -281,9 +435,11 @@ updates within the ``PyPI`` ecosystem.
 .. _automatically included: https://pixi.sh/latest/tutorials/multi_environment/#default
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml
 .. _ci-wheels.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-wheels.yml
+.. _cross-platform workflow command: https://pixi.sh/latest/workspace/advanced_tasks/
 .. _dependabot/dependabot-core issue#2227: https://github.com/dependabot/dependabot-core/issues/2227#issuecomment-1709069470
 .. _fast: https://prefix.dev/blog/sharded_repodata
 .. _feature table: https://pixi.sh/latest/reference/pixi_manifest/#the-feature-table
+.. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _requirements/geovista.yml: https://github.com/bjlittle/geovista/blob/main/requirements/geovista.yml
 .. _requirements/locks: https://github.com/bjlittle/geovista/tree/main/requirements/locks
 .. _resolve: https://pixi.sh/latest/workspace/environment/#solving-environments
