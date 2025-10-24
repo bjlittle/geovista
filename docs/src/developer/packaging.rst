@@ -200,6 +200,9 @@ various fields, such as ``dependencies``, ``pypi-dependencies``,
    +----------------+-----------------------------------+-------------------------------------------------+
 
 
+.. _gv-developer-packaging-pixi-tasks:
+.. _tippy-gv-developer-packaging-pixi-tasks:
+
 :fa:`clapperboard` Pixi Tasks
 -----------------------------
 

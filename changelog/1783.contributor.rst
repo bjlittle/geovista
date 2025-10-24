@@ -1,0 +1,4 @@
+Rebranded the ``doc-images`` `pixi <https://github.com/prefix-dev/pixi>`__ 🧚
+task as ``tests-docs``. Also added :ref:`tippy-gv-developer-packaging-pixi-tasks`
+to the :ref:`tippy-gv-developer-packaging` guidelines.
+(:user:`bjlittle`)
