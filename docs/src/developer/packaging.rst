@@ -99,6 +99,12 @@ by `SPEC 0`_.
    |                      | ``{py}``, ``{test}``        | additional **test** dependencies.                |
    +----------------------+-----------------------------+--------------------------------------------------+
 
+.. seealso::
+   :class: dropdown, toggle-shown
+
+   The ``pixi info`` command provides key information about the system, environments,
+   solve-groups, dependencies and tasks in the workspace.
+
 Several **secondary** solve-groups are available, each of which are named
 after the version of ``python`` that they support e.g., :guilabel:`&p&y&3&1&3`.
 
