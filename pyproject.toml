@@ -537,32 +537,38 @@ vtk-xref = ">=0.1.1,<0.2"
 [tool.pixi.feature.docs.tasks.clean]
 cmd = "make clean"
 cwd = "docs"
+description = "Purge all documentation build artifacts"
 
 [tool.pixi.feature.docs.tasks.clean-all]
 cmd = "make clean-all"
 cwd = "docs"
 depends-on = [{ "task" = "clean" }, { "task" = "clean-cache" }]
+description = "Perform both the clean and clean-cache tasks"
 
 [tool.pixi.feature.docs.tasks.clean-cache]
 cmd = "make clean-cache"
 cwd = "docs"
+description = "Purge the myst-nb Jupyter cache"
 
 [tool.pixi.feature.docs.tasks.doctest]
 cmd = "make doctest"
 cwd = "docs"
 depends-on = [{ "task" = "clean" }]
+description = "Execute sphinx.ext.doctest to test code snippets within documentation"
 
 [tool.pixi.feature.docs.tasks.make]
 args = [{ "arg" = "option", "default" = "html-noplot" }]
 cmd = "make {{ option }}"
 cwd = "docs"
 depends-on = [{ "task" = "clean" }]
+description = "Build the documentation"
 
 [tool.pixi.feature.docs.tasks.serve-html]
 args = [{ "arg" = "option", "default" = "html-noplot" }]
 cmd = "make serve-html"
 cwd = "docs"
 depends-on = [{ "task" = "make", "args" = ["{{ option }}"] }]
+description = "Build the documentation and start local HTTP server on port:11000"
 
 [tool.pixi.feature.geovista.tasks.tests-docs]
 cmd = "pytest --doc_mode"
@@ -574,6 +580,7 @@ depends-on = [
     "html-docstring-inline",
   ] },
 ]
+description = "Perform documentation image tests of pyvista-plot static scenes"
 
 [tool.pixi.feature.py312.dependencies]
 pip = ">=25.1.1,<26"
@@ -593,12 +600,15 @@ pytest-pyvista = ">=0.3.1,<0.4"
 
 [tool.pixi.feature.test.tasks.tests-clean]
 cmd = "rm -rf docs/image_cache tests/plotting/unit_image_cache test_images test_images_failed"
+description = "Purge all documentation and unit image test caches"
 
 [tool.pixi.feature.test.tasks.tests-unit]
 args = [{ "arg" = "option", "default" = "" }]
 cmd = "pytest {% if option | length %}-m '{{ option }}' {% endif %}--generated_image_dir test_images"
 depends-on = [{ "task" = "tests-clean" }]
+description = "Perform unit tests"
 
 [tool.pixi.tasks.download]
 args = [{ "arg" = "option", "default" = "all" }]
 cmd = "geovista download --{{ option }}"
+description = "Download and cache offline assets"
