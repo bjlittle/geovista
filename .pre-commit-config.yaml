@@ -21,7 +21,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.1"
+    rev: "v0.14.2"
     hooks:
       - id: ruff-check
         types: [file, python]
@@ -132,6 +132,6 @@ repos:
         args: [--ignore, ".pixi", --ignore, "changelog/template.rst"]
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.15.2
+    rev: v1.16.0
     hooks:
       - id: zizmor
