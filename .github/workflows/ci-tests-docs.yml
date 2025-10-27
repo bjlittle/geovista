@@ -84,7 +84,7 @@ jobs:
 
       - name: "upload test images"
         if: ${{ failure() && !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ci-tests-docs-test-images-failure-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/test_images_failed

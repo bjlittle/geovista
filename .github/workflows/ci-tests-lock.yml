@@ -65,7 +65,7 @@ jobs:
           pixi update --json | pixi exec pixi-diff-to-markdown > diff.md
 
       - name: "upload artifacts"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ci-tests-lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
           path: |
