@@ -92,7 +92,7 @@ jobs:
 
       - name: "upload test images"
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ci-tests-test-images-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/test_images
@@ -105,7 +105,7 @@ jobs:
           mv .coverage ${COVERAGE_FILE}
 
       - if: ${{ matrix.coverage }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-artifacts-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/ci-test-coverage*
@@ -130,7 +130,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install coverage
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: coverage-artifacts-*
           merge-multiple: true
