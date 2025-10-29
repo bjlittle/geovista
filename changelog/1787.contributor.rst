@@ -1,0 +1,3 @@
+Added descriptions to the `pixi <https://github.com/prefix-dev/pixi>`__ 🧚 tasks,
+available via the ``pixi task list`` command line interface (CLI).
+(:user:`bjlittle`)
