@@ -12,7 +12,7 @@ The following :data:`resources` dictionary keys are defined:
 
 * ``cache_dir`` - The directory used to store :mod:`geovista.cache` assets.  The default
   configuration is based on the
-  `XDG Base Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>`_
+  `XDG Base Directory Specification <https://specifications.freedesktop.org/basedir/latest/>`_
   i.e., ``${XDG_CACHE_HOME}/geovista``.  Otherwise, the default is the ``geovista``
   directory under :func:`platformdirs.user_cache_dir`.
 
