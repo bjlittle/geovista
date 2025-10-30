@@ -46,7 +46,7 @@ from platformdirs import user_cache_dir
 
 __all__ = ["resources"]
 
-# see https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+# see https://specifications.freedesktop.org/basedir/latest/
 
 resources: dict[str, Path] = {
     "cache_dir": Path(environ.get("XDG_CACHE_HOME", user_cache_dir())) / __package__
