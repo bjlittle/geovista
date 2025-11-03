@@ -21,7 +21,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.2"
+    rev: "v0.14.3"
     hooks:
       - id: ruff-check
         types: [file, python]
@@ -126,12 +126,12 @@ repos:
         args: [--option, "reorder_arrays=true", --option, "reorder_keys=true"]
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
-    rev: v1.0.0
+    rev: v1.0.1
     hooks:
       - id: sphinx-lint
         args: [--ignore, ".pixi", --ignore, "changelog/template.rst"]
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.16.0
+    rev: v1.16.2
     hooks:
       - id: zizmor
