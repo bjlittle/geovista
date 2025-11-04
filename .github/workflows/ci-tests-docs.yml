@@ -62,7 +62,7 @@ jobs:
           version: 1.0
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
+        uses: prefix-dev/setup-pixi@82d477f15f3a381dbcc8adc1206ce643fe110fb7
         with:
           environments: "geovista-${{ matrix.version }}"
           frozen: true
