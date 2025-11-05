@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/bjlittle/geovista#--------">
+  <a href="https://geovista.readthedocs.io/en/latest/">
     <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/branding/title/geovista-title.svg"
          alt="GeoVista"
          style="width: 50%; height: 50%"></a>
