@@ -116,6 +116,7 @@ inheritance relationship between its environments:
    config:
       theme: base
       themeVariables:
+         lineColor: "#F8B229"
          nodeBorder: "#2569E9"
          primaryColor: "#DCE7FC"
          secondaryColor: "#F4DDFF"
@@ -200,6 +201,7 @@ inheritance relationship between its environments:
    config:
       theme: base
       themeVariables:
+         lineColor: "#F8B229"
          nodeBorder: "#2569E9"
          primaryColor: "#DCE7FC"
          secondaryColor: "#F4DDFF"
