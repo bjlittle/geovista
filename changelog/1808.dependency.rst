@@ -1,0 +1,3 @@
+Added `sphinxcontrib-mermaid <https://github.com/mgaitan/sphinxcontrib-mermaid>`__
+``sphinx`` extension for rendering embedded `mermaid <https://mermaid.js.org/>`__
+diagrams.  (:user:`bjlittle`)
