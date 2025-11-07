@@ -14,6 +14,7 @@ sphinx-gallery >=0.17,<0.19.1
 sphinx-tags >=0.4,<0.4.1
 sphinx-tippy <0.4.4
 sphinx-togglebutton <0.3.3
+sphinxcontrib-mermaid >=1.0.0,<1.0.1
 pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2 # https://github.com/bjlittle/geovista/issues/1247
 ipywidgets <8.1.9
 jupyter-server-proxy <4.4.1
