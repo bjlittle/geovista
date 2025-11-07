@@ -105,6 +105,42 @@ by `SPEC 0`_.
    The ``pixi info`` command provides key information about the system, environments,
    solve-groups, dependencies and tasks in the workspace.
 
+Given the above :guilabel:`&d&e&f&a&u&l&t` solve-group we have the following
+inheritance relationship between its environments:
+
+.. mermaid::
+   :align: center
+   :caption: Environment Hierarchy for :guilabel:`&d&e&f&a&u&l&t` Solve-Group
+
+   ---
+   config:
+      theme: base
+      themeVariables:
+         nodeBorder: "#2569E9"
+         primaryColor: "#DCE7FC"
+         secondaryColor: "#F4DDFF"
+   ---
+   graph LR
+      default(["`**default**`"])
+      devs(["`**devs**`"])
+      docs(["`**docs**`"])
+      test(["`**test**`"])
+      geovista(["`**geovista**`"])
+      default -. "`*core*`" .-> devs
+      devs ---> docs
+      devs ---> test
+      docs ---> geovista
+      test ---> geovista
+
+.. note::
+   :class: dropdown, toggle-shown
+
+   As its name suggests, the :guilabel:`default` environment is used
+   **by default** when no explicit environment name is specified to ``pixi``.
+   e.g., ``pixi shell`` starts a shell with the :guilabel:`default` environment
+   activated, whereas ``pixi shell -e devs`` will activate the :guilabel:`devs`
+   environment instead.
+
 Several **secondary** solve-groups are available, each of which are named
 after the version of ``python`` that they support e.g., :guilabel:`&p&y&3&1&3`.
 
@@ -152,6 +188,33 @@ dependency to be included in all ``py313`` environments.
 
    The generic :guilabel:`&p&y&3&x&x` solve-group does **not** exist, neither does
    the generic ``{py3xx}`` feature.
+
+Given the above :guilabel:`&p&y&3&x&x` solve-group we have the following
+inheritance relationship between its environments:
+
+.. mermaid::
+   :align: center
+   :caption: Environment Hierarchy for :guilabel:`&p&y&3&x&x` Solve-Group
+
+   ---
+   config:
+      theme: base
+      themeVariables:
+         nodeBorder: "#2569E9"
+         primaryColor: "#DCE7FC"
+         secondaryColor: "#F4DDFF"
+   ---
+   graph LR
+      py3xx(["`**py3xx**`"])
+      devs(["`**devs-py3xx**`"])
+      docs(["`**docs-py3xx**`"])
+      test(["`**test-py3xx**`"])
+      geovista(["`**geovista-py3xx**`"])
+      py3xx --> |"`*core*`"| devs
+      devs --> docs
+      devs --> test
+      docs --> geovista
+      test --> geovista
 
 
 :fa:`puzzle-piece` Pixi Features

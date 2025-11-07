@@ -1,0 +1,4 @@
+Added embedded `mermaid <https://github.com/mgaitan/sphinxcontrib-mermaid>`__
+graphs of `pixi <https://github.com/prefix-dev/pixi>`__ 🧚 solve-group
+environment hierarchies to the :ref:`tippy-gv-developer-packaging` guidelines.
+(:user:`bjlittle`)

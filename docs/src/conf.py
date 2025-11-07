@@ -168,6 +168,7 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_tags",
     "sphinx_togglebutton",
+    "sphinxcontrib.mermaid",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
     "myst_nb",
