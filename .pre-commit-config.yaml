@@ -21,7 +21,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.3"
+    rev: "v0.14.4"
     hooks:
       - id: ruff-check
         types: [file, python]
@@ -112,7 +112,7 @@ repos:
       - id: check-readthedocs
 
   - repo: https://github.com/scientific-python/cookie
-    rev: 2025.10.20
+    rev: 2025.11.10
     hooks:
       - id: sp-repo-review
         additional_dependencies: ["repo-review[cli]"]
@@ -132,6 +132,6 @@ repos:
         args: [--ignore, ".pixi", --ignore, "changelog/template.rst"]
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.16.2
+    rev: v1.16.3
     hooks:
       - id: zizmor
