@@ -1,0 +1,3 @@
+Used the :class:`pyvista.CameraPosition` to explicitly clarify the
+camera position vectors in the :ref:`sphx_glr_generated_gallery_scalar_data_from_tiff__dem.py`
+gallery example. (:user:`bjlittle`)
