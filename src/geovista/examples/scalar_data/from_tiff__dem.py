@@ -58,6 +58,8 @@ the topography of Mount Fuji and its surrounding landscape.
 
 from __future__ import annotations
 
+import pyvista as pv
+
 import geovista as gv
 from geovista.pantry import fetch_raster
 import geovista.theme
@@ -97,11 +99,11 @@ def main() -> None:
     )
 
     # Define a specific camera position and orientation.
-    cpos = [
-        (-0.6134635189209598, 0.5500672658209347, 0.5735486559145044),
-        (-0.6130746222715426, 0.5383021484428419, 0.5780820278342568),
-        (-0.6616613958706443, 0.25045119061438004, 0.7067378568708134),
-    ]
+    cpos = pv.CameraPosition(
+        position=(-0.6134635189209598, 0.5500672658209347, 0.5735486559145044),
+        focal_point=(-0.6130746222715426, 0.5383021484428419, 0.5780820278342568),
+        viewup=(-0.6616613958706443, 0.25045119061438004, 0.7067378568708134),
+    )
 
     p.show(cpos=cpos)
 
