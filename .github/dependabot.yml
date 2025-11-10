@@ -29,8 +29,7 @@ updates:
     directory: "/"
     open-pull-requests-limit: 3
     schedule:
-      interval: "weekly"
-      day: "sunday"
+      interval: "daily"
     cooldown:
       default-days: 7
       semver-major-days: 5
