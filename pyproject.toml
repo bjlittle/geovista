@@ -156,6 +156,8 @@ max_image_size = 450
 ignore = [
   # https://learn.scientific-python.org/development/guides/style/#PC180
   "PC180", # Uses prettier.
+  # https://learn.scientific-python.org/development/guides/packaging-simple#PP006
+  "PP006", # dev dependency group
 ]
 
 
