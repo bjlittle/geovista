@@ -32,7 +32,7 @@ of the Earth's land surface between 60°N and 56°S latitude with
 data points posted every 1 arc-second (approximately 30 meters).
 
 This SRTM sample is of *Mount Fuji*, one of Japan's
-`Three Holy Mountains <https://blog.japanwondertravel.com/japans-three-sacred-mountains-14297>`_,
+`Three Holy Mountains <https://en.wikipedia.org/wiki/Mount_Fuji>`_,
 which is an active stratovolcano, located on the Japanese island of *Honshū*.
 
 The resulting mesh contains quad cells, with the elevation data located
