@@ -1,0 +1,4 @@
+Introduced the ``@geovista-bot auto-approve`` :fab:`github` workflow to
+approve pull-requests by trusted contributors and thus permitting elevated
+``main`` branch protection by enforcing ``CODEOWNERS`` reviews.
+(:user:`bjlittle`)

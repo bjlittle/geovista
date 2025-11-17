@@ -1,0 +1,79 @@
+# Reference:
+#   - https://github.com/hmarr/auto-approve-action
+#   - https://github.com/peter-evans/create-or-update-comment
+
+name: ci-auto-approve
+
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  auto-approve:
+    name: "auto-approve"
+    runs-on: ubuntu-latest
+
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '@geovista-bot auto-approve') }}
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: "verify"
+        id: verify
+        run: |
+          if [[ "${GITHUB_EVENT_COMMENT_USER_LOGIN}" == "bjlittle" ]]; then
+            echo "valid=true" >> $GITHUB_OUTPUT
+            echo "reaction=rocket" >> $GITHUB_OUTPUT
+            {
+              echo "message<<EOF"
+              echo -e ":white_check_mark: I approved this pull-request! :sparkles:\n\n"
+              echo "As requested by @${GITHUB_EVENT_COMMENT_USER_LOGIN} in this [comment](${GITHUB_EVENT_COMMENT_HTML_URL})."
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+          else
+            echo "valid=false" >> $GITHUB_OUTPUT
+            echo "reaction=-1" >> $GITHUB_OUTPUT
+            {
+              echo "message<<EOF"
+              echo -e ":x: Dang! I can't approve this pull-request! :cry:\n\n"
+              echo -e "You don't have sufficent permissions.\n\n"
+              echo "As requested by @${GITHUB_EVENT_COMMENT_USER_LOGIN} in this [comment](${GITHUB_EVENT_COMMENT_HTML_URL})."
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_EVENT_COMMENT_USER_LOGIN: ${{ github.event.comment.user.login }}
+          GITHUB_EVENT_COMMENT_HTML_URL: ${{ github.event.comment.html_url }}
+
+      - name: "reaction"
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          token: ${{ secrets.GEOVISTA_BOT_TOKEN }}
+          reactions: ${{ steps.verify.outputs.reaction }}
+
+      - name: "approve"
+        if: ${{ steps.verify.outputs.valid == 'true' }}
+        uses: hmarr/auto-approve-action@f0939ea97e9205ef24d872e76833fa908a770363
+        with:
+          pull-request-number: ${{ github.event.issue.number }}
+          github-token: ${{ secrets.GEOVISTA_BOT_TOKEN }}
+          review-message: ${{ steps.verify.outputs.message }}
+
+      - name: "deny"
+        if: ${{ steps.verify.outputs.valid == 'false' }}
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          token: ${{ secrets.GEOVISTA_BOT_TOKEN }}
+          body: ${{ steps.verify.outputs.message }}
