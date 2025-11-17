@@ -297,7 +297,6 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
         emsg = f"Expected a 'pyvista.UnstructuredGrid', got {dtype}."
         raise TypeError(emsg)
 
-    # see https://vtk.org/pipermail/vtkusers/2011-March/066506.html
     alg = pv._vtk.vtkGeometryFilter()  # noqa: SLF001
     alg.AddInputData(mesh)
     alg.Update()
