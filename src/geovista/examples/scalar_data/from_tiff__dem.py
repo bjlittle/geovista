@@ -10,7 +10,7 @@ GeoTIFF DEM
 -----------
 
 This example demonstrates how to render **Digital Elevation Model** (DEM) data
-encoded in an `OGC GeoTIFF <https://www.ogc.org/publications/standard/geotiff/>`_
+encoded in an `OGC GeoTIFF <https://www.ogc.org/standards/geotiff/>`_
 as a geolocated mesh.
 
 📋 Summary
