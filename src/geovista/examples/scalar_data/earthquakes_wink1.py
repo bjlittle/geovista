@@ -43,7 +43,7 @@ for further details.
 .. attention::
 
    Optional package dependencies `pandas <https://pandas.pydata.org/docs/>`_ and
-   `fastparquet <https://fastparquet.readthedocs.io/en/stable>`_ are required.
+   `fastparquet <https://fastparquet.readthedocs.io/en/stable/>`_ are required.
 
 .. tags::
 
