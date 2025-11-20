@@ -47,14 +47,14 @@ jobs:
         with:
           args: |
             --cache
+            --exclude '^https://github\.com/bjlittle/geovista\.git'
+            --max-concurrency 1
             --no-progress
             --verbose
-            --max-concurrency 1
-            --exclude '^https://github\.com/bjlittle/geovista\.git'
+            './changelog/*.rst'
             './docs/src/**/*.md'
             './docs/src/**/*.rst'
             './docs/src/**/*.txt'
-            './changelog/*.rst'
             './src/**/*.py'
           fail: false
 

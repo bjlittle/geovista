@@ -11,7 +11,7 @@ Assorted package metadata about ``geovista``.
 ------------------------------
 
 .. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7608302.svg
-    :target: https://doi.org/10.5281/zenodo.7608302
+    :target: https://zenodo.org/doi/10.5281/zenodo.7608302
 
 |zenodo|
 
