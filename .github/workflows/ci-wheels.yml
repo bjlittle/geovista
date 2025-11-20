@@ -27,12 +27,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  id-token: none
-
 defaults:
   run:
     shell: bash -l {0}
+
+permissions: {}
 
 jobs:
   build-artifacts:

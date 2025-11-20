@@ -1,0 +1,2 @@
+Adopted explicit default ``permissions`` for :fab:`github` Actions.
+(:user:`bjlittle`)

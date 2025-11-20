@@ -5,9 +5,10 @@
 name: ci-auto-approve
 
 on:
-  workflow_dispatch:
   issue_comment:
     types: [created]
+
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,6 +17,8 @@ concurrency:
 defaults:
   run:
     shell: bash -l {0}
+
+permissions: {}
 
 jobs:
   auto-approve:

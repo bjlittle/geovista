@@ -15,17 +15,16 @@ on:
 
   workflow_dispatch:
 
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  issues: write
-
 defaults:
   run:
     shell: bash -l {0}
+
+permissions:
+  issues: write
 
 env:
   ALLOW_PLOTTING: true

@@ -8,26 +8,26 @@
 name: ci-locks
 
 on:
-  workflow_dispatch:
   schedule:
     # every sunday @ 00h03
     - cron: "3 0 * * 0"
+
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  id-token: none
+defaults:
+  run:
+    shell: bash -l {0}
 
 env:
   NAME: "geovista"
   SHELLOPTS: "errexit:pipefail"
   VERSION: "py313"
 
-defaults:
-  run:
-    shell: bash -l {0}
+permissions: {}
 
 jobs:
   pixi-update:
