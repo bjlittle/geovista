@@ -62,4 +62,4 @@ jobs:
       - name: "exit action"
         if: ${{ fromJSON(steps.lychee.outputs.exit_code) != 0 }}
         run:
-          exit {{ steps.lychee.outputs.exit_code }}
+          exit ${{ fromJSON(steps.lychee.outputs.exit_code) }}
