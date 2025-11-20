@@ -7,7 +7,7 @@
 .. _Discussions: https://github.com/bjlittle/geovista/discussions
 .. _Executable Books: https://github.com/executablebooks
 .. _GeoVista: https://github.com/bjlittle/geovista
-.. _GitHub: https://docs.github.com/
+.. _GitHub: https://docs.github.com/en
 .. _Issue: https://github.com/bjlittle/geovista/issues
 .. _Issues: https://github.com/bjlittle/geovista/issues
 .. _Kitware: https://www.kitware.com/
@@ -20,14 +20,14 @@
 .. _PyVistaQt: https://github.com/pyvista/pyvistaqt
 .. _Python: https://www.python.org/
 .. _Qt: https://www.qt.io/
-.. _RTD (latest): https://geovista.readthedocs.io/en/latest
-.. _RTD (stable): https://geovista.readthedocs.io/en/stable
+.. _RTD (latest): https://geovista.readthedocs.io/en/latest/
+.. _RTD (stable): https://geovista.readthedocs.io/en/stable/
 .. _Test PyPI: https://test.pypi.org/project/geovista/
 .. _Trame: https://kitware.github.io/trame/
 .. _VTK: https://vtk.org/
 .. _Visualization Toolkit: https://vtk.org/
 .. _cartopy: https://github.com/SciTools/cartopy
-.. _cmocean: https://matplotlib.org/cmocean
+.. _cmocean: https://matplotlib.org/cmocean/
 .. _cmocean balance: https://matplotlib.org/cmocean/#balance
 .. _cmocean thermal: https://matplotlib.org/cmocean/#thermal
 .. _conda: https://docs.conda.io/projects/conda/en/latest/index.html

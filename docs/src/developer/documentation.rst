@@ -305,7 +305,7 @@ Otherwise, the top-level label **must** follow the `include directive`_ e.g., th
 :fa:`lines-leaning` Pixi Workflow
 ---------------------------------
 
-The documentation may be built and rendered using `pixi run <https://pixi.sh/latest/reference/cli/pixi/run>`__
+The documentation may be built and rendered using `pixi run <https://pixi.sh/latest/reference/cli/pixi/run/>`__
 tasks, all of which do not require to be executed within the ``docs`` directory, unlike the above
 :ref:`tippy-gv-developer-documentation-building` ``make`` tasks e.g.,
 

@@ -73,4 +73,4 @@ A massive thank-you to all our awesome contributors (`Emoji Key ✨`_):
 .. _all-contributors bot 🤖: https://all-contributors.github.io/bot/usage/#all-contributors-add
 .. _BSD-3-Clause: https://spdx.org/licenses/BSD-3-Clause.html
 .. _Emoji Key ✨: https://all-contributors.github.io/emoji-key/
-.. _all-contributors: https://github.com/all-contributors/all-contributors
+.. _all-contributors: https://github.com/all-contributors/all-contributors.github.io
