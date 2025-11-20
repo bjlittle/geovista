@@ -7,21 +7,21 @@
 name: ci-tests-lock
 
 on:
-  workflow_dispatch:
   schedule:
     # every day @ 00h03 except sunday (see ci-locks.yml)
     - cron: "3 0 * * 1-6"
+
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  issues: write
-
 defaults:
   run:
     shell: bash -l {0}
+
+permissions: {}
 
 jobs:
   test-lock:

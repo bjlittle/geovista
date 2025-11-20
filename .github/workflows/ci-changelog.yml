@@ -19,8 +19,7 @@ on:
 
   workflow_dispatch:
 
-permissions:
-  id-token: none
+permissions: {}
 
 jobs:
   changelog:
