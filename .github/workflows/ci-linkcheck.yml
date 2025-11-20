@@ -49,7 +49,7 @@ jobs:
           fail: false
 
       - name: "report failure"
-        if: steps.lychee.outputs.exit_code != 0
+        if: ${{ fromJSON(steps.lychee.outputs.exit_code) != 0 }}
         uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710
         with:
           title: "chore: linkcheck failure"
@@ -60,6 +60,6 @@ jobs:
             type: documentation
 
       - name: "exit action"
-        if: steps.lychee.outputs.exit_code != 0
+        if: ${{ fromJSON(steps.lychee.outputs.exit_code) != 0 }}
         run:
           exit {{ steps.lychee.outputs.exit_code }}
