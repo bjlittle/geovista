@@ -4,7 +4,6 @@
 #   - https://github.com/snnaplab/get-labels-action
 #   - https://github.com/dorny/paths-filter
 
-
 name: ci-changelog
 
 on:
@@ -30,7 +29,7 @@ jobs:
       run:
         shell: bash -l {0}
 
-    if: github.actor != 'pre-commit-ci[bot]'
+    if: ${{ github.actor != 'pre-commit-ci[bot]' }}
     steps:
       - uses: actions/checkout@v5
         with:

@@ -80,7 +80,7 @@ jobs:
         key: ${{ runner.os }}-cartopy-data-${{ env.CACHE_PERIOD }}
 
     - name: "refresh cartopy cache"
-      if: steps.cartopy-cache.outputs.cache-hit != 'true'
+      if: ${{ steps.cartopy-cache.outputs.cache-hit != 'true' }}
       env:
         CARTOPY_SHARE_DIR: ~/.local/share/cartopy
       run: |
@@ -95,7 +95,7 @@ jobs:
         key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ env.CACHE_PERIOD }}
 
     - name: "refresh geovista cache"
-      if: steps.geovista-cache.outputs.cache-hit != 'true'
+      if: ${{ steps.geovista-cache.outputs.cache-hit != 'true' }}
       run: |
         geovista download --all --decompress
 
@@ -104,7 +104,7 @@ jobs:
         xvfb-run -a pytest --generated_image_dir test_images
 
     - name: "report failure"
-      if: failure() && github.event_name == 'schedule'
+      if: ${{ failure() && github.event_name == 'schedule' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
