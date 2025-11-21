@@ -125,7 +125,7 @@ jobs:
     environment: test-pypi
 
     # upload to Test PyPI for every commit on main branch
-    if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
+    if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/download-artifact@v6
       with:
@@ -149,7 +149,7 @@ jobs:
     environment: pypi
 
     # upload to PyPI for every tag starting with 'v'
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    if: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v') }}
     steps:
     - uses: actions/download-artifact@v6
       with:
