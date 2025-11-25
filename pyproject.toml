@@ -138,6 +138,7 @@ filterwarnings = [
 ]
 log_cli = true
 log_cli_level = "INFO"
+log_level = "INFO"
 markers = ["example: gallery image tests", "image: plotting image tests"]
 minversion = "6.0"
 required_plugins = "pytest-mock pytest_pyvista"
