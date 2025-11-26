@@ -316,7 +316,7 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
 .. table:: Pixi Tasks
     :widths: 1 3
     :align: center
-    :name: documentation-pixi-workflow
+    :name: gv-documentation-pixi-workflow
 
     +-------------------------+----------------------------------------------------------------------------------+
     | Pixi Task               | Description                                                                      |
@@ -358,6 +358,8 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
 
         $ pixi run --frozen serve-html html-gallery
 
+
+:ref:`gv-documentation-pixi-workflow`
 
 .. _gv-developer-documentation-tagging:
 .. _tippy-gv-developer-documentation-tagging:
