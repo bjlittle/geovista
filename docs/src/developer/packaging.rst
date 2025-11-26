@@ -73,8 +73,8 @@ contain the **latest** supported version of ``python``. This is denoted by the
 by `SPEC 0`_.
 
 .. table:: Pixi :guilabel:`&d&e&f&a&u&l&t` Solve-Group
-   :widths: 1 2 5
    :align: center
+   :widths: 1 2 5
 
    +----------------------+-----------------------------+--------------------------------------------------+
    | Environment          | Features                    | Description                                      |
@@ -160,8 +160,8 @@ will contain the ``{py313}`` feature which in turn defines the ``python=3.13``
 dependency to be included in all ``py313`` environments.
 
 .. table:: Pixi :guilabel:`&p&y&3&x&x` Solve-Groups
-   :widths: 2 2 6
    :align: center
+   :widths: 2 2 6
 
    +----------------------------+-----------------------------+-----------------------------------------------+
    | Environment                | Feature                     | Description                                   |
@@ -237,8 +237,8 @@ various fields, such as ``dependencies``, ``pypi-dependencies``,
 ``channels``, ``channel-priority``, ``target`` and ``tasks``.
 
 .. table:: Pixi Features
-   :widths: 1 2 6
    :align: center
+   :widths: 1 2 6
 
    +----------------+-----------------------------------+-------------------------------------------------+
    | Feature        | TOML Table                        | Description                                     |
@@ -291,8 +291,8 @@ streamlined and automated custom workflows.
 The following tasks are defined for each of our features:
 
 .. table:: Pixi Tasks
-   :widths: 1 1 6
    :align: center
+   :widths: 1 1 6
 
    +----------------+-----------------+---------------------------------------------------------------------+
    | Feature        | Task            | Description                                                         |
@@ -441,8 +441,8 @@ The following tasks are defined for each of our features:
 The following packaging workflows are available:
 
 .. table:: Packaging Workflows
-   :widths: 1 2
    :align: center
+   :widths: 1 2
 
    +-------------+-------------------------------------------------------------------------------------+
    | Workflow    | Description                                                                         |

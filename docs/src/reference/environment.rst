@@ -17,8 +17,8 @@ Internal
 Package environment variables that influence the behaviour of ``geovista``:
 
 .. table:: Internal Variables
-    :widths: auto
     :align: center
+    :widths: auto
 
     +--------------------------------------+---------------+-----------------------------------------------------------+
     | Name                                 | Type          | Description                                               |
@@ -73,8 +73,8 @@ Notable third-party environment variables that influence the behaviour of
 ``geovista``:
 
 .. table:: External Variables
-    :widths: auto
     :align: center
+    :widths: auto
 
     +--------------------------------------+---------------+---------------------------------------------------------+
     | Name                                 | Type          | Description                                             |
