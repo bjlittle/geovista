@@ -44,8 +44,8 @@ The following sections describe the ``make`` tasks that are available.
 Start afresh with confidence by performing documentation hygiene to purge various build artifacts.
 
 .. table:: Housekeeping Tasks
-    :widths: 1 3
     :align: center
+    :widths: 1 3
 
     +-------------------------+----------------------------------------------------------------------------------+
     | Make Task               | Description                                                                      |
@@ -70,8 +70,8 @@ Build the documentation along with various controls to limit image creation. Not
 static images and interactive scenes can be resource hungry and time consuming.
 
 .. table:: Build Tasks
-    :widths: 1 3
     :align: center
+    :widths: 1 3
 
     +-----------------------------------+--------------------------------------------------------------------------+
     | Make Task                         | Description                                                              |
@@ -105,8 +105,8 @@ static images and interactive scenes can be resource hungry and time consuming.
 How-to serve the rendered documentation for inspection in a local browser.
 
 .. table:: Render Tasks
-    :widths: 1 3
     :align: center
+    :widths: 1 3
 
     +------------------------+-------------------------------------------------------------------------------------+
     | Make Task              | Description                                                                         |
@@ -122,8 +122,8 @@ How-to serve the rendered documentation for inspection in a local browser.
 Perform documentation quality assurance.
 
 .. table:: Test Tasks
-    :widths: 1 3
     :align: center
+    :widths: 1 3
 
     +-----------------------+----------------------------------------------------------------------------------+
     | Make Task             | Description                                                                      |
@@ -176,8 +176,8 @@ The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType
 The following documentation workflows are available:
 
 .. table:: Documentation Workflows
-    :widths: 1 2
     :align: center
+    :widths: 1 2
 
     +-------------+----------------------------------------------------------------------------------+
     | Workflow    | Description                                                                      |
@@ -298,6 +298,26 @@ Otherwise, the top-level label **must** follow the `include directive`_ e.g., th
     :fa:`square-pen` Documentation
     ==============================
 
+To cross-reference a ``figure`` or a ``table`` use the ``:name:`` option to
+create the label, ensuring to append its title (or similar) for uniqueness e.g.,
+the ``docs/src/overview.rst`` document has the following
+:ref:`table <tippy-gv-overview-ecosystem-geovista-ecosystem>` within
+its :ref:`tippy-gv-overview-ecosystem` section:
+
+.. code:: rst
+
+    .. figure:: _static/images/ecosystem.png
+        :align: center
+        :alt: GeoVista Ecosystem
+        :name: tippy-gv-overview-ecosystem-geovista-ecosystem
+
+        Ecosystem of ``geovista``
+
+.. hint::
+
+    To support accessibility best practice use the ``:alt:`` option for both
+    ``image`` and ``figure`` directives.
+
 
 .. _gv-developer-documentation-pixi-workflow:
 .. _tippy-gv-developer-documentation-pixi-workflow:
@@ -314,9 +334,8 @@ tasks, all of which do not require to be executed within the ``docs`` directory,
     $ pixi run <pixi-task>
 
 .. table:: Pixi Tasks
-    :widths: 1 3
     :align: center
-    :name: documentation-pixi-workflow
+    :widths: 1 3
 
     +-------------------------+----------------------------------------------------------------------------------+
     | Pixi Task               | Description                                                                      |
@@ -414,8 +433,8 @@ e.g.,
         style: opacity
 
 .. table:: Content Tags
-    :widths: 1 2 2
     :align: center
+    :widths: 1 2 2
 
     +------------------------+----------------------------------------------------+------------------------------------------------+
     | Category               | Topic                                              | Description                                    |

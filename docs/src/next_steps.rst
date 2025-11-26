@@ -24,13 +24,14 @@ To help us, help you, get the best out of ``geovista``, we've adopted the
 
 It provides best practice advice on how to *organise* documentation in
 a systematic way, with a focus on *content* and *style* that addresses the
-four distinct needs of documentation users (see :numref:`diátaxis-figure`).
+four distinct needs of documentation users
+(see :numref:`tippy-gv-next-steps-diátaxis-axes-of-needs`).
 
 .. figure:: _static/images/axes-of-needs.png
+    :alt: Diátaxis Axes of Needs
     :figclass: margin
+    :name: tippy-gv-next-steps-diátaxis-axes-of-needs
     :target: https://diataxis.fr/
-    :name: diátaxis-figure
-    :alt: Diátaxis Axis of Needs
 
     Diátaxis Axes of Needs
 
