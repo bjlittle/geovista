@@ -111,7 +111,6 @@ inheritance relationship between its environments:
 .. mermaid::
    :align: center
    :caption: Environment Hierarchy for :guilabel:`&d&e&f&a&u&l&t` Solve-Group
-   :zoom:
 
    ---
    config:
@@ -197,7 +196,6 @@ inheritance relationship between its environments:
 .. mermaid::
    :align: center
    :caption: Environment Hierarchy for :guilabel:`&p&y&3&x&x` Solve-Group
-   :zoom:
 
    ---
    config:

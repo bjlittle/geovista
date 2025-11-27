@@ -301,7 +301,7 @@ Otherwise, the top-level label **must** follow the `include directive`_ e.g., th
 To cross-reference a ``figure`` or a ``table`` use the ``:name:`` option to
 create the label, ensuring to append its title (or similar) for uniqueness e.g.,
 the ``docs/src/overview.rst`` document has the following
-:ref:`table <tippy-gv-overview-ecosystem-geovista-ecosystem>` within
+:ref:`figure <tippy-gv-overview-ecosystem-geovista-ecosystem>` within
 its :ref:`tippy-gv-overview-ecosystem` section:
 
 .. code:: rst
