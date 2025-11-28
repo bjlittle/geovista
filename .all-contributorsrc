@@ -446,6 +446,16 @@
       "contributions": [
         "promotion"
       ]
+    },
+    {
+      "login": "DanCopsey",
+      "name": "Dan Copsey",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2242402?v=4",
+      "profile": "https://github.com/DanCopsey",
+      "contributions": [
+        "promotion",
+        "tool"
+      ]
     }
   ],
   "commitType": "docs"
