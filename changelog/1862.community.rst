@@ -1,0 +1,2 @@
+Added :user:`DanCopsey` as a contributor for ``promotion`` and ``tool``.
+(:user:`bjlittle`)
