@@ -43,7 +43,7 @@ jobs:
         session: ["doctest"]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           persist-credentials: false
