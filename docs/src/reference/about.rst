@@ -33,7 +33,7 @@ remember to cite us:
     :class: margin, dropdown, toggle-shown
 
     Anyone can use the |icon| `all-contributors bot 🤖`_  to acknowledge
-    the efforts of others.
+    the efforts of others (or yourself 😉).
 
 
 We follow the |icon| `all-contributors`_ specification. Contributions of
