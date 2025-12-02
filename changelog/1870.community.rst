@@ -1,0 +1,2 @@
+Added :user:`RobWatersMet` as a contributor for ``ideas``.
+(:user:`bjlittle`)
