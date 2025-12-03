@@ -276,15 +276,15 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         # reduced rendered points to only points enclosed by self.bbox
         if self.bbox:
             mesh_enclosed = self.bbox.enclosed(mesh)
-            # because points reduced, also need to reduce labels
-            enclosed_labels = []
-            for i_point in range(mesh.points.shape[0]):
-                # for each original point, test if now in enclosed mesh and if
-                # so take forward label
-                if np.any(np.all(np.isclose(
-                        mesh_enclosed.points, mesh.points[i_point,:]), axis=1)):
-                    enclosed_labels.append(graticule.labels[i_point])  # noqa: PERF401
-            graticule.labels = enclosed_labels
+            # make a quick list of the enclosed points
+            enclosed_points = [tuple(p) for p in mesh_enclosed.points]
+            # filter labels based on if the original points are in
+            # enclosed_points
+            graticule.labels = [
+                label for p, label in zip(
+                    mesh.points, graticule.labels, strict=True) if tuple(p) in
+                enclosed_points]
+
             mesh = mesh_enclosed
 
         xyz = mesh.points
