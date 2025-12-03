@@ -272,6 +272,21 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         # the point-cloud won't be sliced, however it's important that the
         # central-meridian rotation is performed here
         mesh = transform_mesh(mesh, tgt_crs=self.crs, zlevel=zlevel, inplace=True)
+
+        # reduced rendered points to only points enclosed by self.bbox
+        if self.bbox:
+            mesh_enclosed = self.bbox.enclosed(mesh)
+            # because points reduced, also need to reduce labels
+            enclosed_labels = []
+            for i_point in range(mesh.points.shape[0]):
+                # for each original point, test if now in enclosed mesh and if
+                # so take forward label
+                if np.any(np.all(np.isclose(
+                        mesh_enclosed.points, mesh.points[i_point,:]), axis=1)):
+                    enclosed_labels.append(graticule.labels[i_point])  # noqa: PERF401
+            graticule.labels = enclosed_labels
+            mesh = mesh_enclosed
+
         xyz = mesh.points
 
         if "show_points" in point_labels_args:
@@ -917,7 +932,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             mesh_args["zscale"] = zscale
 
         for mesh in meridians.blocks:
-            self.add_mesh(mesh, **mesh_args)
+            # reduced rendered points to only points enclosed by self.bbox
+            if self.bbox:
+                mesh_enclosed = self.bbox.enclosed(mesh)
+                self.add_mesh(mesh_enclosed, **mesh_args)
+            else:
+                self.add_mesh(mesh)
 
         if show_labels:
             self._add_graticule_labels(
@@ -1103,7 +1123,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             mesh_args["zscale"] = zscale
 
         for mesh in parallels.blocks:
-            self.add_mesh(mesh, **mesh_args)
+            # reduced rendered points to only points enclosed by self.bbox
+            if self.bbox:
+                mesh_enclosed = self.bbox.enclosed(mesh)
+                self.add_mesh(mesh_enclosed, **mesh_args)
+            else:
+                self.add_mesh(mesh)
 
         if show_labels:
             self._add_graticule_labels(
