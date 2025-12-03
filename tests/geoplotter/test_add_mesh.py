@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import pyvista as pv
 
-from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter, WGS84
+from geovista.geoplotter import OPACITY_BLACKLIST, WGS84, GeoPlotter
 
 
 def test_no_opacity_kwarg(lfric, mocker):
@@ -80,10 +80,13 @@ class DummyBBox:
         self.called_with = mesh
         return self.filtered_mesh
 
+
 @pytest.mark.parametrize("bbox_factory", [None, DummyBBox])
 def test_bbox_filtering(mocker, bbox_factory):
     """Test with bbox subsetting enabled and disabled."""
     bbox = bbox_factory() if callable(bbox_factory) else None
+    if bbox:
+        mocker.spy(bbox, "enclosed")
 
     # Patch mesh creation so add_base_layer() gets a predictable mesh
     input_mesh = pv.PolyData([[0.0, 0.0, 0.0]])
@@ -104,7 +107,7 @@ def test_bbox_filtering(mocker, bbox_factory):
         # bbox subsetting should be happening, assert add mesh uses the
         # dummy enclosed mesh and that bbox has been
         assert bbox.called is True
-        assert bbox.called_with is input_mesh
+        bbox.enclosed.assert_called_once_with(input_mesh)
         mock_super.assert_called_once()
         args, _ = mock_super.call_args
         assert args[0] is bbox.filtered_mesh

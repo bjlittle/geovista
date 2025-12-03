@@ -83,6 +83,8 @@ class DummyBBox:
 def test_bbox_filtering(mocker, bbox_factory):
     """Test with bbox subsetting enabled and disabled."""
     bbox = bbox_factory() if callable(bbox_factory) else None
+    if bbox:
+        mocker.spy(bbox, "enclosed")
 
     # Patch mesh creation so add_base_layer() gets a predictable mesh
     input_mesh = pv.PolyData([[0.0, 0.0, 0.0]])
@@ -105,7 +107,7 @@ def test_bbox_filtering(mocker, bbox_factory):
         # bbox subsetting should be happening, assert add mesh uses the
         # dummy enclosed mesh and that bbox has been
         assert bbox.called is True
-        assert bbox.called_with is input_mesh
+        bbox.enclosed.assert_called_once_with(input_mesh)
         p.add_mesh.assert_called_once()
         args, _ = p.add_mesh.call_args
         assert args[0] is bbox.filtered_mesh
