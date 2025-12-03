@@ -176,8 +176,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
         bbox : BBox, optional
             A bounding box object used for subsetting to the rendered area so
-            that only points enclosed by the bounding box are rendered. Used
-            in self.add_mesh, self.add_base_layer and self.add_coastline.
+            that only points enclosed by the bounding box are rendered.
+            Subsetted features include mesh, coastline, base layer, parallels,
+            meridians and their labels.
         **kwargs : dict, optional
             See :class:`pyvista.Plotter` for further details.
 
