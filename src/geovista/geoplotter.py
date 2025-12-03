@@ -65,6 +65,8 @@ from .pantry.meshes import (
 from .raster import wrap_texture
 from .transform import transform_mesh, transform_point
 
+from geovista.geodesic import BBox
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -158,7 +160,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     """
 
     def __init__(
-        self, *args: Any | None, crs: CRSLike | None = None, **kwargs: Any | None
+        self, *args: Any | None,
+        crs: CRSLike | None = None,
+        bbox: BBox | None = None,
+        **kwargs: Any | None
     ) -> None:
         """Create geospatial aware plotter.
 
@@ -199,6 +204,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         self.crs = pyproj.CRS.from_user_input(crs) if crs is not None else WGS84
         """The Coordinate Reference System (CRS) for the plotter."""
+
+        self.bbox = bbox
 
         # status of gpu opacity support
         self._missing_opacity = False
@@ -393,6 +400,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         else:
             mesh = _lfric_mesh(resolution=resolution, radius=radius)
 
+        if self.bbox:
+            mesh =  self.bbox.enclosed(mesh)
+
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
     def add_coastlines(
@@ -429,6 +439,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         atol : float, optional
             The absolute tolerance for longitudes close to the 'wrap meridian' -
             see :func:`geovista.common.wrap` for more.
+        bbox: BBox, optional
+            A geovista bounding box object for limiting the area for which
+            coastline are added to the rendered plot.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -459,6 +472,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         mesh = coastlines(
             resolution=resolution, radius=radius, zlevel=zlevel, zscale=zscale
         )
+
+        if self.bbox:
+            mesh =  self.bbox.enclosed(mesh)
 
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
@@ -731,6 +747,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         if scalar_bar_args:
             kwargs["scalar_bar_args"] = scalar_bar_args
+
+        if self.bbox:
+            mesh = self.bbox.enclosed(mesh)
 
         return super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
 
