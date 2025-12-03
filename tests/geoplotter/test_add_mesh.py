@@ -90,8 +90,7 @@ def test_bbox_filtering(mocker, bbox_factory):
 
     # Patch mesh creation so add_base_layer() gets a predictable mesh
     input_mesh = pv.PolyData([[0.0, 0.0, 0.0]])
-    mock_super = mocker.patch.object(pv.Plotter, "add_mesh",
-                                     return_value="mocked")
+    mock_super = mocker.patch.object(pv.Plotter, "add_mesh", return_value="mocked")
     mocker.patch("geovista.geoplotter.from_wkt", return_value=WGS84)
 
     p = GeoPlotter(bbox=bbox)

@@ -64,6 +64,7 @@ def test_gpu_opacity_unavailable(mocker, key, value):
         spy.assert_called_once_with(*args, **kwargs)
         assert p._missing_opacity is True
 
+
 class DummyBBox:
     """Mock bbox with an enclosed() method to track calls."""
 
@@ -79,6 +80,7 @@ class DummyBBox:
         self.called_with = mesh
         return self.filtered_mesh
 
+
 @pytest.mark.parametrize("bbox_factory", [None, DummyBBox])
 def test_bbox_filtering(mocker, bbox_factory):
     """Test with bbox subsetting enabled and disabled."""
@@ -88,10 +90,8 @@ def test_bbox_filtering(mocker, bbox_factory):
 
     # Patch mesh creation so add_base_layer() gets a predictable mesh
     input_mesh = pv.PolyData([[0.0, 0.0, 0.0]])
-    mocker.patch("geovista.geoplotter._lfric_mesh",
-                 return_value=input_mesh)
-    mocker.patch("geovista.geoplotter.regular_grid",
-                 return_value=input_mesh)
+    mocker.patch("geovista.geoplotter._lfric_mesh", return_value=input_mesh)
+    mocker.patch("geovista.geoplotter.regular_grid", return_value=input_mesh)
 
     p = GeoPlotter(bbox=bbox)
     p.add_mesh = mocker.MagicMock(name="add_mesh")

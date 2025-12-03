@@ -159,10 +159,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     """
 
     def __init__(
-        self, *args: Any | None,
+        self,
+        *args: Any | None,
         crs: CRSLike | None = None,
         bbox: BBox | None = None,
-        **kwargs: Any | None
+        **kwargs: Any | None,
     ) -> None:
         """Create geospatial aware plotter.
 
@@ -282,9 +283,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             # filter labels based on if the original points are in
             # enclosed_points
             graticule.labels = [
-                label for p, label in zip(
-                    mesh.points, graticule.labels, strict=True) if tuple(p) in
-                enclosed_points]
+                label
+                for p, label in zip(mesh.points, graticule.labels, strict=True)
+                if tuple(p) in enclosed_points
+            ]
 
             mesh = mesh_enclosed
 
@@ -492,7 +494,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         # reduced rendered points to only points enclosed by self.bbox
         if self.bbox:
-            mesh =  self.bbox.enclosed(mesh)
+            mesh = self.bbox.enclosed(mesh)
 
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
