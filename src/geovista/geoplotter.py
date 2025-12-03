@@ -421,7 +421,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         # reduced rendered points to only points enclosed by self.bbox
         if self.bbox:
-            mesh =  self.bbox.enclosed(mesh)
+            mesh = self.bbox.enclosed(mesh)
 
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
