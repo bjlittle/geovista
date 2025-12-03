@@ -65,8 +65,6 @@ from .pantry.meshes import (
 from .raster import wrap_texture
 from .transform import transform_mesh, transform_point
 
-from geovista.geodesic import BBox
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -74,6 +72,7 @@ if TYPE_CHECKING:
     import pyvista as pv
 
     from geovista.crs import CRSLike
+    from geovista.geodesic import BBox
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -175,6 +174,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The target CRS to render geolocated meshes added to the plotter.
             May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`.
             Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
+        bbox : BBox, optional
+            A bounding box object used for subsetting to the rendered area so
+            that only points enclosed by the bounding box are rendered. Used
+            in self.add_mesh, self.add_base_layer and self.add_coastline.
         **kwargs : dict, optional
             See :class:`pyvista.Plotter` for further details.
 
@@ -400,6 +403,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         else:
             mesh = _lfric_mesh(resolution=resolution, radius=radius)
 
+        # reduced rendered points to only points enclosed by self.bbox
         if self.bbox:
             mesh =  self.bbox.enclosed(mesh)
 
@@ -439,9 +443,6 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         atol : float, optional
             The absolute tolerance for longitudes close to the 'wrap meridian' -
             see :func:`geovista.common.wrap` for more.
-        bbox: BBox, optional
-            A geovista bounding box object for limiting the area for which
-            coastline are added to the rendered plot.
         **kwargs : dict, optional
             See :meth:`pyvista.Plotter.add_mesh`.
 
@@ -473,6 +474,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             resolution=resolution, radius=radius, zlevel=zlevel, zscale=zscale
         )
 
+        # reduced rendered points to only points enclosed by self.bbox
         if self.bbox:
             mesh =  self.bbox.enclosed(mesh)
 
@@ -748,6 +750,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if scalar_bar_args:
             kwargs["scalar_bar_args"] = scalar_bar_args
 
+        # reduced rendered points to only points enclosed by self.bbox
         if self.bbox:
             mesh = self.bbox.enclosed(mesh)
 
