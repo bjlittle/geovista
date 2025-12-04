@@ -403,6 +403,7 @@ numpydoc_use_plots = True
 numpydoc_xref_aliases = {
     "Actor": "pyvista.Actor",
     "ArrayLike": "numpy.typing.ArrayLike",
+    "BBox": "geovista.geodesic.BBox",
     "bool": ":class:`python:bool`",
     "CRSLike": "geovista.crs.CRSLike",
     "CloudPreference": "geovista.pantry.data.CloudPreference",

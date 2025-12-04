@@ -72,6 +72,7 @@ if TYPE_CHECKING:
     import pyvista as pv
 
     from geovista.crs import CRSLike
+    from geovista.geodesic import BBox
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -158,7 +159,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     """
 
     def __init__(
-        self, *args: Any | None, crs: CRSLike | None = None, **kwargs: Any | None
+        self,
+        *args: Any | None,
+        crs: CRSLike | None = None,
+        bbox: BBox | None = None,
+        **kwargs: Any | None,
     ) -> None:
         """Create geospatial aware plotter.
 
@@ -170,6 +175,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The target CRS to render geolocated meshes added to the plotter.
             May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`.
             Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
+        bbox : BBox, optional
+            A bounding box object used for subsetting to the rendered area so
+            that only points enclosed by the bounding box are rendered.
+            Subsetted features include mesh, coastline, base layer, parallels,
+            meridians and their labels.
         **kwargs : dict, optional
             See :class:`pyvista.Plotter` for further details.
 
@@ -199,6 +209,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         self.crs = pyproj.CRS.from_user_input(crs) if crs is not None else WGS84
         """The Coordinate Reference System (CRS) for the plotter."""
+
+        self.bbox = bbox
 
         # status of gpu opacity support
         self._missing_opacity = False
@@ -262,6 +274,22 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         # the point-cloud won't be sliced, however it's important that the
         # central-meridian rotation is performed here
         mesh = transform_mesh(mesh, tgt_crs=self.crs, zlevel=zlevel, inplace=True)
+
+        # reduced rendered points to only points enclosed by self.bbox
+        if self.bbox:
+            mesh_enclosed = self.bbox.enclosed(mesh)
+            # make a quick list of the enclosed points
+            enclosed_points = [tuple(p) for p in mesh_enclosed.points]
+            # filter labels based on if the original points are in
+            # enclosed_points
+            graticule.labels = [
+                label
+                for p, label in zip(mesh.points, graticule.labels, strict=True)
+                if tuple(p) in enclosed_points
+            ]
+
+            mesh = mesh_enclosed
+
         xyz = mesh.points
 
         if "show_points" in point_labels_args:
@@ -393,6 +421,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         else:
             mesh = _lfric_mesh(resolution=resolution, radius=radius)
 
+        # reduced rendered points to only points enclosed by self.bbox
+        if self.bbox:
+            mesh = self.bbox.enclosed(mesh)
+
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
     def add_coastlines(
@@ -459,6 +491,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         mesh = coastlines(
             resolution=resolution, radius=radius, zlevel=zlevel, zscale=zscale
         )
+
+        # reduced rendered points to only points enclosed by self.bbox
+        if self.bbox:
+            mesh = self.bbox.enclosed(mesh)
 
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
@@ -732,6 +768,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if scalar_bar_args:
             kwargs["scalar_bar_args"] = scalar_bar_args
 
+        # reduced rendered points to only points enclosed by self.bbox
+        if self.bbox:
+            mesh = self.bbox.enclosed(mesh)
+
         return super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
 
     def add_meridian(
@@ -895,7 +935,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             mesh_args["zscale"] = zscale
 
         for mesh in meridians.blocks:
-            self.add_mesh(mesh, **mesh_args)
+            # reduced rendered points to only points enclosed by self.bbox
+            if self.bbox:
+                mesh_enclosed = self.bbox.enclosed(mesh)
+                self.add_mesh(mesh_enclosed, **mesh_args)
+            else:
+                self.add_mesh(mesh)
 
         if show_labels:
             self._add_graticule_labels(
@@ -1081,7 +1126,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             mesh_args["zscale"] = zscale
 
         for mesh in parallels.blocks:
-            self.add_mesh(mesh, **mesh_args)
+            # reduced rendered points to only points enclosed by self.bbox
+            if self.bbox:
+                mesh_enclosed = self.bbox.enclosed(mesh)
+                self.add_mesh(mesh_enclosed, **mesh_args)
+            else:
+                self.add_mesh(mesh)
 
         if show_labels:
             self._add_graticule_labels(
