@@ -87,7 +87,6 @@ __all__ = [
     "GRATICULE_LABEL_FONT_SIZE",
     "GRATICULE_SHOW_LABELS",
     "OPACITY_BLACKLIST",
-    "BBox",
     "GeoPlotter",
     "GeoPlotterBase",
 ]
