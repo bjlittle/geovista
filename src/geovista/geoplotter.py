@@ -22,8 +22,6 @@ from warnings import warn
 
 import lazy_loader as lazy
 
-from geovista.geodesic import BBox
-
 from .bridge import Transform
 from .common import (
     GV_FIELD_ZSCALE,
@@ -74,6 +72,7 @@ if TYPE_CHECKING:
     import pyvista as pv
 
     from geovista.crs import CRSLike
+    from geovista.geodesic import BBox
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
