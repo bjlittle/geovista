@@ -1,8 +1,25 @@
 .. comment
 
-    common URL resources in alphabetical order:
+   custom inplace roles
+   - https://pygments.org/docs/lexers/#lexers-for-python-and-related-languages
+   - https://docutils.sourceforge.io/docs/ref/rst/directives.html#custom-interpreted-text-roles
+
+.. role:: bash(code)
+   :language: bash
+
+.. role:: python(code)
+   :language: python
+
+.. role:: toml(code)
+   :language: toml
+
+
+.. comment
+
+   common URL resources in alphabetical order:
 
 .. _Cartopy: https://github.com/SciTools/cartopy
+.. _Dependabot: https://docs.github.com/en/code-security/getting-started/dependabot-quickstart-guide
 .. _Diátaxis: https://diataxis.fr/
 .. _Discussions: https://github.com/bjlittle/geovista/discussions
 .. _Executable Books: https://github.com/executablebooks
@@ -22,6 +39,8 @@
 .. _Qt: https://www.qt.io/
 .. _RTD (latest): https://geovista.readthedocs.io/en/latest/
 .. _RTD (stable): https://geovista.readthedocs.io/en/stable/
+.. _SPEC: https://scientific-python.org/specs/
+.. _SPEC 0: https://scientific-python.org/specs/spec-0000/
 .. _Test PyPI: https://test.pypi.org/project/geovista/
 .. _Trame: https://kitware.github.io/trame/
 .. _VTK: https://vtk.org/
@@ -45,8 +64,11 @@
 .. _myst-parser: https://github.com/executablebooks/MyST-Parser
 .. _pip: https://pip.pypa.io/en/stable/index.html
 .. _pixi: https://github.com/prefix-dev/pixi
+.. _pooch: https://github.com/fatiando/pooch
 .. _pre-commit: https://pre-commit.com/
+.. _pytest: https://github.com/pytest-dev/pytest
 .. _pytest-pyvista: https://github.com/pyvista/pytest-pyvista
+.. _pyvista: https://github.com/pyvista/pyvista
 .. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
 .. _ruff: https://github.com/astral-sh/ruff
 .. _sphinx: https://github.com/sphinx-doc/sphinx
@@ -62,8 +84,8 @@
 
 .. comment
 
-    core developers and prolific contributors (github handle) in
-    alphabetical order:
+   core developers and prolific contributors (github handle) in
+   alphabetical order:
 
 .. _@banesullivan: https://github.com/banesullivan
 .. _@bjlittle: https://github.com/bjlittle

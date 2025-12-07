@@ -160,7 +160,7 @@ To configure a full **developer environment**, first clone the :fab:`github`
 
     $ git clone git@github.com:bjlittle/geovista.git
 
-Change to the root directory of the cloned repository:
+Change to the ``geovista`` root directory of the cloned repository:
 
 .. code:: console
 
