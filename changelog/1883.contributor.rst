@@ -1,0 +1,5 @@
+Relaxed ``dependabot`` to ignore ``patch`` releases for the ``PyPI`` ecosystem
+in order to reduce the update cadence and closer align to the default
+`pixi <https://github.com/prefix-dev/pixi>`__ 🧚 ``major``/``minor`` maximum
+capping-pin strategy for explicit dependency versions.
+(:user:`bjlittle`)
