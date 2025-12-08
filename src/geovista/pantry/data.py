@@ -281,15 +281,10 @@ def dynamico() -> SampleUnstructuredXY:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def fesom(*, step: int | None = None) -> SampleUnstructuredXY:
+def fesom() -> SampleUnstructuredXY:
     """Download and cache unstructured surface sample data.
 
     Load AWI-CM FESOM 1.4 unstructured mesh.
-
-    Parameters
-    ----------
-    step : int, default=0
-        The time-series offset.
 
     Returns
     -------
@@ -302,7 +297,7 @@ def fesom(*, step: int | None = None) -> SampleUnstructuredXY:
 
     """
     fname = "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
-    resource = CACHE.fetch(f"{fname}")
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}")
     dataset = nc.Dataset(resource)
 
     # load the lon/lat cell grid
@@ -322,10 +317,6 @@ def fesom(*, step: int | None = None) -> SampleUnstructuredXY:
     name = capitalise(data.standard_name)
     units = data.units
 
-    # deal with the time-series step
-    steps = dataset.dimensions["time"].size
-    idx = 0 if step is None else (step % steps)
-
     # construct the masked connectivity based on protocol of
     # repeated identical trailing spatial values being used
     # to identify padding to fill the fixed number of points
@@ -341,7 +332,12 @@ def fesom(*, step: int | None = None) -> SampleUnstructuredXY:
     connectivity.mask = mask
 
     return SampleUnstructuredXY(
-        lons, lats, connectivity, data=data[idx], name=name, units=units, steps=steps
+        lons,
+        lats,
+        connectivity,
+        data=data[:],
+        name=name,
+        units=units,
     )
 
 

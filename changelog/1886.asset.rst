@@ -1,0 +1,3 @@
+Updated the ``geovista.cache`` to reference ``geovista-data =2025.12.0``, which includes
+the rehosted ``FESOM`` time-series decimated to the first time-step.
+(:user:`bjlittle`)
