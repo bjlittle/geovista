@@ -43,7 +43,7 @@ type FileLike = str | IO[str] | IO[bytes]
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
 """Base URL for :mod:`geovista` resources."""
 
-DATA_VERSION: str = "2025.10.3"
+DATA_VERSION: str = "2025.12.0"
 """The ``geovista-data`` repository version for :mod:`geovista` resources."""
 
 GEOVISTA_CACHEDIR: str = "GEOVISTA_CACHEDIR"
@@ -55,11 +55,6 @@ GEOVISTA_DATA_VERSION: str = os.environ.get("GEOVISTA_DATA_VERSION", DATA_VERSIO
 RETRY_ATTEMPTS: int = 3
 """The number of retry attempts to download a resource."""
 
-URL_DKRZ_FESOM: str = (
-    "https://swift.dkrz.de/v1/dkrz_0262ea1f00e34439850f3f1d71817205/FESOM/"
-    "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
-)
-
 CACHE: pooch.Pooch = pooch.create(
     path=resources["cache_dir"],
     base_url=BASE_URL,
@@ -68,9 +63,6 @@ CACHE: pooch.Pooch = pooch.create(
     registry=None,
     retry_if_failed=RETRY_ATTEMPTS,
     env=GEOVISTA_CACHEDIR,
-    urls={
-        "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc": URL_DKRZ_FESOM  # noqa: E501
-    },
 )
 """Cache manager for :mod:`geovista` resources."""
 

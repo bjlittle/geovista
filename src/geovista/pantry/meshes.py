@@ -180,15 +180,10 @@ def dynamico() -> pv.PolyData:
     )
 
 
-def fesom(*, step: int | None = None) -> pv.PolyData:
+def fesom() -> pv.PolyData:
     """Create a mesh from :mod:`geovista.pantry.data` sample data.
 
     Generate a AWI-CM FESOM 1.4 mesh with Sea Surface Temperature data.
-
-    Parameters
-    ----------
-    step : int, default=0
-        The time-series offset.
 
     Returns
     -------
@@ -200,7 +195,7 @@ def fesom(*, step: int | None = None) -> pv.PolyData:
     .. versionadded:: 0.1.0
 
     """
-    sample = geovista.pantry.data.fesom(step=step)
+    sample = geovista.pantry.data.fesom()
 
     return Transform.from_unstructured(
         sample.lons,
