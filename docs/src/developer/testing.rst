@@ -461,7 +461,7 @@ Finer-grained control of unit test can be achieved by using our ``pytest``
 
 
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml
-.. _ci-tests.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests.yaml
+.. _ci-tests.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests.yml
 .. _ci-tests-lock.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-lock.yml
 .. _ci-tests-pypi.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-pypi.yml
 .. _codecov: https://app.codecov.io/gh/bjlittle/geovista
