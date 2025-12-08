@@ -6,8 +6,8 @@
 :fa:`flask-vial` Testing
 ========================
 
-.. |codecov| image:: https://app.codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3
-   :target: https://app.codecov.io/gh/bjlittle/geovista
+.. |codecov| image:: https://codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3
+   :target: https://codecov.io/gh/bjlittle/geovista
 
 |codecov|
 
