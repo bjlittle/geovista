@@ -87,14 +87,14 @@ jobs:
         env:
           PY_COLORS: "1"
         run: |
-          xvfb-run -a pixi run --frozen pytest -m "${{ matrix.marker }}" --generated_image_dir test_images ${{ matrix.coverage }}
+          xvfb-run -a pixi run --frozen pytest -m "${{ matrix.marker }}" --failed_image_dir failed_images ${{ matrix.coverage }}
 
-      - name: "upload test images"
+      - name: "upload failed images"
         if: ${{ failure() }}
         uses: actions/upload-artifact@v5
         with:
           name: ci-tests-test-images-${{ github.job }}-${{ strategy.job-index }}
-          path: ${{ github.workspace }}/test_images
+          path: ${{ github.workspace }}/failed_images
 
       - name: "prepare coverage"
         if: ${{ matrix.coverage }}
