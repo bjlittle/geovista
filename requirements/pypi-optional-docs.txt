@@ -1,7 +1,7 @@
 ipykernel <7.2
 joblib <1.6
 myst-nb <1.4
-numpydoc <1.10
+numpydoc <1.11
 sphinx >=7.3.0,<9.1
 sphinx_design <0.7
 sphinx-autoapi >=3.2.0,<3.7
@@ -10,7 +10,7 @@ sphinx-changelog >=1.6.0,<1.7
 towncrier <25.9
 sphinx-click <6.2
 sphinx-copybutton <0.6
-sphinx-gallery >=0.17.0,<0.20
+sphinx-gallery >=0.17.0,<0.21
 sphinx-tags >=0.4.0,<0.5
 sphinx-tippy <0.5
 sphinx-togglebutton <0.4
