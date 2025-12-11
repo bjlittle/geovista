@@ -87,7 +87,7 @@ jobs:
         env:
           NAME: ${{ env.NAME }}
         run: |
-          xvfb-run -a pixi run --frozen --environment ${NAME} pytest --generated_image_dir test_images
+          xvfb-run -a pixi run --frozen --environment ${NAME} pytest
 
       - name: "report failure"
         if: ${{ failure() }}

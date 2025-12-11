@@ -294,134 +294,132 @@ The following tasks are defined for each of our features:
    :align: center
    :widths: 1 1 6
 
-   +----------------+-----------------+---------------------------------------------------------------------+
-   | Feature        | Task            | Description                                                         |
-   +================+=================+=====================================================================+
-   | ``{default}``  | ``download``    | Download and cache offline assets.                                  |
-   |                |                 |                                                                     |
-   |                |                 | This task calls the :ref:`tippy-gv-reference-cli-download` command. |
-   |                |                 | Provide optional argument ``all``, ``clean``, ``doc-images``,       |
-   |                |                 | ``dry-run``, ``images``, ``list``, ``natural-earth``,               |
-   |                |                 | ``operational``, ``pantry``, ``rasters``, ``unit-images`` or        |
-   |                |                 | ``verify``. Defaults to ``all`` e.g.,                               |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run download operational                                  |
-   |                |                 |                                                                     |
-   +----------------+-----------------+---------------------------------------------------------------------+
-   | ``{docs}``     | ``clean``       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_ `sphinx-tags`_,      |
-   |                |                 | carousel, and other `sphinx-build`_ artifacts e.g.,                 |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run clean                                                 |
-   |                |                 |                                                                     |
-   |                |                 | This task is an alias for the :bash:`make clean` command.           |
-   |                +-----------------+---------------------------------------------------------------------+
-   |                | ``clean-all``   | Perform both the ``clean`` and ``clean-cache`` tasks e.g.,          |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run clean-all                                             |
-   |                |                 |                                                                     |
-   |                |                 | This task is an alias for the :bash:`make clean-all` command.       |
-   |                +-----------------+---------------------------------------------------------------------+
-   |                | ``clean-cache`` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_    |
-   |                |                 | for further details e.g.,                                           |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run clean-cache                                           |
-   |                |                 |                                                                     |
-   |                |                 | This task is an alias for the :bash:`make clean-cache` command.     |
-   |                +-----------------+---------------------------------------------------------------------+
-   |                | ``doctest``     | Execute `sphinx.ext.doctest`_ to test code snippets within the      |
-   |                |                 | documentation i.e.,                                                 |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run doctest                                               |
-   |                |                 |                                                                     |
-   |                |                 | Note that the ``clean`` task is called prior to running this task.  |
-   |                |                 |                                                                     |
-   |                |                 | This task is an alias for the :bash:`make doctest` command.         |
-   |                +-----------------+---------------------------------------------------------------------+
-   |                | ``make``        | Build the documentation.                                            |
-   |                |                 |                                                                     |
-   |                |                 | Provide optional argument ``html``, ``html-docstring``,             |
-   |                |                 | ``html-docstring-inline``, ``html-gallery``, ``html-inline`` or     |
-   |                |                 | ``html-noplot``. Defaults to ``html-noplot`` e.g.,                  |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run make html-gallery                                     |
-   |                |                 |                                                                     |
-   |                |                 | Note that the ``clean`` task is called prior to running this task.  |
-   |                |                 |                                                                     |
-   |                |                 | This task is an alias for the :bash:`make` command.                 |
-   |                +-----------------+---------------------------------------------------------------------+
-   |                | ``serve-html``  | Build the documentation and start a local ``HTTP`` server on port   |
-   |                |                 | ``11000`` to view the rendered documentation. This is necessary in  |
-   |                |                 | order to support interactive scenes.                                |
-   |                |                 |                                                                     |
-   |                |                 | Note that the ``clean`` and ``make`` tasks are called prior to      |
-   |                |                 | running this task.                                                  |
-   |                |                 |                                                                     |
-   |                |                 | Defaults to passing ``html-noplot`` to the ``make`` task. Override  |
-   |                |                 | this behaviour by providing an alternative optional argument as     |
-   |                |                 | per the ``make`` task e.g.,                                         |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run serve-html html                                       |
-   |                |                 |                                                                     |
-   |                |                 | This task is an alias for the :bash:`make serve-html` command.      |
-   +----------------+-----------------+---------------------------------------------------------------------+
-   | ``{geovista}`` | ``tests-docs``  | Perform documentation image tests of ``pyvista-plot`` directive     |
-   |                |                 | static scenes e.g.,                                                 |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run tests-docs                                            |
-   |                |                 |                                                                     |
-   |                |                 | This task calls :bash:`pytest --doc_mode` to perform the            |
-   |                |                 | documentation image tests using the `pytest-pyvista`_ plugin. Refer |
-   |                |                 | to the :toml:`[tool.pytest.ini_options]` table entry in the         |
-   |                |                 | :bash:`pyproject.toml` manifest for default configuration options.  |
-   |                |                 |                                                                     |
-   |                |                 | Note that the ``download doc-images`` and                           |
-   |                |                 | ``make html-docstring-inline`` tasks are called prior to running    |
-   |                |                 | this task.                                                          |
-   |                |                 |                                                                     |
-   |                |                 | This task is only available in the :guilabel:`geovista` and         |
-   |                |                 | :guilabel:`geovista-py3xx` environments.                            |
-   +----------------+-----------------+---------------------------------------------------------------------+
-   | ``{test}``     | ``tests-clean`` | Purge both the documentation and unit test image caches, along with |
-   |                |                 | any images generated from previous test sessions e.g.,              |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run tests-clean                                           |
-   |                |                 |                                                                     |
-   |                +-----------------+---------------------------------------------------------------------+
-   |                | ``tests-unit``  | Perform the unit tests.                                             |
-   |                |                 |                                                                     |
-   |                |                 | This task calls the ``pytest`` command. Defaults to executing all   |
-   |                |                 | unit tests discoverable from the :bash:`geovista` root directory.   |
-   |                |                 |                                                                     |
-   |                |                 | Accepts a valid ``pytest`` marker expression as an optional         |
-   |                |                 | argument. Refer to the :toml:`[tool.pytest.ini_options]` table      |
-   |                |                 | entry in the :bash:`pyproject.toml` manifest for configured         |
-   |                |                 | ``markers`` e.g.,                                                   |
-   |                |                 |                                                                     |
-   |                |                 | .. code:: console                                                   |
-   |                |                 |                                                                     |
-   |                |                 |    $ pixi run tests-unit "not image"                                |
-   |                |                 |                                                                     |
-   |                |                 | Note that the ``tests-clean`` task is called prior to running this  |
-   |                |                 | task.                                                               |
-   +----------------+-----------------+---------------------------------------------------------------------+
+   +----------------+-----------------+---------------------------------------------------------------------------------------+
+   | Feature        | Task            | Description                                                                           |
+   +================+=================+=======================================================================================+
+   | ``{default}``  | ``download``    | Download and cache offline assets.                                                    |
+   |                |                 |                                                                                       |
+   |                |                 | This task calls the :ref:`tippy-gv-reference-cli-download` command. Provide optional  |
+   |                |                 | argument ``all``, ``clean``, ``doc-images``, ``dry-run``, ``images``, ``list``,       |
+   |                |                 | ``natural-earth``, ``operational``, ``pantry``, ``rasters``, ``unit-images`` or       |
+   |                |                 | ``verify``. Defaults to ``all`` e.g.,                                                 |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run download operational                                                    |
+   |                |                 |                                                                                       |
+   +----------------+-----------------+---------------------------------------------------------------------------------------+
+   | ``{docs}``     | ``clean``       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_ `sphinx-tags`_, carousel, and other    |
+   |                |                 | `sphinx-build`_ artifacts e.g.,                                                       |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run clean                                                                   |
+   |                |                 |                                                                                       |
+   |                |                 | This task is an alias for the :bash:`make clean` command.                             |
+   |                +-----------------+---------------------------------------------------------------------------------------+
+   |                | ``clean-all``   | Perform both the ``clean`` and ``clean-cache`` tasks e.g.,                            |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run clean-all                                                               |
+   |                |                 |                                                                                       |
+   |                |                 | This task is an alias for the :bash:`make clean-all` command.                         |
+   |                +-----------------+---------------------------------------------------------------------------------------+
+   |                | ``clean-cache`` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_ for further details  |
+   |                |                 | e.g.,                                                                                 |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run clean-cache                                                             |
+   |                |                 |                                                                                       |
+   |                |                 | This task is an alias for the :bash:`make clean-cache` command.                       |
+   |                +-----------------+---------------------------------------------------------------------------------------+
+   |                | ``doctest``     | Execute `sphinx.ext.doctest`_ to test code snippets within the documentation i.e.,    |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run doctest                                                                 |
+   |                |                 |                                                                                       |
+   |                |                 | Note that the ``clean`` task is called prior to running this task.                    |
+   |                |                 |                                                                                       |
+   |                |                 | This task is an alias for the :bash:`make doctest` command.                           |
+   |                +-----------------+---------------------------------------------------------------------------------------+
+   |                | ``make``        | Build the documentation.                                                              |
+   |                |                 |                                                                                       |
+   |                |                 | Provide optional argument ``html``, ``html-docstring``, ``html-docstring-inline``,    |
+   |                |                 | ``html-gallery``, ``html-inline`` or ``html-noplot``. Defaults to ``html-noplot``     |
+   |                |                 | e.g.,                                                                                 |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run make html-gallery                                                       |
+   |                |                 |                                                                                       |
+   |                |                 | Note that the ``clean`` task is called prior to running this task.                    |
+   |                |                 |                                                                                       |
+   |                |                 | This task is an alias for the :bash:`make` command.                                   |
+   |                +-----------------+---------------------------------------------------------------------------------------+
+   |                | ``serve-html``  | Build the documentation and start a local ``HTTP`` server on port ``11000`` to view   |
+   |                |                 | the rendered documentation. This is necessary in order to support interactive scenes. |
+   |                |                 |                                                                                       |
+   |                |                 | Note that the ``clean`` and ``make`` tasks are called prior to running this task.     |
+   |                |                 |                                                                                       |
+   |                |                 | Defaults to passing ``html-noplot`` to the ``make`` task. Override this behaviour by  |
+   |                |                 | providing an alternative optional argument as per the ``make`` task e.g.,             |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run serve-html html                                                         |
+   |                |                 |                                                                                       |
+   |                |                 | This task is an alias for the :bash:`make serve-html` command.                        |
+   +----------------+-----------------+---------------------------------------------------------------------------------------+
+   | ``{geovista}`` | ``tests-docs``  | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g.,   |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run tests-docs                                                              |
+   |                |                 |                                                                                       |
+   |                |                 | This task calls :bash:`pytest --doc_mode` to perform the documentation image tests    |
+   |                |                 | using the `pytest-pyvista`_ plugin. Refer to the :toml:`[tool.pytest.ini_options]`    |
+   |                |                 | table entry in the :bash:`pyproject.toml` manifest for default configuration options. |
+   |                |                 |                                                                                       |
+   |                |                 | Note that the ``download doc-images`` and ``make html-docstring-inline`` tasks are    |
+   |                |                 | called prior to running this task.                                                    |
+   |                |                 |                                                                                       |
+   |                |                 | This task is only available in the :guilabel:`geovista` and                           |
+   |                |                 | :guilabel:`geovista-py3xx` environments.                                              |
+   +----------------+-----------------+---------------------------------------------------------------------------------------+
+   | ``{test}``     | ``tests-clean`` | Purge both the documentation and unit test image caches, along with any images        |
+   |                |                 | generated from previous test sessions e.g.,                                           |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run tests-clean                                                             |
+   |                |                 |                                                                                       |
+   |                +-----------------+---------------------------------------------------------------------------------------+
+   |                | ``tests-unit``  | Perform the unit tests.                                                               |
+   |                |                 |                                                                                       |
+   |                |                 | This task calls the ``pytest`` command. Defaults to executing all unit tests          |
+   |                |                 | discoverable from the :bash:`geovista` root directory.                                |
+   |                |                 |                                                                                       |
+   |                |                 | Accepts a valid ``pytest`` marker expression as an optional argument. Refer to the    |
+   |                |                 | :toml:`[tool.pytest.ini_options]` table entry in the :bash:`pyproject.toml` manifest  |
+   |                |                 | for configured ``markers`` e.g.,                                                      |
+   |                |                 |                                                                                       |
+   |                |                 | .. code:: console                                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    $ pixi run tests-unit "not image"                                                  |
+   |                |                 |                                                                                       |
+   |                |                 | Note that the ``tests-clean`` task is called prior to running this task.              |
+   |                |                 |                                                                                       |
+   |                |                 | .. note::                                                                             |
+   |                |                 |    :class: dropdown, toggle-shown                                                     |
+   |                |                 |                                                                                       |
+   |                |                 |    Failed :ref:`tippy-gv-developer-testing-image-tests` are captured via the          |
+   |                |                 |    ``pytest-pyvista`` plugin option ``--failed_image_dir`` (see                       |
+   |                |                 |    :ref:`Image Tests Generation <tippy-gv-developer-testing-image-tests-generation>`) |
+   |                |                 |    within the :bash:`failed_images` directory for analysis and investigation.         |
+   +----------------+-----------------+---------------------------------------------------------------------------------------+
 
 .. seealso::
    :class: dropdown, toggle-shown
