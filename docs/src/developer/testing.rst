@@ -59,7 +59,7 @@ The following testing workflows are available:
    |           |    :class: dropdown, toggle-shown                                                                             |
    |           |                                                                                                               |
    |           |    Failed :ref:`tippy-gv-developer-testing-image-tests` are captured via the ``pytest-pyvista`` plugin option |
-   |           |    ``--failed_image_dir`` (see :ref:`tippy-gv-developer-testing-image-tests-generation`), uploaded and        |
+   |           |    ``--failed_image_dir`` (see :ref:`tippy-gv-developer-testing-image-tests-generation`), and uploaded and    |
    |           |    archived as a :fab:`github` `Workflow Artifact`_ for the CI job. The failed unit test images may then be   |
    |           |    downloaded for analysis and investigation.                                                                 |
    +-----------+---------------------------------------------------------------------------------------------------------------+
