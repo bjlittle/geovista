@@ -8,7 +8,7 @@ sphinx-autoapi >=3.2.0,<3.7
 sphinx-book-theme >=1.1.3,<1.2
 sphinx-changelog >=1.6.0,<1.7
 towncrier <25.9
-sphinx-click <6.2
+sphinx-click <6.3
 sphinx-copybutton <0.6
 sphinx-gallery >=0.17.0,<0.21
 sphinx-tags >=0.4.0,<0.5
