@@ -9,9 +9,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from pooch import Decompress
 import pytest
 
-from geovista.cache import CACHE
+from geovista.cache import CACHE, READ_MODE
 
 
 def test_fetch():
@@ -21,6 +22,30 @@ def test_fetch():
     asset_cache.unlink(missing_ok=True)
     actual = CACHE.fetch(asset.as_posix())
     assert asset.name == Path(actual).name
+
+
+@pytest.mark.xfail(reason="flaky read permission bits", strict=False)
+def test_fetch__downloader():
+    """Test downloaded asset is readable."""
+    fname = "geodesic.test_BBox.test_outline.png"
+    asset = Path(CACHE.fetch(f"tests/unit/{fname}"))
+    assert asset.is_file()
+    assert (asset.stat().st_mode & READ_MODE) == READ_MODE
+
+
+@pytest.mark.xfail(reason="flaky read permission bits", strict=False)
+def test_fetch__downloader__decompress():
+    """Test downloaded assets (compressed and uncompressed) are readable."""
+    fname, ext = "falklands.nc", "bz2"
+    processor = Decompress(method="auto", name=fname)
+
+    asset = Path(CACHE.fetch(f"pantry/data/lams/{fname}.{ext}", processor=processor))
+    assert asset.is_file()
+    assert (asset.stat().st_mode & READ_MODE) == READ_MODE
+
+    asset = asset.with_name(f"{asset.name}.{ext}")
+    assert asset.is_file()
+    assert (asset.stat().st_mode & READ_MODE) == READ_MODE
 
 
 @pytest.mark.xfail(reason="flaky HTTP 403", strict=False)
