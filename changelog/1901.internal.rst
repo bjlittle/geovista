@@ -1,0 +1,2 @@
+Endeavour to provision a community readable :class:`pooch.Pooch` cache.
+(:user:`bjlittle`)
