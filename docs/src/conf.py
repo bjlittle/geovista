@@ -448,7 +448,7 @@ autoapi_options = [
     # "inherited-members",
     "undoc-members",
     # "private-members",
-    # "special-members",
+    "special-members",
     "show-inheritance",
     # "show-inheritance-diagram",
     "show-module-summary",
