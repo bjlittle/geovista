@@ -87,7 +87,7 @@ jobs:
         env:
           NAME: ${{ env.NAME }}
         run: |
-          xvfb-run -a pixi run --frozen --environment ${NAME} pytest
+          xvfb-run -a pixi run --frozen --environment ${NAME} pytest --failed_image_dir failed_images
 
       - name: "report failure"
         if: ${{ failure() }}
@@ -103,3 +103,10 @@ jobs:
           EOL
           )
           gh issue create --title "${TITLE}" --body "${BODY}" --label "bot" --label "new: issue" --repo "${{ github.repository }}"
+
+      - name: "upload failed images"
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: ci-tests-lock-failed-images-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ github.workspace }}/failed_images
