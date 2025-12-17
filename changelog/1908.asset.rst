@@ -1,0 +1,3 @@
+Updated the ``geovista.cache`` to reference ``geovista-data =2025.12.1``,
+which includes a new :class:`~geovista.geodesic.BBox` image unit test asset.
+(:user:`bjlittle`)
