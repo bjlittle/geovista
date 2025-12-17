@@ -106,7 +106,7 @@ def lfric(request):
     return sample_lfric(resolution=resolution)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def lfric_sst():
     """Fixture to provide a cube-sphere mesh with SST face data."""
     mesh = sample_lfric_sst()
