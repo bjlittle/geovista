@@ -1,0 +1,10 @@
+Added alternative :class:`geovista.geodesic.BBox` workflow equivalent to
+:meth:`~geovista.geodesic.BBox.enclosed`. A :class:`~geovista.geodesic.BBox`
+instance is now callable, extracting the region from the single argument
+``mesh`` contained within its geodesic bounded-box manifold e.g.,
+:python:`bbox(mesh)` is equivalent to :python:`bbox.enclosed(mesh)`.
+The behaviour of the :class:`~geovista.geodesic.BBox` instance is configured
+with the :attr:`~geovista.geodesic.BBox.outside`,
+:attr:`~geovista.geodesic.BBox.preference` and
+:attr:`~geovista.geodesic.BBox.tolerance` getter/setter properties.
+(:user:`bjlittle`)
