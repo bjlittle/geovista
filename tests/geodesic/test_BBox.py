@@ -18,7 +18,15 @@ from geovista.common import (
     distance,
 )
 from geovista.crs import WGS84, from_wkt
-from geovista.geodesic import PANEL_IDX_BY_NAME, BBox, EnclosedPreference, panel
+from geovista.geodesic import (
+    BBOX_OUTSIDE,
+    BBOX_TOLERANCE,
+    PANEL_IDX_BY_NAME,
+    PREFERENCE,
+    BBox,
+    EnclosedPreference,
+    panel,
+)
 
 from .conftest import CIDS
 
@@ -130,6 +138,28 @@ def test_boundary_field_data(name):
     assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
 
 
+def test___eq__():
+    """Test equality operator for equality."""
+    bbox1 = panel(name := "americas")
+    bbox2 = panel(name)
+    assert bbox1 == bbox2
+
+
+def test___eq___fail():
+    """Test equality operator for inequality."""
+    bbox1 = panel(name := "arctic")
+    bbox2 = panel(name, c=32)
+    # intentional usage instead of "!="
+    assert not bbox1 == bbox2  # noqa: SIM201
+
+
+def test___eq___fail_type():
+    """Test equality operator with non-BBox."""
+    bbox = panel("arctic")
+    # intentional usage instead of "!="
+    assert not bbox == "bbox"  # noqa: SIM201
+
+
 def test___hash__():
     """Test that BBox is hashable."""
     bbox = panel("antarctic")
@@ -145,3 +175,96 @@ def test___hash__():
         )
     )
     assert actual == expected
+
+
+def test___ne__():
+    """Test inequality operator for inequality."""
+    bbox1 = panel("africa")
+    bbox2 = panel("asia")
+    assert bbox1 != bbox2
+
+
+def test___ne___fail():
+    """Test inequality operator for equality."""
+    bbox1 = panel(name := "africa")
+    bbox2 = panel(name)
+    # intentional usage instead of "=="
+    assert not bbox1 != bbox2  # noqa: SIM202
+
+
+def test___ne___fail_type():
+    """Test inequality operator with non-BBox."""
+    bbox = panel("africa")
+    assert bbox != "bbox"
+
+
+def test_serialization():
+    """Test string and representation serialization."""
+    bbox = panel("antarctic")
+    expected = "geovista.BBox<ellps=WGS84, c=256, n_points=132098, n_cells=132096>"
+    assert repr(bbox) == expected
+    assert str(bbox) == expected
+
+
+def test_outside_default():
+    """Test outside property default."""
+    bbox = panel("africa")
+    assert bbox.outside == BBOX_OUTSIDE
+
+
+@pytest.mark.parametrize(
+    ("outside", "expected"),
+    [(None, BBOX_OUTSIDE), (not BBOX_OUTSIDE, not BBOX_OUTSIDE), (0, False), (1, True)],
+)
+def test_outside(outside, expected):
+    """Test outside property getter/setter."""
+    bbox = panel("africa")
+    bbox.outside = outside
+    assert bbox.outside == expected
+
+
+def test_preference_default():
+    """Test preference property default."""
+    bbox = panel("africa")
+    assert bbox.preference == EnclosedPreference(PREFERENCE)
+
+
+@pytest.mark.parametrize(
+    ("preference", "expected"),
+    [
+        (None, EnclosedPreference(PREFERENCE)),
+        ("cell", EnclosedPreference("cell")),
+        (EnclosedPreference("point"), EnclosedPreference("point")),
+    ],
+)
+def test_preference(preference, expected):
+    """Test preference property getter/setter."""
+    bbox = panel("pacific")
+    bbox.preference = preference
+    assert bbox.preference == expected
+
+
+def test_preference_fail():
+    """Test preference property setter exception."""
+    bbox = panel("asia")
+    preference = "wibble"
+    emsg = f"Expected a preference of .*, got '{preference}'."
+    with pytest.raises(ValueError, match=emsg):
+        bbox.preference = preference
+
+
+def test_tolerance_default():
+    """Test tolerance property default."""
+    bbox = panel("americas")
+    assert bbox.tolerance == pytest.approx(BBOX_TOLERANCE)
+
+
+@pytest.mark.parametrize(
+    ("tolerance", "expected"),
+    [(None, BBOX_TOLERANCE), (1.23, 1.23), ("4.56", 4.56)],
+)
+def test_tolerance(tolerance, expected):
+    """Test tolerance property getter/setter."""
+    bbox = panel("arctic")
+    bbox.tolerance = tolerance
+    assert bbox.tolerance == pytest.approx(expected)
