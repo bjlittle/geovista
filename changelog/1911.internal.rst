@@ -1,0 +1,3 @@
+Updated ``ci-tests-lock`` and ``ci-tests-pypi`` :fab:`github` Actions
+to capture and upload failed image unit tests as :fab:`github` artifacts.
+(:user:`bjlittle`)
