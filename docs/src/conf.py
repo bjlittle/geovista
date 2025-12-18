@@ -544,6 +544,11 @@ html_theme_options = {
             "url": "https://www.youtube.com/@geovista_devs/videos",
             "icon": "fa-brands fa-youtube",
         },
+        {
+            "name": "PyVista",
+            "url": "https://docs.pyvista.org",
+            "icon": "fa-brands fa-python",
+        },
     ],
     "max_navbar_depth": 3,
     "navigation_with_keys": False,
