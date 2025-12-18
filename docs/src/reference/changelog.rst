@@ -1,3 +1,5 @@
+.. include:: ../common.txt
+
 .. _gv-reference-changelog:
 .. _tippy-gv-reference-changelog:
 

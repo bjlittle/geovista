@@ -1,0 +1,2 @@
+Enabled `sphinx-autoapi`_ documentation of ``special-members`` (aka dunder methods).
+(:user:`bjlittle`)
