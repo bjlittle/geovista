@@ -1,0 +1,3 @@
+Added the :fab:`python` icon in the primary sidebar as a navigation
+convenience to the `pyvista <https://docs.pyvista.org>`__ documentation.
+(:user:`bjlittle`)
