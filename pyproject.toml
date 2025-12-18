@@ -112,7 +112,6 @@ checks = [
   # -> No Yields section found
   "YD01", # Not all docstrings require a "Yields" section.
 ]
-exclude = ['\.__eq__$', '\.__hash__$', '\.__ne__$', '\.__repr__$']
 
 
 [tool.pytest.ini_options]

@@ -25,3 +25,15 @@ def test_outline(plot_nodeid, verify_image_cache):
     p.view_vector(vector=(1, 1, 0))
     p.camera.zoom(1.5)
     p.show()
+
+
+@pytest.mark.image
+def test___call__(plot_nodeid, verify_image_cache, lfric_sst):
+    """Test callable enclosed behaviour."""
+    verify_image_cache.test_name = plot_nodeid
+    p = gv.GeoPlotter()
+    bbox = panel("africa")
+    p.add_mesh(bbox(lfric_sst))
+    p.view_yz()
+    p.camera.zoom(1.2)
+    p.show()
