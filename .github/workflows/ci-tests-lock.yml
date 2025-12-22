@@ -65,7 +65,7 @@ jobs:
           pixi update --json | pixi exec pixi-diff-to-markdown > diff.md
 
       - name: "upload artifacts"
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ci-tests-lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
           path: |
@@ -106,7 +106,7 @@ jobs:
 
       - name: "upload failed images"
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ci-tests-lock-failed-images-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/failed_images
