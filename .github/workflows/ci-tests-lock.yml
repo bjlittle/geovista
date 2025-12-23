@@ -21,7 +21,8 @@ defaults:
   run:
     shell: bash -l {0}
 
-permissions: {}
+permissions:
+  issues: write
 
 jobs:
   test-lock:
