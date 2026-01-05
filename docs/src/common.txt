@@ -1,6 +1,6 @@
 .. comment
 
-   custom inplace roles
+   custom inplace roles:
    - https://pygments.org/docs/lexers/#lexers-for-python-and-related-languages
    - https://docutils.sourceforge.io/docs/ref/rst/directives.html#custom-interpreted-text-roles
 
@@ -12,6 +12,14 @@
 
 .. role:: toml(code)
    :language: toml
+
+
+.. comment
+
+   resources:
+
+.. |geovista| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json
+    :target: https://geovista.readthedocs.io/
 
 
 .. comment

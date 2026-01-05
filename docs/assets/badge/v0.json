@@ -1,6 +1,6 @@
 {
-    "label": "visualized by",
+    "label": "🌍 visualized by",
     "message": "geovista",
-    "labelColor": "#7f2faf",
-    "color": "#80d050"
+    "labelColor": "grey",
+    "color": "#7f2faf"
 }
