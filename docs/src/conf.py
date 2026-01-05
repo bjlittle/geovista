@@ -581,6 +581,7 @@ html_static_path = [
     "_static",
 ]
 html_css_files = [
+    "color.css",
     "style.css",
     "theme_overrides.css",
 ]

@@ -147,11 +147,16 @@ for asset configuration details.
 
 Other branding assets are available from the `geovista-media`_ repository.
 
-The branding RGB colour is ``#80d050``.
+Branding colours (``RGB``) are defined in :bash:`docs/src/_static/color.css`:
+
+- :octicon:`square-fill;2em;gv-text-main` ``#80d050`` is the **primary** colour (``gv-text-main``)
+- :octicon:`square-fill;2em;gv-text-comp` ``#7f2faf`` is the **complementary** colour (``gv-text-comp``)
 
 
 :fa:`pencil` Logo Font
 ~~~~~~~~~~~~~~~~~~~~~~
+
+The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType font.
 
 .. figure:: ../_static/geovista-title.svg
    :align: center
@@ -159,8 +164,6 @@ The branding RGB colour is ``#80d050``.
    :width: 25%
 
    GeoVista Logo Title
-
-The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType font.
 
 
 :fab:`github` Continuous Integration
