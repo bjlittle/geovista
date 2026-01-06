@@ -24,9 +24,9 @@ unstructured geospatial data interactively in 3-D.
 
 We're still busy crafting the documentation, which is incomplete and liable
 to change.  Thanks for your patience. However, your feedback is important
-to us.  So feel free to submit a :fab:`github` `Issue`_  or
-:fab:`github` `Pull-Request`_ to help elevate ``geovista`` to the next level
-of awesome 🚀
+to us.  So feel free to submit a :far:`circle-dot` `Issue`_  or
+:fa:`code-pull-request` `Pull-Request`_ to help elevate ``geovista`` to the
+next level of awesome 🚀
 
 Alternatively, come share with us over on our :fab:`github` `Discussions`_.
 We'd 💚 to hear from you.
