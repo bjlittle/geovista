@@ -24,7 +24,7 @@ to the cloud and reference the provided URL e.g.,
 $ pixi shell
 $ vhs publish pixi_shell_geovista_dark.tape
 ```
-Otherwise, smaller GIFs may be stored in the ``docs/tapes`` directory.
+Otherwise, smaller GIFs may be stored in the ``docs/assets/tapes`` directory.
 
 Ensure to create both ``light`` and ``dark`` tape versions using the
 ``rose-pine-dawn`` and ``rose-pine-moon`` themes respectively.
