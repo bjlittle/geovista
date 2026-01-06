@@ -34,9 +34,7 @@ Head over to our :fab:`github` `Discussions`_ to engage with the
 ``geovista`` community. Feel free to ask questions, share ideas, discuss topics,
 and even showcase your work in our :fab:`github` `🍬 Candy Store`_. Go for it!
 
-Use our badge to share your involvement with the community:
-
-|geovista-badge|
+And add a touch of panache to your :bash:`README.md` with our badge |geovista-badge|:
 
 .. tab-set::
 
@@ -49,6 +47,7 @@ Use our badge to share your involvement with the community:
             </a>
 
     .. tab-item:: markdown
+        :selected:
 
         .. code:: markdown
 
@@ -64,10 +63,10 @@ Use our badge to share your involvement with the community:
 .. tip::
    :class: dropdown
 
-   To customize the look and feel of the badge append :bash:`&style=<option>`
+   Customize the look and feel of the badge by appending :bash:`&style=<option>`
    to the endpoint URL.
 
-   See the `shields.io`_ documentation for further details.
+   See the `shields.io documentation`_ for further details.
 
 
 :fa:`file-code` Packages
@@ -76,14 +75,14 @@ Use our badge to share your involvement with the community:
 Share and discover projects using ``geovista``:
 
 - `geovista-slam <https://github.com/bjlittle/geovista-slam>`__: Generating Structured Local Area Model (SLAM) grids from unstructured meshes.
+- `iris <https://github.com/SciTools/iris>`__: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data.
+- `uraster <https://github.com/changliao1025/uraster>`__: Transform raster datasets to unstructured meshes.
 
-.. hint::
+.. admonition:: Share your project with the community!
     :class: dropdown
 
-    Share your project with the community!
-
     Click `here <https://github.com/bjlittle/geovista/edit/main/docs/src/reference/about.rst>`__ to
-    add your contribution and raise a :fa:`code-pull-request` `Pull-Request`_.
+    add your project details and raise a :fa:`code-pull-request` `Pull-Request`_.
 
 
 :fa:`users-line` Contributors
@@ -139,4 +138,4 @@ A massive thank-you to all our awesome contributors (`Emoji Key ✨`_):
 .. _BSD-3-Clause: https://spdx.org/licenses/BSD-3-Clause.html
 .. _🍬 Candy Store: https://github.com/bjlittle/geovista/discussions/1033
 .. _Emoji Key ✨: https://allcontributors.org/emoji-key/
-.. _shields.io: https://shields.io/
+.. _shields.io documentation: https://shields.io/
