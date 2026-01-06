@@ -70,15 +70,20 @@ Use our badge to share your involvement with the community:
    See the `shields.io`_ documentation for further details.
 
 
-:fa:`image` Rendered using GeoVista
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:fa:`file-code` Packages
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-Share and discover projects using ``geovista`` for geospatial visualization
-and analysis:
+Share and discover projects using ``geovista``:
 
 - `geovista-slam <https://github.com/bjlittle/geovista-slam>`__: Generating Structured Local Area Model (SLAM) grids from unstructured meshes.
 
-Add your project here with a :fa:`code-pull-request` `Pull-Request`_.
+.. hint::
+    :class: dropdown
+
+    Share your project with the community!
+
+    Click `here <https://github.com/bjlittle/geovista/edit/main/docs/src/reference/about.rst>`__ to
+    add your contribution and raise a :fa:`code-pull-request` `Pull-Request`_.
 
 
 :fa:`users-line` Contributors
