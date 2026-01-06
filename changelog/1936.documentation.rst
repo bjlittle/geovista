@@ -1,0 +1,2 @@
+Added the :ref:`tippy-gv-reference-about-community` reference section.
+(:user:`bjlittle`)
