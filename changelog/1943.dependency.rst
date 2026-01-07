@@ -1,0 +1,3 @@
+Added `sphinxcontrib-bibtex <https://github.com/mcmtroffaes/sphinxcontrib-bibtex>`__
+``sphinx`` extension for BibTeX style citations and references.
+(:user:`bjlittle`)
