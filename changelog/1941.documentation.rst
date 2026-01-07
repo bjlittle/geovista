@@ -1,0 +1,2 @@
+Reformatted the community :ref:`tippy-gv-reference-about-community-packages`
+as a table for readability. (:user:`bjlittle`)

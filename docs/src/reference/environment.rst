@@ -115,7 +115,7 @@ Notable third-party environment variables that influence the behaviour of
 
 .. comment
 
-    Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
 
 
 .. _SPEC 1: https://scientific-python.org/specs/spec-0001/

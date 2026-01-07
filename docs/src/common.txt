@@ -1,8 +1,9 @@
 .. comment
 
-   custom inplace roles:
-   - https://pygments.org/docs/lexers/#lexers-for-python-and-related-languages
-   - https://docutils.sourceforge.io/docs/ref/rst/directives.html#custom-interpreted-text-roles
+   ⚠️ custom inplace roles:
+      - https://pygments.org/docs/lexers/#lexers-for-python-and-related-languages
+      - https://docutils.sourceforge.io/docs/ref/rst/directives.html#custom-interpreted-text-roles
+
 
 .. role:: bash(code)
    :language: bash
@@ -16,7 +17,8 @@
 
 .. comment
 
-   resources:
+   ⚠️ common image resources:
+
 
 .. |geovista-badge| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json
     :target: https://geovista.readthedocs.io/
@@ -24,7 +26,8 @@
 
 .. comment
 
-   common URL resources in alphabetical order:
+   🔗 common URL resources in alphabetical order:
+
 
 .. _Cartopy: https://github.com/SciTools/cartopy
 .. _Dependabot: https://docs.github.com/en/code-security/getting-started/dependabot-quickstart-guide
@@ -66,6 +69,7 @@
 .. _geovista: https://github.com/bjlittle/geovista
 .. _geovista-data: https://github.com/bjlittle/geovista-data
 .. _geovista-media: https://github.com/bjlittle/geovista-media
+.. _geovista-slam: https://github.com/bjlittle/geovista-slam
 .. _iris: https://github.com/scitools/iris
 .. _matplotlib: https://github.com/matplotlib/matplotlib
 .. _myst-nb: https://github.com/executablebooks/MyST-NB
@@ -92,8 +96,8 @@
 
 .. comment
 
-   core developers and prolific contributors (github handle) in
-   alphabetical order:
+   🔗 core developers and prolific contributors (github handle) in alphabetical order:
+
 
 .. _@banesullivan: https://github.com/banesullivan
 .. _@bjlittle: https://github.com/bjlittle
