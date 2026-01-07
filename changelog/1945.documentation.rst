@@ -1,0 +1,3 @@
+Added the community :ref:`tippy-gv-reference-about-community-publications` section
+with a bibliography to reference scientific publications using
+``geovista``. (:user:`bjlittle`)

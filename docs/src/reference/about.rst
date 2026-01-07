@@ -106,6 +106,9 @@ Discover community projects using ``geovista``:
     add your project details and raise a :fa:`code-pull-request` `Pull-Request`_.
 
 
+.. _gv-reference-about-community-publications:
+.. _tippy-gv-reference-about-community-publications:
+
 :fa:`file-waveform` Publications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
