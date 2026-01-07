@@ -74,6 +74,7 @@ And add a touch of panache to your :bash:`README.md` with our badge |geovista-ba
 
 Share and discover projects using ``geovista``:
 
+- `aeolus <https://github.com/exoclim/aeolus>`__: A library for analysing and visualising atmospheric model output.
 - `geovista-slam <https://github.com/bjlittle/geovista-slam>`__: Generating Structured Local Area Model (SLAM) grids from unstructured meshes.
 - `iris <https://github.com/SciTools/iris>`__: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data.
 - `uraster <https://github.com/changliao1025/uraster>`__: Transform raster datasets to unstructured meshes.
