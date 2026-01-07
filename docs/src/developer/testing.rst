@@ -478,7 +478,7 @@ Finer-grained control of unit test can be achieved by using our ``pytest``
 
 .. comment
 
-   Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
 
 
 .. _Workflow Artifact: https://docs.github.com/en/actions/concepts/workflows-and-actions/workflow-artifacts

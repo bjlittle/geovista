@@ -340,7 +340,8 @@ If so, then let's explore the :ref:`next steps <tippy-gv-next-steps>` on your
 
 .. comment
 
-    Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
+
 
 .. _1:50m Natural Earth Cross-Blended Hypsometric Tints: https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/
 .. _1:50m Natural Earth I: https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/

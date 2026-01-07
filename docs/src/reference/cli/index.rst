@@ -32,10 +32,12 @@ available:
     plot
 
 
+.. [#] See `entry-points`_ for further information.
+
+
 .. comment
 
-    Page link URL resources in alphabetical order:
+    🔗 URL resources in alphabetical order:
 
-.. [#] See `entry-points`_ for further information.
 
 .. _entry-points: https://setuptools.pypa.io/en/latest/userguide/entry_point.html

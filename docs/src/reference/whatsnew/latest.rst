@@ -33,4 +33,5 @@ Notable changes in this **minor** release of ``geovista`` include:
 
 
 .. comment
-    Whatsnew resources in alphabetical order:
+
+   ⚠️ Whatsnew resources in alphabetical order:

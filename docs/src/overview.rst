@@ -110,7 +110,8 @@ Thanks for your patience 🙏
 
 .. comment
 
-    Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
+
 
 .. _Jupyter: https://jupyter.org/
 .. _Mesh data structures: https://docs.pyvista.org/examples/index.html#mesh-creation

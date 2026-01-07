@@ -486,7 +486,7 @@ e.g.,
 
 .. comment
 
-   Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
 
 
 .. _Builds: https://app.readthedocs.org/projects/geovista/builds/

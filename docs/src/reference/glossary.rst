@@ -124,7 +124,7 @@ Say what you mean. Mean what you say.
 
 .. comment
 
-    Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
 
 
 .. _PyVista threshold: https://docs.pyvista.org/api/core/_autosummary/pyvista.datasetfilters.threshold
