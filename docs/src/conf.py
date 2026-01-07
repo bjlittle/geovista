@@ -168,6 +168,7 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_tags",
     "sphinx_togglebutton",
+    "sphinxcontrib.bibtex",
     "sphinxcontrib.mermaid",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
@@ -359,6 +360,14 @@ tippy_skip_urls.extend(sphx_glr("geovista.examples"))
 
 togglebutton_hint = "Click to show"
 togglebutton_hint_hide = "Click to hide"
+
+
+# sphinxcontrib-bibtex options -----------------------------------------------
+# See https://sphinxcontrib-bibtex.readthedocs.io/en/latest/
+
+bibtex_bibfiles = [
+    str(docs_src_dir / "refs.bib"),
+]
 
 
 # myst-nb options ------------------------------------------------------------
