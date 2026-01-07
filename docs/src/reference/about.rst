@@ -78,7 +78,7 @@ Share and discover projects using ``geovista``:
 - `iris <https://github.com/SciTools/iris>`__: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data.
 - `uraster <https://github.com/changliao1025/uraster>`__: Transform raster datasets to unstructured meshes.
 
-.. admonition:: Share your project with the community!
+.. admonition:: Share with the community!
     :class: dropdown
 
     Click `here <https://github.com/bjlittle/geovista/edit/main/docs/src/reference/about.rst>`__ to
