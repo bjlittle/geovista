@@ -28,6 +28,7 @@ dependencies:
 - sphinx-tags >=0.4,<0.5
 - sphinx-togglebutton >=0.3.2,<0.4
 - sphinx_changelog >=1.6.0,<2
+- sphinxcontrib-bibtex >=2.6.0,<3
 - sphinxcontrib-mermaid >=1.0.0,<2
 - towncrier >=24.8.0,<26
 - trame ==3.12.0
