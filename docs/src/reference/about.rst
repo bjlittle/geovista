@@ -95,6 +95,9 @@ Discover community projects using ``geovista``:
     | `iris`_             | A powerful, format-agnostic, and community-driven Python package for analysing  |
     |                     | and visualising Earth science data.                                             |
     +---------------------+---------------------------------------------------------------------------------+
+    | `ngview`_           | A GUI interface for loading NetCDF files; selecting the fields, levels and time |
+    |                     | points you want; and plotting the results using Geovista.                       |
+    +---------------------+---------------------------------------------------------------------------------+
     | `uraster`_          | Transform raster datasets to unstructured meshes.                               |
     +---------------------+---------------------------------------------------------------------------------+
 
