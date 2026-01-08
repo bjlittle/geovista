@@ -74,7 +74,6 @@
 .. _matplotlib: https://github.com/matplotlib/matplotlib
 .. _myst-nb: https://github.com/executablebooks/MyST-NB
 .. _myst-parser: https://github.com/executablebooks/MyST-Parser
-.. _ngview: https://github.com/MetOffice/ngview
 .. _pip: https://pip.pypa.io/en/stable/index.html
 .. _pixi: https://github.com/prefix-dev/pixi
 .. _pooch: https://github.com/fatiando/pooch
