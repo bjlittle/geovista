@@ -72,12 +72,13 @@ Add a touch of panache to your :bash:`README.md` with our badge |geovista-badge|
 :fa:`file-code` Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Discover other community projects using ``geovista``:
-
 .. comment
 
-   ⚠️ please add packages to the table in alphabetical order and
-      add the package URL as a reference at the bottom of this file
+   ⚠️ please add packages to the table below in alphabetical order using
+      a reference to the package URL defined at the bottom of this file
+
+
+Discover community projects using ``geovista``:
 
 .. table:: Third-Party Packages
     :align: center
@@ -103,6 +104,30 @@ Discover other community projects using ``geovista``:
 
     Click `here <https://github.com/bjlittle/geovista/edit/main/docs/src/reference/about.rst>`__ to
     add your project details and raise a :fa:`code-pull-request` `Pull-Request`_.
+
+
+.. _gv-reference-about-community-publications:
+.. _tippy-gv-reference-about-community-publications:
+
+:fa:`file-waveform` Publications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. comment
+
+   ⚠️ please add bibtex entries into the "docs/src/refs.bib" file
+
+
+Explore scientific publications that leverage ``geovista``:
+
+.. bibliography::
+    :all:
+
+
+.. admonition:: Share with the community!
+    :class: dropdown
+
+    Click `here <https://github.com/bjlittle/geovista/edit/main/docs/src/refs.bib>`__ to
+    add your BibTeX entry and raise a :fa:`code-pull-request` `Pull-Request`_.
 
 
 :fa:`users-line` Contributors
