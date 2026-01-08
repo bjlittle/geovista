@@ -96,7 +96,7 @@ Discover community projects using ``geovista``:
     |                     | and visualising Earth science data.                                             |
     +---------------------+---------------------------------------------------------------------------------+
     | `ngview`_           | A GUI interface for loading NetCDF files; selecting the fields, levels and time |
-    |                     | points you want; and plotting the results using Geovista.                       |
+    |                     | points you want; and plotting the results using GeoVista.                       |
     +---------------------+---------------------------------------------------------------------------------+
     | `uraster`_          | Transform raster datasets to unstructured meshes.                               |
     +---------------------+---------------------------------------------------------------------------------+
