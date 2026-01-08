@@ -137,3 +137,18 @@ repos:
     rev: v1.19.0
     hooks:
       - id: zizmor
+
+  # ⚠️ requires nodejs
+  #
+  #    > pixi add nodejs
+  #    > pre-commit run bibtex-tidy --files docs/src/refs.bib
+  #
+  # - repo: https://github.com/FlamingTempura/bibtex-tidy
+  #   rev: v1.14.0
+  #   hooks:
+  #     - id: bibtex-tidy
+  #       args: ["--curly", "--tab", "--months", "--align", "--blank-lines", "--sort=key", "--duplicates=key", "--sort-fields", "--wrap"]
+  #       files: "^docs/src/refs.bib"
+  #       entry: ./bin/bibtex-tidy --modify
+  #       language: script
+  #       types: ['bib']
