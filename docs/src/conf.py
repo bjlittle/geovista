@@ -834,7 +834,10 @@ def generate_carousel(
                     # remove numeric gallery image index e.g., "001"
                     parts = path.stem.split("_")[:-1]
                     link = parts[:2] + list(link_relative.parts) + parts[2:]
-                    link = f"{'_'.join(link)}.py"
+
+                    # enforce lower-case link, which resolves correctly
+                    # for mixed case targets
+                    link = f"{'_'.join(link)}.py".lower()
 
                     kwargs = {
                         "image": image,
