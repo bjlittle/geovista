@@ -365,7 +365,7 @@ the :guilabel:`DATA_VERSION` using the CLI e.g.,
    for further details.
 
 Testing may be performed using the convenience of
-`pixi run <https://pixi.sh/latest/reference/cli/pixi/run/>`__ tasks, which
+`pixi run <https://pixi.prefix.dev/latest/reference/cli/pixi/run/>`__ tasks, which
 **do not** require to be executed from within :bash:`geovista` root directory
 e.g.,
 

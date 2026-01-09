@@ -132,9 +132,9 @@ Say what you mean. Mean what you say.
 .. _What is a Cell?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-cell
 .. _What is a Point?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-point
 .. _What is a Mesh?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-mesh
-.. _design considerations: https://pixi.sh/latest/workspace/multi_environment/#design-considerations
-.. _pixi environment: https://pixi.sh/latest/reference/pixi_manifest/#the-environments-table
-.. _pixi feature: https://pixi.sh/latest/reference/pixi_manifest/#the-feature-table
-.. _pixi task: https://pixi.sh/latest/reference/pixi_manifest/#the-tasks-table
-.. _tasks documentation: https://pixi.sh/latest/workspace/advanced_tasks/
+.. _design considerations: https://pixi.prefix.dev/latest/workspace/multi_environment/#design-considerations
+.. _pixi environment: https://pixi.prefix.dev/latest/reference/pixi_manifest/#the-environments-table
+.. _pixi feature: https://pixi.prefix.dev/latest/reference/pixi_manifest/#the-feature-table
+.. _pixi task: https://pixi.prefix.dev/latest/reference/pixi_manifest/#the-tasks-table
+.. _tasks documentation: https://pixi.prefix.dev/latest/workspace/advanced_tasks/
 .. _vtkActor: https://vtk.org/doc/nightly/html/classvtkActor.html#details
