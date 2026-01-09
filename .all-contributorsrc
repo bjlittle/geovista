@@ -56,7 +56,9 @@
       "profile": "https://github.com/tkknight",
       "contributions": [
         "doc",
-        "infra"
+        "infra",
+        "code",
+        "bug"
       ]
     },
     {
