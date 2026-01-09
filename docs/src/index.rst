@@ -15,12 +15,12 @@ GeoVista Documentation
 Welcome to the ``geovista`` documentation!
 
 ``geovista`` is a pure `Python`_ package, built upon `PyVista`_ that offers
-performant, publication quality 3-D cartographic rendering of Earth Science
+performant, publication quality 3D cartographic rendering of Earth Science
 data.
 
 Our goal is to lower the bar for scientists, such that they can easily
 analyze, visualize, and explore their rectilinear, curvilinear and
-unstructured geospatial data interactively in 3-D.
+unstructured geospatial data interactively in 3D.
 
 We're still busy crafting the documentation, which is incomplete and liable
 to change.  Thanks for your patience. However, your feedback is important

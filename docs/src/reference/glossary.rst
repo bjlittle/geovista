@@ -34,7 +34,7 @@ Say what you mean. Mean what you say.
 
     Curvilinear Grid
         For example, a qudrilateral-cell surface that can be created from an
-        array of 2-D ``x`` and ``y`` spatial points.
+        array of 2D ``x`` and ``y`` spatial points.
 
     Environment
         A `pixi environment`_ is a collection of one or more
@@ -69,7 +69,7 @@ Say what you mean. Mean what you say.
         A water-tight, closed geometric structure e.g., a sphere.
 
     Mesh
-        A spatially referenced dataset that may be a surface or volume in 3-D
+        A spatially referenced dataset that may be a surface or volume in 3D
         space. See `What is a Mesh?`_
 
     MyST
@@ -90,7 +90,7 @@ Say what you mean. Mean what you say.
 
     Rectilinear Grid
         For example, a quadrilateral-cell surface that can be created from an
-        array of 1-D ``x`` and ``y`` spatial points.
+        array of 1D ``x`` and ``y`` spatial points.
 
     Sea Mask
         Typically a boolean array used to indicate the cells in a mesh that

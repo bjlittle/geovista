@@ -4,4 +4,4 @@
 Rectilinear Grid
 ================
 
-Demonstrates support for traditional 2-D rectilinear grids.
+Demonstrates support for traditional 2D rectilinear grids.

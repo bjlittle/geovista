@@ -76,21 +76,21 @@ Let's explore some atmospheric and oceanographic model data using
 OISST AVHRR
 ^^^^^^^^^^^
 
-This example renders a 2-D data array with 1-D X and Y **rectilinear**
+This example renders a 2D data array with 1D X and Y **rectilinear**
 coordinates as a :term:`mesh <Mesh>` of quadrilateral :term:`cells <Cell>` in
-3-D with coastlines.
+3D with coastlines.
 
 The data source is a `NOAA/NCEI Optimum Interpolation SST`_ (OISST) Advanced
 Very High Resolution Radiometer (AVHRR)
 :term:`rectilinear grid <Rectilinear Grid>` containing ``1,036,800``
 quadrilateral cells and ``1,038,961`` :term:`points <Point>`.
 
-The mesh is created from the bounds of 1-D geographic longitude and
+The mesh is created from the bounds of 1D geographic longitude and
 latitude coordinates using the :meth:`~geovista.bridge.Transform.from_1d`
 method. Each X and Y coordinate has 2 coordinate bounds describing
 a quadrilateral cell.
 
-A 2-D array of *Sea Surface Temperature* data located on the mesh cells
+A 2D array of *Sea Surface Temperature* data located on the mesh cells
 are rendered using the
 :term:`perceptually uniform <Perceptually Uniform Colormap>`
 `cmocean balance`_ diverging colormap, along with
@@ -129,11 +129,11 @@ are rendered using the
 NEMO ORCA2
 ^^^^^^^^^^
 
-This example renders a 2-D data array with 2-D X and Y **curvilinear**
+This example renders a 2D data array with 2D X and Y **curvilinear**
 coordinates as a :term:`mesh <Mesh>` of quadilateral :term:`cells <Cell>` in
-3-D. A :term:`threshold <Threshold>` is applied to remove cells with masked
+3D. A :term:`threshold <Threshold>` is applied to remove cells with masked
 data. Coastlines and a :term:`base layer <Base Layer>` are also added before
-the results are transformed to a flat 2-D surface with a `Plate Carrée`_
+the results are transformed to a flat 2D surface with a `Plate Carrée`_
 projection.
 
 The data source is a `Nucleus for European Modelling of the Ocean`_ (NEMO)
@@ -141,7 +141,7 @@ ORCA2 global ocean tripolar :term:`curvilinear grid <Curvilinear Grid>`
 containing ``26,640`` quadrilateral cells and ``106,560``
 :term:`points <Point>`.
 
-As the grid is curvilinear, it is created from the bounds of 2-D geographic
+As the grid is curvilinear, it is created from the bounds of 2D geographic
 longitude and latitude coordinates using the
 :meth:`~geovista.bridge.Transform.from_2d` method. Each X and Y
 coordinate has 4 coordinate bounds describing a quadrilateral cell.
@@ -215,15 +215,15 @@ WAVEWATCH III
 data.
 
 To demonstrate this we create a `WAVEWATCH III`_ (WW3) unstructured
-triangular mesh from 1-D X and Y **unstructured** coordinates and 2-D
+triangular mesh from 1D X and Y **unstructured** coordinates and 2D
 :term:`connectivity <Connectivity>` using the
 :meth:`~geovista.bridge.Transform.from_unstructured` method.
 
 The ``sample.connectivity``, with shape ``(30559, 3)``, is used to index into
-the ``16,160`` 1-D geographical longitude and latitude points to create a
+the ``16,160`` 1D geographical longitude and latitude points to create a
 mesh containing ``30,559`` triangular :term:`cells <Cell>`.
 
-A 1-D array of *Sea Surface Wave Significant Height* data is located on
+A 1D array of *Sea Surface Wave Significant Height* data is located on
 the mesh :term:`nodes <Node>`, which is then interpolated across the
 mesh cells and rendered with the
 :term:`perceptually uniform <Perceptually Uniform Colormap>`
@@ -280,10 +280,10 @@ extruded :term:`mesh <Mesh>` of the `Plymouth Sound and Tamar River`_
 bathymetry in Cornwall, England.
 
 First the :meth:`~geovista.bridge.Transform.from_unstructured` method is used
-to create a triangular mesh from 1-D X and Y **unstructured** coordinates and
-2-D :term:`connectivity <Connectivity>`.
+to create a triangular mesh from 1D X and Y **unstructured** coordinates and
+2D :term:`connectivity <Connectivity>`.
 
-A 1-D array of *Sea Floor Depth Below Geoid* data is added to the mesh
+A 1D array of *Sea Floor Depth Below Geoid* data is added to the mesh
 :term:`cells <Cell>`, but also the mesh :term:`points <Point>`, which
 are then used to displace the mesh points by a proportionally scaled amount
 in the direction of the mesh surface normals.

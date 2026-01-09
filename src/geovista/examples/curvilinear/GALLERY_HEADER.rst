@@ -4,4 +4,4 @@
 Curvilinear Grid
 ================
 
-Demonstrates support for 2-D curvilinear grid surfaces.
+Demonstrates support for 2D curvilinear grid surfaces.

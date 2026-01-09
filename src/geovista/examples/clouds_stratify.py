@@ -13,7 +13,7 @@ This example demonstrates how to render stratified cloud meshes.
 📋 Summary
 ^^^^^^^^^^
 
-Creates meshes from 1-D latitude and longitude unstructured cell points.
+Creates meshes from 1D latitude and longitude unstructured cell points.
 
 The resulting meshes contain quad cells and are constructed from CF UGRID
 unstructured cell points and connectivity.

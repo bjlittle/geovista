@@ -1168,10 +1168,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             cartographic transformation, i.e. ``0 0 0`` is centre of the globe
             (the plot origin), ``0 0 1`` is the north pole.
         xs : ArrayLike, optional
-            A 1-D, 2-D or 3-D array of point-cloud x-values, in canonical `crs` units.
+            A 1D, 2D or 3D array of point-cloud x-values, in canonical `crs` units.
             Must have the same shape as the `ys`.
         ys : ArrayLike
-            A 1-D, 2-D or 3-D array of point-cloud y-values, in canonical `crs` units.
+            A 1D, 2D or 3D array of point-cloud y-values, in canonical `crs` units.
             Must have the same shape as the `xs`.
         scalars : str or ArrayLike, optional
             Values used to color the points. Either, the string name of an array that is
