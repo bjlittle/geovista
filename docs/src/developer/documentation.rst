@@ -501,7 +501,7 @@ e.g.,
 .. _ci-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-docs.yml
 .. _ci-tests-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-docs.yml
 .. _filtering: https://docs.pyvista.org/examples/01-filter/
-.. _include directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#include-directive
+.. _include directive: https://docutils.sourceforge.io/docs/ref/rst/directives.html#include
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _plotting: https://docs.pyvista.org/examples/02-plot/#
 .. _.readthedocs.yml: https://github.com/bjlittle/geovista/blob/main/.readthedocs.yml
