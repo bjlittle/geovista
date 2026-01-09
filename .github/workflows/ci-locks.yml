@@ -95,10 +95,10 @@ jobs:
           title: "chore: pixi manifest update"
           body-path: ${{ github.workspace }}/diff.md
           labels: |
-            new: pull request
+            new: pull-request
             bot
             pixi
-            skip changelog
+            skip-changelog
 
       - name: "show pull-request"
         if: ${{ hashFiles('diff.md') }}

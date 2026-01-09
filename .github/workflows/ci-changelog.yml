@@ -53,7 +53,7 @@ jobs:
           list-files: 'csv'
 
       - name: 'validate changelog'
-        if: ${{ ! contains(fromJSON(env.LABELS), 'skip changelog') }}
+        if: ${{ ! contains(fromJSON(env.LABELS), 'skip-changelog') }}
         env:
           CHANGELOG: "${{ steps.changes.outputs.changelog_files }}"
           PR: "${{ github.event.number }}"

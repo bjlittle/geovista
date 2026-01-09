@@ -108,8 +108,8 @@ It performs the following automated checks on each pull-request:
   as the final entry
 
 These quality assurance checks can be **skipped** by adding the
-`skip changelog` label to the pull-request. Note that a pull-request generated
-by the following bots or services will have the `skip changelog` label
+`skip-changelog` label to the pull-request. Note that a pull-request generated
+by the following bots or services will have the `skip-changelog` label
 automatically applied:
 
 * [dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates) version updates
@@ -119,6 +119,6 @@ automatically applied:
 Also, see the [ci-label](https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-label.yml)
 {fab}`github` Action for automated pull-request labelling.
 
-Removing the `skip changelog` label from a pull-request will trigger the
+Removing the `skip-changelog` label from a pull-request will trigger the
 [ci-changelog](https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-changelog.yml)
 {fab}`github` Action workflow.
