@@ -18,9 +18,9 @@ updates:
         patterns:
           - "*"
     labels:
-      - "new: pull request"
+      - "new: pull-request"
       - "bot"
-      - "skip changelog"
+      - "skip-changelog"
     commit-message:
       prefix: "chore: "
       include: "scope"
@@ -44,9 +44,9 @@ updates:
         patterns:
           - "*"
     labels:
-      - "new: pull request"
+      - "new: pull-request"
       - "bot"
-      - "skip changelog"
+      - "skip-changelog"
     commit-message:
       prefix: "chore: "
       include: "scope"
