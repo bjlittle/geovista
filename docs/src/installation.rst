@@ -45,7 +45,7 @@ and `PyPI`_, and can be easily installed:
             $ pixi add geovista
 
         ℹ️ Consult the ``pixi``
-        `Installation <https://pixi.sh/latest/installation/>`__
+        `Installation <https://pixi.prefix.dev/latest/installation/>`__
         instructions.
 
     .. tab-item:: uv

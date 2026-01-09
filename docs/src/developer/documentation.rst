@@ -337,7 +337,7 @@ its :ref:`tippy-gv-overview-ecosystem` section:
    :ref:`tippy-gv-developer-packaging` for further details.
 
 The documentation may be built and rendered using
-`pixi run <https://pixi.sh/latest/reference/cli/pixi/run/>`__ tasks, all of
+`pixi run <https://pixi.prefix.dev/latest/reference/cli/pixi/run/>`__ tasks, all of
 which **do not** require to be executed from within the :bash:`docs` root directory, unlike
 the above :ref:`tippy-gv-developer-documentation-building` ``make`` command tasks e.g.,
 

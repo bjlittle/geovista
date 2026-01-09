@@ -7,7 +7,7 @@
 ===========================
 
 .. |Pixi| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json
-   :target: https://pixi.sh
+   :target: https://pixi.prefix.dev
 .. |SPEC0| image:: https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038
    :target: https://scientific-python.org/specs/spec-0000/
 
@@ -15,7 +15,7 @@
 
 .. image:: ../_static/images/pixi-banner.svg
    :align: center
-   :target: https://pixi.sh
+   :target: https://pixi.prefix.dev
    :alt: Pixi
 
 .. raw:: html
@@ -510,16 +510,16 @@ latest available package updates within the ``PyPI`` ecosystem.
 .. _OpenID Connect (OIDC): https://openid.net/developers/how-connect-works/
 .. _PyPI Trusted Publishing: https://docs.pypi.org/trusted-publishers/
 .. _.github/dependabot.yml: https://github.com/bjlittle/geovista/blob/main/.github/dependabot.yml
-.. _automatically included: https://pixi.sh/latest/tutorials/multi_environment/#default
+.. _automatically included: https://pixi.prefix.dev/latest/tutorials/multi_environment/#default
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml
 .. _ci-wheels.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-wheels.yml
-.. _cross-platform workflow command: https://pixi.sh/latest/workspace/advanced_tasks/
+.. _cross-platform workflow command: https://pixi.prefix.dev/latest/workspace/advanced_tasks/
 .. _dependabot/dependabot-core issue#2227: https://github.com/dependabot/dependabot-core/issues/2227#issuecomment-1709069470
 .. _fast: https://prefix.dev/blog/sharded_repodata
-.. _feature table: https://pixi.sh/latest/reference/pixi_manifest/#the-feature-table
+.. _feature table: https://pixi.prefix.dev/latest/reference/pixi_manifest/#the-feature-table
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _requirements/geovista.yml: https://github.com/bjlittle/geovista/blob/main/requirements/geovista.yml
 .. _requirements/locks: https://github.com/bjlittle/geovista/tree/main/requirements/locks
-.. _resolve: https://pixi.sh/latest/workspace/environment/#solving-environments
-.. _solve-group: https://pixi.sh/latest/workspace/multi_environment/#feature-environment-set-definitions
-.. _tutorial: https://pixi.sh/latest/tutorials/multi_environment/
+.. _resolve: https://pixi.prefix.dev/latest/workspace/environment/#solving-environments
+.. _solve-group: https://pixi.prefix.dev/latest/workspace/multi_environment/#feature-environment-set-definitions
+.. _tutorial: https://pixi.prefix.dev/latest/tutorials/multi_environment/
