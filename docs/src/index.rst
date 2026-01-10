@@ -29,7 +29,7 @@ to us.  So feel free to submit a :far:`circle-dot` `Issue`_  or
 next level of awesome 🚀
 
 Alternatively, come share with us over on our :fab:`github` `Discussions`_.
-We'd 💚 to hear from you.
+We'd ❤️ to hear from you.
 
 
 ----

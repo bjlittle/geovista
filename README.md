@@ -520,7 +520,7 @@ GeoVista for your work, research or pleasure!
 Showcase your most awesome GeoVista eye candy with undiluted pride and tell
 us more about your work.
 
-We'd 💚 to hear from you!
+We'd ❤️ to hear from you!
 
 
 ## Documentation

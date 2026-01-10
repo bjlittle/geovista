@@ -158,7 +158,7 @@ Temperature* data located on the grid cells, which is then complemented with
 
 Finally, a `cartopy`_ :term:`CRS <Coordinate Reference System>`
 is used to transform the :term:`actors <Actor>` in the scene to the
-`Equidistant Cylindrical`_ (Plate Carrée`) conformal cylindrical
+`Equidistant Cylindrical`_ (Plate Carrée) conformal cylindrical
 projection.
 
 .. note::
