@@ -29,7 +29,7 @@ Notable changes in this **minor** release of ``geovista`` include:
     Your feedback is important to us. So don't hesitate to share
     with us on :fab:`github` :issue:`GitHub<new/choose>`.
 
-    We'd 💚 to hear from you.
+    We'd ❤️ to hear from you.
 
 
 .. comment
