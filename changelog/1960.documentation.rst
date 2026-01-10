@@ -1,0 +1,3 @@
+Applied colour :ref:`tippy-gv-developer-documentation-branding` to the
+`Font Awesome <https://fontawesome.com/>`__ icons.
+(:user:`bjlittle`)
