@@ -10,7 +10,7 @@ GeoTIFF DEM
 -----------
 
 This example demonstrates how to render **Digital Elevation Model** (DEM) data
-encoded in an `OGC GeoTIFF <https://www.ogc.org/publications/standard/geotiff/>`_
+encoded in an `OGC GeoTIFF <https://www.ogc.org/standards/geotiff/>`_
 as a geolocated mesh.
 
 📋 Summary
@@ -32,7 +32,7 @@ of the Earth's land surface between 60°N and 56°S latitude with
 data points posted every 1 arc-second (approximately 30 meters).
 
 This SRTM sample is of *Mount Fuji*, one of Japan's
-`Three Holy Mountains <https://blog.japanwondertravel.com/japans-three-sacred-mountains-14297>`_,
+`Three Holy Mountains <https://en.wikipedia.org/wiki/Mount_Fuji>`_,
 which is an active stratovolcano, located on the Japanese island of *Honshū*.
 
 The resulting mesh contains quad cells, with the elevation data located
@@ -46,7 +46,7 @@ the topography of Mount Fuji and its surrounding landscape.
     domain: orography,
     filter: warp,
     load: geotiff,
-    render: camera,
+    plot: camera,
     style: shading,
     widget: logo
 
@@ -57,6 +57,8 @@ the topography of Mount Fuji and its surrounding landscape.
 """  # noqa: D205,D212,D400
 
 from __future__ import annotations
+
+import pyvista as pv
 
 import geovista as gv
 from geovista.pantry import fetch_raster
@@ -78,14 +80,15 @@ def main() -> None:
     p = gv.GeoPlotter()
 
     # Load the GeoTIFF image, which requires the optional package
-    # dependency 'rasterio'.
+    # dependency 'rasterio'. Note that as a convenience the unit
+    # encoded within the GeoTIFF will populate the placeholder.
     mesh = gv.Transform.from_tiff(fname, extract=True, name="Elevation / {units}")
 
     # Warp the mesh nodes by the elevation.
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
     mesh.warp_by_scalar(inplace=True, factor=2e-7)
 
-    sargs = {"fmt": "%.1f", "shadow": True}
+    sargs = {"fmt": "%.1f"}
     p.add_mesh(mesh, cmap="speed_r", scalar_bar_args=sargs, smooth_shading=True)
     p.add_logo_widget(fetch_raster("japan_map.png"), position=(0.8, 0.8))
     p.add_axes()
@@ -93,15 +96,14 @@ def main() -> None:
         "Mount Fuji, Digital Elevation Model GeoTIFF",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
 
     # Define a specific camera position and orientation.
-    cpos = [
-        (-0.6134635189209598, 0.5500672658209347, 0.5735486559145044),
-        (-0.6130746222715426, 0.5383021484428419, 0.5780820278342568),
-        (-0.6616613958706443, 0.25045119061438004, 0.7067378568708134),
-    ]
+    cpos = pv.CameraPosition(
+        position=(-0.6134635189209598, 0.5500672658209347, 0.5735486559145044),
+        focal_point=(-0.6130746222715426, 0.5383021484428419, 0.5780820278342568),
+        viewup=(-0.6616613958706443, 0.25045119061438004, 0.7067378568708134),
+    )
 
     p.show(cpos=cpos)
 

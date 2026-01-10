@@ -23,7 +23,7 @@ for the Laboratoire de Météorologie Dynamique (LMD-Z), the atmospheric General
 Circulation Model (GCM) part of Institut Pierre-Simon Laplace (IPSL-CM) Earth
 System Model. The data targets the mesh faces/cells.
 
-Note that, a graticule and Natural Earth coastlines are also rendered.
+Note that a graticule and Natural Earth coastlines are also rendered.
 
 .. tags::
 
@@ -54,12 +54,16 @@ def main() -> None:
     sample = dynamico()
 
     # Create the mesh from the sample data.
-    mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
+    mesh = gv.Transform.from_unstructured(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
+    )
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_coastlines()
     p.add_graticule()
     p.add_axes()
@@ -67,7 +71,6 @@ def main() -> None:
         "DYNAMICO Icosahedral (10m Coastlines)",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xz(negative=True)
     p.camera.zoom(1.3)

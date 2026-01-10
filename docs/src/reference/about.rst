@@ -1,4 +1,5 @@
 .. _gv-reference-about:
+.. _tippy-gv-reference-about:
 
 :fa:`circle-info` About
 =======================
@@ -10,7 +11,7 @@ Assorted package metadata about ``geovista``.
 ------------------------------
 
 .. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7608302.svg
-    :target: https://doi.org/10.5281/zenodo.7608302
+    :target: https://zenodo.org/doi/10.5281/zenodo.7608302
 
 |zenodo|
 
@@ -32,7 +33,7 @@ remember to cite us:
     :class: margin, dropdown, toggle-shown
 
     Anyone can use the |icon| `all-contributors bot 🤖`_  to acknowledge
-    the efforts of others.
+    the efforts of others (or yourself 😉).
 
 
 We follow the |icon| `all-contributors`_ specification. Contributions of
@@ -69,7 +70,7 @@ A massive thank-you to all our awesome contributors (`Emoji Key ✨`_):
 
 
 .. |icon| image:: https://raw.githubusercontent.com/all-contributors/all-contributors-cli/1b8533af435da9854653492b1327a23a4dbd0a10/assets/logo-small.svg
-.. _all-contributors bot 🤖: https://allcontributors.org/docs/en/bot/usage#all-contributors-add
+.. _all-contributors bot 🤖: https://all-contributors.github.io/bot/usage/#all-contributors-add
 .. _BSD-3-Clause: https://spdx.org/licenses/BSD-3-Clause.html
-.. _Emoji Key ✨: https://allcontributors.org/docs/en/emoji-key
-.. _all-contributors: https://github.com/all-contributors/all-contributors
+.. _Emoji Key ✨: https://all-contributors.github.io/emoji-key/
+.. _all-contributors: https://github.com/all-contributors/all-contributors.github.io

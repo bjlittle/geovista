@@ -1,0 +1,2 @@
+Dropped use of deprecated ``ActiveArrayInfoTuple`` in the :mod:`geovista.core`.
+(:user:`bjlitte`)

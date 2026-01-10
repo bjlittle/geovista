@@ -21,7 +21,7 @@ Based on a curvilinear ORCA2 global ocean with tri-polar model grid of
 sea water potential temperature data, which has been reduced to a limited
 area and pre-filtered for temperature gradients.
 
-Note that, Natural Earth coastlines are also rendered along with a Natural
+Note that Natural Earth coastlines are also rendered along with a Natural
 Earth base layer with opacity. Additionally, the mesh is transformed to
 the Equidistant Cylindrical (Plate Carrée) conformal cylindrical
 projection.
@@ -62,7 +62,7 @@ def main() -> None:
         sample.lons,
         sample.lats,
         data=sample.zlevel,
-        name=sample.name,
+        name=f"{sample.name} / {sample.units}",
         zlevel=-sample.zlevel,
         zscale=ZLEVEL_SCALE_CLOUD,
     )
@@ -70,12 +70,10 @@ def main() -> None:
     # Plot the projected point cloud.
     crs = "+proj=eqc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     p.add_mesh(
         cloud,
         cmap="deep",
         point_size=5,
-        scalar_bar_args=sargs,
         render_points_as_spheres=True,
     )
     p.add_coastlines(color="black")
@@ -87,7 +85,6 @@ def main() -> None:
         f"ORCA Point-Cloud ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.5)
     p.show()

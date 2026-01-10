@@ -10,7 +10,7 @@ on:
     branches:
       - "main"
       - "v*x"
-      - "!conda-lock-auto-update"
+      - "!pixi-auto-update"
       - "!pre-commit-ci-update-config"
       - "!dependabot/*"
     tags:
@@ -22,20 +22,22 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   manifest:
     name: "check-manifest"
-
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
 
     defaults:
       run:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: "check-manifest"
         run: |

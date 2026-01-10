@@ -1,0 +1,3 @@
+Added the latest supported distribution of ``python`` to the
+`pixi <https://github.com/prefix-dev/pixi>`__ 🧚 ``default`` environment.
+(:user:`bjlittle`)

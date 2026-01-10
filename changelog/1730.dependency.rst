@@ -1,0 +1,1 @@
+Bumped ``pixi`` dependencies. (:user:`bjlittle`)

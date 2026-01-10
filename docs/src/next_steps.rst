@@ -1,6 +1,7 @@
 .. include:: common.txt
 
 .. _gv-next-steps:
+.. _tippy-gv-next-steps:
 
 :fa:`seedling` Next Steps
 =========================
@@ -11,8 +12,8 @@
     Content marked with 🚧 indicates it's still under construction.
 
 
-After a brief :ref:`overview <gv-overview>` and
-:ref:`introduction <gv-quick-start>` to ``geovista``, hopefully you'll be keen
+After a brief :ref:`overview <tippy-gv-overview>` and
+:ref:`introduction <tippy-gv-quick-start>` to ``geovista``, hopefully you'll be keen
 to explore and learn more.
 
 The next step you choose to take is a personal one. It depends on how you
@@ -23,13 +24,14 @@ To help us, help you, get the best out of ``geovista``, we've adopted the
 
 It provides best practice advice on how to *organise* documentation in
 a systematic way, with a focus on *content* and *style* that addresses the
-four distinct needs of documentation users (see :numref:`diátaxis-figure`).
+four distinct needs of documentation users
+(see :numref:`tippy-gv-next-steps-diátaxis-axes-of-needs`).
 
 .. figure:: _static/images/axes-of-needs.png
+    :alt: Diátaxis Axes of Needs
     :figclass: margin
+    :name: tippy-gv-next-steps-diátaxis-axes-of-needs
     :target: https://diataxis.fr/
-    :name: diátaxis-figure
-    :alt: Diátaxis Axis of Needs
 
     Diátaxis Axes of Needs
 
@@ -107,8 +109,8 @@ consult the facts:
 
 
 If you're visually motivated and simply want to see some eye-candy, then why
-not dive straight into our gallery. Alternatively, use our tags to navigate to
-similar gallery examples organised by specific features:
+not dive straight into our gallery. Alternatively, use our topic based tags to navigate
+your way to gallery examples organised by specific features:
 
 .. grid:: 1 1 2 2
     :gutter: 2
@@ -151,4 +153,4 @@ and running in a snap:
     :width: 50%
     :margin: 4 4 auto auto
 
-    Guidelines for contributors.
+    Developer guidelines.

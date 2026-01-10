@@ -99,7 +99,9 @@
       "contributions": [
         "doc",
         "review",
-        "code"
+        "code",
+        "data",
+        "example"
       ]
     },
     {
@@ -305,7 +307,8 @@
       "profile": "https://changliao.github.io/",
       "contributions": [
         "ideas",
-        "promotion"
+        "promotion",
+        "bug"
       ]
     },
     {
@@ -413,6 +416,56 @@
       "profile": "https://github.com/kuchaale",
       "contributions": [
         "example"
+      ]
+    },
+    {
+      "login": "beroda",
+      "name": "beroda",
+      "avatar_url": "https://avatars.githubusercontent.com/u/117822458?v=4",
+      "profile": "https://github.com/beroda",
+      "contributions": [
+        "test",
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "rcomer",
+      "name": "Ruth Comer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10599679?v=4",
+      "profile": "https://github.com/rcomer",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "mo-ijadav",
+      "name": "Isaac Jadav",
+      "avatar_url": "https://avatars.githubusercontent.com/u/144328875?v=4",
+      "profile": "https://github.com/mo-ijadav",
+      "contributions": [
+        "promotion"
+      ]
+    },
+    {
+      "login": "DanCopsey",
+      "name": "Dan Copsey",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2242402?v=4",
+      "profile": "https://github.com/DanCopsey",
+      "contributions": [
+        "promotion",
+        "tool"
+      ]
+    },
+    {
+      "login": "RobWatersMet",
+      "name": "Rob Waters",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40356437?v=4",
+      "profile": "https://github.com/RobWatersMet",
+      "contributions": [
+        "ideas",
+        "code",
+        "test"
       ]
     }
   ],

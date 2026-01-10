@@ -1,2 +1,2 @@
-Rebranded the :ref:`CLI <gv-reference-cli>` icon from :fa:`terminal` to :fa:`code`.
+Rebranded the :ref:`CLI <tippy-gv-reference-cli>` icon from :fa:`terminal` to :fa:`code`.
 (:user:`bjlittle`)

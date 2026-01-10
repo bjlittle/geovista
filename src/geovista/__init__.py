@@ -1,4 +1,4 @@
-# Copyright 2021, GeoVista Contributors.
+# Copyright (c) 2021, GeoVista Contributors.
 #
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
@@ -10,7 +10,7 @@ Provides:
      geospatial data to native geolocated PyVista mesh instances.
   2. Compliments PyVista with cartographic features for processing, projecting
      and rendering geolocated meshes.
-  3. Support for interactive 3D visualization of geolocated meshes.
+  3. Support for interactive 3-D visualization of geolocated meshes.
   4. Coordinate Reference System (CRS) support, with an awareness of Cartopy
      CRSs through the commonality of the Python interface to PROJ (PyPROJ)
      package.

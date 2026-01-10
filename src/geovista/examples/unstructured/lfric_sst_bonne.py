@@ -21,7 +21,7 @@ the cells by indexing into the CF UGRID unstructured points.
 It uses an unstructured Met Office LFRic C48 cubed-sphere of surface temperature
 data located on the mesh faces/cells.
 
-Note that, a threshold is also applied to remove land ``NaN`` cells. A Natural Earth
+Note that a threshold is also applied to remove land ``NaN`` cells. A Natural Earth
 base layer is also rendered along with Natural Earth coastlines and a graticule.
 The mesh is also transformed to the Bonne projection.
 
@@ -61,6 +61,7 @@ def main() -> None:
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
+        name=f"{sample.name} / {sample.units}",
     )
 
     # Remove cells from the mesh with NaN values.
@@ -69,8 +70,7 @@ def main() -> None:
     # Plot the unstructured mesh.
     crs = "+proj=bonne +lat_1=10 +lon_0=180"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.natural_earth_1())
     p.add_coastlines()
     p.add_graticule()
@@ -79,7 +79,6 @@ def main() -> None:
         f"LFRic C48 Unstructured Cube-Sphere ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

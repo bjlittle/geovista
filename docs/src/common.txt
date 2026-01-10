@@ -1,12 +1,30 @@
 .. comment
 
-    common URL resources in alphabetical order:
+   custom inplace roles
+   - https://pygments.org/docs/lexers/#lexers-for-python-and-related-languages
+   - https://docutils.sourceforge.io/docs/ref/rst/directives.html#custom-interpreted-text-roles
+
+.. role:: bash(code)
+   :language: bash
+
+.. role:: python(code)
+   :language: python
+
+.. role:: toml(code)
+   :language: toml
+
+
+.. comment
+
+   common URL resources in alphabetical order:
 
 .. _Cartopy: https://github.com/SciTools/cartopy
+.. _Dependabot: https://docs.github.com/en/code-security/getting-started/dependabot-quickstart-guide
 .. _Diátaxis: https://diataxis.fr/
 .. _Discussions: https://github.com/bjlittle/geovista/discussions
 .. _Executable Books: https://github.com/executablebooks
 .. _GeoVista: https://github.com/bjlittle/geovista
+.. _GitHub: https://docs.github.com/en
 .. _Issue: https://github.com/bjlittle/geovista/issues
 .. _Issues: https://github.com/bjlittle/geovista/issues
 .. _Kitware: https://www.kitware.com/
@@ -19,13 +37,16 @@
 .. _PyVistaQt: https://github.com/pyvista/pyvistaqt
 .. _Python: https://www.python.org/
 .. _Qt: https://www.qt.io/
-.. _RTD (latest): https://geovista.readthedocs.io/en/latest
-.. _RTD (stable): https://geovista.readthedocs.io/en/stable
+.. _RTD (latest): https://geovista.readthedocs.io/en/latest/
+.. _RTD (stable): https://geovista.readthedocs.io/en/stable/
+.. _SPEC: https://scientific-python.org/specs/
+.. _SPEC 0: https://scientific-python.org/specs/spec-0000/
+.. _Test PyPI: https://test.pypi.org/project/geovista/
 .. _Trame: https://kitware.github.io/trame/
 .. _VTK: https://vtk.org/
 .. _Visualization Toolkit: https://vtk.org/
 .. _cartopy: https://github.com/SciTools/cartopy
-.. _cmocean: https://matplotlib.org/cmocean
+.. _cmocean: https://matplotlib.org/cmocean/
 .. _cmocean balance: https://matplotlib.org/cmocean/#balance
 .. _cmocean thermal: https://matplotlib.org/cmocean/#thermal
 .. _conda: https://docs.conda.io/projects/conda/en/latest/index.html
@@ -42,13 +63,20 @@
 .. _myst-nb: https://github.com/executablebooks/MyST-NB
 .. _myst-parser: https://github.com/executablebooks/MyST-Parser
 .. _pip: https://pip.pypa.io/en/stable/index.html
+.. _pixi: https://github.com/prefix-dev/pixi
+.. _pooch: https://github.com/fatiando/pooch
 .. _pre-commit: https://pre-commit.com/
+.. _pytest: https://github.com/pytest-dev/pytest
+.. _pytest-pyvista: https://github.com/pyvista/pytest-pyvista
+.. _pyvista: https://github.com/pyvista/pyvista
 .. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
+.. _ruff: https://github.com/astral-sh/ruff
 .. _sphinx: https://github.com/sphinx-doc/sphinx
 .. _sphinx-autoapi: https://github.com/readthedocs/sphinx-autoapi
 .. _sphinx-build: https://www.sphinx-doc.org/en/master/man/sphinx-build.html
 .. _sphinx-gallery: https://github.com/sphinx-gallery/sphinx-gallery
 .. _sphinx-tags: https://github.com/melissawm/sphinx-tags
+.. _sphinx-tippy: https://github.com/sphinx-extensions2/sphinx-tippy
 .. _sphinx.ext.doctest: https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html
 .. _tox: https://tox.wiki/en/stable/
 .. _xarray: https://github.com/pydata/xarray
@@ -56,11 +84,12 @@
 
 .. comment
 
-    core developers and prolific contributors (github handle) in
-    alphabetical order:
+   core developers and prolific contributors (github handle) in
+   alphabetical order:
 
 .. _@banesullivan: https://github.com/banesullivan
 .. _@bjlittle: https://github.com/bjlittle
+.. _@ukmo-ccbunney: https://github.com/ukmo-ccbunney
 .. _@ESadek-MO: https://github.com/ESadek-MO
 .. _@HGWright: https://github.com/HGWright
 .. _@lbdreyer: https://github.com/lbdreyer

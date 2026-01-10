@@ -1,0 +1,2 @@
+Fixed ``VTKBook`` broken URL. Closes :issue:`1626`.
+(:user:`bjlittle`)

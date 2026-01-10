@@ -1,0 +1,3 @@
+Enabled caching and updated the list of URLs ignored by the
+`lychee <https://github.com/lycheeverse/lychee-action>`__ :fab:`github`
+Action. Closes :issue:`1435`. (:user:`bjlittle`)

@@ -1,4 +1,4 @@
-fastparquet
-h3 >=4.1
-pandas
-rasterio >=1.4.2
+fastparquet <2024.11.1
+h3 >=4.1,<4.3.2
+pandas <2.3.4
+rasterio >=1.4.2,<1.4.4

@@ -1,0 +1,77 @@
+# Reference:
+#   - https://github.com/actions/cache
+#   - https://github.com/actions/checkout
+#   - https://github.com/lycheeverse/lychee-action
+#   - https://github.com/peter-evans/create-issue-from-file
+
+name: ci-linkcheck
+
+on:
+  schedule:
+    # every day @ 00h05
+    - cron: "5 0 * * *"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+permissions: {}
+
+jobs:
+  linkcheck:
+    name: "linkcheck"
+    runs-on: "ubuntu-22.04"
+
+    permissions:
+      issues: write  # required for peter-evans/create-issue-from-file
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "lychee cache"
+        uses: actions/cache@v4
+        with:
+          path: .lycheecache
+          key: cache-lychee
+
+      - name: "linkcheck"
+        id: lychee
+        uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0
+        with:
+          args: |
+            --cache
+            --exclude '^https://github\.com/bjlittle/geovista\.git'
+            --max-concurrency 1
+            --no-progress
+            --verbose
+            './changelog/*.rst'
+            './docs/src/**/*.md'
+            './docs/src/**/*.rst'
+            './docs/src/**/*.txt'
+            './src/**/*.py'
+          fail: false
+
+      - name: "report failure"
+        if: ${{ fromJSON(steps.lychee.outputs.exit_code) != 0 }}
+        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710
+        with:
+          title: "chore: linkcheck failure"
+          content-filepath: ./lychee/out.md
+          labels: |
+            bot
+            new: issue
+            type: documentation
+
+      - name: "exit action"
+        if: ${{ fromJSON(steps.lychee.outputs.exit_code) != 0 }}
+        run:
+          exit ${{ fromJSON(steps.lychee.outputs.exit_code) }}

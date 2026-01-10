@@ -13,8 +13,7 @@ Notes
 
 from __future__ import annotations
 
-from types import ModuleType
-from typing import TypeAlias
+import types
 
 import lazy_loader as lazy
 import scooby
@@ -31,8 +30,8 @@ __all__ = [
     "Report",
 ]
 
-# type aliases
-PackageLike: TypeAlias = ModuleType | str
+# this is a type alias
+type PackageLike = str | types.ModuleType
 """Type alias for a package module or package name."""
 
 # constants
@@ -46,9 +45,11 @@ PACKAGES_CORE: list[str] = [
     "cmocean",
     "colorcet",
     "geovista",
+    "lazy-loader",
     "matplotlib",
     "netcdf4",
     "numpy",
+    "pillow",
     "platformdirs",
     "pooch",
     "pykdtree",
@@ -60,25 +61,29 @@ PACKAGES_CORE: list[str] = [
 """The core packages of geovista to include in the environment report."""
 
 PACKAGES_OPTIONAL: list[str] = [
-    "IPython",
-    "PyQt5",
+    # optional
     "fastparquet",
-    "imageio",
-    "ipywidgets",
-    "jupyter_server_proxy",
-    "jupyterlab",
-    "meshio",
-    "nest_asyncio",
+    "h3",
     "pandas",
+    "pyqt",
     "pyvistaqt",
+    "rasterio",
+    # miscellaneous
+    "ipython",
+    "imageio",
+    "meshio",
     "scipy",
-    "trame",
-    "trame_client",
-    "trame_jupyter_extension",
-    "trame_server",
-    "trame_vtk",
-    "trame_vuetify",
+    # jupyter related
+    "ipywidgets",
+    "jupyter-server-proxy",
+    "jupyterlab",
+    "nest-asyncio",
     "tqdm",
+    "trame",
+    "trame-client",
+    "trame-server",
+    "trame-vtk",
+    "trame-vuetify",
     "wslink",
 ]
 """The optional packages of geovista to include in the environment report."""
@@ -98,9 +103,11 @@ class Report(scooby.Report):  # numpydoc ignore=PR01
 
     def __init__(
         self,
+        *,
         additional: PackageLike | list[PackageLike] | None = None,
         ncol: int | None = None,
         text_width: int | None = None,
+        sort: bool | None = True,
         gpu: bool | None = True,
     ) -> None:
         """Generate an environment package and hardware report.
@@ -115,6 +122,8 @@ class Report(scooby.Report):  # numpydoc ignore=PR01
         text_width : int, optional
             The number of character columns in a non-HTML report. Defaults to
             :data:`TEXT_WIDTH`.
+        sort : bool, optional
+            Alphabetically sort the packages. Defaults to ``True``.
         gpu : bool, optional
             Detect GPU hardware details. Defaults to ``True``. Disable this option if
             experiencing rendering issues to ensure report generation.
@@ -156,5 +165,6 @@ class Report(scooby.Report):  # numpydoc ignore=PR01
             optional=optional,
             ncol=ncol,
             text_width=text_width,
+            sort=sort,
             extra_meta=extra_meta,
         )

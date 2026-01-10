@@ -1,12 +1,13 @@
-cartopy >=0.22
-click
-click-default-group
-cmocean
-lazy_loader
-netCDF4
-numpy >=1.25
-platformdirs
-pooch
-pykdtree
-pyproj >=3.3
-pyvista >=0.43.1
+cartopy >=0.22,<0.25.1
+click <8.3.2
+click-default-group <1.2.5
+cmocean <4.0.4
+colorcet <3.1.1
+lazy_loader >=0.4,<0.4.1
+netCDF4 <1.7.4
+numpy >=1.25,<2.3.6
+platformdirs <4.5.2
+pooch <1.8.3
+pykdtree <1.4.4
+pyproj >=3.3,<3.7.3
+pyvista >=0.45.0,<0.46.5

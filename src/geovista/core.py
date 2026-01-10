@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING
 import warnings
 
 import lazy_loader as lazy
-import pyvista as pv
 
 from .common import (
     CENTRAL_MERIDIAN,
@@ -45,8 +44,6 @@ from .filters import remesh
 from .search import find_cell_neighbours
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from numpy.typing import ArrayLike
     import pyvista as pv
 
@@ -100,7 +97,9 @@ class MeridianSlice:  # numpydoc ignore=PR01
     def __init__(
         self,
         mesh: pv.PolyData,
+        /,
         meridian: float,
+        *,
         offset: float | None = None,
     ) -> None:
         """Create a `meridian` seam in the `mesh`.
@@ -140,19 +139,27 @@ class MeridianSlice:  # numpydoc ignore=PR01
             self._info.name, preference=self._info.association.name.lower()
         )
         self.mesh = mesh
+        """The mesh to be sliced along the meridian."""
         self.radius = distance(mesh)
+        """The radius of the mesh."""
         self.meridian = wrap(meridian)[0]
+        """The meridian (degrees longitude) along which to slice the mesh."""
         self.offset = abs(CUT_OFFSET if offset is None else offset)
+        """The bias offset around the meridian, used to determine coincident cells."""
         self.slices = {bias: self._intersection(bias) for bias in SliceBias}
+        """The intersection of the mesh cells along the meridian and east/west bias."""
 
         n_cells = self.slices[SliceBias.EXACT].n_cells
         self.west_ids = (
             set(self.slices[SliceBias.WEST][GV_CELL_IDS]) if n_cells else set()
         )
+        """The set of cell ids that are bisected west of the meridian."""
         self.east_ids = (
             set(self.slices[SliceBias.EAST][GV_CELL_IDS]) if n_cells else set()
         )
+        """The set of cell ids that are bisected east of the meridian."""
         self.split_ids = self.west_ids.intersection(self.east_ids)
+        """The set of cell ids that are bisected by the meridian."""
 
     def _intersection(
         self, bias: SliceBias, n_points: float | None = None
@@ -199,6 +206,7 @@ class MeridianSlice:  # numpydoc ignore=PR01
 
     def extract(
         self,
+        *,
         bias: SliceBias | None = None,
         split_cells: bool | None = False,
         clip: bool | None = True,
@@ -264,12 +272,14 @@ class MeridianSlice:  # numpydoc ignore=PR01
 
 def add_texture_coords(
     mesh: pv.PolyData,
+    /,
+    *,
     meridian: float | None = None,
     antimeridian: bool | None = False,
 ) -> pv.PolyData:
     """Compute and attach texture coordinates, in UV space, to the mesh.
 
-    Note that, the mesh will be sliced along the `meridian` to ensure that
+    Note that the mesh will be sliced along the `meridian` to ensure that
     cell connectivity is appropriately disconnected prior to texture mapping.
 
     Parameters
@@ -322,7 +332,7 @@ def add_texture_coords(
 
 
 def combine(
-    *meshes: Iterable[pv.PolyData],
+    *meshes: pv.PolyData,
     data: bool | None = True,
     clean: bool | None = False,
 ) -> pv.PolyData:
@@ -331,7 +341,7 @@ def combine(
     Only meshes with cells will be combined. Support is not yet provided for combining
     meshes that consist of only points or lines.
 
-    Note that, no check is performed to ensure that mesh cells do not overlap.
+    Note that no check is performed to ensure that mesh cells do not overlap.
     However, meshes may share coincident points. Coincident point data from the
     first input mesh will overwrite all other mesh data sharing the same
     coincident point in the resultant mesh.
@@ -376,9 +386,7 @@ def combine(
         common_point_data = set(first.point_data.keys())
         common_cell_data = set(first.cell_data.keys())
         common_field_data = set(first.field_data.keys())
-        active_scalars_info = {
-            pv.core.dataset.ActiveArrayInfoTuple(*first.active_scalars_info)
-        }
+        active_scalars_info = {first.active_scalars_info}
 
     for i, mesh in enumerate(meshes):
         if not isinstance(mesh, pv.PolyData):
@@ -427,15 +435,13 @@ def combine(
             common_cell_data &= set(mesh.cell_data.keys())
             common_field_data &= set(mesh.field_data.keys())
             if mesh.active_scalars_name:
-                active_scalars_info &= {
-                    pv.core.dataset.ActiveArrayInfoTuple(*mesh.active_scalars_info)
-                }
+                active_scalars_info &= {mesh.active_scalars_info}
 
     points = np.vstack(combined_points)
     faces = np.hstack(combined_faces)
     combined = pv.PolyData(points, faces=faces)
 
-    def combine_data(names: set[str], field: bool | None = False) -> None:
+    def combine_data(names: set[str], *, field: bool | None = False) -> None:
         """Combine point, cell or field data from the meshes onto a single mesh.
 
         Parameters
@@ -481,6 +487,8 @@ def combine(
 
 def resize(
     mesh: pv.PolyData,
+    /,
+    *,
     radius: float | None = None,
     zlevel: int | None = None,
     zscale: float | None = None,
@@ -549,7 +557,7 @@ def resize(
             )
     else:
         new_radius = radius + radius * zlevel * zscale
-        update = new_radius and not np.isclose(distance(mesh), new_radius)
+        update = bool(new_radius) and not np.isclose(distance(mesh), new_radius)
 
     if update:
         lonlat = from_cartesian(mesh)
@@ -572,6 +580,8 @@ def resize(
 
 def slice_cells(
     mesh: pv.PolyData,
+    /,
+    *,
     meridian: float | None = None,
     antimeridian: bool | None = False,
     rtol: float | None = None,
@@ -628,9 +638,10 @@ def slice_cells(
         meridian += 180
 
     meridian = wrap(meridian)[0]
+    assert isinstance(meridian, float)
 
     info = mesh.active_scalars_info
-    slicer = MeridianSlice(mesh, meridian)
+    slicer = MeridianSlice(mesh, meridian=meridian)
     mesh_whole = slicer.extract(split_cells=False)
     mesh_split = slicer.extract(split_cells=True)
     result: pv.PolyData = mesh.copy(deep=True)
@@ -651,7 +662,7 @@ def slice_cells(
 
     if mesh_split.n_cells:
         remeshed, remeshed_west, remeshed_east = remesh(
-            mesh_split, meridian, rtol=rtol, atol=atol
+            mesh_split, meridian=meridian, rtol=rtol, atol=atol
         )
         meshes.extend([remeshed_west, remeshed_east])
         remeshed_ids = np.hstack([remeshed_ids, remeshed[GV_CELL_IDS]])
@@ -673,8 +684,8 @@ def slice_cells(
                 cxpts = neighbours.get_cell(cid).points[:, 0]
                 cxmin, cxmax = cxpts.min(), cxpts.max()
                 xdelta.append(cxmax - cxmin)
-            xdelta = np.array(xdelta)
-            bad = np.where(xdelta > 270)[0]
+            xdelta_array = np.array(xdelta)
+            bad = np.where(xdelta_array > 270)[0]
             if bad.size:
                 bad_cids = np.unique(neighbours[GV_CELL_IDS][bad])
                 plural = "s" if (n_cells := bad_cids.size) > 1 else ""
@@ -700,7 +711,11 @@ def slice_cells(
 
 
 def slice_lines(
-    mesh: pv.PolyData, n_points: int | None = None, copy: bool | None = False
+    mesh: pv.PolyData,
+    /,
+    *,
+    n_points: int | None = None,
+    copy: bool | None = False,
 ) -> pv.PolyData:
     """Cut a line-based mesh along the Antimeridian, breaking line connectivity.
 
@@ -880,6 +895,8 @@ def slice_lines(
 
 def slice_mesh(
     mesh: pv.PolyData,
+    /,
+    *,
     rtol: float | None = None,
     atol: float | None = None,
 ) -> pv.PolyData:

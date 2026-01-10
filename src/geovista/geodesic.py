@@ -14,8 +14,7 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 import warnings
 
 import lazy_loader as lazy
@@ -24,7 +23,7 @@ from .common import (
     GV_FIELD_RADIUS,
     RADIUS,
     ZLEVEL_SCALE,
-    MixinStrEnum,
+    StrEnumPlus,
     distance,
     to_cartesian,
     wrap,
@@ -33,8 +32,11 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import WGS84, to_wkt
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     import numpy as np
     from numpy.typing import ArrayLike
+    import pyproj
     import pyvista as pv
 
 # lazy import third-party dependencies
@@ -63,8 +65,8 @@ __all__ = [
     "wedge",
 ]
 
-# type aliases
-Corners: TypeAlias = tuple[float, float, float, float]
+# this is a type alias
+type Corners = tuple[float, float, float, float]
 """Type alias for the corners of a bounding-box."""
 
 # constants
@@ -123,7 +125,7 @@ PREFERENCE: str = "center"
 """The default bounding-box preference."""
 
 
-class EnclosedPreference(MixinStrEnum, StrEnum):
+class EnclosedPreference(StrEnumPlus):
     """Enumeration of mesh geometry enclosed preferences.
 
     Notes
@@ -133,8 +135,11 @@ class EnclosedPreference(MixinStrEnum, StrEnum):
     """
 
     CELL = "cell"
+    """Enclosed if all cell vertices within bounding-box manifold."""
     CENTER = "center"
+    """Enclosed if cell center within bounding-box manifold."""
     POINT = "point"
+    """Enclosed if at least one cell vertex within bounding-box manifold."""
 
 
 class BBox:  # numpydoc ignore=PR01
@@ -144,8 +149,9 @@ class BBox:  # numpydoc ignore=PR01
         self,
         lons: ArrayLike,
         lats: ArrayLike,
+        *,
         ellps: str | None = ELLIPSE,
-        c: int | None = BBOX_C,
+        c: int = BBOX_C,
         triangulate: bool | None = False,
     ) -> None:
         """Create 3-D geodesic bounding-box to extract enclosed mesh, lines or point.
@@ -161,7 +167,7 @@ class BBox:  # numpydoc ignore=PR01
         ----------
         lons : ArrayLike
             The longitudes (degrees) of the bounding-box, in the half-closed interval
-            ``[-180, 180)``. Note that, longitudes will be wrapped to this interval.
+            ``[-180, 180)``. Note that longitudes will be wrapped to this interval.
         lats : ArrayLike
             The latitudes (degrees) of the bounding-box, in the closed interval
             ``[-90, 90]``.
@@ -226,17 +232,24 @@ class BBox:  # numpydoc ignore=PR01
                 lons, lats = lons[:-1], lats[:-1]
 
         self.lons = lons
+        """The longitudes of the bounding-box."""
         self.lats = lats
+        """The latitudes of the bounding-box."""
         self.ellps = ellps
+        """The ellipsoid defining the geodesic surface."""
         self.c = c
+        """The number of cells that define the bounding-box face geometry i.e., c^2."""
         self.triangulate = triangulate
+        """Whether the bounding-box faces are triangulated."""
         # the resultant bounding-box mesh
-        self._mesh = None
+        self._mesh: pv.PolyData | None = None
+        # the bounding-box mesh edges
+        self._outline: pv.PolyData | None = None
         # cache prior surface radius, as an optimisation
-        self._surface_radius = None
+        self._surface_radius: float | None = None
 
-    def __eq__(self, other: BBox) -> bool:
-        result = NotImplemented
+    def __eq__(self, other: object) -> bool:
+        result: bool = NotImplemented
         if isinstance(other, BBox):
             result = False
             lhs = (self.ellps, self.c, self.triangulate)
@@ -247,7 +260,18 @@ class BBox:  # numpydoc ignore=PR01
                 result = np.allclose(self.lats, other.lats)
         return result
 
-    def __ne__(self, other: BBox) -> bool:
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.ellps,
+                self.c,
+                self.triangulate,
+                self.lons.tobytes(),
+                self.lats.tobytes(),
+            )
+        )
+
+    def __ne__(self, other: object) -> bool:
         result = self == other
         if result is not NotImplemented:
             result = not result
@@ -285,7 +309,7 @@ class BBox:  # numpydoc ignore=PR01
         >>> from geovista.geodesic import BBox
         >>> p = geovista.GeoPlotter()
         >>> _ = p.add_base_layer(
-        ...     texture=geovista.natural_earth_hypsometric(), style="wireframe"
+        ...     texture=geovista.natural_earth_hypsometric(), opacity=0.5
         ... )
         >>> bbox = BBox(lons=[-15, 20, 25, -15], lats=[-25, -20, 15, 10], c=32)
         >>> _ = p.add_mesh(bbox.mesh, color="white")
@@ -297,6 +321,43 @@ class BBox:  # numpydoc ignore=PR01
             self._generate_bbox_mesh()
         return self._mesh
 
+    @property
+    def outline(self) -> pv.PolyData:
+        """The manifold bounding-box mesh edges.
+
+        Returns
+        -------
+        PolyData
+            The bounding-box mesh edges.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        Examples
+        --------
+        Add the geodesic bounding-box manifold for the Arctic cubed-sphere
+        panel along with its edges. A texture mapped Natural Earth base layer
+        is also rendered.
+
+        >>> import geovista
+        >>> from geovista.geodesic import panel
+        >>> p = geovista.GeoPlotter()
+        >>> _ = p.add_base_layer(texture=geovista.natural_earth_1(), opacity=0.5)
+        >>> bbox = panel("arctic")
+        >>> _ = p.add_mesh(bbox.mesh, color="orange")
+        >>> _ = p.add_mesh(bbox.outline, color="yellow", line_width=3)
+        >>> p.view_vector(vector=(1, 1, 0))
+        >>> p.camera.zoom(1.5)
+        >>> p.show()
+
+        """
+        if self._mesh is None:
+            self._generate_bbox_mesh()
+        if self._outline is None:
+            self._outline = self.mesh.extract_feature_edges()
+        return self._outline
+
     def _init(self) -> None:
         """Bootstrap the bounding-box state.
 
@@ -306,7 +367,8 @@ class BBox:  # numpydoc ignore=PR01
 
         """
         self._idx_map = np.empty((self.c + 1, self.c + 1), dtype=int)
-        self._bbox_lons, self._bbox_lats = [], []
+        self._bbox_lons: list[float] = []
+        self._bbox_lats: list[float] = []
         self._bbox_count = 0
         self._geod = pyproj.Geod(ellps=self.ellps)
         self._npts = self.c - 1
@@ -364,7 +426,7 @@ class BBox:  # numpydoc ignore=PR01
         # corner indices
         c1_idx, c2_idx, c3_idx, c4_idx = range(4)
 
-        def bbox_extend(lons: Iterable[float], lats: Iterable[float]) -> None:
+        def bbox_extend(lons: Sequence[float], lats: Sequence[float]) -> None:
             """Register the bounding box longitudes and latitudes.
 
             Parameters
@@ -403,19 +465,18 @@ class BBox:  # numpydoc ignore=PR01
 
             """
             assert row is not None or column is not None
-            if row is None:
-                row = slice(None)
-            if column is None:
-                column = slice(None)
+            row_slice = np.s_[:] if row is None else np.s_[row]
+            column_slice = np.s_[:] if column is None else np.s_[column]
+
             glons, glats = npoints_by_idx(
                 self._bbox_lons,
                 self._bbox_lats,
-                idx1,
-                idx2,
+                start_idx=idx1,
+                end_idx=idx2,
                 npts=self._npts,
                 geod=self._geod,
             )
-            self._idx_map[row, column] = [
+            self._idx_map[row_slice, column_slice] = [
                 idx1,
                 *(np.arange(self._npts) + self._bbox_count),
                 idx2,
@@ -431,11 +492,11 @@ class BBox:  # numpydoc ignore=PR01
 
         # register bbox inner indices and points
         for row_idx in range(1, self.c):
-            row = self._idx_map[row_idx]
-            bbox_update(row[0], row[-1], row=row_idx)
+            row_idx_map = self._idx_map[row_idx]
+            bbox_update(row_idx_map[0], row_idx_map[-1], row=row_idx)
 
     def _generate_bbox_mesh(
-        self, surface: pv.PolyData | None = None, radius: float | None = None
+        self, surface: pv.PolyData | None = None, *, radius: float | None = None
     ) -> None:
         """Construct 3-D geodetic bounding-box extruded surface defined by corners.
 
@@ -447,7 +508,7 @@ class BBox:  # numpydoc ignore=PR01
         a third-party mesh are contained/enclosed within the bounding-box
         manifold.
 
-        Note that, the bounding-box inner surface and outer surface are
+        Note that the bounding-box inner surface and outer surface are
         congruent.
 
         Parameters
@@ -456,7 +517,7 @@ class BBox:  # numpydoc ignore=PR01
             The surface that the bounding-box will be enclosing.
         radius : float, optional
             The radius of the surface that the bounding-box will be enclosing.
-            Note that, the `radius` is only used when the `surface` is not
+            Note that the `radius` is only used when the `surface` is not
             provided. Defaults to :data:`geovista.common.RADIUS`.
 
         Notes
@@ -545,7 +606,7 @@ class BBox:  # numpydoc ignore=PR01
         return np.hstack([faces_n, faces_c1, faces_c2, faces_c3, faces_c4])
 
     def boundary(
-        self, surface: pv.PolyData | None = None, radius: float | None = None
+        self, surface: pv.PolyData | None = None, *, radius: float | None = None
     ) -> pv.PolyData:
         """Footprint of bounding-box intersecting on the provided mesh surface.
 
@@ -560,7 +621,7 @@ class BBox:  # numpydoc ignore=PR01
         radius : float, optional
             The radius of the spherical mesh that will be enclosed by the
             bounding-box
-            boundary. Note that, the `radius` is only used when the `surface`
+            boundary. Note that the `radius` is only used when the `surface`
             is not provided. Defaults to :data:`geovista.common.RADIUS`.
 
         Returns
@@ -595,6 +656,7 @@ class BBox:  # numpydoc ignore=PR01
         """
         self._generate_bbox_mesh(surface=surface, radius=radius)
 
+        assert isinstance(self._surface_radius, float)
         radius = self._surface_radius + self._surface_radius * ZLEVEL_SCALE
 
         edge_idxs = self._bbox_face_edge_idxs()
@@ -611,13 +673,15 @@ class BBox:  # numpydoc ignore=PR01
     def enclosed(
         self,
         surface: pv.PolyData,
+        /,
+        *,
         tolerance: float | None = BBOX_TOLERANCE,
         outside: bool | None = False,
         preference: str | EnclosedPreference | None = None,
     ) -> pv.PolyData:
         """Extract region of the `surface` contained within the bounding-box.
 
-        Note that, points that are on the surface of the bounding-box manifold are not
+        Note that points that are on the surface of the bounding-box manifold are not
         considered within the bounding-box. See the `preference` and `tolerance`
         options.
 
@@ -735,6 +799,7 @@ class BBox:  # numpydoc ignore=PR01
 def line(
     lons: ArrayLike,
     lats: ArrayLike,
+    *,
     surface: pv.PolyData | None = None,
     radius: float | None = None,
     npts: int | None = None,
@@ -745,7 +810,7 @@ def line(
 ) -> pv.PolyData:
     """Geodesic line consisting of one or more connected geodesic line segments.
 
-    Note that, as a convenience, if a single value is provided for `lons` and ``N``
+    Note that as a convenience, if a single value is provided for `lons` and ``N``
     values are provided for `lats`, then the longitude value will be automatically
     repeated ``N`` times, and vice versa, providing ``N >= 2``.
 
@@ -753,7 +818,7 @@ def line(
     ----------
     lons : ArrayLike
         The longitudes (degrees) of the geodesic line segments, in the half-closed
-        interval ``[-180, 180)``. Note that, longitudes will be wrapped to this
+        interval ``[-180, 180)``. Note that longitudes will be wrapped to this
         interval.
     lats : ArrayLike
         The latitudes (degrees) of the geodesic line segments, in the closed
@@ -763,7 +828,7 @@ def line(
     radius : float, optional
         The radius of the spherical surface that the geodesic line will be
         rendered over.
-        Note that, the `radius` is only used when the `surface` is not
+        Note that the `radius` is only used when the `surface` is not
         provided. Defaults to :data:`geovista.common.RADIUS`.
     npts : float, optional
         The number of equally spaced geodesic points in a line segment, excluding
@@ -801,9 +866,9 @@ def line(
     >>> from geovista.geodesic import line
     >>> p = geovista.GeoPlotter()
     >>> _ = p.add_base_layer(texture=geovista.natural_earth_1())
-    >>> meridian = line(-180, [90, 0, -90])
+    >>> meridian = line(lons=-180, lats=[90, 0, -90])
     >>> _ = p.add_mesh(meridian, color="orange", line_width=3)
-    >>> p.view_yz(negative=True)
+    >>> p.view_xy()
     >>> p.show()
 
     """
@@ -863,7 +928,8 @@ def line(
         )
         raise ValueError(emsg)
 
-    line_lons, line_lats = [], []
+    line_lons: list[float] = []
+    line_lats: list[float] = []
     geod = pyproj.Geod(ellps=ellps)
 
     for idx in range(n_lons - 1):
@@ -898,6 +964,7 @@ def npoints(
     start_lat: float,
     end_lon: float,
     end_lat: float,
+    *,
     npts: int | None = GEODESIC_NPTS,
     radians: bool | None = False,
     include_start: bool | None = False,
@@ -910,7 +977,7 @@ def npoints(
     intermediate longitude and latitude `npts` points along the geodesic line
     that spans between the start and end points.
 
-    Note that, longitudes (degrees) will be wrapped to the half-closed interval
+    Note that longitudes (degrees) will be wrapped to the half-closed interval
     ``[-180, 180)``.
 
     Parameters
@@ -986,6 +1053,7 @@ def npoints_by_idx(
     lats: ArrayLike,
     start_idx: int,
     end_idx: int,
+    *,
     npts: int | None = GEODESIC_NPTS,
     radians: bool | None = False,
     include_start: bool | None = False,
@@ -998,7 +1066,7 @@ def npoints_by_idx(
     spaced intermediate longitude and latitude `npts` points along the geodesic
     line that spans between the start and end points.
 
-    Note that, longitudes (degrees) will be wrapped to the half-closed interval
+    Note that longitudes (degrees) will be wrapped to the half-closed interval
     ``[-180, 180)``.
 
     Parameters
@@ -1069,8 +1137,10 @@ def npoints_by_idx(
 
 def panel(
     name: int | str,
+    /,
+    *,
     ellps: str | None = ELLIPSE,
-    c: int | None = BBOX_C,
+    c: int = BBOX_C,
     triangulate: bool | None = False,
 ) -> BBox:
     """Create boundary-box for specific cubed-sphere panel.
@@ -1085,8 +1155,8 @@ def panel(
         The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
         Defaults to :data:`ELLIPSE`.
     c : float, optional
-        The bounding-box face geometry will contain ``c**2`` cells. Defaults to
-        :data:`BBOX_C`.
+        The bounding-box face geometry will contain ``c**2`` cells. Defaults
+        to :data:`BBOX_C`.
     triangulate : bool, optional
         Specify whether the panel bounding-box faces are triangulated. Defaults to
         ``False``.
@@ -1111,8 +1181,8 @@ def panel(
     >>> from geovista.geodesic import panel
     >>> p = geovista.GeoPlotter()
     >>> _ = p.add_base_layer(texture=geovista.natural_earth_hypsometric(), opacity=0.5)
-    >>> bbox = panel("americas", c=8)
-    >>> _ = p.add_mesh(bbox.mesh, color="orange", style="wireframe")
+    >>> bbox = panel("americas", c=5, triangulate=True)
+    >>> _ = p.add_mesh(bbox.mesh, color="orange", show_edges=True)
     >>> p.view_xz()
     >>> p.show()
 
@@ -1142,8 +1212,9 @@ def panel(
 def wedge(
     lon1: float,
     lon2: float,
+    *,
     ellps: str | None = ELLIPSE,
-    c: int | None = BBOX_C,
+    c: int = BBOX_C,
     triangulate: bool | None = False,
 ) -> BBox:
     """Create geodesic bounding-box manifold wedge from the north to the south pole.
@@ -1158,8 +1229,8 @@ def wedge(
         The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
         Defaults to :data:`ELLIPSE`.
     c : float, optional
-        The bounding-box face geometry will contain ``c**2`` cells. Defaults to
-        :data:`BBOX_C`.
+        The bounding-box face geometry will contain ``c**2`` cells. Defaults
+        to :data:`BBOX_C`.
     triangulate : bool, optional
         Specify whether the wedge bounding-box faces are triangulated. Defaults to
         ``False``.
@@ -1182,8 +1253,8 @@ def wedge(
     >>> from geovista.geodesic import wedge
     >>> p = geovista.GeoPlotter()
     >>> _ = p.add_base_layer(texture=geovista.blue_marble(), opacity=0.5)
-    >>> bbox = wedge(-30, 30, c=8)
-    >>> _ = p.add_mesh(bbox.mesh, color="orange", style="wireframe")
+    >>> bbox = wedge(-30, 30, c=5)
+    >>> _ = p.add_mesh(bbox.mesh, color="orange", show_edges=True)
     >>> p.view_yz()
     >>> p.show()
 

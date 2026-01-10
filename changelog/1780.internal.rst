@@ -1,0 +1,3 @@
+Added artifact upload of failed documentation test images for the
+``ci-tests-docs`` :fab:`github` Action.
+(:user:`bjlittle`)

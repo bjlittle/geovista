@@ -16,7 +16,7 @@ from __future__ import annotations
 from functools import wraps
 import os
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, TypeAlias
+from typing import IO, TYPE_CHECKING, Any
 
 import pooch
 
@@ -37,14 +37,13 @@ __all__ = [
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-# type aliases
-FileLike: TypeAlias = str | IO
+type FileLike = str | IO[str] | IO[bytes]
 """Type alias for filename or file-like object."""
 
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
 """Base URL for :mod:`geovista` resources."""
 
-DATA_VERSION: str = "2025.01.4"
+DATA_VERSION: str = "2025.10.3"
 """The ``geovista-data`` repository version for :mod:`geovista` resources."""
 
 GEOVISTA_CACHEDIR: str = "GEOVISTA_CACHEDIR"
@@ -82,11 +81,10 @@ GEOVISTA_POOCH_MUTE: bool = (
 
 
 # configure the cache with the registry
-CACHE.load_registry(
-    (Path(__file__).parent / "registry.txt").open(
-        "r", encoding="utf-8", errors="strict"
-    )
-)
+with (Path(__file__).parent / "registry.txt").open(
+    "r", encoding="utf-8", errors="strict"
+) as text_io:
+    CACHE.load_registry(text_io)
 
 # maintain the original Pooch.fetch method prior to wrapping
 # with user-agent headers version
@@ -94,10 +92,13 @@ CACHE._fetch = CACHE.fetch  # noqa: SLF001
 
 
 @wraps(CACHE._fetch)  # noqa: SLF001
-def _fetch(*args: str, **kwargs: bool | Callable) -> str:  # numpydoc ignore=GL08
+def _fetch(
+    *args: str, **kwargs: bool | Callable[..., Any]
+) -> str:  # numpydoc ignore=GL08
     # default to our http/s downloader with user-agent headers
     kwargs.setdefault("downloader", _downloader)
-    return CACHE._fetch(*args, **kwargs)  # noqa: SLF001
+    result: str = CACHE._fetch(*args, **kwargs)  # noqa: SLF001
+    return result
 
 
 # override the original Pooch.fetch method with our
@@ -109,6 +110,8 @@ def _downloader(
     url: str,
     output_file: FileLike,
     poocher: pooch.Pooch,
+    /,
+    *,
     check_only: bool | None = False,
 ) -> bool | None:
     """Download the `url` asset over HTTP/S to the target file.
@@ -140,15 +143,15 @@ def _downloader(
     .. versionadded:: 0.6.0
 
     """
-    import geovista
+    import geovista  # noqa: PLC0415
 
     # see https://github.com/readthedocs/readthedocs.org/issues/11763
     headers = {"User-Agent": f"geovista ({geovista.__version__})"}
-    downloader = pooch.HTTPDownloader(headers=headers)
+    downloader: Callable[..., bool | None] = pooch.HTTPDownloader(headers=headers)
     return downloader(url, output_file, poocher, check_only=check_only)
 
 
-def pooch_mute(silent: bool | None = True) -> bool:
+def pooch_mute(*, silent: bool | None = None) -> bool:
     """Control the :mod:`pooch` cache manager logger verbosity.
 
     Updates the status variable :data:`GEOVISTA_POOCH_MUTE`.
@@ -170,6 +173,9 @@ def pooch_mute(silent: bool | None = True) -> bool:
 
     """
     global GEOVISTA_POOCH_MUTE  # noqa: PLW0603
+
+    if silent is None:
+        silent = True
 
     level = "WARNING" if silent else "NOTSET"
     pooch.utils.get_logger().setLevel(level)
@@ -195,11 +201,11 @@ def reload_registry(fname: str | None = None) -> None:
 
     """
     if fname is None:
-        fname = (Path(__file__).parent / "registry.txt").open(
+        text_io = (Path(__file__).parent / "registry.txt").open(
             "r", encoding="utf-8", errors="strict"
         )
-    CACHE.load_registry(fname)
+    CACHE.load_registry(text_io)
 
 
 # configure the pooch cache manager logger verbosity
-pooch_mute(GEOVISTA_POOCH_MUTE)
+pooch_mute(silent=GEOVISTA_POOCH_MUTE)

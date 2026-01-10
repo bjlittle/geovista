@@ -37,7 +37,7 @@ from .common import cast_UnstructuredGrid_to_PolyData as cast
 if TYPE_CHECKING:
     import pyvista as pv
 
-    # type aliases.
+    # this is a type alias
     Remesh = tuple[pv.PolyData, pv.PolyData, pv.PolyData]
 
 # lazy import third-party dependencies
@@ -67,7 +67,9 @@ VTK_FREE_EDGE_MASK: str = "FreeEdge"
 
 def remesh(
     mesh: pv.PolyData,
+    /,
     meridian: float,
+    *,
     boundary: bool | None = False,
     check: bool | None = False,
     rtol: float | None = None,
@@ -75,9 +77,7 @@ def remesh(
 ) -> Remesh:
     """Slice `mesh` along `meridian` and triangulate any sliced cells.
 
-    See the
-    `vtkIntersectionPolyDataFilter <https://vtk.org/doc/nightly/html/classvtkIntersectionPolyDataFilter.html>`_
-    documentation for more.
+    See :vtk:`vtkIntersectionPolyDataFilter` for more details.
 
     Parameters
     ----------

@@ -1,7 +1,8 @@
 # Reference:
+#   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/setup-python
-#   - https://github.com/awalsh128/cache-apt-pkgs-action
+#   - https://github.com/pyvista/setup-headless-display-action
 
 name: ci-tests-pypi
 
@@ -14,7 +15,6 @@ on:
 
   workflow_dispatch:
 
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -23,8 +23,11 @@ defaults:
   run:
     shell: bash -l {0}
 
+permissions:
+  issues: write
+
 env:
-  ALLOW_PLOTTING: "true"
+  ALLOW_PLOTTING: true
   CARTOPY_SHARE_DIR: ~/.local/share/cartopy
   GEOVISTA_POOCH_MUTE: true
   PY_COLORS: "1"
@@ -39,42 +42,69 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04"]
-        version: ["3.12"]
+        version: ["3.13"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
+        persist-credentials: false
 
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.version }}
 
-    - name: "apt cache"
-      uses: awalsh128/cache-apt-pkgs-action@5902b33ae29014e6ca012c5d8025d4346556bd40
-      with:
-        packages: libgl1-mesa-glx xvfb
-        version: 1.0
+    - uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19
 
     - name: "pip install"
       run: |
-        pip install --no-cache-dir -e .[test,exam,cmap]
+        pip install --no-cache-dir -e .[test,exam]
 
     - name: "pip freeze"
       run: |
         pip freeze
 
-    - name: "download cartopy assets"
+    - name: "environment configure"
+      env:
+        # Maximum cache period (in weeks) before forcing a cache refresh.
+        CACHE_WEEKS: 2
+      run: |
+        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+        echo "DATA_VERSION=$(geovista --data-version)" >> ${GITHUB_ENV}
+
+    - name: "check cartopy cache"
+      uses: actions/cache@v4
+      id: cartopy-cache
+      with:
+        path: ~/.local/share/cartopy
+        key: ${{ runner.os }}-cartopy-data-${{ env.CACHE_PERIOD }}
+
+    - name: "refresh cartopy cache"
+      if: ${{ steps.cartopy-cache.outputs.cache-hit != 'true' }}
+      env:
+        CARTOPY_SHARE_DIR: ~/.local/share/cartopy
       run: |
         mkdir -p ${CARTOPY_SHARE_DIR}
-        python -m cartopy.feature.download physical --output ${CARTOPY_SHARE_DIR} --no-warn
+        cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
+
+    - name: "check geovista cache"
+      uses: actions/cache@v4
+      id: geovista-cache
+      with:
+        path: ~/.cache/geovista
+        key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ env.CACHE_PERIOD }}
+
+    - name: "refresh geovista cache"
+      if: ${{ steps.geovista-cache.outputs.cache-hit != 'true' }}
+      run: |
+        geovista download --all --decompress
 
     - name: "test pypi (py${{ matrix.version }})"
       run: |
-        pytest --xvfb-backend xvfb --fail_extra_image_cache --generated_image_dir test_images
+        xvfb-run -a pytest --generated_image_dir test_images
 
     - name: "report failure"
-      if: failure() && github.event_name == 'schedule'
+      if: ${{ failure() && github.event_name == 'schedule' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |

@@ -1,0 +1,2 @@
+Added a cubed-sphere panel region extraction gallery example using
+:func:`geovista.geodesic.panel`. (:user:`bjlittle`)

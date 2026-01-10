@@ -21,7 +21,7 @@ The example uses NOAA/NECI 1/4° Daily Optimum Interpolation Sea Surface Tempera
 (OISST) v2.1 Advanced Very High Resolution Radiometer (AVHRR) gridded data.
 The data targets the mesh faces/cells.
 
-Note that, a threshold is also applied to remove land ``NaN`` cells, and a
+Note that a threshold is also applied to remove land ``NaN`` cells, and a
 NASA Blue Marble base layer is rendered along with Natural Earth coastlines.
 The mesh is also transformed to the Equidistant Cylindrical (Plate Carrée)
 conformal cylindrical projection.
@@ -57,7 +57,12 @@ def main() -> None:
     sample = oisst_avhrr_sst()
 
     # Create the mesh from the sample data.
-    mesh = gv.Transform.from_1d(sample.lons, sample.lats, data=sample.data)
+    mesh = gv.Transform.from_1d(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
+    )
 
     # Remove cells from the mesh with NaN values.
     mesh = mesh.threshold()
@@ -65,8 +70,7 @@ def main() -> None:
     # Plot the rectilinear grid.
     crs = "+proj=eqc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.blue_marble())
     p.add_coastlines()
     p.add_axes()
@@ -74,7 +78,6 @@ def main() -> None:
         f"NOAA/NCEI OISST AVHRR ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

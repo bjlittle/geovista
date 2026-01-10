@@ -8,8 +8,11 @@ updates:
     directories:
       - "/"
       - "/.github/workflows/composite/*"
+    open-pull-requests-limit: 3
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 7
     groups:
       gha:
         patterns:
@@ -24,9 +27,14 @@ updates:
 
   - package-ecosystem: "pip"
     directory: "/"
+    open-pull-requests-limit: 3
     schedule:
-      interval: "weekly"
-      day: "sunday"
+      interval: "daily"
+    cooldown:
+      default-days: 7
+      semver-major-days: 5
+      semver-minor-days: 3
+      semver-patch-days: 1
     groups:
       pip:
         patterns:

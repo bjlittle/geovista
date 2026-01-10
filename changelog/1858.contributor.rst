@@ -1,0 +1,4 @@
+Updated the :ref:`tippy-gv-developer-documentation-cross-references` guidelines
+to include the use of the ``:name:`` option for a ``figure`` or ``table``, and
+recommended the ``:alt:`` option for ``figure`` accessibility best practice.
+(:user:`bjlittle`)

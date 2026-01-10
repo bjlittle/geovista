@@ -1,16 +1,17 @@
 # Reference:
 #   - https://github.com/actions/checkout
-#   - https://github.com/awalsh128/cache-apt-pkgs-action
-#   - https://github.com/conda-incubator/setup-miniconda
 #   - https://github.com/actions/upload-artifact
+#   - https://github.com/prefix-dev/setup-pixi
+#   - https://github.com/pyvista/setup-headless-display-action
 
 name: ci-tests-lock
 
 on:
-  workflow_dispatch:
   schedule:
     # every day @ 00h03 except sunday (see ci-locks.yml)
     - cron: "3 0 * * 1-6"
+
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,90 +21,85 @@ defaults:
   run:
     shell: bash -l {0}
 
+permissions: {}
+
 jobs:
   test-lock:
     name: "test lock (${{ matrix.version }})"
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ matrix.os }}"
 
     env:
-      ENV_NAME: "ci-tests-lock"
+      ALLOW_PLOTTING: true
       PY_COLORS: "1"
 
     strategy:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04"]
-        version: ["py312"]
+        version: ["py313"]
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
-    - name: "environment configure"
-      env:
-        # Maximum cache period (in weeks) before forcing a cache refresh.
-        CACHE_WEEKS: 2
-      run: |
-        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-        echo "PY_MAJOR=$(echo -n ${{ matrix.version }} | tail -c 3 | head -c 1)" >> ${GITHUB_ENV}
-        echo "PY_MINOR=$(echo -n ${{ matrix.version }} | tail -c 2)" >> ${GITHUB_ENV}
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+          echo "NAME=geovista-${{ matrix.version }}" >> ${GITHUB_ENV}
 
-    - name: "build lock (${{ matrix.version }})"
-      working-directory: requirements
-      env:
-        VTK_BUILD: "  - vtk=*=qt_*"
-      run: |
-        python -c 'open("geovista.yml", "a").write("\n  - python =${{ env.PY_MAJOR }}.${{ env.PY_MINOR }}\n${{ env.VTK_BUILD }}\n")'
-        pipx run conda-lock --channel conda-forge --kind explicit --file geovista.yml --platform linux-64
+      - uses: pyvista/setup-headless-display-action@7d84ae825e6d9297a8e99bdbbae20d1b919a0b19
 
-    - name: "upload lock artifact"
-      uses: actions/upload-artifact@v4
-      with:
-        name: lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
-        path: |
-          ${{ github.workspace }}/requirements/conda-linux-64.lock
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@82d477f15f3a381dbcc8adc1206ce643fe110fb7
+        with:
+          cache-write: false
+          run-install: false
 
-    - name: "conda install"
-      uses: conda-incubator/setup-miniconda@505e6394dae86d6a5c7fbb6e3fb8938e3e863830
-      with:
-        miniforge-version: latest
-        activate-environment: ${{ env.ENV_NAME }}
-        environment-file: requirements/conda-linux-64.lock
-        use-only-tar-bz2: false
+      - name: "refresh pixi manifest"
+        run: |
+          pixi update --json | pixi exec pixi-diff-to-markdown > diff.md
 
-    - name: "conda info"
-      run: |
-        conda info
-        conda list
+      - name: "upload artifacts"
+        uses: actions/upload-artifact@v5
+        with:
+          name: ci-tests-lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
+          path: |
+            ${{ github.workspace }}/diff.md
+            ${{ github.workspace }}/pixi.lock
 
-    - name: "cartopy cache"
-      uses: ./.github/workflows/composite/cartopy-cache
-      with:
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
+      - name: "cartopy cache"
+        uses: ./.github/workflows/composite/cartopy-cache
+        with:
+          cache_period: ${{ env.CACHE_PERIOD }}
 
-    - name: "apt cache"
-      uses: awalsh128/cache-apt-pkgs-action@5902b33ae29014e6ca012c5d8025d4346556bd40
-      with:
-        packages: libgl1-mesa-glx xvfb
-        version: 1.0
+      - name: "geovista cache"
+        uses: ./.github/workflows/composite/geovista-cache
+        with:
+          cache_period: ${{ env.CACHE_PERIOD }}
+          pixi_environment: ${{ env.NAME }}
 
-    - name: "test lock (${{ matrix.version }})"
-      run: |
-        pip install --no-deps -e .
-        pytest --xvfb-backend xvfb --fail_extra_image_cache --generated_image_dir test_images
+      - name: "test lock (${{ matrix.version }})"
+        env:
+          NAME: ${{ env.NAME }}
+        run: |
+          xvfb-run -a pixi run --frozen --environment ${NAME} pytest --generated_image_dir test_images
 
-    - name: "report failure"
-      if: failure()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        TITLE="chore: conda lock test failure"
-        BODY=$(cat <<EOL
-        The \`${{ matrix.version }}\` tests for the latest resolved \`conda-lock\` environment have failed.
+      - name: "report failure"
+        if: ${{ failure() }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NAME: ${{ env.NAME }}
+        run: |
+          TITLE="chore: pixi.lock test failure"
+          BODY=$(cat <<EOL
+          The \`${{ matrix.version }}\` tests for the latest resolved \`pixi.lock\` have failed for the \`${NAME}\` environment.
 
-        Please investigate GHA run-id [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-        EOL
-        )
-        gh issue create --title "${TITLE}" --body "${BODY}" --label "bot" --label "new: issue" --repo "${{ github.repository }}"
+          Please investigate GHA run-id [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOL
+          )
+          gh issue create --title "${TITLE}" --body "${BODY}" --label "bot" --label "new: issue" --repo "${{ github.repository }}"

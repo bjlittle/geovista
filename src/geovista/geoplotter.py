@@ -66,10 +66,13 @@ from .raster import wrap_texture
 from .transform import transform_mesh, transform_point
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from numpy.typing import ArrayLike
     import pyvista as pv
 
     from geovista.crs import CRSLike
+    from geovista.geodesic import BBox
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -87,10 +90,10 @@ __all__ = [
     "GeoPlotterBase",
 ]
 
-ADD_POINTS_STYLE: list[str, str] = ["points", "points_gaussian"]
+ADD_POINTS_STYLE: tuple[str, str] = ("points", "points_gaussian")
 """The valid 'style' options for adding points."""
 
-BASE_ZLEVEL_SCALE: int = 1.0e-3
+BASE_ZLEVEL_SCALE: float = 1.0e-3
 """Proportional multiplier for z-axis levels/offsets of base-layer mesh."""
 
 COASTLINES_RTOL: float = 1.0e-8
@@ -110,6 +113,7 @@ OPACITY_BLACKLIST = [
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def _lfric_mesh(
+    *,
     resolution: str | None = None,
     radius: float | None = None,
 ) -> pv.PolyData:
@@ -155,7 +159,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     """
 
     def __init__(
-        self, *args: Any | None, crs: CRSLike | None = None, **kwargs: Any | None
+        self,
+        *args: Any | None,
+        crs: CRSLike | None = None,
+        bbox: BBox | None = None,
+        **kwargs: Any | None,
     ) -> None:
         """Create geospatial aware plotter.
 
@@ -167,6 +175,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The target CRS to render geolocated meshes added to the plotter.
             May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`.
             Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
+        bbox : BBox, optional
+            A bounding box object used for subsetting to the rendered area so
+            that only points enclosed by the bounding box are rendered.
+            Subsetted features include mesh, coastline, base layer, parallels,
+            meridians and their labels.
         **kwargs : dict, optional
             See :class:`pyvista.Plotter` for further details.
 
@@ -195,16 +208,21 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 raise ValueError(emsg)
 
         self.crs = pyproj.CRS.from_user_input(crs) if crs is not None else WGS84
+        """The Coordinate Reference System (CRS) for the plotter."""
+
+        self.bbox = bbox
 
         # status of gpu opacity support
         self._missing_opacity = False
         # cartesian (xyz) center of last mesh added to the plotter
-        self._poi = None
+        self._poi: list[float] | None = None
         super().__init__(*args, **kwargs)
 
     def _add_graticule_labels(
         self,
         graticule: GraticuleGrid,
+        /,
+        *,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -255,7 +273,23 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         to_wkt(mesh, WGS84)
         # the point-cloud won't be sliced, however it's important that the
         # central-meridian rotation is performed here
-        mesh = transform_mesh(mesh, self.crs, zlevel=zlevel, inplace=True)
+        mesh = transform_mesh(mesh, tgt_crs=self.crs, zlevel=zlevel, inplace=True)
+
+        # reduced rendered points to only points enclosed by self.bbox
+        if self.bbox:
+            mesh_enclosed = self.bbox.enclosed(mesh)
+            # make a quick list of the enclosed points
+            enclosed_points = [tuple(p) for p in mesh_enclosed.points]
+            # filter labels based on if the original points are in
+            # enclosed_points
+            graticule.labels = [
+                label
+                for p, label in zip(mesh.points, graticule.labels, strict=True)
+                if tuple(p) in enclosed_points
+            ]
+
+            mesh = mesh_enclosed
+
         xyz = mesh.points
 
         if "show_points" in point_labels_args:
@@ -270,6 +304,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         # opinionated over-ride to disable label visibility filter
         point_labels_args["always_visible"] = False
 
+        self.add_point_labels: Callable[..., None]
         self.add_point_labels(xyz, graticule.labels, **point_labels_args)
 
     def _warn_opacity(self) -> None:
@@ -288,6 +323,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             renderer_version = info.renderer, info.version
 
             if renderer_version in OPACITY_BLACKLIST:
+                self.add_text: Callable[..., None]
                 self.add_text(
                     "Requires GPU opacity support",
                     position="lower_right",
@@ -299,6 +335,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     def add_base_layer(
         self,
+        *,
         mesh: pv.PolyData | None = None,
         resolution: str | None = None,
         radius: float | None = None,
@@ -384,10 +421,15 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         else:
             mesh = _lfric_mesh(resolution=resolution, radius=radius)
 
+        # reduced rendered points to only points enclosed by self.bbox
+        if self.bbox:
+            mesh = self.bbox.enclosed(mesh)
+
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
     def add_coastlines(
         self,
+        *,
         resolution: str | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
@@ -450,10 +492,15 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             resolution=resolution, radius=radius, zlevel=zlevel, zscale=zscale
         )
 
+        # reduced rendered points to only points enclosed by self.bbox
+        if self.bbox:
+            mesh = self.bbox.enclosed(mesh)
+
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
     def add_graticule(
         self,
+        *,
         lon_start: float | None = None,
         lon_stop: float | None = None,
         lon_step: float | None = None,
@@ -557,6 +604,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     def add_mesh(
         self,
         mesh: Any,
+        /,
+        *,
         radius: float | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
@@ -701,11 +750,35 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             # POI cartesian xyz
             self._poi = mesh.center
 
-        return super().add_mesh(mesh, **kwargs)
+        # Extend the geovista theme for scalar bar options.
+        scalar_bar_args = (
+            {
+                "outline": True,
+                "background_color": self.background_color,  # type: ignore[attr-defined]
+                "fill": True,
+            }
+            if pv.global_theme.name == "geovista"
+            else {}
+        )
+
+        # Always honour any requested scalar bar options.
+        if "scalar_bar_args" in kwargs:
+            scalar_bar_args.update(kwargs["scalar_bar_args"])  # type: ignore[arg-type]
+
+        if scalar_bar_args:
+            kwargs["scalar_bar_args"] = scalar_bar_args
+
+        # reduced rendered points to only points enclosed by self.bbox
+        if self.bbox:
+            mesh = self.bbox.enclosed(mesh)
+
+        return super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
 
     def add_meridian(
         self,
         lon: float,
+        /,
+        *,
         lat_step: float | None = None,
         n_samples: int | None = None,
         show_labels: bool | None = None,
@@ -765,6 +838,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     def add_meridians(
         self,
+        *,
         start: float | None = None,
         stop: float | None = None,
         step: float | None = None,
@@ -821,7 +895,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        from . import GEOVISTA_IMAGE_TESTING
+        from . import GEOVISTA_IMAGE_TESTING  # noqa: PLC0415
 
         if show_labels is None:
             show_labels = False if GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
@@ -861,7 +935,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             mesh_args["zscale"] = zscale
 
         for mesh in meridians.blocks:
-            self.add_mesh(mesh, **mesh_args)
+            # reduced rendered points to only points enclosed by self.bbox
+            if self.bbox:
+                mesh_enclosed = self.bbox.enclosed(mesh)
+                self.add_mesh(mesh_enclosed, **mesh_args)
+            else:
+                self.add_mesh(mesh)
 
         if show_labels:
             self._add_graticule_labels(
@@ -875,6 +954,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     def add_parallel(
         self,
         lat: float,
+        /,
+        *,
         lon_step: float | None = None,
         n_samples: int | None = None,
         poles_parallel: bool | None = None,
@@ -939,6 +1020,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     def add_parallels(
         self,
+        *,
         start: float | None = None,
         stop: float | None = None,
         step: float | None = None,
@@ -1004,7 +1086,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        from . import GEOVISTA_IMAGE_TESTING
+        from . import GEOVISTA_IMAGE_TESTING  # noqa: PLC0415
 
         if show_labels is None:
             show_labels = False if GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
@@ -1044,7 +1126,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             mesh_args["zscale"] = zscale
 
         for mesh in parallels.blocks:
-            self.add_mesh(mesh, **mesh_args)
+            # reduced rendered points to only points enclosed by self.bbox
+            if self.bbox:
+                mesh_enclosed = self.bbox.enclosed(mesh)
+                self.add_mesh(mesh_enclosed, **mesh_args)
+            else:
+                self.add_mesh(mesh)
 
         if show_labels:
             self._add_graticule_labels(
@@ -1058,6 +1145,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
     def add_points(
         self,
         points: ArrayLike | pv.PolyData | None = None,
+        *,
         xs: ArrayLike | None = None,
         ys: ArrayLike | None = None,
         scalars: str | ArrayLike | None = None,
@@ -1195,8 +1283,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 warn(wmsg, stacklevel=2)
 
             mesh = Transform.from_points(
-                xs=xs,
-                ys=ys,
+                xs,
+                ys,
                 crs=crs,
                 radius=radius,
                 zlevel=zlevel,
@@ -1213,6 +1301,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         self,
         x: float | None = None,
         y: float | None = None,
+        *,
         crs: CRSLike | None = None,
     ) -> None:
         """Center the camera at a point-of-interest (POI).
@@ -1220,7 +1309,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         If no POI is provided, then the center of the previous mesh added to the scene
         is used, if available.
 
-        Note that, the camera will be positioned at the POI to view **all** the actors
+        Note that the camera will be positioned at the POI to view **all** the actors
         added to the scene so far; order is important. The point at which
         :meth:`~geovista.geoplotter.GeoPlotterBase.view_poi` is called relative to the
         other actors influences the final rendered scene.
@@ -1256,7 +1345,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         ... )
 
         Now add the ``bahamas`` mesh to a ``plotter`` **before** adding a texture mapped
-        base layer. Note that, the camera is centered over the ``bahamas`` mesh, which
+        base layer. Note that the camera is centered over the ``bahamas`` mesh, which
         is the primary focus of the scene.
 
         >>> p = geovista.GeoPlotter()
@@ -1276,6 +1365,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         >>> p.show()
 
         """
+        self.camera: pv.Plotter.camera
         camera = self.camera
 
         if crs is None:
@@ -1307,8 +1397,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 x, y, _ = self._poi
                 crs = self.crs
 
+        # Assertion to appease MyPy.
+        assert x is not None
+        assert y is not None
         if crs != self.crs:
-            x, y, _ = transform_point(crs, self.crs, x, y)
+            x, y, _ = transform_point(src_crs=crs, tgt_crs=self.crs, x=x, y=y)
 
         if self.crs.is_geographic:
             camera.focal_point = (0, 0, 0)
@@ -1318,6 +1411,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             u_hat = xyz / np.linalg.norm(xyz)
             # set the new camera position at the same magnitude from the focal point
             camera.position = u_hat * np.linalg.norm(camera.position)
+            self.reset_camera: Callable[..., None]
             self.reset_camera(render=False)
             clip = camera.clipping_range
             # defensive: extend far clip range to ensure no accidental

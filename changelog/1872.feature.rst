@@ -1,0 +1,1 @@
+Added the ``bbox`` argument to the GeoPlotterBase class, allowing users to consistently subset the render so that only points enclosed by the bbox are rendered, including coastline, base_layer, meshes, graticule, and their labels. Closes :issue:`1869` (:user:`RobWatersMet`)

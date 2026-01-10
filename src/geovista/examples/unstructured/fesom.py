@@ -22,7 +22,7 @@ It uses a AWI Climate Model (AWI-CI) Finite Element Sea ice-Ocean Model (FESOM)
 v1.4 unstructured mesh of surface sea temperature data. The data targets the
 mesh faces/cells.
 
-Note that, a Natural Earth base layer is rendered along with Natural Earth
+Note that a Natural Earth base layer is rendered along with Natural Earth
 coastlines.
 
 .. tags::
@@ -55,13 +55,16 @@ def main() -> None:
 
     # Create the mesh from the sample data.
     mesh = gv.Transform.from_unstructured(
-        sample.lons, sample.lats, connectivity=sample.connectivity, data=sample.data
+        sample.lons,
+        sample.lats,
+        connectivity=sample.connectivity,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
     )
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_coastlines()
     p.add_axes()
@@ -69,7 +72,6 @@ def main() -> None:
         "AWI-CM FESOM v1.4 (10m Coastlines)",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.3)
     p.show()

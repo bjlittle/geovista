@@ -50,7 +50,9 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 image_cache
+unit_image_cache
 test_images
+test_images_failed
 .tox/
 .nox/
 .coverage
@@ -120,6 +122,7 @@ celerybeat.pid
 
 # Environments
 .env
+.envrc
 .venv
 env/
 venv/
@@ -144,3 +147,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# pixi environments
+.pixi
+*.egg-info
+
+wip

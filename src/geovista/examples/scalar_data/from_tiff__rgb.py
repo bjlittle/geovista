@@ -9,7 +9,7 @@ GeoTIFF RGB
 -----------
 
 This example demonstrates how to render an
-`OGC GeoTIFF <https://www.ogc.org/publications/standard/geotiff/>`_ RGB image as a
+`OGC GeoTIFF <https://www.ogc.org/standards/geotiff/>`_ RGB image as a
 geolocated mesh.
 
 📋 Summary
@@ -23,7 +23,7 @@ The GeoTIFF RGB image is first pre-processed using :func:`rasterio.features.siev
 to remove several unwanted masked regions within the interior of the image, which
 are due to a lack of dynamic range in the ``uint8`` image data.
 
-Note that, the RGB image pixel data is located on the mesh nodes/points.
+Note that the RGB image pixel data is located on the mesh nodes/points.
 
 The masked RGB pixels are then removed by extracting only mesh cells with no
 masked points.
@@ -70,7 +70,6 @@ def main() -> None:
         "Bahamas, RGB GeoTIFF",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xz()
     p.camera.zoom(1.3)

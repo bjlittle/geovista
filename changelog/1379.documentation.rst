@@ -1,0 +1,2 @@
+Added the new ``resolution`` `sphinx-tags <https://github.com/melissawm/sphinx-tags>`__
+category. (:user:`bjlittle`)

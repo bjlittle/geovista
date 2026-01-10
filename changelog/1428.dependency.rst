@@ -1,0 +1,3 @@
+Introduced minimum pin ``setuptools >=77.0.3`` to support
+`PEP 639 <https://peps.python.org/pep-0639/>`__ changes to ``license`` and
+``license-files`` fields in the ``pyproject.toml``. (:user:`bjlittle`)

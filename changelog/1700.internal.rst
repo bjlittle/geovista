@@ -1,0 +1,2 @@
+Updated ``all-contributors`` domain name from ``https://allcontributors.org`` to
+``https://all-contributors.github.io``. (:user:`bjlittle`)

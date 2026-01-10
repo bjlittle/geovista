@@ -1,0 +1,2 @@
+Introduced minimum pin ``sphinx-gallery >=0.17`` for ``README.rst`` to
+``GALLERY_HEADER.rst`` migration. (:user:`bjlittle`)

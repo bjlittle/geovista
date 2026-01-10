@@ -1,0 +1,3 @@
+Disabled zooming and panning of `mermaid <https://github.com/mgaitan/sphinxcontrib-mermaid>`__
+diagrams in the :ref:`tippy-gv-developer-packaging` guidelines.
+(:user:`bjlittle`)

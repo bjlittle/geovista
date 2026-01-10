@@ -1,0 +1,3 @@
+Added the :ref:`tippy-gv-developer-documentation-pixi-workflow` section to document
+the `pixi <https://github.com/prefix-dev/pixi>`__ 🧚 tasks available to clean, build
+and render the documentation. (:user:`bjlittle`)

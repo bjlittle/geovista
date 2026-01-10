@@ -1,0 +1,3 @@
+Enabled the `zizmor <https://github.com/zizmorcore/zizmor>`__ ``pre-commit``
+hook for security static analysis of :fab:`github` Actions.
+Closes :issue:`1248`. (:user:`tkoyama010`)

@@ -1,3 +1,3 @@
-Adjusted the :ref:`Region Manifold Extraction <gv-tutorials-region-manifold-extraction>`
+Adjusted the :ref:`Region Manifold Extraction <tippy-gv-tutorials-region-manifold-extraction>`
 tutorial to render better on reduced footprint mobile platforms.
 (:user:`bjlittle`)

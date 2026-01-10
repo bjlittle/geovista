@@ -1,37 +1,26 @@
 name: "cartopy-cache"
 description: "create and cache cartopy assets"
 
-#
-# Assumes the environment contains the following variables:
-#   - CONDA
-#
 inputs:
   cache_period:
     description: "conda environment cache timestamp"
-    required: true
-  env_name:
-    description: "gha environment name"
     required: true
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v4
+    - name: "check cartopy cache"
+      uses: actions/cache@v4
       id: cartopy-cache
       with:
         path: ~/.local/share/cartopy
-        key: ${{ runner.os }}-cartopy-${{ inputs.env_name }}-${{ inputs.cache_period }}
+        key: ${{ runner.os }}-cartopy-data-${{ inputs.cache_period }}
 
-    - if: steps.cartopy-cache.outputs.cache-hit != 'true'
+    - name: "refresh cartopy cache"
+      if: steps.cartopy-cache.outputs.cache-hit != 'true'
       env:
         CARTOPY_SHARE_DIR: ~/.local/share/cartopy
-        CARTOPY_FEATURE: https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
       shell: bash
       run: |
-        # Require to explicitly activate the environment within the composite action.
-        source ${{ env.CONDA }}/etc/profile.d/conda.sh >/dev/null 2>&1
-        conda activate ${{ inputs.env_name }}
-        wget --quiet ${CARTOPY_FEATURE}
         mkdir -p ${CARTOPY_SHARE_DIR}
-        # Requires a pre-installed version of cartopy within the environment.
-        python cartopy_feature_download.py physical --output ${CARTOPY_SHARE_DIR} --no-warn
+        pixi run --frozen cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn

@@ -26,7 +26,7 @@ hierarchical sequence of hexagonal meshes. Its structure is built on top of a
 **base icosahedron**, the relationship between the **base icosahedron** and the
 **base resolution mesh** informs the structure of the meshes of the further
 meshes in the sequence.
-Note that, a spherical surface cannot be tessellated solely with hexagons;
+Note that a spherical surface cannot be tessellated solely with hexagons;
 pentagons are also required.
 
 The **12 vertices** of the underlying **base icosahedron** anchor the center of
@@ -53,7 +53,7 @@ hexagonal cell is **~0.895 m^2**.
 
 Given a ``H3Index``, it is trivial to calculate the resolution, location
 and neighbours of a cell, as well as all its child cells and parent cell.
-Note that, the neighbours of a hexagon or a pentagon cell in a tessellated
+Note that the neighbours of a hexagon or a pentagon cell in a tessellated
 mesh are equidistant, unlike a mesh consisting of triangular or rectangular
 cells.
 
@@ -68,7 +68,7 @@ The visibility of each actor, apart from the coastlines, can be toggled
 interactively via checkbox buttons, allowing the viewer to easily explore
 the relationship between the geometric objects rendered in the scene.
 
-For further information see https://h3geo.org/.
+For further information see https://github.com/uber/h3.
 
 .. tags::
 
@@ -107,7 +107,7 @@ from pyvista import Actor, PolyData
 
 import geovista
 from geovista.geodesic import line
-import geovista.theme
+import geovista.theme  # noqa: F401
 
 # %%
 # As a convenience, we create some **type aliases** and **data containers**
@@ -115,12 +115,12 @@ import geovista.theme
 # container holds the various VTK actors that will be rendered within
 # the scene.
 
-#: Missing Data Indicator
+# Missing Data Indicator
 MDI = -1
 
-#: Type alias
-H3AssetLike = str | PolyData
-H3Indexes = set[str]
+# Convenient type aliases
+type H3AssetLike = str | PolyData
+type H3Indexes = set[str]
 
 
 @dataclass(slots=True)
@@ -260,7 +260,7 @@ def to_children(h3indexes: H3Indexes) -> H3Indexes:
     The child hexagon/pentagon cells will be at the next
     resolution (finer) of the parent cell resolution (coarser).
 
-    Note that, a hexagon parent has 7 children, whereas a pentagon
+    Note that a hexagon parent has 7 children, whereas a pentagon
     parent only has 6 children. A pentagon parent will always
     contain a pentagon child. A hexagon parent will never contain
     a pentagon child.
@@ -276,7 +276,7 @@ def to_children(h3indexes: H3Indexes) -> H3Indexes:
         The children cell indexes.
 
     """
-    result = set()
+    result: set[str] = set()
     children = [h3.cell_to_children(h3index) for h3index in h3indexes]
     result.update(*children)
 
@@ -309,7 +309,9 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
         The H3 mesh surface.
 
     """
-    nverts, lats, lons = [], [], []
+    nverts: list[int] = []
+    lats: list[float] = []
+    lons: list[float] = []
 
     # Get the lat/lon vertices of each H3Index cell polygon.
     for h3index in h3indexes:
@@ -320,7 +322,7 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
         nverts.append(len(boundary_lats))
 
     # Create an empty cell connectivity for the mesh filled
-    # with MDI. Note that, each cell may contain a variable
+    # with MDI. Note that each cell may contain a variable
     # number of vertices.
     shape = (len(nverts), np.max(nverts))
     connectivity = np.ones(shape, dtype=int) * MDI
@@ -392,7 +394,6 @@ def add_checkboxes(
             title,
             position=(x_offset, y_offset),
             font_size=8,
-            shadow=True,
             color=getattr(colors, slot),
         )
 
@@ -517,7 +518,6 @@ def main() -> None:
         "Uber H3: Hexagonal Hierarchical Spatial Index",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.add_coastlines()
     p.camera.zoom(1.5)

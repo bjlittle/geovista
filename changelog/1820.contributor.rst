@@ -1,0 +1,3 @@
+Reduced the ``dependabot`` schedule interval for the ``pip`` ecosystem to be
+``daily`` now that the `cooldown <https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#cooldown->`__
+period is configured. (:user:`bjlittle`)

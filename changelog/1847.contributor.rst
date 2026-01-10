@@ -1,0 +1,4 @@
+Reduced ``max-concurrency`` to a **single thread** when performing URL
+linkchecks with the `lychee <https://github.com/lycheeverse/lychee-action>`__
+:fab:`github` Action. This is to avoid exceptions caused by sporadic
+server-side connection resets. (:user:`bjlittle`)

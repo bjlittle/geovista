@@ -1,0 +1,2 @@
+Included ``trame-common`` package to the `scooby <https://github.com/banesullivan/scooby/>`__
+:class:`geovista.report.Report`. (:user:`bjlittle`)

@@ -1,4 +1,5 @@
 .. _gv-reference:
+.. _tippy-gv-reference:
 
 :fa:`mountain` Reference
 ========================
@@ -51,6 +52,17 @@ Consult our reference material for no fuss facts about ``geovista``.
         :class-card: sd-rounded-3
 
         Command line interface.
+
+    .. grid-item-card:: Contributing
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-developer
+        :link-type: ref
+        :img-top: ../_static/images/icons/contributing.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Developer Guidelines.
 
     .. grid-item-card:: Environment Variables
         :class-title: custom-title

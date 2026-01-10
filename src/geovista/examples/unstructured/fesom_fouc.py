@@ -22,7 +22,7 @@ It uses a AWI Climate Model (AWI-CI) Finite Element Sea ice-Ocean Model (FESOM)
 v1.4 unstructured mesh of surface sea temperature data. The data targets the
 mesh faces/cells.
 
-Note that, a Natural Earth base layer is rendered along with Natural Earth
+Note that a Natural Earth base layer is rendered along with Natural Earth
 coastlines, and the mesh is also transformed to the Foucaut pseudo-cylindrical
 projection.
 
@@ -61,16 +61,16 @@ def main() -> None:
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
+        name=f"{sample.name} / {sample.units}",
         clean=True,
     )
 
     # Plot the unstructured mesh.
     crs = "+proj=fouc"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
     # Require increased relative tolerance accuracy when cutting the mesh
     # at the anti-meridian due to its complex geometry.
-    p.add_mesh(mesh, scalar_bar_args=sargs, rtol=1e-8)
+    p.add_mesh(mesh, rtol=1e-8)
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_coastlines()
     p.add_axes()
@@ -78,7 +78,6 @@ def main() -> None:
         f"AWI-CM FESOM v1.4 ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

@@ -1,0 +1,3 @@
+Updated ``README.md`` and :ref:`tippy-gv-installation` section to include
+`pixi <https://github.com/prefix-dev/pixi>`__ 🧚 instructions.
+Closes :issue:`1476`. (:user:`bjlittle`)

@@ -43,7 +43,7 @@ for further details.
 .. attention::
 
    Optional package dependencies `pandas <https://pandas.pydata.org/docs/>`_ and
-   `fastparquet <https://fastparquet.readthedocs.io/en/stable>`_ are required.
+   `fastparquet <https://fastparquet.readthedocs.io/en/stable/>`_ are required.
 
 .. tags::
 
@@ -78,7 +78,7 @@ def main() -> None:
     # Plot the points.
     crs = "+proj=wink1 +lon_0=180"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": "Magnitude", "shadow": True}
+    sargs = {"title": "Magnitude"}
     p.add_points(
         xs=sample.lons,
         ys=sample.lats,
@@ -97,7 +97,6 @@ def main() -> None:
         f"USGS M2.5+ Earthquakes, 2000-2018 ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

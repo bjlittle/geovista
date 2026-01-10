@@ -1,0 +1,3 @@
+Mirrored the `pyvista <https://github.com/pyvista/pyvista>`__ `PyPI <https://pypi.org/>`__
+package management strategy by adopting a rolling latest maximum pin, and rely on
+``dependabot`` to orchestrate ecosystem updates. (:user:`bjlittle`)

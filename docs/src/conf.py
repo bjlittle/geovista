@@ -28,10 +28,13 @@ from __future__ import annotations
 import ast
 import contextlib
 import datetime
+import importlib
 from importlib.metadata import version as get_version
 import os
 from pathlib import Path
+import pkgutil
 import re
+import shutil
 import subprocess
 import textwrap
 from typing import TYPE_CHECKING
@@ -41,6 +44,8 @@ import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 from sphinx.util import logging
 from sphinx.util.console import colorize
+
+from geovista.cache import CACHE
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -55,9 +60,10 @@ if TYPE_CHECKING:
         PythonProperty,
     )
     from sphinx.application import Sphinx
+    from sphinx.config import Config
     from sphinx.environment import BuildEnvironment
 
-    # type aliases.
+    # this is a type alias
     Mapper = (
         PythonAttribute
         | PythonData
@@ -68,6 +74,9 @@ if TYPE_CHECKING:
         | PythonProperty
     )
 
+
+CACHE_BASE_DIR: Path = CACHE.abspath / "tests" / "docs"
+"""Target directory containing documentation reference image cache"""
 
 GALLERY_DIRS: str = "generated/gallery"
 """sphinx-gallery target output directory"""
@@ -92,6 +101,44 @@ def autolog(message: str, section: str | None = None, color: str | None = None) 
     section = colorize(color, colorize("bold", f"[{section}] ")) if section else ""
     msg = f"{colorize(color, section)}{colorize('darkblue', f'{message}')}"
     logger.info(msg)
+
+
+def sphx_glr(root: str) -> list[str]:
+    """Generate ``sphinx-gallery`` thumbnail URLs relative to the `root` package.
+
+    Recursively searches down from the `root` to find all child (leaf) modules.
+
+    Parameters
+    ----------
+    root : str
+        The name (dot notation) of the top level package to search under.
+        e.g., ``geovista.examples``.
+
+    Returns
+    -------
+    list of str
+        The list of thumbnail URLs, relative to the `root` and submodules.
+
+    """
+    mods: list[str] = []
+    pkgs: list[str] = []
+
+    for info in pkgutil.iter_modules(importlib.import_module(root).__path__):
+        name = f"{root}.{info.name}"
+        if info.ispkg:
+            container = pkgs
+        else:
+            container = mods
+            name = f"{name}.html#sphx-glr-generated-gallery-.*-py"
+        container.append(name)
+
+    mods.extend(f"{pkg}/.*html#sphx-glr-generated-gallery-.*-py" for pkg in pkgs)
+    mods = [name.split(f"{root}.")[1] for name in mods]
+
+    for pkg in pkgs:
+        mods.extend(sphx_glr(pkg))
+
+    return mods
 
 
 logger = logging.getLogger("sphinx-geovista")
@@ -121,9 +168,11 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_tags",
     "sphinx_togglebutton",
+    "sphinxcontrib.mermaid",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
     "myst_nb",
+    "vtk_xref",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -181,7 +230,7 @@ if rtd_version is not None:
 rtd_version_type = os.environ.get("READTHEDOCS_VERSION_TYPE")
 
 # get the short commit sha.
-rev_parse = subprocess.run(  # noqa: S603
+rev_parse = subprocess.run(
     ["git", "rev-parse", "--short", "HEAD"],  # noqa: S607
     capture_output=True,
     text=True,
@@ -203,17 +252,64 @@ rst_epilog = f"""
 """
 
 # docs src directory
-docs_src_dir = Path(__file__).absolute().parent
+docs_src_dir = Path(__file__).resolve().parent
+docs_cache_dir = docs_src_dir.parent / "image_cache"
 docs_images_dir = docs_src_dir / "_static" / "images"
 root_dir = docs_src_dir.parents[1]
 package_src_dir = root_dir / "src"
 package_dir = package_src_dir / "geovista"
 
+# prepare to download image cache for each image test
+if docs_cache_dir.is_dir() and not docs_cache_dir.is_symlink():
+    # remove directory which may have been created by pytest-pyvista
+    # when plugin is bootstrapped by pytest
+    shutil.rmtree(str(docs_cache_dir))
+
+if docs_cache_dir.is_symlink() and (
+    not docs_cache_dir.exists() or docs_cache_dir.readlink() != CACHE_BASE_DIR
+):
+    # detected a broken symlink or non-latest version of cache
+    docs_cache_dir.unlink()
+
+if not docs_cache_dir.exists():
+    CACHE_BASE_DIR.mkdir(parents=True, exist_ok=True)
+    # create the symbolic link to the pooch cache
+    docs_cache_dir.symlink_to(CACHE_BASE_DIR)
+
 autolog(f"{docs_src_dir=}", section="General")
+autolog(f"{docs_cache_dir=}", section="General")
 autolog(f"{docs_images_dir=}", section="General")
 autolog(f"{root_dir=}", section="General")
 autolog(f"{package_src_dir=}", section="General")
 autolog(f"{package_dir=}", section="General")
+
+
+# sphinx-tags options --------------------------------------------------------
+# See https://sphinx-tags.readthedocs.io/en/latest/index.html
+
+tags_badge_colors = {
+    "component:*": "primary",
+    "domain:*": "secondary",
+    "filter:*": "success",
+    "load:*": "dark",
+    "plot:*": "danger",
+    "projection:*": "warning",
+    "resolution:*": "danger",
+    "sample:*": "dark",
+    "style:*": "light",
+    "widget:*": "info",
+}
+
+tags_create_tags = True
+tags_create_badges = True
+tags_index_head = "Themed content tags:"  # tags landing page intro text
+tags_intro_text = "Tags:"  # prefix text for a tags list
+tags_overview_title = r""".. _tippy-gv-tagoverview:
+
+:fa:`tags` Tags"""  # title for the tags landing page
+tags_output_dir = "tags"
+tags_page_header = "Tagged content:"  # tag sub-page, header text
+tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
 
 
 # sphinx-tippy options -------------------------------------------------------
@@ -243,34 +339,19 @@ tippy_rtd_urls = [
     "https://rasterio.readthedocs.io/en/stable/",
     "https://requests.readthedocs.io/en/stable/",
 ]
-tippy_skip_anchor_classes = ("headerlink", "sd-stretched-link")
+tippy_skip_anchor_classes = ("headerlink", "sd-sphinx-override")
+tippy_skip_urls = [
+    ".*#gv-.*",
+    ".*#tagoverview",
+]
 tippy_anchor_parent_selector = "article.bd-article"
-tippy_props = {"maxWidth": 700, "placement": "top-start", "theme": "light"}
+tippy_props = {"theme": "light"}
 
+# skip generating tooltips for the sphinx-tags
+tippy_skip_urls.extend(f"{item.split(':')[0]}-.*" for item in tags_badge_colors)
 
-# sphinx-tags options --------------------------------------------------------
-# See https://sphinx-tags.readthedocs.io/en/latest/index.html
-
-tags_badge_colors = {
-    "component:*": "primary",  # coastlines, graticule, manifold, texture, vectors
-    "domain:*": "secondary",  # oceanography, seismology, meteorology, orography
-    "filter:*": "success",  # extrude, threshold, warp
-    "load:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
-    "projection:*": "warning",  # crs, transform
-    "render:*": "danger",  # camera
-    "sample:*": "dark",  # rectilinear, curvilinear, unstructured, points, geotiff
-    "style:*": "light",  # colormap, lighting, opacity, shading
-    "widget:*": "info",  # checkbox, logo
-}
-
-tags_create_tags = True
-tags_create_badges = True
-tags_index_head = "Themed content tags:"  # tags landing page intro text
-tags_intro_text = "Tags:"  # prefix text for a tags list
-tags_overview_title = ":fa:`tags` Tags"  # title for the tags landing page
-tags_output_dir = "tags"
-tags_page_header = "Tagged content:"  # tag sub-page, header text
-tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
+# skip generating tooltips for the sphinx-gallery thumbnails
+tippy_skip_urls.extend(sphx_glr("geovista.examples"))
 
 
 # sphinx-togglebutton options ------------------------------------------------
@@ -300,9 +381,9 @@ nitpick_ignore_regex = [
     (r"py:.*", r"scooby.Report"),  # no scooby sphinx docs available
     (r"py:.*", r"pv"),  # TBD: geovista.geoplotter, geovista.gridlines (lazy import)
     (r"py:class", r"numpy.typing.ArrayLike"),  # TBD: geovista.pantry.data (lazy import)
+    (r"py:class", r"ArrayLike"),  # TBD: geovista.search (use of type)
     (r"py:mod", r"pyvista"),  # see https://github.com/pyvista/pyvista/issues/5663
     (r"py:mod", r"pyvistaqt"),  # no :mod:`pyvistaqt` inventory entry available
-    (r"py:mod", r"vtk"),  # no :mod:`vtk` inventory entry available
 ]
 
 
@@ -322,6 +403,7 @@ numpydoc_use_plots = True
 numpydoc_xref_aliases = {
     "Actor": "pyvista.Actor",
     "ArrayLike": "numpy.typing.ArrayLike",
+    "BBox": "geovista.geodesic.BBox",
     "bool": ":class:`python:bool`",
     "CRSLike": "geovista.crs.CRSLike",
     "CloudPreference": "geovista.pantry.data.CloudPreference",
@@ -330,7 +412,6 @@ numpydoc_xref_aliases = {
     "Path": "pathlib.Path",
     "Preference": "geovista.common.Preference",
     "PolyData": "pyvista.PolyData",
-    "Shape": "geovista.bridge.Shape",
     "Texture": "pyvista.Texture",
 }
 numpydoc_xref_ignore = {"optional", "default", "of"}
@@ -378,9 +459,9 @@ autoapi_python_class_content = "both"
 autoapi_keep_files = True
 autoapi_add_toctree_entry = False
 
-autolog(f"{autoapi_dirs=}", section="AutoAPI")
-autolog(f"{autoapi_ignore=}", section="AutoAPI")
-autolog(f"{autoapi_root=}", section="AutoAPI")
+autolog(f"{autoapi_dirs=}", section="autoapi")
+autolog(f"{autoapi_ignore=}", section="autoapi")
+autolog(f"{autoapi_root=}", section="autoapi")
 
 
 # -- internationalization options --------------------------------------------
@@ -410,7 +491,7 @@ pygments_style = "friendly"
 # a list of builtin themes.
 
 html_theme = "sphinx_book_theme"
-html_logo = "_static/logo.png"
+html_logo = "_static/geovista-title.svg"
 
 html_context = {
     "github_url": "https://github.com",
@@ -446,12 +527,12 @@ html_theme_options = {
         {
             "name": "GitHub Issues",
             "url": "https://github.com/bjlittle/geovista/issues",
-            "icon": "fa-brands fa-square-github fa-fw",
+            "icon": "far fa-circle-dot fa-fw",
         },
         {
-            "name": "GitHub Pulls",
+            "name": "GitHub PRs",
             "url": "https://github.com/bjlittle/geovista/pulls",
-            "icon": "fa-brands fa-github-alt fa-fw",
+            "icon": "fa fa-code-pull-request fa-fw",
         },
         {
             "name": "Bluesky",
@@ -500,33 +581,18 @@ html_css_files = [
 ]
 
 
-# -- linkcheck builder options -----------------------------------------------
-# See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
-
-linkcheck_ignore = [
-    "https://doi.org/10.5281/zenodo.7608302",
-    "https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/",
-    "https://www.usgs.gov/programs/earthquake-hazards",
-    "https://www.ncei.noaa.gov/products/optimum-interpolation-sst",
-    "https://earthexplorer.usgs.gov",
-    "https://www.fvcom.org",
-    "https://www.gnu.org/software/make/",
-]
-linkcheck_retries = 3
-
-
 # -- intersphinx options -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 
 intersphinx_mapping = {
-    "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "cartopy": ("https://cartopy.readthedocs.io/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "platformdirs": ("https://platformdirs.readthedocs.io/en/stable/", None),
     "pooch": ("https://www.fatiando.org/pooch/latest/", None),
     "pyproj": ("https://pyproj4.github.io/pyproj/stable/", None),
     "python": ("https://docs.python.org/3/", None),
-    "pyvista": ("https://docs.pyvista.org/version/stable/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
     "pyvistaqt": ("https://qtdocs.pyvista.org/", None),
     "rasterio": ("https://rasterio.readthedocs.io/en/stable/", None),
     "requests": ("https://requests.readthedocs.io/en/stable/", None),
@@ -536,7 +602,7 @@ intersphinx_mapping = {
 # -- copybutton options ------------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
 
-copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_text = r">>> |\.\.\. |\$"
 copybutton_prompt_is_regexp = True
 copybutton_line_continuation_character = "\\"
 
@@ -579,12 +645,10 @@ pyvista.set_error_output_file("errors.txt")
 pyvista.OFF_SCREEN = True
 
 # Preferred plotting style for documentation
-pyvista.set_plot_theme("document")
-pyvista.global_theme.window_size = [1024, 768]
-pyvista.global_theme.font.size = 22
-pyvista.global_theme.font.label_size = 22
-pyvista.global_theme.font.title_size = 22
-pyvista.global_theme.return_cpos = False
+pyvista.set_plot_theme("document_build")
+pyvista.set_jupyter_backend(None)
+
+# Necessary when building the sphinx gallery
 pyvista.BUILDING_GALLERY = True
 os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 
@@ -607,7 +671,7 @@ scraper = DynamicScraper()
 sphinx_gallery_conf = {
     "default_thumb_file": str(docs_images_dir / "gallery-thumb.png"),
     "filename_pattern": "/.*",
-    "ignore_pattern": "(__init__)|(clouds)|(fesom)|(synthetic)",
+    "ignore_pattern": "(__init__)|(clouds_stratify)|(fesom)|(synthetic)",
     "examples_dirs": str(package_dir / "examples"),
     "gallery_dirs": GALLERY_DIRS,
     "min_reported_time": 90,
@@ -624,6 +688,18 @@ sphinx_gallery_conf = {
     },
 }
 
+if os.environ.get("GEOVISTA_SPHX_GLR_SERIAL") is None:
+    with contextlib.suppress(ModuleNotFoundError):
+        import joblib  # noqa: F401
+
+        sphinx_gallery_conf["parallel"] = True
+
+        msg = "parallel build configured"
+else:
+    msg = "serial build configured"
+
+autolog(msg, section="sphinx-gallery")
+
 
 # -- pyvista-plot directive options ------------------------------------------
 
@@ -635,12 +711,13 @@ PATTERN = r"""(?P<prefix>.*)
               (?P<postfix>(\.\.\ rubric::)?.*)"""
 REGEX = re.compile(PATTERN, flags=re.DOTALL | re.MULTILINE | re.VERBOSE)
 
-plot_setup = """
+pyvista_plot_setup = """
 from pyvista import set_plot_theme as __s_p_t
-__s_p_t('document')
+__s_p_t('document_build')
 del __s_p_t
 """
-plot_cleanup = plot_setup
+pyvista_plot_cleanup = pyvista_plot_setup
+pyvista_plot_skip_optional = False
 
 
 def indent(block: str, amount: int = 3) -> str:
@@ -668,7 +745,7 @@ def geovista_skip_member(
     and the associated text block of the rubric, which itself will be indented
     appropriately to belong to the scope of the injected directive.
 
-    Note that, the directive will be at the same level as the rubric.
+    Note that the directive will be at the same level as the rubric.
 
     """
     plot_docstring = app.builder.config.plot_docstring
@@ -688,7 +765,7 @@ def geovista_skip_member(
     return skip
 
 
-def _bool_eval(arg: str | bool) -> bool:
+def _bool_eval(*, arg: str | bool) -> bool:
     """Sanitise to a boolean only configuration."""
     if isinstance(arg, str):
         with contextlib.suppress(TypeError):
@@ -774,9 +851,10 @@ def generate_carousel(
 
 def geovista_builder_inited(app: Sphinx) -> None:
     """Configure geovista sphinx options."""
-    plot_docstring = _bool_eval(app.builder.config.plot_docstring)
-    plot_gallery = _bool_eval(app.builder.config.plot_gallery)
-    plot_tutorial = _bool_eval(app.builder.config.plot_tutorial)
+    plot_docstring = _bool_eval(arg=app.builder.config.plot_docstring)
+    plot_gallery = _bool_eval(arg=app.builder.config.plot_gallery)
+    plot_inline = _bool_eval(arg=app.builder.config.plot_inline)
+    plot_tutorial = _bool_eval(arg=app.builder.config.plot_tutorial)
 
     # overwrite the myst-nb sphinx configuration option that controls the
     # notebook execution mode. this option has been pre-parsed by the sphinx
@@ -793,6 +871,7 @@ def geovista_builder_inited(app: Sphinx) -> None:
     # report diagnostics
     autolog(f"{plot_docstring=}", section="GeoVista")
     autolog(f"{plot_gallery=}", section="GeoVista")
+    autolog(f"{plot_inline=}", section="GeoVista")
     autolog(f"{plot_tutorial=}", section="GeoVista")
 
 
@@ -808,9 +887,18 @@ def geovista_carousel(
     with fname.open("w"):
         pass
 
-    if _bool_eval(app.builder.config.plot_gallery):
+    if _bool_eval(arg=app.builder.config.plot_gallery):
         # only generate the carousel if we have a gallery
         generate_carousel(app, fname)
+
+
+def geovista_plot_inline(
+    app: Sphinx,  # noqa: ARG001
+    config: Config,
+) -> None:
+    """Configure the pyvista plot directive skip optional option."""
+    plot_inline = _bool_eval(arg=config.plot_inline)
+    config["pyvista_plot_skip_optional"] = not plot_inline
 
 
 def setup(app: Sphinx) -> None:
@@ -819,10 +907,13 @@ def setup(app: Sphinx) -> None:
     app.setup_extension("sphinx_gallery.gen_gallery")
     # register geovista options
     app.add_config_value(name="plot_docstring", default="True", rebuild="html")
+    app.add_config_value(name="plot_inline", default="True", rebuild="html")
     app.add_config_value(name="plot_tutorial", default="True", rebuild="html")
     # early configuration of geovista options, see
     # https://www.sphinx-doc.org/en/master/extdev/event_callbacks.html
     app.connect("builder-inited", geovista_builder_inited, priority=10)
+    # register callback to configure the pyvista plot directive
+    app.connect("config-inited", geovista_plot_inline)
     # register callback for the autoapi event
     app.connect("autoapi-skip-member", geovista_skip_member)
     # register callback to generate gallery carousel

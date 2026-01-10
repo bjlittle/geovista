@@ -6,9 +6,7 @@ export PYDEVD_DISABLE_FILE_VALIDATION := 1
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
-#
-# -W  Warnings promoted to errors
-SPHINXOPTS    ?= -W --keep-going
+SPHINXOPTS    ?= --show-traceback --fail-on-warning --keep-going --jobs auto
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = src
 BUILDDIR      = _build
@@ -17,7 +15,7 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: Makefile clean clean-cache clean-all doctest help html-docstring html-gallery html-noplot html-tutorial linkcheck serve-html
+.PHONY: Makefile clean clean-cache clean-all doctest help html-docstring html-docstring-inline html-gallery html-inline html-noplot html-tutorial serve-html
 
 clean:
 	-rm -rf $(BUILDDIR)/*
@@ -33,22 +31,25 @@ clean-cache:
 clean-all: clean-cache clean
 
 doctest:
-	@$(SPHINXBUILD) -b doctest -D plot_docstring=False -D plot_gallery=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/doctest"
+	@$(SPHINXBUILD) -b doctest -D plot_docstring=False -D plot_gallery=False -D plot_inline=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/doctest"
 
 html-docstring:
+	@$(SPHINXBUILD) -b html -D plot_gallery=False -D plot_inline=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
+
+html-docstring-inline:
 	@$(SPHINXBUILD) -b html -D plot_gallery=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
 html-gallery:
-	@$(SPHINXBUILD) -b html -D plot_docstring=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
+	@$(SPHINXBUILD) -b html -D plot_docstring=False -D plot_inline=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
-html-noplot:
+html-inline:
 	@$(SPHINXBUILD) -b html -D plot_docstring=False -D plot_gallery=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
-html-tutorial:
-	@$(SPHINXBUILD) -b html -D plot_docstring=False -D plot_gallery=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
+html-noplot:
+	@$(SPHINXBUILD) -b html -D plot_docstring=False -D plot_gallery=False -D plot_inline=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
-linkcheck:
-	@$(SPHINXBUILD) -b linkcheck -D plot_docstring=False -D plot_gallery=False -D plot_tutorial=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/linkcheck"
+html-tutorial:
+	@$(SPHINXBUILD) -b html -D plot_docstring=False -D plot_gallery=False -D plot_inline=False -d "$(BUILDDIR)/doctrees" $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
 # Spin up a local http server to view the rendered documentation.
 # This is required for interactive examples to work.

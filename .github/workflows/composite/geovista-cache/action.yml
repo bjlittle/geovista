@@ -5,21 +5,38 @@ inputs:
   cache_period:
     description: "geovista assets cache timestamp"
     required: true
+  pixi_environment:
+    description: "pixi environment to use for geovista"
+    required: false
+    default: ""
+
 
 runs:
   using: "composite"
   steps:
-    - shell: bash
+    - name: "get geovista-data version"
+      shell: bash
+      id: geovista-data
+      env:
+        INPUTS_PIXI_ENVIRONMENT: "${{ inputs.pixi_environment }}"
       run: |
-        echo "DATA_VERSION=$(grep '^DATA_VERSION' src/geovista/cache/__init__.py | tr -d ' "' | cut -d'=' -f2)" >> ${GITHUB_ENV}
+        if [ -z "${INPUTS_PIXI_ENVIRONMENT}" ]; then
+          # Use the active pixi environment if none is specified
+          echo "version=$(pixi run --frozen geovista --data-version)" >> ${GITHUB_OUTPUT}
+        else
+          # Use the specified pixi environment
+          echo "version=$(pixi run --frozen --environment ${INPUTS_PIXI_ENVIRONMENT} geovista --data-version )" >> ${GITHUB_OUTPUT}
+        fi
 
-    - uses: actions/cache@v4
+    - name: "check geovista cache"
+      uses: actions/cache@v4
       id: geovista-cache
       with:
         path: ~/.cache/geovista
-        key: ${{ runner.os }}-geovista-data-${{ env.DATA_VERSION }}-${{ inputs.cache_period }}
+        key: ${{ runner.os }}-geovista-data-${{ steps.geovista-data.outputs.version }}-${{ inputs.cache_period }}
 
-    - if: steps.geovista-cache.outputs.cache-hit != 'true'
+    - name: "refresh geovista cache"
+      if: steps.geovista-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        echo "GEOVISTA_DOWNLOAD=geovista download --all --decompress" >> ${GITHUB_ENV}
+        pixi run --frozen geovista download --all --decompress

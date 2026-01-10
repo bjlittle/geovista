@@ -14,12 +14,12 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
+from pykdtree.kdtree import KDTree as pyKDTree
 
-from .common import VTK_CELL_IDS, MixinStrEnum, to_cartesian
+from .common import VTK_CELL_IDS, StrEnumPlus, to_cartesian
 from .crs import WGS84, from_wkt
 from .transform import transform_points
 
@@ -28,11 +28,10 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     import pyvista as pv
 
-    # Type aliases
-    NearestNeighbours = tuple[ArrayLike, ArrayLike]
+    type NearestNeighbours = tuple[ArrayLike, ArrayLike]
     """Type alias for a tuple of nearest neighbour distances and indices.""" ""
 
-    # type aliases
+    # these are type aliases
     CellIDs = list[int]
     CellIDLike = int | CellIDs
 
@@ -64,7 +63,7 @@ KDTREE_PREFERENCE: str = "point"
 """The default search preference."""
 
 
-class SearchPreference(MixinStrEnum, StrEnum):
+class SearchPreference(StrEnumPlus):
     """Enumeration of mesh geometry search preferences.
 
     Notes
@@ -74,7 +73,9 @@ class SearchPreference(MixinStrEnum, StrEnum):
     """
 
     CENTER = "center"
+    """Preference to search the cell centers."""
     POINT = "point"
+    """Preference to search the mesh points."""
 
 
 class KDTree:  # numpydoc ignore=PR01
@@ -91,12 +92,14 @@ class KDTree:  # numpydoc ignore=PR01
     def __init__(
         self,
         mesh: pv.PolyData,
+        /,
+        *,
         leaf_size: int | None = None,
         preference: str | SearchPreference | None = None,
     ) -> None:
         """Construct kd-tree for nearest neighbour search of mesh points/cell centers.
 
-        Note that, the cell centers will be calculated from the mesh geometry and do not
+        Note that the cell centers will be calculated from the mesh geometry and do not
         require to be provided.
 
         The geolocated mesh data points are converted to cartesian coordinates on a S2
@@ -125,8 +128,6 @@ class KDTree:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        from pykdtree.kdtree import KDTree as pyKDTree
-
         if leaf_size is None:
             leaf_size = KDTREE_LEAF_SIZE
 
@@ -158,7 +159,7 @@ class KDTree:  # numpydoc ignore=PR01
             # TODO @bjlittle: Clarify zlevel preservation for non-WGS84 point-clouds.
             xyz = to_cartesian(transformed[:, 0], transformed[:, 1])
 
-        self._n_points = xyz.shape[0]
+        self._n_points: int = xyz.shape[0]
         self._mesh_type = mesh.__class__.__name__
         self._kdtree = pyKDTree(xyz, leafsize=leaf_size)
 
@@ -199,7 +200,9 @@ class KDTree:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        return self._kdtree.leafsize
+        result = self._kdtree.leafsize
+        assert isinstance(result, int)
+        return result
 
     @property
     def n_points(self) -> int:
@@ -255,6 +258,8 @@ class KDTree:  # numpydoc ignore=PR01
         self,
         lons: float | ArrayLike,
         lats: float | ArrayLike,
+        /,
+        *,
         k: int | None = None,
         epsilon: float | None = None,
         distance_upper_bound: float | None = None,
@@ -310,9 +315,12 @@ class KDTree:  # numpydoc ignore=PR01
 
         xyz = to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
 
-        return self._kdtree.query(
+        result = self._kdtree.query(
             xyz, k=k, eps=epsilon, distance_upper_bound=distance_upper_bound
         )
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+        return result
 
 
 def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:
@@ -359,9 +367,11 @@ def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:
 
 def find_nearest_cell(
     mesh: pv.PolyData,
+    /,
     x: float,
     y: float,
     z: float | None = 0,
+    *,
     single: bool | None = False,
 ) -> CellIDLike:
     """Find the cell in the `mesh` that is closest to the point-of-interest (POI).

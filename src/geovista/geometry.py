@@ -34,11 +34,16 @@ from .pantry import fetch_coastlines
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+    import numpy as np
+    import pyvista as pv
     from shapely import LineString, MultiLineString
+    from shapely.geometry.base import GeometrySequence
 
 # lazy import third-party dependencies
+cartopy = lazy.load("cartopy")
 np = lazy.load("numpy")
 pv = lazy.load("pyvista")
+shapely = lazy.load("shapely")
 
 __all__ = [
     "coastlines",
@@ -51,6 +56,7 @@ __all__ = [
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def coastlines(
+    *,
     resolution: str | None = None,
     radius: float | None = None,
     zlevel: int | None = None,
@@ -184,9 +190,91 @@ def load_natural_earth_geometries(
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def load_coastline_geometries(
+def load_natural_earth_geometries(
+    category: str,
+    name: str,
     resolution: str | None = None,
 ) -> list[np.ndarray]:
+    """Download Natural Earth shapefile for the required `resolution`.
+
+    Generic routine for downloading natural earth "Line" features, such
+    as coastlines, borders, etc.
+
+    If the geometries are not already available within the cartopy cache, then
+    they will be downloaded.
+
+    The 2-D longitude (``φ``) and latitude (``λ``) ``xy`` coastline geometries will be
+    unpacked as 3-D ``xy0`` coordinates i.e., ``φλ0``.
+
+    Parameters
+    ----------
+    category : str
+        The Natural Earth category of the feature.
+    name : str
+        The name of the Natural Earth feature.
+    resolution : str, optional
+        The resolution of the Natural Earth feature, which may be either
+        ``110m``, ``50m`` or ``10m`` (defaults to "110m").
+
+    Returns
+    -------
+    list of np.ndarray
+        A list containing one or more ``xy0`` geometries.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    import cartopy.io.shapereader as shp
+    from shapely import LineString, MultiLineString, MultiPolygon, Polygon
+
+    if resolution is None:
+        resolution = "110m"  # TODO(chris): Better default
+
+    lines, multi_lines = [], []
+
+    # load in the shapefiles
+    fname = shp.natural_earth(resolution=resolution, category=category, name=name)
+    reader = shp.Reader(fname)
+
+    def unpack(
+        geometries: Generator[LineString | MultiLineString | MultiPolygon],
+    ) -> None:
+        """Unpack the geometries coordinates.
+
+        Parameters
+        ----------
+        geometries : Generator of LineString or MultiLineString
+            The geometries to unpack.
+
+        """
+        for geometry in geometries:
+            if isinstance(geometry, MultiLineString | MultiPolygon):
+                multi_lines.extend(list(geometry.geoms))
+            else:
+                if isinstance(geometry, Polygon):
+                    xy = np.array(geometry.exterior.coords[:], dtype=np.float32)
+                elif isinstance(geometry, LineString):
+                    xy = np.array(geometry.coords[:], dtype=np.float32)
+                else:
+                    msg = f"Unsupported geometry type: {type(geometry)}"
+                    raise ValueError(msg)  # noqa: TRY004
+                x = xy[:, 0].reshape(-1, 1)
+                y = xy[:, 1].reshape(-1, 1)
+                z = np.zeros_like(x)
+                xyz = np.hstack((x, y, z))
+                lines.append(xyz)
+
+    unpack(reader.geometries())
+    if multi_lines:
+        unpack(multi_lines)
+
+    return lines
+
+
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def load_coastline_geometries(*, resolution: str | None = None) -> list[np.ndarray]:
     """Download Natural Earth coastline shapefile for the required `resolution`.
 
     If the geometries are not already available within the cartopy cache, then
@@ -220,6 +308,7 @@ def load_coastline_geometries(
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def load_coastlines(
+    *,
     resolution: str | None = None,
     radius: float | None = None,
     zlevel: int | None = None,
@@ -326,10 +415,10 @@ def load_natural_earth_feature(
     zlevel = 0 if zlevel is None else int(zlevel)
     radius += radius * zlevel * zscale
 
-    geoms = load_natural_earth_geometries(category, name, resolution=resolution)
-    npoints_per_geom = [geom.shape[0] for geom in geoms]
-    ngeoms = len(geoms)
-    geoms = np.concatenate(geoms)
+    geoms_list = load_natural_earth_geometries(category, name, resolution=resolution)
+    npoints_per_geom = [geom.shape[0] for geom in geoms_list]
+    ngeoms = len(geoms_list)
+    geoms = np.concatenate(geoms_list)
     nlines = geoms.shape[0] - ngeoms
 
     if drape_over_mesh is not None:

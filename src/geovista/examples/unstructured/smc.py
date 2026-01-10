@@ -20,7 +20,7 @@ The resulting mesh contains quad cells.
 It uses WAVEWATCH III (WW3) unstructured Spherical Multi-Cell (SMC) sea surface
 wave significant height data located on mesh faces/cells.
 
-Note that, a threshold is also applied to remove land ``NaN`` cells, and a
+Note that a threshold is also applied to remove land ``NaN`` cells, and a
 Natural Earth base layer is rendered along with Natural Earth coastlines.
 
 .. tags::
@@ -53,15 +53,19 @@ def main() -> None:
     sample = ww3_global_smc()
 
     # Create the mesh from the sample data.
-    mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data)
+    mesh = gv.Transform.from_unstructured(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
+    )
 
     # Threshold the mesh of NaNs.
     mesh = mesh.threshold()
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_coastlines()
     p.add_axes()
@@ -69,7 +73,6 @@ def main() -> None:
         "WW3 Spherical Multi-Cell (10m Coastlines)",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.3)
     p.show()

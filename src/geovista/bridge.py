@@ -19,8 +19,8 @@ Notes
 
 from __future__ import annotations
 
-from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, TypeAlias
+import pathlib
+from typing import TYPE_CHECKING
 import warnings
 
 import lazy_loader as lazy
@@ -60,11 +60,10 @@ __all__ = [
     "Transform",
 ]
 
-# type aliases
-PathLike: TypeAlias = str | PurePath
+type PathLike = str | pathlib.Path
 """Type alias for an asset file path."""
 
-Shape: TypeAlias = tuple[int]
+type Shape = tuple[int, ...]
 """Type alias for a tuple of integers."""
 
 # constants
@@ -95,11 +94,13 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike,
         n_points: int,
         n_cells: int,
-        rgb: bool = False,  # noqa: FBT001
+        /,
+        *,
+        rgb: bool = False,
     ) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 
-        Note that, masked values will be filled with NaNs.
+        Note that masked values will be filled with NaNs.
 
         Parameters
         ----------
@@ -268,7 +269,7 @@ class Transform:  # numpydoc ignore=PR01
         ..versionadded:: 0.1.0
 
         For VTK Quadrilateral cell type node ordering see
-        https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
+        https://examples.vtk.org/site/VTKBook/05Chapter5/#54-cell-types.
 
         """
         # sanity check - internally this should always be the case
@@ -313,7 +314,7 @@ class Transform:  # numpydoc ignore=PR01
         ..versionadded:: 0.1.0
 
         For VTK Quadrilateral cell type node ordering see
-        https://kitware.github.io/vtk-examples/site/VTKBook/05Chapter5/#54-cell-types
+        https://examples.vtk.org/site/VTKBook/05Chapter5/#54-cell-types.
 
         """
         # sanity check - internally this should always be the case
@@ -406,6 +407,8 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
@@ -497,6 +500,8 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
@@ -573,6 +578,7 @@ class Transform:  # numpydoc ignore=PR01
         cls._verify_2d(xs, ys)
         shape, ndim = xs.shape, xs.ndim
 
+        points_shape: tuple[int, int]
         if ndim == 2:
             # we have shape (M+1, N+1)
             rows, cols = points_shape = shape
@@ -608,6 +614,8 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
@@ -618,7 +626,7 @@ class Transform:  # numpydoc ignore=PR01
     ) -> pv.PolyData:
         """Build a point-cloud mesh from x-values, y-values and z-levels.
 
-        Note that, any optional mesh `data` provided must be in the same order as the
+        Note that any optional mesh `data` provided must be in the same order as the
         spatial points.
 
         Parameters
@@ -702,8 +710,6 @@ class Transform:  # numpydoc ignore=PR01
 
             if not name:
                 name = NAME_POINTS
-            if not isinstance(name, str):
-                name = str(name)
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data
@@ -718,8 +724,10 @@ class Transform:  # numpydoc ignore=PR01
     def from_tiff(
         cls,
         fname: PathLike,
+        /,
+        *,
         name: str | None = None,
-        band: int | None = 1,
+        band: int = 1,
         rgb: bool | None = False,
         sieve: bool | None = False,
         size: int | None = None,
@@ -731,7 +739,7 @@ class Transform:  # numpydoc ignore=PR01
     ) -> pv.PolyData:
         """Build a quad-faced mesh from the GeoTIFF.
 
-        Note that, the GeoTIFF data will be located on the ``points``
+        Note that the GeoTIFF data will be located on the ``points``
         of the resultant mesh.
 
         Parameters
@@ -740,12 +748,12 @@ class Transform:  # numpydoc ignore=PR01
             The file path to the GeoTIFF.
         name : str, optional
             The name of the GeoTIFF data array to be attached to the mesh.
-            Defaults to :data:`NAME_POINTS`. Note that, ``{units}`` may be
+            Defaults to :data:`NAME_POINTS`. Note that ``{units}`` may be
             used as a placeholder for the units of the data array e.g.,
             ``"Elevation / {units}"``.
-        band : int, optional
-            The band index to read from the GeoTIFF. Note that, the `band`
-            index is one-based. Defaults to the first band i.e., ``band=1``.
+        band : int, default=1
+            The band index to read from the GeoTIFF. Note that the `band`
+            index is one-based.
         rgb : bool, default=False
             Specify whether to read the GeoTIFF as an ``RGB`` or ``RGBA`` image.
             When ``rgb=True``, the `band` index is ignored.
@@ -808,7 +816,7 @@ class Transform:  # numpydoc ignore=PR01
 
         """
         try:
-            import rasterio as rio
+            import rasterio as rio  # noqa: PLC0415
         except ImportError:
             emsg = (
                 "Optional dependency 'rasterio' is required to read GeoTIFF files. "
@@ -817,10 +825,9 @@ class Transform:  # numpydoc ignore=PR01
             raise ImportError(emsg) from None
 
         if isinstance(fname, str):
-            fname = Path(fname)
+            fname = pathlib.Path(fname)
 
         fname = fname.resolve(strict=True)
-        band = None if rgb else band
 
         if size is None:
             size = RIO_SIEVE_SIZE
@@ -899,10 +906,10 @@ class Transform:  # numpydoc ignore=PR01
 
             if extract:
                 if sieve:
-                    from rasterio.features import sieve as riosieve
+                    from rasterio.features import sieve as riosieve  # noqa: PLC0415
 
                     # convert boolean mask to conform to GDAL RFC 15 for sieve
-                    # see https://trac.osgeo.org/gdal/wiki/rfc15_nodatabitmask
+                    # see https://gdal.org/en/stable/development/rfc/rfc15_nodatabitmask.html
                     dtype = np.dtype(src.dtypes[0])
                     muint = 2 ** (dtype.itemsize * 8) - 1
                     mask = (~mask * muint).astype(dtype)
@@ -921,12 +928,14 @@ class Transform:  # numpydoc ignore=PR01
         cls,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         connectivity: ArrayLike | Shape | None = None,
         data: ArrayLike | None = None,
         start_index: int | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        rgb: bool | None = None,
+        rgb: bool | None = False,
         radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
@@ -1006,6 +1015,9 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
+        if rgb is None:
+            rgb = False
+
         xs, ys = np.asanyarray(xs), np.asanyarray(ys)
         shape = xs.shape
 
@@ -1040,20 +1052,10 @@ class Transform:  # numpydoc ignore=PR01
             # default to the shape of the points
             connectivity = shape
 
-            # generate connectivity from masked points
-            if (
-                np.ma.is_masked(xs)
-                and np.ma.is_masked(ys)
-                and np.array_equal(xs.mask, ys.mask)
-            ):
-                connectivity = np.ma.arange(np.ma.prod(shape), dtype=np.uint32).reshape(
-                    shape
-                )
-                connectivity.mask = xs.mask
-
         if isinstance(connectivity, tuple):
-            cls._verify_connectivity(connectivity)
+            ignore_start_index = True
             npts = np.prod(connectivity)
+            dtype = np.uint32
 
             if npts != xs.size:
                 emsg = (
@@ -1063,18 +1065,28 @@ class Transform:  # numpydoc ignore=PR01
                 )
                 raise ValueError(emsg)
 
-            connectivity = np.arange(npts, dtype=np.uint32).reshape(connectivity)
-            ignore_start_index = True
+            # generate connectivity array
+            if (
+                np.ma.is_masked(xs)
+                and np.ma.is_masked(ys)
+                and np.array_equal(xs.mask, ys.mask)
+            ):
+                connectivity_array = np.ma.arange(npts, dtype=dtype).reshape(
+                    connectivity
+                )
+                connectivity_array.mask = np.copy(xs.mask)
+            else:
+                connectivity_array = np.arange(npts, dtype=dtype).reshape(connectivity)
         else:
-            # require to copy connectivity, otherwise results in a memory
-            # corruption within vtk
-            connectivity = np.asanyarray(connectivity).copy()
-            cls._verify_connectivity(connectivity.shape)
             ignore_start_index = False
+            # copy connectivity to avoid memory corruption within vtk
+            connectivity_array = np.asanyarray(connectivity).copy()
+
+        cls._verify_connectivity(connectivity_array.shape)
 
         if not ignore_start_index:
             if start_index is None:
-                start_index = connectivity.min()
+                start_index = connectivity_array.min()
 
             if start_index not in [0, 1]:
                 emsg = (
@@ -1084,7 +1096,7 @@ class Transform:  # numpydoc ignore=PR01
                 raise ValueError(emsg)
 
             if start_index:
-                connectivity -= start_index
+                connectivity_array -= start_index
 
         # reduce any singularity points at the poles to a common longitude
         poles = np.isclose(np.abs(ys), 90)
@@ -1099,16 +1111,16 @@ class Transform:  # numpydoc ignore=PR01
         # convert lat/lon to cartesian xyz
         geometry = to_cartesian(xs, ys, radius=radius)
 
-        if np.ma.is_masked(connectivity):
+        if np.ma.is_masked(connectivity_array):
             # create face connectivity from masked vertex indices, thus
             # supporting varied mesh face geometry e.g., triangular, quad,
             # pentagon (et al) cells within a single mesh.
-            connectivity = np.atleast_2d(connectivity)
-            if (ndim := connectivity.ndim) > 2:
+            connectivity_array = np.atleast_2d(connectivity_array)
+            if (ndim := connectivity_array.ndim) > 2:
                 emsg = f"Masked connectivity must be at most 2-D, got {ndim}-D."
                 raise ValueError(emsg)
-            n_faces = connectivity.shape[0]
-            n_vertices = np.ma.sum(~connectivity.mask, axis=1)
+            n_faces = connectivity_array.shape[0]
+            n_vertices = np.ma.sum(~connectivity_array.mask, axis=1)
             # ensure at least three vertices per face
             valid_faces_mask = n_vertices > 2
             if not np.all(valid_faces_mask):
@@ -1120,8 +1132,10 @@ class Transform:  # numpydoc ignore=PR01
                 )
                 warnings.warn(wmsg, stacklevel=2)
                 n_vertices = n_vertices[valid_faces_mask]
-                connectivity = connectivity[valid_faces_mask]
-            faces = np.ma.hstack([n_vertices.reshape(-1, 1), connectivity]).ravel()
+                connectivity_array = connectivity_array[valid_faces_mask]
+            faces = np.ma.hstack(
+                [n_vertices.reshape(-1, 1), connectivity_array]
+            ).ravel()
             faces = faces[~faces.mask].data
         else:
             # create face connectivity serialization e.g., for a quad-mesh,
@@ -1129,13 +1143,13 @@ class Transform:  # numpydoc ignore=PR01
             # of vertices defining the face, followed by the four indices (Vn)
             # specifying each of the face vertices in an anti-clockwise order
             # into the mesh geometry.
-            n_faces, n_vertices = connectivity.shape
+            n_faces, n_vertices = connectivity_array.shape
             faces = np.hstack(
                 [
                     np.broadcast_to(
                         np.array([n_vertices], dtype=np.int8), (n_faces, 1)
                     ),
-                    connectivity,
+                    connectivity_array,
                 ]
             )
 
@@ -1150,12 +1164,10 @@ class Transform:  # numpydoc ignore=PR01
 
         # attach any optional data to the mesh
         if data is not None:
-            data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells, rgb)
+            data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells, rgb=rgb)
             if not name:
                 size = data.size // data.shape[-1] if rgb else data.size
                 name = NAME_POINTS if size == mesh.n_points else NAME_CELLS
-            if not isinstance(name, str):
-                name = str(name)
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data
@@ -1170,6 +1182,8 @@ class Transform:  # numpydoc ignore=PR01
         self,
         xs: ArrayLike,
         ys: ArrayLike,
+        /,
+        *,
         connectivity: ArrayLike | Shape | None = None,
         start_index: int | None = None,
         crs: CRSLike | None = None,
@@ -1273,7 +1287,7 @@ class Transform:  # numpydoc ignore=PR01
         self._n_cells = mesh.n_cells
 
     def __call__(
-        self, data: ArrayLike | None = None, name: str | None = None
+        self, *, data: ArrayLike | None = None, name: str | None = None
     ) -> pv.PolyData:
         """Build the mesh and attach the provided `data` to faces or nodes.
 

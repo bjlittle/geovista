@@ -1,0 +1,4 @@
+Reduced the :ref:`sphx_glr_generated_gallery_domain_clouds.py` and
+:ref:`sphx_glr_generated_gallery_domain_clouds_robin.py` examples by rendering
+only a single cloud mesh in order to reduce documentation build time.
+(:user:`bjlittle`)

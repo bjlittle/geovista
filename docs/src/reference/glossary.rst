@@ -1,6 +1,7 @@
 .. include:: ../common.txt
 
 .. _gv-reference-glossary:
+.. _tippy-gv-reference-glossary:
 
 :fa:`spell-check` Glossary
 ==========================
@@ -12,7 +13,7 @@ Say what you mean. Mean what you say.
 
     Actor
         Represents an object (geometry and properties) in a rendered scene.
-        See `vtkActor`_.
+        See :vtk:`vtkActor`.
 
     Base Layer
         A surface mesh that may be texture mapped, and lies beneath another
@@ -35,8 +36,30 @@ Say what you mean. Mean what you say.
         For example, a qudrilateral-cell surface that can be created from an
         array of 2-D ``x`` and ``y`` spatial points.
 
+    Environment
+        A `pixi environment`_ is a collection of one or more
+        :term:`features <Feature>` that encapsulate its dependencies,
+        configurations and tasks. Environments can be installed and
+        activated to run :term:`tasks <Task>`. Our environments are
+        defined under the ``[tool.pixi.environments]`` table in the
+        ``pyproject.toml`` manifest. See these `design considerations`_ for
+        further details.
+
     Face
         A polygonal cell in a mesh geometry. Also see :term:`Cell`.
+
+    Feature
+        A `pixi feature`_ defines part of an
+        :term:`environment <Environment>` and may contain ``dependencies``,
+        ``platforms``, ``channels``, ``tasks`` and various other configurations.
+        Our features are defined under ``[tools.pixi.feature.<feature-name>.*]``
+        tables in the ``pyproject.toml`` manifest. See these
+        `design considerations`_ for further details.
+
+    GHA
+        Acronym for **GitHub Action**. A feature offered by `GitHub`_ that provides
+        Continuous Integration (CI), Continuous Deployment (CD) and task automation
+        workflows within a GitHub repository.
 
     Land Mask
         Typically a boolean array used to indicate the cells in a mesh that
@@ -73,6 +96,14 @@ Say what you mean. Mean what you say.
         Typically a boolean array used to indicate the cells in a mesh that
         represent water e.g., river, lake, sea, ocean.
 
+    Task
+        A `pixi task`_ is defined as part of a :term:`feature <Feature>`
+        to perform a cross-platform workflow command within an
+        :term:`environment <Environment>`. Tasks are defined under the
+        ``[tool.pixi.feature.<feature-name>.tasks.<task-name>]`` table in the
+        ``pyproject.toml`` manifest. See the `tasks documentation`_ for
+        for further details.
+
     Texture Map
         A graphical technique where a raster image is wrapped over the
         surface of a geometric object.
@@ -101,4 +132,9 @@ Say what you mean. Mean what you say.
 .. _What is a Cell?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-cell
 .. _What is a Point?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-point
 .. _What is a Mesh?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-mesh
+.. _design considerations: https://pixi.sh/latest/workspace/multi_environment/#design-considerations
+.. _pixi environment: https://pixi.sh/latest/reference/pixi_manifest/#the-environments-table
+.. _pixi feature: https://pixi.sh/latest/reference/pixi_manifest/#the-feature-table
+.. _pixi task: https://pixi.sh/latest/reference/pixi_manifest/#the-tasks-table
+.. _tasks documentation: https://pixi.sh/latest/workspace/advanced_tasks/
 .. _vtkActor: https://vtk.org/doc/nightly/html/classvtkActor.html#details

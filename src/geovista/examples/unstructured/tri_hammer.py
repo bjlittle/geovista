@@ -60,14 +60,13 @@ def main() -> None:
         sample.lats,
         connectivity=sample.connectivity,
         data=sample.data,
-        name=sample.name,
+        name=f"{sample.name} / {sample.units}",
     )
 
     # Plot the unstructured mesh.
     crs = "+proj=hammer"
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    p.add_mesh(mesh, scalar_bar_args=sargs, scalars=sample.name)
+    p.add_mesh(mesh)
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_coastlines()
     p.add_axes()
@@ -75,7 +74,6 @@ def main() -> None:
         f"WW3 Triangular Mesh ({crs})",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

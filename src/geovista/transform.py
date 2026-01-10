@@ -45,7 +45,9 @@ __all__ = [
 
 def transform_mesh(
     mesh: pv.PolyData,
+    /,
     tgt_crs: CRSLike,
+    *,
     slice_connectivity: bool | None = True,
     rtol: float | None = None,
     atol: float | None = None,
@@ -94,7 +96,7 @@ def transform_mesh(
     .. versionadded:: 0.3.0
 
     """
-    from .core import slice_mesh
+    from .core import slice_mesh  # noqa: PLC0415
 
     src_crs = from_wkt(mesh)
 
@@ -186,6 +188,7 @@ def transform_point(
     x: float,
     y: float,
     z: float | None = None,
+    *,
     trap: bool | None = True,
 ) -> ArrayLike:
     """Transform the spatial point from the source to the target CRS.
@@ -242,6 +245,7 @@ def transform_points(
     xs: ArrayLike,
     ys: ArrayLike,
     zs: ArrayLike | None = None,
+    *,
     trap: bool | None = True,
 ) -> ArrayLike:
     """Transform the spatial points from the source to the target CRS.

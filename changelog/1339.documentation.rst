@@ -1,0 +1,3 @@
+Simplified several :ref:`tippy-gv-examples` by using ``geovista.pantry.meshes``
+instead of loading ``geovista.pantry.data`` to construct sample
+meshes. (:user:`bjlittle`)

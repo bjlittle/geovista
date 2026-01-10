@@ -1,6 +1,7 @@
 .. include:: common.txt
 
 .. _gv-overview:
+.. _tippy-gv-overview:
 
 :fa:`panorama` Overview
 =======================
@@ -46,6 +47,9 @@ your spatial data for visualization, such as `geopandas`_, `iris`_ and
 `xarray`_.
 
 
+.. _gv-overview-ecosystem:
+.. _tippy-gv-overview-ecosystem:
+
 Ecosystem
 ---------
 
@@ -55,8 +59,8 @@ of the GPU.
 
 .. figure:: _static/images/ecosystem.png
     :align: center
-    :name: ecosystem-figure
     :alt: GeoVista Ecosystem
+    :name: tippy-gv-overview-ecosystem-geovista-ecosystem
 
     Ecosystem of ``geovista``
 
@@ -73,10 +77,9 @@ PyVista in a Nutshell
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. figure:: _static/images/pyvista-examples.png
+    :alt: PyVista Examples
     :figclass: margin
     :target: https://docs.pyvista.org/examples/
-    :name: pyvista-figure
-    :alt: PyVista Examples
 
     PyVista Examples
 
@@ -89,7 +92,7 @@ PyVista in a Nutshell
 - Batteries-included access to a rich suite of mesh `filtering algorithms`_
 - GPU accelerated visualization
 - Scales up to large and complex geometries
-- Interoperability with `ParaView`_ through `VTK`_ (see :numref:`ecosystem-figure`)
+- Interoperability with `ParaView`_ through `VTK`_ (see :numref:`tippy-gv-overview-ecosystem-geovista-ecosystem`)
 - Static and interactive plot integration within `Jupyter`_ ecosystem
 
 

@@ -22,7 +22,7 @@ sea floor depth below geoid data.
 The resulting mesh contains triangular cells. The connectivity is required to
 construct the cells from the unstructured points.
 
-Note that, the data is on the mesh faces/cells, but also on the nodes/points.
+Note that the data is on the mesh faces/cells, but also on the nodes/points.
 
 A ``pyvista`` "warp" operation is used to extrude the mesh by the point depth
 values, to reveal the bathymetry of the Plymouth Sound and Tamar River in
@@ -30,7 +30,7 @@ Cornwall, UK.
 
 The warp uses :meth:`~pyvista.PolyDataFilters.compute_normals` and
 :meth:`~pyvista.DataSetFilters.warp_by_scalar`. See
-`Computing Surface Normals <https://docs.pyvista.org/examples/01-filter/compute-normals>`_
+`Computing Surface Normals <https://docs.pyvista.org/examples/01-filter/compute_normals>`_
 for further details.
 
 .. tags::
@@ -77,14 +77,13 @@ def main() -> None:
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
+    sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(mesh, cmap="deep", scalars="face", scalar_bar_args=sargs)
     p.add_axes()
     p.add_text(
         "PML FVCOM Tamar",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.camera.zoom(1.2)
     p.show()

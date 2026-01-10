@@ -1,0 +1,6 @@
+Converted `pyvista <https://github.com/pyvista/pyvista>`__ documentation
+URLs to use ``snake_case`` post
+`pyvista v0.45.0 <https://github.com/pyvista/pyvista/releases/tag/v0.45.0>`__
+release. Reference :fa:`code-pull-request`
+`pyvista #7169 <https://github.com/pyvista/pyvista/pull/7169>`__.
+Closes :issue:`1423`. (:user:`bjlittle`)

@@ -1,0 +1,4 @@
+Introduced minimum pin ``pyvista >=0.45.0`` and dropped the
+`pytest <https://github.com/pytest-dev/pytest>`__ plugin
+`pytest-xvfb <https://github.com/The-Compiler/pytest-xvfb>`__
+for headless display support. (:user:`bjlittle`)

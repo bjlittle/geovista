@@ -1,0 +1,2 @@
+Introduced pin ``trame-vtk ==2.8.15`` to avoid subplot interactive scene
+behaviour regression. (:user:`bjlittle`)

@@ -1,5 +1,5 @@
 # Reference:
-#   - https://github.com/tibdex/github-app-token
+#   - https://github.com/actions/create-github-app-token
 #   - https://github.com/adRise/update-pr-branch
 
 name: ci-update
@@ -13,19 +13,24 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   autoupdate:
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
+
     steps:
       - name: "generate token"
-        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
+        uses: actions/create-github-app-token@v2
         id: generate-token
         with:
-          app_id: ${{ secrets.AUTH_APP_ID }}
-          private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.AUTH_APP_ID }}
+          private-key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
 
       - name: "automatically update PR"
-        uses: adRise/update-pr-branch@3576c22e28fb6f665417bfe3a83f9da7ca5363e2
+        uses: adRise/update-pr-branch@a51c014567e5be98445551cce9b8f5ad42dd8acf
         with:
           token: ${{ steps.generate-token.outputs.token }}
           base: "main"

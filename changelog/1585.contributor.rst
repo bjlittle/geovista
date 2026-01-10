@@ -1,0 +1,2 @@
+Added the `pixi <https://github.com/prefix-dev/pixi>`__ 🧚 workflow tasks
+``test`` and ``test-clean`` for the ``test`` feature. (:user:`bjlittle`)

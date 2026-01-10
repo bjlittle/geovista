@@ -1,0 +1,2 @@
+Enforced an ``open-pull-request-limit`` for automated ``dependabot`` generated
+pull-requests. (:user:`bjlittle`)

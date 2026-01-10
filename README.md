@@ -1,25 +1,25 @@
-<h1 align="center">
-  <a href="https://github.com/bjlittle/geovista#--------">
-    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/branding/logo/primary/geovistalogo.svg"
+<p align="center">
+  <a href="https://geovista.readthedocs.io/en/latest/">
+    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/branding/title/geovista-title.svg"
          alt="GeoVista"
-         width="200"></a>
-</h1>
+         style="width: 50%; height: 50%"></a>
+</p>
 
 <h3 align="center">
   Cartographic rendering and mesh analytics powered by <a href="https://docs.pyvista.org/index.html">PyVista</a>
 </h3>
 
-|              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ⚙️ CI        | [![ci-citation](https://github.com/bjlittle/geovista/actions/workflows/ci-citation.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-citation.yml) [![ci-locks](https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml) [![ci-manifest](https://github.com/bjlittle/geovista/actions/workflows/ci-manifest.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-manifest.yml) [![ci-tests](https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml) [![ci-wheels](https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml) [![pre-commit](https://results.pre-commit.ci/badge/github/bjlittle/geovista/main.svg)](https://results.pre-commit.ci/latest/github/bjlittle/geovista/main)                                                                                                                                |
-| 💬 Community | [![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-2.1-4baaaa.svg)](https://github.com/bjlittle/geovista/blob/main/CODE_OF_CONDUCT.md) [![GH Discussions](https://img.shields.io/badge/github-discussions%20%F0%9F%92%AC-yellow?logo=github&logoColor=lightgrey)](https://github.com/bjlittle/geovista/discussions) [![Bluesky](https://img.shields.io/badge/geovista-0285FF?label=bluesky&logo=bluesky&logoColor=0285FF)](https://bsky.app/profile/geovista.bsky.social) [![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UCMJIzZ23r_3fvtqNpYi57Lw?label=@geovista_devs)](https://www.youtube.com/@geovista_devs/videos) [![All Contributors](https://img.shields.io/github/all-contributors/bjlittle/geovista?color=ee8449)](https://geovista.readthedocs.io/en/latest/reference/about.html#contributors) [![Mentioned in Awesome Open Geoscience](https://awesome.re/mentioned-badge.svg)](https://github.com/softwareunderground/awesome-open-geoscience) [![GitHub Repo stars](https://img.shields.io/github/stars/bjlittle/geovista)](https://github.com/bjlittle/geovista/stargazers) |
-| 📚 Docs      | [![Documentation Status](https://readthedocs.org/projects/geovista/badge/?version=latest)](https://geovista.readthedocs.io/en/latest/?badge=latest)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| 📈 Health    | [![codecov](https://codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3)](https://codecov.io/gh/bjlittle/geovista)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ✨ Meta       | [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/) [![license - bsd-3-clause](https://img.shields.io/github/license/bjlittle/geovista)](https://github.com/bjlittle/geovista/blob/main/LICENSE) [![conda platform](https://img.shields.io/conda/pn/conda-forge/geovista.svg)](https://anaconda.org/conda-forge/geovista)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 📦 Package   | [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7608302.svg)](https://doi.org/10.5281/zenodo.7608302) [![conda-forge](https://img.shields.io/conda/vn/conda-forge/geovista?color=orange&label=conda-forge&logo=conda-forge&logoColor=white)](https://anaconda.org/conda-forge/geovista) [![pypi](https://img.shields.io/pypi/v/geovista?color=orange&label=pypi&logo=python&logoColor=white)](https://pypi.org/project/geovista/) [![pypi - python version](https://img.shields.io/pypi/pyversions/geovista.svg?color=orange&logo=python&label=python&logoColor=white)](https://pypi.org/project/geovista/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 🧰 Repo      | [![commits-since](https://img.shields.io/github/commits-since/bjlittle/geovista/latest.svg)](https://github.com/bjlittle/geovista/commits/main) [![contributors](https://img.shields.io/github/contributors/bjlittle/geovista)](https://github.com/bjlittle/geovista/graphs/contributors) [![release](https://img.shields.io/github/v/release/bjlittle/geovista)](https://github.com/bjlittle/geovista/releases)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| 🛡️ Status   | [![scitools](https://img.shields.io/badge/scitools-ownership%20pending-yellow)](https://github.com/bjlittle/geovista/issues/167)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-|              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+|              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ⚙️ CI        | [![ci-citation](https://github.com/bjlittle/geovista/actions/workflows/ci-citation.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-citation.yml) [![ci-linkcheck](https://github.com/bjlittle/geovista/actions/workflows/ci-linkcheck.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-linkcheck.yml) [![ci-locks](https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml) [![ci-manifest](https://github.com/bjlittle/geovista/actions/workflows/ci-manifest.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-manifest.yml) [![ci-tests](https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml) [![ci-tests-lock](https://github.com/bjlittle/geovista/actions/workflows/ci-tests-lock.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-tests-lock.yml) [![ci-tests-pypi](https://github.com/bjlittle/geovista/actions/workflows/ci-tests-pypi.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-tests-pypi.yml) [![ci-wheels](https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml) [![pre-commit](https://results.pre-commit.ci/badge/github/bjlittle/geovista/main.svg)](https://results.pre-commit.ci/latest/github/bjlittle/geovista/main) |
+| 💬 Community | [![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-2.1-4baaaa.svg)](https://github.com/bjlittle/geovista/blob/main/CODE_OF_CONDUCT.md) [![GH Discussions](https://img.shields.io/badge/github-discussions%20%F0%9F%92%AC-yellow?logo=github&logoColor=lightgrey)](https://github.com/bjlittle/geovista/discussions) [![Bluesky](https://img.shields.io/badge/geovista-0285FF?label=bluesky&logo=bluesky&logoColor=0285FF)](https://bsky.app/profile/geovista.bsky.social) [![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UCMJIzZ23r_3fvtqNpYi57Lw?label=@geovista_devs)](https://www.youtube.com/@geovista_devs/videos) [![All Contributors](https://img.shields.io/github/all-contributors/bjlittle/geovista?color=ee8449)](https://geovista.readthedocs.io/en/latest/reference/about.html#contributors) [![Mentioned in Awesome Open Geoscience](https://awesome.re/mentioned-badge.svg)](https://github.com/softwareunderground/awesome-open-geoscience) [![GitHub Repo stars](https://img.shields.io/github/stars/bjlittle/geovista)](https://github.com/bjlittle/geovista/stargazers)                                                |
+| 📚 Docs      | [![ci-docs](https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml) [![ci-tests-docs](https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml/badge.svg)](https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml) [![RTD](https://app.readthedocs.org/projects/geovista/badge/?version=latest)](https://geovista.readthedocs.io/en/latest/?badge=latest)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| 📈 Health    | [![codecov](https://app.codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3)](https://app.codecov.io/gh/bjlittle/geovista)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ✨ Meta       | [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/) [![license - bsd-3-clause](https://img.shields.io/github/license/bjlittle/geovista)](https://github.com/bjlittle/geovista/blob/main/LICENSE) [![conda platform](https://img.shields.io/conda/pn/conda-forge/geovista.svg)](https://anaconda.org/conda-forge/geovista) [![zizmor](https://img.shields.io/badge/%F0%9F%8C%88-zizmor-white?labelColor=white)](https://zizmor.sh/)                                                                                                                                                                                                                                                                                                                              |
+| 📦 Package   | [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7608302.svg)](https://zenodo.org/doi/10.5281/zenodo.7608302) [![conda-forge](https://img.shields.io/conda/vn/conda-forge/geovista?color=orange&label=conda-forge&logo=conda-forge&logoColor=white)](https://anaconda.org/conda-forge/geovista) [![pypi](https://img.shields.io/pypi/v/geovista?color=orange&label=pypi&logo=python&logoColor=white)](https://pypi.org/project/geovista/) [![pypi - python version](https://img.shields.io/pypi/pyversions/geovista.svg?color=orange&logo=python&label=python&logoColor=white)](https://pypi.org/project/geovista/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 🧰 Repo      | [![commits-since](https://img.shields.io/github/commits-since/bjlittle/geovista/latest.svg)](https://github.com/bjlittle/geovista/commits/main) [![contributors](https://img.shields.io/github/contributors/bjlittle/geovista)](https://github.com/bjlittle/geovista/graphs/contributors) [![release](https://img.shields.io/github/v/release/bjlittle/geovista)](https://github.com/bjlittle/geovista/releases)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 🛡️ Status   | [![scitools](https://img.shields.io/badge/scitools-ownership%20pending-yellow)](https://github.com/bjlittle/geovista/issues/167)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ## Rediscover Your Data
 
@@ -58,24 +58,24 @@ Scientific Python community.
 
 Simply put, "*[GeoVista](https://geovista.readthedocs.io/) is to
 [PyVista](https://docs.pyvista.org/)*", as
-"*[Cartopy](https://scitools.org.uk/cartopy/docs/latest/) is to
+"*[Cartopy](https://cartopy.readthedocs.io/stable/) is to
 [Matplotlib](https://matplotlib.org/)*". Well, that's the aspiration.
 
 ## Installation
 
 GeoVista is available on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/).
-
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/index.html) to install GeoVista 👍
+See our  [Installation](https://geovista.readthedocs.io/en/latest/installation.html) guide for further details.
 
 ### Conda
 
 GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with
 [conda](https://docs.conda.io/projects/conda/en/latest/index.html):
+
 ```shell
-conda install -c conda-forge geovista
+conda install --channel conda-forge geovista
 ```
-For more information see our [conda-forge feedstock](https://github.com/conda-forge/geovista-feedstock) and
-[prefix.dev dashboard](https://prefix.dev/channels/conda-forge/packages/geovista).
+
+Also see our [conda-forge feedstock](https://github.com/conda-forge/geovista-feedstock).
 
 ### Pip
 
@@ -86,6 +86,24 @@ pip install geovista
 ```
 
 Checkout out our [PyPI Download Stats](https://pypistats.org/packages/geovista), if you like that kinda thing.
+
+### Pixi 🧚
+
+Alternatively, install GeoVista with [pixi](https://pixi.sh/):
+
+```shell
+pixi add geovista
+````
+
+<!--- https://github.blog/developer-skills/how-to-make-your-images-in-markdown-on-github-adjust-for-dark-mode-and-light-mode --->
+
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="https://vhs.charm.sh/vhs-yd17Xp4J6XrEpKcSjvJZ2.gif">
+  <source media="(prefers-color-scheme: dark)" srcset="https://vhs.charm.sh/vhs-7beUyABBzxlzwVcLljsroC.gif">
+  <img src="https://vhs.charm.sh/vhs-yd17Xp4J6XrEpKcSjvJZ2.gif">
+</picture>
+
+For more information visit our [prefix.dev dashboard](https://prefix.dev/channels/conda-forge/packages/geovista).
 
 ## Quick Start
 
@@ -154,7 +172,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/ww3-tri.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/ww3-tri.png"
        alt="WAVEWATCH III Model, Unstructured Triangular Mesh of Sea Surface Wave Significant Height"
        style="width: 75%; height: 75%">
 </p>
@@ -201,7 +219,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/tamar.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/tamar.png"
        alt="Finite Volume Community Ocean Model, Unstructured Triangular Mesh of Sea Floor Below Geoid"
        style="width: 75%; height: 75%">
 </p>
@@ -254,14 +272,14 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lam-moll.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/lam-moll.png"
        alt="CF UGRID Local Area Model, Unstructured Quadrilateral Mesh of Air Potential Temperature"
        style="width: 75%; height: 75%">
 </p>
 
 Using the same **unstructured** LAM data, reproject to
 [Equidistant Cylindrical](https://proj.org/operations/projections/eqc.html) but this time using a
-[Cartopy Plate Carrée CRS](https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree),
+[Cartopy Plate Carrée CRS](https://cartopy.readthedocs.io/stable/reference/projections.html#cartopy.crs.PlateCarree),
 also with [10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/)
 and a
 [1:50m Natural Earth Cross-Blended Hypsometric Tints](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-cross-blend-hypso/)
@@ -302,7 +320,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lam-eqc.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/lam-eqc.png"
        alt="CF UGRID Local Area Model, Unstructured Quadrilateral Mesh of Air Potential Temperature in Plate Carrée Projection"
        style="width: 75%; height: 75%">
 </p>
@@ -346,7 +364,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/lfric-robin.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/lfric-robin.png"
        alt="LFRic Model, Unstructured Cube Sphere of Surface Temperature in Robinson Projection"
        style="width: 75%; height: 75%">
 </p>
@@ -388,7 +406,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/nemo-orca.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/nemo-orca.png"
        alt="NEMO ORCA2 Model, Curvilinear Quadrilateral Mesh of Sea Water Potential Temperature"
        style="width: 75%; height: 75%">
 </p>
@@ -430,7 +448,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/oisst-avhrr.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/oisst-avhrr.png"
        alt="Optimum Interpolation Sea Surface Temperature Advanced Very High Resolution Radiometer Model, Rectilinear Quadrilateral Mesh"
        style="width: 75%; height: 75%">
 </p>
@@ -469,7 +487,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2024.07.0/media/readme/dynamico-icosahedral.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/dynamico-icosahedral.png"
        alt="DYNAMICO Model, Unstructured Hexagonal Mesh of Surface Air Temperature"
        style="width: 75%; height: 75%">
 </p>

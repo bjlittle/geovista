@@ -1,0 +1,3 @@
+Applied the ``:vkt:`` role from the ``sphinx`` extension `vtk-xref <https://github.com/pyvista/vtk-xref>`__
+to cross-reference items within the `VTK documentation <https://vtk.org/doc/nightly/html/index.html>`__.
+(:user:`bjlittle`)

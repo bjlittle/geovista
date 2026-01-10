@@ -134,9 +134,13 @@ class GraticuleGrid:
     """
 
     blocks: pv.MultiBlock
+    """Meridian/Parallel meshes in a multi-block dataset."""
     lonlat: ArrayLike
+    """The longitude/latitude points for the meridian/parallel labels."""
     labels: list[str]
-    mask: ArrayLike = None
+    """The labels for the meridian/parallel lines."""
+    mask: ArrayLike | None = None
+    """A mask for closed interval meridians, if applicable."""
 
 
 def _step_period(lon: float, lat: float) -> tuple[float, float]:
@@ -170,7 +174,7 @@ def _step_period(lon: float, lat: float) -> tuple[float, float]:
     return (lon, lat)
 
 
-def create_meridian_labels(lons: list[float]) -> list[str]:
+def create_meridian_labels(lons: list[float] | float) -> list[str]:
     """Generate labels for the meridians.
 
     Parameters
@@ -211,6 +215,7 @@ def create_meridian_labels(lons: list[float]) -> list[str]:
 
 
 def create_meridians(
+    *,
     start: float | None = None,
     stop: float | None = None,
     step: float | None = None,
@@ -369,7 +374,7 @@ def create_meridians(
 
 
 def create_parallel_labels(
-    lats: list[float], poles_parallel: bool | None = None
+    lats: list[float] | float, *, poles_parallel: bool | None = None
 ) -> list[str]:
     """Generate labels for the parallels.
 
@@ -419,6 +424,7 @@ def create_parallel_labels(
 
 
 def create_parallels(
+    *,
     start: float | None = None,
     stop: float | None = None,
     step: float | None = None,

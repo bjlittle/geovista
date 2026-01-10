@@ -20,7 +20,7 @@ The resulting mesh contains quad cells.
 It uses an ORCA2 global ocean with tri-polar model grid with sea water
 potential temperature data. The data targets the mesh faces/cells.
 
-Note that, a threshold is applied to remove land ``NaN`` cells, before the
+Note that a threshold is applied to remove land ``NaN`` cells, before the
 mesh is then transformed to the Mollweide pseudo-cylindrical projection
 and extruded to give depth to the projected surface. Finally, 10m
 resolution Natural Earth coastlines are also rendered.
@@ -29,7 +29,7 @@ resolution Natural Earth coastlines are also rendered.
 
     component: coastlines, component: texture,
     domain: oceanography,
-    filter: extrude, filter: threshold
+    filter: cast, filter: extrude, filter: threshold,
     load: curvilinear,
     projection: crs, projection: transform
 
@@ -58,7 +58,12 @@ def main() -> None:
     sample = nemo_orca2()
 
     # Create the mesh from the sample data.
-    mesh = gv.Transform.from_2d(sample.lons, sample.lats, data=sample.data)
+    mesh = gv.Transform.from_2d(
+        sample.lons,
+        sample.lats,
+        data=sample.data,
+        name=f"{sample.name} / {sample.units}",
+    )
 
     # Remove cells from the mesh with NaN values.
     mesh = cast(mesh.threshold())
@@ -69,15 +74,13 @@ def main() -> None:
 
     # Plot the curvilinear mesh.
     p = gv.GeoPlotter(crs=crs)
-    sargs = {"title": f"{sample.name} / {sample.units}", "shadow": True}
-    p.add_mesh(mesh, scalar_bar_args=sargs)
+    p.add_mesh(mesh)
     p.add_coastlines(color="black")
     p.add_axes()
     p.add_text(
         f"ORCA ({crs}, extrude)",
         position="upper_left",
         font_size=10,
-        shadow=True,
     )
     p.view_xy()
     p.camera.zoom(1.5)

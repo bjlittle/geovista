@@ -56,8 +56,8 @@ __all__ = [
     "WRAP_RTOL",
     "ZLEVEL_SCALE",
     "ZTRANSFORM_FACTOR",
-    "MixinStrEnum",
     "Preference",
+    "StrEnumPlus",
     "active_kernel",
     "cast_UnstructuredGrid_to_PolyData",
     "distance",
@@ -148,28 +148,31 @@ ZTRANSFORM_FACTOR: int = 3
 """The zlevel scaling to be applied when transforming to a projection."""
 
 
-class MixinStrEnum:
-    """Convenience behaviour mixin for a string enumeration.
+class StrEnumPlus(StrEnum):
+    """Convenience behaviour for a string enumeration.
 
     Notes
     -----
-    .. versionadded:: 0.3.0
+    .. versionadded:: 0.6.0
+
+    Previously called MixinStrEnum.
 
     """
 
     @classmethod
-    def _missing_(cls, item: str | Preference) -> Preference | None:
+    def _missing_(cls, value: object) -> StrEnumPlus | None:
         """Handle missing enumeration members.
 
         Parameters
         ----------
-        item : str or Preference
-            The candidate preference enumeration member.
+        value : object
+            The candidate preference enumeration member. Expected to be str or
+            StrEnumPlus instance, but could be any object.
 
         Returns
         -------
-        Preference
-            The preference member or None if the member is not a valid
+        StrEnumPlus
+            The enum member or None if the member is not a valid
             enumeration member.
 
         Notes
@@ -177,14 +180,14 @@ class MixinStrEnum:
         .. versionadded:: 0.3.0
 
         """
-        item = str(item).lower()
+        value_string = str(value).lower()
         for member in cls:
-            if member.value == item:
+            if member.value == value_string:
                 return member
         return None
 
     @classmethod
-    def valid(cls, item: str | Preference) -> bool:
+    def valid(cls, item: str | StrEnumPlus) -> bool:
         """Determine whether the provided item is a valid enumeration member.
 
         Parameters
@@ -218,10 +221,10 @@ class MixinStrEnum:
         .. versionadded:: 0.3.0
 
         """
-        return tuple([member.value for member in cls])
+        return tuple(member.value for member in cls)
 
 
-class Preference(MixinStrEnum, StrEnum):
+class Preference(StrEnumPlus):
     """Enumeration of common mesh geometry preferences.
 
     Notes
@@ -231,7 +234,9 @@ class Preference(MixinStrEnum, StrEnum):
     """
 
     CELL = "cell"
+    """Preference for cell geometry."""
     POINT = "point"
+    """Preference for point geometry."""
 
 
 def active_kernel() -> bool:
@@ -250,7 +255,7 @@ def active_kernel() -> bool:
     result = True
 
     try:
-        from IPython import get_ipython
+        from IPython import get_ipython  # noqa: PLC0415
 
         # the following statement may or may not raise an exception
         _ = get_ipython().kernel
@@ -262,6 +267,8 @@ def active_kernel() -> bool:
 
 def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
     mesh: pv.UnstructuredGrid,
+    /,
+    *,
     clean: bool | None = False,
 ) -> pv.PolyData:
     """Convert a :class:`~pyvista.UnstructuredGrid` to a :class:`~pyvista.PolyData`.
@@ -290,7 +297,6 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
         emsg = f"Expected a 'pyvista.UnstructuredGrid', got {dtype}."
         raise TypeError(emsg)
 
-    # see https://vtk.org/pipermail/vtkusers/2011-March/066506.html
     alg = pv._vtk.vtkGeometryFilter()  # noqa: SLF001
     alg.AddInputData(mesh)
     alg.Update()
@@ -304,12 +310,14 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
 
 def distance(
     mesh: pv.PolyData,
+    /,
+    *,
     origin: ArrayLike | None = None,
     mean: bool | None = True,
 ) -> float | np.ndarray:
     """Calculate the mean distance from the `origin` to the points of the `mesh`.
 
-    Note that, given a spherical `mesh` the distance calculated is the radius.
+    Note that given a spherical `mesh` the distance calculated is the radius.
 
     Parameters
     ----------
@@ -364,6 +372,8 @@ def distance(
 
 def from_cartesian(
     mesh: pv.PolyData,
+    /,
+    *,
     stacked: bool | None = True,
     closed_interval: bool | None = False,
     rtol: float | None = None,
@@ -514,7 +524,7 @@ def from_cartesian(
     return np.vstack(data).T if stacked else np.array(data)
 
 
-def get_modules(root: str, base: bool | None = True) -> list[str]:
+def get_modules(root: str, /, *, base: bool | None = True) -> list[str]:
     """Find all submodule names relative to the `root` package.
 
     Recursively searches down from the `root` to find all child (leaf) modules.
@@ -540,7 +550,8 @@ def get_modules(root: str, base: bool | None = True) -> list[str]:
     .. versionadded:: 0.5.0
 
     """
-    modules, pkgs = [], []
+    modules: list[str] = []
+    pkgs: list[str] = []
 
     for info in pkgutil.iter_modules(importlib.import_module(root).__path__):
         name = f"{root}.{info.name}"
@@ -604,11 +615,12 @@ def point_cloud(mesh: pv.PolyData) -> bool:
     .. versionadded:: 0.2.0
 
     """
-    return (mesh.n_points == mesh.n_cells) and (mesh.n_lines == 0)
+    result: bool = (mesh.n_points == mesh.n_cells) and (mesh.n_lines == 0)
+    return result
 
 
 def sanitize_data(
-    *meshes: Iterable[pv.PolyData],
+    *meshes: pv.PolyData,
 ) -> None:
     """Purge standard VTK helper cell and point data index arrays.
 
@@ -634,7 +646,7 @@ def sanitize_data(
             del mesh.point_data[VTK_POINT_IDS]
 
 
-def set_jupyter_backend(backend: str | None = None) -> bool:
+def set_jupyter_backend(*, backend: str | None = None) -> bool:
     """Configure the jupyter plotting backend for pyvista.
 
     Parameters
@@ -670,6 +682,7 @@ def set_jupyter_backend(backend: str | None = None) -> bool:
 def to_cartesian(
     lons: ArrayLike,
     lats: ArrayLike,
+    *,
     radius: float | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
@@ -725,18 +738,20 @@ def to_cartesian(
     zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
     # cast as float here, as from_cartesian use-case results in float zlevels
     # that should be dtype preserved for the purpose of precision
-    zlevel = np.array([0.0]) if zlevel is None else np.atleast_1d(zlevel).astype(float)
+    zlevel_array = (
+        np.array([0.0]) if zlevel is None else np.atleast_1d(zlevel).astype(float)
+    )
 
     try:
-        _ = np.broadcast_shapes(zshape := zlevel.shape, shape)
+        _ = np.broadcast_shapes(zlevel_array.shape, shape)
     except ValueError as err:
         emsg = (
-            f"Cannot broadcast zlevel with shape {zshape} to longitude/latitude"
-            f"shape {shape}."
+            f"Cannot broadcast zlevel with shape {zlevel_array.shape} to "
+            f"longitude/latitude shape {shape}."
         )
         raise ValueError(emsg) from err
 
-    radius += radius * zlevel * zscale
+    radius += radius * zlevel_array * zscale
 
     x_rad = np.radians(lons)
     y_rad = np.radians(90.0 - lats)
@@ -750,6 +765,8 @@ def to_cartesian(
 
 def to_lonlat(
     xyz: ArrayLike,
+    /,
+    *,
     radians: bool | None = False,
     radius: float | None = None,
     rtol: float | None = None,
@@ -800,6 +817,8 @@ def to_lonlat(
 
 def to_lonlats(
     xyz: ArrayLike,
+    /,
+    *,
     radians: bool | None = False,
     radius: float | ArrayLike | None = None,
     stacked: bool | None = True,
@@ -850,14 +869,14 @@ def to_lonlats(
     if radius is None:
         radius = RADIUS
 
-    radius = np.abs(np.atleast_1d(radius).astype(float))
+    radius_array = np.abs(np.atleast_1d(radius).astype(float))
 
-    if radius.shape != (1,) and (
-        radius.ndim != 1 or radius.shape[0] != points.shape[0]
+    if radius_array.shape != (1,) and (
+        radius_array.ndim != 1 or radius_array.shape[0] != points.shape[0]
     ):
         emsg = (
-            f"Require a 1-D array of radii, got a {radius.ndim}-D array with shape "
-            f"{radius.shape}."
+            f"Require a 1-D array of radii, got a {radius_array.ndim}-D array "
+            f"with shape {radius_array.shape}."
         )
         raise ValueError(emsg)
 
@@ -868,7 +887,7 @@ def to_lonlats(
         lons = np.degrees(lons)
     lons = wrap(lons, base=base, period=period, rtol=rtol, atol=atol)
 
-    z_radius = points[:, 2] / radius
+    z_radius = points[:, 2] / radius_array
     # NOTE: defensive clobber of values outside arcsin domain [-1, 1]
     #       which is the result of floating point inaccuracies at the extremes
     if indices := np.where(z_radius > 1):
@@ -902,11 +921,12 @@ def triangulated(surface: pv.PolyData) -> bool:
     .. versionadded:: 0.1.0
 
     """
-    return np.all(np.diff(surface._offset_array) == 3)  # noqa: SLF001
+    result: bool = np.all(np.diff(surface._offset_array) == 3)  # noqa: SLF001
+    return result
 
 
 def vtk_warnings_off() -> None:
-    """Disable :mod:`vtk` warning messages.
+    """Disable :vtk:`vtkLogger` warning messages.
 
     Notes
     -----
@@ -919,7 +939,7 @@ def vtk_warnings_off() -> None:
 
 
 def vtk_warnings_on() -> None:
-    """Enable :mod:`vtk` warning messages.
+    """Enable :vtk:`vtkLogger` warning messages.
 
     Notes
     -----
@@ -933,6 +953,7 @@ def vtk_warnings_on() -> None:
 
 def wrap(
     lons: ArrayLike,
+    *,
     base: float | None = None,
     period: float | None = None,
     rtol: float | None = None,

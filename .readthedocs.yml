@@ -3,34 +3,32 @@ version: 2
 build:
   os: ubuntu-22.04
   tools:
-    python: mambaforge-23.11
+    python: "latest"
   apt_packages:
     - libgl1-mesa-dev
     - xvfb
   jobs:
+    # https://docs.readthedocs.com/platform/stable/build-customization.html#install-dependencies-with-pixi
+    create_environment:
+      - asdf plugin add pixi
+      - asdf install pixi latest
+      - asdf global pixi latest
     post_checkout:
       # require full history for correct setuptools-scm version discovery
-      - git fetch --unshallow
-      - git fetch --all
+      - git fetch --unshallow || true
+      - git fetch --all --tags || true
     pre_install:
-      # keep checkout untainted from RTD to ensure correct
-      # setuptools-scm version
-      - git stash
+      # keep checkout untainted from RTD to ensure correct setuptools-scm version
+      - git stash || true
+    install:
+      - pixi install --frozen --environment docs
     post_install:
-      - git stash pop
-      - geovista download --operational --decompress
-
-conda:
-  environment: requirements/locks/rtd.yml
+      - git stash pop || true
+      - pixi run --frozen --environment docs geovista download --operational --decompress
+    build:
+      html:
+        - pixi run --frozen --environment docs sphinx-build -T -b html docs/src $READTHEDOCS_OUTPUT/html
 
 sphinx:
   configuration: docs/src/conf.py
   fail_on_warning: false
-
-python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - cmap
-        - docs

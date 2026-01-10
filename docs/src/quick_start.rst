@@ -1,11 +1,12 @@
 .. include:: common.txt
 
 .. _gv-quick-start:
+.. _tippy-gv-quick-start:
 
 :fa:`truck-fast` Quick Start
 ============================
 
-Now that you've :ref:`installed <gv-installation>` ``geovista``, let's take a
+Now that you've :ref:`installed <tippy-gv-installation>` ``geovista``, let's take a
 quick tour to see some of the features and capabilities on offer.
 
 
@@ -23,14 +24,14 @@ following on the command line:
 
 .. code:: console
 
-    geovista download --all
+    $ geovista download --all
 
 
 To view the manifest of registered resources:
 
 .. code:: console
 
-    geovsita download --list
+    $ geovsita download --list
 
 
 .. note::
@@ -40,7 +41,7 @@ To view the manifest of registered resources:
 
     .. code:: console
 
-        geovista download --help
+        $ geovista download --help
 
 
 Examples
@@ -54,7 +55,7 @@ Examples
    import pyvista
    pyvista.set_jupyter_backend('static')
    pyvista.global_theme.background = 'white'
-   pyvista.global_theme.window_size = [400, 300]
+   pyvista.global_theme.window_size = [600, 400]
    pyvista.global_theme.axes.show = False
    pyvista.global_theme.anti_aliasing = 'fxaa'
 
@@ -93,10 +94,11 @@ A 2-D array of *Sea Surface Temperature* data located on the mesh cells
 are rendered using the
 :term:`perceptually uniform <Perceptually Uniform Colormap>`
 `cmocean balance`_ diverging colormap, along with
-`10m Natural Earth coastlines`_. Note that, the land cells are masked.
+`10m Natural Earth coastlines`_. Note that the land cells are masked.
 
 .. pyvista-plot::
     :context:
+    :optional:
 
     import geovista as gv
     from geovista.pantry.data import oisst_avhrr_sst
@@ -170,6 +172,7 @@ projection.
 
 .. pyvista-plot::
     :context:
+    :optional:
 
     import cartopy.crs as ccrs
 
@@ -235,6 +238,7 @@ Finally, the render is decorated with `10m Natural Earth coastlines`_.
 
 .. pyvista-plot::
     :context:
+    :optional:
 
     import geovista as gv
     from geovista.pantry.data import ww3_global_tri
@@ -290,6 +294,7 @@ interactively.
 
 .. pyvista-plot::
     :context:
+    :optional:
 
     import geovista as gv
     from geovista.pantry.data import fvcom_tamar
@@ -329,7 +334,7 @@ And Finally ...
 Hopefully this whirlwind tour of ``geovista`` has whet your appetite for much
 more!
 
-If so, then let's explore the :ref:`next steps <gv-next-steps>` on your
+If so, then let's explore the :ref:`next steps <tippy-gv-next-steps>` on your
 ``geovista`` journey.
 
 
@@ -346,7 +351,7 @@ If so, then let's explore the :ref:`next steps <gv-next-steps>` on your
 .. _NASA Blue Marble: https://visibleearth.nasa.gov/collection/1484/blue-marble
 .. _NOAA/NCEI Optimum Interpolation SST: https://www.ncei.noaa.gov/products/optimum-interpolation-sst
 .. _Nucleus for European Modelling of the Ocean: https://forge.nemo-ocean.eu/nemo/nemo/-/wikis/home
-.. _Plate Carrée: https://scitools.org.uk/cartopy/docs/latest/reference/projections.html#cartopy.crs.PlateCarree
+.. _Plate Carrée: https://cartopy.readthedocs.io/stable/reference/projections.html#cartopy.crs.PlateCarree
 .. _Plymouth Sound and Tamar River: https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365
 .. _Robinson: https://proj4.org/en/stable/operations/projections/robin.html
 .. _WAVEWATCH III: https://github.com/NOAA-EMC/WW3

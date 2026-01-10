@@ -1,6 +1,7 @@
 .. _gv-explanation:
+.. _tippy-gv-explanation:
 
-🚧 :fa:`wind` Explanation
+:fa:`wind` Explanation 🚧
 =========================
 
 .. note::

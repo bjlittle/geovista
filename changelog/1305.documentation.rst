@@ -1,0 +1,1 @@
+Added a gallery example using :meth:`pyvista.PolyDataFilters.contour_banded`. (:user:`HGWright`)

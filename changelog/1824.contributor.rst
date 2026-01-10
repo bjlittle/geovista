@@ -1,0 +1,2 @@
+Added :user:`geovista-bot` as a generic user independent codeowner.
+(:user:`bjlittle`)
