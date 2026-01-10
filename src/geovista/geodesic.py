@@ -147,7 +147,7 @@ class EnclosedPreference(StrEnumPlus):
 
 
 class BBox:  # numpydoc ignore=PR01
-    """A 3-D bounding-box constructed from geodesic lines or great circles."""
+    """A 3D bounding-box constructed from geodesic lines or great circles."""
 
     def __init__(
         self,
@@ -158,7 +158,7 @@ class BBox:  # numpydoc ignore=PR01
         c: int = BBOX_C,
         triangulate: bool | None = False,
     ) -> None:
-        """Create 3-D geodesic bounding-box to extract enclosed mesh, lines or point.
+        """Create 3D geodesic bounding-box to extract enclosed mesh, lines or point.
 
         The bounding-box region is specified in terms of its four corners, in
         degrees of longitude and latitude. As the bounding-box is a geodesic, it
@@ -612,7 +612,7 @@ class BBox:  # numpydoc ignore=PR01
         )
 
     def _generate_bbox_face(self) -> None:
-        """Construct 2-D geodetic bounding-box surface defined by corners.
+        """Construct 2D geodetic bounding-box surface defined by corners.
 
         Given the longitude/latitude corners of the bounding-box and the number
         of faces that define the bounding-box mesh i.e., c**2, determine all
@@ -703,7 +703,7 @@ class BBox:  # numpydoc ignore=PR01
     def _generate_bbox_mesh(
         self, surface: pv.PolyData | None = None, *, radius: float | None = None
     ) -> None:
-        """Construct 3-D geodetic bounding-box extruded surface defined by corners.
+        """Construct 3D geodetic bounding-box extruded surface defined by corners.
 
         The bounding-box mesh consists of an inner surface, an outer surface,
         and a skirt that joins these two surfaces together to create a mesh

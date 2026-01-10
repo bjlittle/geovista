@@ -731,7 +731,7 @@ def to_cartesian(
         raise ValueError(emsg)
 
     if (ndim := lons.ndim) > 3:
-        emsg = f"Require at most 3-D longitudes and latitudes, got {ndim}-D instead."
+        emsg = f"Require at most 3D longitudes and latitudes, got {ndim}D instead."
         raise ValueError(emsg)
 
     radius = RADIUS if radius is None else abs(float(radius))
@@ -805,8 +805,7 @@ def to_lonlat(
     if point.shape != (3,):
         shape = f" with shape {point.shape}" if point.shape else ""
         emsg = (
-            "Require a 1-D array of (x, y, z) points, got a "
-            f"{point.ndim}-D array{shape}."
+            f"Require a 1D array of (x, y, z) points, got a {point.ndim}D array{shape}."
         )
         raise ValueError(emsg)
 
@@ -861,8 +860,8 @@ def to_lonlats(
 
     if points.ndim != 2 or points.shape[1] != 3:
         emsg = (
-            "Require a 2-D array of (x, y, z) points, got a "
-            f"{points.ndim}-D array with shape {points.shape}."
+            "Require a 2D array of (x, y, z) points, got a "
+            f"{points.ndim}D array with shape {points.shape}."
         )
         raise ValueError(emsg)
 
@@ -875,7 +874,7 @@ def to_lonlats(
         radius_array.ndim != 1 or radius_array.shape[0] != points.shape[0]
     ):
         emsg = (
-            f"Require a 1-D array of radii, got a {radius_array.ndim}-D array "
+            f"Require a 1D array of radii, got a {radius_array.ndim}D array "
             f"with shape {radius_array.shape}."
         )
         raise ValueError(emsg)

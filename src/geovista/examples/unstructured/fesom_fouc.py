@@ -13,7 +13,7 @@ This example demonstrates how to render a projected unstructured mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 2-D latitude and longitude unstructured bounds and connectivity.
+Creates a mesh from 2D latitude and longitude unstructured bounds and connectivity.
 
 The resulting mesh is formed from masked connectivity indexing into the points,
 allowing the mesh to contain mixed cell geometries up to 18-sides (octadecagon).

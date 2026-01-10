@@ -13,7 +13,7 @@ This example demonstrates how to render a projected rectilinear grid.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude rectilinear cell bounds.
+Creates a mesh from 1D latitude and longitude rectilinear cell bounds.
 
 The resulting mesh contains quad cells.
 
@@ -42,7 +42,7 @@ def main() -> None:
     .. versionadded:: 0.1.0
 
     """
-    # Create the 1-D spatial coordinates and data.
+    # Create the 1D spatial coordinates and data.
     M, N = 45, 90
     lats = np.linspace(-90, 90, M + 1)
     lons = np.linspace(-180, 180, N + 1)
@@ -59,7 +59,7 @@ def main() -> None:
     p.add_coastlines()
     p.add_axes()
     p.add_text(
-        f"1-D Synthetic Node Data ({crs})",
+        f"1D Synthetic Node Data ({crs})",
         position="upper_left",
         font_size=10,
     )

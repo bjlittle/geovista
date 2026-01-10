@@ -36,7 +36,7 @@ def test_shape_fail():
 def test_ndim_fail():
     """Test trap of longitude and latitude dimension."""
     lons = lats = np.array([0]).reshape(-1, 1, 1, 1)
-    emsg = "Require at most 3-D"
+    emsg = "Require at most 3D"
     with pytest.raises(ValueError, match=emsg):
         _ = to_cartesian(lons, lats)
 

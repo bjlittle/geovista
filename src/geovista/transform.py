@@ -206,7 +206,7 @@ def transform_point(
     x : ArrayLike
         The spatial point x-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. Must be a scalar
-        or a single valued 1-D array.
+        or a single valued 1D array.
     y : ArrayLike
         The spatial point y-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. Must be scalar
@@ -263,15 +263,15 @@ def transform_points(
     xs : ArrayLike
         The spatial points x-values, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar,
-        1-D or 2-D.
+        1D or 2D.
     ys : ArrayLike
         The spatial points y-values, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar,
-        1-D or 2-D.
+        1D or 2D.
     zs : ArrayLike, optional
         The spatial points z-values, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar,
-        1-D or 2-D.
+        1D or 2D.
     trap : bool, default=True
         Raise an exception if an error occurs during CRS transformation
         of the spatial points. Otherwise, ``inf`` will be returned for
@@ -283,7 +283,7 @@ def transform_points(
         The transformed spatial points in the canonical units of the target
         CRS. The shape of the result will either be ``(1, 3)``, ``(M, 3)``
         or ``(M, N, 3)`` depending on whether the provided spatial points
-        were scalar, 1-D or 2-D, respectively.
+        were scalar, 1D or 2D, respectively.
 
     Notes
     -----
@@ -302,7 +302,7 @@ def transform_points(
 
     # sanity check spatial arrays
     if (xndim := xs.ndim) > 2 or (yndim := ys.ndim) > 2:
-        emsg = "Cannot transform points, 'xs' and 'ys' must be 1-D or 2-D only."
+        emsg = "Cannot transform points, 'xs' and 'ys' must be 1D or 2D only."
         raise ValueError(emsg)
 
     shape = list(xs.shape)
@@ -322,7 +322,7 @@ def transform_points(
 
     if zs is not None:
         if (zndim := zs.ndim) > 2:
-            emsg = "Cannot transform points, 'zs' must be 1-D or 2-D only."
+            emsg = "Cannot transform points, 'zs' must be 1D or 2D only."
             raise ValueError(emsg)
 
         if zndim != 1:

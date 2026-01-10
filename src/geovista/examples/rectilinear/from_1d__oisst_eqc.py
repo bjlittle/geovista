@@ -13,7 +13,7 @@ This example demonstrates how to render a projected rectilinear grid.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude rectilinear cell bounds.
+Creates a mesh from 1D latitude and longitude rectilinear cell bounds.
 
 The resulting mesh contains quad cells.
 
