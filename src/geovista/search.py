@@ -164,11 +164,12 @@ class KDTree:  # numpydoc ignore=PR01
         self._kdtree = pyKDTree(xyz, leafsize=leaf_size)
 
     def __repr__(self) -> str:
-        """Serialize kd-tree representation.
+        """Serialize :class:`KDTree` representation.
 
         Returns
         -------
         str
+            String representation of the instance.
 
         Notes
         -----

@@ -34,7 +34,7 @@ Say what you mean. Mean what you say.
 
     Curvilinear Grid
         For example, a qudrilateral-cell surface that can be created from an
-        array of 2-D ``x`` and ``y`` spatial points.
+        array of 2D ``x`` and ``y`` spatial points.
 
     Environment
         A `pixi environment`_ is a collection of one or more
@@ -69,7 +69,7 @@ Say what you mean. Mean what you say.
         A water-tight, closed geometric structure e.g., a sphere.
 
     Mesh
-        A spatially referenced dataset that may be a surface or volume in 3-D
+        A spatially referenced dataset that may be a surface or volume in 3D
         space. See `What is a Mesh?`_
 
     MyST
@@ -90,7 +90,7 @@ Say what you mean. Mean what you say.
 
     Rectilinear Grid
         For example, a quadrilateral-cell surface that can be created from an
-        array of 1-D ``x`` and ``y`` spatial points.
+        array of 1D ``x`` and ``y`` spatial points.
 
     Sea Mask
         Typically a boolean array used to indicate the cells in a mesh that
@@ -124,7 +124,7 @@ Say what you mean. Mean what you say.
 
 .. comment
 
-    Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
 
 
 .. _PyVista threshold: https://docs.pyvista.org/api/core/_autosummary/pyvista.datasetfilters.threshold
@@ -132,9 +132,9 @@ Say what you mean. Mean what you say.
 .. _What is a Cell?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-cell
 .. _What is a Point?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-point
 .. _What is a Mesh?: https://docs.pyvista.org/user-guide/what-is-a-mesh.html#what-is-a-mesh
-.. _design considerations: https://pixi.sh/latest/workspace/multi_environment/#design-considerations
-.. _pixi environment: https://pixi.sh/latest/reference/pixi_manifest/#the-environments-table
-.. _pixi feature: https://pixi.sh/latest/reference/pixi_manifest/#the-feature-table
-.. _pixi task: https://pixi.sh/latest/reference/pixi_manifest/#the-tasks-table
-.. _tasks documentation: https://pixi.sh/latest/workspace/advanced_tasks/
+.. _design considerations: https://pixi.prefix.dev/latest/workspace/multi_environment/#design-considerations
+.. _pixi environment: https://pixi.prefix.dev/latest/reference/pixi_manifest/#the-environments-table
+.. _pixi feature: https://pixi.prefix.dev/latest/reference/pixi_manifest/#the-feature-table
+.. _pixi task: https://pixi.prefix.dev/latest/reference/pixi_manifest/#the-tasks-table
+.. _tasks documentation: https://pixi.prefix.dev/latest/workspace/advanced_tasks/
 .. _vtkActor: https://vtk.org/doc/nightly/html/classvtkActor.html#details

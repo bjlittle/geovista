@@ -16,8 +16,8 @@ from geovista.common import to_lonlats
 @pytest.mark.parametrize(
     ("points", "emsg"),
     [
-        ([[[0]]], r"Require a 2-D array .* got a 3-D array"),
-        ([[0, 1]], r"Require a 2-D array .* got a 2-D array with shape \(1, 2\)"),
+        ([[[0]]], r"Require a 2D array .* got a 3D array"),
+        ([[0, 1]], r"Require a 2D array .* got a 2D array with shape \(1, 2\)"),
     ],
 )
 def test_xyz_shape_fail(points, emsg):
@@ -29,7 +29,7 @@ def test_xyz_shape_fail(points, emsg):
 @pytest.mark.parametrize("radius", [(1, 2), np.arange(10).reshape(5, 2)])
 def test_radius_shape_fail(manydegrees, radius):
     """Test trap of non-compliant radius array shape."""
-    emsg = "Require a 1-D array of radii"
+    emsg = "Require a 1D array of radii"
     with pytest.raises(ValueError, match=emsg):
         _ = to_lonlats(manydegrees.xyz, radius=radius)
 

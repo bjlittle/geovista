@@ -13,7 +13,7 @@ This example demonstrates how to render an unstructured quadrilateral mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude unstructured points and connectivity.
+Creates a mesh from 1D latitude and longitude unstructured points and connectivity.
 
 The resulting mesh contains quad cells. The connectivity is required to construct
 the cells by indexing into the CF UGRID unstructured points.

@@ -1,0 +1,2 @@
+Added ``README.md`` light/dark theme support for our `Star History Chart <https://github.com/star-history/star-history>`__.
+(:user:`bjlittle`)

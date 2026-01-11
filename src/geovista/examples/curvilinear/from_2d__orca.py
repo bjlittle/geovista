@@ -13,7 +13,7 @@ This example demonstrates how to render a curvilinear grid.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 2-D latitude and longitude curvilinear cell bounds.
+Creates a mesh from 2D latitude and longitude curvilinear cell bounds.
 
 The resulting mesh contains quad cells.
 

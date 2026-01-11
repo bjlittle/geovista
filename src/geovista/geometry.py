@@ -280,8 +280,8 @@ def load_coastline_geometries(*, resolution: str | None = None) -> list[np.ndarr
     If the geometries are not already available within the cartopy cache, then
     they will be downloaded.
 
-    The 2-D longitude (``φ``) and latitude (``λ``) ``xy`` coastline geometries will be
-    unpacked as 3-D ``xy0`` coordinates i.e., ``φλ0``.
+    The 2D longitude (``φ``) and latitude (``λ``) ``xy`` coastline geometries will be
+    unpacked as 3D ``xy0`` coordinates i.e., ``φλ0``.
 
     Parameters
     ----------

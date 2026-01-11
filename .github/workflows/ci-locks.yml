@@ -80,7 +80,7 @@ jobs:
       - name: "create pull-request"
         id: cpr
         if: ${{ hashFiles('diff.md') }}
-        uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412
+        uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725
         with:
           token: ${{ steps.generate-token.outputs.token }}
           add-paths: |
@@ -95,10 +95,10 @@ jobs:
           title: "chore: pixi manifest update"
           body-path: ${{ github.workspace }}/diff.md
           labels: |
-            new: pull request
+            new: pull-request
             bot
             pixi
-            skip changelog
+            skip-changelog
 
       - name: "show pull-request"
         if: ${{ hashFiles('diff.md') }}

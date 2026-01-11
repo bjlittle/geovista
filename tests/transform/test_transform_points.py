@@ -45,7 +45,7 @@ def test_xy_dimension_fail(xbad, ybad):
         ys = ys.reshape((2, 3, 4))
     bad = xbad or ybad
     if bad:
-        emsg = "Cannot transform points, 'xs' and 'ys' must be 1-D or 2-D only"
+        emsg = "Cannot transform points, 'xs' and 'ys' must be 1D or 2D only"
         with pytest.raises(ValueError, match=emsg):
             _ = transform_points(src_crs=WGS84, tgt_crs=WGS84, xs=xs, ys=ys)
 
@@ -65,7 +65,7 @@ def test_z_dimension_fail():
     """Test trap of non-compliant zs dimensionality."""
     data = np.empty(1)
     zs = np.empty(1).reshape(1, 1, 1)
-    emsg = "Cannot transform points, 'zs' must be 1-D or 2-D"
+    emsg = "Cannot transform points, 'zs' must be 1D or 2D"
     with pytest.raises(ValueError, match=emsg):
         _ = transform_points(src_crs=WGS84, tgt_crs=WGS84, xs=data, ys=data, zs=zs)
 

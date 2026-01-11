@@ -1,0 +1,3 @@
+Fixed gallery carousel generation to support mixed-case URL targets
+for `sphinx-design card carousels <https://sphinx-design.readthedocs.io/en/furo-theme/cards.html#card-carousels>`__.
+(:user:`tkknight`)

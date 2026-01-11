@@ -16,12 +16,12 @@ Motivation
 ----------
 
 ``geovista`` is a pure `Python`_ package that offers performant,
-publication quality 3-D cartographic rendering of Earth Science data.
+publication quality 3D cartographic rendering of Earth Science data.
 
 Its goal is to lower the bar for scientists, such that they can easily
 analyze, visualize, and explore their rectilinear, curvilinear and
-unstructured geospatial data interactively in 3-D, whilst also supporting
-traditional 2-D static plots, cartographic projections and coordinate
+unstructured geospatial data interactively in 3D, whilst also supporting
+traditional 2D static plots, cartographic projections and coordinate
 transformations.
 
 Our intention is for ``geovista`` to be a cartographic gateway into the
@@ -84,7 +84,7 @@ PyVista in a Nutshell
     PyVista Examples
 
 
-`PyVista`_ is a powerful open-source 3-D visualization library built on
+`PyVista`_ is a powerful open-source 3D visualization library built on
 `VTK`_, providing:
 
 - A Pythonic, high-level, and streamlined API to `VTK`_
@@ -110,7 +110,8 @@ Thanks for your patience 🙏
 
 .. comment
 
-    Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
+
 
 .. _Jupyter: https://jupyter.org/
 .. _Mesh data structures: https://docs.pyvista.org/examples/index.html#mesh-creation

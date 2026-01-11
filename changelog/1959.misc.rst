@@ -1,0 +1,2 @@
+Reverted dimensionality reference usage from ``n-D`` to ``nD``.
+(:user:`bjlittle`)

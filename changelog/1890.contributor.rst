@@ -1,0 +1,3 @@
+Capture failed image unit tests for the ``ci-tests`` :fab:`github` Action as a workflow artifact,
+and also when using the ``tests-unit`` `pixi <https://github.com/prefix-dev/pixi>`__ 🧚 task.
+(:user:`bjlittle`)

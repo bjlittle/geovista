@@ -13,7 +13,7 @@ This example demonstrates how to render an unstructured hexagon/pentagon mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 2-D latitude and longitude unstructured cell bounds.
+Creates a mesh from 2D latitude and longitude unstructured cell bounds.
 
 The resulting mesh contains hexagonal cells tessellated around 12 pentagon cells,
 which are centered over the 12 vertices of a base icosahedron.

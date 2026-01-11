@@ -1,0 +1,2 @@
+Added the ``geovista`` badge |geovista-badge| as a `shields.io <https://shields.io/>`__
+endpoint asset. (:user:`bjlittle`)

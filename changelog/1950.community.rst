@@ -1,0 +1,2 @@
+Added :user:`DanCopsey` as a contributor for ``documentation``.
+(:user:`bjlittle`)

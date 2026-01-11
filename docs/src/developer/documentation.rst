@@ -147,11 +147,16 @@ for asset configuration details.
 
 Other branding assets are available from the `geovista-media`_ repository.
 
-The branding RGB colour is ``#80d050``.
+Branding colours (``RGB``) are defined in :bash:`docs/src/_static/color.css`:
+
+- :octicon:`square-fill;2em;gv-text-main` ``#80d050`` is the **primary** colour (``gv-text-main``)
+- :octicon:`square-fill;2em;gv-text-comp` ``#7f2faf`` is the **complementary** colour (``gv-text-comp``)
 
 
 :fa:`pencil` Logo Font
 ~~~~~~~~~~~~~~~~~~~~~~
+
+The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType font.
 
 .. figure:: ../_static/geovista-title.svg
    :align: center
@@ -159,8 +164,6 @@ The branding RGB colour is ``#80d050``.
    :width: 25%
 
    GeoVista Logo Title
-
-The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType font.
 
 
 :fab:`github` Continuous Integration
@@ -334,7 +337,7 @@ its :ref:`tippy-gv-overview-ecosystem` section:
    :ref:`tippy-gv-developer-packaging` for further details.
 
 The documentation may be built and rendered using
-`pixi run <https://pixi.sh/latest/reference/cli/pixi/run/>`__ tasks, all of
+`pixi run <https://pixi.prefix.dev/latest/reference/cli/pixi/run/>`__ tasks, all of
 which **do not** require to be executed from within the :bash:`docs` root directory, unlike
 the above :ref:`tippy-gv-developer-documentation-building` ``make`` command tasks e.g.,
 
@@ -483,7 +486,7 @@ e.g.,
 
 .. comment
 
-   Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
 
 
 .. _Builds: https://app.readthedocs.org/projects/geovista/builds/
@@ -498,7 +501,7 @@ e.g.,
 .. _ci-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-docs.yml
 .. _ci-tests-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-docs.yml
 .. _filtering: https://docs.pyvista.org/examples/01-filter/
-.. _include directive: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#include-directive
+.. _include directive: https://docutils.sourceforge.io/docs/ref/rst/directives.html#include
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _plotting: https://docs.pyvista.org/examples/02-plot/#
 .. _.readthedocs.yml: https://github.com/bjlittle/geovista/blob/main/.readthedocs.yml

@@ -127,7 +127,7 @@ class Transform:  # numpydoc ignore=PR01
             data = np.asanyarray(data)
 
             if rgb and data.ndim < 2:
-                emsg = f"RGB/RGBA image data must be at least 2-D, got {data.ndim}-D."
+                emsg = f"RGB/RGBA image data must be at least 2D, got {data.ndim}D."
                 raise ValueError(emsg)
 
             size = data.size // data.shape[-1] if rgb else data.size
@@ -151,7 +151,7 @@ class Transform:  # numpydoc ignore=PR01
     def _as_contiguous_1d(
         xs: ArrayLike, ys: ArrayLike
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Construct contiguous 1-D x-axis and y-axis bounds arrays.
+        """Construct contiguous 1D x-axis and y-axis bounds arrays.
 
         Verify and return a contiguous (N+1,) x-axis and (M+1,) y-axis
         bounds array, that will be then used afterwards to build a (M, N)
@@ -167,7 +167,7 @@ class Transform:  # numpydoc ignore=PR01
         Returns
         -------
         tuple of ndarray
-            The x-values and y-values as contiguous 1-D bounds arrays.
+            The x-values and y-values as contiguous 1D bounds arrays.
 
         Notes
         -----
@@ -178,28 +178,28 @@ class Transform:  # numpydoc ignore=PR01
 
         if xs.ndim not in (1, 2) or (xs.ndim == 2 and xs.shape[1] != 2):
             emsg = (
-                "Require a 1-D '(N+1,)' x-axis array, or 2-D '(N, 2)' "
-                f"x-axis array, got {xs.ndim}-D '{xs.shape}'."
+                "Require a 1D '(N+1,)' x-axis array, or 2D '(N, 2)' "
+                f"x-axis array, got {xs.ndim}D '{xs.shape}'."
             )
             raise ValueError(emsg)
 
         if ys.ndim not in (1, 2) or (ys.ndim == 2 and ys.shape[1] != 2):
             emsg = (
-                "Require a 1-D '(M+1,)' y-axis array, or 2-D '(M, 2)' "
-                f"y-axis array, got {ys.ndim}-D '{ys.shape}'."
+                "Require a 1D '(M+1,)' y-axis array, or 2D '(M, 2)' "
+                f"y-axis array, got {ys.ndim}D '{ys.shape}'."
             )
             raise ValueError(emsg)
 
         if xs.ndim == 1 and xs.size < 2:
             emsg = (
-                "Require a 1-D x-axis array with minimal shape '(2,)' i.e., "
+                "Require a 1D x-axis array with minimal shape '(2,)' i.e., "
                 "one face with two x-value bounds."
             )
             raise ValueError(emsg)
 
         if ys.ndim == 1 and ys.size < 2:
             emsg = (
-                "Require a 1-D y-axis array with minimal shape '(2,)' i.e., "
+                "Require a 1D y-axis array with minimal shape '(2,)' i.e., "
                 "one face with two y-value bounds."
             )
             raise ValueError(emsg)
@@ -242,7 +242,7 @@ class Transform:  # numpydoc ignore=PR01
 
     @staticmethod
     def _create_connectivity_m1n1(shape: Shape) -> np.ndarray:
-        """Create 2-D quad-mesh connectivity from node `shape`.
+        """Create 2D quad-mesh connectivity from node `shape`.
 
         The connectivity ordering of the quad-mesh face nodes (points) is
         anti-clockwise, as follows:
@@ -257,7 +257,7 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         shape : Shape
-            The shape of the 2-D mesh nodes.
+            The shape of the 2D mesh nodes.
 
         Returns
         -------
@@ -287,7 +287,7 @@ class Transform:  # numpydoc ignore=PR01
 
     @staticmethod
     def _create_connectivity_mn4(shape: Shape) -> np.ndarray:
-        """Create 2-D quad-mesh connectivity from face `shape`.
+        """Create 2D quad-mesh connectivity from face `shape`.
 
         The connectivity ordering of the quad-mesh face nodes (points) is
         anti-clockwise, as follows:
@@ -302,7 +302,7 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         shape : Shape
-            The shape of the 2-D mesh faces.
+            The shape of the 2D mesh faces.
 
         Returns
         -------
@@ -353,8 +353,8 @@ class Transform:  # numpydoc ignore=PR01
 
         if xs.ndim not in (2, 3) or (xs.ndim == 3 and xs.shape[2] != 4):
             emsg = (
-                "Require 2-D x-values with shape '(M+1, N+1)', or 3-D "
-                f"x-values with shape '(M, N, 4)', got {xs.ndim}-D with "
+                "Require 2D x-values with shape '(M+1, N+1)', or 3D "
+                f"x-values with shape '(M, N, 4)', got {xs.ndim}D with "
                 f"shape '{xs.shape}'."
             )
             raise ValueError(emsg)
@@ -369,15 +369,15 @@ class Transform:  # numpydoc ignore=PR01
 
     @staticmethod
     def _verify_connectivity(connectivity: Shape) -> None:
-        """Ensure compatible 2-D connectivity.
+        """Ensure compatible 2D connectivity.
 
-        The connectivity shape must be 2-D and contain at least the minimal number of
+        The connectivity shape must be 2D and contain at least the minimal number of
         indices to construct a mesh with a single triangular face.
 
         Parameters
         ----------
         connectivity : Shape
-            The 2-D shape of the connectivity, which must be at least (1, 3)
+            The 2D shape of the connectivity, which must be at least (1, 3)
             for the minimal mesh consisting of one triangular face.
 
         Notes
@@ -387,9 +387,9 @@ class Transform:  # numpydoc ignore=PR01
         """
         if len(connectivity) != 2:
             emsg = (
-                "Require a 2-D '(M, N)' connectivity array, defining the "
+                "Require a 2D '(M, N)' connectivity array, defining the "
                 "N indices for each of the M-faces of the mesh, got "
-                f"{len(connectivity)}-D connectivity array with shape "
+                f"{len(connectivity)}D connectivity array with shape "
                 f"'{connectivity}'."
             )
             raise ValueError(emsg)
@@ -418,7 +418,7 @@ class Transform:  # numpydoc ignore=PR01
         zscale: float | None = None,
         clean: bool | None = None,
     ) -> pv.PolyData:
-        """Build a quad-faced mesh from contiguous 1-D x-values and y-values.
+        """Build a quad-faced mesh from contiguous 1D x-values and y-values.
 
         This allows the construction of a uniform or rectilinear quad-faced
         ``(M, N)`` mesh grid, where the mesh has ``M``-faces in the y-axis, and
@@ -430,12 +430,12 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         xs : ArrayLike
-            A 1-D array of x-values, in canonical `crs` units, defining the
+            A 1D array of x-values, in canonical `crs` units, defining the
             contiguous face x-value boundaries of the mesh. Creating a mesh
             with ``N``-faces in the `crs` x-axis requires a ``(N+1,)`` array.
             Alternatively, a ``(N, 2)`` contiguous bounds array may be provided.
         ys : ArrayLike
-            A 1-D array of y-values, in canonical `crs` units, defining the
+            A 1D array of y-values, in canonical `crs` units, defining the
             contiguous face y-value boundaries of the mesh. Creating a mesh
             with ``M``-faces in the `crs` y-axis requires a ``(M+1,)`` array.
             Alternatively, a ``(M, 2)`` contiguous bounds array may be provided.
@@ -511,7 +511,7 @@ class Transform:  # numpydoc ignore=PR01
         zscale: float | None = None,
         clean: bool | None = None,
     ) -> pv.PolyData:
-        """Build a quad-faced mesh from 2-D x-values and y-values.
+        """Build a quad-faced mesh from 2D x-values and y-values.
 
         This allows the construction of a uniform, rectilinear or curvilinear
         quad-faced ``(M, N)`` mesh grid, where the mesh has ``M``-faces in the y-axis,
@@ -524,12 +524,12 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         xs : ArrayLike
-            A 2-D array of x-values, in canonical `crs` units, defining the
+            A 2D array of x-values, in canonical `crs` units, defining the
             face x-value boundaries of the mesh. Creating a ``(M, N)`` mesh
             requires a ``(M+1, N+1)`` x-axis array. Alternatively, a ``(M, N, 4)``
             array may be provided.
         ys : ArrayLike
-            A 2-D array of y-values, in canonical `crs` units, defining the
+            A 2D array of y-values, in canonical `crs` units, defining the
             face y-value boundaries of the mesh. Creating a ``(M, N)`` mesh
             requires a ``(M+1, N+1)`` y-axis array. Alternatively, a ``(M, N, 4)``
             array may be provided.
@@ -632,10 +632,10 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         xs : ArrayLike
-            A 1-D, 2-D or 3-D array of point-cloud x-values, in canonical `crs` units.
+            A 1D, 2D or 3D array of point-cloud x-values, in canonical `crs` units.
             Must have the same shape as the `ys`.
         ys : ArrayLike
-            A 1-D, 2-D or 3-D array of point-cloud y-values, in canonical `crs` units.
+            A 1D, 2D or 3D array of point-cloud y-values, in canonical `crs` units.
             Must have the same shape as the `xs`.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh points defined by
@@ -876,7 +876,7 @@ class Transform:  # numpydoc ignore=PR01
             cols, rows = np.meshgrid(
                 np.arange(src.width), np.arange(src.height), indexing="xy"
             )
-            # rasterio 1.4.0 (regression) expects 1-D arrays, fixed in 1.4.1
+            # rasterio 1.4.0 (regression) expects 1D arrays, fixed in 1.4.1
             # see https://github.com/rasterio/rasterio/issues/3191
             xs, ys = rio.transform.xy(src.transform, rows.flatten(), cols.flatten())
 
@@ -941,7 +941,7 @@ class Transform:  # numpydoc ignore=PR01
         zscale: float | None = None,
         clean: bool | None = None,
     ) -> pv.PolyData:
-        """Build a mesh from unstructured 1-D x-values and y-values.
+        """Build a mesh from unstructured 1D x-values and y-values.
 
         The `connectivity` defines the topology of faces within the
         unstructured mesh. This is represented in terms of indices into the
@@ -954,20 +954,20 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         xs : ArrayLike
-            A 1-D array of x-values, in canonical `crs` units, defining the
+            A 1D array of x-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
         ys : ArrayLike
-            A 1-D array of y-values, in canonical `crs` units, defining the
+            A 1D array of y-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
         connectivity : ArrayLike or Shape, optional
             Defines the topology of each face in the unstructured mesh in terms
             of indices into the provided `xs` and `ys` mesh geometry
-            arrays. The `connectivity` is a 2-D ``(M, N)`` array, where ``M`` is
+            arrays. The `connectivity` is a 2D ``(M, N)`` array, where ``M`` is
             the number of mesh faces, and ``N`` is the number of nodes per
             face. Alternatively, an ``(M, N)`` tuple defining the connectivity
             shape may be provided instead, given that the `xs` and `ys` define
             ``M*N`` points (at most) in the mesh geometry. If no connectivity is
-            provided, and the `xs` and `ys` are 2-D, then their shape is used
+            provided, and the `xs` and `ys` are 2D, then their shape is used
             to determine the connectivity. Also, note that masked connectivity
             may be used to define a mesh consisting of different shaped faces.
         data : ArrayLike, optional
@@ -1117,7 +1117,7 @@ class Transform:  # numpydoc ignore=PR01
             # pentagon (et al) cells within a single mesh.
             connectivity_array = np.atleast_2d(connectivity_array)
             if (ndim := connectivity_array.ndim) > 2:
-                emsg = f"Masked connectivity must be at most 2-D, got {ndim}-D."
+                emsg = f"Masked connectivity must be at most 2D, got {ndim}D."
                 raise ValueError(emsg)
             n_faces = connectivity_array.shape[0]
             n_vertices = np.ma.sum(~connectivity_array.mask, axis=1)
@@ -1200,20 +1200,20 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         xs : ArrayLike
-            A 1-D array of x-values, in canonical `crs` units, defining the
+            A 1D array of x-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
         ys : ArrayLike
-            A 1-D array of y-values, in canonical `crs` units, defining the
+            A 1D array of y-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
         connectivity : ArrayLike or Shape, optional
             Defines the topology of each face in the unstructured mesh in terms
             of indices into the provided `xs` and `ys` mesh geometry
-            arrays. The `connectivity` is a 2-D ``(M, N)`` array, where ``M`` is
+            arrays. The `connectivity` is a 2D ``(M, N)`` array, where ``M`` is
             the number of mesh faces, and ``N`` is the number of nodes per
             face. Alternatively, an ``(M, N)`` tuple defining the connectivity
             shape may be provided instead, given that the `xs` and `ys` define
             ``M*N`` points (at most) in the mesh geometry. If no connectivity is
-            provided, and the `xs` and `ys` are 2-D, then their shape is used
+            provided, and the `xs` and `ys` are 2D, then their shape is used
             to determine the connectivity.  Also, note that masked connectivity
             may be used to define a mesh consisting of different shaped faces.
         start_index : int, default=0

@@ -1,3 +1,5 @@
+.. include:: ../common.txt
+
 .. _gv-reference-about:
 .. _tippy-gv-reference-about:
 
@@ -22,10 +24,119 @@ remember to cite us:
     :language: text
 
 
+.. _gv-reference-about-community:
+.. _tippy-gv-reference-about-community:
+
+:fa:`heart-circle-plus` Community
+---------------------------------
+
+Head over to our :fab:`github` `Discussions`_ to engage with the
+``geovista`` community. Feel free to ask questions, share ideas, discuss topics,
+and even showcase your work in our :fab:`github` `🍬 Candy Store`_. Go for it!
+
+Add a touch of panache to your :bash:`README.md` with our badge |geovista-badge|:
+
+.. tab-set::
+
+    .. tab-item:: html
+
+        .. code:: html
+
+            <a href="https://geovista.readthedocs.io/" >
+            <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json" />
+            </a>
+
+    .. tab-item:: markdown
+        :selected:
+
+        .. code:: markdown
+
+            [![geovista](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json)](https://geovista.readthedocs.io/)
+
+    .. tab-item:: rst
+
+        .. code:: rst
+
+            .. |geovista-badge| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json
+                :target: https://geovista.readthedocs.io/
+
+.. tip::
+   :class: dropdown
+
+   Customize the look and feel of the badge by appending :bash:`&style=<option>`
+   to the endpoint URL.
+
+   See the `shields.io documentation`_ for further details.
+
+
+:fa:`file-code` Packages
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. comment
+
+   ⚠️ please add packages to the table below in alphabetical order using
+      a reference to the package URL defined at the bottom of this file
+
+
+Discover community projects using ``geovista``:
+
+.. table:: Third-Party Packages
+    :align: center
+    :name: tippy-gv-reference-about-community-packages
+    :widths: 1 4
+
+    +---------------------+---------------------------------------------------------------------------------+
+    | Package             | Description                                                                     |
+    +=====================+=================================================================================+
+    | `aeolus`_           | A library for analysing and visualising atmospheric model output.               |
+    +---------------------+---------------------------------------------------------------------------------+
+    | `geovista-slam`_    | Generating Structured Local Area Model (SLAM) grids from unstructured meshes.   |
+    +---------------------+---------------------------------------------------------------------------------+
+    | `iris`_             | A powerful, format-agnostic, and community-driven Python package for analysing  |
+    |                     | and visualising Earth science data.                                             |
+    +---------------------+---------------------------------------------------------------------------------+
+    | `ngview`_           | A GUI for loading NetCDF files; selecting the fields, levels and time points    |
+    |                     | you want; and plotting the results using ``geovista``.                          |
+    +---------------------+---------------------------------------------------------------------------------+
+    | `uraster`_          | Transform raster datasets to unstructured meshes.                               |
+    +---------------------+---------------------------------------------------------------------------------+
+
+
+.. admonition:: Share with the community!
+    :class: dropdown
+
+    Click `here <https://github.com/bjlittle/geovista/edit/main/docs/src/reference/about.rst>`__ to
+    add your project details and raise a :fa:`code-pull-request` `Pull-Request`_.
+
+
+.. _gv-reference-about-community-publications:
+.. _tippy-gv-reference-about-community-publications:
+
+:fa:`file-waveform` Publications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. comment
+
+   ⚠️ please add bibtex entries into the "docs/src/refs.bib" file
+
+
+Explore scientific publications that leverage ``geovista``:
+
+.. bibliography::
+    :all:
+
+
+.. admonition:: Share with the community!
+    :class: dropdown
+
+    Click `here <https://github.com/bjlittle/geovista/edit/main/docs/src/refs.bib>`__ to
+    add your BibTeX entry and raise a :fa:`code-pull-request` `Pull-Request`_.
+
+
 :fa:`users-line` Contributors
 -----------------------------
 
-.. |all-contributors| image:: https://img.shields.io/github/all-contributors/bjlittle/geovista?color=ee8449)
+.. |all-contributors| image:: https://img.shields.io/github/all-contributors/bjlittle/geovista?color=ee8449
 
 |all-contributors|
 
@@ -66,11 +177,15 @@ A massive thank-you to all our awesome contributors (`Emoji Key ✨`_):
 
 .. comment
 
-    Page link URL resources in alphabetical order:
-
+   🔗 URL resources in alphabetical order:
 
 .. |icon| image:: https://raw.githubusercontent.com/all-contributors/all-contributors-cli/1b8533af435da9854653492b1327a23a4dbd0a10/assets/logo-small.svg
-.. _all-contributors bot 🤖: https://all-contributors.github.io/bot/usage/#all-contributors-add
+.. _aeolus: https://github.com/exoclim/aeolus
+.. _all-contributors: https://github.com/all-contributors/allcontributors.org
+.. _all-contributors bot 🤖: https://allcontributors.org/bot/usage/#all-contributors-add
 .. _BSD-3-Clause: https://spdx.org/licenses/BSD-3-Clause.html
-.. _Emoji Key ✨: https://all-contributors.github.io/emoji-key/
-.. _all-contributors: https://github.com/all-contributors/all-contributors.github.io
+.. _🍬 Candy Store: https://github.com/bjlittle/geovista/discussions/1033
+.. _Emoji Key ✨: https://allcontributors.org/emoji-key/
+.. _ngview: https://github.com/MetOffice/ngview
+.. _shields.io documentation: https://shields.io/
+.. _uraster: https://github.com/changliao1025/uraster

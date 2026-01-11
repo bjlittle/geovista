@@ -37,9 +37,9 @@ Primary keyboard and mouse bindings that control the rendered scene.
             +----------------------------------------+------------------------------------------------+--------------+
             | :guilabel:`w`                          | Render scene using ``wireframe`` style.        | |fvcom-w|    |
             +----------------------------------------+------------------------------------------------+--------------+
-            | :guilabel:`L-Click`                    | Rotate the rendered scene in 3-D.              | |fvcom-3d|   |
+            | :guilabel:`L-Click`                    | Rotate the rendered scene in 3D.               | |fvcom-3d|   |
             +----------------------------------------+------------------------------------------------+--------------+
-            | :guilabel:`Ctrl + L-Click`             | Rotate the rendered scene in 2-D (view plane). | |fvcom-2d|   |
+            | :guilabel:`Ctrl + L-Click`             | Rotate the rendered scene in 2D (view plane).  | |fvcom-2d|   |
             +----------------------------------------+------------------------------------------------+--------------+
             | :guilabel:`Shift + L-Click` or         | Pan the rendered scene.                        | |fvcom-pan|  |
             | :guilabel:`M-Click`                    |                                                |              |
@@ -73,9 +73,9 @@ Primary keyboard and mouse bindings that control the rendered scene.
             +----------------------------------------+------------------------------------------------+--------------+
             | :guilabel:`w`                          | Render scene using ``wireframe`` style.        | |fvcom-w|    |
             +----------------------------------------+------------------------------------------------+--------------+
-            | :guilabel:`Click`                      | Rotate the rendered scene in 3-D.              | |fvcom-3d|   |
+            | :guilabel:`Click`                      | Rotate the rendered scene in 3D.               | |fvcom-3d|   |
             +----------------------------------------+------------------------------------------------+--------------+
-            | :guilabel:`⌘ + Click` or               | Rotate the rendered scene in 2-D (view plane). | |fvcom-2d|   |
+            | :guilabel:`⌘ + Click` or               | Rotate the rendered scene in 2D (view plane).  | |fvcom-2d|   |
             | :guilabel:`Ctrl + Click`               |                                                |              |
             +----------------------------------------+------------------------------------------------+--------------+
             | :guilabel:`Shift + Click`              | Pan the rendered scene.                        | |fvcom-pan|  |
@@ -87,12 +87,12 @@ Primary keyboard and mouse bindings that control the rendered scene.
 
 .. comment
 
-    The FVCOM example (geovista.examples.warp.from_unstructured__fvcom) GIFs
-    used the following camera position:
+    ⚠️ The FVCOM example (geovista.examples.warp.from_unstructured__fvcom) GIFs
+       used the following camera position:
 
-    cpos = [(0.652936947323311, -0.06686933227332881, 0.7722722989946459),
-            (0.638759454274243, -0.04909585033098298, 0.7656316102303734),
-            (0.29679655733036037, 0.5328351105797621, 0.7924635944258254)]
+       cpos = [(0.652936947323311, -0.06686933227332881, 0.7722722989946459),
+               (0.638759454274243, -0.04909585033098298, 0.7656316102303734),
+               (0.29679655733036037, 0.5328351105797621, 0.7924635944258254)]
 
 
 .. |fvcom-s| image::  ../_static/images/fvcom-surface.png
@@ -128,14 +128,14 @@ Primary keyboard and mouse bindings that control the rendered scene.
     :align: middle
     :width: 600
     :height: 400
-    :alt: Rotate 3-D
+    :alt: Rotate 3D
 
 .. |fvcom-2d| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/docs/fvcom-rotate-2d.gif
     :scale: 30%
     :align: middle
     :width: 600
     :height: 400
-    :alt: Rotate 2-D
+    :alt: Rotate 2D
 
 .. |fvcom-pan| image:: https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/docs/fvcom-pan.gif
     :scale: 30%
@@ -154,7 +154,7 @@ Primary keyboard and mouse bindings that control the rendered scene.
 
 .. comment
 
-    Page link URL resources in alphabetical order:
+    🔗 URL resources in alphabetical order:
 
 
 .. _isometric camera: https://docs.pyvista.org/api/plotting/_autosummary/pyvista.plotter.view_isometric

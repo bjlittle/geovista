@@ -13,7 +13,7 @@ This example demonstrates how to render a warped unstructured triangular mesh.
 📋 Summary
 ^^^^^^^^^^
 
-Creates a mesh from 1-D latitude and longitude unstructured points and
+Creates a mesh from 1D latitude and longitude unstructured points and
 connectivity, warped to show the vertical profile.
 
 It uses an unstructured grid Finite Volume Community Ocean Model (FVCOM) mesh of

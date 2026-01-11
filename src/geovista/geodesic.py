@@ -46,6 +46,7 @@ pv = lazy.load("pyvista")
 
 __all__ = [
     "BBOX_C",
+    "BBOX_OUTSIDE",
     "BBOX_RADIUS_RATIO",
     "BBOX_TOLERANCE",
     "ELLIPSE",
@@ -79,10 +80,13 @@ GEODESIC_NPTS: int = 64
 BBOX_C: int = 256
 """The bounding-box face geometry will contain ``BBOX_C**2`` cells."""
 
-BBOX_RADIUS_RATIO = 1e-1
+BBOX_OUTSIDE: bool = False
+"""Preference for selecting sample points outside/inside bounding-box."""
+
+BBOX_RADIUS_RATIO: float = 1e-1
 """Ratio the bounding-box inner and outer faces are offset from the surface mesh."""
 
-BBOX_TOLERANCE = 1e-6
+BBOX_TOLERANCE: float = 1e-6
 """The bounding-box tolerance on intersection."""
 
 PANEL_IDX_BY_NAME: dict[str, int] = {
@@ -143,7 +147,7 @@ class EnclosedPreference(StrEnumPlus):
 
 
 class BBox:  # numpydoc ignore=PR01
-    """A 3-D bounding-box constructed from geodesic lines or great circles."""
+    """A 3D bounding-box constructed from geodesic lines or great circles."""
 
     def __init__(
         self,
@@ -154,7 +158,7 @@ class BBox:  # numpydoc ignore=PR01
         c: int = BBOX_C,
         triangulate: bool | None = False,
     ) -> None:
-        """Create 3-D geodesic bounding-box to extract enclosed mesh, lines or point.
+        """Create 3D geodesic bounding-box to extract enclosed mesh, lines or point.
 
         The bounding-box region is specified in terms of its four corners, in
         degrees of longitude and latitude. As the bounding-box is a geodesic, it
@@ -245,10 +249,61 @@ class BBox:  # numpydoc ignore=PR01
         self._mesh: pv.PolyData | None = None
         # the bounding-box mesh edges
         self._outline: pv.PolyData | None = None
+        # enclosed preference for points outside/inside manifold
+        self._outside = BBOX_OUTSIDE
+        # enclosed cell preference
+        self._preference = EnclosedPreference(PREFERENCE)
         # cache prior surface radius, as an optimisation
         self._surface_radius: float | None = None
+        # enclosed tolerance of intersection operation
+        self._tolerance = BBOX_TOLERANCE
+
+    def __call__(self, surface: pv.PolyData) -> pv.PolyData:
+        """Extract region of the `surface` contained within the bounding-box.
+
+        Parameters
+        ----------
+        surface : PolyData
+            The :class:`~pyvista.PolyData` mesh to be checked for containment.
+
+        Returns
+        -------
+        PolyData
+            The :class:`~pyvista.PolyData` representing those parts of the
+            provided `surface` enclosed by the bounding-box.
+
+        See Also
+        --------
+        enclosed : Equivalent method.
+        outside : Property that selects points inside/outside manifold.
+        preference : Property that specifies criterion for `surface` cell inclusion.
+        tolerance : Property that controls manifold intersection tolerance.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        return self.enclosed(surface)
 
     def __eq__(self, other: object) -> bool:
+        """Perform an equality comparison with the `other` operand.
+
+        Parameters
+        ----------
+        other : object
+            Equality comparison performed with this operand.
+
+        Returns
+        -------
+        bool
+            Equality comparison result.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
         result: bool = NotImplemented
         if isinstance(other, BBox):
             result = False
@@ -261,6 +316,18 @@ class BBox:  # numpydoc ignore=PR01
         return result
 
     def __hash__(self) -> int:
+        """Support hash-based collections.
+
+        Returns
+        -------
+        int
+            The computed :func:`hash` value of the instance.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
         return hash(
             (
                 self.ellps,
@@ -272,12 +339,41 @@ class BBox:  # numpydoc ignore=PR01
         )
 
     def __ne__(self, other: object) -> bool:
+        """Perform an inequality comparison with the `other` operand.
+
+        Parameters
+        ----------
+        other : object
+            Inequality comparison performed with this operand.
+
+        Returns
+        -------
+        bool
+            Inequality comparison result.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
         result = self == other
         if result is not NotImplemented:
             result = not result
         return result
 
     def __repr__(self) -> str:
+        """Serialize :class:`BBox` representation.
+
+        Returns
+        -------
+        str
+            String representation of the instance.
+
+        Notes
+        -----
+        .. versionadded:: 0.1.0
+
+        """
         params = (
             f"ellps={self.ellps}, c={self.c}, n_points={self.mesh.n_points}, "
             f"n_cells={self.mesh.n_cells}"
@@ -358,6 +454,115 @@ class BBox:  # numpydoc ignore=PR01
             self._outline = self.mesh.extract_feature_edges()
         return self._outline
 
+    @property
+    def outside(self) -> bool:
+        """The preference to select points outside/inside the bounding-box.
+
+        Returns
+        -------
+        bool
+            Manifold bounding-box selection preference.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        return self._outside
+
+    @outside.setter
+    def outside(self, value: bool | None) -> None:
+        """Set preference to select points outside/inside the bounding-box.
+
+        Parameters
+        ----------
+        value : bool
+            Whether to select points outside/inside the bounding-box.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        if value is not None:
+            self._outside = bool(value)
+
+    @property
+    def preference(self) -> EnclosedPreference:
+        """The criterion for cell containment within the bounding-box.
+
+        Returns
+        -------
+        EnclosedPreference
+            The bounding-box enclosed preference.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        return self._preference
+
+    @preference.setter
+    def preference(self, value: str | EnclosedPreference | None) -> None:
+        """Set the criterion for cell containment within the bounding-box.
+
+        Parameters
+        ----------
+        value : str or EnclosedPreference
+            The bounding-box enclosed preference for cell membership.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        if value is not None:
+            if not EnclosedPreference.valid(value):
+                options = " or ".join(
+                    f"{item!r}" for item in EnclosedPreference.values()
+                )
+                emsg = f"Expected a preference of {options}, got '{value}'."
+                raise ValueError(emsg)
+
+            self._preference = EnclosedPreference(value)
+
+    @property
+    def tolerance(self) -> float:
+        """The tolerance of the bounding-box manifold intersection.
+
+        See :meth:`~pyvista.DataSetFilters.select_enclosed_points` for further
+        details.
+
+        Returns
+        -------
+        float
+            The bounding-box manifold intersection tolerance.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        return self._tolerance
+
+    @tolerance.setter
+    def tolerance(self, value: float | None) -> None:
+        """Set the tolerance of the bounding-box manifold intersection.
+
+        Parameters
+        ----------
+        value : float
+            The bounding-box manifold intersection tolerance.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        if value is not None:
+            self._tolerance = float(value)
+
     def _init(self) -> None:
         """Bootstrap the bounding-box state.
 
@@ -407,7 +612,7 @@ class BBox:  # numpydoc ignore=PR01
         )
 
     def _generate_bbox_face(self) -> None:
-        """Construct 2-D geodetic bounding-box surface defined by corners.
+        """Construct 2D geodetic bounding-box surface defined by corners.
 
         Given the longitude/latitude corners of the bounding-box and the number
         of faces that define the bounding-box mesh i.e., c**2, determine all
@@ -416,7 +621,7 @@ class BBox:  # numpydoc ignore=PR01
 
         The indices (_idx_map) reference the longitude/latitude points
         (_bbox_lon/_bbox_lat), and together are required to create the
-        resultant bounding-box :class:`pyvista.PolyData` mesh.
+        resultant bounding-box :class:`~pyvista.PolyData` mesh.
 
         Notes
         -----
@@ -498,7 +703,7 @@ class BBox:  # numpydoc ignore=PR01
     def _generate_bbox_mesh(
         self, surface: pv.PolyData | None = None, *, radius: float | None = None
     ) -> None:
-        """Construct 3-D geodetic bounding-box extruded surface defined by corners.
+        """Construct 3D geodetic bounding-box extruded surface defined by corners.
 
         The bounding-box mesh consists of an inner surface, an outer surface,
         and a skirt that joins these two surfaces together to create a mesh
@@ -616,7 +821,7 @@ class BBox:  # numpydoc ignore=PR01
         Parameters
         ----------
         surface : PolyData, optional
-            The :class:`pyvista.PolyData` mesh that will be enclosed by the
+            The :class:`~pyvista.PolyData` mesh that will be enclosed by the
             bounding-box boundary.
         radius : float, optional
             The radius of the spherical mesh that will be enclosed by the
@@ -675,8 +880,8 @@ class BBox:  # numpydoc ignore=PR01
         surface: pv.PolyData,
         /,
         *,
-        tolerance: float | None = BBOX_TOLERANCE,
-        outside: bool | None = False,
+        tolerance: float | None = None,
+        outside: bool | None = None,
         preference: str | EnclosedPreference | None = None,
     ) -> pv.PolyData:
         """Extract region of the `surface` contained within the bounding-box.
@@ -688,17 +893,16 @@ class BBox:  # numpydoc ignore=PR01
         Parameters
         ----------
         surface : PolyData
-            The :class:`pyvista.PolyData` mesh to be checked for containment.
+            The :class:`~pyvista.PolyData` mesh to be checked for containment.
         tolerance : float, optional
             The tolerance on the intersection operation with the `surface`,
             expressed as a fraction of the diagonal of the bounding-box.
-            See PyVista's
-            :meth:`~pyvista.DataSetFilters.select_enclosed_points` for more.
-            Defaults to :data:`BBOX_TOLERANCE`.
+            See :meth:`~pyvista.DataSetFilters.select_enclosed_points` for
+            further details. Defaults to :data:`BBOX_TOLERANCE`.
         outside : bool, optional
             By default, select those points of the `surface` that are inside
             the bounding-box. Otherwise, select those points that are outside
-            the bounding-box. Defaults to ``False``.
+            the bounding-box. Defaults to :data:`BBOX_OUTSIDE`.
         preference : str or EnclosedPreference, optional
             Criteria for defining whether a face of a `surface` mesh is
             deemed to be enclosed by the bounding-box. A `preference` of
@@ -711,7 +915,7 @@ class BBox:  # numpydoc ignore=PR01
         Returns
         -------
         PolyData
-            The :class:`pyvista.PolyData` representing those parts of
+            The :class:`~pyvista.PolyData` representing those parts of
             the provided `surface` enclosed by the bounding-box. This behaviour
             may be inverted with the `outside` parameter.
 
@@ -755,35 +959,33 @@ class BBox:  # numpydoc ignore=PR01
         >>> p.show()
 
         """
-        if preference is None:
-            preference = PREFERENCE
-
-        if not EnclosedPreference.valid(preference):
-            options = " or ".join(f"{item!r}" for item in EnclosedPreference.values())
-            emsg = f"Expected a preference of {options}, got '{preference}'."
-            raise ValueError(emsg)
+        self.tolerance = tolerance
+        self.outside = outside
+        self.preference = preference
 
         # capture the current active scalars name
         active_scalars_name = surface.active_scalars_name
 
-        preference = EnclosedPreference(preference)
         self._generate_bbox_mesh(surface=surface)
 
-        if preference == EnclosedPreference.CENTER:
+        if self.preference == EnclosedPreference.CENTER:
             original = surface
             surface = surface.cell_centers()
 
         # filter the surface with the bbox manifold mesh
         selected = surface.select_enclosed_points(
-            self.mesh, tolerance=tolerance, inside_out=outside, check_surface=False
+            self.mesh,
+            tolerance=self.tolerance,
+            inside_out=self.outside,
+            check_surface=False,
         )
         # name of the point mask generated by select_enclosed_points
         scalars = "SelectedPoints"
 
         # sample the surface with the enclosed cells to extract the bbox region
-        if preference == EnclosedPreference.CENTER:
+        if self.preference == EnclosedPreference.CENTER:
             region = original.extract_cells(selected[scalars].view(bool))
-        elif preference == EnclosedPreference.POINT:
+        elif self.preference == EnclosedPreference.POINT:
             region = selected.threshold(0.5, scalars=scalars, preference="cell")
         else:
             region = surface.extract_points(

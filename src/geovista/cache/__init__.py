@@ -16,7 +16,8 @@ from __future__ import annotations
 from functools import wraps
 import os
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any
+import stat
+from typing import TYPE_CHECKING, Any
 
 import pooch
 
@@ -37,13 +38,13 @@ __all__ = [
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-type FileLike = str | IO[str] | IO[bytes]
+type FileLike = str | os.PathLike[str]
 """Type alias for filename or file-like object."""
 
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
 """Base URL for :mod:`geovista` resources."""
 
-DATA_VERSION: str = "2025.10.3"
+DATA_VERSION: str = "2026.01.0"
 """The ``geovista-data`` repository version for :mod:`geovista` resources."""
 
 GEOVISTA_CACHEDIR: str = "GEOVISTA_CACHEDIR"
@@ -52,13 +53,11 @@ GEOVISTA_CACHEDIR: str = "GEOVISTA_CACHEDIR"
 GEOVISTA_DATA_VERSION: str = os.environ.get("GEOVISTA_DATA_VERSION", DATA_VERSION)
 """Environment variable to override default :attr:`DATA_VERSION`."""
 
+READ_MODE: int = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
+"""Enable all read permission mode bits."""
+
 RETRY_ATTEMPTS: int = 3
 """The number of retry attempts to download a resource."""
-
-URL_DKRZ_FESOM: str = (
-    "https://swift.dkrz.de/v1/dkrz_0262ea1f00e34439850f3f1d71817205/FESOM/"
-    "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
-)
 
 CACHE: pooch.Pooch = pooch.create(
     path=resources["cache_dir"],
@@ -68,9 +67,6 @@ CACHE: pooch.Pooch = pooch.create(
     registry=None,
     retry_if_failed=RETRY_ATTEMPTS,
     env=GEOVISTA_CACHEDIR,
-    urls={
-        "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc": URL_DKRZ_FESOM  # noqa: E501
-    },
 )
 """Cache manager for :mod:`geovista` resources."""
 
@@ -148,7 +144,22 @@ def _downloader(
     # see https://github.com/readthedocs/readthedocs.org/issues/11763
     headers = {"User-Agent": f"geovista ({geovista.__version__})"}
     downloader: Callable[..., bool | None] = pooch.HTTPDownloader(headers=headers)
-    return downloader(url, output_file, poocher, check_only=check_only)
+    result = downloader(url, output_file, poocher, check_only=check_only)
+
+    if not check_only:
+        # perform best endevours to make downloaded asset community readable
+        try:
+            asset = Path(output_file)
+            # get current mode
+            mode = asset.stat().st_mode
+            # compute desired mode by OR-ing read bits for user, group, other
+            expected = mode | READ_MODE
+            if mode != expected:
+                asset.chmod(expected)
+        except (FileNotFoundError, OSError, PermissionError, ValueError):
+            pass
+
+    return result
 
 
 def pooch_mute(*, silent: bool | None = None) -> bool:

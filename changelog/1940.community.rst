@@ -1,0 +1,3 @@
+Added `aeolus <https://github.com/exoclim/aeolus>`__ package to
+the :ref:`tippy-gv-reference-about-community` section.
+(:user:`dennissergeev`)

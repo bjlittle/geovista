@@ -56,7 +56,9 @@
       "profile": "https://github.com/tkknight",
       "contributions": [
         "doc",
-        "infra"
+        "infra",
+        "code",
+        "bug"
       ]
     },
     {
@@ -187,7 +189,8 @@
         "promotion",
         "ideas",
         "talk",
-        "example"
+        "example",
+        "doc"
       ]
     },
     {
@@ -454,7 +457,8 @@
       "profile": "https://github.com/DanCopsey",
       "contributions": [
         "promotion",
-        "tool"
+        "tool",
+        "doc"
       ]
     },
     {
@@ -466,6 +470,15 @@
         "ideas",
         "code",
         "test"
+      ]
+    },
+    {
+      "login": "Erin-1919",
+      "name": "Erin Li",
+      "avatar_url": "https://avatars.githubusercontent.com/u/65569463?v=4",
+      "profile": "https://erin-1919.github.io/",
+      "contributions": [
+        "promotion"
       ]
     }
   ],

@@ -1,0 +1,3 @@
+Added `ngview <https://github.com/MetOffice/ngview>`__ package to
+the :ref:`tippy-gv-reference-about-community` section.
+(:user:`DanCopsey`)

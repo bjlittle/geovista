@@ -6,8 +6,8 @@
 :fa:`flask-vial` Testing
 ========================
 
-.. |codecov| image:: https://app.codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3
-   :target: https://app.codecov.io/gh/bjlittle/geovista
+.. |codecov| image:: https://codecov.io/gh/bjlittle/geovista/branch/main/graph/badge.svg?token=RVVXGP1SD3
+   :target: https://codecov.io/gh/bjlittle/geovista
 
 |codecov|
 
@@ -54,6 +54,14 @@ The following testing workflows are available:
    |           | A `codecov`_ report is generated only for the **latest** supported distribution of ``python``.                |
    |           |                                                                                                               |
    |           | Also see the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`tests-unit` task.             |
+   |           |                                                                                                               |
+   |           | .. note::                                                                                                     |
+   |           |    :class: dropdown, toggle-shown                                                                             |
+   |           |                                                                                                               |
+   |           |    Failed :ref:`tippy-gv-developer-testing-image-tests` are captured via the ``pytest-pyvista`` plugin option |
+   |           |    ``--failed_image_dir`` (see :ref:`tippy-gv-developer-testing-image-tests-generation`), and uploaded and    |
+   |           |    archived as a :fab:`github` `Workflow Artifact`_ for the CI job. The failed unit test images may then be   |
+   |           |    downloaded for analysis and investigation.                                                                 |
    +-----------+---------------------------------------------------------------------------------------------------------------+
    | |ci-lock| | The `ci-tests-lock.yml`_ ``cron`` based :fab:`github` Action regularly schedules the execution of both the    |
    |           | :ref:`tippy-gv-developer-testing-image-tests` and :ref:`tippy-gv-developer-testing-unit-tests` for the        |
@@ -278,6 +286,9 @@ The :bash:`tests/plotting/unit_image_cache` symbolic-link to the :data:`~geovist
 manager image cache is automatically verified and managed by the :python:`tests.plotting` module.
 
 
+.. _gv-developer-testing-image-tests-generation:
+.. _tippy-gv-developer-testing-image-tests-generation:
+
 Generation
 ~~~~~~~~~~
 
@@ -354,7 +365,7 @@ the :guilabel:`DATA_VERSION` using the CLI e.g.,
    for further details.
 
 Testing may be performed using the convenience of
-`pixi run <https://pixi.sh/latest/reference/cli/pixi/run/>`__ tasks, which
+`pixi run <https://pixi.prefix.dev/latest/reference/cli/pixi/run/>`__ tasks, which
 **do not** require to be executed from within :bash:`geovista` root directory
 e.g.,
 
@@ -408,6 +419,16 @@ e.g.,
    |                         |                                                               |
    |                         | Note that the :guilabel:`tests-clean` task is called prior to |
    |                         | running this task.                                            |
+   |                         |                                                               |
+   |                         | .. note::                                                     |
+   |                         |    :class: dropdown, toggle-shown                             |
+   |                         |                                                               |
+   |                         |    Failed :ref:`tippy-gv-developer-testing-image-tests` are   |
+   |                         |    captured via the ``pytest-pyvista`` plugin option          |
+   |                         |    ``--failed_image_dir`` (see                                |
+   |                         |    :ref:`tippy-gv-developer-testing-image-tests-generation`)  |
+   |                         |    and available within the :bash:`failed_images` directory   |
+   |                         |    for analysis and investigation.                            |
    +-------------------------+---------------------------------------------------------------+
 
 .. tip::
@@ -457,9 +478,10 @@ Finer-grained control of unit test can be achieved by using our ``pytest``
 
 .. comment
 
-   Page link URL resources in alphabetical order:
+   🔗 URL resources in alphabetical order:
 
 
+.. _Workflow Artifact: https://docs.github.com/en/actions/concepts/workflows-and-actions/workflow-artifacts
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml
 .. _ci-tests.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests.yml
 .. _ci-tests-lock.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-lock.yml

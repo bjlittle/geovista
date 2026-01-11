@@ -73,7 +73,7 @@ jobs:
         echo "DATA_VERSION=$(geovista --data-version)" >> ${GITHUB_ENV}
 
     - name: "check cartopy cache"
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: cartopy-cache
       with:
         path: ~/.local/share/cartopy
@@ -88,7 +88,7 @@ jobs:
         cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
 
     - name: "check geovista cache"
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: geovista-cache
       with:
         path: ~/.cache/geovista
@@ -101,7 +101,7 @@ jobs:
 
     - name: "test pypi (py${{ matrix.version }})"
       run: |
-        xvfb-run -a pytest --generated_image_dir test_images
+        xvfb-run -a pytest --failed_image_dir failed_images
 
     - name: "report failure"
       if: ${{ failure() && github.event_name == 'schedule' }}
@@ -116,3 +116,10 @@ jobs:
         EOL
         )
         gh issue create --title "${TITLE}" --body "${BODY}" --label "bot" --label "new: issue" --repo "${{ github.repository }}"
+
+    - name: "upload failed images"
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v6
+      with:
+        name: ci-tests-pypi-failed-images-${{ github.job }}-${{ strategy.job-index }}
+        path: ${{ github.workspace }}/failed_images

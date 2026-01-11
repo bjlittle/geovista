@@ -24,7 +24,6 @@ build:
       - pixi install --frozen --environment docs
     post_install:
       - git stash pop || true
-      - pixi run --frozen --environment docs geovista download --operational --decompress
     build:
       html:
         - pixi run --frozen --environment docs sphinx-build -T -b html docs/src $READTHEDOCS_OUTPUT/html

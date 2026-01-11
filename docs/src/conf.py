@@ -168,6 +168,7 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_tags",
     "sphinx_togglebutton",
+    "sphinxcontrib.bibtex",
     "sphinxcontrib.mermaid",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
@@ -361,6 +362,14 @@ togglebutton_hint = "Click to show"
 togglebutton_hint_hide = "Click to hide"
 
 
+# sphinxcontrib-bibtex options -----------------------------------------------
+# See https://sphinxcontrib-bibtex.readthedocs.io/en/latest/
+
+bibtex_bibfiles = [
+    str(docs_src_dir / "refs.bib"),
+]
+
+
 # myst-nb options ------------------------------------------------------------
 # See https://myst-nb.readthedocs.io/en/latest/configuration.html
 
@@ -448,7 +457,7 @@ autoapi_options = [
     # "inherited-members",
     "undoc-members",
     # "private-members",
-    # "special-members",
+    "special-members",
     "show-inheritance",
     # "show-inheritance-diagram",
     "show-module-summary",
@@ -544,6 +553,11 @@ html_theme_options = {
             "url": "https://www.youtube.com/@geovista_devs/videos",
             "icon": "fa-brands fa-youtube",
         },
+        {
+            "name": "PyVista",
+            "url": "https://docs.pyvista.org",
+            "icon": "fa-brands fa-python",
+        },
     ],
     "max_navbar_depth": 3,
     "navigation_with_keys": False,
@@ -576,6 +590,7 @@ html_static_path = [
     "_static",
 ]
 html_css_files = [
+    "color.css",
     "style.css",
     "theme_overrides.css",
 ]
@@ -819,7 +834,10 @@ def generate_carousel(
                     # remove numeric gallery image index e.g., "001"
                     parts = path.stem.split("_")[:-1]
                     link = parts[:2] + list(link_relative.parts) + parts[2:]
-                    link = f"{'_'.join(link)}.py"
+
+                    # enforce lower-case link, which resolves correctly
+                    # for mixed case targets
+                    link = f"{'_'.join(link)}.py".lower()
 
                     kwargs = {
                         "image": image,

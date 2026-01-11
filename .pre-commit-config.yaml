@@ -23,7 +23,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.7"
+    rev: "v0.14.10"
     hooks:
       - id: ruff-check
         types: [file, python]
@@ -39,14 +39,14 @@ repos:
         additional_dependencies: [tomli]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.19.0'
+    rev: 'v1.19.1'
     hooks:
       - id: mypy
         # https://github.com/python/mypy/issues/13916
         pass_filenames: false
 
   - repo: https://github.com/numpy/numpydoc
-    rev: v1.9.0
+    rev: v1.10.0
     hooks:
       - id: numpydoc-validation
         files: "^src/"
@@ -107,7 +107,7 @@ repos:
         # Forbid files which have a UTF-8 Unicode replacement character.
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.35.0
+    rev: 0.36.0
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
@@ -134,6 +134,21 @@ repos:
         args: [--ignore, ".pixi", --ignore, "changelog/template.rst"]
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.18.0
+    rev: v1.19.0
     hooks:
       - id: zizmor
+
+  # ⚠️ requires nodejs
+  #
+  #    > pixi add nodejs
+  #    > pre-commit run bibtex-tidy --files docs/src/refs.bib
+  #
+  # - repo: https://github.com/FlamingTempura/bibtex-tidy
+  #   rev: v1.14.0
+  #   hooks:
+  #     - id: bibtex-tidy
+  #       args: ["--curly", "--tab", "--months", "--align", "--blank-lines", "--sort=key", "--duplicates=key", "--sort-fields", "--wrap"]
+  #       files: "^docs/src/refs.bib"
+  #       entry: ./bin/bibtex-tidy --modify
+  #       language: script
+  #       types: ['bib']
