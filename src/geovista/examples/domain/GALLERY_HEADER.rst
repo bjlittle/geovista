@@ -1,7 +1,7 @@
 .. _gv-examples-domain:
 .. _tippy-gv-examples-domain:
 
-Domain
-======
+:fa:`image` Domain
+==================
 
 Highlights various science domain specific examples.

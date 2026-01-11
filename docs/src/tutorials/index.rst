@@ -27,7 +27,7 @@ A collection of themed practical lessons to work through.
             :alt: Region Manifold Extraction
 
         +++
-        Region Manifold Extraction
+        :fa:`droplet` Region Manifold Extraction
 
 
 .. toctree::

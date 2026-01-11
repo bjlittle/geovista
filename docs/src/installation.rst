@@ -6,8 +6,8 @@
 :fa:`circle-down` Installation
 ==============================
 
-Stable
-------
+:fa:`heart-circle-check` Stable
+-------------------------------
 
 The latest **stable release** of ``geovista`` is available on `conda-forge`_
 and `PyPI`_, and can be easily installed:
@@ -97,8 +97,8 @@ then instead install the latest **stable release** as follows:
             $ uv pip install "geovista[exam]"
 
 
-Latest
-------
+:fa:`heart-circle-plus` Latest
+------------------------------
 
 If you simply can't wait for the next **stable release** of ``geovista``, then
 install the latest **development version** from the :fab:`github` ``main``
@@ -137,8 +137,8 @@ branch:
             $ uv pip install "git+https://github.com/bjlittle/geovista.git@main"
 
 
-Developer
----------
+:fa:`heart-circle-bolt` Developer
+---------------------------------
 
 .. image:: https://vhs.charm.sh/vhs-6tXpDhss6UKkT7lTOb1MDp.gif
    :class: only-light

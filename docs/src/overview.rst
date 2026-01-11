@@ -12,8 +12,8 @@ We briefly discuss its goals and motivation, and introduce you to the rich,
 powerful ecosystem that underpins its evolving capability.
 
 
-Motivation
-----------
+:fa:`star-of-life` Motivation
+-----------------------------
 
 ``geovista`` is a pure `Python`_ package that offers performant,
 publication quality 3D cartographic rendering of Earth Science data.
@@ -50,8 +50,8 @@ your spatial data for visualization, such as `geopandas`_, `iris`_ and
 .. _gv-overview-ecosystem:
 .. _tippy-gv-overview-ecosystem:
 
-Ecosystem
----------
+:fa:`mountain-sun` Ecosystem
+----------------------------
 
 ``geovista`` is built on the shoulders of giants, namely `PyVista`_ and the
 `Visualization Toolkit`_ (VTK), thus allowing it to easily leverage the power
@@ -73,8 +73,8 @@ This toolchain is enabled through `PyVista`_, which exposes the powerful
 visualization backend of `VTK`_ through an intuitive Pythonic interface.
 
 
-PyVista in a Nutshell
-^^^^^^^^^^^^^^^^^^^^^
+:fab:`python` PyVista in a Nutshell
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. figure:: _static/images/pyvista-examples.png
     :alt: PyVista Examples
@@ -96,8 +96,8 @@ PyVista in a Nutshell
 - Static and interactive plot integration within `Jupyter`_ ecosystem
 
 
-Development Status
-------------------
+:fa:`battery-quarter` Development Status
+----------------------------------------
 
 It's still early days for ``geovista``, but we're already excited about the
 potential and promise that it might offer to the Earth Science community.

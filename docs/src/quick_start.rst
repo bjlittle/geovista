@@ -10,8 +10,8 @@ Now that you've :ref:`installed <tippy-gv-installation>` ``geovista``, let's tak
 quick tour to see some of the features and capabilities on offer.
 
 
-Resources
----------
+:fa:`industry` Resources
+------------------------
 
 For convenience, ``geovista`` comes with numerous **pre-canned resources** to
 help get you started on your visualization journey e.g., rasters, `VTK`_
@@ -44,8 +44,8 @@ To view the manifest of registered resources:
         $ geovista download --help
 
 
-Examples
---------
+:fa:`images` Examples
+---------------------
 
 .. pyvista-plot::
    :context:
@@ -73,8 +73,8 @@ Let's explore some atmospheric and oceanographic model data using
 **curvilinear**, and **unstructured** meshes.
 
 
-OISST AVHRR
-^^^^^^^^^^^
+:fa:`image` OISST AVHRR
+^^^^^^^^^^^^^^^^^^^^^^^
 
 This example renders a 2D data array with 1D X and Y **rectilinear**
 coordinates as a :term:`mesh <Mesh>` of quadrilateral :term:`cells <Cell>` in
@@ -126,8 +126,8 @@ are rendered using the
     p.show()
 
 
-NEMO ORCA2
-^^^^^^^^^^
+:fa:`image` NEMO ORCA2
+^^^^^^^^^^^^^^^^^^^^^^
 
 This example renders a 2D data array with 2D X and Y **curvilinear**
 coordinates as a :term:`mesh <Mesh>` of quadilateral :term:`cells <Cell>` in
@@ -207,8 +207,8 @@ projection.
     p.show()
 
 
-WAVEWATCH III
-^^^^^^^^^^^^^
+:fa:`image` WAVEWATCH III
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``geovista`` provides rich support for easily constructing a
 :term:`mesh <Mesh>` surface from various unstructured Earth Science model
@@ -269,8 +269,8 @@ Finally, the render is decorated with `10m Natural Earth coastlines`_.
     p.show()
 
 
-Finite Volume Community Ocean Model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:fa:`image` Finite Volume Community Ocean Model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This final example showcases how `PyVista`_ can take visualization of Earth
 Science data to the next dimension, quite literally.
@@ -328,8 +328,8 @@ interactively.
     p.show()
 
 
-And Finally ...
----------------
+:fa:`quote-left` And Finally ...
+--------------------------------
 
 Hopefully this whirlwind tour of ``geovista`` has whet your appetite for much
 more!
