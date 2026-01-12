@@ -50,8 +50,8 @@ your spatial data for visualization, such as `geopandas`_, `iris`_ and
 .. _gv-overview-ecosystem:
 .. _tippy-gv-overview-ecosystem:
 
-:fa:`mountain-sun` Ecosystem
-----------------------------
+:fa:`recycle` Ecosystem
+-----------------------
 
 ``geovista`` is built on the shoulders of giants, namely `PyVista`_ and the
 `Visualization Toolkit`_ (VTK), thus allowing it to easily leverage the power
