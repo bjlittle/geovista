@@ -1,0 +1,2 @@
+Completed first and second level title `Font Awesome <https://fontawesome.com>`__
+icon coverage. (:user:`bjlittle`)
