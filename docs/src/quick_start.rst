@@ -10,8 +10,8 @@ Now that you've :ref:`installed <tippy-gv-installation>` ``geovista``, let's tak
 quick tour to see some of the features and capabilities on offer.
 
 
-:fa:`industry` Resources
-------------------------
+:fa:`toolbox` Resources
+-----------------------
 
 For convenience, ``geovista`` comes with numerous **pre-canned resources** to
 help get you started on your visualization journey e.g., rasters, `VTK`_
