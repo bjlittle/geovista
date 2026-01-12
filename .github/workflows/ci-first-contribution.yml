@@ -1,0 +1,61 @@
+# Reference:
+#   - https://github.com/plbstl/first-contribution
+
+name: ci-first-contribution
+
+on:
+  issues:
+    types: [opened]
+
+  pull_request:
+    types: [opened, closed]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  welcome:
+    name: "welcome first contribution"
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: plbstl/first-contribution@4b2b042fffa26792504a18e49aa9543a87bec077
+        with:
+          token: ${{ secrets.GEOVISTA_BOT_WELCOME }}
+
+          issue-reactions: eyes
+          pr-reactions: eyes
+          issue-labels: first-issue
+          pr-labels: first-pull-request
+
+          issue-opened-msg: |
+            Welcome @{fc-author}!
+
+            Congrats! Your first issue :tada:
+
+            Thanks for taking the time to feedback and tell us how to improve `geovista` :heart:
+
+            Check out our [Code of Conduct](https://github.com/bjlittle/geovista/blob/main/CODE_OF_CONDUCT.md) and [Contribution Guide](https://geovista.readthedocs.io/en/latest/developer/index.html) to learn more about contributing to the `geovista` community.
+
+          pr-opened-msg: |
+            Welcome @{fc-author}!
+
+            Awesome! Your first pull-request! :partying_face:
+
+            Thanks for taking the time to contribute to `geovista` :heart:
+
+            Check out our [Code of Conduct](https://github.com/bjlittle/geovista/blob/main/CODE_OF_CONDUCT.md) and [Contribution Guide](https://geovista.readthedocs.io/en/latest/developer/index.html) to learn more about contributing to the `geovista` community.
+
+          pr-merged-msg: |
+            Hey @{fc-author}!
+
+            Congrats on banking your first `geovista` pull-request! :sparkles:
+
+            Let the good times roll! 🤟
