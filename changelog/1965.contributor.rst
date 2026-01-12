@@ -1,0 +1,4 @@
+Added the ``ci-first-contribution`` :fab:`github` Action to automatically
+acknowledge and welcome first time :far:`circle-dot` `Issue`_  and
+:fa:`code-pull-request` `Pull-Request`_ contributions from the
+community. (:user:`bjlittle`)
