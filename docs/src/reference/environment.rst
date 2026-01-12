@@ -11,8 +11,8 @@ Internal and external (third-party) environment variables for either a
 ``platform`` e.g., a GitHub runner.
 
 
-Internal
---------
+:fa:`users-viewfinder` Internal
+-------------------------------
 
 Package environment variables that influence the behaviour of ``geovista``:
 
@@ -66,8 +66,8 @@ Package environment variables that influence the behaviour of ``geovista``:
     +--------------------------------------+---------------+-----------------------------------------------------------+
 
 
-Third-Party
------------
+:fa:`users-rays` Third-Party
+----------------------------
 
 Notable third-party environment variables that influence the behaviour of
 ``geovista``:

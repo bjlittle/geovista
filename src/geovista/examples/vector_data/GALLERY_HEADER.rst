@@ -1,7 +1,7 @@
 .. _gv-examples-vector-data:
 .. _tippy-gv-examples-vector-data:
 
-Vector Data
-===========
+:fa:`image` Vector Data
+=======================
 
 Examples of wind vector data.

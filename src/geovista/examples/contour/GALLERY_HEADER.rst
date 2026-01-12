@@ -1,8 +1,8 @@
 .. _gv-examples-contour:
 .. _tippy-gv-examples-contour:
 
-Contour
-=======
+:fa:`image` Contour
+===================
 
 Showcases various contouring examples.
 
