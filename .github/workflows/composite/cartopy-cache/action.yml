@@ -10,7 +10,7 @@ runs:
   using: "composite"
   steps:
     - name: "check cartopy cache"
-      uses: actions/cache@v5
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb
       id: cartopy-cache
       with:
         path: ~/.local/share/cartopy

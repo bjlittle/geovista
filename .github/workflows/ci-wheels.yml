@@ -39,7 +39,7 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -53,7 +53,7 @@ jobs:
         run: |
           ls -l ${{ github.workspace }}/dist
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: pypi-artifacts-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/dist
@@ -73,12 +73,12 @@ jobs:
         version: ["py312", "py313"]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           pattern: pypi-artifacts-*
           path: ${{ github.workspace }}/dist
@@ -105,7 +105,7 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-    - uses: actions/download-artifact@v7
+    - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
       with:
         pattern: pypi-artifacts-*
         path: ${{ github.workspace }}/dist
@@ -127,7 +127,7 @@ jobs:
     # upload to Test PyPI for every commit on main branch
     if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/main' }}
     steps:
-    - uses: actions/download-artifact@v7
+    - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
       with:
         pattern: pypi-artifacts-*
         path: ${{ github.workspace }}/dist
@@ -151,7 +151,7 @@ jobs:
     # upload to PyPI for every tag starting with 'v'
     if: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v') }}
     steps:
-    - uses: actions/download-artifact@v7
+    - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
       with:
         pattern: pypi-artifacts-*
         path: ${{ github.workspace }}/dist
