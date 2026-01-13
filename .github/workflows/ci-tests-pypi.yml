@@ -2,6 +2,7 @@
 #   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/setup-python
+#   - https://github.com/actions/upload-artifact
 #   - https://github.com/pyvista/setup-headless-display-action
 
 name: ci-tests-pypi
@@ -45,12 +46,12 @@ jobs:
         version: ["3.13"]
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
       with:
         fetch-depth: 0
         persist-credentials: false
 
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548
       with:
         python-version: ${{ matrix.version }}
 
@@ -73,7 +74,7 @@ jobs:
         echo "DATA_VERSION=$(geovista --data-version)" >> ${GITHUB_ENV}
 
     - name: "check cartopy cache"
-      uses: actions/cache@v5
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb
       id: cartopy-cache
       with:
         path: ~/.local/share/cartopy
@@ -88,7 +89,7 @@ jobs:
         cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
 
     - name: "check geovista cache"
-      uses: actions/cache@v5
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb
       id: geovista-cache
       with:
         path: ~/.cache/geovista
@@ -119,7 +120,7 @@ jobs:
 
     - name: "upload failed images"
       if: ${{ failure() }}
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
       with:
         name: ci-tests-pypi-failed-images-${{ github.job }}-${{ strategy.job-index }}
         path: ${{ github.workspace }}/failed_images

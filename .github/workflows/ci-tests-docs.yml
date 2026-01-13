@@ -1,5 +1,6 @@
 # Reference:
 #   - https://github.com/actions/checkout
+#   - https://github.com/actions/upload-artifact
 #   - https://github.com/awalsh128/cache-apt-pkgs-action
 #   - https://github.com/prefix-dev/setup-pixi
 
@@ -42,7 +43,7 @@ jobs:
         version: ["py313"]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -83,7 +84,7 @@ jobs:
 
       - name: "upload test images"
         if: ${{ failure() && !cancelled() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: ci-tests-docs-test-images-failure-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/test_images_failed
