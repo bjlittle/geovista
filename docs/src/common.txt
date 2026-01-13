@@ -21,7 +21,7 @@
 
 
 .. |geovista-badge| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json
-    :target: https://geovista.readthedocs.io/
+    :target: https://geovista.readthedocs.io/en/latest/
 
 
 .. comment
