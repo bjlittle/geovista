@@ -41,7 +41,7 @@ requires-python = ">=3.12"
 [project.urls]
 Changelog = "https://geovista.readthedocs.io/en/latest/reference/whatsnew/index.html#gv-reference-whatsnew"
 Discussions = "https://github.com/bjlittle/geovista/discussions"
-Home = "https://geovista.readthedocs.io"
+Home = "https://geovista.readthedocs.io/en/latest"
 Issues = "https://github.com/bjlittle/geovista/issues"
 Repository = "https://github.com/bjlittle/geovista"
 YouTube = "https://www.youtube.com/@geovista_devs/videos"
