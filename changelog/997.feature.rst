@@ -1,3 +1,3 @@
-Added `NASA Black Marble <https://earthobservatory.nasa.gov/images/90008/night-light-maps-open-up-new-applications>`__
+Added `NASA Black Marble <https://science.nasa.gov/earth/earth-observatory/night-light-maps-open-up-new-applications-90008/>`__
 "night lights" global texture :func:`geovista.pantry.textures.black_marble`.
 Closes :issue:`992`. (:user:`bjlittle`)

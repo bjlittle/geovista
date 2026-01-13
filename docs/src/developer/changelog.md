@@ -112,7 +112,7 @@ These quality assurance checks can be **skipped** by adding the
 by the following bots or services will have the `skip-changelog` label
 automatically applied:
 
-* [dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates) version updates
+* [dependabot](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/configuring-dependabot-version-updates) version updates
 * [pre-commit.ci](https://pre-commit.ci/) hook updates
 * [ci-locks](https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml) {fab}`github` Action
 

@@ -34,7 +34,12 @@ Head over to our :fab:`github` `Discussions`_ to engage with the
 ``geovista`` community. Feel free to ask questions, share ideas, discuss topics,
 and even showcase your work in our :fab:`github` `🍬 Candy Store`_. Go for it!
 
-Add a touch of panache to your :bash:`README.md` with our badge |geovista-badge|:
+Add a touch of panache to your :bash:`README.md` with our badge:
+
+.. rst-class:: center
+
+    |geovista-badge|
+
 
 .. tab-set::
 
