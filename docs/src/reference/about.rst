@@ -27,8 +27,8 @@ remember to cite us:
 .. _gv-reference-about-community:
 .. _tippy-gv-reference-about-community:
 
-:fa:`heart-circle-plus` Community
----------------------------------
+:fa:`people-roof` Community
+---------------------------
 
 Head over to our :fab:`github` `Discussions`_ to engage with the
 ``geovista`` community. Feel free to ask questions, share ideas, discuss topics,
@@ -138,8 +138,8 @@ Explore scientific publications that leverage ``geovista``:
     add your BibTeX entry and raise a :fa:`code-pull-request` `Pull-Request`_.
 
 
-:fa:`users-line` Contributors
------------------------------
+:fa:`users` Contributors
+------------------------
 
 .. |all-contributors| image:: https://img.shields.io/github/all-contributors/bjlittle/geovista?color=ee8449
 
