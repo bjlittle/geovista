@@ -1,2 +1,2 @@
-Refreshed the :class:`~geovista.report.Report` package dependencies.
+Refreshed the :class:`geovista.report.Report` package dependencies.
 (:user:`bjlittle`)

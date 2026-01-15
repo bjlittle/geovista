@@ -34,7 +34,6 @@ from .common import (
     cast_UnstructuredGrid_to_PolyData,
     nan_mask,
     to_cartesian,
-    wrap,
 )
 from .crs import WGS84, CRSLike, to_wkt
 from .transform import transform_points
@@ -676,20 +675,12 @@ class Transform:  # numpydoc ignore=PR01
         radius = RADIUS if radius is None else abs(float(radius))
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
 
-        if crs is not None:
-            crs = pyproj.CRS.from_user_input(crs)
+        if crs is None:
+            crs = WGS84
 
-            if crs != WGS84:
-                transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
-                xs, ys = transformed[:, 0], transformed[:, 1]
-
-        # ensure longitudes (degrees) are in half-closed interval [-180, 180)
-        xs = wrap(xs)
-
-        # reduce any singularity points at the poles to a common longitude
-        poles = np.isclose(np.abs(ys), 90)
-        if np.any(poles):
-            xs[poles] = 0
+        # transform spatial points to WGS84 with shape (M, 3) or (M, N, 3)
+        transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
+        xs, ys = transformed[..., 0], transformed[..., 1]
 
         # convert lat/lon to cartesian xyz
         xyz = to_cartesian(xs, ys, radius=radius, zlevel=zlevel, zscale=zscale)
@@ -1036,17 +1027,15 @@ class Transform:  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
+        # flatten the points to 1D with shape (M,)
         xs, ys = xs.ravel(), ys.ravel()
 
-        if crs is not None:
-            crs = pyproj.CRS.from_user_input(crs)
+        if crs is None:
+            crs = WGS84
 
-            if crs != WGS84:
-                transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
-                xs, ys = transformed[:, 0], transformed[:, 1]
-
-        # ensure longitudes (degrees) are in half-closed interval [-180, 180)
-        xs = wrap(xs)
+        # transform spatial points to WGS84 with shape (M, 3)
+        transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
+        xs, ys = transformed[:, 0], transformed[:, 1]
 
         if connectivity is None:
             # default to the shape of the points
@@ -1097,11 +1086,6 @@ class Transform:  # numpydoc ignore=PR01
 
             if start_index:
                 connectivity_array -= start_index
-
-        # reduce any singularity points at the poles to a common longitude
-        poles = np.isclose(np.abs(ys), 90)
-        if np.any(poles):
-            xs[poles] = 0
 
         radius = RADIUS if radius is None else abs(float(radius))
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)

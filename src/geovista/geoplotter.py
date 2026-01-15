@@ -683,7 +683,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             transform_required = src_crs and src_crs != tgt_crs
             central_meridian = get_central_meridian(tgt_crs) or 0
 
-            if transform_required and not cloud:
+            if transform_required and not cloud and not src_crs.is_projected:
                 if central_meridian:
                     mesh.rotate_z(-central_meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)

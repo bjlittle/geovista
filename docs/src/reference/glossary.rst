@@ -19,6 +19,9 @@ Say what you mean. Mean what you say.
         A surface mesh that may be texture mapped, and lies beneath another
         mesh typically to fill holes in that mesh.
 
+    CRS
+        Abbreviation. See :term:`Coordinate Reference System`.
+
     Cell
         A cell is the geometry between points that defines the connectivity
         or topology of a mesh. See `What is a Cell?`_
@@ -57,9 +60,12 @@ Say what you mean. Mean what you say.
         `design considerations`_ for further details.
 
     GHA
-        Acronym for **GitHub Action**. A feature offered by `GitHub`_ that provides
-        Continuous Integration (CI), Continuous Deployment (CD) and task automation
-        workflows within a GitHub repository.
+        Abbreviation. See :term:`GitHub Action`.
+
+    GitHub Action
+        A feature offered by `GitHub`_ that provides Continuous Integration
+        (CI), Continuous Deployment (CD) and task automation workflows within
+        a GitHub repository.
 
     Land Mask
         Typically a boolean array used to indicate the cells in a mesh that
@@ -73,9 +79,10 @@ Say what you mean. Mean what you say.
         space. See `What is a Mesh?`_
 
     MyST
-        *Markedly Structured Text* is a rich and extensible flavour of ``Markdown``
-        for authoring technical and scientific documents. See `myst-nb`_ and
-        `myst-parser`_ from the `Executable Books`_ organisation.
+        Abbreviation for *Markedly Structured Text*. MyST is a rich and
+        extensible flavour of ``Markdown`` for authoring technical and scientific
+        documents. See `myst-nb`_ and `myst-parser`_ from the `Executable Books`_
+        organisation.
 
     Node
         Nodes are the vertices of a mesh. Also see :term:`Point`.
