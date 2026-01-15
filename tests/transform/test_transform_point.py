@@ -10,6 +10,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from geovista.common import wrap
 from geovista.crs import WGS84
 from geovista.transform import transform_point
 
@@ -50,4 +51,28 @@ def test_valid_pass_thru(extract_xyz):
     x, y, z = extract_xyz(expected)
     result = transform_point(src_crs=WGS84, tgt_crs=WGS84, x=x, y=y, z=z)
     assert result.shape == expected.shape
+    np.testing.assert_array_equal(result, expected)
+
+
+@pytest.mark.parametrize(
+    "y",
+    [-90, 90],
+)
+def test_transform_to_wgs84_poles(y):
+    """Test poles to WGS84 have zero longitudes."""
+    result = transform_point(src_crs=WGS84, tgt_crs=WGS84, x=90, y=y)
+    expected = np.array([0, y, 0])
+    np.testing.assert_array_equal(result, expected)
+
+
+@pytest.mark.parametrize(
+    "x",
+    np.arange(0, 450, 90),
+)
+def test_transform_to_wgs84_interval(x):
+    """Test longitude transformed to WGS84 are in [-180, 180)."""
+    y = 0
+    result = transform_point(src_crs=WGS84, tgt_crs=WGS84, x=x, y=y)
+    tx = wrap(x)[0]
+    expected = np.array([tx, y, 0])
     np.testing.assert_array_equal(result, expected)

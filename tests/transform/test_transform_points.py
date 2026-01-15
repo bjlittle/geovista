@@ -12,6 +12,7 @@ from pyproj import Transformer
 from pyproj.exceptions import CRSError
 import pytest
 
+from geovista.common import wrap
 from geovista.crs import WGS84
 from geovista.transform import transform_points
 
@@ -77,6 +78,29 @@ def test_z_size_fail():
     emsg = "Cannot transform points, 'xs' and 'zs' require same length"
     with pytest.raises(ValueError, match=emsg):
         _ = transform_points(src_crs=WGS84, tgt_crs=WGS84, xs=data, ys=data, zs=zs)
+
+
+@pytest.mark.parametrize(
+    "y",
+    [-90, 90],
+)
+def test_transform_to_wgs84_poles(y):
+    """Test poles to WGS84 have zero longitudes."""
+    xs = np.arange(0, 370, 10)
+    ys = np.ones_like(xs) * y
+    result = transform_points(src_crs=WGS84, tgt_crs=WGS84, xs=xs, ys=ys)
+    zeros = np.zeros_like(xs)
+    expected = np.vstack([zeros, ys, zeros]).T
+    np.testing.assert_array_equal(result, expected)
+
+
+def test_transform_to_wgs84_interval():
+    """Test longitudes transformed to WGS84 are in [-180, 180)."""
+    xs = np.arange(0, 370, 10)
+    ys = np.zeros_like(xs)
+    result = transform_points(src_crs=WGS84, tgt_crs=WGS84, xs=xs, ys=ys)
+    expected = np.vstack([wrap(xs), ys, np.zeros_like(xs)]).T
+    np.testing.assert_array_equal(result, expected)
 
 
 @pytest.mark.parametrize("zoffset", [None, 100])

@@ -18,7 +18,14 @@ from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
-from .common import GV_FIELD_ZSCALE, ZLEVEL_SCALE, from_cartesian, point_cloud
+from .common import (
+    GV_FIELD_ZSCALE,
+    ZLEVEL_SCALE,
+    from_cartesian,
+    point_cloud,
+    to_cartesian,
+    wrap,
+)
 from .crs import (
     WGS84,
     CRSLike,
@@ -49,10 +56,11 @@ def transform_mesh(
     tgt_crs: CRSLike,
     *,
     slice_connectivity: bool | None = True,
-    rtol: float | None = None,
-    atol: float | None = None,
+    radius: float | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
+    rtol: float | None = None,
+    atol: float | None = None,
     inplace: bool | None = False,
 ) -> pv.PolyData:
     """Transform the mesh from its source CRS to the target CRS.
@@ -68,12 +76,8 @@ def transform_mesh(
     slice_connectivity : bool, default=True
         Slice the mesh prior to transformation in order to break mesh connectivity and
         create a seam in the mesh. Also see :func:`geovista.core.slice_mesh`.
-    rtol : float, optional
-        The relative tolerance for longitudes close to the 'wrap meridian' -
-        see :func:`geovista.common.wrap` for more.
-    atol : float, optional
-        The absolute tolerance for longitudes close to the 'wrap meridian' -
-        see :func:`geovista.common.wrap` for more.
+    radius : float, optional
+        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
     zlevel : int or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius`/vertical by a proportional amount e.g., ``radius * zlevel * zscale``.
@@ -82,6 +86,12 @@ def transform_mesh(
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
+    rtol : float, optional
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
+    atol : float, optional
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
     inplace : bool, default=False
         Update the `mesh` in-place. Can only perform an in-place operation when
         ``slice_connectivity=False``.
@@ -103,6 +113,10 @@ def transform_mesh(
     if src_crs is None:
         emsg = "Cannot transform mesh, no coordinate reference system (CRS) attached."
         raise ValueError(emsg)
+
+    # override: only slice connectivity for a non-projected src crs
+    if slice_connectivity:
+        slice_connectivity = not src_crs.is_projected
 
     # sanity check the target crs
     tgt_crs = pyproj.CRS.from_user_input(tgt_crs)
@@ -150,11 +164,17 @@ def transform_mesh(
         transformed = transform_points(
             src_crs=src_crs, tgt_crs=tgt_crs, xs=xyz[:, 0], ys=xyz[:, 1]
         )
+
         xs, ys = transformed[:, 0], transformed[:, 1]
         zs = 0
 
         if not inplace and not slice_connectivity:
             mesh = mesh.copy(deep=True)
+
+        if tgt_crs == WGS84:
+            xs, ys, zs = to_cartesian(
+                xs, ys, radius=radius, zlevel=zlevel, zscale=zscale, stacked=False
+            )
 
         mesh.points[:, 0] = xs
         mesh.points[:, 1] = ys
@@ -365,6 +385,15 @@ def transform_points(
         assert xs.shape == ys.shape == zs.shape, (
             "Cannot combine points, non-uniform shapes."
         )
+
+        if tgt_crs == WGS84:
+            # ensure longitudes (degrees) are in half-closed interval [-180, 180)
+            xs = wrap(xs)
+
+            # reduce any singularity points at the poles to a common longitude
+            poles = np.isclose(np.abs(ys), 90)
+            if np.any(poles):
+                xs[poles] = 0
 
         return np.vstack([xs, ys, zs]).T
 
