@@ -56,7 +56,7 @@ The following testing workflows are available:
    |           | Also see the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`tests-unit` task.             |
    |           |                                                                                                               |
    |           | .. note::                                                                                                     |
-   |           |    :class: dropdown, toggle-shown                                                                             |
+   |           |    :class: dropdown                                                                                           |
    |           |                                                                                                               |
    |           |    Failed :ref:`tippy-gv-developer-testing-image-tests` are captured via the ``pytest-pyvista`` plugin option |
    |           |    ``--failed_image_dir`` (see :ref:`tippy-gv-developer-testing-image-tests-generation`), and uploaded and    |
@@ -208,7 +208,7 @@ All image unit tests require to use the following ``pytest`` `fixtures`_:
    |                        | initiate the image comparison.                                      |
    |                        |                                                                     |
    |                        | .. seealso::                                                        |
-   |                        |    :class: dropdown, toggle-shown                                   |
+   |                        |    :class: dropdown                                                 |
    |                        |                                                                     |
    |                        |    For further details see :toml:`[tool.pytest.ini_options]` table  |
    |                        |    in the :bash:`pyproject.toml` manifest.                          |
@@ -326,6 +326,10 @@ Typically, we recommend the following:
 
    Refer to `pytest-pyvista`_ for further CLI and configuration options.
 
+   Also see the :guilabel:`tests-unit` ``pixi`` :term:`task <Task>` in the
+   following :ref:`tippy-gv-developer-testing-pixi-workflow` section, as a
+   convenience.
+
 To register a new baseline image for a unit test:
 
 #. Generate the baseline image using the ``--generated_image_dir`` option to the
@@ -421,14 +425,18 @@ e.g.,
    |                         | running this task.                                            |
    |                         |                                                               |
    |                         | .. note::                                                     |
-   |                         |    :class: dropdown, toggle-shown                             |
+   |                         |    :class: dropdown                                           |
    |                         |                                                               |
    |                         |    Failed :ref:`tippy-gv-developer-testing-image-tests` are   |
-   |                         |    captured via the ``pytest-pyvista`` plugin option          |
-   |                         |    ``--failed_image_dir`` (see                                |
+   |                         |    automatically captured via the ``pytest-pyvista`` plugin   |
+   |                         |    option ``--failed_image_dir`` (see                         |
    |                         |    :ref:`tippy-gv-developer-testing-image-tests-generation`)  |
    |                         |    and available within the :bash:`failed_images` directory   |
    |                         |    for analysis and investigation.                            |
+   |                         |                                                               |
+   |                         |    Additionally all generated images are captured via the     |
+   |                         |    ``--generated_image_dir`` plugin option and are available  |
+   |                         |    within the :bash:`test_images` directory.                  |
    +-------------------------+---------------------------------------------------------------+
 
 .. tip::

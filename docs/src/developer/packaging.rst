@@ -413,7 +413,7 @@ The following tasks are defined for each of our features:
    |                |                 | Note that the ``tests-clean`` task is called prior to running this task.              |
    |                |                 |                                                                                       |
    |                |                 | .. note::                                                                             |
-   |                |                 |    :class: dropdown, toggle-shown                                                     |
+   |                |                 |    :class: dropdown                                                                   |
    |                |                 |                                                                                       |
    |                |                 |    Failed :ref:`tippy-gv-developer-testing-image-tests` are captured via the          |
    |                |                 |    ``pytest-pyvista`` plugin option ``--failed_image_dir`` (see                       |
