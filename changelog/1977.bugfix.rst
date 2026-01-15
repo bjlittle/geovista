@@ -1,0 +1,8 @@
+Fixed :mod:`geovista.transform` such that
+:func:`~geovista.transform.transform_mesh`,
+:func:`~geovista.transform.transform_point`, and
+:func:`~geovista.transform.transform_points` correctly handle a
+projected :term:`CRS` source transformation. Additionally,
+:meth:`geovista.geoplotter.GeoPlotterBase.add_mesh` correctly
+renders a projected :term:`CRS` geometry within a plotter scene.
+(:user:`bjlittle`)

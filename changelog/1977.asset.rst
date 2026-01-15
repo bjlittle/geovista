@@ -1,0 +1,4 @@
+Updated the ``geovista.cache`` to reference ``geovista-data =2026.01.1``,
+which includes new :func:`geovista.transform.transform_mesh` and
+:meth:`geovista.geoplotter.GeoPlotterBase.add_mesh` image unit test assets.
+(:user:`bjlittle`)
