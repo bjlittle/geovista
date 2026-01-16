@@ -672,6 +672,9 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.2.0
 
         """
+        if clean is None:
+            clean = BRIDGE_CLEAN
+
         radius = RADIUS if radius is None else abs(float(radius))
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
 
@@ -1008,6 +1011,9 @@ class Transform:  # numpydoc ignore=PR01
         """
         if rgb is None:
             rgb = False
+
+        if clean is None:
+            clean = BRIDGE_CLEAN
 
         xs, ys = np.asanyarray(xs), np.asanyarray(ys)
         shape = xs.shape
