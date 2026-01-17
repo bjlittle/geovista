@@ -28,6 +28,21 @@ or
 Cross-referenced module headings to improve primary sidebar readability.
 ```
 
+Don't use a leading tilde (`~`) for shortened cross-references to the API. Instead
+always use fully-qualified cross-references for audience clarity e.g.,
+
+|                                                  | Cross-Reference                                    | Rendered Output                              |
+|:------------------------------------------------:|:--------------------------------------------------:|:--------------------------------------------:|
+| {octicon}`check-circle-fill;1em;sd-text-success` | `` :func:`geovista.transform.transform_points` ``  | {func}`geovista.transform.transform_points`  |
+| {octicon}`x-circle-fill;1em;sd-text-danger`      | `` :func:`~geovista.transform.transform_points` `` | {func}`~geovista.transform.transform_points` |
+
+The exception to this rule is when clear context is provided e.g.,
+
+```none
+Updated :mod:`geovista.transform` such that :func:`~geovista.transform.transform_point`
+and :func:`~geovista.transform.transform_points` optionally trap projection exceptions.
+```
+
 The following [extlinks](https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html)
 conveniences may be used within a news fragment file:
 
