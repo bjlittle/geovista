@@ -1,0 +1,3 @@
+Updated the ``geovista.cache`` to reference ``geovista-data =2026.01.2``, which
+includes new :meth:`geovista.geodesic.BBox.enclosed` image unit test assets.
+(:user:`bjlittle`)
