@@ -11,14 +11,14 @@ import pytest
 
 from geovista.common import from_cartesian
 
-# cubed-sphere antarctic panel corner cell-ids (top to bottom, left to right)
-ANTARCTIC_CORNER_CIDS = [11520, 11567, 13776, 13823]
+# cubed-sphere africa panel corner cell-ids (top to bottom, left to right)
+AFRICA_CORNER_CIDS = [0, 47, 2256, 2303]
 
 
 @pytest.fixture
-def antarctic_corners(lfric_sst):
+def africa_corners(lfric_sst):
     """Fixture generates lon/lats of cubed-sphere corner cells centers."""
-    cells = lfric_sst.extract_cells(ANTARCTIC_CORNER_CIDS)
+    cells = lfric_sst.extract_cells(AFRICA_CORNER_CIDS)
     cell_centers = cells.cell_centers()
     lonlat = from_cartesian(cell_centers)[[0, 1, 3, 2]]
     return lonlat[:, 0], lonlat[:, 1]

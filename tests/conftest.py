@@ -22,6 +22,7 @@ from geovista.pantry.meshes import lam_polar as sample_lam_polar
 from geovista.pantry.meshes import lam_uk as sample_lam_uk
 from geovista.pantry.meshes import lfric as sample_lfric
 from geovista.pantry.meshes import lfric_sst as sample_lfric_sst
+from geovista.transform import transform_mesh
 
 
 @pytest.fixture
@@ -113,6 +114,18 @@ def lfric_sst():
     name = mesh.active_scalars_name
     mesh["cids"] = np.arange(mesh.n_cells)
     mesh["pids"] = np.arange(mesh.n_points)
+    mesh.set_active_scalars(name)
+    return mesh
+
+
+@pytest.fixture
+def lfric_sst_eqc():
+    """Fixture to provide an eqc cube-sphere mesh with SST face data."""
+    mesh = sample_lfric_sst()
+    name = mesh.active_scalars_name
+    mesh["cids"] = np.arange(mesh.n_cells)
+    mesh["pids"] = np.arange(mesh.n_points)
+    mesh = transform_mesh(mesh, tgt_crs="+proj=eqc")
     mesh.set_active_scalars(name)
     return mesh
 

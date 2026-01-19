@@ -28,7 +28,7 @@ from geovista.geodesic import (
     panel,
 )
 
-from .conftest import CIDS
+from .conftest import ANTARCTIC_CORNER_CIDS as CIDS
 
 # cell-ids of the C48 SST cubed-sphere antarctic panel
 ANTARCTIC_CIDS = np.arange(CIDS[0], CIDS[-1] + 1)
