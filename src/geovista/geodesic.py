@@ -21,15 +21,18 @@ import lazy_loader as lazy
 
 from .common import (
     GV_FIELD_RADIUS,
+    GV_MANIFOLD_CELL_IDS,
     RADIUS,
     ZLEVEL_SCALE,
     StrEnumPlus,
     distance,
+    sanitize_data,
     to_cartesian,
     wrap,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
-from .crs import WGS84, to_wkt
+from .crs import WGS84, from_wkt, to_wkt
+from .transform import transform_mesh
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -959,6 +962,8 @@ class BBox:  # numpydoc ignore=PR01
         >>> p.show()
 
         """
+        original = surface
+
         self.tolerance = tolerance
         self.outside = outside
         self.preference = preference
@@ -966,11 +971,19 @@ class BBox:  # numpydoc ignore=PR01
         # capture the current active scalars name
         active_scalars_name = surface.active_scalars_name
 
-        self._generate_bbox_mesh(surface=surface)
+        crs = from_wkt(surface)
 
+        if transformed := crs != WGS84:
+            if self.preference == EnclosedPreference.CENTER:
+                surface[GV_MANIFOLD_CELL_IDS] = np.arange(surface.n_cells)
+
+            surface = transform_mesh(surface, tgt_crs=WGS84)
+
+        # perform after transformation to avoid cloud specific transform behaviour
         if self.preference == EnclosedPreference.CENTER:
-            original = surface
             surface = surface.cell_centers()
+
+        self._generate_bbox_mesh(surface=surface)
 
         # filter the surface with the bbox manifold mesh
         selected = surface.select_enclosed_points(
@@ -984,16 +997,22 @@ class BBox:  # numpydoc ignore=PR01
 
         # sample the surface with the enclosed cells to extract the bbox region
         if self.preference == EnclosedPreference.CENTER:
-            region = original.extract_cells(selected[scalars].view(bool))
+            mask = selected[scalars].view(bool)
+            idxs = surface[GV_MANIFOLD_CELL_IDS][mask] if transformed else mask
+            region = original.extract_cells(idxs)
         elif self.preference == EnclosedPreference.POINT:
-            region = selected.threshold(0.5, scalars=scalars, preference="cell")
+            original.point_data[scalars] = selected[scalars]
+            region = original.threshold(0.5, scalars=scalars, preference="cell")
         else:
-            region = surface.extract_points(
+            region = original.extract_points(
                 selected[scalars].view(bool), adjacent_cells=False
             )
 
         # ensure to preserve active scalars name
         region.active_scalars_name = active_scalars_name
+
+        # tidy data markers
+        sanitize_data(region)
 
         return cast(region)
 

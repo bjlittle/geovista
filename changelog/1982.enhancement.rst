@@ -1,0 +1,3 @@
+Enhanced :meth:`geovista.geodesic.BBox.enclosed` to support geodesic
+manifold extraction of projected surfaces.
+(:user:`bjlittle`)

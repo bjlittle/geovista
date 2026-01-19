@@ -42,6 +42,7 @@ __all__ = [
     "GV_FIELD_RADIUS",
     "GV_FIELD_RESOLUTION",
     "GV_FIELD_ZSCALE",
+    "GV_MANIFOLD_CELL_IDS",
     "GV_POINT_IDS",
     "GV_REMESH_POINT_IDS",
     "JUPYTER_BACKEND",
@@ -104,6 +105,9 @@ GV_FIELD_RESOLUTION: str = "gvResolution"
 
 GV_FIELD_ZSCALE: str = "gvZScale"
 """The field array name of the mesh proportional multiplier for z-axis levels."""
+
+GV_MANIFOLD_CELL_IDS: str = "gvManifoldCellIds"
+"""Name of the geovista manifold cell indices/marker array."""
 
 GV_POINT_IDS: str = "gvOriginalPointIds"
 """Name of the geovista point indices array."""
