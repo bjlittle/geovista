@@ -28,7 +28,7 @@ from .common import (
     REMESH_SEAM,
     distance,
     from_cartesian,
-    sanitize_data,
+    sanitize_vtk,
     triangulated,
     wrap,
 )
@@ -190,6 +190,6 @@ def remesh(
         remeshed_east = cast(remeshed.extract_cells(east_mask))
 
         del remeshed.point_data[GV_REMESH_POINT_IDS]
-        sanitize_data(remeshed, remeshed_west, remeshed_east)
+        sanitize_vtk(remeshed, remeshed_west, remeshed_east)
 
     return remeshed, remeshed_west, remeshed_east

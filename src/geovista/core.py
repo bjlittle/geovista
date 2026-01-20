@@ -34,7 +34,7 @@ from .common import (
     distance,
     from_cartesian,
     point_cloud,
-    sanitize_data,
+    sanitize_vtk,
     to_cartesian,
     wrap,
 )
@@ -261,7 +261,7 @@ class MeridianSlice:  # numpydoc ignore=PR01
                 lonlat = from_cartesian(mesh)
                 match = np.abs(lonlat[:, 0] - self.meridian) < 90
                 mesh = cast(mesh.extract_points(match))
-            sanitize_data(mesh)
+            sanitize_vtk(mesh)
             if mesh.n_cells:
                 mesh.set_active_scalars(
                     self._info.name, preference=self._info.association.name.lower()
