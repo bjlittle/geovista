@@ -1,0 +1,3 @@
+Added the utility function :func:`geovista.common.sanitize` to
+purge standard index arrays from one or more meshes.
+(:user:`bjlittle`)
