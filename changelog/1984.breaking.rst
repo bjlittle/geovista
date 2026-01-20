@@ -1,0 +1,2 @@
+Renamed the utility function ``sanitize_data`` to :func:`geovista.common.sanitize_vtk`.
+(:user:`bjlittle`)
