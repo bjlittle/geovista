@@ -66,6 +66,7 @@ __all__ = [
     "get_modules",
     "nan_mask",
     "point_cloud",
+    "sanitize",
     "sanitize_vtk",
     "set_jupyter_backend",
     "to_cartesian",
@@ -150,6 +151,18 @@ ZLEVEL_SCALE: float = 1.0e-4
 
 ZTRANSFORM_FACTOR: int = 3
 """The zlevel scaling to be applied when transforming to a projection."""
+
+_GV_SANITIZE: list[str] = [
+    GV_CELL_IDS,
+    GV_MANIFOLD_CELL_IDS,
+    GV_POINT_IDS,
+    GV_REMESH_POINT_IDS,
+]
+
+_VTK_SANITIZE: list[str] = [
+    VTK_CELL_IDS,
+    VTK_POINT_IDS,
+]
 
 
 class StrEnumPlus(StrEnum):
@@ -623,6 +636,51 @@ def point_cloud(mesh: pv.PolyData) -> bool:
     return result
 
 
+def sanitize(
+    *meshes: pv.PolyData,
+    extra: str | list[str] | None = None,
+    vtk: bool = True,
+) -> None:
+    """Purge standard helper cell and point data index arrays.
+
+    Parameters
+    ----------
+    *meshes : iterable of :class:`~pyvista.PolyData`
+        One or more meshes to sanitize.
+    extra : str or list of str, optional
+        The name of additional data arrays to purge.
+    vtk : bool | None, optional
+        Whether to sanitize VTK data arrays. Defaults to ``True``.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if not meshes:
+        emsg = "Expected one or more meshes to sanitize."
+        raise ValueError(emsg)
+
+    if isinstance(extra, str):
+        extra = [extra]
+
+    cleanse = _GV_SANITIZE.copy()
+
+    if extra:
+        cleanse.extend(list(extra))
+
+    for mesh in meshes:
+        for name in cleanse:
+            if name in mesh.cell_data:
+                del mesh.cell_data[name]
+
+            if name in mesh.point_data:
+                del mesh.point_data[name]
+
+    if vtk:
+        sanitize_vtk(*meshes)
+
+
 def sanitize_vtk(
     *meshes: pv.PolyData,
 ) -> None:
@@ -643,11 +701,12 @@ def sanitize_vtk(
         raise ValueError(emsg)
 
     for mesh in meshes:
-        if VTK_CELL_IDS in mesh.cell_data:
-            del mesh.cell_data[VTK_CELL_IDS]
+        for name in _VTK_SANITIZE:
+            if name in mesh.cell_data:
+                del mesh.cell_data[name]
 
-        if VTK_POINT_IDS in mesh.point_data:
-            del mesh.point_data[VTK_POINT_IDS]
+            if name in mesh.point_data:
+                del mesh.point_data[name]
 
 
 def set_jupyter_backend(*, backend: str | None = None) -> bool:
