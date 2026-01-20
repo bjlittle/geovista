@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Unit-tests for :func:`geovista.common.sanitize_data`."""
+"""Unit-tests for :func:`geovista.common.sanitize_vtk`."""
 
 from __future__ import annotations
 
@@ -15,14 +15,14 @@ import pytest
 if TYPE_CHECKING:
     import pyvista as pv
 
-from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS, sanitize_data
+from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS, sanitize_vtk
 
 
 def test_meshes_fail():
     """Test trap of no meshes."""
     emsg = "Expected one or more meshes"
     with pytest.raises(ValueError, match=emsg):
-        sanitize_data()
+        sanitize_vtk()
 
 
 def test(lam_uk):
@@ -37,6 +37,6 @@ def test(lam_uk):
     meshes = [lam_uk.copy() for i in range(10)]
     for mesh in meshes:
         assert _available(mesh)
-    sanitize_data(*meshes)
+    sanitize_vtk(*meshes)
     for mesh in meshes:
         assert not _available(mesh)

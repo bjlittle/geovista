@@ -66,7 +66,7 @@ __all__ = [
     "get_modules",
     "nan_mask",
     "point_cloud",
-    "sanitize_data",
+    "sanitize_vtk",
     "set_jupyter_backend",
     "to_cartesian",
     "to_lonlat",
@@ -623,7 +623,7 @@ def point_cloud(mesh: pv.PolyData) -> bool:
     return result
 
 
-def sanitize_data(
+def sanitize_vtk(
     *meshes: pv.PolyData,
 ) -> None:
     """Purge standard VTK helper cell and point data index arrays.

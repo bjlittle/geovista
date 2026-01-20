@@ -26,7 +26,7 @@ from .common import (
     ZLEVEL_SCALE,
     StrEnumPlus,
     distance,
-    sanitize_data,
+    sanitize_vtk,
     to_cartesian,
     wrap,
 )
@@ -1012,7 +1012,7 @@ class BBox:  # numpydoc ignore=PR01
         region.active_scalars_name = active_scalars_name
 
         # tidy data markers
-        sanitize_data(region)
+        sanitize_vtk(region)
 
         return cast(region)
 
