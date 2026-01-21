@@ -672,7 +672,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
             src_crs = from_wkt(mesh)
 
-            if src_crs is None:
+            if src_crs is None and not mesh.is_empty:
                 wmsg = (
                     "geovista found no coordinate reference system (CRS) attached "
                     "to mesh."
