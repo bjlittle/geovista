@@ -1,0 +1,3 @@
+Enabled the ``allow_empty_mesh`` option for our :mod:`geovista.theme`, which
+permits empty meshes to be added to a plotter scene without exception.
+(:user:`bjlittle`)
