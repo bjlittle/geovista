@@ -81,7 +81,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-mermaid-2.0.0-pyhd8ed1ab_0.conda#33668b178e862f3a5ebcdd73876d2cf9
   - https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-htmlhelp-2.1.0-pyhd8ed1ab_1.conda#e9fb3fe8a5b758b4aff187d434f94f03
   - https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-devhelp-2.0.0-pyhd8ed1ab_1.conda#910f28a05c178feba832f842155cbfff
-  - https://conda.anaconda.org/conda-forge/noarch/setuptools-80.9.0-pyhff2d567_0.conda#4de79c071274a53dcaf2a8c749d1499e
+  - https://conda.anaconda.org/conda-forge/noarch/setuptools-80.10.1-pyh332efcf_0.conda#cb72cedd94dd923c6a9405a3d3b1c018
   - https://conda.anaconda.org/conda-forge/noarch/six-1.17.0-pyhe01879c_1.conda#3339e3b65d58accf4ca4fb8748ab16b3
   - https://conda.anaconda.org/conda-forge/noarch/latexcodec-2.0.1-pyh9f0ad1d_0.tar.bz2#8d67904973263afd2985ba56aa2d6bb4
   - https://conda.anaconda.org/conda-forge/noarch/zipp-3.23.0-pyhcf101f3_1.conda#30cd29cb87d819caead4d55184c1d115
@@ -119,7 +119,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.2-pyhd8ed1ab_1.conda#bf22cb9c439572760316ce0748af3713
   - https://conda.anaconda.org/conda-forge/noarch/sphinx-click-6.2.0-pyhcf101f3_0.conda#bad3e6be48f688549fc0129e3a8866d7
   - https://conda.anaconda.org/conda-forge/noarch/typing-extensions-4.15.0-h396c80c_0.conda#edd329d7d3a4ab45dcf905899a7a6115
-  - https://conda.anaconda.org/conda-forge/noarch/soupsieve-2.8.2-pyhd8ed1ab_0.conda#fcbe3971b6017792e9b24ff451daa7f5
+  - https://conda.anaconda.org/conda-forge/noarch/soupsieve-2.8.3-pyhd8ed1ab_0.conda#18de09b20462742fe093ba39185d9bac
   - https://conda.anaconda.org/conda-forge/noarch/beautifulsoup4-4.14.3-pyha770c72_0.conda#5267bef8efea4127aacd1f4e1f149b6e
   - https://conda.anaconda.org/conda-forge/noarch/accessible-pygments-0.0.5-pyhd8ed1ab_1.conda#74ac5069774cdbc53910ec4d631a3999
   - https://conda.anaconda.org/conda-forge/noarch/pydata-sphinx-theme-0.15.4-pyhd8ed1ab_0.conda#c7c50dd5192caa58a05e6a4248a27acb
@@ -129,7 +129,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/sphinx-autoapi-3.6.1-pyhd8ed1ab_0.conda#55f80593df674ca6a7f68ae743d8658a
   - https://conda.anaconda.org/conda-forge/noarch/setuptools-scm-8.3.1-pyhd8ed1ab_0.conda#996376098e3648237b3efb0e0ad460c1
   - https://conda.anaconda.org/conda-forge/linux-64/ruff-0.14.13-h4196e79_0.conda#5c8827cadaa6c8d4b8e510cf3dbf0fa6
-  - https://conda.anaconda.org/conda-forge/noarch/pyparsing-3.3.1-pyhcf101f3_0.conda#d837065e4e0de4962c3462079c23f969
+  - https://conda.anaconda.org/conda-forge/noarch/pyparsing-3.3.2-pyhcf101f3_0.conda#3687cc0b82a8b4c17e1f0eb7e47163d5
   - https://conda.anaconda.org/conda-forge/linux-64/libgfortran5-15.2.0-h68bc16d_16.conda#39183d4e0c05609fd65f130633194e37
   - https://conda.anaconda.org/conda-forge/linux-64/libgfortran-15.2.0-h69a702a_16.conda#40d9b534410403c821ff64f00d0adc22
   - https://conda.anaconda.org/conda-forge/linux-64/libopenblas-0.3.30-pthreads_h94d23a6_4.conda#be43915efc66345cccb3c310b6ed0374
