@@ -1,0 +1,2 @@
+Relaxed the regex checking for the existence of an author in
+new changelog fragments. (:user:`ukmo-ccbunney`)

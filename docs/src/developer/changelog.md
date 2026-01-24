@@ -51,10 +51,19 @@ conveniences may be used within a news fragment file:
 * `:user:` - Link to a {fab}`github` user e.g., **:user:\`bjlittle\`**
 
 ````{note}
-Remember to acknowledge the author/s of a pull-request e.g.,
+Remember to acknowledge the author/s of a pull-request with the `:user:` extlink.
+Some examples:
 
 ```none
 Added an awesome new feature. (:user:`bjlittle`)
+```
+
+```none
+:user:`bjlittle` added a cool feature.
+```
+
+```none
+A big change co-authored by :user:`bjlittle` and :user:`another`.
 ```
 ````
 
@@ -119,8 +128,7 @@ It performs the following automated checks on each pull-request:
   * The `<PULL-REQUEST>` component is a valid integer and matches the pull-request number
   * The `<TYPE>` matches a configured `[[tool.towncrier.type]]` entry in the `pyproject.toml`
   * The `rst` extension is provided
-* The news fragment contains at least one author attribution e.g., ```(:user:`bjlittle`)```,
-  as the final entry
+* The news fragment contains at least one author attribution e.g., ``` :user:`bjlittle` ```.
 
 These quality assurance checks can be **skipped** by adding the
 `skip-changelog` label to the pull-request. Note that a pull-request generated
