@@ -1,0 +1,2 @@
+Added :user:`ukmo-ccbunney` as a contributor for ``code`` and ``documentation``.
+(:user:`bjlittle`)
