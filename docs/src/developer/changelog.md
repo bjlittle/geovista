@@ -63,7 +63,7 @@ Added an awesome new feature. (:user:`bjlittle`)
 ```
 
 ```none
-A big change co-authored by :user:`bjlittle` and :user:`another`.
+A big change co-authored by :user:`bjlittle` and :user:`ukmo-ccbunney`.
 ```
 ````
 
