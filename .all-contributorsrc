@@ -350,7 +350,9 @@
       "profile": "https://www.metoffice.gov.uk/research/weather/ocean-forecasting",
       "contributions": [
         "ideas",
-        "userTesting"
+        "userTesting",
+        "code",
+        "doc"
       ]
     },
     {
