@@ -1,0 +1,3 @@
+Added :user:`scout-the-beagle` 🐶 as contributor for ``audio``, ``ideas``, ``mentoring``,
+``question``, and ``security``.
+(:user:`bjlittle`)
