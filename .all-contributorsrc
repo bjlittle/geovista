@@ -482,6 +482,19 @@
       "contributions": [
         "promotion"
       ]
+    },
+    {
+      "login": "scout-the-beagle",
+      "name": "Scout",
+      "avatar_url": "https://avatars.githubusercontent.com/u/257372424?v=4",
+      "profile": "https://github.com/scout-the-beagle",
+      "contributions": [
+        "audio",
+        "ideas",
+        "mentoring",
+        "question",
+        "security"
+      ]
     }
   ],
   "commitType": "docs"
