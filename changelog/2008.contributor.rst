@@ -1,0 +1,3 @@
+Extended the ``@geovista-bot auto-approve`` :fab:`github` workflow behaviour
+to allow trusted collaborators to request approval for bot sourced pull-requests.
+(:user:`bjlittle`)
