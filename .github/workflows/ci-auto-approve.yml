@@ -34,13 +34,13 @@ jobs:
       - name: "verify"
         id: verify
         run: |
-          if [[ "${GITHUB_EVENT_COMMENT_USER_LOGIN}" == "bjlittle" ]]; then
+          if [[ "${COMMENT_USER_LOGIN}" == 'bjlittle' || "${EVENT_PR_USER_LOGIN}" == 'dependabot[bot]' || "${EVENT_PR_USER_LOGIN}" == 'geovista-ci[bot]' || "${EVENT_PR_USER_LOGIN}" == 'pre-commit-ci[bot]' ]]; then
             echo "valid=true" >> $GITHUB_OUTPUT
             echo "reaction=rocket" >> $GITHUB_OUTPUT
             {
               echo "message<<EOF"
               echo -e ":white_check_mark: I approved this pull-request! :sparkles:\n\n"
-              echo "As requested by @${GITHUB_EVENT_COMMENT_USER_LOGIN} in this [comment](${GITHUB_EVENT_COMMENT_HTML_URL})."
+              echo "As requested by @${COMMENT_USER_LOGIN} in this [comment](${COMMENT_HTML_URL})."
               echo "EOF"
             } >> $GITHUB_OUTPUT
           else
@@ -50,13 +50,14 @@ jobs:
               echo "message<<EOF"
               echo -e ":x: Dang! I can't approve this pull-request! :cry:\n\n"
               echo -e "You don't have sufficent permissions.\n\n"
-              echo "As requested by @${GITHUB_EVENT_COMMENT_USER_LOGIN} in this [comment](${GITHUB_EVENT_COMMENT_HTML_URL})."
+              echo "As requested by @${COMMENT_USER_LOGIN} in this [comment](${COMMENT_HTML_URL})."
               echo "EOF"
             } >> $GITHUB_OUTPUT
           fi
         env:
-          GITHUB_EVENT_COMMENT_USER_LOGIN: ${{ github.event.comment.user.login }}
-          GITHUB_EVENT_COMMENT_HTML_URL: ${{ github.event.comment.html_url }}
+          COMMENT_USER_LOGIN: ${{ github.event.comment.user.login }}
+          COMMENT_HTML_URL: ${{ github.event.comment.html_url }}
+          EVENT_PR_USER_LOGIN: ${{ github.event.pull_request.user.login }}
 
       - name: "reaction"
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
