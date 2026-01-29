@@ -28,6 +28,8 @@ jobs:
           persist-credentials: false
 
       - uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b
+        with:
+          repo-token: ${{ secrets.GEOVISTA_BOT_TOKEN }}
 
       - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
         if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'geovista-ci[bot]' || github.event.pull_request.user.login == 'pre-commit-ci[bot]' }}
