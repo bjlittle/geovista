@@ -57,7 +57,7 @@ jobs:
         env:
           COMMENT_USER_LOGIN: ${{ github.event.comment.user.login }}
           COMMENT_HTML_URL: ${{ github.event.comment.html_url }}
-          EVENT_PR_USER_LOGIN: ${{ github.event.pull_request.user.login }}
+          EVENT_PR_USER_LOGIN: ${{ github.event.issue.user.login }}
 
       - name: "reaction"
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
