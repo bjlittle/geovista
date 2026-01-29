@@ -497,7 +497,7 @@ setuptools-scm = ">=8.3.1,<9"
 [tool.pixi.feature.devs.dependencies]
 fastparquet = ">=2024.11.0,<2026"
 h3-py = ">=4.2.2,<5"
-pandas = ">=2.2.3,<3"
+pandas = ">=2.2.3,<3.1"
 pre-commit = ">=4.2.0,<5"
 rasterio = ">=1.4.3,<2"
 ruff = ">=0.12.0,<0.15"
