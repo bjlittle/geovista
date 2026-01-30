@@ -92,6 +92,7 @@
 .. _sphinx.ext.doctest: https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html
 .. _tox: https://tox.wiki/en/stable/
 .. _xarray: https://github.com/pydata/xarray
+.. _zizmor: https://github.com/zizmorcore/zizmor
 
 
 .. comment
