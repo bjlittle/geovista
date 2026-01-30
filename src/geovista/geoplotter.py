@@ -940,7 +940,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 mesh_enclosed = self.bbox.enclosed(mesh)
                 self.add_mesh(mesh_enclosed, **mesh_args)
             else:
-                self.add_mesh(mesh)
+                self.add_mesh(mesh, **mesh_args)
 
         if show_labels:
             self._add_graticule_labels(
@@ -1131,7 +1131,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 mesh_enclosed = self.bbox.enclosed(mesh)
                 self.add_mesh(mesh_enclosed, **mesh_args)
             else:
-                self.add_mesh(mesh)
+                self.add_mesh(mesh, **mesh_args)
 
         if show_labels:
             self._add_graticule_labels(
