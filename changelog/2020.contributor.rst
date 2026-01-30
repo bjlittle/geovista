@@ -1,0 +1,2 @@
+Added developer :ref:`tippy-gv-developer-codecraft` maintenance guidelines.
+(:user:`bjlittle`)
