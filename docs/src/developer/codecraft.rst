@@ -3,20 +3,11 @@
 .. _gv-developer-codecraft:
 .. _tippy-gv-developer-codecraft:
 
-:fa:`hat-wizard` Codecraft
-==========================
+:fa:`hat-wizard` Codecraft 🚧
+=============================
 
 .. |pre-commit| image:: https://results.pre-commit.ci/badge/github/bjlittle/geovista/main.svg
     :target: https://results.pre-commit.ci/latest/github/bjlittle/geovista/main
-
-.. note::
-    :class: margin, dropdown, toggle-shown
-
-    We've just started to bank content for the :fa:`hat-wizard` **Codecraft**
-    material, which will slowly grow and mature over time.
-
-    Thanks for your patience 🙏
-
 
 Here we provide some high-level maintenance guidelines, best practice and all-round sage
 advice for contributors.
@@ -53,6 +44,52 @@ and ``semver`` (default) for our ``pixi`` package dependencies.
 
     If so, then raise a separate follow-on :fa:`code-pull-request` ``pull-request``.
 
+
+:fa:`code-branch` GitHub Collaboration Model
+--------------------------------------------
+
+We recommend that **trusted collaborators** adopt the **shared-repository** workflow,
+whereby you branch **directly** within the :guilabel:`upstream` repository and
+then open a :fab:`github` ``pull-request`` from that branch.
+
+.. mermaid::
+    :align: center
+    :caption: Shared-Repository Workflow
+
+    ---
+    title: bjlittle / geovista
+    config:
+       theme: base
+    ---
+    gitGraph
+       commit id: "46b4308"
+       commit id: "3046ae3"
+       branch feature
+       checkout feature
+       commit id: "e4010dc"
+       commit id: "f31bc89"
+       checkout main
+       commit id: "0c135fa"
+       branch bug-fix
+       commit id: "d86b85b"
+       checkout main
+       merge feature
+       commit id: "main"
+
+
+This is opposed to the **forking** workflow. That involves creating your **own**
+fork of the :guilabel:`upstream` repository, pushing branches to **your** fork,
+then opening a :fab:`github` ``pull-request`` back to :guilabel:`upstream`. This
+workflow is typically adopted by **external collaborators**.
+
+The main benefits of the shared-repository workflow are:
+
+- **smoother collaboration** - your colleagues can easily checkout your branch,
+  review and even push fixes
+- **full CI/CD access** - your :fab:`github` ``pull-request`` gets the same runners,
+  secrets, and environments as :guilabel:`upstream`
+
+Additionally, this workflow mirrors the development model adopted by the `pyvista`_ collaborators.
 
 
 .. comment
