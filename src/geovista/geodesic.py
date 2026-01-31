@@ -425,7 +425,7 @@ class BBox:  # numpydoc ignore=PR01
         >>> _ = p.add_base_layer(
         ...     texture=geovista.natural_earth_hypsometric(), opacity=0.5
         ... )
-        >>> bbox = BBox(lons=[-15, 20, 25, -15], lats=[-25, -20, 15, 10], c=32)
+        >>> bbox = BBox(xs=[-15, 20, 25, -15], ys=[-25, -20, 15, 10], c=32)
         >>> _ = p.add_mesh(bbox.mesh, color="white")
         >>> p.camera.zoom(1.5)
         >>> p.show()
@@ -871,7 +871,7 @@ class BBox:  # numpydoc ignore=PR01
         >>> p = geovista.GeoPlotter()
         >>> mesh = lfric_sst()
         >>> _ = p.add_mesh(mesh, cmap="balance")
-        >>> bbox = BBox(lons=[-15, 20, 25, -15], lats=[-25, -20, 15, 10], c=32)
+        >>> bbox = BBox(xs=[-15, 20, 25, -15], ys=[-25, -20, 15, 10], c=32)
         >>> _ = p.add_mesh(bbox.boundary(mesh), color="orange", line_width=3)
         >>> p.view_yz()
         >>> p.show()
@@ -961,7 +961,7 @@ class BBox:  # numpydoc ignore=PR01
         >>> p = geovista.GeoPlotter()
         >>> _ = p.add_base_layer(texture=geovista.natural_earth_hypsometric())
         >>> mesh = lfric_sst()
-        >>> bbox = BBox(lons=[-15, 20, 25, -15], lats=[-25, -20, 15, 10], c=32)
+        >>> bbox = BBox(xs=[-15, 20, 25, -15], ys=[-25, -20, 15, 10], c=32)
         >>> region = bbox.enclosed(mesh)
         >>> _ = p.add_mesh(region, cmap="balance")
         >>> p.view_yz()
