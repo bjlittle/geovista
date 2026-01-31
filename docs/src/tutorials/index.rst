@@ -7,8 +7,8 @@
 .. note::
     :class: margin, dropdown, toggle-shown
 
-    We've just started to bank content for the tutorial material,
-    which will slowly grow and mature over time.
+    We've just started to bank content for the :fa:`water` **Tutorial**
+    material, which will slowly grow and mature over time.
 
     Thanks for your patience 🙏
 
