@@ -1,0 +1,3 @@
+Updated ``BBox`` to allow corner points to be specified in different projections
+via new ``crs`` keyword (defaults to WGS84). (:issue:`1986`, :pull:`2023`).
+(:user:`ukmo-ccbunney`)
