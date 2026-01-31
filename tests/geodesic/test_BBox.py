@@ -27,6 +27,7 @@ from geovista.geodesic import (
     EnclosedPreference,
     panel,
 )
+from geovista.transform import transform_points
 
 from .conftest import ANTARCTIC_CORNER_CIDS as CIDS
 
@@ -42,13 +43,23 @@ C48 = (48, 48)
 @pytest.mark.parametrize(
     "preference", ["point", EnclosedPreference.POINT, EnclosedPreference("point")]
 )
-def test_enclosed_point(antarctic_corners, lfric_sst, active, outside, preference):
+@pytest.mark.parametrize("proj", [pytest.param(None, id="WGS84"), "moll", "stere"])
+def test_enclosed_point(
+    antarctic_corners, lfric_sst, active, outside, preference, proj
+):
     """Test enclosed points of antarctic cubed-sphere panel."""
     if not active:
         lfric_sst.active_scalars_name = None
     active_scalars_name = lfric_sst.active_scalars_name
     lons, lats = antarctic_corners
-    bbox = BBox(lons, lats)
+    if proj:
+        crs = f"+proj={proj}"
+        xy = transform_points(xs=lons, ys=lats, src_crs=WGS84, tgt_crs=crs)
+        xs, ys = xy[:, 0], xy[:, 1]
+    else:
+        crs = WGS84
+        xs, ys = lons, lats
+    bbox = BBox(xs, ys, crs=crs)
     region = bbox.enclosed(lfric_sst, outside=outside, preference=preference)
     if outside:
         cids = np.arange(lfric_sst.n_cells)
@@ -66,13 +77,21 @@ def test_enclosed_point(antarctic_corners, lfric_sst, active, outside, preferenc
 @pytest.mark.parametrize(
     "preference", ["cell", EnclosedPreference.CELL, EnclosedPreference("cell")]
 )
-def test_enclosed_cell(antarctic_corners, lfric_sst, active, outside, preference):
+@pytest.mark.parametrize("proj", [pytest.param(None, id="WGS84"), "moll", "stere"])
+def test_enclosed_cell(antarctic_corners, lfric_sst, active, outside, preference, proj):
     """Test enclosed cells of antarctic cubed-sphere panel."""
     if not active:
         lfric_sst.active_scalars_name = None
     active_scalars_name = lfric_sst.active_scalars_name
     lons, lats = antarctic_corners
-    bbox = BBox(lons, lats)
+    if proj:
+        crs = f"+proj={proj}"
+        xy = transform_points(xs=lons, ys=lats, src_crs=WGS84, tgt_crs=crs)
+        xs, ys = xy[:, 0], xy[:, 1]
+    else:
+        crs = WGS84
+        xs, ys = lons, lats
+    bbox = BBox(xs, ys, crs=crs)
     region = bbox.enclosed(lfric_sst, outside=outside, preference=preference)
     if outside:
         cids = np.arange(lfric_sst.n_cells)
