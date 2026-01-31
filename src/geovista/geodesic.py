@@ -31,8 +31,8 @@ from .common import (
     wrap,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
-from .crs import WGS84, from_wkt, to_wkt
-from .transform import transform_mesh
+from .crs import WGS84, CRSLike, from_wkt, to_wkt
+from .transform import transform_mesh, transform_points
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -154,30 +154,35 @@ class BBox:  # numpydoc ignore=PR01
 
     def __init__(
         self,
-        lons: ArrayLike,
-        lats: ArrayLike,
+        xs: ArrayLike,
+        ys: ArrayLike,
         *,
+        crs: CRSLike | None = WGS84,
         ellps: str | None = ELLIPSE,
         c: int = BBOX_C,
         triangulate: bool | None = False,
     ) -> None:
         """Create 3D geodesic bounding-box to extract enclosed mesh, lines or point.
 
-        The bounding-box region is specified in terms of its four corners, in
-        degrees of longitude and latitude. As the bounding-box is a geodesic, it
-        can only ever at most enclose half of an ellipsoid.
+        The bounding-box region is specified in terms of its four corners using
+        coordinates defined by the projection ``crs`` (defaults WGS84 latitude
+        and longitude). As the bounding-box is a geodesic, it can only ever at
+        most enclose half of an ellipsoid.
 
         The geometry of the bounding-box may be specified as either an open or
-        closed longitude/latitude geometry i.e., 4 or 5 longitude/latitude values.
+        closed point geometry i.e., 4 or 5 corner values.
 
         Parameters
         ----------
-        lons : ArrayLike
-            The longitudes (degrees) of the bounding-box, in the half-closed interval
+        xs : ArrayLike
+            The x-coordinates of the bounding-box, in the half-closed interval
             ``[-180, 180)``. Note that longitudes will be wrapped to this interval.
-        lats : ArrayLike
-            The latitudes (degrees) of the bounding-box, in the closed interval
+        ys : ArrayLike
+            The y-coordinates of the bounding-box, in the closed interval
             ``[-90, 90]``.
+        crs : str, optional
+            The coordinate reference system of the provided `xs` and `ys`.
+            Defaults to WGS84.
         ellps : str, optional
             The ellipsoid for geodesic calculations. See
             :func:`pyproj.list.get_ellps_map`. Defaults to :data:`ELLIPSE`.
@@ -193,55 +198,54 @@ class BBox:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        if not isinstance(lons, Iterable):
-            lons = [lons]
-        if not isinstance(lats, Iterable):
-            lats = [lats]
+        if not isinstance(xs, Iterable):
+            xs = [xs]
+        if not isinstance(ys, Iterable):
+            ys = [ys]
 
-        lons = np.asanyarray(lons)
-        lats = np.asanyarray(lats)
-        n_lons, n_lats = lons.size, lats.size
+        xs = np.asanyarray(xs)
+        ys = np.asanyarray(ys)
+        nx, ny = xs.size, ys.size
 
-        if n_lons != n_lats:
-            emsg = (
-                f"Require the same number of longitudes ({n_lons}) and "
-                f"latitudes ({n_lats})."
-            )
+        if nx != ny:
+            emsg = f"Require the same number of x points ({nx}) and y points ({ny})."
             raise ValueError(emsg)
 
-        if n_lons < 4:
+        if nx < 4:
             emsg = (
                 "Require a bounding-box geometry containing at least 4 "
-                "longitude/latitude values to create the bounding-box manifold, "
-                f"got '{n_lons}'."
+                "x/y values to create the bounding-box manifold, "
+                f"got '{nx}'."
             )
             raise ValueError(emsg)
 
-        if n_lons > 5:
+        if nx > 5:
             emsg = (
                 "Require a bounding-box geometry containing 4 (open) or 5 (closed) "
-                "longitude/latitude values to create the bounding-box manifold, "
-                f"got {n_lons}."
+                "x/y values to create the bounding-box manifold, "
+                f"got {nx}."
             )
             raise ValueError(emsg)
 
         # ensure the specified bbox geometry is open
-        if n_lons == 5:
-            if np.isclose(lons[0], lons[-1]) and np.isclose(lats[0], lats[-1]):
-                lons, lats = lons[-1], lats[-1]
+        if nx == 5:
+            if np.isclose(xs[0], xs[-1]) and np.isclose(ys[0], ys[-1]):
+                xs, ys = xs[-1], ys[-1]
             else:
                 wmsg = (
-                    "geovista bounding-box was specified with 5 longitude/latitude"
+                    "geovista bounding-box was specified with 5 x/y"
                     "values, however the first and last values are not close enough to "
                     "specify a closed geometry - ignoring last value."
                 )
                 warnings.warn(wmsg, stacklevel=2)
-                lons, lats = lons[:-1], lats[:-1]
+                xs, ys = xs[:-1], ys[:-1]
 
-        self.lons = lons
-        """The longitudes of the bounding-box."""
-        self.lats = lats
-        """The latitudes of the bounding-box."""
+        self.xs = xs
+        """The x points of the bounding-box."""
+        self.ys = ys
+        """The y points of the bounding-box."""
+        self.crs = crs
+        """The coordinate reference system of the bounding-box points."""
         self.ellps = ellps
         """The ellipsoid defining the geodesic surface."""
         self.c = c
@@ -260,6 +264,16 @@ class BBox:  # numpydoc ignore=PR01
         self._surface_radius: float | None = None
         # enclosed tolerance of intersection operation
         self._tolerance = BBOX_TOLERANCE
+
+        if self.crs != WGS84:
+            latlon = transform_points(
+                xs=self.xs, ys=self.ys, src_crs=self.crs, tgt_crs=WGS84
+            )
+            self.lons = latlon[:, 0]
+            self.lats = latlon[:, 1]
+        else:
+            self.lons = xs
+            self.lats = ys
 
     def __call__(self, surface: pv.PolyData) -> pv.PolyData:
         """Extract region of the `surface` contained within the bounding-box.
@@ -310,12 +324,12 @@ class BBox:  # numpydoc ignore=PR01
         result: bool = NotImplemented
         if isinstance(other, BBox):
             result = False
-            lhs = (self.ellps, self.c, self.triangulate)
-            rhs = (other.ellps, other.c, other.triangulate)
+            lhs = (self.crs, self.ellps, self.c, self.triangulate)
+            rhs = (other.crs, other.ellps, other.c, other.triangulate)
             if all(x[0] == x[1] for x in zip(lhs, rhs, strict=True)) and np.allclose(
-                self.lons, other.lons
+                self.xs, other.xs
             ):
-                result = np.allclose(self.lats, other.lats)
+                result = np.allclose(self.ys, other.ys)
         return result
 
     def __hash__(self) -> int:
@@ -333,11 +347,12 @@ class BBox:  # numpydoc ignore=PR01
         """
         return hash(
             (
+                self.crs,
                 self.ellps,
                 self.c,
                 self.triangulate,
-                self.lons.tobytes(),
-                self.lats.tobytes(),
+                self.xs.tobytes(),
+                self.ys.tobytes(),
             )
         )
 
@@ -378,8 +393,8 @@ class BBox:  # numpydoc ignore=PR01
 
         """
         params = (
-            f"ellps={self.ellps}, c={self.c}, n_points={self.mesh.n_points}, "
-            f"n_cells={self.mesh.n_cells}"
+            f"crs={self.crs}, ellps={self.ellps}, c={self.c}, "
+            f"n_points={self.mesh.n_points}, n_cells={self.mesh.n_cells}"
         )
 
         return f"{__package__}.{self.__class__.__name__}<{params}>"

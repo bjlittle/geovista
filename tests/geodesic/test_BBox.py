@@ -167,6 +167,7 @@ def test___hash__():
     assert isinstance(actual, int)
     expected = hash(
         (
+            bbox.crs,
             bbox.ellps,
             bbox.c,
             bbox.triangulate,
@@ -201,7 +202,10 @@ def test___ne___fail_type():
 def test_serialization():
     """Test string and representation serialization."""
     bbox = panel("antarctic")
-    expected = "geovista.BBox<ellps=WGS84, c=256, n_points=132098, n_cells=132096>"
+    expected = (
+        "geovista.BBox<crs=epsg:4326, ellps=WGS84, c=256, "
+        "n_points=132098, n_cells=132096>"
+    )
     assert repr(bbox) == expected
     assert str(bbox) == expected
 
