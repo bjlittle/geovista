@@ -15,6 +15,7 @@ Notes
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from functools import lru_cache
 import os
 from typing import TYPE_CHECKING, Any
@@ -498,7 +499,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
-    def add_graticule(
+    def add_graticule(  # noqa: PLR0913
         self,
         *,
         lon_start: float | None = None,
@@ -507,6 +508,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         lat_start: float | None = None,
         lat_stop: float | None = None,
         lat_step: float | None = None,
+        n_samples: int | tuple[int | None, int | None] | None = None,
+        factor: float | None = None,
         poles_parallel: bool | None = None,
         poles_label: bool | None = None,
         show_labels: bool | None = None,
@@ -545,6 +548,18 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         lat_step : float, optional
             The delta (degrees) between neighbouring parallels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
+        n_samples : int | tuple[int | None, int | None], optional
+            The number of points in a single line of longitude and latitude.
+            If a single integer is provided, both meridians and parallels will
+            use that value. If a tuple of two integers is provided, the first
+            value will be used for meridians and the second for parallels. A value
+            of ``None`` will use the defaults provided by
+            :data:`geovista.gridlines.LONGITUDE_N_SAMPLES` and
+            :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
+        factor : float, optional
+            The factor to scale the number of sample points in a single graticule line
+            (meridians and parallels). E.g. a ``factor=2`` will double the number of
+            sample points. Defaults to 1.
         poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
@@ -574,11 +589,18 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
+        if not isinstance(n_samples, Iterable):
+            num_samples = (n_samples, n_samples)
+        else:
+            num_samples = n_samples
+
         self.add_meridians(
             start=lon_start,
             stop=lon_stop,
             step=lon_step,
             lat_step=lat_step,
+            n_samples=num_samples[0],
+            factor=factor,
             show_labels=show_labels,
             radius=radius,
             zlevel=zlevel,
@@ -591,6 +613,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             stop=lat_stop,
             step=lat_step,
             lon_step=lon_step,
+            n_samples=num_samples[1],
+            factor=factor,
             poles_parallel=poles_parallel,
             poles_label=poles_label,
             show_labels=show_labels,
@@ -781,6 +805,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         *,
         lat_step: float | None = None,
         n_samples: int | None = None,
+        factor: float | None = None,
         show_labels: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
@@ -801,6 +826,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         n_samples : int, optional
             The number of points in a single line of longitude. Defaults to
             :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
+        factor : float, optional
+            The factor to scale the number of sample points in a single line of
+            longitude. E.g. a ``factor=2`` will double the number of sample points.
+            Defaults to 1.
         show_labels : bool, optional
             Whether to render the meridian label. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
@@ -828,6 +857,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             stop=lon,
             lat_step=lat_step,
             n_samples=n_samples,
+            factor=factor,
             show_labels=show_labels,
             radius=radius,
             zlevel=zlevel,
@@ -844,6 +874,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         step: float | None = None,
         lat_step: float | None = None,
         n_samples: int | None = None,
+        factor: float | None = None,
         show_labels: bool | None = None,
         radius: float | None = None,
         zlevel: int | None = None,
@@ -873,6 +904,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         n_samples : int, optional
             The number of points in a single line of longitude. Defaults to
             :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
+        factor : float, optional
+            The factor to scale the number of sample points in a single line of
+            longitude. E.g. a ``factor=2`` will double the number of sample points.
+            Defaults to 1.
         show_labels : bool, optional
             Whether to render the labels of the meridians. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
@@ -918,6 +953,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             step=step,
             lat_step=lat_step,
             n_samples=n_samples,
+            factor=factor,
             closed_interval=closed_interval,
             central_meridian=central_meridian,
             radius=radius,
@@ -958,6 +994,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         *,
         lon_step: float | None = None,
         n_samples: int | None = None,
+        factor: float | None = None,
         poles_parallel: bool | None = None,
         show_labels: bool | None = None,
         radius: float | None = None,
@@ -979,6 +1016,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         n_samples : int, optional
             The number of points in a single line of latitude. Defaults to
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
+        factor : float, optional
+            The factor to scale the number of sample points in a single line of
+            latitude. E.g. a ``factor=2`` will double the number of sample points.
+            Defaults to 1.
         poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
@@ -1009,6 +1050,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             stop=lat,
             lon_step=lon_step,
             n_samples=n_samples,
+            factor=factor,
             poles_parallel=poles_parallel,
             show_labels=show_labels,
             radius=radius,
@@ -1026,6 +1068,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         step: float | None = None,
         lon_step: float | None = None,
         n_samples: int | None = None,
+        factor: float | None = None,
         poles_parallel: bool | None = None,
         poles_label: bool | None = None,
         show_labels: bool | None = None,
@@ -1057,6 +1100,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         n_samples : int, optional
             The number of points in a single line of latitude. Defaults to
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
+        factor : float, optional
+            The factor to scale the number of sample points in a single line of
+            latitude. E.g. a ``factor=2`` will double the number of sample points.
+            Defaults to 1.
         poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
@@ -1109,6 +1156,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             step=step,
             lon_step=lon_step,
             n_samples=n_samples,
+            factor=factor,
             poles_parallel=poles_parallel,
             poles_label=poles_label,
             radius=radius,

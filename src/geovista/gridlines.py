@@ -221,6 +221,7 @@ def create_meridians(
     step: float | None = None,
     lat_step: float | None = None,
     n_samples: int | None = None,
+    factor: float | None = None,
     closed_interval: bool | None = None,
     central_meridian: float | None = None,
     radius: float | None = None,
@@ -247,6 +248,10 @@ def create_meridians(
     n_samples : int, optional
         The number of points in a single line of longitude. Defaults to
         :data:`LONGITUDE_N_SAMPLES`.
+    factor : float, optional
+        The factor to scale the number of sample points in a single line of
+        longitude.  E.g. a ``factor=2`` will double the number of sample points.
+        Defaults to 1.
     closed_interval : bool, default=False
         Longitude values will be in the half-closed interval [-180, 180). Otherwise,
         longitudes will be in the closed interval [-180, 180]. Defaults to
@@ -288,6 +293,9 @@ def create_meridians(
 
     if n_samples is None:
         n_samples = LONGITUDE_N_SAMPLES
+
+    if factor is not None:
+        n_samples = max(int(n_samples * factor), 2)
 
     if lat_step is None:
         lat_step = LATITUDE_STEP
@@ -430,6 +438,7 @@ def create_parallels(
     step: float | None = None,
     lon_step: float | None = None,
     n_samples: int | None = None,
+    factor: float | None = None,
     poles_parallel: bool | None = None,
     poles_label: bool | None = None,
     radius: float | None = None,
@@ -457,6 +466,10 @@ def create_parallels(
     n_samples : int, optional
         The number of points in a single line of latitude. Defaults to
         :data:`LATITUDE_N_SAMPLES`.
+    factor : float, optional
+        The factor to scale the number of sample points in a single line of
+        latitude.  E.g. a ``factor=2`` will double the number of sample points.
+        Defaults to 1.
     poles_parallel : bool, optional
         Whether to create a line of latitude at the north/south poles. Also see
         ``poles_label``. Defaults to :data:`LATITUDE_POLES_PARALLEL`.
@@ -506,6 +519,9 @@ def create_parallels(
 
     if n_samples is None:
         n_samples = LATITUDE_N_SAMPLES
+
+    if factor is not None:
+        n_samples = max(int(n_samples * factor), 2)
 
     if poles_parallel is None:
         poles_parallel = LATITUDE_POLES_PARALLEL
