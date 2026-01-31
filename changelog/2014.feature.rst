@@ -1,0 +1,5 @@
+Added a new ``factor`` keyword to :func:`geovista.gridlines.create_meridians`
+and :func:`geovista.gridlines.create_parallels` methods. This new keyword and
+the existing ``n_samples`` keyword are have also been made available via the
+:func:`geovista.geoplotter.GeoPlotterBase.add_graticule` convenience function.
+(:user:`ukmo-ccbunney`)

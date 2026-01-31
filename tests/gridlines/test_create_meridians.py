@@ -53,17 +53,29 @@ def test_lat_step_fail(lat_step):
         _ = create_meridians(lat_step=lat_step)
 
 
+@pytest.mark.parametrize("factor", [0, 0.001])
+def test_num_samples_factor_min(factor):
+    """Test number of samples in a graticule line is >= 2 for tiny/zero factor."""
+    meridian_lons = create_meridians(factor=factor)
+    assert meridian_lons.blocks[0].n_points >= 2
+
+
 @pytest.mark.parametrize(
     "n_samples",
     [LONGITUDE_N_SAMPLES // 2, LONGITUDE_N_SAMPLES, 2 * LONGITUDE_N_SAMPLES],
 )
 @pytest.mark.parametrize("zlevel", [None, 1, 10])
 @pytest.mark.parametrize("step", [None, 15, 30])
-def test_core(n_samples, zlevel, step):
+@pytest.mark.parametrize("factor", [None, 0.5, 2.0])
+def test_core(n_samples, zlevel, step, factor):
     """Test core behaviour of meridian generation."""
-    result = create_meridians(step=step, n_samples=n_samples, zlevel=zlevel)
+    result = create_meridians(
+        step=step, n_samples=n_samples, zlevel=zlevel, factor=factor
+    )
     if step is None:
         step = LONGITUDE_STEP
+    if factor:
+        n_samples = max(int(n_samples * factor), 2)
     meridian_lons = wrap(np.arange(LONGITUDE_START, LONGITUDE_STOP, step))
     meridians = [str(lon) for lon in meridian_lons]
     # check the meridian longitudes
