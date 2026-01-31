@@ -250,7 +250,11 @@ Note that:
   the name of the unit test baseline image
 - :bash:`line: 12` - The :meth:`~pyvista.Plotter.show` method of the plotter is
   called to render the unit test scene and then invoke image comparison via the
-  ``pytest-pyvista`` plugin configured by its :python:`verify_image_cache` fixture
+  ``pytest-pyvista`` plugin configured by its :python:`verify_image_cache` fixture.
+  Be aware that the :meth:`~pyvista.Plotter.show` method **must only be invoked once**
+  within the unit test. However the test itself may be decorated with the
+  :python:`@pytest.mark.parametrize` marker to execute it multiple times.
+
 
 
 .. _gv-developer-testing-image-tests-caching:
