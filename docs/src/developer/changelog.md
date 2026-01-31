@@ -59,11 +59,11 @@ Added an awesome new feature. (:user:`bjlittle`)
 ```
 
 ```none
-:user:`bjlittle` added a cool feature.
+:user:`ukmo-ccbunney` fixed a nasty bug. Closes :issue:`67`.
 ```
 
 ```none
-A big change co-authored by :user:`bjlittle` and :user:`ukmo-ccbunney`.
+A breaking change co-authored by :user:`ukmo-ccbunney` and :user:`bjlittle`.
 ```
 ````
 
