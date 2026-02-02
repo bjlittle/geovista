@@ -200,13 +200,8 @@ class BBox:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        if not isinstance(xs, Iterable):
-            xs = [xs]
-        if not isinstance(ys, Iterable):
-            ys = [ys]
-
-        xs = np.asanyarray(xs)
-        ys = np.asanyarray(ys)
+        xs = np.atleast_1d(xs)
+        ys = np.atleast_1d(ys)
         nx, ny = xs.size, ys.size
 
         if nx != ny:
