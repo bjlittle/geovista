@@ -176,8 +176,9 @@ class BBox:  # numpydoc ignore=PR01
         Parameters
         ----------
         xs : ArrayLike
-            The x-coordinates of the bounding-box, in the half-closed interval
-            ``[-180, 180)``. Note that longitudes will be wrapped to this interval.
+            The x-coordinates of the bounding-box in canonical `crs` units.
+            Note that longitudes will be wrapped to the half-closed interval
+            ``[-180, 180)``.
         ys : ArrayLike
             The y-coordinates of the bounding-box, in the closed interval
             ``[-90, 90]``.
