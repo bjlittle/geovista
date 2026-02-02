@@ -184,6 +184,16 @@ def test___eq__():
     assert bbox1 == bbox2
 
 
+@pytest.mark.parametrize("crs", ["moll", "merc"])
+def test___eq__different_projections(crs):
+    """Test equality operator for same BBox in different projections."""
+    bbox1 = panel("americas")
+    crs = f"+proj={crs}"
+    xy = transform_points(xs=bbox1.lons, ys=bbox1.lats, src_crs=WGS84, tgt_crs=crs)
+    bbox2 = BBox(xs=xy[:, 0], ys=xy[:, 1], crs=crs)
+    assert bbox1 == bbox2
+
+
 def test___eq___fail():
     """Test equality operator for inequality."""
     bbox1 = panel(name := "arctic")

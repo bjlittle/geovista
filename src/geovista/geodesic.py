@@ -324,12 +324,12 @@ class BBox:  # numpydoc ignore=PR01
         result: bool = NotImplemented
         if isinstance(other, BBox):
             result = False
-            lhs = (self.crs, self.ellps, self.c, self.triangulate)
-            rhs = (other.crs, other.ellps, other.c, other.triangulate)
+            lhs = (self.ellps, self.c, self.triangulate)
+            rhs = (other.ellps, other.c, other.triangulate)
             if all(x[0] == x[1] for x in zip(lhs, rhs, strict=True)) and np.allclose(
-                self.xs, other.xs
+                self.lons, other.lons
             ):
-                result = np.allclose(self.ys, other.ys)
+                result = np.allclose(self.lats, other.lats)
         return result
 
     def __hash__(self) -> int:
