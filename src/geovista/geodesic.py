@@ -165,9 +165,10 @@ class BBox:  # numpydoc ignore=PR01
         """Create 3D geodesic bounding-box to extract enclosed mesh, lines or point.
 
         The bounding-box region is specified in terms of its four corners using
-        coordinates defined by the projection ``crs`` (defaults WGS84 latitude
-        and longitude). As the bounding-box is a geodesic, it can only ever at
-        most enclose half of an ellipsoid.
+        coordinates defined by the projection `crs` (defaults to
+        :data:`geovista.crs.WGS84`). As the bounding-box is a geodesic
+        composed of great-circle lines, it can only ever at most enclose
+        half of an ellipsoid.
 
         The geometry of the bounding-box may be specified as either an open or
         closed point geometry i.e., 4 or 5 corner values.
