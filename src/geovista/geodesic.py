@@ -13,7 +13,6 @@ Notes
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import TYPE_CHECKING
 import warnings
 
@@ -1118,13 +1117,7 @@ def line(
     if ellps is None:
         ellps = ELLIPSE
 
-    if not isinstance(lons, Iterable):
-        lons = [lons]
-
-    if not isinstance(lats, Iterable):
-        lats = [lats]
-
-    lons, lats = np.asanyarray(lons), np.asanyarray(lats)
+    lons, lats = np.atleast_1d(lons), np.atleast_1d(lats)
 
     # check whether to auto-repeat lons or lats
     if (lons.size == 1 or lats.size == 1) and (lons.size + lats.size > 2):
