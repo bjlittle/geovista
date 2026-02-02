@@ -180,8 +180,8 @@ class BBox:  # numpydoc ignore=PR01
             Note that longitudes will be wrapped to the half-closed interval
             ``[-180, 180)``.
         ys : ArrayLike
-            The y-coordinates of the bounding-box, in the closed interval
-            ``[-90, 90]``.
+            The y-coordinates of the bounding-box in canonical `crs` units.
+            Note that latitudes are in the closed interval ``[-90, 90]``.
         crs : str, optional
             The coordinate reference system of the provided `xs` and `ys`.
             Defaults to WGS84.
