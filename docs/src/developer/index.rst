@@ -63,7 +63,7 @@ clarify the various steps involved in how to contribute to ``geovista``.
         Testing guidelines.
 
 
-.. card:: Codecraft
+.. card:: Codecraft 🚧
     :class-title: custom-title
     :class-body: custom-body
     :link: gv-developer-codecraft
