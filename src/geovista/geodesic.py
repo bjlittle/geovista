@@ -231,21 +231,19 @@ class BBox:  # numpydoc ignore=PR01
 
         # ensure the specified bbox geometry is open
         if nx == 5:
-            if np.isclose(xs[0], xs[-1]) and np.isclose(ys[0], ys[-1]):
-                xs, ys = xs[-1], ys[-1]
-            else:
+            if not (np.isclose(xs[0], xs[-1]) and np.isclose(ys[0], ys[-1])):
                 wmsg = (
-                    "geovista bounding-box was specified with 5 x/y"
+                    "geovista bounding-box was specified with 5 x/y "
                     "values, however the first and last values are not close enough to "
                     "specify a closed geometry - ignoring last value."
                 )
                 warnings.warn(wmsg, stacklevel=2)
-                xs, ys = xs[:-1], ys[:-1]
+            xs, ys = xs[:-1], ys[:-1]
 
         self.xs = xs
-        """The x points of the bounding-box."""
+        """The x points of the bounding-box in canonical CRS units."""
         self.ys = ys
-        """The y points of the bounding-box."""
+        """The y points of the bounding-box in canonical CRS units."""
         self.crs = crs
         """The coordinate reference system of the bounding-box points."""
         self.ellps = ellps

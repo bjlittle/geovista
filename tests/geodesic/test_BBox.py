@@ -157,6 +157,26 @@ def test_boundary_field_data(name):
     assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
 
 
+def test_closed_geometry():
+    """Test 5 corner points form closed geometry."""
+    xs = [0, 10, 10, 0, 0]
+    ys = [0, 0, 10, 10, 0]
+    bbox = BBox(xs, ys)
+    # We only keep the open geometry:
+    assert len(bbox.xs) == len(bbox.ys) == 4
+
+
+def test_closed_geometry_warn_not_close():
+    """Test warning raised if 5 corner points do not form closed geometry."""
+    xs = [0, 10, 10, 0, 1]
+    ys = [0, 0, 10, 10, 0]
+    emsg = "first and last values are not close enough to specify a closed geometry"
+    with pytest.warns(UserWarning, match=emsg):
+        bbox = BBox(xs, ys)
+    # We only keep the open geometry:
+    assert len(bbox.xs) == len(bbox.ys) == 4
+
+
 def test___eq__():
     """Test equality operator for equality."""
     bbox1 = panel(name := "americas")
