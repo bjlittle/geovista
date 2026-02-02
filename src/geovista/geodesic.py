@@ -183,8 +183,8 @@ class BBox:  # numpydoc ignore=PR01
             The y-coordinates of the bounding-box in canonical `crs` units.
             Note that latitudes are in the closed interval ``[-90, 90]``.
         crs : str, optional
-            The coordinate reference system of the provided `xs` and `ys`.
-            Defaults to WGS84.
+            The Coordinate Reference System of the provided `xs` and `ys`.
+            Defaults to :data:`geovista.crs.WGS84`.
         ellps : str, optional
             The ellipsoid for geodesic calculations. See
             :func:`pyproj.list.get_ellps_map`. Defaults to :data:`ELLIPSE`.
