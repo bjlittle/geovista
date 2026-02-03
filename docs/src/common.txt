@@ -52,6 +52,7 @@
 .. _RTD (stable): https://geovista.readthedocs.io/en/stable/
 .. _SPEC: https://scientific-python.org/specs/
 .. _SPEC 0: https://scientific-python.org/specs/spec-0000/
+.. _SciTools: https://github.com/SciTools
 .. _Test PyPI: https://test.pypi.org/project/geovista/
 .. _Trame: https://kitware.github.io/trame/
 .. _VTK: https://vtk.org/

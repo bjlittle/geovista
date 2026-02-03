@@ -13,6 +13,31 @@ Here we provide some high-level maintenance guidelines, best practice and all-ro
 advice for contributors.
 
 
+:fa:`robot` Auto-Approve Workflow
+---------------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`.github/CODEOWNERS`
+- :bash:`.github/workflows/ci-auto-approve.yml`
+
+The ``main`` branch of the :guilabel:`upstream` repository has
+adopted the branch protection rule which requires a :fab:`github` ``pull-request``
+review approval from a designated code owner.
+
+Trusted collaborators with sufficient privileges may request automated approval
+from the :user:`geovista-bot` by submitting a ``@geovista-bot auto-approve``
+comment within a :fab:`github` ``pull-request``.
+
+:user:`bjlittle` has exclusive privileges pro tempore, pending governance
+policy formulation on ``geovista`` membership of the  :fab:`github` `SciTools`_
+organisation.
+
+However, trusted collaborators have sufficient privileges to request
+``@geovista-bot`` approval of third-party bot generated :fab:`github`
+``pull-requests``.
+
+
 :fa:`code-pull-request` Dependabot
 ----------------------------------
 
