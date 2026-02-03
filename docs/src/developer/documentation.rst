@@ -463,7 +463,7 @@ e.g.,
    | :guilabel:`load`       | ``curvilinear``, ``geotiff``, ``points``,          | Demonstrates use of the :mod:`geovista.bridge` |
    |                        | ``rectilinear``, ``unstructured``                  | to load various types of geospatial data.      |
    +------------------------+----------------------------------------------------+------------------------------------------------+
-   | :guilabel:`plot`       | ``camera``, ``subplots``                           | Content that showcases various `plotting`_     |
+   | :guilabel:`plot`       | ``anti-aliasing``, ``camera``, ``subplots``        | Content that showcases various `plotting`_     |
    |                        |                                                    | techniques.                                    |
    +------------------------+----------------------------------------------------+------------------------------------------------+
    | :guilabel:`projection` | ``crs``, ``transform``                             | Content that demonstrates the use of           |
@@ -479,7 +479,7 @@ e.g.,
    | :guilabel:`style`      | ``colormap``, ``lighting``, ``opacity``,           | Content that includes customization of         |
    |                        | ``shading``                                        | various render styles and aesthetics.          |
    +------------------------+----------------------------------------------------+------------------------------------------------+
-   | :guilabel:`widget`     | ``checkbox``, ``logo``                             | Content that demonstrates the use of           |
+   | :guilabel:`widget`     | ``checkbox``, ``logo``, ``north-arrow``            | Content that demonstrates the use of           |
    |                        |                                                    | interactive `widgets`_.                        |
    +------------------------+----------------------------------------------------+------------------------------------------------+
 

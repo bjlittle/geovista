@@ -114,7 +114,8 @@ The main benefits of the shared-repository workflow are:
 - **full CI/CD access** - your :fab:`github` ``pull-request`` gets the same runners,
   secrets, and environments as :guilabel:`upstream`
 
-Additionally, this workflow mirrors the development model adopted by the `pyvista`_ collaborators.
+Additionally, this workflow mirrors the development model adopted by the `pyvista`_
+trusted collaborators.
 
 
 .. comment
