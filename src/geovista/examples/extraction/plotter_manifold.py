@@ -38,8 +38,8 @@ panel to reinforce the region of interest.
 .. hint::
     :class: dropdown, toggle-shown
 
-    A :class:`~geovista.geoplotter.GeoPlotter` instance may be created along
-    with the ``manifold`` keyword argument e.g.,
+    A :class:`~geovista.geoplotter.GeoPlotter` instance may be created using
+    the ``manifold`` keyword argument e.g.,
 
     .. code-block:: python
 
