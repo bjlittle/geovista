@@ -1,0 +1,3 @@
+Updated the ``geovista.cache`` to reference ``geovista-data =2026.02.0``, which
+includes the new :ref:`sphx_glr_generated_gallery_extraction_plotter_manifold.py`
+image unit test asset. (:user:`bjlittle`)

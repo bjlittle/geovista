@@ -18,13 +18,11 @@ from geovista import GEOVISTA_IMAGE_TESTING
 
 @pytest.mark.skipif(GEOVISTA_IMAGE_TESTING, reason="geovista image testing")
 def test_default():
-    """Test trap for adding an empty mesh to plotter with default theme."""
+    """Test no trap for adding an empty mesh to plotter with default theme."""
     assert pv.global_theme.name != "geovista"
     empty = pv.PolyData()
     p = geovista.GeoPlotter()
-    emsg = "Empty meshes cannot be plotted."
-    with pytest.raises(ValueError, match=emsg):
-        _ = p.add_mesh(empty)
+    _ = p.add_mesh(empty)
 
 
 @pytest.mark.skipif(GEOVISTA_IMAGE_TESTING, reason="geovista image testing")

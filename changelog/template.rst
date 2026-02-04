@@ -15,7 +15,7 @@ v{{ versiondata.version }} ({{ versiondata.date }})
 
 {% for text, values in sections[section][category]|dictsort(by='value') %}
 {% set comma = joiner(', ') %}
-- {% for value in values|sort %}{{ comma() }}:fa:`code-pull-request` :pull:`{{ value[1:] }}`{% endfor %}: {{ text|replace(":issue:", ":far:`circle-dot` :issue:") }}
+- {% for value in values|sort %}{{ comma() }}:fa:`code-pull-request` :pull:`{{ value[1:] }}`{% endfor %}: {{ text|replace(":issue:", ":far:`circle-dot` :issue:")|replace(":pull:", ":fa:`code-pull-request` :pull:") }}
 
 {% endfor %}
 

@@ -26,6 +26,7 @@ import lazy_loader as lazy
 from .bridge import Transform
 from .common import (
     GV_FIELD_ZSCALE,
+    GV_POINT_IDS,
     GV_REMESH_POINT_IDS,
     LRU_CACHE_SIZE,
     RADIUS,
@@ -50,6 +51,7 @@ from .crs import (
     set_central_meridian,
     to_wkt,
 )
+from .geodesic import BBox
 from .geometry import coastlines
 from .gridlines import (
     GRATICULE_ZLEVEL,
@@ -73,7 +75,6 @@ if TYPE_CHECKING:
     import pyvista as pv
 
     from geovista.crs import CRSLike
-    from geovista.geodesic import BBox
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -163,7 +164,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         self,
         *args: Any | None,
         crs: CRSLike | None = None,
-        bbox: BBox | None = None,
+        manifold: BBox | None = None,
         **kwargs: Any | None,
     ) -> None:
         """Create geospatial aware plotter.
@@ -176,11 +177,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The target CRS to render geolocated meshes added to the plotter.
             May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`.
             Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
-        bbox : BBox, optional
-            A bounding box object used for subsetting to the rendered area so
-            that only points enclosed by the bounding box are rendered.
-            Subsetted features include mesh, coastline, base layer, parallels,
-            meridians and their labels.
+        manifold : BBox, optional
+            Apply the `manifold` to each mesh added to the plotter so that only
+            the region enclosed by the `manifold` is rendered.
         **kwargs : dict, optional
             See :class:`pyvista.Plotter` for further details.
 
@@ -211,13 +210,50 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         self.crs = pyproj.CRS.from_user_input(crs) if crs is not None else WGS84
         """The Coordinate Reference System (CRS) for the plotter."""
 
-        self.bbox = bbox
+        # the manifold defining the AOI (area of interest) for geometries
+        # added to the plotter i.e., sample extraction within its boundary
+        self.manifold = manifold
 
         # status of gpu opacity support
         self._missing_opacity = False
         # cartesian (xyz) center of last mesh added to the plotter
         self._poi: list[float] | None = None
         super().__init__(*args, **kwargs)
+
+    @property
+    def manifold(self) -> BBox | None:
+        """The manifold boundary applied to meshes added to the plotter.
+
+        Returns
+        -------
+        BBox or None
+            The plotter manifold.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        return self._manifold
+
+    @manifold.setter
+    def manifold(self, value: Any) -> None:
+        """Set the manifold boundary applied to meshes added to the plotter.
+
+        Parameters
+        ----------
+        value : BBox, optional
+            The manifold boundary to apply to meshes added to the plotter.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        if value is not None and not isinstance(value, BBox):
+            emsg = f"'manifold' must be a 'BBox' instance, got '{type(value)}'."
+            raise TypeError(emsg)
+        self._manifold = value
 
     def _add_graticule_labels(
         self,
@@ -259,54 +295,48 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if point_labels_args is None:
             point_labels_args = {}
 
+        labels = graticule.labels
         lonlat = graticule.lonlat
+
         xyz = to_cartesian(
             lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
         )
-
         mesh = pv.PolyData(xyz)
+        to_wkt(mesh, WGS84)
 
         if graticule.mask is not None:
             mask = graticule.mask * REMESH_SEAM
             mesh.point_data[GV_REMESH_POINT_IDS] = mask
             mesh.set_active_scalars(name=None)
 
-        to_wkt(mesh, WGS84)
-        # the point-cloud won't be sliced, however it's important that the
-        # central-meridian rotation is performed here
-        mesh = transform_mesh(mesh, tgt_crs=self.crs, zlevel=zlevel, inplace=True)
+        if self._manifold:
+            mesh[GV_POINT_IDS] = np.arange(mesh.n_points)
+            mesh.set_active_scalars(name=None)
+            mesh = self._manifold(mesh)
+            idxs = mesh[GV_POINT_IDS]
+            labels = np.array(labels)[idxs]
 
-        # reduced rendered points to only points enclosed by self.bbox
-        if self.bbox:
-            mesh_enclosed = self.bbox.enclosed(mesh)
-            # make a quick list of the enclosed points
-            enclosed_points = [tuple(p) for p in mesh_enclosed.points]
-            # filter labels based on if the original points are in
-            # enclosed_points
-            graticule.labels = [
-                label
-                for p, label in zip(mesh.points, graticule.labels, strict=True)
-                if tuple(p) in enclosed_points
-            ]
+        if mesh.n_points:
+            # the point-cloud won't be sliced, however it's important that the
+            # central-meridian rotation is performed here
+            mesh = transform_mesh(mesh, tgt_crs=self.crs, zlevel=zlevel, inplace=True)
 
-            mesh = mesh_enclosed
+            xyz = mesh.points
 
-        xyz = mesh.points
+            if "show_points" in point_labels_args:
+                _ = point_labels_args.pop("show_points")
 
-        if "show_points" in point_labels_args:
-            _ = point_labels_args.pop("show_points")
+            if "font_size" not in point_labels_args:
+                point_labels_args["font_size"] = GRATICULE_LABEL_FONT_SIZE
 
-        if "font_size" not in point_labels_args:
-            point_labels_args["font_size"] = GRATICULE_LABEL_FONT_SIZE
+            # labels over-plot points, therefore enforce non-rendering of points,
+            # which is more efficient
+            point_labels_args["show_points"] = False
+            # opinionated over-ride to disable label visibility filter
+            point_labels_args["always_visible"] = False
 
-        # labels over-plot points, therefore enforce non-rendering of points,
-        # which is more efficient
-        point_labels_args["show_points"] = False
-        # opinionated over-ride to disable label visibility filter
-        point_labels_args["always_visible"] = False
-
-        self.add_point_labels: Callable[..., None]
-        self.add_point_labels(xyz, graticule.labels, **point_labels_args)
+            self.add_point_labels: Callable[..., None]
+            self.add_point_labels(xyz, labels, **point_labels_args)
 
     def _warn_opacity(self) -> None:
         """Add textual warning for no opacity support to plotter scene.
@@ -422,10 +452,6 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         else:
             mesh = _lfric_mesh(resolution=resolution, radius=radius)
 
-        # reduced rendered points to only points enclosed by self.bbox
-        if self.bbox:
-            mesh = self.bbox.enclosed(mesh)
-
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
     def add_coastlines(
@@ -492,10 +518,6 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         mesh = coastlines(
             resolution=resolution, radius=radius, zlevel=zlevel, zscale=zscale
         )
-
-        # reduced rendered points to only points enclosed by self.bbox
-        if self.bbox:
-            mesh = self.bbox.enclosed(mesh)
 
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
@@ -792,11 +814,13 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if scalar_bar_args:
             kwargs["scalar_bar_args"] = scalar_bar_args
 
-        # reduced rendered points to only points enclosed by self.bbox
-        if self.bbox:
-            mesh = self.bbox.enclosed(mesh)
+        # reduced rendered mesh to only points enclosed by the manifold
+        if self._manifold:
+            mesh = self._manifold(mesh)
 
-        return super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
+        # explicitly don't add an empty mesh, regardless of
+        # theme allow_empty_mesh option
+        return None if mesh.is_empty else super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
 
     def add_meridian(
         self,
@@ -971,12 +995,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             mesh_args["zscale"] = zscale
 
         for mesh in meridians.blocks:
-            # reduced rendered points to only points enclosed by self.bbox
-            if self.bbox:
-                mesh_enclosed = self.bbox.enclosed(mesh)
-                self.add_mesh(mesh_enclosed, **mesh_args)
-            else:
-                self.add_mesh(mesh, **mesh_args)
+            self.add_mesh(mesh, **mesh_args)
 
         if show_labels:
             self._add_graticule_labels(
@@ -1174,12 +1193,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             mesh_args["zscale"] = zscale
 
         for mesh in parallels.blocks:
-            # reduced rendered points to only points enclosed by self.bbox
-            if self.bbox:
-                mesh_enclosed = self.bbox.enclosed(mesh)
-                self.add_mesh(mesh_enclosed, **mesh_args)
-            else:
-                self.add_mesh(mesh, **mesh_args)
+            self.add_mesh(mesh, **mesh_args)
 
         if show_labels:
             self._add_graticule_labels(

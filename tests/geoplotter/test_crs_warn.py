@@ -45,7 +45,5 @@ def test_no_crs_no_warn():
     p = GeoPlotter()
     with warnings.catch_warnings(record=True) as warn:
         warnings.simplefilter("always")
-        emsg = "Empty meshes cannot be plotted."
-        with pytest.raises(ValueError, match=emsg):
-            _ = p.add_mesh(empty)
+        _ = p.add_mesh(empty)
     assert len(warn) == 0

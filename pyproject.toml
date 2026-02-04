@@ -289,11 +289,7 @@ max-statements = 91
   # https://docs.astral.sh/ruff/rules/typing-only-third-party-import/
   "TC002", # flake8-type-checking: Move 3rd-party import into a type checking block.
 ]
-"src/geovista/examples/earthquakes.py" = [
-  # https://docs.astral.sh/ruff/rules/line-too-long/
-  "E501", # pycodestyle: Line too long.
-]
-"src/geovista/examples/earthquakes_wink1.py" = [
+"src/geovista/examples/extraction/plotter_manifold.py" = [
   # https://docs.astral.sh/ruff/rules/line-too-long/
   "E501", # pycodestyle: Line too long.
 ]

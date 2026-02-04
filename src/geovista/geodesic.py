@@ -25,7 +25,6 @@ from .common import (
     ZLEVEL_SCALE,
     StrEnumPlus,
     distance,
-    sanitize,
     to_cartesian,
     wrap,
 )
@@ -56,6 +55,7 @@ __all__ = [
     "N_PANELS",
     "PANEL_BBOX_BY_IDX",
     "PANEL_IDX_BY_NAME",
+    "PANEL_NAMES",
     "PANEL_NAME_BY_IDX",
     "PREFERENCE",
     "BBox",
@@ -110,6 +110,9 @@ PANEL_NAME_BY_IDX: dict[int, str] = {
     5: "antarctic",
 }
 """Lookup table for cubed-sphere panel name by panel index."""
+
+PANEL_NAMES: list[str] = list(PANEL_IDX_BY_NAME.keys())
+"""Cubed-sphere panel names."""
 
 CSC: float = np.rad2deg(np.arcsin(1 / np.sqrt(3)))
 """Latitude (degrees) of a cubed-sphere panel corner."""
@@ -982,11 +985,15 @@ class BBox:  # numpydoc ignore=PR01
 
         crs = from_wkt(surface)
 
-        if transformed := crs != WGS84:
-            if self.preference == EnclosedPreference.CENTER:
-                surface[GV_MANIFOLD_CELL_IDS] = np.arange(surface.n_cells)
+        if crs is not None:
+            if transformed := crs != WGS84:
+                if self.preference == EnclosedPreference.CENTER:
+                    surface[GV_MANIFOLD_CELL_IDS] = np.arange(surface.n_cells)
 
-            surface = transform_mesh(surface, tgt_crs=WGS84)
+                surface = transform_mesh(surface, tgt_crs=WGS84)
+        else:
+            # assume we have a raw mesh with cartesian points
+            transformed = False
 
         # perform after transformation to avoid cloud specific transform behaviour
         if self.preference == EnclosedPreference.CENTER:
@@ -1019,9 +1026,6 @@ class BBox:  # numpydoc ignore=PR01
 
         # ensure to preserve active scalars name
         region.active_scalars_name = active_scalars_name
-
-        # tidy data markers
-        sanitize(region, extra=scalars)
 
         return cast(region)
 
