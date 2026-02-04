@@ -1,0 +1,2 @@
+Updated the scalar-bar formatting for ``README.md`` and gallery point-cloud
+and DYNAMICO examples. (:user:`bjlittle`)

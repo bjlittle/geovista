@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://geovista.readthedocs.io/en/latest/">
-    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/branding/title/geovista-title.svg"
+    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.0/media/branding/title/geovista-title.svg"
          alt="GeoVista"
          style="width: 50%; height: 50%"></a>
 </p>
@@ -172,7 +172,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/ww3-tri.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.0/media/readme/ww3-tri.png"
        alt="WAVEWATCH III Model, Unstructured Triangular Mesh of Sea Surface Wave Significant Height"
        style="width: 75%; height: 75%">
 </p>
@@ -219,7 +219,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/tamar.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.0/media/readme/tamar.png"
        alt="Finite Volume Community Ocean Model, Unstructured Triangular Mesh of Sea Floor Below Geoid"
        style="width: 75%; height: 75%">
 </p>
@@ -272,7 +272,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/lam-moll.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.0/media/readme/lam-moll.png"
        alt="CF UGRID Local Area Model, Unstructured Quadrilateral Mesh of Air Potential Temperature"
        style="width: 75%; height: 75%">
 </p>
@@ -320,7 +320,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/lam-eqc.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.0/media/readme/lam-eqc.png"
        alt="CF UGRID Local Area Model, Unstructured Quadrilateral Mesh of Air Potential Temperature in Plate Carrée Projection"
        style="width: 75%; height: 75%">
 </p>
@@ -364,7 +364,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/lfric-robin.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.0/media/readme/lfric-robin.png"
        alt="LFRic Model, Unstructured Cube Sphere of Surface Temperature in Robinson Projection"
        style="width: 75%; height: 75%">
 </p>
@@ -406,7 +406,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/nemo-orca.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.0/media/readme/nemo-orca.png"
        alt="NEMO ORCA2 Model, Curvilinear Quadrilateral Mesh of Sea Water Potential Temperature"
        style="width: 75%; height: 75%">
 </p>
@@ -448,7 +448,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/oisst-avhrr.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.0/media/readme/oisst-avhrr.png"
        alt="Optimum Interpolation Sea Surface Temperature Advanced Very High Resolution Radiometer Model, Rectilinear Quadrilateral Mesh"
        style="width: 75%; height: 75%">
 </p>
@@ -459,8 +459,9 @@ Finally, to demonstrate support for non-traditional cell geometries i.e., not tr
 the **unstructured** mesh from the [DYNAMICO](https://gitlab.in2p3.fr/ipsl/projets/dynamico/dynamico) project. This
 model uses hexagonal and pentagonal cells, and is a new dynamical core for
 [LMD-Z](https://www.lmd.ipsl.fr/en/modelisations/lmdz-en/), the atmospheric General Circulation Model (GCM) part of the
-[IPSL-CM](https://cmc.ipsl.fr/ipsl-climate-models/) Earth System Model. The render also contains
-[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/).
+[IPSL-CM](https://cmc.ipsl.fr/ipsl-climate-models/) Earth System Model. The scene also contains
+[10m Natural Earth coastlines](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/) and a
+[1:50m Natural Earth I](https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/) base layer.
 
 <details aria-expanded="false" aria-label="Click for code">
 <summary>🗒 Click for code ...</summary>
@@ -478,8 +479,14 @@ mesh = gv.Transform.from_unstructured(sample.lons, sample.lats, data=sample.data
 
 # Plot the mesh.
 p = gv.GeoPlotter()
-sargs = {"title": f"{sample.name} / {sample.units}"}
-p.add_mesh(mesh, scalar_bar_args=sargs)
+sargs = {"title": f"{sample.name} / {sample.units}", "fmt": "%.0f"}
+p.add_mesh(
+    mesh.threshold(1e5, invert=True),
+    cmap="diff",
+    scalar_bar_args=sargs,
+    show_edges=True,
+)
+p.add_base_layer(texture=gv.natural_earth_1())
 p.add_coastlines()
 p.add_axes()
 p.show()
@@ -487,7 +494,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2025.09.1/media/readme/dynamico-icosahedral.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.0/media/readme/dynamico-icosahedral.png"
        alt="DYNAMICO Model, Unstructured Hexagonal Mesh of Surface Air Temperature"
        style="width: 75%; height: 75%">
 </p>

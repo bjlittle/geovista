@@ -75,6 +75,7 @@ def main() -> None:
         cmap="deep",
         point_size=5,
         render_points_as_spheres=True,
+        scalar_bar_args={"fmt": "%.0f"},
     )
     p.add_coastlines(color="black")
     # Force zlevel alignment of coastlines and base layer.
