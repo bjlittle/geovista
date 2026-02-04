@@ -63,7 +63,7 @@ def main() -> None:
 
     # Plot the unstructured mesh.
     p = gv.GeoPlotter()
-    p.add_mesh(mesh)
+    p.add_mesh(mesh, scalar_bar_args={"fmt": "%.0f"})
     p.add_coastlines()
     p.add_graticule()
     p.add_axes()
