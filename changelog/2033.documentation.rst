@@ -1,0 +1,2 @@
+Added the :ref:`sphx_glr_generated_gallery_extraction_plotter_manifold.py`
+gallery example. (:user:`bjlittle`)

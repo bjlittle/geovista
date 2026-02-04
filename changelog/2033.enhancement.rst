@@ -1,0 +1,6 @@
+Optimised :class:`geovista.geoplotter.GeoPlotterBase` manifold extraction
+introduced by :pull:`1872` which is now specified through the generic ``manifold``
+keyword argument instead of ``bbox``, and accessed through the
+:attr:`~geovista.geoplotter.GeoPlotterBase.manifold` property. Additionally, empty
+meshes may be added to a :class:`~geovista.geoplotter.GeoPlotter` without exception.
+(:user:`bjlittle`)
