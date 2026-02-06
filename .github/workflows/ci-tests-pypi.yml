@@ -74,7 +74,7 @@ jobs:
         echo "DATA_VERSION=$(geovista --data-version)" >> ${GITHUB_ENV}
 
     - name: "check cartopy cache"
-      uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7
+      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
       id: cartopy-cache
       with:
         path: ~/.local/share/cartopy
@@ -89,7 +89,7 @@ jobs:
         cartopy_feature_download physical --output ${CARTOPY_SHARE_DIR} --no-warn
 
     - name: "check geovista cache"
-      uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7
+      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
       id: geovista-cache
       with:
         path: ~/.cache/geovista
