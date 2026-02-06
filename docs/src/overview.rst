@@ -102,7 +102,7 @@ visualization backend of `VTK`_ through an intuitive Pythonic interface.
 It's still early days for ``geovista``, but we're already excited about the
 potential and promise that it might offer to the Earth Science community.
 
-Our primary focus at the moment is to provision a stable API and core set of
+Our primary focus at the moment is to provide a stable API and core set of
 features ... we're working hard on that, but we're not there yet!
 
 Thanks for your patience 🙏
