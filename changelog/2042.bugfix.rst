@@ -1,0 +1,5 @@
+Removed the :mod:`geovista.theme` opinionated scalar bar configuration
+for fixed position and size. Rather, default to adaptive positioning and
+scale behaviour offered by ``pyvista``, leaving the user to customise.
+Otherwise a ``geovista`` themed scalar bar can easily render incorrectly.
+(:user:`bjlittle`)
