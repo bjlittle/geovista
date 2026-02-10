@@ -527,8 +527,8 @@ towncrier = ">=24.8.0,<26"
 trame = "==3.12.0"
 trame-client = ">=3.9.0,<4"
 trame-server = ">=3.4.0,<4"
-trame-vtk = "==2.8.15"                            # https://github.com/pyvista/pyvista/issues/7721 unpin when https://github.com/Kitware/trame-vtk/issues/94 resolved
-trame-vuetify = "==3.1.0"
+trame-vtk = "==2.10.2"
+trame-vuetify = "==3.2.0"
 
 [tool.pixi.feature.docs.pypi-dependencies]
 sphinx-tippy = ">=0.4.3,<0.5"
