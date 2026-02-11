@@ -1,0 +1,4 @@
+Added defensive guard within :meth:`geovista.geoplotter.GeoPlotterBase.add_mesh`
+prior to accessing the :attr:`~pyvista.DataObject.is_empty` property, which does
+not exist on all `pyvista`_ instances.
+(:user:`bjlittle`)

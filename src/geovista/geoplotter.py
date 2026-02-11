@@ -718,7 +718,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
             src_crs = from_wkt(mesh)
 
-            if src_crs is None and not mesh.is_empty:
+            if src_crs is None and hasattr(mesh, "is_empty") and not mesh.is_empty:
                 wmsg = (
                     "geovista found no coordinate reference system (CRS) attached "
                     "to mesh."
@@ -820,7 +820,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         # explicitly don't add an empty mesh, regardless of
         # theme allow_empty_mesh option
-        return None if mesh.is_empty else super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
+        if hasattr(mesh, "is_empty") and mesh.is_empty:
+            result = None
+        else:
+            result = super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
+
+        return result
 
     def add_meridian(
         self,
