@@ -6,7 +6,7 @@ colorcet <3.2
 lazy_loader >=0.4.0,<0.5
 netCDF4 <1.8
 numpy >=1.25.0,<2.5
-platformdirs <4.9
+platformdirs <4.10
 pooch <1.10
 pykdtree <1.5
 pyproj >=3.3.0,<3.8
