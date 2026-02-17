@@ -486,7 +486,7 @@ platformdirs = ">=4.3.8,<5"
 pooch = ">=1.8.2,<2"
 pykdtree = ">=1.4.1,<2"
 pyproj = ">=3.7.1,<4"
-pyvista = ">=0.45.0,<0.47.0"
+pyvista = ">=0.47.0,<0.48.0"
 setuptools = ">=80.9.0,<81"
 setuptools-scm = ">=8.3.1,<9"
 
