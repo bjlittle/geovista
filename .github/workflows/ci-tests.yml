@@ -87,7 +87,7 @@ jobs:
         env:
           PY_COLORS: "1"
         run: |
-          geovista --version
+          geovista --report
           xvfb-run -a pixi run --frozen pytest -m "${{ matrix.marker }}" --failed_image_dir test_images_failed ${{ matrix.coverage }}
 
       - name: "upload failed images"

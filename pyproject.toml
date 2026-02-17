@@ -573,13 +573,13 @@ description = "Build the documentation and start local HTTP server on port:11000
 [tool.pixi.feature.geovista.tasks.tests-doc]
 cmd = "pytest --doc_mode"
 depends-on = [
+  { "task" = "tests-clean" },
   { "task" = "download", "args" = [
     "doc-images",
   ] },
   { "task" = "make", "args" = [
     "html-docstring-inline",
   ] },
-  { "task" = "tests-clean" },
 ]
 description = "Perform documentation image tests of pyvista-plot static scenes"
 
