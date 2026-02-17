@@ -80,4 +80,5 @@ jobs:
 
       - name: "${{ matrix.session }} (${{ matrix.version }})"
         run: |
+          geovista --report
           pixi run --frozen make ${{ matrix.session }}

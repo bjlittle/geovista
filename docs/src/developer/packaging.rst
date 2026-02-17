@@ -418,7 +418,7 @@ The following tasks are defined for each of our features:
    |                |                 |    Failed :ref:`tippy-gv-developer-testing-image-tests` are captured via the          |
    |                |                 |    ``pytest-pyvista`` plugin option ``--failed_image_dir`` (see                       |
    |                |                 |    :ref:`Image Tests Generation <tippy-gv-developer-testing-image-tests-generation>`) |
-   |                |                 |    within the :bash:`failed_images` directory for analysis and investigation.         |
+   |                |                 |    within the :bash:`test_images_failed` directory for analysis and investigation.    |
    +----------------+-----------------+---------------------------------------------------------------------------------------+
 
 .. seealso::

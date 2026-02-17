@@ -570,7 +570,7 @@ cwd = "docs"
 depends-on = [{ "task" = "make", "args" = ["{{ option }}"] }]
 description = "Build the documentation and start local HTTP server on port:11000"
 
-[tool.pixi.feature.geovista.tasks.tests-docs]
+[tool.pixi.feature.geovista.tasks.tests-doc]
 cmd = "pytest --doc_mode"
 depends-on = [
   { "task" = "download", "args" = [
@@ -579,6 +579,7 @@ depends-on = [
   { "task" = "make", "args" = [
     "html-docstring-inline",
   ] },
+  { "task" = "tests-clean" },
 ]
 description = "Perform documentation image tests of pyvista-plot static scenes"
 
@@ -599,12 +600,12 @@ pytest-pretty = ">=1.3.0,<2"
 pytest-pyvista = ">=0.3.1,<0.4"
 
 [tool.pixi.feature.test.tasks.tests-clean]
-cmd = "rm -rf docs/image_cache tests/plotting/unit_image_cache test_images failed_images"
+cmd = "rm -rf docs/image_cache tests/plotting/unit_image_cache test_images test_images_failed"
 description = "Purge all documentation and image unit test caches"
 
 [tool.pixi.feature.test.tasks.tests-unit]
 args = [{ "arg" = "option", "default" = "" }]
-cmd = "pytest {% if option | length %}-m '{{ option }}' {% endif %}--generated_image_dir test_images --failed_image_dir failed_images"
+cmd = "pytest {% if option | length %}-m '{{ option }}' {% endif %}--generated_image_dir test_images --failed_image_dir test_images_failed"
 depends-on = [{ "task" = "tests-clean" }]
 description = "Perform unit tests"
 

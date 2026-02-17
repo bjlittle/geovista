@@ -81,7 +81,7 @@ jobs:
       - name: "test images (${{ matrix.version }})"
         run: |
           geovista --report
-          pixi run --frozen tests-docs
+          pixi run --frozen tests-doc
 
       - name: "upload test images"
         if: ${{ failure() && !cancelled() }}
