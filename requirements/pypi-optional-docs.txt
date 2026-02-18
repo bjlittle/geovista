@@ -19,7 +19,7 @@ sphinxcontrib-mermaid >=1.0.0,<2.1
 pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2 # https://github.com/bjlittle/geovista/issues/1247
 ipywidgets <8.2
 jupyter-server-proxy <4.5
-nest_asyncio <1.7
+nest-asyncio2 >=1.7.2,<1.8
 trame >=2.5.2,<3.13
 trame-client >=2.12.7,<3.12
 trame-server >=2.11.7,<3.11
