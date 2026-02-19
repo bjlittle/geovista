@@ -15,7 +15,7 @@ dependencies:
 - joblib >=1.5.1,<2
 - jupyter-server-proxy >=4.4.0,<5
 - myst-nb >=1.2.0,<2
-- nest-asyncio >=1.6.0,<2
+- nest-asyncio2 >=1.7.2,<2
 - numpydoc >=1.8.0,<2
 - pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2
 - sphinx >=8.2.3,<10
@@ -57,7 +57,7 @@ dependencies:
 - pooch >=1.8.2,<2
 - pykdtree >=1.4.1,<2
 - pyproj >=3.7.1,<4
-- pyvista >=0.45.0,<0.47.0
+- pyvista >=0.47.0,<0.48.0
 - setuptools >=80.9.0,<81
 - setuptools-scm >=8.3.1,<9
 - pip
