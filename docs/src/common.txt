@@ -94,21 +94,3 @@
 .. _tox: https://tox.wiki/en/stable/
 .. _xarray: https://github.com/pydata/xarray
 .. _zizmor: https://github.com/zizmorcore/zizmor
-
-
-.. comment
-
-   🔗 core developers and prolific contributors (github handle) in alphabetical order:
-
-
-.. _@banesullivan: https://github.com/banesullivan
-.. _@bjlittle: https://github.com/bjlittle
-.. _@ukmo-ccbunney: https://github.com/ukmo-ccbunney
-.. _@ESadek-MO: https://github.com/ESadek-MO
-.. _@HGWright: https://github.com/HGWright
-.. _@lbdreyer: https://github.com/lbdreyer
-.. _@pp-mo: https://github.com/pp-mo
-.. _@stephenworsley: https://github.com/stephenworsley
-.. _@tkknight: https://github.com/tkknight
-.. _@tkoyama010: https://github.com/tkoyama010
-.. _@trexfeathers: https://github.com/trexfeathers

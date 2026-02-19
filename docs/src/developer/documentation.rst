@@ -149,8 +149,10 @@ Other branding assets are available from the `geovista-media`_ repository.
 
 Branding colours (``RGB``) are defined in :bash:`docs/src/_static/color.css`:
 
-- :octicon:`square-fill;2em;gv-text-main` ``#80d050`` is the **primary** colour (``gv-text-main``)
-- :octicon:`square-fill;2em;gv-text-comp` ``#7f2faf`` is the **complementary** colour (``gv-text-comp``)
+- :octicon:`square-fill;2em;gv-text-main` ``#80d050`` (``128``, ``208``, ``80``)
+  is the **primary** colour (``gv-text-main``)
+- :octicon:`square-fill;2em;gv-text-comp` ``#7f2faf`` (``127``, ``47``, ``175``)
+  is the **complementary** colour (``gv-text-comp``)
 
 
 :fa:`pencil` Logo Font

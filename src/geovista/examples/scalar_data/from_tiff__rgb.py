@@ -33,7 +33,9 @@ masked points.
     load: geotiff,
     style: lighting
 
-.. attention:: Optional package dependency :mod:`rasterio` is required.
+.. attention::
+
+    Optional package dependency :mod:`rasterio` is required.
 
 ----
 

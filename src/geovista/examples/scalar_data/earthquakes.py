@@ -39,16 +39,16 @@ Magnitude      Earthquake Effects                                             Es
 See `reference <https://www.mtu.edu/geo/community/seismology/learn/earthquake-measure/magnitude/>`_
 for further details.
 
-.. attention::
-
-   Optional package dependencies `pandas <https://pandas.pydata.org/docs/>`_ and
-   `fastparquet <https://fastparquet.readthedocs.io/en/stable/>`_ are required.
-
 .. tags::
 
     component: coastlines, component: graticule, component: texture,
     domain: seismology,
     load: points
+
+.. attention::
+
+    Optional package dependencies `pandas <https://pandas.pydata.org/docs/>`_ and
+    `fastparquet <https://fastparquet.readthedocs.io/en/stable/>`_ are required.
 
 ----
 
