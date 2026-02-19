@@ -76,6 +76,10 @@ For further information see https://github.com/uber/h3.
     load: unstructured,
     widget: checkbox
 
+.. attention::
+
+    Optional package dependency `h3 <https://github.com/uber/h3>`_ is required.
+
 ----
 
 """  # noqa: D205,D212,D400

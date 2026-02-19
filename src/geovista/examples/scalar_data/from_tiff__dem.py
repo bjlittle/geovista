@@ -50,7 +50,9 @@ the topography of Mount Fuji and its surrounding landscape.
     style: shading,
     widget: logo
 
-.. attention:: Optional package dependency :mod:`rasterio` is required.
+.. attention::
+
+    Optional package dependency :mod:`rasterio` is required.
 
 ----
 
