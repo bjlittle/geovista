@@ -51,8 +51,8 @@ pip-delete-this-directory.txt
 htmlcov/
 image_cache
 unit_image_cache
-failed_images
 test_images
+test_images_failed
 .tox/
 .nox/
 .coverage

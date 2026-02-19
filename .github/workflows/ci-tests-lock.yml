@@ -88,7 +88,8 @@ jobs:
         env:
           NAME: ${{ env.NAME }}
         run: |
-          xvfb-run -a pixi run --frozen --environment ${NAME} pytest --failed_image_dir failed_images
+          geovista --report
+          xvfb-run -a pixi run --frozen --environment ${NAME} pytest --failed_image_dir test_images_failed
 
       - name: "report failure"
         if: ${{ failure() }}
@@ -110,4 +111,4 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: ci-tests-lock-failed-images-${{ github.job }}-${{ strategy.job-index }}
-          path: ${{ github.workspace }}/failed_images
+          path: ${{ github.workspace }}/test_images_failed

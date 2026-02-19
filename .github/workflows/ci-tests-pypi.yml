@@ -102,7 +102,7 @@ jobs:
 
     - name: "test pypi (py${{ matrix.version }})"
       run: |
-        xvfb-run -a pytest --failed_image_dir failed_images
+        xvfb-run -a pytest --failed_image_dir test_images_failed
 
     - name: "report failure"
       if: ${{ failure() && github.event_name == 'schedule' }}
@@ -123,4 +123,4 @@ jobs:
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
       with:
         name: ci-tests-pypi-failed-images-${{ github.job }}-${{ strategy.job-index }}
-        path: ${{ github.workspace }}/failed_images
+        path: ${{ github.workspace }}/test_images_failed

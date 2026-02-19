@@ -373,18 +373,18 @@ The following tasks are defined for each of our features:
    |                |                 |                                                                                       |
    |                |                 | This task is an alias for the :bash:`make serve-html` command.                        |
    +----------------+-----------------+---------------------------------------------------------------------------------------+
-   | ``{geovista}`` | ``tests-docs``  | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g.,   |
+   | ``{geovista}`` | ``tests-doc``   | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g.,   |
    |                |                 |                                                                                       |
    |                |                 | .. code:: console                                                                     |
    |                |                 |                                                                                       |
-   |                |                 |    $ pixi run tests-docs                                                              |
+   |                |                 |    $ pixi run tests-doc                                                               |
    |                |                 |                                                                                       |
    |                |                 | This task calls :bash:`pytest --doc_mode` to perform the documentation image tests    |
    |                |                 | using the `pytest-pyvista`_ plugin. Refer to the :toml:`[tool.pytest.ini_options]`    |
    |                |                 | table entry in the :bash:`pyproject.toml` manifest for default configuration options. |
    |                |                 |                                                                                       |
-   |                |                 | Note that the ``download doc-images`` and ``make html-docstring-inline`` tasks are    |
-   |                |                 | called prior to running this task.                                                    |
+   |                |                 | Note that the ``tests-clean``, ``download doc-images`` and                            |
+   |                |                 | ``make html-docstring-inline`` tasks are called prior to running this task.           |
    |                |                 |                                                                                       |
    |                |                 | This task is only available in the :guilabel:`geovista` and                           |
    |                |                 | :guilabel:`geovista-py3xx` environments.                                              |
@@ -418,7 +418,7 @@ The following tasks are defined for each of our features:
    |                |                 |    Failed :ref:`tippy-gv-developer-testing-image-tests` are captured via the          |
    |                |                 |    ``pytest-pyvista`` plugin option ``--failed_image_dir`` (see                       |
    |                |                 |    :ref:`Image Tests Generation <tippy-gv-developer-testing-image-tests-generation>`) |
-   |                |                 |    within the :bash:`failed_images` directory for analysis and investigation.         |
+   |                |                 |    within the :bash:`test_images_failed` directory for analysis and investigation.    |
    +----------------+-----------------+---------------------------------------------------------------------------------------+
 
 .. seealso::

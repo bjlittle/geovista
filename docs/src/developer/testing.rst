@@ -307,11 +307,11 @@ For example, to serizalize all unit test rendered images to file within the
    $ pytest -m image --generated_image_dir test_images
 
 To serialize both the baseline image (expected) and rendered image (actual) of
-all unit test failures to file within the :bash:`failed_images` directory e.g.,
+all unit test failures to file within the :bash:`test_images_failed` directory e.g.,
 
 .. code:: console
 
-   $ pytest -m image --failed_image_dir failed_images
+   $ pytest -m image --failed_image_dir test_images_failed
 
 .. attention::
    :class: dropdown
@@ -435,8 +435,8 @@ e.g.,
    |                         |    automatically captured via the ``pytest-pyvista`` plugin   |
    |                         |    option ``--failed_image_dir`` (see                         |
    |                         |    :ref:`tippy-gv-developer-testing-image-tests-generation`)  |
-   |                         |    and available within the :bash:`failed_images` directory   |
-   |                         |    for analysis and investigation.                            |
+   |                         |    and available within the :bash:`test_images_failed`        |
+   |                         |    directory for analysis and investigation.                  |
    |                         |                                                               |
    |                         |    Additionally all generated images are captured via the     |
    |                         |    ``--generated_image_dir`` plugin option and are available  |

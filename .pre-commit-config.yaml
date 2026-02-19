@@ -125,7 +125,7 @@ repos:
     hooks:
       - id: taplo-format
         # See options: https://taplo.tamasfe.dev/configuration/formatter-options.html
-        args: [--option, "reorder_arrays=true", --option, "reorder_keys=true"]
+        args: [--option, "reorder_arrays=false", --option, "reorder_keys=true"]
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
     rev: v1.0.2
