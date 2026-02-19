@@ -77,7 +77,7 @@ PACKAGES_OPTIONAL: list[str] = [
     "ipywidgets",
     "jupyter-server-proxy",
     "jupyterlab",
-    "nest-asyncio",
+    "nest-asyncio2",
     "tqdm",
     "trame",
     "trame-client",
