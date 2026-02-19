@@ -1,0 +1,3 @@
+Refreshed the :class:`geovista.report.Report` to reflect the package migration
+from ``nest-asyncio`` to ``nest-asyncio2`` for ``pyvista >=0.47.0``.
+(:user:`bjlittle`)
