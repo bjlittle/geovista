@@ -388,6 +388,13 @@ The following tasks are defined for each of our features:
    |                |                 |                                                                                       |
    |                |                 | This task is only available in the :guilabel:`geovista` and                           |
    |                |                 | :guilabel:`geovista-py3xx` environments.                                              |
+   |                |                 |                                                                                       |
+   |                |                 | .. note::                                                                             |
+   |                |                 |    :class: dropdown                                                                   |
+   |                |                 |                                                                                       |
+   |                |                 |    Failed image tests are captured via the ``pytest-pyvista`` plugin option           |
+   |                |                 |    ``--failed_image_dir`` within the :bash:`test_images_failed` directory for         |
+   |                |                 |    analysis and investigation.                                                        |
    +----------------+-----------------+---------------------------------------------------------------------------------------+
    | ``{test}``     | ``tests-clean`` | Purge both the documentation and unit test image caches, along with any images        |
    |                |                 | generated from previous test sessions e.g.,                                           |

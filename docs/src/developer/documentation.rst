@@ -351,34 +351,63 @@ the above :ref:`tippy-gv-developer-documentation-building` ``make`` command task
    :align: center
    :widths: 1 3
 
-   +-------------------------+----------------------------------------------------------------------------------+
-   | Pixi Task               | Description                                                                      |
-   +=========================+==================================================================================+
-   | :guilabel:`clean`       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_, `sphinx-tags`_, carousel, and    |
-   |                         | other `sphinx-build`_ artifacts.                                                 |
-   +-------------------------+----------------------------------------------------------------------------------+
-   | :guilabel:`clean-all`   | Perform both the :guilabel:`clean` and :guilabel:`clean-cache` tasks.            |
-   +-------------------------+----------------------------------------------------------------------------------+
-   | :guilabel:`clean-cache` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_                 |
-   |                         | for further details.                                                             |
-   +-------------------------+----------------------------------------------------------------------------------+
-   | :guilabel:`doctest`     | Execute `sphinx.ext.doctest`_ to test code snippets within the documentation.    |
-   |                         | Note that the :guilabel:`clean` task is called prior to running this task.       |
-   +-------------------------+----------------------------------------------------------------------------------+
-   | :guilabel:`make`        | Build the documentation using ``html-noplot`` by default. Pass either ``html``,  |
-   |                         | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline`` |
-   |                         | or ``html-tutorial`` as an argument to override the default ``html-noplot``      |
-   |                         | behaviour. Note that the :guilabel:`clean` task is called prior to running this  |
-   |                         | task.                                                                            |
-   +-------------------------+----------------------------------------------------------------------------------+
-   | :guilabel:`serve-html`  | Build the documentation using ``html-noplot`` by default and start a local       |
-   |                         | ``HTTP`` server on port ``11000`` to view the rendered documentation. This is    |
-   |                         | necessary in order to support interactive scenes. Pass either ``html``,          |
-   |                         | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline`` |
-   |                         | or ``html-tutorial`` as an argument to override the default ``html-noplot``      |
-   |                         | behaviour. Note that the :guilabel:`clean` and :guilabel:`make` tasks are called |
-   |                         | prior to running this task.                                                      |
-   +-------------------------+----------------------------------------------------------------------------------+
+   +-------------------------+-------------------------------------------------------------------------------------+
+   | Pixi Task               | Description                                                                         |
+   +=========================+=====================================================================================+
+   | :guilabel:`clean`       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_, `sphinx-tags`_, carousel, and       |
+   |                         | other `sphinx-build`_ artifacts.                                                    |
+   +-------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`clean-all`   | Perform both the :guilabel:`clean` and :guilabel:`clean-cache` tasks.               |
+   +-------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`clean-cache` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_                    |
+   |                         | for further details.                                                                |
+   +-------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`doctest`     | Execute `sphinx.ext.doctest`_ to test code snippets within the documentation.       |
+   |                         |                                                                                     |
+   |                         | Note that the :guilabel:`clean` task is called prior to running this task.          |
+   +-------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`make`        | Build the documentation using ``html-noplot`` by default. Pass either ``html``,     |
+   |                         | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline``    |
+   |                         | or ``html-tutorial`` as an argument to override the default ``html-noplot``         |
+   |                         | behaviour.                                                                          |
+   |                         |                                                                                     |
+   |                         | Note that the :guilabel:`clean` task is called prior to running this task.          |
+   +-------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`serve-html`  | Build the documentation using ``html-noplot`` by default and start a local          |
+   |                         | ``HTTP`` server on port ``11000`` to view the rendered documentation. This is       |
+   |                         | necessary in order to support interactive scenes. Pass either ``html``,             |
+   |                         | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline``    |
+   |                         | or ``html-tutorial`` as an argument to override the default ``html-noplot``         |
+   |                         | behaviour.                                                                          |
+   |                         |                                                                                     |
+   |                         | Note that the :guilabel:`clean` and :guilabel:`make` tasks are called prior to      |
+   |                         | running this task.                                                                  |
+   +-------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`tests-doc`   | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g., |
+   |                         |                                                                                     |
+   |                         | .. code:: console                                                                   |
+   |                         |                                                                                     |
+   |                         |    $ pixi run tests-doc                                                             |
+   |                         |                                                                                     |
+   |                         | This task calls :bash:`pytest --doc_mode` to perform the documentation image tests  |
+   |                         | using the `pytest-pyvista`_ plugin. Refer to the :toml:`[tool.pytest.ini_options]`  |
+   |                         | table entry in the :bash:`pyproject.toml` manifest for default configuration        |
+   |                         | options.                                                                            |
+   |                         |                                                                                     |
+   |                         | Note that the :guilabel:`tests-clean`, :guilabel:`download` and :guilabel:`make`    |
+   |                         | tasks are called prior to running this task. See                                    |
+   |                         | :ref:`Packaging <tippy-gv-developer-packaging-pixi-tasks>` for further details.     |
+   |                         |                                                                                     |
+   |                         | This task is only available in the :guilabel:`geovista` and                         |
+   |                         | :guilabel:`geovista-py3xx` environments.                                            |
+   |                         |                                                                                     |
+   |                         | .. note::                                                                           |
+   |                         |    :class: dropdown                                                                 |
+   |                         |                                                                                     |
+   |                         |    Failed image tests are captured via the ``pytest-pyvista`` plugin option         |
+   |                         |    ``--failed_image_dir`` within the :bash:`test_images_failed` directory for       |
+   |                         |    analysis and investigation.                                                      |
+   +-------------------------+-------------------------------------------------------------------------------------+
 
 .. tip::
    :class: dropdown, toggle-shown
