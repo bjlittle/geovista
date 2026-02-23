@@ -173,7 +173,9 @@ class Downloader:
         for target in asset_dirs:
             try:
                 if target.is_symlink():
-                    rmtree(target.readlink())
+                    link_target = target.readlink()
+                    if link_target.exists() and link_target.name != DATA_VERSION:
+                        rmtree(link_target)
                     target.unlink()
                 else:
                     rmtree(target)
