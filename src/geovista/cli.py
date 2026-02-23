@@ -24,7 +24,7 @@ from click_default_group import DefaultGroup
 import lazy_loader as lazy
 
 from . import __version__
-from .cache import CACHE, pooch_mute
+from .cache import CACHE, DATA_VERSION, pooch_mute
 from .common import get_modules
 from .config import resources
 from .geoplotter import GeoPlotter
@@ -140,6 +140,47 @@ class Downloader:
                 click.echo("👍 All done!")
             else:
                 click.echo("\nThere are no cached assets to delete.")
+
+    def tidy(self) -> None:
+        """Remove old cached assets except the current data version.
+
+        Removes all versioned asset directories from the geovista cache directory
+        *except* the current :data:`DATA_VERSION` directory.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        msg = (
+            "Are you sure you want to delete all cached geovista assets "
+            f"other than the current data version ({DATA_VERSION!r})"
+        )
+        if not click.confirm(f"\n{msg}?", abort=True):
+            return
+
+        asset_dirs = list(
+            filter(
+                lambda target: target.name != DATA_VERSION,
+                pathlib.Path(resources["cache_dir"]).glob("*/"),
+            )
+        )
+
+        if not asset_dirs:
+            click.echo("\nThere are no cached assets to delete.")
+            return
+
+        for target in asset_dirs:
+            try:
+                if target.is_symlink():
+                    rmtree(target.readlink())
+                    target.unlink()
+                else:
+                    rmtree(target)
+                click.echo("Deleted old assets directory:", nl=False)
+                click.secho(f"{target}", fg=FG_COLOUR)
+            except (FileNotFoundError, OSError, PermissionError) as e:
+                click.secho(f"⚠️ Failed to remove {target}. Reason: {e}", fg="red")
 
     def collect(self, prefix: str, /, *, invert: bool = False) -> list[str]:
         """Filter the asset names by the starting `prefix`.
@@ -404,7 +445,7 @@ def main(
     "-c",
     "--clean",
     is_flag=True,
-    help="Delete all cached assets.",
+    help="Delete all cached assets; see also `--tidy`.",
 )
 @click.option(
     "-d",
@@ -451,6 +492,11 @@ def main(
     type=click.Path(file_okay=False, resolve_path=True, path_type=pathlib.Path),
     help=f"Download target directory (default: {CACHE.abspath})",
 )
+@click.option(
+    "--tidy",
+    is_flag=True,
+    help="Delete all cached assets except the current data version.",
+)
 @click.option("--unit-images", is_flag=True, help="Download unit test image assets.")
 @click.option(
     "-v",
@@ -458,7 +504,7 @@ def main(
     is_flag=True,
     help="Verify availability of registered assets (no download).",
 )
-def download(
+def download(  # noqa: PLR0913
     pull: bool,
     clean: bool,
     decompress: bool,
@@ -471,6 +517,7 @@ def download(
     pantry: bool,
     rasters: bool,
     target: pathlib.Path | None,
+    tidy: bool,
     unit_images: bool,
     verify: bool,
 ) -> None:  # numpydoc ignore=PR01
@@ -495,6 +542,10 @@ def download(
 
     if clean:
         downloader.clean()
+        return
+
+    if tidy:
+        downloader.tidy()
         return
 
     if target:
