@@ -1,0 +1,4 @@
+Added ``--tidy`` option to ``geovista download`` to remove old
+asset directories from the geovista cache whilst keeping the
+current data version. Closes :issue:`2073`.
+(:user:`ukmo-ccbunney`)
