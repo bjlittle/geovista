@@ -1,0 +1,2 @@
+Added rebranded logo to ``README.md``.
+(:user:`bjlittle`)
