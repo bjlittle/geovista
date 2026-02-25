@@ -1,13 +1,13 @@
 <p align="center">
   <a href="https://geovista.readthedocs.io/en/latest/">
-    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/branding/logo/logomark/geovistalogoicon.svg"
+    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/branding/logo/logomark/geovistalogoicon.svg"
          alt="GeoVista Logo"
          style="width: 30%; height: 30%"></a>
 </p>
 
 <p align="center">
   <a href="https://geovista.readthedocs.io/en/latest/">
-    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/branding/title/geovista-title.svg"
+    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/branding/title/geovista-title.svg"
          alt="GeoVista"
          style="width: 50%; height: 50%"></a>
 </p>
@@ -179,7 +179,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/readme/ww3-tri.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/readme/ww3-tri.png"
        alt="WAVEWATCH III Model, Unstructured Triangular Mesh of Sea Surface Wave Significant Height"
        style="width: 75%; height: 75%">
 </p>
@@ -226,7 +226,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/readme/tamar.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/readme/tamar.png"
        alt="Finite Volume Community Ocean Model, Unstructured Triangular Mesh of Sea Floor Below Geoid"
        style="width: 75%; height: 75%">
 </p>
@@ -279,7 +279,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/readme/lam-moll.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/readme/lam-moll.png"
        alt="CF UGRID Local Area Model, Unstructured Quadrilateral Mesh of Air Potential Temperature"
        style="width: 75%; height: 75%">
 </p>
@@ -327,7 +327,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/readme/lam-eqc.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/readme/lam-eqc.png"
        alt="CF UGRID Local Area Model, Unstructured Quadrilateral Mesh of Air Potential Temperature in Plate Carrée Projection"
        style="width: 75%; height: 75%">
 </p>
@@ -371,7 +371,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/readme/lfric-robin.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/readme/lfric-robin.png"
        alt="LFRic Model, Unstructured Cube Sphere of Surface Temperature in Robinson Projection"
        style="width: 75%; height: 75%">
 </p>
@@ -413,7 +413,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/readme/nemo-orca.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/readme/nemo-orca.png"
        alt="NEMO ORCA2 Model, Curvilinear Quadrilateral Mesh of Sea Water Potential Temperature"
        style="width: 75%; height: 75%">
 </p>
@@ -455,7 +455,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/readme/oisst-avhrr.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/readme/oisst-avhrr.png"
        alt="Optimum Interpolation Sea Surface Temperature Advanced Very High Resolution Radiometer Model, Rectilinear Quadrilateral Mesh"
        style="width: 75%; height: 75%">
 </p>
@@ -501,7 +501,7 @@ p.show()
 </details>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.2/media/readme/dynamico-icosahedral.png"
+  <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/readme/dynamico-icosahedral.png"
        alt="DYNAMICO Model, Unstructured Hexagonal Mesh of Surface Air Temperature"
        style="width: 75%; height: 75%">
 </p>
