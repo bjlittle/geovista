@@ -16,6 +16,8 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Atmospheric Science",
+  "Topic :: Scientific/Engineering :: Oceanography",
+  "Topic :: Scientific/Engineering :: Visualization",
 ]
 description = "Cartographic rendering and mesh analytics powered by PyVista"
 dynamic = ["dependencies", "optional-dependencies", "readme", "version"]
