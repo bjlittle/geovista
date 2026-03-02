@@ -23,7 +23,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.2"
+    rev: "v0.15.4"
     hooks:
       - id: ruff-check
         types: [file, python]
@@ -107,7 +107,7 @@ repos:
         # Forbid files which have a UTF-8 Unicode replacement character.
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.36.2
+    rev: 0.37.0
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
