@@ -264,6 +264,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         zlevel: int | None = None,
         zscale: float | None = None,
         point_labels_args: dict[Any, Any] | None = None,
+        name: str | None = None,
     ) -> None:
         """Render the labels for the given parallels/meridians.
 
@@ -283,6 +284,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             :data:`geovista.common.ZLEVEL_SCALE`.
         point_labels_args : dict, optional
             Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+        name : str, optional
+            The name for the added labels/actor so that they can be easily updated.
+            If an actor of this name already exists in the plotter scene, it
+            will be replaced by the new actor. Note that the provided `name` will be
+            prepended with ``-labels`` to form the final name of the added
+            labels/actor.
 
         Notes
         -----
@@ -336,7 +343,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             point_labels_args["always_visible"] = False
 
             self.add_point_labels: Callable[..., None]
-            self.add_point_labels(xyz, labels, **point_labels_args)
+            self.add_point_labels(xyz, labels, name=name, **point_labels_args)
 
     def _warn_opacity(self) -> None:
         """Add textual warning for no opacity support to plotter scene.
@@ -540,6 +547,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
         point_labels_args: dict[Any, Any] | None = None,
+        name: str | None = None,
     ) -> None:
         """Generate a graticule and add to the plotter scene.
 
@@ -580,8 +588,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
         factor : float, optional
             The factor to scale the number of sample points in a single graticule line
-            (meridians and parallels). E.g. a ``factor=2`` will double the number of
-            sample points. Defaults to 1.
+            (meridians and parallels) e.g. a ``factor=2`` will double the number of
+            sample points. Defaults to ``1``.
         poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
@@ -605,6 +613,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
         point_labels_args : dict, optional
             Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+        name : str, optional
+            The name for the added graticule actors so that they can be easily updated.
+            If actors of this name already exist in the plotter scene, they
+            will be replaced by the new actors. Note that the provided `name` will be
+            prepended with ``-meridian``, ``-parallel``, or ``-labels`` to form the
+            final names of the added graticule actors. Defaults to ``graticule``.
 
         Notes
         -----
@@ -615,6 +629,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             num_samples = (n_samples, n_samples)
         else:
             num_samples = n_samples
+
+        if name is None:
+            name = "graticule"
 
         self.add_meridians(
             start=lon_start,
@@ -629,6 +646,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             zscale=zscale,
             mesh_args=mesh_args,
             point_labels_args=point_labels_args,
+            name=name,
         )
         self.add_parallels(
             start=lat_start,
@@ -645,6 +663,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             zscale=zscale,
             mesh_args=mesh_args,
             point_labels_args=point_labels_args,
+            name=name,
         )
 
     def add_mesh(
@@ -841,6 +860,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
         point_labels_args: dict[Any, Any] | None = None,
+        name: str | None = None,
     ) -> None:
         """Generate a line of constant longitude and add to the plotter scene.
 
@@ -857,8 +877,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
         factor : float, optional
             The factor to scale the number of sample points in a single line of
-            longitude. E.g. a ``factor=2`` will double the number of sample points.
-            Defaults to 1.
+            longitude e.g., a ``factor=2`` will double the number of sample points.
+            Defaults to ``1``.
         show_labels : bool, optional
             Whether to render the meridian label. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
@@ -875,6 +895,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
         point_labels_args : dict, optional
             Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+        name : str, optional
+            The name for the added meridian/actor so that it can be easily updated.
+            If an actor of this name already exists in the plotter scene, it
+            will be replaced by the new actor. Note that the provided `name` will be
+            prepended with ``-meridian`` to form the final name of the added
+            meridian/actor.
 
         Notes
         -----
@@ -893,6 +919,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             zscale=zscale,
             mesh_args=mesh_args,
             point_labels_args=point_labels_args,
+            name=name,
         )
 
     def add_meridians(
@@ -910,6 +937,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
         point_labels_args: dict[Any, Any] | None = None,
+        name: str | None = None,
     ) -> None:
         """Generate lines of constant longitude and add to the plotter scene.
 
@@ -935,8 +963,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
         factor : float, optional
             The factor to scale the number of sample points in a single line of
-            longitude. E.g. a ``factor=2`` will double the number of sample points.
-            Defaults to 1.
+            longitude e.g., a ``factor=2`` will double the number of sample points.
+            Defaults to ``1``.
         show_labels : bool, optional
             Whether to render the labels of the meridians. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
@@ -953,6 +981,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
         point_labels_args : dict, optional
             Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+        name : str, optional
+            The name for the added meridians/actor so that it can be easily updated.
+            If an actor of this name already exists in the plotter scene, it
+            will be replaced by the new actor. Note that the provided `name` will be
+            prepended with ``-meridian`` to form the final name of the added
+            meridians/actor.
 
         Notes
         -----
@@ -999,8 +1033,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if zscale is not None:
             mesh_args["zscale"] = zscale
 
-        for mesh in meridians.blocks:
-            self.add_mesh(mesh, **mesh_args)
+        if name is not None:
+            name = f"{name}-meridian"
+
+        self.add_mesh(meridians.blocks, name=name, **mesh_args)
 
         if show_labels:
             self._add_graticule_labels(
@@ -1009,6 +1045,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 zlevel=zlevel,
                 zscale=zscale,
                 point_labels_args=point_labels_args,
+                name=name,
             )
 
     def add_parallel(
@@ -1026,6 +1063,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
         point_labels_args: dict[Any, Any] | None = None,
+        name: str | None = None,
     ) -> None:
         """Generate a line of constant latitude and add to the plotter scene.
 
@@ -1042,8 +1080,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
         factor : float, optional
             The factor to scale the number of sample points in a single line of
-            latitude. E.g. a ``factor=2`` will double the number of sample points.
-            Defaults to 1.
+            latitude e.g., a ``factor=2`` will double the number of sample points.
+            Defaults to ``1``.
         poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
@@ -1063,6 +1101,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
         point_labels_args : dict, optional
             Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+        name : str, optional
+            The name for the added parallel/actor so that it can be easily updated.
+            If an actor of this name already exists in the plotter scene, it
+            will be replaced by the new actor. Note that the provided `name` will be
+            prepended with ``-parallel`` to form the final name of the added
+            parallel/actor.
 
         Notes
         -----
@@ -1082,6 +1126,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             zscale=zscale,
             mesh_args=mesh_args,
             point_labels_args=point_labels_args,
+            name=name,
         )
 
     def add_parallels(
@@ -1101,6 +1146,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
         point_labels_args: dict[Any, Any] | None = None,
+        name: str | None = None,
     ) -> None:
         """Generate lines of constant latitude and add to the plotter scene.
 
@@ -1126,8 +1172,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
         factor : float, optional
             The factor to scale the number of sample points in a single line of
-            latitude. E.g. a ``factor=2`` will double the number of sample points.
-            Defaults to 1.
+            latitude e.g., a ``factor=2`` will double the number of sample points.
+            Defaults to ``1``.
         poles_parallel : bool, optional
             Whether to create a line of latitude at the north/south poles. Defaults to
             :data:`geovista.gridlines.LATITUDE_POLES_PARALLEL`.
@@ -1151,6 +1197,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             Arguments to pass through to :meth:`pyvista.Plotter.add_mesh`.
         point_labels_args : dict, optional
             Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
+        name : str, optional
+            The name for the added parallels/actor so that it can be easily updated.
+            If an actor of this name already exists in the plotter scene, it
+            will be replaced by the new actor. Note that the provided `name` will be
+            prepended with ``-parallel`` to form the final name of the added
+            parallels/actor.
 
         Notes
         -----
@@ -1197,8 +1249,10 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if zscale is not None:
             mesh_args["zscale"] = zscale
 
-        for mesh in parallels.blocks:
-            self.add_mesh(mesh, **mesh_args)
+        if name is not None:
+            name = f"{name}-parallel"
+
+        self.add_mesh(parallels.blocks, name=name, **mesh_args)
 
         if show_labels:
             self._add_graticule_labels(
@@ -1207,6 +1261,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 zlevel=zlevel,
                 zscale=zscale,
                 point_labels_args=point_labels_args,
+                name=name,
             )
 
     def add_points(

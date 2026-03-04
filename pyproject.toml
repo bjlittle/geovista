@@ -256,7 +256,7 @@ max-complexity = 26
 
 [tool.ruff.lint.pylint]
 # TODO @bjlittle: refactor to reduce the complexity, if possible
-max-args = 14
+max-args = 15
 max-branches = 29
 max-statements = 91
 
