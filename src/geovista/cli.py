@@ -506,7 +506,7 @@ def main(
     is_flag=True,
     help="Verify availability of registered assets (no download).",
 )
-def download(  # noqa: PLR0913
+def download(
     pull: bool,
     clean: bool,
     decompress: bool,

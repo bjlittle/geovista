@@ -250,8 +250,8 @@ def create_meridians(
         :data:`LONGITUDE_N_SAMPLES`.
     factor : float, optional
         The factor to scale the number of sample points in a single line of
-        longitude.  E.g. a ``factor=2`` will double the number of sample points.
-        Defaults to 1.
+        longitude e.g., a ``factor=2`` will double the number of sample points.
+        Defaults to ``1``.
     closed_interval : bool, default=False
         Longitude values will be in the half-closed interval [-180, 180). Otherwise,
         longitudes will be in the closed interval [-180, 180]. Defaults to
@@ -468,8 +468,8 @@ def create_parallels(
         :data:`LATITUDE_N_SAMPLES`.
     factor : float, optional
         The factor to scale the number of sample points in a single line of
-        latitude.  E.g. a ``factor=2`` will double the number of sample points.
-        Defaults to 1.
+        latitude e.g., a ``factor=2`` will double the number of sample points.
+        Defaults to ``1``.
     poles_parallel : bool, optional
         Whether to create a line of latitude at the north/south poles. Also see
         ``poles_label``. Defaults to :data:`LATITUDE_POLES_PARALLEL`.
