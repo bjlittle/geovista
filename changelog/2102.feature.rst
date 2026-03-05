@@ -1,0 +1,3 @@
+Added graticule actor naming for meridians, parallels and labels thus allowing
+them to be easily updated or removed from the plotter scene.
+(:user:`bjlittle`)
