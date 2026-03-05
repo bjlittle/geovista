@@ -92,7 +92,7 @@ jobs:
 
       - name: "upload failed images"
         if: ${{ failure() }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: ci-tests-failed-images-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/test_images_failed
@@ -105,7 +105,7 @@ jobs:
           mv .coverage ${COVERAGE_FILE}
 
       - if: ${{ matrix.coverage }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: coverage-artifacts-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/ci-test-coverage*
