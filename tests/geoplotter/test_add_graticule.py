@@ -12,8 +12,8 @@ import pytest
 from geovista.geoplotter import GeoPlotter
 
 
-@pytest.mark.parametrize("name", [None, "test"])
-def test_actor_naming(name):
+@pytest.mark.parametrize("name", [None, "test"], ids=["no-name", "name"])
+def test_graticule_actor_naming(name):
     """Test graticule actor naming."""
     p = GeoPlotter()
     p.add_graticule(name=name, show_labels=True)
