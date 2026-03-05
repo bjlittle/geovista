@@ -288,8 +288,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The name for the added labels/actor so that they can be easily updated.
             If an actor of this name already exists in the plotter scene, it
             will be replaced by the new actor. Note that the provided `name` will be
-            prepended with ``-labels`` to form the final name of the added
-            labels/actor.
+            appended with ``-labels`` to form the name of the added labels/actor.
 
         Notes
         -----
@@ -617,8 +616,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The name for the added graticule actors so that they can be easily updated.
             If actors of this name already exist in the plotter scene, they
             will be replaced by the new actors. Note that the provided `name` will be
-            prepended with ``-meridian``, ``-parallel``, or ``-labels`` to form the
-            final names of the added graticule actors. Defaults to ``graticule``.
+            prepended with ``meridian-`` or ``parallel-`` to form the names of the
+            graticule actors.
 
         Notes
         -----
@@ -629,9 +628,6 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             num_samples = (n_samples, n_samples)
         else:
             num_samples = n_samples
-
-        if name is None:
-            name = "graticule"
 
         self.add_meridians(
             start=lon_start,
@@ -896,11 +892,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         point_labels_args : dict, optional
             Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
         name : str, optional
-            The name for the added meridian/actor so that it can be easily updated.
+            The name for the added meridian/actors so that it can be easily updated.
             If an actor of this name already exists in the plotter scene, it
             will be replaced by the new actor. Note that the provided `name` will be
-            prepended with ``-meridian`` to form the final name of the added
-            meridian/actor.
+            prepended with ``meridian-`` along with the longitude to form the name
+            of the added meridian/actors.
 
         Notes
         -----
@@ -982,11 +978,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         point_labels_args : dict, optional
             Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
         name : str, optional
-            The name for the added meridians/actor so that it can be easily updated.
+            The name for the added meridians/actors so that it can be easily updated.
             If an actor of this name already exists in the plotter scene, it
             will be replaced by the new actor. Note that the provided `name` will be
-            prepended with ``-meridian`` to form the final name of the added
-            meridians/actor.
+            prepended with ``meridian-`` along with the longitude to form the name of
+            the added meridians/actors.
 
         Notes
         -----
@@ -1033,19 +1029,33 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if zscale is not None:
             mesh_args["zscale"] = zscale
 
-        if name is not None:
-            name = f"{name}-meridian"
+        labels = (
+            label.replace("°", "")
+            for label in meridians.labels[: len(meridians.blocks)]
+        )
+        mesh_names = []
 
-        self.add_mesh(meridians.blocks, name=name, **mesh_args)
+        for label, mesh in zip(labels, meridians.blocks, strict=True):
+            address = f"{type(mesh).__name__}({mesh.GetAddressAsString('')})"
+            postfix = f"{address}" if name is None else f"{name}-{address}"
+            mesh_name = f"meridian-{label}-{postfix}"
+            mesh_names.append(mesh_name)
+            self.add_mesh(mesh, name=mesh_name, **mesh_args)
 
         if show_labels:
+            if len(mesh_names) == 1:
+                (labels_name,) = mesh_names
+            else:
+                labels_name = "meridian" if name is None else f"meridian-{name}"
+
+            # note that pyvista will automatically append "-labels" to the actor name
             self._add_graticule_labels(
                 meridians,
                 radius=radius,
                 zlevel=zlevel,
                 zscale=zscale,
                 point_labels_args=point_labels_args,
-                name=name,
+                name=labels_name,
             )
 
     def add_parallel(
@@ -1105,8 +1115,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             The name for the added parallel/actor so that it can be easily updated.
             If an actor of this name already exists in the plotter scene, it
             will be replaced by the new actor. Note that the provided `name` will be
-            prepended with ``-parallel`` to form the final name of the added
-            parallel/actor.
+            prepended with ``parallel-`` along with the latitude to form the name of
+            the added parallel/actor.
 
         Notes
         -----
@@ -1198,11 +1208,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         point_labels_args : dict, optional
             Arguments to pass through to :meth:`pyvista.Plotter.add_point_labels`.
         name : str, optional
-            The name for the added parallels/actor so that it can be easily updated.
+            The name for the added parallels/actors so that it can be easily updated.
             If an actor of this name already exists in the plotter scene, it
             will be replaced by the new actor. Note that the provided `name` will be
-            prepended with ``-parallel`` to form the final name of the added
-            parallels/actor.
+            prepended with ``-parallel`` along with the latitude to form the name of
+            the added parallels/actors.
 
         Notes
         -----
@@ -1249,19 +1259,33 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if zscale is not None:
             mesh_args["zscale"] = zscale
 
-        if name is not None:
-            name = f"{name}-parallel"
+        labels = (
+            label.replace("°", "")
+            for label in parallels.labels[: len(parallels.blocks)]
+        )
+        mesh_names = []
 
-        self.add_mesh(parallels.blocks, name=name, **mesh_args)
+        for label, mesh in zip(labels, parallels.blocks, strict=True):
+            address = f"{type(mesh).__name__}({mesh.GetAddressAsString('')})"
+            postfix = f"{address}" if name is None else f"{name}-{address}"
+            mesh_name = f"parallel-{label}-{postfix}"
+            mesh_names.append(mesh_name)
+            self.add_mesh(mesh, name=mesh_name, **mesh_args)
 
         if show_labels:
+            if len(mesh_names) == 1:
+                (labels_name,) = mesh_names
+            else:
+                labels_name = "parallel" if name is None else f"parallel-{name}"
+
+            # note that pyvista will automatically append "-labels" to the actor name
             self._add_graticule_labels(
                 parallels,
                 radius=radius,
                 zlevel=zlevel,
                 zscale=zscale,
                 point_labels_args=point_labels_args,
-                name=name,
+                name=labels_name,
             )
 
     def add_points(
