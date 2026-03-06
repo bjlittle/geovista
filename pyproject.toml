@@ -50,7 +50,7 @@ YouTube = "https://www.youtube.com/@geovista_devs/videos"
 
 
 [project.scripts]
-geovista = "geovista.cli:main"
+geovista = "geovista.__main__:main"
 
 
 [tool.check-manifest]

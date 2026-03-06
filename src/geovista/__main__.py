@@ -7,6 +7,13 @@
 
 from __future__ import annotations
 
-from .cli import main
+from geovista.cli import main as entry
 
-main()
+
+def main() -> None:
+    """Execute the CLI entry-point."""
+    entry()
+
+
+if __name__ == "__main__":
+    main()
