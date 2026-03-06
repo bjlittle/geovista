@@ -1,0 +1,3 @@
+Tidied the CLI entry-point to always route through ``geovista.__main__``
+and support direct script invocation.
+(:user:`bjlittle`)
