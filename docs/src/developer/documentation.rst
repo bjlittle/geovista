@@ -172,9 +172,9 @@ Branding colours (``RGB``) are defined in :bash:`docs/src/_static/color.css`:
 The ``geovista`` logo takes its inspiration from `The Great Wave off Kanagawa`_
 (c. 1830-1832) by `Katsushika Hokusai`_, the influential Japanese `ukiyo-e`_
 woodblock print artist. The logo palette is primarily sampled from the painting,
-and includes all four classical elements of *earth* (:fa:`mountain`),
+and also includes all four classical elements of *earth* (:fa:`mountain`),
 *water* (:fa:`water`), *air* (:fa:`wind`), and *fire* (:fa:`fire`),
-reflecting the theme of nature used throughout the ``geovista`` documentation.
+reflecting the theme of nature woven throughout the ``geovista`` documentation.
 
 
 :fa:`pencil` Logo Font
