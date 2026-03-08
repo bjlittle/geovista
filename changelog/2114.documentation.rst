@@ -1,0 +1,3 @@
+Added rebranded :ref:`tippy-gv-developer-documentation-branding-logo` to the
+documentation.
+(:user:`bjlittle`)
