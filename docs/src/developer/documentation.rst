@@ -155,6 +155,28 @@ Branding colours (``RGB``) are defined in :bash:`docs/src/_static/color.css`:
   is the **complementary** colour (``gv-text-comp``)
 
 
+.. _gv-developer-documentation-branding-logo:
+.. _tippy-gv-developer-documentation-branding-logo:
+
+
+:fa:`paintbrush` Logo
+~~~~~~~~~~~~~~~~~~~~~
+
+.. figure:: ../_static/brand/geovista-logo.svg
+   :align: center
+   :alt: GeoVista Logo
+   :width: 25%
+
+   GeoVista Logo
+
+The ``geovista`` logo takes its inspiration from `The Great Wave off Kanagawa`_
+(c. 1830-1832) by `Katsushika Hokusai`_, the influential Japanese `ukiyo-e`_
+woodblock print artist. The logo palette is primarily sampled from the painting,
+and includes all four classical elements of *earth* (:fa:`mountain`),
+*water* (:fa:`water`), *air* (:fa:`wind`), and *fire* (:fa:`fire`),
+reflecting the theme of nature used throughout the ``geovista`` documentation.
+
+
 :fa:`pencil` Logo Font
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -526,8 +548,10 @@ e.g.,
 .. _Font Awesome: https://fontawesome.com/
 .. _GNU make: https://www.gnu.org/software/make/
 .. _Jupyter Notebooks: https://jupyter.org/
+.. _Katsushika Hokusai: https://en.wikipedia.org/wiki/Hokusai
 .. _La Machine Company: https://www.dafont.com/la-machine-company.font
 .. _ReadtheDocs: https://app.readthedocs.org/projects/geovista/
+.. _The Great Wave off Kanagawa: https://en.wikipedia.org/wiki/The_Great_Wave_off_Kanagawa
 .. _Versions: https://app.readthedocs.org/projects/geovista/
 .. _ci-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-docs.yml
 .. _ci-tests-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-docs.yml
@@ -538,4 +562,5 @@ e.g.,
 .. _.readthedocs.yml: https://github.com/bjlittle/geovista/blob/main/.readthedocs.yml
 .. _single preview rule: https://docs.astral.sh/ruff/preview/#selecting-single-preview-rules
 .. _sphinx linkcheck builder: https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.linkcheck.CheckExternalLinksBuilder
+.. _ukiyo-e: https://en.wikipedia.org/wiki/Ukiyo-e
 .. _widgets: https://docs.pyvista.org/examples/03-widgets/
