@@ -160,7 +160,7 @@ Branding colours (``RGB``) are defined in :bash:`docs/src/_static/color.css`:
 
 The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType font.
 
-.. figure:: ../_static/geovista-title.svg
+.. figure:: ../_static/brand/geovista-title.svg
    :align: center
    :alt: GeoVista Logo Title
    :width: 25%
