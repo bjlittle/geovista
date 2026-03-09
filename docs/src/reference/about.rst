@@ -48,7 +48,7 @@ Add a touch of panache to your :bash:`README.md` with our badge:
         .. code:: html
 
             <a href="https://geovista.readthedocs.io/en/latest/" >
-            <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json" />
+            <img alt="geovista-badge" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json" />
             </a>
 
     .. tab-item:: markdown
@@ -56,7 +56,7 @@ Add a touch of panache to your :bash:`README.md` with our badge:
 
         .. code:: markdown
 
-            [![geovista](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json)](https://geovista.readthedocs.io/en/latest/)
+            [![geovista-badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json)](https://geovista.readthedocs.io/en/latest/)
 
     .. tab-item:: rst
 

@@ -155,9 +155,52 @@ Branding colours (``RGB``) are defined in :bash:`docs/src/_static/color.css`:
   is the **complementary** colour (``gv-text-comp``)
 
 
+.. _gv-developer-documentation-branding-badge:
+.. _tippy-gv-developer-documentation-branding-badge:
+
+:fa:`shield-halved` Badge
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/assets/badge/v0.json`
+
+Our `shields.io`_ badge asset is encoded as a `JSON Endpoint Response`_.
+
+The badge logo is based on the public domain `Earth Grid Symbol SVG Vector`_,
+which is freely available and distributed under a `CC0-1.0`_ licence.
+
+.. rst-class:: center
+
+    |geovista-badge|
+
+.. tab-set::
+
+    .. tab-item:: html
+
+        .. code:: html
+
+            <a href="https://geovista.readthedocs.io/en/latest/" >
+            <img alt="geovista-badge" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json" />
+            </a>
+
+    .. tab-item:: markdown
+        :selected:
+
+        .. code:: markdown
+
+            [![geovista-badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json)](https://geovista.readthedocs.io/en/latest/)
+
+    .. tab-item:: rst
+
+        .. code:: rst
+
+            .. |geovista-badge| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bjlittle/geovista/main/docs/assets/badge/v0.json
+                :target: https://geovista.readthedocs.io/en/latest/
+
+
 .. _gv-developer-documentation-branding-logo:
 .. _tippy-gv-developer-documentation-branding-logo:
-
 
 :fa:`paintbrush` Logo
 ~~~~~~~~~~~~~~~~~~~~~
@@ -543,10 +586,13 @@ e.g.,
 
 
 .. _Builds: https://app.readthedocs.org/projects/geovista/builds/
+.. _CC0-1.0: https://www.svgrepo.com/page/licensing/#CC0
 .. _CPY001: https://docs.astral.sh/ruff/rules/missing-copyright-notice/
 .. _Creative Commons Attribution 4.0 International License: https://creativecommons.org/licenses/by/4.0/
+.. _Earth Grid Symbol SVG Vector: https://www.svgrepo.com/svg/52614/earth-grid-symbol
 .. _Font Awesome: https://fontawesome.com/
 .. _GNU make: https://www.gnu.org/software/make/
+.. _JSON Endpoint Response: https://shields.io/badges/endpoint-badge
 .. _Jupyter Notebooks: https://jupyter.org/
 .. _Katsushika Hokusai: https://en.wikipedia.org/wiki/Hokusai
 .. _La Machine Company: https://www.dafont.com/la-machine-company.font
@@ -560,6 +606,7 @@ e.g.,
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _plotting: https://docs.pyvista.org/examples/02-plot/#
 .. _.readthedocs.yml: https://github.com/bjlittle/geovista/blob/main/.readthedocs.yml
+.. _shields.io: https://shields.io/
 .. _single preview rule: https://docs.astral.sh/ruff/preview/#selecting-single-preview-rules
 .. _sphinx linkcheck builder: https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.linkcheck.CheckExternalLinksBuilder
 .. _ukiyo-e: https://en.wikipedia.org/wiki/Ukiyo-e
