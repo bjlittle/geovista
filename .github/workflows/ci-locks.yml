@@ -1,6 +1,5 @@
 # Reference:
 #   - https://github.com/actions/checkout
-#   - https://github.com/actions/create-github-app-token
 #   - https://github.com/pavelzw/pixi-diff-to-markdown
 #   - https://github.com/peter-evans/create-pull-request
 #   - https://github.com/prefix-dev/setup-pixi
@@ -70,19 +69,12 @@ jobs:
         run: |
           python lock2yaml.py ${{ env.VERSION }}
 
-      - name: "generate token"
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf
-        id: generate-token
-        with:
-          app-id: ${{ secrets.AUTH_APP_ID }}
-          private-key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
-
       - name: "create pull-request"
         id: cpr
         if: ${{ hashFiles('diff.md') }}
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0
         with:
-          token: ${{ steps.generate-token.outputs.token }}
+          token: ${{ secrets.GEOVISTA_BOT_TOKEN }}
           add-paths: |
             ${{ github.workspace }}/pixi.lock
             ${{ github.workspace }}/requirements/geovista.yml
