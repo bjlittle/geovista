@@ -5,7 +5,8 @@ build:
   tools:
     python: "latest"
   apt_packages:
-    - libgl1-mesa-dev
+    - libgl1
+    - libglx-mesa0
     - xvfb
   jobs:
     # https://docs.readthedocs.com/platform/stable/build-customization.html#install-dependencies-with-pixi
