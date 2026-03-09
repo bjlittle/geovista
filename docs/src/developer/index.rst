@@ -4,7 +4,7 @@
 :fa:`retweet` Contributing
 ==========================
 
-.. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
+.. |Contributor Covenant| image:: https://img.shields.io/badge/contributor%20covenant-3.0-4baaaa.svg
    :target: https://github.com/bjlittle/geovista/blob/main/CODE_OF_CONDUCT.md
 
 |Contributor Covenant|
