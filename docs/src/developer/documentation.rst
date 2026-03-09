@@ -15,17 +15,17 @@ contributors wishing to build and render the documentation.
 :fa:`screwdriver-wrench` Building
 ---------------------------------
 
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/Makefile`
+- :bash:`docs/src/conf.py`
+
 The documentation is built using `sphinx`_ to parse and render `reStructuredText`_
 (:bash:`rst`) documents into ``HTML``.
 
 We also use `myst-parser`_, a ``sphinx`` and `docutils`_ extension to parse and convert
 :term:`MyST` to :bash:`rst`, and `myst-nb`_ to execute and convert
 `Jupyter Notebooks`_ into ``sphinx`` documents.
-
-.. seealso::
-   :class: margin, dropdown, toggle-shown
-
-   For configuration details see :bash:`Makefile` and :bash:`conf.py`.
 
 The documentation is built using `sphinx-build`_ and the `GNU make`_ tool from within
 the :bash:`docs` root directory e.g.,
@@ -138,6 +138,11 @@ Perform documentation quality assurance.
 :fa:`heart-circle-check` Branding
 ---------------------------------
 
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/src/_static`
+- :bash:`docs/src/conf.py`
+
 Our icons are provided by `Font Awesome`_. Font Awesome (Free) is licensed under the
 `Creative Commons Attribution 4.0 International License`_ (CC BY 4.0).
 
@@ -205,6 +210,10 @@ which is freely available and distributed under a `CC0-1.0`_ licence.
 :fa:`paintbrush` Logo
 ~~~~~~~~~~~~~~~~~~~~~
 
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/src/_static/brand/geovista-logo.svg`
+
 .. figure:: ../_static/brand/geovista-logo.svg
    :align: center
    :alt: GeoVista Logo
@@ -223,6 +232,11 @@ reflecting the theme of nature woven throughout the ``geovista`` documentation.
 :fa:`pencil` Logo Font
 ~~~~~~~~~~~~~~~~~~~~~~
 
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/src/_static/brand/geovista-title.svg`
+- :bash:`docs/src/_static/fonts/la-machine-company.ttf`
+
 The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType font.
 
 .. figure:: ../_static/brand/geovista-title.svg
@@ -235,6 +249,10 @@ The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType
 
 :fab:`github` Continuous Integration
 ------------------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`.github/workflows`
 
 .. |ci-docs| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml
@@ -284,6 +302,11 @@ The following documentation workflows are available:
 :fa:`file-contract` Copyright & License
 ---------------------------------------
 
+:fa:`file-code` **Reference:**
+
+- :bash:`LICENSE`
+- :bash:`pyproject.toml`
+
 Source code must contain the following copyright and license preamble at the top of the file:
 
 .. code::
@@ -309,6 +332,10 @@ For further details refer to the following TOML tables:
 
 :fa:`up-right-from-square` Cross-References
 -------------------------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/src/common.txt`
 
 Arbitrary locations are cross-referenced using ``reStructuredText`` labels and the ``sphinx``
 `:ref: <https://www.sphinx-doc.org/en/master/usage/referencing.html#cross-referencing-arbitrary-locations>`__
@@ -395,6 +422,10 @@ its :ref:`tippy-gv-overview-ecosystem` section:
 
 :fa:`lines-leaning` Pixi Workflow
 ---------------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
 
 .. admonition:: Pixi Environment
 
@@ -492,10 +523,9 @@ the above :ref:`tippy-gv-developer-documentation-building` ``make`` command task
 :fa:`tags` Tagging
 ------------------
 
-.. note::
-  :class: margin, dropdown, toggle-shown
+:fa:`file-code` **Reference:**
 
-  Tags are configured in the :bash:`docs/src/conf.py` file.
+- :bash:`docs/src/conf.py`
 
 Themed content :ref:`tippy-gv-tagoverview` are supported using `sphinx-tags`_.
 
