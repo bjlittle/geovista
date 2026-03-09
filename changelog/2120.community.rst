@@ -1,3 +1,2 @@
-Updated the `Contributor Covenant`_ Code of Conduct from version ``2.1`` to version ``3.0``. (:user:`tkoyama010`)
-
-.. _Contributor Covenant: https://www.contributor-covenant.org/version/3/0/code_of_conduct/
+Updated the `Contributor Covenant Code of Conduct`_ from version ``2.1``
+to version ``3.0``. (:user:`tkoyama010`)
