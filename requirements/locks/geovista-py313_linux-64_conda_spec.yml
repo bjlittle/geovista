@@ -123,7 +123,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/sphinx-book-theme-1.1.4-pyh29332c3_0.conda#f3d3f4e7e2c9198e88cd524633665081
   - https://conda.anaconda.org/conda-forge/noarch/stdlib-list-0.12.0-pyhd8ed1ab_0.conda#eaa44ab9b35bfd560e49ecca18f4d24d
   - https://conda.anaconda.org/conda-forge/linux-64/astroid-4.1.1-py313h78bf25f_0.conda#bdcb1441bfafbce185d9079b12d9f70d
-  - https://conda.anaconda.org/conda-forge/noarch/sphinx-autoapi-3.7.0-pyhd8ed1ab_0.conda#aa1de8bc52b10871afeb909e6f2bbd41
+  - https://conda.anaconda.org/conda-forge/noarch/sphinx-autoapi-3.8.0-pyhd8ed1ab_0.conda#0fa79d4828025ca82f495c13fca24f2a
   - https://conda.anaconda.org/conda-forge/noarch/setuptools-scm-8.3.1-pyhd8ed1ab_0.conda#996376098e3648237b3efb0e0ad460c1
   - https://conda.anaconda.org/conda-forge/linux-64/ruff-0.14.14-h40fa522_1.conda#d3e1d08b141529c7fce6a13b4d670605
   - https://conda.anaconda.org/conda-forge/noarch/pyparsing-3.3.2-pyhcf101f3_0.conda#3687cc0b82a8b4c17e1f0eb7e47163d5
@@ -252,7 +252,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/linux-64/nlohmann_json-3.12.0-h54a6638_1.conda#16c2a0e9c4a166e53632cfca4f68d020
   - https://conda.anaconda.org/conda-forge/linux-64/qhull-2020.2-h434a139_5.conda#353823361b1d27eb3960efb076dfcaf6
   - https://conda.anaconda.org/conda-forge/noarch/python-dateutil-2.9.0.post0-pyhe01879c_2.conda#5b8d21249ff20967101ffa321cab24e8
-  - https://conda.anaconda.org/conda-forge/linux-64/kiwisolver-1.4.9-py313hc8edb43_2.conda#3e0e65595330e26515e31b7fc6d933c7
+  - https://conda.anaconda.org/conda-forge/linux-64/kiwisolver-1.5.0-py313hc8edb43_0.conda#b81883b9dbf5069821c2fb09a8ba1407
   - https://conda.anaconda.org/conda-forge/linux-64/freetype-2.14.2-ha770c72_0.conda#eeec961fec28e747e1e1dc0446277452
   - https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyhd8ed1ab_1.conda#37293a85a0f4f77bbd9cf7aaefc62609
   - https://conda.anaconda.org/conda-forge/linux-64/brotli-bin-1.2.0-hb03c661_1.conda#af39b9a8711d4a8d437b52c1d78eb6a1
