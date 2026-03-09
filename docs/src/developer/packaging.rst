@@ -29,6 +29,10 @@
    recommendation for *Minimum Supported Dependencies* (`SPEC 0`_), and
    typically support the latest **2-3** distributions of ``python``.
 
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+
 Package management is orchestrated and performed by `pixi`_.
 
 Our ``pixi`` :term:`environments <Environment>`, :term:`features <Feature>`,
@@ -62,6 +66,10 @@ additional dependencies compatible within the solve-group.
 
 :fa:`group-arrows-rotate` Pixi Solve-Groups
 -------------------------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
 
 Our ``pixi`` **environments** are organized into collections by `solve-group`_.
 See the :toml:`[tool.pixi.environments]` table defined in the :bash:`pyproject.toml`
@@ -223,6 +231,10 @@ inheritance relationship between its environments:
 :fa:`puzzle-piece` Pixi Features
 --------------------------------
 
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+
 A ``pixi`` :term:`environment <Environment>` is defined by combining one or
 more :term:`features <Feature>`. For further details see this ``pixi`` `tutorial`_
 on how to create and use features in a multi-environment scenario.
@@ -278,6 +290,10 @@ various fields, such as :toml:`dependencies`, :toml:`pypi-dependencies`,
 
 :fa:`clapperboard` Pixi Tasks
 -----------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
 
 A ``pixi`` :term:`task <Task>` is a custom `cross-platform workflow command`_
 that is defined as part of a :term:`feature <Feature>` within an
@@ -442,6 +458,10 @@ The following tasks are defined for each of our features:
 :fab:`github` Continuous Integration
 ------------------------------------
 
+:fa:`file-code` **Reference:**
+
+- :bash:`.github/workflows` :fa:`folder`
+
 .. |ci-locks| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml/badge.svg
    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-locks.yml
 .. |ci-wheels| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-wheels.yml/badge.svg
@@ -489,6 +509,11 @@ The following packaging workflows are available:
 
 :fab:`python` Python Package Index
 ----------------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+- :bash:`requirements` :fa:`folder`
 
 ``PyPI`` package dependencies are configured in the :bash:`pyproject.toml` manifest
 under the :toml:`[tool.setuptools.dynamic]` and

@@ -140,7 +140,7 @@ Perform documentation quality assurance.
 
 :fa:`file-code` **Reference:**
 
-- :bash:`docs/src/_static`
+- :bash:`docs/src/_static` :fa:`folder`
 - :bash:`docs/src/conf.py`
 
 Our icons are provided by `Font Awesome`_. Font Awesome (Free) is licensed under the
@@ -252,7 +252,7 @@ The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType
 
 :fa:`file-code` **Reference:**
 
-- :bash:`.github/workflows`
+- :bash:`.github/workflows` :fa:`folder`
 
 .. |ci-docs| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml
