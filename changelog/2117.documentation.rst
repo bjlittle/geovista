@@ -1,0 +1,3 @@
+Added :ref:`tippy-gv-developer-documentation-branding-badge` section to the
+contributor guidelines.
+(:user:`bjlittle`)

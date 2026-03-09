@@ -155,6 +155,9 @@ Branding colours (``RGB``) are defined in :bash:`docs/src/_static/color.css`:
   is the **complementary** colour (``gv-text-comp``)
 
 
+.. _gv-developer-documentation-branding-badge:
+.. _tippy-gv-developer-documentation-branding-badge:
+
 :fa:`shield-halved` Badge
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
