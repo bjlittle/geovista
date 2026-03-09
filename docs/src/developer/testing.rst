@@ -32,12 +32,20 @@ infrastructure.
 .. |ci-pypi| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-pypi.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-pypi.yml
 
+:fa:`file-code` **Reference:**
+
+- :bash:`.github/workflows` :fa:`folder`
+- :bash:`pyproject.toml`
+- :bash:`requirements` :fa:`folder`
+- :bash:`tests` :fa:`folder`
+
 .. note::
    :class: dropdown, toggle-shown
 
    We follow *Scientific Python Ecosystem Coordination* (`SPEC`_)
    recommendation for *Minimum Supported Dependencies* (`SPEC 0`_), and
    typically support the latest **2-3** distributions of ``python``.
+
 
 The following testing workflows are available:
 
@@ -109,7 +117,14 @@ The following testing workflows are available:
 :fa:`images` Image Tests
 ------------------------
 
-The image unit tests are located within the :bash:`tests/plotting` directory.
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+- :bash:`src/geovista/examples` :fa:`folder`
+- :bash:`tests/plotting` :fa:`folder`
+
+This section outlines how to create and run our image tests, and also
+highlights the key infrastructure that underpins it.
 
 
 .. _gv-developer-testing-image-tests-markers:
@@ -117,6 +132,10 @@ The image unit tests are located within the :bash:`tests/plotting` directory.
 
 Markers
 ~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
 
 The following ``pytest`` markers are configured for image unit tests:
 
@@ -178,6 +197,10 @@ selection for execution:
 Fixtures
 ~~~~~~~~
 
+:fa:`file-code` **Reference:**
+
+- :bash:`tests/conftest.py`
+
 All image unit tests require to use the following ``pytest`` `fixtures`_:
 
 .. table:: Image Unit Test Fixtures
@@ -217,6 +240,11 @@ All image unit tests require to use the following ``pytest`` `fixtures`_:
 
 Template
 ~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+- :bash:`tests/conftest.py`
 
 Image unit tests should adopt the following usage pattern of
 :ref:`tippy-gv-developer-testing-image-tests-markers` and
@@ -263,6 +291,14 @@ Note that:
 Caching
 ~~~~~~~
 
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+- :bash:`src/geovista/cache/__init__.py`
+- :bash:`src/geovista/config.py`
+- :bash:`src/geovista/tests/plotting/__init__.py`
+- :bash:`src/geovista/tests/plotting/unit_image_cache` :fa:`folder`
+
 The ``pytest-pyvista`` plugin performs the image comparison between a
 unit test baseline image (expected) and rendered image (actual) via its
 ``verify_image_cache`` fixture.
@@ -295,6 +331,12 @@ manager image cache is automatically verified and managed by the :python:`tests.
 
 Generation
 ~~~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+- :bash:`src/geovista/cache/__init__.py`
+- :bash:`src/geovista/cache/registry.txt`
 
 Unit test rendered image (actual) generation is managed through the
 ``pytest-pyvista`` plugin.
@@ -363,6 +405,10 @@ the :guilabel:`DATA_VERSION` using the CLI e.g.,
 
 :fa:`lines-leaning` Pixi Workflow
 ---------------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
 
 .. admonition:: Pixi Environment
    :class: dropdown, toggle-shown
@@ -460,6 +506,11 @@ e.g.,
 
 :fa:`vial-circle-check` Unit Tests
 ----------------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+- :bash:`tests` :fa:`folder`
 
 The unit tests are located within the :bash:`tests` root directory and are
 organised into sub-directories, typically one for each ``geovista`` top-level
