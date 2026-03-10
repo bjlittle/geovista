@@ -48,7 +48,6 @@ jobs:
         uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411
         with:
           args: |
-            --accept ‘100..=103, 200..=299, 429’
             --cache
             --exclude '^https://github\.com/bjlittle/geovista\.git'
             --host-conncurrency 2
