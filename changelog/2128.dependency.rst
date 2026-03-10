@@ -1,0 +1,2 @@
+Migrated from the obsolete ``libgl1-mesa-glx`` package to the modern equivalent ``libgl1``
+and ``libglx-mesa0``. (:user:`bjlittle`)
