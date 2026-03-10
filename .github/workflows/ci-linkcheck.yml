@@ -50,7 +50,7 @@ jobs:
           args: |
             --cache
             --exclude '^https://github\.com/bjlittle/geovista\.git'
-            --host-conncurrency 2
+            --host-concurrency 2
             --host-request-interval 1s
             --no-progress
             --retry-wait-time 3
