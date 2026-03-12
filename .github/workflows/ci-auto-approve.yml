@@ -36,7 +36,7 @@ jobs:
       - name: "verify"
         id: verify
         run: |
-          if [[ "${COMMENT_USER_LOGIN}" == 'bjlittle' || "${EVENT_PR_USER_LOGIN}" == 'dependabot[bot]' || "${EVENT_PR_USER_LOGIN}" == 'geovista-ci[bot]' || "${EVENT_PR_USER_LOGIN}" == 'pre-commit-ci[bot]' ]]; then
+          if [[ "${COMMENT_USER_LOGIN}" == 'bjlittle' || "${EVENT_PR_USER_LOGIN}" == 'geovista-bot' || "${EVENT_PR_USER_LOGIN}" == 'dependabot[bot]' || "${EVENT_PR_USER_LOGIN}" == 'pre-commit-ci[bot]' ]]; then
             echo "valid=true" >> $GITHUB_OUTPUT
             echo "reaction=rocket" >> $GITHUB_OUTPUT
             {
