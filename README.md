@@ -73,7 +73,7 @@ Simply put, "*[GeoVista](https://geovista.readthedocs.io/en/latest/) is to
 GeoVista is available on both [conda-forge](https://anaconda.org/conda-forge/geovista) and [PyPI](https://pypi.org/project/geovista/).
 See our  [Installation](https://geovista.readthedocs.io/en/latest/installation.html) guide for further details.
 
-### Conda
+### `conda`
 
 GeoVista is available on [conda-forge](https://anaconda.org/conda-forge/geovista), and can be easily installed with
 [conda](https://docs.conda.io/projects/conda/en/latest/index.html):
@@ -84,7 +84,7 @@ conda install --channel conda-forge geovista
 
 Also see our [conda-forge feedstock](https://github.com/conda-forge/geovista-feedstock).
 
-### Pip
+### `pip`
 
 GeoVista is also available on [PyPI](https://pypi.org/project/geovista/):
 
@@ -94,13 +94,16 @@ pip install geovista
 
 Checkout out our [PyPI Download Stats](https://pypistats.org/packages/geovista), if you like that kinda thing.
 
-### Pixi 🧚
+### `pixi` 🧚
 
 Alternatively, install GeoVista with [pixi](https://pixi.prefix.dev/):
 
 ```shell
 pixi add geovista
-````
+```
+
+> [!TIP]
+> We recommend using `pixi` for package management.
 
 <!--- https://github.blog/developer-skills/how-to-make-your-images-in-markdown-on-github-adjust-for-dark-mode-and-light-mode --->
 
