@@ -2,14 +2,14 @@
   <a href="https://geovista.readthedocs.io/en/latest/">
     <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/branding/logo/logomark/geovistalogoicon.svg"
          alt="GeoVista Logo"
-         style="width: 30%; height: 30%"></a>
+         width="250"></a>
 </p>
 
 <p align="center">
   <a href="https://geovista.readthedocs.io/en/latest/">
     <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2026.02.4/media/branding/title/geovista-title.svg"
          alt="GeoVista"
-         style="width: 50%; height: 50%"></a>
+         width="300"></a>
 </p>
 
 <h3 align="center">
