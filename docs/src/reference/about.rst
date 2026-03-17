@@ -95,6 +95,9 @@ Discover community projects using ``geovista``:
     +=====================+=================================================================================+
     | `aeolus`_           | A library for analysing and visualising atmospheric model output.               |
     +---------------------+---------------------------------------------------------------------------------+
+    | `geojav`_           | Plume dataset visualization tool to assist paper submission to the              |
+    |                     | `Journal of Applied Volcanology`_.                                              |
+    +---------------------+---------------------------------------------------------------------------------+
     | `geovista-slam`_    | Generating Structured Local Area Model (SLAM) grids from unstructured meshes.   |
     +---------------------+---------------------------------------------------------------------------------+
     | `iris`_             | A powerful, format-agnostic, and community-driven Python package for analysing  |
@@ -191,6 +194,8 @@ A massive thank-you to all our awesome contributors (`Emoji Key ✨`_):
 .. _BSD-3-Clause: https://spdx.org/licenses/BSD-3-Clause.html
 .. _🍬 Candy Store: https://github.com/bjlittle/geovista/discussions/1033
 .. _Emoji Key ✨: https://allcontributors.org/emoji-key/
+.. _geojav: https://github.com/bjlittle/geovista-jav-2026
+.. _Journal of Applied Volcanology: https://link.springer.com/journal/13617
 .. _ngview: https://github.com/MetOffice/ngview
 .. _shields.io documentation: https://shields.io/
 .. _uraster: https://github.com/changliao1025/uraster
