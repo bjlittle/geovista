@@ -760,9 +760,8 @@ class Transform:  # numpydoc ignore=PR01
                 # rotated grid or similar, but we probably do need to support that.
                 vectors_crs = crs
 
-            if vectors_crs is not None:
-                # sanity check the vectors crs
-                vectors_crs = pyproj.CRS.from_user_input(vectors_crs)
+            # sanity check the vectors crs
+            vectors_crs = pyproj.CRS.from_user_input(vectors_crs)
 
             if vectors_crs == WGS84:
                 vector_xs = lons
@@ -815,7 +814,7 @@ class Transform:  # numpydoc ignore=PR01
 
                 if vectors_crs != crs:
                     transformed = transform_points(
-                        src_crs=crs or WGS84, tgt_crs=vectors_crs, xs=xs, ys=ys
+                        src_crs=crs, tgt_crs=vectors_crs, xs=xs, ys=ys
                     )
                     vector_xs, vector_ys = transformed[:, 0], transformed[:, 1]
 
