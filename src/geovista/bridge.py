@@ -737,7 +737,7 @@ class Transform:  # numpydoc ignore=PR01
             mesh[name] = data
 
         if vectors is not None:
-            # TODO @pp-mo: this section is very long, consider refactor
+            # TODO @pp-mo: This section is very long, consider refactor
             if not vectors_name:
                 vectors_name = NAME_VECTORS
 
@@ -754,7 +754,7 @@ class Transform:  # numpydoc ignore=PR01
             ws = components[2] if len(components) == 3 else np.zeros_like(us)
 
             if vectors_crs is None:
-                # Vectors crs defaults to main input CRS
+                # Vectors CRS defaults to points CRS
                 # NOTE: vectors may have a different CRS than the input points.
                 # The only likely usage is for true-lat-lon winds with locations on a
                 # rotated grid or similar, but we probably do need to support that.
@@ -790,13 +790,13 @@ class Transform:  # numpydoc ignore=PR01
                     raise ValueError(msg)
 
                 # For a CRS with longitude and latitude axes, its axes determine the
-                # east- and north-wards directions of surface-oriented vectors.
+                # east-wards and north-wards directions of surface-oriented vectors.
                 # This means we can calculate the xyz vectors for the input points in
                 # vector coordinates, and afterwards rotate them to the display.
-                # TODO @pp-mo: support other common cases as needed, for example OSGB
-                #  or Mercator.  Sadly I think there is no general solution.
+                # TODO @pp-mo: Support other common cases as needed, for example OSGB
+                #              or Mercator. There may be no general solution.
 
-                # calculate post-rotate matrix, so "vectors @= post_rotate_matrix"
+                # Calculate post-rotate matrix, so "vectors @= post_rotate_matrix"
                 # transform the equivalent of the x,y,z basis vectors
                 bases_x = np.array([0, 90, 0])
                 bases_y = np.array([0, 0, 90])
@@ -819,19 +819,20 @@ class Transform:  # numpydoc ignore=PR01
                     )
                     vector_xs, vector_ys = transformed[:, 0], transformed[:, 1]
 
-            # TODO @pp-mo: should we pass flattened arrays here, and reshape as-per the
-            #   inputs (and xyz)? Not clear if multidimensional input is used or needed
+            # TODO @pp-mo: Should we pass flattened arrays here, and reshape as-per
+            #              the inputs (and xyz)? Not clear if multidimensional
+            #              input is used or needed
             xx, yy, zz = vectors_to_cartesian(
                 lons=vector_xs, lats=vector_ys, vectors_uvw=(us, vs, ws)
             )
             mesh_vectors = np.vstack((xx, yy, zz)).T
 
             if post_rotate_matrix is not None:
-                # At this point, vectors are correct xyz's for the original points in
-                # 'vector_crs', but not ready for plotting since the "true" point
-                # locations are different : hence apply "post-rotation".
-                # TODO @pp-mo: replace np.dot with a '@' if a masked-array multiply bug
-                #  gets fixed : see https://github.com/numpy/numpy/issues/14992
+                # At this point, vectors are correct xyz's for the original points
+                # in 'vector_crs', but not ready for plotting since the "true"
+                # point locations are different : hence apply "post-rotation".
+                # TODO @pp-mo: Replace np.dot with '@' when masked-array multiply bug
+                #              bug is fixed, see https://github.com/numpy/numpy/issues/14992
                 mesh_vectors = np.dot(post_rotate_matrix, mesh_vectors.T).T
 
             mesh[vectors_name] = mesh_vectors
