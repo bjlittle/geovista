@@ -871,15 +871,16 @@ def vectors_to_cartesian(
     zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
     # cast as float here, as from_cartesian use-case results in float zlevels
     # that should be dtype preserved for the purpose of precision
-    if zlevel is None:
-        zlevel = 0
-    zlevel = np.atleast_1d(zlevel).astype(float)
-    if zlevel.size > 1:
+    zlevel_array = (
+        np.array([0.0]) if zlevel is None else np.atleast_1d(zlevel).astype(float)
+    )
+
+    if zlevel_array.size > 1:
         # TODO @pp-mo: remove multiple zlevel, when removed from "from_points".
-        msg = f"'zlevel' may not be multiple, has shape {zlevel.shape}."
+        msg = f"'zlevel' may not be multiple, has shape {zlevel_array.shape}."
         raise ValueError(msg)
 
-    radius += radius * zlevel * zscale
+    radius += radius * zlevel_array * zscale
 
     if lons.shape != lats.shape:
         msg = f"'lons' and 'lats' do not have same shape: {lons.shape} != {lats.shape}."

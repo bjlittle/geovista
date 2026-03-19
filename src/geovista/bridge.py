@@ -36,7 +36,6 @@ from .common import (
     nan_mask,
     to_cartesian,
     vectors_to_cartesian,
-    wrap,
 )
 from .crs import WGS84, CRSLike, to_wkt
 from .transform import transform_points
@@ -56,6 +55,7 @@ __all__ = [
     "BRIDGE_CLEAN",
     "NAME_CELLS",
     "NAME_POINTS",
+    "NAME_VECTORS",
     "RIO_SIEVE_SIZE",
     "PathLike",
     "Shape",
@@ -77,6 +77,9 @@ NAME_CELLS: str = "cell_data"
 
 NAME_POINTS: str = "point_data"
 """Default array name for data on the mesh points."""
+
+NAME_VECTORS: str = "vector_data"
+"""Default array name for mesh vectors."""
 
 RIO_SIEVE_SIZE: int = 800
 """The default size of the :func:`rasterio.features.sieve` filter."""
@@ -629,7 +632,7 @@ class Transform:  # numpydoc ignore=PR01
             tuple[ArrayLike, ArrayLike, ArrayLike] | tuple[ArrayLike, ArrayLike] | None
         ) = None,
         vectors_crs: CRSLike | None = None,
-        vectors_array_name: str | None = None,
+        vectors_name: str | None = None,
     ) -> pv.PolyData:
         """Build a point-cloud mesh from x-values, y-values and z-levels.
 
@@ -681,9 +684,10 @@ class Transform:  # numpydoc ignore=PR01
             as 'crs'.  Note that `vectors_crs` only specifies **horizontal orientation**
             of the vectors : their magnitudes are always spatial distance, and the Z
             component is always radial (i.e. "upwards").
-        vectors_array_name : str, optional
-            Specifies an alternate name for the points array to store the vectors.
-            Also set as the active vectors name.   Defaults to ``"vectors"``.
+        vectors_name : str, optional
+            The name of the optional vectors array to be attached to the mesh. If
+            `vectors` is provided but with no `vectors_name`, defaults to
+            :data:`NAME_VECTORS`.
 
         Returns
         -------
@@ -706,10 +710,10 @@ class Transform:  # numpydoc ignore=PR01
 
         # transform spatial points to WGS84 with shape (M, 3) or (M, N, 3)
         transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
-        xs, ys = transformed[..., 0], transformed[..., 1]
+        lons, lats = transformed[..., 0], transformed[..., 1]
 
         # convert lat/lon to cartesian xyz
-        xyz = to_cartesian(xs, ys, radius=radius, zlevel=zlevel, zscale=zscale)
+        xyz = to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
 
         # create the point-cloud mesh
         mesh = pv.PolyData(xyz)
@@ -733,20 +737,20 @@ class Transform:  # numpydoc ignore=PR01
 
         if vectors is not None:
             # TODO @pp-mo: this section is very long, consider refactor
-            if vectors_array_name is None:
-                vectors_array_name = "vectors"
+            if not vectors_name:
+                vectors_name = NAME_VECTORS
 
             if (
                 not isinstance(vectors, Iterable)  # type: ignore[redundant-expr]
                 or len(vectors) not in (2, 3)
             ):
-                msg = "Keyword 'vectors' must be a tuple of 2 or 3 array-likes."
-                raise ValueError(msg)
+                emsg = "Keyword 'vectors' must be a tuple of 2 or 3 array-likes."
+                raise ValueError(emsg)
 
-            in_vectors = [np.asanyarray(arr) for arr in vectors]
-
-            xx, yy = in_vectors[:2]
-            zz = in_vectors[2] if len(in_vectors) == 3 else np.zeros_like(xx)
+            # unpack vector components to UVW
+            components = [np.asanyarray(component) for component in vectors]
+            us, vs = components[:2]
+            ws = components[2] if len(components) == 3 else np.zeros_like(us)
 
             if vectors_crs is None:
                 # Vectors crs defaults to main input CRS
@@ -756,30 +760,28 @@ class Transform:  # numpydoc ignore=PR01
                 vectors_crs = crs
 
             if vectors_crs is not None:
+                # sanity check the vectors crs
                 vectors_crs = pyproj.CRS.from_user_input(vectors_crs)
-                if vectors_crs == WGS84:
-                    # As for main crs, "None" means plain-latlon crs
-                    vectors_crs = None
 
-            if vectors_crs is None:
-                vector_xs = xs_latlon
-                vector_ys = ys_latlon
+            if vectors_crs == WGS84:
+                vector_xs = lons
+                vector_ys = lats
                 post_rotate_matrix = None
             else:
-                # Supplied vector xx/yy/zz are for a "different" orientation than
-                # standard lat-lon, so will need rotating afterwards.
-                # NOTE: we can only do this for specific CRS types where we know how to
-                # find **its** pole.
+                # The supplied UVW vectors are for a "different" orientation
+                # than standard lat-lon, so will need rotating afterwards.
+                # We can only do this for specific CRS types where we know how
+                # to find its pole.
                 axis_info = getattr(vectors_crs, "axis_info", [])
-                ok = (
-                    isinstance(axis_info, list)
-                    and len(axis_info) >= 2
-                    and all(hasattr(x, "name") for x in axis_info)
+                valid = len(axis_info) >= 2 and all(
+                    hasattr(x, "name") for x in axis_info
                 )
-                if ok:
-                    axis_names = [x.name for x in axis_info]
-                    ok = axis_names[:2] == ["Longitude", "Latitude"]
-                if not ok:
+
+                if valid:
+                    axis_names = [axis.name for axis in axis_info]
+                    valid = axis_names[:2] == ["Longitude", "Latitude"]
+
+                if not valid:
                     msg = (
                         "Cannot determine wind directions : Target CRS type is not "
                         f"supported for grid orientation decoding : {vectors_crs}."
@@ -806,22 +808,20 @@ class Transform:  # numpydoc ignore=PR01
                 post_rotate_matrix = np.array(cartesian_bases).T
 
                 # We will also need points as lons+lats **in the vector CRS** to
-                # calculate the vectors (i.e. oriented to "its" northward + eastward).
+                # calculate the vectors (i.e., oriented to "its" northward + eastward).
                 vector_xs = xs
                 vector_ys = ys
-                src_crs = crs or WGS84
-                if vectors_crs != src_crs:
+
+                if vectors_crs != crs:
                     transformed = transform_points(
-                        src_crs=src_crs or WGS84, tgt_crs=vectors_crs, xs=xs, ys=ys
+                        src_crs=crs or WGS84, tgt_crs=vectors_crs, xs=xs, ys=ys
                     )
                     vector_xs, vector_ys = transformed[:, 0], transformed[:, 1]
 
             # TODO @pp-mo: should we pass flattened arrays here, and reshape as-per the
             #   inputs (and xyz)? Not clear if multidimensional input is used or needed
             xx, yy, zz = vectors_to_cartesian(
-                lons=vector_xs,
-                lats=vector_ys,
-                vectors_uvw=(xx, yy, zz),
+                lons=vector_xs, lats=vector_ys, vectors_uvw=(us, vs, ws)
             )
             mesh_vectors = np.vstack((xx, yy, zz)).T
 
@@ -833,8 +833,8 @@ class Transform:  # numpydoc ignore=PR01
                 #  gets fixed : see https://github.com/numpy/numpy/issues/14992
                 mesh_vectors = np.dot(post_rotate_matrix, mesh_vectors.T).T
 
-            mesh[vectors_array_name] = mesh_vectors
-            mesh.set_active_vectors(vectors_array_name)
+            mesh[vectors_name] = mesh_vectors
+            mesh.set_active_vectors(vectors_name)
 
         # clean the mesh
         if clean:

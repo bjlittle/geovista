@@ -12,7 +12,7 @@ import numpy as np
 from pyproj import CRS, Transformer
 import pytest
 
-from geovista.bridge import NAME_POINTS, Transform
+from geovista.bridge import NAME_POINTS, NAME_VECTORS, Transform
 from geovista.common import GV_FIELD_CRS, GV_FIELD_RADIUS, RADIUS, to_cartesian, wrap
 from geovista.crs import WGS84
 
@@ -103,9 +103,9 @@ class TestVectors:
     def test_basic(self):
         """Check basic operation on true-latlon uvw vectors."""
         mesh = Transform.from_points(
-            xs=self.lons, ys=self.lats, vectors=(self.u, self.v, self.w)
+            self.lons, self.lats, vectors=(self.u, self.v, self.w)
         )
-        result = mesh["vectors"].T
+        result = mesh[NAME_VECTORS].T
         expected = np.array(
             [
                 [10.385, -29.006, -6.416, -41.658],
@@ -118,11 +118,11 @@ class TestVectors:
     def test_nonarrays(self):
         """Check basic operation with lists of numbers in place of array vectors."""
         mesh = Transform.from_points(
-            xs=self.lons,
-            ys=self.lats,
+            self.lons,
+            self.lats,
             vectors=(list(self.u), list(self.v), list(self.w)),
         )
-        result = mesh["vectors"].T
+        result = mesh[NAME_VECTORS].T
         expected = np.array(
             [
                 [10.385, -29.006, -6.416, -41.658],
@@ -134,10 +134,8 @@ class TestVectors:
 
     def test_basic__2d_uv(self):
         """Check operation with only 2 input component arrays (no W)."""
-        mesh = Transform.from_points(
-            xs=self.lons, ys=self.lats, vectors=(self.u, self.v)
-        )
-        result = mesh["vectors"].T
+        mesh = Transform.from_points(self.lons, self.lats, vectors=(self.u, self.v))
+        result = mesh[NAME_VECTORS].T
         expected = np.array(
             [
                 [-4.331, -25.681, -5.13, -28.485],
@@ -150,12 +148,12 @@ class TestVectors:
     def test_crs(self):
         """Check operation with alternate latlon-type CRS."""
         mesh = Transform.from_points(
-            xs=self.lons,
-            ys=self.lats,
+            self.lons,
+            self.lats,
             vectors=(self.u, self.v),
             crs=self.crs_rotatedlatlon,
         )
-        result = mesh["vectors"].T
+        result = mesh[NAME_VECTORS].T
         expected = np.array(
             [
                 [-0.474, -17.651, -13.786, -32.429],
@@ -170,8 +168,8 @@ class TestVectors:
         msg = "Cannot determine wind directions : Target CRS type is not supported.*"
         with pytest.raises(ValueError, match=msg):
             _ = Transform.from_points(
-                xs=self.easting,
-                ys=self.northing,
+                self.easting,
+                self.northing,
                 vectors=(self.u, self.v),
                 crs=self.crs_northpolar,
             )
@@ -179,13 +177,13 @@ class TestVectors:
     def test__nonlatloncrs__truelatlon__vectorscrs(self):
         """Check ok with non-latlon CRS for points but latlon vectors."""
         mesh = Transform.from_points(
-            xs=self.easting,
-            ys=self.northing,
+            self.easting,
+            self.northing,
             vectors=(self.u, self.v),
             crs=self.crs_northpolar,
             vectors_crs=self.crs_truelatlon,
         )
-        result = mesh["vectors"].T
+        result = mesh[NAME_VECTORS].T
         expected = np.array(
             [
                 [4.722, -8.267, -9.112, -4.879],
@@ -198,12 +196,12 @@ class TestVectors:
     def test__latlon__vectorscrs(self):
         """Check operation with different specified CRS for vectors only."""
         mesh = Transform.from_points(
-            xs=self.lons,
-            ys=self.lats,
+            self.lons,
+            self.lats,
             vectors=(self.u, self.v),
             vectors_crs=self.crs_rotatedlatlon,
         )
-        result = mesh["vectors"].T
+        result = mesh[NAME_VECTORS].T
         expected = np.array(
             [
                 [-4.066, 25.821, -8.955, -38.46],
@@ -216,10 +214,10 @@ class TestVectors:
     def test__vectors_array_name(self):
         """Check operation with alternate vectors array name."""
         mesh = Transform.from_points(
-            xs=self.lons,
-            ys=self.lats,
+            self.lons,
+            self.lats,
             vectors=(self.u, self.v, self.w),
-            vectors_array_name="squiggle",
+            vectors_name="squiggle",
         )
         result = mesh["squiggle"].T
         expected = np.array(
