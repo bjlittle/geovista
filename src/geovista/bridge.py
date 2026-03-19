@@ -68,6 +68,9 @@ type PathLike = str | pathlib.Path
 type Shape = tuple[int, ...]
 """Type alias for a tuple of integers."""
 
+type VectorLike = tuple[ArrayLike, ArrayLike] | tuple[ArrayLike, ArrayLike, ArrayLike]
+"""Type alias for 2D or 3D vector components."""
+
 # constants
 BRIDGE_CLEAN: bool = False
 """Whether mesh cleaning performed by the bridge."""
@@ -628,9 +631,7 @@ class Transform:  # numpydoc ignore=PR01
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
-        vectors: (
-            tuple[ArrayLike, ArrayLike, ArrayLike] | tuple[ArrayLike, ArrayLike] | None
-        ) = None,
+        vectors: VectorLike | None = None,
         vectors_crs: CRSLike | None = None,
         vectors_name: str | None = None,
     ) -> pv.PolyData:
@@ -672,7 +673,7 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points. See
             :meth:`pyvista.PolyDataFilters.clean`. Defaults to
             :data:`BRIDGE_CLEAN`.
-        vectors : tuple(ArrayLike), optional
+        vectors : VectorLike, optional
             If present, a tuple of 2 or 3 arrays of the same shape as `xs` and `ys`.
             These give eastward, northward and (optionally) vertical vectors, which are
             converted to an [N, 3] array of 3-D vectors attached to the result as a
