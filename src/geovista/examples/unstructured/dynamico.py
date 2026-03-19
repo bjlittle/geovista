@@ -29,7 +29,8 @@ Note that a graticule and Natural Earth coastlines are also rendered.
 
     component: coastlines, component: graticule,
     domain: meteorology,
-    load: unstructured
+    load: unstructured,
+    version: 0.1.0
 
 ----
 

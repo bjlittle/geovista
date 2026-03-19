@@ -37,7 +37,8 @@ for further details.
 
     domain: oceanography,
     filter: warp,
-    load: unstructured
+    load: unstructured,
+    version: 0.1.0
 
 ----
 

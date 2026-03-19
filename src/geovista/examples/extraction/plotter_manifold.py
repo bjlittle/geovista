@@ -55,6 +55,7 @@ panel to reinforce the region of interest.
     filter: threshold,
     plot: anti-aliasing, plot: camera,
     sample: unstructured,
+    version: 0.6.0,
     widget: north-arrow
 
 ----

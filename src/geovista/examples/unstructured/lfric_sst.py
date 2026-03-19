@@ -29,7 +29,8 @@ base layer is also rendered along with Natural Earth coastlines and a graticule.
     component: coastlines, component: graticule, component: texture,
     domain: oceanography,
     filter: threshold,
-    load: unstructured
+    load: unstructured,
+    version: 0.1.0
 
 ----
 

@@ -30,7 +30,8 @@ azimuthal projection.
     component: coastlines, component: texture,
     domain: oceanography,
     load: unstructured,
-    projection: crs
+    projection: crs,
+    version: 0.1.0
 
 ----
 

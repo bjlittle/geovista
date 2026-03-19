@@ -28,7 +28,8 @@ Natural Earth base layer is rendered along with Natural Earth coastlines.
     component: coastlines, component: texture,
     domain: oceanography,
     load: unstructured,
-    filter: threshold
+    filter: threshold,
+    version: 0.1.0
 
 ----
 

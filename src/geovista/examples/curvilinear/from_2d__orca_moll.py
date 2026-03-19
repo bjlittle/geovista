@@ -31,7 +31,8 @@ resolution Natural Earth coastlines are also rendered.
     domain: oceanography,
     filter: cast, filter: extrude, filter: threshold,
     load: curvilinear,
-    projection: crs, projection: transform
+    projection: crs, projection: transform,
+    version: 0.1.0
 
 ----
 

@@ -36,7 +36,8 @@ and mesh is rendered in pink.
     filter: threshold,
     plot: camera, plot: subplots,
     sample: unstructured,
-    style: opacity
+    style: opacity,
+    version: 0.6.0
 
 ----
 

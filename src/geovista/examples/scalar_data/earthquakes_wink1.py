@@ -45,7 +45,8 @@ for further details.
     component: coastlines, component: graticule, component: texture,
     domain: seismology,
     load: points,
-    projection: crs
+    projection: crs,
+    version: 0.4.0
 
 .. attention::
 

@@ -74,6 +74,7 @@ For further information see https://github.com/uber/h3.
 
     component: coastlines, component: texture,
     load: unstructured,
+    version: 0.5.0,
     widget: checkbox
 
 .. attention::

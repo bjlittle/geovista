@@ -32,7 +32,8 @@ conformal cylindrical projection.
     domain: oceanography,
     filter: threshold,
     load: rectilinear,
-    projection: crs
+    projection: crs,
+    version: 0.1.0
 
 ----
 

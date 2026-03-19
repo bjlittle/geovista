@@ -29,7 +29,8 @@ coastlines.
 
     component: coastlines, component: texture,
     domain: oceanography,
-    load: unstructured
+    load: unstructured,
+    version: 0.1.0
 
 ----
 

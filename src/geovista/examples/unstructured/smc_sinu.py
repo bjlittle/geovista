@@ -31,7 +31,8 @@ projection.
     domain: oceanography,
     load: unstructured,
     filter: threshold,
-    projection: crs
+    projection: crs,
+    version: 0.1.0
 
 ----
 

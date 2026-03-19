@@ -32,7 +32,8 @@ projection.
     domain: oceanography,
     load: points,
     projection: crs,
-    style: opacity
+    style: opacity,
+    version: 0.3.0
 
 ----
 
