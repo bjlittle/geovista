@@ -41,7 +41,8 @@ is also rendered along with Natural Earth coastlines.
 
     component: coastlines, component: manifold, component: texture,
     domain: orography,
-    sample: unstructured
+    sample: unstructured,
+    version: 0.6.0
 
 ----
 

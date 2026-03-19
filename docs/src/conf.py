@@ -298,6 +298,7 @@ tags_badge_colors = {
     "resolution:*": "danger",
     "sample:*": "dark",
     "style:*": "light",
+    "version:*": "secondary",
     "widget:*": "info",
 }
 

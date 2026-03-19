@@ -31,7 +31,8 @@ masked points.
 .. tags::
 
     load: geotiff,
-    style: lighting
+    style: lighting,
+    version: 0.5.0
 
 .. attention::
 

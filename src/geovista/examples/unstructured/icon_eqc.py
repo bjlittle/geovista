@@ -30,7 +30,8 @@ to the Equidistant Cylindrical (Plate Carrée) conformal cylindrical projection.
     component: coastlines,
     load: unstructured,
     projection: crs,
-    style: colormap
+    style: colormap,
+    version: 0.1.0
 
 ----
 

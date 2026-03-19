@@ -28,7 +28,8 @@ coastlines.
 
     component: coastlines, component: texture,
     domain: meteorology,
-    load: unstructured
+    load: unstructured,
+    version: 0.1.0
 
 ----
 

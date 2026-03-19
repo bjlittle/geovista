@@ -31,7 +31,8 @@ mesh is also transformed to the Polyconic pseudo-conical projection.
     component: coastlines, component: graticule,
     domain: meteorology,
     load: unstructured,
-    projection: crs
+    projection: crs,
+    version: 0.1.0
 
 ----
 

@@ -29,7 +29,8 @@ NASA Blue Marble base layer is rendered along with Natural Earth coastlines.
     component: coastlines, component: texture,
     domain: oceanography,
     filter: threshold,
-    load: rectilinear
+    load: rectilinear,
+    version: 0.1.0
 
 ----
 

@@ -31,7 +31,8 @@ The mesh is also transformed to the Bonne projection.
     domain: oceanography,
     filter: threshold,
     load: unstructured,
-    projection: crs
+    projection: crs,
+    version: 0.1.0
 
 ----
 

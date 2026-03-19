@@ -33,7 +33,8 @@ for further details.
 
     domain: orography,
     filter: warp,
-    sample: unstructured
+    sample: unstructured,
+    version: 0.1.0
 
 ----
 

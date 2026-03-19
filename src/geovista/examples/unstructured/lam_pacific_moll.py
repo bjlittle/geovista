@@ -30,7 +30,8 @@ projection.
     component: coastlines, component: texture,
     domain: meteorology,
     load: unstructured,
-    projection: crs
+    projection: crs,
+    version: 0.1.0
 
 ----
 

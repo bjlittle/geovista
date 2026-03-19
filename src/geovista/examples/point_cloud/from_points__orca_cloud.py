@@ -29,7 +29,8 @@ Earth base layer with opacity.
     component: coastlines, component: texture,
     domain: oceanography,
     load: points,
-    style: opacity
+    style: opacity,
+    version: 0.2.0
 
 ----
 

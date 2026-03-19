@@ -21,7 +21,8 @@ A Natural Earth base layer is also rendered for geolocation context.
 .. tags::
 
     component: texture, component: vectors,
-    style: lighting
+    style: lighting,
+    version: 0.4.0
 
 ----
 

@@ -28,7 +28,8 @@ Note that Natural Earth coastlines are also rendered.
 
     component: coastlines,
     load: unstructured,
-    style: colormap
+    style: colormap,
+    version: 0.1.0
 
 ----
 

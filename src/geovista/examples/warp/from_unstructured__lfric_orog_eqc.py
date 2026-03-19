@@ -38,7 +38,8 @@ for further details.
     domain: orography,
     filter: warp,
     sample: unstructured,
-    projection: crs, projection: transform
+    projection: crs, projection: transform,
+    version: 0.1.0
 
 ----
 

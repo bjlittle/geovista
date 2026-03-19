@@ -48,6 +48,7 @@ the topography of Mount Fuji and its surrounding landscape.
     load: geotiff,
     plot: camera,
     style: shading,
+    version: 0.5.0,
     widget: logo
 
 .. attention::

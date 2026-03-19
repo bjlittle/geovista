@@ -36,7 +36,8 @@ coastlines.
     load: unstructured,
     projection: crs,
     resolution: high,
-    style: colormap, style: opacity
+    style: colormap, style: opacity,
+    version: 0.4.0
 
 ----
 
