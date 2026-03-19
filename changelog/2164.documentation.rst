@@ -1,0 +1,2 @@
+Added the new ``version`` `sphinx-tags`_ category.
+(:user:`bjlittle`)
