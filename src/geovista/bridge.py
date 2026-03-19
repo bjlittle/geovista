@@ -745,7 +745,7 @@ class Transform:  # numpydoc ignore=PR01
                 not isinstance(vectors, Iterable)  # type: ignore[redundant-expr]
                 or len(vectors) not in (2, 3)
             ):
-                emsg = "Keyword 'vectors' must be a tuple of 2 or 3 array-likes."
+                emsg = "'vectors' must be an iterable of 2 or 3 array-likes."
                 raise ValueError(emsg)
 
             # unpack vector components to UVW
