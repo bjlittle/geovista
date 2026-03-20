@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.pantry.data import lfric_winds
+import geovista.theme
 
 
 def main() -> None:

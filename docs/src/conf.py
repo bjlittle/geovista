@@ -423,6 +423,7 @@ numpydoc_xref_aliases = {
     "Preference": "geovista.common.Preference",
     "PolyData": "pyvista.PolyData",
     "Texture": "pyvista.Texture",
+    "VectorLike": "geovista.common.VectorLike",
 }
 numpydoc_xref_ignore = {"optional", "default", "of"}
 numpydoc_xref_param_type = True

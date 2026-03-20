@@ -40,6 +40,7 @@ import cartopy.crs as ccrs
 import numpy as np
 
 import geovista as gv
+import geovista.theme
 
 
 def main() -> None:
