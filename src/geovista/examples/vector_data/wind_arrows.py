@@ -65,7 +65,6 @@ def main() -> None:
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_mesh(arrows, cmap="inferno")
     p.add_graticule()
-    p.add_axes()
 
     # Define a specific camera position and orientation.
     cpos = pv.CameraPosition(
@@ -78,6 +77,8 @@ def main() -> None:
         viewup=(-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
     )
     p.camera.zoom(1.3)
+
+    p.add_axes()
     p.show(cpos=cpos)
 
 

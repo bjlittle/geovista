@@ -74,14 +74,17 @@ def main() -> None:
     p.add_mesh(mesh)
     p.add_base_layer(texture=gv.blue_marble())
     p.add_coastlines()
-    p.add_axes()
     p.add_text(
         f"NOAA/NCEI OISST AVHRR ({crs})",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.view_xy()
     p.camera.zoom(1.5)
+
+    p.add_axes()
     p.show()
 
 

@@ -67,14 +67,17 @@ def main() -> None:
     p.add_mesh(mesh, scalar_bar_args={"fmt": "%.0f"})
     p.add_coastlines()
     p.add_graticule()
-    p.add_axes()
     p.add_text(
         "DYNAMICO Icosahedral (10m Coastlines)",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.view_xz(negative=True)
     p.camera.zoom(1.3)
+
+    p.add_axes()
     p.show()
 
 

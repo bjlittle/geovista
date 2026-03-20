@@ -74,7 +74,6 @@ def main() -> None:
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_mesh(arrows, color="red")
     p.add_graticule()
-    p.add_axes()
 
     # Define a specific camera position and orientation.
     cpos = pv.CameraPosition(
@@ -82,6 +81,8 @@ def main() -> None:
         focal_point=(0.0, 0.0, 0.0028896447726441954),
         viewup=(-0.9809865744261353, -0.019981215106321615, 0.19304427429621296),
     )
+
+    p.add_axes()
     p.show(cpos=cpos)
 
 

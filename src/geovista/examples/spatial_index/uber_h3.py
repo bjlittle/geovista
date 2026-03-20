@@ -523,7 +523,10 @@ def main() -> None:
         font_size=10,
     )
     p.add_coastlines()
+
+    # Define a specific camera position.
     p.camera.zoom(1.5)
+
     p.show()
 
 

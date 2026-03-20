@@ -75,14 +75,17 @@ def main() -> None:
     p = gv.GeoPlotter(crs=crs)
     sargs = {"title": "Surface Altitude / m", "fmt": "%.0f"}
     p.add_mesh(mesh, scalar_bar_args=sargs)
-    p.add_axes()
     p.add_text(
         f"LFRic C48 Unstructured Cube-Sphere ({crs})",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.view_xy()
     p.camera.zoom(1.5)
+
+    p.add_axes()
     p.show()
 
 

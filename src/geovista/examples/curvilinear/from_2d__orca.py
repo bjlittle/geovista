@@ -69,13 +69,16 @@ def main() -> None:
     p.add_mesh(mesh)
     p.add_base_layer(texture=gv.natural_earth_1())
     p.add_coastlines()
-    p.add_axes()
     p.add_text(
         "ORCA (10m Coastlines)",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.camera.zoom(1.3)
+
+    p.add_axes()
     p.show()
 
 

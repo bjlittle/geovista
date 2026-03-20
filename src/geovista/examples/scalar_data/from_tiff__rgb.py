@@ -68,14 +68,17 @@ def main() -> None:
     mesh = gv.Transform.from_tiff(fname, rgb=True, sieve=True, extract=True)
 
     p.add_mesh(mesh, lighting=False, rgb=True)
-    p.add_axes()
     p.add_text(
         "Bahamas, RGB GeoTIFF",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.view_xz()
     p.camera.zoom(1.3)
+
+    p.add_axes()
     p.show()
 
 
