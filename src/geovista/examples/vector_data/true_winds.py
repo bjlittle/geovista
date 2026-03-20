@@ -30,6 +30,15 @@ Please refer to other code examples, e.g.
 :ref:`Wind Arrows Plot <sphx_glr_generated_gallery_vector_data_wind_arrows.py>`
 for more details of the basic methods used.
 
+.. tags::
+
+    component: graticule, component: texture, component: vectors,
+    domain: meteorology,
+    filter: glyph,
+    version: 0.6.0
+
+----
+
 """  # noqa: D205,D212,D400
 
 from __future__ import annotations

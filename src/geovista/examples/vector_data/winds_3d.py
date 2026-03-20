@@ -31,6 +31,17 @@ Here, we display 3-dimensional wind arrows.
 We have amplified the "W" components by a considerable factor, which is typical since
 vertical winds are generally much smaller in magnitude and otherwise tend to be not
 very visible.
+
+.. tags::
+
+    component: graticule, component: texture, component: vectors,
+    domain: meteorology,
+    filter: glyph,
+    load: vectors,
+    version: 0.6.0
+
+----
+
 """  # noqa: D205,D212,D400
 
 from __future__ import annotations
@@ -68,7 +79,6 @@ def main() -> None:
     p.add_graticule()
 
     # Define a specific camera position and orientation.
-    p.camera.zoom(1.3)
     cpos = pv.CameraPosition(
         position=(0.6917810912064826, -3.065688850990997, 0.4317999141924935),
         focal_point=(0.41358279170396495, 0.07362917740509836, 0.5091223320854129),

@@ -28,6 +28,17 @@ The arrows themselves are created from this mesh via the
 
 In this example we display flow arrows of a fixed length, showing direction
 only, but with a colour scale indicating magnitude.
+
+.. tags::
+
+    component: graticule, component: texture, component: vectors,
+    domain: meteorology,
+    filter: glyph,
+    load: vectors,
+    version: 0.6.0
+
+----
+
 """  # noqa: D205,D212,D400
 
 from __future__ import annotations

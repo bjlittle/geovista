@@ -32,6 +32,17 @@ The arrows themselves are created from this mesh via the
 :meth:`pyvista.DataSetFilters.glyph` method.
 
 Here we show just horizontal winds (U, V), which are usually of the most interest.
+
+.. tags::
+
+    component: graticule, component: texture, component: vectors,
+    domain: meteorology,
+    filter: glyph,
+    load: vectors,
+    version: 0.6.0
+
+----
+
 """  # noqa: D205,D212,D400
 
 from __future__ import annotations
