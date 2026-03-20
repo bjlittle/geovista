@@ -32,6 +32,8 @@ only, but with a colour scale indicating magnitude.
 
 from __future__ import annotations
 
+import pyvista as pv
+
 import geovista as gv
 from geovista.pantry.data import lfric_winds
 import geovista.theme
@@ -56,14 +58,18 @@ def main() -> None:
     p.add_graticule()
     p.add_axes()
 
+    # Define a specific camera position and orientation.
+    cpos = pv.CameraPosition(
+        position=(-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
+        focal_point=(
+            -0.0037798285484313965,
+            0.005168497562408447,
+            -0.0031679868698120117,
+        ),
+        viewup=(-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
+    )
     p.camera.zoom(1.3)
-    selected_view = [
-        (-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
-        (-0.0037798285484313965, 0.005168497562408447, -0.0031679868698120117),
-        (-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
-    ]
-    p.camera_position = selected_view
-    p.show()
+    p.show(cpos=cpos)
 
 
 if __name__ == "__main__":

@@ -36,6 +36,8 @@ Here we show just horizontal winds (U, V), which are usually of the most interes
 
 from __future__ import annotations
 
+import pyvista as pv
+
 import geovista as gv
 from geovista.pantry.data import lfric_winds
 import geovista.theme
@@ -60,21 +62,23 @@ def main() -> None:
 
     # Add the arrows to a Plotter with other aspects, and display
     p = gv.GeoPlotter()
-    # Scale the base layer slightly to ensure it remains 'below' other elements.
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_mesh(arrows, cmap="inferno")
     p.add_graticule()
     p.add_axes()
 
-    # Set up a nice default view
-    p.camera.zoom(1.3)  # adjusts the camera view angle
-    selected_view = [
-        (-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
-        (-0.0037798285484313965, 0.005168497562408447, -0.0031679868698120117),
-        (-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
-    ]
-    p.camera_position = selected_view
-    p.show()
+    # Define a specific camera position and orientation.
+    cpos = pv.CameraPosition(
+        position=(-4.0688208659033505, -2.5462610064466777, -2.859304866708606),
+        focal_point=(
+            -0.0037798285484313965,
+            0.005168497562408447,
+            -0.0031679868698120117,
+        ),
+        viewup=(-0.523382090763761, -0.11174892277533728, 0.8447386372874786),
+    )
+    p.camera.zoom(1.3)
+    p.show(cpos=cpos)
 
 
 if __name__ == "__main__":

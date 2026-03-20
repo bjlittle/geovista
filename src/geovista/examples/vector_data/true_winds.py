@@ -38,6 +38,7 @@ from __future__ import annotations
 #  (which we can translate into PROJ via the .to_wkt() method)
 import cartopy.crs as ccrs
 import numpy as np
+import pyvista as pv
 
 import geovista as gv
 import geovista.theme
@@ -70,20 +71,18 @@ def main() -> None:
 
     # Add the arrows to a Plotter with other aspects, and display
     p = gv.GeoPlotter()
-    # Scale the base layer slightly to ensure it remains 'below' other elements.
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_mesh(arrows, color="red")
     p.add_graticule()
     p.add_axes()
 
-    # Set up a nice default view
-    selected_view = [
-        (0.6037050543418041, -0.011033743353827528, 3.069575190259155),
-        (0.0, 0.0, 0.0028896447726441954),
-        (-0.9809865744261353, -0.019981215106321615, 0.19304427429621296),
-    ]
-    p.camera_position = selected_view
-    p.show()
+    # Define a specific camera position and orientation.
+    cpos = pv.CameraPosition(
+        position=(0.6037050543418041, -0.011033743353827528, 3.069575190259155),
+        focal_point=(0.0, 0.0, 0.0028896447726441954),
+        viewup=(-0.9809865744261353, -0.019981215106321615, 0.19304427429621296),
+    )
+    p.show(cpos=cpos)
 
 
 if __name__ == "__main__":

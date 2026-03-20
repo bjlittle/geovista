@@ -35,6 +35,8 @@ very visible.
 
 from __future__ import annotations
 
+import pyvista as pv
+
 import geovista as gv
 from geovista.pantry.data import lfric_winds
 import geovista.theme
@@ -61,7 +63,6 @@ def main() -> None:
 
     # Add the arrows to a Plotter with other aspects, and display
     p = gv.GeoPlotter()
-    # Scale the base layer slightly to ensure it remains 'below' other elements.
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_mesh(arrows, cmap="inferno")
     p.add_graticule()
@@ -69,13 +70,13 @@ def main() -> None:
 
     # Set up a suitable camera view
     p.camera.zoom(1.3)
-    selected_view = [
-        (0.6917810912064826, -3.065688850990997, 0.4317999141924935),
-        (0.41358279170396495, 0.07362917740509836, 0.5091223320854129),
-        (0.8088496364623022, 0.05726400555597287, 0.5852205560833343),
-    ]
-    p.camera_position = selected_view
-    p.show()
+    cpos = pv.CameraPosition(
+        position=(0.6917810912064826, -3.065688850990997, 0.4317999141924935),
+        focal_point=(0.41358279170396495, 0.07362917740509836, 0.5091223320854129),
+        viewup=(0.8088496364623022, 0.05726400555597287, 0.5852205560833343),
+    )
+    p.camera.zoom(1.3)
+    p.show(cpos=cpos)
 
 
 if __name__ == "__main__":
