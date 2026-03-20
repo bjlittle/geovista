@@ -62,9 +62,8 @@ def main() -> None:
     # Add the arrows to a Plotter with other aspects, and display
     p = gv.GeoPlotter()
     # Scale the base layer slightly to ensure it remains 'below' other elements.
-    p.add_base_layer(radius=0.99)
+    p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_mesh(arrows, cmap="inferno")
-    p.add_coastlines()
     p.add_graticule()
     p.add_axes()
 

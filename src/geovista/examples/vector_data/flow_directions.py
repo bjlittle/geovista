@@ -51,9 +51,8 @@ def main() -> None:
     arrows = mesh.glyph(factor=0.1, scale=False)
 
     p = gv.GeoPlotter()
-    p.add_base_layer()
+    p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_mesh(arrows, cmap="magma")
-    p.add_coastlines()
     p.add_graticule()
     p.add_axes()
 
