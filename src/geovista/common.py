@@ -59,6 +59,9 @@ __all__ = [
     "ZTRANSFORM_FACTOR",
     "Preference",
     "StrEnumPlus",
+    "Vector2DLike",
+    "Vector3DLike",
+    "VectorLike",
     "active_kernel",
     "cast_UnstructuredGrid_to_PolyData",
     "distance",
@@ -78,6 +81,15 @@ __all__ = [
     "vtk_warnings_on",
     "wrap",
 ]
+
+type Vector2DLike = tuple[ArrayLike, ArrayLike]
+"""Type alias for 2D vector components."""
+
+type Vector3DLike = tuple[ArrayLike, ArrayLike, ArrayLike]
+"""Type alias for 3D vector components."""
+
+type VectorLike = Vector2DLike | Vector3DLike
+"""Type alias for 2D or 3D vector components."""
 
 # TODO @bjlittle: support richer default management
 
@@ -830,21 +842,25 @@ def to_cartesian(
 def vectors_to_cartesian(
     lons: ArrayLike,
     lats: ArrayLike,
-    vectors_uvw: tuple[ArrayLike, ArrayLike, ArrayLike],
+    vectors: Vector3DLike,
+    *,
     radius: float | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Transform geographic-oriented vector components to cartesian ``xyz`` components.
+) -> Vector3DLike:
+    """Transform geographic-oriented vector components ``uvw`` to cartesian ``xyz``.
 
     Parameters
     ----------
-    lons, lats : ArrayLike
-        The longitude + latitude locations of the vectors (in degrees).
-        Both shapes must be the same.
-    vectors_uvw : tuple of ArrayLike
-        The eastward, northward and upward vector components.
-        All shapes must be the same as ``lons`` and ``lats``.
+    lons : ArrayLike
+        The longitude points of the `vectors` (in degrees). Must be the same
+        shape as `lats`.
+    lats : ArrayLike
+        The latitude points of the `vectors` (in degrees). Must be the same
+        shape as `lons`.
+    vectors : Vector3DLike
+        The eastward (``U``), northward (``V``) and upward (``W``) vector components.
+        All shapes must be the same as `lons` and `lats`.
     radius : float, optional
         The radius of the sphere. Defaults to :data:`RADIUS`.
     zlevel : int  or :data:`~numpy.typing.ArrayLike`, default=0.0
@@ -859,12 +875,12 @@ def vectors_to_cartesian(
 
     Returns
     -------
-    (ndarray, ndarray, ndarray)
+    Vector3DLike
         The corresponding ``xyz`` cartesian vector components.
 
     Notes
     -----
-    .. versionadded:: 0.5.0
+    .. versionadded:: 0.6.0
 
     """
     radius = RADIUS if radius is None else abs(float(radius))
@@ -886,15 +902,15 @@ def vectors_to_cartesian(
         msg = f"'lons' and 'lats' do not have same shape: {lons.shape} != {lats.shape}."
         raise ValueError(msg)
 
-    if any(x.shape != lons.shape for x in vectors_uvw):
+    if any(x.shape != lons.shape for x in vectors):
         msg = (
             "some of 'vectors_uvw' do not have same shape as lons : "
-            f"{(x.shape for x in vectors_uvw)} != {lons.shape}."
+            f"{(x.shape for x in vectors)} != {lons.shape}."
         )
         raise ValueError(msg)
 
     lons, lats = (np.deg2rad(arr) for arr in (lons, lats))
-    u, v, w = vectors_uvw
+    u, v, w = vectors
 
     coslons = np.cos(lons)
     sinlons = np.sin(lons)

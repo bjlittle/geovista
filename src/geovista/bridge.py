@@ -32,6 +32,7 @@ from .common import (
     GV_FIELD_ZSCALE,
     RADIUS,
     ZLEVEL_SCALE,
+    VectorLike,
     cast_UnstructuredGrid_to_PolyData,
     nan_mask,
     to_cartesian,
@@ -67,9 +68,6 @@ type PathLike = str | pathlib.Path
 
 type Shape = tuple[int, ...]
 """Type alias for a tuple of integers."""
-
-type VectorLike = tuple[ArrayLike, ArrayLike] | tuple[ArrayLike, ArrayLike, ArrayLike]
-"""Type alias for 2D or 3D vector components."""
 
 # constants
 BRIDGE_CLEAN: bool = False
@@ -637,8 +635,8 @@ class Transform:  # numpydoc ignore=PR01
     ) -> pv.PolyData:
         """Build a point-cloud mesh from x-values, y-values and z-levels.
 
-        Note that any optional mesh `data` provided must be in the same order as the
-        spatial points.
+        Note that optional mesh `data` or `vectors` must be in the same order
+        as the spatial points.
 
         Parameters
         ----------
@@ -674,26 +672,27 @@ class Transform:  # numpydoc ignore=PR01
             :meth:`pyvista.PolyDataFilters.clean`. Defaults to
             :data:`BRIDGE_CLEAN`.
         vectors : VectorLike, optional
-            If present, a tuple of 2 or 3 arrays of the same shape as `xs` and `ys`.
-            These give eastward, northward and (optionally) vertical vectors, which are
-            converted to an [N, 3] array of 3-D vectors attached to the result as a
-            points array ``mesh["vectors"]``.  This can be used to generate glyphs
-            (such as arrows) and streamlines.
+            A tuple of 2 or 3 arrays of the same shape as `xs` and `ys`.
+            These give eastward (``U``), northward (``V``) and optionally
+            upward (``W``) vector components, which are converted to an ``[N, 3]``
+            array of 3D vectors and attached to the resultant mesh, see
+            `vectors_name`. This can be used to generate glyphs (such as arrows)
+            and streamlines.
         vectors_crs : CRSLike, optional
             The Coordinate Reference System of the provided `vectors`. May be anything
             accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults to the same
-            as 'crs'.  Note that `vectors_crs` only specifies **horizontal orientation**
-            of the vectors : their magnitudes are always spatial distance, and the Z
-            component is always radial (i.e. "upwards").
+            as `crs`.  Note that `vectors_crs` only specifies horizontal orientation
+            of the vectors. Their magnitudes are always spatial distance, and the
+            vertical component is always radial (i.e., "upwards").
         vectors_name : str, optional
-            The name of the optional vectors array to be attached to the mesh. If
+            The name of the vectors array to be attached to the mesh. If
             `vectors` is provided but with no `vectors_name`, defaults to
             :data:`NAME_VECTORS`.
 
         Returns
         -------
         PolyData
-            The point-cloud spherical mesh.
+            The point-cloud mesh with optional vectors attached.
 
         Notes
         -----
@@ -822,7 +821,7 @@ class Transform:  # numpydoc ignore=PR01
             #              the inputs (and xyz)? Not clear if multidimensional
             #              input is used or needed
             xx, yy, zz = vectors_to_cartesian(
-                lons=vector_xs, lats=vector_ys, vectors_uvw=(us, vs, ws)
+                lons=vector_xs, lats=vector_ys, vectors=(us, vs, ws)
             )
             mesh_vectors = np.vstack((xx, yy, zz)).T
 
