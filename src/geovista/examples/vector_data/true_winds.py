@@ -86,9 +86,9 @@ def main() -> None:
 
     # Define a specific camera position and orientation.
     cpos = pv.CameraPosition(
-        position=(0.6037050543418041, -0.011033743353827528, 3.069575190259155),
-        focal_point=(0.0, 0.0, 0.0028896447726441954),
-        viewup=(-0.9809865744261353, -0.019981215106321615, 0.19304427429621296),
+        position=(0.60371, -0.01103, 3.06958),
+        focal_point=(0.0, 0.0, 0.00289),
+        viewup=(-0.98099, -0.01998, 0.19304),
     )
 
     p.add_axes()
