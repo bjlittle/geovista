@@ -51,7 +51,13 @@ import geovista.theme
 
 
 def main() -> None:
-    """Demonstrate a flow direction plot with fixed-length arrows."""
+    """Demonstrate a flow direction plot with fixed-length arrows.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
     # get sample data
     sample = lfric_winds()
 

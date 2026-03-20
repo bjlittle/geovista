@@ -996,7 +996,7 @@ def lfric_winds() -> SampleVectorsXYUVW:
 
     Notes
     -----
-    .. versionadded:: 0.5.0
+    .. versionadded:: 0.6.0
 
     """
     fname = "lfric_winds_sample.nc"

@@ -54,7 +54,13 @@ import geovista.theme
 
 
 def main() -> None:
-    """Demonstrate plotting vectors on different CRS from points."""
+    """Demonstrate plotting vectors on different CRS from points.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
     # Create a mesh of individual points, adding vectors at each point.
     # NOTE: this creates a mesh with 'mesh vectors' : a specific concept in PyVista.
 

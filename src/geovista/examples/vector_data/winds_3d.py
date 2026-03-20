@@ -54,7 +54,13 @@ import geovista.theme
 
 
 def main() -> None:
-    """Demonstrate 3-dimensional wind arrows plotting."""
+    """Demonstrate 3-dimensional wind arrows plotting.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
     # get sample data
     sample = lfric_winds()
 
