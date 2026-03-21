@@ -32,7 +32,7 @@ The wind arrows are generated from this point cloud mesh via the
 colour relative to the magnitude of its associated wind vector.
 
 Note that, we only use the horizontal winds (``U`` and ``V``) in this example,
-which is usually of most common use case.
+which is the most common use case.
 
 .. seealso::
     :class: dropdown, toggle-shown
@@ -62,7 +62,7 @@ import geovista.theme
 
 
 def main() -> None:
-    """Plot scaled horizontal wind arrows.
+    """Plot scaled horizontal wind arrows (UV).
 
     Notes
     -----

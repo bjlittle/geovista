@@ -8,29 +8,32 @@
 Wind Arrows 3D
 --------------
 
-This example demonstrates how to plot 3D wind vectors.
+This example demonstrates how to render 3D wind vectors.
 
 📋 Summary
 ^^^^^^^^^^
 
-The data source provides X and Y arrays containing plain longitude and
-latitude values, which is the most common case.
+The sample data contains a longitude and latitude point cloud, along with sample
+winds provided in the form of three separate eastward (``U``), northward (``V``),
+and upward (``W``) vector components.
 
-3D wind components are provided in three separate field arrays, 'U, V and W',
-i.e. eastward, northward and vertical components.
+The vector components are measured relative to each spatial sample point in the
+point cloud.
 
-There is no connectivity provided, so each location has its own attached vector, and is
-independent of the others.  We use the :meth:`geovista.bridge.Transform.from_points`
-method, passing the winds to the ``vectors`` keyword, producing a mesh of scattered
-points with attached vectors.
+No connectivity is provided within the sample data, so each point is a
+separate location in a field of scattered points, and each point has an
+associated wind vector independent of the others. We use the
+:meth:`geovista.bridge.Transform.from_points` method, passing the winds with
+the ``vectors`` keyword, along with the associated sample points to generate
+a point cloud mesh with attached vectors.
 
-The arrows themselves are created from this mesh via the
-:meth:`pyvista.DataSetFilters.glyph` method.
+The wind arrows are generated from this point cloud mesh via the
+:meth:`pyvista.DataSetFilters.glyph` method, which scales each arrow in size and
+colour relative to the magnitude of its associated wind vector.
 
-Here, we display 3-dimensional wind arrows.
-We have amplified the "W" components by a considerable factor, which is typical since
-vertical winds are generally much smaller in magnitude and otherwise tend to be not
-very visible.
+Note that, we use all 3 wind components and amplify the upward (``W``) vector
+component by a considerable factor for illustrative purposes. Vertical winds are
+generally much smaller in magnitude, and tend not to be very visible otherwise.
 
 .. tags::
 
@@ -54,31 +57,37 @@ import geovista.theme
 
 
 def main() -> None:
-    """Demonstrate 3-dimensional wind arrows plotting.
+    """Plot 3D wind arrows (UVW).
 
     Notes
     -----
     .. versionadded:: 0.6.0
 
     """
-    # get sample data
+    # Load the sample data.
     sample = lfric_winds()
 
-    # Create a mesh of individual points, adding vectors at each point.
+    # Provide all three components, but with exaggerated upwards scaling bias.
+    vectors = (sample.u, sample.v, sample.w * 1500.0)
+
+    # Create the point cloud mesh with attached wind vectors from the
+    # sample eastward (u), northward (v), and upward (w) components.
     mesh = gv.Transform.from_points(
         sample.lons,
         sample.lats,
-        # supply all three components, but with a big extra scaling on the "W" values
-        vectors=(sample.u, sample.v, sample.w * 1500.0),
-        # offset from surface to avoid downward-pointing arrows disappearing
+        vectors=vectors,
         radius=1.1,
     )
 
     # Create a new mesh containing arrow glyphs, from the mesh vectors.
     # NOTE: choose an overall scaling factor to make the arrows a reasonable size.
+
+    # Generate a mesh containing arrow glyphs from the wind vectors. Apply an
+    # overall scaling factor to make the arrows a reasonable size, and colour
+    # the arrows relative to their associated vector magnitude.
     arrows = mesh.glyph(factor=0.02, color_mode="vector")
 
-    # Add the arrows to a Plotter with other aspects, and display
+    # Now render the plotter scene.
     p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(arrows, cmap="inferno", scalar_bar_args=sargs)

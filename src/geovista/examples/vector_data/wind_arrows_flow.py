@@ -35,7 +35,7 @@ Rendering with fixed-length arrows highlights the wind flow and direction,
 leaving colour alone to indicate magnitude.
 
 Note that, we only use the horizontal winds (``U`` and ``V``) in this example,
-which is usually of most common use case.
+which is the most common use case.
 
 .. seealso::
     :class: dropdown, toggle-shown
@@ -65,7 +65,7 @@ import geovista.theme
 
 
 def main() -> None:
-    """Plot fixed-length horizontal wind arrows.
+    """Plot fixed-length horizontal wind arrows (UV).
 
     Notes
     -----
