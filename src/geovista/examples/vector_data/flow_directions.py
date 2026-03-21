@@ -67,11 +67,12 @@ def main() -> None:
         vectors=(sample.u, sample.v),
     )
     # Note: with "scale=False", arrow size is fixed and controlled by "factor".
-    arrows = mesh.glyph(factor=0.1, scale=False)
+    arrows = mesh.glyph(factor=0.1, scale=False, color_mode="vector")
 
     p = gv.GeoPlotter()
     p.add_base_layer(texture=gv.natural_earth_hypsometric())
-    p.add_mesh(arrows, cmap="magma")
+    sargs = {"title": f"{sample.name} / {sample.units}"}
+    p.add_mesh(arrows, cmap="magma", scalar_bar_args=sargs)
     p.add_graticule()
 
     # Define a specific camera position and orientation.
