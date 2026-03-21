@@ -821,7 +821,12 @@ class Transform:  # numpydoc ignore=PR01
             #              the inputs (and xyz)? Not clear if multidimensional
             #              input is used or needed
             xx, yy, zz = vectors_to_cartesian(
-                lons=vector_xs, lats=vector_ys, vectors=(us, vs, ws)
+                lons=vector_xs,
+                lats=vector_ys,
+                vectors=(us, vs, ws),
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
             )
             mesh_vectors = np.vstack((xx, yy, zz)).T
 
