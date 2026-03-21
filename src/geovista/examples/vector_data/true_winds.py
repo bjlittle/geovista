@@ -20,16 +20,12 @@ synthetic vector values to them, representing wind data. These data are presente
 not related to the foreign sample points grid. This is a fairly typical real world
 use case.
 
-In this example, a synthetic eastward wind with a constant ``4.0 ms-1`` is generated
-everywhere, so the effect is clearly visible.
+A synthetic eastward wind with a constant ``4.0 ms-1`` is generated everywhere,
+so the final effect is clearly visible.
 
 We use the :meth:`geovista.bridge.Transform.from_points` method, passing the
 winds to the ``vectors`` keyword, and specifying the different CRS of both the
 sample points (``crs``) and the vectors (``vectors_crs``).
-
-Please refer to other vector examples, e.g.,
-:ref:`Wind Arrows <sphx_glr_generated_gallery_vector_data_wind_arrows.py>`
-for more details of the basic methods used.
 
 .. tags::
 
@@ -75,12 +71,12 @@ def main() -> None:
     xs, ys = xs.flatten(), ys.flatten()
     us, vs = 4.0 * np.ones_like(xs), np.zeros_like(ys)
 
-    # Create the mesh with attached vectors.
+    # Create the point cloud mesh with attached wind vectors.
     mesh = gv.Transform.from_points(
         xs, ys, vectors=(us, vs), crs=crs_polar, vectors_crs=crs_latlon
     )
 
-    # Generate a new mesh containing arrow glyphs from the mesh vectors.
+    # Generate a mesh containing arrow glyphs from the wind vectors.
     arrows = mesh.glyph(factor=0.02)
 
     # Now render the plotter scene.

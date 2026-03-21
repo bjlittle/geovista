@@ -8,30 +8,37 @@
 Wind Arrows
 -----------
 
-This example demonstrates how to display horizontal winds.
+This example demonstrates how to render scaled horizontal wind arrows.
 
 📋 Summary
 ^^^^^^^^^^
 
-The data source provides X and Y arrays containing plain longitude and
-latitude values, which is the most common case.
+The sample data contains a longitude and latitude point cloud, along with sample
+winds provided in the form of three separate eastward (``U``), northward (``V``),
+and upward (``W``) vector components.
 
-The wind information is provided in three separate field arrays, 'U, V and W',
-i.e. eastward, northward and vertical components.
+The vector components are measured relative to each spatial sample point in the
+point cloud.
 
-These values are coded for each location (X, Y), measured relative to the longitude,
-latitude and vertical directions at each point.
+No connectivity is provided within the sample data, so each point is a
+separate location in a field of scattered points, and each point has an
+associated wind vector independent of the others. We use the
+:meth:`geovista.bridge.Transform.from_points` method, passing the winds with
+the ``vectors`` keyword, along with the associated sample points to generate
+a point cloud mesh with attached vectors.
 
-There is no connectivity provided, so each point is a separate location in a mesh of
-scattered points, and each point has an associated vector value independent of
-the others.  We use the :meth:`geovista.bridge.Transform.from_points` method, passing
-the winds to the ``vectors`` keyword, producing a mesh of scattered points with
-attached vectors.
+The wind arrows are generated from this point cloud mesh via the
+:meth:`pyvista.DataSetFilters.glyph` method, which scales each arrow in size and
+colour relative to the magnitude of its associated wind vector.
 
-The arrows themselves are created from this mesh via the
-:meth:`pyvista.DataSetFilters.glyph` method.
+Note that, we only use the horizontal winds (``U`` and ``V``) in this example,
+which is usually of most common use case.
 
-Here we show just horizontal winds (U, V), which are usually of the most interest.
+.. seealso::
+    :class: dropdown, toggle-shown
+
+    :ref:`sphx_glr_generated_gallery_vector_data_wind_arrows_flow.py` for an
+    example of rendering **fixed-length** horizontal wind arrows.
 
 .. tags::
 
@@ -55,29 +62,30 @@ import geovista.theme
 
 
 def main() -> None:
-    """Demonstrate horizontal wind arrows plotting.
+    """Plot scaled horizontal wind arrows.
 
     Notes
     -----
     .. versionadded:: 0.6.0
 
     """
-    # get sample data
+    # Load the sample data.
     sample = lfric_winds()
 
-    # Create a mesh of individual points, adding vectors at each point.
-    # NOTE: this creates a mesh with 'mesh vectors' : a specific concept in PyVista.
+    # Create the point cloud mesh with attached horizontal wind vectors
+    # from the sample eastward (u) and northward (v) components.
     mesh = gv.Transform.from_points(
         sample.lons,
         sample.lats,
         vectors=(sample.u, sample.v),
     )
 
-    # Create a new mesh containing arrow glyphs, from the mesh vectors.
-    # NOTE: apply an overall scaling factor to make the arrows a reasonable size.
+    # Generate a mesh containing arrow glyphs from the wind vectors. Apply an
+    # overall scaling factor to make the arrows a reasonable size, and colour
+    # the arrows relative to their associated vector magnitude.
     arrows = mesh.glyph(factor=0.02, color_mode="vector")
 
-    # Add the arrows to a Plotter with other aspects, and display
+    # Now render the plotter scene.
     p = gv.GeoPlotter()
     sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(arrows, cmap="inferno", scalar_bar_args=sargs)
