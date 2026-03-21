@@ -5,8 +5,8 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-Wind Arrows Plot
-----------------
+Wind Arrows
+-----------
 
 This example demonstrates how to display horizontal winds.
 
@@ -79,9 +79,9 @@ def main() -> None:
 
     # Add the arrows to a Plotter with other aspects, and display
     p = gv.GeoPlotter()
-    p.add_base_layer(texture=gv.natural_earth_hypsometric())
     sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(arrows, cmap="inferno", scalar_bar_args=sargs)
+    p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_graticule()
 
     # Define a specific camera position and orientation.

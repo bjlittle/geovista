@@ -5,8 +5,8 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-"True" Winds on a Foreign Grid
-------------------------------
+True Winds (Foreign Grid)
+-------------------------
 
 This example demonstrates how to display "true" winds, when attached to data points
 given in a non-standard coordinate system.
@@ -86,8 +86,8 @@ def main() -> None:
 
     # Add the arrows to a Plotter with other aspects, and display
     p = gv.GeoPlotter()
-    p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_mesh(arrows, color="red")
+    p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_graticule()
 
     # Define a specific camera position and orientation.

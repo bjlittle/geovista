@@ -5,7 +5,7 @@
 # See the LICENSE file in the package root directory for licensing details.
 
 """
-3D Wind Arrows
+Wind Arrows 3D
 --------------
 
 This example demonstrates how to plot 3D wind vectors.
@@ -80,9 +80,9 @@ def main() -> None:
 
     # Add the arrows to a Plotter with other aspects, and display
     p = gv.GeoPlotter()
-    p.add_base_layer(texture=gv.natural_earth_hypsometric())
     sargs = {"title": f"{sample.name} / {sample.units}"}
     p.add_mesh(arrows, cmap="inferno", scalar_bar_args=sargs)
+    p.add_base_layer(texture=gv.natural_earth_hypsometric())
     p.add_graticule()
 
     # Define a specific camera position and orientation.
