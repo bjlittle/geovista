@@ -904,8 +904,8 @@ def vectors_to_cartesian(
 
     if any(x.shape != lons.shape for x in vectors):
         msg = (
-            "some of 'vectors_uvw' do not have same shape as lons : "
-            f"{(x.shape for x in vectors)} != {lons.shape}."
+            "some 'vectors' do not have same shape as 'lons' : "
+            f"{[x.shape for x in vectors]} != {lons.shape}."
         )
         raise ValueError(msg)
 
