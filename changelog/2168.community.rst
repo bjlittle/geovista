@@ -1,0 +1,3 @@
+Added :user:`pp-mo` as a contributor for ``code``, ``data``, ``example``,
+``talk``, ``test``, and ``promotion``.
+(:user:`bjlittle`)
