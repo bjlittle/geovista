@@ -110,9 +110,9 @@ from numpy import ma
 from numpy.typing import ArrayLike
 from pyvista import Actor, PolyData
 
-import geovista
+import geovista as gv
 from geovista.geodesic import line
-import geovista.theme  # noqa: F401
+import geovista.theme
 
 # %%
 # As a convenience, we create some **type aliases** and **data containers**
@@ -341,7 +341,7 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
     # Create the mesh from the H3 geometry and topology.
     connectivity = ma.masked_equal(connectivity, MDI)
 
-    return geovista.Transform.from_unstructured(lons, lats, connectivity=connectivity)
+    return gv.Transform.from_unstructured(lons, lats, connectivity=connectivity)
 
 
 # %%
@@ -355,9 +355,7 @@ def to_mesh(h3indexes: H3Indexes) -> PolyData:
 # * The next 3 child resolution meshes (increasingly finer).
 
 
-def add_checkboxes(
-    plotter: geovista.GeoPlotter, colors: H3Asset, actors: H3Asset
-) -> None:
+def add_checkboxes(plotter: gv.GeoPlotter, colors: H3Asset, actors: H3Asset) -> None:
     """Render the checkbox for each ``H3Asset``.
 
     A checkbox is created for each actor that allows the
@@ -456,14 +454,14 @@ def main() -> None:
 
     # Create the icosahedron surface.
     surface = generate_icosahedron_surface()
-    icosahedron = geovista.Transform.from_unstructured(
+    icosahedron = gv.Transform.from_unstructured(
         surface.lons, surface.lats, connectivity=surface.connectivity
     )
 
-    p = geovista.GeoPlotter()
+    p = gv.GeoPlotter()
     style = "wireframe"
     actor_base_layer = p.add_base_layer(
-        texture=geovista.natural_earth_hypsometric(), zlevel=0
+        texture=gv.natural_earth_hypsometric(), zlevel=0
     )
     actor_resolution_0 = p.add_mesh(
         mesh_resolution_0,
@@ -525,7 +523,10 @@ def main() -> None:
         font_size=10,
     )
     p.add_coastlines()
+
+    # Define a specific camera position.
     p.camera.zoom(1.5)
+
     p.show()
 
 

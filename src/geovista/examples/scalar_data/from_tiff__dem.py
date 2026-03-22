@@ -94,7 +94,6 @@ def main() -> None:
     sargs = {"fmt": "%.1f"}
     p.add_mesh(mesh, cmap="speed_r", scalar_bar_args=sargs, smooth_shading=True)
     p.add_logo_widget(fetch_raster("japan_map.png"), position=(0.8, 0.8))
-    p.add_axes()
     p.add_text(
         "Mount Fuji, Digital Elevation Model GeoTIFF",
         position="upper_left",
@@ -108,6 +107,7 @@ def main() -> None:
         viewup=(-0.6616613958706443, 0.25045119061438004, 0.7067378568708134),
     )
 
+    p.add_axes()
     p.show(cpos=cpos)
 
 

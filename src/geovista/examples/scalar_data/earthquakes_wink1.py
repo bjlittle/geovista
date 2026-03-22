@@ -93,14 +93,17 @@ def main() -> None:
     p.add_base_layer(texture=gv.natural_earth_1(), zlevel=0)
     p.add_graticule()
     p.add_coastlines()
-    p.add_axes()
     p.add_text(
         f"USGS M2.5+ Earthquakes, 2000-2018 ({crs})",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.view_xy()
     p.camera.zoom(1.5)
+
+    p.add_axes()
     p.show()
 
 

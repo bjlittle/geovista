@@ -102,7 +102,7 @@ def main() -> None:
     p.view_vector(vector=(1, 1, 1))
     p.camera.zoom(1.2)
 
-    p.show_axes()
+    p.add_axes()
     p.show()
 
 

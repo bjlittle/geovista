@@ -77,14 +77,17 @@ def main() -> None:
     p.add_coastlines(color="black")
     # Force zlevel alignment of coastlines and base layer.
     p.add_base_layer(texture=gv.natural_earth_1(), opacity=0.5, zlevel=0)
-    p.add_axes()
-    p.view_yz()
     p.add_text(
         "ORCA Point-Cloud (10m Coastlines)",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
+    p.view_yz()
     p.camera.zoom(1.3)
+
+    p.add_axes()
     p.show()
 
 
