@@ -100,14 +100,17 @@ def main() -> None:
     # Force zlevel alignment of coastlines and base layer.
     p.add_base_layer(texture=gv.natural_earth_1(), zlevel=0)
     p.add_coastlines()
-    p.add_axes()
     p.add_text(
         f"High Cloud Amount ({crs})",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.view_xy()
     p.camera.zoom(1.5)
+
+    p.add_axes()
     p.show()
 
 

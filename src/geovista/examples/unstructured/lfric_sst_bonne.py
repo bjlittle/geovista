@@ -75,14 +75,17 @@ def main() -> None:
     p.add_base_layer(texture=gv.natural_earth_1())
     p.add_coastlines()
     p.add_graticule()
-    p.add_axes()
     p.add_text(
         f"LFRic C48 Unstructured Cube-Sphere ({crs})",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.view_xy()
     p.camera.zoom(1.5)
+
+    p.add_axes()
     p.show()
 
 

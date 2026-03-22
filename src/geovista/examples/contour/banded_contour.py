@@ -45,10 +45,10 @@ A Natural Earth base layer is also rendered along with the Natural Earth coastli
 
 from __future__ import annotations
 
-import geovista
+import geovista as gv
 from geovista.common import cast_UnstructuredGrid_to_PolyData as cast
 from geovista.pantry.meshes import lfric_orog
-import geovista.theme  # noqa: F401
+import geovista.theme
 
 
 def main() -> None:
@@ -74,13 +74,13 @@ def main() -> None:
     n_contours = 13
     contours, edges = mesh.contour_banded(n_contours)
 
-    p = geovista.GeoPlotter()
+    p = gv.GeoPlotter()
 
     sargs = {"title": "Surface Altitude / m", "fmt": "%.0f"}
     p.add_mesh(contours, cmap="Set3", n_colors=n_contours - 1, scalar_bar_args=sargs)
     p.add_mesh(edges, color="black", zlevel=1)
 
-    p.add_base_layer(texture=geovista.natural_earth_1())
+    p.add_base_layer(texture=gv.natural_earth_1())
     p.add_coastlines()
 
     # Render the scene using super-sample anti-aliasing.

@@ -71,14 +71,17 @@ def main() -> None:
     cmap = mpl.colormaps.get_cmap("cet_CET_L17").resampled(lutsize=9)
     p.add_mesh(mesh, cmap=cmap)
     p.add_coastlines()
-    p.add_axes()
     p.add_text(
         f"ICON 160km Resolution Triangular Mesh ({crs})",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.view_xy()
     p.camera.zoom(1.5)
+
+    p.add_axes()
     p.show()
 
 

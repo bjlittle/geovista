@@ -37,6 +37,7 @@ __all__ = [
     "SampleStructuredXY",
     "SampleStructuredXYZ",
     "SampleUnstructuredXY",
+    "SampleVectorsXYUVW",
     "capitalise",
     "cloud_amount",
     "dynamico",
@@ -52,6 +53,7 @@ __all__ = [
     "lam_uk",
     "lfric_orog",
     "lfric_sst",
+    "lfric_winds",
     "nemo_orca2",
     "nemo_orca2_gradient",
     "oisst_avhrr_sst",
@@ -125,6 +127,21 @@ class SampleUnstructuredXY:
     units: str | None = field(default=None)
     steps: int | None = field(default=None)
     ndim: int = 2
+
+
+@dataclass(frozen=True)
+class SampleVectorsXYUVW:
+    """Data container for vector information on unconnected points."""
+
+    lons: ArrayLike
+    lats: ArrayLike
+    u: ArrayLike
+    v: ArrayLike
+    w: ArrayLike = field(default=None)
+    name: str | None = field(default=None)
+    units: str | None = field(default=None)
+    steps: int | None = field(default=None)
+    ndim: int = 1
 
 
 def capitalise(title: str) -> str:
@@ -717,36 +734,38 @@ def lfric_sst() -> SampleUnstructuredXY:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def oisst_avhrr_sst() -> SampleStructuredXY:
-    """Download and cache structured surface sample data.
+def lfric_winds() -> SampleVectorsXYUVW:
+    """Download and cache unstructured 3D winds sample.
 
-    Load NOAA/NCEI OISST AVHRR rectilinear mesh.
+    This data is derived from the LFRic test suite.
 
     Returns
     -------
-    SampleStructuredXY
-        The curvilinear spatial coordinates and data payload.
+    SampleVectorsXYUVW
+        Data payload with XY spatial coordinates and UVW wind components.
 
     Notes
     -----
-    .. versionadded:: 0.1.0
+    .. versionadded:: 0.6.0
 
     """
-    fname = "oisst-avhrr.nc"
+    fname = "lfric_winds_sample.nc"
     processor = pooch.Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
-    # load the lon/lat grid
-    lons = dataset.variables["lon_bnds"][:]
-    lats = dataset.variables["lat_bnds"][:]
+    # load the lon/lat/zlevel points
+    lons = dataset.variables["Mesh2d_face_x"][:]
+    lats = dataset.variables["Mesh2d_face_y"][:]
+    # NOTE: for now, take first time and depth.
+    # This effectively 'pretends' U and V are on same levels as W -- which they aren't!
+    units = dataset.variables["u_in_w3"].units
+    u = dataset.variables["u_in_w3"][0, 0]
+    v = dataset.variables["v_in_w3"][0, 0]
+    w = dataset.variables["w_in_wth"][0, 0]
+    name = "Wind"
 
-    # load the mesh payload
-    data = dataset.variables["sst"]
-    name = capitalise(data.long_name)
-    units = data.units
-
-    return SampleStructuredXY(lons, lats, data=data[0, 0], name=name, units=units)
+    return SampleVectorsXYUVW(lons, lats, u, v, w, name=name, units=units)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -812,6 +831,39 @@ def nemo_orca2_gradient() -> SampleStructuredXYZ:
     name = "Depth"
 
     return SampleStructuredXYZ(lons, lats, depth, data=depth, name=name, units=units)
+
+
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def oisst_avhrr_sst() -> SampleStructuredXY:
+    """Download and cache structured surface sample data.
+
+    Load NOAA/NCEI OISST AVHRR rectilinear mesh.
+
+    Returns
+    -------
+    SampleStructuredXY
+        The curvilinear spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    fname = "oisst-avhrr.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
+    dataset = nc.Dataset(resource)
+
+    # load the lon/lat grid
+    lons = dataset.variables["lon_bnds"][:]
+    lats = dataset.variables["lat_bnds"][:]
+
+    # load the mesh payload
+    data = dataset.variables["sst"]
+    name = capitalise(data.long_name)
+    units = data.units
+
+    return SampleStructuredXY(lons, lats, data=data[0, 0], name=name, units=units)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)

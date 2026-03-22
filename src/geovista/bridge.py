@@ -19,6 +19,7 @@ Notes
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 import pathlib
 from typing import TYPE_CHECKING
 import warnings
@@ -31,9 +32,11 @@ from .common import (
     GV_FIELD_ZSCALE,
     RADIUS,
     ZLEVEL_SCALE,
+    VectorLike,
     cast_UnstructuredGrid_to_PolyData,
     nan_mask,
     to_cartesian,
+    vectors_to_cartesian,
 )
 from .crs import WGS84, CRSLike, to_wkt
 from .transform import transform_points
@@ -53,6 +56,7 @@ __all__ = [
     "BRIDGE_CLEAN",
     "NAME_CELLS",
     "NAME_POINTS",
+    "NAME_VECTORS",
     "RIO_SIEVE_SIZE",
     "PathLike",
     "Shape",
@@ -74,6 +78,9 @@ NAME_CELLS: str = "cell_data"
 
 NAME_POINTS: str = "point_data"
 """Default array name for data on the mesh points."""
+
+NAME_VECTORS: str = "vector_data"
+"""Default array name for mesh vectors."""
 
 RIO_SIEVE_SIZE: int = 800
 """The default size of the :func:`rasterio.features.sieve` filter."""
@@ -622,11 +629,14 @@ class Transform:  # numpydoc ignore=PR01
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
+        vectors: VectorLike | None = None,
+        vectors_crs: CRSLike | None = None,
+        vectors_name: str | None = None,
     ) -> pv.PolyData:
         """Build a point-cloud mesh from x-values, y-values and z-levels.
 
-        Note that any optional mesh `data` provided must be in the same order as the
-        spatial points.
+        Note that optional mesh `data` or `vectors` must be in the same order
+        as the spatial points.
 
         Parameters
         ----------
@@ -661,11 +671,28 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points. See
             :meth:`pyvista.PolyDataFilters.clean`. Defaults to
             :data:`BRIDGE_CLEAN`.
+        vectors : VectorLike, optional
+            A tuple of 2 or 3 arrays of the same shape as `xs` and `ys`.
+            These give eastward (``U``), northward (``V``) and optionally
+            upward (``W``) vector components, which are converted to an ``[N, 3]``
+            array of 3D vectors and attached to the resultant mesh, see
+            `vectors_name`. This can be used to generate glyphs (such as arrows)
+            and streamlines.
+        vectors_crs : CRSLike, optional
+            The Coordinate Reference System of the provided `vectors`. May be anything
+            accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults to the same
+            as `crs`.  Note that `vectors_crs` only specifies horizontal orientation
+            of the vectors. Their magnitudes are always spatial distance, and the
+            vertical component is always radial (i.e., "upwards").
+        vectors_name : str, optional
+            The name of the vectors array to be attached to the mesh. If
+            `vectors` is provided but with no `vectors_name`, defaults to
+            :data:`NAME_VECTORS`.
 
         Returns
         -------
         PolyData
-            The point-cloud spherical mesh.
+            The point-cloud mesh with optional vectors attached.
 
         Notes
         -----
@@ -683,10 +710,10 @@ class Transform:  # numpydoc ignore=PR01
 
         # transform spatial points to WGS84 with shape (M, 3) or (M, N, 3)
         transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
-        xs, ys = transformed[..., 0], transformed[..., 1]
+        lons, lats = transformed[..., 0], transformed[..., 1]
 
         # convert lat/lon to cartesian xyz
-        xyz = to_cartesian(xs, ys, radius=radius, zlevel=zlevel, zscale=zscale)
+        xyz = to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
 
         # create the point-cloud mesh
         mesh = pv.PolyData(xyz)
@@ -707,6 +734,112 @@ class Transform:  # numpydoc ignore=PR01
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
             mesh[name] = data
+
+        if vectors is not None:
+            # TODO @pp-mo: This section is very long, consider refactor
+            if not vectors_name:
+                vectors_name = NAME_VECTORS
+
+            if (
+                not isinstance(vectors, Iterable)  # type: ignore[redundant-expr]
+                or len(vectors) not in (2, 3)
+            ):
+                emsg = "'vectors' must be an iterable of 2 or 3 array-likes."
+                raise ValueError(emsg)
+
+            # unpack vector components to UVW
+            components = [np.asanyarray(component) for component in vectors]
+            us, vs = components[:2]
+            ws = components[2] if len(components) == 3 else np.zeros_like(us)
+
+            if vectors_crs is None:
+                # Vectors CRS defaults to points CRS
+                # NOTE: vectors may have a different CRS than the input points.
+                # The only likely usage is for true-lat-lon winds with locations on a
+                # rotated grid or similar, but we probably do need to support that.
+                vectors_crs = crs
+
+            # sanity check the vectors crs
+            vectors_crs = pyproj.CRS.from_user_input(vectors_crs)
+
+            if vectors_crs == WGS84:
+                vector_xs = lons
+                vector_ys = lats
+                post_rotate_matrix = None
+            else:
+                # The supplied UVW vectors are for a "different" orientation
+                # than standard lat-lon, so will need rotating afterwards.
+                # We can only do this for specific CRS types where we know how
+                # to find its pole.
+                axis_info = getattr(vectors_crs, "axis_info", [])
+                valid = len(axis_info) >= 2 and all(
+                    hasattr(x, "name") for x in axis_info
+                )
+
+                if valid:
+                    axis_names = [axis.name for axis in axis_info]
+                    valid = axis_names[:2] == ["Longitude", "Latitude"]
+
+                if not valid:
+                    msg = (
+                        "Cannot determine wind directions : Target CRS type is not "
+                        f"supported for grid orientation decoding : {vectors_crs}."
+                    )
+                    raise ValueError(msg)
+
+                # For a CRS with longitude and latitude axes, its axes determine the
+                # east-wards and north-wards directions of surface-oriented vectors.
+                # This means we can calculate the xyz vectors for the input points in
+                # vector coordinates, and afterwards rotate them to the display.
+                # TODO @pp-mo: Support other common cases as needed, for example OSGB
+                #              or Mercator. There may be no general solution.
+
+                # Calculate post-rotate matrix, so "vectors @= post_rotate_matrix"
+                # transform the equivalent of the x,y,z basis vectors
+                bases_x = np.array([0, 90, 0])
+                bases_y = np.array([0, 0, 90])
+                transformed_bases = transform_points(
+                    src_crs=vectors_crs, tgt_crs=WGS84, xs=bases_x, ys=bases_y
+                )
+                cartesian_bases = to_cartesian(
+                    transformed_bases[:, 0], transformed_bases[:, 1]
+                )
+                post_rotate_matrix = np.array(cartesian_bases).T
+
+                # We will also need points as lons+lats **in the vector CRS** to
+                # calculate the vectors (i.e., oriented to "its" northward + eastward).
+                vector_xs = xs
+                vector_ys = ys
+
+                if vectors_crs != crs:
+                    transformed = transform_points(
+                        src_crs=crs, tgt_crs=vectors_crs, xs=xs, ys=ys
+                    )
+                    vector_xs, vector_ys = transformed[:, 0], transformed[:, 1]
+
+            # TODO @pp-mo: Should we pass flattened arrays here, and reshape as-per
+            #              the inputs (and xyz)? Not clear if multidimensional
+            #              input is used or needed
+            xx, yy, zz = vectors_to_cartesian(
+                lons=vector_xs,
+                lats=vector_ys,
+                vectors=(us, vs, ws),
+                radius=radius,
+                zlevel=zlevel,
+                zscale=zscale,
+            )
+            mesh_vectors = np.vstack((xx, yy, zz)).T
+
+            if post_rotate_matrix is not None:
+                # At this point, vectors are correct xyz's for the original points
+                # in 'vector_crs', but not ready for plotting since the "true"
+                # point locations are different : hence apply "post-rotation".
+                # TODO @pp-mo: Replace np.dot with '@' when masked-array multiply bug
+                #              bug is fixed, see https://github.com/numpy/numpy/issues/14992
+                mesh_vectors = np.dot(post_rotate_matrix, mesh_vectors.T).T
+
+            mesh[vectors_name] = mesh_vectors
+            mesh.set_active_vectors(vectors_name)
 
         # clean the mesh
         if clean:

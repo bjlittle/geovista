@@ -57,16 +57,18 @@ def main() -> None:
     p = gv.GeoPlotter(crs=crs)
     p.add_mesh(mesh, clim=clim, cmap="ice", show_edges=True)
     p.add_coastlines()
-    p.add_axes()
     p.add_text(
         f"1D Synthetic Face Data ({crs})",
         position="upper_left",
         font_size=10,
     )
+
+    # Define a specific camera position.
     p.view_xy()
     p.camera.zoom(1.5)
+
+    p.add_axes()
     p.show()
-    p.close()
 
 
 if __name__ == "__main__":
