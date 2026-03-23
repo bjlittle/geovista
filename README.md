@@ -610,3 +610,6 @@ community too!
        alt="creative-commons-by" style="border-width:0">
 </a>
 </p>
+
+
+<!-- fix-issue-959: ✨ Acknowledge our Contributors -->
