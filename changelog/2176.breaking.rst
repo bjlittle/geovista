@@ -1,0 +1,2 @@
+Renamed the convenience dataclass ``SampleStructuredXYZ`` to
+:class:`geovista.pantry.data.SamplePointsXYZ`. (:user:`bjlittle`)
