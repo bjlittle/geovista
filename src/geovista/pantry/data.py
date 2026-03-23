@@ -34,8 +34,8 @@ pooch = lazy.load("pooch")
 __all__ = [
     "CLOUD_AMOUNT_PREFERENCE",
     "CloudPreference",
+    "SamplePointsXYZ",
     "SampleStructuredXY",
-    "SampleStructuredXYZ",
     "SampleUnstructuredXY",
     "SampleVectorsXYUVW",
     "capitalise",
@@ -86,6 +86,20 @@ class CloudPreference(StrEnumPlus):
 
 
 @dataclass(frozen=True)
+class SamplePointsXYZ:
+    """Data container for point cloud."""
+
+    lons: ArrayLike
+    lats: ArrayLike
+    zlevel: ArrayLike
+    data: ArrayLike | None = field(default=None)
+    name: str | None = field(default=None)
+    units: str | None = field(default=None)
+    steps: int | None = field(default=None)
+    ndim: int = 3
+
+
+@dataclass(frozen=True)
 class SampleStructuredXY:
     """Data container for structured surface."""
 
@@ -96,20 +110,6 @@ class SampleStructuredXY:
     units: str | None = field(default=None)
     steps: int | None = field(default=None)
     ndim: int = 2
-
-
-@dataclass(frozen=True)
-class SampleStructuredXYZ:
-    """Data container for structured volume."""
-
-    lons: ArrayLike
-    lats: ArrayLike
-    zlevel: ArrayLike
-    data: ArrayLike | None = field(default=None)
-    name: str | None = field(default=None)
-    units: str | None = field(default=None)
-    steps: int | None = field(default=None)
-    ndim: int = 3
 
 
 @dataclass(frozen=True)
@@ -802,14 +802,14 @@ def nemo_orca2() -> SampleStructuredXY:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def nemo_orca2_gradient() -> SampleStructuredXYZ:
+def nemo_orca2_gradient() -> SamplePointsXYZ:
     """Download and cache point-cloud sample data.
 
     Load NEMO ORCA2 curvilinear mesh with gradient filter.
 
     Returns
     -------
-    SampleStructuredXYZ
+    SamplePointsXYZ
         The gradient filtered spatial coordinates and data payload.
 
     Notes
@@ -830,7 +830,7 @@ def nemo_orca2_gradient() -> SampleStructuredXYZ:
     depth = depth[:]
     name = "Depth"
 
-    return SampleStructuredXYZ(lons, lats, depth, data=depth, name=name, units=units)
+    return SamplePointsXYZ(lons, lats, depth, data=depth, name=name, units=units)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
@@ -867,12 +867,12 @@ def oisst_avhrr_sst() -> SampleStructuredXY:
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
-def usgs_earthquakes() -> SampleStructuredXYZ:
+def usgs_earthquakes() -> SamplePointsXYZ:
     """Download and cache the USGS HoloViz large earthquake dataset.
 
     Returns
     -------
-    SampleStructuredXYZ
+    SamplePointsXYZ
         The spatial coordinates and data payload.
 
     Notes
@@ -907,7 +907,7 @@ def usgs_earthquakes() -> SampleStructuredXYZ:
     zlevel = dataset.depth.to_numpy()
     data = dataset.mag.to_numpy()
 
-    return SampleStructuredXYZ(lons=lons, lats=lats, zlevel=zlevel, data=data)
+    return SamplePointsXYZ(lons=lons, lats=lats, zlevel=zlevel, data=data)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
