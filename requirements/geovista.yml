@@ -1,4 +1,4 @@
-name: geovista-py313
+name: geovista
 channels:
 - conda-forge
 - nodefaults
