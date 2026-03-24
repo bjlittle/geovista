@@ -1,0 +1,3 @@
+Enabled generation of a generic ``conda`` environment ``YAML`` file that
+tracks the latest supported distribution of ``python``.
+(:user:`bjlittle`)
