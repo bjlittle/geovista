@@ -29,6 +29,7 @@ sample points (``crs``) and the vectors (``vectors_crs``).
 
 .. tags::
 
+    experimental 🧪,
     component: graticule, component: texture, component: vectors,
     domain: meteorology,
     filter: glyph,

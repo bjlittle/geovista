@@ -37,6 +37,7 @@ generally much smaller in magnitude, and tend not to be very visible otherwise.
 
 .. tags::
 
+    experimental 🧪,
     component: graticule, component: texture, component: vectors,
     domain: meteorology,
     filter: glyph,

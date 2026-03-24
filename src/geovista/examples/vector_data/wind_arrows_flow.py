@@ -45,6 +45,7 @@ which is the most common use case.
 
 .. tags::
 
+    experimental 🧪,
     component: graticule, component: texture, component: vectors,
     domain: meteorology,
     filter: glyph,
