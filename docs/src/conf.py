@@ -291,6 +291,7 @@ autolog(f"{package_dir=}", section="General")
 tags_badge_colors = {
     "component:*": "primary",
     "domain:*": "secondary",
+    "experimental 🧪": "warning",
     "filter:*": "success",
     "load:*": "dark",
     "plot:*": "danger",

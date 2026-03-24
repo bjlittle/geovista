@@ -609,6 +609,11 @@ e.g.,
    |                        |                                                    | interactive `widgets`_.                        |
    +------------------------+----------------------------------------------------+------------------------------------------------+
 
+.. note::
+   :class: dropdown, toggle-shown
+
+   Experimental features may be tagged with :bdg-warning:`experimental 🧪`
+
 
 .. comment
 
