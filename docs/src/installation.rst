@@ -175,7 +175,7 @@ Now install ``geovista`` and all its dependencies:
         .. code:: console
 
             $ conda env create --file requirements/geovista.yml
-            $ conda activate myenv
+            $ conda activate geovista
 
     .. tab-item:: pip
 

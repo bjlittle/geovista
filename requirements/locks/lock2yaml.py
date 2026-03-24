@@ -9,13 +9,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-import sys
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-
-if (nargv := (len(sys.argv) - 1)) != 1:
-    emsg = f"Expect 'version' as a single argument to '{sys.argv[0]}' script."
-    raise ValueError(emsg)
 
 environment = Environment(
     autoescape=select_autoescape(), loader=FileSystemLoader("templates/")
@@ -23,7 +18,7 @@ environment = Environment(
 template = environment.get_template("lock2yaml.txt")
 
 # default to linux-64 only
-env = f"geovista-{sys.argv[1]}"
+env = "geovista"
 lock = f"{env}_linux-64_conda_spec.txt"
 yaml = f"{env}_linux-64_conda_spec.yml"
 

@@ -24,7 +24,6 @@ defaults:
 env:
   NAME: "geovista"
   SHELLOPTS: "errexit:pipefail"
-  VERSION: "py313"
 
 permissions: {}
 
@@ -43,7 +42,7 @@ jobs:
 
       - name: "environment configure"
         run: |
-          echo "ENV_NAME=${{ env.NAME }}-${{ env.VERSION }}" >> ${GITHUB_ENV}
+          echo "ENV_NAME=${{ env.NAME }}" >> ${GITHUB_ENV}
 
       - name: "setup pixi"
         uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e
@@ -69,7 +68,7 @@ jobs:
         if: ${{ hashFiles('diff.md') }}
         working-directory: requirements/locks
         run: |
-          python lock2yaml.py ${{ env.VERSION }}
+          python lock2yaml.py
 
       - name: "create pull-request"
         id: cpr
