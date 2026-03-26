@@ -1,0 +1,2 @@
+Added the geocoding package `geopy <https://github.com/geopy/geopy>`__ as a core dependency.
+(:user:`bjlittle`)
