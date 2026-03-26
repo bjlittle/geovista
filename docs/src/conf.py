@@ -423,6 +423,7 @@ numpydoc_xref_aliases = {
     "Path": "pathlib.Path",
     "Preference": "geovista.common.Preference",
     "PolyData": "pyvista.PolyData",
+    "StructuredGrid": "pyvista.StructuredGrid",
     "Texture": "pyvista.Texture",
     "VectorLike": "geovista.common.VectorLike",
 }
