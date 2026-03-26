@@ -605,6 +605,7 @@ html_css_files = [
 
 intersphinx_mapping = {
     "cartopy": ("https://cartopy.readthedocs.io/stable/", None),
+    "geopy": ("https://geopy.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "platformdirs": ("https://platformdirs.readthedocs.io/en/stable/", None),

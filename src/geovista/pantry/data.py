@@ -17,12 +17,14 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
+from geopy.geocoders import Nominatim
 import lazy_loader as lazy
 
 from geovista.cache import CACHE
 from geovista.common import LRU_CACHE_SIZE, StrEnumPlus
 
 if TYPE_CHECKING:
+    from geopy.location import Location
     import netCDF4 as nc  # noqa: N813
     from numpy.typing import ArrayLike
 
@@ -88,14 +90,6 @@ class CloudPreference(StrEnumPlus):
 
 
 @dataclass(frozen=True, slots=True)
-class POI:
-    """A geospatial point-of-interest."""
-
-    x: float
-    y: float
-
-
-@dataclass(frozen=True, slots=True)
 class SampleGridXYZ:
     """Data container for structured grid."""
 
@@ -104,7 +98,7 @@ class SampleGridXYZ:
     zs: ArrayLike
     data: ArrayLike | None = field(default=None)
     name: str | None = field(default=None)
-    poi: POI | None = field(default=None)
+    poi: Location | None = field(default=None)
     units: str | None = field(default=None)
 
 
@@ -824,12 +818,13 @@ def name_reykjanes() -> SampleGridXYZ:
     data = dataset.variables["SULPHUR_DIOXIDE_AIR_CONCENTRATION"]
     name = capitalise(data.long_name)
     units = data.units
-    data = np.ma.masked_less_equal(data, 0).filled(np.nan)
+    data = np.ma.masked_less_equal(data[:], 0).filled(np.nan)
 
     # load and parse the point-of-interest
     release_location = dataset.getncattr("release_location")
-    plat, plon = release_location.split()[::-1]
-    poi = POI(x=float(plon[:-1]), y=float(plat[:-1]))
+    release_location = " ".join(release_location.split()[::-1])
+    geolocator = Nominatim(user_agent="geovista")
+    poi = geolocator.geocode(release_location, language="en")
 
     return SampleGridXYZ(xs, ys, zs, data=data, name=name, poi=poi, units=units)
 

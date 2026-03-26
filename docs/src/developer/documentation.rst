@@ -580,17 +580,18 @@ e.g.,
    | :guilabel:`component`  | ``coastlines``, ``graticule``, ``manifold``,       | Content that demonstrates the use of a         |
    |                        | ``texture``, ``vectors``                           | specific feature.                              |
    +------------------------+----------------------------------------------------+------------------------------------------------+
-   | :guilabel:`domain`     | ``oceanography``, ``seismology``, ``meteorology``, | Content that is relevant to a specific         |
-   |                        | ``orography``                                      | scientific domain or discipline.               |
+   | :guilabel:`domain`     | ``meteorology``, ``oceanography``, ``orography``,  | Content that is relevant to a specific         |
+   |                        | ``seismology``, ``volcanology``                    | scientific domain or discipline.               |
    +------------------------+----------------------------------------------------+------------------------------------------------+
    | :guilabel:`filter`     | ``cast``, ``contour``, ``extrude``, ``glyph``,     | Content that demonstrates the use of           |
    |                        | ``threshold``, ``triangulate``, ``warp``           | specific `filtering`_ techniques.              |
    +------------------------+----------------------------------------------------+------------------------------------------------+
-   | :guilabel:`load`       | ``curvilinear``, ``geotiff``, ``points``,          | Demonstrates use of the :mod:`geovista.bridge` |
-   |                        | ``rectilinear``, ``unstructured``, ``vectors``     | to load various types of geospatial data.      |
+   | :guilabel:`load`       | ``curvilinear``, ``geotiff``, ``grid``,            | Demonstrates use of the :mod:`geovista.bridge` |
+   |                        | ``points``, ``rectilinear``, ``unstructured``,     | to load various types of geospatial data.      |
+   |                        | ``vectors``                                        |                                                |
    +------------------------+----------------------------------------------------+------------------------------------------------+
-   | :guilabel:`plot`       | ``anti-aliasing``, ``camera``, ``subplots``        | Content that showcases various `plotting`_     |
-   |                        |                                                    | techniques.                                    |
+   | :guilabel:`plot`       | ``anti-aliasing``, ``camera``, ``log-scale``       | Content that showcases various `plotting`_     |
+   |                        | ``subplots``                                       | techniques.                                    |
    +------------------------+----------------------------------------------------+------------------------------------------------+
    | :guilabel:`projection` | ``crs``, ``transform``                             | Content that demonstrates the use of           |
    |                        |                                                    | geospatial projections or transformations.     |
@@ -598,9 +599,9 @@ e.g.,
    | :guilabel:`resolution` | ``high``                                           | Content using high-resolution or high-volume   |
    |                        |                                                    | geospatial data.                               |
    +------------------------+----------------------------------------------------+------------------------------------------------+
-   | :guilabel:`sample`     | ``curvilinear``, ``geotiff``, ``points``,          | Content that leverages the convenience of      |
-   |                        | ``rectilinear``, ``unstructured``, ``vectors``     | pre-canned geospatial sample data available    |
-   |                        |                                                    | from the :mod:`geovista.pantry`.               |
+   | :guilabel:`sample`     | ``curvilinear``, ``geotiff``, ``grid``,            | Content that leverages the convenience of      |
+   |                        | ``points``, ``rectilinear``, ``unstructured``,     | pre-canned geospatial sample data available    |
+   |                        | ``vectors``                                        | from the :mod:`geovista.pantry`.               |
    +------------------------+----------------------------------------------------+------------------------------------------------+
    | :guilabel:`style`      | ``colormap``, ``lighting``, ``opacity``,           | Content that includes customization of         |
    |                        | ``shading``                                        | various render styles and aesthetics.          |
