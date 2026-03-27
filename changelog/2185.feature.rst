@@ -1,0 +1,4 @@
+Added initial :class:`pyvista.StructuredGrid` support with the
+:meth:`geovista.bridge.Transform.to_structured_grid` method, along with a
+supporting :ref:`tippy-gv-examples-grid` gallery section.
+(:user:`bjlittle`)
