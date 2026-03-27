@@ -82,6 +82,12 @@ disallow_subclassing_any = false
 module = ["geovista.geoplotter", "geovista.qt", "geovista.report"]
 
 
+[[tool.mypy.overrides]]
+# Problem caused by geopy being untyped.
+disable_error_code = ["union-attr"]
+module = ["geovista.examples.grid.*"]
+
+
 [tool.numpydoc_validation]
 checks = [
   "all", # Enable all numpydoc validation rules, apart from the following:

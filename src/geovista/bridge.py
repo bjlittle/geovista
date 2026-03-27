@@ -1076,7 +1076,7 @@ class Transform:  # numpydoc ignore=PR01
 
         Note that any optional mesh `data` provided must be in the same order
         as the mesh face `connectivity`, or in the same order as the points
-        described by `xs` & `ys` (data can be on points or on cells).
+        described by `xs` and `ys` (data can only be attached to points or cells).
 
         Parameters
         ----------
@@ -1300,6 +1300,132 @@ class Transform:  # numpydoc ignore=PR01
             mesh.clean(inplace=True)
 
         return mesh
+
+    @classmethod
+    def to_structured_grid(
+        cls,
+        xs: ArrayLike,
+        ys: ArrayLike,
+        zs: ArrayLike,
+        /,
+        *,
+        data: ArrayLike | None = None,
+        name: str | None = None,
+        crs: CRSLike | None = None,
+        radius: float | None = None,
+        zlevel: float | None = None,
+        zscale: float | None = None,
+    ) -> pv.StructuredGrid:
+        """Build a structured grid from contiguous 1D spatial coordinates.
+
+        The 3D structured grid consists of cubic voxel cells which are
+        constructed from the 1D spatial coordinates defining the bounds of
+        the cells in each dimension.
+
+        Parameters
+        ----------
+        xs : ArrayLike
+            The 1D array of x-values, in canonical `crs` units, defining the
+            x-axis cell bounds of the grid.
+        ys : ArrayLike
+            The 1D array of y-values, in canonical `crs` units, defining the
+            y-axis cell bounds of the grid.
+        zs : ArrayLike
+            The 1D array of z-values, in canonical `crs` units, defining the
+            z-axis cell bounds of the grid.
+        data : ArrayLike | None, optional
+            Data to be optionally attached to the structured grid cells or points.
+            Note that the expected data dimensionality is ``(Z, Y, X)`` order.
+        name : str | None, optional
+            The name of the optional data array to be attached to the grid. If
+            `data` is provided but with no `name`, defaults to either
+            :data:`NAME_POINTS` or :data:`NAME_CELLS`.
+        crs : CRSLike, optional
+            The Coordinate Reference System of the provided spatial coordinates.
+            May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`.
+            Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
+        radius : float | None, optional
+            The radius of the grid sphere. Defaults to :data:`~geovista.common.RADIUS`.
+        zlevel : int, default=0
+            The z-axis level. Used in combination with the `zscale` to offset the
+            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zscale : float, optional
+            The proportional multiplier for z-axis `zlevel`. Defaults to
+            :data:`~geovista.common.ZLEVEL_SCALE`.
+
+        Returns
+        -------
+        StructuredGrid
+            The spherical structured grid.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        xs, ys, zs = np.atleast_1d(xs), np.atleast_1d(ys), np.atleast_1d(zs)
+
+        if xs.size < 2 or ys.size < 2 or zs.size < 2:
+            emsg = (
+                "Require at least two points per dimension to create a "
+                f"minimal structured grid voxel, got '{xs.size=}', "
+                f"'{ys.size=}' and '{zs.size=}'."
+            )
+            raise ValueError(emsg)
+
+        if xs.ndim != 1 or ys.ndim != 1 or zs.ndim != 1:
+            emsg = (
+                "Require 1D 'xs', 'ys' and 'zs', got "
+                f"'{xs.ndim}D', '{ys.ndim}D' and {zs.ndim}D'."
+            )
+            raise ValueError(emsg)
+
+        # TODO @bjlittle: add foreign crs to WGS84 support
+        if crs is None:
+            crs = WGS84
+
+        # TODO @bjlittle: add foreign crs to WGS84 support,
+        #                 require to enable 3D transforms
+        if crs != WGS84:
+            emsg = (
+                "Only spatial coordinates with a 'WGS84' CRS are supported"
+                "at the moment."
+            )
+            raise ValueError(emsg)
+
+        radius = RADIUS if radius is None else abs(float(radius))
+        zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
+        zlevel = 0 if zlevel is None else int(zlevel)
+
+        # TODO @bjlittle: add richer vertical support
+        arc_length = np.radians(np.mean(np.diff(ys)))
+        zs = np.arange(*zs.shape) * arc_length * 0.5 + zlevel * zscale
+
+        # (M,), (N,), (P,) -> gives shapes (M, N, P)
+        xv, yv, zv = np.meshgrid(xs, ys, zs, indexing="ij")
+        shape = xv.shape
+
+        # convert lat/lon to cartesian xyz
+        xyz = to_cartesian(xv, yv, radius=radius, zlevel=zv, zscale=1)
+
+        # create the grid
+        grid = pv.StructuredGrid(
+            xyz[:, 0].reshape(shape), xyz[:, 1].reshape(shape), xyz[:, 2].reshape(shape)
+        )
+
+        # attach the pyproj crs serialized as ogc wkt
+        to_wkt(grid, WGS84)
+
+        if data is not None:
+            data = cls._as_compatible_data(data, grid.n_points, grid.n_cells)
+
+            if not name:
+                name = NAME_POINTS if data.size == grid.n_points else NAME_CELLS
+
+            grid.field_data[GV_FIELD_NAME] = np.array([name])
+            grid[name] = data
+
+        return grid
 
     def __init__(
         self,
