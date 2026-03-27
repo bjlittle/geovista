@@ -327,20 +327,12 @@ with contextlib.suppress(ModuleNotFoundError):
 tippy_enable_wikitips = False
 tippy_enable_doitips = False
 tippy_rtd_urls = [
-    "https://www.sphinx-doc.org/en/master/",
-    "https://geovista.readthedocs.io/en/latest/",
-    "https://geovista.readthedocs.io/en/stable/",
     "http://localhost:11000",
     "http://0.0.0.0:11000",
     "http://127.0.0.1:11000",
     "http://localhost:8888",
     "http://0.0.0.0:8888",
     "http://127.0.0.1:8888",
-    "https://matplotlib.org/stable/",
-    "https://numpy.org/doc/stable/",
-    "https://platformdirs.readthedocs.io/en/stable/",
-    "https://rasterio.readthedocs.io/en/stable/",
-    "https://requests.readthedocs.io/en/stable/",
 ]
 tippy_skip_anchor_classes = ("headerlink", "sd-sphinx-override")
 tippy_skip_urls = [
