@@ -17,12 +17,14 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
+from geopy.geocoders import Nominatim
 import lazy_loader as lazy
 
 from geovista.cache import CACHE
 from geovista.common import LRU_CACHE_SIZE, StrEnumPlus
 
 if TYPE_CHECKING:
+    from geopy.location import Location
     import netCDF4 as nc  # noqa: N813
     from numpy.typing import ArrayLike
 
@@ -34,6 +36,7 @@ pooch = lazy.load("pooch")
 __all__ = [
     "CLOUD_AMOUNT_PREFERENCE",
     "CloudPreference",
+    "SampleGridXYZ",
     "SamplePointsXYZ",
     "SampleStructuredXY",
     "SampleUnstructuredXY",
@@ -54,6 +57,7 @@ __all__ = [
     "lfric_orog",
     "lfric_sst",
     "lfric_winds",
+    "name_reykjanes",
     "nemo_orca2",
     "nemo_orca2_gradient",
     "oisst_avhrr_sst",
@@ -85,7 +89,20 @@ class CloudPreference(StrEnumPlus):
     MESH = "mesh"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
+class SampleGridXYZ:
+    """Data container for structured grid."""
+
+    xs: ArrayLike
+    ys: ArrayLike
+    zs: ArrayLike
+    data: ArrayLike | None = field(default=None)
+    name: str | None = field(default=None)
+    poi: Location | None = field(default=None)
+    units: str | None = field(default=None)
+
+
+@dataclass(frozen=True, slots=True)
 class SamplePointsXYZ:
     """Data container for point cloud."""
 
@@ -96,10 +113,9 @@ class SamplePointsXYZ:
     name: str | None = field(default=None)
     units: str | None = field(default=None)
     steps: int | None = field(default=None)
-    ndim: int = 3
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class SampleStructuredXY:
     """Data container for structured surface."""
 
@@ -109,10 +125,9 @@ class SampleStructuredXY:
     name: str | None = field(default=None)
     units: str | None = field(default=None)
     steps: int | None = field(default=None)
-    ndim: int = 2
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class SampleUnstructuredXY:
     """Data container for unstructured surface."""
 
@@ -126,10 +141,9 @@ class SampleUnstructuredXY:
     name: str | None = field(default=None)
     units: str | None = field(default=None)
     steps: int | None = field(default=None)
-    ndim: int = 2
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class SampleVectorsXYUVW:
     """Data container for vector information on unconnected points."""
 
@@ -141,7 +155,6 @@ class SampleVectorsXYUVW:
     name: str | None = field(default=None)
     units: str | None = field(default=None)
     steps: int | None = field(default=None)
-    ndim: int = 1
 
 
 def capitalise(title: str) -> str:
@@ -766,6 +779,54 @@ def lfric_winds() -> SampleVectorsXYUVW:
     name = "Wind"
 
     return SampleVectorsXYUVW(lons, lats, u, v, w, name=name, units=units)
+
+
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def name_reykjanes() -> SampleGridXYZ:
+    """Download and cache structured grid sample.
+
+    Load NAME Reykjanes structured grid.
+
+    Returns
+    -------
+    SampleGridXYZ
+        The structured grid spatial coordinates and data payload.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    fname = "reykjanes.nc"
+    processor = pooch.Decompress(method="auto", name=fname)
+    resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
+    dataset = nc.Dataset(resource)
+
+    # load the contiguous longitude grid bounds
+    bnds = dataset.variables["longitude_bnds"][:]
+    xs = np.insert(bnds[:, 1], 0, bnds[0, 0])
+
+    # load the contiguous latitude grid bounds
+    bnds = dataset.variables["latitude_bnds"][:]
+    ys = np.insert(bnds[:, 1], 0, bnds[0, 0])
+
+    # load the contiguous vertical grid bounds
+    bnds = dataset.variables["altitude_bnds"][:]
+    zs = np.insert(bnds[:, 1], 0, bnds[0, 0])
+
+    # load the grid payload
+    data = dataset.variables["SULPHUR_DIOXIDE_AIR_CONCENTRATION"]
+    name = capitalise(data.long_name)
+    units = data.units
+    data = np.ma.masked_less_equal(data[:], 0).filled(np.nan)
+
+    # load and parse the point-of-interest
+    release_location = dataset.getncattr("release_location")
+    release_location = " ".join(release_location.split()[::-1])
+    geolocator = Nominatim(user_agent="geovista")
+    poi = geolocator.geocode(release_location, language="en")
+
+    return SampleGridXYZ(xs, ys, zs, data=data, name=name, poi=poi, units=units)
 
 
 @lru_cache(maxsize=LRU_CACHE_SIZE)
