@@ -31,7 +31,7 @@ To view the manifest of registered resources:
 
 .. code:: console
 
-    $ geovsita download --list
+    $ geovista download --list
 
 
 .. note::
