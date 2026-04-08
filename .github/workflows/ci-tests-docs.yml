@@ -60,7 +60,7 @@ jobs:
           sudo apt-get install libgl1 libglx-mesa0
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e
+        uses: prefix-dev/setup-pixi@1b2de7f3351f171c8b4dfeb558c639cb58ed4ec0
         with:
           environments: "geovista-${{ matrix.version }}"
           frozen: true
