@@ -11,6 +11,7 @@ towncrier <25.9
 sphinx-click <6.3
 sphinx-copybutton <0.6
 sphinx-gallery >=0.17.0,<0.21
+sphinx-sitemap >=2.9.0,<2.10
 sphinx-tags >=0.4.0,<0.5
 sphinx-tippy <0.5
 sphinx-togglebutton <0.5
