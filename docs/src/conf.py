@@ -166,6 +166,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
+    "sphinx_iconify",
     "sphinx_tags",
     "sphinx_togglebutton",
     "sphinxcontrib.bibtex",
@@ -285,7 +286,7 @@ autolog(f"{package_src_dir=}", section="General")
 autolog(f"{package_dir=}", section="General")
 
 
-# sphinx-tags options --------------------------------------------------------
+# -- sphinx-tags options -----------------------------------------------------
 # See https://sphinx-tags.readthedocs.io/en/latest/index.html
 
 tags_badge_colors = {
@@ -315,7 +316,7 @@ tags_page_header = "Tagged content:"  # tag sub-page, header text
 tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag name
 
 
-# sphinx-tippy options -------------------------------------------------------
+# -- sphinx-tippy options ----------------------------------------------------
 # See https://github.com/sphinx-extensions2/sphinx-tippy
 
 # optional dependency (unavailable on conda-forge)
@@ -349,14 +350,14 @@ tippy_skip_urls.extend(f"{item.split(':')[0]}-.*" for item in tags_badge_colors)
 tippy_skip_urls.extend(sphx_glr("geovista.examples"))
 
 
-# sphinx-togglebutton options ------------------------------------------------
+# -- sphinx-togglebutton options ---------------------------------------------
 # See https://github.com/executablebooks/sphinx-togglebutton
 
 togglebutton_hint = "Click to show"
 togglebutton_hint_hide = "Click to hide"
 
 
-# sphinxcontrib-bibtex options -----------------------------------------------
+# -- sphinxcontrib-bibtex options --------------------------------------------
 # See https://sphinxcontrib-bibtex.readthedocs.io/en/latest/
 
 bibtex_bibfiles = [
@@ -364,7 +365,7 @@ bibtex_bibfiles = [
 ]
 
 
-# myst-nb options ------------------------------------------------------------
+# -- myst-nb options ---------------------------------------------------------
 # See https://myst-nb.readthedocs.io/en/latest/configuration.html
 
 nb_execution_mode = "cache"
@@ -374,7 +375,7 @@ nb_number_source_lines = True
 nb_render_text_lexer = "python"
 
 
-# nitpicky options -----------------------------------------------------------
+# -- nitpicky options --------------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-nitpicky
 
 nitpicky = True
@@ -390,7 +391,7 @@ nitpick_ignore_regex = [
 ]
 
 
-# sphinx.ext.todo options ----------------------------------------------------
+# -- sphinx.ext.todo options -------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = False
 todo_emit_warnings = False  # set to True, to discover todos in the code

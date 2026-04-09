@@ -2,6 +2,9 @@
 
 .gv-text-comp { color: #7f2faf; }
 
+/* temporary icon for prefix-dev/pixi using their brand colour (installation section) */
+.fa-puzzle-piece { color: #ffca16; }
+
 /* brand fontawesome icons (fa, fas, far, fab) */
 .fa-apple,
 .fa-arrow-pointer,
@@ -31,6 +34,7 @@
 .fa-flask-vial,
 .fa-folder,
 .fa-github,
+.fa-gears,
 .fa-graduation-cap,
 .fa-group-arrows-rotate,
 .fa-hat-wizard,
@@ -52,7 +56,6 @@
 .fa-people-roof,
 .fa-poo-storm,
 .fa-pump-medical,
-.fa-puzzle-piece,
 .fa-python,
 .fa-quote-left,
 .fa-readme,

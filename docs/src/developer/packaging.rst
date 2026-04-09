@@ -228,8 +228,8 @@ inheritance relationship between its environments:
       test --> geovista
 
 
-:fa:`puzzle-piece` Pixi Features
---------------------------------
+:fa:`gears` Pixi Features
+-------------------------
 
 :fa:`file-code` **Reference:**
 
