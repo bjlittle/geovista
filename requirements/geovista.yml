@@ -65,5 +65,6 @@ dependencies:
 - pip
 - pip:
   - -e .
+  - sphinx-iconify>=0.3.0, <0.4
   - sphinx-tippy>=0.4.3, <0.5
   - vtk-xref>=0.1.1, <0.2
