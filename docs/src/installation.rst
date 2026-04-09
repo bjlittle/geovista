@@ -14,28 +14,28 @@ and `PyPI`_, and can be easily installed:
 
 .. tab-set::
 
-    .. tab-item:: conda
+    .. tab-item:: :iconify:`vscode-icons:file-type-conda` conda
 
         .. code:: console
 
             $ conda create --name myenv --channel conda-forge geovista
             $ conda activate myenv
 
-        ℹ️ Consult the ``conda``
+        :iconify:`twemoji:information` Consult the ``conda``
         `Installation <https://docs.conda.io/projects/conda/en/stable/>`__
         instructions.
 
-    .. tab-item:: pip
+    .. tab-item:: :iconify:`devicon:pypi` pip
 
         .. code:: console
 
             $ pip install geovista
 
-        ℹ️ Consult the ``pip``
+        :iconify:`twemoji:information` Consult the ``pip``
         `Installation <https://pip.pypa.io/en/stable/installation/#>`__
         instructions.
 
-    .. tab-item:: pixi
+    .. tab-item:: :fa:`puzzle-piece` pixi
         :selected:
 
         .. code:: console
@@ -44,17 +44,17 @@ and `PyPI`_, and can be easily installed:
             $ cd myenv
             $ pixi add geovista
 
-        ℹ️ Consult the ``pixi``
+        :iconify:`twemoji:information` Consult the ``pixi``
         `Installation <https://pixi.prefix.dev/latest/installation/>`__
         instructions.
 
-    .. tab-item:: uv
+    .. tab-item:: :iconify:`material-icon-theme:uv` uv
 
         .. code:: console
 
             $ uv pip install geovista
 
-        ℹ️ Consult the ``uv``
+        :iconify:`twemoji:information` Consult the ``uv``
         `Installation <https://docs.astral.sh/uv/getting-started/installation/>`__
         instructions.
 
@@ -64,7 +64,7 @@ then instead install the latest **stable release** as follows:
 
 .. tab-set::
 
-    .. tab-item:: conda
+    .. tab-item:: :iconify:`vscode-icons:file-type-conda` conda
 
         .. code:: console
 
@@ -72,15 +72,16 @@ then instead install the latest **stable release** as follows:
             $ conda activate myenv
             $ pip install geovista[exam]
 
-        ℹ️ `conda`_ users must also install `pip`_ into their environment.
+        :iconify:`twemoji:information` `conda`_ users
+        must also install `pip`_ into their environment.
 
-    .. tab-item:: pip
+    .. tab-item:: :iconify:`devicon:pypi` pip
 
         .. code:: console
 
             $ pip install geovista[exam]
 
-    .. tab-item:: pixi
+    .. tab-item:: :fa:`puzzle-piece` pixi
         :selected:
 
         .. code:: console
@@ -90,7 +91,7 @@ then instead install the latest **stable release** as follows:
             $ pixi add python
             $ pixi add --pypi geovista[exam]
 
-    .. tab-item:: uv
+    .. tab-item:: :iconify:`material-icon-theme:uv` uv
 
         .. code:: console
 
@@ -106,7 +107,7 @@ branch:
 
 .. tab-set::
 
-    .. tab-item:: conda
+    .. tab-item:: :iconify:`vscode-icons:file-type-conda` conda
 
         .. code:: console
 
@@ -114,13 +115,13 @@ branch:
             $ conda activate myenv
             $ pip install git+https://github.com/bjlittle/geovista.git@main
 
-    .. tab-item:: pip
+    .. tab-item:: :iconify:`devicon:pypi` pip
 
         .. code:: console
 
             $ pip install git+https://github.com/bjlittle/geovista.git@main
 
-    .. tab-item:: pixi
+    .. tab-item:: :fa:`puzzle-piece` pixi
         :selected:
 
         .. code:: console
@@ -130,7 +131,7 @@ branch:
             $ pixi add python
             $ pixi add --git https://github.com/bjlittle/geovista.git geovista --branch main --pypi
 
-    .. tab-item:: uv
+    .. tab-item:: :iconify:`material-icon-theme:uv` uv
 
         .. code:: console
 
@@ -170,27 +171,27 @@ Now install ``geovista`` and all its dependencies:
 
 .. tab-set::
 
-    .. tab-item:: conda
+    .. tab-item:: :iconify:`vscode-icons:file-type-conda` conda
 
         .. code:: console
 
             $ conda env create --file requirements/geovista.yml
             $ conda activate geovista
 
-    .. tab-item:: pip
+    .. tab-item:: :iconify:`devicon:pypi` pip
 
         .. code:: console
 
             $ pip install --editable .[all]
 
-    .. tab-item:: pixi
+    .. tab-item:: :fa:`puzzle-piece` pixi
         :selected:
 
         .. code:: console
 
             $ pixi shell --environment geovista
 
-    .. tab-item:: uv
+    .. tab-item:: :iconify:`material-icon-theme:uv` uv
 
         .. code:: console
 
