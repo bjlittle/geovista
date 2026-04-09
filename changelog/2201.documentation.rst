@@ -1,0 +1,4 @@
+Create a ``sitemap.xml`` only for the ``stable`` version of the
+documentation on ``readthedocs`` to improve Search Engine
+Optimization and discoverability.
+(:user:`bjlittle`)

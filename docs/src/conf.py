@@ -592,6 +592,24 @@ html_css_files = [
 ]
 
 
+# -- sphinx-sitemap ----------------------------------------------------------
+# See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
+
+if on_rtd and rtd_version == "stable":
+    extensions.append("sphinx_sitemap")
+
+    html_baseurl = "https://geovista.readthedocs.io/en/stable/"
+
+    sitemap_url_scheme = "{link}"
+    sitemap_excludes = [
+        "search.html",
+        "genindex.html",
+        "_modules/*",
+        "py-modindex.html",
+        "*/sg_execution_times.html",
+    ]
+
+
 # -- intersphinx options -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 

@@ -1,8 +1,5 @@
 .. include:: common.txt
 
-.. meta::
-    :algolia-site-verification: 4BBAD3AF3FC882B3
-
 .. _gv-root:
 .. _tippy-gv-root:
 
