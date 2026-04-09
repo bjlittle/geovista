@@ -1,0 +1,4 @@
+Added `sphinx-iconify <https://github.com/lepture/sphinx-iconify>`__
+``sphinx`` extension to use
+`iconify-icon <https://iconify.design/docs/iconify-icon/>`__ web component.
+(:user:`bjlittle`)
