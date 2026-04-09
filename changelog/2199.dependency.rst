@@ -1,0 +1,5 @@
+Added `sphinx-sitemap <https://github.com/jdillard/sphinx-sitemap>`__
+``sphinx`` extension to generate
+`sitemaps.org <https://www.sitemaps.org/protocol.html>`__ compliant
+documentation sitemaps.
+(:user:`bjlittle`)
