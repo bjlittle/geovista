@@ -535,8 +535,6 @@ sphinxcontrib-bibtex = ">=2.6.0,<3"
 sphinxcontrib-mermaid = ">=1.0.0,<3"
 towncrier = ">=24.8.0,<26"
 trame = "==3.12.0"
-trame-client = ">=3.9.0,<4"
-trame-server = ">=3.4.0,<4"
 trame-vtk = "==2.8.15"                            # https://github.com/pyvista/pyvista/issues/7721 unpin when https://github.com/Kitware/trame-vtk/issues/94 resolved
 trame-vuetify = "==3.1.0"
 
