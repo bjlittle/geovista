@@ -10,8 +10,8 @@
 GeoVista
 ========
 {% else %}
-:py:mod:`{{ obj.id }}`
-=========={{ "=" * obj.id|length }}
+{{ obj.id }}
+{{ "=" * obj.id|length }}
 {% endif %}
 
 .. py:module:: {{ obj.name }}
