@@ -34,8 +34,10 @@ try:
     from ._version import version as __version__
 except ModuleNotFoundError:
     __version__ = "unknown"
+    """The ``major.minor.patch`` version string."""
 
 #: flag when performing image testing
 GEOVISTA_IMAGE_TESTING: bool = (
     os.environ.get("GEOVISTA_IMAGE_TESTING", "false").lower() == "true"
 )
+"""Developer environment variable to control image testing render and theme."""
