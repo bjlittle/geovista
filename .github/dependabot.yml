@@ -39,7 +39,7 @@ updates:
       - dependency-name: "*"
         # ignore patch updates
         update-types: ["version-update:semver-patch"]
-    versioning-strategy: "widen"
+    versioning-strategy: "increase-if-necessary"
     groups:
       pip:
         patterns:
