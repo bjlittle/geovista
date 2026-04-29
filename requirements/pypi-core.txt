@@ -6,7 +6,7 @@ colorcet <3.2
 geopy <2.5
 lazy-loader <0.6
 netCDF4 <1.8
-numpy >=2.2.6,<2.5
+numpy >=2.4.4,<2.5
 platformdirs <4.10
 pooch <1.10
 pykdtree <1.5
