@@ -1,0 +1,3 @@
+Added the `check-manifest <https://github.com/mgedmin/check-manifest>`__ package
+dependency to the ``devs`` `pixi`_ 🧚 ``feature``.
+(:user:`bjlittle`)
