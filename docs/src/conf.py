@@ -307,7 +307,7 @@ tags_badge_colors = {
 tags_create_tags = True
 tags_create_badges = True
 tags_index_head = "Themed content tags:"  # tags landing page intro text
-tags_intro_text = "Tags:"  # prefix text for a tags list
+tags_intro_text = "🏷 Tags:"  # prefix text for a tags list
 tags_overview_title = r""".. _tippy-gv-tagoverview:
 
 :fa:`tags` Tags"""  # title for the tags landing page
