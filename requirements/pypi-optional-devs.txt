@@ -1,3 +1,4 @@
+check-manifest <0.52
 pre-commit <4.7
 ruff <0.16
 zizmor <1.25
