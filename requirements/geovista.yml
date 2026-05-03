@@ -3,6 +3,7 @@ channels:
 - conda-forge
 - nodefaults
 dependencies:
+- check-manifest >=0.51.0,<0.52
 - fastparquet >=2024.11.0,<2027
 - h3-py >=4.2.2,<5
 - pandas >=2.2.3,<3.1
