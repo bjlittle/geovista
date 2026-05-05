@@ -81,9 +81,6 @@ Notable third-party environment variables that influence the behaviour of
     +======================================+===============+=========================================================+
     | :guilabel:`CI`                       | ``Platform``  | Default environment variable set on a `GitHub Action`_  |
     |                                      |               | runner.                                                 |
-    |                                      |               |                                                         |
-    |                                      |               | Used by ``geovista`` to start an X virtual frame buffer |
-    |                                      |               | display server via :func:`pyvista.start_xvfb`.          |
     +--------------------------------------+---------------+---------------------------------------------------------+
     | :guilabel:`EAGER_IMPORT`             | ``User``      | Set this environment variable to **disable** lazy       |
     |                                      |               | loading of ``geovista`` subpackages and external        |
@@ -99,9 +96,6 @@ Notable third-party environment variables that influence the behaviour of
     +--------------------------------------+---------------+---------------------------------------------------------+
     | :guilabel:`READTHEDOCS`              | ``Platform``  | Default environment variable set on a `Read the Docs`_  |
     |                                      |               | runner.                                                 |
-    |                                      |               |                                                         |
-    |                                      |               | Used by ``geovista`` to start an X virtual frame buffer |
-    |                                      |               | display server via :func:`pyvista.start_xvfb`.          |
     +--------------------------------------+---------------+---------------------------------------------------------+
     | :guilabel:`XDG_CACHE_HOME`           | ``User``      | Configures the root directory (absolute path) where     |
     |                                      |               | ``geovista`` resources will be downloaded and cached.   |
