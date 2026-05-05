@@ -11,4 +11,4 @@ platformdirs <4.10
 pooch <1.10
 pykdtree <1.5
 pyproj <3.8
-pyvista >=0.47.0,<0.48
+pyvista >=0.47.0,<0.49
