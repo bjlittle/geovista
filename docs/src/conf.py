@@ -689,10 +689,6 @@ pyvista.FIGURE_PATH = str(pyvista_images_dir)
 if not pyvista_images_dir.exists():
     pyvista_images_dir.mkdir(parents=True, exist_ok=True)
 
-# We also need to start this on CI services and GitHub Actions has a CI env var
-if on_rtd or os.environ.get("CI"):
-    pyvista.start_xvfb()
-
 scraper = DynamicScraper()
 
 

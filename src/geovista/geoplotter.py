@@ -1310,7 +1310,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         ----------
         points : ArrayLike or PolyData, optional
             Array of xyz points, or the points of the mesh to be rendered.
-            Passed to :meth:`pyvista.core.utilities.helpers.wrap` without any
+            Passed to :func:`pyvista.wrap` without any
             cartographic transformation, i.e. ``0 0 0`` is centre of the globe
             (the plot origin), ``0 0 1`` is the north pole.
         xs : ArrayLike, optional
@@ -1394,7 +1394,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 raise ValueError(emsg)
 
             if not pv.core.utilities.helpers.is_pyvista_dataset(points):
-                points = pv.core.utilities.helpers.wrap(points)
+                points = pv.wrap(points)
 
             mesh = points
 
