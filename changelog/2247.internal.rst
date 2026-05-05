@@ -1,0 +1,2 @@
+Dropped the use of ``pyvista.start_xvfb`` when building the documentation.
+(:user:`bjlittle`)
