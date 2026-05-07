@@ -13,8 +13,10 @@ The latest **stable release** of ``geovista`` is available on `conda-forge`_
 and `PyPI`_, and can be easily installed:
 
 .. tab-set::
+    :sync-group: install
 
     .. tab-item:: :iconify:`vscode-icons:file-type-conda` conda
+        :sync: conda
 
         .. code:: console
 
@@ -26,6 +28,7 @@ and `PyPI`_, and can be easily installed:
         instructions.
 
     .. tab-item:: :iconify:`devicon:pypi` pip
+        :sync: pip
 
         .. code:: console
 
@@ -36,6 +39,7 @@ and `PyPI`_, and can be easily installed:
         instructions.
 
     .. tab-item:: :fa:`puzzle-piece` pixi
+        :sync: pixi
         :selected:
 
         .. code:: console
@@ -49,6 +53,7 @@ and `PyPI`_, and can be easily installed:
         instructions.
 
     .. tab-item:: :iconify:`material-icon-theme:uv` uv
+        :sync: uv
 
         .. code:: console
 
@@ -63,8 +68,10 @@ Additional package dependencies will be required by some of the
 then instead install the latest **stable release** as follows:
 
 .. tab-set::
+    :sync-group: install
 
     .. tab-item:: :iconify:`vscode-icons:file-type-conda` conda
+        :sync: conda
 
         .. code:: console
 
@@ -76,12 +83,14 @@ then instead install the latest **stable release** as follows:
         must also install `pip`_ into their environment.
 
     .. tab-item:: :iconify:`devicon:pypi` pip
+        :sync: pip
 
         .. code:: console
 
             $ pip install geovista[exam]
 
     .. tab-item:: :fa:`puzzle-piece` pixi
+        :sync: pixi
         :selected:
 
         .. code:: console
@@ -92,6 +101,7 @@ then instead install the latest **stable release** as follows:
             $ pixi add --pypi geovista[exam]
 
     .. tab-item:: :iconify:`material-icon-theme:uv` uv
+        :sync: uv
 
         .. code:: console
 
@@ -106,8 +116,10 @@ install the latest **development version** from the :fab:`github` ``main``
 branch:
 
 .. tab-set::
+    :sync-group: install
 
     .. tab-item:: :iconify:`vscode-icons:file-type-conda` conda
+        :sync: conda
 
         .. code:: console
 
@@ -116,12 +128,14 @@ branch:
             $ pip install git+https://github.com/bjlittle/geovista.git@main
 
     .. tab-item:: :iconify:`devicon:pypi` pip
+        :sync: pip
 
         .. code:: console
 
             $ pip install git+https://github.com/bjlittle/geovista.git@main
 
     .. tab-item:: :fa:`puzzle-piece` pixi
+        :sync: pixi
         :selected:
 
         .. code:: console
@@ -132,6 +146,7 @@ branch:
             $ pixi add --git https://github.com/bjlittle/geovista.git geovista --branch main --pypi
 
     .. tab-item:: :iconify:`material-icon-theme:uv` uv
+        :sync: uv
 
         .. code:: console
 
@@ -170,8 +185,10 @@ Change to the ``geovista`` root directory of the cloned repository:
 Now install ``geovista`` and all its dependencies:
 
 .. tab-set::
+    :sync-group: install
 
     .. tab-item:: :iconify:`vscode-icons:file-type-conda` conda
+        :sync: conda
 
         .. code:: console
 
@@ -179,12 +196,14 @@ Now install ``geovista`` and all its dependencies:
             $ conda activate geovista
 
     .. tab-item:: :iconify:`devicon:pypi` pip
+        :sync: pip
 
         .. code:: console
 
             $ pip install --editable .[all]
 
     .. tab-item:: :fa:`puzzle-piece` pixi
+        :sync: pixi
         :selected:
 
         .. code:: console
@@ -192,6 +211,7 @@ Now install ``geovista`` and all its dependencies:
             $ pixi shell --environment geovista
 
     .. tab-item:: :iconify:`material-icon-theme:uv` uv
+        :sync: uv
 
         .. code:: console
 
