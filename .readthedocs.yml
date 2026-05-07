@@ -27,7 +27,7 @@ build:
       - git stash pop || true
     build:
       html:
-        - pixi run --frozen --environment docs sphinx-build -T -b html docs/src $READTHEDOCS_OUTPUT/html
+        - xvfb-run -a -s "-screen 0 1024x768x24" pixi run --frozen --environment docs sphinx-build -T -b html docs/src $READTHEDOCS_OUTPUT/html
 
 sphinx:
   configuration: docs/src/conf.py
