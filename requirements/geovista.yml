@@ -6,6 +6,7 @@ dependencies:
 - check-manifest >=0.51.0,<0.52
 - fastparquet >=2024.11.0,<2027
 - h3-py >=4.2.2,<5
+- jupyterlab >=4.5.7,<5
 - pandas >=2.2.3,<3.1
 - pre-commit >=4.2.0,<5
 - rasterio >=1.4.3,<2
@@ -36,6 +37,7 @@ dependencies:
 - trame ==3.12.0
 - trame-vtk ==2.8.15
 - trame-vuetify ==3.1.0
+- wurlitzer >=3.1.1,<4
 - pip >=25.1.1,<26
 - python 3.13.*
 - python >=3.12
