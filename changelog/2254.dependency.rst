@@ -1,0 +1,5 @@
+Added the `jupyterlab <https://github.com/jupyterlab/jupyterlab>`__ package
+dependency to the ``devs`` `pixi`_ 🧚 ``feature``, and added the
+`wurlitzer <https://github.com/minrk/wurlitzer>`__ package dependency
+to the ``docs`` `pixi`_ 🧚 ``feature``.
+(:user:`bjlittle`)
