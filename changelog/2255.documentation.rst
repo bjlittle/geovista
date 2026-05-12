@@ -1,0 +1,3 @@
+Used the `wurlitzer <https://github.com/minrk/wurlitzer>`__ ``IPython`` extension
+to remove third-party diagnostic output from the rendered ``myst-nb`` tutorial.
+(:user:`bjlittle`)
