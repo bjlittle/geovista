@@ -49,7 +49,6 @@ import cmocean
 
 import geovista as gv
 from geovista.pantry.data import cloud_amount
-import geovista.theme
 
 # Multiplication factor of the zlevel for cloud surface stratification.
 ZLEVEL_FACTOR: int = 75

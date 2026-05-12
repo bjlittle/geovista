@@ -43,7 +43,6 @@ import matplotlib as mpl
 
 import geovista as gv
 from geovista.pantry.data import icon_soil
-import geovista.theme
 
 
 def main() -> None:

@@ -51,7 +51,6 @@ import pyvista as pv
 
 import geovista as gv
 from geovista.pantry.data import name_reykjanes
-import geovista.theme
 
 
 def main() -> None:

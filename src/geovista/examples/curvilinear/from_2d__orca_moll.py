@@ -43,7 +43,6 @@ from __future__ import annotations
 import geovista as gv
 from geovista.common import cast_UnstructuredGrid_to_PolyData as cast
 from geovista.pantry.data import nemo_orca2
-import geovista.theme
 from geovista.transform import transform_mesh
 
 

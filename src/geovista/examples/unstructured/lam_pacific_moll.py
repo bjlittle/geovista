@@ -41,7 +41,6 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.pantry.data import lam_pacific
-import geovista.theme
 
 
 def main() -> None:

@@ -40,6 +40,11 @@ name = "geovista"
 requires-python = ">=3.12"
 
 
+[project.entry-points."pyvista.themes"]
+geovista = "geovista.themes:GeoVistaTheme"
+geovista_document = "geovista.themes:GeoVistaDocumentTheme"
+
+
 [project.urls]
 Changelog = "https://geovista.readthedocs.io/en/latest/reference/whatsnew/index.html#gv-reference-whatsnew"
 Discussions = "https://github.com/bjlittle/geovista/discussions"
@@ -495,7 +500,7 @@ platformdirs = ">=4.3.8,<5"
 pooch = ">=1.8.2,<2"
 pykdtree = ">=1.4.1,<2"
 pyproj = ">=3.7.1,<4"
-pyvista = ">=0.47.0,<0.49.0"
+pyvista = ">=0.48.0,<0.49.0"
 setuptools = ">=80.9.0,<81"
 setuptools-scm = ">=8.3.1,<9"
 

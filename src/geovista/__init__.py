@@ -23,9 +23,9 @@ Notes
 
 from __future__ import annotations
 
-import os
-
 import lazy_loader as lazy
+
+from .themes import set_plot_theme
 
 # submodules are lazily imported
 (__getattr__, __dir__, __all__) = lazy.attach_stub(__name__, __file__)
@@ -36,8 +36,4 @@ except ModuleNotFoundError:
     __version__ = "unknown"
     """The ``major.minor.patch`` version string."""
 
-#: flag when performing image testing
-GEOVISTA_IMAGE_TESTING: bool = (
-    os.environ.get("GEOVISTA_IMAGE_TESTING", "false").lower() == "true"
-)
-"""Developer environment variable to control image testing render and theme."""
+set_plot_theme("geovista")

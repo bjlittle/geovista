@@ -62,7 +62,6 @@ import pyvista as pv
 
 import geovista as gv
 from geovista.pantry.data import lfric_winds
-import geovista.theme
 
 
 def main() -> None:

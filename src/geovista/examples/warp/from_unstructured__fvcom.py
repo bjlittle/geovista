@@ -48,7 +48,6 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.pantry.data import fvcom_tamar
-import geovista.theme
 
 
 def main() -> None:

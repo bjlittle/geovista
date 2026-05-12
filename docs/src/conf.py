@@ -418,6 +418,7 @@ numpydoc_xref_aliases = {
     "PolyData": "pyvista.PolyData",
     "StructuredGrid": "pyvista.StructuredGrid",
     "Texture": "pyvista.Texture",
+    "Theme": "pyvista.plotting.themes.Theme",
     "VectorLike": "geovista.common.VectorLike",
 }
 numpydoc_xref_ignore = {"optional", "default", "of"}
@@ -676,7 +677,7 @@ pyvista.set_error_output_file("errors.txt")
 pyvista.OFF_SCREEN = True
 
 # Preferred plotting style for documentation
-pyvista.set_plot_theme("document_build")
+pyvista.set_plot_theme("geovista_document")
 pyvista.set_jupyter_backend(None)
 
 # Necessary when building the sphinx gallery
@@ -740,7 +741,7 @@ REGEX = re.compile(PATTERN, flags=re.DOTALL | re.MULTILINE | re.VERBOSE)
 
 pyvista_plot_setup = """
 from pyvista import set_plot_theme as __s_p_t
-__s_p_t('document_build')
+__s_p_t('geovista_document')
 del __s_p_t
 """
 pyvista_plot_cleanup = pyvista_plot_setup

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import pyvista as pv
 
-from . import GEOVISTA_IMAGE_TESTING
+from .config import GEOVISTA_IMAGE_TESTING
 
 theme = pv.themes.Theme()
 """Customised plotting :class:`~pyvista.plotting.themes.Theme` for geovista."""

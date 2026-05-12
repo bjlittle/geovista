@@ -23,6 +23,8 @@ from warnings import warn
 
 import lazy_loader as lazy
 
+import geovista.config as gvc
+
 from .bridge import Transform
 from .common import (
     GV_FIELD_ZSCALE,
@@ -66,6 +68,7 @@ from .pantry.meshes import (
     regular_grid,
 )
 from .raster import wrap_texture
+from .themes import resolve_theme_name
 from .transform import transform_mesh, transform_point
 
 if TYPE_CHECKING:
@@ -73,6 +76,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
     import pyvista as pv
+    from pyvista.plotting.themes import Theme
 
     from geovista.crs import CRSLike
 
@@ -160,11 +164,15 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     """
 
+    if TYPE_CHECKING:
+        theme: Theme
+
     def __init__(
         self,
         *args: Any | None,
         crs: CRSLike | None = None,
         manifold: BBox | None = None,
+        theme: Theme | str | None = None,
         **kwargs: Any | None,
     ) -> None:
         """Create geospatial aware plotter.
@@ -180,6 +188,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         manifold : BBox, optional
             Apply the `manifold` to each mesh added to the plotter so that only
             the region enclosed by the `manifold` is rendered.
+        theme : Theme or str, optional
+            Plot specific theme.
         **kwargs : dict, optional
             See :class:`pyvista.Plotter` for further details.
 
@@ -213,6 +223,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         # the manifold defining the AOI (area of interest) for geometries
         # added to the plotter i.e., sample extraction within its boundary
         self.manifold = manifold
+
+        if isinstance(theme, str):
+            theme = resolve_theme_name(theme)
+
+        if theme is not None:
+            kwargs["theme"] = theme
 
         # status of gpu opacity support
         self._missing_opacity = False
@@ -820,7 +836,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 "background_color": self.background_color,  # type: ignore[attr-defined]
                 "fill": True,
             }
-            if pv.global_theme.name == "geovista"
+            if self.theme.name.startswith("geovista")
             else {}
         )
 
@@ -992,10 +1008,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        from . import GEOVISTA_IMAGE_TESTING  # noqa: PLC0415
-
         if show_labels is None:
-            show_labels = False if GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
+            show_labels = False if gvc.GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
 
         if zlevel is None:
             zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
@@ -1222,10 +1236,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
-        from . import GEOVISTA_IMAGE_TESTING  # noqa: PLC0415
-
         if show_labels is None:
-            show_labels = False if GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
+            show_labels = False if gvc.GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
 
         if zlevel is None:
             zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL

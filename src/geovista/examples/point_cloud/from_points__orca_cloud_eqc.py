@@ -44,7 +44,6 @@ from __future__ import annotations
 import geovista as gv
 from geovista.pantry.data import nemo_orca2_gradient
 from geovista.pantry.meshes import ZLEVEL_SCALE_CLOUD
-import geovista.theme
 
 
 def main() -> None:

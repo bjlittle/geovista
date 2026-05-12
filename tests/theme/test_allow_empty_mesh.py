@@ -13,10 +13,10 @@ import pytest
 import pyvista as pv
 
 import geovista
-from geovista import GEOVISTA_IMAGE_TESTING
+import geovista.config as gvc
 
 
-@pytest.mark.skipif(GEOVISTA_IMAGE_TESTING, reason="geovista image testing")
+@pytest.mark.skipif(gvc.GEOVISTA_IMAGE_TESTING, reason="geovista image testing")
 def test_default():
     """Test no trap for adding an empty mesh to plotter with default theme."""
     assert pv.global_theme.name != "geovista"
@@ -25,7 +25,7 @@ def test_default():
     _ = p.add_mesh(empty)
 
 
-@pytest.mark.skipif(GEOVISTA_IMAGE_TESTING, reason="geovista image testing")
+@pytest.mark.skipif(gvc.GEOVISTA_IMAGE_TESTING, reason="geovista image testing")
 def test_theme():
     """Test trap for adding an empty mesh to plotter with geovista theme."""
     original = pv.global_theme
