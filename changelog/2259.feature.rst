@@ -1,0 +1,17 @@
+Added the :mod:`geovista.themes` module which adopts the extensible
+:class:`pyvista.plotting.themes.Theme` plugin registry framework for
+third-party packages (``pyvista >=0.48.0``). Includes the new
+:class:`~geovista.themes.GeoVistaDocumentTheme` and
+:class:`~geovista.themes.GeoVistaTheme` both of which are discoverable
+and registered by `pyvista`_ through ``entry-points``
+(`PEP621 <https://peps.python.org/pep-0621/#entry-points>`__). The
+:class:`~geovista.themes.GeoVistaTheme` will be loaded and enabled
+by default. Override this behaviour with the
+:ref:`GEOVISTA_DISABLE_PLOT_THEME <tippy-gv-reference-environment-internal>`
+environment variable. Additionally provisions the following functionality:
+
+* :func:`geovista.themes.resolve_theme_name`
+* :func:`geovista.themes.restore_plot_theme`
+* :func:`geovista.themes.set_plot_theme`
+
+(:user:`bjlittle`)

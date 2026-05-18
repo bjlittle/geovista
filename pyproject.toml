@@ -315,7 +315,7 @@ max-statements = 91
   # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
   "ANN401", # flake8-annotations: Dynamically typed expressions (typing.Any).
 ]
-"test_*.py" = [
+"test*.py" = [
   # flake8-annotations (ANN)
   # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
   "ANN001", # Missing type annotation for function argument.

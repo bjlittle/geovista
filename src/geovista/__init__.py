@@ -36,4 +36,4 @@ except ModuleNotFoundError:
     __version__ = "unknown"
     """The ``major.minor.patch`` version string."""
 
-set_plot_theme("geovista")
+set_plot_theme("geovista", bootstrap=True)

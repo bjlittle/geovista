@@ -23,7 +23,7 @@ BASE_DIR: Path = CACHE.abspath / "tests" / "unit"
 CI: bool = os.environ.get("CI", "false").lower() == "true"
 
 # prepare geovista/pyvista for off-screen image testing
-pv.global_theme.load_theme(pv.plotting.themes._TestingTheme())  # noqa: SLF001
+pv.global_theme.load_theme(pv.plotting.themes._TestingTheme())
 pv.global_theme.background = "white"
 pv.global_theme.cmap = "balance"
 pv.global_theme.font.color = "black"
