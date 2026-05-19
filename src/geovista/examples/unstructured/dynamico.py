@@ -40,7 +40,6 @@ from __future__ import annotations
 
 import geovista as gv
 from geovista.pantry.data import dynamico
-import geovista.theme
 
 
 def main() -> None:

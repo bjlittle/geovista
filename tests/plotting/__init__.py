@@ -13,8 +13,8 @@ import shutil
 
 import pyvista as pv
 
-import geovista as gv
 from geovista.cache import CACHE
+import geovista.config as gvc
 
 BASE_DIR: Path = CACHE.abspath / "tests" / "unit"
 
@@ -23,13 +23,13 @@ BASE_DIR: Path = CACHE.abspath / "tests" / "unit"
 CI: bool = os.environ.get("CI", "false").lower() == "true"
 
 # prepare geovista/pyvista for off-screen image testing
-pv.global_theme.load_theme(pv.plotting.themes._TestingTheme())  # noqa: SLF001
+pv.global_theme.load_theme(pv.plotting.themes._TestingTheme())
 pv.global_theme.background = "white"
 pv.global_theme.cmap = "balance"
 pv.global_theme.font.color = "black"
 pv.global_theme.window_size = [450, 300]
 pv.OFF_SCREEN = True
-gv.GEOVISTA_IMAGE_TESTING = True
+gvc.GEOVISTA_IMAGE_TESTING = True
 
 # prepare to download image cache for each image test
 # also see reference in pyproject.toml

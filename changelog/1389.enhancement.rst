@@ -1,2 +1,2 @@
-Extended the :mod:`geovista.theme` to automatically reposition an outlined
+Extended the ``geovista.theme`` to automatically reposition an outlined
 and filled scalar bar for improved readability. (:user:`bjlittle`)

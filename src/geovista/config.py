@@ -39,17 +39,17 @@ Notes
 
 from __future__ import annotations
 
-from os import environ
+import os
 from pathlib import Path
 
 from platformdirs import user_cache_dir
 
-__all__ = ["resources"]
+__all__ = ["GEOVISTA_DISABLE_PLOT_THEME", "GEOVISTA_IMAGE_TESTING", "resources"]
 
 # see https://specifications.freedesktop.org/basedir/latest/
 
 resources: dict[str, Path] = {
-    "cache_dir": Path(environ.get("XDG_CACHE_HOME", user_cache_dir())) / __package__
+    "cache_dir": Path(os.environ.get("XDG_CACHE_HOME", user_cache_dir())) / __package__
 }
 """Resources configuration dictionary."""
 
@@ -69,3 +69,14 @@ try:
     update_config(resources)
 except ImportError:
     pass
+
+
+GEOVISTA_DISABLE_PLOT_THEME: bool = (
+    os.environ.get("GEOVISTA_DISABLE_PLOT_THEME", "false").lower() != "false"
+)
+"""Environment variable to control plot theme override."""
+
+GEOVISTA_IMAGE_TESTING: bool = (
+    os.environ.get("GEOVISTA_IMAGE_TESTING", "false").lower() != "false"
+)
+"""Developer environment variable to control image testing render and theme."""

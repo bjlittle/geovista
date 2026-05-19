@@ -1,0 +1,2 @@
+Bumped the minimum pin ``pyvista >=0.48.0``.
+(:user:`bjlittle`)

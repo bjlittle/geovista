@@ -31,7 +31,6 @@ from __future__ import annotations
 import numpy as np
 
 import geovista as gv
-import geovista.theme
 
 
 def main() -> None:

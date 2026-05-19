@@ -65,7 +65,6 @@ import pyvista as pv
 
 import geovista as gv
 from geovista.pantry import fetch_raster
-import geovista.theme
 
 
 def main() -> None:

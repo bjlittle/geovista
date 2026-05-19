@@ -1,0 +1,7 @@
+Replaced the ``geovista.theme`` module with :mod:`geovista.themes`.
+Previously the global plotting theme was updated as a side-effect
+by importing ``geovista.theme``. Instead :mod:`geovista.themes`
+adopts the new extensible :class:`pyvista.plotting.themes.Theme`
+plugin registry framework for third-party packages available
+from ``>=0.48.0``.
+(:user:`bjlittle`)

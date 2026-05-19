@@ -16,54 +16,72 @@ Internal and external (third-party) environment variables for either a
 
 Package environment variables that influence the behaviour of ``geovista``:
 
-.. table:: Internal Variables
+.. _gv-reference-environment-internal:
+.. _tippy-gv-reference-environment-internal:
+
+.. table:: Internal Environment Variables
     :align: center
     :widths: auto
 
-    +--------------------------------------+---------------+-----------------------------------------------------------+
-    | Name                                 | Type          | Description                                               |
-    +======================================+===============+===========================================================+
-    | :guilabel:`GEOVISTA_CACHEDIR`        | ``User``      | Configures the root directory (absolute path) where       |
-    |                                      |               | ``geovista`` resources will be downloaded and cached.     |
-    |                                      |               | See :data:`~geovista.cache.GEOVISTA_CACHEDIR`.            |
-    |                                      |               |                                                           |
-    |                                      |               | Defaults to the ``geovista`` sub-directory under the user |
-    |                                      |               | and platform specific cache directory returned by         |
-    |                                      |               | :func:`platformdirs.user_cache_dir`.                      |
-    +--------------------------------------+---------------+-----------------------------------------------------------+
-    | :guilabel:`GEOVISTA_DATA_VERSION`    | ``User``      | Configures the version of data resources to be downloaded |
-    |                                      |               | and cached from the :data:`~geovista.cache.BASE_URL`. See |
-    |                                      |               | :data:`~geovista.cache.GEOVISTA_DATA_VERSION`.            |
-    |                                      |               |                                                           |
-    |                                      |               | Defaults to the specific                                  |
-    |                                      |               | :data:`~geovista.cache.DATA_VERSION` bundled with the     |
-    |                                      |               | version of ``geovista``.                                  |
-    +--------------------------------------+---------------+-----------------------------------------------------------+
-    | :guilabel:`GEOVISTA_IMAGE_TESTING`   | ``Developer`` | When set, the :mod:`geovista.theme` will not be loaded    |
-    |                                      |               | and :mod:`geovista.gridlines` will not show labels.       |
-    |                                      |               |                                                           |
-    |                                      |               | This allows image testing to be more robust, particularly |
-    |                                      |               | by being independent of any ``geovista`` theme changes.   |
-    |                                      |               |                                                           |
-    |                                      |               | Image tests default to using the                          |
-    |                                      |               | :doc:`pyvista <pyvista:index>` testing theme.             |
-    +--------------------------------------+---------------+-----------------------------------------------------------+
-    | :guilabel:`GEOVISTA_POOCH_MUTE`      | ``User``      | Controls the verbosity level of the ``geovista``          |
-    |                                      |               | :data:`~geovista.cache.CACHE` manager. Set to ``True`` to |
-    |                                      |               | silence the :mod:`pooch` logger diagnostic warnings.      |
-    |                                      |               | See :data:`~geovista.cache.GEOVISTA_POOCH_MUTE` and also  |
-    |                                      |               | :func:`~geovista.cache.pooch_mute`.                       |
-    |                                      |               |                                                           |
-    |                                      |               | Defaults to ``False``.                                    |
-    +--------------------------------------+---------------+-----------------------------------------------------------+
-    | :guilabel:`GEOVISTA_SPHX_GLR_SERIAL` | ``Developer`` | When set, disables ``parallel`` building of               |
-    |                                      |               | `sphinx-gallery`_.                                        |
-    +--------------------------------------+---------------+-----------------------------------------------------------+
-    | :guilabel:`GEOVISTA_VTK_WARNINGS`    | ``User``      | Set to ``True`` to enable backend `VTK`_ diagnostic       |
-    |                                      |               | warnings.                                                 |
-    |                                      |               |                                                           |
-    |                                      |               | Defaults to ``False``.                                    |
-    +--------------------------------------+---------------+-----------------------------------------------------------+
+    +-----------------------------------------+---------------+-----------------------------------------------------------+
+    | Name                                    | Type          | Description                                               |
+    +=========================================+===============+===========================================================+
+    | :guilabel:`GEOVISTA_CACHEDIR`           | ``User``      | Configures the root directory (absolute path) where       |
+    |                                         |               | ``geovista`` resources will be downloaded and cached.     |
+    |                                         |               | See :data:`~geovista.cache.GEOVISTA_CACHEDIR`.            |
+    |                                         |               |                                                           |
+    |                                         |               | Defaults to the ``geovista`` sub-directory under the user |
+    |                                         |               | and platform specific cache directory returned by         |
+    |                                         |               | :func:`platformdirs.user_cache_dir`.                      |
+    +-----------------------------------------+---------------+-----------------------------------------------------------+
+    | :guilabel:`GEOVISTA_DATA_VERSION`       | ``User``      | Configures the version of data resources to be downloaded |
+    |                                         |               | and cached from the :data:`~geovista.cache.BASE_URL`. See |
+    |                                         |               | :data:`~geovista.cache.GEOVISTA_DATA_VERSION`.            |
+    |                                         |               |                                                           |
+    |                                         |               | Defaults to the specific                                  |
+    |                                         |               | :data:`~geovista.cache.DATA_VERSION` bundled with the     |
+    |                                         |               | version of ``geovista``.                                  |
+    +-----------------------------------------+---------------+-----------------------------------------------------------+
+    | :guilabel:`GEOVISTA_DISABLE_PLOT_THEME` | ``User``      | When set, a plotting theme will not be loaded whenever    |
+    |                                         |               | :func:`geovista.themes.set_plot_theme` is called.         |
+    |                                         |               |                                                           |
+    |                                         |               | By default the :class:`~geovista.themes.GeoVistaTheme` is |
+    |                                         |               | enabled whenever ``geovista`` is imported. This           |
+    |                                         |               | environment variable allows users to override this        |
+    |                                         |               | default behaviour and allow prior `pyvista`_ or custom    |
+    |                                         |               | plot themes to remain activated.                          |
+    |                                         |               |                                                           |
+    |                                         |               | Also see :func:`geovista.themes.restore_plot_theme`       |
+    |                                         |               | to undo the last call to                                  |
+    |                                         |               | :func:`geovista.themes.set_plot_theme`.                   |
+    +-----------------------------------------+---------------+-----------------------------------------------------------+
+    | :guilabel:`GEOVISTA_IMAGE_TESTING`      | ``Developer`` | When set, plotting themes will not be loaded whenever     |
+    |                                         |               | :func:`geovista.themes.set_plot_theme` is called.         |
+    |                                         |               | Additionally, labels will not be rendered for             |
+    |                                         |               | :mod:`geovista.gridlines`.                                |
+    |                                         |               |                                                           |
+    |                                         |               | This allows image testing to be more robust, particularly |
+    |                                         |               | by being independent of any ``geovista`` theme changes.   |
+    |                                         |               |                                                           |
+    |                                         |               | Image tests default to using the                          |
+    |                                         |               | :doc:`pyvista <pyvista:index>` testing theme.             |
+    +-----------------------------------------+---------------+-----------------------------------------------------------+
+    | :guilabel:`GEOVISTA_POOCH_MUTE`         | ``User``      | Controls the verbosity level of the ``geovista``          |
+    |                                         |               | :data:`~geovista.cache.CACHE` manager. Set to ``True`` to |
+    |                                         |               | silence the :mod:`pooch` logger diagnostic warnings.      |
+    |                                         |               | See :data:`~geovista.cache.GEOVISTA_POOCH_MUTE` and also  |
+    |                                         |               | :func:`~geovista.cache.pooch_mute`.                       |
+    |                                         |               |                                                           |
+    |                                         |               | Defaults to ``False``.                                    |
+    +-----------------------------------------+---------------+-----------------------------------------------------------+
+    | :guilabel:`GEOVISTA_SPHX_GLR_SERIAL`    | ``Developer`` | When set, disables ``parallel`` building of the           |
+    |                                         |               | `sphinx-gallery`_.                                        |
+    +-----------------------------------------+---------------+-----------------------------------------------------------+
+    | :guilabel:`GEOVISTA_VTK_WARNINGS`       | ``User``      | Set to ``True`` to enable backend `VTK`_ diagnostic       |
+    |                                         |               | warnings.                                                 |
+    |                                         |               |                                                           |
+    |                                         |               | Defaults to ``False``.                                    |
+    +-----------------------------------------+---------------+-----------------------------------------------------------+
 
 
 :far:`square-caret-up` Third-Party
@@ -72,7 +90,7 @@ Package environment variables that influence the behaviour of ``geovista``:
 Notable third-party environment variables that influence the behaviour of
 ``geovista``:
 
-.. table:: External Variables
+.. table:: External Environment Variables
     :align: center
     :widths: auto
 
@@ -93,6 +111,19 @@ Notable third-party environment variables that influence the behaviour of
     +--------------------------------------+---------------+---------------------------------------------------------+
     | :guilabel:`PYVISTA_BUILDING_GALLERY` | ``Developer`` | Set to ``true`` when building the documentation         |
     |                                      |               | `sphinx-gallery`_.                                      |
+    +--------------------------------------+---------------+---------------------------------------------------------+
+    | :guilabel:`PYVISTA_OFF_SCREEN`       | ``User``      | Set this environment variable to enable off-screen      |
+    |                                      |               | rendering.                                              |
+    +--------------------------------------+---------------+---------------------------------------------------------+
+    | :guilabel:`PYVISTA_PLOT_THEME`       | ``User``      | Set this environment variable to the name of a          |
+    |                                      |               | registered `pyvista`_ plot theme to be loaded and       |
+    |                                      |               | enabled. Overrides the initial default configuration of |
+    |                                      |               | the :class:`~geovista.themes.GeoVistaTheme` when        |
+    |                                      |               | importing ``geovista``.                                 |
+    |                                      |               |                                                         |
+    |                                      |               | May also be set to the ``package.module:ClassName``     |
+    |                                      |               | dotted path of an importable                            |
+    |                                      |               | :class:`pyvista.plotting.themes.Theme` subclass.        |
     +--------------------------------------+---------------+---------------------------------------------------------+
     | :guilabel:`READTHEDOCS`              | ``Platform``  | Default environment variable set on a `Read the Docs`_  |
     |                                      |               | runner.                                                 |
