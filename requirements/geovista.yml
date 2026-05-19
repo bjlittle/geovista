@@ -34,9 +34,7 @@ dependencies:
 - sphinxcontrib-bibtex >=2.6.0,<3
 - sphinxcontrib-mermaid >=1.0.0,<3
 - towncrier >=24.8.0,<26
-- trame ==3.12.0
-- trame-vtk ==2.8.15
-- trame-vuetify ==3.1.0
+- trame-pyvista >=0.1.1,<0.2
 - wurlitzer >=3.1.1,<4
 - pip >=25.1.1,<26
 - python 3.13.*
@@ -60,7 +58,7 @@ dependencies:
 - pooch >=1.8.2,<2
 - pykdtree >=1.4.1,<2
 - pyproj >=3.7.1,<4
-- pyvista >=0.47.0,<0.49.0
+- pyvista >=0.48.0,<0.49.0
 - setuptools >=80.9.0,<81
 - setuptools-scm >=8.3.1,<9
 - pip
