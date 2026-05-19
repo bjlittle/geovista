@@ -1,6 +1,6 @@
 # Reference:
+#   - https://github.com/actions/checkout
 #   - https://github.com/actions/labeler
-#   - https://github.com/actions-ecosystem/action-add-labels
 
 name: ci-label
 
@@ -11,6 +11,10 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
 
 permissions:
   contents: read
@@ -29,57 +33,68 @@ jobs:
 
       - uses: actions/labeler@f27b608878404679385c85cfa523b85ccb86e213
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'pre-commit-ci[bot]' }}
-        with:
-          labels: 'skip-changelog'
+      - if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'pre-commit-ci[bot]' }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'skip-changelog'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'breaking-change') || startsWith(github.event.pull_request.head.ref, 'breaking') || startsWith(github.event.pull_request.head.ref, 'break') }}
-        with:
-          labels: 'breaking-change'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'breaking-change') || startsWith(github.event.pull_request.head.ref, 'breaking') || startsWith(github.event.pull_request.head.ref, 'break') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'breaking-change'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'bug') || startsWith(github.event.pull_request.head.ref, 'fix') || startsWith(github.event.pull_request.head.ref, 'patch') }}
-        with:
-          labels: 'type: bug'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'bug') || startsWith(github.event.pull_request.head.ref, 'fix') || startsWith(github.event.pull_request.head.ref, 'patch') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'type: bug'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'debt') }}
-        with:
-          labels: 'type: tech-debt'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'debt') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'type: tech-debt'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'doc') || startsWith(github.event.pull_request.head.ref, 'docs') }}
-        with:
-          labels: 'type: documentation'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'doc') || startsWith(github.event.pull_request.head.ref, 'docs') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'type: documentation'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'feat') || startsWith(github.event.pull_request.head.ref, 'feature') }}
-        with:
-          labels: 'type: enhancement'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'feat') || startsWith(github.event.pull_request.head.ref, 'feature') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'type: enhancement'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'ex') || startsWith(github.event.pull_request.head.ref, 'example') || startsWith(github.event.pull_request.head.ref, 'examples') }}
-        with:
-          labels: 'type: examples'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'ex') || startsWith(github.event.pull_request.head.ref, 'example') || startsWith(github.event.pull_request.head.ref, 'examples') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'type: examples'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'merge-back') || startsWith(github.event.pull_request.head.ref, 'mb') }}
-        with:
-          labels: 'type: merge-back'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'merge-back') || startsWith(github.event.pull_request.head.ref, 'mb') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'type: merge-back'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'pixi') }}
-        with:
-          labels: 'pixi'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'pixi') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'pixi'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'perf') || startsWith(github.event.pull_request.head.ref, 'performance') }}
-        with:
-          labels: 'type: performance'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'perf') || startsWith(github.event.pull_request.head.ref, 'performance') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'type: performance'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions-ecosystem/action-add-labels@18f1af5e3544586314bbe15c0273249c770b2daf
-        if: ${{ startsWith(github.event.pull_request.head.ref, 'spec') || startsWith(github.event.pull_request.head.ref, 'spec0') }}
-        with:
-          labels: 'type: spec-0'
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'spec') || startsWith(github.event.pull_request.head.ref, 'spec0') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'type: spec-0'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
