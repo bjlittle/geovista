@@ -22,8 +22,6 @@ pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2 # https://github.com/bjlittle/geov
 ipywidgets <8.2
 jupyter-server-proxy <4.6
 nest-asyncio2 <1.8
-trame ==3.12.0
-trame-vtk ==2.8.15
-trame-vuetify ==3.1.0
+trame-pyvista <0.2
 vtk-xref <0.2
 wurlitzer <3.2
