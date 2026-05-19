@@ -1,0 +1,4 @@
+Adopted `trame-pyvista`_ package as a managed replacement for
+``trame``, ``trame-client``, ``trame-server``, ``trame-vtk``
+and ``trame-vuetify``.
+(:user:`bjlittle`)
