@@ -93,5 +93,6 @@
 .. _sphinx-tippy: https://github.com/sphinx-extensions2/sphinx-tippy
 .. _sphinx.ext.doctest: https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html
 .. _tox: https://tox.wiki/en/stable/
+.. _trame-pyvista: https://github.com/pyvista/trame-pyvista
 .. _xarray: https://github.com/pydata/xarray
 .. _zizmor: https://github.com/zizmorcore/zizmor
