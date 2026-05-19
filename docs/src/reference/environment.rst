@@ -42,9 +42,8 @@ Package environment variables that influence the behaviour of ``geovista``:
     |                                         |               | :data:`~geovista.cache.DATA_VERSION` bundled with the     |
     |                                         |               | version of ``geovista``.                                  |
     +-----------------------------------------+---------------+-----------------------------------------------------------+
-    | :guilabel:`GEOVISTA_DISABLE_PLOT_THEME` | ``User``      | When set, :mod:`geovista.themes` will not be loaded       |
-    |                                         |               | whenever :func:`geovista.themes.set_plot_theme` is        |
-    |                                         |               | called.                                                   |
+    | :guilabel:`GEOVISTA_DISABLE_PLOT_THEME` | ``User``      | When set, a plotting theme will not be loaded whenever    |
+    |                                         |               | :func:`geovista.themes.set_plot_theme` is called.         |
     |                                         |               |                                                           |
     |                                         |               | By default the :class:`~geovista.themes.GeoVistaTheme` is |
     |                                         |               | enabled whenever ``geovista`` is imported. This           |
@@ -56,9 +55,9 @@ Package environment variables that influence the behaviour of ``geovista``:
     |                                         |               | to undo the last call to                                  |
     |                                         |               | :func:`geovista.themes.set_plot_theme`.                   |
     +-----------------------------------------+---------------+-----------------------------------------------------------+
-    | :guilabel:`GEOVISTA_IMAGE_TESTING`      | ``Developer`` | When set, :mod:`geovista.themes` will not be loaded       |
-    |                                         |               | whenever :func:`geovista.themes.set_plot_theme` is        |
-    |                                         |               | called. Additionally, labels will not be rendered for     |
+    | :guilabel:`GEOVISTA_IMAGE_TESTING`      | ``Developer`` | When set, plotting themes will not be loaded whenever     |
+    |                                         |               | :func:`geovista.themes.set_plot_theme` is called.         |
+    |                                         |               | Additionally, labels will not be rendered for             |
     |                                         |               | :mod:`geovista.gridlines`.                                |
     |                                         |               |                                                           |
     |                                         |               | This allows image testing to be more robust, particularly |

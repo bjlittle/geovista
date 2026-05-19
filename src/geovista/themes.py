@@ -57,7 +57,7 @@ _cached_themes: list[Theme] = []
 
 
 class ThemeMixin:
-    """Common ``geovista`` theme property state.
+    """Common ``geovista`` plotting theme property state.
 
     Notes
     -----
@@ -106,6 +106,7 @@ class GeoVistaTheme(Theme, ThemeMixin):  # type: ignore[misc]
     def __init__(self) -> None:
         """Default plotting theme for ``geovista``."""
         super().__init__()
+        # apply common theme state to the theme instance
         self.mixin_state()
 
 
@@ -136,6 +137,7 @@ class GeoVistaDocumentTheme(DocumentTheme, ThemeMixin):  # type: ignore[misc]
     def __init__(self) -> None:
         """Documentation plotting theme for ``geovista``."""
         super().__init__()
+        # apply common theme state to the theme instance
         self.mixin_state()
 
 

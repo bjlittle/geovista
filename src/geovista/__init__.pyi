@@ -14,7 +14,7 @@ from .pantry.textures import (
     natural_earth_hypsometric,
 )
 from .report import Report
-from .themes import set_plot_theme
+from .themes import restore_plot_theme, set_plot_theme
 
 __version__: str
 
@@ -28,5 +28,6 @@ __all__ = [
     "checkerboard",
     "natural_earth_1",
     "natural_earth_hypsometric",
+    "restore_plot_theme",
     "set_plot_theme",
 ]
