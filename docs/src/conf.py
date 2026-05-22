@@ -167,6 +167,7 @@ extensions = [
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx_iconify",
+    "sphinx_llms_txt",
     "sphinx_tags",
     "sphinx_togglebutton",
     "sphinxcontrib.bibtex",
@@ -703,6 +704,7 @@ sphinx_gallery_conf = {
     "examples_dirs": str(package_dir / "examples"),
     "gallery_dirs": GALLERY_DIRS,
     "min_reported_time": 90,
+    "write_computation_times": False,
     "matplotlib_animations": True,
     # see https://github.com/sphinx-gallery/sphinx-gallery/pull/195
     "plot_gallery": "'True'",
