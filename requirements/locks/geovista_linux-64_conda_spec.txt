@@ -41,7 +41,7 @@ https://conda.anaconda.org/conda-forge/noarch/aiosignal-1.4.0-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/noarch/aiohappyeyeballs-2.6.2-pyhd8ed1ab_0.conda#8a9936643c4a9565459c4a8eb5d4e3ff
 https://conda.anaconda.org/conda-forge/linux-64/aiohttp-3.13.5-py313hd6074c6_0.conda#d6af03fc1fda940641f409014de8f1fe
 https://conda.anaconda.org/conda-forge/noarch/wslink-2.5.7-pyhd8ed1ab_0.conda#410dee7cbee308f33b01645f16f11efc
-https://conda.anaconda.org/conda-forge/noarch/more-itertools-11.0.2-pyhcf101f3_0.conda#b874955758a30a37c78b82ea5cf78fdb
+https://conda.anaconda.org/conda-forge/noarch/more-itertools-11.1.0-pyhcf101f3_0.conda#0e694257dbf916540b749c3ffc808efe
 https://conda.anaconda.org/conda-forge/noarch/trame-server-3.12.4-pyhd8ed1ab_0.conda#15bc0aee27680bffea66ad8aa521bf16
 https://conda.anaconda.org/conda-forge/linux-64/yaml-0.2.5-h280c20c_3.conda#a77f85f77be52ff59391544bfe73390a
 https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.3-py313h3dea7bd_1.conda#f256753e840c3cd3766488c9437a8f8b
@@ -325,7 +325,7 @@ https://conda.anaconda.org/conda-forge/noarch/nbformat-5.10.4-pyhd8ed1ab_1.conda
 https://conda.anaconda.org/conda-forge/linux-64/tornado-6.5.5-py313h07c4f96_0.conda#6c0b0ae017b5bfd9c8d718217efd8f14
 https://conda.anaconda.org/conda-forge/linux-64/libsodium-1.0.22-h280c20c_1.conda#965e4d531b588b2e42f66fd8e48b056c
 https://conda.anaconda.org/conda-forge/linux-64/zeromq-4.3.5-h09e67af_11.conda#96b08867e21d4694fa5c2c226e6581b0
-https://conda.anaconda.org/conda-forge/linux-64/pyzmq-27.1.0-py312hda471dd_2.conda#082985717303dab433c976986c674b35
+https://conda.anaconda.org/conda-forge/linux-64/pyzmq-27.1.0-py312hda471dd_3.conda#acd216255e1370e9aeab5351b831f07c
 https://conda.anaconda.org/conda-forge/noarch/jupyter_client-8.8.0-pyhcf101f3_0.conda#8a3d6d0523f66cf004e563a50d9392b3
 https://conda.anaconda.org/conda-forge/noarch/nbclient-0.10.4-pyhd8ed1ab_0.conda#00f5b8dafa842e0c27c1cd7296aa4875
 https://conda.anaconda.org/conda-forge/noarch/mdit-py-plugins-0.6.1-pyhd8ed1ab_0.conda#ad6821df7a98510117db06e9a833281f
