@@ -1,0 +1,4 @@
+Adopted `sphinx-llms-txt <https://github.com/jdillard/sphinx-llms-txt>`__
+to generate Large Language Model (``LLM``) friendly Markdown summaries
+of the documentation.
+(:user:`bjlittle`)
