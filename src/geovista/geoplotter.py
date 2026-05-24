@@ -728,7 +728,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        info = mesh.active_scalars_info
+        info = (
+            mesh.active_scalars_info if hasattr(mesh, "active_scalars_info") else None
+        )
 
         # assume this is a sane default
         if os.environ.get("GEOVISTA_VTK_WARNINGS", "false").lower() == "false":
@@ -856,7 +858,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if hasattr(mesh, "is_empty") and mesh.is_empty:
             result = None
         else:
-            mesh.set_active_scalars(info.name, preference=info.association.name.lower())
+            if info is not None:
+                mesh.set_active_scalars(
+                    info.name, preference=info.association.name.lower()
+                )
+
             result = super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
 
         return result
