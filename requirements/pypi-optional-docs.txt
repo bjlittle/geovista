@@ -19,7 +19,7 @@ sphinx-tippy <0.5
 sphinx-togglebutton <0.5
 sphinxcontrib-bibtex <2.8
 sphinxcontrib-mermaid <2.1
-pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2 # https://github.com/bjlittle/geovista/issues/1247
+pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.18.1 # https://github.com/bjlittle/geovista/issues/1247
 ipywidgets <8.2
 jupyter-server-proxy <4.6
 nest-asyncio2 <1.8
