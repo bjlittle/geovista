@@ -190,10 +190,10 @@ A massive thank-you to all our awesome contributors (`Emoji Key ✨`_):
 .. |icon| image:: https://raw.githubusercontent.com/all-contributors/all-contributors-cli/1b8533af435da9854653492b1327a23a4dbd0a10/assets/logo-small.svg
 .. _aeolus: https://github.com/exoclim/aeolus
 .. _all-contributors: https://github.com/all-contributors/allcontributors.org
-.. _all-contributors bot 🤖: https://allcontributors.org/bot/usage/#all-contributors-add
+.. _all-contributors bot 🤖: https://allcontributors.org/en/bot/usage/#all-contributors-add
 .. _BSD-3-Clause: https://spdx.org/licenses/BSD-3-Clause.html
 .. _🍬 Candy Store: https://github.com/bjlittle/geovista/discussions/1033
-.. _Emoji Key ✨: https://allcontributors.org/emoji-key/
+.. _Emoji Key ✨: https://allcontributors.org/en/reference/emoji-key/
 .. _geojav: https://github.com/bjlittle/geovista-jav-2026
 .. _Journal of Applied Volcanology: https://link.springer.com/journal/13617
 .. _ngview: https://github.com/MetOffice/ngview
