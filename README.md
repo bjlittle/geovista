@@ -116,7 +116,7 @@ GeoVista is also available from [PyPI](https://pypi.org/project/geovista/):
 pip install geovista
 ```
 
-Checkout out our [PyPI Download Stats](https://pypistats.org/packages/geovista), if you like that kinda thing.
+Checkout out our [PyPI Stats](https://clickpy.clickhouse.com/dashboard/geovista), if you like that kinda thing.
 
 ## Quick Start
 
