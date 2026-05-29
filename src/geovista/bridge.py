@@ -1052,6 +1052,72 @@ class Transform:  # numpydoc ignore=PR01
             return mesh
 
     @classmethod
+    def _structured_from_surface_levels(
+        cls,
+        lons_vtk: np.ndarray,
+        lats_vtk: np.ndarray,
+        zs: np.ndarray,
+        *,
+        data: np.ndarray | None = None,
+        name: str | None = None,
+        crs: CRSLike | None = None,
+        radius: float | None = None,
+        zlevel: float | None = None,
+    ) -> pv.StructuredGrid:
+        """Build a StructuredGrid from a 2D surface + 1D depth levels.
+
+        Direction-vector fast path: computes unit-sphere directions once for
+        the 2D surface (nnode points), then scales per depth level.  Avoids
+        materialising three (nx, ny, nz) coordinate arrays (~3x memory saving
+        vs the broadcast path) and skips O(nz) redundant ``to_cartesian`` work.
+
+        ``lons_vtk`` and ``lats_vtk`` must be in VTK ``(nx, ny)`` layout
+        (i.e. the transpose of the NumPy ``(ny, nx)`` convention).
+        ``zs`` must be 1D proportional sphere-radius offsets (not metres).
+        """
+        if crs is None:
+            crs = WGS84
+        if crs != WGS84:
+            emsg = (
+                "Only spatial coordinates with a 'WGS84' CRS are supported"
+                "at the moment."
+            )
+            raise ValueError(emsg)
+
+        _radius = RADIUS if radius is None else abs(float(radius))
+        _zscale = ZLEVEL_SCALE
+        if zlevel:
+            zs = zs + float(zlevel) * _zscale
+
+        nx, ny = lons_vtk.shape
+        nz = zs.size
+
+        # Unit-sphere directions: F-ravel of (nx, ny) → x (i) varies fastest,
+        # matching VTK point ordering i + j*nx + k*nx*ny.
+        xyz_unit = to_cartesian(
+            lons_vtk.ravel("F"), lats_vtk.ravel("F"), radius=1.0, zscale=1
+        )  # (nx*ny, 3)
+
+        r_levels = _radius * (1.0 + zs)  # (nz,)
+        # Broadcast: (nz, nx*ny, 3) reshaped to (nz*nx*ny, 3).
+        # C-ravel gives flat index k*nx*ny + p = i + j*nx + k*nx*ny = VTK index.
+        xyz_all = (r_levels[:, None, None] * xyz_unit[None, :, :]).reshape(-1, 3)
+
+        grid = pv.StructuredGrid()
+        grid.points = xyz_all
+        grid.dimensions = [nx, ny, nz]
+        to_wkt(grid, WGS84)
+
+        if data is not None:
+            data = cls._as_compatible_data(data, grid.n_points, grid.n_cells)
+            if not name:
+                name = NAME_POINTS if data.size == grid.n_points else NAME_CELLS
+            grid.field_data[GV_FIELD_NAME] = np.array([name])
+            grid[name] = data
+
+        return grid
+
+    @classmethod
     def _extrude_to_volume(
         cls,
         xs: np.ndarray,
@@ -1105,9 +1171,6 @@ class Transform:  # numpydoc ignore=PR01
         _base_radius = RADIUS if radius is None else abs(float(radius))
         zs = -depth / EARTH_RADIUS_M * float(vexag)
 
-        # Unit-sphere directions scaled per depth level.
-        # to_cartesian(radius=1) gives normalised direction vectors;
-        # r_k = _base_radius*(1+zs[k]) sets the actual sphere-radius.
         xyz_unit = to_cartesian(xs, ys, radius=1.0)         # (nnode, 3)
         r_levels = _base_radius * (1.0 + zs)                # (nz,)
         xyz_all = (
@@ -1535,13 +1598,10 @@ class Transform:  # numpydoc ignore=PR01
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
         zlevel = 0.0 if zlevel is None else float(zlevel)
 
-        # zs values are proportional radius offsets (dimensionless).
-        # A global shift can be layered on top via zlevel * zscale.
         if zlevel:
             zs = zs + zlevel * zscale
 
         if _prebroadcast:
-            # already in VTK (nx, ny, nz) order; use directly
             xv, yv, zv = xs, ys, zs
         else:
             # (M,), (N,), (P,) -> gives shapes (M, N, P)
@@ -1651,10 +1711,6 @@ class Transform:  # numpydoc ignore=PR01
             )
 
         depth = np.asarray(depth, dtype=float)
-        # Convert metres to dimensionless sphere-radius offsets.
-        # EARTH_RADIUS_M is the physical Earth radius; RADIUS is the normalised
-        # sphere radius (1.0). Dividing by EARTH_RADIUS_M gives the proportion
-        # of the Earth's radius regardless of the normalised RADIUS value.
         zs = -depth / EARTH_RADIUS_M * float(vexag)
 
         if lons.ndim == 1 and lats.ndim == 1 and zs.ndim == 1:
@@ -1674,19 +1730,11 @@ class Transform:  # numpydoc ignore=PR01
             ny, nx = lons.shape
 
             if zs.ndim == 1:
-                nz = zs.size
-                # curvilinear surface + uniform depth levels:
-                # transpose (ny,nx) → (nx,ny) then broadcast to (nx,ny,nz)
-                lons_v = np.ascontiguousarray(
-                    np.broadcast_to(lons.T[:, :, None], (nx, ny, nz))
+                return cls._structured_from_surface_levels(
+                    lons.T, lats.T, zs,
+                    data=data, name=name, crs=crs, radius=radius, zlevel=zlevel,
                 )
-                lats_v = np.ascontiguousarray(
-                    np.broadcast_to(lats.T[:, :, None], (nx, ny, nz))
-                )
-                zs_v = np.ascontiguousarray(
-                    np.broadcast_to(zs[None, None, :], (nx, ny, nz))
-                )
-            elif zs.ndim == 3 and zs.shape == (zs.shape[0], ny, nx):
+            if zs.ndim == 3 and zs.shape == (zs.shape[0], ny, nx):
                 # terrain-following: depth varies per column (nz, ny, nx)
                 nz = zs.shape[0]
                 lons_v = np.ascontiguousarray(
