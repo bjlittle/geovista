@@ -1074,6 +1074,31 @@ class Transform:  # numpydoc ignore=PR01
         ``lons_vtk`` and ``lats_vtk`` must be in VTK ``(nx, ny)`` layout
         (i.e. the transpose of the NumPy ``(ny, nx)`` convention).
         ``zs`` must be 1D proportional sphere-radius offsets (not metres).
+
+        Parameters
+        ----------
+        lons_vtk : ndarray
+            Longitude array in VTK ``(nx, ny)`` layout (degrees).
+        lats_vtk : ndarray
+            Latitude array in VTK ``(nx, ny)`` layout (degrees).
+        zs : ndarray
+            1D proportional sphere-radius offsets (dimensionless).
+        data : ndarray, optional
+            Data to attach to the grid.
+        name : str, optional
+            Name for the attached data array.
+        crs : CRSLike, optional
+            CRS of the input coordinates.  Only WGS84 is supported.
+        radius : float, optional
+            Sphere radius.  Defaults to :data:`~geovista.common.RADIUS`.
+        zlevel : float, optional
+            Uniform vertical offset added to all ``zs`` values.
+
+        Returns
+        -------
+        StructuredGrid
+            The 3D spherical structured grid.
+
         """
         if crs is None:
             crs = WGS84
@@ -1134,6 +1159,31 @@ class Transform:  # numpydoc ignore=PR01
         Internal helper for :meth:`from_unstructured` when ``depth`` is given.
         Prism (triangular faces) or hexahedral (quad faces) cells are built
         by connecting consecutive depth layers of the surface connectivity.
+
+        Parameters
+        ----------
+        xs : ndarray
+            1D longitude values of the surface nodes (degrees).
+        ys : ndarray
+            1D latitude values of the surface nodes (degrees).
+        connectivity_array : ndarray
+            Face connectivity array, shape ``(nface, nvertices)``.
+        depth : ndarray
+            1D physical depth values in metres, positive = downward.
+        vexag : float
+            Vertical exaggeration multiplier.
+        radius : float or None
+            Sphere radius.  ``None`` uses :data:`~geovista.common.RADIUS`.
+        data : ndarray or None
+            Data to attach to the grid.
+        name : str or None
+            Name for the attached data array.
+
+        Returns
+        -------
+        UnstructuredGrid
+            The 3D volume mesh of prism or hex cells.
+
         """
         if depth.ndim != 1:
             emsg = (
@@ -1156,10 +1206,10 @@ class Transform:  # numpydoc ignore=PR01
         nface, nvertices = connectivity_array.shape
 
         if nvertices == 3:
-            cell_type_id = 13   # VTK_WEDGE (triangular prism)
+            cell_type_id = 13  # VTK_WEDGE (triangular prism)
             pts_per_cell = 6
         elif nvertices == 4:
-            cell_type_id = 12   # VTK_HEXAHEDRON
+            cell_type_id = 12  # VTK_HEXAHEDRON
             pts_per_cell = 8
         else:
             emsg = (
@@ -1171,8 +1221,8 @@ class Transform:  # numpydoc ignore=PR01
         _base_radius = RADIUS if radius is None else abs(float(radius))
         zs = -depth / EARTH_RADIUS_M * float(vexag)
 
-        xyz_unit = to_cartesian(xs, ys, radius=1.0)         # (nnode, 3)
-        r_levels = _base_radius * (1.0 + zs)                # (nz,)
+        xyz_unit = to_cartesian(xs, ys, radius=1.0)  # (nnode, 3)
+        r_levels = _base_radius * (1.0 + zs)  # (nz,)
         xyz_all = (
             r_levels[:, None, None] * xyz_unit[None, :, :]  # (nz,nnode,3)
         ).reshape(-1, 3)
@@ -1182,9 +1232,7 @@ class Transform:  # numpydoc ignore=PR01
         bot_off = ((np.arange(nz - 1) + 1) * nnode)[:, None, None]
         conn = connectivity_array[None, :, :].astype(np.int64)
         cnt = np.full((nz - 1, nface, 1), pts_per_cell, dtype=np.int64)
-        cells = np.concatenate(
-            [cnt, conn + top_off, conn + bot_off], axis=-1
-        ).ravel()
+        cells = np.concatenate([cnt, conn + top_off, conn + bot_off], axis=-1).ravel()
         celltypes = np.full((nz - 1) * nface, cell_type_id, dtype=np.uint8)
 
         ugrid = pv.UnstructuredGrid(cells, celltypes, xyz_all)
@@ -1442,7 +1490,8 @@ class Transform:  # numpydoc ignore=PR01
         # depth extrusion: return 3D UnstructuredGrid instead of surface mesh
         if depth is not None:
             return cls._extrude_to_volume(
-                xs, ys,
+                xs,
+                ys,
                 connectivity_array,
                 np.asarray(depth, dtype=float),
                 float(vexag),
@@ -1702,11 +1751,21 @@ class Transform:  # numpydoc ignore=PR01
         if depth is None:
             if lons.ndim == 1:
                 return cls.from_1d(
-                    lons, lats, data=data, name=name, crs=crs, radius=radius,
+                    lons,
+                    lats,
+                    data=data,
+                    name=name,
+                    crs=crs,
+                    radius=radius,
                     zlevel=zlevel,
                 )
             return cls.from_2d(
-                lons, lats, data=data, name=name, crs=crs, radius=radius,
+                lons,
+                lats,
+                data=data,
+                name=name,
+                crs=crs,
+                radius=radius,
                 zlevel=zlevel,
             )
 
@@ -1716,8 +1775,14 @@ class Transform:  # numpydoc ignore=PR01
         if lons.ndim == 1 and lats.ndim == 1 and zs.ndim == 1:
             # rectilinear: pass 1D arrays; to_structured_grid handles meshgrid
             return cls.to_structured_grid(
-                lons, lats, zs,
-                data=data, name=name, crs=crs, radius=radius, zlevel=zlevel,
+                lons,
+                lats,
+                zs,
+                data=data,
+                name=name,
+                crs=crs,
+                radius=radius,
+                zlevel=zlevel,
             )
 
         if lons.ndim == 2 and lats.ndim == 2:
@@ -1731,8 +1796,14 @@ class Transform:  # numpydoc ignore=PR01
 
             if zs.ndim == 1:
                 return cls._structured_from_surface_levels(
-                    lons.T, lats.T, zs,
-                    data=data, name=name, crs=crs, radius=radius, zlevel=zlevel,
+                    lons.T,
+                    lats.T,
+                    zs,
+                    data=data,
+                    name=name,
+                    crs=crs,
+                    radius=radius,
+                    zlevel=zlevel,
                 )
             if zs.ndim == 3 and zs.shape == (zs.shape[0], ny, nx):
                 # terrain-following: depth varies per column (nz, ny, nx)
@@ -1752,8 +1823,14 @@ class Transform:  # numpydoc ignore=PR01
                 raise ValueError(emsg)
 
             return cls.to_structured_grid(
-                lons_v, lats_v, zs_v,
-                data=data, name=name, crs=crs, radius=radius, zlevel=zlevel,
+                lons_v,
+                lats_v,
+                zs_v,
+                data=data,
+                name=name,
+                crs=crs,
+                radius=radius,
+                zlevel=zlevel,
             )
 
         if lons.ndim == 3 and lons.shape == lats.shape == zs.shape:
@@ -1762,7 +1839,11 @@ class Transform:  # numpydoc ignore=PR01
                 np.ascontiguousarray(lons.T),
                 np.ascontiguousarray(lats.T),
                 np.ascontiguousarray(zs.T),
-                data=data, name=name, crs=crs, radius=radius, zlevel=zlevel,
+                data=data,
+                name=name,
+                crs=crs,
+                radius=radius,
+                zlevel=zlevel,
             )
 
         emsg = (
