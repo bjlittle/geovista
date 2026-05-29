@@ -1693,7 +1693,7 @@ class Transform:  # numpydoc ignore=PR01
         crs: CRSLike | None = None,
         radius: float | None = None,
         vexag: float = 1.0,
-        zlevel: float | None = None,
+        zlevel: int | None = None,
     ) -> pv.PolyData | pv.StructuredGrid:
         """Build a mesh from structured longitude/latitude arrays with optional depth.
 
@@ -1730,7 +1730,7 @@ class Transform:  # numpydoc ignore=PR01
             Vertical exaggeration multiplier.  The depth-to-offset formula is
             ``zs = -depth / radius * vexag``.  Use values > 1 (e.g. 100-600)
             to make vertical structure visible in visualisations.
-        zlevel : float, optional
+        zlevel : int, optional
             Uniform global vertical offset passed through to
             :meth:`to_structured_grid` (scaled by ``ZLEVEL_SCALE``).
 
