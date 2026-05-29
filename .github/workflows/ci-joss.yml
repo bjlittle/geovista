@@ -1,0 +1,57 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/actions/upload-artifact
+
+name: ci-joss
+
+on:
+  pull_request:
+    paths:
+      - "joss/*"
+      - .github/workflows/ci-joss.yml
+
+  push:
+    branches:
+      - "main"
+      - "v*x"
+      - "!pixi-auto-update"
+      - "!pre-commit-ci-update-config"
+      - "!dependabot/*"
+    paths:
+      - "joss/*"
+      - .github/workflows/ci-joss.yml
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  paper:
+    name: "paper pdf"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "build pdf"
+        uses: openjournals/openjournals-draft-action@85a18372e48f551d8af9ddb7a747de685fbbb01c
+        with:
+          journal: joss
+          # This should be the path to the paper within your repo.
+          paper-path: joss/paper.md
+
+      - name: "upload pdf"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: paper
+          # This is the output path where Pandoc will write the compiled
+          # PDF. Note, this should be the same directory as the input
+          # paper.md
+          path: joss/paper.pdf

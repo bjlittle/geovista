@@ -1,0 +1,4 @@
+Added the ``ci-joss`` :fab:`github` workflow to automatically compile our
+`JOSS <https://joss.readthedocs.io/en/latest/index.html>`__ paper from
+``Markdown`` to ``PDF``.
+(:user:`tkoyama010`)
