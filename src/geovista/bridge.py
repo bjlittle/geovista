@@ -1325,14 +1325,27 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         xs : ArrayLike
-            The 1D array of x-values, in canonical `crs` units, defining the
-            x-axis cell bounds of the grid.
+            The 1D array of longitude values (degrees), defining the
+            x-axis node positions of the grid.
         ys : ArrayLike
-            The 1D array of y-values, in canonical `crs` units, defining the
-            y-axis cell bounds of the grid.
+            The 1D array of latitude values (degrees), defining the
+            y-axis node positions of the grid.
         zs : ArrayLike
-            The 1D array of z-values, in canonical `crs` units, defining the
-            z-axis cell bounds of the grid.
+            The 1D array of vertical-level values, defining the z-axis node
+            positions of the grid.  Each value is a **proportional offset from
+            the base sphere radius** (dimensionless fraction):
+
+            * ``zs = 0.0`` → node lies on the sphere surface (radius = `radius`)
+            * ``zs < 0.0`` → node lies *below* the surface (depth in ocean /
+              subsurface)
+            * ``zs > 0.0`` → node lies *above* the surface (altitude in
+              atmosphere)
+
+            The Cartesian radius for each node is computed as
+            ``r = radius * (1 + zs_val)``.  To convert a physical depth *d*
+            (metres) to a ``zs`` value use
+            ``zs = -d / (earth_radius_m * zscale)``
+            with ``zscale = 1`` (the default used internally by this method).
         data : ArrayLike | None, optional
             Data to be optionally attached to the structured grid cells or points.
             Note that the expected data dimensionality is ``(Z, Y, X)`` order.
@@ -1346,12 +1359,15 @@ class Transform:  # numpydoc ignore=PR01
             Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
         radius : float | None, optional
             The radius of the grid sphere. Defaults to :data:`~geovista.common.RADIUS`.
-        zlevel : int, default=0
-            The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        zlevel : float, default=0.0
+            A uniform vertical offset added to *all* ``zs`` values before mesh
+            construction.  The offset is scaled by `zscale` i.e., the effective
+            shift applied to every ``zs`` value is ``zlevel * zscale``.  Use
+            this to lift or sink the entire volume by a fixed amount without
+            modifying the ``zs`` array.
         zscale : float, optional
-            The proportional multiplier for z-axis `zlevel`. Defaults to
-            :data:`~geovista.common.ZLEVEL_SCALE`.
+            The proportional multiplier applied to `zlevel` when computing the
+            global offset.  Defaults to :data:`~geovista.common.ZLEVEL_SCALE`.
 
         Returns
         -------
@@ -1395,17 +1411,19 @@ class Transform:  # numpydoc ignore=PR01
 
         radius = RADIUS if radius is None else abs(float(radius))
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
-        zlevel = 0 if zlevel is None else int(zlevel)
+        zlevel = 0.0 if zlevel is None else float(zlevel)
 
-        # TODO @bjlittle: add richer vertical support
-        arc_length = np.radians(np.mean(np.diff(ys)))
-        zs = np.arange(*zs.shape) * arc_length * 0.5 + zlevel * zscale
+        # zs values are proportional radius offsets (dimensionless).
+        # A global shift can be layered on top via zlevel * zscale.
+        if zlevel:
+            zs = zs + zlevel * zscale
 
         # (M,), (N,), (P,) -> gives shapes (M, N, P)
         xv, yv, zv = np.meshgrid(xs, ys, zs, indexing="ij")
         shape = xv.shape
 
-        # convert lat/lon to cartesian xyz
+        # convert lat/lon to cartesian xyz; zscale=1 because zv already holds
+        # the proportional offsets directly.
         xyz = to_cartesian(xv, yv, radius=radius, zlevel=zv, zscale=1)
 
         # create the grid
