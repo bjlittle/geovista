@@ -14,16 +14,15 @@ import pyvista as pv
 from geovista.bridge import NAME_CELLS, NAME_POINTS, Transform
 from geovista.common import GV_FIELD_CRS, RADIUS
 
-
 # ── Shared fixtures ────────────────────────────────────────────────────────────
 
 
 @pytest.fixture
 def simple_inputs():
-    """Minimal lon/lat/depth arrays: 3×2×3 points → 2×1×2 cells."""
-    xs = np.linspace(-10.0, 10.0, 4)     # 4 lon points  → 3 lon cells
-    ys = np.linspace(-5.0, 5.0, 3)       # 3 lat points  → 2 lat cells
-    zs = np.array([0.0, -0.01, -0.02])   # 3 depth points → 2 depth cells
+    """Minimal lon/lat/depth arrays: 4x3x3 points giving 3x2x2 cells."""
+    xs = np.linspace(-10.0, 10.0, 4)     # 4 lon points  -> 3 lon cells
+    ys = np.linspace(-5.0, 5.0, 3)       # 3 lat points  -> 2 lat cells
+    zs = np.array([0.0, -0.01, -0.02])   # 3 depth points -> 2 depth cells
     return xs, ys, zs
 
 
@@ -34,21 +33,25 @@ class TestToStructuredGridBasics:
     """Verify basic output type and grid dimensions."""
 
     def test_returns_structured_grid(self, simple_inputs):
+        """Return type must be StructuredGrid."""
         xs, ys, zs = simple_inputs
         result = Transform.to_structured_grid(xs, ys, zs)
         assert isinstance(result, pv.StructuredGrid)
 
     def test_crs_attached(self, simple_inputs, wgs84_wkt):
+        """WGS84 CRS metadata must be attached to the output grid."""
         xs, ys, zs = simple_inputs
         result = Transform.to_structured_grid(xs, ys, zs)
         assert result[GV_FIELD_CRS] == wgs84_wkt
 
     def test_point_count(self, simple_inputs):
+        """Point count must equal len(xs) * len(ys) * len(zs)."""
         xs, ys, zs = simple_inputs
         result = Transform.to_structured_grid(xs, ys, zs)
         assert result.n_points == len(xs) * len(ys) * len(zs)
 
     def test_cell_count(self, simple_inputs):
+        """Cell count must equal (nx-1) * (ny-1) * (nz-1)."""
         xs, ys, zs = simple_inputs
         result = Transform.to_structured_grid(xs, ys, zs)
         expected = (len(xs) - 1) * (len(ys) - 1) * (len(zs) - 1)
@@ -70,9 +73,9 @@ class TestDepthRadiusMapping:
     """Verify that zs values map correctly to sphere radii.
 
     The proportional model is: r = radius * (1 + zs_val)
-    - zs_val = 0.0  → r = RADIUS  (on the surface)
-    - zs_val < 0.0  → r < RADIUS  (below the surface, i.e. depth)
-    - zs_val > 0.0  → r > RADIUS  (above the surface, i.e. altitude)
+    - zs_val = 0.0  -> r = RADIUS  (on the surface)
+    - zs_val < 0.0  -> r < RADIUS  (below the surface, i.e. depth)
+    - zs_val > 0.0  -> r > RADIUS  (above the surface, i.e. altitude)
     """
 
     def test_negative_zs_reduce_radius(self):
@@ -141,12 +144,14 @@ class TestDepthRadiusMapping:
         depths = np.array([0.0, -0.01, -0.05, -0.10])
         result = Transform.to_structured_grid(xs, ys, depths)
 
-        unique_radii = np.sort(np.unique(np.linalg.norm(result.points, axis=1).round(8)))
+        unique_radii = np.sort(
+            np.unique(np.linalg.norm(result.points, axis=1).round(8))
+        )
         expected = np.sort([RADIUS * (1.0 + d) for d in depths])
         np.testing.assert_allclose(unique_radii, expected, rtol=1e-5)
 
     def test_monotonically_decreasing_radii_with_depth(self):
-        """Monotonically decreasing zs must produce monotonically decreasing unique radii.
+        """Monotonically decreasing zs must produce monotonically decreasing radii.
 
         Each distinct zs value maps to a unique spherical shell; checking the
         sorted unique radii avoids any dependency on PyVista's internal point
@@ -160,7 +165,9 @@ class TestDepthRadiusMapping:
         unique_radii = np.sort(
             np.unique(np.linalg.norm(result.points, axis=1).round(8))
         )[::-1]  # largest first = surface first
-        assert len(unique_radii) == len(zs), "Each zs value must produce a distinct shell"
+        assert len(unique_radii) == len(zs), (
+            "Each zs value must produce a distinct shell"
+        )
         np.testing.assert_array_less(
             np.diff(unique_radii),
             0,
@@ -184,6 +191,7 @@ class TestToStructuredGridValidation:
         ids=["too-few-xs", "too-few-ys", "too-few-zs"],
     )
     def test_raises_on_too_few_points(self, xs, ys, zs):
+        """Fewer than 2 points in any dimension must raise ValueError."""
         with pytest.raises(ValueError, match="at least two points"):
             Transform.to_structured_grid(xs, ys, zs)
 
@@ -197,7 +205,8 @@ class TestToStructuredGridValidation:
         ids=["2d-xs", "2d-ys", "2d-zs"],
     )
     def test_raises_on_non_1d_inputs(self, xs, ys, zs):
-        with pytest.raises(ValueError, match="Require 1D"):
+        """Non-1D inputs must raise ValueError."""
+        with pytest.raises(ValueError, match="all-1D"):
             Transform.to_structured_grid(xs, ys, zs)
 
     def test_raises_on_non_wgs84_crs(self):
@@ -216,6 +225,7 @@ class TestToStructuredGridData:
     """Verify data can be attached to cells or points."""
 
     def test_attach_cell_data(self, simple_inputs):
+        """Cell-sized data is attached under NAME_CELLS."""
         xs, ys, zs = simple_inputs
         ref = Transform.to_structured_grid(xs, ys, zs)
         data = np.arange(ref.n_cells, dtype=float)
@@ -224,6 +234,7 @@ class TestToStructuredGridData:
         np.testing.assert_array_equal(result[NAME_CELLS], data)
 
     def test_attach_point_data(self, simple_inputs):
+        """Point-sized data is attached under NAME_POINTS."""
         xs, ys, zs = simple_inputs
         ref = Transform.to_structured_grid(xs, ys, zs)
         data = np.arange(ref.n_points, dtype=float)
@@ -232,6 +243,7 @@ class TestToStructuredGridData:
         np.testing.assert_array_equal(result[NAME_POINTS], data)
 
     def test_named_data(self, simple_inputs):
+        """Explicitly named data is stored under the given key."""
         xs, ys, zs = simple_inputs
         ref = Transform.to_structured_grid(xs, ys, zs)
         data = np.arange(ref.n_cells, dtype=float)
