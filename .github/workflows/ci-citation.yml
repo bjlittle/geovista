@@ -4,10 +4,12 @@ on:
   pull_request:
     paths:
       - "CITATION.cff"
+      - .github/workflows/ci-citation.yml
 
   push:
     paths:
       - "CITATION.cff"
+      - .github/workflows/ci-citation.yml
 
   workflow_dispatch:
 
