@@ -2,10 +2,13 @@
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/upload-artifact
 
-name: ci-draft-pdf
+name: ci-joss
 
 on:
   pull_request:
+    paths:
+      - "joss/*"
+      - .github/workflows/ci-joss.yml
 
   push:
     branches:
@@ -14,6 +17,9 @@ on:
       - "!pixi-auto-update"
       - "!pre-commit-ci-update-config"
       - "!dependabot/*"
+    paths:
+      - "joss/*"
+      - .github/workflows/ci-joss.yml
 
   workflow_dispatch:
 
@@ -25,7 +31,7 @@ permissions: {}
 
 jobs:
   paper:
-    name: "paper draft"
+    name: "paper pdf"
     runs-on: "ubuntu-latest"
 
     steps:
