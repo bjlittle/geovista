@@ -91,9 +91,7 @@ class TestFromStructuredShape:
         """Terrain-following depth (nz, ny, nx) with 2-D lon/lat."""
         ny, nx = lons_2d.shape
         nz = len(depth_1d)
-        depth_3d = np.broadcast_to(
-            depth_1d[:, None, None], (nz, ny, nx)
-        ).copy()
+        depth_3d = np.broadcast_to(depth_1d[:, None, None], (nz, ny, nx)).copy()
         result = Transform.from_structured(lons_2d, lats_2d, depth=depth_3d)
         assert isinstance(result, pv.StructuredGrid)
         assert result.n_points == nx * ny * nz
@@ -104,9 +102,7 @@ class TestFromStructuredShape:
         nz = len(depth_1d)
         lons_3d = np.broadcast_to(lons_2d[None], (nz, ny, nx)).copy()
         lats_3d = np.broadcast_to(lats_2d[None], (nz, ny, nx)).copy()
-        depth_3d = np.broadcast_to(
-            depth_1d[:, None, None], (nz, ny, nx)
-        ).copy()
+        depth_3d = np.broadcast_to(depth_1d[:, None, None], (nz, ny, nx)).copy()
         result = Transform.from_structured(lons_3d, lats_3d, depth=depth_3d)
         assert isinstance(result, pv.StructuredGrid)
         assert result.n_points == nx * ny * nz
@@ -139,9 +135,11 @@ class TestFromStructuredDepthSemantics:
         depth = np.array([0.0, 1000.0])
         r1 = Transform.from_structured(lons_1d, lats_1d, depth=depth, vexag=100.0)
         r2 = Transform.from_structured(lons_1d, lats_1d, depth=depth, vexag=200.0)
+
         def _radial_extent(grid: pv.StructuredGrid) -> float:
             norms = np.linalg.norm(grid.points, axis=1)
             return float(norms.max() - norms.min())
+
         np.testing.assert_allclose(
             _radial_extent(r2), 2.0 * _radial_extent(r1), rtol=1e-6
         )

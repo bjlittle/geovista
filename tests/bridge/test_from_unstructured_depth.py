@@ -188,8 +188,12 @@ class TestFromUnstructuredDepthData:
         nz = len(depth_levels)
         n_cells = nface * (nz - 1)
         result = Transform.from_unstructured(
-            lons, lats, connectivity=conn, depth=depth_levels,
-            data=np.arange(n_cells, dtype=float), name="sal",
+            lons,
+            lats,
+            connectivity=conn,
+            depth=depth_levels,
+            data=np.arange(n_cells, dtype=float),
+            name="sal",
         )
         assert "sal" in result.array_names
         assert result["sal"].size == n_cells
@@ -201,7 +205,10 @@ class TestFromUnstructuredDepthData:
         nz = len(depth_levels)
         n_pts = nnode * nz
         result = Transform.from_unstructured(
-            lons, lats, connectivity=conn, depth=depth_levels,
+            lons,
+            lats,
+            connectivity=conn,
+            depth=depth_levels,
             data=np.ones(n_pts),
         )
         assert result[NAME_POINTS].size == n_pts
@@ -211,7 +218,10 @@ class TestFromUnstructuredDepthData:
         lons, lats, conn = triangle_mesh
         nface, nz = conn.shape[0], len(depth_levels)
         result = Transform.from_unstructured(
-            lons, lats, connectivity=conn, depth=depth_levels,
+            lons,
+            lats,
+            connectivity=conn,
+            depth=depth_levels,
             data=np.zeros(nface * (nz - 1)),
         )
         assert NAME_CELLS in result.array_names

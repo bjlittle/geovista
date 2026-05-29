@@ -20,9 +20,9 @@ from geovista.common import GV_FIELD_CRS, RADIUS
 @pytest.fixture
 def simple_inputs():
     """Minimal lon/lat/depth arrays: 4x3x3 points giving 3x2x2 cells."""
-    xs = np.linspace(-10.0, 10.0, 4)     # 4 lon points  -> 3 lon cells
-    ys = np.linspace(-5.0, 5.0, 3)       # 3 lat points  -> 2 lat cells
-    zs = np.array([0.0, -0.01, -0.02])   # 3 depth points -> 2 depth cells
+    xs = np.linspace(-10.0, 10.0, 4)  # 4 lon points  -> 3 lon cells
+    ys = np.linspace(-5.0, 5.0, 3)  # 3 lat points  -> 2 lat cells
+    zs = np.array([0.0, -0.01, -0.02])  # 3 depth points -> 2 depth cells
     return xs, ys, zs
 
 
@@ -247,9 +247,7 @@ class TestToStructuredGridData:
         xs, ys, zs = simple_inputs
         ref = Transform.to_structured_grid(xs, ys, zs)
         data = np.arange(ref.n_cells, dtype=float)
-        result = Transform.to_structured_grid(
-            xs, ys, zs, data=data, name="temperature"
-        )
+        result = Transform.to_structured_grid(xs, ys, zs, data=data, name="temperature")
         assert "temperature" in result.cell_data
 
 
