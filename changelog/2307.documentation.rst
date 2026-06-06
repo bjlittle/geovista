@@ -1,0 +1,3 @@
+Added the custom `sphinx`_ ``readingtime`` directive to automatically estimate
+the audience reading time of a page and render a branded banner.
+(:user:`bjlittle`)

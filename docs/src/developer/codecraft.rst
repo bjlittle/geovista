@@ -6,6 +6,8 @@
 :fa:`hat-wizard` Codecraft 🚧
 =============================
 
+.. readingtime::
+
 .. |pre-commit| image:: https://results.pre-commit.ci/badge/github/bjlittle/geovista/main.svg
     :target: https://results.pre-commit.ci/latest/github/bjlittle/geovista/main
 

@@ -6,6 +6,8 @@
 :fa:`truck-fast` Quick Start
 ============================
 
+.. readingtime::
+
 Now that you've :ref:`installed <tippy-gv-installation>` ``geovista``, let's take a
 quick tour to see some of the features and capabilities on offer.
 

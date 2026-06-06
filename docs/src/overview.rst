@@ -6,6 +6,8 @@
 :fa:`panorama` Overview
 =======================
 
+.. readingtime::
+
 Here we give a high-level overview of ``geovista``.
 
 We briefly discuss its goals and motivation, and introduce you to the rich,

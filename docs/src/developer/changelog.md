@@ -1,5 +1,9 @@
 # {fa}`road-circle-check` Changelog
 
+```{eval-rst}
+.. readingtime:: 6
+```
+
 The {ref}`changelog <tippy-gv-reference-changelog>` is managed and orchestrated with
 [towncrier](https://github.com/twisted/towncrier).
 
