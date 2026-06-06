@@ -36,6 +36,7 @@ import pkgutil
 import re
 import shutil
 import subprocess
+import sys
 import textwrap
 from typing import TYPE_CHECKING
 from urllib.parse import quote
@@ -74,6 +75,7 @@ if TYPE_CHECKING:
         | PythonProperty
     )
 
+sys.path.append(str(Path("_ext").absolute()))
 
 CACHE_BASE_DIR: Path = CACHE.abspath / "tests" / "docs"
 """Target directory containing documentation reference image cache"""
@@ -152,6 +154,7 @@ logger = logging.getLogger("sphinx-geovista")
 # ones.
 extensions = [
     "numpydoc",
+    "readingtime",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "autoapi.extension",
@@ -590,6 +593,7 @@ html_static_path = [
 ]
 html_css_files = [
     "color.css",
+    "readingtime.css",
     "style.css",
     "theme_overrides.css",
 ]

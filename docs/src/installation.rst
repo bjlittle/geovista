@@ -6,6 +6,8 @@
 :fa:`circle-down` Installation
 ==============================
 
+.. readingtime::
+
 :fa:`heart-circle-check` Stable
 -------------------------------
 

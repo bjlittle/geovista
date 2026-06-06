@@ -6,6 +6,8 @@
 :fa:`box-archive` Packaging
 ===========================
 
+.. readingtime::
+
 .. |Pixi| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json
    :target: https://pixi.prefix.dev
 .. |SPEC0| image:: https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038

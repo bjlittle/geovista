@@ -6,6 +6,8 @@
 :fa:`seedling` Next Steps
 =========================
 
+.. readingtime::
+
 .. note::
     :class: margin, dropdown, toggle-shown
 

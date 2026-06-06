@@ -6,6 +6,8 @@
 :fa:`square-pen` Documentation
 ==============================
 
+.. readingtime::
+
 Here we provide some high-level guidelines and best practice advice for authors and
 contributors wishing to build and render the documentation.
 
