@@ -419,6 +419,46 @@ its :ref:`tippy-gv-overview-ecosystem` section:
    ``image`` and ``figure`` directives.
 
 
+.. _gv-developer-documentation-sphinx-directives:
+.. _tippy-gv-developer-documentation-sphinx-directives:
+
+:fa:`plug` Sphinx Directives
+----------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/src/_ext` :fa:`folder`
+- :bash:`docs/src/conf.py`
+
+The following custom ``sphinx`` `reStructuredText`_ (:bash:`rst`) directives
+are available to documentation authors.
+
+:fa:`toggle-off` :bash:`readingtime`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Usage:
+
+.. code:: console
+
+   .. readingtime:: <quote>
+
+Calculates an *estimated* reading time of an entire page based on the content and
+a simple (conservative) technical document *words-per-minute* reading heuristic.
+
+Accepts an *optional* proposed ``<quote>`` (:bash:`int`) reading time
+(in minutes) rather than calculating an estimate.
+
+The directive creates a branded :bash:`readingtime` banner in-situ e.g.,
+
+.. code:: console
+
+   .. readingtime:: 5
+
+Generates the following banner:
+
+.. readingtime:: 5
+
+
 .. _gv-developer-documentation-pixi-workflow:
 .. _tippy-gv-developer-documentation-pixi-workflow:
 

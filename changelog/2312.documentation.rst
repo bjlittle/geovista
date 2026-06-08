@@ -1,0 +1,3 @@
+Added the :ref:`tippy-gv-developer-documentation-sphinx-directives` section to the
+contributor guidelines.
+(:user:`bjlittle`)
