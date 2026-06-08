@@ -1,0 +1,3 @@
+Added support for the optional ``words-per-minute`` argument to the custom
+`sphinx`_ ``readingtime`` directive.
+(:user:`bjlittle`)

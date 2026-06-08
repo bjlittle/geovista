@@ -440,23 +440,42 @@ Usage:
 
 .. code:: console
 
-   .. readingtime:: <quote>
+   .. readingtime:: [<duration>|<wpm>]
 
-Calculates an *estimated* reading time of an entire page based on the content and
-a simple (conservative) technical document *words-per-minute* reading heuristic.
+Calculates an *estimated* reading time of an entire page based on the
+number of words and a default *words-per-minute* reading heuristic for
+technical documents.
 
-Accepts an *optional* proposed ``<quote>`` (:bash:`int`) reading time
-(in minutes) rather than calculating an estimate.
+Accepts an optional ``<duration>`` reading time (in minutes), a literal
+reading time to be quoted rather than calculated.
 
-The directive creates a branded :bash:`readingtime` banner in-situ e.g.,
+The directive then creates a branded :bash:`readingtime` banner in-situ e.g.,
 
 .. code:: console
 
    .. readingtime:: 5
 
-Generates the following banner:
+Generates the banner:
 
 .. readingtime:: 5
+
+Alternatively, provide an optional *words-per-minute* to override
+the directive default when calculating the reading time estimation e.g.,
+
+.. code:: console
+
+   ... readingtime:: 1000wpm
+
+Generates the following banner, using ``1,000`` words-per-minute to calculate
+the estimate to read this :ref:`tippy-gv-developer-documentation` page:
+
+.. readingtime:: 1000wpm
+
+.. note::
+   :class: dropdown, toggle-shown
+
+   A default *words-per-minute* value will always be used to generate a reading
+   time for a directive with no arguments i.e., ``.. readingtime::``.
 
 
 .. _gv-developer-documentation-pixi-workflow:
