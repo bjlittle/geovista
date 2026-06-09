@@ -1,4 +1,4 @@
 fastparquet <2026.5.1
-h3 <4.5
+h3 <4.6
 pandas <3.1
 rasterio <1.6
