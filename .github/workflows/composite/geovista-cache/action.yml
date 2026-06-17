@@ -38,5 +38,11 @@ runs:
     - name: "refresh geovista cache"
       if: steps.geovista-cache.outputs.cache-hit != 'true'
       shell: bash
+      env:
+        INPUTS_PIXI_ENVIRONMENT: "${{ inputs.pixi_environment }}"
       run: |
-        pixi run --frozen geovista download --all --decompress
+        if [ -z "${INPUTS_PIXI_ENVIRONMENT}" ]; then
+          pixi run --frozen geovista download --all --decompress
+        else
+          pixi run --frozen --environment ${INPUTS_PIXI_ENVIRONMENT} geovista download --all --decompress
+        fi
