@@ -44,7 +44,10 @@ def test_no_resize(lfric):
 @pytest.mark.parametrize("inplace", [False, True])
 @pytest.mark.parametrize(
     "radius",
-    (np.round(value, decimals=1) for value in np.linspace(RADIUS / 10, 2 * RADIUS, 20)),
+    tuple(
+        np.round(value, decimals=1)
+        for value in np.linspace(RADIUS / 10, 2 * RADIUS, 20)
+    ),
 )
 def test_resize(lfric, radius, inplace):
     """Test resize mesh by new radius."""
