@@ -23,7 +23,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.16"
+    rev: "v0.15.17"
     hooks:
       - id: ruff-check
         types: [file, python]
@@ -46,7 +46,7 @@ repos:
         pass_filenames: false
 
   - repo: https://github.com/numpy/numpydoc
-    rev: v1.10.0
+    rev: v1.11.0rc0
     hooks:
       - id: numpydoc-validation
         files: "^src/"
@@ -107,7 +107,7 @@ repos:
         # Forbid files which have a UTF-8 Unicode replacement character.
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.2
+    rev: 0.37.3
     hooks:
       - id: check-dependabot
       - id: check-github-workflows

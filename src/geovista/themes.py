@@ -82,6 +82,10 @@ class ThemeMixin:
 class GeoVistaTheme(Theme, ThemeMixin):  # type: ignore[misc]
     """Default ``geovista`` plot theme.
 
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
     Examples
     --------
     Make the ``geovista`` theme the global default using an
@@ -94,10 +98,6 @@ class GeoVistaTheme(Theme, ThemeMixin):  # type: ignore[misc]
     Alternatively, enable the theme via its string name.
 
     >>> pv.set_plot_theme("geovista")
-
-    Notes
-    -----
-    .. versionadded:: 0.6.0
 
     """
 
@@ -113,6 +113,10 @@ class GeoVistaTheme(Theme, ThemeMixin):  # type: ignore[misc]
 class GeoVistaDocumentTheme(DocumentTheme, ThemeMixin):  # type: ignore[misc]
     """Theme used for building the documentation.
 
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
     Examples
     --------
     Make the ``geovista_document`` theme the global default using an
@@ -125,10 +129,6 @@ class GeoVistaDocumentTheme(DocumentTheme, ThemeMixin):  # type: ignore[misc]
     Alternatively, enable the theme via its string name.
 
     >>> pv.set_plot_theme("geovista_document")
-
-    Notes
-    -----
-    .. versionadded:: 0.6.0
 
     """
 

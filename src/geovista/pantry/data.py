@@ -430,13 +430,13 @@ def icon_soil() -> SampleUnstructuredXY:
     SampleUnstructuredXY
         The unstructured spatial coordinates and data payload.
 
-    References
-    ----------
-    Sourced from http://icon-downloads.mpimet.mpg.de/dwd_grids.xml
-
     Notes
     -----
     .. versionadded:: 0.1.0
+
+    References
+    ----------
+    Sourced from http://icon-downloads.mpimet.mpg.de/dwd_grids.xml
 
     """
     fname = "icon_extpar_0010_R02B04_G.nc"
