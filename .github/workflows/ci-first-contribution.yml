@@ -28,7 +28,7 @@ jobs:
     environment: development
 
     steps:
-      - uses: plbstl/first-contribution@fa732d1b5586da1a72ba34290a32e87467a59b78
+      - uses: plbstl/first-contribution@2c36bdb58684587f60549a69aaa3ec00b9d5f4fe
         with:
           token: ${{ secrets.GEOVISTA_BOT_TOKEN }}
 
