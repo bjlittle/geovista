@@ -1,0 +1,5 @@
+Added the |agentic| auto-label for feature-branch names ``agentic``,
+``agent`` or ``ai``. (:user:`bjlittle`)
+
+.. |agentic| image:: https://img.shields.io/badge/agentic-ffcba4
+   :target: https://github.com/bjlittle/geovista/issues?q=state%3Aopen%20label%3Aagentic
