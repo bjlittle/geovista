@@ -39,6 +39,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - if: ${{ startsWith(github.event.pull_request.head.ref, 'agent') || startsWith(github.event.pull_request.head.ref, 'agentic') || startsWith(github.event.pull_request.head.ref, 'ai') }}
+        run: |
+          gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'agentic'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - if: ${{ startsWith(github.event.pull_request.head.ref, 'breaking-change') || startsWith(github.event.pull_request.head.ref, 'breaking') || startsWith(github.event.pull_request.head.ref, 'break') }}
         run: |
           gh issue edit ${{ github.event.issue.number || github.event.pull_request.number }} --add-label 'breaking-change'
