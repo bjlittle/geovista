@@ -1,0 +1,8 @@
+Added :meth:`geovista.Transform.from_structured` for building 3D spherical
+:class:`~pyvista.StructuredGrid` meshes from structured longitude/latitude
+arrays and a physical depth dimension. Supports 1D rectilinear, 2D
+curvilinear (including tripolar ocean grids), and terrain-following
+depth arrays. Also adds depth extrusion to
+:meth:`geovista.Transform.from_unstructured`, and fixes a bug in
+:meth:`geovista.Transform.to_structured_grid` where ``zs`` depth values
+were silently replaced by index-based offsets. (:user:`jbusecke`)
