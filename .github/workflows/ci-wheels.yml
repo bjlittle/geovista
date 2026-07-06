@@ -85,7 +85,7 @@ jobs:
           merge-multiple: true
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11
+        uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f
         with:
           cache-write: false
           environments: "${{ matrix.version }}"
