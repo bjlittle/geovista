@@ -566,20 +566,6 @@ things GeoVista!
 GeoVista is distributed under the terms of the [BSD-3-Clause](https://spdx.org/licenses/BSD-3-Clause.html) license.
 
 
-## Star History
-
-Diggin' GeoVista? Then why not show it some 💚 with a GitHub ⭐!
-
-It's a simple click that means the world to us, and helps others discover our
-community too!
-
-<picture>
-  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=bjlittle/geovista&type=Date">
-  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=bjlittle/geovista&type=Date&theme=dark">
-  <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=bjlittle/geovista&type=Date">
-</picture>
-
-
 ## [#ShowYourStripes](https://showyourstripes.info/s/globe)
 
 <h4 align="center">
