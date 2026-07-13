@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/labeler@f27b608878404679385c85cfa523b85ccb86e213
+      - uses: actions/labeler@b8dd2d9be0f68b860e7dae5dae7d772984eacd6d
 
       - if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'pre-commit-ci[bot]' }}
         run: |
