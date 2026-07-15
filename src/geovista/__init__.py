@@ -31,9 +31,17 @@ from .themes import set_plot_theme
 (__getattr__, __dir__, __all__) = lazy.attach_stub(__name__, __file__)
 
 try:
-    from ._version import version as __version__
-except ModuleNotFoundError:
-    __version__ = "unknown"
-    """The ``major.minor.patch`` version string."""
+    from ._version import __version__
+except ModuleNotFoundError as e:
+    if e.name != f"{__name__}._version":
+        raise
+
+    try:
+        from importlib.metadata import PackageNotFoundError, version
+
+        __version__ = version("geovista")
+        """The ``major.minor.patch`` version string."""
+    except PackageNotFoundError:
+        __version__ = "0+unknown"
 
 set_plot_theme("geovista", bootstrap=True)
