@@ -2,4 +2,4 @@ check-manifest <0.52
 jupyterlab <4.7
 pre-commit <4.7
 ruff <0.16
-zizmor <1.27
+zizmor <1.28
