@@ -26,7 +26,7 @@ permissions: {}
 jobs:
   linkcheck:
     name: "linkcheck"
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-latest"
 
     permissions:
       issues: write  # required for peter-evans/create-issue-from-file
