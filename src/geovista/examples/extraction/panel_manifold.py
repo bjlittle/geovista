@@ -78,7 +78,9 @@ def main() -> None:
 
     # Create a plotter containing three subplots in two columns, where
     # the first column has two rows, and the second column has only one.
-    p = gv.GeoPlotter(shape="2|1")
+    # border=True keeps the outer frame, which pyvista >=0.49 otherwise
+    # drops now that it only draws the seams interior to the subplots.
+    p = gv.GeoPlotter(shape="2|1", border=True)
 
     # First subplot: render the sample data with a transparent
     # manifold, highlighting the manifold edges and boundary.
