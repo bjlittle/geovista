@@ -1,0 +1,5 @@
+Fixed the ``extraction.panel_manifold`` example, which now requests a border
+width of 2 pixels. `pyvista`_ 0.49 draws a single seam shared between adjacent
+subplots rather than a border around each one, which would otherwise halve the
+width of the seam rendered between the panels.
+(:user:`larsoner`)
