@@ -1,3 +1,4 @@
+affine <3.0
 fastparquet <2026.5.1
 h3 <4.6
 pandas <3.1
