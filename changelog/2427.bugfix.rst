@@ -1,5 +1,6 @@
-Fixed the ``unstructured.icon`` and ``unstructured.icon_eqc`` examples, which use
-the ``cet_CET_L17`` colormap but never imported ``colorcet``, and so relied on
-some other module having already registered the ``cet_*`` colormaps with
-:mod:`matplotlib`. Running either example on its own raised a ``ValueError``.
-(:user:`claude`)
+Fixed the :ref:`sphx_glr_generated_gallery_unstructured_icon.py` and
+:ref:`sphx_glr_generated_gallery_unstructured_icon_eqc.py` gallery examples,
+which use the ``cet_CET_L17`` colormap but never imported ``colorcet``, and so
+relied on some other module having already registered the ``cet_*`` colormaps
+with :mod:`matplotlib`. Running either example on its own raised a
+``ValueError``. (:user:`claude`)
