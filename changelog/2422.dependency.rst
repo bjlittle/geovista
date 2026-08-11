@@ -1,3 +1,0 @@
-Introduced the temporary defensive maximum capping-pin ``affine <3.0``, an
-implicit dependency through ``rasterio``, to avoid rendering issues.
-(:user:`bjlittle`)
