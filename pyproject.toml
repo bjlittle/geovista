@@ -147,6 +147,9 @@ filterwarnings = [
   "ignore:numpy.ndarray size changed:RuntimeWarning",
   "ignore:pyvista test cache image dir:UserWarning",
   "ignore:pyvista test generated image dir:UserWarning",
+  # a render matched one of the baseline image variants of a test, but not the
+  # first variant compared against - see tests/plotting/conftest.py
+  "ignore:(?s).*This test has multiple cached images:UserWarning",
   "ignore:Passing 'N' to ListedColormap is deprecated since 3.11 and will be removed in 3.13. Please ensure the list of passed colors is the required length instead.",
   "ignore:Setting the shape on a NumPy array has been deprecated in NumPy 2.5:DeprecationWarning",
   "ignore:The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future:DeprecationWarning",

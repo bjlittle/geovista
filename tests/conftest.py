@@ -43,11 +43,17 @@ def plot_nodeid(request):
     if not name.startswith("test_"):
         name = f"test_{name}"
 
-    # ensure cache is populated with *existing* baseline image
-    with suppress(ValueError):
-        # pyvista-pytest removes the "test_" prefix from baseline image
-        baseline = f"tests/unit/{name.removeprefix('test_')}.png"
-        _ = CACHE.fetch(baseline)
+    # ensure cache is populated with *existing* baseline image/s
+    # note that pytest-pyvista removes the "test_" prefix from the baseline
+    # image, and that a test may have a *directory* of baseline image variants
+    # rather than a single baseline image e.g., renders which differ between
+    # PROJ versions
+    stem = f"tests/unit/{name.removeprefix('test_')}"
+    variants = [fname for fname in CACHE.registry_files if fname.startswith(f"{stem}/")]
+
+    for baseline in variants or [f"{stem}.png"]:
+        with suppress(ValueError):
+            _ = CACHE.fetch(baseline)
 
     return name
 

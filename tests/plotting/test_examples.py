@@ -19,9 +19,17 @@ from . import CI
 EXAMPLES = get_modules("geovista.examples")
 
 # individual GHA CI example test case exceptions to the default image tolerances
+#
+# note that a test case with a directory of baseline image variants in the cache
+# must also set "error_value", as the "verify_image_cache" fixture override
+# collapses the error threshold onto the warning threshold before this point
+# see tests/plotting/conftest.py
 thresholds = {
     "point_cloud.from_points__orca_cloud": {"warning_value": 202.0},
-    "point_cloud.from_points__orca_cloud_eqc": {"warning_value": 250.0},
+    "point_cloud.from_points__orca_cloud_eqc": {
+        "error_value": 250.0,
+        "warning_value": 250.0,
+    },
     "spatial_index.uber_h3": {"warning_value": 450.0},
 }
 
