@@ -511,7 +511,6 @@ setuptools = ">=80.9.0,<81"
 setuptools-scm = ">=8.3.1,<9"
 
 [tool.pixi.feature.devs.dependencies]
-affine = ">=2.3.0,<3"
 check-manifest = ">=0.51.0,<0.52"
 fastparquet = ">=2024.11.0,<2027"
 h3-py = ">=4.2.2,<5"
