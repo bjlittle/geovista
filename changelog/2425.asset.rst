@@ -1,0 +1,6 @@
+Updated the ``geovista.cache`` to reference ``geovista-data =2026.08.1``, which
+replaces the single ``+proj=eqc`` baseline image test assets with a *directory*
+of baseline image variants, one for ``PROJ <9.8`` and one for ``PROJ >=9.8``.
+``PROJ 9.8`` adopted the ellipsoidal Equidistant Cylindrical method (EPSG:1028)
+for ``+proj=eqc``, which sub-pixel shifts the render of every ``eqc`` image test.
+(:user:`bjlittle`)
