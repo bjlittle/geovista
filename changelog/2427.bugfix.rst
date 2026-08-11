@@ -1,5 +1,5 @@
 Fixed the ``unstructured.icon`` and ``unstructured.icon_eqc`` examples, which use
-the ``cet_CET_L17`` colormap but never imported :mod:`colorcet`, and so relied on
+the ``cet_CET_L17`` colormap but never imported ``colorcet``, and so relied on
 some other module having already registered the ``cet_*`` colormaps with
 :mod:`matplotlib`. Running either example on its own raised a ``ValueError``.
 (:user:`claude`)
