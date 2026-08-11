@@ -39,6 +39,8 @@ to the Equidistant Cylindrical (Plate Carrée) conformal cylindrical projection.
 
 from __future__ import annotations
 
+# required to register the "cet_*" colormaps with matplotlib
+import colorcet  # noqa: F401
 import matplotlib as mpl
 
 import geovista as gv
