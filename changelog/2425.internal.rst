@@ -2,4 +2,4 @@ Added the ``verify_image_cache`` fixture override in ``tests/plotting/conftest.p
 to collapse the ``pytest-pyvista`` error threshold onto the warning threshold for
 image tests which have a *directory* of baseline image variants in the cache.
 Without this a render which only exceeds the warning threshold is never compared
-against the remaining variants. (:user:`bjlittle`)
+against the remaining variants. (:user:`claude`)
