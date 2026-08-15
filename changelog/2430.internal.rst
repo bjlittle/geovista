@@ -1,0 +1,7 @@
+Replaced the use of the private ``pyvista.PolyData._offset_array`` property in
+:func:`geovista.common.triangulated` and :func:`geovista.core.combine` with the
+new private ``geovista.common._face_offsets`` helper, which defers to the
+underlying :vtk:`vtkCellArray` of the mesh instead. ``pyvista`` removed the
+property in `pyvista#8873 <https://github.com/pyvista/pyvista/pull/8873>`__
+when adopting fixed-size storage for regular cell arrays, which broke
+``geovista`` in the ``pyvista`` downstream integration tests. (:user:`claude`)

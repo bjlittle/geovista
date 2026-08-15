@@ -31,6 +31,7 @@ from .common import (
     REMESH_JOIN,
     REMESH_SEAM,
     ZLEVEL_SCALE,
+    _face_offsets,
     distance,
     from_cartesian,
     point_cloud,
@@ -412,13 +413,14 @@ def combine(
         faces = mesh.faces.copy()
 
         if n_points:
+            offsets = _face_offsets(mesh)
             # compute the number of vertices (N) for each face of the mesh
-            faces_n = np.diff(mesh._offset_array)  # noqa: SLF001
+            faces_n = np.diff(offsets)
             # determine the N offset for each face within the faces array
             # a face entry consists of (N, v1, v2, ..., vN), where vN is the Nth
             # vertex offset (connectivity) for that face into the associated mesh
             # points array
-            faces_n_offset = mesh._offset_array + np.arange(mesh._offset_array.size)  # noqa: SLF001
+            faces_n_offset = offsets + np.arange(offsets.size)
             # offset the current mesh connectivity by the cumulative mesh points count
             faces += n_points
             # reinstate N for each face entry

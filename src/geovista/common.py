@@ -1067,6 +1067,37 @@ def to_lonlats(
     return np.vstack(data).T if stacked else np.array(data)
 
 
+def _face_offsets(surface: pv.PolyData) -> np.ndarray:
+    """Determine the face offsets of the provided mesh.
+
+    The offsets are the indices into the face connectivity array of the first
+    point of each face, along with a final entry of the total number of
+    connectivity entries i.e., there are ``surface.n_faces + 1`` offsets.
+
+    Parameters
+    ----------
+    surface : :class:`~pyvista.PolyData`
+        The surface mesh to determine the face offsets of.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The face offsets of the mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    Defers to the underlying :vtk:`vtkCellArray` of the mesh, as ``pyvista``
+    removed its private ``PolyData._offset_array`` property in ``pyvista>=0.49``
+    when adopting fixed-size storage for regular cell arrays, see
+    https://github.com/pyvista/pyvista/pull/8873.
+
+    """
+    result: np.ndarray = pv.convert_array(surface.GetPolys().GetOffsetsArray())
+    return result
+
+
 def triangulated(surface: pv.PolyData) -> bool:
     """Determine whether the provided mesh is triangulated.
 
@@ -1085,7 +1116,7 @@ def triangulated(surface: pv.PolyData) -> bool:
     .. versionadded:: 0.1.0
 
     """
-    result: bool = np.all(np.diff(surface._offset_array) == 3)  # noqa: SLF001
+    result: bool = np.all(np.diff(_face_offsets(surface)) == 3)
     return result
 
 
