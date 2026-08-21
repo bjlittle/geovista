@@ -141,6 +141,12 @@ PERIOD: float = 360.0
 RADIUS: float = 1.0
 """Default radius of a spherical mesh."""
 
+EARTH_RADIUS_M: float = 6.371e6
+"""Mean Earth radius in metres. Used to convert physical depth or altitude
+values (in metres) to the dimensionless proportional offsets required by
+:meth:`~geovista.bridge.Transform.from_structured` and
+:meth:`~geovista.bridge.Transform.from_unstructured`."""
+
 REMESH_JOIN: int = -3
 """Marker for remesh filter cell join point."""
 
