@@ -73,12 +73,12 @@ jobs:
             ${{ github.workspace }}/pixi.lock
 
       - name: "cartopy cache"
-        uses: ./.github/workflows/composite/cartopy-cache
+        uses: $/.github/workflows/composite/cartopy-cache
         with:
           cache_period: ${{ env.CACHE_PERIOD }}
 
       - name: "geovista cache"
-        uses: ./.github/workflows/composite/geovista-cache
+        uses: $/.github/workflows/composite/geovista-cache
         with:
           cache_period: ${{ env.CACHE_PERIOD }}
           pixi_environment: ${{ env.NAME }}
