@@ -1129,7 +1129,6 @@ def vtk_warnings_off() -> None:
 
     """
     vtk.vtkObject.GlobalWarningDisplayOff()
-    # https://gitlab.kitware.com/vtk/vtk/-/issues/18785
     vtk.vtkLogger.SetStderrVerbosity(vtk.vtkLogger.VERBOSITY_OFF)
 
 
@@ -1142,7 +1141,6 @@ def vtk_warnings_on() -> None:
 
     """
     vtk.vtkObject.GlobalWarningDisplayOn()
-    # https://gitlab.kitware.com/vtk/vtk/-/issues/18785
     vtk.vtkLogger.SetStderrVerbosity(vtk.vtkLogger.VERBOSITY_INFO)
 
 
