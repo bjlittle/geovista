@@ -1,0 +1,7 @@
+The ``ci-locks`` :fab:`github` workflow decided whether ``pixi update`` had changed
+anything by measuring the length of the rendered summary, which reads ``No diff`` —
+eight bytes — when nothing has moved. Against a threshold of ten that sat two bytes
+from passing an empty update through into a weekly pull-request with nothing in it.
+It now asks ``pixi update --json`` directly, reading the answer in an assignment so
+that ``errexit`` covers a missing interpreter rather than letting it read as
+"nothing moved". (:user:`claude`)

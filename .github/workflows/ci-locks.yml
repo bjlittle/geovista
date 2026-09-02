@@ -49,11 +49,22 @@ jobs:
         with:
           run-install: false
 
+      # Ask the update what moved, rather than how long the rendered summary is.
+      # `pixi-diff-to-markdown` writes "No diff" for an unchanged resolution, at 8
+      # bytes against a threshold of 10 -- a reworded "No changes" is 11, and the
+      # guard would then fail open into a weekly empty pull-request. `.environment`
+      # is empty when nothing moved and carries an entry per environment when
+      # something did.
+      #
+      # The reader runs in an assignment, not as the condition of an `if`, which is
+      # what makes `errexit` cover it: a command failing as an `if` condition is
+      # exempt, so a missing interpreter would read as "nothing moved" and pass.
       - name: "refresh pixi manifest"
         run: |
-          pixi update --json | pixi exec pixi-diff-to-markdown > diff.md
-          if [ $(wc -c < diff.md) -lt 10 ]; then
-            rm -f diff.md
+          pixi update --json > update.json
+          moved=$(python -c "import json; print(len(json.load(open('update.json'))['environment']))" < /dev/null)
+          if [ "${moved}" -gt 0 ]; then
+            pixi exec pixi-diff-to-markdown < update.json > diff.md
           fi
 
       - name: "refresh lock and yml"
