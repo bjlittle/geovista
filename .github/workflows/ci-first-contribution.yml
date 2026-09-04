@@ -7,12 +7,29 @@ on:
   issues:
     types: [opened]
 
-  pull_request:
+  # `pull_request_target`, and not `pull_request`, because GitHub withholds
+  # secrets from a `pull_request` run triggered by a fork -- where a first-time
+  # contributor is, by definition. `GEOVISTA_BOT_TOKEN` is empty there, so the
+  # greeting never reaches the people this workflow is for.
+  #
+  # The trigger is safe here because the job checks nothing out and runs no code
+  # from the pull-request: it reacts, comments and labels through the API alone.
+  pull_request_target:  # zizmor: ignore[dangerous-triggers]
     types: [opened, closed]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Keyed by the thread, not by `github.ref`. An `issues` event carries the
+  # default branch, and a `pull_request_target` event carries the *base* branch
+  # -- unlike `pull_request`, which carries `refs/pull/<n>/merge` -- so with the
+  # trigger changed above, a ref-keyed group would hold every issue and every
+  # pull-request in the repository in one queue.
+  #
+  # Not cancelling, either: nothing here supersedes anything. Each event is one
+  # message to one person, so a cancelled run is a message silently not sent.
+  group: >-
+    ${{ github.workflow }}-${{ github.event.issue.number
+    || github.event.pull_request.number }}
+  cancel-in-progress: false
 
 permissions: {}
 
@@ -21,10 +38,9 @@ jobs:
     name: "welcome"
     runs-on: ubuntu-latest
 
-    permissions:
-      issues: write
-      pull-requests: write
-
+    # No `permissions:` block, deliberately. The action authenticates as the bot
+    # through the `token` input below, so this job's own `GITHUB_TOKEN` is never
+    # used and is granted nothing -- the top-level `permissions: {}` stands.
     environment: development
 
     steps:
