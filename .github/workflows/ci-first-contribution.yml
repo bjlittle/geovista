@@ -28,10 +28,9 @@ jobs:
     name: "welcome"
     runs-on: ubuntu-latest
 
-    permissions:
-      issues: write
-      pull-requests: write
-
+    # No `permissions:` block, deliberately. The action authenticates as the bot
+    # through the `token` input below, so this job's own `GITHUB_TOKEN` is never
+    # used and is granted nothing -- the top-level `permissions: {}` stands.
     environment: development
 
     steps:
