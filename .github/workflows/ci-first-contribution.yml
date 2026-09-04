@@ -7,7 +7,14 @@ on:
   issues:
     types: [opened]
 
-  pull_request:
+  # `pull_request_target`, and not `pull_request`, because GitHub withholds
+  # secrets from a `pull_request` run triggered by a fork -- where a first-time
+  # contributor is, by definition. `GEOVISTA_BOT_TOKEN` is empty there, so the
+  # greeting never reaches the people this workflow is for.
+  #
+  # The trigger is safe here because the job checks nothing out and runs no code
+  # from the pull-request: it reacts, comments and labels through the API alone.
+  pull_request_target:  # zizmor: ignore[dangerous-triggers]
     types: [opened, closed]
 
 concurrency:
