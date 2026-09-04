@@ -72,11 +72,11 @@ jobs:
 
           # Labels on issues exempted from stale.
           exempt-issue-labels: |
-            "status: blocked,status: decision required,good first issue"
+            status: blocked,status: decision-required,good-first-issue
 
           # Labels on prs exempted from stale.
           exempt-pr-labels: |
-            "status: blocked,status: decision required,good first issue"
+            status: blocked,status: decision-required,good-first-issue
 
           # Max number of operations per run.
           operations-per-run: 100
