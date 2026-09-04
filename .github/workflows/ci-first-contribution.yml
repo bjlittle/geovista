@@ -18,8 +18,18 @@ on:
     types: [opened, closed]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Keyed by the thread, not by `github.ref`. An `issues` event carries the
+  # default branch, and a `pull_request_target` event carries the *base* branch
+  # -- unlike `pull_request`, which carries `refs/pull/<n>/merge` -- so with the
+  # trigger changed above, a ref-keyed group would hold every issue and every
+  # pull-request in the repository in one queue.
+  #
+  # Not cancelling, either: nothing here supersedes anything. Each event is one
+  # message to one person, so a cancelled run is a message silently not sent.
+  group: >-
+    ${{ github.workflow }}-${{ github.event.issue.number
+    || github.event.pull_request.number }}
+  cancel-in-progress: false
 
 permissions: {}
 
