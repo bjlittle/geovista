@@ -67,7 +67,7 @@ jobs:
       - uses: pyvista/setup-headless-display-action@b0bf9f57d62d2b3fee9f1c0e0c7e390f05e97a4e
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@f00437f565399d418b0acc85936d12c1fb668347
+        uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
         with:
           environments: "test-${{ matrix.version }}"
           frozen: true
