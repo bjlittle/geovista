@@ -1,0 +1,7 @@
+Fixed the first-contribution greeting, which could not reach a contributor on a
+fork. The workflow triggered on ``pull_request``, and GitHub withholds secrets
+from such a run when it is raised from a fork -- which is where a first
+contribution comes from -- so the bot token was empty exactly there. It now
+triggers on ``pull_request_target``, which runs in this repository's context;
+that is safe here because the job checks nothing out and runs no code from the
+pull-request. (:user:`claude`)
