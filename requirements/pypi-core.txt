@@ -10,5 +10,5 @@ numpy >=2.2.6,<2.6
 platformdirs <4.12
 pooch <1.10
 pykdtree <1.5
-pyproj <3.8
+pyproj <3.9
 pyvista >=0.48.0,<0.49
