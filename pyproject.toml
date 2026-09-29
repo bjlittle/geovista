@@ -493,7 +493,7 @@ py313 = { features = ["py313"], solve-group = "py313" }
 test-py313 = { features = ["devs", "py313", "test"], solve-group = "py313" }
 
 [tool.pixi.dependencies]
-cartopy = ">=0.24.0,<0.26"
+cartopy = ">=0.24.0,<0.27"
 click = ">=8.2.1,<9"
 click-default-group = ">=1.2.4,<2"
 cmocean = ">=4.0.3,<5"
@@ -547,7 +547,7 @@ sphinx-togglebutton = ">=0.3.2,<0.5"
 sphinx_changelog = ">=1.6.0,<2"
 sphinxcontrib-bibtex = ">=2.6.0,<3"
 sphinxcontrib-mermaid = ">=1.0.0,<3"
-towncrier = ">=24.8.0,<26"
+towncrier = ">=24.8.0,<27"
 trame-pyvista = ">=0.1.1,<0.2"
 wurlitzer = ">=3.1.1,<4"
 
