@@ -102,6 +102,25 @@ def test_central_meridian__non_degree_prime_meridian():
 
 
 @pytest.mark.parametrize(
+    "proj", ["+proj=hammer", "+proj=moll", "+proj=eqc", "+proj=robin"]
+)
+def test_central_meridian__bare_proj(proj):
+    """Test that an omitted longitudinal origin is not mistaken for a failure.
+
+    A PROJ string that does not name its origin is centred on ``0``, unlike
+    :mod:`cartopy.crs`, which always emits ``lon_0`` explicitly. Such a `crs`
+    must not warn, since "filterwarnings = error" would fail any plot using it.
+
+    Note that ``+proj=hammer`` has no EPSG conversion parameters whatsoever,
+    whereas the remainder are given a defaulted EPSG ``8802``.
+
+    """
+    # "filterwarnings = error" promotes an unrecoverable central meridian
+    # warning to a failure here
+    assert not get_central_meridian(CRS.from_user_input(proj))
+
+
+@pytest.mark.parametrize(
     "crs",
     [
         ccrs.RotatedPole(pole_longitude=0, pole_latitude=45),

@@ -101,6 +101,34 @@ def from_wkt(mesh: pv.PolyData) -> CRS:
     return crs
 
 
+def _rotated_pole(crs_json: dict[str, Any]) -> bool:
+    """Determine whether the `crs_json` describes a rotated pole.
+
+    A rotated pole expresses its origin relative to the rotated pole itself,
+    for which a scalar central meridian is not a faithful abstraction.
+
+    Parameters
+    ----------
+    crs_json : dict
+        The Coordinate Reference System serialized as PROJ JSON, as returned by
+        :meth:`pyproj.crs.CRS.to_json_dict`.
+
+    Returns
+    -------
+    bool
+        Whether the coordinate operation rotates the pole.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    conversion = crs_json.get("conversion") or {}
+    parameters = conversion.get("parameters") or []
+
+    return any(param.get("name") in PROJ_ROTATED_POLE for param in parameters)
+
+
 def _find_central_meridian(
     crs_json: dict[str, Any],
 ) -> tuple[dict[str, Any], str] | None:
@@ -126,13 +154,11 @@ def _find_central_meridian(
     .. versionadded:: 0.6.0
 
     """
+    if _rotated_pole(crs_json):
+        return None
+
     conversion = crs_json.get("conversion") or {}
     parameters = conversion.get("parameters") or []
-
-    # a rotated pole expresses its origin relative to the rotated pole itself,
-    # for which a scalar central meridian is not a faithful abstraction
-    if any(param.get("name") in PROJ_ROTATED_POLE for param in parameters):
-        return None
 
     by_code: dict[str, dict[str, Any]] = {}
     native: dict[str, Any] | None = None
@@ -181,14 +207,19 @@ def get_central_meridian(crs: CRS) -> float | None:
     .. versionadded:: 0.1.0
 
     """
-    located = _find_central_meridian(crs.to_json_dict())
+    crs_json = crs.to_json_dict()
+    located = _find_central_meridian(crs_json)
 
     if located is None:
-        if crs.coordinate_operation is not None:
+        # a projection that simply omits its longitudinal origin is centred on
+        # 0, which needs no warning - only a rotated pole carries an origin that
+        # cannot be expressed as a central meridian at all
+        if _rotated_pole(crs_json):
             wmsg = (
                 f"geovista is unable to determine the central meridian of the "
-                f"{crs.name!r} coordinate reference system, and will assume 0. A "
-                f"mesh transformed to this CRS may be torn at the wrong seam."
+                f"{crs.name!r} rotated pole coordinate reference system, and will "
+                f"assume 0. A mesh transformed to this CRS may be torn at the "
+                f"wrong seam."
             )
             warnings.warn(wmsg, stacklevel=2)
         return None
