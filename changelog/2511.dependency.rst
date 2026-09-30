@@ -1,0 +1,9 @@
+Temporarily pin `cartopy <0.26 <https://github.com/SciTools/cartopy>`__.
+
+``cartopy 0.26`` redefines :class:`cartopy.crs.PlateCarree` from ``+proj=eqc``
+to ``+proj=latlong``, which flips ``crs.is_projected`` from ``True`` to
+``False``. ``geovista`` branches on ``crs.is_projected`` to decide whether a
+scene is rendered as a flat plane or a 3D sphere, so a
+``GeoPlotter(crs=ccrs.PlateCarree())`` scene placed its base layer and
+coastlines at the same z-level as the data mesh, hiding the data behind the
+base layer. (:user:`claude`)
