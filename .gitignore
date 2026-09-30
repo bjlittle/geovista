@@ -152,4 +152,7 @@ dmypy.json
 .pixi
 *.egg-info
 
+# CodeGraph index
+.codegraph/
+
 wip
