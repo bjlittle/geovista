@@ -34,7 +34,7 @@ dependencies:
 - sphinx_changelog >=1.6.0,<2
 - sphinxcontrib-bibtex >=2.6.0,<3
 - sphinxcontrib-mermaid >=1.0.0,<3
-- towncrier >=24.8.0,<26
+- towncrier >=24.8.0,<27
 - trame-pyvista >=0.1.1,<0.2
 - wurlitzer >=3.1.1,<4
 - pip >=25.1.1,<26
