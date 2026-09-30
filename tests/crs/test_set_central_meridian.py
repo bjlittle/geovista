@@ -28,7 +28,11 @@ def _proj_central_meridian(crs) -> float:
     # PlateCarree
     for key in ("lon_0", "lonc", "pm"):
         if value := proj.get(key):
-            return float(value)
+            try:
+                return float(value)
+            except ValueError:
+                # a named prime meridian e.g. "paris" is not a central meridian
+                continue
 
     return 0.0
 
@@ -72,6 +76,20 @@ def test_set_central_meridian__get_set_invariant(projection):
 
     if get_central_meridian(crs):
         assert set_central_meridian(crs, 0) is not None
+
+
+@pytest.mark.parametrize("meridian", [0, 10.0, -45.0])
+def test_set_central_meridian__non_degree_parameter(meridian):
+    """Test that a projection parameter is rewritten in the unit it is read in.
+
+    ``EPSG:29701`` expresses its longitude of projection centre in grad, so a
+    meridian in degrees written there verbatim would be reinterpreted as grad.
+
+    """
+    result = set_central_meridian(CRS.from_user_input("epsg:29701"), meridian)
+
+    assert result is not None
+    assert _proj_central_meridian(result) == pytest.approx(meridian, abs=1e-6)
 
 
 def test_set_central_meridian__no_central_meridian():

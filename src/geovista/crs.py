@@ -51,6 +51,7 @@ EPSG_CENTRAL_MERIDIAN_ALIASES: tuple[str, ...] = (
     EPSG_CENTRAL_MERIDIAN,  # longitude of natural origin
     "8822",  # longitude of false origin e.g. conic projections
     "8812",  # longitude of projection centre e.g. oblique mercator
+    "8833",  # longitude of origin e.g. polar stereographic variant B, krovak
     "8835",  # longitude of topocentric origin e.g. vertical perspective
 )
 """EPSG projection parameters that may carry the central meridian.
@@ -58,7 +59,17 @@ EPSG_CENTRAL_MERIDIAN_ALIASES: tuple[str, ...] = (
 A projection method defines its longitudinal origin using whichever parameter
 suits its geometry, so the central meridian is not always EPSG ``8802``.
 Ordered by precedence.
+
+Note that EPSG ``8830`` (initial longitude) is deliberately absent, as it is
+the western edge of zone one of a zoned grid system rather than the central
+meridian of the projection.
 """
+
+EPSG_DEGREE: str = "degree"
+"""PROJ JSON angular unit of a projection parameter expressed in degrees."""
+
+EPSG_ANGULAR_UNIT: str = "AngularUnit"
+"""PROJ JSON unit type of a projection parameter measuring an angle."""
 
 PROJ_CENTRAL_MERIDIAN: str = "lon_0"
 """PROJ parameter for the central meridian, used by PROJ-native methods."""
@@ -129,9 +140,43 @@ def _rotated_pole(crs_json: dict[str, Any]) -> bool:
     return any(param.get("name") in PROJ_ROTATED_POLE for param in parameters)
 
 
+def _degrees_per_unit(unit: Any) -> float | None:  # noqa: ANN401
+    """Calculate the number of degrees in the angular `unit`.
+
+    Parameters
+    ----------
+    unit : str or dict or None
+        The unit of a projection parameter, as serialized in PROJ JSON.
+
+    Returns
+    -------
+    float or None
+        The degrees per `unit`, or ``None`` if the `unit` is not angular.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if unit is None or unit == EPSG_DEGREE:
+        return 1.0
+
+    # a unit other than degrees is serialized as a mapping that quantifies
+    # itself in radians e.g. "EPSG:29701" is in grad, of which there are 400
+    # in a turn, making its 49 grad longitude of projection centre 44.1 degrees
+    if (
+        isinstance(unit, dict)
+        and unit.get("type") == EPSG_ANGULAR_UNIT
+        and (factor := unit.get("conversion_factor"))
+    ):
+        return float(float(factor) * 180.0 / np.pi)
+
+    return None
+
+
 def _find_central_meridian(
     crs_json: dict[str, Any],
-) -> tuple[dict[str, Any], str] | None:
+) -> tuple[dict[str, Any], str, float] | None:
     """Locate the mapping within `crs_json` that carries the central meridian.
 
     Shared by :func:`get_central_meridian` and :func:`set_central_meridian` so
@@ -145,9 +190,10 @@ def _find_central_meridian(
 
     Returns
     -------
-    tuple of (dict, str) or None
-        The mapping holding the central meridian and the key within it, or
-        ``None`` if the central meridian could not be located.
+    tuple of (dict, str, float) or None
+        The mapping holding the central meridian, the key within it, and the
+        degrees per unit of the value held there, or ``None`` if the central
+        meridian could not be located.
 
     Notes
     -----
@@ -160,29 +206,35 @@ def _find_central_meridian(
     conversion = crs_json.get("conversion") or {}
     parameters = conversion.get("parameters") or []
 
-    by_code: dict[str, dict[str, Any]] = {}
-    native: dict[str, Any] | None = None
+    by_code: dict[str, tuple[dict[str, Any], float]] = {}
+    native: tuple[dict[str, Any], float] | None = None
 
     for param in parameters:
+        # a parameter in a non-angular unit is not a longitude at all
+        if (degrees := _degrees_per_unit(param.get("unit"))) is None:
+            continue
+
         # a PROJ-native method has no EPSG identifier for its parameters
         code = (param.get("id") or {}).get("code")
         if code is not None:
-            by_code[str(code)] = param
+            by_code[str(code)] = (param, degrees)
         elif param.get("name") == PROJ_CENTRAL_MERIDIAN:
-            native = param
+            native = (param, degrees)
 
     for code in EPSG_CENTRAL_MERIDIAN_ALIASES:
-        if (param := by_code.get(code)) is not None:
-            return param, "value"
+        if (found := by_code.get(code)) is not None:
+            param, degrees = found
+            return param, "value", degrees
 
     if native is not None:
-        return native, "value"
+        param, degrees = native
+        return param, "value", degrees
 
     # cartopy >=0.26 defines PlateCarree(central_longitude=...) as a geographic
     # CRS shifted by its datum prime meridian, rather than as a conversion
     datum = crs_json.get("datum") or {}
     if (prime_meridian := datum.get("prime_meridian")) is not None:
-        return prime_meridian, "longitude"
+        return prime_meridian, "longitude", 1.0
 
     return None
 
@@ -224,7 +276,7 @@ def get_central_meridian(crs: CRS) -> float | None:
             warnings.warn(wmsg, stacklevel=2)
         return None
 
-    mapping, key = located
+    mapping, key, degrees = located
     value = mapping[key]
 
     if key == "longitude":
@@ -235,7 +287,7 @@ def get_central_meridian(crs: CRS) -> float | None:
         if not value:
             return None
 
-    return float(value)
+    return float(value) * degrees
 
 
 def has_wkt(mesh: pv.PolyData) -> bool:
@@ -328,7 +380,7 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
     if located is None:
         return None
 
-    mapping, key = located
+    mapping, key, degrees = located
 
     # a prime meridian in a non-degree angular unit is not rewritten, to avoid
     # silently reinterpreting its units
@@ -345,8 +397,10 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
             proj[PROJ_CENTRAL_MERIDIAN] = meridian
             return CRS.from_dict(proj)
 
-    # "mapping" is a view onto "crs_json", so this mutates the serialization
-    mapping[key] = meridian
+    # "mapping" is a view onto "crs_json", so this mutates the serialization.
+    # the value is written back in the unit it was read in, which matters for
+    # the legacy grad based national grids e.g. "EPSG:29701"
+    mapping[key] = meridian / degrees
 
     return CRS.from_json_dict(crs_json)
 

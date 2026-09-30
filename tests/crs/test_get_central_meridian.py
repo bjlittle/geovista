@@ -89,6 +89,47 @@ def test_central_meridian__geographic(crs):
     assert get_central_meridian(crs) is None
 
 
+@pytest.mark.parametrize(
+    ("code", "expected"),
+    [
+        # EPSG:8833, longitude of origin
+        ("epsg:3413", -45.0),  # polar stereographic variant B, NSIDC sea ice
+        ("epsg:3032", 70.0),  # polar stereographic variant B, antarctic
+        ("epsg:2065", 42.5),  # krovak
+        # EPSG:8802, longitude of natural origin, implied by the UTM zone
+        ("epsg:32615", -93.0),
+    ],
+)
+def test_central_meridian__epsg_registry(code, expected):
+    """Test recovery for EPSG registry CRSs, which are not cartopy shaped.
+
+    A projection method carries its longitudinal origin under whichever EPSG
+    parameter suits its geometry, and the registry exercises parameters that
+    :mod:`cartopy.crs` never emits.
+
+    """
+    assert get_central_meridian(CRS.from_user_input(code)) == expected
+
+
+def test_central_meridian__non_degree_parameter():
+    """Test that a projection parameter in a non-degree unit is converted.
+
+    ``EPSG:29701`` expresses its longitude of projection centre as ``49`` grad,
+    which is ``44.1`` degrees, so the value must not be taken at face value.
+
+    """
+    crs = CRS.from_user_input("epsg:29701")
+    (param,) = [
+        p
+        for p in crs.to_json_dict()["conversion"]["parameters"]
+        if (p.get("id") or {}).get("code") == 8812
+    ]
+
+    assert param["value"] == 49
+    assert param["unit"]["name"] == "grad"
+    assert get_central_meridian(crs) == pytest.approx(44.1)
+
+
 def test_central_meridian__non_degree_prime_meridian():
     """Test that a prime meridian in a non-degree unit is not misreported.
 
