@@ -50,11 +50,20 @@ pytest tests/core/        # Specific module
 pytest -m "not image"     # Exclude image tests
 ```
 
+⚠️ **Image tests segfault without a GPU/display**, so a green local run proves
+nothing about them — they are only meaningfully exercised in CI. `pytest.ini`
+sets `filterwarnings = ["error", ...]`, so *any* new `warnings.warn` in library
+code can fail an image test even when unit tests pass. Warn only when the
+condition is genuinely exceptional, and check CI before calling such work done.
+
 ## Code Style
 
 - **Formatter/Linter**: ruff (config in `pyproject.toml` under `[tool.ruff]`)
 - **Type checking**: mypy strict mode (`[tool.mypy]`)
-- **Docstrings**: NumPy style, validated by numpydoc
+- **Docstrings**: NumPy style, validated by numpydoc. Record a new public API
+  with `.. versionadded:: X.Y.Z` under `Notes`; the `.. versionchanged::`
+  directive is **not** used in this project. Get the next version from
+  `geovista.__version__` (setuptools-scm), not by guessing.
 - **Line length**: 88 characters
 - **Pre-commit**: hooks defined in `.pre-commit-config.yaml`
 
@@ -94,4 +103,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 18 June 2026
+**Last Updated**: 30 September 2026
