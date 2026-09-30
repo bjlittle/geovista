@@ -1,6 +1,6 @@
 codecov <2.2
 pytest <9.2
 pytest-cov <7.2
-pytest-mock <3.16
+pytest-mock <3.17
 pytest-pretty <1.4
 pytest-pyvista <0.4
