@@ -122,6 +122,19 @@ Documentation deps are defined in:
 
 Use the `docs` pixi environment: `pixi run -e docs <command>`
 
+⚠️ **`sphinx-book-theme` pins `pydata-sphinx-theme` to an *exact* version**, so
+the two only ever move together — `1.1.4` requires `==0.15.4`, `1.4.0` requires
+`==0.20.0`. Bumping `pydata-sphinx-theme` on its own can never resolve, and
+pinning it back silently freezes `sphinx-book-theme` too. Always bump the pair,
+and check the target release's pin first:
+
+```bash
+curl -s https://pypi.org/pypi/sphinx-book-theme/<version>/json \
+  | python3 -c "import json,sys; print([r for r in json.load(sys.stdin)['info']['requires_dist'] if 'pydata' in r])"
+```
+
+The theme is in maintenance mode but still releasing; it is not abandoned.
+
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
 - **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
