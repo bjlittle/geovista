@@ -68,6 +68,14 @@ cd docs && pixi run -e docs sphinx-build -b html \
   -d _build/doctrees src _build/html
 ```
 
+⚠️ **A docs CI failure is often not your change.** `nitpicky = True` plus
+`--fail-on-warning` over 12 remote `intersphinx` inventories (none of which
+have a local fallback) means a `503` from any one of them fails the `doctest`
+and `test images` jobs, with a cascade of hundreds of `python:float`-style
+nitpick warnings. Before debugging, check the warning head for
+`failed to reach any of the inventories` and `curl -I` the inventory URL. See
+issue #2517.
+
 ## Code Style
 
 - **Formatter/Linter**: ruff (config in `pyproject.toml` under `[tool.ruff]`)
@@ -119,4 +127,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 30 September 2026
+**Last Updated**: 1 October 2026
