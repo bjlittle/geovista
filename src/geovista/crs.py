@@ -29,6 +29,12 @@ if TYPE_CHECKING:
 np = lazy.load("numpy")
 
 __all__ = [
+    "EPSG_ANGULAR_UNIT",
+    "EPSG_CENTRAL_MERIDIAN",
+    "EPSG_CENTRAL_MERIDIAN_ALIASES",
+    "EPSG_DEGREE",
+    "PROJ_CENTRAL_MERIDIAN",
+    "PROJ_ROTATED_POLE",
     "WGS84",
     "CRSLike",
     "PlateCarree",
