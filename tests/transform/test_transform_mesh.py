@@ -13,6 +13,7 @@ from pyproj import CRS
 import pytest
 
 import geovista as gv
+from geovista.crs import projected
 from geovista.transform import transform_mesh
 
 #: Fraction of the projection width above which a cell is considered torn.
@@ -20,6 +21,12 @@ TORN = 0.25
 
 #: Central meridian shift that exercises the seam of a global mesh.
 MERIDIAN: float = 180.0
+
+#: Longitude/latitude extent of a regional mesh, as (xmin, xmax, ymin, ymax).
+REGION: tuple[float, float, float, float] = (10.0, 30.0, 30.0, 50.0)
+
+#: Central meridian shift applied to a regional mesh.
+REGIONAL_MERIDIAN: float = 45.0
 
 #: Whole-globe projections carrying the central meridian in assorted ways.
 #:
@@ -44,6 +51,16 @@ def global_mesh():
     lats = np.arange(-90, 91, 10, dtype=float)
     shape = (lats.size - 1, lons.size - 1)
     data = np.arange(np.prod(shape), dtype=float).reshape(shape)
+    return gv.Transform.from_1d(lons, lats, data=data)
+
+
+@pytest.fixture
+def regional_mesh():
+    """Create a regional quad mesh, clear of both the seam and the poles."""
+    lon_min, lon_max, lat_min, lat_max = REGION
+    lons = np.linspace(lon_min, lon_max, 3)
+    lats = np.linspace(lat_min, lat_max, 3)
+    data = np.arange(4, dtype=float).reshape(2, 2)
     return gv.Transform.from_1d(lons, lats, data=data)
 
 
@@ -110,3 +127,27 @@ def test_transform_mesh__rotated_pole_seam(global_mesh):
         result = transform_mesh(global_mesh, tgt_crs)
 
     assert _torn_cells(result) == 0
+
+
+def test_transform_mesh__flat_source(regional_mesh):
+    """Test that an already flat mesh is not preprocessed as a sphere.
+
+    A mesh transformed to a flat geographic CRS carries lon/lat points rather
+    than cartesian xyz, so it must bypass the spherical seam slicing and the
+    central meridian rotation. Otherwise ``rotate_z`` spins the lon/lat values
+    as if they were cartesian. See :issue:`2522`.
+
+    """
+    flat = transform_mesh(regional_mesh, ccrs.PlateCarree())
+    assert projected(flat)
+    assert flat.bounds[:4] == pytest.approx(REGION)
+
+    shifted = transform_mesh(
+        flat, ccrs.PlateCarree(central_longitude=REGIONAL_MERIDIAN)
+    )
+
+    xmin, xmax, ymin, ymax = REGION
+    expected = (xmin - REGIONAL_MERIDIAN, xmax - REGIONAL_MERIDIAN, ymin, ymax)
+
+    assert shifted.n_points == flat.n_points
+    assert shifted.bounds[:4] == pytest.approx(expected)

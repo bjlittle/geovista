@@ -7,7 +7,9 @@
 
 from __future__ import annotations
 
+import cartopy.crs as ccrs
 from pyproj import CRS
+import pytest
 import pyvista as pv
 
 from geovista.crs import WGS84, has_wkt, projected, to_wkt
@@ -35,5 +37,20 @@ def test_non_planer__with_crs(sphere):
     """Test that the mesh CRS is used over the geometry heuristic."""
     assert has_wkt(sphere) is False
     crs = CRS.from_user_input("+proj=eqc")
+    to_wkt(sphere, crs)
+    assert projected(sphere)
+
+
+@pytest.mark.parametrize("crs", ["+proj=latlong", ccrs.PlateCarree()])
+def test_flat_geographic__with_crs(sphere, crs):
+    """Test that a flat geographic CRS is detected as projected.
+
+    A geographic CRS other than :data:`geovista.crs.WGS84` is rendered as a flat
+    plane, even though its ``is_projected`` is ``False`` - which is the case for
+    ``cartopy >=0.26``, where ``PlateCarree`` is ``+proj=latlong``.
+
+    """
+    crs = CRS.from_user_input(crs)
+    assert not crs.is_projected
     to_wkt(sphere, crs)
     assert projected(sphere)

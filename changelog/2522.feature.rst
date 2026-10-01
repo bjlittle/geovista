@@ -2,5 +2,6 @@ Added :func:`geovista.crs.planar`, which determines whether a
 :class:`~pyproj.crs.CRS` renders a scene as a flat plane. A scene is rendered on
 the surface of a 3D sphere only for :data:`geovista.crs.WGS84`, and flat
 otherwise - the same rule applied by :func:`geovista.transform.transform_mesh`.
-This is a distinct question from :func:`geovista.crs.projected`, which inspects
-a mesh to determine whether it has already been projected. (:user:`claude`)
+:func:`geovista.crs.projected` now asks this same question of a mesh, deferring
+to :func:`~geovista.crs.planar` whenever the mesh carries a
+:class:`~pyproj.crs.CRS`. (:user:`claude`)

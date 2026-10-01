@@ -763,7 +763,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             transform_required = src_crs and src_crs != tgt_crs
             central_meridian = get_central_meridian(tgt_crs) or 0
 
-            if transform_required and not cloud and not src_crs.is_projected:
+            if transform_required and not cloud and not planar(src_crs):
                 if central_meridian:
                     mesh.rotate_z(-central_meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
@@ -1555,7 +1555,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 warn(wmsg, stacklevel=2)
                 return
 
-            if self.crs.is_geographic:
+            if not planar(self.crs):
                 # convert cartesian xyz to lon/lat
                 x, y = to_lonlat(self._poi)
                 crs = WGS84
@@ -1569,7 +1569,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if crs != self.crs:
             x, y, _ = transform_point(src_crs=crs, tgt_crs=self.crs, x=x, y=y)
 
-        if self.crs.is_geographic:
+        if not planar(self.crs):
             camera.focal_point = (0, 0, 0)
             # convert POI lon/lat to cartesian xyz
             xyz = to_cartesian(x, y)[0]

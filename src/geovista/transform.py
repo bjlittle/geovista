@@ -31,6 +31,7 @@ from .crs import (
     CRSLike,
     from_wkt,
     get_central_meridian,
+    planar,
     set_central_meridian,
     to_wkt,
 )
@@ -114,9 +115,10 @@ def transform_mesh(
         emsg = "Cannot transform mesh, no coordinate reference system (CRS) attached."
         raise ValueError(emsg)
 
-    # override: only slice connectivity for a non-projected src crs
+    # override: only slice connectivity for a spherical src crs, as slicing
+    # operates on cartesian xyz points, which only a WGS84 mesh carries
     if slice_connectivity:
-        slice_connectivity = not src_crs.is_projected
+        slice_connectivity = not planar(src_crs)
 
     # sanity check the target crs
     tgt_crs = pyproj.CRS.from_user_input(tgt_crs)

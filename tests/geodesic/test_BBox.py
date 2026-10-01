@@ -7,9 +7,11 @@
 
 from __future__ import annotations
 
+import cartopy.crs as ccrs
 import numpy as np
 import pytest
 
+import geovista as gv
 from geovista.common import (
     GV_FIELD_CRS,
     GV_FIELD_RADIUS,
@@ -27,7 +29,7 @@ from geovista.geodesic import (
     EnclosedPreference,
     panel,
 )
-from geovista.transform import transform_points
+from geovista.transform import transform_mesh, transform_points
 
 from .conftest import ANTARCTIC_CORNER_CIDS as CIDS
 
@@ -321,3 +323,24 @@ def test_tolerance(tolerance, expected):
     bbox = panel("arctic")
     bbox.tolerance = tolerance
     assert bbox.tolerance == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("preference", ["center", "point", "cell"])
+def test_enclosed__flat_mesh(preference):
+    """Test that a flat mesh selects the same region as its spherical source.
+
+    An already flat mesh must not be sliced as a sphere on its way back to
+    WGS84, which adds vertices and desynchronises the selection mask against
+    the mesh. See :issue:`2522`.
+
+    """
+    edges = np.linspace(-25, 25, 6)
+    shape = (edges.size - 1, edges.size - 1)
+    data = np.arange(np.prod(shape), dtype=float).reshape(shape)
+    sphere = gv.Transform.from_1d(edges, edges, data=data)
+    flat = transform_mesh(sphere.copy(), ccrs.PlateCarree())
+
+    bbox = BBox(xs=[-30, 30, 30, -30], ys=[1, 1, 30, 30])
+    expected = bbox.enclosed(sphere, preference=preference).n_cells
+
+    assert bbox.enclosed(flat, preference=preference).n_cells == expected
