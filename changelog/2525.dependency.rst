@@ -1,3 +1,10 @@
 Bumped the `pyvista <https://github.com/pyvista/pyvista>`__ max-pin to
 ``<0.50``, which admits ``pyvista 0.49``. The ``>=0.48.0`` minimum pin is
-unchanged, as no ``0.49`` API is adopted here. (:user:`claude`)
+unchanged, as no ``0.49`` API is adopted here.
+
+``pyvista 0.49`` renames the output directory of its ``plot_directive`` sphinx
+extension from ``plot_directive`` to ``pyvista_plot_directive``, so the
+``doc_images_dir`` ``pytest-pyvista`` option is repointed accordingly. Without
+this the documentation image tests abort during ``pytest`` configuration, as
+the directory they scrape rendered scenes from no longer exists.
+(:user:`claude`)

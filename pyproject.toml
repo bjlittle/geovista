@@ -162,7 +162,7 @@ xfail_strict = true
 # pytest-pyvista options
 doc_failed_image_dir = "test_images_failed"
 doc_image_cache_dir = "docs/image_cache"
-doc_images_dir = "docs/_build/plot_directive"
+doc_images_dir = "docs/_build/pyvista_plot_directive"
 image_cache_dir = "tests/plotting/unit_image_cache"
 image_format = "png"
 max_image_size = 450
