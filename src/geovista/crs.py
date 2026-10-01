@@ -344,7 +344,8 @@ def planar(crs: CRS) -> bool:
     .. versionadded:: 0.6.0
 
     """
-    return crs != WGS84
+    result: bool = crs != WGS84
+    return result
 
 
 def projected(mesh: pv.PolyData) -> bool:
