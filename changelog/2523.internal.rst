@@ -1,0 +1,5 @@
+Added ``mypy`` to the ``devs`` environment, pinned to match the ``mirrors-mypy``
+revision used by the pre-commit hook, and documented the ``geovista`` superset
+environment along with the local pre-commit workflow in ``AGENTS.md``. Note that
+``pre-commit run mypy`` remains the authoritative type check, as the hook runs
+in an isolated environment without the third-party libraries. (:user:`claude`)
