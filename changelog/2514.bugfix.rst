@@ -1,0 +1,7 @@
+Fixed :func:`geovista.crs.get_central_meridian` and
+:func:`geovista.crs.set_central_meridian`, which recognised the central meridian
+only as EPSG parameter ``8802``. A projection method defines its longitudinal
+origin using whichever parameter suits its geometry, so eight
+:mod:`cartopy.crs` projections silently lost their shift and were seam-cut at
+longitude ``0``, tearing the mesh across the projection. Closes :issue:`2512`.
+(:user:`claude`)

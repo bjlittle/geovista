@@ -14,6 +14,7 @@ Notes
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+import warnings
 
 import lazy_loader as lazy
 import pyproj
@@ -28,6 +29,12 @@ if TYPE_CHECKING:
 np = lazy.load("numpy")
 
 __all__ = [
+    "EPSG_ANGULAR_UNIT",
+    "EPSG_CENTRAL_MERIDIAN",
+    "EPSG_CENTRAL_MERIDIAN_ALIASES",
+    "EPSG_DEGREE",
+    "PROJ_CENTRAL_MERIDIAN",
+    "PROJ_ROTATED_POLE",
     "WGS84",
     "CRSLike",
     "PlateCarree",
@@ -45,6 +52,36 @@ type CRSLike = int | str | dict[str, Any] | pyproj.crs.crs.CRS
 # constants
 EPSG_CENTRAL_MERIDIAN: str = "8802"
 """EPSG projection parameter for longitude of natural origin/central meridian."""
+
+EPSG_CENTRAL_MERIDIAN_ALIASES: tuple[str, ...] = (
+    EPSG_CENTRAL_MERIDIAN,  # longitude of natural origin
+    "8822",  # longitude of false origin e.g. conic projections
+    "8812",  # longitude of projection centre e.g. oblique mercator
+    "8833",  # longitude of origin e.g. polar stereographic variant B, krovak
+    "8835",  # longitude of topocentric origin e.g. vertical perspective
+)
+"""EPSG projection parameters that may carry the central meridian.
+
+A projection method defines its longitudinal origin using whichever parameter
+suits its geometry, so the central meridian is not always EPSG ``8802``.
+Ordered by precedence.
+
+Note that EPSG ``8830`` (initial longitude) is deliberately absent, as it is
+the western edge of zone one of a zoned grid system rather than the central
+meridian of the projection.
+"""
+
+EPSG_DEGREE: str = "degree"
+"""PROJ JSON angular unit of a projection parameter expressed in degrees."""
+
+EPSG_ANGULAR_UNIT: str = "AngularUnit"
+"""PROJ JSON unit type of a projection parameter measuring an angle."""
+
+PROJ_CENTRAL_MERIDIAN: str = "lon_0"
+"""PROJ parameter for the central meridian, used by PROJ-native methods."""
+
+PROJ_ROTATED_POLE: tuple[str, str] = ("o_lon_p", "o_lat_p")
+"""PROJ parameters identifying a rotated pole coordinate operation."""
 
 PlateCarree = CRS.from_user_input("epsg:32662")
 """WGS84 / Plate Carree (Equidistant Cylindrical)."""
@@ -81,10 +118,137 @@ def from_wkt(mesh: pv.PolyData) -> CRS:
     return crs
 
 
+def _rotated_pole(crs_json: dict[str, Any]) -> bool:
+    """Determine whether the `crs_json` describes a rotated pole.
+
+    A rotated pole expresses its origin relative to the rotated pole itself,
+    for which a scalar central meridian is not a faithful abstraction.
+
+    Parameters
+    ----------
+    crs_json : dict
+        The Coordinate Reference System serialized as PROJ JSON, as returned by
+        :meth:`pyproj.crs.CRS.to_json_dict`.
+
+    Returns
+    -------
+    bool
+        Whether the coordinate operation rotates the pole.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    conversion = crs_json.get("conversion") or {}
+    parameters = conversion.get("parameters") or []
+
+    return any(param.get("name") in PROJ_ROTATED_POLE for param in parameters)
+
+
+def _degrees_per_unit(unit: Any) -> float | None:  # noqa: ANN401
+    """Calculate the number of degrees in the angular `unit`.
+
+    Parameters
+    ----------
+    unit : str or dict or None
+        The unit of a projection parameter, as serialized in PROJ JSON.
+
+    Returns
+    -------
+    float or None
+        The degrees per `unit`, or ``None`` if the `unit` is not angular.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if unit is None or unit == EPSG_DEGREE:
+        return 1.0
+
+    # a unit other than degrees is serialized as a mapping that quantifies
+    # itself in radians e.g. "EPSG:29701" is in grad, of which there are 400
+    # in a turn, making its 49 grad longitude of projection centre 44.1 degrees
+    if (
+        isinstance(unit, dict)
+        and unit.get("type") == EPSG_ANGULAR_UNIT
+        and (factor := unit.get("conversion_factor"))
+    ):
+        return float(float(factor) * 180.0 / np.pi)
+
+    return None
+
+
+def _find_central_meridian(
+    crs_json: dict[str, Any],
+) -> tuple[dict[str, Any], str, float] | None:
+    """Locate the mapping within `crs_json` that carries the central meridian.
+
+    Shared by :func:`get_central_meridian` and :func:`set_central_meridian` so
+    that the two cannot disagree about where the central meridian lives.
+
+    Parameters
+    ----------
+    crs_json : dict
+        The Coordinate Reference System serialized as PROJ JSON, as returned by
+        :meth:`pyproj.crs.CRS.to_json_dict`.
+
+    Returns
+    -------
+    tuple of (dict, str, float) or None
+        The mapping holding the central meridian, the key within it, and the
+        degrees per unit of the value held there, or ``None`` if the central
+        meridian could not be located.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if _rotated_pole(crs_json):
+        return None
+
+    conversion = crs_json.get("conversion") or {}
+    parameters = conversion.get("parameters") or []
+
+    by_code: dict[str, tuple[dict[str, Any], float]] = {}
+    native: tuple[dict[str, Any], float] | None = None
+
+    for param in parameters:
+        # a parameter in a non-angular unit is not a longitude at all
+        if (degrees := _degrees_per_unit(param.get("unit"))) is None:
+            continue
+
+        # a PROJ-native method has no EPSG identifier for its parameters
+        code = (param.get("id") or {}).get("code")
+        if code is not None:
+            by_code[str(code)] = (param, degrees)
+        elif param.get("name") == PROJ_CENTRAL_MERIDIAN:
+            native = (param, degrees)
+
+    for code in EPSG_CENTRAL_MERIDIAN_ALIASES:
+        if (found := by_code.get(code)) is not None:
+            param, degrees = found
+            return param, "value", degrees
+
+    if native is not None:
+        param, degrees = native
+        return param, "value", degrees
+
+    # cartopy >=0.26 defines PlateCarree(central_longitude=...) as a geographic
+    # CRS shifted by its datum prime meridian, rather than as a conversion
+    datum = crs_json.get("datum") or {}
+    if (prime_meridian := datum.get("prime_meridian")) is not None:
+        return prime_meridian, "longitude", 1.0
+
+    return None
+
+
 def get_central_meridian(crs: CRS) -> float | None:
     """Retrieve the longitude of natural origin of the `CRS`.
 
-    THe natural origin is also known as the central meridian.
+    The natural origin is also known as the central meridian.
 
     Parameters
     ----------
@@ -101,18 +265,35 @@ def get_central_meridian(crs: CRS) -> float | None:
     .. versionadded:: 0.1.0
 
     """
-    result = None
+    crs_json = crs.to_json_dict()
+    located = _find_central_meridian(crs_json)
 
-    if crs.coordinate_operation is not None:
-        params = crs.coordinate_operation.params
-        cm_param = list(
-            filter(lambda param: param.code == EPSG_CENTRAL_MERIDIAN, params)
-        )
-        if len(cm_param) == 1:
-            (cm_param_single,) = cm_param
-            result = cm_param_single.value
+    if located is None:
+        # a projection that simply omits its longitudinal origin is centred on
+        # 0, which needs no warning - only a rotated pole carries an origin that
+        # cannot be expressed as a central meridian at all
+        if _rotated_pole(crs_json):
+            wmsg = (
+                f"geovista is unable to determine the central meridian of the "
+                f"{crs.name!r} rotated pole coordinate reference system, and will "
+                f"assume 0. A mesh transformed to this CRS may be torn at the "
+                f"wrong seam."
+            )
+            warnings.warn(wmsg, stacklevel=2)
+        return None
 
-    return result
+    mapping, key, degrees = located
+    value = mapping[key]
+
+    if key == "longitude":
+        # a prime meridian may be expressed in a non-degree angular unit, and a
+        # Greenwich prime meridian is not a central meridian
+        if isinstance(value, dict):
+            return None
+        if not value:
+            return None
+
+    return float(value) * degrees
 
 
 def has_wkt(mesh: pv.PolyData) -> bool:
@@ -199,20 +380,35 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
 
     """
     # https://proj.org/development/reference/cpp/operation.html#classosgeo_1_1proj_1_1operation_1_1Conversion_1center_longitude
-    result = None
     crs_json = crs.to_json_dict()
-    found = False
-    if (conversion := crs_json.get("conversion")) and (
-        parameters := conversion.get("parameters")
-    ):
-        for param in parameters:
-            if found := param["id"]["code"] == int(EPSG_CENTRAL_MERIDIAN):
-                param["value"] = meridian
-                break
-    if found:
-        result = CRS.from_json_dict(crs_json)
+    located = _find_central_meridian(crs_json)
 
-    return result
+    if located is None:
+        return None
+
+    mapping, key, degrees = located
+
+    # a prime meridian in a non-degree angular unit is not rewritten, to avoid
+    # silently reinterpreting its units
+    if key == "longitude" and isinstance(mapping[key], dict):
+        return None
+
+    if not mapping.get("id") and mapping.get("name") == PROJ_CENTRAL_MERIDIAN:
+        # a PROJ-native parameter is not honoured when rebuilding a CRS from its
+        # JSON serialization, so round-trip through the PROJ dict instead
+        with warnings.catch_warnings():
+            # rebuilding via PROJ is lossy by nature, which is not news here
+            warnings.simplefilter("ignore", UserWarning)
+            proj = crs.to_dict()
+            proj[PROJ_CENTRAL_MERIDIAN] = meridian
+            return CRS.from_dict(proj)
+
+    # "mapping" is a view onto "crs_json", so this mutates the serialization.
+    # the value is written back in the unit it was read in, which matters for
+    # the legacy grad based national grids e.g. "EPSG:29701"
+    mapping[key] = meridian / degrees
+
+    return CRS.from_json_dict(crs_json)
 
 
 def to_wkt(mesh: pv.PolyData, crs: CRS) -> None:
