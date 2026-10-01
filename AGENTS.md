@@ -52,11 +52,17 @@ pixi run -e devs pre-commit install                 # fires on every commit
 pixi run -e devs pre-commit run --files <paths>     # check before pushing
 ```
 
-`mypy` is the one tool not importable from any pixi environment —
-`.pre-commit-config.yaml` uses `mirrors-mypy`, which builds its own isolated
-venv — so `pre-commit run` is the *only* way to reach it. Note `pyproj` is
-largely untyped, so returning a `pyproj` expression directly from a `-> bool`
-function trips `no-any-return`; bind it to an annotated local first.
+⚠️ **`pre-commit run mypy` is the authoritative type check, not bare `mypy`.**
+`mypy` is available in `devs`/`geovista`, but invoking it directly does *not*
+reproduce CI: `.pre-commit-config.yaml` uses `mirrors-mypy`, whose isolated venv
+has no third-party libraries, so `pyvista`/`numpy` collapse to `Any`. Inside a
+pixi environment mypy sees their real types and reports hundreds of additional
+strict-mode errors (mostly in `examples/`) that the hook never raises. Use bare
+`mypy` to explore a single file; trust only the hook.
+
+Note `pyproj` is largely untyped, so returning a `pyproj` expression directly
+from a `-> bool` function trips `no-any-return`; bind it to an annotated local
+first.
 
 Direct pytest (with pixi environment activated):
 
