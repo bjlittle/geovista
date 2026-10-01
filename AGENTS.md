@@ -42,6 +42,22 @@ pixi run -e docs serve-html              # Build + serve docs locally
 pixi run download                        # Fetch offline assets
 ```
 
+**`geovista` is the superset environment** — development, testing, docs and all.
+Prefer `pixi run -e geovista ...` over hunting across `test`/`devs`/`docs`.
+
+**Install the hooks and let them gate commits, not CI:**
+
+```bash
+pixi run -e devs pre-commit install                 # fires on every commit
+pixi run -e devs pre-commit run --files <paths>     # check before pushing
+```
+
+`mypy` is the one tool not importable from any pixi environment —
+`.pre-commit-config.yaml` uses `mirrors-mypy`, which builds its own isolated
+venv — so `pre-commit run` is the *only* way to reach it. Note `pyproj` is
+largely untyped, so returning a `pyproj` expression directly from a `-> bool`
+function trips `no-any-return`; bind it to an annotated local first.
+
 Direct pytest (with pixi environment activated):
 
 ```bash
