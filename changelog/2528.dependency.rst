@@ -1,0 +1,8 @@
+Unpinned `pydata-sphinx-theme <https://github.com/pydata/pydata-sphinx-theme>`__,
+which :issue:`1247` had held at ``0.15.4``, and bumped
+`sphinx-book-theme <https://github.com/executablebooks/sphinx-book-theme>`__ to
+``>=1.4.0,<1.5``. The two must move together, as every ``sphinx-book-theme``
+release pins an *exact* ``pydata-sphinx-theme`` version - ``1.4.0`` requires
+``pydata-sphinx-theme 0.20.0``. This also picks up the fix for the primary
+sidebar toggle, which popped the sidebar out instead of collapsing it.
+(:user:`claude`)

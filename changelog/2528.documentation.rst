@@ -1,0 +1,5 @@
+Fixed the gallery carousel, where each card painted an empty body over its own
+background image, blanking the thumbnail. Since ``pydata-sphinx-theme 0.16`` a
+card body is rendered even when it has no content, so the carousel cards - which
+carry a background image and nothing else - now suppress theirs. Closes
+:issue:`1247`. (:user:`claude`)
