@@ -45,6 +45,13 @@ pixi run download                        # Fetch offline assets
 **`geovista` is the superset environment** — development, testing, docs and all.
 Prefer `pixi run -e geovista ...` over hunting across `test`/`devs`/`docs`.
 
+**Use `--frozen` to reproduce CI.** Every CI job installs with `frozen: true`
+and runs `pixi run --frozen ...`, which resolves strictly from `pixi.lock`
+rather than re-solving the manifest — so `pixi run --frozen -e <env> ...`
+locally is the same environment CI gets. The corollary: after editing any
+dependency, run `pixi lock` *first*, or `--frozen` will silently keep running
+the previous environment.
+
 **Install the hooks and let them gate commits, not CI:**
 
 ```bash
