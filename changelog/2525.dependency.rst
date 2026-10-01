@@ -1,0 +1,3 @@
+Bumped the `pyvista <https://github.com/pyvista/pyvista>`__ max-pin to
+``<0.50``, which admits ``pyvista 0.49``. The ``>=0.48.0`` minimum pin is
+unchanged, as no ``0.49`` API is adopted here. (:user:`claude`)
