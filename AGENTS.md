@@ -52,6 +52,14 @@ locally is the same environment CI gets. The corollary: after editing any
 dependency, run `pixi lock` *first*, or `--frozen` will silently keep running
 the previous environment.
 
+⚠️ **But `pixi lock` alone will not raise a version ceiling.** It only
+re-solves when the lock is *invalid*, and an already-locked version still
+satisfies a widened max-pin — so bumping a ceiling and running `pixi lock`
+leaves the old version in place, and the suite then silently tests nothing new.
+Use `pixi update <pkg>`, and confirm with `pixi list -e <env> <pkg>`. The same
+bump must also be applied to `requirements/pypi-*.txt`, which `pixi` neither
+reads nor updates.
+
 **Install the hooks and let them gate commits, not CI:**
 
 ```bash
