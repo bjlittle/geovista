@@ -41,6 +41,7 @@ __all__ = [
     "from_wkt",
     "get_central_meridian",
     "has_wkt",
+    "planar",
     "projected",
     "set_central_meridian",
     "to_wkt",
@@ -317,13 +318,46 @@ def has_wkt(mesh: pv.PolyData) -> bool:
     return GV_FIELD_CRS in mesh.field_data
 
 
+def planar(crs: CRS) -> bool:
+    """Determine whether the `crs` renders a scene as a flat plane.
+
+    A :mod:`geovista` scene is rendered on the surface of a 3D sphere only for
+    :data:`WGS84`, and on a flat plane for every other
+    :class:`~pyproj.crs.CRS`. This is the same rule applied by
+    :func:`geovista.transform.transform_mesh`.
+
+    Note that a flat scene is not the same thing as a projected
+    :class:`~pyproj.crs.CRS`. A geographic :class:`~pyproj.crs.CRS` other than
+    :data:`WGS84` e.g., ``+proj=latlong``, is still rendered as a flat plane, so
+    :attr:`~pyproj.crs.CRS.is_projected` is not a reliable test. :func:`projected`
+    asks this same question of a *mesh*.
+
+    Parameters
+    ----------
+    crs : :class:`~pyproj.crs.CRS`
+        The Coordinate Reference System of the scene.
+
+    Returns
+    -------
+    bool
+        Whether the scene is rendered as a flat plane.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    result: bool = crs != WGS84
+    return result
+
+
 def projected(mesh: pv.PolyData) -> bool:
     """Determine if the mesh is a planar projection.
 
     Simple heuristic approach achieved by attempting to inspect the associated
-    :class:`~pyproj.crs.CRS` of the mesh. If the mesh :class:`~pyproj.crs.CRS` is
-    unavailable then the weaker contract of inspecting the mesh geometry is
-    used to detect for a flat plane.
+    :class:`~pyproj.crs.CRS` of the mesh, which is deferred to :func:`planar`.
+    If the mesh :class:`~pyproj.crs.CRS` is unavailable then the weaker contract
+    of inspecting the mesh geometry is used to detect for a flat plane.
 
     Parameters
     ----------
@@ -348,7 +382,7 @@ def projected(mesh: pv.PolyData) -> bool:
         xdelta, ydelta, zdelta = (xmax - xmin), (ymax - ymin), (zmax - zmin)
         result = np.isclose(xdelta, 0) or np.isclose(ydelta, 0) or np.isclose(zdelta, 0)
     else:
-        result = crs.is_projected
+        result = planar(crs)
 
     return result
 

@@ -49,6 +49,7 @@ from .crs import (
     from_wkt,
     get_central_meridian,
     has_wkt,
+    planar,
     projected,
     set_central_meridian,
     to_wkt,
@@ -445,13 +446,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         """
         if resolution is None:
-            resolution = (
-                REGULAR_RESOLUTION if self.crs.is_projected else LFRIC_RESOLUTION
-            )
+            resolution = REGULAR_RESOLUTION if planar(self.crs) else LFRIC_RESOLUTION
         else:
             resolution = str(resolution)
 
-        if self.crs.is_projected:
+        if planar(self.crs):
             # pass through "zlevel" and "zscale" to the "add_mesh" method,
             # but ignore "radius", as it's not applicable to planar projections
             radius = None
@@ -523,7 +522,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        if self.crs.is_projected:
+        if planar(self.crs):
             # ignore "radius", as it's not applicable to planar projections
             radius = None
 
@@ -764,7 +763,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             transform_required = src_crs and src_crs != tgt_crs
             central_meridian = get_central_meridian(tgt_crs) or 0
 
-            if transform_required and not cloud and not src_crs.is_projected:
+            if transform_required and not cloud and not planar(src_crs):
                 if central_meridian:
                     mesh.rotate_z(-central_meridian, inplace=True)
                     tgt_crs = set_central_meridian(tgt_crs, 0)
@@ -1018,7 +1017,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             show_labels = False if gvc.GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
 
         if zlevel is None:
-            zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
+            zlevel = ZTRANSFORM_FACTOR if planar(self.crs) else GRATICULE_ZLEVEL
 
         if mesh_args is None:
             mesh_args = {}
@@ -1026,7 +1025,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if point_labels_args is None:
             point_labels_args = {}
 
-        closed_interval = self.crs.is_projected
+        closed_interval = planar(self.crs)
         central_meridian = get_central_meridian(self.crs)
 
         meridians = create_meridians(
@@ -1246,7 +1245,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             show_labels = False if gvc.GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
 
         if zlevel is None:
-            zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
+            zlevel = ZTRANSFORM_FACTOR if planar(self.crs) else GRATICULE_ZLEVEL
 
         if mesh_args is None:
             mesh_args = {}
@@ -1556,7 +1555,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 warn(wmsg, stacklevel=2)
                 return
 
-            if self.crs.is_geographic:
+            if not planar(self.crs):
                 # convert cartesian xyz to lon/lat
                 x, y = to_lonlat(self._poi)
                 crs = WGS84
@@ -1570,7 +1569,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if crs != self.crs:
             x, y, _ = transform_point(src_crs=crs, tgt_crs=self.crs, x=x, y=y)
 
-        if self.crs.is_geographic:
+        if not planar(self.crs):
             camera.focal_point = (0, 0, 0)
             # convert POI lon/lat to cartesian xyz
             xyz = to_cartesian(x, y)[0]

@@ -7,9 +7,13 @@
 
 from __future__ import annotations
 
+import cartopy.crs as ccrs
+import numpy as np
 import pytest
 
+import geovista as gv
 from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
+from geovista.transform import transform_mesh
 
 
 def test_no_opacity_kwarg(lfric, mocker):
@@ -62,3 +66,23 @@ def test_gpu_opacity_unavailable(lfric, mocker, key, value):
         }
         spy.assert_called_once_with(*args, **kwargs)
         assert p._missing_opacity is True
+
+
+def test_flat_mesh_zlevel():
+    """Test that a flat mesh is not resized as a sphere.
+
+    An already flat mesh added to a scene with the same flat CRS must not be
+    radially rescaled by ``zlevel``, which would distort its lon/lat extent.
+    See :issue:`2522`.
+
+    """
+    lons, lats = np.linspace(10, 30, 3), np.linspace(30, 50, 3)
+    data = np.arange(4, dtype=float).reshape(2, 2)
+    sphere = gv.Transform.from_1d(lons, lats, data=data)
+    flat = transform_mesh(sphere, ccrs.PlateCarree())
+    expected = flat.bounds[:4]
+
+    p = GeoPlotter(crs=ccrs.PlateCarree())
+    p.add_mesh(flat, zlevel=1)
+
+    assert p.mesh.bounds[:4] == pytest.approx(expected)

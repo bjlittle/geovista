@@ -32,7 +32,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cli11-2.7.2-h54a6638_1.conda
@@ -276,7 +276,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py313ha52865f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -651,7 +651,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py312h0f77346_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py312h748b537_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py312h703531f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py312h0ec8046_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -1027,7 +1027,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py313ha52865f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -1403,7 +1403,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py313ha52865f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -1840,7 +1840,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py312h0f77346_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py312h748b537_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py312h703531f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py312h0ec8046_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -2278,7 +2278,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py313ha52865f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -2715,7 +2715,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py313ha52865f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -3162,7 +3162,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py312h0f77346_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py312h748b537_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py312h703531f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py312h0ec8046_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -3610,7 +3610,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py313ha52865f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -4053,7 +4053,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py312h0f77346_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py312h748b537_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py312h0ec8046_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cli11-2.7.2-h54a6638_1.conda
@@ -4296,7 +4296,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cli11-2.7.2-h54a6638_1.conda
@@ -4540,7 +4540,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py313ha52865f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -4925,7 +4925,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py312h0f77346_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py312h748b537_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py312h703531f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py312h0ec8046_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -5311,7 +5311,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.8-hebe6cf0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.6-h3c89d7e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py313ha52865f_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py313h12b3e8d_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/charset-normalizer-3.5.2-h1114479_0.conda
@@ -5963,7 +5963,7 @@ packages:
   - zstd >=1.5.7,<1.6.0a0
   license: BSD-3-Clause AND MIT AND EPL-2.0
   purls:
-  - pkg:pypi/backports-zstd?source=hash-mapping
+  - pkg:pypi/backports-zstd?source=compressed-mapping
   run_exports: {}
   size: 241113
   timestamp: 1788491295568
@@ -6128,50 +6128,52 @@ packages:
     - cairo >=1.18.6,<2.0a0
   size: 1007110
   timestamp: 1790045358757
-- conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py312h0f77346_3.conda
-  sha256: 4365a6a260a21bea24667c78b475380a23deede2ccbce816d0a3cd66eab35a0e
-  md5: 612c6dd5655f10e16f5d693c57259131
+- conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py312h748b537_1.conda
+  sha256: 733c75a4a33486dcda16a26d313fb24820ee10a2538a44f75326d0c0cfe3af05
+  md5: b8d5a8220d88a90fe30a2e120a36bea3
   depends:
   - python
-  - matplotlib-base >=3.6
+  - numpy >=1.26
+  - matplotlib-base >=3.8
   - shapely >=2.0
   - packaging >=21
-  - pyshp >=2.3
-  - pyproj >=3.3.1
-  - libgcc >=14
-  - libstdcxx >=14
+  - pyshp >=2.3.1
+  - pyproj >=3.6
   - __glibc >=2.17,<3.0.a0
+  - libgcc >=15
+  - libstdcxx >=15
+  - numpy >=1.25,<3
   - python_abi 3.12.* *_cp312
-  - numpy >=1.25,<3
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/cartopy?source=hash-mapping
+  - pkg:pypi/cartopy?source=compressed-mapping
   run_exports: {}
-  size: 1592838
-  timestamp: 1786369205878
-- conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.25.0-np2py313h73dcb5b_3.conda
-  sha256: 9601e48f99e7077bdf4d57f03375d030e413597d7933022914b4df54a386f23d
-  md5: 85793522f0ed1e2d31e7dfc53fd66035
+  size: 1588623
+  timestamp: 1789829342706
+- conda: https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.26.0-np2py313h38606b7_1.conda
+  sha256: 397934c7ec8aa401d8a7b175367b80d9660bf44c92c5eebc5b37052cf01fe5a5
+  md5: 313aeba76e49560ecc5349605b13a364
   depends:
   - python
-  - matplotlib-base >=3.6
+  - numpy >=1.26
+  - matplotlib-base >=3.8
   - shapely >=2.0
   - packaging >=21
-  - pyshp >=2.3
-  - pyproj >=3.3.1
+  - pyshp >=2.3.1
+  - pyproj >=3.6
   - __glibc >=2.17,<3.0.a0
-  - libstdcxx >=14
-  - libgcc >=14
-  - python_abi 3.13.* *_cp313
+  - libgcc >=15
+  - libstdcxx >=15
   - numpy >=1.25,<3
+  - python_abi 3.13.* *_cp313
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/cartopy?source=hash-mapping
+  - pkg:pypi/cartopy?source=compressed-mapping
   run_exports: {}
-  size: 1603403
-  timestamp: 1786369200058
+  size: 1597811
+  timestamp: 1789829346464
 - conda: https://conda.anaconda.org/conda-forge/linux-64/cffi-2.1.1-py312h703531f_3.conda
   sha256: 7c6e8b24d62e0bfa5d14050cd29053778f399feefa7d6887b04575210285a849
   md5: 41f019d067f8c52c6d9283d8afb28889
@@ -11038,7 +11040,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/imagesize?source=compressed-mapping
+  - pkg:pypi/imagesize?source=hash-mapping
   run_exports: {}
   size: 21467
   timestamp: 1787649248672
@@ -12689,7 +12691,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/sphinx-autoapi?source=compressed-mapping
+  - pkg:pypi/sphinx-autoapi?source=hash-mapping
   run_exports: {}
   size: 36858
   timestamp: 1788306503410
@@ -13303,7 +13305,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/websocket-client?source=compressed-mapping
+  - pkg:pypi/websocket-client?source=hash-mapping
   run_exports: {}
   size: 78254
   timestamp: 1788531123810
@@ -13374,7 +13376,7 @@ packages:
 - pypi: ./
   name: geovista
   requires_dist:
-  - cartopy<0.26
+  - cartopy>=0.26
   - click<8.6
   - click-default-group<1.3
   - cmocean<4.1
@@ -13386,7 +13388,7 @@ packages:
   - platformdirs<4.13
   - pooch<1.10
   - pykdtree<1.5
-  - pyproj<3.9
+  - pyproj>=3.8.0,<3.9
   - pyvista>=0.48.0,<0.49
   - geovista[devs,docs,exam,test] ; extra == 'all'
   - check-manifest<0.52 ; extra == 'devs'
