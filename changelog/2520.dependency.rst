@@ -1,0 +1,8 @@
+Introduced a ``pyproj >=3.8`` minimum pin, which guarantees ``PROJ >=9.8`` from
+both ``conda-forge`` and the ``PyPI`` wheels. ``PROJ 9.8`` changed ``+proj=eqc``
+to the ellipsoidal ``EPSG:1028`` method, which previously required a *directory*
+of baseline image variants for each affected test, along with bespoke fixture
+machinery to adjudicate between them. All 11 variant directories are now
+collapsed to a single baseline, and the ``verify_image_cache`` fixture override
+is retired, which also restores the default error threshold to the tests that
+carried it. (:user:`claude`)

@@ -112,6 +112,24 @@ All test files must include `from __future__ import annotations` (enforced by ru
 - Use `verify_image_cache` fixture from pytest-pyvista
 - Maximum image size: 450px
 
+⚠️ **Baselines live in a second repo.** `bjlittle/geovista-data` holds the PNGs
+under `assets/`; `src/geovista/cache/registry.txt` lists `<path> <sha256>` and
+`DATA_VERSION` (`src/geovista/cache/__init__.py`) names the **git tag** to fetch
+from. Changing a baseline is therefore a two-repo dance: land the asset PR
+there, let it release, then bump `DATA_VERSION` *and* the registry together — a
+bump to a tag that does not exist yet fails the whole suite at collection, not
+just the image tests. `registry.txt` is **hand-maintained**: grouped by blank
+lines and only roughly sorted, so edit the affected lines in place. Never
+rewrite or re-sort it.
+
+⚠️ **Never hand-edit `version.txt` in `geovista-data`, and never tag it by
+hand.** Its `ci-release.yml` does both automatically on merge to `main`: it
+derives `YYYY.MM` from the current date and sets the serial to `0`, *unless*
+`version.txt` already carries the current month, in which case it increments the
+serial. So a manual bump to the version you want is self-defeating — it pushes
+the release one serial past it. Predict the tag from the date and what is on
+`main`, then bake that into `DATA_VERSION`.
+
 ### Ruff Exceptions for Tests
 
 Test files (`test*.py`) are exempt from:
@@ -136,4 +154,4 @@ Use the `test` pixi environment: `pixi run -e test <command>`
 
 ---
 
-**Last Updated**: 18 June 2026
+**Last Updated**: 1 October 2026
