@@ -49,6 +49,7 @@ from .crs import (
     from_wkt,
     get_central_meridian,
     has_wkt,
+    planar,
     projected,
     set_central_meridian,
     to_wkt,
@@ -445,13 +446,11 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         """
         if resolution is None:
-            resolution = (
-                REGULAR_RESOLUTION if self.crs.is_projected else LFRIC_RESOLUTION
-            )
+            resolution = REGULAR_RESOLUTION if planar(self.crs) else LFRIC_RESOLUTION
         else:
             resolution = str(resolution)
 
-        if self.crs.is_projected:
+        if planar(self.crs):
             # pass through "zlevel" and "zscale" to the "add_mesh" method,
             # but ignore "radius", as it's not applicable to planar projections
             radius = None
@@ -523,7 +522,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        if self.crs.is_projected:
+        if planar(self.crs):
             # ignore "radius", as it's not applicable to planar projections
             radius = None
 
@@ -1018,7 +1017,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             show_labels = False if gvc.GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
 
         if zlevel is None:
-            zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
+            zlevel = ZTRANSFORM_FACTOR if planar(self.crs) else GRATICULE_ZLEVEL
 
         if mesh_args is None:
             mesh_args = {}
@@ -1026,7 +1025,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         if point_labels_args is None:
             point_labels_args = {}
 
-        closed_interval = self.crs.is_projected
+        closed_interval = planar(self.crs)
         central_meridian = get_central_meridian(self.crs)
 
         meridians = create_meridians(
@@ -1246,7 +1245,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             show_labels = False if gvc.GEOVISTA_IMAGE_TESTING else GRATICULE_SHOW_LABELS
 
         if zlevel is None:
-            zlevel = ZTRANSFORM_FACTOR if self.crs.is_projected else GRATICULE_ZLEVEL
+            zlevel = ZTRANSFORM_FACTOR if planar(self.crs) else GRATICULE_ZLEVEL
 
         if mesh_args is None:
             mesh_args = {}

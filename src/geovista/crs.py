@@ -41,6 +41,7 @@ __all__ = [
     "from_wkt",
     "get_central_meridian",
     "has_wkt",
+    "planar",
     "projected",
     "set_central_meridian",
     "to_wkt",
@@ -315,6 +316,35 @@ def has_wkt(mesh: pv.PolyData) -> bool:
 
     """
     return GV_FIELD_CRS in mesh.field_data
+
+
+def planar(crs: CRS) -> bool:
+    """Determine whether the `crs` renders a scene as a flat plane.
+
+    A :mod:`geovista` scene is rendered on the surface of a 3D sphere only for
+    :data:`WGS84`, and on a flat plane for every other
+    :class:`~pyproj.crs.CRS`. This is the same rule applied by
+    :func:`geovista.transform.transform_mesh`.
+
+    Note that this asks a different question to :func:`projected`, which
+    inspects a *mesh* to determine whether it has already been projected.
+
+    Parameters
+    ----------
+    crs : :class:`~pyproj.crs.CRS`
+        The Coordinate Reference System of the scene.
+
+    Returns
+    -------
+    bool
+        Whether the scene is rendered as a flat plane.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    return crs != WGS84
 
 
 def projected(mesh: pv.PolyData) -> bool:
