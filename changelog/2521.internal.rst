@@ -1,0 +1,4 @@
+Documented the ``intersphinx`` CI failure mode in ``AGENTS.md``. A ``503`` from
+any one of the 12 remote inventories fails the ``doctest`` and ``test images``
+jobs, behind a cascade of unrelated nitpick warnings that reads like a
+regression in the pull request under test. See :issue:`2517`. (:user:`claude`)
