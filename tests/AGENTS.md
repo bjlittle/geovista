@@ -15,6 +15,7 @@ tests/
 ├── common/              # Tests for geovista.common utilities
 ├── core/                # Tests for geovista.core (slice_cells, resize, etc.)
 ├── crs/                 # Tests for geovista.crs
+├── docs/                # Browser tests for the rendered docs theme chrome
 ├── geodesic/            # Tests for geovista.geodesic (BBox, line)
 ├── geometry/            # Tests for geovista.geometry (coastlines)
 ├── geoplotter/          # Tests for geovista.geoplotter
@@ -67,6 +68,7 @@ All pytest configuration is in `pyproject.toml` under `[tool.pytest.ini_options]
 
 | Marker | Purpose |
 |--------|---------|
+| `browser` | Documentation theme chrome tests |
 | `example` | Gallery image tests |
 | `image` | Plotting image comparison tests |
 
@@ -129,6 +131,39 @@ derives `YYYY.MM` from the current date and sets the serial to `0`, *unless*
 serial. So a manual bump to the version you want is self-defeating — it pushes
 the release one serial past it. Predict the tag from the date and what is on
 `main`, then bake that into `DATA_VERSION`.
+
+### Browser Tests
+
+`tests/docs` drives a headless chromium over a built documentation site with
+playwright, covering the theme chrome that no Python test can reach — the
+sidebar toggles, the dialogs they open, and the gallery carousel.
+
+```bash
+pixi run -e geovista tests-docs-browser-install   # one-off, fetches chromium
+pixi run -e geovista tests-docs-browser           # build + test
+pixi run -e geovista tests-docs-browser html-gallery  # include the carousel
+```
+
+Every prerequisite **skips** rather than fails — no playwright, no chromium, no
+build — so a plain `pytest` run is unaffected.
+
+⚠️ **The default `html-noplot` build has no carousel.** `plot_gallery=False`
+leaves `geovista_carousel` with nothing to render, so the carousel tests skip.
+Only `html-gallery` (or another plotting target) covers them, and rendering the
+thumbnails needs a display — so, exactly like the image tests, the carousel is
+only meaningfully exercised in CI.
+
+⚠️ **Never settle the page with a fixed delay.** Both themes inject their
+toggles from JavaScript *after* load, so the chrome is not final when the page
+is ready. `conftest.py` polls until the toggle count stops changing; a sleep
+tuned on a developer machine is apt to be too short on a loaded CI runner.
+
+⚠️ **`sd-stretched-link` covers its card through an `::after` overlay**, so the
+anchor's own bounding rect is just its text. Click coverage must be checked by
+hit-testing with `elementFromPoint`, not by comparing rectangles. A carousel
+also deliberately hangs cards past its own edge, so only cards lying wholly
+inside the clipping rect can be hit-tested — assert that some card qualifies,
+or the test passes vacuously.
 
 ### Ruff Exceptions for Tests
 

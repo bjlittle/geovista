@@ -85,3 +85,64 @@ jobs:
         with:
           name: ci-tests-docs-test-images-failure-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/test_images_failed
+
+  browser:
+    name: "test docs chrome (${{ matrix.version }})"
+    runs-on: "${{ matrix.os }}"
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-22.04"]
+        version: ["py313"]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+
+      - uses: pyvista/setup-headless-display-action@c103a2ff45650d38cb71684b5dc6cdfeb9442c79
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        with:
+          environments: "geovista-${{ matrix.version }}"
+          frozen: true
+          activate-environment: true
+
+      - name: "cartopy cache"
+        uses: $/.github/workflows/composite/cartopy-cache
+        with:
+          cache_period: ${{ env.CACHE_PERIOD }}
+
+      - name: "geovista cache"
+        uses: $/.github/workflows/composite/geovista-cache
+        with:
+          cache_period: ${{ env.CACHE_PERIOD }}
+
+      # deliberately not cached: the system libraries are installed into the
+      # runner and so cannot be, which leaves only the browser download to
+      # save - noise beside the gallery build, and a tag-triggered workflow
+      # with a writable cache is a poisoning vector
+      - name: "install chromium"
+        run: |
+          pixi run --frozen playwright install --with-deps chromium
+
+      # "html-gallery" is the cheapest build that renders the gallery, and so
+      # the only one carrying the carousel the tests cover
+      - name: "test docs chrome (${{ matrix.version }})"
+        run: |
+          geovista --report
+          xvfb-run -a pixi run --frozen tests-docs-browser html-gallery
