@@ -136,17 +136,23 @@ curl -s https://pypi.org/pypi/sphinx-book-theme/<version>/json \
 The theme is in maintenance mode but still releasing; it is not abandoned.
 
 ⚠️ **`src/_static/sidebar_toggle.js` is a workaround, not a feature.**
-`sphinx-book-theme` renders a second `.primary-toggle` button and hides
-`pydata-sphinx-theme`'s, but both themes bind their handler with
-`document.querySelector(".primary-toggle")` — the *first* match, i.e. the
-hidden one — so the visible button is inert and the sidebar is unreachable on a
-phone. The shim forwards clicks to the bound button and self-retires when only
-one button remains. On every theme bump, re-check
+`sphinx-book-theme` renders a second `.primary-toggle` *and* `.secondary-toggle`
+button and hides `pydata-sphinx-theme`'s pair, but both themes bind their
+handlers with `document.querySelector(...)` — the *first* match, i.e. the hidden
+one — so the visible buttons are inert and both sidebars are unreachable on a
+phone. The shim forwards clicks to the bound button of each pair, and
+self-retires when only one button remains. It also closes the primary dialog at
+`(min-width: 992px)`, since the dialog inherits the sidebar's classes and so
+inherits the wide-viewport collapsed state, which leaves it open but invisible
+over a page it blocks. On every theme bump, re-check
 [sphinx-book-theme#865](https://github.com/executablebooks/sphinx-book-theme/issues/865)
-and drop the shim once upstream fixes it. There is no CI coverage for theme
-chrome — the image tests compare pyvista scenes, not page furniture — so a
-regression here is only caught by eye on the Read the Docs preview, at a
-viewport below 992 px.
+and drop whatever upstream has fixed.
+
+There is **no CI coverage for theme chrome** — the image tests compare pyvista
+scenes, not page furniture. Verify changes here in a real browser against the
+Read the Docs preview, exercising *both* sidebars either side of 992 px and
+across a resize through it. See the `headless-browser-on-this-host` note for
+running chromium where no sudo is available.
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
