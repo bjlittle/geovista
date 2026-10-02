@@ -5,27 +5,45 @@
  * license. See the LICENSE file in the package root directory for licensing
  * details.
  *
- * Repair the primary sidebar toggle.
+ * Repair the primary and secondary sidebar toggles.
  *
- * "sphinx-book-theme" renders its own ".primary-toggle" button in the article
- * header, and hides the "pydata-sphinx-theme" one in the navigation bar. Both
- * themes, however, bind their click handler with
+ * "sphinx-book-theme" renders its own ".primary-toggle" and ".secondary-toggle"
+ * buttons in the article header, and hides the "pydata-sphinx-theme" pair in the
+ * navigation bar. Both themes, however, bind their click handlers with
  *
  *     document.querySelector(".primary-toggle")
+ *     document.querySelector(".secondary-toggle")
  *
- * which matches only the *first* button in document order - the hidden navbar
- * one. The button a reader actually sees is therefore inert: on a narrow
- * viewport the primary sidebar is off-canvas with no way to reveal it, which
- * strands every link it contains.
+ * which match only the *first* button of each kind in document order - the
+ * hidden navbar ones. The buttons a reader actually sees are therefore inert: on
+ * a narrow viewport both sidebars are off-canvas with no way to reveal them,
+ * which strands every link they contain.
  *
  * Forward clicks from the inert buttons to the button carrying the handlers,
- * which restores both behaviours the themes intend - the off-canvas dialog on
- * a narrow viewport, and collapse-in-place on a wide one.
+ * which restores every behaviour the themes intend - the off-canvas dialog on a
+ * narrow viewport, and collapse-in-place on a wide one.
  *
  * See https://github.com/executablebooks/sphinx-book-theme/issues/865
  */
-document.addEventListener("DOMContentLoaded", () => {
-  const toggles = document.querySelectorAll(".primary-toggle");
+
+// each toggle and the dialog "pydata-sphinx-theme" opens from it
+const GROUPS = [
+  { toggle: ".primary-toggle", modal: "pst-primary-sidebar-modal" },
+  { toggle: ".secondary-toggle", modal: "pst-secondary-sidebar-modal" },
+];
+
+// the viewport at which "sphinx-book-theme" switches the primary sidebar from a
+// dialog to collapse-in-place, as per its own "fixSidebarToggle"
+const WIDE = "(min-width: 992px)";
+
+/**
+ * Forward clicks from the inert buttons to the button holding the handlers.
+ *
+ * @param {string} toggle - selector matching every button of this kind
+ * @param {string} modal - id of the dialog opened by this kind of button
+ */
+function forward(toggle, modal) {
+  const toggles = document.querySelectorAll(toggle);
 
   // nothing to repair once there is only one button to bind to i.e., upstream
   // has dropped the duplicate
@@ -35,12 +53,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // the button that "querySelector" found, and so the only one with handlers
   const bound = toggles[0];
-  const dialog = document.getElementById("pst-primary-sidebar-modal");
+  const dialog = document.getElementById(modal);
 
   Array.from(toggles)
     .slice(1)
-    .forEach((toggle) => {
-      toggle.addEventListener("click", (event) => {
+    .forEach((button) => {
+      button.addEventListener("click", (event) => {
         // should upstream bind every button, its handler may already have run
         // and opened the dialog, and opening an open dialog throws an
         // "InvalidStateError" - so defer to it
@@ -56,4 +74,40 @@ document.addEventListener("DOMContentLoaded", () => {
         bound.click();
       });
     });
+}
+
+/**
+ * Dismiss the primary sidebar dialog when the viewport grows wide.
+ *
+ * Opening the dialog moves the sidebar's classes onto it, and on a wide viewport
+ * "sphinx-book-theme" collapses the sidebar by adding "pst-sidebar-hidden". A
+ * dialog opened narrow and then widened therefore carries that class into a
+ * viewport whose styling honours it, leaving the dialog open but invisible - and
+ * an open dialog holds the top layer, so it blocks the whole page while offering
+ * nothing to click. Escape cannot dismiss it either, as "pydata-sphinx-theme"
+ * binds that to the dialog, which can no longer hold focus.
+ *
+ * Closing it hands back to "pydata-sphinx-theme", whose own "close" handler
+ * returns the nodes and classes to the sidebar and restores focus.
+ *
+ * Only the primary sidebar is affected; "sphinx-book-theme" leaves the secondary
+ * one alone, and its dialog is still the intended wide-viewport presentation.
+ */
+function dismissOnWide() {
+  const dialog = document.getElementById("pst-primary-sidebar-modal");
+
+  if (!dialog) {
+    return;
+  }
+
+  window.matchMedia(WIDE).addEventListener("change", (event) => {
+    if (event.matches && dialog.hasAttribute("open")) {
+      dialog.close();
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  GROUPS.forEach(({ toggle, modal }) => forward(toggle, modal));
+  dismissOnWide();
 });
