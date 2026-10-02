@@ -135,6 +135,19 @@ curl -s https://pypi.org/pypi/sphinx-book-theme/<version>/json \
 
 The theme is in maintenance mode but still releasing; it is not abandoned.
 
+⚠️ **`src/_static/sidebar_toggle.js` is a workaround, not a feature.**
+`sphinx-book-theme` renders a second `.primary-toggle` button and hides
+`pydata-sphinx-theme`'s, but both themes bind their handler with
+`document.querySelector(".primary-toggle")` — the *first* match, i.e. the
+hidden one — so the visible button is inert and the sidebar is unreachable on a
+phone. The shim forwards clicks to the bound button and self-retires when only
+one button remains. On every theme bump, re-check
+[sphinx-book-theme#865](https://github.com/executablebooks/sphinx-book-theme/issues/865)
+and drop the shim once upstream fixes it. There is no CI coverage for theme
+chrome — the image tests compare pyvista scenes, not page furniture — so a
+regression here is only caught by eye on the Read the Docs preview, at a
+viewport below 992 px.
+
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
 - **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
@@ -144,4 +157,4 @@ The theme is in maintenance mode but still releasing; it is not abandoned.
 
 ---
 
-**Last Updated**: 18 June 2026
+**Last Updated**: 2 October 2026
