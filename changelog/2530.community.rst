@@ -1,0 +1,2 @@
+Added :user:`HarshRajSinghania` as a contributor for ``maintenance``.
+(:user:`bjlittle`)
