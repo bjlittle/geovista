@@ -189,4 +189,4 @@ Use the `test` pixi environment: `pixi run -e test <command>`
 
 ---
 
-**Last Updated**: 1 October 2026
+**Last Updated**: 2 October 2026
