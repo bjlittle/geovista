@@ -9,14 +9,10 @@ from __future__ import annotations
 
 import pytest
 import pyvista as pv
+from pyvista import ImageData
 
 from geovista.common import point_cloud
 from geovista.core import slice_cells
-
-try:
-    from pyvista import ImageData
-except ImportError:
-    from pyvista import UniformGrid as ImageData
 
 
 def test_mesh_fail():
