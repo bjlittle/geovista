@@ -1,0 +1,6 @@
+Added developer :ref:`tippy-gv-developer-testing-browser-tests` guidelines,
+covering the prerequisites, markers, fixtures and helpers of the new
+``tests/docs`` suite, along with the previously undocumented ``ci-tests-docs.yml``
+workflow and the :guilabel:`tests-docs-browser` ``pixi`` tasks. Also added a
+:ref:`tippy-gv-developer-documentation-theme` section, explaining the
+``sidebar_toggle.js`` shim that the suite exists to guard. (:user:`claude`)

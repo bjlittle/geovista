@@ -24,11 +24,16 @@ infrastructure.
    on ``conda-forge`` or ``PyPI``.
 
 
+.. _gv-developer-testing-continuous-integration:
+.. _tippy-gv-developer-testing-continuous-integration:
+
 :fab:`github` Continuous Integration
 ------------------------------------
 
 .. |ci-test| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests.yml
+.. |ci-docs| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml/badge.svg
+    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml
 .. |ci-lock| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-lock.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-lock.yml
 .. |ci-pypi| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-pypi.yml/badge.svg
@@ -72,6 +77,20 @@ The following testing workflows are available:
    |           |    ``--failed_image_dir`` (see :ref:`tippy-gv-developer-testing-image-tests-generation`), and uploaded and    |
    |           |    archived as a :fab:`github` `Workflow Artifact`_ for the CI job. The failed unit test images may then be   |
    |           |    downloaded for analysis and investigation.                                                                 |
+   +-----------+---------------------------------------------------------------------------------------------------------------+
+   | |ci-docs| | The `ci-tests-docs.yml`_ :fab:`github` Action executes both the documentation image tests and the             |
+   |           | :ref:`tippy-gv-developer-testing-browser-tests` for the **latest** `SPEC 0`_ supported distribution of        |
+   |           | ``python``.                                                                                                   |
+   |           |                                                                                                               |
+   |           | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` :guilabel:`tests-doc`        |
+   |           | task, and the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`tests-docs-browser` task.    |
+   |           |                                                                                                               |
+   |           | .. note::                                                                                                     |
+   |           |    :class: dropdown                                                                                           |
+   |           |                                                                                                               |
+   |           |    The :ref:`tippy-gv-developer-testing-browser-tests` require a built documentation site, so this job        |
+   |           |    builds the :guilabel:`html-gallery` target - the cheapest build that renders the gallery, and therefore    |
+   |           |    the only one carrying the carousel that the browser tests cover.                                           |
    +-----------+---------------------------------------------------------------------------------------------------------------+
    | |ci-lock| | The `ci-tests-lock.yml`_ ``cron`` based :fab:`github` Action regularly schedules the execution of both the    |
    |           | :ref:`tippy-gv-developer-testing-image-tests` and :ref:`tippy-gv-developer-testing-unit-tests` for the        |
@@ -402,6 +421,242 @@ the :guilabel:`DATA_VERSION` using the CLI e.g.,
    $ geovista download --all --decompress
 
 
+.. _gv-developer-testing-browser-tests:
+.. _tippy-gv-developer-testing-browser-tests:
+
+:fa:`window-maximize` Browser Tests
+-----------------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+- :bash:`docs` :fa:`folder`
+- :bash:`tests/docs` :fa:`folder`
+
+The browser unit tests drive a headless ``chromium`` browser over a **built**
+documentation site using `playwright`_, in order to cover the theme chrome that is
+assembled in the browser and is therefore beyond the reach of any other unit test
+i.e., the primary and secondary sidebar toggles, the dialogs that they open, and
+the :ref:`tippy-gv-examples` gallery carousel.
+
+.. note::
+   :class: dropdown, toggle-shown
+
+   The browser unit tests deliberately assert on what a reader can **see and do**,
+   rather than on the markup of any particular theme release, so that they survive
+   a theme bump and report what actually broke.
+
+
+.. _gv-developer-testing-browser-tests-prerequisites:
+.. _tippy-gv-developer-testing-browser-tests-prerequisites:
+
+Prerequisites
+~~~~~~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+- :bash:`requirements/pypi-optional-test.txt`
+- :bash:`tests/docs/conftest.py`
+
+The browser unit tests require the following:
+
+.. table:: Browser Unit Test Prerequisites
+   :align: center
+   :widths: 1 4
+
+   +-------------------------+------------------------------------------------------------------------------------------+
+   | Prerequisite            | Description                                                                              |
+   +=========================+==========================================================================================+
+   | ``playwright``          | The ``python`` bindings that drive the browser, which are sourced from                   |
+   |                         | ``PyPI`` rather than ``conda-forge``, as the ``conda-forge`` package of the              |
+   |                         | same name provides the ``node`` command line interface but no ``python``                 |
+   |                         | bindings.                                                                                |
+   |                         |                                                                                          |
+   |                         | Declared in the :toml:`[tool.pixi.feature.test.pypi-dependencies]` table of              |
+   |                         | the :bash:`pyproject.toml` manifest, and in                                              |
+   |                         | :bash:`requirements/pypi-optional-test.txt`.                                             |
+   +-------------------------+------------------------------------------------------------------------------------------+
+   | ``chromium``            | The browser itself, which ``playwright`` manages separately from its                     |
+   |                         | ``python`` bindings. Install it once with the                                            |
+   |                         | :guilabel:`tests-docs-browser-install` ``pixi`` :term:`task <Task>`.                     |
+   +-------------------------+------------------------------------------------------------------------------------------+
+   | A documentation build   | The tests are performed against the :bash:`docs/_build/html` site, which is              |
+   |                         | opened over ``file://`` - no web server is required. See                                 |
+   |                         | :ref:`tippy-gv-developer-documentation-building` for further details.                    |
+   +-------------------------+------------------------------------------------------------------------------------------+
+
+Each of the above is guarded by a ``pytest`` `fixture <fixtures_>`__ that **skips**
+rather than fails when its prerequisite is unavailable, so a plain ``pytest`` run
+remains unaffected for contributors who have neither ``playwright`` nor a
+documentation build.
+
+.. seealso::
+   :class: dropdown, toggle-shown
+
+   Refer to the :ref:`tippy-gv-developer-testing-pixi-workflow`
+   :guilabel:`tests-docs-browser-install` and :guilabel:`tests-docs-browser` tasks,
+   which satisfy the ``chromium`` and documentation build prerequisites
+   respectively.
+
+.. attention::
+   :class: dropdown, toggle-shown
+
+   The default :guilabel:`html-noplot` documentation build target sets
+   :python:`plot_gallery = False`, which leaves the :ref:`tippy-gv-examples` gallery
+   carousel with nothing to render - so the carousel unit tests **skip**. Only the
+   :guilabel:`html-gallery` target, or another plotting target, covers them, and
+   rendering the gallery thumbnails requires a display.
+
+   Exactly like the :ref:`tippy-gv-developer-testing-image-tests`, the carousel is
+   therefore only meaningfully exercised by the `ci-tests-docs.yml`_ :fab:`github`
+   Action. See :ref:`tippy-gv-developer-testing-continuous-integration` for further
+   details.
+
+
+.. _gv-developer-testing-browser-tests-markers:
+.. _tippy-gv-developer-testing-browser-tests-markers:
+
+Markers
+~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+
+The following ``pytest`` marker is configured for browser unit tests:
+
+.. table:: Browser Unit Test Markers
+   :align: center
+   :widths: 1 4
+
+   +-----------------------+-------------------------------------------------------------------------------------+
+   | Marker                | Description                                                                         |
+   +=======================+=====================================================================================+
+   | :guilabel:`browser`   | Generic marker to be used on **all** documentation theme chrome unit                |
+   |                       | tests.                                                                              |
+   +-----------------------+-------------------------------------------------------------------------------------+
+
+The marker is applied to an entire test module with a :python:`pytestmark` global,
+rather than to each unit test e.g.,
+
+.. code-block:: python
+   :linenos:
+   :caption: Browser Unit Test Marker
+   :emphasize-lines: 4
+
+   import pytest
+
+
+   pytestmark = pytest.mark.browser
+
+The following marker expressions can be used for finer-grained control of unit test
+selection for execution:
+
+.. table:: Browser Marker Expressions
+   :align: center
+   :widths: 3 4
+
+   +-------------------------------------+------------------------------------------------------------+
+   | Marker Expression                   | Description                                                |
+   +=====================================+============================================================+
+   | :bash:`pytest -m browser`           | Execute all browser unit tests.                            |
+   +-------------------------------------+------------------------------------------------------------+
+   | :bash:`pytest -m "not browser"`     | Execute all unit tests except the browser unit             |
+   |                                     | tests.                                                     |
+   +-------------------------------------+------------------------------------------------------------+
+
+.. seealso::
+   :class: dropdown, toggle-shown
+
+   For further details see the ``markers`` array entry in the
+   :toml:`[tool.pytest.ini_options]` table of the :bash:`pyproject.toml` manifest.
+
+.. attention::
+   :class: dropdown
+
+   ``pytest`` must be executed from within the :bash:`geovista` root directory.
+
+
+.. _gv-developer-testing-browser-tests-fixtures:
+.. _tippy-gv-developer-testing-browser-tests-fixtures:
+
+Fixtures
+~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`tests/docs/conftest.py`
+
+The following ``pytest`` `fixtures`_ are available to browser unit tests:
+
+.. table:: Browser Unit Test Fixtures
+   :align: center
+   :widths: 1 4
+
+   +------------------+--------------------------------------------------------------------------------------------+
+   | Fixture          | Description                                                                                |
+   +==================+============================================================================================+
+   | ``browser``      | A launched headless ``chromium`` browser, shared for the duration of the                   |
+   |                  | test session and closed on teardown.                                                       |
+   +------------------+--------------------------------------------------------------------------------------------+
+   | ``goto``         | A factory that opens a built page at a given viewport width, defaulting                    |
+   |                  | to :bash:`index.html` e.g., :python:`page = goto(390)`.                                    |
+   |                  |                                                                                            |
+   |                  | The factory waits for the theme chrome to **settle** before handing the                    |
+   |                  | page back, and closes every page that it opened on teardown.                               |
+   |                  |                                                                                            |
+   |                  | .. attention::                                                                             |
+   |                  |    :class: dropdown                                                                        |
+   |                  |                                                                                            |
+   |                  |    Both themes inject their toggles from ``JavaScript`` *after* the page                   |
+   |                  |    has loaded, so the chrome is not final the moment the page is ready.                    |
+   |                  |    The factory therefore polls until the toggle count stops changing,                      |
+   |                  |    rather than pausing for a fixed delay - a delay tuned on a developer                    |
+   |                  |    machine is apt to be too short on a loaded CI runner.                                   |
+   +------------------+--------------------------------------------------------------------------------------------+
+   | ``html_root``    | The root directory of the documentation build, :bash:`docs/_build/html`.                   |
+   +------------------+--------------------------------------------------------------------------------------------+
+   | ``api_page``     | The path of a built API reference page, relative to ``html_root``.                         |
+   |                  |                                                                                            |
+   |                  | Such a page carries a secondary *On this page* sidebar with enough                         |
+   |                  | entries to be worth revealing, which the landing page does not.                            |
+   +------------------+--------------------------------------------------------------------------------------------+
+
+
+.. _gv-developer-testing-browser-tests-helpers:
+.. _tippy-gv-developer-testing-browser-tests-helpers:
+
+Helpers
+~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`tests/docs/_theme.py`
+
+The :bash:`tests/docs/_theme.py` module provides the helpers that browser unit tests
+use to interrogate the theme chrome, such as :python:`click_visible` to activate a
+toggle, :python:`dialog` to report the state of a sidebar dialog, and
+:python:`sidebar_offset` to distinguish a sidebar that collapses in place from one
+that opens as a dialog.
+
+Both themes render a **duplicate** of each toggle and hide one of them, so "the
+button" is ambiguous - the helpers consistently act upon the one that a reader can
+actually see.
+
+.. attention::
+   :class: dropdown
+
+   The ``sphinx-design`` :python:`sd-stretched-link` class covers its card through
+   an :python:`::after` overlay, so the bounding rectangle of the anchor itself is
+   no more than its text. Click coverage must therefore be verified by hit-testing
+   with :python:`document.elementFromPoint`, and **not** by comparing rectangles.
+
+   A carousel also deliberately hangs its cards past its own clipping edge, so only
+   those cards lying wholly inside the clipping rectangle can be hit-tested - assert
+   that at least one card qualifies, otherwise the unit test passes vacuously.
+
+
 .. _gv-developer-testing-pixi-workflow:
 .. _tippy-gv-developer-testing-pixi-workflow:
 
@@ -433,63 +688,96 @@ e.g.,
    :align: center
    :widths: 2 3
 
-   +-------------------------+---------------------------------------------------------------+
-   | Pixi Task               | Description                                                   |
-   +=========================+===============================================================+
-   | :guilabel:`download`    | Download and cache offline assets.                            |
-   |                         |                                                               |
-   |                         | This task calls the :ref:`tippy-gv-reference-cli-download`    |
-   |                         | command. Provide optional argument ``all``, ``clean``,        |
-   |                         | ``doc-images``, ``dry-run``, ``images``, ``list``,            |
-   |                         | ``natural-earth``, ``operational``, ``pantry``, ``rasters``,  |
-   |                         | ``unit-images`` or ``verify``. Defaults to ``all`` e.g.,      |
-   |                         |                                                               |
-   |                         | .. code:: console                                             |
-   |                         |                                                               |
-   |                         |    $ pixi run download rasters                                |
-   |                         |                                                               |
-   +-------------------------+---------------------------------------------------------------+
-   | :guilabel:`tests-clean` | Purge both the documentation and unit test image caches,      |
-   |                         | along with any images generated from previous test sessions   |
-   |                         | e.g.,                                                         |
-   |                         |                                                               |
-   |                         | .. code:: console                                             |
-   |                         |                                                               |
-   |                         |    $ pixi run tests-clean                                     |
-   |                         |                                                               |
-   +-------------------------+---------------------------------------------------------------+
-   | :guilabel:`tests-unit`  | Perform the unit tests.                                       |
-   |                         |                                                               |
-   |                         | This task calls the ``pytest`` command. Defaults to executing |
-   |                         | all unit tests discoverable from the :bash:`geovista` root    |
-   |                         | directory.                                                    |
-   |                         |                                                               |
-   |                         | Accepts a valid ``pytest`` marker expression as an optional   |
-   |                         | argument. Refer to the :toml:`[tool.pytest.ini_options]`      |
-   |                         | table entry in the :bash:`pyproject.toml` manifest for        |
-   |                         | configured ``markers`` e.g.,                                  |
-   |                         |                                                               |
-   |                         | .. code:: console                                             |
-   |                         |                                                               |
-   |                         |    $ pixi run tests-unit "not image"                          |
-   |                         |                                                               |
-   |                         | Note that the :guilabel:`tests-clean` task is called prior to |
-   |                         | running this task.                                            |
-   |                         |                                                               |
-   |                         | .. note::                                                     |
-   |                         |    :class: dropdown                                           |
-   |                         |                                                               |
-   |                         |    Failed :ref:`tippy-gv-developer-testing-image-tests` are   |
-   |                         |    automatically captured via the ``pytest-pyvista`` plugin   |
-   |                         |    option ``--failed_image_dir`` (see                         |
-   |                         |    :ref:`tippy-gv-developer-testing-image-tests-generation`)  |
-   |                         |    and available within the :bash:`test_images_failed`        |
-   |                         |    directory for analysis and investigation.                  |
-   |                         |                                                               |
-   |                         |    Additionally all generated images are captured via the     |
-   |                         |    ``--generated_image_dir`` plugin option and are available  |
-   |                         |    within the :bash:`test_images` directory.                  |
-   +-------------------------+---------------------------------------------------------------+
+   +----------------------------------------+------------------------------------------------------------------+
+   | Pixi Task                              | Description                                                      |
+   +========================================+==================================================================+
+   | :guilabel:`download`                   | Download and cache offline assets.                               |
+   |                                        |                                                                  |
+   |                                        | This task calls the :ref:`tippy-gv-reference-cli-download`       |
+   |                                        | command. Provide optional argument ``all``, ``clean``,           |
+   |                                        | ``doc-images``, ``dry-run``, ``images``, ``list``,               |
+   |                                        | ``natural-earth``, ``operational``, ``pantry``, ``rasters``,     |
+   |                                        | ``unit-images`` or ``verify``. Defaults to ``all`` e.g.,         |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run download rasters                                   |
+   |                                        |                                                                  |
+   +----------------------------------------+------------------------------------------------------------------+
+   | :guilabel:`tests-clean`                | Purge both the documentation and unit test image caches,         |
+   |                                        | along with any images generated from previous test sessions      |
+   |                                        | e.g.,                                                            |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run tests-clean                                        |
+   |                                        |                                                                  |
+   +----------------------------------------+------------------------------------------------------------------+
+   | :guilabel:`tests-unit`                 | Perform the unit tests.                                          |
+   |                                        |                                                                  |
+   |                                        | This task calls the ``pytest`` command. Defaults to executing    |
+   |                                        | all unit tests discoverable from the :bash:`geovista` root       |
+   |                                        | directory.                                                       |
+   |                                        |                                                                  |
+   |                                        | Accepts a valid ``pytest`` marker expression as an optional      |
+   |                                        | argument. Refer to the :toml:`[tool.pytest.ini_options]`         |
+   |                                        | table entry in the :bash:`pyproject.toml` manifest for           |
+   |                                        | configured ``markers`` e.g.,                                     |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run tests-unit "not image"                             |
+   |                                        |                                                                  |
+   |                                        | Note that the :guilabel:`tests-clean` task is called prior to    |
+   |                                        | running this task.                                               |
+   |                                        |                                                                  |
+   |                                        | .. note::                                                        |
+   |                                        |    :class: dropdown                                              |
+   |                                        |                                                                  |
+   |                                        |    Failed :ref:`tippy-gv-developer-testing-image-tests` are      |
+   |                                        |    automatically captured via the ``pytest-pyvista`` plugin      |
+   |                                        |    option ``--failed_image_dir`` (see                            |
+   |                                        |    :ref:`tippy-gv-developer-testing-image-tests-generation`)     |
+   |                                        |    and available within the :bash:`test_images_failed`           |
+   |                                        |    directory for analysis and investigation.                     |
+   |                                        |                                                                  |
+   |                                        |    Additionally all generated images are captured via the        |
+   |                                        |    ``--generated_image_dir`` plugin option and are available     |
+   |                                        |    within the :bash:`test_images` directory.                     |
+   +----------------------------------------+------------------------------------------------------------------+
+   | :guilabel:`tests-docs-browser`         | Perform the browser unit tests.                                  |
+   |                                        |                                                                  |
+   |                                        | This task calls the ``pytest`` command for the                   |
+   |                                        | :bash:`tests/docs` directory.                                    |
+   |                                        |                                                                  |
+   |                                        | Accepts an optional documentation build target as                |
+   |                                        | an argument, which is built first. Defaults to                   |
+   |                                        | ``html-noplot`` e.g.,                                            |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run tests-docs-browser html-gallery                    |
+   |                                        |                                                                  |
+   |                                        | .. attention::                                                   |
+   |                                        |    :class: dropdown                                              |
+   |                                        |                                                                  |
+   |                                        |    The default ``html-noplot`` target carries no                 |
+   |                                        |    gallery carousel, so the carousel unit tests                  |
+   |                                        |    skip. See                                                     |
+   |                                        |    :ref:`tippy-gv-developer-testing-browser-tests-prerequisites` |
+   |                                        |    for further details.                                          |
+   |                                        |                                                                  |
+   +----------------------------------------+------------------------------------------------------------------+
+   | :guilabel:`tests-docs-browser-install` | Install the ``chromium`` browser required by the                 |
+   |                                        | :ref:`tippy-gv-developer-testing-browser-tests` e.g.,            |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run tests-docs-browser-install                         |
+   |                                        |                                                                  |
+   |                                        | This is a one-off, as ``playwright`` manages the                 |
+   |                                        | browser separately from its ``python`` bindings.                 |
+   +----------------------------------------+------------------------------------------------------------------+
 
 .. tip::
    :class: dropdown, toggle-shown
@@ -518,8 +806,9 @@ The unit tests are located within the :bash:`tests` root directory and are
 organised into sub-directories, typically one for each ``geovista`` top-level
 module or sub-package.
 
-The exception to this rule is :bash:`tests/plotting` which contains the
-:ref:`tippy-gv-developer-testing-image-tests`.
+The exceptions to this rule are :bash:`tests/plotting`, which contains the
+:ref:`tippy-gv-developer-testing-image-tests`, and :bash:`tests/docs`, which
+contains the :ref:`tippy-gv-developer-testing-browser-tests`.
 
 To execute all unit tests:
 
@@ -538,7 +827,8 @@ To execute all unit tests:
    ``pytest`` must be executed from within the :bash:`geovista` root directory.
 
 Finer-grained control of unit test can be achieved by using our ``pytest``
-:ref:`tippy-gv-developer-testing-image-tests-markers`.
+:ref:`image <tippy-gv-developer-testing-image-tests-markers>` and
+:ref:`browser <tippy-gv-developer-testing-browser-tests-markers>` markers.
 
 
 .. comment
@@ -549,8 +839,10 @@ Finer-grained control of unit test can be achieved by using our ``pytest``
 .. _Workflow Artifact: https://docs.github.com/en/actions/concepts/workflows-and-actions/workflow-artifacts
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml
 .. _ci-tests.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests.yml
+.. _ci-tests-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-docs.yml
 .. _ci-tests-lock.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-lock.yml
 .. _ci-tests-pypi.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-pypi.yml
 .. _codecov: https://app.codecov.io/gh/bjlittle/geovista
 .. _dependabot.yml: https://github.com/bjlittle/geovista/blob/main/.github/dependabot.yml
 .. _fixtures: https://docs.pytest.org/en/stable/how-to/fixtures.html#how-to-fixtures
+.. _playwright: https://playwright.dev/python/

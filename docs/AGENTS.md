@@ -157,11 +157,18 @@ redundant navbar removed — and is reported separately as
 [#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), so
 that half outlives it. On every theme bump, re-check both.
 
-There is **no CI coverage for theme chrome** — the image tests compare pyvista
-scenes, not page furniture. Verify changes here in a real browser against the
-Read the Docs preview, exercising *both* sidebars either side of 992 px and
-across a resize through it. See the `headless-browser-on-this-host` note for
-running chromium where no sudo is available.
+Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
+`ci-tests-docs.yml` — the image tests compare pyvista scenes, not page
+furniture. Run it locally with `pixi run -e geovista tests-docs-browser`; see
+`tests/AGENTS.md` for the gotchas. The suite needs a local build (never a Read
+the Docs URL — RTD's addons tear out and re-inject the page after `load`), and
+the carousel only renders under `html-gallery`, so that third of the suite is
+CI-only here. See the `headless-browser-on-this-host` note for running chromium
+where no sudo is available.
+
+Developer-facing docs for all of this live in `docs/src/developer/`: the theme
+shim in `documentation.rst` (:fa:`palette` Theme), the suite in `testing.rst`
+(:fa:`window-maximize` Browser Tests). Keep them in step with this file.
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
