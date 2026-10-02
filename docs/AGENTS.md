@@ -153,8 +153,9 @@ fixed on `main` by
 [#987](https://github.com/executablebooks/sphinx-book-theme/pull/987) but
 unreleased as of `1.4.0`; the forwarding half self-retires when that ships. The
 breakpoint stranding is *not* fixed by `#987` — verified against a DOM with the
-redundant navbar removed — so that half outlives it. On every theme bump,
-re-check both.
+redundant navbar removed — and is reported separately as
+[#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), so
+that half outlives it. On every theme bump, re-check both.
 
 There is **no CI coverage for theme chrome** — the image tests compare pyvista
 scenes, not page furniture. Verify changes here in a real browser against the

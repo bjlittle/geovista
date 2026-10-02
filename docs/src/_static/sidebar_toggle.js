@@ -104,6 +104,9 @@ function forward(toggle, modal) {
  * https://github.com/executablebooks/sphinx-book-theme/pull/987 - it is caused by
  * the class transfer rather than the duplication, and reproduces with the
  * redundant navigation bar removed. So this half outlives "forward".
+ *
+ * Reported upstream as
+ * https://github.com/executablebooks/sphinx-book-theme/issues/1012
  */
 function dismissOnWide() {
   const dialog = document.getElementById("pst-primary-sidebar-modal");
