@@ -7,7 +7,8 @@
 
 The carousel is built from rendered gallery thumbnails, so it only exists in a
 build made with ``plot_gallery`` enabled. These tests skip on a no-plot build
-rather than silently passing over an empty page.
+rather than silently passing over an empty page - or fail, under
+``--browser-strict``, for a build that was meant to carry one.
 
 """
 
@@ -53,13 +54,15 @@ PROBE = """() => {
 
 
 @pytest.fixture
-def cards(goto):
+def cards(goto, require):
     """Collect the carousel cards from the landing page.
 
     Parameters
     ----------
     goto : Callable
         The page factory.
+    require : Callable
+        The prerequisite guard.
 
     Returns
     -------
@@ -70,7 +73,7 @@ def cards(goto):
     page = goto(1400)
 
     if page.locator(CAROUSEL).count() == 0:
-        pytest.skip("no gallery carousel in this build, see plot_gallery")
+        require("no gallery carousel in this build, see plot_gallery")
 
     # the carousel sits below the fold, and a hit-test off-screen is vacuous
     page.evaluate(

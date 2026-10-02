@@ -167,9 +167,10 @@ that half outlives it. On every theme bump, re-check both.
 Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
 `ci-tests-docs.yml` — the image tests compare pyvista scenes, not page
 furniture. Run it locally with `pixi run -e geovista tests-docs-browser`; see
-`tests/AGENTS.md` for the gotchas. The suite needs a local build (never a Read
-the Docs URL — RTD's addons tear out and re-inject the page after `load`), and
-the carousel only renders under `html-gallery`, so that third of the suite is
+`tests/AGENTS.md` for the gotchas, including why CI must pass `--browser-strict`
+when a skipping suite is otherwise green. The suite needs a local build (never a
+Read the Docs URL — RTD's addons tear out and re-inject the page after `load`),
+and the carousel only renders under `html-gallery`, so that third of the suite is
 CI-only here. See the `headless-browser-on-this-host` note for running chromium
 where no sudo is available.
 

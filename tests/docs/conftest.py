@@ -9,10 +9,16 @@ Every fixture here skips rather than fails when its prerequisite is missing, so
 that a plain ``pytest`` run is unaffected for contributors who have neither
 ``playwright`` nor a documentation build.
 
+That is the wrong default for CI, which installs every prerequisite and builds
+the gallery deliberately, and so would report success having silently stopped
+covering anything. Pass ``--browser-strict`` to require them instead.
+
 """
 
 from __future__ import annotations
 
+from functools import partial
+import importlib
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -20,8 +26,14 @@ import pytest
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
+    from typing import NoReturn
 
     from playwright.sync_api import Browser, Page
+
+#: The option requiring, rather than skipping, each prerequisite, registered
+#: in the test root "conftest.py" as pytest honours "pytest_addoption" only
+#: there.
+STRICT = "--browser-strict"
 
 #: The root of the built documentation, relative to this file.
 HTML_ROOT = Path(__file__).parents[2] / "docs" / "_build" / "html"
@@ -62,9 +74,57 @@ SETTLED = """([selector, quiet]) => {
 }"""
 
 
+def _require(config: pytest.Config, reason: str) -> NoReturn:
+    """Skip an unmet prerequisite, or fail it under ``--browser-strict``.
+
+    Parameters
+    ----------
+    config : pytest.Config
+        The pytest configuration, carrying the command line options.
+    reason : str
+        The prerequisite that is unavailable.
+
+    Raises
+    ------
+    Failed
+        When the prerequisite is required.
+    Skipped
+        Otherwise.
+
+    """
+    if config.getoption(STRICT):
+        pytest.fail(f"{reason} ({STRICT})")
+
+    pytest.skip(reason)
+
+
 @pytest.fixture(scope="session")
-def html_root() -> Path:
+def require(pytestconfig: pytest.Config) -> Callable[[str], NoReturn]:
+    """Provide the guard for a prerequisite that only a test can detect.
+
+    Parameters
+    ----------
+    pytestconfig : pytest.Config
+        The pytest configuration, carrying the command line options.
+
+    Returns
+    -------
+    Callable
+        A callable taking the prerequisite that is unavailable, which skips, or
+        fails under ``--browser-strict``.
+
+    """
+    return partial(_require, pytestconfig)
+
+
+@pytest.fixture(scope="session")
+def html_root(pytestconfig: pytest.Config) -> Path:
     """Locate the built documentation.
+
+    Parameters
+    ----------
+    pytestconfig : pytest.Config
+        The pytest configuration, carrying the command line options.
 
     Returns
     -------
@@ -73,17 +133,19 @@ def html_root() -> Path:
 
     """
     if not (HTML_ROOT / "index.html").is_file():
-        pytest.skip(f"no documentation build found at {HTML_ROOT}")
+        _require(pytestconfig, f"no documentation build found at {HTML_ROOT}")
 
     return HTML_ROOT
 
 
 @pytest.fixture(scope="session")
-def api_page(html_root: Path) -> str:
+def api_page(pytestconfig: pytest.Config, html_root: Path) -> str:
     """Locate a built page carrying a secondary sidebar.
 
     Parameters
     ----------
+    pytestconfig : pytest.Config
+        The pytest configuration, carrying the command line options.
     html_root : Path
         The root directory of the build.
 
@@ -94,14 +156,19 @@ def api_page(html_root: Path) -> str:
 
     """
     if not (html_root / API_PAGE).is_file():
-        pytest.skip(f"no api reference page built at {API_PAGE}")
+        _require(pytestconfig, f"no api reference page built at {API_PAGE}")
 
     return API_PAGE
 
 
 @pytest.fixture(scope="session")
-def browser() -> Iterator[Browser]:
+def browser(pytestconfig: pytest.Config) -> Iterator[Browser]:
     """Provide a headless chromium browser.
+
+    Parameters
+    ----------
+    pytestconfig : pytest.Config
+        The pytest configuration, carrying the command line options.
 
     Yields
     ------
@@ -109,9 +176,10 @@ def browser() -> Iterator[Browser]:
         A launched browser, closed on teardown.
 
     """
-    sync_api = pytest.importorskip(
-        "playwright.sync_api", reason="playwright is not installed"
-    )
+    try:
+        sync_api = importlib.import_module("playwright.sync_api")
+    except ImportError:
+        _require(pytestconfig, "playwright is not installed")
 
     with sync_api.sync_playwright() as driver:
         try:
@@ -120,7 +188,7 @@ def browser() -> Iterator[Browser]:
             # the python package is installed but "playwright install chromium"
             # has not been run, or the host is missing the shared libraries it
             # needs - neither is a failure of the documentation
-            pytest.skip(f"unable to launch chromium: {err}")
+            _require(pytestconfig, f"unable to launch chromium: {err}")
 
         yield instance
 

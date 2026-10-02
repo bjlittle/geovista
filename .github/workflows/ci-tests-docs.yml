@@ -141,8 +141,10 @@ jobs:
           pixi run --frozen playwright install --with-deps chromium
 
       # "html-gallery" is the cheapest build that renders the gallery, and so
-      # the only one carrying the carousel the tests cover
+      # the only one carrying the carousel the tests cover. "strict" requires
+      # every prerequisite that this job has deliberately provided, otherwise
+      # losing one would skip its tests and leave the job green regardless
       - name: "test docs chrome (${{ matrix.version }})"
         run: |
           geovista --report
-          xvfb-run -a pixi run --frozen tests-docs-browser html-gallery
+          xvfb-run -a pixi run --frozen tests-docs-browser html-gallery strict

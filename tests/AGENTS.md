@@ -142,10 +142,20 @@ sidebar toggles, the dialogs they open, and the gallery carousel.
 pixi run -e geovista tests-docs-browser-install   # one-off, fetches chromium
 pixi run -e geovista tests-docs-browser           # build + test
 pixi run -e geovista tests-docs-browser html-gallery  # include the carousel
+pixi run -e geovista tests-docs-browser html-gallery strict  # what CI runs
 ```
 
 Every prerequisite **skips** rather than fails — no playwright, no chromium, no
-build — so a plain `pytest` run is unaffected.
+build, no carousel — so a plain `pytest` run is unaffected.
+
+⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** CI installs
+every prerequisite and builds the gallery deliberately; without the option, a
+regression that stops the carousel being generated skips its three tests and the
+job still passes, having silently lost the coverage it exists to provide. The
+option turns each unmet prerequisite into a failure, and the second `strict`
+argument of the pixi task passes it. Note that pytest honours `pytest_addoption`
+only in the test-root `tests/conftest.py`, so that is where it is registered —
+not in `tests/docs/`, which consumes it.
 
 ⚠️ **The default `html-noplot` build has no carousel.** `plot_gallery=False`
 leaves `geovista_carousel` with nothing to render, so the carousel tests skip.

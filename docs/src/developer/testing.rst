@@ -90,7 +90,9 @@ The following testing workflows are available:
    |           |                                                                                                               |
    |           |    The :ref:`tippy-gv-developer-testing-browser-tests` require a built documentation site, so this job        |
    |           |    builds the :guilabel:`html-gallery` target - the cheapest build that renders the gallery, and therefore    |
-   |           |    the only one carrying the carousel that the browser tests cover.                                           |
+   |           |    the only one carrying the carousel that the browser tests cover. It is run with the ``--browser-strict``   |
+   |           |    option, so that a prerequisite which this job deliberately provides, but which quietly goes missing,       |
+   |           |    fails rather than skips - leaving the job green over lost coverage.                                        |
    +-----------+---------------------------------------------------------------------------------------------------------------+
    | |ci-lock| | The `ci-tests-lock.yml`_ ``cron`` based :fab:`github` Action regularly schedules the execution of both the    |
    |           | :ref:`tippy-gv-developer-testing-image-tests` and :ref:`tippy-gv-developer-testing-unit-tests` for the        |
@@ -491,6 +493,23 @@ rather than fails when its prerequisite is unavailable, so a plain ``pytest`` ru
 remains unaffected for contributors who have neither ``playwright`` nor a
 documentation build.
 
+That is the wrong default for `ci-tests-docs.yml`_, which installs every
+prerequisite and builds the gallery deliberately, and so would report success
+having silently stopped covering anything. The ``--browser-strict`` option
+**requires** each prerequisite instead e.g.,
+
+.. code:: console
+
+   $ pytest tests/docs -m browser --browser-strict
+
+.. note::
+   :class: dropdown
+
+   ``pytest`` honours the ``pytest_addoption`` hook only within the test root
+   :bash:`tests/conftest.py`, which is therefore where the ``--browser-strict``
+   option is registered, rather than alongside the browser unit tests that
+   consume it.
+
 .. seealso::
    :class: dropdown, toggle-shown
 
@@ -504,9 +523,10 @@ documentation build.
 
    The default :guilabel:`html-noplot` documentation build target sets
    :python:`plot_gallery = False`, which leaves the :ref:`tippy-gv-examples` gallery
-   carousel with nothing to render - so the carousel unit tests **skip**. Only the
-   :guilabel:`html-gallery` target, or another plotting target, covers them, and
-   rendering the gallery thumbnails requires a display.
+   carousel with nothing to render - so the carousel unit tests **skip**, or **fail**
+   under ``--browser-strict``. Only the :guilabel:`html-gallery` target, or another
+   plotting target, covers them, and rendering the gallery thumbnails requires a
+   display.
 
    Exactly like the :ref:`tippy-gv-developer-testing-image-tests`, the carousel is
    therefore only meaningfully exercised by the `ci-tests-docs.yml`_ :fab:`github`
@@ -621,6 +641,12 @@ The following ``pytest`` `fixtures`_ are available to browser unit tests:
    |                  |                                                                                            |
    |                  | Such a page carries a secondary *On this page* sidebar with enough                         |
    |                  | entries to be worth revealing, which the landing page does not.                            |
+   +------------------+--------------------------------------------------------------------------------------------+
+   | ``require``      | A guard for a prerequisite that only a unit test itself can detect,                        |
+   |                  | such as the gallery carousel, which **skips** or, under                                    |
+   |                  | ``--browser-strict``, **fails** e.g.,                                                      |
+   |                  |                                                                                            |
+   |                  | :python:`require("no gallery carousel in this build")`.                                    |
    +------------------+--------------------------------------------------------------------------------------------+
 
 
@@ -757,6 +783,15 @@ e.g.,
    |                                        | .. code:: console                                                |
    |                                        |                                                                  |
    |                                        |    $ pixi run tests-docs-browser html-gallery                    |
+   |                                        |                                                                  |
+   |                                        | A non-empty second argument additionally                         |
+   |                                        | passes the ``--browser-strict`` option, which                    |
+   |                                        | requires rather than skips each prerequisite                     |
+   |                                        | e.g.,                                                            |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run tests-docs-browser html-gallery strict             |
    |                                        |                                                                  |
    |                                        | .. attention::                                                   |
    |                                        |    :class: dropdown                                              |
