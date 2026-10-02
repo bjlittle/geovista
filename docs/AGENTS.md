@@ -114,6 +114,13 @@ These paths are regenerated on build — never commit manual edits:
 - Sphinx-lint and codespell run via pre-commit on `.rst` files.
 - Ruff lints Python in `docs/src` (included in `tool.ruff` `src` list).
 
+⚠️ **A new `:fa:`/`:fab:` icon must be added to `src/_static/color.css`.** The
+selector list there ending `.fa-windows { color: #80d050 !important; }` is what
+brands every icon green; an icon absent from it renders in the default text
+colour and nothing warns you. Confirm the emitted class with
+`grep -o '<[^>]*fa-<name>[^>]*>' _build/html/<page>.html` — it is `fa fa-<name>`,
+and the list is alphabetical.
+
 ## Dependencies
 
 Documentation deps are defined in:
