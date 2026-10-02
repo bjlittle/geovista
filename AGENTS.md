@@ -39,6 +39,7 @@ pixi run -e test tests-unit "image"      # Image comparison tests only
 pixi run -e test tests-unit "not image"  # Skip image tests
 pixi run -e docs make                    # Build docs (html-noplot)
 pixi run -e docs serve-html              # Build + serve docs locally
+pixi run -e geovista tests-docs-browser  # Browser tests of the docs chrome
 pixi run download                        # Fetch offline assets
 ```
 
@@ -59,6 +60,14 @@ leaves the old version in place, and the suite then silently tests nothing new.
 Use `pixi update <pkg>`, and confirm with `pixi list -e <env> <pkg>`. The same
 bump must also be applied to `requirements/pypi-*.txt`, which `pixi` neither
 reads nor updates.
+
+⚠️ **A conda-forge package of the same name is not always the Python one.**
+Tools that ship both a Node and a Python distribution (`playwright` is the
+case in point) are packaged on conda-forge as the *Node* CLI, with no Python
+bindings at all — the conda package installs cleanly and `import <pkg>` then
+raises `ModuleNotFoundError`. Check with `pixi list -e <env> <pkg>` plus an
+actual import before assuming conda-forge availability settles it; such
+packages belong in a feature's `pypi-dependencies`.
 
 **Install the hooks and let them gate commits, not CI:**
 
@@ -92,6 +101,12 @@ nothing about them — they are only meaningfully exercised in CI. `pytest.ini`
 sets `filterwarnings = ["error", ...]`, so *any* new `warnings.warn` in library
 code can fail an image test even when unit tests pass. Warn only when the
 condition is genuinely exceptional, and check CI before calling such work done.
+
+⚠️ **A suite that skips is a suite that passes.** Where a test guards itself on
+a prerequisite — a display, a browser, a built artefact — CI must *require* that
+prerequisite rather than inherit the local skip, or a regression that removes it
+silently drops the coverage and the job still exits 0. `tests/docs` does this
+with `--browser-strict`; follow the pattern for any new guarded suite.
 
 ⚠️ **The `docs` pixi tasks shell out to `make`, which is not a declared
 dependency.** Where the host lacks it, `pixi run -e docs make` prints
@@ -164,4 +179,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 1 October 2026
+**Last Updated**: 2 October 2026

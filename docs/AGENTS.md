@@ -114,6 +114,13 @@ These paths are regenerated on build — never commit manual edits:
 - Sphinx-lint and codespell run via pre-commit on `.rst` files.
 - Ruff lints Python in `docs/src` (included in `tool.ruff` `src` list).
 
+⚠️ **A new `:fa:`/`:fab:` icon must be added to `src/_static/color.css`.** The
+selector list there ending `.fa-windows { color: #80d050 !important; }` is what
+brands every icon green; an icon absent from it renders in the default text
+colour and nothing warns you. Confirm the emitted class with
+`grep -o '<[^>]*fa-<name>[^>]*>' _build/html/<page>.html` — it is `fa fa-<name>`,
+and the list is alphabetical.
+
 ## Dependencies
 
 Documentation deps are defined in:
@@ -157,11 +164,19 @@ redundant navbar removed — and is reported separately as
 [#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), so
 that half outlives it. On every theme bump, re-check both.
 
-There is **no CI coverage for theme chrome** — the image tests compare pyvista
-scenes, not page furniture. Verify changes here in a real browser against the
-Read the Docs preview, exercising *both* sidebars either side of 992 px and
-across a resize through it. See the `headless-browser-on-this-host` note for
-running chromium where no sudo is available.
+Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
+`ci-tests-docs.yml` — the image tests compare pyvista scenes, not page
+furniture. Run it locally with `pixi run -e geovista tests-docs-browser`; see
+`tests/AGENTS.md` for the gotchas, including why CI must pass `--browser-strict`
+when a skipping suite is otherwise green. The suite needs a local build (never a
+Read the Docs URL — RTD's addons tear out and re-inject the page after `load`),
+and the carousel only renders under `html-gallery`, so that third of the suite is
+CI-only here. See the `headless-browser-on-this-host` note for running chromium
+where no sudo is available.
+
+Developer-facing docs for all of this live in `docs/src/developer/`: the theme
+shim in `documentation.rst` (:fa:`palette` Theme), the suite in `testing.rst`
+(:fa:`window-maximize` Browser Tests). Keep them in step with this file.
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 

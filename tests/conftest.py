@@ -24,6 +24,35 @@ from geovista.pantry.meshes import lfric as sample_lfric
 from geovista.pantry.meshes import lfric_sst as sample_lfric_sst
 from geovista.transform import transform_mesh
 
+#: The option requiring, rather than skipping, each prerequisite of the
+#: "tests/docs" browser tests.
+BROWSER_STRICT = "--browser-strict"
+
+
+def pytest_addoption(parser):
+    """Register the geovista pytest command line options.
+
+    Note that pytest honours this hook only in the test root conftest, so the
+    browser test option is registered here rather than alongside the tests in
+    "tests/docs" that consume it.
+
+    Parameters
+    ----------
+    parser : pytest.Parser
+        The pytest command line parser.
+
+    """
+    parser.addoption(
+        BROWSER_STRICT,
+        action="store_true",
+        default=False,
+        help=(
+            "require, rather than skip, each prerequisite of the tests/docs "
+            "browser tests e.g., the gallery carousel, which is rendered only by "
+            "a plotting documentation build target"
+        ),
+    )
+
 
 @pytest.fixture
 def plot_nodeid(request):

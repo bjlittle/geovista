@@ -478,6 +478,48 @@ the estimate to read this :ref:`tippy-gv-developer-documentation` page:
    time for a directive with no arguments i.e., ``.. readingtime::``.
 
 
+.. _gv-developer-documentation-theme:
+.. _tippy-gv-developer-documentation-theme:
+
+:fa:`palette` Theme
+-------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/src/_static` :fa:`folder`
+- :bash:`docs/src/conf.py`
+- :bash:`tests/docs` :fa:`folder`
+
+The documentation is rendered with `sphinx-book-theme`_, which is layered upon
+`pydata-sphinx-theme`_. Note that ``sphinx-book-theme`` pins ``pydata-sphinx-theme``
+to an **exact** version, so the pair of them only ever move together.
+
+.. attention::
+   :class: dropdown, toggle-shown
+
+   :bash:`docs/src/_static/sidebar_toggle.js` is a **workaround**, not a feature.
+
+   ``sphinx-book-theme`` renders a second primary and secondary sidebar toggle and
+   hides the ``pydata-sphinx-theme`` pair, yet both themes bind their handlers to
+   the **first** match i.e., the hidden one - leaving the visible buttons inert and
+   both sidebars unreachable on a narrow viewport. The shim forwards clicks to the
+   bound button of each pair, and self-retires once only one button remains.
+
+   It also closes the primary dialog at :python:`(min-width: 992px)`, since the
+   dialog inherits the classes of the sidebar, and therefore its wide-viewport
+   collapsed state, which would otherwise strand the dialog open but invisible over
+   a page that it blocks.
+
+   The two halves retire on different schedules, so **re-check both on every theme
+   bump**.
+
+The theme chrome is assembled in the browser and so is beyond the reach of the
+:ref:`tippy-gv-developer-testing-image-tests`, which compare ``pyvista`` scenes
+rather than page furniture. It is instead covered by the
+:ref:`tippy-gv-developer-testing-browser-tests`, which exercise both sidebars
+either side of the ``992`` pixel theme breakpoint, and across a resize through it.
+
+
 .. _gv-developer-documentation-pixi-workflow:
 .. _tippy-gv-developer-documentation-pixi-workflow:
 
@@ -508,63 +550,108 @@ the above :ref:`tippy-gv-developer-documentation-building` ``make`` command task
    :align: center
    :widths: 1 3
 
-   +-------------------------+-------------------------------------------------------------------------------------+
-   | Pixi Task               | Description                                                                         |
-   +=========================+=====================================================================================+
-   | :guilabel:`clean`       | Purge all `sphinx-autoapi`_, `sphinx-gallery`_, `sphinx-tags`_, carousel, and       |
-   |                         | other `sphinx-build`_ artifacts.                                                    |
-   +-------------------------+-------------------------------------------------------------------------------------+
-   | :guilabel:`clean-all`   | Perform both the :guilabel:`clean` and :guilabel:`clean-cache` tasks.               |
-   +-------------------------+-------------------------------------------------------------------------------------+
-   | :guilabel:`clean-cache` | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_                    |
-   |                         | for further details.                                                                |
-   +-------------------------+-------------------------------------------------------------------------------------+
-   | :guilabel:`doctest`     | Execute `sphinx.ext.doctest`_ to test code snippets within the documentation.       |
-   |                         |                                                                                     |
-   |                         | Note that the :guilabel:`clean` task is called prior to running this task.          |
-   +-------------------------+-------------------------------------------------------------------------------------+
-   | :guilabel:`make`        | Build the documentation using ``html-noplot`` by default. Pass either ``html``,     |
-   |                         | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline``    |
-   |                         | or ``html-tutorial`` as an argument to override the default ``html-noplot``         |
-   |                         | behaviour.                                                                          |
-   |                         |                                                                                     |
-   |                         | Note that the :guilabel:`clean` task is called prior to running this task.          |
-   +-------------------------+-------------------------------------------------------------------------------------+
-   | :guilabel:`serve-html`  | Build the documentation using ``html-noplot`` by default and start a local          |
-   |                         | ``HTTP`` server on port ``11000`` to view the rendered documentation. This is       |
-   |                         | necessary in order to support interactive scenes. Pass either ``html``,             |
-   |                         | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline``    |
-   |                         | or ``html-tutorial`` as an argument to override the default ``html-noplot``         |
-   |                         | behaviour.                                                                          |
-   |                         |                                                                                     |
-   |                         | Note that the :guilabel:`clean` and :guilabel:`make` tasks are called prior to      |
-   |                         | running this task.                                                                  |
-   +-------------------------+-------------------------------------------------------------------------------------+
-   | :guilabel:`tests-doc`   | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g., |
-   |                         |                                                                                     |
-   |                         | .. code:: console                                                                   |
-   |                         |                                                                                     |
-   |                         |    $ pixi run tests-doc                                                             |
-   |                         |                                                                                     |
-   |                         | This task calls :bash:`pytest --doc_mode` to perform the documentation image tests  |
-   |                         | using the `pytest-pyvista`_ plugin. Refer to the :toml:`[tool.pytest.ini_options]`  |
-   |                         | table entry in the :bash:`pyproject.toml` manifest for default configuration        |
-   |                         | options.                                                                            |
-   |                         |                                                                                     |
-   |                         | Note that the :guilabel:`tests-clean`, :guilabel:`download` and :guilabel:`make`    |
-   |                         | tasks are called prior to running this task. See                                    |
-   |                         | :ref:`Packaging <tippy-gv-developer-packaging-pixi-tasks>` for further details.     |
-   |                         |                                                                                     |
-   |                         | This task is only available in the :guilabel:`geovista` and                         |
-   |                         | :guilabel:`geovista-py3xx` environments.                                            |
-   |                         |                                                                                     |
-   |                         | .. note::                                                                           |
-   |                         |    :class: dropdown                                                                 |
-   |                         |                                                                                     |
-   |                         |    Failed image tests are captured via the ``pytest-pyvista`` plugin option         |
-   |                         |    ``--failed_image_dir`` within the :bash:`test_images_failed` directory for       |
-   |                         |    analysis and investigation.                                                      |
-   +-------------------------+-------------------------------------------------------------------------------------+
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | Pixi Task                              | Description                                                                         |
+   +========================================+=====================================================================================+
+   | :guilabel:`clean`                      | Purge all `sphinx-autoapi`_, `sphinx-gallery`_, `sphinx-tags`_, carousel, and       |
+   |                                        | other `sphinx-build`_ artifacts.                                                    |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`clean-all`                  | Perform both the :guilabel:`clean` and :guilabel:`clean-cache` tasks.               |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`clean-cache`                | Purge the `myst-nb`_ Jupyter cache. See `myst-nb configuration`_                    |
+   |                                        | for further details.                                                                |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`doctest`                    | Execute `sphinx.ext.doctest`_ to test code snippets within the documentation.       |
+   |                                        |                                                                                     |
+   |                                        | Note that the :guilabel:`clean` task is called prior to running this task.          |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`make`                       | Build the documentation using ``html-noplot`` by default. Pass either ``html``,     |
+   |                                        | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline``    |
+   |                                        | or ``html-tutorial`` as an argument to override the default ``html-noplot``         |
+   |                                        | behaviour.                                                                          |
+   |                                        |                                                                                     |
+   |                                        | Note that the :guilabel:`clean` task is called prior to running this task.          |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`serve-html`                 | Build the documentation using ``html-noplot`` by default and start a local          |
+   |                                        | ``HTTP`` server on port ``11000`` to view the rendered documentation. This is       |
+   |                                        | necessary in order to support interactive scenes. Pass either ``html``,             |
+   |                                        | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline``    |
+   |                                        | or ``html-tutorial`` as an argument to override the default ``html-noplot``         |
+   |                                        | behaviour.                                                                          |
+   |                                        |                                                                                     |
+   |                                        | Note that the :guilabel:`clean` and :guilabel:`make` tasks are called prior to      |
+   |                                        | running this task.                                                                  |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`tests-doc`                  | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g., |
+   |                                        |                                                                                     |
+   |                                        | .. code:: console                                                                   |
+   |                                        |                                                                                     |
+   |                                        |    $ pixi run tests-doc                                                             |
+   |                                        |                                                                                     |
+   |                                        | This task calls :bash:`pytest --doc_mode` to perform the documentation image tests  |
+   |                                        | using the `pytest-pyvista`_ plugin. Refer to the :toml:`[tool.pytest.ini_options]`  |
+   |                                        | table entry in the :bash:`pyproject.toml` manifest for default configuration        |
+   |                                        | options.                                                                            |
+   |                                        |                                                                                     |
+   |                                        | Note that the :guilabel:`tests-clean`, :guilabel:`download` and :guilabel:`make`    |
+   |                                        | tasks are called prior to running this task. See                                    |
+   |                                        | :ref:`Packaging <tippy-gv-developer-packaging-pixi-tasks>` for further details.     |
+   |                                        |                                                                                     |
+   |                                        | This task is only available in the :guilabel:`geovista` and                         |
+   |                                        | :guilabel:`geovista-py3xx` environments.                                            |
+   |                                        |                                                                                     |
+   |                                        | .. note::                                                                           |
+   |                                        |    :class: dropdown                                                                 |
+   |                                        |                                                                                     |
+   |                                        |    Failed image tests are captured via the ``pytest-pyvista`` plugin option         |
+   |                                        |    ``--failed_image_dir`` within the :bash:`test_images_failed` directory for       |
+   |                                        |    analysis and investigation.                                                      |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`tests-docs-browser`         | Perform browser tests of the documentation theme chrome e.g.,                       |
+   |                                        |                                                                                     |
+   |                                        | .. code:: console                                                                   |
+   |                                        |                                                                                     |
+   |                                        |    $ pixi run tests-docs-browser                                                    |
+   |                                        |                                                                                     |
+   |                                        | This task calls :bash:`pytest tests/docs -m browser` to drive a headless            |
+   |                                        | ``chromium`` browser over the built documentation using `playwright`_.              |
+   |                                        |                                                                                     |
+   |                                        | Accepts a documentation build target as an optional argument, which is              |
+   |                                        | built first. Defaults to ``html-noplot`` e.g.,                                      |
+   |                                        |                                                                                     |
+   |                                        | .. code:: console                                                                   |
+   |                                        |                                                                                     |
+   |                                        |    $ pixi run tests-docs-browser html-gallery                                       |
+   |                                        |                                                                                     |
+   |                                        | Note that the :guilabel:`make` task is called prior to running this task.           |
+   |                                        |                                                                                     |
+   |                                        | This task is only available in the :guilabel:`geovista` and                         |
+   |                                        | :guilabel:`geovista-py3xx` environments. See                                        |
+   |                                        | :ref:`Testing <tippy-gv-developer-testing-browser-tests>` for further               |
+   |                                        | details.                                                                            |
+   |                                        |                                                                                     |
+   |                                        | .. attention::                                                                      |
+   |                                        |    :class: dropdown                                                                 |
+   |                                        |                                                                                     |
+   |                                        |    The default ``html-noplot`` target sets :python:`plot_gallery = False`,          |
+   |                                        |    which leaves the gallery carousel with nothing to render - so the                |
+   |                                        |    carousel tests skip. Only ``html-gallery``, or another plotting                  |
+   |                                        |    target, covers them.                                                             |
+   |                                        |                                                                                     |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`tests-docs-browser-install` | Install the ``chromium`` browser required by the                                    |
+   |                                        | :guilabel:`tests-docs-browser` task e.g.,                                           |
+   |                                        |                                                                                     |
+   |                                        | .. code:: console                                                                   |
+   |                                        |                                                                                     |
+   |                                        |    $ pixi run tests-docs-browser-install                                            |
+   |                                        |                                                                                     |
+   |                                        | This is a one-off, as `playwright`_ manages the browser separately from             |
+   |                                        | its ``python`` bindings.                                                            |
+   |                                        |                                                                                     |
+   |                                        | This task is only available in the :guilabel:`geovista` and                         |
+   |                                        | :guilabel:`geovista-py3xx` environments.                                            |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
 
 .. tip::
    :class: dropdown, toggle-shown
@@ -701,10 +788,13 @@ e.g.,
 .. _filtering: https://docs.pyvista.org/examples/01-filter/
 .. _include directive: https://docutils.sourceforge.io/docs/ref/rst/directives.html#include
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
+.. _playwright: https://playwright.dev/python/
 .. _plotting: https://docs.pyvista.org/examples/02-plot/#
+.. _pydata-sphinx-theme: https://pydata-sphinx-theme.readthedocs.io/en/stable/
 .. _.readthedocs.yml: https://github.com/bjlittle/geovista/blob/main/.readthedocs.yml
 .. _shields.io: https://shields.io/
 .. _single preview rule: https://docs.astral.sh/ruff/preview/#selecting-single-preview-rules
 .. _sphinx linkcheck builder: https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.linkcheck.CheckExternalLinksBuilder
+.. _sphinx-book-theme: https://sphinx-book-theme.readthedocs.io/en/stable/
 .. _ukiyo-e: https://en.wikipedia.org/wiki/Ukiyo-e
 .. _widgets: https://docs.pyvista.org/examples/03-widgets/

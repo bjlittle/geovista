@@ -154,7 +154,11 @@ filterwarnings = [
 log_cli = true
 log_cli_level = "INFO"
 log_level = "INFO"
-markers = ["example: gallery image tests", "image: plotting image tests"]
+markers = [
+  "browser: documentation theme chrome tests",
+  "example: gallery image tests",
+  "image: plotting image tests",
+]
 minversion = "6.0"
 required_plugins = "pytest-mock pytest_pyvista"
 testpaths = "tests"
@@ -603,6 +607,23 @@ depends-on = [
 ]
 description = "Perform documentation image tests of pyvista-plot static scenes"
 
+# the default build carries no gallery, so the carousel tests skip; pass
+# "html-gallery" to cover them, which needs a display to render the thumbnails.
+# a non-empty "strict" requires every prerequisite, rather than skipping it,
+# so that a build which has quietly stopped carrying the carousel is a failure
+[tool.pixi.feature.geovista.tasks.tests-docs-browser]
+args = [
+  { "arg" = "option", "default" = "html-noplot" },
+  { "arg" = "strict", "default" = "" },
+]
+cmd = "pytest tests/docs -m browser{% if strict | length %} --browser-strict{% endif %}"
+depends-on = [{ "task" = "make", "args" = ["{{ option }}"] }]
+description = "Perform browser tests of the documentation theme chrome"
+
+[tool.pixi.feature.geovista.tasks.tests-docs-browser-install]
+cmd = "playwright install chromium"
+description = "Install the chromium browser required by the documentation browser tests"
+
 [tool.pixi.feature.py312.dependencies]
 pip = ">=25.1.1,<26"
 python = "3.12.*"
@@ -618,6 +639,11 @@ pytest-cov = ">=6.1.1,<8"
 pytest-mock = ">=3.14.1,<4"
 pytest-pretty = ">=1.3.0,<2"
 pytest-pyvista = ">=0.3.1,<0.4"
+
+[tool.pixi.feature.test.pypi-dependencies]
+# the conda-forge "playwright" is the node package, which provides the cli but
+# no python bindings, so this must come from pypi
+playwright = ">=1.63.0,<2"
 
 [tool.pixi.feature.test.tasks.tests-clean]
 cmd = "rm -rf docs/image_cache tests/plotting/unit_image_cache test_images test_images_failed"
