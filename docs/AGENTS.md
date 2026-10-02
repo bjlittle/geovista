@@ -144,9 +144,17 @@ phone. The shim forwards clicks to the bound button of each pair, and
 self-retires when only one button remains. It also closes the primary dialog at
 `(min-width: 992px)`, since the dialog inherits the sidebar's classes and so
 inherits the wide-viewport collapsed state, which leaves it open but invisible
-over a page it blocks. On every theme bump, re-check
-[sphinx-book-theme#865](https://github.com/executablebooks/sphinx-book-theme/issues/865)
-and drop whatever upstream has fixed.
+over a page it blocks.
+
+The two halves retire on different schedules. The duplicate buttons are
+[sphinx-book-theme#988](https://github.com/executablebooks/sphinx-book-theme/issues/988)
+/ [#999](https://github.com/executablebooks/sphinx-book-theme/issues/999), already
+fixed on `main` by
+[#987](https://github.com/executablebooks/sphinx-book-theme/pull/987) but
+unreleased as of `1.4.0`; the forwarding half self-retires when that ships. The
+breakpoint stranding is *not* fixed by `#987` — verified against a DOM with the
+redundant navbar removed — so that half outlives it. On every theme bump,
+re-check both.
 
 There is **no CI coverage for theme chrome** — the image tests compare pyvista
 scenes, not page furniture. Verify changes here in a real browser against the

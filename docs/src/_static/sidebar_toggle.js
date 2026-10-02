@@ -23,7 +23,14 @@
  * which restores every behaviour the themes intend - the off-canvas dialog on a
  * narrow viewport, and collapse-in-place on a wide one.
  *
- * See https://github.com/executablebooks/sphinx-book-theme/issues/865
+ * Reported upstream as
+ * https://github.com/executablebooks/sphinx-book-theme/issues/988 and
+ * https://github.com/executablebooks/sphinx-book-theme/issues/999, and fixed on
+ * "main" by https://github.com/executablebooks/sphinx-book-theme/pull/987, which
+ * stops the redundant navigation bar - and so the duplicate buttons - from being
+ * rendered at all. That is unreleased as of "sphinx-book-theme 1.4.0", but needs
+ * nothing from us when it ships: "forward" below retires itself as soon as there
+ * is only one button of a kind left to bind to.
  */
 
 // each toggle and the dialog "pydata-sphinx-theme" opens from it
@@ -92,6 +99,11 @@ function forward(toggle, modal) {
  *
  * Only the primary sidebar is affected; "sphinx-book-theme" leaves the secondary
  * one alone, and its dialog is still the intended wide-viewport presentation.
+ *
+ * Unlike the duplicate buttons above, this is not fixed by
+ * https://github.com/executablebooks/sphinx-book-theme/pull/987 - it is caused by
+ * the class transfer rather than the duplication, and reproduces with the
+ * redundant navigation bar removed. So this half outlives "forward".
  */
 function dismissOnWide() {
   const dialog = document.getElementById("pst-primary-sidebar-modal");
