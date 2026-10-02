@@ -1,0 +1,8 @@
+Made the documentation build resilient to an upstream ``intersphinx`` outage. A
+copy of each inventory is now vendored and offered as a fallback, so that a
+documentation site which cannot be reached no longer fails our build with a
+warning for the inventory plus a cascade of nitpick misses for every
+cross-reference it would have resolved. A new
+`ci-inventories.yml <https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-inventories.yml>`__
+:fab:`github` Action refreshes the inventories monthly. Closes :issue:`2517`.
+(:user:`claude`)

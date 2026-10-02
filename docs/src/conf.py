@@ -153,6 +153,7 @@ logger = logging.getLogger("sphinx-geovista")
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "intersphinx_resilience",
     "numpydoc",
     "readingtime",
     "sphinx.ext.autodoc",
@@ -623,19 +624,36 @@ if on_rtd and rtd_version == "stable":
 # -- intersphinx options -----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 
+#: The directory of the vendored fallback inventories, relative to this file.
+#: It carries one inventory per mapping below, named after it, refreshed by
+#: ".github/scripts/inventories.py".
+INVENTORY_DIR = "_inventory"
+
+#: The documentation sets cross-referenced by intersphinx.
+INTERSPHINX_URLS = {
+    "cartopy": "https://cartopy.readthedocs.io/stable/",
+    "geopy": "https://geopy.readthedocs.io/en/stable/",
+    "matplotlib": "https://matplotlib.org/stable/",
+    "numpy": "https://numpy.org/doc/stable/",
+    "platformdirs": "https://platformdirs.readthedocs.io/en/stable/",
+    "pooch": "https://www.fatiando.org/pooch/latest/",
+    "pyproj": "https://pyproj4.github.io/pyproj/stable/",
+    "python": "https://docs.python.org/3/",
+    "pyvista": "https://docs.pyvista.org/",
+    "pyvistaqt": "https://qt.pyvista.org/",
+    "rasterio": "https://rasterio.readthedocs.io/en/stable/",
+    "requests": "https://requests.readthedocs.io/en/stable/",
+}
+
+# each inventory is sought remotely first, so that a build always carries the
+# current targets, and falls back on its vendored copy only when the remote
+# cannot be reached. sphinx reports the failure of an earlier location at
+# "info" rather than "warning" once a later one succeeds, so a fallback that
+# is used leaves "--fail-on-warning" unaffected. see "intersphinx_resilience"
+# for what happens when there is no usable fallback either
 intersphinx_mapping = {
-    "cartopy": ("https://cartopy.readthedocs.io/stable/", None),
-    "geopy": ("https://geopy.readthedocs.io/en/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "platformdirs": ("https://platformdirs.readthedocs.io/en/stable/", None),
-    "pooch": ("https://www.fatiando.org/pooch/latest/", None),
-    "pyproj": ("https://pyproj4.github.io/pyproj/stable/", None),
-    "python": ("https://docs.python.org/3/", None),
-    "pyvista": ("https://docs.pyvista.org/", None),
-    "pyvistaqt": ("https://qt.pyvista.org/", None),
-    "rasterio": ("https://rasterio.readthedocs.io/en/stable/", None),
-    "requests": ("https://requests.readthedocs.io/en/stable/", None),
+    name: (url, (None, f"{INVENTORY_DIR}/{name}.inv"))
+    for name, url in INTERSPHINX_URLS.items()
 }
 
 

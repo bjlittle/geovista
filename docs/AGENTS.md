@@ -16,7 +16,8 @@ docs/
     ├── index.rst            # Root document
     ├── common.txt           # Shared RST substitutions (included via rst_prolog)
     ├── refs.bib             # BibTeX bibliography
-    ├── _ext/                # Custom Sphinx extensions (readingtime)
+    ├── _ext/                # Custom Sphinx extensions (readingtime, intersphinx_resilience)
+    ├── _inventory/          # Vendored intersphinx fallbacks — do not hand-edit
     ├── _static/             # Static assets (CSS, fonts, images, branding)
     ├── _templates/          # Jinja2 Sphinx templates
     ├── _autoapi_templates/  # Custom sphinx-autoapi templates
@@ -77,6 +78,13 @@ Key extensions configured in `src/conf.py`:
 | `sphinx_llms_txt` | LLM-friendly text output |
 | `pyvista.ext.plot_directive` | 3D plot rendering in docstrings |
 | `pyvista.ext.viewer_directive` | Interactive 3D viewer |
+
+⚠️ **A new `intersphinx_mapping` entry needs a vendored inventory.** Add the URL
+to `INTERSPHINX_URLS` in `src/conf.py` — the single source of truth, read by
+`.github/scripts/inventories.py` — then run `pixi run -e docs fetch-inventories`
+and commit the `_inventory/*.inv` it writes. Without one, an outage at that site
+falls through to `intersphinx_resilience`, which saves the build by disabling
+`nitpicky` for the rest of it. See the root `AGENTS.md` and issue #2517.
 
 ## Conventions
 
