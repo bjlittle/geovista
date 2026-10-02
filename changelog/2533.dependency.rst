@@ -1,0 +1,4 @@
+Added ``playwright`` to the ``test`` dependencies, required by the new
+documentation theme chrome browser tests. It is sourced from ``PyPI``, as the
+``conda-forge`` package of the same name provides the ``node`` command line
+interface but no Python bindings. (:user:`claude`)

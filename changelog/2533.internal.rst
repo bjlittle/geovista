@@ -1,0 +1,8 @@
+Added ``tests/docs``, a `playwright`_ suite that drives a headless browser over
+a built documentation site to cover the theme chrome that no Python test can
+reach - the sidebar toggles, the dialogs they open, and the gallery carousel.
+The regressions fixed in :pull:`2528` were all rendered defects, so none of them
+had a test. Every prerequisite skips rather than fails, so a plain ``pytest``
+run is unaffected. Closes :issue:`2531`. (:user:`claude`)
+
+.. _playwright: https://playwright.dev/python/
