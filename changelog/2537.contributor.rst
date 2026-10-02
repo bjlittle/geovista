@@ -1,0 +1,7 @@
+Declared ``make`` as a dependency of the ``docs``
+`pixi <https://github.com/prefix-dev/pixi>`__ 🧚 feature. Every task in that
+feature shells out to it, as do the ``tests-doc`` and ``tests-docs-browser``
+tasks by way of ``depends-on``, so a contributor whose host lacked ``make``
+could not build, serve or test the documentation at all - each task exited
+``127`` from its ``clean`` step. The :fab:`github` runner images ship ``make``,
+which is why CI never saw it. See :issue:`2535`. (:user:`claude`)
