@@ -3,3 +3,11 @@ background image, blanking the thumbnail. Since ``pydata-sphinx-theme 0.16`` a
 card body is rendered even when it has no content, so the carousel cards - which
 carry a background image and nothing else - now suppress theirs. Closes
 :issue:`1247`. (:user:`claude`)
+
+Fixed the primary sidebar toggle, which did nothing when clicked. Both
+``sphinx-book-theme`` and ``pydata-sphinx-theme`` bind their handler to the
+*first* ``.primary-toggle`` button on the page, but ``sphinx-book-theme`` adds a
+second button of its own and hides the first, leaving the only button a reader
+can see inert. On a narrow viewport, such as a phone, that stranded every link
+in the sidebar, as it is off-canvas there with no other way to reveal it.
+(:user:`claude`)

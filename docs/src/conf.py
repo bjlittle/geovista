@@ -597,6 +597,9 @@ html_css_files = [
     "style.css",
     "theme_overrides.css",
 ]
+html_js_files = [
+    "sidebar_toggle.js",
+]
 
 
 # -- sphinx-sitemap ----------------------------------------------------------
