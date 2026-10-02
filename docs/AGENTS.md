@@ -122,6 +122,47 @@ Documentation deps are defined in:
 
 Use the `docs` pixi environment: `pixi run -e docs <command>`
 
+⚠️ **`sphinx-book-theme` pins `pydata-sphinx-theme` to an *exact* version**, so
+the two only ever move together — `1.1.4` requires `==0.15.4`, `1.4.0` requires
+`==0.20.0`. Bumping `pydata-sphinx-theme` on its own can never resolve, and
+pinning it back silently freezes `sphinx-book-theme` too. Always bump the pair,
+and check the target release's pin first:
+
+```bash
+curl -s https://pypi.org/pypi/sphinx-book-theme/<version>/json \
+  | python3 -c "import json,sys; print([r for r in json.load(sys.stdin)['info']['requires_dist'] if 'pydata' in r])"
+```
+
+The theme is in maintenance mode but still releasing; it is not abandoned.
+
+⚠️ **`src/_static/sidebar_toggle.js` is a workaround, not a feature.**
+`sphinx-book-theme` renders a second `.primary-toggle` *and* `.secondary-toggle`
+button and hides `pydata-sphinx-theme`'s pair, but both themes bind their
+handlers with `document.querySelector(...)` — the *first* match, i.e. the hidden
+one — so the visible buttons are inert and both sidebars are unreachable on a
+phone. The shim forwards clicks to the bound button of each pair, and
+self-retires when only one button remains. It also closes the primary dialog at
+`(min-width: 992px)`, since the dialog inherits the sidebar's classes and so
+inherits the wide-viewport collapsed state, which leaves it open but invisible
+over a page it blocks.
+
+The two halves retire on different schedules. The duplicate buttons are
+[sphinx-book-theme#988](https://github.com/executablebooks/sphinx-book-theme/issues/988)
+/ [#999](https://github.com/executablebooks/sphinx-book-theme/issues/999), already
+fixed on `main` by
+[#987](https://github.com/executablebooks/sphinx-book-theme/pull/987) but
+unreleased as of `1.4.0`; the forwarding half self-retires when that ships. The
+breakpoint stranding is *not* fixed by `#987` — verified against a DOM with the
+redundant navbar removed — and is reported separately as
+[#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), so
+that half outlives it. On every theme bump, re-check both.
+
+There is **no CI coverage for theme chrome** — the image tests compare pyvista
+scenes, not page furniture. Verify changes here in a real browser against the
+Read the Docs preview, exercising *both* sidebars either side of 992 px and
+across a resize through it. See the `headless-browser-on-this-host` note for
+running chromium where no sudo is available.
+
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
 - **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
@@ -131,4 +172,4 @@ Use the `docs` pixi environment: `pixi run -e docs <command>`
 
 ---
 
-**Last Updated**: 18 June 2026
+**Last Updated**: 2 October 2026

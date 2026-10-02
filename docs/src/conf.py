@@ -597,6 +597,9 @@ html_css_files = [
     "style.css",
     "theme_overrides.css",
 ]
+html_js_files = [
+    "sidebar_toggle.js",
+]
 
 
 # -- sphinx-sitemap ----------------------------------------------------------
@@ -828,12 +831,17 @@ def generate_carousel(
     base = Path(app.srcdir, *GALLERY_DIRS.split("/"))
     cards_by_link = {}
 
+    # the carousel cards carry only a background image and no text. since
+    # pydata-sphinx-theme 0.16 an empty card body is still rendered, which
+    # paints over the image, so suppress it with bootstrap "display: none".
+    # see https://github.com/bjlittle/geovista/issues/1247
     card = r""".. card::
     :img-background: {image}
     :link: {link}
     :link-type: ref
     :width: {width}
     :margin: {margin}
+    :class-body: d-none
 """
 
     # TODO @bjlittle: use Path.walk when python >=3.12

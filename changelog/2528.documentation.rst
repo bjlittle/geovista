@@ -1,0 +1,19 @@
+Fixed the gallery carousel, where each card painted an empty body over its own
+background image, blanking the thumbnail. Since ``pydata-sphinx-theme 0.16`` a
+card body is rendered even when it has no content, so the carousel cards - which
+carry a background image and nothing else - now suppress theirs. Closes
+:issue:`1247`. (:user:`claude`)
+
+Fixed the primary and secondary sidebar toggles, which did nothing when clicked.
+Both ``sphinx-book-theme`` and ``pydata-sphinx-theme`` bind their handlers to the
+*first* ``.primary-toggle`` and ``.secondary-toggle`` button on the page, but
+``sphinx-book-theme`` adds a second of each in the article header and hides the
+first, leaving the only buttons a reader can see inert. On a narrow viewport,
+such as a phone, that stranded every link in both sidebars, as they are
+off-canvas there with no other way to reveal them. (:user:`claude`)
+
+Fixed the primary sidebar dialog blocking the page when a narrow viewport was
+widened while it was open. It inherits the sidebar's classes, so it also
+inherited the collapsed state that ``sphinx-book-theme`` applies on a wide
+viewport, which left it open but invisible - and an open dialog holds the top
+layer, so nothing else on the page could be clicked. (:user:`claude`)
