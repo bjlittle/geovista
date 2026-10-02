@@ -1,0 +1,3 @@
+Replaced the tests ``UniformGrid`` compatibility fallback with a direct
+:python:`from pyvista import ImageData` post ``pyvista >=0.48`` floor raise.
+(:user:`HarshRajSinghania`)
