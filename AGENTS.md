@@ -102,6 +102,12 @@ sets `filterwarnings = ["error", ...]`, so *any* new `warnings.warn` in library
 code can fail an image test even when unit tests pass. Warn only when the
 condition is genuinely exceptional, and check CI before calling such work done.
 
+⚠️ **A suite that skips is a suite that passes.** Where a test guards itself on
+a prerequisite — a display, a browser, a built artefact — CI must *require* that
+prerequisite rather than inherit the local skip, or a regression that removes it
+silently drops the coverage and the job still exits 0. `tests/docs` does this
+with `--browser-strict`; follow the pattern for any new guarded suite.
+
 ⚠️ **The `docs` pixi tasks shell out to `make`, which is not a declared
 dependency.** Where the host lacks it, `pixi run -e docs make` prints
 `make: command not found` and still **exits 0** — never treat that as a
