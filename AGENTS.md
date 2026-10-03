@@ -61,6 +61,11 @@ Use `pixi update <pkg>`, and confirm with `pixi list -e <env> <pkg>`. The same
 bump must also be applied to `requirements/pypi-*.txt`, which `pixi` neither
 reads nor updates.
 
+⚠️ **A max-pin cannot see a renamed distribution.** `vtk-xref` became
+`sphinx-vtk-xref` (#2541): the old name stopped at 0.1.2, so `pixi update`
+had nothing to offer and dependabot nothing to propose, while five months of
+fixes landed under the new name. A long-still pin is a smell — check PyPI.
+
 ⚠️ **A conda-forge package of the same name is not always the Python one.**
 Tools that ship both a Node and a Python distribution (`playwright` is the
 case in point) are packaged on conda-forge as the *Node* CLI, with no Python
@@ -84,9 +89,8 @@ pixi environment mypy sees their real types and reports hundreds of additional
 strict-mode errors (mostly in `examples/`) that the hook never raises. Use bare
 `mypy` to explore a single file; trust only the hook.
 
-Note `pyproj` is largely untyped, so returning a `pyproj` expression directly
-from a `-> bool` function trips `no-any-return`; bind it to an annotated local
-first.
+Note `pyproj` is largely untyped: returning a `pyproj` expression from a
+`-> bool` function trips `no-any-return` — bind an annotated local first.
 
 Direct pytest (with pixi environment activated):
 
@@ -192,4 +196,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 2 October 2026
+**Last Updated**: 3 October 2026
