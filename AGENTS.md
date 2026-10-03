@@ -61,6 +61,11 @@ Use `pixi update <pkg>`, and confirm with `pixi list -e <env> <pkg>`. The same
 bump must also be applied to `requirements/pypi-*.txt`, which `pixi` neither
 reads nor updates.
 
+⚠️ **A max-pin cannot see a renamed distribution.** `vtk-xref` became
+`sphinx-vtk-xref` (#2541): the old name stopped at 0.1.2, so `pixi update`
+had nothing to offer and dependabot nothing to propose, while five months of
+fixes landed under the new name. A long-still pin is a smell — check PyPI.
+
 ⚠️ **A conda-forge package of the same name is not always the Python one.**
 Tools that ship both a Node and a Python distribution (`playwright` is the
 case in point) are packaged on conda-forge as the *Node* CLI, with no Python
@@ -84,9 +89,8 @@ pixi environment mypy sees their real types and reports hundreds of additional
 strict-mode errors (mostly in `examples/`) that the hook never raises. Use bare
 `mypy` to explore a single file; trust only the hook.
 
-Note `pyproj` is largely untyped, so returning a `pyproj` expression directly
-from a `-> bool` function trips `no-any-return`; bind it to an annotated local
-first.
+Note `pyproj` is largely untyped: returning a `pyproj` expression from a
+`-> bool` function trips `no-any-return` — bind an annotated local first.
 
 Direct pytest (with pixi environment activated):
 
@@ -167,6 +171,14 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 - **Versioning**: `setuptools-scm` (no manual version file edits)
 - **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types.
+- **`agentic` label**: ⚠️ **every issue and pull-request you raise must carry
+  it**, alongside the usual `type:` ones — `gh` runs as the repository owner, so
+  nothing else tells agent-generated work apart. `ci-label.yml` adds it
+  automatically only for branches named `agent*`/`ai*`, which the `docs/`,
+  `deps/`, `tests/` prefixes used here never match — so pass `--label agentic`
+  to `gh issue create` / `gh pr create`, or `gh issue edit <n> --add-label
+  agentic` after the fact. It is **not** the `bot` label, which marks
+  deterministic automation: dependabot, and the scheduled `ci-*.yml` workflows.
 - **Dependencies**: core deps in `requirements/pypi-core.txt`; optional groups in `requirements/pypi-optional-*.txt`. Pixi deps mirrored in `pyproject.toml`.
 - **License**: BSD-3-Clause
 
@@ -184,4 +196,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 2 October 2026
+**Last Updated**: 3 October 2026
