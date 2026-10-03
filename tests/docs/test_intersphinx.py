@@ -16,18 +16,21 @@ import importlib.util
 import io
 from pathlib import Path
 import shutil
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from types import ModuleType
     from typing import NoReturn
 
 try:
     from sphinx.application import Sphinx
+    from sphinx.util.inventory import InventoryFile
 except ImportError:
     Sphinx = None
+    InventoryFile = None
 
 #: The documentation source, carrying the extension and the vendored
 #: inventories under test.
@@ -81,8 +84,46 @@ MISSING = "collections.abc.Sequence"
 PRESENT = "pyvistaqt.BackgroundPlotter"
 
 
+class Build(NamedTuple):
+    """A completed documentation build.
+
+    Attributes
+    ----------
+    app : Sphinx
+        The application that performed the build.
+    status : str
+        Everything the build reported to its status stream, which is where the
+        extension reports a degraded build.
+
+    """
+
+    app: Sphinx
+    status: str
+
+
+@pytest.fixture(scope="session")
+def inventories() -> ModuleType:
+    """Load the refresher of the vendored inventories.
+
+    It is loaded from its path rather than imported, as the workflow that runs
+    it monthly has only the standard library available and so it is a
+    standalone script rather than a module of the package.
+
+    Returns
+    -------
+    ModuleType
+        The loaded script.
+
+    """
+    spec = importlib.util.spec_from_file_location("inventories", SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    return module
+
+
 @pytest.fixture
-def build(require: Callable[[str], NoReturn], tmp_path: Path) -> Callable[..., Sphinx]:
+def build(require: Callable[[str], NoReturn], tmp_path: Path) -> Callable[..., Build]:
     """Provide a factory building a minimal documentation set.
 
     Parameters
@@ -104,7 +145,7 @@ def build(require: Callable[[str], NoReturn], tmp_path: Path) -> Callable[..., S
 
     def factory(
         target: str, *, resilient: bool = True, fallback: bool = False
-    ) -> Sphinx:
+    ) -> Build:
         src = tmp_path / "src"
         src.mkdir(exist_ok=True)
 
@@ -128,33 +169,37 @@ def build(require: Callable[[str], NoReturn], tmp_path: Path) -> Callable[..., S
         (src / "conf.py").write_text(conf, encoding="utf-8")
         (src / "index.rst").write_text(INDEX.format(target=target), encoding="utf-8")
 
+        status = io.StringIO()
         app = Sphinx(
             srcdir=str(src),
             confdir=str(src),
             outdir=str(tmp_path / "html"),
             doctreedir=str(tmp_path / "doctrees"),
             buildername="html",
-            status=None,
+            status=status,
             warning=io.StringIO(),
             warningiserror=True,
             freshenv=True,
         )
         app.build()
 
-        return app
+        return Build(app, status.getvalue())
 
     return factory
 
 
 def test_unreachable__degrades(build):
     """An unreachable inventory with no fallback must not fail the build."""
-    app = build(MISSING, resilient=True, fallback=False)
+    app, status = build(MISSING, resilient=True, fallback=False)
 
     assert app.statuscode == 0
     assert app._warncount == 0
     # the cascade of nitpick misses is withdrawn along with the warning that
     # would otherwise be counted
     assert app.config.nitpicky is False
+    # the guard is installed on every sphinx handler, each of which is offered
+    # the same record, so a miscount here reports one outage several times over
+    assert "1 intersphinx inventory is unreachable" in status
 
 
 def test_unreachable__control(build):
@@ -164,13 +209,13 @@ def test_unreachable__control(build):
     passing for the wrong reason.
 
     """
-    app = build(MISSING, resilient=False, fallback=False)
+    app, _ = build(MISSING, resilient=False, fallback=False)
 
     assert app.statuscode != 0
     assert app._warncount > 0
 
 
-def test_vendored__complete():
+def test_vendored__complete(inventories):
     """Every documentation set cross-referenced must have a usable fallback.
 
     A mapping added without one is silent until the day that site is
@@ -179,10 +224,6 @@ def test_vendored__complete():
     that the monthly "ci-inventories.yml" workflow depends on.
 
     """
-    spec = importlib.util.spec_from_file_location("inventories", SCRIPT)
-    inventories = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(inventories)
-
     urls, directory = inventories.mapping(DOCS / "conf.py")
 
     assert urls, "no intersphinx mapping found"
@@ -194,8 +235,60 @@ def test_vendored__complete():
             f"no vendored inventory for {name!r}, refresh them with "
             f"'pixi run -e docs fetch-inventories'"
         )
-        # a truncated or wrongly formatted inventory raises here
+        # a truncated, mis-versioned or wrongly compressed inventory raises here
         assert inventories.payload(inventory.read_bytes())
+
+
+def test_vendored__loadable(require, inventories):
+    """Every vendored inventory must be one that sphinx can actually load.
+
+    The structural check of :func:`test_vendored__complete` is our own reading
+    of the format, which the refresher has to make do with; this is sphinx's,
+    and sphinx is what must read these files during an outage. A payload that
+    decompresses is not thereby readable, and an inventory sphinx rejects is no
+    fallback at all.
+
+    """
+    if InventoryFile is None:
+        require("sphinx is not installed")
+
+    urls, directory = inventories.mapping(DOCS / "conf.py")
+
+    for name, url in urls.items():
+        raw = (DOCS / directory / f"{name}.inv").read_bytes()
+        inventory = InventoryFile.loads(raw, uri=url)
+
+        assert inventory.data, f"the vendored inventory for {name!r} is empty"
+
+
+@pytest.mark.parametrize(
+    "corrupt",
+    [
+        b"# Sphinx inventory version 9",
+        b"# Sphinx inventory version 1",
+        b"not an inventory at all",
+    ],
+)
+def test_refresh__repairs(inventories, tmp_path, monkeypatch, corrupt):
+    """A vendored inventory sphinx cannot load must be replaced, not kept.
+
+    Only the header of a corrupt inventory need differ for its payload to match
+    the remote, so a refresher comparing payloads alone reports it unchanged -
+    leaving a fallback that fails on the very day it is wanted.
+
+    """
+    valid = (DOCS / "_inventory" / FALLBACK).read_bytes()
+    _, _, rest = valid.partition(b"\n")
+
+    monkeypatch.setattr(inventories, "fetch", lambda _url: valid)
+
+    inventory = tmp_path / FALLBACK
+    inventory.write_bytes(corrupt + b"\n" + rest)
+
+    assert inventories.refresh(UNREACHABLE, inventory).startswith("**updated**")
+    assert inventory.read_bytes() == valid
+    # and, now repaired, it is left alone rather than rewritten every month
+    assert inventories.refresh(UNREACHABLE, inventory) == "unchanged"
 
 
 def test_fallback__resolves(build):
@@ -206,7 +299,7 @@ def test_fallback__resolves(build):
     reference must resolve through it.
 
     """
-    app = build(PRESENT, resilient=True, fallback=True)
+    app, _ = build(PRESENT, resilient=True, fallback=True)
 
     assert app.statuscode == 0
     assert app._warncount == 0

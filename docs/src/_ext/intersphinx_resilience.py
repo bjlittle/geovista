@@ -85,6 +85,7 @@ class InventoryFailure(logging.Filter):
         """
         super().__init__()
         self.failures: list[str] = []
+        self._seen: logging.LogRecord | None = None
 
     def filter(self, record: logging.LogRecord) -> bool:
         """Determine whether the record should be handled.
@@ -111,7 +112,13 @@ class InventoryFailure(logging.Filter):
         ):
             return True
 
-        self.failures.append(record.getMessage())
+        # the guard is installed on every sphinx handler, so that the record is
+        # suppressed whichever of them would emit it, and logging offers each
+        # handler the same record in turn - so count it only the first time it
+        # is seen, or one unreachable inventory is reported as three
+        if record is not self._seen:
+            self._seen = record
+            self.failures.append(record.getMessage())
 
         return False
 

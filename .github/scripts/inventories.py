@@ -45,6 +45,12 @@ FILENAME = "objects.inv"
 #: a version 2 inventory.
 HEADER = 4
 
+#: The header declaring the only inventory format that sphinx loads, and the
+#: compression it declares. A payload which decompresses is not necessarily
+#: one sphinx will accept, and an inventory it rejects is no fallback at all.
+VERSION = b"# Sphinx inventory version 2"
+COMPRESSION = b"zlib"
+
 #: The schemes an inventory may be fetched over.
 SCHEMES = ("https://", "http://")
 
@@ -111,7 +117,12 @@ def mapping(conf: Path) -> tuple[dict[str, str], str]:
 
 
 def payload(raw: bytes) -> bytes:
-    """Decompress the body of an inventory.
+    """Decompress the body of an inventory, rejecting one sphinx cannot load.
+
+    The header is checked as well as the payload. A file whose body
+    decompresses is not thereby readable - sphinx refuses an unexpected
+    version or compression outright - and accepting one would vendor a
+    fallback that fails on the very day it is wanted.
 
     Parameters
     ----------
@@ -137,6 +148,19 @@ def payload(raw: bytes) -> bytes:
 
     if len(lines) <= HEADER:
         emsg = f"expected {HEADER} header lines, got {len(lines) - 1}"
+        raise ValueError(emsg)
+
+    # sphinx compares the version line only once stripped of trailing space
+    if (version := lines[0].rstrip()) != VERSION:
+        found = version.decode(errors="replace")
+        emsg = f"expected {VERSION.decode()!r}, got {found!r}"
+        raise ValueError(emsg)
+
+    if COMPRESSION not in (declared := lines[HEADER - 1]):
+        found = declared.decode(errors="replace")
+        emsg = (
+            f"expected a payload compressed with {COMPRESSION.decode()}, got {found!r}"
+        )
         raise ValueError(emsg)
 
     return zlib.decompress(lines[HEADER])
@@ -218,6 +242,8 @@ def refresh(url: str, inventory: Path) -> str:
             if payload(inventory.read_bytes()) == fresh:
                 return "unchanged"
         except (ValueError, zlib.error):
+            # an inventory that cannot be read is replaced rather than compared,
+            # as a corrupt header alone leaves the payload matching the remote
             pass
 
         action = "updated"
