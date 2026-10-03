@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import logging
 from pathlib import Path
 import shutil
+import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
@@ -200,6 +202,59 @@ def test_unreachable__degrades(build):
     # the guard is installed on every sphinx handler, each of which is offered
     # the same record, so a miscount here reports one outage several times over
     assert "1 intersphinx inventory is unreachable" in status
+
+
+def test_interleaved__counted_once(build):
+    """Interleaved failures must each be counted once.
+
+    Sphinx fetches the inventories on a thread pool, and ``Handler.handle``
+    filters outside its own lock, so the records of two failures can reach the
+    guard interleaved rather than one completed record at a time. A guard
+    remembering only the record it saw last counts the first of them again when
+    it resumes, overstating the outage in the build summary and in the GitHub
+    Actions annotation alike.
+
+    The interleaving is driven deliberately rather than raced for, so that the
+    test fails on every run rather than on an unlucky one.
+
+    """
+    # a build reaching its fallback collects no failure, leaving a guard that
+    # is installed on the real handlers and empty
+    build(PRESENT, resilient=True, fallback=True)
+
+    extension = sys.modules["intersphinx_resilience"]
+    instance = extension.guard()
+
+    assert instance is not None
+    assert instance.failures == []
+
+    records = [
+        logging.LogRecord(
+            extension.ORIGIN,
+            logging.WARNING,
+            __file__,
+            0,
+            f"{extension.UNREACHABLE}: %s",
+            (name,),
+            None,
+        )
+        for name in ("alpha", "beta")
+    ]
+    first, second = records
+    handlers = logging.getLogger(extension.NAMESPACE).handlers
+
+    # the first record reaches one handler, the second is offered to all of
+    # them, and only then does the first resume on the handlers that remain
+    handlers[0].handle(first)
+
+    for handler in handlers:
+        handler.handle(second)
+
+    for handler in handlers[1:]:
+        handler.handle(first)
+
+    assert len(instance.failures) == len(records)
+    assert len(set(instance.failures)) == len(records)
 
 
 def test_unreachable__control(build):

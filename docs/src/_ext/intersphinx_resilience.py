@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
 from typing import TYPE_CHECKING
 
 from sphinx.util import logging as sphinx_logging
@@ -85,7 +86,8 @@ class InventoryFailure(logging.Filter):
         """
         super().__init__()
         self.failures: list[str] = []
-        self._seen: logging.LogRecord | None = None
+        self._lock = threading.Lock()
+        self._seen: list[logging.LogRecord] = []
 
     def filter(self, record: logging.LogRecord) -> bool:
         """Determine whether the record should be handled.
@@ -115,10 +117,18 @@ class InventoryFailure(logging.Filter):
         # the guard is installed on every sphinx handler, so that the record is
         # suppressed whichever of them would emit it, and logging offers each
         # handler the same record in turn - so count it only the first time it
-        # is seen, or one unreachable inventory is reported as three
-        if record is not self._seen:
-            self._seen = record
-            self.failures.append(record.getMessage())
+        # is seen, or one unreachable inventory is reported as three.
+        #
+        # sphinx fetches the inventories on a thread pool, and "Handler.handle"
+        # filters outside its lock, so the records of two failures can
+        # interleave across the handlers. Remembering only the last record seen
+        # would then count the first of them twice, and the check and its
+        # record must be a single atomic step. The records held are one per
+        # mapping, and holding them is what makes the identity test sound.
+        with self._lock:
+            if all(record is not seen for seen in self._seen):
+                self._seen.append(record)
+                self.failures.append(record.getMessage())
 
         return False
 
