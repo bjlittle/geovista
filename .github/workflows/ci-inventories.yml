@@ -1,0 +1,105 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/peter-evans/create-pull-request
+
+name: ci-inventories
+
+on:
+  schedule:
+    # the first of every month @ 00h07
+    - cron: "7 0 1 * *"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+env:
+  # the vendored fallback inventories, which "docs/src/conf.py" consults when
+  # a remote inventory cannot be reached
+  INVENTORY_DIR: "docs/src/_inventory"
+  SHELLOPTS: "errexit:pipefail"
+
+permissions: {}
+
+jobs:
+  intersphinx:
+    name: "intersphinx inventories"
+    runs-on: "ubuntu-22.04"
+
+    environment: development
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # the refresher is deliberately standard library only, so this needs
+      # neither pixi nor the documentation environment
+      - name: "refresh inventories"
+        run: |
+          python .github/scripts/inventories.py > report.md
+
+      # ask git what moved rather than the report, which always lists every
+      # inventory. an "objects.inv" is rewritten by each upstream documentation
+      # build, so the refresher compares the decompressed payload and leaves a
+      # merely recompressed inventory alone - without which this would raise a
+      # monthly pull-request of half a megabyte of identical targets.
+      #
+      # the reader runs as the condition of an "if", which "errexit" exempts,
+      # so a git failure is indistinguishable from a difference here. that
+      # fails safe: the worst of it is a pull-request carrying no change.
+      - name: "report inventories"
+        env:
+          INVENTORY_DIR: ${{ env.INVENTORY_DIR }}
+        run: |
+          if ! git diff --quiet -- "${INVENTORY_DIR}"; then
+            {
+              echo "The vendored intersphinx fallback inventories have been"
+              echo "refreshed by \`.github/scripts/inventories.py\`."
+              echo ""
+              cat report.md
+            } > body.md
+          fi
+
+      - name: "create pull-request"
+        id: cpr
+        if: ${{ hashFiles('body.md') }}
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
+        with:
+          token: ${{ secrets.GEOVISTA_BOT_TOKEN }}
+          add-paths: |
+            ${{ github.workspace }}/${{ env.INVENTORY_DIR }}/*.inv
+          commit-message: "refreshed intersphinx fallback inventories"
+          branch: intersphinx-auto-update
+          base: main
+          delete-branch: true
+          title: "docs: intersphinx inventory refresh"
+          body-path: ${{ github.workspace }}/body.md
+          labels: |
+            new: pull-request
+            bot
+            type: documentation
+            skip-changelog
+
+      - name: "show pull-request"
+        if: ${{ hashFiles('body.md') }}
+        env:
+          CPR_PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          CPR_PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
+          CPR_PR_OPERATION: ${{ steps.cpr.outputs.pull-request-operation }}
+          CPR_PR_HEAD_SHA: ${{ steps.cpr.outputs.pull-request-head-sha }}
+        run: |
+          echo "### :rocket: Pull-Request Summary" >> ${GITHUB_STEP_SUMMARY}
+          echo "" >> ${GITHUB_STEP_SUMMARY}
+          echo "The following inventories pull-request has been auto-generated:" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **PR** #${CPR_PR_NUMBER}" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **URL** ${CPR_PR_URL}" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **Operation** [${CPR_PR_OPERATION}]" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **SHA** ${CPR_PR_HEAD_SHA}" >> ${GITHUB_STEP_SUMMARY}

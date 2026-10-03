@@ -121,13 +121,17 @@ cd docs && pixi run -e docs sphinx-build -b html \
   -d _build/doctrees src _build/html
 ```
 
-⚠️ **A docs CI failure is often not your change.** `nitpicky = True` plus
-`--fail-on-warning` over 12 remote `intersphinx` inventories (none of which
-have a local fallback) means a `503` from any one of them fails the `doctest`
-and `test images` jobs, with a cascade of hundreds of `python:float`-style
-nitpick warnings. Before debugging, check the warning head for
-`failed to reach any of the inventories` and `curl -I` the inventory URL. See
-issue #2517.
+⚠️ **`intersphinx` is no longer allowed to fail the build (#2517).** Each
+mapping in `conf.py` is `(url, (None, "_inventory/<name>.inv"))`, so an
+unreachable remote falls back on the vendored copy — sphinx logs an earlier
+location's failure at `info` once a later one succeeds, leaving
+`--fail-on-warning` green. Add a mapping and you **must** add its inventory:
+`pixi run -e docs fetch-inventories`, which `ci-inventories.yml` also runs
+monthly to raise a refresh PR. Should every location fail, the
+`intersphinx_resilience` extension disables `nitpicky` for the rest of the
+build rather than emitting the warning plus its cascade of hundreds of nitpick
+misses — a degraded build is annotated, so check the job summary before
+trusting a green docs run.
 
 ## Code Style
 

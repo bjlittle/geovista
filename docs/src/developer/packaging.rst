@@ -364,6 +364,16 @@ The following tasks are defined for each of our features:
    |                |                                |                                                                                       |
    |                |                                | This task is an alias for the :bash:`make doctest` command.                           |
    |                +--------------------------------+---------------------------------------------------------------------------------------+
+   |                | ``fetch-inventories``          | Refresh the vendored `intersphinx`_ fallback inventories e.g.,                        |
+   |                |                                |                                                                                       |
+   |                |                                | .. code:: console                                                                     |
+   |                |                                |                                                                                       |
+   |                |                                |    $ pixi run fetch-inventories                                                       |
+   |                |                                |                                                                                       |
+   |                |                                | Each inventory is the local fallback consulted only when its remote counterpart       |
+   |                |                                | cannot be reached. See                                                                |
+   |                |                                | :ref:`tippy-gv-developer-documentation-cross-references-intersphinx`.                 |
+   |                +--------------------------------+---------------------------------------------------------------------------------------+
    |                | ``make``                       | Build the documentation.                                                              |
    |                |                                |                                                                                       |
    |                |                                | Provide optional argument ``html``, ``html-docstring``, ``html-docstring-inline``,    |
@@ -609,6 +619,7 @@ latest available package updates within the ``PyPI`` ecosystem.
 .. _dependabot/dependabot-core issue#2227: https://github.com/dependabot/dependabot-core/issues/2227#issuecomment-1709069470
 .. _fast: https://prefix.dev/blog/sharded_repodata
 .. _feature table: https://pixi.prefix.dev/latest/reference/pixi_manifest/#the-feature-table
+.. _intersphinx: https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _playwright: https://playwright.dev/python/
 .. _requirements/geovista.yml: https://github.com/bjlittle/geovista/blob/main/requirements/geovista.yml

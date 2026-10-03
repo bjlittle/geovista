@@ -448,6 +448,14 @@ the :ref:`tippy-gv-examples` gallery carousel.
    rather than on the markup of any particular theme release, so that they survive
    a theme bump and report what actually broke.
 
+The :bash:`tests/docs` directory also carries unit tests of the ``sphinx``
+configuration itself, such as the
+:ref:`tippy-gv-developer-documentation-cross-references-intersphinx` fallback
+behaviour, which build throwaway documentation sets in-process and so require no
+browser. They share the skip-or-require guard described below, and the whole
+directory is selected for execution rather than the :guilabel:`browser` marker,
+so that both are covered by the same :fab:`github` Action.
+
 
 .. _gv-developer-testing-browser-tests-prerequisites:
 .. _tippy-gv-developer-testing-browser-tests-prerequisites:
@@ -500,7 +508,7 @@ having silently stopped covering anything. The ``--browser-strict`` option
 
 .. code:: console
 
-   $ pytest tests/docs -m browser --browser-strict
+   $ pytest tests/docs --browser-strict
 
 .. note::
    :class: dropdown

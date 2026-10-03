@@ -581,6 +581,10 @@ cwd = "docs"
 depends-on = [{ "task" = "clean" }]
 description = "Execute sphinx.ext.doctest to test code snippets within documentation"
 
+[tool.pixi.feature.docs.tasks.fetch-inventories]
+cmd = "python .github/scripts/inventories.py"
+description = "Refresh the vendored intersphinx fallback inventories"
+
 [tool.pixi.feature.docs.tasks.make]
 args = [{ "arg" = "option", "default" = "html-noplot" }]
 cmd = "make {{ option }}"
@@ -611,13 +615,16 @@ description = "Perform documentation image tests of pyvista-plot static scenes"
 # the default build carries no gallery, so the carousel tests skip; pass
 # "html-gallery" to cover them, which needs a display to render the thumbnails.
 # a non-empty "strict" requires every prerequisite, rather than skipping it,
-# so that a build which has quietly stopped carrying the carousel is a failure
+# so that a build which has quietly stopped carrying the carousel is a failure.
+# the whole of "tests/docs" is selected rather than the "browser" marker, as
+# the sphinx configuration tests alongside them have no browser prerequisite
+# yet share the same skip-or-require guard
 [tool.pixi.feature.geovista.tasks.tests-docs-browser]
 args = [
   { "arg" = "option", "default" = "html-noplot" },
   { "arg" = "strict", "default" = "" },
 ]
-cmd = "pytest tests/docs -m browser{% if strict | length %} --browser-strict{% endif %}"
+cmd = "pytest tests/docs{% if strict | length %} --browser-strict{% endif %}"
 depends-on = [{ "task" = "make", "args" = ["{{ option }}"] }]
 description = "Perform browser tests of the documentation theme chrome"
 

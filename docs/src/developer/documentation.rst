@@ -260,6 +260,8 @@ The ``geovista`` logo title is rendered using the `La Machine Company`_ TrueType
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-docs.yml
 .. |ci-images| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-docs.yml
+.. |ci-inv| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-inventories.yml/badge.svg
+    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-inventories.yml
 .. |ci-rtd| image:: https://img.shields.io/badge/docs-passing-4BC51D
     :target: https://geovista.readthedocs.io/en/latest/?badge=latest
 
@@ -285,6 +287,13 @@ The following documentation workflows are available:
    |             |                                                                                  |
    |             | Also see the :ref:`make build tasks <tippy-gv-developer-documentation-build>`    |
    |             | for further details.                                                             |
+   +-------------+----------------------------------------------------------------------------------+
+   | |ci-inv|    | The `ci-inventories.yml`_ ``cron`` based :fab:`github` Action monthly refreshes  |
+   |             | the vendored `intersphinx`_ fallback inventories, raising a                      |
+   |             | :fa:`code-pull-request` ``pull-request`` when any of them has moved on.          |
+   |             |                                                                                  |
+   |             | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` |
+   |             | :guilabel:`fetch-inventories` task.                                              |
    +-------------+----------------------------------------------------------------------------------+
    | |ci-rtd|    | The `.readthedocs.yml`_ workflow builds and publishes our documentation on the   |
    |             | `ReadtheDocs`_ (RTD) platform.                                                   |
@@ -417,6 +426,56 @@ its :ref:`tippy-gv-overview-ecosystem` section:
 
    To support accessibility best practice use the ``:alt:`` option for both
    ``image`` and ``figure`` directives.
+
+
+.. _gv-developer-documentation-cross-references-intersphinx:
+.. _tippy-gv-developer-documentation-cross-references-intersphinx:
+
+:fa:`box-archive` Intersphinx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`.github/scripts/inventories.py`
+- :bash:`docs/src/_inventory` :fa:`folder`
+- :bash:`docs/src/conf.py`
+
+Cross-references into the documentation of another project are resolved by
+`intersphinx`_, which downloads an inventory of targets from each project in
+the ``INTERSPHINX_URLS`` mapping of :bash:`docs/src/conf.py`.
+
+Since ``geovista`` builds its documentation in ``nitpicky`` mode with
+``--fail-on-warning``, every one of those projects would otherwise be a hard
+build dependency: a site that is briefly unavailable fails the build, both for
+the inventory it could not download *and* for each cross-reference that
+inventory would have resolved.
+
+To avoid this, a copy of each inventory is **vendored** in the
+:bash:`docs/src/_inventory` directory and offered to `intersphinx`_ as a
+fallback location. A build always prefers the remote inventory, so it carries
+the current targets; the vendored copy is consulted only when the remote cannot
+be reached, and ``sphinx`` does not warn when a later location succeeds.
+
+.. important::
+   :class: dropdown, toggle-shown
+
+   Adding a project to ``INTERSPHINX_URLS`` **must** be accompanied by its
+   vendored inventory. Refresh them with:
+
+   .. code:: console
+
+      $ pixi run -e docs fetch-inventories
+
+   Then commit whichever :bash:`*.inv` files have changed. The
+   :bash:`ci-inventories.yml` workflow runs the same task monthly and raises a
+   pull-request when an inventory has moved on.
+
+Should every location for an inventory fail — a project added without a
+vendored fallback, say — the :bash:`intersphinx_resilience` extension disables
+``nitpicky`` mode for the remainder of the build, reporting the failure without
+failing on it. The documentation is then built, but unresolved cross-references
+go unreported, so treat a degraded build as a warning to refresh the
+inventories rather than a pass.
 
 
 .. _gv-developer-documentation-sphinx-directives:
@@ -564,6 +623,10 @@ the above :ref:`tippy-gv-developer-documentation-building` ``make`` command task
    | :guilabel:`doctest`                    | Execute `sphinx.ext.doctest`_ to test code snippets within the documentation.       |
    |                                        |                                                                                     |
    |                                        | Note that the :guilabel:`clean` task is called prior to running this task.          |
+   +----------------------------------------+-------------------------------------------------------------------------------------+
+   | :guilabel:`fetch-inventories`          | Refresh the vendored `intersphinx`_ fallback inventories in the                     |
+   |                                        | :bash:`docs/src/_inventory` directory. See                                          |
+   |                                        | :ref:`tippy-gv-developer-documentation-cross-references-intersphinx`.               |
    +----------------------------------------+-------------------------------------------------------------------------------------+
    | :guilabel:`make`                       | Build the documentation using ``html-noplot`` by default. Pass either ``html``,     |
    |                                        | ``html-docstring``, ``html-docstring-inline``, ``html-gallery``, ``html-inline``    |
@@ -784,9 +847,11 @@ e.g.,
 .. _The Great Wave off Kanagawa: https://en.wikipedia.org/wiki/The_Great_Wave_off_Kanagawa
 .. _Versions: https://app.readthedocs.org/projects/geovista/
 .. _ci-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-docs.yml
+.. _ci-inventories.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-inventories.yml
 .. _ci-tests-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-docs.yml
 .. _filtering: https://docs.pyvista.org/examples/01-filter/
 .. _include directive: https://docutils.sourceforge.io/docs/ref/rst/directives.html#include
+.. _intersphinx: https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 .. _myst-nb configuration: https://myst-nb.readthedocs.io/en/latest/configuration.html
 .. _playwright: https://playwright.dev/python/
 .. _plotting: https://docs.pyvista.org/examples/02-plot/#

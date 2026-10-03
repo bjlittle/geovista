@@ -6,32 +6,19 @@ pytest-based test suite for GeoVista. Tests cover the core library modules, CLI,
 
 ## Directory Structure
 
+One directory per `geovista` module — `bridge/`, `cache/`, `cli/`, `common/`,
+`core/`, `crs/`, `geodesic/`, `geometry/`, `geoplotter/`, `gridlines/`,
+`pantry/`, `search/`, `theme/`, `themes/`, `transform/` — plus `test_qt.py`.
+The exceptions:
+
 ```
 tests/
 ├── conftest.py          # Root fixtures (meshes, coastlines, CRS, plotting helpers)
-├── bridge/              # Tests for geovista.bridge (Transform)
-├── cache/               # Tests for geovista.cache
-├── cli/                 # Tests for geovista.cli
-├── common/              # Tests for geovista.common utilities
-├── core/                # Tests for geovista.core (slice_cells, resize, etc.)
-├── crs/                 # Tests for geovista.crs
-├── docs/                # Browser tests for the rendered docs theme chrome
-├── geodesic/            # Tests for geovista.geodesic (BBox, line)
-├── geometry/            # Tests for geovista.geometry (coastlines)
-├── geoplotter/          # Tests for geovista.geoplotter
-├── gridlines/           # Tests for geovista.gridlines
-├── pantry/              # Tests for geovista.pantry data/meshes
-├── plotting/            # Image comparison tests (examples + unit plots)
-│   ├── test_examples.py # Parametrized gallery example image tests
-│   ├── geodesic/        # Plotting tests for geodesic module
-│   ├── geoplotter/      # Plotting tests for geoplotter module
-│   ├── transform/       # Plotting tests for transform module
-│   └── unit_image_cache # Baseline images (git-ignored, fetched from cache)
-├── search/              # Tests for geovista.search (spatial indexing)
-├── theme/               # Tests for geovista.theme
-├── themes/              # Tests for geovista.themes
-├── transform/           # Tests for geovista.transform
-└── test_qt.py           # Tests for geovista.qt
+├── docs/                # Browser and sphinx configuration tests of the docs
+└── plotting/            # Image comparison tests (examples + unit plots)
+    ├── test_examples.py # Parametrized gallery example image tests
+    ├── geodesic/ geoplotter/ transform/  # Plotting tests per module
+    └── unit_image_cache # Baseline images (git-ignored, fetched from cache)
 ```
 
 ## Running Tests
@@ -132,11 +119,12 @@ serial. So a manual bump to the version you want is self-defeating — it pushes
 the release one serial past it. Predict the tag from the date and what is on
 `main`, then bake that into `DATA_VERSION`.
 
-### Browser Tests
+### Documentation Tests
 
-`tests/docs` drives a headless chromium over a built documentation site with
-playwright, covering the theme chrome that no Python test can reach — the
-sidebar toggles, the dialogs they open, and the gallery carousel.
+`tests/docs` covers what no other Python test can reach: a headless chromium
+driven over a built site with playwright for the theme chrome — the sidebar
+toggles, the dialogs they open, the gallery carousel — and the sphinx
+configuration itself, by building throwaway documentation sets in-process.
 
 ```bash
 pixi run -e geovista tests-docs-browser-install   # one-off, fetches chromium
@@ -146,7 +134,9 @@ pixi run -e geovista tests-docs-browser html-gallery strict  # what CI runs
 ```
 
 Every prerequisite **skips** rather than fails — no playwright, no chromium, no
-build, no carousel — so a plain `pytest` run is unaffected.
+build, no carousel — so a plain `pytest` run is unaffected. The task selects the
+whole of `tests/docs`, not the `browser` marker, so the sphinx configuration
+tests beside them are covered by the same CI job and the same guard.
 
 ⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** CI installs
 every prerequisite and builds the gallery deliberately; without the option, a
@@ -156,6 +146,14 @@ option turns each unmet prerequisite into a failure, and the second `strict`
 argument of the pixi task passes it. Note that pytest honours `pytest_addoption`
 only in the test-root `tests/conftest.py`, so that is where it is registered —
 not in `tests/docs/`, which consumes it.
+
+⚠️ **Only the first `Sphinx` application in a process builds cleanly.** docutils
+registers nodes, directives and roles in a *global* registry, so every later
+application re-registers them and sphinx warns once apiece — some 57 warnings
+that fail any `warningiserror=True` build for reasons of the harness alone.
+They are typed, so a generated `conf.py` can carry `suppress_warnings = ["app"]`
+to be rid of them; the intersphinx inventory failure, by contrast, has no type
+and so cannot be suppressed that way.
 
 ⚠️ **The default `html-noplot` build has no carousel.** `plot_gallery=False`
 leaves `geovista_carousel` with nothing to render, so the carousel tests skip.
