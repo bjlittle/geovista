@@ -10,7 +10,7 @@ sphinx-changelog >=1.6.0,<1.7
 towncrier <26.10
 sphinx-click <6.3
 sphinx-copybutton <0.6
-sphinx-gallery >=0.20.0,<0.22
+sphinx-gallery >=0.20.0,<0.23
 sphinx-iconify <0.4
 sphinx-llms-txt <0.8
 sphinx-sitemap <2.10
