@@ -1,10 +1,10 @@
 Added ``tests/docs``, a `playwright`_ suite that drives a headless browser over
 a built documentation site to cover the theme chrome that no Python test can
-reach - the sidebar toggles, the dialogs they open, and the gallery carousel.
+reach: the sidebar toggles, the dialogs they open, and the gallery carousel.
 The regressions fixed in :pull:`2528` were all rendered defects, so none of them
 had a test. Every prerequisite skips rather than fails, so a plain ``pytest``
 run is unaffected, whilst the new ``--browser-strict`` option requires them
-instead - without it a regression that stops the carousel being generated would
+instead. Without it, a regression that stops the carousel being generated would
 skip its tests and leave CI green over the lost coverage. Closes :issue:`2531`.
 (:user:`claude`)
 

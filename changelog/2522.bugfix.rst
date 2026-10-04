@@ -1,12 +1,12 @@
 Fixed the detection of a mesh that has already been flattened, which previously
 relied on :attr:`pyproj.crs.CRS.is_projected`. A flat geographic
-:class:`~pyproj.crs.CRS` such as ``+proj=latlong`` - which is what
-``cartopy >=0.26`` uses for ``ccrs.PlateCarree()`` - reports ``is_projected`` as
-``False``, so such a mesh was processed as if it were still a sphere. As a
-result :func:`geovista.transform.transform_mesh` and
-:meth:`geovista.geoplotter.GeoPlotterBase.add_mesh` sliced it at a seam and spun
-its longitude/latitude values with ``rotate_z``, corrupting a shifted
-reprojection and desynchronising :meth:`geovista.geodesic.BBox.enclosed`;
-``add_mesh`` with a ``zlevel`` radially rescaled it; and
-:meth:`geovista.geoplotter.GeoPlotterBase.view_poi` placed the camera edge-on to
-the plane. (:user:`claude`)
+:class:`~pyproj.crs.CRS` such as ``+proj=latlong``, which is what
+``cartopy >=0.26`` uses for ``ccrs.PlateCarree()``, reports ``is_projected`` as
+``False``, so such a mesh was processed as if it were still a sphere.
+:func:`geovista.transform.transform_mesh` and
+:meth:`geovista.geoplotter.GeoPlotterBase.add_mesh` then sliced the mesh at a
+seam and spun its longitude/latitude values with ``rotate_z``, corrupting a
+shifted reprojection and desynchronising
+:meth:`geovista.geodesic.BBox.enclosed`. ``add_mesh`` with a ``zlevel``
+radially rescaled it, and :meth:`geovista.geoplotter.GeoPlotterBase.view_poi`
+placed the camera edge-on to the plane. (:user:`claude`)
