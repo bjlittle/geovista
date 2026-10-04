@@ -1,0 +1,13 @@
+Migrated from ``vtk-xref`` to `sphinx-vtk-xref
+<https://github.com/pyvista/vtk-xref>`__, the same sphinx extension under its
+renamed ``PyPI`` distribution, and bumped it from ``0.1.2`` to ``0.4.0``. The
+``conf.py`` ``extensions`` entry is renamed ``vtk_xref`` to ``sphinx_vtk_xref``
+to match. The old name stopped at ``0.1.2``, so neither ``pixi`` nor
+``dependabot`` could see the releases that followed under the new one.
+
+``0.1.2`` warned when it could not reach ``vtk.org`` to validate a ``:vtk:``
+class reference at all, then cached that class as invalid and warned again for
+every remaining reference to it, so a single network blip failed the
+documentation build under ``--fail-on-warning``. ``0.4.0`` reports an
+unreachable check as transient and uses the class URL unvalidated. Closes
+:issue:`2541`. (:user:`claude`)
