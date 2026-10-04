@@ -470,8 +470,8 @@ be reached, and ``sphinx`` does not warn when a later location succeeds.
    :bash:`ci-inventories.yml` workflow runs the same task monthly and raises a
    pull-request when an inventory has moved on.
 
-Should every location for an inventory fail — a project added without a
-vendored fallback, say — the :bash:`intersphinx_resilience` extension disables
+Should every location for an inventory fail, say for a project added without a
+vendored fallback, the :bash:`intersphinx_resilience` extension disables
 ``nitpicky`` mode for the remainder of the build, reporting the failure without
 failing on it. The documentation is then built, but unresolved cross-references
 go unreported, so treat a degraded build as a warning to refresh the
@@ -560,9 +560,9 @@ to an **exact** version, so the pair of them only ever move together.
 
    ``sphinx-book-theme`` renders a second primary and secondary sidebar toggle and
    hides the ``pydata-sphinx-theme`` pair, yet both themes bind their handlers to
-   the **first** match i.e., the hidden one - leaving the visible buttons inert and
-   both sidebars unreachable on a narrow viewport. The shim forwards clicks to the
-   bound button of each pair, and self-retires once only one button remains.
+   the **first** match i.e., the hidden one. That leaves the visible buttons inert
+   and both sidebars unreachable on a narrow viewport. The shim forwards clicks to
+   the bound button of each pair, and self-retires once only one button remains.
 
    It also closes the primary dialog at :python:`(min-width: 992px)`, since the
    dialog inherits the classes of the sidebar, and therefore its wide-viewport
@@ -697,7 +697,7 @@ the above :ref:`tippy-gv-developer-documentation-building` ``make`` command task
    |                                        |    :class: dropdown                                                                 |
    |                                        |                                                                                     |
    |                                        |    The default ``html-noplot`` target sets :python:`plot_gallery = False`,          |
-   |                                        |    which leaves the gallery carousel with nothing to render - so the                |
+   |                                        |    which leaves the gallery carousel with nothing to render, so the                 |
    |                                        |    carousel tests skip. Only ``html-gallery``, or another plotting                  |
    |                                        |    target, covers them.                                                             |
    |                                        |                                                                                     |
