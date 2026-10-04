@@ -7,6 +7,7 @@ dependencies:
 - fastparquet >=2024.11.0,<2027
 - h3-py >=4.2.2,<5
 - jupyterlab >=4.5.7,<5
+- mypy >=2.3.1,<3
 - pandas >=2.2.3,<3.1
 - pre-commit >=4.2.0,<5
 - rasterio >=1.4.3,<2
@@ -16,13 +17,14 @@ dependencies:
 - ipywidgets >=8.1.7,<9
 - joblib >=1.5.1,<2
 - jupyter-server-proxy >=4.4.0,<5
+- make >=4.4,<5
 - myst-nb >=1.2.0,<2
 - nest-asyncio2 >=1.7.2,<2
 - numpydoc >=1.8.0,<2
-- pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2
+- pydata-sphinx-theme >=0.20.0,<0.21
 - sphinx >=8.2.3,<10
 - sphinx-autoapi >=3.8.0,<4
-- sphinx-book-theme >=1.1.3,<2
+- sphinx-book-theme >=1.4.0,<1.5
 - sphinx-click >=6.0.0,<7
 - sphinx-copybutton >=0.5.2,<0.6
 - sphinx-design >=0.6.1,<0.8
@@ -46,20 +48,20 @@ dependencies:
 - pytest-mock >=3.14.1,<4
 - pytest-pretty >=1.3.0,<2
 - pytest-pyvista >=0.3.1,<0.4
-- cartopy >=0.24.0,<0.26
+- cartopy >=0.26
 - click >=8.2.1,<9
 - click-default-group >=1.2.4,<2
 - cmocean >=4.0.3,<5
 - colorcet >=3.1.0,<4
 - geopy >=2.4.0,<3
-- lazy-loader >=0.4.0,<0.6
+- lazy-loader >=0.4.0,<0.7
 - netcdf4 >=1.7.2,<2
 - numpy >=2.2.6,<3
 - platformdirs >=4.3.8,<5
 - pooch >=1.8.2,<2
 - pykdtree >=1.4.1,<2
-- pyproj >=3.7.1,<4
-- pyvista >=0.48.0,<0.49.0
+- pyproj >=3.8.0,<4
+- pyvista >=0.48.0,<0.50.0
 - setuptools >=80.9.0,<81
 - setuptools-scm >=8.3.1,<9
 - pip
@@ -68,3 +70,4 @@ dependencies:
   - sphinx-iconify>=0.3.0, <0.4
   - sphinx-tippy>=0.4.3, <0.5
   - vtk-xref>=0.1.1, <0.2
+  - playwright>=1.63.0, <2
