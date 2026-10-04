@@ -170,7 +170,7 @@ All Python files must include `from __future__ import annotations` (enforced by 
 ## Conventions
 
 - **Versioning**: `setuptools-scm` (no manual version file edits)
-- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types.
+- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label.
 - **`agentic` label**: ⚠️ **every issue and pull-request you raise must carry
   it**, alongside the usual `type:` ones — `gh` runs as the repository owner, so
   nothing else tells agent-generated work apart. `ci-label.yml` adds it
@@ -196,4 +196,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 3 October 2026
+**Last Updated**: 4 October 2026
