@@ -179,7 +179,7 @@ extensions = [
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
     "myst_nb",
-    "vtk_xref",
+    "sphinx_vtk_xref",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

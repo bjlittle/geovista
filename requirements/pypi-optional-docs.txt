@@ -24,5 +24,5 @@ ipywidgets <8.2
 jupyter-server-proxy <4.7
 nest-asyncio2 <1.8
 trame-pyvista <0.2
-vtk-xref <0.2
+sphinx-vtk-xref <0.5
 wurlitzer <3.2

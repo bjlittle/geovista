@@ -1833,7 +1833,7 @@ environments:
       - pypi: ./
       - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/22/d294f6f0992c41385fe4f79392158b63ac3d86c1874a823fed8e878a267f/vtk_xref-0.1.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
   docs-py312:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -2276,7 +2276,7 @@ environments:
       - pypi: ./
       - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/22/d294f6f0992c41385fe4f79392158b63ac3d86c1874a823fed8e878a267f/vtk_xref-0.1.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
   docs-py313:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -2718,7 +2718,7 @@ environments:
       - pypi: ./
       - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/22/d294f6f0992c41385fe4f79392158b63ac3d86c1874a823fed8e878a267f/vtk_xref-0.1.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
   geovista:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -3171,7 +3171,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/27/9c/103a5037789062bdab27c7dca53f3ca6b075b572ab2cd96eec825b3aec4e/playwright-1.63.0-py3-none-manylinux1_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/22/d294f6f0992c41385fe4f79392158b63ac3d86c1874a823fed8e878a267f/vtk_xref-0.1.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/85/cb/ab0c123c514ed4e94c0dc9ee2e86362633e6b998cfc05de7fc9ac2eb9690/greenlet-3.5.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/a0/c4/b4d4827c93ef43c01f599ef31453ccc1c132b353284fc6c87d535c233129/pyee-13.0.1-py3-none-any.whl
   geovista-py312:
@@ -3628,7 +3628,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/66/6a/1594f3869c57c149abdb380492529e04d4c0229b5e4d79572c5bd0aaa673/greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/22/d294f6f0992c41385fe4f79392158b63ac3d86c1874a823fed8e878a267f/vtk_xref-0.1.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/c4/b4d4827c93ef43c01f599ef31453ccc1c132b353284fc6c87d535c233129/pyee-13.0.1-py3-none-any.whl
   geovista-py313:
     channels:
@@ -4082,7 +4082,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/27/9c/103a5037789062bdab27c7dca53f3ca6b075b572ab2cd96eec825b3aec4e/playwright-1.63.0-py3-none-manylinux1_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/22/d294f6f0992c41385fe4f79392158b63ac3d86c1874a823fed8e878a267f/vtk_xref-0.1.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/85/cb/ab0c123c514ed4e94c0dc9ee2e86362633e6b998cfc05de7fc9ac2eb9690/greenlet-3.5.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/a0/c4/b4d4827c93ef43c01f599ef31453ccc1c132b353284fc6c87d535c233129/pyee-13.0.1-py3-none-any.whl
   py312:
@@ -13644,7 +13644,7 @@ packages:
   - jupyter-server-proxy<4.7 ; extra == 'docs'
   - nest-asyncio2<1.8 ; extra == 'docs'
   - trame-pyvista<0.2 ; extra == 'docs'
-  - vtk-xref<0.2 ; extra == 'docs'
+  - sphinx-vtk-xref<0.5 ; extra == 'docs'
   - wurlitzer<3.2 ; extra == 'docs'
   - fastparquet<2026.9.1 ; extra == 'exam'
   - h3<4.6 ; extra == 'exam'
@@ -13699,15 +13699,15 @@ packages:
   - psutil ; extra == 'test'
   - setuptools ; extra == 'test'
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/7e/22/d294f6f0992c41385fe4f79392158b63ac3d86c1874a823fed8e878a267f/vtk_xref-0.1.2-py3-none-any.whl
-  name: vtk-xref
-  version: 0.1.2
-  sha256: d6de530fa85276e00b3b6efa1f4e45ea3360a5e18e3524b6323fd3adcf903358
+- pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
+  name: sphinx-vtk-xref
+  version: 0.4.0
+  sha256: 8cee0fd8dc962d40c415ba7ae35137970501bcd4794d1b9bde7dbe069edd08cf
   requires_dist:
-  - sphinx>=4.0
+  - sphinx>=8.1
   - beautifulsoup4
   - requests
-  requires_python: '>=3.8'
+  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/85/cb/ab0c123c514ed4e94c0dc9ee2e86362633e6b998cfc05de7fc9ac2eb9690/greenlet-3.5.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
   name: greenlet
   version: 3.5.6
