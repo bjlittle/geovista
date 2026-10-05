@@ -349,7 +349,10 @@ tippy_props = {"theme": "light"}
 # unreachable. Named "_static"-relative; sphinx supplies its own cache-busting query.
 # NB the directory is "_static/js/" and deliberately neither "_static/tippy/", where
 # the extension writes its own generated per-page javascript, nor "_static/vendor/",
-# which pydata-sphinx-theme already owns for its fontawesome bundle.
+# which pydata-sphinx-theme already owns for its fontawesome bundle. Both bundles are
+# MIT licensed, so each carries its upstream notice in a sibling "<bundle>.LICENSE.txt"
+# that sphinx publishes with the site, the convention pydata-sphinx-theme itself
+# follows for the bundles that it vendors.
 tippy_js = (
     "js/popper.min.js",
     "js/tippy-bundle.umd.min.js",

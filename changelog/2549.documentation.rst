@@ -5,7 +5,9 @@ extension leaves ``tippy_js`` pointing at ``@popperjs/core@2`` and
 every page fetched them from a third party, and no tooltip appeared at all
 when that host was unreachable. Pinned copies of the two ``UMD`` bundles now
 sit under ``docs/src/_static/js/``, where sphinx serves them with its own
-cache-busting query.
+cache-busting query. Both are ``MIT`` licensed, so each is accompanied by its
+upstream notice in a sibling ``<bundle>.LICENSE.txt``, which is published along
+with the documentation.
 
 ``sphinx-tippy`` also moved from a ``PyPI`` dependency to a ``conda-forge``
 one, and the ``conf.py`` import guard that treated it as optional went with

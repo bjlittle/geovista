@@ -87,10 +87,10 @@ falls through to `intersphinx_resilience`, which saves the build by disabling
 ⚠️ **An extension's default asset URLs are a network dependency too**, and they
 bite at *read* time, so no build log ever shows them. `sphinx-tippy` defaulted
 `tippy_js` to two floating-major `unpkg` URLs on 148 of 173 pages until #2549
-vendored the bundles under `src/_static/js/` — deliberately not `_static/tippy/`,
-which the extension owns, nor `_static/vendor/`, which the theme owns. Audit with
-`grep -rho '<script[^>]*src="https[^"]*"' _build/html`; `sphinx-iconify` still
-loads `code.iconify.design` on 171 pages.
+vendored the bundles under `src/_static/js/` (not `_static/tippy/`, which the
+extension owns, nor `_static/vendor/`, the theme's), each beside its upstream MIT
+notice as `<bundle>.LICENSE.txt`. Audit with `grep -rho '<script[^>]*src="https[^"]*"'
+_build/html`; `sphinx-iconify` still loads `code.iconify.design` on 171 pages.
 
 ## Conventions
 
