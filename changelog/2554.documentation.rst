@@ -1,0 +1,7 @@
+Replaced the retired ``YouTube`` badge on the :bash:`README.md` with a static
+one. ``shields.io`` has withdrawn its whole ``YouTube`` family: subscribers,
+channel views, video views, likes and comments each render the words ``retired
+badge`` now, so there was no live-count endpoint left to move to. The
+replacement matches the ``Bluesky`` badge beside it, and carries the
+``@geovista_devs`` handle in place of a subscriber count. It has no upstream
+API behind it, so nothing can retire it in turn. (:user:`claude`)
