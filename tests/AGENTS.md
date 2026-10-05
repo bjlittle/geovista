@@ -23,25 +23,22 @@ tests/
 
 ## Running Tests
 
-From the repo root using pixi:
-
 ```bash
-pixi run -e test tests-unit                 # all unit tests; also "image", "not image"
-pixi run -e geovista tests-doc              # documentation image tests
+pixi run -e test tests-unit    # all unit tests; also "image", "not image"
+pixi run -e geovista tests-doc # documentation image tests
+pytest tests/core/             # direct; also -m "not image", -k "test_slice_cells"
 ```
 
-Or directly with pytest, which reads its config from `pyproject.toml`:
-
-```bash
-pytest tests/core/        # a module; also -m "not image", -k "test_slice_cells"
-```
+The pixi tasks run from the repo root; pytest reads its config from
+`pyproject.toml` either way.
 
 ## Configuration
 
 All pytest configuration is in `pyproject.toml` under `[tool.pytest.ini_options]`:
 import mode `importlib` (no `sys.path` manipulation), strict config and markers,
 doctests on via `--doctest-modules`, `xfail_strict`, and warnings as errors with
-an explicit allowlist for known third-party ones.
+an explicit allowlist for known third-party ones. Required plugins are
+`pytest-mock` and `pytest_pyvista` (image comparison, off-screen rendering).
 
 ### Markers
 
@@ -55,21 +52,14 @@ Apply `browser` module-wide with a `pytestmark` global. `tests/docs/test_tooltip
 mixes static and browser checks, so it marks per-test instead, which keeps
 `-m "not browser"` selecting the static half.
 
-### Required Plugins
-
-`pytest-mock` (mocking), `pytest_pyvista` (image comparison, off-screen rendering).
-
 ## Conventions
 
-### Test File Naming
+### Naming and Preamble
 
-- Files: `test_<function_or_class>.py` (one test file per public function/class)
-- Functions: `test_<scenario>` (descriptive of the behaviour being verified)
-
-### Preamble
-
-Every test file begins with the copyright header given in the root `AGENTS.md`,
-followed by `from __future__ import annotations` (both enforced by ruff).
+One file per public function or class, named `test_<function_or_class>.py`, with
+functions named `test_<scenario>` for the behaviour verified. Every file begins
+with the copyright header given in the root `AGENTS.md`, followed by
+`from __future__ import annotations` (both enforced by ruff).
 
 ### Fixtures
 
@@ -119,7 +109,16 @@ pixi run -e geovista tests-docs-browser html-gallery strict  # what CI runs
 Every prerequisite **skips** rather than fails — no playwright, no chromium, no
 build, no carousel — so a plain `pytest` run is unaffected. The task selects the
 whole of `tests/docs`, not the `browser` marker, so the sphinx configuration
-tests beside them are covered by the same CI job and the same guard.
+tests beside them share the same CI job and the same guard.
+
+⚠️ **A source-tree policy gate has nothing to skip on, and must not acquire
+one.** `test_readingtime_coverage.py` reads `docs/src` as *text*, so it needs
+neither sphinx, a build nor a browser, and runs in the ordinary unit suite as
+well as the docs job. It also *derives* the pages it governs from the tree
+rather than listing them, so a new page is covered the day it lands and an
+exemption must be declared with its reason. Guard such a gate on nothing: a skip
+would retire the rule in silence. Its `reading` fixture is shared with
+`test_readingtime.py` from `tests/docs/conftest.py`.
 
 ⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** CI installs
 every prerequisite and builds the gallery deliberately; without the option, a

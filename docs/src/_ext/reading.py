@@ -5,12 +5,15 @@
 
 """The reading-time model behind the ``readingtime`` directive.
 
-One definition of what a word is, what the rate is, and how the directive's
-argument is spelled, kept apart from the ``sphinx`` plumbing that renders it.
+One definition of what a word is, what the rate is, how the directive's
+argument is spelled and where on a page it belongs, kept apart from the
+``sphinx`` plumbing that renders it.
 
 Nothing here imports anything outside the standard library, so the unit tests
 covering it run in every environment rather than skipping wherever ``sphinx``
-is absent.
+is absent. That matters most for the scanner at the foot of this module, which
+polices the documentation sources rather than a build of them: it reads a page
+as text, and so must stay runnable in the bare test environment.
 
 Notes
 -----
@@ -21,10 +24,29 @@ Notes
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import math
 import re
+from typing import TYPE_CHECKING, NamedTuple
 
-__all__ = ["WPM", "Argument", "count_words", "estimate_minutes", "parse_argument"]
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+__all__ = [
+    "WPM",
+    "Argument",
+    "MystLine",
+    "carries_reading_time",
+    "count_words",
+    "directive_lines",
+    "estimate_minutes",
+    "first_section_line",
+    "lead_directive_lines",
+    "myst_scan",
+    "notebook_markdown",
+    "parse_argument",
+    "title_line",
+]
 
 #: Words-per-minute reading rate for technical documentation. Brysbaert (2019),
 #: a meta-analysis of 190 studies, puts most adults between 175 and 300 wpm on
@@ -156,3 +178,348 @@ def parse_argument(argument: str | None) -> Argument:
         return Argument(minutes=None, wpm=int(match["wpm"]))
 
     return Argument(minutes=int(match["minutes"]), wpm=WPM)
+
+
+#: A fenced block opening at column 0. An indented fence is content within
+#: something else, not page structure.
+FENCE: re.Pattern[str] = re.compile(r"\A(?P<rail>`{3,}|~{3,})(?P<info>.*)\Z")
+
+#: A reStructuredText section underline at column 0, three characters or more.
+UNDERLINE: re.Pattern[str] = re.compile(
+    r"""\A(?P<char>[=\-~^"'`#*+:.])(?P=char){2,}[ \t]*\Z"""
+)
+
+#: The directive at column 0. Indented, it is a demonstration rather than a
+#: banner, which is what lets "developer/documentation.rst" show the directive
+#: and carry a live one. The lookahead requires the name to end at whitespace
+#: or line end, so "readingtime::junk" does not match - docutils parses that as
+#: a comment, and a prefix match would credit a page with a banner that never
+#: renders.
+RST_DIRECTIVE: re.Pattern[str] = re.compile(r"\A\.\. readingtime::(?=\s|\Z)")
+
+#: The info string of the fence that opens the directive natively in MyST.
+MYST_DIRECTIVE: str = "{readingtime}"
+
+#: The info string of a fence whose body is evaluated as reStructuredText. Both
+#: MyST pages here reach the directive through one, so its body is page content
+#: and is scanned rather than skipped.
+RST_WINDOW: str = "{eval-rst}"
+
+#: The first section heading of a MyST page, whose title is a single "#".
+MYST_HEADING: str = "## "
+
+#: The suffixes read as MyST. A notebook is a JSON wrapper around markdown
+#: cells, so it is scanned as MyST once those have been lifted out of it.
+MYST_SUFFIXES: tuple[str, ...] = (".ipynb", ".md")
+
+
+class MystLine(NamedTuple):
+    """A column-0 line of a MyST page, with the context needed to read it.
+
+    Attributes
+    ----------
+    number : int
+        The 1-indexed line number.
+    text : str
+        The line itself.
+    info : str or None
+        The stripped info string when the line opens a fence, otherwise
+        ``None``.
+    window : bool
+        Whether the line sits inside a :data:`RST_WINDOW` fence, and so is to
+        be read as reStructuredText rather than as markdown.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+
+    number: int
+    text: str
+    info: str | None
+    window: bool
+
+
+def notebook_markdown(text: str) -> str:
+    """Lift the MyST source out of a Jupyter notebook.
+
+    Only the markdown cells carry page structure. A code cell is skipped, so
+    neither a comment that looks like a heading nor a string that looks like a
+    directive can be mistaken for one.
+
+    Parameters
+    ----------
+    text : str
+        The ``.ipynb`` JSON.
+
+    Returns
+    -------
+    str
+        The markdown cell sources, in document order, newline separated.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    notebook = json.loads(text)
+
+    return "\n".join(
+        "".join(cell.get("source", ()))
+        for cell in notebook.get("cells", ())
+        if cell.get("cell_type") == "markdown"
+    )
+
+
+def myst_scan(text: str) -> Iterator[MystLine]:
+    """Yield the column-0 lines of ``text`` that carry page structure.
+
+    A MyST directive *is* a fence, and its opening rail carries the info string
+    naming it, so a reader that skipped each fence whole could not see the
+    thing being looked for. The rail is therefore yielded with its info string,
+    and the body of a :data:`RST_WINDOW` fence is yielded too.
+
+    Which of the two a line is matters, because the two syntaxes are not read
+    on the same page. A heading is markdown and means nothing inside the
+    window; an ``rst`` directive is reStructuredText and means nothing outside
+    it. So each line is yielded knowing whether it sits in one.
+
+    A fence closes only on a rail of the same character, at least as long, and
+    carrying no info string - so a block opened with four backticks may quote a
+    three-backtick block without being closed by it.
+
+    Parameters
+    ----------
+    text : str
+        The page source.
+
+    Yields
+    ------
+    MystLine
+        The line, and the context needed to read it.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    rail: str | None = None
+    window = False
+
+    for number, line in enumerate(text.splitlines(), start=1):
+        fence = FENCE.match(line)
+
+        if fence is not None:
+            found, info = fence["rail"], fence["info"].strip()
+
+            if rail is None:
+                rail = found
+                window = info == RST_WINDOW
+                # the rail opens the window rather than sitting inside it
+                yield MystLine(number, line, info, window=False)
+                continue
+
+            if found[0] == rail[0] and len(found) >= len(rail) and not info:
+                rail, window = None, False
+                continue
+
+        if rail is None or window:
+            yield MystLine(number, line, None, window=window)
+
+
+def _underlines(text: str) -> list[int]:
+    """Return the 1-indexed lines that underline a title or section heading."""
+    lines = text.splitlines()
+    found: list[int] = []
+
+    for number, line in enumerate(lines, start=1):
+        if UNDERLINE.match(line) is None:
+            continue
+
+        # a transition - a rule on its own between paragraphs - underlines
+        # nothing, whereas a real underline sits beneath text and is at least
+        # as long as it
+        above = lines[number - 2].rstrip() if number >= 2 else ""
+
+        if above and len(line.rstrip()) >= len(above):
+            found.append(number)
+
+    return found
+
+
+def title_line(text: str, suffix: str) -> int | None:
+    """Locate the title of a page.
+
+    Parameters
+    ----------
+    text : str
+        The page source.
+    suffix : str
+        The file extension, which decides how the page is read. One of
+        :data:`MYST_SUFFIXES`, or anything else for reStructuredText.
+
+    Returns
+    -------
+    int or None
+        The 1-indexed line of the title underline for reStructuredText, of the
+        ``"# "`` heading for MyST, or ``None`` for a page with no title.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if suffix in MYST_SUFFIXES:
+        source = notebook_markdown(text) if suffix == ".ipynb" else text
+
+        for entry in myst_scan(source):
+            if not entry.window and entry.text.startswith("# "):
+                return entry.number
+
+        return None
+
+    underlines = _underlines(text)
+
+    return underlines[0] if underlines else None
+
+
+def first_section_line(text: str, suffix: str) -> int | None:
+    """Locate the first section heading below the title of a page.
+
+    Parameters
+    ----------
+    text : str
+        The page source.
+    suffix : str
+        The file extension, as for :func:`title_line`.
+
+    Returns
+    -------
+    int or None
+        The 1-indexed line of the heading, or ``None`` when the page has no
+        sections, in which case the whole of it is its lead.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if suffix in MYST_SUFFIXES:
+        source = notebook_markdown(text) if suffix == ".ipynb" else text
+
+        for entry in myst_scan(source):
+            if not entry.window and entry.text.startswith(MYST_HEADING):
+                return entry.number
+
+        return None
+
+    underlines = _underlines(text)
+
+    return underlines[1] if len(underlines) > 1 else None
+
+
+def directive_lines(text: str, suffix: str) -> list[int]:
+    """Find every occurrence of the directive at column 0.
+
+    Parameters
+    ----------
+    text : str
+        The page source.
+    suffix : str
+        The file extension, as for :func:`title_line`.
+
+    Returns
+    -------
+    list of int
+        The 1-indexed lines, in document order.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if suffix in MYST_SUFFIXES:
+        source = notebook_markdown(text) if suffix == ".ipynb" else text
+
+        # a directive taking an argument spells it on the info string, as
+        # "{readingtime} 30" or "{readingtime} 200wpm", so the name is the
+        # first token of that string rather than the whole of it. the rst
+        # spelling counts only inside a window, a bare one being prose that
+        # renders as itself
+        return [
+            entry.number
+            for entry in myst_scan(source)
+            if (entry.info is not None and entry.info.split()[:1] == [MYST_DIRECTIVE])
+            or (entry.window and RST_DIRECTIVE.match(entry.text) is not None)
+        ]
+
+    return [
+        number
+        for number, line in enumerate(text.splitlines(), start=1)
+        if RST_DIRECTIVE.match(line) is not None
+    ]
+
+
+def lead_directive_lines(text: str, suffix: str) -> list[int]:
+    """Find the occurrences of the directive in the lead of a page.
+
+    The lead is what sits after the title and before the first section
+    heading, which is the only place a banner is of any use: lower down it
+    quotes a reader time they have already spent. A directive below the lead
+    is a demonstration, as in the ``readingtime`` section of
+    ``developer/documentation.rst``, and is not a banner.
+
+    Parameters
+    ----------
+    text : str
+        The page source.
+    suffix : str
+        The file extension, as for :func:`title_line`.
+
+    Returns
+    -------
+    list of int
+        The 1-indexed lines, in document order. Empty for a page with no
+        title, which has no lead to put a banner in.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    title = title_line(text, suffix)
+
+    if title is None:
+        return []
+
+    section = first_section_line(text, suffix)
+
+    return [
+        number
+        for number in directive_lines(text, suffix)
+        if number > title and (section is None or number < section)
+    ]
+
+
+def carries_reading_time(text: str, suffix: str) -> bool:
+    """Report whether a page opens with a reading-time banner.
+
+    Parameters
+    ----------
+    text : str
+        The page source.
+    suffix : str
+        The file extension, as for :func:`title_line`.
+
+    Returns
+    -------
+    bool
+        Whether the lead of the page carries the directive.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    return bool(lead_directive_lines(text, suffix))

@@ -1,7 +1,7 @@
 # {fa}`road-circle-check` Changelog
 
 ```{eval-rst}
-.. readingtime:: 6
+.. readingtime::
 ```
 
 The {ref}`changelog <tippy-gv-reference-changelog>` is managed and orchestrated with

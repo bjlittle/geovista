@@ -564,6 +564,9 @@ all when that host cannot be reached.
 The following custom ``sphinx`` `reStructuredText`_ (:bash:`rst`) directives
 are available to documentation authors.
 
+.. _gv-developer-documentation-sphinx-directives-readingtime:
+.. _tippy-gv-developer-documentation-sphinx-directives-readingtime:
+
 :fa:`toggle-off` :bash:`readingtime`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -590,7 +593,10 @@ because they alternate prose with code and output that a reader works through
 line by line.
 
 Accepts an optional ``<duration>`` reading time (in minutes), a literal
-reading time to be quoted rather than calculated.
+reading time to be quoted rather than calculated. Reach for it on a page whose
+estimate is wrong for a reason the word count cannot see, such as a tutorial
+whose reader stops to run every snippet. On a page the count gets right it is
+a figure that has to be revised by hand every time the page changes.
 
 The directive then creates a branded :bash:`readingtime` banner in-situ e.g.,
 
@@ -626,6 +632,30 @@ the estimate to read this :ref:`tippy-gv-developer-documentation` page:
    Any other argument fails the build. Quietly falling back on the default
    would publish an estimate the author never asked for, and nothing would
    say that the argument had been misspelled.
+
+Every page a reader reads start to finish opens with a banner, placed at column
+zero after the title and before the first section heading. A page carries
+exactly one. The two live examples above sit well below the first heading of
+this page, which is what makes them demonstrations and not banners.
+
+A page that is **navigated** rather than read carries none: the site root and
+the section landing pages, the reference pages whose body a directive
+generates, the release notes, the lookup tables
+(:ref:`tippy-gv-reference-glossary`, :ref:`tippy-gv-reference-bindings`,
+:ref:`tippy-gv-reference-environment` and :ref:`tippy-gv-reference-about`), and
+:ref:`tippy-gv-developer-towncrier`, whose body is an include of a page that
+carries the banner already. Putting a duration on a glossary invites a reader
+to treat it as a chapter.
+
+.. important::
+   :class: dropdown, toggle-shown
+
+   Those pages are named in ``EXEMPT`` in
+   :bash:`tests/docs/test_readingtime_coverage.py`, each with the reason
+   beside it, and the gate there holds every other page to the rule. It
+   derives the pages it governs from :bash:`docs/src` rather than listing
+   them, so a new page is covered from the day it lands. Adding one means
+   adding the banner or adding the reason.
 
 
 .. _gv-developer-documentation-theme:

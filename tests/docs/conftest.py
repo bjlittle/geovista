@@ -3,29 +3,35 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Fixtures for the documentation theme chrome browser tests.
+"""Fixtures for the documentation tests.
 
-Every fixture here skips rather than fails when its prerequisite is missing, so
-that a plain ``pytest`` run is unaffected for contributors who have neither
-``playwright`` nor a documentation build.
+Most are for the theme chrome browser tests, and every one of those skips
+rather than fails when its prerequisite is missing, so that a plain ``pytest``
+run is unaffected for contributors who have neither ``playwright`` nor a
+documentation build.
 
 That is the wrong default for CI, which installs every prerequisite and builds
 the gallery deliberately, and so would report success having silently stopped
 covering anything. Pass ``--browser-strict`` to require them instead.
+
+The exception is :func:`reading`, which needs neither a browser nor a build and
+so never skips.
 
 """
 
 from __future__ import annotations
 
 from functools import partial
-import importlib
+import importlib.util
 from pathlib import Path
+import sys
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
+    from types import ModuleType
     from typing import NoReturn
 
     from playwright.sync_api import Browser, Page
@@ -37,6 +43,9 @@ STRICT = "--browser-strict"
 
 #: The root of the built documentation, relative to this file.
 HTML_ROOT = Path(__file__).parents[2] / "docs" / "_build" / "html"
+
+#: The documentation source, carrying the extensions under test.
+DOCS = Path(__file__).parents[2] / "docs" / "src"
 
 #: A page carrying a secondary "On this page" sidebar with enough entries to
 #: be worth revealing.
@@ -115,6 +124,33 @@ def require(pytestconfig: pytest.Config) -> Callable[[str], NoReturn]:
 
     """
     return partial(_require, pytestconfig)
+
+
+@pytest.fixture(scope="session")
+def reading() -> ModuleType:
+    """Load the reading-time model.
+
+    It is loaded from its path rather than imported, as ``docs/src/_ext`` is on
+    the path of a documentation build and of nothing else. It imports nothing
+    beyond the standard library, so unlike the browser fixtures here this one
+    has no prerequisite to skip on.
+
+    Returns
+    -------
+    ModuleType
+        The loaded module.
+
+    """
+    path = DOCS / "_ext" / "reading.py"
+    spec = importlib.util.spec_from_file_location("reading", path)
+    module = importlib.util.module_from_spec(spec)
+    # registered before it is executed, as "dataclass" resolves the annotations
+    # of a module compiled with "from __future__ import annotations" by looking
+    # the module up by name
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    return module
 
 
 @pytest.fixture(scope="session")
