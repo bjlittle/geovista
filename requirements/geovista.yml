@@ -32,6 +32,7 @@ dependencies:
 - sphinx-llms-txt >=0.7.1,<0.8
 - sphinx-sitemap >=2.9.0,<3
 - sphinx-tags >=0.4,<0.5
+- sphinx-tippy >=0.4.3,<0.5
 - sphinx-togglebutton >=0.3.2,<0.5
 - sphinx_changelog >=1.6.0,<2
 - sphinxcontrib-bibtex >=2.6.0,<3
@@ -68,6 +69,5 @@ dependencies:
 - pip:
   - -e .
   - sphinx-iconify>=0.3.0, <0.4
-  - sphinx-tippy>=0.4.3, <0.5
-  - vtk-xref>=0.1.1, <0.2
+  - sphinx-vtk-xref>=0.4.0, <0.5
   - playwright>=1.63.0, <2
