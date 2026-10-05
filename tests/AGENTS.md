@@ -42,8 +42,7 @@ an explicit allowlist for known third-party ones. Required plugins are
 | `image` | Plotting image comparison tests |
 
 Apply `browser` module-wide with a `pytestmark` global. `tests/docs/test_tooltips.py`
-mixes static and browser checks, so it marks per-test instead, which keeps
-`-m "not browser"` selecting the static half.
+mixes static and browser checks, so marks per-test, keeping `-m "not browser"` useful.
 
 ## Conventions
 
@@ -171,11 +170,13 @@ is ready. `conftest.py` polls until the toggle count stops changing; a sleep
 tuned on a developer machine is apt to be too short on a loaded CI runner.
 
 ⚠️ **`sd-stretched-link` covers its card through an `::after` overlay**, so the
-anchor's own bounding rect is just its text. Click coverage must be checked by
-hit-testing with `elementFromPoint`, not by comparing rectangles. A carousel
-also deliberately hangs cards past its own edge, so only cards lying wholly
-inside the clipping rect can be hit-tested — assert that some card qualifies,
-or the test passes vacuously.
+anchor's own bounding rect is just its text: hit-test with `elementFromPoint`,
+never compare rectangles. A carousel hangs cards past its own edge, so assert
+that some card lies wholly inside the clipping rect, or the test is vacuous.
+
+⚠️ **Parse built HTML, never pattern-match it.** Quoting, attribute order and
+`rel` arity are the author's choice and invisible in the page, so a regex gate
+is one an extension walks past unseen (#2559). Use `html.parser.HTMLParser`.
 
 ### Ruff Exceptions for Tests
 

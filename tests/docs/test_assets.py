@@ -27,8 +27,12 @@ distributing it. It needs no build and so never skips.
 
 from __future__ import annotations
 
+from html.parser import HTMLParser
 from pathlib import Path
 import re
+from urllib.parse import urlsplit
+
+import pytest
 
 #: The documentation source, carrying the vendored assets.
 DOCS = Path(__file__).parents[2] / "docs" / "src"
@@ -44,21 +48,70 @@ NOTICE_SUFFIX = ".LICENSE.txt"
 #: at most a one-line banner naming the licence, which is not that notice.
 COPYRIGHT = re.compile(r"copyright\b", re.IGNORECASE)
 
-#: A "<script>" or "<link>" opening tag, in whichever attribute order sphinx,
-#: the theme or an extension happened to write it.
-TAG = re.compile(r"<(script|link)\b([^>]*)>", re.IGNORECASE)
-
-#: A double-quoted attribute within such a tag.
-ATTR = re.compile(r'\b([a-z-]+)\s*=\s*"([^"]*)"', re.IGNORECASE)
+#: The tags that fetch an asset, and the attribute naming it in each.
+SOURCE = {"link": "href", "script": "src"}
 
 #: The "<link>" relationships that fetch an asset for the page itself. Named as
 #: an allowlist rather than an exclusion, so that "canonical" - which sphinx
 #: emits as an absolute URL from "html_baseurl", and must - is out of scope by
-#: construction along with any relationship a future theme invents.
+#: construction along with any relationship a future theme invents. "rel" holds
+#: a whitespace-separated token list, so one token matching is a match.
 RENDERING = frozenset({"modulepreload", "preload", "prefetch", "stylesheet"})
 
-#: A URL naming a host rather than a path within the build.
-ABSOLUTE = re.compile(r"^[a-z][a-z0-9+.-]*:|^//", re.IGNORECASE)
+
+class _Assets(HTMLParser):
+    """Collect the off-site scripts and stylesheets of the markup fed to it.
+
+    Reading the tags with the standard-library parser rather than a pattern is
+    what makes the audit indifferent to how sphinx, the theme or an extension
+    happened to write them. Single-quoted, unquoted and self-closing shapes are
+    all one thing to it, as is the order the attributes come in, and it honours
+    the CDATA rule for "<script>" content - where a pattern matches a tag named
+    inside a string literal. Every one of those is a way for an off-site asset
+    to enter the build unseen by a gate that exists to see it.
+
+    Attributes
+    ----------
+    found : list of str
+        The URL of each off-site asset, in the order the markup loads them.
+
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.found: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        """Record the tag if it fetches an asset from another host.
+
+        Parameters
+        ----------
+        tag : str
+            The name of the tag, lowercased by the parser.
+        attrs : list of tuple
+            The attributes of the tag, each name lowercased by the parser and
+            each value unquoted and unescaped by it. A value is ``None`` for an
+            attribute given without one.
+
+        Notes
+        -----
+        A self-closing tag arrives here too, the inherited
+        ``handle_startendtag`` delegating to this method.
+
+        """
+        if (attribute := SOURCE.get(tag)) is None:
+            return
+
+        values = {name: value or "" for name, value in attrs}
+
+        if tag == "link" and not RENDERING & set(values.get("rel", "").lower().split()):
+            return
+
+        url = values.get(attribute, "")
+        parts = urlsplit(url)
+
+        if parts.scheme or parts.netloc:
+            self.found.append(url)
 
 
 def _remote(page: Path) -> list[str]:
@@ -75,23 +128,65 @@ def _remote(page: Path) -> list[str]:
         The URL of each off-site asset, in the order the page loads them.
 
     """
-    html = page.read_text(encoding="utf-8", errors="replace")
-    found = []
+    parser = _Assets()
+    parser.feed(page.read_text(encoding="utf-8", errors="replace"))
+    parser.close()
 
-    for tag, body in TAG.findall(html):
-        attrs = {key.lower(): value for key, value in ATTR.findall(body)}
+    return parser.found
 
-        if tag.lower() == "script":
-            url = attrs.get("src", "")
-        elif attrs.get("rel", "").lower() in RENDERING:
-            url = attrs.get("href", "")
-        else:
-            continue
 
-        if url and ABSOLUTE.match(url):
-            found.append(url)
+#: The shapes an off-site asset can arrive in, each with what the audit must
+#: make of it. How an attribute is quoted, how many tokens its "rel" carries
+#: and what order the attributes come in are all the author's choice, of no
+#: consequence to a browser and invisible in the rendered page - so an audit
+#: that reads one shape of each is one an extension walks past without anybody
+#: having written anything wrong.
+SHAPES = {
+    "script": ('<script src="https://x.example/run.js"></script>', 1),
+    "script-single-quoted": ("<script src='https://x.example/run.js'></script>", 1),
+    "script-unquoted": ("<script src=https://x.example/run.js></script>", 1),
+    "script-protocol-relative": ('<script src="//x.example/run.js"></script>', 1),
+    "script-vendored": ('<script src="_static/js/run.js"></script>', 0),
+    "script-inline": (
+        """<script>var t = '<link rel="stylesheet" href="https://x.example">';</script>""",
+        0,
+    ),
+    "stylesheet": ('<link rel="stylesheet" href="https://x.example/t.css">', 1),
+    "stylesheet-many-tokens": (
+        '<link rel="alternate stylesheet" href="https://x.example/t.css" title="Alt">',
+        1,
+    ),
+    "stylesheet-self-closing": (
+        '<link rel="stylesheet" href="https://x.example/t.css" />',
+        1,
+    ),
+    "stylesheet-reordered": (
+        '<link href="https://x.example/t.css" rel="stylesheet">',
+        1,
+    ),
+    "stylesheet-vendored": ('<link rel="stylesheet" href="_static/styles/t.css">', 0),
+    "canonical": (
+        '<link rel="canonical" href="https://geovista.readthedocs.io/en/latest/">',
+        0,
+    ),
+}
 
-    return found
+
+@pytest.mark.parametrize(("markup", "expected"), SHAPES.values(), ids=list(SHAPES))
+def test_remote_reads_every_shape(tmp_path, markup, expected):
+    """Find an off-site asset however the page happens to spell it.
+
+    The audit is only as good as the markup it can read, and an asset missed
+    for the quoting of its attribute is missed as thoroughly as one nobody
+    looked for. The negative cases matter equally: an audit that cried off at
+    a vendored path, a canonical link or a tag named inside an inline script
+    would be turned off long before it ever caught anything.
+
+    """
+    page = tmp_path / "page.html"
+    page.write_text(markup, encoding="utf-8")
+
+    assert len(_remote(page)) == expected
 
 
 def test_pages_load_no_off_site_assets(html_root):
