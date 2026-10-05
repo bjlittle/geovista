@@ -1,0 +1,23 @@
+Adopted a stated policy for which pages carry a ``readingtime`` banner, and
+gated it. Every page a reader reads start to finish opens with one, placed at
+column zero after the title and before the first section heading, and carries
+exactly one. A page that is navigated rather than read carries none and is
+named in ``EXEMPT`` in :bash:`tests/docs/test_readingtime_coverage.py`, with
+the reason beside it. The exempt pages fall into four groups: the site root and
+the section landing pages, the reference pages whose body a directive
+generates, the lookup tables such as :ref:`tippy-gv-reference-glossary` and
+:ref:`tippy-gv-reference-bindings`, and :ref:`tippy-gv-developer-towncrier`,
+whose body is an include of a page that carries the banner already.
+
+The gate derives the pages it governs from :bash:`docs/src` instead of listing
+them, so a page is covered from the day it lands. It reads the sources as text
+and needs neither a browser, a build nor ``sphinx``, so unlike the rest of
+:bash:`tests/docs` it never skips. Adding a page now means adding the banner or
+adding the reason.
+
+The :bash:`docs/src/developer/changelog.md` banner drops its literal ``6``,
+which the word count arrives at unaided and which would otherwise need revising
+by hand whenever the page changed. The ``30`` on
+:ref:`tippy-gv-tutorials-region-manifold-extraction` stays, being an estimate
+the word count cannot make: its reader stops to run every snippet.
+(:user:`claude`)

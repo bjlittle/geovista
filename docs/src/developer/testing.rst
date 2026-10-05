@@ -461,6 +461,14 @@ They share the skip-or-require guard described below, and the whole directory is
 selected for execution instead of the :guilabel:`browser` marker, so that all of
 them are covered by the same :fab:`github` Action.
 
+The :bash:`tests/docs/test_readingtime_coverage.py` gate is the one module there
+with nothing to skip on. It reads the documentation sources as text, needing
+neither a browser nor a build nor ``sphinx`` itself, and holds every published
+page to the
+:ref:`banner rule <tippy-gv-developer-documentation-sphinx-directives-readingtime>`.
+The pages it governs are derived from :bash:`docs/src` rather than listed, so a
+page is covered from the day it lands.
+
 
 .. _gv-developer-testing-browser-tests-prerequisites:
 .. _tippy-gv-developer-testing-browser-tests-prerequisites:

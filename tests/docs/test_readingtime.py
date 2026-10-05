@@ -171,31 +171,6 @@ class Build(NamedTuple):
 
 
 @pytest.fixture(scope="session")
-def reading() -> ModuleType:
-    """Load the reading-time model.
-
-    It is loaded from its path rather than imported, as ``docs/src/_ext`` is on
-    the path of a documentation build and of nothing else.
-
-    Returns
-    -------
-    ModuleType
-        The loaded module.
-
-    """
-    path = DOCS / "_ext" / "reading.py"
-    spec = importlib.util.spec_from_file_location("reading", path)
-    module = importlib.util.module_from_spec(spec)
-    # registered before it is executed, as "dataclass" resolves the annotations
-    # of a module compiled with "from __future__ import annotations" by looking
-    # the module up by name
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-
-    return module
-
-
-@pytest.fixture(scope="session")
 def readingtime(reading: ModuleType, require: Callable[[str], NoReturn]) -> ModuleType:
     """Load the directive, under a name of its own.
 
