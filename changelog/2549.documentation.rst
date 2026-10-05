@@ -1,0 +1,13 @@
+Vendored the `sphinx-tippy
+<https://github.com/sphinx-extensions2/sphinx-tippy>`__ tooltip runtime. The
+extension leaves ``tippy_js`` pointing at ``@popperjs/core@2`` and
+``tippy.js@6`` on ``unpkg``. Both float on a major version, every reader of
+every page fetched them from a third party, and no tooltip appeared at all
+when that host was unreachable. Pinned copies of the two ``UMD`` bundles now
+sit under ``docs/src/_static/js/``, where sphinx serves them with its own
+cache-busting query.
+
+``sphinx-tippy`` also moved from a ``PyPI`` dependency to a ``conda-forge``
+one, and the ``conf.py`` import guard that treated it as optional went with
+it. That guard let a missing extension strip every tooltip out of the build
+and still leave it green. (:user:`claude`)
