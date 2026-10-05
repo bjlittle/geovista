@@ -123,7 +123,9 @@ demonstration. A page *navigated* rather than read (landing page, generated
 body, lookup table, or an `.. include::` of a page that carries one) goes in
 `EXEMPT` in `tests/docs/test_readingtime_coverage.py` **with its reason**. That
 gate derives its corpus from `src`, so a new page is governed the day it lands;
-the build stays silent and the test is what tells you. Reserve a literal
+the build stays silent and the test is what tells you. On a MyST page wrap it in
+an `{eval-rst}` fence or use the native `{readingtime}` one — a bare
+`.. readingtime::` line there renders as prose, unwarned. Reserve a literal
 `.. readingtime:: <n>` for an estimate the word count cannot make, such as a
 tutorial whose reader runs every snippet.
 
