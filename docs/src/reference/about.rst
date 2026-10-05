@@ -130,8 +130,16 @@ Discover community projects using ``geovista``:
 
 Explore scientific publications that leverage ``geovista``:
 
+.. comment
+
+   ⚠️ the filter rather than ":all:", so that a work the documentation cites
+   for its own reasons is not listed here as a publication using "geovista".
+   An entry carrying no keywords at all is listed, so a contributor who adds
+   one and leaves the field off still appears
+
+
 .. bibliography::
-    :all:
+    :filter: not keywords % "internal"
 
 
 .. admonition:: Share with the community!
