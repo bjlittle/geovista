@@ -26,6 +26,31 @@
 
 .. comment
 
+   ⚠️ inline icons, vendored from Iconify under "_static/icons/" and sized by
+      the "gv-icon" rule in "_static/style.css". Each one labels the word it
+      sits beside, so the alt text is deliberately empty - announcing it would
+      only repeat that word. Carry the upstream notice for any icon added here.
+
+
+.. |icon-conda| image:: /_static/icons/conda.svg
+    :class: gv-icon
+    :alt:
+
+.. |icon-info| image:: /_static/icons/info.svg
+    :class: gv-icon
+    :alt:
+
+.. |icon-pypi| image:: /_static/icons/pypi.svg
+    :class: gv-icon
+    :alt:
+
+.. |icon-uv| image:: /_static/icons/uv.svg
+    :class: gv-icon
+    :alt:
+
+
+.. comment
+
    🔗 common URL resources in alphabetical order:
 
 

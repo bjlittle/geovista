@@ -1,0 +1,17 @@
+Dropped the `sphinx-iconify <https://github.com/lepture/sphinx-iconify>`__
+extension and vendored the four icons it drew. The extension put a loader
+script from ``code.iconify.design`` on 171 of the 173 built pages, and the
+``<iconify-icon>`` element that script defines then resolved each icon
+against ``api.iconify.design`` as the page was read. Only the first of those
+two hops is visible in the HTML, so vendoring the script by itself would have
+left the icons still coming off the network.
+
+Those icons are now four SVG files under ``docs/src/_static/icons/``, reached
+through substitutions in ``common.txt`` and sized to the surrounding text by
+a ``gv-icon`` rule in ``style.css``. They render as they did before. Three
+are ``MIT`` licensed and the fourth is ``CC BY 4.0``, so each is accompanied
+by its upstream notice in a sibling ``<icon>.svg.LICENSE.txt``, which is
+published along with the documentation.
+
+No page in the build now loads a script or a stylesheet from a third party.
+(:user:`claude`)

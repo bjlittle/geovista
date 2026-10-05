@@ -69,6 +69,5 @@ dependencies:
 - pip
 - pip:
   - -e .
-  - sphinx-iconify>=0.3.0, <0.4
   - sphinx-vtk-xref>=0.4.0, <0.5
   - playwright>=1.63.0, <2

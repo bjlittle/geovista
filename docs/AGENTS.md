@@ -12,13 +12,10 @@ docs/
 ├── assets/                  # Non-Sphinx assets
 ├── _build/                  # Build output (git-ignored, do not edit)
 └── src/                     # Sphinx source directory (SOURCEDIR)
-    ├── conf.py              # Sphinx configuration
-    ├── index.rst            # Root document
-    ├── common.txt           # Shared RST substitutions (via rst_prolog)
-    ├── refs.bib             # BibTeX bibliography
-    ├── _ext/                # Custom extensions (reading, readingtime, intersphinx_resilience)
-    ├── _inventory/          # Vendored intersphinx fallbacks — do not hand-edit
-    ├── _static/             # Static assets (CSS, fonts, images, branding)
+    ├── conf.py index.rst    # Sphinx configuration; root document
+    ├── common.txt refs.bib  # Shared RST substitutions (included); bibliography
+    ├── _ext/ _inventory/    # Custom extensions; vendored .inv — do not hand-edit
+    ├── _static/             # CSS, fonts, branding, and vendored js/ and icons/
     ├── _templates/ _autoapi_templates/   # Jinja2 templates
     ├── developer/ explanation/ howtos/ tutorials/ reference/  # Diátaxis
     └── generated/ tags/ reference/generated/  # Auto-generated — do not edit
@@ -70,7 +67,10 @@ bite at *read* time, so no build log ever shows them. `sphinx-tippy` defaulted
 vendored the bundles under `src/_static/js/` (not `_static/tippy/`, which the
 extension owns, nor `_static/vendor/`, the theme's), each beside its upstream MIT
 notice as `<bundle>.LICENSE.txt`. Audit with `grep -rho '<script[^>]*src="https[^"]*"'
-_build/html`; `sphinx-iconify` still loads `code.iconify.design` on 171 pages.
+_build/html` — though that sees the *loader*, not what it then fetches: the
+`sphinx-iconify` script on 171 pages resolved each icon against `api.iconify.design`
+from inside the bundle, so vendoring it would have cleaned the grep and fixed
+nothing. #2559 dropped it for SVGs under `_static/icons/`, gated by `test_assets.py`.
 
 ⚠️ **`tippy_skip_urls` matches the raw `href`, which comes in two shapes.**
 `re.match` sees the href as written: bare between sibling pages (`clouds.html`)

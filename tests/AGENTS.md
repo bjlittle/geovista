@@ -96,9 +96,9 @@ the release one serial past it. Predict the tag from the date and what is on
 ### Documentation Tests
 
 `tests/docs` covers what no other Python test reaches: a headless chromium driven
-over a built site with playwright for the theme chrome — sidebar toggles, the
-dialogs they open, the gallery carousel, tooltip attachment — and the sphinx
-configuration itself, read off the built HTML or a throwaway build made in-process.
+over a built site with playwright for the theme chrome — sidebar toggles, dialogs,
+carousel, tooltips — the sphinx configuration read off the built HTML or a
+throwaway in-process build, and the off-site assets no page may load (#2559).
 
 ```bash
 pixi run -e geovista tests-docs-browser-install   # one-off, fetches chromium
