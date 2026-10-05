@@ -584,7 +584,7 @@ e.g.,
 .. code-block:: python
    :linenos:
    :caption: Browser Unit Test Marker
-   :emphasize-lines: 4
+   :emphasize-lines: 3
 
    import pytest
 
