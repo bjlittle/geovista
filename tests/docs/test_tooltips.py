@@ -56,6 +56,17 @@ RUNTIME = re.compile(r"\b(popper|tippy-bundle)\b", re.IGNORECASE)
 #: The bundles the runtime is split across, the positioning engine and tippy.
 BUNDLES = 2
 
+#: The suffix of the file carrying the upstream notice of a vendored bundle,
+#: the convention "pydata-sphinx-theme" ships for the bundles it vendors.
+NOTICE_SUFFIX = ".LICENSE.txt"
+
+#: The notice an "MIT" licence requires to travel with every copy, which the
+#: bare "MIT License" banner of a minified bundle does not satisfy.
+NOTICE = re.compile(
+    r"Copyright \(c\).*?above copyright notice and this permission notice",
+    re.DOTALL,
+)
+
 #: The body of a page, which is "tippy_anchor_parent_selector" and so the only
 #: part of one the extension attaches a tip within.
 ARTICLE = re.compile(r'<article class="bd-article">(.*?)</article>', re.DOTALL)
@@ -374,6 +385,10 @@ def test_runtime_is_vendored(tipped, html_root):
     fetched by every reader of every tipped page. Nothing in a build log says
     so, and an unreachable host takes the tooltips away entirely.
 
+    Vendoring a bundle is also distributing it, and both are ``MIT`` licensed,
+    so the upstream notice must travel alongside. A minified bundle carries at
+    most a one-line banner naming the licence, which is not that notice.
+
     """
     for page in tipped:
         runtime = [src for src in page.scripts if RUNTIME.search(src)]
@@ -390,6 +405,15 @@ def test_runtime_is_vendored(tipped, html_root):
             assert resolved.is_file(), f"{page.page} loads a missing {src}"
             assert html_root.resolve() in resolved.parents, (
                 f"{page.page} loads {src} from outside the build"
+            )
+
+            notice = resolved.with_name(f"{resolved.name}{NOTICE_SUFFIX}")
+
+            assert notice.is_file(), (
+                f"{page.page} loads {src} with no published {notice.name}"
+            )
+            assert NOTICE.search(notice.read_text(encoding="utf-8")), (
+                f"{notice.name} carries no copyright and permission notice"
             )
 
 

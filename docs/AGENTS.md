@@ -89,13 +89,12 @@ notice as `<bundle>.LICENSE.txt`. Audit with `grep -rho '<script[^>]*src="https[
 _build/html`; `sphinx-iconify` still loads `code.iconify.design` on 171 pages.
 
 ⚠️ **`tippy_skip_urls` matches the raw `href`, which comes in two shapes.**
-`re.match` is applied to the href exactly as written into the page: bare between
-sibling pages (`clouds.html`) and directory-prefixed from anywhere else
-(`../generated/gallery/domain/clouds.html`), so a pattern for one shape silently
-matches nothing from the other and nothing warns. Its sibling
-`tippy_skip_anchor_classes` *replaces* the defaults `headerlink`/`sd-stretched-link`
-rather than extending them, and is applied in the browser, so dropping one leaves
-the build output unchanged. `tests/docs/test_tooltips.py` gates both.
+`re.match` sees the href as written: bare between sibling pages (`clouds.html`)
+and directory-prefixed from anywhere else (`../generated/gallery/domain/clouds.html`),
+so a pattern for one shape silently matches nothing from the other, unwarned. Its
+sibling `tippy_skip_anchor_classes` *replaces* the defaults
+`headerlink`/`sd-stretched-link` rather than extending them, and applies in the
+browser, so dropping one leaves the build unchanged. `test_tooltips.py` gates both.
 
 ## Conventions
 
