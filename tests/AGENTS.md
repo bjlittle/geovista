@@ -113,12 +113,13 @@ whole of `tests/docs`, not the `browser` marker, so the sphinx configuration
 tests beside them share the same CI job and the same guard.
 
 ⚠️ **A source-tree policy gate has nothing to skip on, and must not acquire
-one.** `test_readingtime_coverage.py` reads `docs/src` as *text*, so it needs
-neither sphinx, a build nor a browser, and runs in the ordinary unit suite as
-well as the docs job. It also *derives* the pages it governs from the tree
-rather than listing them, so a new page is covered the day it lands and an
+one.** `test_readingtime_coverage.py` reads `docs/src` as *text*, and
+`test_python_support.py` reads `pyproject.toml` beside the workflow matrices —
+neither needs sphinx, a build nor a browser, so both run in the ordinary unit
+suite. Both also *derive* what they govern from the tree rather than listing it,
+so a new page or a new `pyXYZ` feature is covered the day it lands, and an
 exemption must be declared with its reason. Guard such a gate on nothing: a skip
-would retire the rule in silence. Its `reading` fixture is shared with
+would retire the rule in silence. The `reading` fixture is shared with
 `test_readingtime.py` from `tests/docs/conftest.py`.
 
 ⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** CI installs

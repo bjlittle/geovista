@@ -177,6 +177,11 @@ All Python files must include `from __future__ import annotations` (enforced by 
   to `gh issue create` / `gh pr create`, or `gh issue edit <n> --add-label
   agentic` after the fact. It is **not** the `bot` label, which marks
   deterministic automation: dependabot, and the scheduled `ci-*.yml` workflows.
+- **Python support**: SPEC 0 — a minor version is dropped three years after its
+  release. Nine places declare which ones are supported, from the trove
+  classifiers through the `pyXYZ` pixi features and their environments to the CI
+  matrices; `tests/test_python_support.py` holds them all to the classifiers, so
+  bump those first and let the gate name whatever else must follow.
 - **Dependencies**: core deps in `requirements/pypi-core.txt`; optional groups in `requirements/pypi-optional-*.txt`. Pixi deps mirrored in `pyproject.toml`.
 - **License**: BSD-3-Clause
 

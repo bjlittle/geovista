@@ -255,6 +255,9 @@ https://conda.anaconda.org/conda-forge/noarch/click-8.5.0-pyh5ded981_0.conda#dea
 https://conda.anaconda.org/conda-forge/noarch/towncrier-26.9.0-pyhd8ed1ab_0.conda#d4167f473b71694bbca708347abee99e
 https://conda.anaconda.org/conda-forge/noarch/sphinx_changelog-1.6.0-pyhd8ed1ab_1.conda#3c4521d251abd353af49c3293030f674
 https://conda.anaconda.org/conda-forge/noarch/sphinx-togglebutton-0.3.2-pyhd8ed1ab_0.tar.bz2#382738101934261ea7931d1460e64868
+https://conda.anaconda.org/conda-forge/noarch/soupsieve-2.10-pyhd8ed1ab_0.conda#6c2382c11f0c0486f3300a761e5c1205
+https://conda.anaconda.org/conda-forge/noarch/beautifulsoup4-4.15.0-pyha770c72_0.conda#3b261da3fe9b4168738712832410b022
+https://conda.anaconda.org/conda-forge/noarch/sphinx-tippy-0.4.3-pyhcf101f3_0.conda#df44d130fab50f3056bec6bddfbe48f2
 https://conda.anaconda.org/conda-forge/noarch/sphinx-tags-0.4-pyhd8ed1ab_1.conda#3ef0873d02bf250ba9907804ddfdc421
 https://conda.anaconda.org/conda-forge/noarch/sphinx-last-updated-by-git-0.3.8-pyhe01879c_0.conda#405a232fb900fc631d2f1b5cdf01dea9
 https://conda.anaconda.org/conda-forge/noarch/sphinx-sitemap-2.9.0-pyhcf101f3_0.conda#3baeff262222dc87e978a68702bc5797
@@ -263,8 +266,6 @@ https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.21.0-pyhd8ed1ab_0
 https://conda.anaconda.org/conda-forge/noarch/sphinx-design-0.7.0-pyhd8ed1ab_0.conda#28eddfb8b9ecdd044a6f609f985398a7
 https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.2-pyhd8ed1ab_1.conda#bf22cb9c439572760316ce0748af3713
 https://conda.anaconda.org/conda-forge/noarch/sphinx-click-6.2.0-pyhcf101f3_0.conda#bad3e6be48f688549fc0129e3a8866d7
-https://conda.anaconda.org/conda-forge/noarch/soupsieve-2.10-pyhd8ed1ab_0.conda#6c2382c11f0c0486f3300a761e5c1205
-https://conda.anaconda.org/conda-forge/noarch/beautifulsoup4-4.15.0-pyha770c72_0.conda#3b261da3fe9b4168738712832410b022
 https://conda.anaconda.org/conda-forge/noarch/accessible-pygments-0.0.5-pyhd8ed1ab_1.conda#74ac5069774cdbc53910ec4d631a3999
 https://conda.anaconda.org/conda-forge/noarch/pydata-sphinx-theme-0.20.0-pyhc364b38_0.conda#4539a6224d84b50aea1bcdcc01ee9802
 https://conda.anaconda.org/conda-forge/noarch/sphinx-book-theme-1.4.0-pyhc364b38_0.conda#e307ff5cc407bb90cf4cbaed1f611fa6
