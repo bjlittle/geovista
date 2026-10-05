@@ -1,0 +1,24 @@
+Separated the work of ``blacken-docs`` and ``ruff`` in
+:bash:`.pre-commit-config.yaml`. ``blacken-docs`` leaves ``>>>`` doctests
+untouched, so the ``docstring-code-format`` setting of ``ruff format`` was
+already the only thing formatting those, and ``blacken-docs`` is the only thing
+reaching a code block in a standalone ``.rst`` or ``.md`` file. The two met on
+a single construct, an rst code block inside a Python docstring, where the
+pinned ``black==24.*`` had drifted from the style ``ruff`` follows:
+``"\N{snowman}"`` is normalised to ``"\N{SNOWMAN}"`` by one and left alone by
+the other. ``blacken-docs`` is now limited to ``markdown`` and ``rst``, with
+its ``black`` pin on the current major.
+
+``ruff`` also picks up :bash:`docs/src/tutorials/region-manifold-extraction.ipynb`,
+which a ``types`` override had been narrowing out of the
+``types_or: [python, pyi, jupyter]`` default of the hook. That notebook was
+already clean.
+
+Six hooks join them: ``check-json``, for the badge endpoint under
+:bash:`docs/assets/badge/` that nothing validated; ``detect-private-key``;
+``check-executables-have-shebangs`` and
+``check-shebang-scripts-are-executable``, since ``ci-changelog.yml`` invokes
+:bash:`.github/scripts/changelog.py` by path and the execute bit carries it;
+and the ``check-hooks-apply`` and ``check-useless-excludes`` meta hooks, which
+hold every filter in this file to matching something. All six pass as they
+stand. (:user:`claude`)

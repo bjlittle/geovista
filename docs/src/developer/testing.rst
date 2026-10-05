@@ -588,7 +588,6 @@ e.g.,
 
    import pytest
 
-
    pytestmark = pytest.mark.browser
 
 A module that mixes browser and non-browser unit tests, such as
