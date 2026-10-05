@@ -1,0 +1,12 @@
+Renamed :bash:`tests/themes/test.py` to :bash:`tests/themes/test_themes.py`.
+The old name matched neither half of the ``pytest`` ``python_files`` default,
+``test_*.py`` and ``*_test.py``, so none of its eleven tests had been collected
+since they landed.
+
+Collecting them exposed a real failure. ``test_default_theme`` asserts that the
+global ``pyvista`` theme is ``geovista``, and importing :bash:`tests/plotting`
+loads the ``pyvista`` testing theme over it to prepare off-screen rendering.
+That happens at import, so collecting the image tests displaces the theme
+whether or not they are then selected to run. The test now reinstates the theme
+it is about through a fixture, and puts back whatever it found afterwards.
+(:user:`claude`)

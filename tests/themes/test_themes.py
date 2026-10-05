@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+import copy
+
 import pytest
 import pyvista as pv
 from pyvista.plotting.themes import Theme
@@ -17,6 +19,23 @@ from geovista.themes import GeoVistaDocumentTheme, GeoVistaTheme
 registered: set[str] = {theme.name for theme in pv.registered_themes()}
 themes: list[Theme] = [GeoVistaDocumentTheme, GeoVistaTheme]
 theme_names: list[str] = [theme().name for theme in themes]
+
+
+@pytest.fixture
+def global_theme():
+    """Reinstate the ``geovista`` global plotting theme.
+
+    Importing :mod:`tests.plotting` loads the ``pyvista`` testing theme into
+    :data:`pyvista.global_theme` to prepare off-screen image testing. That
+    happens at import, so merely collecting the image tests is enough to
+    displace the theme that ``geovista`` installs on import, whether or not
+    those tests are then selected to run.
+
+    """
+    snapshot = copy.deepcopy(pv.global_theme)
+    pv.global_theme.load_theme(GeoVistaTheme())
+    yield pv.global_theme
+    pv.global_theme.load_theme(snapshot)
 
 
 @pytest.mark.parametrize(
@@ -36,9 +55,9 @@ def test_inherit(cls):
     assert isinstance(theme, Theme)
 
 
-def test_default_theme():
+def test_default_theme(global_theme):
     """Test no trap for adding an empty mesh to plotter with default theme."""
-    assert pv.global_theme.name == "geovista"
+    assert global_theme.name == "geovista"
     empty = pv.PolyData()
     p = gv.GeoPlotter()
     _ = p.add_mesh(empty)
