@@ -89,10 +89,10 @@ The following testing workflows are available:
    |           |    :class: dropdown                                                                                           |
    |           |                                                                                                               |
    |           |    The :ref:`tippy-gv-developer-testing-browser-tests` require a built documentation site, so this job        |
-   |           |    builds the :guilabel:`html-gallery` target - the cheapest build that renders the gallery, and therefore    |
+   |           |    builds the :guilabel:`html-gallery` target: the cheapest build that renders the gallery, and therefore     |
    |           |    the only one carrying the carousel that the browser tests cover. It is run with the ``--browser-strict``   |
    |           |    option, so that a prerequisite which this job deliberately provides, but which quietly goes missing,       |
-   |           |    fails rather than skips - leaving the job green over lost coverage.                                        |
+   |           |    fails rather than skips, which would leave the job green over lost coverage.                               |
    +-----------+---------------------------------------------------------------------------------------------------------------+
    | |ci-lock| | The `ci-tests-lock.yml`_ ``cron`` based :fab:`github` Action regularly schedules the execution of both the    |
    |           | :ref:`tippy-gv-developer-testing-image-tests` and :ref:`tippy-gv-developer-testing-unit-tests` for the        |
@@ -453,7 +453,7 @@ configuration itself, such as the
 :ref:`tippy-gv-developer-documentation-cross-references-intersphinx` fallback
 behaviour, which build throwaway documentation sets in-process and so require no
 browser. They share the skip-or-require guard described below, and the whole
-directory is selected for execution rather than the :guilabel:`browser` marker,
+directory is selected for execution instead of the :guilabel:`browser` marker,
 so that both are covered by the same :fab:`github` Action.
 
 
@@ -492,7 +492,7 @@ The browser unit tests require the following:
    |                         | :guilabel:`tests-docs-browser-install` ``pixi`` :term:`task <Task>`.                     |
    +-------------------------+------------------------------------------------------------------------------------------+
    | A documentation build   | The tests are performed against the :bash:`docs/_build/html` site, which is              |
-   |                         | opened over ``file://`` - no web server is required. See                                 |
+   |                         | opened over ``file://``: no web server is required. See                                  |
    |                         | :ref:`tippy-gv-developer-documentation-building` for further details.                    |
    +-------------------------+------------------------------------------------------------------------------------------+
 
@@ -515,7 +515,7 @@ having silently stopped covering anything. The ``--browser-strict`` option
 
    ``pytest`` honours the ``pytest_addoption`` hook only within the test root
    :bash:`tests/conftest.py`, which is therefore where the ``--browser-strict``
-   option is registered, rather than alongside the browser unit tests that
+   option is registered, not alongside the browser unit tests that
    consume it.
 
 .. seealso::
@@ -531,7 +531,7 @@ having silently stopped covering anything. The ``--browser-strict`` option
 
    The default :guilabel:`html-noplot` documentation build target sets
    :python:`plot_gallery = False`, which leaves the :ref:`tippy-gv-examples` gallery
-   carousel with nothing to render - so the carousel unit tests **skip**, or **fail**
+   carousel with nothing to render, so the carousel unit tests **skip**, or **fail**
    under ``--browser-strict``. Only the :guilabel:`html-gallery` target, or another
    plotting target, covers them, and rendering the gallery thumbnails requires a
    display.
@@ -566,7 +566,7 @@ The following ``pytest`` marker is configured for browser unit tests:
    +-----------------------+-------------------------------------------------------------------------------------+
 
 The marker is applied to an entire test module with a :python:`pytestmark` global,
-rather than to each unit test e.g.,
+not to each unit test e.g.,
 
 .. code-block:: python
    :linenos:
@@ -640,7 +640,7 @@ The following ``pytest`` `fixtures`_ are available to browser unit tests:
    |                  |    Both themes inject their toggles from ``JavaScript`` *after* the page                   |
    |                  |    has loaded, so the chrome is not final the moment the page is ready.                    |
    |                  |    The factory therefore polls until the toggle count stops changing,                      |
-   |                  |    rather than pausing for a fixed delay - a delay tuned on a developer                    |
+   |                  |    rather than pausing for a fixed delay, since a delay tuned on a developer               |
    |                  |    machine is apt to be too short on a loaded CI runner.                                   |
    +------------------+--------------------------------------------------------------------------------------------+
    | ``html_root``    | The root directory of the documentation build, :bash:`docs/_build/html`.                   |
@@ -675,7 +675,7 @@ toggle, :python:`dialog` to report the state of a sidebar dialog, and
 that opens as a dialog.
 
 Both themes render a **duplicate** of each toggle and hide one of them, so "the
-button" is ambiguous - the helpers consistently act upon the one that a reader can
+button" is ambiguous: the helpers consistently act upon the one that a reader can
 actually see.
 
 .. attention::
@@ -687,7 +687,7 @@ actually see.
    with :python:`document.elementFromPoint`, and **not** by comparing rectangles.
 
    A carousel also deliberately hangs its cards past its own clipping edge, so only
-   those cards lying wholly inside the clipping rectangle can be hit-tested - assert
+   those cards lying wholly inside the clipping rectangle can be hit-tested. Assert
    that at least one card qualifies, otherwise the unit test passes vacuously.
 
 

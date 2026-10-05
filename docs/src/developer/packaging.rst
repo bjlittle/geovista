@@ -600,7 +600,7 @@ latest available package updates within the ``PyPI`` ecosystem.
 
    A tool shipping both a ``node`` and a ``python`` distribution may be packaged on
    ``conda-forge`` as the ``node`` command line interface alone, with no ``python``
-   bindings - the ``conda`` package then installs cleanly, and the subsequent
+   bindings. The ``conda`` package then installs cleanly, and the subsequent
    :python:`import` raises a :exc:`ModuleNotFoundError`. `playwright`_, required by
    the :ref:`tippy-gv-developer-testing-browser-tests`, is the case in point.
 
