@@ -292,11 +292,46 @@ def test_a_directive_quoted_inside_a_plain_myst_fence_does_not_count(reading):
     assert reading.directive_lines(text, ".md") == [4]
 
 
+def test_a_bare_rst_directive_in_myst_is_prose(reading):
+    """MyST renders the literal line, so the page carries no banner.
+
+    The two syntaxes are not read on the same page: an ``rst`` directive means
+    something only inside the window that evaluates one.
+    """
+    text = MYST_PAGE.replace("```{eval-rst}\n.. readingtime::\n```", ".. readingtime::")
+
+    assert reading.directive_lines(text, ".md") == []
+    assert not reading.carries_reading_time(text, ".md")
+
+
+def test_a_bare_rst_directive_in_a_notebook_cell_is_prose(reading):
+    """A markdown cell is MyST, and the rule there is the rule anywhere."""
+    text = notebook(
+        ("markdown", "# Title\n"),
+        ("markdown", ".. readingtime::\n"),
+        ("markdown", "## Section\n"),
+    )
+
+    assert reading.directive_lines(text, ".ipynb") == []
+    assert not reading.carries_reading_time(text, ".ipynb")
+
+
 def test_a_heading_inside_a_myst_fence_is_not_a_section(reading):
     """Otherwise a quoted heading would close the lead early."""
     text = MYST_PAGE.replace("Lead text.\n", "```\n## Not a heading\n```\n")
 
     assert reading.first_section_line(text, ".md") == 11
+
+
+def test_a_heading_inside_an_eval_rst_window_is_not_a_heading(reading):
+    """The converse of the bare directive: the window body is not markdown."""
+    text = MYST_PAGE.replace(
+        ".. readingtime::", "# Not a title\n\n## Not a section\n\n.. readingtime::"
+    )
+
+    assert reading.title_line(text, ".md") == 1
+    assert reading.first_section_line(text, ".md") == 13
+    assert reading.directive_lines(text, ".md") == [8]
 
 
 def test_the_myst_scanner_keeps_the_rail_discipline(reading):

@@ -27,7 +27,7 @@ from dataclasses import dataclass
 import json
 import math
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 __all__ = [
     "WPM",
     "Argument",
+    "MystLine",
     "carries_reading_time",
     "count_words",
     "directive_lines",
@@ -212,6 +213,34 @@ MYST_HEADING: str = "## "
 MYST_SUFFIXES: tuple[str, ...] = (".ipynb", ".md")
 
 
+class MystLine(NamedTuple):
+    """A column-0 line of a MyST page, with the context needed to read it.
+
+    Attributes
+    ----------
+    number : int
+        The 1-indexed line number.
+    text : str
+        The line itself.
+    info : str or None
+        The stripped info string when the line opens a fence, otherwise
+        ``None``.
+    window : bool
+        Whether the line sits inside a :data:`RST_WINDOW` fence, and so is to
+        be read as reStructuredText rather than as markdown.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+
+    number: int
+    text: str
+    info: str | None
+    window: bool
+
+
 def notebook_markdown(text: str) -> str:
     """Lift the MyST source out of a Jupyter notebook.
 
@@ -243,13 +272,18 @@ def notebook_markdown(text: str) -> str:
     )
 
 
-def myst_scan(text: str) -> Iterator[tuple[int, str, str | None]]:
+def myst_scan(text: str) -> Iterator[MystLine]:
     """Yield the column-0 lines of ``text`` that carry page structure.
 
     A MyST directive *is* a fence, and its opening rail carries the info string
     naming it, so a reader that skipped each fence whole could not see the
     thing being looked for. The rail is therefore yielded with its info string,
     and the body of a :data:`RST_WINDOW` fence is yielded too.
+
+    Which of the two a line is matters, because the two syntaxes are not read
+    on the same page. A heading is markdown and means nothing inside the
+    window; an ``rst`` directive is reStructuredText and means nothing outside
+    it. So each line is yielded knowing whether it sits in one.
 
     A fence closes only on a rail of the same character, at least as long, and
     carrying no info string - so a block opened with four backticks may quote a
@@ -262,9 +296,8 @@ def myst_scan(text: str) -> Iterator[tuple[int, str, str | None]]:
 
     Yields
     ------
-    tuple of (int, str, str or None)
-        The 1-indexed line number, the line, and - when the line opens a fence
-        - its stripped info string.
+    MystLine
+        The line, and the context needed to read it.
 
     Notes
     -----
@@ -283,7 +316,8 @@ def myst_scan(text: str) -> Iterator[tuple[int, str, str | None]]:
             if rail is None:
                 rail = found
                 window = info == RST_WINDOW
-                yield number, line, info
+                # the rail opens the window rather than sitting inside it
+                yield MystLine(number, line, info, window=False)
                 continue
 
             if found[0] == rail[0] and len(found) >= len(rail) and not info:
@@ -291,7 +325,7 @@ def myst_scan(text: str) -> Iterator[tuple[int, str, str | None]]:
                 continue
 
         if rail is None or window:
-            yield number, line, None
+            yield MystLine(number, line, None, window=window)
 
 
 def _underlines(text: str) -> list[int]:
@@ -339,9 +373,9 @@ def title_line(text: str, suffix: str) -> int | None:
     if suffix in MYST_SUFFIXES:
         source = notebook_markdown(text) if suffix == ".ipynb" else text
 
-        for number, line, _ in myst_scan(source):
-            if line.startswith("# "):
-                return number
+        for entry in myst_scan(source):
+            if not entry.window and entry.text.startswith("# "):
+                return entry.number
 
         return None
 
@@ -374,9 +408,9 @@ def first_section_line(text: str, suffix: str) -> int | None:
     if suffix in MYST_SUFFIXES:
         source = notebook_markdown(text) if suffix == ".ipynb" else text
 
-        for number, line, _ in myst_scan(source):
-            if line.startswith(MYST_HEADING):
-                return number
+        for entry in myst_scan(source):
+            if not entry.window and entry.text.startswith(MYST_HEADING):
+                return entry.number
 
         return None
 
@@ -410,12 +444,14 @@ def directive_lines(text: str, suffix: str) -> list[int]:
 
         # a directive taking an argument spells it on the info string, as
         # "{readingtime} 30" or "{readingtime} 200wpm", so the name is the
-        # first token of that string rather than the whole of it
+        # first token of that string rather than the whole of it. the rst
+        # spelling counts only inside a window, a bare one being prose that
+        # renders as itself
         return [
-            number
-            for number, line, info in myst_scan(source)
-            if (info is not None and info.split()[:1] == [MYST_DIRECTIVE])
-            or RST_DIRECTIVE.match(line) is not None
+            entry.number
+            for entry in myst_scan(source)
+            if (entry.info is not None and entry.info.split()[:1] == [MYST_DIRECTIVE])
+            or (entry.window and RST_DIRECTIVE.match(entry.text) is not None)
         ]
 
     return [
