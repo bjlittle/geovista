@@ -43,13 +43,8 @@ make clean             # build artifacts + generated sources; also
 make serve-html        # local HTTP server at http://localhost:11000
 ```
 
-Pixi task equivalents (run from repo root):
-
-```bash
-pixi run -e docs make              # Builds with html-noplot by default
-pixi run -e docs serve-html        # Build + serve
-pixi run -e docs clean             # Clean build artifacts
-```
+Each has a pixi task of the same name, run from the repo root as
+`pixi run -e docs <task>`; `make` builds `html-noplot`.
 
 The Makefile sets `PYVISTA_OFF_SCREEN=True` and
 `PYDEVD_DISABLE_FILE_VALIDATION=1`, and passes sphinx
@@ -96,6 +91,19 @@ sibling `tippy_skip_anchor_classes` *replaces* the defaults
 `headerlink`/`sd-stretched-link` rather than extending them, and applies in the
 browser, so dropping one leaves the build unchanged. `test_tooltips.py` gates both.
 
+⚠️ **Nothing type-checks `src/_ext`:** the `mypy` hook is `pass_filenames: false`,
+so it only sees `[tool.mypy] files = ["src/geovista"]`, and `numpydoc-validation`
+is `files: "^src/"` — #2551 found `PATTERN: re.Match` and a `-> None` `setup()`
+returning a dict. That `setup()` must also return `parallel_read_safe` and
+`parallel_write_safe`, or `--jobs` warns twice and reads serially, failing
+`--fail-on-warning`; and must `env.note_dependency(__file__)` for anything it
+bakes into a doctree, its own modules being no source sphinx watches.
+
+⚠️ **`sphinx-llms-txt` concatenates `_sources/*` verbatim** — the *source* of
+each page, so `llms-full.txt` carries `.. readingtime::` rather than the banner
+and no directive output can appear there. Check rendering with the `text`
+builder instead.
+
 ## Conventions
 
 ### File Formats
@@ -107,12 +115,9 @@ browser, so dropping one leaves the build unchanged. `test_tooltips.py` gates bo
 
 ### Do Not Edit (Generated)
 
-These paths are regenerated on build — never commit manual edits:
-
-- `src/generated/` — sphinx-gallery output
-- `src/reference/generated/` — sphinx-autoapi output
-- `src/tags/` — sphinx-tags pages
-- `_build/` — all build artifacts
+Regenerated on build, so never commit manual edits: `src/generated/`
+(sphinx-gallery), `src/reference/generated/` (sphinx-autoapi), `src/tags/`
+(sphinx-tags), `_build/`.
 
 ### Adding a New Page or Tutorial
 
@@ -146,24 +151,22 @@ the two only ever move together — `1.1.4` requires `==0.15.4`, `1.4.0` require
 pinning it back silently freezes `sphinx-book-theme` too. Always bump the pair,
 checking the target release's pin first with `curl -s
 https://pypi.org/pypi/sphinx-book-theme/<version>/json | grep -o
-'pydata-sphinx-theme[^"]*'`. The theme is in maintenance mode but still
-releasing; it is not abandoned.
+'pydata-sphinx-theme[^"]*'`. It is in maintenance mode, not abandoned.
 
 ⚠️ **A `contextlib.suppress(ModuleNotFoundError)` extension guard outlives its
-reason.** `sphinx-tippy`'s was written when conda-forge had no package; by #2549
-it did, and the guard let a missing extension drop every tooltip while the build
-still exited 0. Check conda-forge before adding one, and again before keeping one.
+reason.** `sphinx-tippy`'s predated its conda-forge package and, by #2549, let a
+missing extension drop every tooltip while the build still exited 0. Check
+conda-forge before adding one, and again before keeping one.
 
 ⚠️ **`src/_static/sidebar_toggle.js` is a workaround, not a feature.**
-`sphinx-book-theme` renders a second `.primary-toggle` *and* `.secondary-toggle`
-button and hides `pydata-sphinx-theme`'s pair, but both themes bind their
-handlers with `document.querySelector(...)` — the *first* match, i.e. the hidden
-one — so the visible buttons are inert and both sidebars are unreachable on a
-phone. The shim forwards clicks to the bound button of each pair, and
-self-retires when only one button remains. It also closes the primary dialog at
-`(min-width: 992px)`, since the dialog inherits the sidebar's classes and so
-inherits the wide-viewport collapsed state, which leaves it open but invisible
-over a page it blocks.
+`sphinx-book-theme` renders a second `.primary-toggle`/`.secondary-toggle` pair
+and hides `pydata-sphinx-theme`'s, but both themes bind with
+`document.querySelector(...)` — the *first* match, i.e. the hidden one — so the
+visible buttons are inert and both sidebars are unreachable on a phone. The shim
+forwards clicks to the bound button of each pair, self-retires when only one
+remains, and closes the primary dialog at `(min-width: 992px)`, where it
+inherits the sidebar's collapsed state and sits open but invisible over a page
+it blocks.
 
 The two halves retire separately. The duplicate buttons are sphinx-book-theme
 [#988](https://github.com/executablebooks/sphinx-book-theme/issues/988) /
@@ -176,12 +179,9 @@ that half outlives it. Re-check both on every theme bump.
 
 Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
 `ci-tests-docs.yml` — the image tests compare pyvista scenes, not page furniture.
-Run it with `pixi run -e geovista tests-docs-browser`; see `tests/AGENTS.md` for
-the gotchas, including why CI must pass `--browser-strict` when a skipping suite
-is otherwise green. The suite needs a local build (never a Read the Docs URL —
-RTD's addons tear out and re-inject the page after `load`), and the carousel only
-renders under `html-gallery`, so that third of the suite is CI-only here. See the
-`headless-browser-on-this-host` note for running chromium without sudo.
+Run `pixi run -e geovista tests-docs-browser`; `tests/AGENTS.md` has the gotchas,
+including why CI must pass `--browser-strict`. The suite needs a *local* build,
+never a Read the Docs URL — RTD's addons re-inject the page after `load`.
 
 Developer-facing docs live in `docs/src/developer/`: the theme shim and tooltips
 in `documentation.rst` (:fa:`palette` Theme, :fa:`comments` Tooltips), the suite

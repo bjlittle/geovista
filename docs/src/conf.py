@@ -75,7 +75,10 @@ if TYPE_CHECKING:
         | PythonProperty
     )
 
-sys.path.append(str(Path("_ext").absolute()))
+# ahead of the environment rather than behind it: the modules in "_ext" are
+# imported by bare top-level name, so appending would let an installed package
+# of the same name win over the extension the build is asking for
+sys.path.insert(0, str(Path("_ext").absolute()))
 
 CACHE_BASE_DIR: Path = CACHE.abspath / "tests" / "docs"
 """Target directory containing documentation reference image cache"""

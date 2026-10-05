@@ -1,0 +1,18 @@
+Added the ``tests/docs/test_readingtime.py`` unit tests, which hold the
+``readingtime`` sphinx extension in place. The reading-time model moved out to
+``docs/src/_ext/reading.py``, which imports nothing beyond the standard
+library, so the rate, the word pattern and the argument grammar are covered
+wherever ``pytest`` runs. The directive around it is covered by building a
+throwaway documentation set in-process, as ``tests/docs`` already does for
+``intersphinx``.
+
+The extension now declares itself safe for a parallel read and write. Without
+that, ``sphinx-build --jobs`` warns twice and drops back to a serial read,
+which ``--fail-on-warning`` turns into a build failure. It also notes both of
+its own modules as dependencies of every page it estimates, as neither is a
+document source that sphinx watches, and an incremental build would otherwise
+serve a pickled doctree carrying the previous figure. ``docs/src/conf.py`` puts
+``_ext`` ahead of the environment on ``sys.path`` rather than behind it, since
+the modules there are imported by bare top-level name and an installed package
+of the same name would otherwise win. See
+:ref:`tippy-gv-developer-documentation`. (:user:`claude`)

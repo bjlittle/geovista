@@ -39,12 +39,9 @@ pytest tests/core/        # a module; also -m "not image", -k "test_slice_cells"
 ## Configuration
 
 All pytest configuration is in `pyproject.toml` under `[tool.pytest.ini_options]`:
-
-- **Import mode**: `importlib` (no `sys.path` manipulation)
-- **Strict config/markers**: unrecognized markers and config errors are failures
-- **Doctests**: enabled via `--doctest-modules` (runs doctests in `src/`)
-- **Warnings**: treated as errors, with explicit allowlist for known third-party warnings
-- **xfail_strict**: `true` — unexpectedly passing xfail tests are failures
+import mode `importlib` (no `sys.path` manipulation), strict config and markers,
+doctests on via `--doctest-modules`, `xfail_strict`, and warnings as errors with
+an explicit allowlist for known third-party ones.
 
 ### Markers
 
@@ -60,8 +57,7 @@ mixes static and browser checks, so it marks per-test instead, which keeps
 
 ### Required Plugins
 
-`pytest-mock` (mocking) and `pytest_pyvista` (image comparison, off-screen
-rendering).
+`pytest-mock` (mocking), `pytest_pyvista` (image comparison, off-screen rendering).
 
 ## Conventions
 
@@ -108,11 +104,10 @@ the release one serial past it. Predict the tag from the date and what is on
 
 ### Documentation Tests
 
-`tests/docs` covers what no other Python test can reach: a headless chromium
-driven over a built site with playwright for the theme chrome — the sidebar
-toggles, the dialogs they open, the gallery carousel, tooltip attachment — and
-the sphinx configuration itself, read off the built HTML or off a throwaway
-documentation set built in-process.
+`tests/docs` covers what no other Python test reaches: a headless chromium driven
+over a built site with playwright for the theme chrome — sidebar toggles, the
+dialogs they open, the gallery carousel, tooltip attachment — and the sphinx
+configuration itself, read off the built HTML or a throwaway build made in-process.
 
 ```bash
 pixi run -e geovista tests-docs-browser-install   # one-off, fetches chromium
@@ -141,6 +136,13 @@ application re-registers them and sphinx warns once apiece — some 57 warnings
 that fail any `warningiserror=True` build for reasons of the harness alone.
 They are typed, so a generated `conf.py` can carry `suppress_warnings = ["app"]`
 to be rid of them; the intersphinx inventory failure has no type and so cannot.
+
+⚠️ **Register a path-loaded module in `sys.modules` before `exec_module`.**
+`spec_from_file_location` does not, and a `@dataclass` under `from __future__
+import annotations` resolves annotations through `sys.modules[cls.__module__]` —
+so it raises `AttributeError: 'NoneType' object has no attribute '__dict__'` at
+class creation. `docs/src/_ext` is not an importable package, so this is the only
+way its modules reach a test.
 
 ⚠️ **The default `html-noplot` build has no carousel.** `plot_gallery=False`
 leaves `geovista_carousel` nothing to render, so its tests skip. Only
