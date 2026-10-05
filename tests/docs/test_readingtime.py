@@ -124,6 +124,32 @@ Title
 .. include:: included.txt
 """
 
+#: A page defining a substitution it never uses. Docutils keeps the definition
+#: in the doctree and no writer renders it, so it is markup like any other.
+SUBSTITUTION_UNUSED = """
+Title
+=====
+
+.. readingtime:: 1wpm
+
+alpha beta gamma
+
+.. |nobody-uses-this| replace:: delta epsilon zeta eta theta iota kappa
+"""
+
+#: The same definition, used once. Its words are read where they expand, and
+#: are not also owed to the definition they expanded from.
+SUBSTITUTION_USED = """
+Title
+=====
+
+.. readingtime:: 1wpm
+
+alpha beta |delta|
+
+.. |delta| replace:: epsilon zeta eta
+"""
+
 
 class Build(NamedTuple):
     """A completed documentation build.
@@ -170,7 +196,7 @@ def reading() -> ModuleType:
 
 
 @pytest.fixture(scope="session")
-def readingtime(require: Callable[[str], NoReturn]) -> ModuleType:
+def readingtime(reading: ModuleType, require: Callable[[str], NoReturn]) -> ModuleType:
     """Load the directive, under a name of its own.
 
     Loaded rather than imported for the same reason as :func:`reading`, and
@@ -179,6 +205,12 @@ def readingtime(require: Callable[[str], NoReturn]) -> ModuleType:
 
     Parameters
     ----------
+    reading : ModuleType
+        The reading-time model. The directive imports it by bare name, which
+        resolves only because that fixture registered it in ``sys.modules`` -
+        requested here so that a test taking this fixture alone still finds it,
+        rather than inheriting it from whichever test first put
+        ``docs/src/_ext`` on the path by building a documentation set.
     require : Callable
         The guard for an unavailable prerequisite.
 
@@ -190,6 +222,8 @@ def readingtime(require: Callable[[str], NoReturn]) -> ModuleType:
     """
     if Sphinx is None:
         require("sphinx is not installed")
+
+    assert sys.modules.get(reading.__name__) is reading
 
     path = DOCS / "_ext" / "readingtime.py"
     spec = importlib.util.spec_from_file_location("readingtime_under_test", path)
@@ -409,6 +443,16 @@ def test_doctree__counts_generated_bodies(build):
     ).rendered
 
     assert published(rendered) == 6
+
+
+def test_doctree__ignores_an_unused_substitution(build):
+    """A definition nothing uses renders nowhere, so it is not read."""
+    assert published(build(SUBSTITUTION_UNUSED).rendered) == 4
+
+
+def test_doctree__counts_a_substitution_where_it_expands(build):
+    """A used definition is read where it expands, and only there."""
+    assert published(build(SUBSTITUTION_USED).rendered) == 6
 
 
 def test_argument__duration_quoted(build):

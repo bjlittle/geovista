@@ -1,7 +1,8 @@
 Corrected the ``readingtime`` estimates, which were counting the markup of a
 page rather than the page. The words are now counted on the parsed document,
-so directive names, option lines, link targets and comments no longer inflate
-the figure, and a body produced by another directive is included in it.
+so directive names, option lines, link targets, comments and substitution
+definitions no longer inflate the figure, and a body produced by another
+directive is included in it.
 Counting the source ran between 1.3 and 2.0 times the rendered word count, so
 every calculated estimate moves: :ref:`tippy-gv-developer-testing` drops from
 ``37`` minutes to ``22``, and :ref:`tippy-gv-installation` from ``6`` to ``3``.

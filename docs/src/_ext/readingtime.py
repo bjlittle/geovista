@@ -35,11 +35,15 @@ if TYPE_CHECKING:
 
 __all__ = ["ReadingTimeDirective", "setup"]
 
-#: Doctree text that a reader never reads.
+#: Doctree text that a reader never reads. A substitution definition is the
+#: subtle one: docutils leaves it in the tree and every writer skips it, while
+#: expanding a copy of it at each use - so counting the definition charges words
+#: that render nowhere, and charges them twice over wherever one is used.
 SKIP: tuple[type[nodes.Element], ...] = (
     nodes.system_message,
     nodes.comment,
     nodes.raw,
+    nodes.substitution_definition,
 )
 
 #: The clock, as the markup pydata-sphinx-theme itself emits for a Font Awesome
