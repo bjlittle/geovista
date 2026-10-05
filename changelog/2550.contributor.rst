@@ -1,0 +1,11 @@
+Added the ``tests/docs/test_tooltips.py`` unit tests, which hold the
+`sphinx-tippy <https://github.com/sphinx-extensions2/sphinx-tippy>`__
+configuration in place. Its two halves fail differently, and only one of them
+leaves a trace in the build: ``tippy_skip_urls`` is applied as a tooltip is
+generated, so a leak is visible in the payload of a page, whereas
+``tippy_skip_anchor_classes`` is applied in the browser as a tooltip is
+attached, so a dropped class leaves the payload untouched and only a browser
+can tell. The unit tests read the built payload for the first and drive
+``playwright`` for the second, and also cover the vendored tooltip runtime of
+:pull:`2549`. See :ref:`tippy-gv-developer-documentation-cross-references-tooltips`.
+(:user:`claude`)
