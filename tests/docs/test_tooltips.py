@@ -40,6 +40,15 @@ if TYPE_CHECKING:
 #: "src" of a script on every page it has tipped.
 PAYLOAD = "_static/tippy/"
 
+#: The pages sphinx builds without a source document behind them, which the
+#: extension never sees and so can never tip: the general and module indices,
+#: the search page, the "viewcode" sources, and the macro fragments of the
+#: theme. Named rather than discovered, so that a page losing its tooltips
+#: fails the checks below instead of dropping out of them.
+UNTIPPABLE = re.compile(
+    r"^(?:_modules|_static)/|^(?:genindex|py-modindex|search)\.html$"
+)
+
 #: The "src" of a script on a page.
 SCRIPT = re.compile(r'<script\b[^>]*\bsrc="([^"]*)"')
 
@@ -166,10 +175,12 @@ class Tips(NamedTuple):
         The whole of the page.
     article : str
         The body of the page, within which tips are attached.
-    payload : Path
-        The javascript the extension wrote for the page.
+    payload : Path or None
+        The javascript the extension wrote for the page, or ``None`` when it
+        tipped nothing on it.
     tips : dict of str
-        The tip markup of the page, keyed on the "href" that raises it.
+        The tip markup of the page, keyed on the "href" that raises it, and
+        empty for an untipped page.
     trailer : str
         The payload below the tip map, carrying the runtime guards.
     scripts : list of str
@@ -181,7 +192,7 @@ class Tips(NamedTuple):
     file: Path
     html: str
     article: str
-    payload: Path
+    payload: Path | None
     tips: dict[str, str]
     trailer: str
     scripts: list[str]
@@ -220,8 +231,12 @@ def _resolve(root: Path, page: Path, href: str) -> Path | None:
     return Path(base, path.lstrip("/")).resolve()
 
 
-def _read(root: Path, file: Path) -> Tips | None:
+def _read(root: Path, file: Path) -> Tips:
     """Collect the tooltips of a built page.
+
+    A page the extension tipped nothing on is read all the same, with an
+    empty tip map, so that a regression stripping the tooltips off a page
+    cannot also drop that page out of the coverage meant to catch it.
 
     Parameters
     ----------
@@ -232,34 +247,29 @@ def _read(root: Path, file: Path) -> Tips | None:
 
     Returns
     -------
-    Tips or None
-        The tooltips of the page, or ``None`` when the extension tipped
-        nothing on it.
+    Tips
+        The tooltips of the page.
 
     """
     html = file.read_text(encoding="utf-8", errors="replace")
     scripts = SCRIPT.findall(html)
     payloads = [src for src in scripts if PAYLOAD in src]
-
-    if not payloads:
-        return None
-
-    payload = _resolve(root, file, payloads[0])
-    javascript = payload.read_text(encoding="utf-8")
+    payload = _resolve(root, file, payloads[0]) if payloads else None
+    # a page the extension found nothing on carries an empty payload file, and
+    # one it never reached carries no payload script at all
+    javascript = "" if payload is None else payload.read_text(encoding="utf-8")
     assigned = ASSIGNED.search(javascript)
+    tips, trailer = {}, ""
 
-    if assigned is None:
-        # the extension writes an empty file for a page it found nothing on
-        return None
+    if assigned is not None:
+        end = javascript.index("\n", assigned.end())
+        trailer = javascript[end:]
 
-    end = javascript.index("\n", assigned.end())
-    tips = {}
+        for selector, markup in json.loads(javascript[assigned.end() : end]).items():
+            keyed = SELECTOR.match(selector)
 
-    for selector, markup in json.loads(javascript[assigned.end() : end]).items():
-        keyed = SELECTOR.match(selector)
-
-        if keyed is not None:
-            tips[keyed.group(1)] = markup
+            if keyed is not None:
+                tips[keyed.group(1)] = markup
 
     article = ARTICLE.search(html)
 
@@ -270,21 +280,46 @@ def _read(root: Path, file: Path) -> Tips | None:
         article="" if article is None else article.group(1),
         payload=payload,
         tips=tips,
-        trailer=javascript[end:],
+        trailer=trailer,
         scripts=scripts,
     )
 
 
 @pytest.fixture(scope="session")
-def tipped(require: Callable[[str], NoReturn], html_root: Path) -> list[Tips]:
+def pages(html_root: Path) -> list[Tips]:
+    """Collect the tooltips of every page the extension can reach.
+
+    Everything bar the handful of ``UNTIPPABLE`` pages is collected, tipped or
+    not, so that a page is only ever left out of a check by name.
+
+    Parameters
+    ----------
+    html_root : Path
+        The root directory of the build.
+
+    Returns
+    -------
+    list of Tips
+        The tooltips of the build, one entry per page.
+
+    """
+    return [
+        _read(html_root, file)
+        for file in sorted(html_root.rglob("*.html"))
+        if not UNTIPPABLE.match(file.relative_to(html_root).as_posix())
+    ]
+
+
+@pytest.fixture(scope="session")
+def tipped(require: Callable[[str], NoReturn], pages: list[Tips]) -> list[Tips]:
     """Collect the tooltips of every page the extension tipped.
 
     Parameters
     ----------
     require : Callable
         The guard for an unavailable prerequisite.
-    html_root : Path
-        The root directory of the build.
+    pages : list of Tips
+        The tooltips of every page of the build.
 
     Returns
     -------
@@ -292,27 +327,28 @@ def tipped(require: Callable[[str], NoReturn], html_root: Path) -> list[Tips]:
         The tooltips of the build, one entry per tipped page.
 
     """
-    pages = [_read(html_root, file) for file in sorted(html_root.rglob("*.html"))]
-    found = [page for page in pages if page is not None]
+    found = [page for page in pages if page.tips]
 
     if not found:
-        require(f"no tooltips found in the build at {html_root}")
+        require("no tooltips found in the build")
 
     return found
 
 
-def test_glossary_terms_are_tipped(tipped, html_root):
+def test_glossary_terms_are_tipped(pages, html_root):
     """Tip every glossary term with its definition.
 
     The glossary is the whole reason for the extension: a term in the prose
     defines itself on hover, rather than sending the reader to another page
-    and back.
+    and back. Every page is checked, tipped or not, so that a regression
+    stripping the tooltips off one of them is a failure rather than a page
+    quietly dropping out of the search.
 
     """
     glossary = (html_root / GLOSSARY).resolve()
     seen, missing, undefined = 0, [], []
 
-    for page in tipped:
+    for page in pages:
         for href in ANCHOR.findall(page.article):
             if "#term-" not in href or _resolve(html_root, page.file, href) != glossary:
                 continue
@@ -329,7 +365,7 @@ def test_glossary_terms_are_tipped(tipped, html_root):
     assert not undefined, f"glossary tips carrying no definition: {undefined}"
 
 
-def test_gallery_thumbnails_are_not_tipped(tipped):
+def test_gallery_thumbnails_are_not_tipped(pages):
     """Leave the sphinx-gallery thumbnails to sphinx-gallery.
 
     Every thumbnail carries a ``tooltip`` attribute that sphinx-gallery styles
@@ -340,7 +376,7 @@ def test_gallery_thumbnails_are_not_tipped(tipped):
     """
     seen, tipped_thumbnails = 0, []
 
-    for page in tipped:
+    for page in pages:
         for thumbnail in THUMBNAIL.findall(page.html):
             for href in ANCHOR.findall(thumbnail):
                 seen += 1
@@ -352,7 +388,7 @@ def test_gallery_thumbnails_are_not_tipped(tipped):
     assert not tipped_thumbnails, f"gallery thumbnails tipped: {tipped_thumbnails}"
 
 
-def test_tag_badges_are_not_tipped(tipped, html_root):
+def test_tag_badges_are_not_tipped(pages, html_root):
     """Leave the sphinx-tags badges untipped.
 
     A tag page is headed by the tag itself, so its tip repeats the badge that
@@ -362,7 +398,7 @@ def test_tag_badges_are_not_tipped(tipped, html_root):
     tags = (html_root / TAGS).resolve()
     seen, tipped_badges = 0, []
 
-    for page in tipped:
+    for page in pages:
         for href in ANCHOR.findall(page.article):
             target = _resolve(html_root, page.file, href)
 

@@ -155,11 +155,13 @@ Its sibling `tippy_skip_urls` is applied as the tooltip is generated, so that
 half *is* checkable statically. Gate a two-halved config with both kinds of
 test, and be clear which half any given assertion covers.
 
-⚠️ **Never glob for a generated per-page asset.** `sphinx_tippy` stamps each
-payload with a UUID and its stale-payload cleanup globs the wrong path part, so
-superseded payloads accumulate beside the live one. Resolve the live one from
-the `<script src>` of the page itself. It also writes an *empty* payload for a
-page with no tips, so an empty file is data rather than a failure.
+⚠️ **Never let a generated artefact set a test's scope.** `sphinx_tippy` stamps
+each payload with a UUID and its stale-payload cleanup globs the wrong path
+part, so superseded payloads pile up beside the live one — resolve the live one
+from the `<script src>` of the page. It writes an *empty* payload for a page it
+tipped nothing on, so an empty file is data, not a failure; and gathering only
+the pages that *have* payloads leaves a check vacuous on any page that loses
+one. Enumerate every page and exclude by name.
 
 ⚠️ **Never settle the page with a fixed delay.** Both themes inject their
 toggles from JavaScript *after* load, so the chrome is not final when the page
