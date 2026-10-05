@@ -1790,6 +1790,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-sitemap-2.9.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tags-0.4-pyhd8ed1ab_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tippy-0.4.3-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-togglebutton-0.3.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx_changelog-1.6.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-applehelp-2.0.0-pyhd8ed1ab_1.conda
@@ -1831,7 +1832,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/wurlitzer-3.1.1-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
       - pypi: ./
-      - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
   docs-py312:
@@ -2232,6 +2232,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-sitemap-2.9.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tags-0.4-pyhd8ed1ab_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tippy-0.4.3-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-togglebutton-0.3.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx_changelog-1.6.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-applehelp-2.0.0-pyhd8ed1ab_1.conda
@@ -2274,7 +2275,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/wurlitzer-3.1.1-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
       - pypi: ./
-      - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
   docs-py313:
@@ -2675,6 +2675,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-sitemap-2.9.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tags-0.4-pyhd8ed1ab_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tippy-0.4.3-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-togglebutton-0.3.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx_changelog-1.6.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-applehelp-2.0.0-pyhd8ed1ab_1.conda
@@ -2716,7 +2717,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/wurlitzer-3.1.1-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
       - pypi: ./
-      - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
   geovista:
@@ -3127,6 +3127,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-sitemap-2.9.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tags-0.4-pyhd8ed1ab_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tippy-0.4.3-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-togglebutton-0.3.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx_changelog-1.6.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-applehelp-2.0.0-pyhd8ed1ab_1.conda
@@ -3169,7 +3170,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
       - pypi: ./
       - pypi: https://files.pythonhosted.org/packages/27/9c/103a5037789062bdab27c7dca53f3ca6b075b572ab2cd96eec825b3aec4e/playwright-1.63.0-py3-none-manylinux1_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/85/cb/ab0c123c514ed4e94c0dc9ee2e86362633e6b998cfc05de7fc9ac2eb9690/greenlet-3.5.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
@@ -3582,6 +3582,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-sitemap-2.9.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tags-0.4-pyhd8ed1ab_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tippy-0.4.3-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-togglebutton-0.3.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx_changelog-1.6.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-applehelp-2.0.0-pyhd8ed1ab_1.conda
@@ -3625,7 +3626,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
       - pypi: ./
       - pypi: https://files.pythonhosted.org/packages/27/9c/103a5037789062bdab27c7dca53f3ca6b075b572ab2cd96eec825b3aec4e/playwright-1.63.0-py3-none-manylinux1_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/66/6a/1594f3869c57c149abdb380492529e04d4c0229b5e4d79572c5bd0aaa673/greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
@@ -4038,6 +4038,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-llms-txt-0.7.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-sitemap-2.9.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tags-0.4-pyhd8ed1ab_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tippy-0.4.3-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-togglebutton-0.3.2-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx_changelog-1.6.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-applehelp-2.0.0-pyhd8ed1ab_1.conda
@@ -4080,7 +4081,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
       - pypi: ./
       - pypi: https://files.pythonhosted.org/packages/27/9c/103a5037789062bdab27c7dca53f3ca6b075b572ab2cd96eec825b3aec4e/playwright-1.63.0-py3-none-manylinux1_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/d1/0308899505bdcb89e4987b986ecef52296b1d39a47d2d6e2b485cda1a925/sphinx_vtk_xref-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/85/cb/ab0c123c514ed4e94c0dc9ee2e86362633e6b998cfc05de7fc9ac2eb9690/greenlet-3.5.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
@@ -6081,7 +6081,7 @@ packages:
   - python_abi 3.13.* *_cp313
   license: BSD-3-Clause AND MIT AND EPL-2.0
   purls:
-  - pkg:pypi/backports-zstd?source=hash-mapping
+  - pkg:pypi/backports-zstd?source=compressed-mapping
   run_exports: {}
   size: 243747
   timestamp: 1788491297080
@@ -9480,7 +9480,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/rpds-py?source=hash-mapping
+  - pkg:pypi/rpds-py?source=compressed-mapping
   run_exports: {}
   size: 300095
   timestamp: 1788577298075
@@ -10464,7 +10464,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/affine?source=hash-mapping
+  - pkg:pypi/affine?source=compressed-mapping
   run_exports: {}
   size: 22619
   timestamp: 1788134268940
@@ -11416,7 +11416,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/jsonschema?source=hash-mapping
+  - pkg:pypi/jsonschema?source=compressed-mapping
   run_exports: {}
   size: 82084
   timestamp: 1787579299493
@@ -11467,7 +11467,7 @@ packages:
   - nodejs >=22
   license: Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND ISC AND MIT
   purls:
-  - pkg:pypi/jupyter-builder?source=hash-mapping
+  - pkg:pypi/jupyter-builder?source=compressed-mapping
   run_exports: {}
   size: 888064
   timestamp: 1788566563939
@@ -11539,7 +11539,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/jupyter-client?source=hash-mapping
+  - pkg:pypi/jupyter-client?source=compressed-mapping
   run_exports: {}
   size: 118962
   timestamp: 1787929615607
@@ -11898,7 +11898,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/nbclient?source=hash-mapping
+  - pkg:pypi/nbclient?source=compressed-mapping
   run_exports: {}
   size: 29971
   timestamp: 1788212974885
@@ -11946,7 +11946,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/nbformat?source=hash-mapping
+  - pkg:pypi/nbformat?source=compressed-mapping
   run_exports: {}
   size: 107750
   timestamp: 1787133512599
@@ -12159,7 +12159,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/pre-commit?source=hash-mapping
+  - pkg:pypi/pre-commit?source=compressed-mapping
   run_exports: {}
   size: 201879
   timestamp: 1786408353117
@@ -12513,7 +12513,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/fastjsonschema?source=hash-mapping
+  - pkg:pypi/fastjsonschema?source=compressed-mapping
   run_exports: {}
   size: 254446
   timestamp: 1786892280524
@@ -12548,7 +12548,7 @@ packages:
   license: BSD-2-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/python-json-logger?source=hash-mapping
+  - pkg:pypi/python-json-logger?source=compressed-mapping
   run_exports: {}
   size: 19367
   timestamp: 1786872772907
@@ -12622,7 +12622,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/pyvista-validation
+  - pkg:pypi/pyvista-validation?source=compressed-mapping
   run_exports: {}
   size: 40640
   timestamp: 1789614540757
@@ -13043,6 +13043,23 @@ packages:
   run_exports: {}
   size: 13226
   timestamp: 1736168945773
+- conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-tippy-0.4.3-pyhcf101f3_0.conda
+  sha256: b9563f7391ce4144f1f6e830e09da47183bbbd13717081e31b90287fad19d97a
+  md5: df44d130fab50f3056bec6bddfbe48f2
+  depends:
+  - beautifulsoup4
+  - jinja2
+  - python >=3.10
+  - requests
+  - sphinx >4
+  - python
+  license: MIT
+  license_family: MIT
+  purls:
+  - pkg:pypi/sphinx-tippy?source=hash-mapping
+  run_exports: {}
+  size: 18089
+  timestamp: 1763491906091
 - conda: https://conda.anaconda.org/conda-forge/noarch/sphinx-togglebutton-0.3.2-pyhd8ed1ab_0.tar.bz2
   sha256: 0dcee238aae6337fae5eaf1f9a29b0c51ed9834ae501fccb2cde0fed8dae1a88
   md5: 382738101934261ea7931d1460e64868
@@ -13666,21 +13683,6 @@ packages:
   - pyee>=13,<14
   - greenlet>=3.1.1,<4.0.0
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/54/5d/60c9da704aee0f269a6d6bbd0e24ca61ef34effa6fd5863ca46f496e7cea/sphinx_tippy-0.4.3-py3-none-any.whl
-  name: sphinx-tippy
-  version: 0.4.3
-  sha256: 572b0e001baec9b03e2b19ec4e9760ca1a853f4c3226b5cea251f477b2c2b096
-  requires_dist:
-  - sphinx>4
-  - beautifulsoup4
-  - jinja2
-  - requests
-  - myst-parser ; extra == 'docs'
-  - furo ; extra == 'docs'
-  - pytest ; extra == 'testing'
-  - sphinx-pytest ; extra == 'testing'
-  - pytest-regressions ; extra == 'testing'
-  requires_python: '>=3.8'
 - pypi: https://files.pythonhosted.org/packages/57/6f/7dd3097d8ce08109cff3e63a771ca1ad795d8d63d8015eaa6fbd13f784fa/sphinx_iconify-0.3.0-py3-none-any.whl
   name: sphinx-iconify
   version: 0.3.0

@@ -55,11 +55,9 @@ pixi run -e docs serve-html        # Build + serve
 pixi run -e docs clean             # Clean build artifacts
 ```
 
-Environment variables (set by Makefile):
-- `PYVISTA_OFF_SCREEN=True`
-- `PYDEVD_DISABLE_FILE_VALIDATION=1`
-
-Sphinx flags: `--fail-on-warning --keep-going --show-traceback`
+The Makefile sets `PYVISTA_OFF_SCREEN=True` and
+`PYDEVD_DISABLE_FILE_VALIDATION=1`, and passes sphinx
+`--fail-on-warning --keep-going --show-traceback`.
 
 ## Sphinx Extensions
 
@@ -85,6 +83,14 @@ to `INTERSPHINX_URLS` in `src/conf.py` — the single source of truth, read by
 and commit the `_inventory/*.inv` it writes. Without one, an outage at that site
 falls through to `intersphinx_resilience`, which saves the build by disabling
 `nitpicky` for the rest of it. See the root `AGENTS.md` and issue #2517.
+
+⚠️ **An extension's default asset URLs are a network dependency too**, and they
+bite at *read* time, so no build log ever shows them. `sphinx-tippy` defaulted
+`tippy_js` to two floating-major `unpkg` URLs on 148 of 173 pages until #2549
+vendored the bundles under `src/_static/js/` (not `_static/tippy/`, which the
+extension owns, nor `_static/vendor/`, the theme's), each beside its upstream MIT
+notice as `<bundle>.LICENSE.txt`. Audit with `grep -rho '<script[^>]*src="https[^"]*"'
+_build/html`; `sphinx-iconify` still loads `code.iconify.design` on 171 pages.
 
 ## Conventions
 
@@ -131,24 +137,23 @@ and the list is alphabetical.
 
 ## Dependencies
 
-Documentation deps are defined in:
-- **Pixi**: `[tool.pixi.feature.docs.dependencies]` and `[tool.pixi.feature.docs.pypi-dependencies]` in `pyproject.toml`
-- **pip**: `requirements/pypi-optional-docs.txt` (for `pip install -e ".[docs]"`)
-
-Use the `docs` pixi environment: `pixi run -e docs <command>`
+Deps live in `[tool.pixi.feature.docs.dependencies]` / `.pypi-dependencies` in
+`pyproject.toml`, and in `requirements/pypi-optional-docs.txt` for
+`pip install -e ".[docs]"`. Use `pixi run -e docs <command>`.
 
 ⚠️ **`sphinx-book-theme` pins `pydata-sphinx-theme` to an *exact* version**, so
 the two only ever move together — `1.1.4` requires `==0.15.4`, `1.4.0` requires
 `==0.20.0`. Bumping `pydata-sphinx-theme` on its own can never resolve, and
 pinning it back silently freezes `sphinx-book-theme` too. Always bump the pair,
-and check the target release's pin first:
+checking the target release's pin first with `curl -s
+https://pypi.org/pypi/sphinx-book-theme/<version>/json | grep -o
+'pydata-sphinx-theme[^"]*'`. The theme is in maintenance mode but still
+releasing; it is not abandoned.
 
-```bash
-curl -s https://pypi.org/pypi/sphinx-book-theme/<version>/json \
-  | python3 -c "import json,sys; print([r for r in json.load(sys.stdin)['info']['requires_dist'] if 'pydata' in r])"
-```
-
-The theme is in maintenance mode but still releasing; it is not abandoned.
+⚠️ **A `contextlib.suppress(ModuleNotFoundError)` extension guard outlives its
+reason.** `sphinx-tippy`'s was written when conda-forge had no package; by #2549
+it did, and the guard let a missing extension drop every tooltip while the build
+still exited 0. Check conda-forge before adding one, and again before keeping one.
 
 ⚠️ **`src/_static/sidebar_toggle.js` is a workaround, not a feature.**
 `sphinx-book-theme` renders a second `.primary-toggle` *and* `.secondary-toggle`
@@ -161,26 +166,23 @@ self-retires when only one button remains. It also closes the primary dialog at
 inherits the wide-viewport collapsed state, which leaves it open but invisible
 over a page it blocks.
 
-The two halves retire on different schedules. The duplicate buttons are
-[sphinx-book-theme#988](https://github.com/executablebooks/sphinx-book-theme/issues/988)
-/ [#999](https://github.com/executablebooks/sphinx-book-theme/issues/999), already
-fixed on `main` by
-[#987](https://github.com/executablebooks/sphinx-book-theme/pull/987) but
-unreleased as of `1.4.0`; the forwarding half self-retires when that ships. The
-breakpoint stranding is *not* fixed by `#987` — verified against a DOM with the
-redundant navbar removed — and is reported separately as
+The two halves retire separately. The duplicate buttons are sphinx-book-theme
+[#988](https://github.com/executablebooks/sphinx-book-theme/issues/988) /
+[#999](https://github.com/executablebooks/sphinx-book-theme/issues/999), fixed on
+`main` by [#987](https://github.com/executablebooks/sphinx-book-theme/pull/987)
+but unreleased as of `1.4.0`. The breakpoint stranding is *not* fixed by it —
+verified against a DOM with the redundant navbar removed — and is
 [#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), so
-that half outlives it. On every theme bump, re-check both.
+that half outlives it. Re-check both on every theme bump.
 
 Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
-`ci-tests-docs.yml` — the image tests compare pyvista scenes, not page
-furniture. Run it locally with `pixi run -e geovista tests-docs-browser`; see
-`tests/AGENTS.md` for the gotchas, including why CI must pass `--browser-strict`
-when a skipping suite is otherwise green. The suite needs a local build (never a
-Read the Docs URL — RTD's addons tear out and re-inject the page after `load`),
-and the carousel only renders under `html-gallery`, so that third of the suite is
-CI-only here. See the `headless-browser-on-this-host` note for running chromium
-where no sudo is available.
+`ci-tests-docs.yml` — the image tests compare pyvista scenes, not page furniture.
+Run it with `pixi run -e geovista tests-docs-browser`; see `tests/AGENTS.md` for
+the gotchas, including why CI must pass `--browser-strict` when a skipping suite
+is otherwise green. The suite needs a local build (never a Read the Docs URL —
+RTD's addons tear out and re-inject the page after `load`), and the carousel only
+renders under `html-gallery`, so that third of the suite is CI-only here. See the
+`headless-browser-on-this-host` note for running chromium without sudo.
 
 Developer-facing docs for all of this live in `docs/src/developer/`: the theme
 shim in `documentation.rst` (:fa:`palette` Theme), the suite in `testing.rst`
@@ -195,4 +197,4 @@ shim in `documentation.rst` (:fa:`palette` Theme), the suite in `testing.rst`
 
 ---
 
-**Last Updated**: 2 October 2026
+**Last Updated**: 5 October 2026

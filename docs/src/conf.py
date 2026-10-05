@@ -173,6 +173,7 @@ extensions = [
     "sphinx_iconify",
     "sphinx_llms_txt",
     "sphinx_tags",
+    "sphinx_tippy",
     "sphinx_togglebutton",
     "sphinxcontrib.bibtex",
     "sphinxcontrib.mermaid",
@@ -324,12 +325,6 @@ tags_page_title = ":fa:`tags` Tag"  # tag sub-page, title appended with the tag 
 # -- sphinx-tippy options ----------------------------------------------------
 # See https://github.com/sphinx-extensions2/sphinx-tippy
 
-# optional dependency (unavailable on conda-forge)
-with contextlib.suppress(ModuleNotFoundError):
-    import sphinx_tippy  # noqa: F401
-
-    extensions.append("sphinx_tippy")
-
 tippy_enable_wikitips = False
 tippy_enable_doitips = False
 tippy_rtd_urls = [
@@ -347,6 +342,21 @@ tippy_skip_urls = [
 ]
 tippy_anchor_parent_selector = "article.bd-article"
 tippy_props = {"theme": "light"}
+
+# The tooltip runtime, vendored and pinned rather than fetched from unpkg by every
+# reader of every page. The extension defaults to "@popperjs/core@2" and "tippy.js@6",
+# which float on a major and take the tooltips away entirely when the CDN is
+# unreachable. Named "_static"-relative; sphinx supplies its own cache-busting query.
+# NB the directory is "_static/js/" and deliberately neither "_static/tippy/", where
+# the extension writes its own generated per-page javascript, nor "_static/vendor/",
+# which pydata-sphinx-theme already owns for its fontawesome bundle. Both bundles are
+# MIT licensed, so each carries its upstream notice in a sibling "<bundle>.LICENSE.txt"
+# that sphinx publishes with the site, the convention pydata-sphinx-theme itself
+# follows for the bundles that it vendors.
+tippy_js = (
+    "js/popper.min.js",
+    "js/tippy-bundle.umd.min.js",
+)
 
 # skip generating tooltips for the sphinx-tags
 tippy_skip_urls.extend(f"{item.split(':')[0]}-.*" for item in tags_badge_colors)
