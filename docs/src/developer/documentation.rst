@@ -478,6 +478,78 @@ go unreported, so treat a degraded build as a warning to refresh the
 inventories rather than a pass.
 
 
+.. _gv-developer-documentation-cross-references-tooltips:
+.. _tippy-gv-developer-documentation-cross-references-tooltips:
+
+:fa:`comments` Tooltips
+~~~~~~~~~~~~~~~~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/src/_static/js` :fa:`folder`
+- :bash:`docs/src/conf.py`
+- :bash:`tests/docs/test_tooltips.py`
+
+A `sphinx-tippy`_ tooltip previews the target of a link without following it.
+Which links are given one is settled twice over, by two ``conf.py`` settings
+that behave quite differently:
+
+.. table:: Tooltip Skip Settings
+   :align: center
+   :widths: 2 5
+
+   +-------------------------------+---------------------------------------------------------------+
+   | Setting                       | Description                                                   |
+   +===============================+===============================================================+
+   | ``tippy_skip_urls``           | Regular expressions matched against the ``href`` of a link    |
+   |                               | as the tooltip is **generated**. A link skipped here has no   |
+   |                               | tooltip in the payload of the page at all.                    |
+   +-------------------------------+---------------------------------------------------------------+
+   | ``tippy_skip_anchor_classes`` | Class names consulted in the browser as the tooltip is        |
+   |                               | **attached**. A link skipped here still has a tooltip         |
+   |                               | generated for it, and merely never has one shown.             |
+   +-------------------------------+---------------------------------------------------------------+
+
+.. attention::
+   :class: dropdown, toggle-shown
+
+   A ``tippy_skip_urls`` pattern is applied with :python:`re.match` against the
+   ``href`` exactly as it was written into the page, which is bare between
+   sibling pages (``clouds.html``) and directory-prefixed from anywhere else
+   (``../generated/gallery/domain/clouds.html``). A pattern for one shape
+   silently misses the other, so :bash:`conf.py` generates both, anchored at
+   the end so that a deliberate ``tippy-gv-`` fragment may still opt its target
+   back in.
+
+.. attention::
+   :class: dropdown, toggle-shown
+
+   ``tippy_skip_anchor_classes`` **replaces** the extension defaults of
+   ``headerlink`` and ``sd-stretched-link`` rather than extending them, so both
+   must be restated alongside any addition. Dropping ``sd-stretched-link`` is
+   what allows a ``sphinx-design`` card to raise a tooltip carrying the heading
+   and opening paragraph of the page that it links to, since such a card is an
+   anchor stretched over the whole card body.
+
+Tooltips are skipped for the `sphinx-gallery`_ thumbnails, which render a
+tooltip of their own that a second one would collide with, and for the
+`sphinx-tags`_ badges, whose tooltip repeats the text of the badge that raised
+it.
+
+The ``tippy.js`` and ``popper`` runtime bundles are **vendored** in the
+:bash:`docs/src/_static/js` directory, since the extension otherwise loads them
+from a third-party ``CDN`` on every page, leaving a reader with no tooltips at
+all when that host cannot be reached.
+
+.. seealso::
+   :class: dropdown, toggle-shown
+
+   The :bash:`tests/docs/test_tooltips.py` unit tests hold all of the above in
+   place, inspecting the built payload of each page for the static behaviour
+   and driving a browser for the rest. See
+   :ref:`tippy-gv-developer-testing-browser-tests` for further details.
+
+
 .. _gv-developer-documentation-sphinx-directives:
 .. _tippy-gv-developer-documentation-sphinx-directives:
 

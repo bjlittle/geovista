@@ -438,8 +438,10 @@ the :guilabel:`DATA_VERSION` using the CLI e.g.,
 The browser unit tests drive a headless ``chromium`` browser over a **built**
 documentation site using `playwright`_, in order to cover the theme chrome that is
 assembled in the browser and is therefore beyond the reach of any other unit test
-i.e., the primary and secondary sidebar toggles, the dialogs that they open, and
-the :ref:`tippy-gv-examples` gallery carousel.
+i.e., the primary and secondary sidebar toggles, the dialogs that they open, the
+:ref:`tippy-gv-examples` gallery carousel, and the
+:ref:`tippy-gv-developer-documentation-cross-references-tooltips`, which are
+attached to a page only once it has loaded.
 
 .. note::
    :class: dropdown, toggle-shown
@@ -449,12 +451,15 @@ the :ref:`tippy-gv-examples` gallery carousel.
    a theme bump and report what actually broke.
 
 The :bash:`tests/docs` directory also carries unit tests of the ``sphinx``
-configuration itself, such as the
+configuration itself, which require no browser. Some build a throwaway
+documentation set in-process, such as those covering the
 :ref:`tippy-gv-developer-documentation-cross-references-intersphinx` fallback
-behaviour, which build throwaway documentation sets in-process and so require no
-browser. They share the skip-or-require guard described below, and the whole
-directory is selected for execution instead of the :guilabel:`browser` marker,
-so that both are covered by the same :fab:`github` Action.
+behaviour; others read the built site directly, such as those covering which
+links are given a
+:ref:`tooltip <tippy-gv-developer-documentation-cross-references-tooltips>`.
+They share the skip-or-require guard described below, and the whole directory is
+selected for execution instead of the :guilabel:`browser` marker, so that all of
+them are covered by the same :fab:`github` Action.
 
 
 .. _gv-developer-testing-browser-tests-prerequisites:
@@ -565,8 +570,8 @@ The following ``pytest`` marker is configured for browser unit tests:
    |                       | tests.                                                                              |
    +-----------------------+-------------------------------------------------------------------------------------+
 
-The marker is applied to an entire test module with a :python:`pytestmark` global,
-not to each unit test e.g.,
+The marker is applied to an entire test module with a :python:`pytestmark` global
+e.g.,
 
 .. code-block:: python
    :linenos:
@@ -577,6 +582,11 @@ not to each unit test e.g.,
 
 
    pytestmark = pytest.mark.browser
+
+A module that mixes browser and non-browser unit tests, such as
+:bash:`tests/docs/test_tooltips.py`, decorates each browser unit test with
+:python:`@pytest.mark.browser` instead, so that the marker expressions below
+still select the remainder.
 
 The following marker expressions can be used for finer-grained control of unit test
 selection for execution:

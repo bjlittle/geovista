@@ -121,6 +121,15 @@ def sphx_glr(root: str) -> list[str]:
     list of str
         The list of thumbnail URLs, relative to the `root` and submodules.
 
+    Notes
+    -----
+    The URLs are regular expressions matched by ``sphinx-tippy`` with
+    ``re.match`` against the raw ``href`` of a page, which is bare
+    (``clouds.html``) between the examples of one gallery section and
+    directory-prefixed (``domain/clouds.html``) from the gallery landing page.
+    Both shapes are therefore generated, and both are anchored at the end so
+    that a deliberate ``tippy-gv-`` fragment still opts its target back in.
+
     """
     mods: list[str] = []
     pkgs: list[str] = []
@@ -131,10 +140,10 @@ def sphx_glr(root: str) -> list[str]:
             container = pkgs
         else:
             container = mods
-            name = f"{name}.html#sphx-glr-generated-gallery-.*-py"
+            name = f"{name}.html$"
         container.append(name)
 
-    mods.extend(f"{pkg}/.*html#sphx-glr-generated-gallery-.*-py" for pkg in pkgs)
+    mods.extend(f"{pkg}/[^#]*.html$" for pkg in pkgs)
     mods = [name.split(f"{root}.")[1] for name in mods]
 
     for pkg in pkgs:
@@ -335,7 +344,20 @@ tippy_rtd_urls = [
     "http://0.0.0.0:8888",
     "http://127.0.0.1:8888",
 ]
-tippy_skip_anchor_classes = ("headerlink", "sd-sphinx-override")
+# "headerlink" and "sd-stretched-link" are the extension's own defaults, and this
+# setting replaces rather than extends them, so both have to be restated. Dropping
+# "sd-stretched-link" matters here: sphinx-design builds a card from a zero-size
+# anchor stretched over the whole card body by an "::after" rule, so hovering
+# anywhere on a card is hovering that anchor. Without it, the tutorials index card
+# for region manifold extraction raises a tooltip carrying the page heading and its
+# opening paragraph. NB the extension applies these at runtime, in the emitted
+# javascript, rather than when it collects tips, so a skipped anchor still has a
+# tip generated for it and simply never has one attached.
+tippy_skip_anchor_classes = (
+    "headerlink",
+    "sd-sphinx-override",
+    "sd-stretched-link",
+)
 tippy_skip_urls = [
     ".*#gv-.*",
     ".*#tagoverview",
@@ -358,8 +380,17 @@ tippy_js = (
     "js/tippy-bundle.umd.min.js",
 )
 
-# skip generating tooltips for the sphinx-tags
-tippy_skip_urls.extend(f"{item.split(':')[0]}-.*" for item in tags_badge_colors)
+# Skip generating tooltips for the sphinx-tags badges, whose tip carries only the
+# heading of the tag page and so merely repeats the badge that raised it. The page
+# is named for the tag slugged the way "sphinx-tags" slugs it, which is not the tag
+# text - the unslugged "experimental 🧪" matched no URL at all. As with the gallery
+# above, the href is bare between the tag pages themselves and dotted from every
+# page carrying a badge, so both shapes are needed.
+tag_slugs = [
+    re.sub(r"[\s\W]+", "-", tag).lower().strip("-") for tag in tags_badge_colors
+]
+tippy_skip_urls.extend(rf"{slug}(-.*)?\.html$" for slug in tag_slugs)
+tippy_skip_urls.append(rf"(\.\./)*{tags_output_dir}/[^#]*\.html$")
 
 # skip generating tooltips for the sphinx-gallery thumbnails
 tippy_skip_urls.extend(sphx_glr("geovista.examples"))

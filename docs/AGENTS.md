@@ -35,16 +35,12 @@ docs/
 Run from the `docs/` directory:
 
 ```bash
-make html              # Full build (all plots rendered)
-make html-noplot       # No plots (fastest iteration)
-make html-gallery      # Gallery plots only
-make html-docstring    # Docstring plots only
-make html-tutorial     # Tutorial plots only
-make doctest           # Run doctests
-make clean             # Remove build artifacts + generated sources
-make clean-cache       # Purge myst-nb Jupyter cache
-make clean-all         # clean + clean-cache
-make serve-html        # Local HTTP server at http://localhost:11000
+make html              # full build; also html-noplot (fastest iteration),
+                       # html-gallery, html-docstring, html-tutorial
+make doctest           # run doctests
+make clean             # build artifacts + generated sources; also
+                       # clean-cache (purge myst-nb), clean-all
+make serve-html        # local HTTP server at http://localhost:11000
 ```
 
 Pixi task equivalents (run from repo root):
@@ -92,6 +88,14 @@ extension owns, nor `_static/vendor/`, the theme's), each beside its upstream MI
 notice as `<bundle>.LICENSE.txt`. Audit with `grep -rho '<script[^>]*src="https[^"]*"'
 _build/html`; `sphinx-iconify` still loads `code.iconify.design` on 171 pages.
 
+⚠️ **`tippy_skip_urls` matches the raw `href`, which comes in two shapes.**
+`re.match` sees the href as written: bare between sibling pages (`clouds.html`)
+and directory-prefixed from anywhere else (`../generated/gallery/domain/clouds.html`),
+so a pattern for one shape silently matches nothing from the other, unwarned. Its
+sibling `tippy_skip_anchor_classes` *replaces* the defaults
+`headerlink`/`sd-stretched-link` rather than extending them, and applies in the
+browser, so dropping one leaves the build unchanged. `test_tooltips.py` gates both.
+
 ## Conventions
 
 ### File Formats
@@ -110,17 +114,12 @@ These paths are regenerated on build — never commit manual edits:
 - `src/tags/` — sphinx-tags pages
 - `_build/` — all build artifacts
 
-### Adding a New Page
+### Adding a New Page or Tutorial
 
-1. Create a `.rst` file in the appropriate section (`developer/`, `explanation/`, `howtos/`, `reference/`).
-2. Add it to the section's `index.rst` toctree.
-3. Follow the [Diátaxis](https://diataxis.fr/) framework (tutorials, how-tos, explanation, reference).
-
-### Adding a Tutorial
-
-1. Create a `.ipynb` notebook in `src/tutorials/`.
-2. Add it to `src/tutorials/index.rst`.
-3. Notebooks are executed and cached during build (`nb_execution_mode = "cache"`).
+Create the `.rst` in the appropriate section (`developer/`, `explanation/`,
+`howtos/`, `reference/`) or the `.ipynb` in `src/tutorials/`, then add it to that
+section's `index.rst` toctree, following [Diátaxis](https://diataxis.fr/).
+Notebooks are executed and cached on build (`nb_execution_mode = "cache"`).
 
 ### RST Style
 
@@ -184,9 +183,9 @@ RTD's addons tear out and re-inject the page after `load`), and the carousel onl
 renders under `html-gallery`, so that third of the suite is CI-only here. See the
 `headless-browser-on-this-host` note for running chromium without sudo.
 
-Developer-facing docs for all of this live in `docs/src/developer/`: the theme
-shim in `documentation.rst` (:fa:`palette` Theme), the suite in `testing.rst`
-(:fa:`window-maximize` Browser Tests). Keep them in step with this file.
+Developer-facing docs live in `docs/src/developer/`: the theme shim and tooltips
+in `documentation.rst` (:fa:`palette` Theme, :fa:`comments` Tooltips), the suite
+in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 

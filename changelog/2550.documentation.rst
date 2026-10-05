@@ -1,0 +1,14 @@
+Corrected which links are given a `sphinx-tippy
+<https://github.com/sphinx-extensions2/sphinx-tippy>`__ tooltip. Three of the
+skip patterns in ``docs/src/conf.py`` were matching nothing at all, so the
+`sphinx-gallery <https://github.com/sphinx-gallery/sphinx-gallery>`__
+thumbnails raised a tooltip that collided with the one ``sphinx-gallery``
+renders itself, every `sphinx-tags <https://github.com/melissawm/sphinx-tags>`__
+badge raised one that merely repeated its own text, and the ``sphinx-design``
+card on the :ref:`tippy-gv-tutorials` index raised one carrying the heading and
+opening paragraph of the page behind it.
+
+The gallery and tag patterns now cover both of the shapes an ``href`` takes in
+a built page, bare and directory-prefixed, and ``sd-stretched-link`` has been
+restored to ``tippy_skip_anchor_classes``, which replaces the defaults of the
+extension rather than extending them. (:user:`claude`)

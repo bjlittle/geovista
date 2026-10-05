@@ -26,19 +26,14 @@ tests/
 From the repo root using pixi:
 
 ```bash
-pixi run -e test tests-unit                 # Run all unit tests
-pixi run -e test tests-unit "image"         # Run only image-marked tests
-pixi run -e test tests-unit "not image"     # Skip image tests
-pixi run -e geovista tests-doc              # Run documentation image tests
+pixi run -e test tests-unit                 # all unit tests; also "image", "not image"
+pixi run -e geovista tests-doc              # documentation image tests
 ```
 
-Or directly with pytest:
+Or directly with pytest, which reads its config from `pyproject.toml`:
 
 ```bash
-pytest                                       # All tests (uses pyproject.toml config)
-pytest tests/core/                           # Test a specific module
-pytest -m "not image"                        # Exclude image tests
-pytest -k "test_slice_cells"                 # Run by name pattern
+pytest tests/core/        # a module; also -m "not image", -k "test_slice_cells"
 ```
 
 ## Configuration
@@ -59,10 +54,14 @@ All pytest configuration is in `pyproject.toml` under `[tool.pytest.ini_options]
 | `example` | Gallery image tests |
 | `image` | Plotting image comparison tests |
 
+Apply `browser` module-wide with a `pytestmark` global. `tests/docs/test_tooltips.py`
+mixes static and browser checks, so it marks per-test instead, which keeps
+`-m "not browser"` selecting the static half.
+
 ### Required Plugins
 
-- `pytest-mock` — mocking support
-- `pytest_pyvista` — image comparison and off-screen rendering
+`pytest-mock` (mocking) and `pytest_pyvista` (image comparison, off-screen
+rendering).
 
 ## Conventions
 
@@ -71,20 +70,10 @@ All pytest configuration is in `pyproject.toml` under `[tool.pytest.ini_options]
 - Files: `test_<function_or_class>.py` (one test file per public function/class)
 - Functions: `test_<scenario>` (descriptive of the behaviour being verified)
 
-### Copyright Header
+### Preamble
 
-Every test file must begin with:
-
-```python
-# Copyright (c) 2021, GeoVista Contributors.
-#
-# This file is part of GeoVista and is distributed under the 3-Clause BSD license.
-# See the LICENSE file in the package root directory for licensing details.
-```
-
-### Imports
-
-All test files must include `from __future__ import annotations` (enforced by ruff ISC rule).
+Every test file begins with the copyright header given in the root `AGENTS.md`,
+followed by `from __future__ import annotations` (both enforced by ruff).
 
 ### Fixtures
 
@@ -94,12 +83,10 @@ All test files must include `from __future__ import annotations` (enforced by ru
 
 ### Image Tests
 
-- Plotting tests use `pytest-pyvista` for baseline image comparison
-- Baseline images are cached remotely and fetched via `geovista.cache.CACHE`
-- Image cache directory: `tests/plotting/unit_image_cache`
-- Failed image output: `test_images_failed/`
-- Use `verify_image_cache` fixture from pytest-pyvista
-- Maximum image size: 450px
+- Plotting tests use `pytest-pyvista` baseline comparison through the
+  `verify_image_cache` fixture; maximum image size 450px
+- Baselines are fetched via `geovista.cache.CACHE` into
+  `tests/plotting/unit_image_cache`; failures land in `test_images_failed/`
 
 ⚠️ **Baselines live in a second repo.** `bjlittle/geovista-data` holds the PNGs
 under `assets/`; `src/geovista/cache/registry.txt` lists `<path> <sha256>` and
@@ -123,8 +110,9 @@ the release one serial past it. Predict the tag from the date and what is on
 
 `tests/docs` covers what no other Python test can reach: a headless chromium
 driven over a built site with playwright for the theme chrome — the sidebar
-toggles, the dialogs they open, the gallery carousel — and the sphinx
-configuration itself, by building throwaway documentation sets in-process.
+toggles, the dialogs they open, the gallery carousel, tooltip attachment — and
+the sphinx configuration itself, read off the built HTML or off a throwaway
+documentation set built in-process.
 
 ```bash
 pixi run -e geovista tests-docs-browser-install   # one-off, fetches chromium
@@ -152,14 +140,28 @@ registers nodes, directives and roles in a *global* registry, so every later
 application re-registers them and sphinx warns once apiece — some 57 warnings
 that fail any `warningiserror=True` build for reasons of the harness alone.
 They are typed, so a generated `conf.py` can carry `suppress_warnings = ["app"]`
-to be rid of them; the intersphinx inventory failure, by contrast, has no type
-and so cannot be suppressed that way.
+to be rid of them; the intersphinx inventory failure has no type and so cannot.
 
 ⚠️ **The default `html-noplot` build has no carousel.** `plot_gallery=False`
-leaves `geovista_carousel` with nothing to render, so the carousel tests skip.
-Only `html-gallery` (or another plotting target) covers them, and rendering the
-thumbnails needs a display — so, exactly like the image tests, the carousel is
-only meaningfully exercised in CI.
+leaves `geovista_carousel` nothing to render, so its tests skip. Only
+`html-gallery` covers them, and rendering thumbnails needs a display, so like
+the image tests the carousel is only meaningfully exercised in CI.
+
+⚠️ **A setting applied in emitted JavaScript is invisible to the build.**
+`tippy_skip_anchor_classes` is consulted in the browser as a tooltip is
+*attached*, so a skipped anchor still has one *generated* into the page payload:
+drop a class and nothing under `_build/html` changes. Only a browser sees it.
+Its sibling `tippy_skip_urls` is applied as the tooltip is generated, so that
+half *is* checkable statically. Gate a two-halved config with both kinds of
+test, and be clear which half any given assertion covers.
+
+⚠️ **Never let a generated artefact set a test's scope.** `sphinx_tippy` stamps
+each payload with a UUID and its stale-payload cleanup globs the wrong path
+part, so superseded payloads pile up beside the live one — resolve the live one
+from the `<script src>` of the page. It writes an *empty* payload for a page it
+tipped nothing on, so an empty file is data, not a failure; and gathering only
+the pages that *have* payloads leaves a check vacuous on any page that loses
+one. Enumerate every page and exclude by name.
 
 ⚠️ **Never settle the page with a fixed delay.** Both themes inject their
 toggles from JavaScript *after* load, so the chrome is not final when the page
@@ -175,18 +177,13 @@ or the test passes vacuously.
 
 ### Ruff Exceptions for Tests
 
-Test files (`test*.py`) are exempt from:
-- `ANN001` — no type annotations required for test function arguments
-- `ANN201` — no return type annotations required
-- `SLF001` — private member access is permitted
+`test*.py` is exempt from `ANN001`/`ANN201` (no annotations needed on test
+functions) and `SLF001` (private member access is permitted).
 
 ## Dependencies
 
-Test deps are defined in:
-- **Pixi**: `[tool.pixi.feature.test.dependencies]` in `pyproject.toml`
-- **pip**: `requirements/pypi-optional-test.txt`
-
-Use the `test` pixi environment: `pixi run -e test <command>`
+Test deps live in `[tool.pixi.feature.test.dependencies]` in `pyproject.toml`
+and in `requirements/pypi-optional-test.txt`. Use `pixi run -e test <command>`.
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
@@ -197,4 +194,4 @@ Use the `test` pixi environment: `pixi run -e test <command>`
 
 ---
 
-**Last Updated**: 2 October 2026
+**Last Updated**: 5 October 2026
