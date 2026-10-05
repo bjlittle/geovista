@@ -1,0 +1,2 @@
+Added support for ``python 3.14``, which is now built and tested alongside
+``python 3.13``. (:user:`claude`)

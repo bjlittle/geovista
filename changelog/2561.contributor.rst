@@ -1,0 +1,8 @@
+Added a test that holds every declaration of ``python`` support to the trove
+classifiers in ``pyproject.toml``, namely ``requires-python``, the ``pyXYZ``
+``pixi`` features, the environments built upon them, and the workflow matrices.
+Nine places declare which versions are supported and nothing else ties them
+together, so a bump reaching only some of them leaves ``geovista`` advertising
+one version of ``python`` and testing another. The test reads the source tree
+as text, so it requires neither a built artefact, a network, nor any particular
+interpreter. (:user:`claude`)
