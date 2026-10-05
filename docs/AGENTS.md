@@ -9,25 +9,19 @@ Sphinx documentation for GeoVista. Built with reStructuredText (`.rst`) and MyST
 ```
 docs/
 ├── Makefile                 # Build targets
-├── _build/                  # Build output (git-ignored, do not edit)
 ├── assets/                  # Non-Sphinx assets
+├── _build/                  # Build output (git-ignored, do not edit)
 └── src/                     # Sphinx source directory (SOURCEDIR)
     ├── conf.py              # Sphinx configuration
     ├── index.rst            # Root document
-    ├── common.txt           # Shared RST substitutions (included via rst_prolog)
+    ├── common.txt           # Shared RST substitutions (via rst_prolog)
     ├── refs.bib             # BibTeX bibliography
-    ├── _ext/                # Custom Sphinx extensions (readingtime, intersphinx_resilience)
+    ├── _ext/                # Custom extensions (reading, readingtime, intersphinx_resilience)
     ├── _inventory/          # Vendored intersphinx fallbacks — do not hand-edit
     ├── _static/             # Static assets (CSS, fonts, images, branding)
-    ├── _templates/          # Jinja2 Sphinx templates
-    ├── _autoapi_templates/  # Custom sphinx-autoapi templates
-    ├── developer/           # Developer guides (changelog, testing, packaging)
-    ├── explanation/         # Explanation docs (Diátaxis)
-    ├── howtos/              # How-to guides (Diátaxis)
-    ├── tutorials/           # Jupyter notebook tutorials
-    ├── reference/           # API reference, CLI, glossary, whatsnew
-    ├── generated/           # Auto-generated (gallery) — do not edit
-    └── tags/                # Auto-generated (sphinx-tags) — do not edit
+    ├── _templates/ _autoapi_templates/   # Jinja2 templates
+    ├── developer/ explanation/ howtos/ tutorials/ reference/  # Diátaxis
+    └── generated/ tags/ reference/generated/  # Auto-generated — do not edit
 ```
 
 ## Build Commands
@@ -35,12 +29,10 @@ docs/
 Run from the `docs/` directory:
 
 ```bash
-make html              # full build; also html-noplot (fastest iteration),
-                       # html-gallery, html-docstring, html-tutorial
-make doctest           # run doctests
-make clean             # build artifacts + generated sources; also
-                       # clean-cache (purge myst-nb), clean-all
-make serve-html        # local HTTP server at http://localhost:11000
+make html        # full; also html-noplot (fastest), html-gallery/-docstring/-tutorial
+make doctest     # run doctests
+make clean       # build + generated sources; also clean-cache (myst-nb), clean-all
+make serve-html  # local HTTP server at http://localhost:11000
 ```
 
 Each has a pixi task of the same name, run from the repo root as
@@ -99,19 +91,17 @@ returning a dict. That `setup()` must also return `parallel_read_safe` and
 `--fail-on-warning`; and must `env.note_dependency(__file__)` for anything it
 bakes into a doctree, its own modules being no source sphinx watches.
 
-⚠️ **`sphinx-llms-txt` concatenates `_sources/*` verbatim** — the *source* of
-each page, so `llms-full.txt` carries `.. readingtime::` rather than the banner
-and no directive output can appear there. Check rendering with the `text`
-builder instead.
+⚠️ **`sphinx-llms-txt` concatenates `_sources/*` verbatim** — page *source*, so
+`llms-full.txt` carries `.. readingtime::` rather than the banner, and no
+directive output can appear there. Check rendering with the `text` builder.
 
 ## Conventions
 
 ### File Formats
 
-- Standard pages: reStructuredText (`.rst`)
-- Tutorials: Jupyter notebooks (`.ipynb`) rendered via MyST-NB with cached execution
-- Cross-references: use Sphinx roles (`:ref:`, `:doc:`, `:func:`, `:class:`, etc.)
-- Shared substitutions live in `src/common.txt`
+Pages are reStructuredText; tutorials are Jupyter notebooks rendered via MyST-NB
+with cached execution. Cross-reference with Sphinx roles (`:ref:`, `:doc:`,
+`:func:`), and keep shared substitutions in `src/common.txt`.
 
 ### Do Not Edit (Generated)
 
@@ -126,11 +116,21 @@ Create the `.rst` in the appropriate section (`developer/`, `explanation/`,
 section's `index.rst` toctree, following [Diátaxis](https://diataxis.fr/).
 Notebooks are executed and cached on build (`nb_execution_mode = "cache"`).
 
+⚠️ **It also needs a reading-time banner, or an exemption.** Every page read
+start to finish opens with `.. readingtime::` at column 0, after the title and
+before the first section — exactly one; a directive lower down is a
+demonstration. A page *navigated* rather than read (landing page, generated
+body, lookup table, or an `.. include::` of a page that carries one) goes in
+`EXEMPT` in `tests/docs/test_readingtime_coverage.py` **with its reason**. That
+gate derives its corpus from `src`, so a new page is governed the day it lands;
+the build stays silent and the test is what tells you. Reserve a literal
+`.. readingtime:: <n>` for an estimate the word count cannot make, such as a
+tutorial whose reader runs every snippet.
+
 ### RST Style
 
-- Use NumPy-style docstrings in any Python within docs.
-- Sphinx-lint and codespell run via pre-commit on `.rst` files.
-- Ruff lints Python in `docs/src` (included in `tool.ruff` `src` list).
+NumPy-style docstrings in any Python within docs; sphinx-lint and codespell run
+on `.rst` via pre-commit, and ruff lints Python in `docs/src`.
 
 ⚠️ **A new `:fa:`/`:fab:` icon must be added to `src/_static/color.css`.** The
 selector list there ending `.fa-windows { color: #80d050 !important; }` is what
@@ -146,12 +146,10 @@ Deps live in `[tool.pixi.feature.docs.dependencies]` / `.pypi-dependencies` in
 `pip install -e ".[docs]"`. Use `pixi run -e docs <command>`.
 
 ⚠️ **`sphinx-book-theme` pins `pydata-sphinx-theme` to an *exact* version**, so
-the two only ever move together — `1.1.4` requires `==0.15.4`, `1.4.0` requires
-`==0.20.0`. Bumping `pydata-sphinx-theme` on its own can never resolve, and
-pinning it back silently freezes `sphinx-book-theme` too. Always bump the pair,
-checking the target release's pin first with `curl -s
-https://pypi.org/pypi/sphinx-book-theme/<version>/json | grep -o
-'pydata-sphinx-theme[^"]*'`. It is in maintenance mode, not abandoned.
+the two only ever move together (`1.4.0` requires `==0.20.0`). Bumping either
+alone can never resolve, and pinning one back silently freezes the other. Always
+bump the pair, checking the target release's pin first in its PyPI JSON. The
+theme is in maintenance mode, not abandoned.
 
 ⚠️ **A `contextlib.suppress(ModuleNotFoundError)` extension guard outlives its
 reason.** `sphinx-tippy`'s predated its conda-forge package and, by #2549, let a
@@ -172,10 +170,10 @@ The two halves retire separately. The duplicate buttons are sphinx-book-theme
 [#988](https://github.com/executablebooks/sphinx-book-theme/issues/988) /
 [#999](https://github.com/executablebooks/sphinx-book-theme/issues/999), fixed on
 `main` by [#987](https://github.com/executablebooks/sphinx-book-theme/pull/987)
-but unreleased as of `1.4.0`. The breakpoint stranding is *not* fixed by it —
-verified against a DOM with the redundant navbar removed — and is
+but unreleased as of `1.4.0`. The breakpoint stranding is *not* fixed by it
+(verified against a DOM with the redundant navbar removed) and is
 [#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), so
-that half outlives it. Re-check both on every theme bump.
+outlives it. Re-check both on every theme bump.
 
 Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
 `ci-tests-docs.yml` — the image tests compare pyvista scenes, not page furniture.
