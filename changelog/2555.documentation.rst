@@ -1,0 +1,11 @@
+Simplified how the documentation cross-references the top-level ``pyvista``
+package. Its ``intersphinx`` inventory carried no entry for the top-level
+module itself, so each reference had to be written as a ``:doc:`` link to the
+``index`` page with the display text supplied by hand, and a matching
+``nitpick_ignore_regex`` entry in :bash:`docs/src/conf.py` silenced the
+``:mod:`` role that could not resolve. `pyvista#5663
+<https://github.com/pyvista/pyvista/issues/5663>`__ has since added that entry,
+so the four docstring references in :bash:`src/geovista/themes.py` and
+:bash:`src/geovista/bridge.py` and the one on
+:ref:`tippy-gv-reference-environment` are now ordinary ``:mod:`` roles, and the
+ignore entry has gone with them. (:user:`claude`)
