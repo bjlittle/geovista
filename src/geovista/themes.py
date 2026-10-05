@@ -3,7 +3,7 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Configures custom :doc:`pyvista <pyvista:index>` themes for ``geovista``.
+"""Configures custom :mod:`pyvista` themes for ``geovista``.
 
 These themes are discoverable by ``pyvista`` and registered
 through ``[project.entry-points]`` TOML table metadata (``PEP621``) in our
@@ -226,8 +226,8 @@ def set_plot_theme(
         The theme to apply, which may be either:
 
         * The string name of a registered theme. See :func:`pyvista.registered_themes`
-          for the available :doc:`pyvista <pyvista:index>` built-in and
-          third-party entry-point group themes.
+          for the available :mod:`pyvista` built-in and third-party
+          entry-point group themes.
         * A string ``package.module:ClassName`` dotted path to an importable
           :class:`pyvista.plotting.themes.Theme` subclass.
         * A :class:`pyvista.plotting.themes.Theme` subclass instance.
@@ -255,7 +255,7 @@ def set_plot_theme(
         The list of available registered themes.
     :class:`pyvista.plotting.themes.Theme`
         Base class for all themes. Subclasses with the class property
-        ``_default_name`` are discoverable by :doc:`pyvista <pyvista:index>`.
+        ``_default_name`` are discoverable by :mod:`pyvista`.
 
     Notes
     -----

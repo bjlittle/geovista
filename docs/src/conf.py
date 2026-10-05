@@ -435,7 +435,6 @@ nitpick_ignore_regex = [
     (r"py:.*", r"pv"),  # TBD: geovista.geoplotter, geovista.gridlines (lazy import)
     (r"py:class", r"numpy.typing.ArrayLike"),  # TBD: geovista.pantry.data (lazy import)
     (r"py:class", r"ArrayLike"),  # TBD: geovista.search (use of type)
-    (r"py:mod", r"pyvista"),  # see https://github.com/pyvista/pyvista/issues/5663
     (r"py:mod", r"pyvistaqt"),  # no :mod:`pyvistaqt` inventory entry available
 ]
 

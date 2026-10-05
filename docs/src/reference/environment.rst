@@ -64,7 +64,7 @@ Package environment variables that influence the behaviour of ``geovista``:
     |                                         |               | by being independent of any ``geovista`` theme changes.   |
     |                                         |               |                                                           |
     |                                         |               | Image tests default to using the                          |
-    |                                         |               | :doc:`pyvista <pyvista:index>` testing theme.             |
+    |                                         |               | :mod:`pyvista` testing theme.                             |
     +-----------------------------------------+---------------+-----------------------------------------------------------+
     | :guilabel:`GEOVISTA_POOCH_MUTE`         | ``User``      | Controls the verbosity level of the ``geovista``          |
     |                                         |               | :data:`~geovista.cache.CACHE` manager. Set to ``True`` to |
