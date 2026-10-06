@@ -180,8 +180,7 @@ is one an extension walks past unseen (#2559). Use `html.parser.HTMLParser`.
 
 ### Ruff Exceptions for Tests
 
-`test*.py` is exempt from `ANN001`/`ANN201` (no annotations needed on test
-functions) and `SLF001` (private member access is permitted).
+`test*.py` is exempt from `ANN001`/`ANN201` (annotations) and `SLF001` (private access).
 
 ## Dependencies
 
