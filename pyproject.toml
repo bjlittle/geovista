@@ -71,6 +71,12 @@ skip = ".git,*.css,*.ipynb,*.js,*.html,*.map,*.po,CODE_OF_CONDUCT.md"
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 exclude = []
 files = ["src/geovista"]
+# unlike "ruff", "mypy" infers nothing from "requires-python" - it assumes the
+# interpreter running it, which for the "pre-commit" hook is whichever one that
+# isolated environment was built with. pin the floor, so a stdlib API added
+# after it is caught here rather than by the oldest supported reader.
+# held to the classifiers by "tests/test_python_support.py".
+python_version = "3.13"
 strict = true
 warn_unreachable = true
 
