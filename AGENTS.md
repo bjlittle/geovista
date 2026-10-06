@@ -79,12 +79,12 @@ pre-commit install`, then `pre-commit run --files <paths>` before pushing.
 
 ⚠️ **`pre-commit run mypy` is the authoritative type check, not bare `mypy`.**
 `mypy` is available in `devs`/`geovista`, but invoking it directly does *not*
-reproduce CI: `.pre-commit-config.yaml` uses `mirrors-mypy`, whose isolated venv
-has no third-party libraries, so `pyvista`/`numpy` collapse to `Any`. Inside a
-pixi environment mypy sees their real types and reports hundreds of additional
-strict-mode errors (mostly in `examples/`) that the hook never raises. Use bare
-`mypy` to explore a single file; trust only the hook. Note too that `pyproj` is
-largely untyped: returning a `pyproj` expression from a `-> bool` function trips
+reproduce CI: `.pre-commit-config.yaml` gives `mirrors-mypy` no
+`additional_dependencies`, so its isolated venv collapses `pyvista`/`numpy` to
+`Any`. Inside a pixi environment mypy sees their real types and raises some 640
+errors the hook cannot, only a quarter of them in `examples/`. Use bare `mypy`
+to explore a single file; trust only the hook. Note too that `pyproj` types
+are thin: returning a `pyproj` expression from a `-> bool` function trips
 `no-any-return`, so bind an annotated local first.
 
 ⚠️ **Image tests segfault without a GPU/display**, so a green local run proves
