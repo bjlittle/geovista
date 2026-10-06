@@ -99,6 +99,10 @@ prerequisite rather than inherit the local skip, or a regression that removes it
 silently drops the coverage and the job still exits 0. `tests/docs` does this
 with `--browser-strict`; follow the pattern for any new guarded suite.
 
+⚠️ **`bash -l {0}` drops the `-e` GitHub's default shell carries**, and 14 of
+the 19 workflows set it, so in a multi-command `run:` only the last command's
+status reaches the job — keep the real check last, or `set -o errexit` first.
+
 ⚠️ **Every `docs` build task wipes the build first.** `make` and `doctest`
 both `depends-on` `clean`, and `serve-html`, `tests-doc` and
 `tests-docs-browser` all chain through `make` — so `pixi run -e docs make` is
@@ -114,15 +118,14 @@ cd docs && pixi run -e docs sphinx-build -b html \
 
 ⚠️ **`intersphinx` is no longer allowed to fail the build (#2517).** Each
 mapping in `conf.py` is `(url, (None, "_inventory/<name>.inv"))`, so an
-unreachable remote falls back on the vendored copy — sphinx logs an earlier
-location's failure at `info` once a later one succeeds, leaving
-`--fail-on-warning` green. Add a mapping and you **must** add its inventory:
-`pixi run -e docs fetch-inventories`, which `ci-inventories.yml` also runs
-monthly to raise a refresh PR. Should every location fail, the
-`intersphinx_resilience` extension disables `nitpicky` for the rest of the
-build rather than emitting the warning plus its cascade of hundreds of nitpick
-misses — a degraded build is annotated, so check the job summary before
-trusting a green docs run.
+unreachable remote falls back on the vendored copy, and sphinx logs the earlier
+failure at `info` once a later location succeeds. Add a mapping and you **must**
+add its inventory: `pixi run -e docs fetch-inventories`, which
+`ci-inventories.yml` also runs monthly to raise a refresh PR. Should every
+location fail, the `intersphinx_resilience` extension disables `nitpicky` for
+the rest of the build rather than emitting hundreds of nitpick misses — a
+degraded build is annotated, so check the job summary before trusting a green
+docs run.
 
 ⚠️ **`nitpick_ignore_regex` entries are prefix matches.** Sphinx applies them
 with `re.match`, anchored at the start only, so `(r"py:mod", r"pyvista")` also
