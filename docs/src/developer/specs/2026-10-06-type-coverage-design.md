@@ -53,7 +53,9 @@ once per member, and `numpy.typing.ArrayLike` is a seven-member union, so one li
 raise seven errors. Counting distinct source lines instead, and setting aside the upstream
 false positives of {ref}`§3.4 <typing-spec-3-4>`, the work is **206 lines**.
 
-Three of the twenty-five library modules are clean. The check that was supposed to be
+Three of the twenty-five library modules report nothing, and none of the three is much of
+a check: `mypy` reads `__init__.pyi` in place of `__init__.py`, `_version.py` is generated
+by `setuptools-scm`, and `__main__.py` is nineteen lines. The check that was supposed to be
 guarding the other twenty-two has been reporting success throughout.
 
 (typing-spec-2)=
@@ -114,14 +116,15 @@ This follows `pyvista`, which runs `mypy` as a dedicated workflow and carries no
 hook at all; `geovista` keeps the hook as well, because this repository gates commits with
 hooks rather than deferring to CI.
 
-The three existing `[[tool.mypy.overrides]]` blocks are narrowed, not deleted. Measured on
-2026-10-06, removing them raises the total from 642 to 648. `disallow_untyped_decorators`
-stays on `geovista.cli`: `click` ships `py.typed`, but `main.command` is an untyped
-decorator and three commands depend on it. `disallow_subclassing_any` stays on
-`geovista.qt`, where `pyvistaqt` is absent from the locked environment altogether, so its
-three base classes are `Any`. The same setting is redundant for `geovista.geoplotter` and
-`geovista.report`, which report an identical 36 and 5 errors either way, so those two names
-come off its `module` list.
+All three existing `[[tool.mypy.overrides]]` blocks are kept, and one of the three is
+narrowed. Measured on 2026-10-06, removing all three raises the total from 642 to 648.
+`disallow_untyped_decorators` stays on `geovista.cli` unchanged: `click` ships `py.typed`,
+but `main.command` is an untyped decorator and three commands depend on it. The `union-attr`
+suppression on `geovista.examples.grid.*` is unchanged too; it predates this spec.
+`disallow_subclassing_any` is the one that narrows. It stays on `geovista.qt`, where
+`pyvistaqt` is absent from the locked environment altogether, so its three base classes are
+`Any`, but it is redundant for `geovista.geoplotter` and `geovista.report`, which report an
+identical 36 and 5 errors either way, so those two names come off its `module` list.
 
 (typing-spec-3-2)=
 ### 3.2 The ratchet
@@ -146,8 +149,9 @@ module = [
 ]
 ```
 
-From that point the check is live for the three clean modules and for every module added
-afterwards. Each subsequent change deletes one entry and fixes what it exposes.
+From that point the check is live for every module added afterwards, the three that report
+nothing today having little in them to check. Each subsequent change deletes one entry and
+fixes what it exposes.
 
 A ratchet with nothing holding it becomes a dumping ground, so the list is frozen in a test
 that permits removals and refuses additions:
@@ -156,9 +160,9 @@ that permits removals and refuses additions:
 RATCHET_BASELINE = frozenset({"geovista.bridge", "geovista.common", ...})
 
 
-def test_typing_ratchet_only_shrinks():
-    current = _mypy_ignored_modules()
-    assert current <= RATCHET_BASELINE
+def test_ratchet_only_shrinks():
+    added = _ignored() - RATCHET_BASELINE
+    assert not added, f"added to the typing ratchet: {sorted(added)}"
 ```
 
 This follows `tests/test_python_support.py`, which encodes a convention as a test rather

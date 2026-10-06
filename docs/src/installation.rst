@@ -225,4 +225,9 @@ For extra credit, install our developer `pre-commit`_ git-hooks:
 
     $ pre-commit install
 
+The ``mypy`` hook type checks against the locked ``geovista`` `pixi`_
+environment, where the third-party types are real rather than ``Any``, so it
+needs ``pixi`` on your ``PATH`` whichever route you took above. Without it the
+hook fails with "Executable pixi not found".
+
 Finally, you're good to roll 🥳

@@ -77,15 +77,15 @@ packages belong in a feature's `pypi-dependencies`.
 **Install the hooks and let them gate commits, not CI:** `pixi run -e devs
 pre-commit install`, then `pre-commit run --files <paths>` before pushing.
 
-⚠️ **`pre-commit run mypy` is the authoritative type check, not bare `mypy`.**
-`mypy` is available in `devs`/`geovista`, but invoking it directly does *not*
-reproduce CI: `.pre-commit-config.yaml` gives `mirrors-mypy` no
-`additional_dependencies`, so its isolated venv collapses `pyvista`/`numpy` to
-`Any`. Inside a pixi environment mypy sees their real types and raises some 640
-errors the hook cannot, only a quarter of them in `examples/`. Use bare `mypy`
-to explore a single file; trust only the hook. Note too that `pyproj` types
-are thin: returning a `pyproj` expression from a `-> bool` function trips
-`no-any-return`, so bind an annotated local first.
+⚠️ **`mypy` is green because 23 modules are ratcheted, not because they pass.**
+The hook is `local`, running `pixi run --frozen -e geovista mypy` against the
+locked environment where third-party types are real; `pre-commit.ci` has no
+`pixi`, so it skips `mypy` and `.github/workflows/ci-typing.yml` carries it.
+The 642 errors it exposed sit under `ignore_errors` in `[tool.mypy]`, which
+`tests/test_typing_ratchet.py` only lets shrink — so bare `mypy <file>` on a
+ratcheted module reports success, suppression and all. Note too that `pyproj`
+types are thin: returning a `pyproj` expression from a `-> bool` function
+trips `no-any-return`, so bind an annotated local first.
 
 ⚠️ **Image tests segfault without a GPU/display**, so a green local run proves
 nothing about them — they are only meaningfully exercised in CI. `pytest.ini`
