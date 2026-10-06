@@ -62,17 +62,16 @@ bump must also be applied to `requirements/pypi-*.txt`, which `pixi` neither
 reads nor updates.
 
 ⚠️ **A max-pin cannot see a renamed distribution.** `vtk-xref` became
-`sphinx-vtk-xref` (#2541): the old name stopped at 0.1.2, so `pixi update`
-had nothing to offer and dependabot nothing to propose, while five months of
-fixes landed under the new name. A long-still pin is a smell — check PyPI.
+`sphinx-vtk-xref` (#2541): the old name stopped at 0.1.2, so `pixi update` and
+dependabot had nothing to offer while five months of fixes landed under the new
+name. A long-still pin is a smell — check PyPI.
 
 ⚠️ **A conda-forge package of the same name is not always the Python one.**
-Tools that ship both a Node and a Python distribution (`playwright` is the
-case in point) are packaged on conda-forge as the *Node* CLI, with no Python
-bindings at all — the conda package installs cleanly and `import <pkg>` then
-raises `ModuleNotFoundError`. Check with `pixi list -e <env> <pkg>` plus an
-actual import before assuming conda-forge availability settles it; such
-packages belong in a feature's `pypi-dependencies`.
+Tools shipping both a Node and a Python distribution (`playwright` is the case
+in point) are packaged on conda-forge as the *Node* CLI, with no Python
+bindings at all: it installs cleanly and `import <pkg>` then raises
+`ModuleNotFoundError`. Check with an actual import before assuming conda-forge
+availability settles it; such packages belong in `pypi-dependencies`.
 
 **Install the hooks and let them gate commits, not CI:** `pixi run -e devs
 pre-commit install`, then `pre-commit run --files <paths>` before pushing.
