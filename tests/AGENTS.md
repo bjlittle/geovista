@@ -42,8 +42,7 @@ an explicit allowlist for known third-party ones. Required plugins are
 | `image` | Plotting image comparison tests |
 
 Apply `browser` module-wide with a `pytestmark` global. `tests/docs/test_tooltips.py`
-mixes static and browser checks, so it marks per-test instead, which keeps
-`-m "not browser"` selecting the static half.
+mixes static and browser checks, so marks per-test, keeping `-m "not browser"` useful.
 
 ## Conventions
 
@@ -96,9 +95,9 @@ the release one serial past it. Predict the tag from the date and what is on
 ### Documentation Tests
 
 `tests/docs` covers what no other Python test reaches: a headless chromium driven
-over a built site with playwright for the theme chrome — sidebar toggles, the
-dialogs they open, the gallery carousel, tooltip attachment — and the sphinx
-configuration itself, read off the built HTML or a throwaway build made in-process.
+over a built site with playwright for the theme chrome — sidebar toggles, dialogs,
+carousel, tooltips — the sphinx configuration read off the built HTML or a
+throwaway in-process build, and the off-site assets no page may load (#2559).
 
 ```bash
 pixi run -e geovista tests-docs-browser-install   # one-off, fetches chromium
@@ -108,9 +107,10 @@ pixi run -e geovista tests-docs-browser html-gallery strict  # what CI runs
 ```
 
 Every prerequisite **skips** rather than fails — no playwright, no chromium, no
-build, no carousel — so a plain `pytest` run is unaffected. The task selects the
-whole of `tests/docs`, not the `browser` marker, so the sphinx configuration
-tests beside them share the same CI job and the same guard.
+build, no carousel. The task selects the whole of `tests/docs`, not the `browser`
+marker, so the sphinx configuration tests share that CI job and guard. ⚠️ But an
+*existing* build satisfies the guard however stale, so a plain `pytest` audits
+whatever was last built — rebuild before believing a `tests/docs` result.
 
 ⚠️ **A source-tree policy gate has nothing to skip on, and must not acquire
 one.** `test_readingtime_coverage.py` reads `docs/src` as *text* and
@@ -151,11 +151,10 @@ the image tests the carousel is only meaningfully exercised in CI.
 
 ⚠️ **A setting applied in emitted JavaScript is invisible to the build.**
 `tippy_skip_anchor_classes` is consulted in the browser as a tooltip is
-*attached*, so a skipped anchor still has one *generated* into the page payload:
-drop a class and nothing under `_build/html` changes. Only a browser sees it.
-Its sibling `tippy_skip_urls` is applied as the tooltip is generated, so that
-half *is* checkable statically. Gate a two-halved config with both kinds of
-test, and be clear which half any given assertion covers.
+*attached*, so a skipped anchor still has one *generated* into the payload and
+nothing under `_build/html` changes — only a browser sees it. Its sibling
+`tippy_skip_urls` applies as it is generated, so that half *is* checkable
+statically. Gate both halves, and be clear which half an assertion covers.
 
 ⚠️ **Never let a generated artefact set a test's scope.** `sphinx_tippy` stamps
 each payload with a UUID and its stale-payload cleanup globs the wrong path
@@ -171,16 +170,17 @@ is ready. `conftest.py` polls until the toggle count stops changing; a sleep
 tuned on a developer machine is apt to be too short on a loaded CI runner.
 
 ⚠️ **`sd-stretched-link` covers its card through an `::after` overlay**, so the
-anchor's own bounding rect is just its text. Click coverage must be checked by
-hit-testing with `elementFromPoint`, not by comparing rectangles. A carousel
-also deliberately hangs cards past its own edge, so only cards lying wholly
-inside the clipping rect can be hit-tested — assert that some card qualifies,
-or the test passes vacuously.
+anchor's own bounding rect is just its text: hit-test with `elementFromPoint`,
+never compare rectangles. A carousel hangs cards past its own edge, so assert
+that some card lies wholly inside the clipping rect, or the test is vacuous.
+
+⚠️ **Parse built HTML, never pattern-match it.** Quoting, attribute order and
+`rel` arity are the author's choice and invisible in the page, so a regex gate
+is one an extension walks past unseen (#2559). Use `html.parser.HTMLParser`.
 
 ### Ruff Exceptions for Tests
 
-`test*.py` is exempt from `ANN001`/`ANN201` (no annotations needed on test
-functions) and `SLF001` (private member access is permitted).
+`test*.py` is exempt from `ANN001`/`ANN201` (annotations) and `SLF001` (private access).
 
 ## Dependencies
 
@@ -196,4 +196,4 @@ and in `requirements/pypi-optional-test.txt`. Use `pixi run -e test <command>`.
 
 ---
 
-**Last Updated**: 5 October 2026
+**Last Updated**: 6 October 2026

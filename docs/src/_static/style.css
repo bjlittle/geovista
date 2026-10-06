@@ -2,6 +2,18 @@
     text-align: center;
 }
 
+/* Inline icons vendored from the Iconify sets, see "_static/icons/". Each SVG is
+   authored at "width=1em height=1em", but an "<img>" resolves that against the
+   SVG document's own font size rather than the page's, so the size is restated
+   here to track the surrounding text. The "-0.125em" nudge is the value the
+   "<iconify-icon>" web component applied to these same icons. */
+.gv-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+}
+
 .sd-card-img-top {
     width: 15% !important;
     position: absolute !important;

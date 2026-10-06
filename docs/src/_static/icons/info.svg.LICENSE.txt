@@ -1,0 +1,16 @@
+twemoji: information
+https://github.com/jdecked/twemoji
+https://api.iconify.design/twemoji/information.svg
+
+Copyright 2019 Twitter, Inc and other contributors
+
+Graphics licensed under CC-BY 4.0:
+https://creativecommons.org/licenses/by/4.0/
+
+You are free to share and adapt this material for any purpose, even
+commercially, provided you give appropriate credit, provide a link to the
+licence, and indicate if changes were made. The graphic is published here
+unmodified, exactly as served by the Iconify API from the source above.
+
+The full licence text is at https://creativecommons.org/licenses/by/4.0/legalcode
+and is reproduced upstream as LICENSE-GRAPHICS in the repository named above.

@@ -1,0 +1,7 @@
+Added ``tests/docs/test_assets.py``, which asserts that no built page loads a
+script or a stylesheet from another host, and that every vendored icon is
+published beside its upstream licence notice. An extension that defaults its
+asset URLs to a content delivery network writes them into the page as it is
+read, so no build log carries them and no build fails when that host is
+unreachable. The three such dependencies closed so far were each found by
+hand and after the fact. (:user:`claude`)

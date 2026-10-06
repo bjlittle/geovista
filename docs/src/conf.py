@@ -182,7 +182,6 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
-    "sphinx_iconify",
     "sphinx_llms_txt",
     "sphinx_tags",
     "sphinx_tippy",
