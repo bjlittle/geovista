@@ -21,8 +21,9 @@ orphan: true
 - **Scope:** where `geovista` runs `mypy`, what it is allowed not to check yet, and the
   order in which that allowance is withdrawn; the strictness settings themselves stay as
   they are
-- **Parent spec:** none. This is the first specification in this repository, so it inherits
-  nothing, and the conventions it follows are not yet written down anywhere else
+- **Parent spec:** none, but not unconventioned. It was the first specification in this
+  repository and so inherited nothing; the conventions it arrived at are now written down,
+  and governed, by {ref}`docs spec §1 <docs-spec-1>`
 - **Published:** built, but not yet listed. `myst_parser` registers `.md` of its own
   accord, whatever `source_suffix` in `conf.py` names, so `sphinx` reads and renders this
   file today. No toctree holds it, which warns as `toc.not_included` and fails
@@ -262,7 +263,7 @@ account of `geopy` being untyped.
 
 | # | Scope | Lines | Status |
 |---|---|---|---|
-| 1 | The `local` hook, `ci-typing.yml`, the ratchet and its test | 0 | landed |
+| 1 | The `local` hook, `ci-typing.yml`, the ratchet and its test | 0 | ✅ landed (2026-10-06, {pull}`2565`) |
 | 2 | `transform.py` | 29 | not started |
 | 3 | `bridge.py` | 28 | not started |
 | 4 | `common.py` | 20 | not started |
@@ -270,8 +271,16 @@ account of `geopy` being untyped.
 | 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | not started |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
 
-Each carries a towncrier fragment and the `agentic` label. Changes 2 to 4 alter published
-signatures and each adds tests exercising the widened input.
+Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`: a landed row names the date and the
+pull request that landed it. This is a living document, so a change that measures something
+the design assumed edits the design in place, and the sentence that was there before
+survives nowhere else. Change 1 rewrote the entry count of {ref}`§3.2 <typing-spec-3-2>`
+and the override claim of {ref}`§3.1 <typing-spec-3-1>`; the row is what makes {pull}`2565`
+reachable from the sections it corrected, so a reader who wants the measurement rather than
+the conclusion has somewhere to go.
+
+Each change carries a towncrier fragment and the `agentic` label. Changes 2 to 4 alter
+published signatures and each adds tests exercising the widened input.
 
 (typing-spec-5)=
 ## 5. Alternatives considered
@@ -328,13 +337,16 @@ Out of scope:
 (typing-spec-8)=
 ## 8. Open items
 
-- The `pyvista` `_Wrapped` and `Plotter.camera` defects of
-  {ref}`§3.4 <typing-spec-3-4>` have not been reported upstream. When they are fixed the
-  suppression should be withdrawn, and a long-lived suppression is a smell in the same way
-  a long-still pin is.
-- `lazy_loader` is 19 of the 29 untyped imports and `geovista` imports it in every module,
-  so a single upstream `py.typed` marker would clear most of that category. Whether to
-  pursue it upstream or absorb it locally is settled in change 6.
+Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
+
+1. **Open** (no issue raised) — **The `pyvista` defects are unreported.** The `_Wrapped` and
+   `Plotter.camera` defects of {ref}`§3.4 <typing-spec-3-4>` have not been reported
+   upstream. When they are fixed the suppression should be withdrawn, and a long-lived
+   suppression is a smell in the same way a long-still pin is.
+2. **Open** (owned by change 6 of {ref}`§4 <typing-spec-4>`) — **Whether to pursue
+   `lazy_loader` upstream.** It is 19 of the 29 untyped imports and `geovista` imports it in
+   every module, so a single upstream `py.typed` marker would clear most of that category.
+   Pursuing it upstream or absorbing it locally is settled in change 6.
 
 (typing-spec-9)=
 ## 9. References
