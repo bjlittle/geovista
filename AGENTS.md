@@ -74,12 +74,8 @@ raises `ModuleNotFoundError`. Check with `pixi list -e <env> <pkg>` plus an
 actual import before assuming conda-forge availability settles it; such
 packages belong in a feature's `pypi-dependencies`.
 
-**Install the hooks and let them gate commits, not CI:**
-
-```bash
-pixi run -e devs pre-commit install                 # fires on every commit
-pixi run -e devs pre-commit run --files <paths>     # check before pushing
-```
+**Install the hooks and let them gate commits, not CI:** `pixi run -e devs
+pre-commit install`, then `pre-commit run --files <paths>` before pushing.
 
 ⚠️ **`pre-commit run mypy` is the authoritative type check, not bare `mypy`.**
 `mypy` is available in `devs`/`geovista`, but invoking it directly does *not*
@@ -87,10 +83,9 @@ reproduce CI: `.pre-commit-config.yaml` uses `mirrors-mypy`, whose isolated venv
 has no third-party libraries, so `pyvista`/`numpy` collapse to `Any`. Inside a
 pixi environment mypy sees their real types and reports hundreds of additional
 strict-mode errors (mostly in `examples/`) that the hook never raises. Use bare
-`mypy` to explore a single file; trust only the hook.
-
-Note `pyproj` is largely untyped: returning a `pyproj` expression from a
-`-> bool` function trips `no-any-return` — bind an annotated local first.
+`mypy` to explore a single file; trust only the hook. Note too that `pyproj` is
+largely untyped: returning a `pyproj` expression from a `-> bool` function trips
+`no-any-return`, so bind an annotated local first.
 
 ⚠️ **Image tests segfault without a GPU/display**, so a green local run proves
 nothing about them — they are only meaningfully exercised in CI. `pytest.ini`
@@ -177,6 +172,12 @@ All Python files must include `from __future__ import annotations` (enforced by 
   to `gh issue create` / `gh pr create`, or `gh issue edit <n> --add-label
   agentic` after the fact. It is **not** the `bot` label, which marks
   deterministic automation: dependabot, and the scheduled `ci-*.yml` workflows.
+- **Python support**: SPEC 0 — drop a minor version three years after its release.
+  Nine places declare it, so bump the classifiers, let `tests/test_python_support.py`
+  name the rest, then `pixi lock` and re-run the `ci-locks.yml` exports. ⚠️ The
+  test, wheel and PyPI matrices span every version, while the unsuffixed pixi
+  environments, the docs workflows and the coverage report track the **newest**
+  alone, so a bump missing one of those silently demotes it to the oldest.
 - **Dependencies**: core deps in `requirements/pypi-core.txt`; optional groups in `requirements/pypi-optional-*.txt`. Pixi deps mirrored in `pyproject.toml`.
 - **License**: BSD-3-Clause
 
@@ -194,4 +195,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 5 October 2026
+**Last Updated**: 6 October 2026

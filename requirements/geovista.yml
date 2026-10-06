@@ -32,6 +32,7 @@ dependencies:
 - sphinx-llms-txt >=0.7.1,<0.8
 - sphinx-sitemap >=2.9.0,<3
 - sphinx-tags >=0.4,<0.5
+- sphinx-tippy >=0.4.3,<0.5
 - sphinx-togglebutton >=0.3.2,<0.5
 - sphinx_changelog >=1.6.0,<2
 - sphinxcontrib-bibtex >=2.6.0,<3
@@ -40,14 +41,15 @@ dependencies:
 - trame-pyvista >=0.1.1,<0.2
 - wurlitzer >=3.1.1,<4
 - pip >=25.1.1,<26
-- python 3.13.*
-- python >=3.12
+- python 3.14.*
+- python >=3.13
 - codecov >=2.1.13,<3
 - pytest >=8.4.0,<10
 - pytest-cov >=6.1.1,<8
 - pytest-mock >=3.14.1,<4
 - pytest-pretty >=1.3.0,<2
 - pytest-pyvista >=0.3.1,<0.4
+- pyyaml >=6.0.3,<7
 - cartopy >=0.26
 - click >=8.2.1,<9
 - click-default-group >=1.2.4,<2
@@ -68,6 +70,5 @@ dependencies:
 - pip:
   - -e .
   - sphinx-iconify>=0.3.0, <0.4
-  - sphinx-tippy>=0.4.3, <0.5
-  - vtk-xref>=0.1.1, <0.2
+  - sphinx-vtk-xref>=0.4.0, <0.5
   - playwright>=1.63.0, <2

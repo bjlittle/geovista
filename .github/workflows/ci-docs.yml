@@ -39,7 +39,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04"]
-        version: ["py313"]
+        version: ["py314"]
         session: ["doctest"]
 
     steps:

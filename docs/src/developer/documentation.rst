@@ -276,14 +276,16 @@ The following documentation workflows are available:
    +=============+==================================================================================+
    | |ci-docs|   | The `ci-docs.yml`_ :fab:`github` Action executes                                 |
    |             | `sphinx.ext.doctest`_ to test *doctest-style* and *code-output-style* blocks     |
-   |             | within the documentation.                                                        |
+   |             | within the documentation, for the **latest** `SPEC 0`_ supported distribution    |
+   |             | of ``python``.                                                                   |
    |             |                                                                                  |
    |             | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` |
    |             | :guilabel:`doctest` task.                                                        |
    +-------------+----------------------------------------------------------------------------------+
    | |ci-images| | The `ci-tests-docs.yml`_ :fab:`github` Action builds the documentation using the |
    |             | ``make`` command task :guilabel:`html-docstring-inline` and then performs        |
-   |             | image testing of ``pyvista-plot`` directive static scenes.                       |
+   |             | image testing of ``pyvista-plot`` directive static scenes, for the **latest**    |
+   |             | `SPEC 0`_ supported distribution of ``python``.                                  |
    |             |                                                                                  |
    |             | Also see the :ref:`make build tasks <tippy-gv-developer-documentation-build>`    |
    |             | for further details.                                                             |
@@ -305,6 +307,21 @@ The following documentation workflows are available:
    |             | Refer to the `Builds`_ section for a render of the documentation for each        |
    |             | :fa:`code-pull-request` ``pull-request``.                                        |
    +-------------+----------------------------------------------------------------------------------+
+
+.. note::
+   :class: dropdown, toggle-shown
+
+   Our documentation workflows build against the **latest** `SPEC 0`_ supported
+   distribution of ``python`` alone, whereas the
+   :ref:`testing workflows <tippy-gv-developer-testing-continuous-integration>`
+   cover every one of them. A single distribution is enough to show that the
+   documentation toolchain works, and the latest is where a documentation
+   dependency, or the ``chromium`` build that the
+   :ref:`tippy-gv-developer-testing-browser-tests` require, first falls behind.
+
+   :bash:`tests/test_python_support.py` holds the ``ci-docs.yml`` and
+   ``ci-tests-docs.yml`` matrices to this, so a `SPEC 0`_ bump that misses either
+   of them fails.
 
 
 .. _gv-developer-documentation-copyright-and-license:

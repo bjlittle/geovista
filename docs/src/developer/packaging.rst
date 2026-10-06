@@ -537,7 +537,7 @@ The following packaging workflows are available:
    |             | ecosystems.                                                                         |
    |             |                                                                                     |
    |             | Only the **latest** ``python`` variant of the :guilabel:`geovista-py3xx`            |
-   |             | environment e.g., :guilabel:`geovista-py313`, will be exported to a ``conda``       |
+   |             | environment e.g., :guilabel:`geovista-py314`, will be exported to a ``conda``       |
    |             | explicit specification file (:bash:`.txt`) and also converted to an equivalent      |
    |             | explicit environment YAML file (:bash:`.yml`). These resources are available in the |
    |             | `requirements/locks`_ directory.                                                    |

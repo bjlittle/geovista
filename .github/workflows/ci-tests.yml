@@ -44,11 +44,11 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04"]
-        version: ["py312", "py313"]
+        version: ["py313", "py314"]
         session: ["tests"]
         marker: ["image", "not image"]
         include:
-          - version: "py313"
+          - version: "py314"
             coverage: "--cov-report= --cov=geovista"
 
     steps:
