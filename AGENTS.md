@@ -92,14 +92,6 @@ strict-mode errors (mostly in `examples/`) that the hook never raises. Use bare
 Note `pyproj` is largely untyped: returning a `pyproj` expression from a
 `-> bool` function trips `no-any-return` — bind an annotated local first.
 
-Direct pytest (with pixi environment activated):
-
-```bash
-pytest                    # All tests
-pytest tests/core/        # Specific module
-pytest -m "not image"     # Exclude image tests
-```
-
 ⚠️ **Image tests segfault without a GPU/display**, so a green local run proves
 nothing about them — they are only meaningfully exercised in CI. `pytest.ini`
 sets `filterwarnings = ["error", ...]`, so *any* new `warnings.warn` in library
@@ -137,6 +129,12 @@ build rather than emitting the warning plus its cascade of hundreds of nitpick
 misses — a degraded build is annotated, so check the job summary before
 trusting a green docs run.
 
+⚠️ **`nitpick_ignore_regex` entries are prefix matches.** Sphinx applies them
+with `re.match`, anchored at the start only, so `(r"py:mod", r"pyvista")` also
+silenced `pyvistaqt` and every other target sharing that prefix. An entry can
+equally outlive its cause and silence nothing, while still masking a future
+regression: drop it once the upstream inventory gains the target (#2555).
+
 ## Code Style
 
 - **Formatter/Linter**: ruff (config in `pyproject.toml` under `[tool.ruff]`)
@@ -170,7 +168,7 @@ All Python files must include `from __future__ import annotations` (enforced by 
 ## Conventions
 
 - **Versioning**: `setuptools-scm` (no manual version file edits)
-- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label.
+- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run -e docs python .github/scripts/changelog.py <PR> "<touched fragment paths>"`.
 - **`agentic` label**: ⚠️ **every issue and pull-request you raise must carry
   it**, alongside the usual `type:` ones — `gh` runs as the repository owner, so
   nothing else tells agent-generated work apart. `ci-label.yml` adds it
@@ -196,4 +194,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 4 October 2026
+**Last Updated**: 5 October 2026

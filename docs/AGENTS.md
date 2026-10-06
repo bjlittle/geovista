@@ -38,9 +38,8 @@ make serve-html  # local HTTP server at http://localhost:11000
 Each has a pixi task of the same name, run from the repo root as
 `pixi run -e docs <task>`; `make` builds `html-noplot`.
 
-The Makefile sets `PYVISTA_OFF_SCREEN=True` and
-`PYDEVD_DISABLE_FILE_VALIDATION=1`, and passes sphinx
-`--fail-on-warning --keep-going --show-traceback`.
+The Makefile sets `PYVISTA_OFF_SCREEN=True` and `PYDEVD_DISABLE_FILE_VALIDATION=1`,
+and passes sphinx `--fail-on-warning --keep-going --show-traceback`.
 
 ## Sphinx Extensions
 
@@ -53,12 +52,10 @@ Key extensions configured in `src/conf.py`:
 | `myst_nb` | Render Jupyter notebooks (cached execution) |
 | `numpydoc` | NumPy-style docstring parsing |
 | `sphinx_design` | UI components (cards, tabs, grids) |
-| `sphinxcontrib.bibtex` | Bibliography from `refs.bib` |
-| `sphinxcontrib.mermaid` | Mermaid diagrams |
+| `sphinxcontrib.bibtex` / `.mermaid` | Bibliography from `refs.bib`; mermaid diagrams |
 | `sphinx_tags` | Document tagging system |
 | `sphinx_llms_txt` | LLM-friendly text output |
-| `pyvista.ext.plot_directive` | 3D plot rendering in docstrings |
-| `pyvista.ext.viewer_directive` | Interactive 3D viewer |
+| `pyvista.ext.plot_directive` / `.viewer_directive` | 3D plots in docstrings; interactive viewer |
 
 ⚠️ **A new `intersphinx_mapping` entry needs a vendored inventory.** Add the URL
 to `INTERSPHINX_URLS` in `src/conf.py` — the single source of truth, read by
@@ -133,6 +130,9 @@ tutorial whose reader runs every snippet.
 
 NumPy-style docstrings in any Python within docs; sphinx-lint and codespell run
 on `.rst` via pre-commit, and ruff lints Python in `docs/src`.
+
+⚠️ **A reformat silently desyncs `:emphasize-lines:`.** The `black` 26 reflow in
+#2557 left `testing.rst` pointing past a now 3-line block; only the build sees it.
 
 ⚠️ **A new `:fa:`/`:fab:` icon must be added to `src/_static/color.css`.** The
 selector list there ending `.fa-windows { color: #80d050 !important; }` is what
