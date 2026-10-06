@@ -13,5 +13,8 @@ behind those errors are corrected.
 
 Specifications here are living documents, maintained alongside the code and
 cited by section from the files they govern, so where the two diverge it is the
-specification that gets corrected. This one is not published yet, as ``conf.py``
-maps only ``.rst`` and ``.ipynb`` in ``source_suffix``. (:user:`claude`)
+specification that gets corrected. This one is built but not yet listed in a
+toctree, and carries ``orphan: true`` until the specifications gain an index.
+Note that ``myst_parser`` registers ``.md`` whatever ``source_suffix`` names, so
+any markdown page added under ``docs/src`` is built from the day it lands, and
+warns unless a toctree holds it or another page includes it. (:user:`claude`)

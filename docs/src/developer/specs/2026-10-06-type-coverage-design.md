@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # geovista type coverage — design specification
 
 ```{readingtime}
@@ -19,10 +23,12 @@
   they are
 - **Parent spec:** none. This is the first specification in this repository, so it inherits
   nothing, and the conventions it follows are not yet written down anywhere else
-- **Published:** not yet. `conf.py` maps only `.rst` and `.ipynb` in `source_suffix`, so
-  `sphinx` does not read this file and no toctree holds it. The reading-time gate in
-  `tests/docs/test_readingtime_coverage.py` globs `*.md` and governs it already, which it
-  passes. Publishing the specs tree is separate work, out of scope here
+- **Published:** built, but not yet listed. `myst_parser` registers `.md` of its own
+  accord, whatever `source_suffix` in `conf.py` names, so `sphinx` reads and renders this
+  file today. No toctree holds it, which warns as `toc.not_included` and fails
+  `--fail-on-warning`, so it carries `orphan: true` until the specs tree gains an index.
+  That marker comes off with the same change. `tests/docs/test_readingtime_coverage.py`
+  globs `*.md` and governs the page regardless, which it passes
 
 (typing-spec-1)=
 ## 1. Purpose
@@ -124,7 +130,11 @@ The twenty-two modules carrying errors are listed once, with `ignore_errors`:
 # "tests/test_typing_ratchet.py" holds it to that. Delete the whole
 # block, and that test, when the last entry goes.
 ignore_errors = true
-module = ["geovista.bridge", "geovista.common", ...]
+module = [
+  "geovista.bridge",
+  "geovista.common",
+  # the remaining twenty
+]
 ```
 
 From that point the check is live for the three clean modules and for every module added
