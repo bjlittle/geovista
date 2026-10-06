@@ -280,7 +280,7 @@ Image unit tests should adopt the following usage pattern of
 
    import pytest
 
-   import geovsita as gv
+   import geovista as gv
 
 
    @pytest.mark.image
