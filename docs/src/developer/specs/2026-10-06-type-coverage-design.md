@@ -51,8 +51,8 @@ inside the `geovista` pixi environment where the real types are present:
 
 The error count overstates the defect count. `mypy` reports an attribute access on a union
 once per member, and `numpy.typing.ArrayLike` is a seven-member union, so one line can
-raise seven errors. Counting distinct source lines instead, and setting aside the upstream
-false positives of {ref}`§3.4 <typing-spec-3-4>`, the work is **206 lines**.
+raise seven errors. Counting distinct source lines instead, and setting aside the errors
+suppressed by {ref}`§3.4 <typing-spec-3-4>`, the work is **206 lines**.
 
 Three of the twenty-five library modules report nothing, and none of the three is much of
 a check: `mypy` reads `__init__.pyi` in place of `__init__.py`, `_version.py` is generated
@@ -78,10 +78,11 @@ guarding the other twenty-two has been reporting success throughout.
   reads the signature and the docstring and passes a list gets `AttributeError`. Converting
   at the boundary makes the published contract true and cannot break an existing caller.
   See {ref}`§3.3 <typing-spec-3-3>`.
-- **An upstream defect is suppressed where it lands, never worked around in the source.**
-  The gallery scripts are rendered into the documentation and readers are invited to copy
-  them, so a `type: ignore` comment in one is a directive published as example code. See
-  {ref}`§3.4 <typing-spec-3-4>`.
+- **A defect a gallery script cannot fix is suppressed in the configuration, never worked
+  around in the script.** The gallery is rendered into the documentation and readers are
+  invited to copy it, so a `type: ignore` comment in one is a directive published as
+  example code. The suppression then has to name its real cause, or nobody will know when
+  it can go. See {ref}`§3.4 <typing-spec-3-4>`.
 
 (typing-spec-3)=
 ## 3. Architecture
@@ -232,19 +233,30 @@ has 7, `common.py` 6, `geoplotter.py` 4, and `pantry/meshes.py`, `search.py` and
 established in the first two changes and applied by rote afterwards.
 
 (typing-spec-3-4)=
-### 3.4 Upstream suppressions
+### 3.4 Gallery suppressions
 
-121 of the 150 errors in `examples/` are two defects in `pyvista`'s own annotations, both
-verified against the runtime on 2026-10-06 with `pyvista` 0.49.0:
+122 of the 150 errors in `examples/` are two defects, measured on 2026-10-06 against
+`pyvista` 0.49.0 with the override below lifted. They have different causes, and the
+section said otherwise until {issue}`2568` and {issue}`2569` were raised:
 
 - 77 × `call-arg`, *Missing positional argument "self" in call to "__call__" of
   "_Wrapped"*, raised on no-argument calls such as `p.view_xy()`. `pyvista`'s `_Wrapped`
-  decorator loses the descriptor protocol in its annotations.
-- 44 × `attr-defined`, *pv.Plotter.camera? has no attribute "zoom"*. The trailing `?`
-  is `mypy` reporting a type it could only partially resolve; `Camera.zoom` is present and
-  callable at runtime.
+  decorator loses the descriptor protocol in its annotations. This one is upstream. It
+  is `pyvista` issue 6589, open since 2024, and is fixed on `main` by `pyvista` pull
+  request 9162, merged the day after 0.49.0 was released. Checked against a clone of
+  that `main`, the count is 0. Tracked by {issue}`2568`.
+- 45 × `attr-defined`, *pv.Plotter.camera? has no attribute "zoom"*, 44 of them on `zoom`
+  and one on `roll`. This one is ours. `geoplotter.py` loads `pyvista` through
+  `lazy.load` and uses the result as a base class, so `mypy` never analyses the base and
+  every inherited member comes back unresolved. The trailing `?` is `mypy` naming a
+  symbol it could not analyse, not a defect in an annotation: `Camera.zoom` is present
+  and callable at runtime, and `mypy` resolves it correctly from a file that imports
+  `pyvista` directly. Against the same `main` clone the count is unchanged, which
+  follows, since no upstream change can resolve a base class hidden behind a runtime
+  call. Tracked by {issue}`2569`, and rooted in the untyped `lazy_loader` of
+  {issue}`2570`.
 
-Both are disabled for the gallery alone, leaving the 20 genuine errors visible:
+Both are disabled for the gallery alone, leaving the 28 genuine errors visible:
 
 ```toml
 [[tool.mypy.overrides]]
@@ -252,6 +264,12 @@ Both are disabled for the gallery alone, leaving the 20 genuine errors visible:
 disable_error_code = ["attr-defined", "call-arg"]
 module = ["geovista.examples.*"]
 ```
+
+The comment is quoted as it stands rather than as it should read, because a specification
+that quotes the code has to quote what the code says; {issue}`2569` corrects it. The two
+halves retire on different triggers, so they retire separately: `call-arg` when the
+`pyvista` floor reaches the release carrying the fix, `attr-defined` when the base class
+resolves.
 
 Neither code appears in the library, where `attr-defined` is zero and `call-arg` is one, so
 the suppression is confined to where the plotting calls are. This extends a pattern already
@@ -324,12 +342,15 @@ Out of scope:
   effective; it does not add to them.
 - **`tests/` and `docs/`.** `files` names `src/geovista` alone, and widening it is a
   separate decision with its own error budget.
-- **Reporting the `pyvista` defects upstream.** Worth doing and recorded in
-  {ref}`§8 <typing-spec-8>`, but it does not gate any of the roadmap.
+- **Chasing the `pyvista` fix into a release.** The `call-arg` defect is already reported
+  and already fixed on `main`, so what remains is a version floor, tracked by
+  {issue}`2568`. It does not gate any of the roadmap.
 - **The untyped imports.** 32 errors are imports rather than code: 29 `import-untyped`
   from distributions that ship no annotations — `lazy_loader` alone accounts for 19, then
-  `cmocean` 5, `cartopy`, `geopy` and `rasterio` 2 each, and one each from `pooch`, `h3`
-  and `fastparquet` — plus 3 `import-not-found`. Two of those three, `geovistaconfig` and
+  `geopy`, `rasterio` and `shapely` 2 each, and one each from `click_default_group`,
+  `fastparquet`, `pandas` and `pooch` — plus 3 `import-not-found`. The gallery adds
+  `cmocean`, `cartopy` and `h3` on top, which is why the figure here is smaller than a
+  count taken over the whole tree. Two of the three not-found, `geovistaconfig` and
   `geovista.siteconfig`, are the optional site configuration and are *meant* to be absent,
   so they want a targeted `ignore_missing_imports` rather than a fix. The configuration
   carries no such entry today. Handling all of this is part of change 6.
@@ -339,13 +360,24 @@ Out of scope:
 
 Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 
-1. **Open** (no issue raised) — **The `pyvista` defects are unreported.** The `_Wrapped` and
-   `Plotter.camera` defects of {ref}`§3.4 <typing-spec-3-4>` have not been reported
-   upstream. When they are fixed the suppression should be withdrawn, and a long-lived
-   suppression is a smell in the same way a long-still pin is.
-2. **Open** (owned by change 6 of {ref}`§4 <typing-spec-4>`) — **Whether to pursue
-   `lazy_loader` upstream.** It is 19 of the 29 untyped imports and `geovista` imports it in
-   every module, so a single upstream `py.typed` marker would clear most of that category.
+1. **Resolved** (2026-10-06, {issue}`2568` and {issue}`2569`) — **Are the
+   {ref}`§3.4 <typing-spec-3-4>` defects reported upstream?** This item asserted that
+   neither was, and raising the issues to track them showed both halves of that wrong.
+   One defect was reported in 2024 and has been fixed on `pyvista` `main` since September
+   2026. The other is not upstream at all. Each now has its own trigger and its own
+   issue, below.
+2. **Open** ({issue}`2568`) — **The `call-arg` suppression will outlive its cause.**
+   `pyvista` pull request 9162 fixes it, and the pin in `pyproject.toml` is
+   `>=0.48.0,<0.50.0`, so what matters is the floor rather than the ceiling. Withdraw
+   that half of the override when the floor reaches the release carrying the fix.
+3. **Open** ({issue}`2569`) — **The `attr-defined` suppression names the wrong cause.**
+   It is labelled upstream in `pyproject.toml` and is not. Until the base class in
+   `geoplotter.py` resolves, 45 errors in the gallery are hidden under a comment that
+   sends the next reader to the wrong repository.
+4. **Open** ({issue}`2570`, owned by change 6 of {ref}`§4 <typing-spec-4>`) — **Whether to
+   pursue `lazy_loader` upstream.** It is 19 of the 29 untyped imports and `geovista`
+   imports it in every module, so a single upstream `py.typed` marker would clear most of
+   that category. It is also the root of item 3, which raises the cost of leaving it.
    Pursuing it upstream or absorbing it locally is settled in change 6.
 
 (typing-spec-9)=
@@ -357,3 +389,7 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
   `tests/test_python_support.py` convention this specification's ratchet test follows
 - `mypy` issue 13916, the reason the hook passes no filenames:
   <https://github.com/python/mypy/issues/13916>
+- `pyvista` issue 6589 and pull request 9162, the report and the fix for the `call-arg`
+  half of {ref}`§3.4 <typing-spec-3-4>`:
+  <https://github.com/pyvista/pyvista/issues/6589> and
+  <https://github.com/pyvista/pyvista/pull/9162>

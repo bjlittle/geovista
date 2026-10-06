@@ -27,4 +27,14 @@ Statuses now cite the work that produced them. A landed roadmap row carries its
 date and its pull request, and an open item carries ``Open``, ``Resolved``,
 ``Deferred`` or ``Abandoned`` with the issue or pull request that settled it, so
 a reader can see which decisions are still live and read what argued for the
-ones that are not. (:user:`claude`)
+ones that are not.
+
+Raising issues for the type coverage specification's two open items found both
+of them misstated, which is the argument for citing in miniature. One of the
+``mypy`` codes disabled for the gallery is an upstream defect that was reported
+in 2024 and fixed on ``pyvista`` ``main`` in September 2026; the other is not
+upstream at all, but ``geoplotter.py`` passing the result of ``lazy.load`` as a
+base class, where ``mypy`` cannot analyse it and every inherited member comes
+back unresolved. The comment on the override says both are upstream. That
+section is corrected, with the counts it reported, and the two halves now retire
+on separate triggers. (:user:`claude`)
