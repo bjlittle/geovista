@@ -153,17 +153,34 @@ From that point the check is live for every module added afterwards, the three t
 nothing today having little in them to check. Each subsequent change deletes one entry and
 fixes what it exposes.
 
-A ratchet with nothing holding it becomes a dumping ground, so the list is frozen in a test
-that permits removals and refuses additions:
+A ratchet with nothing holding it becomes a dumping ground, so the list is mirrored in a
+test that permits removals and refuses additions:
 
 ```python
 RATCHET_BASELINE = frozenset({"geovista.bridge", "geovista.common", ...})
 
 
 def test_ratchet_only_shrinks():
-    added = _ignored() - RATCHET_BASELINE
+    added, retired = _drift(_ignored(), RATCHET_BASELINE)
     assert not added, f"added to the typing ratchet: {sorted(added)}"
+    assert not retired, f"no longer ignored: {sorted(retired)} -- update the baseline"
 ```
+
+The second assertion is what keeps the first one honest. A baseline that names are only
+ever checked *against* is a high-water mark, and it keeps the name a retirement took out:
+a later change can then put that module back under `ignore_errors` and the test still
+passes, handing back the coverage the retiring change won with nothing in the diff to
+catch it. Holding the two level costs a line per retirement, and makes re-entry an
+addition to a list documented as only ever shrinking, in front of a reviewer watching it
+grow.
+
+The same reasoning governs how the test reads `ci-typing.yml`. The workflow matters only
+because `pre-commit.ci` skips `mypy` on the understanding that it runs there instead, so
+the test requires the hook's `entry` to be the last command of a step carrying neither
+`if` nor `continue-on-error`. Searching the script for the command as a substring would
+accept `echo`-ing it, commenting it out, or appending `|| true`. Requiring it *last*
+covers the job's `bash -l {0}`, which drops the `-e` that GitHub's default shell carries,
+so a command with anything after it can fail while the step succeeds.
 
 This follows `tests/test_python_support.py`, which encodes a convention as a test rather
 than trusting it to review, and reads `pyproject.toml` as text so that it needs neither a
