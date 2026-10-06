@@ -228,6 +228,9 @@ max_image_size = 450
 
 [tool.repo-review]
 ignore = [
+  # https://learn.scientific-python.org/development/guides/style/#PC140
+  "PC140", # Uses a type checker. Matched by repo URL, so the "local" hook
+  # running "mypy" in the locked pixi environment is invisible to it.
   # https://learn.scientific-python.org/development/guides/style/#PC180
   "PC180", # Uses prettier.
   # https://learn.scientific-python.org/development/guides/packaging-simple#PP006

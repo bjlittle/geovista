@@ -28,11 +28,14 @@ import tomllib
 from typing import Any
 
 import pytest
+import yaml
 
 #: The repository root, holding the manifest the ratchet lives in.
 ROOT = Path(__file__).parents[1]
 #: The manifest declaring the "mypy" configuration and its overrides.
 PYPROJECT = ROOT / "pyproject.toml"
+#: The hook configuration, which must skip "mypy" on "pre-commit.ci".
+PRE_COMMIT = ROOT / ".pre-commit-config.yaml"
 #: The package root, against which each ratchet entry is resolved.
 SOURCE = ROOT / "src"
 
@@ -169,3 +172,22 @@ def test_ratchet_is_not_empty():
 
     """
     assert _ignored(), "the ratchet is empty: delete this module and the override"
+
+
+def test_mypy_hook_is_skipped_on_pre_commit_ci():
+    """The local "mypy" hook needs "pixi", which "pre-commit.ci" has not got.
+
+    Without the skip every "pre-commit.ci" run fails with "pixi: command not
+    found", which reads as infrastructure flake rather than configuration.
+    The coverage moves to ".github/workflows/ci-typing.yml".
+
+    """
+    config = yaml.safe_load(PRE_COMMIT.read_text(encoding="utf-8"))
+    local = {
+        hook["id"]
+        for repo in config["repos"]
+        if repo["repo"] == "local"
+        for hook in repo["hooks"]
+    }
+    assert "mypy" in local, "the mypy hook is no longer local: is the skip needed?"
+    assert "mypy" in config["ci"]["skip"]
