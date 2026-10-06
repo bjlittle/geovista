@@ -116,6 +116,43 @@ def _ignored() -> frozenset[str]:
     )
 
 
+def _steps() -> tuple[dict[str, Any], ...]:
+    """Return every step of every job in the typing workflow.
+
+    Returns
+    -------
+    tuple of dict
+        The steps, flattened. A job that calls a reusable workflow carries
+        ``uses`` instead of ``steps``, and contributes nothing.
+
+    """
+    workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    return tuple(
+        step for job in workflow["jobs"].values() for step in job.get("steps", [])
+    )
+
+
+def _hook() -> dict[str, Any]:
+    """Return the "local" "mypy" hook.
+
+    Returns
+    -------
+    dict
+        The hook, as parsed.
+
+    """
+    config = yaml.safe_load(PRE_COMMIT.read_text(encoding="utf-8"))
+    hooks = [
+        hook
+        for repo in config["repos"]
+        if repo["repo"] == "local"
+        for hook in repo["hooks"]
+        if hook["id"] == "mypy"
+    ]
+    assert hooks, "no local 'mypy' hook: is the skip still needed?"
+    return hooks[0]
+
+
 def _resolve(module: str) -> Path | None:
     """Return the file a ratchet entry names, if it still exists.
 
@@ -185,13 +222,7 @@ def test_mypy_hook_is_skipped_on_pre_commit_ci():
 
     """
     config = yaml.safe_load(PRE_COMMIT.read_text(encoding="utf-8"))
-    local = {
-        hook["id"]
-        for repo in config["repos"]
-        if repo["repo"] == "local"
-        for hook in repo["hooks"]
-    }
-    assert "mypy" in local, "the mypy hook is no longer local: is the skip needed?"
+    assert _hook()["language"] == "system", "a managed environment needs no skip"
     assert "mypy" in config["ci"]["skip"]
 
 
@@ -203,14 +234,49 @@ def test_ci_typing_names_a_declared_environment():
     it.
 
     """
-    workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
     manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
     declared = set(manifest["tool"]["pixi"]["environments"])
     named = {
         step["with"]["environments"]
-        for job in workflow["jobs"].values()
-        for step in job["steps"]
+        for step in _steps()
         if "setup-pixi" in str(step.get("uses", ""))
     }
     assert named, "ci-typing.yml sets up no pixi environment"
     assert named <= declared, f"undeclared: {sorted(named - declared)}"
+
+
+def test_ci_typing_runs_the_hook_command():
+    """The workflow must run the command "pre-commit.ci" is skipping.
+
+    "mypy" is skipped on "pre-commit.ci" on the understanding that this
+    workflow carries it instead, and nothing else holds it to that. The step
+    can be deleted, or reduced to something that always succeeds, and the skip
+    then retires the check outright while both jobs stay green. ``frozen`` is
+    part of the command: it resolves from "pixi.lock" rather than re-solving
+    the manifest, which is what makes the two environments the same one.
+
+    """
+    entry = _hook()["entry"]
+    runs = [step.get("run", "") for step in _steps()]
+    assert any(entry in run for run in runs), f"no step runs {entry!r}"
+    setup = [step for step in _steps() if "setup-pixi" in str(step.get("uses", ""))]
+    assert all(step["with"].get("frozen") for step in setup), "install from the lock"
+
+
+def test_the_ratchet_is_the_only_suppression():
+    """Nothing at the top of "[tool.mypy]" may silence what the ratchet counts.
+
+    ``test_ratchet_only_shrinks`` reads the override blocks, so a suppression
+    written above them is invisible to it. A top-level ``ignore_errors``
+    silences every module at once, ``disable_error_code`` silences a class of
+    error everywhere, and narrowing ``files`` or filling ``exclude`` drops
+    modules from the run altogether. Each leaves the ratchet list untouched,
+    and each would otherwise leave the whole suite green.
+
+    """
+    manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
+    mypy = manifest["tool"]["mypy"]
+    assert not mypy.get("ignore_errors", False), "this silences every module"
+    assert not mypy.get("disable_error_code", []), "disable per module, not globally"
+    assert mypy["files"] == ["src/geovista"], "the whole package is checked"
+    assert mypy["exclude"] == [], "an exclude drops modules from the run"
