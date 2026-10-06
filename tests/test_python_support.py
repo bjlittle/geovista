@@ -9,11 +9,11 @@ GeoVista states which versions of Python it supports in several places at once:
 the trove classifiers and ``requires-python`` in "pyproject.toml", a ``pyXYZ``
 pixi feature and a solve-group of environments for each one, the unsuffixed
 environments that must always track the newest of them, the conda environment
-exported from those, and the matrices of the workflows that build and test
-them. Nothing in the tooling ties those together, so a version bump that
-reaches six of them and misses the seventh leaves the repository advertising
-one thing and testing another, with both halves perfectly valid on their own
-terms.
+exported from those, the version ``mypy`` is told to assume, and the matrices
+of the workflows that build and test them. Nothing in the tooling ties those
+together, so a version bump that reaches six of them and misses the seventh
+leaves the repository advertising one thing and testing another, with both
+halves perfectly valid on their own terms.
 
 These tests take the classifiers as the statement of intent and hold the rest
 to it. They read the source tree as text and need neither a built artefact, a
@@ -251,6 +251,21 @@ def test_requires_python_floors_at_the_oldest_classifier():
     oldest = min(_classifiers(), key=_order)
 
     assert _manifest()["project"]["requires-python"] == f">={oldest}"
+
+
+def test_mypy_type_checks_against_the_oldest_classifier():
+    """``mypy`` reads no floor from ``requires-python``, as ``ruff`` does.
+
+    It assumes the interpreter running it, which for the ``pre-commit`` hook is
+    whichever one that isolated environment was built with — the newest, never
+    the floor. A stdlib API added after the floor then type-checks clean here
+    and raises for the oldest version the classifiers advertise.
+
+    """
+    oldest = min(_classifiers(), key=_order)
+    target = _manifest()["tool"]["mypy"].get("python_version")
+
+    assert target == oldest, f"mypy targets {target}, not the {oldest} floor"
 
 
 def test_every_pixi_feature_pins_a_minor_version():

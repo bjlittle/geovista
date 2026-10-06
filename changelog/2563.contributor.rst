@@ -1,0 +1,14 @@
+``mypy`` is now told which distribution of ``python`` to assume, and it is the
+oldest one supported. It reads no floor from ``requires-python``, as ``ruff``
+does; it assumes the interpreter running it, which for the ``pre-commit`` hook
+is whichever one that isolated environment happens to have been built with. A
+stdlib API added after the floor therefore type checked clean here, and would
+have raised for the oldest version the classifiers advertise. Pinning
+``python_version`` makes a tenth place declaring ``python`` support, so
+``tests/test_python_support.py`` now holds it to the classifiers alongside the
+other nine.
+
+The gallery carousel walks its images with ``Path.walk`` again. :pull:`870`
+swapped it for ``os.walk`` when the floor was still ``python 3.10``, leaving a
+``TODO`` waiting on ``3.12``; the floor has been past it since :pull:`2561`.
+(:user:`claude`)
