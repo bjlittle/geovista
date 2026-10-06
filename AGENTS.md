@@ -73,6 +73,9 @@ packages belong in `pypi-dependencies`.
 
 **Install the hooks and let them gate commits, not CI:** `pixi run -e devs
 pre-commit install`, then `pre-commit run --files <paths>` before pushing.
+⚠️ The hook calls a bare `pre-commit`, absent from `PATH` outside the
+environment, so `git commit` aborts with "`pre-commit` not found" — commit
+through it instead: `pixi run --frozen -e geovista git commit ...`.
 
 ⚠️ **`mypy` is green because 23 modules are ratcheted, not because they pass.**
 The hook is `local`, running `pixi run --frozen -e geovista mypy` against the
@@ -115,14 +118,11 @@ cd docs && pixi run -e docs sphinx-build -b html \
 
 ⚠️ **`intersphinx` is no longer allowed to fail the build (#2517).** Each
 mapping in `conf.py` is `(url, (None, "_inventory/<name>.inv"))`, so an
-unreachable remote falls back on the vendored copy, and sphinx logs the earlier
-failure at `info` once a later location succeeds. Add a mapping and you **must**
-add its inventory: `pixi run -e docs fetch-inventories`, which
-`ci-inventories.yml` also runs monthly to raise a refresh PR. Should every
-location fail, the `intersphinx_resilience` extension disables `nitpicky` for
-the rest of the build rather than emitting hundreds of nitpick misses — a
-degraded build is annotated, so check the job summary before trusting a green
-docs run.
+unreachable remote falls back on the vendored copy. Add a mapping and you
+**must** add its inventory: `pixi run -e docs fetch-inventories` (monthly in
+`ci-inventories.yml`). Should every location fail, `intersphinx_resilience`
+disables `nitpicky` for the rest of the build, so check the job summary before
+trusting a green docs run.
 
 ⚠️ **`nitpick_ignore_regex` entries are prefix matches.** Sphinx applies them
 with `re.match`, anchored at the start only, so `(r"py:mod", r"pyvista")` also
