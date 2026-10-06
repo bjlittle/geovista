@@ -96,15 +96,13 @@ directive output can appear there. Check rendering with the `text` builder.
 
 ### File Formats
 
-Pages are reStructuredText; tutorials are Jupyter notebooks rendered via MyST-NB
-with cached execution. Cross-reference with Sphinx roles (`:ref:`, `:doc:`,
-`:func:`), and keep shared substitutions in `src/common.txt`.
+Pages are reStructuredText; tutorials are Jupyter notebooks. Cross-reference with
+Sphinx roles (`:ref:`, `:doc:`, `:func:`), and keep substitutions in `src/common.txt`.
 
 ### Do Not Edit (Generated)
 
-Regenerated on build, so never commit manual edits: `src/generated/`
-(sphinx-gallery), `src/reference/generated/` (sphinx-autoapi), `src/tags/`
-(sphinx-tags), `_build/`.
+Regenerated on build, never commit manual edits: `src/generated/` (sphinx-gallery),
+`src/reference/generated/` (sphinx-autoapi), `src/tags/` (sphinx-tags), `_build/`.
 
 ### Adding a New Page or Tutorial
 
@@ -126,6 +124,10 @@ an `{eval-rst}` fence or use the native `{readingtime}` one — a bare
 `.. readingtime:: <n>` for an estimate the word count cannot make, such as a
 tutorial whose reader runs every snippet.
 
+⚠️ **A `.md` page is built the day it lands.** `myst_parser` registers `.md` itself,
+whatever `source_suffix` names, so it warns `toc.not_included` and fails the build
+unless a toctree holds it, a page `.. include::`s it, or it sets `orphan: true` (#2564).
+
 ### RST Style
 
 NumPy-style docstrings in any Python within docs; sphinx-lint and codespell run
@@ -135,11 +137,10 @@ on `.rst` via pre-commit, and ruff lints Python in `docs/src`.
 #2557 left `testing.rst` pointing past a now 3-line block; only the build sees it.
 
 ⚠️ **A new `:fa:`/`:fab:` icon must be added to `src/_static/color.css`.** The
-selector list there ending `.fa-windows { color: #80d050 !important; }` is what
-brands every icon green; an icon absent from it renders in the default text
-colour and nothing warns you. Confirm the emitted class with
-`grep -o '<[^>]*fa-<name>[^>]*>' _build/html/<page>.html` — it is `fa fa-<name>`,
-and the list is alphabetical.
+selector list there ending `.fa-windows { color: #80d050 !important; }` brands every
+icon green; one absent from it renders in the default text colour, unwarned. Confirm
+the emitted class with `grep -o '<[^>]*fa-<name>[^>]*>' _build/html/<page>.html` — it
+is `fa fa-<name>`, and the list is alphabetical.
 
 ## Dependencies
 
@@ -147,11 +148,10 @@ Deps live in `[tool.pixi.feature.docs.dependencies]` / `.pypi-dependencies` in
 `pyproject.toml`, and in `requirements/pypi-optional-docs.txt` for
 `pip install -e ".[docs]"`. Use `pixi run -e docs <command>`.
 
-⚠️ **`sphinx-book-theme` pins `pydata-sphinx-theme` to an *exact* version**, so
-the two only ever move together (`1.4.0` requires `==0.20.0`). Bumping either
-alone can never resolve, and pinning one back silently freezes the other. Always
-bump the pair, checking the target release's pin first in its PyPI JSON. The
-theme is in maintenance mode, not abandoned.
+⚠️ **`sphinx-book-theme` pins `pydata-sphinx-theme` to an *exact* version** — the two
+only move together (`1.4.0` requires `==0.20.0`). Bumping either alone can never
+resolve, and pinning one back silently freezes the other. Always bump the pair, checking
+the target release's pin in its PyPI JSON. It is in maintenance mode, not abandoned.
 
 ⚠️ **A `contextlib.suppress(ModuleNotFoundError)` extension guard outlives its
 reason.** `sphinx-tippy`'s predated its conda-forge package and, by #2549, let a
@@ -196,4 +196,4 @@ in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
 
 ---
 
-**Last Updated**: 5 October 2026
+**Last Updated**: 6 October 2026
