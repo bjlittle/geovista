@@ -57,9 +57,8 @@ the previous environment.
 re-solves when the lock is *invalid*, and an already-locked version still
 satisfies a widened max-pin — so bumping a ceiling and running `pixi lock`
 leaves the old version in place, and the suite then silently tests nothing new.
-Use `pixi update <pkg>`, and confirm with `pixi list -e <env> <pkg>`. The same
-bump must also be applied to `requirements/pypi-*.txt`, which `pixi` neither
-reads nor updates.
+Use `pixi update <pkg>`, confirm with `pixi list -e <env> <pkg>`, and apply the
+same bump to `requirements/pypi-*.txt`, which `pixi` neither reads nor updates.
 
 ⚠️ **A max-pin cannot see a renamed distribution.** `vtk-xref` became
 `sphinx-vtk-xref` (#2541): the old name stopped at 0.1.2, so `pixi update` and
@@ -67,11 +66,10 @@ dependabot had nothing to offer while five months of fixes landed under the new
 name. A long-still pin is a smell — check PyPI.
 
 ⚠️ **A conda-forge package of the same name is not always the Python one.**
-Tools shipping both a Node and a Python distribution (`playwright` is the case
-in point) are packaged on conda-forge as the *Node* CLI, with no Python
-bindings at all: it installs cleanly and `import <pkg>` then raises
-`ModuleNotFoundError`. Check with an actual import before assuming conda-forge
-availability settles it; such packages belong in `pypi-dependencies`.
+Tools shipping both a Node and a Python distribution (`playwright`) are packaged
+there as the *Node* CLI, with no bindings at all: it installs cleanly and
+`import <pkg>` then raises `ModuleNotFoundError`. Check with a real import; such
+packages belong in `pypi-dependencies`.
 
 **Install the hooks and let them gate commits, not CI:** `pixi run -e devs
 pre-commit install`, then `pre-commit run --files <paths>` before pushing.
