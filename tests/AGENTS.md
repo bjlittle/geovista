@@ -8,18 +8,12 @@ pytest-based test suite for GeoVista. Tests cover the core library modules, CLI,
 
 One directory per `geovista` module — `bridge/`, `cache/`, `cli/`, `common/`,
 `core/`, `crs/`, `geodesic/`, `geometry/`, `geoplotter/`, `gridlines/`,
-`pantry/`, `search/`, `theme/`, `themes/`, `transform/` — plus `test_qt.py`.
-The exceptions:
-
-```
-tests/
-├── conftest.py          # Root fixtures (meshes, coastlines, CRS, plotting helpers)
-├── docs/                # Browser and sphinx configuration tests of the docs
-└── plotting/            # Image comparison tests (examples + unit plots)
-    ├── test_examples.py # Parametrized gallery example image tests
-    ├── geodesic/ geoplotter/ transform/  # Plotting tests per module
-    └── unit_image_cache # Baseline images (git-ignored, fetched from cache)
-```
+`pantry/`, `search/`, `themes/`, `transform/` — plus `test_qt.py` and the root
+`conftest.py` of shared fixtures. Two directories are not modules: `docs/`
+tests the built documentation, and `plotting/` holds the image comparisons —
+gallery examples in `test_examples.py`, per-module plots under `geodesic/`,
+`geoplotter/` and `transform/`, baselines fetched into `unit_image_cache/`
+(git-ignored).
 
 ## Running Tests
 
@@ -29,8 +23,7 @@ pixi run -e geovista tests-doc # documentation image tests
 pytest tests/core/             # direct; also -m "not image", -k "test_slice_cells"
 ```
 
-The pixi tasks run from the repo root; pytest reads its config from
-`pyproject.toml` either way.
+The pixi tasks run from the repo root; pytest reads `pyproject.toml` either way.
 
 ## Configuration
 
@@ -59,7 +52,15 @@ mixes static and browser checks, so it marks per-test instead, which keeps
 One file per public function or class, named `test_<function_or_class>.py`, with
 functions named `test_<scenario>` for the behaviour verified. Every file begins
 with the copyright header given in the root `AGENTS.md`, followed by
-`from __future__ import annotations` (both enforced by ruff).
+`from __future__ import annotations` (both enforced by ruff). A name outside
+pytest's `python_files` default is collected by nothing and warns about nothing:
+`tests/themes/test.py` sat dead from #2259 until #2558 renamed it.
+
+⚠️ **`tests/plotting/__init__.py` rewrites global `pyvista` state at import** —
+the testing theme over `pv.global_theme`, plus `OFF_SCREEN` and
+`GEOVISTA_IMAGE_TESTING`. That is *collection*, so `-m "not image"` is no
+escape, and a test reading global theme state passes on its own directory and
+fails in a full run. Restore it in a fixture: `copy.deepcopy` round-trips.
 
 ### Fixtures
 
