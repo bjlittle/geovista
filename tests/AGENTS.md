@@ -107,9 +107,10 @@ pixi run -e geovista tests-docs-browser html-gallery strict  # what CI runs
 ```
 
 Every prerequisite **skips** rather than fails — no playwright, no chromium, no
-build, no carousel — so a plain `pytest` run is unaffected. The task selects the
-whole of `tests/docs`, not the `browser` marker, so the sphinx configuration
-tests beside them share the same CI job and the same guard.
+build, no carousel. The task selects the whole of `tests/docs`, not the `browser`
+marker, so the sphinx configuration tests share that CI job and guard. ⚠️ But an
+*existing* build satisfies the guard however stale, so a plain `pytest` audits
+whatever was last built — rebuild before believing a `tests/docs` result.
 
 ⚠️ **A source-tree policy gate has nothing to skip on, and must not acquire
 one.** `test_readingtime_coverage.py` reads `docs/src` as *text* and
@@ -150,11 +151,10 @@ the image tests the carousel is only meaningfully exercised in CI.
 
 ⚠️ **A setting applied in emitted JavaScript is invisible to the build.**
 `tippy_skip_anchor_classes` is consulted in the browser as a tooltip is
-*attached*, so a skipped anchor still has one *generated* into the page payload:
-drop a class and nothing under `_build/html` changes. Only a browser sees it.
-Its sibling `tippy_skip_urls` is applied as the tooltip is generated, so that
-half *is* checkable statically. Gate a two-halved config with both kinds of
-test, and be clear which half any given assertion covers.
+*attached*, so a skipped anchor still has one *generated* into the payload and
+nothing under `_build/html` changes — only a browser sees it. Its sibling
+`tippy_skip_urls` applies as it is generated, so that half *is* checkable
+statically. Gate both halves, and be clear which half an assertion covers.
 
 ⚠️ **Never let a generated artefact set a test's scope.** `sphinx_tippy` stamps
 each payload with a UUID and its stale-payload cleanup globs the wrong path
@@ -196,4 +196,4 @@ and in `requirements/pypi-optional-test.txt`. Use `pixi run -e test <command>`.
 
 ---
 
-**Last Updated**: 5 October 2026
+**Last Updated**: 6 October 2026
