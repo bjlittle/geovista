@@ -1,0 +1,20 @@
+``mypy`` has run in strict mode since the configuration was written, and has
+never seen a third-party type. The ``pre-commit`` hook is ``mirrors-mypy``,
+whose isolated environment installs ``mypy`` and nothing else, so imports from
+``pyvista``, ``numpy``, ``pyproj`` and the rest resolve to ``Any``. Run instead
+against the locked ``geovista`` environment, the same configuration reports 642
+errors across 22 of the 25 library modules.
+
+The design for closing that is recorded under ``docs/src/developer/specs/``, the
+first specification this repository carries: a ``local`` hook invoking the locked
+environment's own ``mypy``, a companion CI job for ``pre-commit.ci`` which has no
+``pixi``, and a per-module ratchet so the check can go live before the 206 lines
+behind those errors are corrected.
+
+Specifications here are living documents, maintained alongside the code and
+cited by section from the files they govern, so where the two diverge it is the
+specification that gets corrected. This one is built but not yet listed in a
+toctree, and carries ``orphan: true`` until the specifications gain an index.
+Note that ``myst_parser`` registers ``.md`` whatever ``source_suffix`` names, so
+any markdown page added under ``docs/src`` is built from the day it lands, and
+warns unless a toctree holds it or another page includes it. (:user:`claude`)
