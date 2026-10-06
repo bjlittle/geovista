@@ -41,7 +41,7 @@ dependencies:
 - trame-pyvista >=0.1.1,<0.2
 - wurlitzer >=3.1.1,<4
 - pip >=25.1.1,<26
-- python 3.13.*
+- python 3.14.*
 - python >=3.13
 - codecov >=2.1.13,<3
 - pytest >=8.4.0,<10

@@ -7,11 +7,13 @@
 
 GeoVista states which versions of Python it supports in several places at once:
 the trove classifiers and ``requires-python`` in "pyproject.toml", a ``pyXYZ``
-pixi feature and a solve-group of environments for each one, and the matrices
-of the workflows that build and test them. Nothing in the tooling ties those
-together, so a version bump that reaches six of them and misses the seventh
-leaves the repository advertising one thing and testing another, with both
-halves perfectly valid on their own terms.
+pixi feature and a solve-group of environments for each one, the unsuffixed
+environments that must always track the newest of them, the conda environment
+exported from those, and the matrices of the workflows that build and test
+them. Nothing in the tooling ties those together, so a version bump that
+reaches six of them and misses the seventh leaves the repository advertising
+one thing and testing another, with both halves perfectly valid on their own
+terms.
 
 These tests take the classifiers as the statement of intent and hold the rest
 to it. They read the source tree as text and need neither a built artefact, a
@@ -37,6 +39,9 @@ ROOT = Path(__file__).parents[1]
 PYPROJECT = ROOT / "pyproject.toml"
 #: The workflows naming a pixi environment or a bare interpreter version.
 WORKFLOWS = ROOT / ".github" / "workflows"
+#: The conda environment file "ci-locks.yml" exports from the "geovista"
+#: environment, and so the one version a reader installing by hand will get.
+EXPORT = ROOT / "requirements" / "geovista.yml"
 
 #: A trove classifier naming a supported minor version.
 CLASSIFIER = re.compile(r"^Programming Language :: Python :: (\d+\.\d+)$")
@@ -44,11 +49,18 @@ CLASSIFIER = re.compile(r"^Programming Language :: Python :: (\d+\.\d+)$")
 FEATURE = re.compile(r"^py(\d{3,})$")
 #: The "python" pin of a "pyXYZ" feature, e.g. "3.13.*".
 PIN = re.compile(r"^(\d+\.\d+)\.\*$")
+#: The same pin as the export carries it, e.g. "python 3.13.*". The export also
+#: carries the "requires-python" floor, which is deliberately looser.
+EXPORTED = re.compile(r"^python (\d+\.\d+)\.\*$")
 #: The matrix value a workflow interpolates into an environment name. Matched
 #: rather than compared, since the braces take optional interior whitespace.
 PLACEHOLDER = re.compile(r"\$\{\{\s*matrix\.version\s*\}\}")
 #: Any remaining expression, which cannot be resolved without a running job.
 EXPRESSION = "${{"
+
+#: The solve-group of the unsuffixed environments, which are named for what
+#: they hold rather than for a version, and so track the newest supported one.
+PRIMARY = "default"
 
 #: The workflows whose matrix must carry every supported version, because they
 #: are what makes the support claim true. The rest build on one version
@@ -98,9 +110,47 @@ def _features() -> dict[str, str | None]:
     return pinned
 
 
-def _environments() -> set[str]:
-    """Return the names of the declared pixi environments."""
-    return set(_manifest()["tool"]["pixi"]["environments"])
+@cache
+def _environments() -> dict[str, dict[str, Any]]:
+    """Return each declared pixi environment as a table, keyed by name.
+
+    Pixi also accepts a bare list of features as shorthand for a table, which
+    is normalised here so that the callers below need only the one shape.
+
+    """
+    declared = _manifest()["tool"]["pixi"]["environments"]
+    return {
+        name: body if isinstance(body, dict) else {"features": body}
+        for name, body in declared.items()
+    }
+
+
+def _pinned(name: str) -> set[str]:
+    """Return the "pyXYZ" features carried by the environment."""
+    return {
+        feature
+        for feature in _environments()[name].get("features", [])
+        if FEATURE.match(feature)
+    }
+
+
+def _grouped() -> dict[str, set[str]]:
+    """Map each solve-group to the environments belonging to it.
+
+    An environment declaring no solve-group solves alone, in a group of its own
+    name, which is how pixi reads the omission.
+
+    """
+    groups: dict[str, set[str]] = {}
+    for name, body in _environments().items():
+        groups.setdefault(body.get("solve-group", name), set()).add(name)
+    return groups
+
+
+def _newest() -> str:
+    """Return the "pyXYZ" feature pinning the newest supported version."""
+    pinned = {name: version for name, version in _features().items() if version}
+    return max(pinned, key=lambda name: _order(pinned[name]))
 
 
 def _prefixes() -> dict[str, set[str]]:
@@ -192,6 +242,56 @@ def test_every_version_has_the_same_environments():
     assert len(distinct) == 1, f"environments differ between versions: {prefixes}"
 
 
+def test_every_environment_carries_one_python_feature():
+    """Two features would resolve one away, and none leaves the version to pixi."""
+    carried = {name: sorted(_pinned(name)) for name in _environments()}
+    wrong = {name: features for name, features in carried.items() if len(features) != 1}
+
+    assert not wrong, f"environments not carrying one pyXYZ feature: {wrong}"
+
+
+def test_the_primary_solve_group_tracks_the_newest_version():
+    """The unsuffixed environments are the ones a bare "pixi run" reaches for."""
+    primary = _grouped().get(PRIMARY, set())
+    assert primary, f"no environments in the {PRIMARY!r} solve-group"
+
+    newest = _newest()
+    stale = {
+        name: sorted(_pinned(name)) for name in primary if _pinned(name) != {newest}
+    }
+
+    assert not stale, f"environments behind the newest feature {newest!r}: {stale}"
+
+
+def test_each_secondary_solve_group_carries_the_feature_it_names():
+    """A group resolved against another version tests nothing its name claims."""
+    secondary = {group: _grouped().get(group, set()) for group in _features()}
+    missing = sorted(group for group, names in secondary.items() if not names)
+    assert not missing, f"pixi features with no solve-group of their own: {missing}"
+
+    mismatched = {
+        name: sorted(_pinned(name))
+        for group, names in secondary.items()
+        for name in names
+        if _pinned(name) != {group}
+    }
+
+    assert not mismatched, f"environments carrying another feature: {mismatched}"
+
+
+def test_the_exported_environment_pins_the_newest_version():
+    """Nothing re-exports on a bump, so a stale file outlives what made it."""
+    dependencies = yaml.safe_load(EXPORT.read_text(encoding="utf-8"))["dependencies"]
+    pinned = {
+        match.group(1)
+        for entry in dependencies
+        if (match := EXPORTED.match(str(entry)))
+    }
+    assert pinned, f"no pinned python in {EXPORT.name}"
+
+    assert pinned == {_features()[_newest()]}
+
+
 @pytest.mark.parametrize("workflow", EXHAUSTIVE)
 def test_the_matrix_carries_every_supported_version(workflow):
     """These are the jobs that make the support claim true rather than stated."""
@@ -219,7 +319,7 @@ def test_every_workflow_names_a_declared_environment():
     requested = {path.name: _requests(path.name) for path in workflows}
     assert any(requested.values()), "no workflow names a pixi environment"
 
-    declared = _environments()
+    declared = set(_environments())
     unknown = {
         name: sorted(missing)
         for name, wanted in requested.items()
