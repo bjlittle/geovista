@@ -114,15 +114,23 @@ This follows `pyvista`, which runs `mypy` as a dedicated workflow and carries no
 hook at all; `geovista` keeps the hook as well, because this repository gates commits with
 hooks rather than deferring to CI.
 
-Two of the three existing `[[tool.mypy.overrides]]` blocks become redundant and are deleted
-with the same change. `disallow_subclassing_any = false` and
-`disallow_untyped_decorators = false` exist because `pv.Plotter` and `click`'s decorators
-were `Any`; with the real types installed both produce zero errors.
+The three existing `[[tool.mypy.overrides]]` blocks are narrowed, not deleted. Measured on
+2026-10-06, removing them raises the total from 642 to 648. `disallow_untyped_decorators`
+stays on `geovista.cli`: `click` ships `py.typed`, but `main.command` is an untyped
+decorator and three commands depend on it. `disallow_subclassing_any` stays on
+`geovista.qt`, where `pyvistaqt` is absent from the locked environment altogether, so its
+three base classes are `Any`. The same setting is redundant for `geovista.geoplotter` and
+`geovista.report`, which report an identical 36 and 5 errors either way, so those two names
+come off its `module` list.
 
 (typing-spec-3-2)=
 ### 3.2 The ratchet
 
-The twenty-two modules carrying errors are listed once, with `ignore_errors`:
+The twenty-two modules carrying errors are listed once with `ignore_errors`, alongside the
+gallery. With the library ignored and the {ref}`§3.4 <typing-spec-3-4>` suppression
+applied, `examples/` still reports 28 errors — 8 `import-untyped` and the 20 lines change 7
+corrects — so `geovista.examples.*` joins the ratchet as a twenty-third entry and leaves
+with change 7.
 
 ```toml
 [[tool.mypy.overrides]]
@@ -134,6 +142,7 @@ module = [
   "geovista.bridge",
   "geovista.common",
   # the remaining twenty
+  "geovista.examples.*",
 ]
 ```
 
@@ -232,13 +241,13 @@ account of `geopy` being untyped.
 
 | # | Scope | Lines | Status |
 |---|---|---|---|
-| 1 | The `local` hook, `ci-typing.yml`, the ratchet and its test | 0 | not started |
+| 1 | The `local` hook, `ci-typing.yml`, the ratchet and its test | 0 | landed |
 | 2 | `transform.py` | 29 | not started |
 | 3 | `bridge.py` | 28 | not started |
 | 4 | `common.py` | 20 | not started |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | not started |
 | 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | not started |
-| 7 | `examples/`, and the ratchet retired | 20 | not started |
+| 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
 
 Each carries a towncrier fragment and the `agentic` label. Changes 2 to 4 alter published
 signatures and each adds tests exercising the widened input.

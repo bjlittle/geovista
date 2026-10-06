@@ -1,0 +1,14 @@
+The ``mypy`` ``pre-commit`` hook is now a ``local`` one invoking the locked
+``geovista`` ``pixi`` environment, where the third-party types are real, rather
+than ``mirrors-mypy``, whose isolated environment resolved every one of them to
+``Any``. Contributors therefore need ``pixi`` on PATH for the hook to run.
+``pre-commit.ci`` has none, so the hook is listed under ``ci.skip`` and
+``ci-typing.yml`` carries the identical command.
+
+Going live would otherwise have meant correcting 642 errors in a single change,
+so the 22 library modules carrying them are listed under ``ignore_errors``
+alongside the gallery, and ``tests/test_typing_ratchet.py`` only ever lets that
+list shrink. The check is live today for everything outside it, and each module
+is retired on its own. ``sp-repo-review``'s ``PC140`` is ignored along the way:
+it matches a fixed set of repository URLs, so a ``local`` hook is invisible to
+it whatever it runs. (:user:`claude`)
