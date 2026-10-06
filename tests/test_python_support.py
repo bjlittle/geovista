@@ -63,12 +63,18 @@ EXPRESSION = "${{"
 PRIMARY = "default"
 
 #: The workflows whose matrix must carry every supported version, because they
-#: are what makes the support claim true. The rest build on one version
-#: deliberately, and are held only to naming an environment that exists.
+#: are what makes the support claim true.
 EXHAUSTIVE = ("ci-tests.yml", "ci-wheels.yml")
+#: The workflows that build and test the documentation, chromium included. One
+#: version is enough to prove that toolchain works, and it is the newest, so a
+#: documentation dependency unready for it is found here and not by a reader.
+LATEST = ("ci-docs.yml", "ci-tests-docs.yml")
 #: The workflow installing the published wheel, which selects an interpreter by
 #: version rather than a pixi environment by feature.
 PYPI = "ci-tests-pypi.yml"
+#: The workflow whose matrix "include" singles out the one version the coverage
+#: report is measured on, which the documentation states is the newest.
+COVERED = "ci-tests.yml"
 
 
 @cache
@@ -177,6 +183,26 @@ def _matrices(name: str) -> dict[str, list[str]]:
         for job, body in _workflow(name).get("jobs", {}).items()
         if (versions := body.get("strategy", {}).get("matrix", {}).get("version"))
     }
+
+
+def _measured(name: str) -> dict[str, set[str]]:
+    """Return the versions each job measures coverage on, keyed by job.
+
+    A matrix "include" adding ``coverage`` to one version is how a workflow
+    singles it out, so an entry carrying no such key is passed over.
+
+    """
+    measured: dict[str, set[str]] = {}
+    for job, body in _workflow(name).get("jobs", {}).items():
+        included = body.get("strategy", {}).get("matrix", {}).get("include", [])
+        versions = {
+            entry["version"]
+            for entry in included
+            if "coverage" in entry and "version" in entry
+        }
+        if versions:
+            measured[job] = versions
+    return measured
 
 
 def _requests(name: str) -> set[str]:
@@ -302,6 +328,16 @@ def test_the_matrix_carries_every_supported_version(workflow):
         assert set(versions) == set(_features()), f"{workflow}: {job}"
 
 
+@pytest.mark.parametrize("workflow", LATEST)
+def test_the_documentation_matrix_carries_only_the_newest_version(workflow):
+    """Running on one version is a choice, and nothing else records which."""
+    matrices = _matrices(workflow)
+    assert matrices, f"no version matrix in {workflow}"
+
+    for job, versions in matrices.items():
+        assert set(versions) == {_newest()}, f"{workflow}: {job}"
+
+
 def test_the_pypi_matrix_carries_every_classifier():
     """The published wheel is installed by interpreter version, not by feature."""
     matrices = _matrices(PYPI)
@@ -309,6 +345,15 @@ def test_the_pypi_matrix_carries_every_classifier():
 
     for job, versions in matrices.items():
         assert set(versions) == _classifiers(), f"{PYPI}: {job}"
+
+
+def test_the_coverage_report_is_measured_on_the_newest_version():
+    """Only one version is measured, and the documentation says which."""
+    measured = _measured(COVERED)
+    assert measured, f"no job in {COVERED} singles out a version for coverage"
+
+    for job, versions in measured.items():
+        assert versions == {_newest()}, f"{COVERED}: {job}"
 
 
 def test_every_workflow_names_a_declared_environment():

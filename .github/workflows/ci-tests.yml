@@ -48,7 +48,7 @@ jobs:
         session: ["tests"]
         marker: ["image", "not image"]
         include:
-          - version: "py313"
+          - version: "py314"
             coverage: "--cov-report= --cov=geovista"
 
     steps:

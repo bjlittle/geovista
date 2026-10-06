@@ -1,8 +1,15 @@
 Added a test that holds every declaration of ``python`` support to the trove
-classifiers in ``pyproject.toml``, namely ``requires-python``, the ``pyXYZ``
-``pixi`` features, the environments and solve-groups built upon them, and the
-workflow matrices. Nine places declare which versions are supported and nothing
-else ties them together, so a bump reaching only some of them leaves
-``geovista`` advertising one version of ``python`` and testing another. The
-test reads the source tree as text, so it requires neither a built artefact, a
-network, nor any particular interpreter. (:user:`claude`)
+classifiers in ``pyproject.toml``: ``requires-python``, the ``pyXYZ`` ``pixi``
+features, the environments and solve-groups built upon them, the conda
+environment that ``ci-locks.yml`` exports, and the workflow matrices. Nine
+places declare which versions are supported and nothing else ties them
+together, so a bump reaching only some of them leaves ``geovista`` advertising
+one version of ``python`` and testing another. The test reads the source tree
+as text, so it requires neither a built artefact, a network, nor any particular
+interpreter.
+
+The same test now also records a convention that had only ever been followed by
+hand: the ``ci-docs.yml`` and ``ci-tests-docs.yml`` workflows build the
+documentation against the **latest** supported distribution of ``python``
+alone, as does the ``codecov`` report raised by ``ci-tests.yml``. Adopting
+``python 3.14`` had left all three on the oldest instead. (:user:`claude`)
