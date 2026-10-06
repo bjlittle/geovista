@@ -36,6 +36,8 @@ ROOT = Path(__file__).parents[1]
 PYPROJECT = ROOT / "pyproject.toml"
 #: The hook configuration, which must skip "mypy" on "pre-commit.ci".
 PRE_COMMIT = ROOT / ".pre-commit-config.yaml"
+#: The workflow carrying the coverage "pre-commit.ci" cannot provide.
+WORKFLOW = ROOT / ".github" / "workflows" / "ci-typing.yml"
 #: The package root, against which each ratchet entry is resolved.
 SOURCE = ROOT / "src"
 
@@ -191,3 +193,24 @@ def test_mypy_hook_is_skipped_on_pre_commit_ci():
     }
     assert "mypy" in local, "the mypy hook is no longer local: is the skip needed?"
     assert "mypy" in config["ci"]["skip"]
+
+
+def test_ci_typing_names_a_declared_environment():
+    """The workflow's pixi environment must exist in the manifest.
+
+    A name that does not resolve fails the job at setup, with a message about
+    the environment rather than about the manifest that should have declared
+    it.
+
+    """
+    workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+    manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
+    declared = set(manifest["tool"]["pixi"]["environments"])
+    named = {
+        step["with"]["environments"]
+        for job in workflow["jobs"].values()
+        for step in job["steps"]
+        if "setup-pixi" in str(step.get("uses", ""))
+    }
+    assert named, "ci-typing.yml sets up no pixi environment"
+    assert named <= declared, f"undeclared: {sorted(named - declared)}"

@@ -1,0 +1,55 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/prefix-dev/setup-pixi
+
+name: ci-typing
+
+on:
+  pull_request:
+
+  push:
+    branches:
+      - "main"
+      - "v*x"
+      - "!pixi-auto-update"
+      - "!pre-commit-ci-update-config"
+      - "!dependabot/*"
+    tags:
+      - "v*"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  typing:
+    name: "mypy"
+    runs-on: "ubuntu-latest"
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          # "setuptools-scm" derives the version from the history, which the
+          # editable install of "geovista" needs.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        with:
+          environments: "geovista"
+          frozen: true
+
+      - name: "mypy"
+        # typing spec 3.1 -- the identical command the "pre-commit" hook runs,
+        # which "pre-commit.ci" skips for want of "pixi".
+        run: |
+          pixi run --frozen -e geovista mypy
