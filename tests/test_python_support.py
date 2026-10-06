@@ -140,16 +140,35 @@ def _pinned(name: str) -> set[str]:
     }
 
 
-def _grouped() -> dict[str, set[str]]:
-    """Map each solve-group to the environments belonging to it.
+def _group(name: str) -> str:
+    """Return the solve-group the environment belongs to.
 
     An environment declaring no solve-group solves alone, in a group of its own
     name, which is how pixi reads the omission.
 
     """
+    return str(_environments()[name].get("solve-group", name))
+
+
+def _named(name: str) -> str | None:
+    """Return the "pyXYZ" feature that the environment's name declares, if any.
+
+    An environment is named either for a version, as "py314" and "test-py314"
+    are, or for what it holds, as the unsuffixed ones are. The latter declare
+    no version, and so return ``None``.
+
+    """
+    for feature in _features():
+        if name == feature or name.endswith(f"-{feature}"):
+            return feature
+    return None
+
+
+def _grouped() -> dict[str, set[str]]:
+    """Map each solve-group to the environments belonging to it."""
     groups: dict[str, set[str]] = {}
-    for name, body in _environments().items():
-        groups.setdefault(body.get("solve-group", name), set()).add(name)
+    for name in _environments():
+        groups.setdefault(_group(name), set()).add(name)
     return groups
 
 
@@ -168,11 +187,8 @@ def _prefixes() -> dict[str, set[str]]:
     """
     prefixes: dict[str, set[str]] = {feature: set() for feature in _features()}
     for name in _environments():
-        for feature, found in prefixes.items():
-            if name == feature:
-                found.add("")
-            elif name.endswith(f"-{feature}"):
-                found.add(name.removesuffix(f"-{feature}"))
+        if (feature := _named(name)) is not None:
+            prefixes[feature].add(name.removesuffix(feature).removesuffix("-"))
     return prefixes
 
 
@@ -303,6 +319,47 @@ def test_each_secondary_solve_group_carries_the_feature_it_names():
     }
 
     assert not mismatched, f"environments carrying another feature: {mismatched}"
+
+
+def test_each_versioned_environment_agrees_with_its_name():
+    """The name is what a workflow interpolates, and what a reader believes.
+
+    The solve-group check above runs the other way round, from the group to the
+    environments in it, so on its own it lets an environment leave the group it
+    is named for as long as it takes that group's feature with it.
+
+    """
+    versioned = {
+        name: feature
+        for name in _environments()
+        if (feature := _named(name)) is not None
+    }
+    assert versioned, "no environment is named for a pyXYZ feature"
+
+    carried = {
+        name: sorted(_pinned(name))
+        for name, feature in versioned.items()
+        if _pinned(name) != {feature}
+    }
+    assert not carried, f"environments not carrying the version they name: {carried}"
+
+    adrift = {
+        name: _group(name)
+        for name, feature in versioned.items()
+        if _group(name) != feature
+    }
+
+    assert not adrift, f"environments not solved in the group they name: {adrift}"
+
+
+def test_every_unversioned_environment_is_in_the_primary_solve_group():
+    """Named for what it holds, so only its group decides the version it gets."""
+    unversioned = sorted(name for name in _environments() if _named(name) is None)
+    assert unversioned, "no environment is named for what it holds"
+
+    adrift = {name: _group(name) for name in unversioned if _group(name) != PRIMARY}
+
+    assert not adrift, f"environments outside the {PRIMARY!r} solve-group: {adrift}"
 
 
 def test_the_exported_environment_pins_the_newest_version():
