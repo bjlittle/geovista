@@ -8,6 +8,9 @@ ci:
   autofix_commit_msg: "style: pre-commit.ci auto-fixes"
   autoupdate_commit_msg: "chore: update pre-commit hooks"
   autoupdate_schedule: "weekly"
+  # typing spec 3.1 -- "mypy" runs against the locked pixi environment, which
+  # "pre-commit.ci" has no way to build. Covered by "ci-typing.yml" instead.
+  skip: [mypy]
 
 repos:
   - repo: meta
@@ -48,12 +51,19 @@ repos:
         types_or: [python, markdown, rst]
         additional_dependencies: [tomli]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v2.4.0'
+  - repo: local
     hooks:
       - id: mypy
-        # https://github.com/python/mypy/issues/13916
+        name: mypy
+        # typing spec 3.1 -- an isolated "mirrors-mypy" venv installs "mypy"
+        # and nothing else, so every third-party import resolves to "Any" and
+        # the check succeeds against anything. "--frozen" resolves strictly
+        # from "pixi.lock", so this is exactly the environment CI installs.
+        # https://github.com/python/mypy/issues/13916 is why no filenames pass.
+        entry: pixi run --frozen -e geovista mypy
+        language: system
         pass_filenames: false
+        types: [python]
 
   - repo: https://github.com/numpy/numpydoc
     rev: v1.11.0

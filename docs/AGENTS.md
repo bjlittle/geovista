@@ -54,12 +54,11 @@ Key extensions configured in `src/conf.py`:
 | `sphinx_llms_txt` | LLM-friendly text output |
 | `pyvista.ext.plot_directive` / `.viewer_directive` | 3D plots in docstrings; interactive viewer |
 
-⚠️ **A new `intersphinx_mapping` entry needs a vendored inventory.** Add the URL
-to `INTERSPHINX_URLS` in `src/conf.py` — the single source of truth, read by
-`.github/scripts/inventories.py` — then run `pixi run -e docs fetch-inventories`
-and commit the `_inventory/*.inv` it writes. Without one, an outage at that site
-falls through to `intersphinx_resilience`, which saves the build by disabling
-`nitpicky` for the rest of it. See the root `AGENTS.md` and issue #2517.
+⚠️ **A new `intersphinx_mapping` entry needs a vendored inventory.** Add the URL to
+`INTERSPHINX_URLS` in `src/conf.py` — the single source of truth, read by
+`.github/scripts/inventories.py` — then `pixi run -e docs fetch-inventories` and commit
+the `_inventory/*.inv` it writes. Without one, an outage there falls through to
+`intersphinx_resilience`, which saves the build by disabling `nitpicky`. See issue #2517.
 
 ⚠️ **An extension's default asset URLs are a network dependency too**, and they
 bite at *read* time, so no build log ever shows them. `sphinx-tippy` defaulted
@@ -80,13 +79,12 @@ sibling `tippy_skip_anchor_classes` *replaces* the defaults
 `headerlink`/`sd-stretched-link` rather than extending them, and applies in the
 browser, so dropping one leaves the build unchanged. `test_tooltips.py` gates both.
 
-⚠️ **Nothing type-checks `src/_ext`:** the `mypy` hook is `pass_filenames: false`,
-so it only sees `[tool.mypy] files = ["src/geovista"]`, and `numpydoc-validation`
-is `files: "^src/"` — #2551 found `PATTERN: re.Match` and a `-> None` `setup()`
-returning a dict. That `setup()` must also return `parallel_read_safe` and
-`parallel_write_safe`, or `--jobs` warns twice and reads serially, failing
-`--fail-on-warning`; and must `env.note_dependency(__file__)` for anything it
-bakes into a doctree, its own modules being no source sphinx watches.
+⚠️ **Nothing type-checks `src/_ext`:** the `mypy` hook is `pass_filenames: false`, so it
+only sees `[tool.mypy] files = ["src/geovista"]`, and `numpydoc-validation` is
+`files: "^src/"` — #2551 found `PATTERN: re.Match` and a `-> None` `setup()` returning a
+dict. That `setup()` must also return `parallel_read_safe` and `parallel_write_safe`, or
+`--jobs` warns twice and reads serially, failing `--fail-on-warning`; and must
+`env.note_dependency(__file__)` for doctree content, its modules being no source sphinx sees.
 
 ⚠️ **`sphinx-llms-txt` concatenates `_sources/*` verbatim** — page *source*, so
 `llms-full.txt` carries `.. readingtime::` rather than the banner, and no
@@ -133,14 +131,17 @@ unless a toctree holds it, a page `.. include::`s it, or it sets `orphan: true` 
 NumPy-style docstrings in any Python within docs; sphinx-lint and codespell run
 on `.rst` via pre-commit, and ruff lints Python in `docs/src`.
 
+⚠️ **Python in a `.md`/`.rst` fence is formatted by `blacken-docs` (black), not
+`ruff-format`, and can need two passes to settle** — a wrapped `assert cond, "msg"` flips
+between parenthesising the condition and the message. Keep fenced code under 88 unwrapped.
+
 ⚠️ **A reformat silently desyncs `:emphasize-lines:`.** The `black` 26 reflow in
 #2557 left `testing.rst` pointing past a now 3-line block; only the build sees it.
 
-⚠️ **A new `:fa:`/`:fab:` icon must be added to `src/_static/color.css`.** The
-selector list there ending `.fa-windows { color: #80d050 !important; }` brands every
-icon green; one absent from it renders in the default text colour, unwarned. Confirm
-the emitted class with `grep -o '<[^>]*fa-<name>[^>]*>' _build/html/<page>.html` — it
-is `fa fa-<name>`, and the list is alphabetical.
+⚠️ **A new `:fa:`/`:fab:` icon must be added to `src/_static/color.css`.** The selector
+list there ending `.fa-windows { color: #80d050 !important; }` brands every icon green;
+one absent renders in the default text colour, unwarned. Confirm the emitted class with
+`grep -o '<[^>]*fa-<name>[^>]*>' _build/html/<page>.html` — it is `fa fa-<name>`, sorted.
 
 ## Dependencies
 
@@ -169,19 +170,18 @@ inherits the sidebar's collapsed state and sits open but invisible over a page
 it blocks.
 
 The two halves retire separately. The duplicate buttons are sphinx-book-theme
-[#988](https://github.com/executablebooks/sphinx-book-theme/issues/988) /
-[#999](https://github.com/executablebooks/sphinx-book-theme/issues/999), fixed on
-`main` by [#987](https://github.com/executablebooks/sphinx-book-theme/pull/987)
-but unreleased as of `1.4.0`. The breakpoint stranding is *not* fixed by it
-(verified against a DOM with the redundant navbar removed) and is
-[#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), so
-outlives it. Re-check both on every theme bump.
+[#988](https://github.com/executablebooks/sphinx-book-theme/issues/988), fixed on `main`
+by [#987](https://github.com/executablebooks/sphinx-book-theme/pull/987) but unreleased as
+of `1.4.0`; the breakpoint stranding is *not* fixed by it (verified against a DOM without
+the redundant navbar), is
+[#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), and so outlives
+it. Re-check both on every theme bump.
 
 Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
-`ci-tests-docs.yml` — the image tests compare pyvista scenes, not page furniture.
-Run `pixi run -e geovista tests-docs-browser`; `tests/AGENTS.md` has the gotchas,
-including why CI must pass `--browser-strict`. The suite needs a *local* build,
-never a Read the Docs URL — RTD's addons re-inject the page after `load`.
+`ci-tests-docs.yml` — the image tests compare pyvista scenes, not page furniture. Run
+`pixi run -e geovista tests-docs-browser`; `tests/AGENTS.md` has the gotchas, including
+why CI must pass `--browser-strict`. The suite needs a *local* build, never a Read the
+Docs URL — RTD's addons re-inject the page after `load`.
 
 Developer-facing docs live in `docs/src/developer/`: the theme shim and tooltips
 in `documentation.rst` (:fa:`palette` Theme, :fa:`comments` Tooltips), the suite

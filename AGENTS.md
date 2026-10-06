@@ -57,35 +57,32 @@ the previous environment.
 re-solves when the lock is *invalid*, and an already-locked version still
 satisfies a widened max-pin — so bumping a ceiling and running `pixi lock`
 leaves the old version in place, and the suite then silently tests nothing new.
-Use `pixi update <pkg>`, and confirm with `pixi list -e <env> <pkg>`. The same
-bump must also be applied to `requirements/pypi-*.txt`, which `pixi` neither
-reads nor updates.
+Use `pixi update <pkg>`, confirm with `pixi list -e <env> <pkg>`, and apply the
+same bump to `requirements/pypi-*.txt`, which `pixi` neither reads nor updates.
 
 ⚠️ **A max-pin cannot see a renamed distribution.** `vtk-xref` became
-`sphinx-vtk-xref` (#2541): the old name stopped at 0.1.2, so `pixi update`
-had nothing to offer and dependabot nothing to propose, while five months of
-fixes landed under the new name. A long-still pin is a smell — check PyPI.
+`sphinx-vtk-xref` (#2541): the old name stopped at 0.1.2, so `pixi update` and
+dependabot had nothing to offer while five months of fixes landed under the new
+name. A long-still pin is a smell — check PyPI.
 
 ⚠️ **A conda-forge package of the same name is not always the Python one.**
-Tools that ship both a Node and a Python distribution (`playwright` is the
-case in point) are packaged on conda-forge as the *Node* CLI, with no Python
-bindings at all — the conda package installs cleanly and `import <pkg>` then
-raises `ModuleNotFoundError`. Check with `pixi list -e <env> <pkg>` plus an
-actual import before assuming conda-forge availability settles it; such
-packages belong in a feature's `pypi-dependencies`.
+Tools shipping both a Node and a Python distribution (`playwright`) are packaged
+there as the *Node* CLI, with no bindings at all: it installs cleanly and
+`import <pkg>` then raises `ModuleNotFoundError`. Check with a real import; such
+packages belong in `pypi-dependencies`.
 
 **Install the hooks and let them gate commits, not CI:** `pixi run -e devs
 pre-commit install`, then `pre-commit run --files <paths>` before pushing.
 
-⚠️ **`pre-commit run mypy` is the authoritative type check, not bare `mypy`.**
-`mypy` is available in `devs`/`geovista`, but invoking it directly does *not*
-reproduce CI: `.pre-commit-config.yaml` gives `mirrors-mypy` no
-`additional_dependencies`, so its isolated venv collapses `pyvista`/`numpy` to
-`Any`. Inside a pixi environment mypy sees their real types and raises some 640
-errors the hook cannot, only a quarter of them in `examples/`. Use bare `mypy`
-to explore a single file; trust only the hook. Note too that `pyproj` types
-are thin: returning a `pyproj` expression from a `-> bool` function trips
-`no-any-return`, so bind an annotated local first.
+⚠️ **`mypy` is green because 23 modules are ratcheted, not because they pass.**
+The hook is `local`, running `pixi run --frozen -e geovista mypy` against the
+locked environment where third-party types are real; `pre-commit.ci` has no
+`pixi`, so it skips `mypy` and `.github/workflows/ci-typing.yml` carries it.
+The 642 errors it exposed sit under `ignore_errors` in `[tool.mypy]`, which
+`tests/test_typing_ratchet.py` only lets shrink — so bare `mypy <file>` on a
+ratcheted module reports success, suppression and all. Note too that `pyproj`
+types are thin: returning a `pyproj` expression from a `-> bool` function
+trips `no-any-return`, so bind an annotated local first.
 
 ⚠️ **Image tests segfault without a GPU/display**, so a green local run proves
 nothing about them — they are only meaningfully exercised in CI. `pytest.ini`
@@ -98,6 +95,10 @@ a prerequisite — a display, a browser, a built artefact — CI must *require* 
 prerequisite rather than inherit the local skip, or a regression that removes it
 silently drops the coverage and the job still exits 0. `tests/docs` does this
 with `--browser-strict`; follow the pattern for any new guarded suite.
+
+⚠️ **`bash -l {0}` drops the `-e` GitHub's default shell carries**, and 14 of
+the 19 workflows set it, so in a multi-command `run:` only the last command's
+status reaches the job — keep the real check last, or `set -o errexit` first.
 
 ⚠️ **Every `docs` build task wipes the build first.** `make` and `doctest`
 both `depends-on` `clean`, and `serve-html`, `tests-doc` and
@@ -114,15 +115,14 @@ cd docs && pixi run -e docs sphinx-build -b html \
 
 ⚠️ **`intersphinx` is no longer allowed to fail the build (#2517).** Each
 mapping in `conf.py` is `(url, (None, "_inventory/<name>.inv"))`, so an
-unreachable remote falls back on the vendored copy — sphinx logs an earlier
-location's failure at `info` once a later one succeeds, leaving
-`--fail-on-warning` green. Add a mapping and you **must** add its inventory:
-`pixi run -e docs fetch-inventories`, which `ci-inventories.yml` also runs
-monthly to raise a refresh PR. Should every location fail, the
-`intersphinx_resilience` extension disables `nitpicky` for the rest of the
-build rather than emitting the warning plus its cascade of hundreds of nitpick
-misses — a degraded build is annotated, so check the job summary before
-trusting a green docs run.
+unreachable remote falls back on the vendored copy, and sphinx logs the earlier
+failure at `info` once a later location succeeds. Add a mapping and you **must**
+add its inventory: `pixi run -e docs fetch-inventories`, which
+`ci-inventories.yml` also runs monthly to raise a refresh PR. Should every
+location fail, the `intersphinx_resilience` extension disables `nitpicky` for
+the rest of the build rather than emitting hundreds of nitpick misses — a
+degraded build is annotated, so check the job summary before trusting a green
+docs run.
 
 ⚠️ **`nitpick_ignore_regex` entries are prefix matches.** Sphinx applies them
 with `re.match`, anchored at the start only, so `(r"py:mod", r"pyvista")` also
