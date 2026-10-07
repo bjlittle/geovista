@@ -32,7 +32,6 @@ from __future__ import annotations
 
 import ast
 from dataclasses import dataclass
-from itertools import pairwise
 from pathlib import Path
 import re
 from typing import TYPE_CHECKING
@@ -779,39 +778,56 @@ def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
     return problems
 
 
-#: The dash of a range, written with no space on either side of it.
-DASH = re.compile(r"[-\N{EN DASH}\N{EM DASH}]")
+#: The dash of a range, with no space on either side, though a line may break there.
+DASH = re.compile(r"\n?[-\N{EN DASH}\N{EM DASH}]\n?")
+
+#: A far end written after the dash of a range as a number, with no section sign.
+SIGNLESS = re.compile(rf"{DASH.pattern}(?P<num>\d+(?:\.\d+)*)\b")
 
 
 def ranged(path: Path, text: str, names: Namespace) -> list[str]:
-    """Find each range whose far end drops the prefix its near end carries.
+    """Find each range whose far end is not a citation in its own right.
 
     A dash is no separator, so the run ends at it and a bare far end means the
-    containing document, which in a specification resolves without complaint. A
-    range therefore carries its prefix on both ends, the rule ``tephpy`` writes
-    down and does not check. A dash with a space on either side is punctuation and
-    opens no range. Scanning with no owner leaves a citation unresolved unless a
-    prefix was written on it or carried to it, which is what tells the ends apart.
+    containing document, which in a specification resolves without complaint, while
+    a far end written as a plain number is no citation at all, and nothing resolves
+    it. Each end of a range is therefore a citation of its own, the rule ``tephpy``
+    writes down and does not check. A dash with a space on either side is
+    punctuation and opens no range, but a line break beside it is not a space: a
+    paragraph is read whole, so a range a wrap has split is still a range. Scanning
+    with no owner leaves a citation unresolved unless a prefix was written on it or
+    carried to it, which is what tells the ends apart.
     """
     problems = []
-    for number, line in source_lines(path, text):
-        source = prose(line)[0]
-        cited = zip(
+    for run in paragraphs(source_lines(path, text), markdown=path.suffix == ".md"):
+        source = "\n".join(prose(line)[0].strip() for _, line in run)
+        previous: tuple[re.Match[str], Citation] | None = None
+        for match, citation in zip(
             names.signed.finditer(source),
             scan(source, names.signed, None),
             strict=True,
-        )
-        for (before, near), (after, _) in pairwise(cited):
-            if (
-                near.slug is not None
-                and after["bare"] is not None
-                and DASH.fullmatch(source[before.end() : after.start()])
-            ):
+        ):
+            if previous is not None:
+                before, near = previous
+                if (
+                    near.slug is not None
+                    and match["bare"] is not None
+                    and DASH.fullmatch(source[before.end() : match.start()])
+                ):
+                    span = source[before.start() : match.end()]
+                    number = run[0][0] + source.count("\n", 0, match.start())
+                    problems.append(
+                        f"{where(path, number)}: {span!r} opens at {near.slug}, "
+                        "and its far end has no prefix"
+                    )
+            signless = SIGNLESS.match(source, match.end())
+            if signless is not None:
+                span = source[match.start() : signless.end()]
+                number = run[0][0] + source.count("\n", 0, signless.start("num"))
                 problems.append(
-                    f"{where(path, number)}: "
-                    f"{source[before.start() : after.end()]!r} opens at {near.slug}, "
-                    "and its far end has no prefix"
+                    f"{where(path, number)}: {span!r} ends without a section sign"
                 )
+            previous = match, citation
     return problems
 
 
@@ -914,8 +930,28 @@ def test_wrapped_joins_no_lines_that_markdown_keeps_apart(tmp_path, body):
             f"See other spec {SECTION}2, {SECTION}3\N{EN DASH}{SECTION}1.",
             f"'{SECTION}3\N{EN DASH}{SECTION}1' opens at other-spec-3",
         ),
+        (
+            f"See other spec {SECTION}2\N{EN DASH}\n{SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"See other spec {SECTION}2\n\N{EN DASH}{SECTION}1.",
+            f"'other spec {SECTION}2\\n\N{EN DASH}{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"> See other spec {SECTION}2\N{EN DASH}\n> {SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n{SECTION}1' opens at other-spec-2",
+        ),
     ],
-    ids=["en-dash", "hyphen", "em-dash", "carried"],
+    ids=[
+        "en-dash",
+        "hyphen",
+        "em-dash",
+        "carried",
+        "split-after",
+        "split-before",
+        "quoted-split",
+    ],
 )
 def test_ranged_finds_a_far_end_without_its_prefix(tmp_path, body, expected):
     """A dash ends the run, so a bare far end falls back to the demonstration."""
@@ -928,6 +964,42 @@ def test_ranged_finds_a_far_end_without_its_prefix(tmp_path, body, expected):
     ]
 
 
+def test_ranged_reports_a_split_range_where_its_far_end_is(tmp_path):
+    """The line reported holds the far end, which is the one to change."""
+    path, names = paired(tmp_path, f"See other spec {SECTION}2\N{EN DASH}\n{SECTION}1.")
+
+    problems = ranged(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[0].rsplit(":", 1)[1] for p in problems] == ["10"]
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        (
+            f"See other spec {SECTION}2\N{EN DASH}1.",
+            f"'other spec {SECTION}2\N{EN DASH}1'",
+        ),
+        (f"See other spec {SECTION}2-1.", f"'other spec {SECTION}2-1'"),
+        (f"See {SECTION}1\N{EN DASH}2.", f"'{SECTION}1\N{EN DASH}2'"),
+        (
+            f"See other spec {SECTION}2\N{EN DASH}\n1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n1'",
+        ),
+    ],
+    ids=["prefixed", "hyphen", "bare", "split"],
+)
+def test_ranged_finds_a_far_end_without_its_section_sign(tmp_path, body, expected):
+    """A number after a range's dash is a far end that no other rule can see."""
+    path, names = paired(tmp_path, body)
+
+    problems = ranged(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"{expected} ends without a section sign"
+    ]
+
+
 @pytest.mark.parametrize(
     "body",
     [
@@ -935,8 +1007,21 @@ def test_ranged_finds_a_far_end_without_its_prefix(tmp_path, body, expected):
         f"See {SECTION}1\N{EN DASH}{SECTION}2.",
         f"See other spec {SECTION}2 \N{EM DASH} {SECTION}1 explains why.",
         f"See other spec {SECTION}2 \N{EN DASH} {SECTION}1 explains why.",
+        f"See other spec {SECTION}2\N{EN DASH}\nother spec {SECTION}2.",
+        f"See other spec {SECTION}2 \N{EN DASH}\n{SECTION}1 explains why.",
+        f"See other spec {SECTION}2\N{EN DASH}\n\n{SECTION}1 opens a paragraph.",
+        f"See other spec {SECTION}2-style rules.",
     ],
-    ids=["both-ends", "bare", "spaced-em-dash", "spaced-en-dash"],
+    ids=[
+        "both-ends",
+        "bare",
+        "spaced-em-dash",
+        "spaced-en-dash",
+        "split-whole",
+        "split-spaced",
+        "paragraphs",
+        "hyphenated-word",
+    ],
 )
 def test_ranged_passes_a_range_written_whole_and_a_dash_as_punctuation(tmp_path, body):
     """A prefix on both ends, a bare range and a spaced dash are all well formed."""

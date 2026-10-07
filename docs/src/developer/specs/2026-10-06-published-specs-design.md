@@ -150,9 +150,9 @@ open with `Typing spec §3.2`. Where several sections are cited together the pre
 across the run, so `typing spec §3.2, §4` names two sections of one document; the separator
 is a comma or a solidus, and the run may not wrap across a line, since a reader following
 only the second line would read the tail as a reference to somewhere else. A dash is no
-separator, so a range carries its prefix on both ends, as in
-`typing spec §3.2–typing spec §3.4`. And a citation with no prefix means the containing
-document:
+separator, so each end of a range is a citation of its own, as in
+`typing spec §3.2–typing spec §3.4`, or `§3.2–§3.4` within one document. And a citation
+with no prefix means the containing document:
 
 > **A bare `§N` means this document. A reference to any other document names it.**
 
@@ -252,8 +252,8 @@ The suite asserts:
 2. **Keying.** An anchor sits immediately above the heading whose number it names. One that
    has drifted onto the wrong heading still resolves, so resolution alone does not see it.
 3. **Resolution.** Every citation in the corpus names an anchor that exists.
-4. **Form.** Every citation carries its section sign, no run wraps across a line, and a
-   range carries its prefix on both ends, per {ref}`§3.2 <docs-spec-3-2>`.
+4. **Form.** Every citation carries its section sign, no run wraps across a line, and each
+   end of a range is a citation of its own, per {ref}`§3.2 <docs-spec-3-2>`.
 5. **Agreement.** Every `{ref}` role naming a section displays the section it targets, per
    {ref}`§3.4 <docs-spec-3-4>`.
 6. **Triggers.** Each observable roadmap condition of {ref}`§4 <docs-spec-4>`.
