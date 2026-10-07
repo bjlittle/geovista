@@ -6,8 +6,8 @@
 > **Living document.** This specification is maintained alongside the documentation system
 > it describes. It states the conventions every `geovista` design specification follows:
 > where they live, how their sections are addressed, how a citation is written, and what a
-> reader may assume about a roadmap row that has not happened yet. Cite it as `docs spec
-> §…`. Read it as current; the roadmap states what has actually landed.
+> reader may assume about a roadmap row that has not happened yet. Cite it as
+> `docs spec §…`. Read it as current; the roadmap states what has actually landed.
 
 - **Date:** 2026-10-06 (originated; maintained since)
 - **Status:** living design specification
@@ -30,10 +30,11 @@
 `myst_parser` registers `.md` of its own accord, whatever `source_suffix` in `conf.py`
 names, so `sphinx` reads and renders
 `docs/src/developer/specs/2026-10-06-type-coverage-design.md` today. No toctree holds it,
-which warns as `toc.not_included` and fails `--fail-on-warning`, so it carries `orphan:
-true` and the build stays green. Nothing links to it from anywhere in `docs/src`. A reader
-who meets `typing spec 3.1` in a `pyproject.toml` comment has nowhere to go, and a reader
-browsing the developer section is not told the collection exists.
+which warns as `toc.not_included` and fails `--fail-on-warning`, so it carries
+`orphan: true` and the build stays green. Nothing links to it from anywhere in
+`docs/src`. A reader who meets `typing spec 3.1` in a `pyproject.toml` comment has
+nowhere to go, and a reader browsing the developer section is not told the collection
+exists.
 
 The measurement, taken on 2026-10-06:
 

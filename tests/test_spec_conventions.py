@@ -839,6 +839,21 @@ def agreement(path: Path, text: str, names: Namespace) -> list[str]:
     return problems
 
 
+def crossed(path: Path, text: str) -> list[str]:
+    """Find each line of a specification that a code span crosses.
+
+    Code is blanked a line at a time, so a span wrapped across a line break leaves
+    a stray backtick on either side, and on the second line that backtick pairs
+    with the next one, hiding whatever role follows it from the agreement rule. A
+    span therefore opens and closes on one line, which this makes loud.
+    """
+    return [
+        f"{where(path, number)}: a code span crosses a line break"
+        for number, line in read_lines(text)
+        if "`" in prose(line)[0]
+    ]
+
+
 def test_agreement_finds_a_role_opening_another_section(tmp_path):
     """Both strings of a role can be well formed and still disagree."""
     roles = (
@@ -860,6 +875,27 @@ def test_agreement_finds_a_role_opening_another_section(tmp_path):
 def test_every_section_role_displays_its_target(texts, names):
     """Agreement (item 5)."""
     problems = [p for path, text in texts.items() for p in agreement(path, text, names)]
+
+    assert not problems, "\n".join(problems)
+
+
+def test_crossed_finds_a_code_span_wrapped_across_lines(tmp_path):
+    """The stray backtick on the second line would hide the role that follows."""
+    body = DEMO + f"\nA `wrapped\nspan` then {{ref}}`{SECTION}1 <demo-spec-2>`.\n"
+    path, _ = demo(tmp_path, body)
+
+    problems = crossed(path, path.read_text(encoding="utf-8"))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        "a code span crosses a line break",
+        "a code span crosses a line break",
+    ]
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_no_code_span_in_a_specification_crosses_a_line(spec):
+    """Agreement reads a line at a time, so a span must close where it opens."""
+    problems = crossed(spec, spec.read_text(encoding="utf-8"))
 
     assert not problems, "\n".join(problems)
 
