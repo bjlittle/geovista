@@ -77,10 +77,10 @@ pre-commit install`, then `pre-commit run --files <paths>` before pushing.
 environment, so `git commit` aborts with "`pre-commit` not found" — commit
 through it instead: `pixi run --frozen -e geovista git commit ...`.
 
-⚠️ **`mypy` is green because 23 modules are ratcheted, not because they pass.**
+⚠️ **`mypy` is green because modules are ratcheted, not because they pass.**
 The hook is `local`, running `pixi run --frozen -e geovista mypy` in the locked
 environment where third-party types are real; `pre-commit.ci` has no `pixi`, so
-`ci-typing.yml` carries it. The 642 errors sit under `ignore_errors`, which
+`ci-typing.yml` carries it. Their errors sit under `ignore_errors`, which
 `tests/test_typing_ratchet.py` only lets shrink, so `mypy <file>` passes on a
 ratcheted module and a bad annotation there shows only where it is used (the
 gallery's `pv.Plotter.camera?` was `geoplotter.py:1534`, #2569): a `name?` is an
