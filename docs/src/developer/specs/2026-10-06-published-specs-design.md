@@ -339,7 +339,7 @@ carry the evidence.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | Publication, the `§` form, and `tests/test_spec_conventions.py` | not started ({issue}`2566`) |
+| 1 | Publication, the `§` form, and `tests/test_spec_conventions.py` | in progress ({pull}`2573`) |
 | 2 | Citation cross-reference transform | candidate |
 | 3 | Citation integrity hook | candidate |
 | 4 | Rendered-output gate | candidate |

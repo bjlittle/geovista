@@ -206,6 +206,9 @@ exclude_patterns = [
     "_autoapi_templates",
     "_build",
     "Thumbs.db",
+    # a plan records what was intended before implementation and is not updated
+    # afterwards, so a published one would be wrong by design (docs spec §3.1)
+    "developer/plans/**",
     "reference/generated/api/index.rst",
     "generated/gallery/**/*.ipynb",
 ]
