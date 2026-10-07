@@ -396,20 +396,24 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    same check found that {ref}`§3.4 <typing-spec-3-4>` had been showing a one-line
    paraphrase of the override's comment while saying it quoted it; it now quotes
    `pyproject.toml` verbatim.
-4. **Open** ({issue}`2570`, owned by change 6 of {ref}`§4 <typing-spec-4>`) — **Whether to
-   pursue `lazy_loader` upstream.** It is 19 of the 29 untyped imports, one for each of
-   the 20 library modules that import it except `__init__.py`, which `mypy` reads
-   through `__init__.pyi` instead. Upstream, a `py.typed` marker would clear two thirds of
-   that category, provided `load` and `attach` are annotated with it; a bare marker
-   would trade each import error for a `no-untyped-call` on every `lazy.load`, as
-   `Camera.zoom` does in {ref}`§3.4 <typing-spec-3-4>`. Locally, an
-   `ignore_missing_imports` override would clear it. `lazy_loader` 0.6 still ships no
-   marker and nothing upstream asks for one.
-   A maintainer's advice there, in its issue 165, is to keep using it until Python 3.15
-   is the floor and then move to the `lazy import` of PEP 810. This item argued until
-   2026-10-07 that it was also the root of item 3; it is not, which leaves the
-   import-untyped count as the whole case. Pursuing it upstream or absorbing it locally
-   is settled in change 6.
+4. **Resolved** (2026-10-07,
+   [`lazy-loader` issue 181](https://github.com/scientific-python/lazy-loader/issues/181))
+   — **Whether to pursue `lazy_loader` upstream.** Yes, after measuring. It is 19 of the
+   29 untyped imports, one for each of the 20 library modules that import it except
+   `__init__.py`, which `mypy` reads through `__init__.pyi` instead. With a typed copy on
+   `mypy_path` and the library checked under `--strict`, a bare `py.typed` marker turns
+   those 19 into 42 `no-untyped-call`, one at every `lazy.load`, the way `Camera.zoom`
+   behaves in {ref}`§3.4 <typing-spec-3-4>`. The marker together with annotations on
+   `load` and `attach` and a return type on `attach_stub` clears all 19 and leaves every
+   other error unchanged, line for line, so the request asks for both and offers a
+   follow-up pull request. A maintainer's advice there, in its issue 165, is to keep
+   using `lazy_loader` until Python 3.15 is the floor and then move to the `lazy import`
+   of PEP 810. This item argued until 2026-10-07 that it was also the root of item 3; it
+   is not, which left the import count as the whole case.
+5. **Open** ({issue}`2570`, owned by change 6 of {ref}`§4 <typing-spec-4>`) — **Clearing
+   the 19 before a typed release ships.** An `ignore_missing_imports` override for
+   `lazy_loader` clears them locally. It comes out when the floor reaches a release
+   carrying the marker, or when PEP 810 replaces `lazy_loader`, whichever is first.
 
 (typing-spec-9)=
 ## 9. References
@@ -426,3 +430,5 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
   <https://github.com/pyvista/pyvista/pull/9162>
 - `lazy_loader` issue 165, on its relation to PEP 810, cited by item 4 of
   {ref}`§8 <typing-spec-8>`: <https://github.com/scientific-python/lazy-loader/issues/165>
+- `lazy_loader` issue 181, the request for a marker and annotations that resolves item 4
+  of {ref}`§8 <typing-spec-8>`: <https://github.com/scientific-python/lazy-loader/issues/181>
