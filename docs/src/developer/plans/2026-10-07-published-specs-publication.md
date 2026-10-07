@@ -67,11 +67,12 @@ Writing the plan against the tree turned up places where docs spec and the work 
 Each is corrected in the task that owns it, and the two that change a rule are recorded in
 docs spec §8 under its own status grammar.
 
-1. **Row 2's trigger fired on its own document** (decided with Bill on 2026-10-07). It
-   counted citation prefixes and failed past one, but the specification declares the second,
-   `docs spec`, and change 1 cites it from live files. A wrong prefix is also the one
-   mistake the transform cannot catch, since both anchors exist. Rows 2 to 4 now share a
-   scale trigger: citations outside the collection above thirty-five. Task 8; §8 item 5.
+1. **Row 2's trigger fired on its own document** (decided with {user}`bjlittle` on
+   2026-10-07). It counted citation prefixes and failed past one, but the specification
+   declares the second, `docs spec`, and change 1 cites it from live files. A wrong prefix
+   is also the one mistake the transform cannot catch, since both anchors exist. Rows 2 to 4
+   now share a scale trigger: citations outside the collection above thirty-five. Task 8; §8
+   item 5.
 2. **The status rule could not cite another repository.** §3.5 item 7 asked for an
    `{issue}` or `{pull}` role, and the type coverage specification resolves its §8 item 4
    against `lazy-loader` issue 181 by link. A link to an issue or pull request elsewhere
@@ -197,7 +198,7 @@ Closes #2566
 
 It says `tephpy`'s machinery serves 833 citations across more than ten namespaces and that `geovista` has five; the measured figures are 1,096 outside `docs/` across nineteen, and seven. It also ends on a `docs spec §…` placeholder. Edit the body to the measured figures and a link to the published specification, with a one-line correction note at the top, and comment that it was corrected and why.
 
-- [ ] **Step 5: Stop for Bill's review of the plan. Do not start Task 1 until he has reviewed it.**
+- [ ] **Step 5: Stop for {user}`bjlittle`'s review of the plan. Do not start Task 1 until that review is done.**
 
 ### Task 1: Withhold the plans from the build
 
@@ -2560,7 +2561,7 @@ Expected: every check green; confirm a red one's `conclusion` through the API be
 
 ### Task 10: Landing
 
-- [ ] **Step 1: When Bill approves, mark row 1 landed.**
+- [ ] **Step 1: When {user}`bjlittle` approves, mark row 1 landed.**
 
 In `docs/src/developer/specs/2026-10-06-published-specs-design.md`, replace `` in progress ({pull}`PR`) `` in row 1 with `` ✅ landed (TODAY, {pull}`PR`) ``. If `TODAY` is no longer the date that §8 items 4 and 5 carry, re-date those two as well: a status's date is the day the state changed.
 
@@ -2615,10 +2616,11 @@ where these landed.
 | row 4's watch could read nothing from `conf.py` and pass | annotated assignments and `insert` are read, and `myst_nb` must be found | `9807cafa` |
 | docs spec §6 and §8 item 2 described the retired trigger | rewritten | `2b010f6e` |
 
-Three minors are deferred to Bill: a run wrapped inside a blockquote escapes the wrap
-check; `docs/AGENTS.md` dropped "a page includes it" as a way out of `toc.not_included`;
-and a range written as `typing spec §3.2–§3.4` cites the containing document's §3.4,
-which the bare-means-local rule of docs spec §3.2 covers but nothing warns about.
+Three minors are deferred to {user}`bjlittle`: a run wrapped inside a blockquote escapes the
+wrap check; `docs/AGENTS.md` dropped "a page includes it" as a way out of
+`toc.not_included`; and a range written as `typing spec §3.2–§3.4` cites the containing
+document's §3.4, which the bare-means-local rule of docs spec §3.2 covers but nothing warns
+about.
 
 ## After the Codex review
 
@@ -2631,5 +2633,5 @@ deferred.
 | a run wrapped inside a blockquote escaped the wrap check | markdown is joined without its quote markers, while a quote that opens or deepens, or a list item opening with one, still ends the run | `3af73ae4` |
 | the roadmap's count blanked every role, so a hand-written section role never counted toward the ceiling | a section role counts as one citation, and docs spec §4 says so | `5e41bf8e` |
 
-Bill then settled the other two. The `docs/AGENTS.md` clause is restored in `6edaeabf`,
-and the range check is raised as {issue}`2574`, so no minor remains deferred.
+{user}`bjlittle` then settled the other two. The `docs/AGENTS.md` clause is restored in
+`6edaeabf`, and the range check is raised as {issue}`2574`, so no minor remains deferred.
