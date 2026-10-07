@@ -76,6 +76,19 @@ TRACKED = ("docs/src/developer/plans",)
 ANCHOR = re.compile(r"^\((?P<slug>[a-z][a-z-]*?)-(?P<num>\d+(?:-\d+)*)\)=\s*$")
 HEADING = re.compile(r"^#{2,6}\s+(?P<num>\d+(?:\.\d+)*)\.?\s+(?P<title>\S.*?)\s*$")
 FENCE = re.compile(r"^\s*(?P<rail>`{3,}|~{3,})(?P<info>.*)$")
+#: The MyST directives whose body is code rather than prose, and so goes unread.
+CODE_DIRECTIVES = frozenset(
+    {
+        "code",
+        "code-block",
+        "code-cell",
+        "literalinclude",
+        "math",
+        "mermaid",
+        "raw",
+        "sourcecode",
+    }
+)
 #: An inline code span, and the role it completes when one is written against it.
 SPAN = re.compile(
     r"(?P<role>\{[\w:-]+\}|:[\w:-]+:)?"
@@ -177,13 +190,24 @@ def corpus(repo: Path = REPO) -> dict[Path, str]:
     return dict(sorted(found.items()))
 
 
-def read_lines(text: str) -> Iterator[tuple[int, str]]:
-    """Yield the lines of markdown that sit outside a fenced code block.
+def holds_code(info: str) -> bool:
+    """Decide whether a fence with this info string holds code rather than prose."""
+    if not info.startswith("{"):
+        return True
+    return info[1:].partition("}")[0] in CODE_DIRECTIVES
 
-    The opening rail is remembered rather than counted, as in ``tephpy``'s
-    citation grammar: a block opened with four backticks may quote one opened
-    with three, so a fence closes only on a rail of the same character, at least
-    as long, and carrying no info string.
+
+def read_lines(text: str) -> Iterator[tuple[int, str]]:
+    """Yield the lines of markdown that are not code.
+
+    A fence holds code, and its lines are skipped, unless it opens a MyST
+    directive whose body is rendered prose, such as ``{note}``, whose lines are
+    read; a fence nested inside one is code again. The opening rail is
+    remembered rather than counted, as in ``tephpy``'s citation grammar: a block
+    opened with four backticks may quote one opened with three, so a fence
+    closes only on a rail of the same character, at least as long, and carrying
+    no info string. A backtick fence's info string cannot hold a backtick, so a
+    line opening with inline code opens nothing.
 
     Parameters
     ----------
@@ -196,22 +220,23 @@ def read_lines(text: str) -> Iterator[tuple[int, str]]:
         The 1-indexed line number, and the line.
 
     """
-    rail: str | None = None
+    opened: list[tuple[str, bool]] = []
     for number, line in enumerate(text.splitlines(), start=1):
         fence = FENCE.match(line)
-        if fence is not None:
-            found = fence["rail"]
-            if rail is None:
-                rail = found
-                continue
+        if fence is not None and not (fence["rail"][0] == "`" and "`" in fence["info"]):
+            rail, info = fence["rail"], fence["info"].strip()
             if (
-                found[0] == rail[0]
-                and len(found) >= len(rail)
-                and not fence["info"].strip()
+                opened
+                and not info
+                and rail[0] == opened[-1][0][0]
+                and len(rail) >= len(opened[-1][0])
             ):
-                rail = None
+                opened.pop()
                 continue
-        if rail is None:
+            if not opened or not opened[-1][1]:
+                opened.append((rail, holds_code(info)))
+                continue
+        if not any(code for _, code in opened):
             yield number, line
 
 
@@ -392,6 +417,34 @@ def test_fenced_blocks_are_skipped():
     text = "a\n````markdown\n```\n(demo-spec-9)=\n```\n````\nb\n"
 
     assert [line for _, line in read_lines(text)] == ["a", "b"]
+
+
+def test_prose_inside_a_directive_fence_is_read():
+    """An admonition renders its body, so the body is prose and is read."""
+    text = "a\n```{note}\nb\n```\nc\n"
+
+    assert [line for _, line in read_lines(text)] == ["a", "b", "c"]
+
+
+def test_code_inside_a_directive_fence_stays_skipped():
+    """A code block nested in an admonition is still code."""
+    text = "````{note}\nb\n```python\n(demo-spec-9)=\n```\nc\n````\nd\n"
+
+    assert [line for _, line in read_lines(text)] == ["b", "c", "d"]
+
+
+def test_a_directive_whose_body_is_code_is_skipped():
+    """A code-block directive is a fence by another name."""
+    text = "```{code-block} python\n(demo-spec-9)=\n```\nb\n"
+
+    assert [line for _, line in read_lines(text)] == ["b"]
+
+
+def test_inline_code_opening_a_line_is_no_fence():
+    """A backtick fence's info string cannot hold a backtick."""
+    text = "```x``` opens the line\nb\n"
+
+    assert [line for _, line in read_lines(text)] == ["```x``` opens the line", "b"]
 
 
 def test_inline_code_is_blanked_and_roles_are_collected():
