@@ -30,6 +30,7 @@ governs.
 
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass
 from pathlib import Path
 import re
@@ -988,3 +989,88 @@ def test_the_index_names_every_prefix(names):
     }
 
     assert namespace_table(index) == declared
+
+
+#: Citations outside the specifications past which rows 2 to 4 of the roadmap
+#: activate: five times the seven there were when the threshold was set.
+CEILING = 35
+
+#: The entry point by which the rendered-output gate of row 4 is wired in.
+OUTPUT_GATE = "check_rendered_citations"
+
+
+def outside(texts: dict[Path, str], names: Namespace) -> int:
+    """Count the citations in every governed file that is not a specification."""
+    return sum(
+        1
+        for path, text in texts.items()
+        if path not in names.owners
+        for _, line in source_lines(path, text)
+        for _ in scan(prose(line)[0], names.signed, None)
+    )
+
+
+def registered(conf: str) -> set[str]:
+    """Read every extension a sphinx ``conf.py`` registers, however it does so."""
+    found: set[str] = set()
+    for node in ast.walk(ast.parse(conf)):
+        value = None
+        if isinstance(node, ast.Assign | ast.AugAssign):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            if any(isinstance(t, ast.Name) and t.id == "extensions" for t in targets):
+                value = node.value
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            owner = node.func.value
+            if node.func.attr == "setup_extension" or (
+                node.func.attr in {"append", "extend"}
+                and isinstance(owner, ast.Name)
+                and owner.id == "extensions"
+            ):
+                value = ast.Tuple(elts=node.args)
+        if value is not None:
+            found |= {
+                leaf.value
+                for leaf in ast.walk(value)
+                if isinstance(leaf, ast.Constant) and isinstance(leaf.value, str)
+            }
+    return found
+
+
+def test_registered_reads_every_way_an_extension_is_added():
+    """A list, an append and a setup call all register an extension."""
+    conf = (
+        'extensions = ["sphinx.ext.intersphinx"]\n'
+        'extensions.append("geovista_citation_xrefs")\n'
+        'app.setup_extension("sphinx_gallery.gen_gallery")\n'
+    )
+
+    assert registered(conf) == {
+        "sphinx.ext.intersphinx",
+        "geovista_citation_xrefs",
+        "sphinx_gallery.gen_gallery",
+    }
+
+
+def test_rows_2_to_4_wait_until_the_corpus_outgrows_review(texts, names):
+    """Triggers (item 6): the scale at which the citation machinery is wanted."""
+    count = outside(texts, names)
+
+    assert count > 0, "no citation outside the specifications: the count is vacuous"
+    assert count <= CEILING, (
+        f"{count} citations outside the specifications, past {CEILING}: rows 2 "
+        "to 4 of docs spec §4 have activated. Build them, or raise the ceiling "
+        "there with the reason."
+    )
+
+
+def test_row_4_pairs_the_transform_with_its_output_gate():
+    """Triggers (item 6): a transform the output gate does not check."""
+    conf = (REPO / "docs" / "src" / "conf.py").read_text(encoding="utf-8")
+    transforms = {name for name in registered(conf) if "citation" in name}
+    wiring = [REPO / "pyproject.toml", *(REPO / ".github" / "workflows").glob("*.yml")]
+    wired = any(OUTPUT_GATE in path.read_text(encoding="utf-8") for path in wiring)
+
+    assert wired or not transforms, (
+        f"{sorted(transforms)} registered without {OUTPUT_GATE}: row 4 of "
+        "docs spec §4 is due."
+    )

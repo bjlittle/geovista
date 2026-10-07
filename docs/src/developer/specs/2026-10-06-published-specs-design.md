@@ -355,24 +355,25 @@ gives `docs/src/developer/index.rst` its fifth card and toctree entry, removes `
 true` from both specifications, adds the section sign to the seven existing citations, and
 lands the test of {ref}`§3.5 <docs-spec-3-5>`.
 
-Rows 2 to 5 are candidates rather than scheduled work. `geovista` has seven citations in
-one namespace, against `tephpy`'s 1,096 across nineteen, and the machinery those rows
-describe is roughly 2,075 lines ({ref}`§9 <docs-spec-9>`). Building it now would be
-engineering ahead of the need. Each row therefore names the condition that ends that
-objection, and change 1 asserts every condition that can be observed:
+Rows 2 to 5 are candidates rather than scheduled work. When this specification was written
+`geovista` had seven citations in one namespace, against `tephpy`'s 1,096 across nineteen,
+and the machinery those rows describe is roughly 2,075 lines ({ref}`§9 <docs-spec-9>`).
+Building it now would be engineering ahead of the need. Each row therefore names the
+condition that ends that objection, and change 1 asserts every condition that can be
+observed:
 
-- **Row 2** activates when a second citation prefix enters the namespace. One prefix cannot
-  be got wrong; two can, and {ref}`§3.2 <docs-spec-3-2>` says what a reader who drops one
-  gets. *Asserted:* the test fails when the prefix count exceeds one, naming this row.
-- **Row 3** activates with row 2, sharing its grammar. `tephpy` keeps one definition of
-  what a citation is for exactly this reason, two definitions being a disagreement that is
-  silent in both directions. It activates independently when the corpus outgrows review.
-  *Asserted:* the test fails when the citation count exceeds thirty-five, five times
-  today's and the point at which reading them all stops being something anyone does.
-- **Row 4** activates with row 2, as its converse. The input gate cannot tell whether the
-  transform ran at all, and the output gate cannot tell a right target from a wrong one.
-  *Asserted:* the test fails when a transform extension is registered in `conf.py` and the
-  output gate is not wired into a task, which is the pairing rather than either half.
+- **Rows 2 to 4** activate together, when the corpus outgrows review. What the transform of
+  row 2 buys is a link for every plain-text citation and the retirement of the hand-written
+  roles, and both grow with the number of citations. Row 3 shares its grammar, `tephpy`
+  keeping one definition of a citation because two would disagree silently in both
+  directions, and row 4 checks its output. *Asserted:* the test fails when the citations
+  outside the specification collection exceed thirty-five, five times the seven there were
+  when this was written and the point at which reading them all stops being something
+  anyone does.
+- **Row 4** carries a pairing of its own. The input gate cannot tell whether the transform
+  ran at all, and the output gate cannot tell a right target from a wrong one. *Asserted:*
+  the test fails when a transform extension is registered in `conf.py` and the output gate
+  is not wired into a task, which is the pairing rather than either half.
 - **Row 5** has no observable trigger and is **revisited by hand**. Whether a `#` is a
   reference or a comment character is a judgement, and `see # 65` and `x = 1  # 3 files`
   put the same characters in the same places. A threshold over a token that ambiguous would
@@ -461,6 +462,13 @@ that was taken from one that was dropped.
    resolves one of its open items against an issue in `lazy-loader`, which neither role
    can name. A link to an issue or pull request in another repository now counts as the
    reference, so a decision settled elsewhere is cited where it was settled.
+5. **Resolved** (2026-10-07, {pull}`2573`) — **Row 2's trigger fired on its own
+   document.** It counted citation prefixes and failed past one, and this specification
+   declares the second, `docs spec`, cited from the type coverage specification and from
+   the files change 1 touches. The count also measured the wrong thing. A wrong prefix is
+   the one mistake the transform cannot catch, since both anchors exist and either
+   resolves, while what row 2 buys grows with the number of citations. Rows 2 to 4 now
+   share the scale trigger of {ref}`§4 <docs-spec-4>`, decided while planning change 1.
 
 (docs-spec-9)=
 ## 9. References
