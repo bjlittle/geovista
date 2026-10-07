@@ -2619,3 +2619,14 @@ Three minors are deferred to Bill: a run wrapped inside a blockquote escapes the
 check; `docs/AGENTS.md` dropped "a page includes it" as a way out of `toc.not_included`;
 and a range written as `typing spec §3.2–§3.4` cites the containing document's §3.4,
 which the bare-means-local rule of docs spec §3.2 covers but nothing warns about.
+
+## After the Codex review
+
+The Codex review of the pull request raised two P2 findings, and both were fixed with a test
+watched failing first. The first is the blockquote minor above, so two minors remain
+deferred.
+
+| finding | fix | commit |
+|---|---|---|
+| a run wrapped inside a blockquote escaped the wrap check | markdown is joined without its quote markers, while a quote that opens or deepens, or a list item opening with one, still ends the run | `3af73ae4` |
+| the roadmap's count blanked every role, so a hand-written section role never counted toward the ceiling | a section role counts as one citation, and docs spec §4 says so | `5e41bf8e` |
