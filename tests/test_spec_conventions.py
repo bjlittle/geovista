@@ -709,21 +709,40 @@ def form(path: Path, text: str, names: Namespace) -> list[str]:
     ]
 
 
-def paragraphs(lines: Iterable[tuple[int, str]]) -> Iterator[list[tuple[int, str]]]:
+#: The blockquote markers opening a line of markdown, nested ones included, and
+#: the marker of a list item that opens with a quote.
+QUOTE = re.compile(
+    r"^[^\S\n]*(?P<item>(?:[-*+]|\d{1,9}[.)])[^\S\n]+)?(?P<markers>(?:>[^\S\n]?)+)"
+)
+
+
+def paragraphs(
+    lines: Iterable[tuple[int, str]], *, markdown: bool = False
+) -> Iterator[list[tuple[int, str]]]:
     """Group numbered lines into the runs a line wrap can join.
 
     A blank line ends a run, and so does a gap in the numbering, which is where a
     fence was skipped: joining across either would pair lines a reader never sees
-    together.
+    together. Markdown is read without its blockquote markers, which a reader
+    never sees either. A quote that opens or deepens starts a block of its own, and
+    so does a list item opening with one, so either ends the run; a line quoted
+    less deeply continues it, as a lazy continuation line does.
     """
     run: list[tuple[int, str]] = []
-    previous = 0
+    previous = depth = 0
     for number, line in lines:
-        if run and (not line.strip() or number != previous + 1):
+        text, level, item = line, 0, False
+        if markdown and (quote := QUOTE.match(line)) is not None:
+            text = line[quote.end() :]
+            level, item = quote["markers"].count(">"), quote["item"] is not None
+        if run and (
+            not text.strip() or number != previous + 1 or level > depth or item
+        ):
             yield run
             run = []
-        if line.strip():
-            run.append((number, line))
+        if text.strip():
+            depth = max(depth, level) if run else level
+            run.append((number, text))
         previous = number
     if run:
         yield run
@@ -740,7 +759,7 @@ def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
     """
     owner = names.owners.get(path)
     problems = []
-    for run in paragraphs(source_lines(path, text)):
+    for run in paragraphs(source_lines(path, text), markdown=path.suffix == ".md"):
         written = [
             (number, citation)
             for number, line in run
@@ -784,21 +803,52 @@ def test_form_finds_each_citation_without_its_sign(tmp_path):
     ]
 
 
-def test_wrapped_finds_a_run_that_a_line_break_cuts(tmp_path):
-    """Both anchors exist, so only the wrap check sees the wrong one opened."""
+def rewrapped(tmp_path: Path, body: str) -> list[str]:
+    """Run the wrap check over the demonstration with ``body`` appended to it."""
     other = tmp_path / "2026-01-02-other-design.md"
     other.write_text(
         f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
         "(other-spec-2)=\n## 2. Other\n",
         encoding="utf-8",
     )
-    path, _ = demo(tmp_path, DEMO + f"\nSee other spec {SECTION}2,\n{SECTION}2 too.\n")
+    path, _ = demo(tmp_path, f"{DEMO}\n{body}\n")
 
     problems = wrapped(path, path.read_text(encoding="utf-8"), namespace([path, other]))
 
-    assert [p.split(": ", 1)[1] for p in problems] == [
+    return [p.split(": ", 1)[1] for p in problems]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        f"See other spec {SECTION}2,\n{SECTION}2 too.",
+        f"> See other spec {SECTION}2,\n> {SECTION}2 too.",
+        f">> See other spec {SECTION}2,\n> > {SECTION}2 too.",
+        f"> See other spec {SECTION}2,\n{SECTION}2 too.",
+        f"- > See other spec {SECTION}2,\n  > {SECTION}2 too.",
+    ],
+    ids=["paragraph", "quote", "nested", "lazy", "listed"],
+)
+def test_wrapped_finds_a_run_that_a_line_break_cuts(tmp_path, body):
+    """Both anchors exist, so only the wrap check sees the wrong one opened."""
+    assert rewrapped(tmp_path, body) == [
         f"{SECTION}2 reads as demo-spec-2 here, other-spec-2 unwrapped"
     ]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        f"> See other spec {SECTION}2,\n>\n> {SECTION}2 too.",
+        f"See other spec {SECTION}2,\n> {SECTION}2 too.",
+        f"> See other spec {SECTION}2,\n>> {SECTION}2 too.",
+        f"- > See other spec {SECTION}2,\n- > {SECTION}2 too.",
+    ],
+    ids=["quoted-paragraphs", "quote-opens", "quote-deepens", "next-item"],
+)
+def test_wrapped_joins_no_lines_that_markdown_keeps_apart(tmp_path, body):
+    """A quote opening or deepening starts a block, so no run continues into it."""
+    assert rewrapped(tmp_path, body) == []
 
 
 def test_every_citation_resolves(texts, names):
