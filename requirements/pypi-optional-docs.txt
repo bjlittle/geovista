@@ -1,4 +1,4 @@
-ipykernel <7.4
+ipykernel <7.5
 joblib <1.7
 myst-nb <1.5
 numpydoc <1.12
