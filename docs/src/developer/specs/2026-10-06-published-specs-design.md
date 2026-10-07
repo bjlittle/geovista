@@ -162,12 +162,12 @@ Stating it that way is what makes the unqualified form safe. Its meaning is fixe
 it is written rather than by what the reader assumes, and the one thing it cannot be is a
 silent reference to somewhere else.
 
-The section sign is required. All seven of `geovista`'s existing citations were written
-without it, as `typing spec 3.1`, and change 1 of {ref}`§4 <docs-spec-4>` adds it to each.
-The sign is what separates a citation from an ordinary sentence containing a version
+The section sign is required. All seven of `geovista`'s first citations were written
+without it, as `typing spec 3.1`, until change 1 of {ref}`§4 <docs-spec-4>` added it to
+each. The sign is what separates a citation from an ordinary sentence containing a version
 number, and a citation a transform cannot recognise renders as dead text rather than as a
-link. Writing the seven correctly now costs seven edits; leaving them costs a silent gap in
-whatever is built on top.
+link. Writing the seven correctly cost seven edits; leaving them would have cost a silent
+gap in whatever is built on top.
 
 (docs-spec-3-3)=
 ### 3.3 Section anchors

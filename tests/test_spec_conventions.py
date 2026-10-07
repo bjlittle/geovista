@@ -609,3 +609,146 @@ def test_every_anchor_is_keyed_to_its_heading(spec):
     problems = keying(spec, spec.read_text(encoding="utf-8"))
 
     assert not problems, "\n".join(problems)
+
+
+def resolution(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each citation naming an anchor that does not exist."""
+    owner = names.owners.get(path)
+    problems = []
+    for number, line in source_lines(path, text):
+        for citation in scan(prose(line)[0], names.signed, owner):
+            if citation.slug is None:
+                problems.append(
+                    f"{where(path, number)}: {citation.text} names no document, "
+                    "and this file owns no sections"
+                )
+            elif citation.slug not in names.anchors:
+                problems.append(
+                    f"{where(path, number)}: {citation.text} names {citation.slug}, "
+                    "which no specification declares"
+                )
+    return problems
+
+
+def form(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each citation written without its section sign."""
+    return [
+        f"{where(path, number)}: {match[0]!r} has no section sign"
+        for number, line in source_lines(path, text)
+        for match in names.unsigned.finditer(prose(line)[0])
+    ]
+
+
+def paragraphs(lines: Iterable[tuple[int, str]]) -> Iterator[list[tuple[int, str]]]:
+    """Group numbered lines into the runs a line wrap can join.
+
+    A blank line ends a run, and so does a gap in the numbering, which is where a
+    fence was skipped: joining across either would pair lines a reader never sees
+    together.
+    """
+    run: list[tuple[int, str]] = []
+    previous = 0
+    for number, line in lines:
+        if run and (not line.strip() or number != previous + 1):
+            yield run
+            run = []
+        if line.strip():
+            run.append((number, line))
+        previous = number
+    if run:
+        yield run
+
+
+def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each citation a line break separated from the prefix it should carry.
+
+    The scan reads a line at a time, so a run wrapped after its comma reads its
+    tail as a bare section number, which in a specification resolves, silently,
+    to the containing document. Only a citation whose anchor changes when the wrap
+    is undone is reported, as in ``tephpy``; a paragraph whose citation count
+    changes cannot be paired, and is passed over.
+    """
+    owner = names.owners.get(path)
+    problems = []
+    for run in paragraphs(source_lines(path, text)):
+        written = [
+            (number, citation)
+            for number, line in run
+            for citation in scan(prose(line)[0], names.signed, owner)
+        ]
+        joined = " ".join(prose(line)[0].strip() for _, line in run)
+        undone = list(scan(joined, names.signed, owner))
+        if len(written) != len(undone):
+            continue
+        problems.extend(
+            f"{where(path, number)}: {citation.text} reads as {citation.slug} here, "
+            f"{unwrapped.slug} unwrapped"
+            for (number, citation), unwrapped in zip(written, undone, strict=True)
+            if citation.slug != unwrapped.slug
+        )
+    return problems
+
+
+def test_resolution_finds_each_dangling_and_ownerless_citation(tmp_path):
+    """A citation outside the collection must carry its prefix."""
+    _, names = demo(tmp_path, DEMO)
+    source = tmp_path / "module.py"
+    text = f"# demo spec {SECTION}2 and demo spec {SECTION}7, then {SECTION}1\n"
+
+    problems = resolution(source, text, names)
+
+    assert len(problems) == 2
+    assert "demo-spec-7, which no specification declares" in problems[0]
+    assert "this file owns no sections" in problems[1]
+
+
+def test_form_finds_each_citation_without_its_sign(tmp_path):
+    """The sign is what separates a citation from a sentence holding a number."""
+    _, names = demo(tmp_path, DEMO)
+    text = "# demo spec 2.1, and ``demo spec 9`` quoted as code\n"
+
+    problems = form(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        "'demo spec 2.1' has no section sign"
+    ]
+
+
+def test_wrapped_finds_a_run_that_a_line_break_cuts(tmp_path):
+    """Both anchors exist, so only the wrap check sees the wrong one opened."""
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
+        "(other-spec-2)=\n## 2. Other\n",
+        encoding="utf-8",
+    )
+    path, _ = demo(tmp_path, DEMO + f"\nSee other spec {SECTION}2,\n{SECTION}2 too.\n")
+
+    problems = wrapped(path, path.read_text(encoding="utf-8"), namespace([path, other]))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"{SECTION}2 reads as demo-spec-2 here, other-spec-2 unwrapped"
+    ]
+
+
+def test_every_citation_resolves(texts, names):
+    """Resolution (item 3)."""
+    problems = [
+        p for path, text in texts.items() for p in resolution(path, text, names)
+    ]
+
+    assert not problems, "\n".join(problems)
+
+
+def test_no_citation_run_wraps_a_line(texts, names):
+    """A run may not wrap, or its tail silently cites the containing document."""
+    problems = [p for path, text in texts.items() for p in wrapped(path, text, names)]
+
+    assert not problems, "\n".join(problems)
+
+
+def test_every_citation_carries_its_sign(texts, names):
+    """Form (item 4)."""
+    problems = [p for path, text in texts.items() for p in form(path, text, names)]
+
+    assert not problems, "\n".join(problems)

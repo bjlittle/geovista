@@ -49,7 +49,7 @@ jobs:
           frozen: true
 
       - name: "mypy"
-        # typing spec 3.1 -- the identical command the "pre-commit" hook runs,
+        # typing spec §3.1 -- the identical command the "pre-commit" hook runs,
         # which "pre-commit.ci" skips for want of "pixi".
         run: |
           pixi run --frozen -e geovista mypy

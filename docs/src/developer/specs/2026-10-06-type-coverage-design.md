@@ -262,7 +262,7 @@ Both are disabled for the gallery alone, leaving the 28 genuine errors visible:
 
 ```toml
 [[tool.mypy.overrides]]
-# typing spec 3.4 -- two "pyvista" stub defects, both verified against the
+# typing spec §3.4 -- two "pyvista" stub defects, both verified against the
 # runtime on 2026-10-06 with pyvista 0.49.0: "_Wrapped" loses the descriptor
 # protocol, and "Plotter.camera" resolves only partially so ".zoom" is
 # unreachable. Confined to the gallery, whose scripts are published as
