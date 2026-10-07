@@ -2630,3 +2630,6 @@ deferred.
 |---|---|---|
 | a run wrapped inside a blockquote escaped the wrap check | markdown is joined without its quote markers, while a quote that opens or deepens, or a list item opening with one, still ends the run | `3af73ae4` |
 | the roadmap's count blanked every role, so a hand-written section role never counted toward the ceiling | a section role counts as one citation, and docs spec §4 says so | `5e41bf8e` |
+
+Bill then settled the other two. The `docs/AGENTS.md` clause is restored in `6edaeabf`,
+and the range check is raised as {issue}`2574`, so no minor remains deferred.
