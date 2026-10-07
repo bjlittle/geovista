@@ -420,9 +420,9 @@ neighbourhood: both exist to stop a convention decaying quietly. `tests/docs` gu
 the rendered output and skips without a browser; a gate that can skip is a gate that can
 pass by not running.
 
-A trigger assertion fails with a message naming its roadmap row and what firing means, so
-the person who lands the second specification is told which decision they have just made
-rather than which number no longer matches.
+A trigger assertion fails with a message naming its roadmap rows and what firing means, so
+the person whose change carries the count past the ceiling is told which decision they have
+just made rather than which number no longer matches.
 
 (docs-spec-7)=
 ## 7. Scope
@@ -448,11 +448,13 @@ that was taken from one that was dropped.
    write it the one way today. If a second form becomes wanted, the assertion widens; it is
    not widened in advance for a form nobody has asked for. Row 2 owns it because the
    transform retires the roles, and this assertion with them.
-2. **Open** (owned by row 3 of {ref}`§4 <docs-spec-4>`) — **The threshold of thirty-five
-   citations is a judgement, not a measurement.** It is five times the current corpus and
-   is chosen to fire before review stops being credible rather than at the point it does.
-   The number is expected to be revised once there is a second namespace to measure
-   against, and revising it is a change to this document.
+2. **Open** (owned by rows 2 to 4 of {ref}`§4 <docs-spec-4>`) — **The threshold of
+   thirty-five citations is a judgement, not a measurement.** It was five times the seven
+   citations there were when it was set, chosen to fire before review stops being credible
+   rather than at the point it does. This item once waited on a second namespace to measure
+   against; `docs spec` became that namespace with change 1, which brought the count to
+   fifteen, still too few to measure a better number from. Revising it is a change to this
+   document.
 3. **Open** (no issue raised) — **Nothing proves the references in a status line point at
    real work.** {ref}`§3.5 <docs-spec-3-5>`'s seventh assertion checks that a terminal
    status carries a date and a reference, not that {pull}`2565` is the pull request that
