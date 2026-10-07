@@ -369,9 +369,9 @@ observed:
   roles, and both grow with the number of citations. Row 3 shares its grammar, `tephpy`
   keeping one definition of a citation because two would disagree silently in both
   directions, and row 4 checks its output. *Asserted:* the test fails when the citations
-  outside the specification collection exceed thirty-five, five times the seven there were
-  when this was written and the point at which reading them all stops being something
-  anyone does.
+  outside the specification collection, hand-written roles included, exceed thirty-five,
+  five times the seven there were when this was written and the point at which reading
+  them all stops being something anyone does.
 - **Row 4** carries a pairing of its own. The input gate cannot tell whether the transform
   ran at all, and the output gate cannot tell a right target from a wrong one. *Asserted:*
   the test fails when a transform extension is registered in `conf.py` and the output gate

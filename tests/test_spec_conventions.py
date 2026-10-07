@@ -878,6 +878,20 @@ def test_every_citation_carries_its_sign(texts, names):
 OPENED = re.compile(r"(?:\{ref\}|:ref:)`")
 
 
+def section_role(kind: str, body: str, names: Namespace) -> tuple[str, str] | None:
+    """Read a role as a reference to a section: its display text and its target.
+
+    ``None`` unless the role is a ``ref`` whose target carries a specification's
+    prefix.
+    """
+    targeted = TARGETED.match(body)
+    target = targeted["target"] if targeted else body.strip()
+    label = LABEL.match(target)
+    if kind != "ref" or label is None or label["prefix"] not in names.prefixes:
+        return None
+    return (targeted["text"] if targeted else ""), target
+
+
 def agreement(path: Path, text: str, names: Namespace) -> list[str]:
     """Find each section role whose display text names another section."""
     owner = names.owners.get(path)
@@ -887,12 +901,10 @@ def agreement(path: Path, text: str, names: Namespace) -> list[str]:
         if OPENED.search(plain):
             problems.append(f"{where(path, number)}: a role broken across lines")
         for kind, body in roles:
-            targeted = TARGETED.match(body)
-            target = targeted["target"] if targeted else body.strip()
-            label = LABEL.match(target)
-            if kind != "ref" or label is None or label["prefix"] not in names.prefixes:
+            role = section_role(kind, body, names)
+            if role is None:
                 continue
-            display = targeted["text"] if targeted else ""
+            display, target = role
             cited = list(scan(display, names.signed, owner))
             if [c.slug for c in cited] != [target] or cited[0].text != display:
                 problems.append(
@@ -1219,14 +1231,22 @@ OUTPUT_GATE = "check_rendered_citations"
 
 
 def outside(texts: dict[Path, str], names: Namespace) -> int:
-    """Count the citations in every governed file that is not a specification."""
-    return sum(
-        1
-        for path, text in texts.items()
-        if path not in names.owners
-        for _, line in source_lines(path, text)
-        for _ in scan(prose(line)[0], names.signed, None)
-    )
+    """Count the citations in every governed file that is not a specification.
+
+    A section role counts as one. It is a citation written by hand, and retiring
+    those is half of what row 2 buys.
+    """
+    count = 0
+    for path, text in texts.items():
+        if path in names.owners:
+            continue
+        for _, line in source_lines(path, text):
+            plain, roles = prose(line)
+            count += sum(1 for _ in scan(plain, names.signed, None))
+            count += sum(
+                section_role(kind, body, names) is not None for kind, body in roles
+            )
+    return count
 
 
 def registered(conf: str) -> set[str]:
@@ -1253,6 +1273,19 @@ def registered(conf: str) -> set[str]:
                 if isinstance(leaf, ast.Constant) and isinstance(leaf.value, str)
             }
     return found
+
+
+def test_outside_counts_a_section_role_as_a_citation(tmp_path):
+    """Row 2 retires the hand-written roles, so they count toward its trigger."""
+    _, names = demo(tmp_path, DEMO)
+    texts = {
+        tmp_path / "guide.md": f"See {{ref}}`demo spec {SECTION}2 <demo-spec-2>`.\n"
+        * CEILING,
+        tmp_path / "guide.rst": f"See :ref:`demo spec {SECTION}1 <demo-spec-1>`.\n",
+        tmp_path / "other.md": "See {ref}`the gallery <gallery>`.\n",
+    }
+
+    assert outside(texts, names) == CEILING + 1
 
 
 def test_registered_reads_every_way_an_extension_is_added():
