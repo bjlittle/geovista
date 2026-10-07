@@ -1,7 +1,3 @@
----
-orphan: true
----
-
 # geovista type coverage — design specification
 
 ```{readingtime}
@@ -24,12 +20,9 @@ orphan: true
 - **Parent spec:** none, but not unconventioned. It was the first specification in this
   repository and so inherited nothing; the conventions it arrived at are now written down,
   and governed, by {ref}`docs spec §1 <docs-spec-1>`
-- **Published:** built, but not yet listed. `myst_parser` registers `.md` of its own
-  accord, whatever `source_suffix` in `conf.py` names, so `sphinx` reads and renders this
-  file today. No toctree holds it, which warns as `toc.not_included` and fails
-  `--fail-on-warning`, so it carries `orphan: true` until the specs tree gains an index.
-  That marker comes off with the same change. `tests/docs/test_readingtime_coverage.py`
-  globs `*.md` and governs the page regardless, which it passes
+- **Published:** in the specifications index, since change 1 of
+  {ref}`docs spec §4 <docs-spec-4>` took off the `orphan: true` it carried while nothing
+  listed it
 
 (typing-spec-1)=
 ## 1. Purpose

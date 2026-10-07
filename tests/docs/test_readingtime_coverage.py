@@ -52,6 +52,7 @@ EXEMPT = (
     # reader passes through it on the way to somewhere else
     "index.rst",  # the site landing page: a card grid and a toctree
     "developer/index.rst",  # section landing page
+    "developer/specs/index.rst",  # section landing page: a table and a toctree
     "explanation/index.rst",  # quadrant landing page
     "howtos/index.rst",  # quadrant landing page
     "reference/index.rst",  # quadrant landing page

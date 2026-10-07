@@ -924,3 +924,67 @@ def test_every_status_is_in_the_vocabulary_and_evidenced(spec):
 
     assert list(statuses(text)), f"{spec.name} has no roadmap and no open items"
     assert not problems, "\n".join(problems)
+
+
+def front_matter(text: str) -> str:
+    """Read the YAML front matter a markdown document opens with, if any."""
+    if not text.startswith("---\n"):
+        return ""
+    end = text.find("\n---\n", 4)
+    return text[4:end] if end != -1 else ""
+
+
+def toctree(index: str) -> list[str]:
+    """Read, in order, the documents the toctree of a page lists."""
+    lines = index.splitlines()
+    entries = []
+    for line in lines[lines.index(".. toctree::") + 1 :]:
+        if line.strip() and not line.startswith(" "):
+            break
+        entry = line.strip()
+        if entry and not entry.startswith(":"):
+            entries.append(entry)
+    return entries
+
+
+def namespace_table(index: str) -> dict[str, str]:
+    """Read the document each prefix names in the index's namespace table."""
+    pattern = re.compile(
+        rf"\*\s+-\s+``(?P<prefix>[^`]+?)\s*{SECTION}{ELLIPSIS}``\s*\n"
+        r"\s+-\s+:doc:`(?P<doc>[^`]+)`"
+    )
+    return {match["prefix"]: match["doc"] for match in pattern.finditer(index)}
+
+
+def test_front_matter_is_read_only_where_a_document_opens():
+    """A rule quoted further down a page is not the page's front matter."""
+    assert front_matter("---\norphan: true\n---\n\n# Title\n") == "orphan: true"
+    assert front_matter("# Title\n\n---\norphan: true\n---\n") == ""
+
+
+def test_no_specification_is_an_orphan(specs):
+    """A specification is reached through the index, never left unlisted."""
+    orphans = [
+        spec.name
+        for spec in specs
+        if "orphan: true" in front_matter(spec.read_text(encoding="utf-8"))
+    ]
+
+    assert not orphans, f"{orphans} still carry orphan: true"
+
+
+def test_the_index_lists_every_specification(specs):
+    """The toctree is the only way a reader reaches a specification."""
+    index = (SPECS / "index.rst").read_text(encoding="utf-8")
+
+    assert toctree(index) == [spec.stem for spec in specs]
+
+
+def test_the_index_names_every_prefix(names):
+    """The namespace table and the banners agree on which prefix is whose."""
+    index = (SPECS / "index.rst").read_text(encoding="utf-8")
+    declared = {
+        prefix.replace("-", " "): spec.stem for spec, prefix in names.owners.items()
+    }
+
+    assert namespace_table(index) == declared

@@ -1,7 +1,3 @@
----
-orphan: true
----
-
 # geovista design specifications — publication and conventions
 
 ```{readingtime}
@@ -23,9 +19,8 @@ orphan: true
   says is its own business
 - **Parent spec:** none. {ref}`typing spec §1 <typing-spec-1>` records that it inherited
   nothing because the conventions were not written down anywhere. This is that document
-- **Published:** not yet. It carries `orphan: true` for the same reason the type coverage
-  specification does, and change 1 of {ref}`§4 <docs-spec-4>` takes the marker off both.
-  Unlike the identical note there, this one is not left to memory: {issue}`2566` tracks it
+- **Published:** in the specifications index, since change 1 of {ref}`§4 <docs-spec-4>`
+  took `orphan: true` off this document and the type coverage specification together
 
 (docs-spec-1)=
 ## 1. Purpose
@@ -91,7 +86,7 @@ than a plan.
 
 ```text
 docs/src/developer/
-├── index.rst       a fifth card, and a toctree entry
+├── index.rst       a card, and a toctree entry
 ├── plans/          tracked, excluded from the build
 └── specs/          published
     ├── index.rst
@@ -265,6 +260,10 @@ The suite asserts:
    editing it: a row goes stale by the work landing elsewhere, so the check has to read the
    column rather than the diff.
 
+It also holds the publication of {ref}`§3.1 <docs-spec-3-1>` in place: no specification
+carries `orphan: true`, the index's toctree lists every specification, and its namespace
+table names every declared prefix.
+
 Code is skipped, both fenced and inline. That is not a refinement, it is what lets a
 specification quote its own rules: {ref}`§3.3 <docs-spec-3-3>` above illustrates the anchor
 rule with a literal `(docs-spec-3-2)=` and its heading *inside* a fence, and
@@ -409,8 +408,8 @@ objection, and change 1 asserts every condition that can be observed:
 (docs-spec-6)=
 ## 6. Testing
 
-`tests/test_spec_conventions.py` holds {ref}`§3.2 <docs-spec-3-2>` to
-{ref}`§3.5 <docs-spec-3-5>`, and the roadmap triggers of {ref}`§4 <docs-spec-4>`.
+`tests/test_spec_conventions.py` holds {ref}`§3.1 <docs-spec-3-1>` to
+{ref}`§3.6 <docs-spec-3-6>`, and the roadmap triggers of {ref}`§4 <docs-spec-4>`.
 
 It sits in `tests/` rather than `tests/docs/` because it reads source files and needs no
 built artefact, which puts it beside `tests/test_typing_ratchet.py`. That is the right
