@@ -260,9 +260,10 @@ The suite asserts:
 6. **Triggers.** Each observable roadmap condition of {ref}`§4 <docs-spec-4>`.
 7. **Status.** Every roadmap Status cell and every open item opens with a word from the
    vocabulary of {ref}`§3.6 <docs-spec-3-6>`, and every terminal status carries an ISO date
-   and at least one `{issue}` or `{pull}` reference. This is the one rule a specification
-   breaks by *not* editing it: a row goes stale by the work landing elsewhere, so the check
-   has to read the column rather than the diff.
+   and at least one reference: an `{issue}` or `{pull}` role, or a link to an issue or pull
+   request in another repository. This is the one rule a specification breaks by *not*
+   editing it: a row goes stale by the work landing elsewhere, so the check has to read the
+   column rather than the diff.
 
 Code is skipped, both fenced and inline. That is not a refinement, it is what lets a
 specification quote its own rules: {ref}`§3.3 <docs-spec-3-3>` above illustrates the anchor
@@ -455,6 +456,12 @@ that was taken from one that was dropped.
    fail on a network outage, and row 5 of {ref}`§4 <docs-spec-4>` is where reference
    checking belongs if it is ever wanted. Until then this is review's job, and saying so is
    the admission the rule in {ref}`§2 <docs-spec-2>` asks for.
+4. **Resolved** (2026-10-07, {pull}`2573`) — **The status rule accepted only this
+   repository's roles.** The seventh assertion of {ref}`§3.5 <docs-spec-3-5>` asked a
+   terminal status for an `{issue}` or `{pull}` role, and the type coverage specification
+   resolves one of its open items against an issue in `lazy-loader`, which neither role
+   can name. A link to an issue or pull request in another repository now counts as the
+   reference, so a decision settled elsewhere is cited where it was settled.
 
 (docs-spec-9)=
 ## 9. References

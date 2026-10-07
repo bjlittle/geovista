@@ -808,3 +808,119 @@ def test_every_section_role_displays_its_target(texts, names):
     problems = [p for path, text in texts.items() for p in agreement(path, text, names)]
 
     assert not problems, "\n".join(problems)
+
+
+LANDED = "\N{WHITE HEAVY CHECK MARK} landed"
+#: The roadmap states and the open-item states of docs spec §3.6.
+ROW_STATES = (LANDED, "in progress", "not started", "candidate")
+ITEM_STATES = ("Resolved", "Abandoned", "Deferred", "Open")
+TERMINAL = frozenset({LANDED, "Resolved", "Abandoned"})
+DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+#: A role naming work in this repository, or a link to an issue or pull request in
+#: another.
+REFERENCE = re.compile(
+    r"\{(?:issue|pull)\}`\d+`"
+    r"|\]\(https://github\.com/[\w.-]+/[\w.-]+/(?:issues|pull)/\d+\)"
+)
+ITEM = re.compile(r"^\d+\.\s+\*\*(?P<state>[^*]+)\*\*(?P<rest>.*)$")
+
+
+def sections(text: str) -> dict[str, list[tuple[int, str]]]:
+    """Group a specification's lines by the title of the section holding them."""
+    found: dict[str, list[tuple[int, str]]] = {}
+    title = None
+    for number, line in read_lines(text):
+        heading = HEADING.match(line)
+        if heading is not None:
+            title = heading["title"]
+            found.setdefault(title, [])
+        elif title is not None:
+            found[title].append((number, line))
+    return found
+
+
+def carried(rest: str) -> str:
+    """Read the parenthetical a status opens with, balanced so a link survives."""
+    text = rest.lstrip()
+    if not text.startswith("("):
+        return ""
+    depth = 0
+    for index, char in enumerate(text):
+        depth += {"(": 1, ")": -1}.get(char, 0)
+        if depth == 0:
+            return text[1:index]
+    return text[1:]
+
+
+def statuses(text: str) -> Iterator[tuple[int, str]]:
+    """Yield each roadmap Status cell, and each open item with its lines joined."""
+    found = sections(text)
+    rows = [(n, line) for n, line in found.get("Roadmap", []) if line.startswith("|")]
+    if rows:
+        cells = [cell.strip() for cell in rows[0][1].strip().strip("|").split("|")]
+        column = cells.index("Status")
+        for number, line in rows[2:]:
+            yield number, line.strip().strip("|").split("|")[column].strip()
+    item: list[str] = []
+    start = 0
+    for number, line in [*found.get("Open items", []), (0, "")]:
+        if ITEM.match(line) or not line.strip():
+            if item:
+                yield start, " ".join(item)
+            item, start = ([line.strip()], number) if ITEM.match(line) else ([], 0)
+        elif item:
+            item.append(line.strip())
+
+
+def status(path: Path, text: str) -> list[str]:
+    """Find each status outside the vocabulary, or terminal and unevidenced."""
+    problems = []
+    for number, written in statuses(text):
+        item = ITEM.match(written)
+        if item is not None:
+            state, rest = item["state"].strip(), item["rest"]
+            states = ITEM_STATES
+        else:
+            state = next((s for s in ROW_STATES if written.startswith(s)), written)
+            rest, states = written[len(state) :], ROW_STATES
+        if state not in states:
+            problems.append(f"{where(path, number)}: {state!r} is not a status")
+        elif state in TERMINAL:
+            evidence = carried(rest)
+            if not (DATE.search(evidence) and REFERENCE.search(evidence)):
+                problems.append(
+                    f"{where(path, number)}: {state} carries no date and reference"
+                )
+    return problems
+
+
+def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
+    """A terminal status needs its date and its reference, and nothing else does."""
+    roadmap = (
+        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Status |\n|---|---|\n"
+        f"| 1 | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
+        f"| 2 | {LANDED} (2026-01-01) |\n| 3 | shipped |\n| 4 | candidate |\n\n"
+        "(demo-spec-2)=\n## 2. Open items\n\n"
+        "1. **Resolved** (2026-01-01, [x](https://github.com/o/r/issues/1)) - **A.**\n"
+        "2. **Resolved** (no date,\n   {issue}`2`) - **B.**\n"
+        "3. **Open** - **C.**\n"
+    )
+    path, _ = demo(tmp_path, roadmap)
+
+    problems = status(path, path.read_text(encoding="utf-8"))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"{LANDED} carries no date and reference",
+        "'shipped' is not a status",
+        "Resolved carries no date and reference",
+    ]
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_every_status_is_in_the_vocabulary_and_evidenced(spec):
+    """Status (item 7)."""
+    text = spec.read_text(encoding="utf-8")
+    problems = status(spec, text)
+
+    assert list(statuses(text)), f"{spec.name} has no roadmap and no open items"
+    assert not problems, "\n".join(problems)
