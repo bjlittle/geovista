@@ -59,6 +59,7 @@ ELLIPSIS = "\N{HORIZONTAL ELLIPSIS}"
 PRUNED = (
     "build",  # written by a wheel or sdist build
     "dist",  # written by a wheel or sdist build
+    "htmlcov",  # written by coverage
     "docs/_build",  # written by sphinx
     "docs/image_cache",  # written by the documentation image tests
     "docs/src/developer/plans",  # frozen, and so outside the rules (docs spec §3.5)
@@ -157,6 +158,15 @@ def entered(name: str) -> bool:
     return not name.startswith(".") or name == ".github"
 
 
+def foreign(path: Path) -> bool:
+    """Decide whether a directory is another tree: a virtualenv, or a repository.
+
+    Both can sit in a checkout under any name, ``venv`` and a nested worktree
+    among them, and what they hold is not this repository's to govern.
+    """
+    return (path / "pyvenv.cfg").is_file() or (path / ".git").exists()
+
+
 def corpus(repo: Path = REPO) -> dict[Path, str]:
     """Gather every file the conventions govern, with its text.
 
@@ -179,7 +189,9 @@ def corpus(repo: Path = REPO) -> dict[Path, str]:
         dirs[:] = [
             name
             for name in dirs
-            if entered(name) and (relative / name).as_posix() not in PRUNED
+            if entered(name)
+            and (relative / name).as_posix() not in PRUNED
+            and not foreign(here / name)
         ]
         for name in files:
             path = here / name
@@ -497,6 +509,10 @@ def test_corpus_reads_the_tree_it_is_given(tmp_path):
         (tmp_path / name).mkdir(parents=True)
         (tmp_path / name / "file.txt").write_text("text\n", encoding="utf-8")
     (tmp_path / "src" / "image.png").write_bytes(b"\x89PNG\r\n\x1a\n\xff\xfe")
+    for name, marker in (("venv", "pyvenv.cfg"), ("htmlcov", "x"), ("nested", ".git")):
+        (tmp_path / name).mkdir()
+        (tmp_path / name / marker).write_text("home = /usr\n", encoding="utf-8")
+        (tmp_path / name / "file.txt").write_text("text\n", encoding="utf-8")
 
     found = {path.relative_to(tmp_path).as_posix() for path in corpus(tmp_path)}
 
