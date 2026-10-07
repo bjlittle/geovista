@@ -262,13 +262,19 @@ Both are disabled for the gallery alone, leaving the 28 genuine errors visible:
 
 ```toml
 [[tool.mypy.overrides]]
-# typing spec §3.4 -- both verified against the runtime, both upstream.
+# typing spec 3.4 -- two "pyvista" stub defects, both verified against the
+# runtime on 2026-10-06 with pyvista 0.49.0: "_Wrapped" loses the descriptor
+# protocol, and "Plotter.camera" resolves only partially so ".zoom" is
+# unreachable. Confined to the gallery, whose scripts are published as
+# example code, so a "type: ignore" comment in one is a directive a reader
+# is invited to copy. Withdraw when upstream fixes them.
 disable_error_code = ["attr-defined", "call-arg"]
 module = ["geovista.examples.*"]
 ```
 
-The comment is quoted as it stands rather than as it should read, because a specification
-that quotes the code has to quote what the code says; {issue}`2569` corrects it. The two
+The comment is quoted as it stands in `pyproject.toml` rather than as it should read,
+because a specification that quotes the code has to quote what the code says;
+{issue}`2569` corrects it. The two
 halves retire on different triggers. `attr-defined` goes with the one-line correction,
 which falls to change 5 since `geoplotter.py` is in it, and the override then carries
 `no-untyped-call` in its place for the 44 `zoom` calls. `call-arg` goes when the
@@ -386,7 +392,10 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    disproved it. `geoplotter.py` imports `pyvista` under `TYPE_CHECKING` as well, which
    is what `mypy` reads, and the 77 `call-arg` errors of item 2 are raised on methods
    `GeoPlotter` inherits, which could not happen if its base were unresolved. The
-   unbound type in the message, `pv.Plotter.camera?`, is the annotation's own text.
+   unbound type in the message, `pv.Plotter.camera?`, is the annotation's own text. The
+   same check found that {ref}`§3.4 <typing-spec-3-4>` had been showing a one-line
+   paraphrase of the override's comment while saying it quoted it; it now quotes
+   `pyproject.toml` verbatim.
 4. **Open** ({issue}`2570`, owned by change 6 of {ref}`§4 <typing-spec-4>`) — **Whether to
    pursue `lazy_loader` upstream.** It is 19 of the 29 untyped imports, one for each of
    the 20 library modules that import it except `__init__.py`, which `mypy` reads
