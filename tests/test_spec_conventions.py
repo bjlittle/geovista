@@ -876,7 +876,10 @@ REFERENCE = re.compile(
     r"\{(?:issue|pull)\}`\d+`"
     r"|\]\(https://github\.com/[\w.-]+/[\w.-]+/(?:issues|pull)/\d+\)"
 )
-ITEM = re.compile(r"^\d+\.\s+\*\*(?P<state>[^*]+)\*\*(?P<rest>.*)$")
+#: A top-level list item, numbered or bulleted.
+ITEM = re.compile(r"^(?:\d+\.|[-*])\s+(?P<body>.*)$")
+#: The bold state an open item opens with.
+STATE = re.compile(r"^\*\*(?P<state>[^*]+)\*\*(?P<rest>.*)$")
 
 
 def sections(text: str) -> dict[str, list[tuple[int, str]]]:
@@ -906,22 +909,48 @@ def carried(rest: str) -> str:
     return text[1:]
 
 
-def statuses(text: str) -> Iterator[tuple[int, str]]:
-    """Yield each roadmap Status cell, and each open item with its lines joined."""
-    found = sections(text)
-    rows = [(n, line) for n, line in found.get("Roadmap", []) if line.startswith("|")]
-    if rows:
-        cells = [cell.strip() for cell in rows[0][1].strip().strip("|").split("|")]
-        column = cells.index("Status")
-        for number, line in rows[2:]:
-            yield number, line.strip().strip("|").split("|")[column].strip()
+def statuses(text: str) -> Iterator[tuple[int, str, str]]:
+    """Yield every roadmap Status cell, and every open item with its lines joined.
+
+    A cell is read from any table whose header names a Status column, wherever
+    the table sits, and the table ends where its rows do. An open item is any
+    top-level list item under "Open items", numbered or bulleted, so an item that
+    has lost its state is reported rather than passed over.
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+
+    Yields
+    ------
+    tuple of (int, str, str)
+        The line the status opens on; ``"row"`` or ``"item"``; and the status.
+
+    """
+    table: list[tuple[int, str]] = []
+    for number, line in [*read_lines(text), (0, "")]:
+        if line.startswith("|"):
+            table.append((number, line))
+            continue
+        if table:
+            cells = [cell.strip() for cell in table[0][1].strip().strip("|").split("|")]
+            if "Status" in cells:
+                column = cells.index("Status")
+                for row, written in table[2:]:
+                    found = [
+                        cell.strip() for cell in written.strip().strip("|").split("|")
+                    ]
+                    yield row, "row", found[column] if column < len(found) else ""
+            table = []
     item: list[str] = []
     start = 0
-    for number, line in [*found.get("Open items", []), (0, "")]:
-        if ITEM.match(line) or not line.strip():
+    for number, line in [*sections(text).get("Open items", []), (0, "")]:
+        opened = ITEM.match(line)
+        if opened or not line.strip():
             if item:
-                yield start, " ".join(item)
-            item, start = ([line.strip()], number) if ITEM.match(line) else ([], 0)
+                yield start, "item", " ".join(item)
+            item, start = ([opened["body"].strip()], number) if opened else ([], 0)
         elif item:
             item.append(line.strip())
 
@@ -929,14 +958,16 @@ def statuses(text: str) -> Iterator[tuple[int, str]]:
 def status(path: Path, text: str) -> list[str]:
     """Find each status outside the vocabulary, or terminal and unevidenced."""
     problems = []
-    for number, written in statuses(text):
-        item = ITEM.match(written)
-        if item is not None:
-            state, rest = item["state"].strip(), item["rest"]
-            states = ITEM_STATES
-        else:
+    for number, kind, written in statuses(text):
+        if kind == "row":
             state = next((s for s in ROW_STATES if written.startswith(s)), written)
             rest, states = written[len(state) :], ROW_STATES
+        else:
+            bold = STATE.match(written)
+            if bold is None:
+                problems.append(f"{where(path, number)}: an open item with no status")
+                continue
+            state, rest, states = bold["state"].strip(), bold["rest"], ITEM_STATES
         if state not in states:
             problems.append(f"{where(path, number)}: {state!r} is not a status")
         elif state in TERMINAL:
@@ -968,6 +999,39 @@ def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
         "'shipped' is not a status",
         "Resolved carries no date and reference",
     ]
+
+
+def test_status_reads_bullets_and_any_status_table(tmp_path):
+    """A bullet is an item, an item with no state is reported, any table is read."""
+    body = (
+        "(demo-spec-1)=\n## 1. Plan and status\n\n| # | Status |\n|---|---|\n"
+        "| 1 | shipped |\n\n"
+        "(demo-spec-2)=\n## 2. Open items\n\n"
+        "- **shipped** - **A.**\n"
+        "- **Resolved** (no date) - **B.**\n"
+        "* plain text, its state forgotten\n"
+    )
+    path, _ = demo(tmp_path, body)
+
+    problems = status(path, path.read_text(encoding="utf-8"))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        "'shipped' is not a status",
+        "'shipped' is not a status",
+        "Resolved carries no date and reference",
+        "an open item with no status",
+    ]
+
+
+def test_both_kinds_of_status_are_read(specs):
+    """Either reader could find nothing and pass, so each must find something."""
+    kinds = {
+        kind
+        for spec in specs
+        for _, kind, _ in statuses(spec.read_text(encoding="utf-8"))
+    }
+
+    assert kinds == {"row", "item"}
 
 
 @pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
