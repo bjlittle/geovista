@@ -1184,14 +1184,14 @@ def registered(conf: str) -> set[str]:
     found: set[str] = set()
     for node in ast.walk(ast.parse(conf)):
         value = None
-        if isinstance(node, ast.Assign | ast.AugAssign):
+        if isinstance(node, ast.Assign | ast.AugAssign | ast.AnnAssign):
             targets = node.targets if isinstance(node, ast.Assign) else [node.target]
             if any(isinstance(t, ast.Name) and t.id == "extensions" for t in targets):
                 value = node.value
         elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
             owner = node.func.value
             if node.func.attr == "setup_extension" or (
-                node.func.attr in {"append", "extend"}
+                node.func.attr in {"append", "extend", "insert"}
                 and isinstance(owner, ast.Name)
                 and owner.id == "extensions"
             ):
@@ -1220,6 +1220,13 @@ def test_registered_reads_every_way_an_extension_is_added():
     }
 
 
+def test_registered_reads_an_annotated_list_and_an_insert():
+    """A refactor of conf.py must not leave the watch reading nothing."""
+    conf = 'extensions: list[str] = ["a"]\nextensions.insert(0, "b")\n'
+
+    assert registered(conf) == {"a", "b"}
+
+
 def test_rows_2_to_4_wait_until_the_corpus_outgrows_review(texts, names):
     """Triggers (item 6): the scale at which the citation machinery is wanted."""
     count = outside(texts, names)
@@ -1235,7 +1242,10 @@ def test_rows_2_to_4_wait_until_the_corpus_outgrows_review(texts, names):
 def test_row_4_pairs_the_transform_with_its_output_gate():
     """Triggers (item 6): a transform the output gate does not check."""
     conf = (REPO / "docs" / "src" / "conf.py").read_text(encoding="utf-8")
-    transforms = {name for name in registered(conf) if "citation" in name}
+    extensions = registered(conf)
+    transforms = {name for name in extensions if "citation" in name}
+
+    assert "myst_nb" in extensions, "the watch reads none of conf.py's extensions"
     wiring = [REPO / "pyproject.toml", *(REPO / ".github" / "workflows").glob("*.yml")]
     wired = any(OUTPUT_GATE in path.read_text(encoding="utf-8") for path in wiring)
 
