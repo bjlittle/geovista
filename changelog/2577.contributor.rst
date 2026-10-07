@@ -1,0 +1,4 @@
+A citation range now carries its prefix on both ends, as in
+``typing spec §3.2–typing spec §3.4``. A dash ends a run, so a bare far end
+cites the containing document, and ``tests/test_spec_conventions.py`` now fails a
+range that drops its prefix. (:user:`claude`)
