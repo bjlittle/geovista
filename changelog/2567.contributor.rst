@@ -1,0 +1,42 @@
+Neither design specification in this repository can be reached from the
+documentation. Both are built, since ``myst_parser`` registers ``.md`` whatever
+``source_suffix`` names, but nothing links to them, so each carries
+``orphan: true`` to keep the ``--fail-on-warning`` build quiet. The seven
+citations of the form ``typing spec 3.1`` in ``pyproject.toml``,
+``.pre-commit-config.yaml`` and ``ci-typing.yml`` therefore point a reader at a
+page they cannot find.
+
+A second specification now records how that is closed and what keeps it closed.
+Specifications are published under an index, while plans are withheld by
+``exclude_patterns``, since a plan is frozen when it is written and a published
+plan is wrong by design. Sections are addressed by an anchor keyed to the
+section number: the slug ``docutils`` derives from heading text discards the
+number and resolves a collision to ``id1``, which silently becomes ``id2`` when
+anything is inserted above it. A citation carries its section sign, so a later
+transform can find it in source, tests, configuration and workflows without a
+pattern that also matches every decimal version number.
+
+The roadmap records the remaining citation machinery as candidates, each with
+the condition that would promote it, and a conventions test asserts every
+condition that can be observed. The one that cannot is marked as unwatched,
+because the failure is already on the page: the type coverage specification said
+its ``orphan: true`` marker would come off with the same change, nothing was
+watching, and nothing came off.
+
+Statuses now cite the work that produced them. A landed roadmap row carries its
+date and its pull request, and an open item carries ``Open``, ``Resolved``,
+``Deferred`` or ``Abandoned`` with the issue or pull request that settled it, so
+a reader can see which decisions are still live and read what argued for the
+ones that are not.
+
+Raising issues for the type coverage specification's two open items found both
+of them misstated, which is the argument for citing in miniature. One of the
+``mypy`` codes disabled for the gallery is an upstream defect, reported in 2024
+and fixed on ``pyvista`` ``main`` in September 2026. The other is not upstream at
+all. It comes from one annotation in ``geoplotter.py`` that names the ``camera``
+property where a type belongs, which ``mypy`` cannot bind, and which shadows the
+attribute ``pyvista`` provides. The comment on the override says both are
+upstream. The first correction blamed ``lazy.load`` instead, and the same check,
+run before taking a related request upstream, disproved that too. The section
+now carries the measured cause and counts, and the two halves retire on separate
+triggers. (:user:`claude`)
