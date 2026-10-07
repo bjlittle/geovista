@@ -2597,3 +2597,25 @@ git remote prune origin --dry-run && git remote prune origin
 - docs spec §8 records both rule changes with this pull request, and §4's row 1 reads
   `✅ landed`.
 - CI is green, and #2566 closes with the merge.
+
+## After the final review
+
+The whole-branch review returned "with fixes": no critical findings, four important and six
+minor. Three of the minors were re-graded important by their effect, each being a silent
+loss of coverage or an untrue passage, and all seven were fixed in one pass, every code
+fix's test watched failing first. The module therefore differs from the code blocks above
+where these landed.
+
+| finding | fix | commit |
+|---|---|---|
+| prose inside a MyST directive fence went unread, and so did the rest of a document after a line opening with inline triple-backtick code | fences nest, a directive's body is read unless the directive holds code, and a backtick fence's info string cannot hold a backtick | `54d8aaea` |
+| bulleted open items, items without a bold state, and Status tables under other headings went unread | every top-level list item under "Open items" is read and a missing state reported; every table with a Status column is read | `7f94565e` |
+| a code span wrapped across lines hid the roles after it from agreement | a wrapped span in a specification fails, and the two in docs spec were rewrapped | `d9ca5b72` |
+| a `venv/`, `htmlcov/` or nested worktree entered the corpus | a directory holding `pyvenv.cfg` or `.git` is left alone, and `htmlcov` is pruned | `b4039197` |
+| row 4's watch could read nothing from `conf.py` and pass | annotated assignments and `insert` are read, and `myst_nb` must be found | `9807cafa` |
+| docs spec §6 and §8 item 2 described the retired trigger | rewritten | `2b010f6e` |
+
+Three minors are deferred to Bill: a run wrapped inside a blockquote escapes the wrap
+check; `docs/AGENTS.md` dropped "a page includes it" as a way out of `toc.not_included`;
+and a range written as `typing spec §3.2–§3.4` cites the containing document's §3.4,
+which the bare-means-local rule of docs spec §3.2 covers but nothing warns about.
