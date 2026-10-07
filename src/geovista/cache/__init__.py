@@ -109,6 +109,32 @@ def _fetch(
 CACHE.fetch = _fetch
 
 
+def _identity(path: Path) -> tuple[int, int, int] | None:
+    """Identify the file, if any, at the path.
+
+    Parameters
+    ----------
+    path : Path
+        The file path.
+
+    Returns
+    -------
+    tuple of int or None
+        The inode, modification time (ns) and size of the file, or ``None``
+        if there is no file.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    try:
+        status = path.stat()
+    except FileNotFoundError:
+        return None
+    return status.st_ino, status.st_mtime_ns, status.st_size
+
+
 class Decompress(pooch.Decompress):  # type: ignore[misc]  # numpydoc ignore=PR01
     """Decompress a cached asset without exposing a partially written file.
 
@@ -146,6 +172,8 @@ class Decompress(pooch.Decompress):  # type: ignore[misc]  # numpydoc ignore=PR0
                 self.method,
             )
             module = self._compression_module(fname)
+            # identify any existing target, which may be stale
+            original = _identity(target)
             fd, tmp = tempfile.mkstemp(dir=target.parent, prefix=f".{target.name}.")
             try:
                 with os.fdopen(fd, "wb") as output, module.open(fname) as compressed:
@@ -156,8 +184,10 @@ class Decompress(pooch.Decompress):  # type: ignore[misc]  # numpydoc ignore=PR0
                     Path(tmp).replace(target)
                 except PermissionError:
                     # windows refuses to replace a file that another process
-                    # has open, in which case that process completed it first
-                    if not target.exists():
+                    # has open. that is only safe to accept when a concurrent
+                    # process has since published the target, and not when
+                    # it is the original, and possibly stale, target
+                    if _identity(target) in (None, original):
                         raise
             finally:
                 Path(tmp).unlink(missing_ok=True)

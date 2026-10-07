@@ -110,6 +110,50 @@ def test_failure_cleanup(tmp_path):
     assert list(tmp_path.iterdir()) == [corrupt]
 
 
+@pytest.mark.parametrize("action", ["download", "update"])
+def test_replace_refused__stale(compressed, mocker, action):
+    """Test a stale target is never returned when it cannot be replaced."""
+    target = compressed.parent / "payload.bin"
+    target.write_bytes(b"stale")
+    # windows refuses to replace a file that another process holds open
+    _ = mocker.patch.object(cache.Path, "replace", side_effect=PermissionError)
+    with pytest.raises(PermissionError):
+        Decompress(method="auto", name=target.name)(str(compressed), action, None)
+    assert target.read_bytes() == b"stale"
+    assert set(compressed.parent.iterdir()) == {compressed, target}
+
+
+@pytest.mark.parametrize("existing", [False, True])
+def test_replace_refused__published(compressed, mocker, existing):
+    """Test a target published by a concurrent process is accepted."""
+    target = compressed.parent / "payload.bin"
+    if existing:
+        target.write_bytes(b"stale")
+
+    def publish(*args: object) -> None:  # noqa: ARG001
+        # a concurrent process publishes its target, which a reader then
+        # holds open, so this process may not replace it
+        target.unlink(missing_ok=True)
+        target.write_bytes(PAYLOAD)
+        raise PermissionError
+
+    _ = mocker.patch.object(cache.Path, "replace", side_effect=publish)
+    result = Decompress(method="auto", name=target.name)(
+        str(compressed), "download", None
+    )
+    assert result == str(target)
+    assert target.read_bytes() == PAYLOAD
+    assert set(compressed.parent.iterdir()) == {compressed, target}
+
+
+def test_replace_refused__absent(compressed, mocker):
+    """Test a refused replace is raised when no target was published."""
+    _ = mocker.patch.object(cache.Path, "replace", side_effect=PermissionError)
+    with pytest.raises(PermissionError):
+        Decompress(method="auto", name="payload.bin")(str(compressed), "download", None)
+    assert list(compressed.parent.iterdir()) == [compressed]
+
+
 def test_concurrent(compressed, tmp_path_factory):
     """Test concurrent processes never read a partially decompressed file."""
     sync = tmp_path_factory.mktemp("sync")
