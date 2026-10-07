@@ -192,9 +192,8 @@ slug, `docutils` disambiguates the second to `id1`, and that silently becomes `i
 moment a heading is inserted above it. Anchors derived from prose are unstable under
 exactly the edits a living document invites.
 
-The type coverage specification already satisfies this, thirteen anchors against thirteen
-numbered headings. What change 1 of {ref}`§4 <docs-spec-4>` adds is the assertion, so the
-next document is governed rather than merely well written.
+Both specifications satisfy it, and change 1 of {ref}`§4 <docs-spec-4>` added the
+assertion, so the next document is governed rather than merely well written.
 
 (docs-spec-3-4)=
 ### 3.4 Cross-references inside a specification

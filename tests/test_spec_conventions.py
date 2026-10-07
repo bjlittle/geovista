@@ -502,3 +502,110 @@ def test_the_namespace_holds_what_the_rules_read(specs, names):
     assert {"docs-spec-3-5", "typing-spec-3-4"} <= names.anchors
     assert {"docs-spec", "typing-spec"} <= names.prefixes
     assert "ref" in roles
+
+
+#: The banner line a specification declares its citation prefix on.
+DECLARED = re.compile(
+    rf"\*\*Citation prefix:\*\*\s*`(?P<prefix>[^`]+?)\s*{SECTION}{ELLIPSIS}`"
+)
+
+
+def pairing(path: Path, text: str) -> list[str]:
+    """Find each numbered heading with no anchor, and each anchor with no heading."""
+    lines = dict(read_lines(text))
+    problems = []
+    for number, line in lines.items():
+        if HEADING.match(line) and not ANCHOR.match(lines.get(number - 1, "")):
+            problems.append(f"{where(path, number)}: a numbered heading, unanchored")
+        if ANCHOR.match(line) and not HEADING.match(lines.get(number + 1, "")):
+            problems.append(f"{where(path, number)}: an anchor with no heading beneath")
+    return problems
+
+
+def keying(path: Path, text: str) -> list[str]:
+    """Find each anchor keyed to the wrong section or carrying the wrong prefix."""
+    lines = dict(read_lines(text))
+    problems = []
+    slugs = set()
+    for number, line in lines.items():
+        anchor = ANCHOR.match(line)
+        if anchor is None:
+            continue
+        slugs.add(anchor["slug"])
+        heading = HEADING.match(lines.get(number + 1, ""))
+        if heading is not None and anchor["num"].replace("-", ".") != heading["num"]:
+            problems.append(
+                f"{where(path, number)}: anchor {anchor['slug']}-{anchor['num']} "
+                f"sits above section {heading['num']}"
+            )
+    declared = next(
+        (match for line in lines.values() if (match := DECLARED.search(line))), None
+    )
+    if declared is None:
+        problems.append(f"{where(path, 1)}: no citation prefix is declared")
+    elif slugs != {re.sub(r"\s+", "-", declared["prefix"].lower())}:
+        problems.append(
+            f"{where(path, 1)}: declares {declared['prefix']!r}, "
+            f"but its anchors carry {sorted(slugs)}"
+        )
+    return problems
+
+
+def shared(names: Namespace) -> list[str]:
+    """Find each prefix that more than one specification owns."""
+    owned = list(names.owners.values())
+    return sorted({prefix for prefix in owned if owned.count(prefix) > 1})
+
+
+def test_pairing_finds_each_unanchored_heading_and_stranded_anchor(tmp_path):
+    """Both directions, because each catches a fault the other cannot see."""
+    path, _ = demo(tmp_path, "## 1. Purpose\n\n(demo-spec-2)=\n\nprose\n")
+
+    problems = pairing(path, path.read_text(encoding="utf-8"))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        "a numbered heading, unanchored",
+        "an anchor with no heading beneath",
+    ]
+
+
+def test_keying_finds_a_drifted_anchor_and_a_foreign_prefix(tmp_path):
+    """An anchor above the wrong heading still resolves, so only keying sees it."""
+    body = "(demo-spec-1)=\n## 2. Design\n\n(other-spec-3)=\n## 3. X\n"
+    path, _ = demo(tmp_path, body)
+
+    problems = keying(path, path.read_text(encoding="utf-8"))
+
+    assert len(problems) == 2
+    assert "sits above section 2" in problems[0]
+    assert "but its anchors carry" in problems[1]
+
+
+def test_a_copied_specification_sharing_its_prefix_is_caught(tmp_path):
+    """A copy that keeps its template's anchors keeps its prefix too."""
+    first, _ = demo(tmp_path, DEMO)
+    copy = tmp_path / "2026-01-02-copy-design.md"
+    copy.write_text(first.read_text(encoding="utf-8"), encoding="utf-8")
+
+    assert shared(namespace([first, copy])) == ["demo-spec"]
+
+
+def test_every_specification_declares_a_prefix_of_its_own(names):
+    """Two documents sharing a prefix would share every anchor too."""
+    assert shared(names) == []
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_every_numbered_heading_pairs_with_an_anchor(spec):
+    """Pairing (item 1)."""
+    problems = pairing(spec, spec.read_text(encoding="utf-8"))
+
+    assert not problems, "\n".join(problems)
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_every_anchor_is_keyed_to_its_heading(spec):
+    """Keying (item 2)."""
+    problems = keying(spec, spec.read_text(encoding="utf-8"))
+
+    assert not problems, "\n".join(problems)
