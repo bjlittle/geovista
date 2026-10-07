@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 from geopy.geocoders import Nominatim
 import lazy_loader as lazy
 
-from geovista.cache import CACHE
+from geovista.cache import CACHE, Decompress
 from geovista.common import LRU_CACHE_SIZE, StrEnumPlus
 
 if TYPE_CHECKING:
@@ -31,7 +31,6 @@ if TYPE_CHECKING:
 # lazy import third-party dependencies
 nc = lazy.load("netCDF4")
 np = lazy.load("numpy")
-pooch = lazy.load("pooch")
 
 __all__ = [
     "CLOUD_AMOUNT_PREFERENCE",
@@ -199,7 +198,7 @@ def _cloud_amount_dataset(fname: str | CloudPreference) -> nc.Dataset:
     .. versionadded:: 0.4.0
 
     """
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/c768/{fname}.bz2", processor=processor)
 
     return nc.Dataset(resource)
@@ -292,7 +291,7 @@ def dynamico() -> SampleUnstructuredXY:
 
     """
     fname = "dynamico_icosahedral.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -388,7 +387,7 @@ def fvcom_tamar() -> SampleUnstructuredXY:
 
     """
     fname = "fvcom_tamar.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -440,7 +439,7 @@ def icon_soil() -> SampleUnstructuredXY:
 
     """
     fname = "icon_extpar_0010_R02B04_G.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -483,7 +482,7 @@ def _gungho_lam(fname: str) -> SampleUnstructuredXY:
     .. versionadded:: 0.1.0
 
     """
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/lams/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -591,7 +590,7 @@ def lam_pacific() -> SampleUnstructuredXY:
 
     """
     fname = "lam.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -673,7 +672,7 @@ def lfric_orog() -> SampleUnstructuredXY:
 
     """
     fname = "qrparam_shared.orog.ugrid.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -718,7 +717,7 @@ def lfric_sst() -> SampleUnstructuredXY:
 
     """
     fname = "qrclim.sst.ugrid.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -763,7 +762,7 @@ def lfric_winds() -> SampleVectorsXYUVW:
 
     """
     fname = "lfric_winds_sample.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -798,7 +797,7 @@ def name_reykjanes() -> SampleGridXYZ:
 
     """
     fname = "reykjanes.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -846,7 +845,7 @@ def nemo_orca2() -> SampleStructuredXY:
 
     """
     fname = "votemper.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -879,7 +878,7 @@ def nemo_orca2_gradient() -> SamplePointsXYZ:
 
     """
     fname = "votemper-gradient.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -911,7 +910,7 @@ def oisst_avhrr_sst() -> SampleStructuredXY:
 
     """
     fname = "oisst-avhrr.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -952,7 +951,7 @@ def usgs_earthquakes() -> SamplePointsXYZ:
         raise ImportError(emsg) from None
 
     fname = "earthquakes.parq"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/{fname}.bz2", processor=processor)
 
     # load the lon/lat points
@@ -993,7 +992,7 @@ def ww3_global_smc(*, step: int | None = None) -> SampleUnstructuredXY:
 
     """
     fname = "ww3_gbl_smc_hs.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/ww3/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 
@@ -1050,7 +1049,7 @@ def ww3_global_tri() -> SampleUnstructuredXY:
 
     """
     fname = "ww3_gbl_tri_hs.nc"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"{PANTRY_DATA}/ww3/{fname}.bz2", processor=processor)
     dataset = nc.Dataset(resource)
 

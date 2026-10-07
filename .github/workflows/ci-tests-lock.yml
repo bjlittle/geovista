@@ -88,7 +88,7 @@ jobs:
           NAME: ${{ env.NAME }}
         run: |
           pixi run --frozen --environment ${NAME} geovista --report
-          xvfb-run -a pixi run --frozen --environment ${NAME} pytest --failed_image_dir test_images_failed
+          xvfb-run -a pixi run --frozen --environment ${NAME} pytest --numprocesses auto --dist worksteal --failed_image_dir test_images_failed
 
       - name: "report failure"
         if: ${{ failure() }}

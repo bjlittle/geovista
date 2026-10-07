@@ -15,7 +15,9 @@ from geovista.pantry.meshes import LFRIC_RESOLUTION, lfric
 def test_resolution_warning(mocker):
     """Test warning raised of invalid cubed-sphere resolution request."""
     processor = mocker.sentinel.processor
-    _ = mocker.patch("pooch.Decompress", return_value=processor)
+    decompress = mocker.patch(
+        "geovista.pantry.meshes.Decompress", return_value=processor
+    )
     resource = mocker.sentinel.resource
     _ = mocker.patch("geovista.cache.CACHE.fetch", return_value=resource)
     mesh = mocker.sentinel.mesh
@@ -25,13 +27,12 @@ def test_resolution_warning(mocker):
     with pytest.warns(UserWarning, match=wmsg):
         result = lfric(resolution=bad)
 
-    import pooch  # noqa: PLC0415
     import pyvista as pv  # noqa: PLC0415
 
     from geovista.cache import CACHE  # noqa: PLC0415
 
     fname = f"lfric_{LFRIC_RESOLUTION}.vtk"
-    pooch.Decompress.assert_called_once_with(method="auto", name=fname)
+    decompress.assert_called_once_with(method="auto", name=fname)
     CACHE.fetch.assert_called_once_with(
         f"pantry/meshes/{fname}.bz2", processor=processor
     )

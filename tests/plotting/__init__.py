@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import shutil
+import threading
 
 import pyvista as pv
 
@@ -31,21 +32,35 @@ pv.global_theme.window_size = [450, 300]
 pv.OFF_SCREEN = True
 gvc.GEOVISTA_IMAGE_TESTING = True
 
+
+def link_image_cache(link: Path, target: Path) -> None:
+    """Link the image cache directory to the pooch cache of baseline images.
+
+    Safe to call concurrently, as every pytest-xdist worker does on import.
+
+    """
+    if link.is_dir() and not link.is_symlink():
+        # remove directory which may have been created by pytest-pyvista
+        # when plugin is bootstrapped by pytest, tolerating a concurrent
+        # worker that has already removed or replaced it
+        shutil.rmtree(str(link), ignore_errors=True)
+
+    if link.is_symlink() and link.exists() and link.readlink() == target:
+        return
+
+    target.mkdir(parents=True, exist_ok=True)
+    # create the symbolic link under a name unique to this caller, then
+    # rename it into place, which atomically replaces any broken or stale
+    # link to another cache version, or one just made by a concurrent worker
+    tmp = link.with_name(f".{link.name}.{os.getpid()}.{threading.get_ident()}")
+    tmp.unlink(missing_ok=True)
+    tmp.symlink_to(target)
+    try:
+        tmp.replace(link)
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
 # prepare to download image cache for each image test
 # also see reference in pyproject.toml
-cache_dir = Path(__file__).resolve().parent / "unit_image_cache"
-if cache_dir.is_dir() and not cache_dir.is_symlink():
-    # remove directory which may have been created by pytest-pyvista
-    # when plugin is bootstrapped by pytest
-    shutil.rmtree(str(cache_dir))
-
-if cache_dir.is_symlink() and (
-    not cache_dir.exists() or cache_dir.readlink() != BASE_DIR
-):
-    # detected a broken symlink or non-latest version of cache
-    cache_dir.unlink()
-
-if not cache_dir.exists():
-    BASE_DIR.mkdir(parents=True, exist_ok=True)
-    # create the symbolic link to the pooch cache
-    cache_dir.symlink_to(BASE_DIR)
+link_image_cache(Path(__file__).resolve().parent / "unit_image_cache", BASE_DIR)
