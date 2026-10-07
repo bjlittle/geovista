@@ -84,7 +84,7 @@ warn_unreachable = true
 [[tool.mypy.overrides]]
 # Problem caused by the click module - out of our control. "click" ships
 # "py.typed", but "main.command" is still an untyped decorator: removing
-# this raises three "untyped-decorator" errors. See typing spec 3.1.
+# this raises three "untyped-decorator" errors. See typing spec §3.1.
 disallow_untyped_decorators = false
 module = "geovista.cli"
 
@@ -93,7 +93,7 @@ module = "geovista.cli"
 # Subclassing third-party classes - out of our control. "pyvistaqt" is not
 # in the locked environment at all, so its base classes are "Any". The same
 # setting was redundant for "geovista.geoplotter" and "geovista.report",
-# which report identically with and without it. See typing spec 3.1.
+# which report identically with and without it. See typing spec §3.1.
 disallow_subclassing_any = false
 module = ["geovista.qt"]
 
@@ -105,7 +105,7 @@ module = ["geovista.examples.grid.*"]
 
 
 [[tool.mypy.overrides]]
-# typing spec 3.4 -- two "pyvista" stub defects, both verified against the
+# typing spec §3.4 -- two "pyvista" stub defects, both verified against the
 # runtime on 2026-10-06 with pyvista 0.49.0: "_Wrapped" loses the descriptor
 # protocol, and "Plotter.camera" resolves only partially so ".zoom" is
 # unreachable. Confined to the gallery, whose scripts are published as
@@ -116,7 +116,7 @@ module = ["geovista.examples.*"]
 
 
 [[tool.mypy.overrides]]
-# typing spec 3.2 -- the ratchet. This list only ever shrinks, and
+# typing spec §3.2 -- the ratchet. This list only ever shrinks, and
 # "tests/test_typing_ratchet.py" holds it to that. Delete the whole block,
 # and that test, when the last entry goes.
 ignore_errors = true

@@ -63,18 +63,30 @@ clarify the various steps involved in how to contribute to ``geovista``.
         Testing guidelines.
 
 
-.. card:: Codecraft 🚧
-    :class-title: custom-title
-    :class-body: custom-body
-    :link: gv-developer-codecraft
-    :link-type: ref
-    :img-top: ../_static/images/icons/codecraft.svg
-    :class-img-top: dark-light
-    :class-card: sd-rounded-3
-    :width: 50%
-    :margin: 4 4 auto auto
+.. grid:: 1 1 2 2
+    :gutter: 2
 
-    Maintenance guidelines.
+    .. grid-item-card:: Specifications
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-developer-specs
+        :link-type: ref
+        :img-top: ../_static/images/icons/specifications.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Living design documents.
+
+    .. grid-item-card:: Codecraft 🚧
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-developer-codecraft
+        :link-type: ref
+        :img-top: ../_static/images/icons/codecraft.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Maintenance guidelines.
 
 
 .. toctree::
@@ -86,3 +98,4 @@ clarify the various steps involved in how to contribute to ``geovista``.
     packaging
     testing
     codecraft
+    specs/index
