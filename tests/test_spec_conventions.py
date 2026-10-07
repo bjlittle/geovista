@@ -31,15 +31,18 @@ governs.
 from __future__ import annotations
 
 import ast
+import contextlib
 from dataclasses import dataclass
+import io
 from pathlib import Path
 import re
+import tokenize
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Iterable, Iterator, Mapping
 
 #: The repository root, beneath which the corpus is derived.
 REPO = Path(__file__).parents[1]
@@ -715,12 +718,45 @@ QUOTE = re.compile(
     r"^[^\S\n]*(?P<item>(?:[-*+]|\d{1,9}[.)])[^\S\n]+)?(?P<markers>(?:>[^\S\n]?)+)"
 )
 
-#: The marker opening a comment line outside markdown, ``#:`` included.
-COMMENT = re.compile(r"^[^\S\n]*#+:?[^\S\n]?")
+#: The suffixes of the files whose comments open at a ``#`` and run to the line end.
+COMMENTED = frozenset({".cfg", ".py", ".pyi", ".sh", ".toml", ".yaml", ".yml"})
+
+#: Where a comment opens outside Python: a ``#`` that opens the line or follows a
+#: space, which is what YAML and TOML require of one.
+HASH = re.compile(r"(?:^|(?<=[^\S\n]))#")
+
+#: The marker that opens the text of a comment, ``#:`` included.
+MARKER = re.compile(r"#+:?[^\S\n]?")
+
+
+def comment_columns(path: Path, text: str) -> dict[int, int]:
+    """Find the column each comment opens at, by line, in a file that has them.
+
+    Python is tokenized, so a ``#`` inside a string opens nothing. Any other
+    commented file, and a Python file that does not tokenize, falls back on
+    :data:`HASH`.
+    """
+    if path.suffix not in COMMENTED:
+        return {}
+    if path.suffix in {".py", ".pyi"}:
+        with contextlib.suppress(tokenize.TokenError, SyntaxError):
+            return {
+                token.start[0]: token.start[1]
+                for token in tokenize.generate_tokens(io.StringIO(text).readline)
+                if token.type == tokenize.COMMENT
+            }
+    return {
+        number: found.start()
+        for number, line in enumerate(text.splitlines(), start=1)
+        if (found := HASH.search(line)) is not None
+    }
 
 
 def paragraphs(
-    lines: Iterable[tuple[int, str]], *, markdown: bool = False
+    lines: Iterable[tuple[int, str]],
+    *,
+    markdown: bool = False,
+    comments: Mapping[int, int] | None = None,
 ) -> Iterator[list[tuple[int, str]]]:
     """Group numbered lines into the runs a line wrap can join.
 
@@ -729,36 +765,51 @@ def paragraphs(
     together. Markdown is read without its blockquote markers, which a reader
     never sees either. A quote that opens or deepens starts a block of its own, and
     so does a list item opening with one, so either ends the run; a line quoted
-    less deeply continues it, as a lazy continuation line does. Anywhere else a
-    comment line is read without its ``#``, and a run ends where comment gives way
-    to code or code to comment, since neither continues the other.
+    less deeply continues it, as a lazy continuation line does. Elsewhere a comment,
+    found at the column ``comments`` gives for its line, is read without its ``#``.
+    It is a text apart from the code beside it, so a run ends where comment gives
+    way to code or code to comment, and a comment trailing a line of code opens a
+    run that the comment lines below it continue.
     """
     run: list[tuple[int, str]] = []
     previous = depth = 0
     commented = False
     for number, line in lines:
-        text, level, item, comment = line, 0, False, False
+        pieces, level, item = [(line, False)], 0, False
         if markdown:
             if (quote := QUOTE.match(line)) is not None:
-                text = line[quote.end() :]
+                pieces = [(line[quote.end() :], False)]
                 level, item = quote["markers"].count(">"), quote["item"] is not None
-        elif (marker := COMMENT.match(line)) is not None:
-            text, comment = line[marker.end() :], True
-        if run and (
-            not text.strip()
-            or number != previous + 1
-            or level > depth
-            or item
-            or comment != commented
-        ):
-            yield run
-            run = []
-        if text.strip():
-            depth = max(depth, level) if run else level
-            run.append((number, text))
-        previous, commented = number, comment
+        elif comments and number in comments:
+            column = comments[number]
+            found = MARKER.match(line, column)
+            note = (line[found.end() if found else column :], True)
+            pieces = [(line[:column], False), note] if line[:column].strip() else [note]
+        for text, comment in pieces:
+            if run and (
+                not text.strip()
+                or number != previous + 1
+                or level > depth
+                or item
+                or comment != commented
+            ):
+                yield run
+                run = []
+            if text.strip():
+                depth = max(depth, level) if run else level
+                run.append((number, text))
+            previous, commented = number, comment
     if run:
         yield run
+
+
+def runs(path: Path, text: str) -> Iterator[list[tuple[int, str]]]:
+    """Group the lines of a file into paragraphs, as its syntax has them read."""
+    return paragraphs(
+        source_lines(path, text),
+        markdown=path.suffix == ".md",
+        comments=comment_columns(path, text),
+    )
 
 
 def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
@@ -772,7 +823,7 @@ def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
     """
     owner = names.owners.get(path)
     problems = []
-    for run in paragraphs(source_lines(path, text), markdown=path.suffix == ".md"):
+    for run in runs(path, text):
         written = [
             (number, citation)
             for number, line in run
@@ -805,15 +856,17 @@ def ranged(path: Path, text: str, names: Namespace) -> list[str]:
     containing document, which in a specification resolves without complaint, while
     a far end written as a plain number is no citation at all, and nothing resolves
     it. Each end of a range is therefore a citation of its own, the rule ``tephpy``
-    writes down and does not check. A dash with a space on either side is
-    punctuation and opens no range, but a line break beside it is not a space: a
-    paragraph is read whole, so a range a wrap has split is still a range. Scanning
-    with no owner leaves a citation unresolved unless a prefix was written on it or
-    carried to it, which is what tells the ends apart.
+    writes down and does not check. A paragraph is read whole, so a range a wrap
+    has split is still a range: the dash opens one when nothing but a line break
+    stands between it and either end. A space anywhere in that gap, one that ends a
+    line included, makes the dash punctuation. The indentation that opens a line
+    does not count, since a list item, a quote and a docstring all indent their
+    continuation lines. Scanning with no owner leaves a citation unresolved unless
+    a prefix was written on it or carried to it, which is what tells the ends apart.
     """
     problems = []
-    for run in paragraphs(source_lines(path, text), markdown=path.suffix == ".md"):
-        source = "\n".join(prose(line)[0].strip() for _, line in run)
+    for run in runs(path, text):
+        source = "\n".join(prose(line)[0].lstrip() for _, line in run)
         previous: tuple[re.Match[str], Citation] | None = None
         for match, citation in zip(
             names.signed.finditer(source),
@@ -955,6 +1008,14 @@ def test_wrapped_joins_no_lines_that_markdown_keeps_apart(tmp_path, body):
             f"> See other spec {SECTION}2\N{EN DASH}\n> {SECTION}1.",
             f"'other spec {SECTION}2\N{EN DASH}\\n{SECTION}1' opens at other-spec-2",
         ),
+        (
+            f"See other spec {SECTION}2\N{EN DASH}\n {SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"- See other spec {SECTION}2\N{EN DASH}\n  {SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n{SECTION}1' opens at other-spec-2",
+        ),
     ],
     ids=[
         "en-dash",
@@ -964,6 +1025,8 @@ def test_wrapped_joins_no_lines_that_markdown_keeps_apart(tmp_path, body):
         "split-after",
         "split-before",
         "quoted-split",
+        "indented-continuation",
+        "listed-continuation",
     ],
 )
 def test_ranged_finds_a_far_end_without_its_prefix(tmp_path, body, expected):
@@ -1024,6 +1087,9 @@ def test_ranged_finds_a_far_end_without_its_section_sign(tmp_path, body, expecte
         f"See other spec {SECTION}2 \N{EN DASH}\n{SECTION}1 explains why.",
         f"See other spec {SECTION}2\N{EN DASH}\n\n{SECTION}1 opens a paragraph.",
         f"See other spec {SECTION}2-style rules.",
+        f"See other spec {SECTION}2 \n\N{EN DASH}{SECTION}1 explains why.",
+        f"See other spec {SECTION}2\N{EN DASH} \n{SECTION}1 explains why.",
+        f"See other spec {SECTION}2\N{EN DASH}  \n{SECTION}1 explains why.",
     ],
     ids=[
         "both-ends",
@@ -1034,6 +1100,9 @@ def test_ranged_finds_a_far_end_without_its_section_sign(tmp_path, body, expecte
         "split-spaced",
         "paragraphs",
         "hyphenated-word",
+        "space-before-break",
+        "space-after-dash",
+        "hard-break",
     ],
 )
 def test_ranged_passes_a_range_written_whole_and_a_dash_as_punctuation(tmp_path, body):
@@ -1044,14 +1113,20 @@ def test_ranged_passes_a_range_written_whole_and_a_dash_as_punctuation(tmp_path,
 
 
 @pytest.mark.parametrize(
-    ("name", "marker"),
-    [("module.py", "#"), ("module.py", "#:"), ("workflow.yml", "#")],
-    ids=["python", "python-attribute", "yaml"],
+    ("name", "opening"),
+    [
+        ("module.py", "#"),
+        ("module.py", "#:"),
+        ("workflow.yml", "#"),
+        ("module.py", "x = 1  #"),
+        ("workflow.yml", "key: value  #"),
+    ],
+    ids=["python", "python-attribute", "yaml", "python-trailing", "yaml-trailing"],
 )
-def test_ranged_reads_a_comment_without_its_marker(tmp_path, name, marker):
+def test_ranged_reads_a_comment_without_its_marker(tmp_path, name, opening):
     """A far end with no sign is no citation, so only the range check can see it."""
     _, names = paired(tmp_path, "")
-    text = f"{marker} See other spec {SECTION}2\N{EN DASH}\n{marker} 1 for both.\n"
+    text = f"{opening} See other spec {SECTION}2\N{EN DASH}\n# 1 for both.\n"
 
     problems = ranged(tmp_path / name, text, names)
 
@@ -1073,18 +1148,23 @@ def test_wrapped_reads_a_comment_without_its_marker(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "text",
+    ("name", "text"),
     [
-        f"# See other spec {SECTION}2\N{EN DASH}\n1: one\n",
-        f"# See other spec {SECTION}2\N{EN DASH}\n#\n# 1 for both.\n",
+        ("workflow.yml", f"# See other spec {SECTION}2\N{EN DASH}\n1: one\n"),
+        ("workflow.yml", f"# See other spec {SECTION}2\N{EN DASH}\n#\n# 1 for both.\n"),
+        ("workflow.yml", f"key: v  # See other spec {SECTION}2\N{EN DASH}\n1: one\n"),
+        (
+            "module.py",
+            f'x = """a # See other spec {SECTION}2\N{EN DASH}\n# 1 for both."""\n',
+        ),
     ],
-    ids=["code-follows", "bare-marker"],
+    ids=["code-follows", "bare-marker", "trailing-then-code", "hash-in-a-string"],
 )
-def test_ranged_joins_no_comment_to_code_or_across_a_bare_marker(tmp_path, text):
-    """A comment and the code after it are separate texts, and a bare ``#`` is blank."""
+def test_ranged_joins_no_comment_to_code_or_across_a_bare_marker(tmp_path, name, text):
+    """Comment and code are separate texts, and a ``#`` in a string opens no comment."""
     _, names = paired(tmp_path, "")
 
-    assert ranged(tmp_path / "workflow.yml", text, names) == []
+    assert ranged(tmp_path / name, text, names) == []
 
 
 def test_every_citation_resolves(texts, names):
