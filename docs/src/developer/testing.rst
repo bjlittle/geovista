@@ -779,6 +779,15 @@ e.g.,
    |                                        |                                                                  |
    |                                        |    $ pixi run tests-unit "not image"                             |
    |                                        |                                                                  |
+   |                                        | Runs the unit tests in parallel, one worker per CPU core (see    |
+   |                                        | :ref:`tippy-gv-developer-testing-unit-tests-parallel`). Accepts  |
+   |                                        | the number of workers as an optional second argument, where      |
+   |                                        | ``0`` runs them serially in a single process e.g.,               |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run tests-unit "not image" 0                           |
+   |                                        |                                                                  |
    |                                        | Note that the :guilabel:`tests-clean` task is called prior to    |
    |                                        | running this task.                                               |
    |                                        |                                                                  |
@@ -891,6 +900,45 @@ Finer-grained control of unit test can be achieved by using our ``pytest``
 :ref:`browser <tippy-gv-developer-testing-browser-tests-markers>` markers.
 
 
+.. _gv-developer-testing-unit-tests-parallel:
+.. _tippy-gv-developer-testing-unit-tests-parallel:
+
+Parallel Testing
+~~~~~~~~~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`.github/workflows` :fa:`folder`
+- :bash:`pyproject.toml`
+- :bash:`src/geovista/cache/__init__.py`
+
+The :guilabel:`tests-unit` task and continuous integration both spread the unit
+tests over several worker processes with the `pytest-xdist`_ plugin, which is
+several times faster than a serial run on a multi-core machine:
+
+.. code:: console
+
+   $ pytest --numprocesses auto --dist worksteal
+
+Plain ``pytest`` still runs serially, which suits debugging with ``--pdb`` or
+stopping at the first failure with ``-x``. To run the task serially, pass ``0``
+as its second argument.
+
+Each worker is a separate process with its own module state, and takes the next
+free test as it finishes one. A unit test must pass whatever order the tests run
+in, and must not rely on another test having run first in the same process.
+
+.. attention::
+   :class: dropdown
+
+   All workers share the :data:`~geovista.cache.CACHE`. When it starts empty,
+   for example after a :data:`~geovista.cache.DATA_VERSION` bump, several
+   workers may request the same asset at once. ``geovista`` decompresses each
+   asset into a temporary file and renames it into place, so a worker never
+   reads a partly written file. Workers may still download the same asset more
+   than once; run the :guilabel:`download` task first to avoid that.
+
+
 .. comment
 
    🔗 URL resources in alphabetical order:
@@ -906,3 +954,4 @@ Finer-grained control of unit test can be achieved by using our ``pytest``
 .. _dependabot.yml: https://github.com/bjlittle/geovista/blob/main/.github/dependabot.yml
 .. _fixtures: https://docs.pytest.org/en/stable/how-to/fixtures.html#how-to-fixtures
 .. _playwright: https://playwright.dev/python/
+.. _pytest-xdist: https://pytest-xdist.readthedocs.io/

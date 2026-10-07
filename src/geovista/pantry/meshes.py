@@ -19,7 +19,7 @@ from warnings import warn
 import lazy_loader as lazy
 
 from geovista.bridge import Transform
-from geovista.cache import CACHE
+from geovista.cache import CACHE, Decompress
 from geovista.common import Preference
 import geovista.pantry.data
 
@@ -28,7 +28,6 @@ if TYPE_CHECKING:
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
-pooch = lazy.load("pooch")
 pv = lazy.load("pyvista")
 
 __all__ = [
@@ -479,7 +478,7 @@ def lfric(*, resolution: str | None = None) -> pv.PolyData:
         resolution = LFRIC_RESOLUTION
 
     fname = f"lfric_{resolution}.vtk"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"pantry/meshes/{fname}.bz2", processor=processor)
 
     return pv.read(resource)

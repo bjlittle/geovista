@@ -5,4 +5,5 @@ pytest-cov <7.2
 pytest-mock <3.17
 pytest-pretty <1.4
 pytest-pyvista <0.4
+pytest-xdist <3.9
 pyyaml <6.1

@@ -18,14 +18,13 @@ from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
-from geovista.cache import CACHE
+from geovista.cache import CACHE, Decompress
 from geovista.common import COASTLINES_RESOLUTION
 
 if TYPE_CHECKING:
     import pyvista as pv
 
 # lazy import third-party dependencies
-pooch = lazy.load("pooch")
 pv = lazy.load("pyvista")
 
 __all__ = [
@@ -62,7 +61,7 @@ def fetch_coastlines(resolution: str | None = None) -> pv.PolyData:
         resolution = COASTLINES_RESOLUTION
 
     fname = f"ne_coastlines_{resolution}.vtk"
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"natural_earth/physical/{fname}.bz2", processor=processor)
 
     return pv.read(resource)
@@ -90,7 +89,7 @@ def fetch_raster(fname: str) -> Path:
     .. versionadded:: 0.5.0
 
     """
-    processor = pooch.Decompress(method="auto", name=fname)
+    processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"rasters/{fname}.bz2", processor=processor)
 
     return Path(resource)

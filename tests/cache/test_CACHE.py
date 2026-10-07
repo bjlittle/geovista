@@ -9,10 +9,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pooch import Decompress
 import pytest
 
-from geovista.cache import CACHE, READ_MODE
+from geovista.cache import CACHE, READ_MODE, Decompress
 
 
 def test_fetch():
@@ -22,6 +21,25 @@ def test_fetch():
     asset_cache.unlink(missing_ok=True)
     actual = CACHE.fetch(asset.as_posix())
     assert asset.name == Path(actual).name
+
+
+@pytest.mark.parametrize("keyword", [False, True])
+def test_fetch__parent(mocker, tmp_path, keyword):
+    """Test the asset parent directory exists before pooch fetches the asset."""
+    fname = "pantry/meshes/asset.vtk.bz2"
+    parent = tmp_path / "pantry" / "meshes"
+    _ = mocker.patch.object(CACHE, "path", tmp_path)
+
+    def fetch(*args: object, **kwargs: object) -> str:  # noqa: ARG001
+        # pooch creates a missing parent without exist_ok, so racing
+        # processes fail unless it already exists
+        assert parent.is_dir()
+        return str(parent / "asset.vtk")
+
+    _ = mocker.patch.object(CACHE, "_fetch", side_effect=fetch)
+    args, kwargs = ((), {"fname": fname}) if keyword else ((fname,), {})
+    result = CACHE.fetch(*args, **kwargs)
+    assert result == str(parent / "asset.vtk")
 
 
 @pytest.mark.xfail(reason="flaky read permission bits", strict=False)

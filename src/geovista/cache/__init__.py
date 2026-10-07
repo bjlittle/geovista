@@ -16,7 +16,9 @@ from __future__ import annotations
 from functools import wraps
 import os
 from pathlib import Path
+import shutil
 import stat
+import tempfile
 from typing import TYPE_CHECKING, Any
 
 import pooch
@@ -93,6 +95,10 @@ def _fetch(
 ) -> str:  # numpydoc ignore=GL08
     # default to our http/s downloader with user-agent headers
     kwargs.setdefault("downloader", _downloader)
+    # pooch creates a missing parent directory without exist_ok, which
+    # raises FileExistsError in all but the first of concurrent processes
+    fname = args[0] if args else kwargs["fname"]
+    (CACHE.abspath / str(fname)).parent.mkdir(parents=True, exist_ok=True)
     result: str = CACHE._fetch(*args, **kwargs)  # noqa: SLF001
     return result
 
@@ -100,6 +106,62 @@ def _fetch(
 # override the original Pooch.fetch method with our
 # user-agent headers version
 CACHE.fetch = _fetch
+
+
+class Decompress(pooch.Decompress):  # type: ignore[misc]  # numpydoc ignore=PR01
+    """Decompress a cached asset without exposing a partially written file.
+
+    A drop-in replacement for :class:`pooch.Decompress`, which streams into the
+    target file in place. A concurrent process that finds the target already
+    exists then reads it before it is complete. Instead, decompress into a
+    temporary file alongside the target, then atomically rename it.
+
+    Notes
+    -----
+    Remove once :mod:`pooch` decompresses atomically, see
+    https://github.com/fatiando/pooch/issues/411.
+
+    .. versionadded:: 0.6.0
+
+    """
+
+    def __call__(
+        self,
+        fname: str,
+        action: str,
+        poocher: pooch.Pooch | None,  # noqa: ARG002
+    ) -> str:  # numpydoc ignore=PR01,RT01
+        """Decompress the asset, see :meth:`pooch.Decompress.__call__`."""
+        path = Path(fname)
+        target = path.parent / (
+            f"{path.name}.decomp" if self.name is None else self.name
+        )
+
+        if action in ("update", "download") or not target.exists():
+            pooch.get_logger().info(
+                "Decompressing '%s' to '%s' using method '%s'.",
+                fname,
+                target,
+                self.method,
+            )
+            module = self._compression_module(fname)
+            fd, tmp = tempfile.mkstemp(dir=target.parent, prefix=f".{target.name}.")
+            try:
+                with os.fdopen(fd, "wb") as output, module.open(fname) as compressed:
+                    shutil.copyfileobj(compressed, output)
+                # mkstemp is owner only, so restore the community read bits
+                Path(tmp).chmod(Path(tmp).stat().st_mode | READ_MODE)
+                try:
+                    Path(tmp).replace(target)
+                except PermissionError:
+                    # windows refuses to replace a file that another process
+                    # has open, in which case that process completed it first
+                    if not target.exists():
+                        raise
+            finally:
+                Path(tmp).unlink(missing_ok=True)
+
+        return str(target)
 
 
 def _downloader(

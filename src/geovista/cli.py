@@ -24,7 +24,7 @@ from click_default_group import DefaultGroup
 import lazy_loader as lazy
 
 from . import __version__
-from .cache import CACHE, DATA_VERSION, pooch_mute
+from .cache import CACHE, DATA_VERSION, Decompress, pooch_mute
 from .common import get_modules
 from .config import resources
 from .geoplotter import GeoPlotter
@@ -34,7 +34,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 # lazy import third-party dependencies
-pooch = lazy.load("pooch")
 pv = lazy.load("pyvista")
 
 __all__ = ["main"]
@@ -267,11 +266,8 @@ class Downloader:
             processor = None
             name_path = pathlib.Path(fname)
 
-            if (
-                decompress
-                and (suffix := name_path.suffix) in pooch.Decompress.extensions
-            ):
-                processor = pooch.Decompress(
+            if decompress and (suffix := name_path.suffix) in Decompress.extensions:
+                processor = Decompress(
                     method="auto", name=name_path.stem.removesuffix(suffix)
                 )
             CACHE.fetch(fname, processor=processor)

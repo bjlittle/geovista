@@ -1,0 +1,5 @@
+Fixed two races between processes sharing an empty cache. A process could read a
+compressed sample asset while another was still decompressing it, which raised
+read errors or, in one case, rendered the wrong data without any error. Two
+processes could also both try to create the same cache directory, and the second
+failed with a ``FileExistsError``. (:user:`bjlittle`)

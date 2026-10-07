@@ -1,0 +1,3 @@
+The ``tests-unit`` ``pixi`` task and the test workflows now run the unit tests in
+parallel with ``pytest-xdist``. To run the task serially, pass ``0`` as its second
+argument. (:user:`bjlittle`)

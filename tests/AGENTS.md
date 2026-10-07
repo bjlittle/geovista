@@ -19,11 +19,18 @@ gallery examples in `test_examples.py`, per-module plots under `geodesic/`,
 
 ```bash
 pixi run -e test tests-unit    # all unit tests; also "image", "not image"
+pixi run -e test tests-unit "" 0  # serial: the 2nd arg is the xdist worker count
 pixi run -e geovista tests-doc # documentation image tests
 pytest tests/core/             # direct; also -m "not image", -k "test_slice_cells"
 ```
 
 The pixi tasks run from the repo root; pytest reads `pyproject.toml` either way.
+
+⚠️ **`tests-unit` and the `ci-tests*.yml` runs use `pytest-xdist`**; plain `pytest`
+stays serial. The hazard is an *empty* cache: `pooch.Decompress` writes its target
+in place, so a peer worker read it half-written, once silently as a wrong image.
+Use `geovista.cache.Decompress`. Probe cold with an empty `GEOVISTA_CACHEDIR`, and
+race subprocesses behind a start barrier, or start-up jitter hides the race.
 
 ## Configuration
 
@@ -178,15 +185,6 @@ that some card lies wholly inside the clipping rect, or the test is vacuous.
 `rel` arity are the author's choice and invisible in the page, so a regex gate
 is one an extension walks past unseen (#2559). Use `html.parser.HTMLParser`.
 
-### Ruff Exceptions for Tests
-
-`test*.py` is exempt from `ANN001`/`ANN201` (annotations) and `SLF001` (private access).
-
-## Dependencies
-
-Test deps live in `[tool.pixi.feature.test.dependencies]` in `pyproject.toml`
-and in `requirements/pypi-optional-test.txt`. Use `pixi run -e test <command>`.
-
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
 - **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
@@ -196,4 +194,4 @@ and in `requirements/pypi-optional-test.txt`. Use `pixi run -e test <command>`.
 
 ---
 
-**Last Updated**: 6 October 2026
+**Last Updated**: 7 October 2026
