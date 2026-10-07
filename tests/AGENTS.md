@@ -113,13 +113,13 @@ marker, so the sphinx configuration tests share that CI job and guard. ⚠️ Bu
 whatever was last built — rebuild before believing a `tests/docs` result.
 
 ⚠️ **A source-tree policy gate has nothing to skip on, and must not acquire
-one.** `test_readingtime_coverage.py` reads `docs/src` as *text* and
-`test_python_support.py` reads `pyproject.toml` beside the workflow matrices, so
-neither needs sphinx, a build nor a browser. Both *derive* what they govern from
-the tree rather than listing it, so a new page or `pyXYZ` feature is covered the
-day it lands and an exemption must be declared with its reason. Guard such a gate
-on nothing: a skip retires the rule in silence. The `reading` fixture comes from
-`tests/docs/conftest.py`, shared with `test_readingtime.py`.
+one.** `test_readingtime_coverage.py`, `test_python_support.py` and
+`test_spec_conventions.py` read the tree as *text*, needing no sphinx, build nor
+browser, and *derive* what they govern rather than list it, so a new page, `pyXYZ`
+feature or spec is covered the day it lands and an exemption carries its reason.
+Guard such a gate on nothing: a skip retires the rule in silence. A gate reading
+its own source builds its counterexamples, as `SECTION = "\N{SECTION SIGN}"` does.
+The `reading` fixture comes from `tests/docs/conftest.py`.
 
 ⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** CI installs
 every prerequisite and builds the gallery deliberately; without the option, a

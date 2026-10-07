@@ -349,11 +349,12 @@ carry the evidence.
 A `candidate` row is described, and whether it is wanted is the question the triggers below
 answer.
 
-Change 1 is committed work. It creates `docs/src/developer/specs/index.rst`, adds
-`developer/plans/**` to `exclude_patterns` and to the reading-time gate's `EXCLUDED_DIRS`,
-gives `docs/src/developer/index.rst` its fifth card and toctree entry, removes `orphan:
-true` from both specifications, adds the section sign to the seven existing citations, and
-lands the test of {ref}`§3.5 <docs-spec-3-5>`.
+Change 1 created `docs/src/developer/specs/index.rst`, added `developer/plans/**` to
+`exclude_patterns` and to the reading-time gate's `EXCLUDED_DIRS`, gave
+`docs/src/developer/index.rst` a card and a toctree entry, removed `orphan: true` from both
+specifications, added the section sign to the seven existing citations, and landed the
+test of {ref}`§3.5 <docs-spec-3-5>`. Two of this document's rules changed on the way, and
+{ref}`§8 <docs-spec-8>` records both.
 
 Rows 2 to 5 are candidates rather than scheduled work. When this specification was written
 `geovista` had seven citations in one namespace, against `tephpy`'s 1,096 across nineteen,
@@ -439,11 +440,13 @@ and building the documentation rather than this one collection inside it.
 Each carries the grammar of {ref}`§3.6 <docs-spec-3-6>`, so a reader can tell a decision
 that was taken from one that was dropped.
 
-1. **Open** ({issue}`2566`) — **The `{ref}` agreement assertion assumes the display text is
-   the section number.** `` {ref}`§3.1 <typing-spec-3-1>` `` is the only form in use, and a
-   role displaying a section's title instead would fail the check while being correct. Both
-   specifications write it the one way today. If a second form becomes wanted, the
-   assertion widens; it is not widened in advance for a form nobody has asked for.
+1. **Open** (owned by row 2 of {ref}`§4 <docs-spec-4>`) — **The `{ref}` agreement
+   assertion assumes the display text is the section number.**
+   `` {ref}`§3.1 <typing-spec-3-1>` `` is the only form in use, and a role displaying a
+   section's title instead would fail the check while being correct. Both specifications
+   write it the one way today. If a second form becomes wanted, the assertion widens; it is
+   not widened in advance for a form nobody has asked for. Row 2 owns it because the
+   transform retires the roles, and this assertion with them.
 2. **Open** (owned by row 3 of {ref}`§4 <docs-spec-4>`) — **The threshold of thirty-five
    citations is a judgement, not a measurement.** It is five times the current corpus and
    is chosen to fire before review stops being credible rather than at the point it does.

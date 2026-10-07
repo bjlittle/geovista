@@ -1,0 +1,20 @@
+The design specifications are now published. ``developer/specs/index.rst``
+lists them under a new Specifications card in the developer guide, with a table
+of the citation prefix each one owns, and both lose the ``orphan: true`` they
+carried while nothing listed them. The implementation plans stay in the
+repository but out of the build, since a plan records what was intended and is
+not updated once the work lands.
+
+``tests/test_spec_conventions.py`` holds them to their conventions: an anchor
+keyed to every numbered heading, a section sign in every citation, a ``{ref}``
+role that displays the section it opens, and a status that names the work behind
+it. Its corpus is every text file in the repository, so a specification, or a
+citation of one, is governed from the day it lands. It also watches the roadmap.
+The citation machinery ``tephpy`` built becomes due once citations outside the
+collection pass thirty-five, and the test fails at that point instead of leaving
+the decision to somebody's memory.
+
+The seven ``typing spec 3.1`` citations gained their section sign. Two of the
+publication specification's own rules changed on the way: row 2's trigger
+counted citation prefixes and fired on the very document that declared it, and
+the status rule could not cite an issue in another repository. (:user:`claude`)
