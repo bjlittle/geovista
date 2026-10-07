@@ -792,13 +792,41 @@ if os.environ.get("GEOVISTA_SPHX_GLR_SERIAL") is None:
     with contextlib.suppress(ModuleNotFoundError):
         import joblib  # noqa: F401
 
-        sphinx_gallery_conf["parallel"] = True
+        # SPIKE: decouple the gallery from sphinx --jobs
+        _workers = int(os.environ.get("GEOVISTA_SPHX_GLR_WORKERS", len(os.sched_getaffinity(0))))
+        sphinx_gallery_conf["parallel"] = _workers if _workers > 1 else False
 
-        msg = "parallel build configured"
+        msg = f"parallel build configured ({_workers} workers)"
 else:
     msg = "serial build configured"
 
 autolog(msg, section="sphinx-gallery")
+
+
+# SPIKE: builder resources and the lowest available memory seen during the build
+def _meminfo() -> dict[str, int]:
+    with open("/proc/meminfo") as fh:
+        return {k: int(v.split()[0]) // 1024 for k, v in (line.split(":", 1) for line in fh)}
+
+
+import threading as _threading
+import time as _time
+
+_SPIKE = {"min_available": _meminfo()["MemAvailable"], "start": _time.monotonic()}
+
+
+def _sample() -> None:
+    while True:
+        _SPIKE["min_available"] = min(_SPIKE["min_available"], _meminfo()["MemAvailable"])
+        _time.sleep(0.5)
+
+
+_threading.Thread(target=_sample, daemon=True).start()
+autolog(
+    f"cpus={os.cpu_count()} affinity={len(os.sched_getaffinity(0))} "
+    f"mem_total={_meminfo()['MemTotal']}MiB mem_available={_meminfo()['MemAvailable']}MiB",
+    section="spike",
+)
 
 
 # -- pyvista-plot directive options ------------------------------------------
@@ -1009,6 +1037,15 @@ def geovista_plot_inline(
 
 def setup(app: Sphinx) -> None:
     """Configure sphinx application."""
+    # SPIKE: report build resources
+    app.connect(
+        "build-finished",
+        lambda _app, _exc: autolog(
+            f"elapsed={_time.monotonic() - _SPIKE['start']:.0f}s "
+            f"min_mem_available={_SPIKE['min_available']}MiB",
+            section="spike",
+        ),
+    )
     # we require the output of this extension
     app.setup_extension("sphinx_gallery.gen_gallery")
     # register geovista options
