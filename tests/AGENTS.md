@@ -29,8 +29,9 @@ The pixi tasks run from the repo root; pytest reads `pyproject.toml` either way.
 ⚠️ **`tests-unit` and the `ci-tests*.yml` runs use `pytest-xdist`**; plain `pytest`
 stays serial. The hazard is an *empty* cache: `pooch.Decompress` writes its target
 in place, so a peer worker read it half-written, once silently as a wrong image.
-Use `geovista.cache.Decompress`. Probe cold with an empty `GEOVISTA_CACHEDIR`, and
-race subprocesses behind a start barrier, or start-up jitter hides the race.
+Use `geovista.cache.Decompress`. Import-time setup (`tests/plotting/__init__.py`)
+runs once per worker, at once: make filesystem side effects atomic (temp name, then
+`replace`). Probe cold with an empty `GEOVISTA_CACHEDIR`; race behind a barrier.
 
 ## Configuration
 
