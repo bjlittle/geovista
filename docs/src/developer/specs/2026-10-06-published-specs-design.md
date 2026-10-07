@@ -198,8 +198,7 @@ assertion, so the next document is governed rather than merely well written.
 (docs-spec-3-4)=
 ### 3.4 Cross-references inside a specification
 
-A specification names its own sections constantly — fourteen times in the type coverage
-specification, thirty-four in this one — and does it with a hand-written role:
+A specification names its own sections constantly, and does it with a hand-written role:
 
 ```markdown
 See {ref}`§3.1 <typing-spec-3-1>`.
@@ -220,7 +219,7 @@ So the roles stay for now, and the hazard is closed by assertion instead of by
 construction: **a `{ref}` role naming a section must have a display text that agrees with
 its target.** `` {ref}`§3.1 <typing-spec-3-1>` `` passes; the example above fails.
 
-Converting all forty-eight to plain text now was the alternative, and it is rejected
+Converting them all to plain text now was the alternative, and it is rejected
 because it would take working links away from readers today in exchange for a convention
 whose machinery does not exist yet. When the transform lands it makes those citations links
 again, the roles collapse to plain text, and this assertion retires with them.
@@ -386,8 +385,8 @@ objection, and change 1 asserts every condition that can be observed:
 - **Hand-writing a cross-reference role for every citation**, rather than deriving the
   target at build time. Rejected for {ref}`§3.4 <docs-spec-3-4>`'s reason: it manufactures
   one fresh opportunity per citation for a reference that displays correctly and opens the
-  wrong section, which no gate can see. It is tolerated for the existing forty-eight only
-  because an assertion closes it and the transform retires it.
+  wrong section, which no gate can see. It is tolerated for the existing roles only because
+  an assertion closes it and the transform retires it.
 - **Publishing the plans alongside the specifications.** Simpler, one fewer rule. Rejected
   because a plan is not updated after implementation, so a published plan is a page on Read
   the Docs that is wrong by design and gives a reader no way to tell it from a page that is

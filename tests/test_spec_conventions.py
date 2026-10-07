@@ -752,3 +752,59 @@ def test_every_citation_carries_its_sign(texts, names):
     problems = [p for path, text in texts.items() for p in form(path, text, names)]
 
     assert not problems, "\n".join(problems)
+
+
+#: A role opened on a line that does not close it.
+OPENED = re.compile(r"(?:\{ref\}|:ref:)`")
+
+
+def agreement(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each section role whose display text names another section."""
+    owner = names.owners.get(path)
+    problems = []
+    for number, line in source_lines(path, text):
+        plain, roles = prose(line)
+        if OPENED.search(plain):
+            problems.append(f"{where(path, number)}: a role broken across lines")
+        for kind, body in roles:
+            targeted = TARGETED.match(body)
+            target = targeted["target"] if targeted else body.strip()
+            label = LABEL.match(target)
+            if kind != "ref" or label is None or label["prefix"] not in names.prefixes:
+                continue
+            display = targeted["text"] if targeted else ""
+            cited = list(scan(display, names.signed, owner))
+            if [c.slug for c in cited] != [target] or cited[0].text != display:
+                problems.append(
+                    f"{where(path, number)}: {display!r} displayed, {target} opened"
+                )
+            elif target not in names.anchors:
+                problems.append(
+                    f"{where(path, number)}: {target} is no specification's anchor"
+                )
+    return problems
+
+
+def test_agreement_finds_a_role_opening_another_section(tmp_path):
+    """Both strings of a role can be well formed and still disagree."""
+    roles = (
+        f"\nSee {{ref}}`{SECTION}1 <demo-spec-1>` and "
+        f"{{ref}}`{SECTION}1 <demo-spec-2>` and {{ref}}`demo-spec-2`, and\n"
+        f"{{ref}}`{SECTION}2\n<demo-spec-2>` broken.\n"
+    )
+    path, names = demo(tmp_path, DEMO + roles)
+
+    problems = agreement(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"'{SECTION}1' displayed, demo-spec-2 opened",
+        "'' displayed, demo-spec-2 opened",
+        "a role broken across lines",
+    ]
+
+
+def test_every_section_role_displays_its_target(texts, names):
+    """Agreement (item 5)."""
+    problems = [p for path, text in texts.items() for p in agreement(path, text, names)]
+
+    assert not problems, "\n".join(problems)
