@@ -122,9 +122,9 @@ an `{eval-rst}` fence or use the native `{readingtime}` one — a bare
 `.. readingtime:: <n>` for an estimate the word count cannot make, such as a
 tutorial whose reader runs every snippet.
 
-⚠️ **A `.md` page is built the day it lands**: `myst_parser` registers `.md` itself, so it
-fails on `toc.not_included` unless a toctree holds it or it is `orphan: true` (#2564). A
-spec never is (`tests/test_spec_conventions.py`), and `developer/plans/` is never built.
+⚠️ **A `.md` page builds the day it lands**: `myst_parser` registers `.md` itself, so it
+fails on `toc.not_included` unless a toctree holds it, a page includes it, or it is
+`orphan: true` (#2564), which no spec may be. `developer/plans/` is never built.
 
 ### RST Style
 
