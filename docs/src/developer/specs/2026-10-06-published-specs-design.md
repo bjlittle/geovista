@@ -339,7 +339,7 @@ carry the evidence.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | Publication, the `§` form, and `tests/test_spec_conventions.py` | in progress ({pull}`2573`) |
+| 1 | Publication, the `§` form, and `tests/test_spec_conventions.py` | ✅ landed (2026-10-07, {pull}`2573`) |
 | 2 | Citation cross-reference transform | candidate |
 | 3 | Citation integrity hook | candidate |
 | 4 | Rendered-output gate | candidate |
@@ -455,7 +455,7 @@ that was taken from one that was dropped.
    against; `docs spec` became that namespace with change 1, which brought the count to
    fifteen, still too few to measure a better number from. Revising it is a change to this
    document.
-3. **Open** (no issue raised) — **Nothing proves the references in a status line point at
+3. **Open** ({issue}`2575`) — **Nothing proves the references in a status line point at
    real work.** {ref}`§3.5 <docs-spec-3-5>`'s seventh assertion checks that a terminal
    status carries a date and a reference, not that {pull}`2565` is the pull request that
    landed that row, or that it exists. Reaching GitHub from a test would make the suite
