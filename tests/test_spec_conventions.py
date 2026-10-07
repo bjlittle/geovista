@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import ast
 from dataclasses import dataclass
+from itertools import pairwise
 from pathlib import Path
 import re
 from typing import TYPE_CHECKING
@@ -778,6 +779,42 @@ def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
     return problems
 
 
+#: The dash of a range, written with no space on either side of it.
+DASH = re.compile(r"[-\N{EN DASH}\N{EM DASH}]")
+
+
+def ranged(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each range whose far end drops the prefix its near end carries.
+
+    A dash is no separator, so the run ends at it and a bare far end means the
+    containing document, which in a specification resolves without complaint. A
+    range therefore carries its prefix on both ends, the rule ``tephpy`` writes
+    down and does not check. A dash with a space on either side is punctuation and
+    opens no range. Scanning with no owner leaves a citation unresolved unless a
+    prefix was written on it or carried to it, which is what tells the ends apart.
+    """
+    problems = []
+    for number, line in source_lines(path, text):
+        source = prose(line)[0]
+        cited = zip(
+            names.signed.finditer(source),
+            scan(source, names.signed, None),
+            strict=True,
+        )
+        for (before, near), (after, _) in pairwise(cited):
+            if (
+                near.slug is not None
+                and after["bare"] is not None
+                and DASH.fullmatch(source[before.end() : after.start()])
+            ):
+                problems.append(
+                    f"{where(path, number)}: "
+                    f"{source[before.start() : after.end()]!r} opens at {near.slug}, "
+                    "and its far end has no prefix"
+                )
+    return problems
+
+
 def test_resolution_finds_each_dangling_and_ownerless_citation(tmp_path):
     """A citation outside the collection must carry its prefix."""
     _, names = demo(tmp_path, DEMO)
@@ -803,8 +840,8 @@ def test_form_finds_each_citation_without_its_sign(tmp_path):
     ]
 
 
-def rewrapped(tmp_path: Path, body: str) -> list[str]:
-    """Run the wrap check over the demonstration with ``body`` appended to it."""
+def paired(tmp_path: Path, body: str) -> tuple[Path, Namespace]:
+    """Write the demonstration with ``body`` appended, beside a second specification."""
     other = tmp_path / "2026-01-02-other-design.md"
     other.write_text(
         f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
@@ -813,7 +850,14 @@ def rewrapped(tmp_path: Path, body: str) -> list[str]:
     )
     path, _ = demo(tmp_path, f"{DEMO}\n{body}\n")
 
-    problems = wrapped(path, path.read_text(encoding="utf-8"), namespace([path, other]))
+    return path, namespace([path, other])
+
+
+def rewrapped(tmp_path: Path, body: str) -> list[str]:
+    """Run the wrap check over the demonstration with ``body`` appended to it."""
+    path, names = paired(tmp_path, body)
+
+    problems = wrapped(path, path.read_text(encoding="utf-8"), names)
 
     return [p.split(": ", 1)[1] for p in problems]
 
@@ -851,6 +895,56 @@ def test_wrapped_joins_no_lines_that_markdown_keeps_apart(tmp_path, body):
     assert rewrapped(tmp_path, body) == []
 
 
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        (
+            f"See other spec {SECTION}2\N{EN DASH}{SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"See other spec {SECTION}2-{SECTION}1.",
+            f"'other spec {SECTION}2-{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"See other spec {SECTION}2\N{EM DASH}{SECTION}1.",
+            f"'other spec {SECTION}2\N{EM DASH}{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"See other spec {SECTION}2, {SECTION}3\N{EN DASH}{SECTION}1.",
+            f"'{SECTION}3\N{EN DASH}{SECTION}1' opens at other-spec-3",
+        ),
+    ],
+    ids=["en-dash", "hyphen", "em-dash", "carried"],
+)
+def test_ranged_finds_a_far_end_without_its_prefix(tmp_path, body, expected):
+    """A dash ends the run, so a bare far end falls back to the demonstration."""
+    path, names = paired(tmp_path, body)
+
+    problems = ranged(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"{expected}, and its far end has no prefix"
+    ]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        f"See other spec {SECTION}2\N{EN DASH}other spec {SECTION}2.",
+        f"See {SECTION}1\N{EN DASH}{SECTION}2.",
+        f"See other spec {SECTION}2 \N{EM DASH} {SECTION}1 explains why.",
+        f"See other spec {SECTION}2 \N{EN DASH} {SECTION}1 explains why.",
+    ],
+    ids=["both-ends", "bare", "spaced-em-dash", "spaced-en-dash"],
+)
+def test_ranged_passes_a_range_written_whole_and_a_dash_as_punctuation(tmp_path, body):
+    """A prefix on both ends, a bare range and a spaced dash are all well formed."""
+    path, names = paired(tmp_path, body)
+
+    assert ranged(path, path.read_text(encoding="utf-8"), names) == []
+
+
 def test_every_citation_resolves(texts, names):
     """Resolution (item 3)."""
     problems = [
@@ -861,8 +955,15 @@ def test_every_citation_resolves(texts, names):
 
 
 def test_no_citation_run_wraps_a_line(texts, names):
-    """A run may not wrap, or its tail silently cites the containing document."""
+    """Form (item 4): a wrapped run's tail silently cites the containing document."""
     problems = [p for path, text in texts.items() for p in wrapped(path, text, names)]
+
+    assert not problems, "\n".join(problems)
+
+
+def test_every_range_carries_its_prefix_on_both_ends(texts, names):
+    """Form (item 4): a range's bare far end silently cites the containing document."""
+    problems = [p for path, text in texts.items() for p in ranged(path, text, names)]
 
     assert not problems, "\n".join(problems)
 
