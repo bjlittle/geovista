@@ -96,7 +96,8 @@ def _fetch(
     # default to our http/s downloader with user-agent headers
     kwargs.setdefault("downloader", _downloader)
     # pooch creates a missing parent directory without exist_ok, which
-    # raises FileExistsError in all but the first of concurrent processes
+    # raises FileExistsError in all but the first of concurrent processes,
+    # see https://github.com/fatiando/pooch/issues/555
     fname = args[0] if args else kwargs["fname"]
     (CACHE.abspath / str(fname)).parent.mkdir(parents=True, exist_ok=True)
     result: str = CACHE._fetch(*args, **kwargs)  # noqa: SLF001
@@ -119,7 +120,7 @@ class Decompress(pooch.Decompress):  # type: ignore[misc]  # numpydoc ignore=PR0
     Notes
     -----
     Remove once :mod:`pooch` decompresses atomically, see
-    https://github.com/fatiando/pooch/issues/411.
+    https://github.com/fatiando/pooch/issues/555.
 
     .. versionadded:: 0.6.0
 
