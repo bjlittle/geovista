@@ -149,8 +149,8 @@ The prefix is load-bearing rather than decorative. `sphinx` labels are global, s
 `docs-spec-3-2` and `typing-spec-3-2` are distinct anchors naming unrelated sections, and a
 reader who drops the prefix lands in the wrong document with nothing to tell them so.
 
-Three details of the form. The word `spec` is matched without regard to case, so a sentence
-may open with `Spec §3.2`. Where several sections are cited together the prefix carries
+Three details of the form. The prefix is matched without regard to case, so a sentence may
+open with `Typing spec §3.2`. Where several sections are cited together the prefix carries
 across the run, so `typing spec §3.2, §4` names two sections of one document; the separator
 is a comma or a solidus, and the run may not wrap across a line, since a reader following
 only the second line would read the tail as a reference to somewhere else. And a citation
@@ -237,13 +237,14 @@ well-formed comment that still renders.
 declaring one, following `tests/docs/test_readingtime_coverage.py`, so a specification is
 governed from the day it lands rather than from the day somebody remembers to list it.
 
-The corpus is the specifications and the live repository: source, tests, configuration and
-workflows. `developer/plans/` is outside it, for the reason it is outside the build: a plan
-is frozen, so a rule it fails is a rule it cannot be edited to satisfy. The one plan in the
-repository today holds nine citations written before this document existed, and the honest
-treatment of them is the same as the honest treatment of the plan, which is to leave it
-saying what it said. A plan's citations are read by a person, who has the specification in
-front of them.
+The corpus is every text file in the repository, the specifications among them, less the
+trees that are generated, fetched or frozen. Naming the areas instead would miss whatever
+nobody thought to name. `developer/plans/` is outside it, for the reason it is outside the
+build: a plan is frozen, so a rule it fails is a rule it cannot be edited to satisfy. The
+first plan in the repository holds nine citations written before this document existed,
+and the honest treatment of them is the same as the honest treatment of the plan, which is
+to leave it saying what it said. A plan's citations are read by a person, who has the
+specification in front of them.
 
 The suite asserts:
 
