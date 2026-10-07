@@ -78,14 +78,14 @@ environment, so `git commit` aborts with "`pre-commit` not found" — commit
 through it instead: `pixi run --frozen -e geovista git commit ...`.
 
 ⚠️ **`mypy` is green because 23 modules are ratcheted, not because they pass.**
-The hook is `local`, running `pixi run --frozen -e geovista mypy` against the
-locked environment where third-party types are real; `pre-commit.ci` has no
-`pixi`, so it skips `mypy` and `.github/workflows/ci-typing.yml` carries it.
-The 642 errors it exposed sit under `ignore_errors` in `[tool.mypy]`, which
-`tests/test_typing_ratchet.py` only lets shrink — so bare `mypy <file>` on a
-ratcheted module reports success, suppression and all. Note too that `pyproj`
-types are thin: returning a `pyproj` expression from a `-> bool` function
-trips `no-any-return`, so bind an annotated local first.
+The hook is `local`, running `pixi run --frozen -e geovista mypy` in the locked
+environment where third-party types are real; `pre-commit.ci` has no `pixi`, so
+`ci-typing.yml` carries it. The 642 errors sit under `ignore_errors`, which
+`tests/test_typing_ratchet.py` only lets shrink, so `mypy <file>` passes on a
+ratcheted module and a bad annotation there shows only where it is used (the
+gallery's `pv.Plotter.camera?` was `geoplotter.py:1534`, #2569): a `name?` is an
+unbound annotation, so grep for its text. `pyproj` types are thin, so returning
+one from a `-> bool` trips `no-any-return`; bind an annotated local first.
 
 ⚠️ **Image tests segfault without a GPU/display**, so a green local run proves
 nothing about them — they are only meaningfully exercised in CI. `pytest.ini`
@@ -196,4 +196,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 6 October 2026
+**Last Updated**: 7 October 2026
