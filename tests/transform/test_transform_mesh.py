@@ -11,6 +11,7 @@ import cartopy.crs as ccrs
 import numpy as np
 from pyproj import CRS
 import pytest
+import pyvista as pv
 
 import geovista as gv
 from geovista.crs import projected
@@ -210,3 +211,14 @@ def test_transform_mesh__zlevel_that_cannot_broadcast(regional_mesh):
         )
 
     np.testing.assert_array_equal(regional_mesh.points, before)
+
+
+def test_transform_mesh__no_crs():
+    """A mesh without a CRS cannot be transformed.
+
+    ``mypy`` reported this check as unreachable while ``from_wkt`` claimed always
+    to return a CRS. The annotation was wrong, not the check.
+
+    """
+    with pytest.raises(ValueError, match="no coordinate reference system"):
+        _ = transform_mesh(pv.Sphere(), PLANAR)

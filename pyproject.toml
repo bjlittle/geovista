@@ -82,6 +82,13 @@ warn_unreachable = true
 
 
 [[tool.mypy.overrides]]
+# typing spec §8 item 5 -- "lazy_loader" ships no "py.typed" (lazy-loader
+# issue 181). Withdraw when the floor reaches a release carrying one.
+ignore_missing_imports = true
+module = ["lazy_loader"]
+
+
+[[tool.mypy.overrides]]
 # Problem caused by the click module - out of our control. "click" ships
 # "py.typed", but "main.command" is still an untyped decorator: removing
 # this raises three "untyped-decorator" errors. See typing spec §3.1.
@@ -142,7 +149,6 @@ module = [
   "geovista.report",
   "geovista.search",
   "geovista.themes",
-  "geovista.transform",
   "geovista.examples.*",
 ]
 

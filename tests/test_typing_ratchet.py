@@ -74,7 +74,6 @@ RATCHET_BASELINE = frozenset(
         "geovista.report",
         "geovista.search",
         "geovista.themes",
-        "geovista.transform",
     }
 )
 
