@@ -31,15 +31,18 @@ governs.
 from __future__ import annotations
 
 import ast
+import contextlib
 from dataclasses import dataclass
+import io
 from pathlib import Path
 import re
+import tokenize
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Iterable, Iterator, Mapping
 
 #: The repository root, beneath which the corpus is derived.
 REPO = Path(__file__).parents[1]
@@ -715,9 +718,45 @@ QUOTE = re.compile(
     r"^[^\S\n]*(?P<item>(?:[-*+]|\d{1,9}[.)])[^\S\n]+)?(?P<markers>(?:>[^\S\n]?)+)"
 )
 
+#: The suffixes of the files whose comments open at a ``#`` and run to the line end.
+COMMENTED = frozenset({".cfg", ".py", ".pyi", ".sh", ".toml", ".yaml", ".yml"})
+
+#: Where a comment opens outside Python: a ``#`` that opens the line or follows a
+#: space, which is what YAML and TOML require of one.
+HASH = re.compile(r"(?:^|(?<=[^\S\n]))#")
+
+#: The marker that opens the text of a comment, ``#:`` included.
+MARKER = re.compile(r"#+:?[^\S\n]?")
+
+
+def comment_columns(path: Path, text: str) -> dict[int, int]:
+    """Find the column each comment opens at, by line, in a file that has them.
+
+    Python is tokenized, so a ``#`` inside a string opens nothing. Any other
+    commented file, and a Python file that does not tokenize, falls back on
+    :data:`HASH`.
+    """
+    if path.suffix not in COMMENTED:
+        return {}
+    if path.suffix in {".py", ".pyi"}:
+        with contextlib.suppress(tokenize.TokenError, SyntaxError):
+            return {
+                token.start[0]: token.start[1]
+                for token in tokenize.generate_tokens(io.StringIO(text).readline)
+                if token.type == tokenize.COMMENT
+            }
+    return {
+        number: found.start()
+        for number, line in enumerate(text.splitlines(), start=1)
+        if (found := HASH.search(line)) is not None
+    }
+
 
 def paragraphs(
-    lines: Iterable[tuple[int, str]], *, markdown: bool = False
+    lines: Iterable[tuple[int, str]],
+    *,
+    markdown: bool = False,
+    comments: Mapping[int, int] | None = None,
 ) -> Iterator[list[tuple[int, str]]]:
     """Group numbered lines into the runs a line wrap can join.
 
@@ -726,26 +765,51 @@ def paragraphs(
     together. Markdown is read without its blockquote markers, which a reader
     never sees either. A quote that opens or deepens starts a block of its own, and
     so does a list item opening with one, so either ends the run; a line quoted
-    less deeply continues it, as a lazy continuation line does.
+    less deeply continues it, as a lazy continuation line does. Elsewhere a comment,
+    found at the column ``comments`` gives for its line, is read without its ``#``.
+    It is a text apart from the code beside it, so a run ends where comment gives
+    way to code or code to comment, and a comment trailing a line of code opens a
+    run that the comment lines below it continue.
     """
     run: list[tuple[int, str]] = []
     previous = depth = 0
+    commented = False
     for number, line in lines:
-        text, level, item = line, 0, False
-        if markdown and (quote := QUOTE.match(line)) is not None:
-            text = line[quote.end() :]
-            level, item = quote["markers"].count(">"), quote["item"] is not None
-        if run and (
-            not text.strip() or number != previous + 1 or level > depth or item
-        ):
-            yield run
-            run = []
-        if text.strip():
-            depth = max(depth, level) if run else level
-            run.append((number, text))
-        previous = number
+        pieces, level, item = [(line, False)], 0, False
+        if markdown:
+            if (quote := QUOTE.match(line)) is not None:
+                pieces = [(line[quote.end() :], False)]
+                level, item = quote["markers"].count(">"), quote["item"] is not None
+        elif comments and number in comments:
+            column = comments[number]
+            found = MARKER.match(line, column)
+            note = (line[found.end() if found else column :], True)
+            pieces = [(line[:column], False), note] if line[:column].strip() else [note]
+        for text, comment in pieces:
+            if run and (
+                not text.strip()
+                or number != previous + 1
+                or level > depth
+                or item
+                or comment != commented
+            ):
+                yield run
+                run = []
+            if text.strip():
+                depth = max(depth, level) if run else level
+                run.append((number, text))
+            previous, commented = number, comment
     if run:
         yield run
+
+
+def runs(path: Path, text: str) -> Iterator[list[tuple[int, str]]]:
+    """Group the lines of a file into paragraphs, as its syntax has them read."""
+    return paragraphs(
+        source_lines(path, text),
+        markdown=path.suffix == ".md",
+        comments=comment_columns(path, text),
+    )
 
 
 def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
@@ -759,7 +823,7 @@ def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
     """
     owner = names.owners.get(path)
     problems = []
-    for run in paragraphs(source_lines(path, text), markdown=path.suffix == ".md"):
+    for run in runs(path, text):
         written = [
             (number, citation)
             for number, line in run
@@ -770,11 +834,66 @@ def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
         if len(written) != len(undone):
             continue
         problems.extend(
-            f"{where(path, number)}: {citation.text} reads as {citation.slug} here, "
-            f"{unwrapped.slug} unwrapped"
+            f"{where(path, number)}: {citation.text} reads as "
+            f"{citation.slug or 'no document'} here, {unwrapped.slug} unwrapped"
             for (number, citation), unwrapped in zip(written, undone, strict=True)
             if citation.slug != unwrapped.slug
         )
+    return problems
+
+
+#: The dash of a range, with no space on either side, though a line may break there.
+DASH = re.compile(r"\n?[-\N{EN DASH}\N{EM DASH}]\n?")
+
+#: A far end written after the dash of a range as a number, with no section sign.
+SIGNLESS = re.compile(rf"{DASH.pattern}(?P<num>\d+(?:\.\d+)*)\b")
+
+
+def ranged(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each range whose far end is not a citation in its own right.
+
+    A dash is no separator, so the run ends at it and a bare far end means the
+    containing document, which in a specification resolves without complaint, while
+    a far end written as a plain number is no citation at all, and nothing resolves
+    it. Each end of a range is therefore a citation of its own, the rule ``tephpy``
+    writes down and does not check. A paragraph is read whole, so a range a wrap
+    has split is still a range: the dash opens one when nothing but a line break
+    stands between it and either end. A space anywhere in that gap, one that ends a
+    line included, makes the dash punctuation. The indentation that opens a line
+    does not count, since a list item, a quote and a docstring all indent their
+    continuation lines. Scanning with no owner leaves a citation unresolved unless
+    a prefix was written on it or carried to it, which is what tells the ends apart.
+    """
+    problems = []
+    for run in runs(path, text):
+        source = "\n".join(prose(line)[0].lstrip() for _, line in run)
+        previous: tuple[re.Match[str], Citation] | None = None
+        for match, citation in zip(
+            names.signed.finditer(source),
+            scan(source, names.signed, None),
+            strict=True,
+        ):
+            if previous is not None:
+                before, near = previous
+                if (
+                    near.slug is not None
+                    and match["bare"] is not None
+                    and DASH.fullmatch(source[before.end() : match.start()])
+                ):
+                    span = source[before.start() : match.end()]
+                    number = run[0][0] + source.count("\n", 0, match.start())
+                    problems.append(
+                        f"{where(path, number)}: {span!r} opens at {near.slug}, "
+                        "and its far end has no prefix"
+                    )
+            signless = SIGNLESS.match(source, match.end())
+            if signless is not None:
+                span = source[match.start() : signless.end()]
+                number = run[0][0] + source.count("\n", 0, signless.start("num"))
+                problems.append(
+                    f"{where(path, number)}: {span!r} ends without a section sign"
+                )
+            previous = match, citation
     return problems
 
 
@@ -803,8 +922,8 @@ def test_form_finds_each_citation_without_its_sign(tmp_path):
     ]
 
 
-def rewrapped(tmp_path: Path, body: str) -> list[str]:
-    """Run the wrap check over the demonstration with ``body`` appended to it."""
+def paired(tmp_path: Path, body: str) -> tuple[Path, Namespace]:
+    """Write the demonstration with ``body`` appended, beside a second specification."""
     other = tmp_path / "2026-01-02-other-design.md"
     other.write_text(
         f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
@@ -813,7 +932,14 @@ def rewrapped(tmp_path: Path, body: str) -> list[str]:
     )
     path, _ = demo(tmp_path, f"{DEMO}\n{body}\n")
 
-    problems = wrapped(path, path.read_text(encoding="utf-8"), namespace([path, other]))
+    return path, namespace([path, other])
+
+
+def rewrapped(tmp_path: Path, body: str) -> list[str]:
+    """Run the wrap check over the demonstration with ``body`` appended to it."""
+    path, names = paired(tmp_path, body)
+
+    problems = wrapped(path, path.read_text(encoding="utf-8"), names)
 
     return [p.split(": ", 1)[1] for p in problems]
 
@@ -851,6 +977,196 @@ def test_wrapped_joins_no_lines_that_markdown_keeps_apart(tmp_path, body):
     assert rewrapped(tmp_path, body) == []
 
 
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        (
+            f"See other spec {SECTION}2\N{EN DASH}{SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"See other spec {SECTION}2-{SECTION}1.",
+            f"'other spec {SECTION}2-{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"See other spec {SECTION}2\N{EM DASH}{SECTION}1.",
+            f"'other spec {SECTION}2\N{EM DASH}{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"See other spec {SECTION}2, {SECTION}3\N{EN DASH}{SECTION}1.",
+            f"'{SECTION}3\N{EN DASH}{SECTION}1' opens at other-spec-3",
+        ),
+        (
+            f"See other spec {SECTION}2\N{EN DASH}\n{SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"See other spec {SECTION}2\n\N{EN DASH}{SECTION}1.",
+            f"'other spec {SECTION}2\\n\N{EN DASH}{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"> See other spec {SECTION}2\N{EN DASH}\n> {SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"See other spec {SECTION}2\N{EN DASH}\n {SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n{SECTION}1' opens at other-spec-2",
+        ),
+        (
+            f"- See other spec {SECTION}2\N{EN DASH}\n  {SECTION}1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n{SECTION}1' opens at other-spec-2",
+        ),
+    ],
+    ids=[
+        "en-dash",
+        "hyphen",
+        "em-dash",
+        "carried",
+        "split-after",
+        "split-before",
+        "quoted-split",
+        "indented-continuation",
+        "listed-continuation",
+    ],
+)
+def test_ranged_finds_a_far_end_without_its_prefix(tmp_path, body, expected):
+    """A dash ends the run, so a bare far end falls back to the demonstration."""
+    path, names = paired(tmp_path, body)
+
+    problems = ranged(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"{expected}, and its far end has no prefix"
+    ]
+
+
+def test_ranged_reports_a_split_range_where_its_far_end_is(tmp_path):
+    """The line reported holds the far end, which is the one to change."""
+    path, names = paired(tmp_path, f"See other spec {SECTION}2\N{EN DASH}\n{SECTION}1.")
+
+    problems = ranged(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[0].rsplit(":", 1)[1] for p in problems] == ["10"]
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        (
+            f"See other spec {SECTION}2\N{EN DASH}1.",
+            f"'other spec {SECTION}2\N{EN DASH}1'",
+        ),
+        (f"See other spec {SECTION}2-1.", f"'other spec {SECTION}2-1'"),
+        (f"See {SECTION}1\N{EN DASH}2.", f"'{SECTION}1\N{EN DASH}2'"),
+        (
+            f"See other spec {SECTION}2\N{EN DASH}\n1.",
+            f"'other spec {SECTION}2\N{EN DASH}\\n1'",
+        ),
+    ],
+    ids=["prefixed", "hyphen", "bare", "split"],
+)
+def test_ranged_finds_a_far_end_without_its_section_sign(tmp_path, body, expected):
+    """A number after a range's dash is a far end that no other rule can see."""
+    path, names = paired(tmp_path, body)
+
+    problems = ranged(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"{expected} ends without a section sign"
+    ]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        f"See other spec {SECTION}2\N{EN DASH}other spec {SECTION}2.",
+        f"See {SECTION}1\N{EN DASH}{SECTION}2.",
+        f"See other spec {SECTION}2 \N{EM DASH} {SECTION}1 explains why.",
+        f"See other spec {SECTION}2 \N{EN DASH} {SECTION}1 explains why.",
+        f"See other spec {SECTION}2\N{EN DASH}\nother spec {SECTION}2.",
+        f"See other spec {SECTION}2 \N{EN DASH}\n{SECTION}1 explains why.",
+        f"See other spec {SECTION}2\N{EN DASH}\n\n{SECTION}1 opens a paragraph.",
+        f"See other spec {SECTION}2-style rules.",
+        f"See other spec {SECTION}2 \n\N{EN DASH}{SECTION}1 explains why.",
+        f"See other spec {SECTION}2\N{EN DASH} \n{SECTION}1 explains why.",
+        f"See other spec {SECTION}2\N{EN DASH}  \n{SECTION}1 explains why.",
+    ],
+    ids=[
+        "both-ends",
+        "bare",
+        "spaced-em-dash",
+        "spaced-en-dash",
+        "split-whole",
+        "split-spaced",
+        "paragraphs",
+        "hyphenated-word",
+        "space-before-break",
+        "space-after-dash",
+        "hard-break",
+    ],
+)
+def test_ranged_passes_a_range_written_whole_and_a_dash_as_punctuation(tmp_path, body):
+    """A prefix on both ends, a bare range and a spaced dash are all well formed."""
+    path, names = paired(tmp_path, body)
+
+    assert ranged(path, path.read_text(encoding="utf-8"), names) == []
+
+
+@pytest.mark.parametrize(
+    ("name", "opening"),
+    [
+        ("module.py", "#"),
+        ("module.py", "#:"),
+        ("workflow.yml", "#"),
+        ("module.py", "x = 1  #"),
+        ("workflow.yml", "key: value  #"),
+    ],
+    ids=["python", "python-attribute", "yaml", "python-trailing", "yaml-trailing"],
+)
+def test_ranged_reads_a_comment_without_its_marker(tmp_path, name, opening):
+    """A far end with no sign is no citation, so only the range check can see it."""
+    _, names = paired(tmp_path, "")
+    text = f"{opening} See other spec {SECTION}2\N{EN DASH}\n# 1 for both.\n"
+
+    problems = ranged(tmp_path / name, text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"'other spec {SECTION}2\N{EN DASH}\\n1' ends without a section sign"
+    ]
+
+
+def test_wrapped_reads_a_comment_without_its_marker(tmp_path):
+    """Outside the specifications a wrapped tail names no document at all."""
+    _, names = paired(tmp_path, "")
+    text = f"# See other spec {SECTION}2,\n# {SECTION}2 too.\n"
+
+    problems = wrapped(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"{SECTION}2 reads as no document here, other-spec-2 unwrapped"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("name", "text"),
+    [
+        ("workflow.yml", f"# See other spec {SECTION}2\N{EN DASH}\n1: one\n"),
+        ("workflow.yml", f"# See other spec {SECTION}2\N{EN DASH}\n#\n# 1 for both.\n"),
+        ("workflow.yml", f"key: v  # See other spec {SECTION}2\N{EN DASH}\n1: one\n"),
+        (
+            "module.py",
+            f'x = """a # See other spec {SECTION}2\N{EN DASH}\n# 1 for both."""\n',
+        ),
+    ],
+    ids=["code-follows", "bare-marker", "trailing-then-code", "hash-in-a-string"],
+)
+def test_ranged_joins_no_comment_to_code_or_across_a_bare_marker(tmp_path, name, text):
+    """Comment and code are separate texts, and a ``#`` in a string opens no comment."""
+    _, names = paired(tmp_path, "")
+
+    assert ranged(tmp_path / name, text, names) == []
+
+
 def test_every_citation_resolves(texts, names):
     """Resolution (item 3)."""
     problems = [
@@ -861,8 +1177,15 @@ def test_every_citation_resolves(texts, names):
 
 
 def test_no_citation_run_wraps_a_line(texts, names):
-    """A run may not wrap, or its tail silently cites the containing document."""
+    """Form (item 4): a wrapped run's tail silently cites the containing document."""
     problems = [p for path, text in texts.items() for p in wrapped(path, text, names)]
+
+    assert not problems, "\n".join(problems)
+
+
+def test_every_range_carries_its_prefix_on_both_ends(texts, names):
+    """Form (item 4): a range's bare far end silently cites the containing document."""
+    problems = [p for path, text in texts.items() for p in ranged(path, text, names)]
 
     assert not problems, "\n".join(problems)
 

@@ -1,0 +1,5 @@
+Each end of a citation range is now a citation of its own, as in
+``typing spec §3.2–typing spec §3.4``. A dash ends a run, so a bare far end
+cites the containing document, and a far end with no section sign cites nothing.
+``tests/test_spec_conventions.py`` fails both, even in a range that a line
+break has split. (:user:`claude`)
