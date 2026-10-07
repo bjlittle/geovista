@@ -128,8 +128,7 @@ def transform_mesh(
     central_meridian = get_central_meridian(tgt_crs) or 0
     cloud = point_cloud(mesh)
 
-    if zlevel is None:
-        zlevel = 0
+    level = np.asanyarray(0 if zlevel is None else zlevel)
 
     if zscale is None:
         if cloud and GV_FIELD_ZSCALE in mesh.field_data:
@@ -173,15 +172,24 @@ def transform_mesh(
         if not inplace and not slice_connectivity:
             mesh = mesh.copy(deep=True)
 
+        try:
+            np.broadcast_shapes(level.shape, (mesh.n_points,))
+        except ValueError:
+            emsg = (
+                f"Cannot transform mesh, 'zlevel' with shape {level.shape} does not "
+                f"broadcast to its {mesh.n_points:,} points."
+            )
+            raise ValueError(emsg) from None
+
         if tgt_crs == WGS84:
             xs, ys, zs = to_cartesian(
-                xs, ys, radius=radius, zlevel=zlevel, zscale=zscale, stacked=False
+                xs, ys, radius=radius, zlevel=level, zscale=zscale, stacked=False
             )
 
         mesh.points[:, 0] = xs
         mesh.points[:, 1] = ys
 
-        if zlevel or cloud:
+        if np.any(level) or cloud:
             xmin, xmax, ymin, ymax, _, _ = mesh.bounds
             xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
             # TODO @bjlittle: Make this scale factor configurable at the API/module
@@ -192,9 +200,9 @@ def transform_mesh(
 
             if cloud:
                 # extract the zlevel encoded from the non-transformed points
-                zlevel += xyz[:, 2]
+                level = level + xyz[:, 2]
 
-            zs = zlevel * zscale * delta
+            zs = level * zscale * delta
 
         mesh.points[:, 2] = zs
 

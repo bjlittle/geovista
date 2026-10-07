@@ -28,6 +28,9 @@ REGION: tuple[float, float, float, float] = (10.0, 30.0, 30.0, 50.0)
 #: Central meridian shift applied to a regional mesh.
 REGIONAL_MERIDIAN: float = 45.0
 
+#: A planar target CRS, so that a z-level is scaled into each point's z-value.
+PLANAR = "+proj=eqc"
+
 #: Whole-globe projections carrying the central meridian in assorted ways.
 #:
 #: Note that "LambertConformal" and "NearsidePerspective" are deliberately
@@ -62,6 +65,12 @@ def regional_mesh():
     lats = np.linspace(lat_min, lat_max, 3)
     data = np.arange(4, dtype=float).reshape(2, 2)
     return gv.Transform.from_1d(lons, lats, data=data)
+
+
+@pytest.fixture
+def cloud():
+    """Create a small point cloud, which ``transform_mesh`` never slices."""
+    return gv.Transform.from_points([10.0, 20.0, 30.0], [30.0, 40.0, 50.0])
 
 
 def _cell_widths(mesh) -> np.ndarray:
@@ -151,3 +160,53 @@ def test_transform_mesh__flat_source(regional_mesh):
 
     assert shifted.n_points == flat.n_points
     assert shifted.bounds[:4] == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("mesh", ["regional_mesh", "cloud"])
+@pytest.mark.parametrize("sequence", [list, tuple, np.array])
+def test_transform_mesh__zlevel_per_point(request, mesh, sequence):
+    """A per-point zlevel is honoured whatever form of ArrayLike carries it.
+
+    Typing spec §3.3: the signature promises ``ArrayLike``, but before the
+    conversion at the boundary a list or tuple met ``zlevel * zscale`` with
+    ``TypeError``, and an array of more than one element raised ``ValueError``.
+
+    """
+    mesh = request.getfixturevalue(mesh)
+    expected = transform_mesh(mesh.copy(), PLANAR, zlevel=2)
+    zlevel = sequence([2] * mesh.n_points)
+
+    result = transform_mesh(mesh.copy(), PLANAR, zlevel=zlevel)
+
+    np.testing.assert_array_equal(result.points, expected.points)
+
+
+def test_transform_mesh__zlevel_numpy_scalar(regional_mesh):
+    """A numpy scalar is a scalar zlevel like any other."""
+    expected = transform_mesh(regional_mesh.copy(), PLANAR, zlevel=2)
+
+    result = transform_mesh(regional_mesh.copy(), PLANAR, zlevel=np.float64(2))
+
+    np.testing.assert_array_equal(result.points, expected.points)
+
+
+def test_transform_mesh__zlevel_left_untouched(cloud):
+    """The caller's zlevel is never mutated, though a cloud adds to it."""
+    zlevel = np.full(cloud.n_points, 2.0)
+
+    _ = transform_mesh(cloud.copy(), PLANAR, zlevel=zlevel)
+
+    np.testing.assert_array_equal(zlevel, np.full(cloud.n_points, 2.0))
+
+
+def test_transform_mesh__zlevel_that_cannot_broadcast(regional_mesh):
+    """A zlevel of the wrong length fails before any point is written."""
+    before = regional_mesh.points.copy()
+    zlevel = [2] * (regional_mesh.n_points + 1)
+
+    with pytest.raises(ValueError, match="does not broadcast to its 9 points"):
+        _ = transform_mesh(
+            regional_mesh, PLANAR, zlevel=zlevel, slice_connectivity=False, inplace=True
+        )
+
+    np.testing.assert_array_equal(regional_mesh.points, before)
