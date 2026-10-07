@@ -715,6 +715,9 @@ QUOTE = re.compile(
     r"^[^\S\n]*(?P<item>(?:[-*+]|\d{1,9}[.)])[^\S\n]+)?(?P<markers>(?:>[^\S\n]?)+)"
 )
 
+#: The marker opening a comment line outside markdown, ``#:`` included.
+COMMENT = re.compile(r"^[^\S\n]*#+:?[^\S\n]?")
+
 
 def paragraphs(
     lines: Iterable[tuple[int, str]], *, markdown: bool = False
@@ -726,24 +729,34 @@ def paragraphs(
     together. Markdown is read without its blockquote markers, which a reader
     never sees either. A quote that opens or deepens starts a block of its own, and
     so does a list item opening with one, so either ends the run; a line quoted
-    less deeply continues it, as a lazy continuation line does.
+    less deeply continues it, as a lazy continuation line does. Anywhere else a
+    comment line is read without its ``#``, and a run ends where comment gives way
+    to code or code to comment, since neither continues the other.
     """
     run: list[tuple[int, str]] = []
     previous = depth = 0
+    commented = False
     for number, line in lines:
-        text, level, item = line, 0, False
-        if markdown and (quote := QUOTE.match(line)) is not None:
-            text = line[quote.end() :]
-            level, item = quote["markers"].count(">"), quote["item"] is not None
+        text, level, item, comment = line, 0, False, False
+        if markdown:
+            if (quote := QUOTE.match(line)) is not None:
+                text = line[quote.end() :]
+                level, item = quote["markers"].count(">"), quote["item"] is not None
+        elif (marker := COMMENT.match(line)) is not None:
+            text, comment = line[marker.end() :], True
         if run and (
-            not text.strip() or number != previous + 1 or level > depth or item
+            not text.strip()
+            or number != previous + 1
+            or level > depth
+            or item
+            or comment != commented
         ):
             yield run
             run = []
         if text.strip():
             depth = max(depth, level) if run else level
             run.append((number, text))
-        previous = number
+        previous, commented = number, comment
     if run:
         yield run
 
@@ -770,8 +783,8 @@ def wrapped(path: Path, text: str, names: Namespace) -> list[str]:
         if len(written) != len(undone):
             continue
         problems.extend(
-            f"{where(path, number)}: {citation.text} reads as {citation.slug} here, "
-            f"{unwrapped.slug} unwrapped"
+            f"{where(path, number)}: {citation.text} reads as "
+            f"{citation.slug or 'no document'} here, {unwrapped.slug} unwrapped"
             for (number, citation), unwrapped in zip(written, undone, strict=True)
             if citation.slug != unwrapped.slug
         )
@@ -1028,6 +1041,50 @@ def test_ranged_passes_a_range_written_whole_and_a_dash_as_punctuation(tmp_path,
     path, names = paired(tmp_path, body)
 
     assert ranged(path, path.read_text(encoding="utf-8"), names) == []
+
+
+@pytest.mark.parametrize(
+    ("name", "marker"),
+    [("module.py", "#"), ("module.py", "#:"), ("workflow.yml", "#")],
+    ids=["python", "python-attribute", "yaml"],
+)
+def test_ranged_reads_a_comment_without_its_marker(tmp_path, name, marker):
+    """A far end with no sign is no citation, so only the range check can see it."""
+    _, names = paired(tmp_path, "")
+    text = f"{marker} See other spec {SECTION}2\N{EN DASH}\n{marker} 1 for both.\n"
+
+    problems = ranged(tmp_path / name, text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"'other spec {SECTION}2\N{EN DASH}\\n1' ends without a section sign"
+    ]
+
+
+def test_wrapped_reads_a_comment_without_its_marker(tmp_path):
+    """Outside the specifications a wrapped tail names no document at all."""
+    _, names = paired(tmp_path, "")
+    text = f"# See other spec {SECTION}2,\n# {SECTION}2 too.\n"
+
+    problems = wrapped(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"{SECTION}2 reads as no document here, other-spec-2 unwrapped"
+    ]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        f"# See other spec {SECTION}2\N{EN DASH}\n1: one\n",
+        f"# See other spec {SECTION}2\N{EN DASH}\n#\n# 1 for both.\n",
+    ],
+    ids=["code-follows", "bare-marker"],
+)
+def test_ranged_joins_no_comment_to_code_or_across_a_bare_marker(tmp_path, text):
+    """A comment and the code after it are separate texts, and a bare ``#`` is blank."""
+    _, names = paired(tmp_path, "")
+
+    assert ranged(tmp_path / "workflow.yml", text, names) == []
 
 
 def test_every_citation_resolves(texts, names):
