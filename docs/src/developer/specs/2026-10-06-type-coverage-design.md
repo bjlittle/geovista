@@ -236,8 +236,9 @@ established in the first two changes and applied by rote afterwards.
 ### 3.4 Gallery suppressions
 
 122 of the 150 errors in `examples/` are two defects, measured on 2026-10-06 against
-`pyvista` 0.49.0 with the override below lifted. They have different causes, and the
-section said otherwise until {issue}`2568` and {issue}`2569` were raised:
+`pyvista` 0.49.0 with the override below lifted. Their causes differ, and this section got
+the second one wrong twice before it was measured; {ref}`§8 <typing-spec-8>` records both
+corrections:
 
 - 77 × `call-arg`, *Missing positional argument "self" in call to "__call__" of
   "_Wrapped"*, raised on no-argument calls such as `p.view_xy()`. `pyvista`'s `_Wrapped`
@@ -246,15 +247,16 @@ section said otherwise until {issue}`2568` and {issue}`2569` were raised:
   request 9162, merged the day after 0.49.0 was released. Checked against a clone of
   that `main`, the count is 0. Tracked by {issue}`2568`.
 - 45 × `attr-defined`, *pv.Plotter.camera? has no attribute "zoom"*, 44 of them on `zoom`
-  and one on `roll`. This one is ours. `geoplotter.py` loads `pyvista` through
-  `lazy.load` and uses the result as a base class, so `mypy` never analyses the base and
-  every inherited member comes back unresolved. The trailing `?` is `mypy` naming a
-  symbol it could not analyse, not a defect in an annotation: `Camera.zoom` is present
-  and callable at runtime, and `mypy` resolves it correctly from a file that imports
-  `pyvista` directly. Against the same `main` clone the count is unchanged, which
-  follows, since no upstream change can resolve a base class hidden behind a runtime
-  call. Tracked by {issue}`2569`, and rooted in the untyped `lazy_loader` of
-  {issue}`2570`.
+  and one on `roll`. This one is ours, and it is one line. `GeoPlotterBase.view_poi`
+  declares `self.camera: pv.Plotter.camera`, naming a property where a type belongs.
+  `mypy` cannot bind it, so the attribute keeps the unbound type it prints as
+  `pv.Plotter.camera?`, and since `GeoPlotterBase` precedes `pv.Plotter` among
+  `GeoPlotter`'s bases, that declaration shadows `pyvista`'s own `camera` and every access
+  through it fails. `geoplotter.py` is in the ratchet, so the annotation is never reported
+  where it is written, only where it does damage. Corrected to `pv.Camera` on a copy of
+  the tree, all 45 clear and 44 `no-untyped-call` take their place, because `Camera.zoom`
+  has no annotations in 0.49.0. That residue is upstream, and `pyvista` `main` already
+  annotates it. Tracked by {issue}`2569`.
 
 Both are disabled for the gallery alone, leaving the 28 genuine errors visible:
 
@@ -267,9 +269,11 @@ module = ["geovista.examples.*"]
 
 The comment is quoted as it stands rather than as it should read, because a specification
 that quotes the code has to quote what the code says; {issue}`2569` corrects it. The two
-halves retire on different triggers, so they retire separately: `call-arg` when the
-`pyvista` floor reaches the release carrying the fix, `attr-defined` when the base class
-resolves.
+halves retire on different triggers. `attr-defined` goes with the one-line correction,
+which falls to change 5 since `geoplotter.py` is in it, and the override then carries
+`no-untyped-call` in its place for the 44 `zoom` calls. `call-arg` goes when the
+`pyvista` floor reaches the release carrying the fix, and the `zoom` annotations are on
+the same `main`, so from that release the gallery override has nothing left to hold.
 
 Neither code appears in the library, where `attr-defined` is zero and `call-arg` is one, so
 the suppression is confined to where the plotting calls are. This extends a pattern already
@@ -343,8 +347,9 @@ Out of scope:
 - **`tests/` and `docs/`.** `files` names `src/geovista` alone, and widening it is a
   separate decision with its own error budget.
 - **Chasing the `pyvista` fix into a release.** The `call-arg` defect is already reported
-  and already fixed on `main`, so what remains is a version floor, tracked by
-  {issue}`2568`. It does not gate any of the roadmap.
+  and already fixed on `main`, as are the missing `Camera.zoom` annotations, so what
+  remains is a version floor, tracked by {issue}`2568`. It does not gate any of the
+  roadmap.
 - **The untyped imports.** 32 errors are imports rather than code: 29 `import-untyped`
   from distributions that ship no annotations — `lazy_loader` alone accounts for 19, then
   `geopy`, `rasterio` and `shapely` 2 each, and one each from `click_default_group`,
@@ -370,15 +375,32 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    `pyvista` pull request 9162 fixes it, and the pin in `pyproject.toml` is
    `>=0.48.0,<0.50.0`, so what matters is the floor rather than the ceiling. Withdraw
    that half of the override when the floor reaches the release carrying the fix.
-3. **Open** ({issue}`2569`) — **The `attr-defined` suppression names the wrong cause.**
-   It is labelled upstream in `pyproject.toml` and is not. Until the base class in
-   `geoplotter.py` resolves, 45 errors in the gallery are hidden under a comment that
-   sends the next reader to the wrong repository.
+3. **Open** ({issue}`2569`, owned by change 5 of {ref}`§4 <typing-spec-4>`) — **The
+   `attr-defined` suppression hides a bug of ours.** It is labelled upstream in
+   `pyproject.toml`, and the cause is one annotation in `geoplotter.py`, described in
+   {ref}`§3.4 <typing-spec-3-4>`. Until it is corrected, 45 errors in the gallery sit
+   under a comment that sends the next reader to the wrong repository. This item and
+   {ref}`§3.4 <typing-spec-3-4>` first blamed `lazy.load`, on the theory that `mypy`
+   could not see a base class loaded at runtime, and so did {issue}`2569` as first
+   written. Checking that premise on 2026-10-07, before taking item 4 upstream,
+   disproved it. `geoplotter.py` imports `pyvista` under `TYPE_CHECKING` as well, which
+   is what `mypy` reads, and the 77 `call-arg` errors of item 2 are raised on methods
+   `GeoPlotter` inherits, which could not happen if its base were unresolved. The
+   unbound type in the message, `pv.Plotter.camera?`, is the annotation's own text.
 4. **Open** ({issue}`2570`, owned by change 6 of {ref}`§4 <typing-spec-4>`) — **Whether to
-   pursue `lazy_loader` upstream.** It is 19 of the 29 untyped imports and `geovista`
-   imports it in every module, so a single upstream `py.typed` marker would clear most of
-   that category. It is also the root of item 3, which raises the cost of leaving it.
-   Pursuing it upstream or absorbing it locally is settled in change 6.
+   pursue `lazy_loader` upstream.** It is 19 of the 29 untyped imports, one for each of
+   the 20 library modules that import it except `__init__.py`, which `mypy` reads
+   through `__init__.pyi` instead. Upstream, a `py.typed` marker would clear two thirds of
+   that category, provided `load` and `attach` are annotated with it; a bare marker
+   would trade each import error for a `no-untyped-call` on every `lazy.load`, as
+   `Camera.zoom` does in {ref}`§3.4 <typing-spec-3-4>`. Locally, an
+   `ignore_missing_imports` override would clear it. `lazy_loader` 0.6 still ships no
+   marker and nothing upstream asks for one.
+   A maintainer's advice there, in its issue 165, is to keep using it until Python 3.15
+   is the floor and then move to the `lazy import` of PEP 810. This item argued until
+   2026-10-07 that it was also the root of item 3; it is not, which leaves the
+   import-untyped count as the whole case. Pursuing it upstream or absorbing it locally
+   is settled in change 6.
 
 (typing-spec-9)=
 ## 9. References
@@ -393,3 +415,5 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
   half of {ref}`§3.4 <typing-spec-3-4>`:
   <https://github.com/pyvista/pyvista/issues/6589> and
   <https://github.com/pyvista/pyvista/pull/9162>
+- `lazy_loader` issue 165, on its relation to PEP 810, cited by item 4 of
+  {ref}`§8 <typing-spec-8>`: <https://github.com/scientific-python/lazy-loader/issues/165>
