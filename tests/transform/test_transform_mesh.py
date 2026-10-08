@@ -178,15 +178,21 @@ def test_transform_mesh__zlevel_per_point(request, mesh, sequence):
     Typing spec §3.3: the signature promises ``ArrayLike``, but before the
     conversion at the boundary a list or tuple met ``zlevel * zscale`` with
     ``TypeError``, and an array of more than one element raised ``ValueError``.
+    Each point has a level of its own, so a level that landed on the wrong
+    point would show. A point's z is linear in its level, offset by any level
+    a cloud encodes, so it lies on the line through its z at levels 0 and 1.
 
     """
     mesh = request.getfixturevalue(mesh)
-    expected = transform_mesh(mesh.copy(), PLANAR, zlevel=2)
-    zlevel = sequence([2] * mesh.n_points)
+    base = transform_mesh(mesh.copy(), PLANAR, zlevel=0)
+    unit = transform_mesh(mesh.copy(), PLANAR, zlevel=1)
+    levels = np.arange(1, mesh.n_points + 1)
 
-    result = transform_mesh(mesh.copy(), PLANAR, zlevel=zlevel)
+    result = transform_mesh(mesh.copy(), PLANAR, zlevel=sequence(levels.tolist()))
 
-    np.testing.assert_array_equal(result.points, expected.points)
+    np.testing.assert_array_equal(result.points[:, :2], unit.points[:, :2])
+    zs = base.points[:, 2] + levels * (unit.points[:, 2] - base.points[:, 2])
+    np.testing.assert_allclose(result.points[:, 2], zs, rtol=1e-9)
 
 
 def test_transform_mesh__zlevel_numpy_scalar(regional_mesh):
