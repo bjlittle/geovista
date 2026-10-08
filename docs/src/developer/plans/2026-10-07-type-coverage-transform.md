@@ -909,8 +909,8 @@ item 6 dates the merge 2026-09-23, §3.3 puts the census back ahead of the parag
 says that only one of the 20 lines needed the conversion, the typed imports clearing 15
 and two return annotations four, and the comment names PEP 810 as well. Corrections 2
 and 3 and row 2's count above are corrected in place. What tasks 2 and 3 quote is left as
-it was executed, as is the comment task 3 posted on {issue}`2570`, which repeats item 5's
-claim.
+it was executed. The comment task 3 posted on {issue}`2570` repeated item 5's claim, and
+was corrected on 2026-10-08.
 
 Of the other four, {user}`bjlittle` chose to fix the second and third and to leave the
 first and sixth. `b6990899` annotates `transform_point`'s `x`, `y` and `z` as `ArrayLike`
@@ -922,3 +922,12 @@ inside `transform_mesh`, the old test passed all six cases and the new one fails
 The first waits on {issue}`2581`: a planar cloud sent back to WGS84 raised `TypeError` on
 `main` under numpy 2.5.3, and now completes with its z flattened, so a test of its values
 belongs to that fix, as the issue now records. The sixth stands as described.
+
+Codex then reviewed the pull request and raised three findings against the slice carry of
+`f49dd500`. Each was reproduced, and its test watched failing, before it was fixed:
+
+| finding | fix | commit |
+|---|---|---|
+| the clean-up removed a caller's own `gvTransformZLevel` array, even for a scalar `zlevel`, and a per-point `zlevel` overwrote it | the carry takes a name no array of the mesh has, and only that array is removed | `b6b14d71` |
+| integer levels were interpolated as integers where the seam splits a cell, up to 0.31 of a level out | the carried levels are floats | `8da89ff6` |
+| `slice_lines` rebuilds the lines it splits without their point data, so a per-point `zlevel` on a line across the seam failed with a `KeyError`, and left the caller's mesh rotated | a `ValueError` once the rotation is undone, with {issue}`2583` raised for `slice_lines`, since {user}`bjlittle` chose to keep the scope tight | `a4e3fca8` |
