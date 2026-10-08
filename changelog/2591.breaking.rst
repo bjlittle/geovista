@@ -1,0 +1,5 @@
+Planar ``zlevel`` offsets change size. For a mesh spanning the globe they become
+0.64 of what they were in ``eqc``, 0.75 in ``robin`` and 0.71 in ``moll``, and
+smaller meshes rise to match. Layers keep their order, but anyone who tuned
+``zscale`` for a projection will see a different depth, and can raise ``zscale``
+to restore it. (:user:`claude`)

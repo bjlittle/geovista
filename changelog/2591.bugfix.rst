@@ -1,0 +1,8 @@
+In a planar CRS, ``transform_mesh`` now lifts a mesh by ``zlevel * zscale``
+times the radius of the Earth in the units of that CRS, the proportion a level
+already has on the globe. Every mesh and point cloud in a projected scene shares
+that length, so meshes of different extents at one level sit at one height, a
+layer at a higher level draws above one at a lower level, and a feature taken
+from a point cloud sits at the depths it has in the whole cloud. Before, the
+length was a quarter of each mesh's own extent. Closes :issue:`2588`.
+(:user:`claude`)

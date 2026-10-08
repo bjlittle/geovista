@@ -94,7 +94,8 @@ coordinates:
 - for a projected CRS, the semi-major axis of its ellipsoid divided by the metres in one
   unit of its first axis;
 - for a geographic CRS, one radian expressed in its angular unit, so 57.2958 for degrees;
-- for a compound CRS, the `R` of its horizontal component.
+- for a compound or a bound CRS, the `R` of its horizontal component, which `pyproj`
+  reports directly.
 
 On the globe, `to_cartesian` lifts a point by `radius * zlevel * zscale`, so the rule gives
 a level the same proportion of the Earth's radius in either. `pyproj` supplies both inputs,
@@ -152,8 +153,8 @@ what they were, and its deepest point, at 5,275 m, moves from z = −211,365 to 
 
 A CRS that offers no ellipsoid, or no unit on its first axis, has no `R` to compute, and
 `transform_mesh` then raises a `ValueError` naming the CRS rather than guessing a scale.
-Whether any CRS that `transform_mesh` can reach is affected is item 1 of
-{ref}`§8 <zlevel-spec-8>`.
+No CRS that `transform_mesh` can reach is affected, by item 1 of
+{ref}`§8 <zlevel-spec-8>`, so the guard is tested on the helper directly.
 
 Units come from the first horizontal axis. A projected CRS uses one unit on both axes, a
 latitude-first geographic CRS such as EPSG:4269 uses degrees on both, and an unusual angular
@@ -164,7 +165,7 @@ unit converts the same way, so radians give 1 and grads 63.66.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The rule in `transform_mesh`, its tests and docstring, and the image baselines it moves | not started ({issue}`2588`) |
+| 1 | The rule in `transform_mesh`, its tests and docstring, and the image baselines it moves | in progress ({pull}`2591`) |
 
 Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`. The image baselines live in
 `bjlittle/geovista-data`, so row 1 lands there first: the new images are released there,
@@ -221,10 +222,13 @@ yet.
 
 Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 
-1. **Open** ({issue}`2588`) — **Can a CRS that `transform_mesh` reaches lack an ellipsoid
-   or an axis unit?** Every CRS measured for {ref}`§3.1 <zlevel-spec-3-1>` has both. The
-   plan's dry run checks compound, bound and engineering CRSs, and the `ValueError` of
-   {ref}`§3.4 <zlevel-spec-3-4>` gets a test only if one of them reaches it.
+1. **Resolved** (2026-10-08, {pull}`2591`) — **Can a CRS that `transform_mesh` reaches
+   lack an ellipsoid or an axis unit?** No. A compound CRS and a bound one report the
+   ellipsoid and first axis of their horizontal component, a rotated pole CRS is a
+   derived geographic one in degrees, and a geocentric one is in metres. An engineering
+   CRS is the one kind without an ellipsoid, and `pyproj` refuses to build a
+   transformer to it, so `transform_mesh` fails before it needs `R`. The `ValueError`
+   of {ref}`§3.4 <zlevel-spec-3-4>` is tested on the helper directly.
 2. **Open** ({issue}`2588`) — **Which image baselines move?** The ORCA2 `eqc` gallery image
    will, by {ref}`§3.3 <zlevel-spec-3-3>`. The other offsets are small beside their maps,
    and CI decides.
