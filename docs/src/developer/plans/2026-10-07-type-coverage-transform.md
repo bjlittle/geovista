@@ -910,4 +910,15 @@ says that only one of the 20 lines needed the conversion, the typed imports clea
 and two return annotations four, and the comment names PEP 810 as well. Corrections 2
 and 3 and row 2's count above are corrected in place. What tasks 2 and 3 quote is left as
 it was executed, as is the comment task 3 posted on {issue}`2570`, which repeats item 5's
-claim. The other four minors are for discussion.
+claim.
+
+Of the other four, {user}`bjlittle` chose to fix the second and third and to leave the
+first and sixth. `b6990899` annotates `transform_point`'s `x`, `y` and `z` as `ArrayLike`
+and gives `y` and `z` the docstring wording `x` already had: `mypy` over the tests
+reported five `arg-type` errors at the list calls before it and none after, and a second
+test covers a single valued `z`. `f8848261` gives each point of the per-point test its own
+level, checked against the line through its z at levels 0 and 1; with the levels reversed
+inside `transform_mesh`, the old test passed all six cases and the new one fails all six.
+The first waits on {issue}`2581`: a planar cloud sent back to WGS84 raised `TypeError` on
+`main` under numpy 2.5.3, and now completes with its z flattened, so a test of its values
+belongs to that fix, as the issue now records. The sixth stands as described.
