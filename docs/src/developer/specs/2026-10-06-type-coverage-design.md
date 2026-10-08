@@ -297,7 +297,7 @@ account of `geopy` being untyped.
 | # | Scope | Lines | Status |
 |---|---|---|---|
 | 1 | The `local` hook, `ci-typing.yml`, the ratchet and its test | 0 | ✅ landed (2026-10-06, {pull}`2565`) |
-| 2 | `transform.py` | 29 | in progress ({pull}`2580`) |
+| 2 | `transform.py` | 29 | ✅ landed (2026-10-08, {pull}`2580`) |
 | 3 | `bridge.py` | 28 | not started |
 | 4 | `common.py` | 20 | not started |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | not started |
