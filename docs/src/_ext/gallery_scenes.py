@@ -15,6 +15,11 @@ export, and so their pages show the static image instead.
 component before a static example, which ``show`` takes to mean there is no
 scene to export, and registers it again afterwards.
 
+``sphinx-gallery`` skips an example whose source is unchanged since it was last
+built, so :func:`reset` would never run for it. As an extension, this module
+also invalidates the cache of each example whose membership of :data:`STATIC`
+has changed since the previous build, see :func:`invalidate`.
+
 Notes
 -----
 .. versionadded:: 0.6.0
@@ -23,17 +28,25 @@ Notes
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
-from typing import Any
+import re
+from typing import TYPE_CHECKING, Any
 
 import pyvista as pv
 
 import geovista.examples
 
-__all__ = ["STATIC", "reset"]
+if TYPE_CHECKING:
+    from sphinx.application import Sphinx
+
+__all__ = ["STATIC", "invalidate", "reset", "setup"]
 
 COMPONENT: str = "trame"
 """The plotter component that exports the interactive scene."""
+
+STATE: str = ".gallery_scenes.json"
+"""The record of the static examples within the gallery output of a build."""
 
 STATIC: frozenset[str] = frozenset(
     {
@@ -101,3 +114,86 @@ def reset(gallery_conf: dict[str, Any], fname: str | None, when: str) -> None:  
         _disable()
     else:
         _enable()
+
+
+def invalidate(gallery_dir: Path, static: frozenset[str] | None = None) -> list[str]:
+    """Invalidate each cached example whose membership of the static set changed.
+
+    Removing the cached checksum of an example makes ``sphinx-gallery`` run it
+    again, and so :func:`reset` with it. An example that has become static also
+    loses its stale interactive scene. Without a record of the previous build,
+    every example is taken to have been interactive.
+
+    Parameters
+    ----------
+    gallery_dir : Path
+        The ``sphinx-gallery`` output directory.
+    static : frozenset of str, optional
+        The static examples. Defaults to :data:`STATIC`.
+
+    Returns
+    -------
+    list of str
+        The examples that were invalidated.
+
+    """
+    if static is None:
+        static = STATIC
+
+    state = gallery_dir / STATE
+
+    try:
+        previous = frozenset(json.loads(state.read_text(encoding="utf-8")))
+    except (FileNotFoundError, ValueError):
+        previous = frozenset()
+
+    changed = sorted(previous ^ static)
+
+    for name in changed:
+        stem = name.rsplit(".", maxsplit=1)[-1]
+        for checksum in gallery_dir.rglob(f"{stem}.py.md5"):
+            checksum.unlink()
+        if name in static:
+            # the file name of another example may extend this one
+            scene = re.compile(rf"sphx_glr_{re.escape(stem)}_\d+\.vtksz")
+            for path in gallery_dir.rglob("*.vtksz"):
+                if scene.fullmatch(path.name):
+                    path.unlink()
+
+    gallery_dir.mkdir(parents=True, exist_ok=True)
+    state.write_text(json.dumps(sorted(static)), encoding="utf-8")
+
+    return changed
+
+
+def _builder_inited(app: Sphinx) -> None:
+    """Invalidate changed examples before ``sphinx-gallery`` generates the gallery."""
+    gallery_dirs = app.config.sphinx_gallery_conf["gallery_dirs"]
+
+    if isinstance(gallery_dirs, str):
+        gallery_dirs = [gallery_dirs]
+
+    for gallery_dir in gallery_dirs:
+        invalidate(Path(app.srcdir) / gallery_dir)
+
+
+def setup(app: Sphinx) -> dict[str, bool]:
+    """Configure the sphinx application.
+
+    Parameters
+    ----------
+    app : Sphinx
+        The sphinx application.
+
+    Returns
+    -------
+    dict
+        A dictionary declaring the extension safe for parallel reading and
+        writing. It acts once, in the main process, before the gallery is
+        generated.
+
+    """
+    # "sphinx_gallery.gen_gallery" generates the gallery at the default priority
+    app.connect("builder-inited", _builder_inited, priority=400)
+
+    return {"parallel_read_safe": True, "parallel_write_safe": True}

@@ -171,6 +171,7 @@ logger = logging.getLogger("sphinx-geovista")
 # ones.
 extensions = [
     "intersphinx_resilience",
+    "gallery_scenes",
     "numpydoc",
     "readingtime",
     "sphinx.ext.autodoc",

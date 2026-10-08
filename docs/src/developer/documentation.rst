@@ -142,6 +142,8 @@ they open the page. The examples named in ``STATIC`` within
 the export altogether. Add an example there when its scene is large and adds
 little over the image, and use the name the image tests use, e.g.,
 ``grid.reykjanes_contour``. A unit test rejects a name that matches no example.
+The change also applies to an incremental build, which runs again each example
+that has been added to or removed from ``STATIC`` since the last build.
 
 
 :fab:`readme` Render
