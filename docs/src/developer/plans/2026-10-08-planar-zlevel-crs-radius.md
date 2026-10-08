@@ -53,7 +53,7 @@ draft until the implementation lands on it.
   serially; every test this plan adds is a pure computation, safe either way.
 - **Image tests run only in CI.** They segfault without a display, so a local run proves
   nothing about them.
-- **Changelog.** Two towncrier fragments, `{PR}.bugfix.rst` and `{PR}.breaking.rst`
+- **Changelog.** Two towncrier fragments, `2591.bugfix.rst` and `2591.breaking.rst`
   (zlevel spec §4), each signed ``:user:`claude` ``. Pass `agentic` and `type: bug` to
   `gh pr create`.
 - **Names.** Repository text names the reviewer as {user}`bjlittle`.
@@ -471,7 +471,7 @@ The spec records what the dry run settled, and the change gains its fragments.
 **Files:**
 - Modify: `docs/src/developer/specs/2026-10-08-planar-zlevel-design.md`: §3.1, §3.4, §4,
   §8
-- Create: `changelog/{PR}.bugfix.rst`, `changelog/{PR}.breaking.rst`
+- Create: `changelog/2591.bugfix.rst`, `changelog/2591.breaking.rst`
 
 **Interfaces:**
 - Consumes: the measurements in "What the dry run settled".
@@ -480,7 +480,7 @@ The spec records what the dry run settled, and the change gains its fragments.
 - [ ] **Step 1: Mark row 1 in progress**
 
 In zlevel spec §4, change row 1's status from `` not started ({issue}`2588`) `` to
-`` in progress ({pull}`PR`) ``, substituting the real pull request number.
+`` in progress ({pull}`2591`) ``, substituting the real pull request number.
 
 - [ ] **Step 2: Say that pyproj resolves compound and bound CRSs**
 
@@ -516,7 +516,7 @@ No CRS that `transform_mesh` can reach is affected, by item 1 of
 In zlevel spec §8, replace item 1 in full with, substituting the date and number:
 
 ```markdown
-1. **Resolved** (2026-10-08, {pull}`PR`) — **Can a CRS that `transform_mesh` reaches
+1. **Resolved** (2026-10-08, {pull}`2591`) — **Can a CRS that `transform_mesh` reaches
    lack an ellipsoid or an axis unit?** No. A compound CRS and a bound one report the
    ellipsoid and first axis of their horizontal component, a rotated pole CRS is a
    derived geographic one in degrees, and a geocentric one is in metres. An engineering
@@ -527,7 +527,7 @@ In zlevel spec §8, replace item 1 in full with, substituting the date and numbe
 
 - [ ] **Step 4: Write the changelog fragments**
 
-Create `changelog/{PR}.bugfix.rst`, substituting the real number:
+Create `changelog/2591.bugfix.rst`, substituting the real number:
 
 ```rst
 In a planar CRS, ``transform_mesh`` now lifts a mesh by ``zlevel * zscale``
@@ -540,7 +540,7 @@ length was a quarter of each mesh's own extent. Closes :issue:`2588`.
 (:user:`claude`)
 ```
 
-Create `changelog/{PR}.breaking.rst`:
+Create `changelog/2591.breaking.rst`:
 
 ```rst
 Planar ``zlevel`` offsets change size. For a mesh spanning the globe they become
@@ -552,7 +552,7 @@ to restore it. (:user:`claude`)
 
 - [ ] **Step 5: Verify**
 
-Run: `pixi run --frozen -e docs python .github/scripts/changelog.py {PR} "changelog/{PR}.bugfix.rst,changelog/{PR}.breaking.rst"`
+Run: `pixi run --frozen -e docs python .github/scripts/changelog.py 2591 "changelog/2591.bugfix.rst,changelog/2591.breaking.rst"`
 
 Expected: `🆗 Your changelog contribution looks good to me.`
 
@@ -598,7 +598,7 @@ expects the ORCA2 `eqc` gallery image to move, its depths 1.59 times deeper.
 
 - [ ] **Step 1: Let CI render the change**
 
-Run: `gh pr checks {PR} --repo bjlittle/geovista --watch`
+Run: `gh pr checks 2591 --repo bjlittle/geovista --watch`
 
 Expected: the image jobs fail on
 `examples.test__point_cloud.from_points__orca_cloud_eqc`, and every other job passes.
@@ -607,7 +607,7 @@ fails, go to Step 7 and record that no baseline moved.
 
 - [ ] **Step 2: Fetch the renders**
 
-Run: `gh run download <run-id> --repo bjlittle/geovista --pattern "ci-tests-failed-images-*" --dir /tmp/{PR}-images`
+Run: `gh run download <run-id> --repo bjlittle/geovista --pattern "ci-tests-failed-images-*" --dir /tmp/2591-images`
 
 Expected: one PNG per failing image test. Fetch the baseline each replaces with
 `pixi run --frozen -e geovista python -c "from geovista.cache import CACHE; print(CACHE.fetch('tests/unit/<name>.png'))"`.
@@ -667,7 +667,7 @@ The trial convention of committing the landed row before the merge.
 - [ ] **Step 1: Mark row 1 landed, on the day of approval**
 
 Once every review round is done and {user}`bjlittle` approves, change row 1's status to
-`` ✅ landed (YYYY-MM-DD, {pull}`PR`) ``, dated that day.
+`` ✅ landed (YYYY-MM-DD, {pull}`2591`) ``, dated that day.
 
 - [ ] **Step 2: Verify, commit and push**
 
@@ -692,5 +692,5 @@ first.
 - `tests-unit "not image"` passes under `pytest-xdist`, and CI is green, image tests
   included, against baselines {user}`bjlittle` approved.
 - Zlevel spec §4 row 1 reads landed, and §8 items 1 and 2 are resolved.
-- `changelog/{PR}.bugfix.rst` and `changelog/{PR}.breaking.rst` exist, and the pull
+- `changelog/2591.bugfix.rst` and `changelog/2591.breaking.rst` exist, and the pull
   request carries `agentic` and `type: bug`.
