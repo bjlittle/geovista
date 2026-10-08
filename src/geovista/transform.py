@@ -22,6 +22,7 @@ from .common import (
     GV_FIELD_RADIUS,
     GV_FIELD_ZSCALE,
     GV_POINT_ZLEVEL,
+    RADIUS,
     ZLEVEL_SCALE,
     from_cartesian,
     point_cloud,
@@ -116,7 +117,9 @@ def transform_mesh(
     -----
     A point cloud keeps its z-levels from one transform to the next. On the sphere
     they are encoded in the radius of each point, and in a planar CRS they are
-    carried in the :data:`geovista.common.GV_POINT_ZLEVEL` point array.
+    carried in the :data:`geovista.common.GV_POINT_ZLEVEL` point array. The cloud
+    also carries the `radius` and `zscale` that encode them, so a value given here
+    becomes its own.
 
     .. versionadded:: 0.3.0
 
@@ -258,7 +261,7 @@ def transform_mesh(
         points[:, 2] = zs
 
         if cloud:
-            _record_zlevels(mesh, level, tgt_crs)
+            _record_zlevels(mesh, level, tgt_crs, radius=radius, zscale=zscale)
 
         # TODO @bjlittle: Check whether to clean other field_data metadata.
         to_wkt(mesh, original_tgt_crs)
@@ -529,14 +532,21 @@ def _carried_zlevels(
 
 
 def _record_zlevels(
-    mesh: pv.PolyData, levels: NDArray[Any], tgt_crs: pyproj.CRS
+    mesh: pv.PolyData,
+    levels: NDArray[Any],
+    tgt_crs: pyproj.CRS,
+    *,
+    radius: float | None,
+    zscale: float,
 ) -> None:
-    """Record or drop the z-levels of a point cloud, for its target CRS.
+    """Record the z-levels of a point cloud, and how they are encoded, for its CRS.
 
     In a planar CRS the z-levels are recorded in the
     :data:`geovista.common.GV_POINT_ZLEVEL` point array, for the next transform
     to read. On the sphere the radius of each point holds its z-level, so the
-    array is dropped.
+    array is dropped. The cloud carries the `zscale` that encoded its levels, and
+    on the sphere the `radius` too, since later transforms decode the levels with
+    them and default to them.
 
     Parameters
     ----------
@@ -546,13 +556,23 @@ def _record_zlevels(
         The z-level of each point, or one z-level for them all.
     tgt_crs : :class:`~pyproj.crs.CRS`
         The target CRS of the point cloud.
+    radius : float, optional
+        The radius the transform placed the cloud on, where the target is the
+        sphere. Defaults to :data:`geovista.common.RADIUS`, as for
+        :func:`geovista.common.to_cartesian`.
+    zscale : float
+        The proportional multiplier the transform encoded the levels with.
 
     Notes
     -----
     .. versionadded:: 0.6.0
 
     """
+    mesh.field_data[GV_FIELD_ZSCALE] = np.array([float(zscale)])
+
     if tgt_crs == WGS84:
+        base = RADIUS if radius is None else abs(float(radius))
+        mesh.field_data[GV_FIELD_RADIUS] = np.array([base])
         mesh.point_data.pop(GV_POINT_ZLEVEL, None)
     else:
         # set as an array rather than by item, which would make the levels the

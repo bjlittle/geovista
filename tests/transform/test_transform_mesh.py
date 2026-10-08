@@ -461,3 +461,38 @@ def test_transform_mesh__cloud_returns_to_its_radius(radius, expected):
     radii = np.linalg.norm(result.points, axis=1)
     np.testing.assert_allclose(radii, expected, rtol=1e-12)
     np.testing.assert_allclose(result.points / expected, cloud.points / 2.0, rtol=1e-9)
+
+
+@pytest.mark.parametrize(
+    ("override", "radius", "zscale"),
+    [({"radius": 3.0}, 3.0, 0.5), ({"zscale": 0.25}, 1.0, 0.25)],
+    ids=["radius", "zscale"],
+)
+def test_transform_mesh__cloud_carries_the_radius_and_zscale_given(
+    lifted_cloud, override, radius, zscale
+):
+    """A cloud carries the radius or zscale that a transform to WGS84 was given.
+
+    Later transforms decode the levels of a cloud from its radius, and default to
+    its radius and zscale, so the values it carries must be those that placed it.
+
+    """
+    sphere = transform_mesh(transform_mesh(lifted_cloud, PLANAR), WGS84, **override)
+    planar = transform_mesh(sphere, ROBIN)
+
+    result = transform_mesh(planar, WGS84)
+
+    levels = np.array([2.0, 3.0, 4.0])
+    np.testing.assert_allclose(planar.point_data[GV_POINT_ZLEVEL], levels, rtol=1e-9)
+    radii = np.linalg.norm(result.points, axis=1)
+    np.testing.assert_allclose(radii, radius * (1 + levels * zscale), rtol=1e-9)
+
+
+def test_transform_mesh__cloud_carries_the_zscale_given_in_a_planar_crs(lifted_cloud):
+    """A cloud carries the zscale that a transform to a planar CRS was given."""
+    planar = transform_mesh(lifted_cloud, PLANAR, zscale=0.25)
+
+    result = transform_mesh(planar, WGS84)
+
+    radii = np.linalg.norm(result.points, axis=1)
+    np.testing.assert_allclose(radii, 1 + np.array([2.0, 3.0, 4.0]) * 0.25, rtol=1e-9)
