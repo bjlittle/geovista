@@ -1,0 +1,5 @@
+In a planar CRS, ``transform_mesh`` has lifted a mesh by ``zlevel * zscale``
+times a quarter of the mesh's own extent, so equal levels sit at different
+heights in a projected scene. The design that fixes it, tying the length to the
+Earth's radius in the CRS's own units, is recorded under
+``docs/src/developer/specs/`` and cited as ``zlevel spec §…``. (:user:`claude`)
