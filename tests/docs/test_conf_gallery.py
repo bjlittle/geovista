@@ -36,15 +36,21 @@ PROBE = """
 import json, os, runpy, subprocess, sys
 sys.path.insert(0, sys.argv[1])
 namespace = runpy.run_path(sys.argv[2])
+SETTINGS = (
+    "import json, geovista, pyvista as pv; t = pv.global_theme; "
+    "print(json.dumps([pv.OFF_SCREEN, t.name, t.font.size, str(t.axes.z_color)]))"
+)
+import geovista
+exec(SETTINGS.replace("print(", "build = (", 1))
 # a gallery worker is a fresh process, which sees only the environment
 child = subprocess.run(
-    [sys.executable, "-c", "import pyvista; print(pyvista.OFF_SCREEN)"],
-    capture_output=True, text=True, check=True,
+    [sys.executable, "-c", SETTINGS], capture_output=True, text=True, check=True,
 )
 print(json.dumps({
     "parallel": namespace["sphinx_gallery_conf"].get("parallel", False),
     "cpus": os.process_cpu_count(),
-    "child_off_screen": child.stdout.strip(),
+    "build": json.loads(build),
+    "worker": json.loads(child.stdout.strip().splitlines()[-1]),
 }))
 """
 """Execute ``conf.py`` and report what a documentation build would see."""
@@ -60,7 +66,12 @@ def probe(require: Callable[[str], NoReturn]) -> Callable[..., dict[str, object]
         env = {
             key: value
             for key, value in os.environ.items()
-            if key not in {"PYVISTA_OFF_SCREEN", "GEOVISTA_SPHX_GLR_SERIAL"}
+            if key
+            not in {
+                "PYVISTA_OFF_SCREEN",
+                "PYVISTA_PLOT_THEME",
+                "GEOVISTA_SPHX_GLR_SERIAL",
+            }
         }
         env.update(environ)
         # conf.py derives the version from the git repository
@@ -97,4 +108,18 @@ def test_worker_off_screen(probe):
     waits on it forever, which is how a parallel Read the Docs build hung.
 
     """
-    assert probe()["child_off_screen"] == "True"
+    off_screen, *_ = probe()["worker"]
+    assert off_screen is True
+
+
+def test_worker_theme(probe):
+    """Test a fresh gallery worker process renders with the documentation theme.
+
+    A worker that does not falls back to the default ``geovista`` theme, so its
+    examples render with different plotting defaults than a serial build.
+
+    """
+    result = probe()
+    _, name, *_ = result["worker"]
+    assert name == "geovista_document"
+    assert result["worker"] == result["build"]

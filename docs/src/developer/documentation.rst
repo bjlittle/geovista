@@ -126,10 +126,12 @@ examples one at a time in the main process, e.g., when debugging an example.
 
    Each worker is a new process, so it inherits the environment but not any
    state set within the build process. That is why :bash:`conf.py` exports
-   ``PYVISTA_OFF_SCREEN`` as well as setting ``pyvista.OFF_SCREEN``. A worker
-   that renders on-screen opens a window under ``xvfb-run`` and waits on it
-   until the build times out, as happened on Read the Docs, which calls
-   ``sphinx-build`` directly rather than through the :bash:`Makefile`.
+   ``PYVISTA_OFF_SCREEN`` and ``PYVISTA_PLOT_THEME`` as well as setting them
+   in-process. A worker that renders on-screen opens a window under
+   ``xvfb-run`` and waits on it until the build times out, as happened on
+   Read the Docs, which calls ``sphinx-build`` directly rather than through
+   the :bash:`Makefile`. A worker without the theme renders its examples with
+   the default ``geovista`` theme instead of ``geovista_document``.
 
 
 :fab:`readme` Render

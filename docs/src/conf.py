@@ -750,8 +750,11 @@ pyvista.set_error_output_file("errors.txt")
 pyvista.OFF_SCREEN = True
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 
-# Preferred plotting style for documentation
+# Preferred plotting style for documentation, which is also exported for each
+# parallel sphinx-gallery worker. geovista defers its default theme to this
+# environment variable when it is set.
 pyvista.set_plot_theme("geovista_document")
+os.environ["PYVISTA_PLOT_THEME"] = "geovista_document"
 pyvista.set_jupyter_backend(None)
 
 # Necessary when building the sphinx gallery
