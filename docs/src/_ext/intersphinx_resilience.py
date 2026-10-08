@@ -218,7 +218,7 @@ def degrade(app: Sphinx) -> None:
         print(ANNOTATION.format(message=f"{summary}, {ADVICE}"))  # noqa: T201
 
 
-def setup(app: Sphinx) -> None:
+def setup(app: Sphinx) -> dict[str, bool]:
     """Configure the sphinx application.
 
     Parameters
@@ -235,3 +235,5 @@ def setup(app: Sphinx) -> None:
     app.connect("config-inited", install)
     # "sphinx.ext.intersphinx" loads the inventories at the default priority
     app.connect("builder-inited", degrade, priority=800)
+
+    return {"parallel_read_safe": True, "parallel_write_safe": True}

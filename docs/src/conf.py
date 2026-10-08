@@ -793,7 +793,7 @@ if os.environ.get("GEOVISTA_SPHX_GLR_SERIAL") is None:
         import joblib  # noqa: F401
 
         # SPIKE: decouple the gallery from sphinx --jobs
-        _workers = int(os.environ.get("GEOVISTA_SPHX_GLR_WORKERS", len(os.sched_getaffinity(0))))
+        _workers = int(os.environ.get("GEOVISTA_SPHX_GLR_WORKERS", min(2, len(os.sched_getaffinity(0)))))
         sphinx_gallery_conf["parallel"] = _workers if _workers > 1 else False
 
         msg = f"parallel build configured ({_workers} workers)"
