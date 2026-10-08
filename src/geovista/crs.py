@@ -91,7 +91,7 @@ WGS84 = CRS.from_user_input("epsg:4326")
 """Geographic WGS84."""
 
 
-def from_wkt(mesh: pv.PolyData) -> CRS:
+def from_wkt(mesh: pv.PolyData) -> CRS | None:
     """Get the :class:`~pyproj.crs.CRS` associated with the mesh.
 
     Parameters
@@ -102,8 +102,9 @@ def from_wkt(mesh: pv.PolyData) -> CRS:
 
     Returns
     -------
-    :class:`~pyproj.crs.CRS`
-        The Coordinate Reference System.
+    :class:`~pyproj.crs.CRS` or None
+        The Coordinate Reference System, or ``None`` when the mesh has none
+        attached.
 
     Notes
     -----

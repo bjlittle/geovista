@@ -76,3 +76,24 @@ def test_transform_to_wgs84_interval(x):
     tx = wrap(x)[0]
     expected = np.array([tx, y, 0])
     np.testing.assert_array_equal(result, expected)
+
+
+def test_single_valued_lists():
+    """A single valued list is a point, and the result is a (3,) array."""
+    expected = transform_point(WGS84, "+proj=eqc", x=10.0, y=20.0)
+
+    result = transform_point(WGS84, "+proj=eqc", x=[10.0], y=[20.0])
+
+    assert isinstance(result, np.ndarray)
+    assert result.shape == (3,)
+    np.testing.assert_array_equal(result, expected)
+
+
+def test_single_valued_lists_with_z():
+    """A single valued z list joins the x and y lists as one point."""
+    expected = transform_point(WGS84, "+proj=eqc", x=10.0, y=20.0, z=5.0)
+
+    result = transform_point(WGS84, "+proj=eqc", x=[10.0], y=[20.0], z=[5.0])
+
+    assert result.shape == (3,)
+    np.testing.assert_array_equal(result, expected)

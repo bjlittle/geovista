@@ -223,7 +223,19 @@ Those 61 lines sit in eight modules, and two of them hold most of it — `transf
 has 7, `common.py` 6, `geoplotter.py` 4, and `pantry/meshes.py`, `search.py` and
 `pantry/data.py` the remaining 5 between them. The roadmap of
 {ref}`§4 <typing-spec-4>` is ordered to follow that concentration, so the idiom is
-established in the first two changes and applied by rote afterwards.
+established in the first two changes and applied by rote afterwards. Change 2 found,
+though, that only one of `transform.py`'s 20 lines needed the conversion.
+
+The conversion narrows only where `mypy` can see `numpy`. A module that loads it lazily,
+with `np = lazy.load("numpy")`, hands `mypy` an `Any`, and assigning an `Any` never
+narrows an `ArrayLike` parameter, so the module must also import `numpy` under
+`TYPE_CHECKING`, as `common.py` does. Change 2 measured this on `transform.py`, which
+already converted with `np.atleast_1d` and still reported the idiom: importing `numpy` and
+`pyproj` that way cleared 15 of its 20 lines on its own. Four of the other five came from
+the return annotations of `transform_points` and `combine`, which promised `ArrayLike` for
+an `ndarray`, and the fifth was `zlevel`. `core.py`, `crs.py`, `filters.py`,
+`geoplotter.py`, `gridlines.py`, `raster.py`, `pantry/data.py` and `pantry/meshes.py`
+still load `numpy` without one.
 
 (typing-spec-3-4)=
 ### 3.4 Gallery suppressions
@@ -285,7 +297,7 @@ account of `geopy` being untyped.
 | # | Scope | Lines | Status |
 |---|---|---|---|
 | 1 | The `local` hook, `ci-typing.yml`, the ratchet and its test | 0 | ✅ landed (2026-10-06, {pull}`2565`) |
-| 2 | `transform.py` | 29 | not started |
+| 2 | `transform.py` | 29 | in progress ({pull}`2580`) |
 | 3 | `bridge.py` | 28 | not started |
 | 4 | `common.py` | 20 | not started |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | not started |
@@ -357,7 +369,9 @@ Out of scope:
   count taken over the whole tree. Two of the three not-found, `geovistaconfig` and
   `geovista.siteconfig`, are the optional site configuration and are *meant* to be absent,
   so they want a targeted `ignore_missing_imports` rather than a fix. The configuration
-  carries no such entry today. Handling all of this is part of change 6.
+  carries none for them yet. Change 2 cleared `lazy_loader`'s 19 early, with the override
+  of {ref}`§8 <typing-spec-8>` item 5, because the first module to leave the ratchet
+  imports it; the rest is part of change 6.
 
 (typing-spec-8)=
 ## 8. Open items
@@ -403,10 +417,18 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    using `lazy_loader` until Python 3.15 is the floor and then move to the `lazy import`
    of PEP 810. This item argued until 2026-10-07 that it was also the root of item 3; it
    is not, which left the import count as the whole case.
-5. **Open** ({issue}`2570`, owned by change 6 of {ref}`§4 <typing-spec-4>`) — **Clearing
-   the 19 before a typed release ships.** An `ignore_missing_imports` override for
-   `lazy_loader` clears them locally. It comes out when the floor reaches a release
-   carrying the marker, or when PEP 810 replaces `lazy_loader`, whichever is first.
+5. **Open** ({issue}`2570`) — **The `lazy_loader` override comes out when upstream
+   allows.** The `ignore_missing_imports` override for `lazy_loader` clears all 19
+   locally. It was meant for change 6, and change 2 brought it in, because `transform.py`
+   imports `lazy_loader`, as most library modules do, and could not leave the ratchet
+   without it. It comes out when the floor reaches a release carrying the marker, or when
+   PEP 810 replaces `lazy_loader`, whichever is first.
+6. **Open** ({issue}`2568`) — **The cast in `transform_mesh` waits on the same `pyvista`
+   release.** `pyvista` 0.49 annotates `pyvista_ndarray.__setitem__` with
+   `key: int | NumpyArray[int]`, which refuses the tuple index of `mesh.points[:, 0]`
+   that it accepts at runtime, so change 2 sets the points through a `typing.cast`.
+   `pyvista` pull request 9262 widens the key, merged on 2026-09-23 after 0.49.0, so the
+   cast comes out with the floor that carries it, the trigger item 2 already waits on.
 
 (typing-spec-9)=
 ## 9. References
@@ -421,6 +443,9 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
   half of {ref}`§3.4 <typing-spec-3-4>`:
   <https://github.com/pyvista/pyvista/issues/6589> and
   <https://github.com/pyvista/pyvista/pull/9162>
+- `pyvista` pull request 9262, which widens the index `pyvista_ndarray.__setitem__`
+  accepts, cited by item 6 of {ref}`§8 <typing-spec-8>`:
+  <https://github.com/pyvista/pyvista/pull/9262>
 - `lazy_loader` issue 165, on its relation to PEP 810, cited by item 4 of
   {ref}`§8 <typing-spec-8>`: <https://github.com/scientific-python/lazy-loader/issues/165>
 - `lazy_loader` issue 181, the request for a marker and annotations that resolves item 4

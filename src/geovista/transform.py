@@ -14,7 +14,7 @@ Notes
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 import lazy_loader as lazy
 
@@ -37,7 +37,9 @@ from .crs import (
 )
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
+    import numpy as np
+    from numpy.typing import ArrayLike, NDArray
+    import pyproj
     import pyvista as pv
 
 # lazy import third-party dependencies
@@ -49,6 +51,10 @@ __all__ = [
     "transform_point",
     "transform_points",
 ]
+
+#: The name a per-point zlevel travels through the seam slice under, prefixed
+#: with underscores until no array of the mesh has it.
+_ZLEVEL = "gvTransformZLevel"
 
 
 def transform_mesh(
@@ -128,32 +134,70 @@ def transform_mesh(
     central_meridian = get_central_meridian(tgt_crs) or 0
     cloud = point_cloud(mesh)
 
-    if zlevel is None:
-        zlevel = 0
+    level = np.asanyarray(0 if zlevel is None else zlevel)
 
     if zscale is None:
         if cloud and GV_FIELD_ZSCALE in mesh.field_data:
-            zscale = mesh[GV_FIELD_ZSCALE]
+            zscale = float(mesh[GV_FIELD_ZSCALE][0])
         else:
             zscale = ZLEVEL_SCALE
 
     if transform_required:
+        if level.ndim:
+            try:
+                level = np.broadcast_to(level, (mesh.n_points,))
+            except ValueError:
+                emsg = (
+                    f"Cannot transform mesh, 'zlevel' with shape {level.shape} does "
+                    f"not broadcast to its {mesh.n_points:,} points."
+                )
+                raise ValueError(emsg) from None
+
         # slice the mesh to break connectivity, but not for a point-cloud
         if slice_connectivity:
             if central_meridian:
                 mesh.rotate_z(-central_meridian, inplace=True)
-                tgt_crs = set_central_meridian(tgt_crs, 0)
+                rebased = set_central_meridian(tgt_crs, 0)
+                # both helpers locate the same parameter, and refuse the same
+                # non-degree prime meridian, so one that reads can be rewritten
+                assert rebased is not None
+                tgt_crs = rebased
 
+            carry: str | None = None
             if not cloud:
-                # the sliced_mesh is guaranteed to be a new instance,
-                # even if not bisected
-                sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
+                # the sliced_mesh is guaranteed to be a new instance, even if not
+                # bisected, and a per-point zlevel travels through the slice as
+                # point data, so a point the seam duplicates keeps its level. It
+                # travels under a name no array of the caller's has, so only what
+                # is added here is removed, and as floats, so a level the seam
+                # interpolates is not rounded
+                if level.ndim:
+                    carry = _ZLEVEL
+                    while carry in mesh.point_data:
+                        carry = f"_{carry}"
+                    mesh.point_data[carry] = level.astype(float)
+                try:
+                    sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
+                finally:
+                    if carry is not None:
+                        mesh.point_data.pop(carry, None)
             else:
                 sliced_mesh = mesh.copy()
 
             if central_meridian:
                 # undo rotation of original mesh
                 mesh.rotate_z(central_meridian, inplace=True)
+
+            if carry is not None:
+                if carry not in sliced_mesh.point_data:
+                    # slice_lines rebuilds the lines it splits without their point
+                    # data, so the levels are lost (issue 2583)
+                    emsg = (
+                        "Cannot transform mesh, a per-point 'zlevel' cannot yet "
+                        "follow lines sliced at the seam. Use a scalar 'zlevel'."
+                    )
+                    raise ValueError(emsg)
+                level = np.asarray(sliced_mesh.point_data.pop(carry))
 
             mesh = sliced_mesh
 
@@ -168,20 +212,23 @@ def transform_mesh(
         )
 
         xs, ys = transformed[:, 0], transformed[:, 1]
-        zs = 0
+        zs: float | NDArray[Any] = 0.0
 
         if not inplace and not slice_connectivity:
             mesh = mesh.copy(deep=True)
 
         if tgt_crs == WGS84:
             xs, ys, zs = to_cartesian(
-                xs, ys, radius=radius, zlevel=zlevel, zscale=zscale, stacked=False
+                xs, ys, radius=radius, zlevel=level, zscale=zscale, stacked=False
             )
 
-        mesh.points[:, 0] = xs
-        mesh.points[:, 1] = ys
+        # pyvista 0.49 annotates "pyvista_ndarray.__setitem__" to refuse the tuple
+        # index it accepts at runtime, so the points are set through a cast
+        points = cast("NDArray[Any]", mesh.points)
+        points[:, 0] = xs
+        points[:, 1] = ys
 
-        if zlevel or cloud:
+        if np.any(level) or cloud:
             xmin, xmax, ymin, ymax, _, _ = mesh.bounds
             xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
             # TODO @bjlittle: Make this scale factor configurable at the API/module
@@ -192,11 +239,11 @@ def transform_mesh(
 
             if cloud:
                 # extract the zlevel encoded from the non-transformed points
-                zlevel += xyz[:, 2]
+                level = level + xyz[:, 2]
 
-            zs = zlevel * zscale * delta
+            zs = level * zscale * delta
 
-        mesh.points[:, 2] = zs
+        points[:, 2] = zs
 
         # TODO @bjlittle: Check whether to clean other field_data metadata.
         to_wkt(mesh, original_tgt_crs)
@@ -207,12 +254,12 @@ def transform_mesh(
 def transform_point(
     src_crs: CRSLike,
     tgt_crs: CRSLike,
-    x: float,
-    y: float,
-    z: float | None = None,
+    x: ArrayLike,
+    y: ArrayLike,
+    z: ArrayLike | None = None,
     *,
     trap: bool | None = True,
-) -> ArrayLike:
+) -> NDArray[Any]:
     """Transform the spatial point from the source to the target CRS.
 
     Parameters
@@ -231,12 +278,12 @@ def transform_point(
         or a single valued 1D array.
     y : ArrayLike
         The spatial point y-value, in canonical `src_crs` units, to be
-        transformed from the `src_crs` to the `tgt_crs`. Must be scalar
-        (0-dimensional).
+        transformed from the `src_crs` to the `tgt_crs`. Must be a scalar
+        or a single valued 1D array.
     z : ArrayLike, optional
         The spatial point z-value, in canonical `src_crs` units, to be
-        transformed from the `src_crs` to the `tgt_crs`. Must be scalar
-        (0-dimensional).
+        transformed from the `src_crs` to the `tgt_crs`. Must be a scalar
+        or a single valued 1D array.
     trap : bool, default=True
         Raise an exception if an error occurs during CRS transformation
         of the spatial point. Otherwise, ``inf`` will be returned for
@@ -244,7 +291,7 @@ def transform_point(
 
     Returns
     -------
-    ArrayLike
+    ndarray
         The transformed spatial point in the canonical units of the target
         CRS. The shape of the result will be ``(3,)``.
 
@@ -258,7 +305,7 @@ def transform_point(
     )
     shape = result.shape
     assert shape == (1, 3), f"Cannot transform point, got unexpected shape {shape}."
-    return result[0]
+    return result[0, :]
 
 
 def transform_points(
@@ -269,7 +316,7 @@ def transform_points(
     zs: ArrayLike | None = None,
     *,
     trap: bool | None = True,
-) -> ArrayLike:
+) -> NDArray[Any]:
     """Transform the spatial points from the source to the target CRS.
 
     Parameters
@@ -301,7 +348,7 @@ def transform_points(
 
     Returns
     -------
-    ArrayLike
+    ndarray
         The transformed spatial points in the canonical units of the target
         CRS. The shape of the result will either be ``(1, 3)``, ``(M, 3)``
         or ``(M, N, 3)`` depending on whether the provided spatial points
@@ -357,7 +404,9 @@ def transform_points(
             )
             raise ValueError(emsg)
 
-    def combine(xs: ArrayLike, ys: ArrayLike, zs: ArrayLike | None = None) -> ArrayLike:
+    def combine(
+        xs: ArrayLike, ys: ArrayLike, zs: ArrayLike | None = None
+    ) -> NDArray[Any]:
         """Combine the provided points into a single array with shape (N, 3).
 
         Parameters
@@ -371,7 +420,7 @@ def transform_points(
 
         Returns
         -------
-        ArrayLike
+        ndarray
             The (N, 3) array combined from `xs`, `ys`, and `zs`.
 
         Notes
@@ -409,12 +458,11 @@ def transform_points(
             xs, ys = xs[0], ys[0]
             if zs is not None:
                 zs = zs[0]
-        transformed = transformer.transform(xs, ys, zs, errcheck=trap)
-
         if zs is None:
-            (txs, tys), tzs = transformed, None
+            txs, tys = transformer.transform(xs, ys, errcheck=bool(trap))
+            tzs = None
         else:
-            txs, tys, tzs = transformed
+            txs, tys, tzs = transformer.transform(xs, ys, zs, errcheck=bool(trap))
 
         result = combine(txs, tys, tzs)
 

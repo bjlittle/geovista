@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 from pyproj import Transformer
-from pyproj.exceptions import CRSError
+from pyproj.exceptions import CRSError, ProjError
 import pytest
 
 from geovista.common import wrap
@@ -144,3 +144,58 @@ def test_transform(mocker, zoffset, reshape, roundtrip):
     assert spy_from_crs.call_count == call_count
     assert spy_transform.call_count == call_count
     assert result.shape == shape
+
+
+#: A planar target CRS.
+PLANAR = "+proj=eqc"
+
+#: An orthographic projection, which cannot reach the far side of the globe.
+ORTHO = "+proj=ortho +lat_0=0 +lon_0=0"
+
+
+@pytest.mark.parametrize("zs", [None, [1.0, 2.0]], ids=["xy", "xyz"])
+def test_lists(zs):
+    """Lists are accepted wherever arrays are (typing spec §3.3)."""
+    xs, ys = [0.0, 90.0], [10.0, 20.0]
+    expected = transform_points(
+        src_crs=WGS84,
+        tgt_crs=PLANAR,
+        xs=np.array(xs),
+        ys=np.array(ys),
+        zs=None if zs is None else np.array(zs),
+    )
+
+    result = transform_points(src_crs=WGS84, tgt_crs=PLANAR, xs=xs, ys=ys, zs=zs)
+
+    np.testing.assert_array_equal(result, expected)
+
+
+def test_nested_lists():
+    """Nested lists keep their 2D shape, as arrays do."""
+    xs, ys = [[0.0, 90.0], [10.0, 20.0]], [[10.0, 20.0], [30.0, 40.0]]
+    expected = transform_points(
+        src_crs=WGS84, tgt_crs=PLANAR, xs=np.array(xs), ys=np.array(ys)
+    )
+
+    result = transform_points(src_crs=WGS84, tgt_crs=PLANAR, xs=xs, ys=ys)
+
+    assert result.shape == (2, 2, 3)
+    np.testing.assert_array_equal(result, expected)
+
+
+@pytest.mark.parametrize("trap", [None, False])
+def test_untrapped_point_is_inf(trap):
+    """With the trap off, a point the projection cannot reach comes back inf."""
+    result = transform_points(
+        src_crs=WGS84, tgt_crs=ORTHO, xs=[180.0], ys=[0.0], trap=trap
+    )
+
+    assert np.isinf(result[0, :2]).all()
+
+
+def test_trapped_point_raises():
+    """With the trap on, a point the projection cannot reach raises."""
+    with pytest.raises(ProjError, match="outside of projection domain"):
+        _ = transform_points(
+            src_crs=WGS84, tgt_crs=ORTHO, xs=[180.0], ys=[0.0], trap=True
+        )
