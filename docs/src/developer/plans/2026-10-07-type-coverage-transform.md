@@ -78,7 +78,7 @@ document, so task 3 corrects it in place.
    no such import. §3.3 gains a paragraph saying so.
 2. **The `lazy_loader` override moves from change 6 to change 2.** Typing spec §8 item 5
    gives the `ignore_missing_imports` override for `lazy_loader` to change 6, and §7 says
-   the untyped imports are change 6's. But every library module imports `lazy_loader`, so
+   the untyped imports are change 6's. But most library modules import `lazy_loader`, so
    the first module to leave the ratchet meets it: with `transform.py` checked, its
    `import lazy_loader as lazy` is the one error outside the code. The override item 5
    already describes clears it and moves no other error (130 to 129). Its withdrawal
@@ -86,7 +86,7 @@ document, so task 3 corrects it in place.
 3. **One error is upstream, and shares #2568's trigger.** `pyvista` 0.49 annotates
    `pyvista_ndarray.__setitem__` with `key: int | NumpyArray[int]`, which refuses the tuple
    index of `mesh.points[:, 0] = xs` that it accepts at runtime. `pyvista` pull request
-   9262 widens the key to `_Index | tuple[_Index, ...]`, merged on 2026-09-22, after
+   9262 widens the key to `_Index | tuple[_Index, ...]`, merged on 2026-09-23, after
    0.49.0. A `typing.cast` bridges it. The same `pyvista` release carries the fix #2568
    waits on, so a new §8 item records the cast against #2568.
 4. **Scope: one annotation outside `transform.py`.** `crs.from_wkt` is annotated `-> CRS`,
@@ -97,8 +97,8 @@ document, so task 3 corrects it in place.
    change 6. No caller breaks, since `projected` already tests the result for `None`.
 
 Row 2's count reproduces: with the entry lifted on `main`, `mypy` reports 144 errors on
-30 distinct lines, one of them the `lazy_loader` import that §7 sets aside, which leaves
-the 29 the roadmap states.
+29 distinct lines, the roadmap's 29. One of them is the `lazy_loader` import that §7 sets
+aside, so the roadmap counts it.
 
 ## Review Focus
 
@@ -894,10 +894,20 @@ Task 1's text above places the check after slicing; `f49dd500` moved it ahead of
 for the reasons in the table. The slice test's first expectation assumed `+proj=eqc` is
 spherical; it is ellipsoidal, so the test inverse-projects each result point instead.
 
-Six minors are left for {user}`bjlittle`: the `zscale` read is a fix that no test or
+Six minors were left for {user}`bjlittle`: the `zscale` read is a fix that no test or
 changelog line records; `transform_point` is annotated `float` where its docstring and
 the new test accept a single valued list; the per-point test uses a uniform level; §8
-item 5 overstates which modules import `lazy_loader`, dates pyvista #9262 a day early,
-and §3.3 leaves "`transform.py` has 20" standing beside the paragraph that explains it;
-"144 errors on 30 distinct lines" is 29 lines with the import; and float32 clouds differ
-from `main` by an ulp or two.
+item 5 overstates which modules import `lazy_loader`, item 6 dates pyvista #9262 a day
+early, §3.3 leaves "`transform.py` has 20" standing beside the paragraph that explains it,
+and the override's comment names one of item 5's two withdrawal triggers; "144 errors on
+30 distinct lines" is 29 lines with the import; and float32 clouds differ from `main` by
+an ulp or two.
+
+{user}`bjlittle` asked for the fourth and fifth to be fixed before the merge. `0424fe5c`
+corrects the spec and the override: item 5 names `transform.py` rather than every module,
+item 6 dates the merge 2026-09-23, §3.3 puts the census back ahead of the paragraph and
+says that only one of the 20 lines needed the conversion, the typed imports clearing 15
+and two return annotations four, and the comment names PEP 810 as well. Corrections 2
+and 3 and row 2's count above are corrected in place. What tasks 2 and 3 quote is left as
+it was executed, as is the comment task 3 posted on {issue}`2570`, which repeats item 5's
+claim. The other four minors are for discussion.
