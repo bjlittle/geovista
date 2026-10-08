@@ -40,6 +40,7 @@ import mode `importlib` (no `sys.path` manipulation), strict config and markers,
 doctests on via `--doctest-modules`, `xfail_strict`, and warnings as errors with
 an explicit allowlist for known third-party ones. Required plugins are
 `pytest-mock` and `pytest_pyvista` (image comparison, off-screen rendering).
+⚠️ The latter reads `config.cache` on exit, so `-p no:cacheprovider` fails a green run.
 
 ### Markers
 
@@ -195,4 +196,4 @@ is one an extension walks past unseen (#2559). Use `html.parser.HTMLParser`.
 
 ---
 
-**Last Updated**: 7 October 2026
+**Last Updated**: 8 October 2026
