@@ -101,6 +101,39 @@ static images and interactive scenes can be resource hungry and time consuming.
    +-----------------------------------+--------------------------------------------------------------------------+
 
 
+.. _gv-developer-documentation-gallery:
+.. _tippy-gv-developer-documentation-gallery:
+
+:fa:`images` Gallery
+~~~~~~~~~~~~~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`docs/src/conf.py`
+
+The `sphinx-gallery`_ examples run in parallel, with up to four worker
+processes and never more than the available CPUs. sphinx-gallery runs the
+examples of one sub-gallery at a time, and most sub-galleries hold four
+examples or fewer, so more workers would use more memory without making the
+build any faster.
+
+Set the :guilabel:`GEOVISTA_SPHX_GLR_SERIAL`
+:ref:`environment variable <tippy-gv-reference-environment>` to run the
+examples one at a time in the main process, e.g., when debugging an example.
+
+.. attention::
+   :class: dropdown
+
+   Each worker is a new process, so it inherits the environment but not any
+   state set within the build process. That is why :bash:`conf.py` exports
+   ``PYVISTA_OFF_SCREEN`` and ``PYVISTA_PLOT_THEME`` as well as setting them
+   in-process. A worker that renders on-screen opens a window under
+   ``xvfb-run`` and waits on it until the build times out, as happened on
+   Read the Docs, which calls ``sphinx-build`` directly rather than through
+   the :bash:`Makefile`. A worker without the theme renders its examples with
+   the default ``geovista`` theme instead of ``geovista_document``.
+
+
 :fab:`readme` Render
 ~~~~~~~~~~~~~~~~~~~~
 

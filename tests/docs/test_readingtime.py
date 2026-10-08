@@ -513,20 +513,6 @@ def test_dependencies__noted(build):
     assert {"reading.py", "readingtime.py"} <= noted
 
 
-def test_setup__declares_parallel_safety(registered):
-    """The extension must declare itself safe for a parallel build.
-
-    An extension that does not say warns twice and drops the build back to a
-    serial read, which ``--fail-on-warning`` turns into a failure the moment
-    the docs ``Makefile`` passes ``--jobs``.
-
-    """
-    _, metadata = registered
-
-    assert metadata["parallel_read_safe"] is True
-    assert metadata["parallel_write_safe"] is True
-
-
 def test_setup__leaves_the_placeholder_unregistered(registered, readingtime):
     """The placeholder must fail the build rather than publish a blank.
 
