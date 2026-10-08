@@ -87,3 +87,13 @@ def test_single_valued_lists():
     assert isinstance(result, np.ndarray)
     assert result.shape == (3,)
     np.testing.assert_array_equal(result, expected)
+
+
+def test_single_valued_lists_with_z():
+    """A single valued z list joins the x and y lists as one point."""
+    expected = transform_point(WGS84, "+proj=eqc", x=10.0, y=20.0, z=5.0)
+
+    result = transform_point(WGS84, "+proj=eqc", x=[10.0], y=[20.0], z=[5.0])
+
+    assert result.shape == (3,)
+    np.testing.assert_array_equal(result, expected)

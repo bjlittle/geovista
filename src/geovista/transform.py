@@ -236,9 +236,9 @@ def transform_mesh(
 def transform_point(
     src_crs: CRSLike,
     tgt_crs: CRSLike,
-    x: float,
-    y: float,
-    z: float | None = None,
+    x: ArrayLike,
+    y: ArrayLike,
+    z: ArrayLike | None = None,
     *,
     trap: bool | None = True,
 ) -> NDArray[Any]:
@@ -260,12 +260,12 @@ def transform_point(
         or a single valued 1D array.
     y : ArrayLike
         The spatial point y-value, in canonical `src_crs` units, to be
-        transformed from the `src_crs` to the `tgt_crs`. Must be scalar
-        (0-dimensional).
+        transformed from the `src_crs` to the `tgt_crs`. Must be a scalar
+        or a single valued 1D array.
     z : ArrayLike, optional
         The spatial point z-value, in canonical `src_crs` units, to be
-        transformed from the `src_crs` to the `tgt_crs`. Must be scalar
-        (0-dimensional).
+        transformed from the `src_crs` to the `tgt_crs`. Must be a scalar
+        or a single valued 1D array.
     trap : bool, default=True
         Raise an exception if an error occurs during CRS transformation
         of the spatial point. Otherwise, ``inf`` will be returned for
