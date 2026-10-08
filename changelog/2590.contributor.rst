@@ -1,0 +1,5 @@
+The `sphinx-gallery <https://github.com/sphinx-gallery/sphinx-gallery>`__
+examples with the largest interactive scenes now render a static image instead,
+which takes about 380 MB and 35 seconds of scene export off each documentation
+build. Add an example to ``STATIC`` in ``docs/src/_ext/gallery_scenes.py`` to do
+the same for it. (:user:`bjlittle`)

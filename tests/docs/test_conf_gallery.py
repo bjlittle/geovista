@@ -46,11 +46,18 @@ exec(SETTINGS.replace("print(", "build = (", 1))
 child = subprocess.run(
     [sys.executable, "-c", SETTINGS], capture_output=True, text=True, check=True,
 )
+importable = subprocess.run(
+    [sys.executable, "-c", "import gallery_scenes"], capture_output=True, check=False,
+).returncode == 0
+conf = namespace["sphinx_gallery_conf"]
 print(json.dumps({
     "parallel": namespace["sphinx_gallery_conf"].get("parallel", False),
     "cpus": os.process_cpu_count(),
     "build": json.loads(build),
     "worker": json.loads(child.stdout.strip().splitlines()[-1]),
+    "reset_modules": list(conf.get("reset_modules", ())),
+    "reset_modules_order": conf.get("reset_modules_order"),
+    "worker_imports_hook": importable,
 }))
 """
 """Execute ``conf.py`` and report what a documentation build would see."""
@@ -68,9 +75,10 @@ def probe(require: Callable[[str], NoReturn]) -> Callable[..., dict[str, object]
             for key, value in os.environ.items()
             if key
             not in {
+                "GEOVISTA_SPHX_GLR_SERIAL",
+                "PYTHONPATH",
                 "PYVISTA_OFF_SCREEN",
                 "PYVISTA_PLOT_THEME",
-                "GEOVISTA_SPHX_GLR_SERIAL",
             }
         }
         env.update(environ)
@@ -123,3 +131,17 @@ def test_worker_theme(probe):
     _, name, *_ = result["worker"]
     assert name == "geovista_document"
     assert result["worker"] == result["build"]
+
+
+def test_static_scenes(probe):
+    """Test the static scenes hook runs before and after every example.
+
+    It runs within each parallel worker, so a fresh process must be able to
+    import it from ``docs/src/_ext``.
+
+    """
+    result = probe()
+    assert "gallery_scenes.reset" in result["reset_modules"]
+    assert "matplotlib" in result["reset_modules"]
+    assert result["reset_modules_order"] == "both"
+    assert result["worker_imports_hook"] is True
