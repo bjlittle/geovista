@@ -23,7 +23,7 @@ def test_needs_an_ellipsoid():
     """A CRS without an ellipsoid has no radius to scale a level by.
 
     No CRS that ``transform_mesh`` can reach lacks one, since ``pyproj`` refuses to
-    transform to an engineering CRS, so the guard is tested here directly.
+    transform to an engineering or a vertical CRS, so the guard is tested here directly.
 
     """
     with pytest.raises(ValueError, match="Cannot determine the radius of the Earth"):

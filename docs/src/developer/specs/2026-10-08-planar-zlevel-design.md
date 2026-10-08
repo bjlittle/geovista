@@ -137,10 +137,13 @@ zero still leaves z at zero.
 
 For a global mesh, every planar offset shrinks by the ratio of `R` to the old length: to
 0.64 of what it was in `eqc`, which is exactly 2/π, to 0.75 in `robin` and to 0.71 in
-`moll`. A regional mesh rises to meet it. In `eqc` the coastlines sit 1.9 km above the base
-map rather than 3.0 km, and the base layer 6.4 km below it rather than 10.0 km. Every layer
-shrinks by the same factor, so the plotter's layers keep their order: base layer, then
-data, then coastlines and graticule. Beside a map 40,075 km across these offsets are small,
+`moll`. A smaller mesh rises to meet it, the more so the smaller it is: in `eqc` a level
+lifts a mesh over the North Atlantic about twice as high as before, one 10° across 23 times
+as high, and one 1° across 229 times. In `eqc` the coastlines sit 1.9 km above the plane at
+z = 0 rather than 3.0 km, and the base layer 6.4 km below it rather than 10.0 km. The
+plotter's own layers all span the globe and shrink by the same factor, so they keep their
+order: base layer, then data, then coastlines and graticule. Beside a map 40,075 km across
+these offsets are small,
 so the image tests should change only where offsets are large, and item 2 of
 {ref}`§8 <zlevel-spec-8>` records what they actually show.
 
@@ -226,9 +229,9 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    lack an ellipsoid or an axis unit?** No. A compound CRS and a bound one report the
    ellipsoid and first axis of their horizontal component, a rotated pole CRS is a
    derived geographic one in degrees, and a geocentric one is in metres. An engineering
-   CRS is the one kind without an ellipsoid, and `pyproj` refuses to build a
-   transformer to it, so `transform_mesh` fails before it needs `R`. The `ValueError`
-   of {ref}`§3.4 <zlevel-spec-3-4>` is tested on the helper directly.
+   CRS and a vertical one, such as EPSG:5703, have no ellipsoid, and `pyproj` refuses to
+   build a transformer to either, so `transform_mesh` fails before it needs `R`. The
+   `ValueError` of {ref}`§3.4 <zlevel-spec-3-4>` is tested on the helper directly.
 2. **Open** ({issue}`2588`) — **Which image baselines move?** The ORCA2 `eqc` gallery image
    will, by {ref}`§3.3 <zlevel-spec-3-3>`. The other offsets are small beside their maps,
    and CI decides.
