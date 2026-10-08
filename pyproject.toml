@@ -83,7 +83,8 @@ warn_unreachable = true
 
 [[tool.mypy.overrides]]
 # typing spec §8 item 5 -- "lazy_loader" ships no "py.typed" (lazy-loader
-# issue 181). Withdraw when the floor reaches a release carrying one.
+# issue 181). Withdraw when the floor reaches a release carrying one, or
+# when PEP 810 replaces "lazy_loader", whichever is first.
 ignore_missing_imports = true
 module = ["lazy_loader"]
 

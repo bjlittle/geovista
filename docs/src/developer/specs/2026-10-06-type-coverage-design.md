@@ -218,21 +218,24 @@ Docstrings are unchanged, because they already promise `array_like`. Behaviour w
 only, so no existing caller can break, and `np.asanyarray` returns its argument unchanged
 when handed an array, so the hot paths are unaffected.
 
-The conversion narrows only where `mypy` can see `numpy`. A module that loads it lazily,
-with `np = lazy.load("numpy")`, hands `mypy` an `Any`, and assigning an `Any` never
-narrows an `ArrayLike` parameter, so the module must also import `numpy` under
-`TYPE_CHECKING`, as `common.py` does. Change 2 measured this on `transform.py`, which
-already converted with `np.atleast_1d` and still reported the idiom: importing `numpy` and
-`pyproj` that way cleared 102 of its 129 errors on its own. `core.py`, `crs.py`,
-`filters.py`, `geoplotter.py`, `gridlines.py`, `raster.py`, `pantry/data.py` and
-`pantry/meshes.py` still load `numpy` without one.
-
 Those 61 lines sit in eight modules, and two of them hold most of it — `transform.py` has
 20 and `bridge.py` 19, which is roughly two-thirds of each module's errors. `geodesic.py`
 has 7, `common.py` 6, `geoplotter.py` 4, and `pantry/meshes.py`, `search.py` and
 `pantry/data.py` the remaining 5 between them. The roadmap of
 {ref}`§4 <typing-spec-4>` is ordered to follow that concentration, so the idiom is
-established in the first two changes and applied by rote afterwards.
+established in the first two changes and applied by rote afterwards. Change 2 found,
+though, that only one of `transform.py`'s 20 lines needed the conversion.
+
+The conversion narrows only where `mypy` can see `numpy`. A module that loads it lazily,
+with `np = lazy.load("numpy")`, hands `mypy` an `Any`, and assigning an `Any` never
+narrows an `ArrayLike` parameter, so the module must also import `numpy` under
+`TYPE_CHECKING`, as `common.py` does. Change 2 measured this on `transform.py`, which
+already converted with `np.atleast_1d` and still reported the idiom: importing `numpy` and
+`pyproj` that way cleared 15 of its 20 lines on its own. Four of the other five came from
+the return annotations of `transform_points` and `combine`, which promised `ArrayLike` for
+an `ndarray`, and the fifth was `zlevel`. `core.py`, `crs.py`, `filters.py`,
+`geoplotter.py`, `gridlines.py`, `raster.py`, `pantry/data.py` and `pantry/meshes.py`
+still load `numpy` without one.
 
 (typing-spec-3-4)=
 ### 3.4 Gallery suppressions
@@ -416,15 +419,15 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    is not, which left the import count as the whole case.
 5. **Open** ({issue}`2570`) — **The `lazy_loader` override comes out when upstream
    allows.** The `ignore_missing_imports` override for `lazy_loader` clears all 19
-   locally. It was meant for change 6, and change 2 brought it in, since every module that
-   leaves the ratchet imports `lazy_loader` and the first could not pass without it. It
-   comes out when the floor reaches a release carrying the marker, or when PEP 810 replaces
-   `lazy_loader`, whichever is first.
+   locally. It was meant for change 6, and change 2 brought it in, because `transform.py`
+   imports `lazy_loader`, as most library modules do, and could not leave the ratchet
+   without it. It comes out when the floor reaches a release carrying the marker, or when
+   PEP 810 replaces `lazy_loader`, whichever is first.
 6. **Open** ({issue}`2568`) — **The cast in `transform_mesh` waits on the same `pyvista`
    release.** `pyvista` 0.49 annotates `pyvista_ndarray.__setitem__` with
    `key: int | NumpyArray[int]`, which refuses the tuple index of `mesh.points[:, 0]`
    that it accepts at runtime, so change 2 sets the points through a `typing.cast`.
-   `pyvista` pull request 9262 widens the key, merged on 2026-09-22 after 0.49.0, so the
+   `pyvista` pull request 9262 widens the key, merged on 2026-09-23 after 0.49.0, so the
    cast comes out with the floor that carries it, the trigger item 2 already waits on.
 
 (typing-spec-9)=
