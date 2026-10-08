@@ -307,3 +307,20 @@ def test_transform_mesh__zlevel_carry_spares_the_callers_array(regional_mesh, zl
     np.testing.assert_array_equal(result.point_data[_ZLEVEL], data)
     np.testing.assert_array_equal(result.points, expected.points)
     assert [name for name in result.point_data if _ZLEVEL in name] == [_ZLEVEL]
+
+
+def test_transform_mesh__integer_levels_interpolate_as_floats():
+    """Integer levels cross the seam as the same levels given as floats do.
+
+    The seam slice splits each cell that straddles it, and interpolates the level
+    of each point it adds, so integer levels must not be rounded on the way.
+
+    """
+    mesh = gv.Transform.from_1d(np.linspace(-170, 190, 13), np.linspace(-60, 60, 7))
+    levels = np.where(from_cartesian(mesh)[:, 0] < 0, 0, 3)
+    expected = transform_mesh(mesh.copy(), PLANAR, zlevel=levels.astype(float))
+
+    result = transform_mesh(mesh.copy(), PLANAR, zlevel=levels)
+
+    assert result.n_points > mesh.n_points
+    np.testing.assert_array_equal(result.points, expected.points)

@@ -168,13 +168,14 @@ def transform_mesh(
                 # bisected, and a per-point zlevel travels through the slice as
                 # point data, so a point the seam duplicates keeps its level. It
                 # travels under a name no array of the caller's has, so only what
-                # is added here is removed
+                # is added here is removed, and as floats, so a level the seam
+                # interpolates is not rounded
                 carry: str | None = None
                 if level.ndim:
                     carry = _ZLEVEL
                     while carry in mesh.point_data:
                         carry = f"_{carry}"
-                    mesh.point_data[carry] = level
+                    mesh.point_data[carry] = level.astype(float)
                 try:
                     sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
                 finally:
