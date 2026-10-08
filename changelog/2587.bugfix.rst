@@ -1,0 +1,8 @@
+``transform_mesh`` no longer flattens a mesh it sends to WGS84 with a non-zero
+``zlevel``, or a point cloud it brings back to WGS84 from a planar CRS. A point
+cloud now keeps its z-levels from one transform to the next, carried in the new
+``geovista.common.GV_POINT_ZLEVEL`` point array while it is in a planar CRS, so
+a cloud moved between planar CRSs no longer has its z scaled twice. A point
+cloud also returns to WGS84 on the radius it carries, as it already did with
+its ``zscale``, and a ``radius`` or ``zscale`` given to a transform becomes the
+cloud's own. Closes :issue:`2581`. (:user:`claude`)
