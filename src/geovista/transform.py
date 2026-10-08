@@ -52,6 +52,9 @@ __all__ = [
     "transform_points",
 ]
 
+#: The point data array a per-point zlevel travels through the seam slice in.
+_ZLEVEL = "gvTransformZLevel"
+
 
 def transform_mesh(
     mesh: pv.PolyData,
@@ -139,6 +142,16 @@ def transform_mesh(
             zscale = ZLEVEL_SCALE
 
     if transform_required:
+        if level.ndim:
+            try:
+                level = np.broadcast_to(level, (mesh.n_points,))
+            except ValueError:
+                emsg = (
+                    f"Cannot transform mesh, 'zlevel' with shape {level.shape} does "
+                    f"not broadcast to its {mesh.n_points:,} points."
+                )
+                raise ValueError(emsg) from None
+
         # slice the mesh to break connectivity, but not for a point-cloud
         if slice_connectivity:
             if central_meridian:
@@ -150,9 +163,17 @@ def transform_mesh(
                 tgt_crs = rebased
 
             if not cloud:
-                # the sliced_mesh is guaranteed to be a new instance,
-                # even if not bisected
-                sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
+                # the sliced_mesh is guaranteed to be a new instance, even if not
+                # bisected, and a per-point zlevel travels through the slice as
+                # point data, so a point the seam duplicates keeps its level
+                if level.ndim:
+                    mesh.point_data[_ZLEVEL] = level
+                try:
+                    sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
+                finally:
+                    mesh.point_data.pop(_ZLEVEL, None)
+                if level.ndim:
+                    level = np.asarray(sliced_mesh.point_data.pop(_ZLEVEL))
             else:
                 sliced_mesh = mesh.copy()
 
@@ -177,15 +198,6 @@ def transform_mesh(
 
         if not inplace and not slice_connectivity:
             mesh = mesh.copy(deep=True)
-
-        try:
-            np.broadcast_shapes(level.shape, (mesh.n_points,))
-        except ValueError:
-            emsg = (
-                f"Cannot transform mesh, 'zlevel' with shape {level.shape} does not "
-                f"broadcast to its {mesh.n_points:,} points."
-            )
-            raise ValueError(emsg) from None
 
         if tgt_crs == WGS84:
             xs, ys, zs = to_cartesian(

@@ -9,11 +9,12 @@ from __future__ import annotations
 
 import cartopy.crs as ccrs
 import numpy as np
-from pyproj import CRS
+from pyproj import CRS, Transformer
 import pytest
 import pyvista as pv
 
 import geovista as gv
+from geovista.common import from_cartesian
 from geovista.crs import projected
 from geovista.transform import transform_mesh
 
@@ -72,6 +73,12 @@ def regional_mesh():
 def cloud():
     """Create a small point cloud, which ``transform_mesh`` never slices."""
     return gv.Transform.from_points([10.0, 20.0, 30.0], [30.0, 40.0, 50.0])
+
+
+@pytest.fixture
+def lone_point():
+    """Create a point cloud of one point."""
+    return gv.Transform.from_points([10.0], [30.0])
 
 
 def _cell_widths(mesh) -> np.ndarray:
@@ -222,3 +229,54 @@ def test_transform_mesh__no_crs():
     """
     with pytest.raises(ValueError, match="no coordinate reference system"):
         _ = transform_mesh(pv.Sphere(), PLANAR)
+
+
+@pytest.mark.parametrize(
+    ("mesh", "shape"),
+    [("regional_mesh", (9, 1)), ("lone_point", (5,)), ("lone_point", (0,))],
+    ids=["column", "longer", "empty"],
+)
+def test_transform_mesh__zlevel_that_broadcasts_only_with_the_points(
+    request, mesh, shape
+):
+    """A zlevel must broadcast to the points, not merely with them.
+
+    Each of these shapes broadcasts with a column of points into something
+    larger, so a check of compatibility alone passes them, and the mesh is half
+    written before numpy refuses the z column.
+
+    """
+    mesh = request.getfixturevalue(mesh)
+    before = mesh.points.copy()
+
+    with pytest.raises(ValueError, match="does not broadcast to its"):
+        _ = transform_mesh(
+            mesh,
+            PLANAR,
+            zlevel=np.full(shape, 2.0),
+            slice_connectivity=False,
+            inplace=True,
+        )
+
+    np.testing.assert_array_equal(mesh.points, before)
+
+
+def test_transform_mesh__zlevel_follows_the_slice(global_mesh):
+    """A per-point zlevel follows each point through the seam slicing.
+
+    Slicing a global mesh at the seam adds points the caller never made, so a
+    zlevel sized to the caller's mesh must travel with the points. The levels
+    vary with latitude, so a level that landed on the wrong point would show.
+
+    """
+    lats = from_cartesian(global_mesh)[:, 1]
+    zlevel = 1 + np.abs(lats) / 90
+    unit = transform_mesh(global_mesh.copy(), PLANAR, zlevel=1)
+
+    result = transform_mesh(global_mesh.copy(), PLANAR, zlevel=zlevel)
+
+    assert result.n_points > global_mesh.n_points
+    inverse = Transformer.from_crs(PLANAR, "EPSG:4326", always_xy=True)
+    _, lats = inverse.transform(result.points[:, 0], result.points[:, 1])
+    expected = (1 + np.abs(lats) / 90) * unit.points[0, 2]
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)
