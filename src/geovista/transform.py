@@ -228,7 +228,9 @@ def transform_mesh(
         points[:, 0] = xs
         points[:, 1] = ys
 
-        if np.any(level) or cloud:
+        # a planar target offsets z by the level, whereas on the sphere the level
+        # is already in the radius that to_cartesian applied
+        if tgt_crs != WGS84 and (np.any(level) or cloud):
             xmin, xmax, ymin, ymax, _, _ = mesh.bounds
             xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
             # TODO @bjlittle: Make this scale factor configurable at the API/module

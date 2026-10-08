@@ -14,7 +14,7 @@ import pytest
 import pyvista as pv
 
 import geovista as gv
-from geovista.common import from_cartesian, to_cartesian
+from geovista.common import ZLEVEL_SCALE, from_cartesian, to_cartesian
 from geovista.crs import WGS84, projected, to_wkt
 from geovista.transform import _ZLEVEL, transform_mesh
 
@@ -351,3 +351,22 @@ def test_transform_mesh__zlevel_per_point_on_sliced_lines(lons, tgt_crs):
 
     np.testing.assert_allclose(mesh.points, before.points, atol=1e-12)
     assert list(mesh.point_data) == list(before.point_data)
+
+
+def test_transform_mesh__zlevel_to_wgs84(regional_mesh):
+    """A mesh sent to WGS84 is lifted off the sphere by its zlevel.
+
+    Issue 2581: the planar z offset also ran for a WGS84 target, overwriting the z
+    that ``to_cartesian`` had lifted, so the mesh collapsed onto the equatorial
+    plane.
+
+    """
+    levels = np.arange(1, regional_mesh.n_points + 1)
+    flat = transform_mesh(regional_mesh, PLANAR)
+
+    result = transform_mesh(flat, WGS84, zlevel=levels)
+
+    radii = np.linalg.norm(result.points, axis=1)
+    np.testing.assert_allclose(radii, 1 + levels * ZLEVEL_SCALE, rtol=1e-12)
+    directions = result.points / radii[:, np.newaxis]
+    np.testing.assert_allclose(directions, regional_mesh.points, atol=1e-9)
