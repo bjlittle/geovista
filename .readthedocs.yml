@@ -27,7 +27,7 @@ build:
       - git stash pop || true
     build:
       html:
-        - xvfb-run -a -s "-screen 0 1024x768x24" pixi run --frozen --environment docs sphinx-build -T -b html docs/src $READTHEDOCS_OUTPUT/html
+        - timeout -s INT 20m xvfb-run -a -s "-screen 0 1024x768x24" pixi run --frozen --environment docs sphinx-build -T -b html docs/src $READTHEDOCS_OUTPUT/html || (echo "SPIKE: sphinx-build exit $?"; nproc; free -m; exit 1)
 
 sphinx:
   configuration: docs/src/conf.py
