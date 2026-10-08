@@ -77,8 +77,13 @@ if TYPE_CHECKING:
 
 # ahead of the environment rather than behind it: the modules in "_ext" are
 # imported by bare top-level name, so appending would let an installed package
-# of the same name win over the extension the build is asking for
-sys.path.insert(0, str(Path("_ext").absolute()))
+# of the same name win over the extension the build is asking for. It is also
+# exported, as each parallel sphinx-gallery worker imports "gallery_scenes".
+EXT_DIR = str(Path(__file__).parent.absolute() / "_ext")
+sys.path.insert(0, EXT_DIR)
+os.environ["PYTHONPATH"] = os.pathsep.join(
+    filter(None, [EXT_DIR, os.environ.get("PYTHONPATH")])
+)
 
 CACHE_BASE_DIR: Path = CACHE.abspath / "tests" / "docs"
 """Target directory containing documentation reference image cache"""
@@ -789,6 +794,10 @@ sphinx_gallery_conf = {
     "download_all_examples": False,
     "remove_config_comments": True,
     "within_subsection_order": "ExampleTitleSortKey",
+    # render the examples in "gallery_scenes.STATIC" without an interactive
+    # scene, alongside the default reset of the plotting modules
+    "reset_modules": ("matplotlib", "seaborn", "gallery_scenes.reset"),
+    "reset_modules_order": "both",
     "reference_url": {
         "geovista": None,
     },

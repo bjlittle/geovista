@@ -109,6 +109,7 @@ static images and interactive scenes can be resource hungry and time consuming.
 
 :fa:`file-code` **Reference:**
 
+- :bash:`docs/src/_ext/gallery_scenes.py`
 - :bash:`docs/src/conf.py`
 
 The `sphinx-gallery`_ examples run in parallel, with up to four worker
@@ -132,6 +133,15 @@ examples one at a time in the main process, e.g., when debugging an example.
    Read the Docs, which calls ``sphinx-build`` directly rather than through
    the :bash:`Makefile`. A worker without the theme renders its examples with
    the default ``geovista`` theme instead of ``geovista_document``.
+
+Most gallery examples show an interactive 3D scene, which ``pyvista`` exports
+as a ``.vtksz`` file while building the gallery. Exporting a scene costs about
+ten seconds of build time per 100 MB, and readers download the whole scene when
+they open the page. The examples named in ``STATIC`` within
+:bash:`docs/src/_ext/gallery_scenes.py` show a static image instead, and skip
+the export altogether. Add an example there when its scene is large and adds
+little over the image, and use the name the image tests use, e.g.,
+``grid.reykjanes_contour``. A unit test rejects a name that matches no example.
 
 
 :fab:`readme` Render
