@@ -744,8 +744,11 @@ numfig_format = {
 # Manage errors
 pyvista.set_error_output_file("errors.txt")
 
-# Ensure that off-screen rendering is used for docs generation
+# Ensure that off-screen rendering is used for docs generation, including by
+# each parallel sphinx-gallery worker, which is a fresh process that only sees
+# the environment. A worker rendering on-screen blocks the build indefinitely.
 pyvista.OFF_SCREEN = True
+os.environ["PYVISTA_OFF_SCREEN"] = "true"
 
 # Preferred plotting style for documentation
 pyvista.set_plot_theme("geovista_document")
@@ -788,13 +791,16 @@ sphinx_gallery_conf = {
     },
 }
 
-if os.environ.get("GEOVISTA_SPHX_GLR_SERIAL") is None:
-    with contextlib.suppress(ModuleNotFoundError):
-        import joblib  # noqa: F401
+# sphinx-gallery only executes the examples of one sub-gallery at a time, and
+# most hold no more than four, so more workers add memory but not speed. Note
+# that a value of True defers to the sphinx-build --jobs option instead.
+SPHX_GLR_WORKERS = 4
 
-        sphinx_gallery_conf["parallel"] = True
+workers = min(SPHX_GLR_WORKERS, os.process_cpu_count() or 1)
 
-        msg = "parallel build configured"
+if os.environ.get("GEOVISTA_SPHX_GLR_SERIAL") is None and workers > 1:
+    sphinx_gallery_conf["parallel"] = workers
+    msg = f"parallel build configured ({workers} workers)"
 else:
     msg = "serial build configured"
 

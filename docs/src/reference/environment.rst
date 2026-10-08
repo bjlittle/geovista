@@ -74,8 +74,11 @@ Package environment variables that influence the behaviour of ``geovista``:
     |                                         |               |                                                           |
     |                                         |               | Defaults to ``False``.                                    |
     +-----------------------------------------+---------------+-----------------------------------------------------------+
-    | :guilabel:`GEOVISTA_SPHX_GLR_SERIAL`    | ``Developer`` | When set, disables ``parallel`` building of the           |
-    |                                         |               | `sphinx-gallery`_.                                        |
+    | :guilabel:`GEOVISTA_SPHX_GLR_SERIAL`    | ``Developer`` | When set, the `sphinx-gallery`_ examples run one at a     |
+    |                                         |               | time instead of in parallel.                              |
+    |                                         |               |                                                           |
+    |                                         |               | Defaults to running in parallel with up to four workers.  |
+    |                                         |               | See :ref:`tippy-gv-developer-documentation-gallery`.      |
     +-----------------------------------------+---------------+-----------------------------------------------------------+
     | :guilabel:`GEOVISTA_VTK_WARNINGS`       | ``User``      | Set to ``True`` to enable backend `VTK`_ diagnostic       |
     |                                         |               | warnings.                                                 |

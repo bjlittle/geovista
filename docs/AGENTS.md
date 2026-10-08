@@ -17,8 +17,7 @@ docs/
     ├── _ext/ _inventory/    # Custom extensions; vendored .inv — do not hand-edit
     ├── _static/             # CSS, fonts, branding, and vendored js/ and icons/
     ├── _templates/ _autoapi_templates/   # Jinja2 templates
-    ├── developer/ explanation/ howtos/ tutorials/ reference/  # Diátaxis
-    └── generated/ tags/ reference/generated/  # Auto-generated — do not edit
+    └── developer/ explanation/ howtos/ tutorials/ reference/  # Diátaxis
 ```
 
 ## Build Commands
@@ -35,8 +34,9 @@ make serve-html  # local HTTP server at http://localhost:11000
 Each has a pixi task of the same name, run from the repo root as
 `pixi run -e docs <task>`; `make` builds `html-noplot`.
 
-The Makefile sets `PYVISTA_OFF_SCREEN=True` and `PYDEVD_DISABLE_FILE_VALIDATION=1`,
-and passes sphinx `--fail-on-warning --keep-going --show-traceback`.
+The Makefile exports `PYVISTA_OFF_SCREEN`/`PYDEVD_DISABLE_FILE_VALIDATION`, passing
+`--fail-on-warning --keep-going --show-traceback`; ⚠️ RTD bypasses it, and parallel
+gallery workers see only the env, so `conf.py` must export what they need (#2581).
 
 ## Sphinx Extensions
 

@@ -102,7 +102,7 @@ jobs:
 
     - name: "test pypi (py${{ matrix.version }})"
       run: |
-        xvfb-run -a pytest --numprocesses auto --dist worksteal --failed_image_dir test_images_failed
+        xvfb-run -a pytest --numprocesses logical --dist worksteal --failed_image_dir test_images_failed
 
     - name: "report failure"
       if: ${{ failure() && github.event_name == 'schedule' }}
