@@ -163,6 +163,7 @@ def transform_mesh(
                 assert rebased is not None
                 tgt_crs = rebased
 
+            carry: str | None = None
             if not cloud:
                 # the sliced_mesh is guaranteed to be a new instance, even if not
                 # bisected, and a per-point zlevel travels through the slice as
@@ -170,7 +171,6 @@ def transform_mesh(
                 # travels under a name no array of the caller's has, so only what
                 # is added here is removed, and as floats, so a level the seam
                 # interpolates is not rounded
-                carry: str | None = None
                 if level.ndim:
                     carry = _ZLEVEL
                     while carry in mesh.point_data:
@@ -181,14 +181,23 @@ def transform_mesh(
                 finally:
                     if carry is not None:
                         mesh.point_data.pop(carry, None)
-                if carry is not None:
-                    level = np.asarray(sliced_mesh.point_data.pop(carry))
             else:
                 sliced_mesh = mesh.copy()
 
             if central_meridian:
                 # undo rotation of original mesh
                 mesh.rotate_z(central_meridian, inplace=True)
+
+            if carry is not None:
+                if carry not in sliced_mesh.point_data:
+                    # slice_lines rebuilds the lines it splits without their point
+                    # data, so the levels are lost (issue 2583)
+                    emsg = (
+                        "Cannot transform mesh, a per-point 'zlevel' cannot yet "
+                        "follow lines sliced at the seam. Use a scalar 'zlevel'."
+                    )
+                    raise ValueError(emsg)
+                level = np.asarray(sliced_mesh.point_data.pop(carry))
 
             mesh = sliced_mesh
 

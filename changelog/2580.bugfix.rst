@@ -2,8 +2,9 @@
 array, as its ``ArrayLike`` annotation and docstring promise. On anything but a
 point cloud a list or tuple failed with ``TypeError``, and an array of more than
 one element failed everywhere with ``ValueError``. A ``zlevel`` that does not
-broadcast to the points now raises ``ValueError`` before any point is written.
-``transform_point`` is now annotated and documented to accept a single valued
-list or array for ``x``, ``y`` and ``z``, as it always has at runtime.
-``geovista.transform`` also leaves the typing ratchet, so ``mypy`` checks it in
-full. (:user:`claude`)
+broadcast to the points now raises ``ValueError`` before any point is written,
+as does a per-point ``zlevel`` on lines the seam slices, until :issue:`2583`
+lets it follow them. ``transform_point`` is now annotated and documented to
+accept a single valued list or array for ``x``, ``y`` and ``z``, as it always
+has at runtime. ``geovista.transform`` also leaves the typing ratchet, so
+``mypy`` checks it in full. (:user:`claude`)

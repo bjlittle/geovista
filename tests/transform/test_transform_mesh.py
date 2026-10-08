@@ -14,8 +14,8 @@ import pytest
 import pyvista as pv
 
 import geovista as gv
-from geovista.common import from_cartesian
-from geovista.crs import projected
+from geovista.common import from_cartesian, to_cartesian
+from geovista.crs import WGS84, projected, to_wkt
 from geovista.transform import _ZLEVEL, transform_mesh
 
 #: Fraction of the projection width above which a cell is considered torn.
@@ -324,3 +324,30 @@ def test_transform_mesh__integer_levels_interpolate_as_floats():
 
     assert result.n_points > mesh.n_points
     np.testing.assert_array_equal(result.points, expected.points)
+
+
+@pytest.mark.parametrize(
+    ("lons", "tgt_crs"),
+    [
+        ([170.0, -170.0], PLANAR),
+        ([-140.0, -130.0], f"{PLANAR} +lon_0={REGIONAL_MERIDIAN}"),
+    ],
+    ids=["antimeridian", "shifted"],
+)
+def test_transform_mesh__zlevel_per_point_on_sliced_lines(lons, tgt_crs):
+    """A per-point zlevel is refused on lines the seam slices, until #2583.
+
+    ``slice_lines`` rebuilds the lines it splits without their point data, so the
+    levels cannot follow the points through the seam. The refusal leaves the
+    caller's mesh as it was, rotated back from the shifted seam.
+
+    """
+    mesh = pv.PolyData(to_cartesian(lons, [10.0, 10.0]), lines=[2, 0, 1])
+    to_wkt(mesh, WGS84)
+    before = mesh.copy(deep=True)
+
+    with pytest.raises(ValueError, match="cannot yet follow lines sliced at the seam"):
+        _ = transform_mesh(mesh, tgt_crs, zlevel=[1.0, 3.0])
+
+    np.testing.assert_allclose(mesh.points, before.points, atol=1e-12)
+    assert list(mesh.point_data) == list(before.point_data)
