@@ -52,7 +52,8 @@ __all__ = [
     "transform_points",
 ]
 
-#: The point data array a per-point zlevel travels through the seam slice in.
+#: The name a per-point zlevel travels through the seam slice under, prefixed
+#: with underscores until no array of the mesh has it.
 _ZLEVEL = "gvTransformZLevel"
 
 
@@ -165,15 +166,22 @@ def transform_mesh(
             if not cloud:
                 # the sliced_mesh is guaranteed to be a new instance, even if not
                 # bisected, and a per-point zlevel travels through the slice as
-                # point data, so a point the seam duplicates keeps its level
+                # point data, so a point the seam duplicates keeps its level. It
+                # travels under a name no array of the caller's has, so only what
+                # is added here is removed
+                carry: str | None = None
                 if level.ndim:
-                    mesh.point_data[_ZLEVEL] = level
+                    carry = _ZLEVEL
+                    while carry in mesh.point_data:
+                        carry = f"_{carry}"
+                    mesh.point_data[carry] = level
                 try:
                     sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
                 finally:
-                    mesh.point_data.pop(_ZLEVEL, None)
-                if level.ndim:
-                    level = np.asarray(sliced_mesh.point_data.pop(_ZLEVEL))
+                    if carry is not None:
+                        mesh.point_data.pop(carry, None)
+                if carry is not None:
+                    level = np.asarray(sliced_mesh.point_data.pop(carry))
             else:
                 sliced_mesh = mesh.copy()
 

@@ -16,7 +16,7 @@ import pyvista as pv
 import geovista as gv
 from geovista.common import from_cartesian
 from geovista.crs import projected
-from geovista.transform import transform_mesh
+from geovista.transform import _ZLEVEL, transform_mesh
 
 #: Fraction of the projection width above which a cell is considered torn.
 TORN = 0.25
@@ -286,3 +286,24 @@ def test_transform_mesh__zlevel_follows_the_slice(global_mesh):
     _, lats = inverse.transform(result.points[:, 0], result.points[:, 1])
     expected = (1 + np.abs(lats) / 90) * unit.points[0, 2]
     np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)
+
+
+@pytest.mark.parametrize("zlevel", [0, [1]], ids=["scalar", "per-point"])
+def test_transform_mesh__zlevel_carry_spares_the_callers_array(regional_mesh, zlevel):
+    """An array of the caller's named as the zlevel carry is kept, and never read.
+
+    A per-point zlevel travels through the seam slice as point data. The array it
+    travels in must not displace one of the caller's that shares its name, and
+    the clean-up must remove only what the transform added.
+
+    """
+    expected = transform_mesh(regional_mesh.copy(), PLANAR, zlevel=zlevel)
+    data = np.arange(regional_mesh.n_points, dtype=float)
+    regional_mesh.point_data[_ZLEVEL] = data
+
+    result = transform_mesh(regional_mesh, PLANAR, zlevel=zlevel)
+
+    np.testing.assert_array_equal(regional_mesh.point_data[_ZLEVEL], data)
+    np.testing.assert_array_equal(result.point_data[_ZLEVEL], data)
+    np.testing.assert_array_equal(result.points, expected.points)
+    assert [name for name in result.point_data if _ZLEVEL in name] == [_ZLEVEL]
