@@ -92,6 +92,8 @@ def transform_mesh(
     zlevel : int or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius`/vertical by a proportional amount e.g., ``radius * zlevel * zscale``.
+        In a planar CRS the offset is ``zlevel * zscale`` times the radius of the
+        Earth in the units of that CRS, the same proportion as on the sphere.
         If `zlevel` is not a scalar, then its shape must match or broadcast
         with the shape of the ``mesh.points``. For a point cloud, `zlevel` adds to
         the z-level each of its points already carries.
@@ -246,17 +248,11 @@ def transform_mesh(
         points[:, 0] = xs
         points[:, 1] = ys
 
-        # a planar target offsets z by the level, whereas on the sphere the level
+        # zlevel spec §3.1 -- a planar target offsets z by the level times the
+        # radius of the Earth in its own units, whereas on the sphere the level
         # is already in the radius that to_cartesian applied
         if tgt_crs != WGS84 and (np.any(level) or cloud):
-            xmin, xmax, ymin, ymax, _, _ = mesh.bounds
-            xdelta, ydelta = abs(xmax - xmin), abs(ymax - ymin)
-            # TODO @bjlittle: Make this scale factor configurable at the API/module
-            #                 level, as current strategy is slightly flawed in that
-            #                 there isn't consistent scaling across all geometries
-            #                 added to the render scene.
-            delta = max(xdelta, ydelta) // 4
-            zs = level * zscale * delta
+            zs = level * zscale * _earth_radius(tgt_crs)
 
         points[:, 2] = zs
 
@@ -580,3 +576,46 @@ def _record_zlevels(
         mesh.point_data.set_array(
             np.broadcast_to(levels, (mesh.n_points,)).astype(float), GV_POINT_ZLEVEL
         )
+
+
+def _earth_radius(crs: pyproj.CRS) -> float:
+    """Determine the radius of the Earth, in the units of a CRS.
+
+    A planar CRS offsets a z-level by this length, so that a level is the same
+    proportion of the Earth's radius as it is on the sphere. For a geographic CRS
+    the radius is one radian, expressed in its angular unit.
+
+    Parameters
+    ----------
+    crs : :class:`~pyproj.crs.CRS`
+        The planar CRS.
+
+    Returns
+    -------
+    float
+        The radius of the Earth, in the unit of the first axis of the CRS.
+
+    Raises
+    ------
+    ValueError
+        If the CRS has no ellipsoid, or its first axis has no unit.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    ellipsoid = crs.ellipsoid
+    factor = crs.axis_info[0].unit_conversion_factor if crs.axis_info else None
+
+    if ellipsoid is None or not factor:
+        emsg = (
+            f"Cannot determine the radius of the Earth in the units of {crs.name!r}, "
+            "which has no ellipsoid or no axis unit."
+        )
+        raise ValueError(emsg)
+
+    radius: float = (
+        1.0 / factor if crs.is_geographic else ellipsoid.semi_major_metre / factor
+    )
+    return radius
