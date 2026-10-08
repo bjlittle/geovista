@@ -28,6 +28,8 @@ of different documents.
       - :doc:`2026-10-06-published-specs-design`
     * - ``typing spec §…``
       - :doc:`2026-10-06-type-coverage-design`
+    * - ``zlevel spec §…``
+      - :doc:`2026-10-08-planar-zlevel-design`
 
 A new specification chooses a prefix unique across this collection, declares it
 in its own header banner, and joins the table above and the toctree.
@@ -45,3 +47,4 @@ in its own header banner, and joins the table above and the toctree.
 
     2026-10-06-published-specs-design
     2026-10-06-type-coverage-design
+    2026-10-08-planar-zlevel-design
