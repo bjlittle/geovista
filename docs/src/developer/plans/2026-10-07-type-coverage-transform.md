@@ -875,3 +875,29 @@ git push
   before the merge.
 - #2568 and #2570 each carry a comment naming what change 2 did to them.
 - The pull request carries `agentic` and `type: tech-debt`.
+
+## After the final review
+
+The whole-branch review on Opus 5.5 returned "with fixes": no critical findings, three
+important and six minor. It found the runtime-neutral claims held across 2,016 scenarios
+run against `main` and the branch, with the exception of the `zscale` read, which fixes a
+`TypeError` that numpy 2.5 raises (minor 1 below). Two important findings were fixed in
+one pass, each test watched failing first, and the third was raised as an issue:
+
+| finding | fix | commit |
+|---|---|---|
+| the check asked whether `zlevel` broadcasts *with* the points, so a column, or a longer array on a one-point cloud, passed it and failed after x and y were written | `np.broadcast_to` against the caller's points, before anything is rotated, sliced or written | `f49dd500` |
+| the check ran after the seam slice, which adds points, so a `zlevel` sized to a global mesh was refused | a per-point `zlevel` travels through the slice as point data, and seam duplicates keep their level | `f49dd500` |
+| `transform_mesh` flattens a mesh it returns to WGS84 with a non-zero `zlevel`, on `main` as on this branch, and per-point arrays now reach it too | raised as {issue}`2581` | — |
+
+Task 1's text above places the check after slicing; `f49dd500` moved it ahead of the slice
+for the reasons in the table. The slice test's first expectation assumed `+proj=eqc` is
+spherical; it is ellipsoidal, so the test inverse-projects each result point instead.
+
+Six minors are left for {user}`bjlittle`: the `zscale` read is a fix that no test or
+changelog line records; `transform_point` is annotated `float` where its docstring and
+the new test accept a single valued list; the per-point test uses a uniform level; §8
+item 5 overstates which modules import `lazy_loader`, dates pyvista #9262 a day early,
+and §3.3 leaves "`transform.py` has 20" standing beside the paragraph that explains it;
+"144 errors on 30 distinct lines" is 29 lines with the import; and float32 clouds differ
+from `main` by an ulp or two.
