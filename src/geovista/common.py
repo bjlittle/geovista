@@ -44,6 +44,7 @@ __all__ = [
     "GV_FIELD_ZSCALE",
     "GV_MANIFOLD_CELL_IDS",
     "GV_POINT_IDS",
+    "GV_POINT_ZLEVEL",
     "GV_REMESH_POINT_IDS",
     "JUPYTER_BACKEND",
     "LRU_CACHE_SIZE",
@@ -125,6 +126,9 @@ GV_MANIFOLD_CELL_IDS: str = "gvManifoldCellIds"
 
 GV_POINT_IDS: str = "gvOriginalPointIds"
 """Name of the geovista point indices array."""
+
+GV_POINT_ZLEVEL: str = "gvZLevel"
+"""Name of the point array of z-axis levels a point cloud carries in a planar CRS."""
 
 GV_REMESH_POINT_IDS: str = "gvRemeshPointIds"
 """Name of the geovista remesh point indices/marker array."""

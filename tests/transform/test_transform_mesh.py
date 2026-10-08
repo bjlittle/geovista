@@ -14,7 +14,12 @@ import pytest
 import pyvista as pv
 
 import geovista as gv
-from geovista.common import ZLEVEL_SCALE, from_cartesian, to_cartesian
+from geovista.common import (
+    GV_POINT_ZLEVEL,
+    ZLEVEL_SCALE,
+    from_cartesian,
+    to_cartesian,
+)
 from geovista.crs import WGS84, projected, to_wkt
 from geovista.transform import _ZLEVEL, transform_mesh
 
@@ -32,6 +37,9 @@ REGIONAL_MERIDIAN: float = 45.0
 
 #: A planar target CRS, so that a z-level is scaled into each point's z-value.
 PLANAR = "+proj=eqc"
+
+#: A second planar target CRS, for a cloud moved between planar CRSs.
+ROBIN = "+proj=robin"
 
 #: Whole-globe projections carrying the central meridian in assorted ways.
 #:
@@ -79,6 +87,14 @@ def cloud():
 def lone_point():
     """Create a point cloud of one point."""
     return gv.Transform.from_points([10.0], [30.0])
+
+
+@pytest.fixture
+def lifted_cloud():
+    """Create a small point cloud lifted to a different z-level at each point."""
+    return gv.Transform.from_points(
+        [10.0, 20.0, 30.0], [30.0, 40.0, 50.0], zlevel=[2, 3, 4], zscale=0.5
+    )
 
 
 def _cell_widths(mesh) -> np.ndarray:
@@ -370,3 +386,58 @@ def test_transform_mesh__zlevel_to_wgs84(regional_mesh):
     np.testing.assert_allclose(radii, 1 + levels * ZLEVEL_SCALE, rtol=1e-12)
     directions = result.points / radii[:, np.newaxis]
     np.testing.assert_allclose(directions, regional_mesh.points, atol=1e-9)
+
+
+def test_transform_mesh__cloud_round_trip(lifted_cloud):
+    """A cloud sent to a planar CRS and back to WGS84 keeps each point's z-level.
+
+    Issue 2581: nothing decoded the levels from the planar cloud on the way back,
+    so they were lost.
+
+    """
+    result = transform_mesh(transform_mesh(lifted_cloud, PLANAR), WGS84)
+
+    np.testing.assert_allclose(result.points, lifted_cloud.points, rtol=1e-9)
+    assert GV_POINT_ZLEVEL not in result.point_data
+
+
+def test_transform_mesh__cloud_between_planar_crs(lifted_cloud):
+    """A cloud moved between planar CRSs keeps its z-levels, not its z-values.
+
+    Issue 2581: the planar z of the source was added to the levels as though it
+    were a level, so z was scaled twice.
+
+    """
+    expected = transform_mesh(lifted_cloud.copy(), ROBIN)
+
+    result = transform_mesh(transform_mesh(lifted_cloud.copy(), PLANAR), ROBIN)
+
+    np.testing.assert_allclose(result.points, expected.points, rtol=1e-9)
+
+
+def test_transform_mesh__cloud_subset_keeps_its_levels(lifted_cloud):
+    """Each point of a planar cloud carries its own z-level, through a subset.
+
+    A level decoded from the planar z would depend on the extent of the cloud,
+    which a subset changes, so the levels travel as point data instead.
+
+    """
+    planar = transform_mesh(lifted_cloud, PLANAR)
+    subset = planar.extract_points([1, 2], adjacent_cells=False).cast_to_poly_points()
+
+    result = transform_mesh(subset, WGS84)
+
+    np.testing.assert_allclose(result.points, lifted_cloud.points[1:], rtol=1e-9)
+
+
+def test_transform_mesh__cloud_levels_are_not_scalars(cloud):
+    """The z-levels a planar cloud carries never become its active scalars.
+
+    A cloud with no data of its own renders in a single colour, which active
+    scalars would replace with a colour map of its levels.
+
+    """
+    result = transform_mesh(cloud, PLANAR)
+
+    assert GV_POINT_ZLEVEL in result.point_data
+    assert result.active_scalars_name is None

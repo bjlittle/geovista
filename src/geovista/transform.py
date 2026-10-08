@@ -20,6 +20,7 @@ import lazy_loader as lazy
 
 from .common import (
     GV_FIELD_ZSCALE,
+    GV_POINT_ZLEVEL,
     ZLEVEL_SCALE,
     from_cartesian,
     point_cloud,
@@ -89,7 +90,8 @@ def transform_mesh(
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius`/vertical by a proportional amount e.g., ``radius * zlevel * zscale``.
         If `zlevel` is not a scalar, then its shape must match or broadcast
-        with the shape of the ``mesh.points``.
+        with the shape of the ``mesh.points``. For a point cloud, `zlevel` adds to
+        the z-level each of its points already carries.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
@@ -110,6 +112,10 @@ def transform_mesh(
 
     Notes
     -----
+    A point cloud keeps its z-levels from one transform to the next. On the sphere
+    they are encoded in the radius of each point, and in a planar CRS they are
+    carried in the :data:`geovista.common.GV_POINT_ZLEVEL` point array.
+
     .. versionadded:: 0.3.0
 
     """
@@ -207,6 +213,10 @@ def transform_mesh(
         else:
             xyz = mesh.points
 
+        if cloud:
+            # a cloud carries a z-level at each point, which zlevel adds to
+            level = level + _carried_zlevels(mesh, xyz, src_crs)
+
         transformed = transform_points(
             src_crs=src_crs, tgt_crs=tgt_crs, xs=xyz[:, 0], ys=xyz[:, 1]
         )
@@ -238,14 +248,12 @@ def transform_mesh(
             #                 there isn't consistent scaling across all geometries
             #                 added to the render scene.
             delta = max(xdelta, ydelta) // 4
-
-            if cloud:
-                # extract the zlevel encoded from the non-transformed points
-                level = level + xyz[:, 2]
-
             zs = level * zscale * delta
 
         points[:, 2] = zs
+
+        if cloud:
+            _record_zlevels(mesh, level, tgt_crs)
 
         # TODO @bjlittle: Check whether to clean other field_data metadata.
         to_wkt(mesh, original_tgt_crs)
@@ -473,3 +481,77 @@ def transform_points(
         result = result.reshape(tuple(shape))
 
     return result
+
+
+def _carried_zlevels(
+    mesh: pv.PolyData, xyz: NDArray[Any], src_crs: pyproj.CRS
+) -> NDArray[Any]:
+    """Determine the z-level each point of a point cloud carries.
+
+    On the sphere the z-level of a point is encoded in its radius, which
+    :func:`geovista.common.from_cartesian` decodes. In a planar CRS it is read
+    from the :data:`geovista.common.GV_POINT_ZLEVEL` point array, recorded by the
+    transform that put the cloud there, and is zero where that array is absent.
+
+    Parameters
+    ----------
+    mesh : :class:`~pyvista.PolyData`
+        The point cloud, in its source CRS.
+    xyz : :class:`~numpy.ndarray`
+        The points of the cloud, as decoded by
+        :func:`geovista.common.from_cartesian` on the sphere, or as they are in a
+        planar CRS.
+    src_crs : :class:`~pyproj.crs.CRS`
+        The source CRS of the point cloud.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The z-level of each point.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if src_crs == WGS84:
+        return np.asarray(xyz[:, 2])
+
+    if GV_POINT_ZLEVEL in mesh.point_data:
+        return np.asarray(mesh.point_data[GV_POINT_ZLEVEL])
+
+    return np.zeros(mesh.n_points)
+
+
+def _record_zlevels(
+    mesh: pv.PolyData, levels: NDArray[Any], tgt_crs: pyproj.CRS
+) -> None:
+    """Record or drop the z-levels of a point cloud, for its target CRS.
+
+    In a planar CRS the z-levels are recorded in the
+    :data:`geovista.common.GV_POINT_ZLEVEL` point array, for the next transform
+    to read. On the sphere the radius of each point holds its z-level, so the
+    array is dropped.
+
+    Parameters
+    ----------
+    mesh : :class:`~pyvista.PolyData`
+        The point cloud, in its target CRS.
+    levels : :class:`~numpy.ndarray`
+        The z-level of each point, or one z-level for them all.
+    tgt_crs : :class:`~pyproj.crs.CRS`
+        The target CRS of the point cloud.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if tgt_crs == WGS84:
+        mesh.point_data.pop(GV_POINT_ZLEVEL, None)
+    else:
+        # set as an array rather than by item, which would make the levels the
+        # active scalars of a cloud that has none
+        mesh.point_data.set_array(
+            np.broadcast_to(levels, (mesh.n_points,)).astype(float), GV_POINT_ZLEVEL
+        )
