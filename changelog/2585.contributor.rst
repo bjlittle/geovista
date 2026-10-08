@@ -1,0 +1,5 @@
+The `sphinx-gallery <https://github.com/sphinx-gallery/sphinx-gallery>`__
+examples now run in parallel with up to four workers, which halves the CI docs
+build that feeds the browser tests. The ``GEOVISTA_SPHX_GLR_SERIAL`` environment
+variable still runs them one at a time. The test workflows now use
+``pytest-xdist`` with one worker per logical CPU. (:user:`bjlittle`)

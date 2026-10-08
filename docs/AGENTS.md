@@ -36,7 +36,7 @@ Each has a pixi task of the same name, run from the repo root as
 
 The Makefile exports `PYVISTA_OFF_SCREEN`/`PYDEVD_DISABLE_FILE_VALIDATION`, passing
 `--fail-on-warning --keep-going --show-traceback`; ⚠️ RTD bypasses it, and parallel
-gallery workers see only the env, so `conf.py` must export what they need (#2581).
+gallery workers see only the env, so `conf.py` must export what they need (#2585).
 
 ## Sphinx Extensions
 
