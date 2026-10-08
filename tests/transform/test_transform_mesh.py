@@ -441,3 +441,23 @@ def test_transform_mesh__cloud_levels_are_not_scalars(cloud):
 
     assert GV_POINT_ZLEVEL in result.point_data
     assert result.active_scalars_name is None
+
+
+@pytest.mark.parametrize(
+    ("radius", "expected"), [(None, 2.0), (3.0, 3.0)], ids=["carried", "given"]
+)
+def test_transform_mesh__cloud_returns_to_its_radius(radius, expected):
+    """A cloud returns to WGS84 on the radius it carries, unless given another.
+
+    Issue 2581: ``zscale`` defaulted to the cloud's own but ``radius`` did not, so
+    a cloud of radius 2 came back on the unit sphere.
+
+    """
+    cloud = gv.Transform.from_points([10.0, 20.0, 30.0], [30.0, 40.0, 50.0], radius=2.0)
+    planar = transform_mesh(cloud, PLANAR)
+
+    result = transform_mesh(planar, WGS84, radius=radius)
+
+    radii = np.linalg.norm(result.points, axis=1)
+    np.testing.assert_allclose(radii, expected, rtol=1e-12)
+    np.testing.assert_allclose(result.points / expected, cloud.points / 2.0, rtol=1e-9)

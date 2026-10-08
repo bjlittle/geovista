@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any, cast
 import lazy_loader as lazy
 
 from .common import (
+    GV_FIELD_RADIUS,
     GV_FIELD_ZSCALE,
     GV_POINT_ZLEVEL,
     ZLEVEL_SCALE,
@@ -85,7 +86,8 @@ def transform_mesh(
         Slice the mesh prior to transformation in order to break mesh connectivity and
         create a seam in the mesh. Also see :func:`geovista.core.slice_mesh`.
     radius : float, optional
-        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        The radius of the sphere. Defaults to the radius a point cloud carries,
+        otherwise :data:`geovista.common.RADIUS`.
     zlevel : int or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius`/vertical by a proportional amount e.g., ``radius * zlevel * zscale``.
@@ -93,8 +95,8 @@ def transform_mesh(
         with the shape of the ``mesh.points``. For a point cloud, `zlevel` adds to
         the z-level each of its points already carries.
     zscale : float, optional
-        The proportional multiplier for z-axis `zlevel`. Defaults to
-        :data:`geovista.common.ZLEVEL_SCALE`.
+        The proportional multiplier for z-axis `zlevel`. Defaults to the multiplier
+        a point cloud carries, otherwise :data:`geovista.common.ZLEVEL_SCALE`.
     rtol : float, optional
         The relative tolerance for longitudes close to the 'wrap meridian' -
         see :func:`geovista.common.wrap` for more.
@@ -147,6 +149,9 @@ def transform_mesh(
             zscale = float(mesh[GV_FIELD_ZSCALE][0])
         else:
             zscale = ZLEVEL_SCALE
+
+    if radius is None and cloud and GV_FIELD_RADIUS in mesh.field_data:
+        radius = float(mesh[GV_FIELD_RADIUS][0])
 
     if transform_required:
         if level.ndim:
