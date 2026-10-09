@@ -272,3 +272,83 @@ def test_complex_data_follows_a_split():
     expected = [1 + 2j, 3 + 4j, 2 + 3j, 2 + 3j]
     np.testing.assert_array_equal(result.point_data["data"], expected)
     np.testing.assert_array_equal(result.cell_data["cdata"], [5 + 6j, 5 + 6j])
+
+
+@pytest.mark.parametrize(
+    ("lons", "global_ids", "pedigree_ids"),
+    [
+        ([170.0, -170.0], [10, 20, 21, 22], [10, 20, 10, 10]),
+        ([-170.0, 180.0, 170.0], [10, 20, 30, 31], [10, 20, 30, 20]),
+    ],
+    ids=["split", "duplicated"],
+)
+def test_point_ids_keep_their_meaning(lons, global_ids, pedigree_ids):
+    """Point ids follow what they identify, and keep their role.
+
+    VTK's cut leaves out global and pedigree ids, as labels it won't interpolate.
+    A global id is unique, so each point added takes a fresh one beyond the largest.
+    A pedigree id traces where a point came from, so a duplicate takes its vertex's
+    and a split point the first vertex's of its segment.
+
+    """
+    mesh = _line(lons)
+    mesh.point_data["gids"] = np.arange(1, len(lons) + 1) * 10
+    mesh.point_data["pids"] = np.arange(1, len(lons) + 1) * 10
+    mesh.GetPointData().SetActiveGlobalIds("gids")
+    mesh.GetPointData().SetActivePedigreeIds("pids")
+
+    result = slice_lines(mesh)
+
+    np.testing.assert_array_equal(result.point_data["gids"], global_ids)
+    np.testing.assert_array_equal(result.point_data["pids"], pedigree_ids)
+    assert result.GetPointData().GetGlobalIds().GetName() == "gids"
+    assert result.GetPointData().GetPedigreeIds().GetName() == "pids"
+
+
+def test_string_pedigree_ids_follow_a_split():
+    """Pedigree ids that are strings take the first vertex's of a split segment."""
+    mesh = _line([170.0, -170.0])
+    mesh.point_data["pids"] = np.array(["a", "b"])
+    mesh.GetPointData().SetActivePedigreeIds("pids")
+
+    result = slice_lines(mesh)
+
+    np.testing.assert_array_equal(result.point_data["pids"], ["a", "b", "a", "a"])
+    assert result.GetPointData().GetPedigreeIds().GetName() == "pids"
+
+
+def test_cell_ids_keep_their_meaning():
+    """The half a split adds takes a fresh global id, but the segment's pedigree id."""
+    mesh = _line([170.0, -170.0])
+    mesh.cell_data["gids"] = np.array([7])
+    mesh.cell_data["pids"] = np.array([7])
+    mesh.GetCellData().SetActiveGlobalIds("gids")
+    mesh.GetCellData().SetActivePedigreeIds("pids")
+
+    result = slice_lines(mesh)
+
+    np.testing.assert_array_equal(result.cell_data["gids"], [7, 8])
+    np.testing.assert_array_equal(result.cell_data["pids"], [7, 7])
+    assert result.GetCellData().GetGlobalIds().GetName() == "gids"
+    assert result.GetCellData().GetPedigreeIds().GetName() == "pids"
+
+
+@pytest.mark.parametrize("lons", [[170.0, -170.0], [-170.0, 180.0, 170.0]])
+def test_roles_are_kept(lons):
+    """Every array keeps the role it plays, on the points and on the cells."""
+    mesh = _line(lons)
+    mesh.point_data.set_array(np.ones((mesh.n_points, 3)), "vectors")
+    mesh.point_data.set_array(np.zeros((mesh.n_points, 2)), "uv")
+    mesh.cell_data.set_array(np.ones(mesh.n_cells), "level")
+    mesh.cell_data.set_array(np.tile([0.0, 0.0, 1.0], (mesh.n_cells, 1)), "normals")
+    mesh.GetPointData().SetActiveVectors("vectors")
+    mesh.GetPointData().SetActiveTCoords("uv")
+    mesh.GetCellData().SetActiveScalars("level")
+    mesh.GetCellData().SetActiveNormals("normals")
+
+    result = slice_lines(mesh)
+
+    assert result.GetPointData().GetVectors().GetName() == "vectors"
+    assert result.GetPointData().GetTCoords().GetName() == "uv"
+    assert result.GetCellData().GetScalars().GetName() == "level"
+    assert result.GetCellData().GetNormals().GetName() == "normals"

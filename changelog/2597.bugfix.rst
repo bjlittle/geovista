@@ -2,5 +2,7 @@
 antimeridian, so a line crossing the seam keeps its data in a projected plot.
 Each point it adds takes the values interpolated at the crossing, a duplicated
 vertex keeps its own, and both halves of a split segment keep its cell data.
-``transform_mesh`` can therefore carry a per-point ``zlevel`` along such lines
-too. Closes :issue:`2583`. (:user:`claude`)
+Every array keeps its role, such as the active scalars or pedigree ids, and any
+point or cell added gets a global id of its own. ``transform_mesh`` can now
+carry a per-point ``zlevel`` along such lines too. Closes :issue:`2583`.
+(:user:`claude`)

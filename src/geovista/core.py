@@ -963,10 +963,11 @@ def _carry_line_data(
 ) -> None:
     """Carry the point and cell data of lines into the lines they are sliced into.
 
-    Each point a split adds takes the values that the cut interpolated at its
-    crossing, which rounds an integer as VTK does, and each point a detach adds
-    takes the values of the vertex it duplicates. Both halves of a split segment
-    keep its cell data, and the active scalars stay active.
+    Each point a split adds takes the values the cut interpolated at its crossing,
+    so an integer rounds as VTK rounds it. An array the cut leaves out, such as
+    pedigree ids, takes the value of the first vertex of the segment instead. A
+    point a detach adds takes the values of the vertex it duplicates. Both halves
+    of a split segment keep its cell data, and every array keeps its role.
 
     Parameters
     ----------
@@ -989,13 +990,20 @@ def _carry_line_data(
     .. versionadded:: 0.6.0
 
     """
+    # the first vertex of each split segment
+    first = mesh.lines.reshape(-1, 3)[split_cids, 1]
+
     # pyvista hands back a complex array of one value without its point
     # dimension, so every array is held to at least one
     for name in mesh.point_data:
         values = np.atleast_1d(mesh.point_data[name])
         parts = [values]
         if split_cids:
-            crossing = np.atleast_1d(cut.point_data[name])[split_pois]
+            if name in cut.point_data:
+                crossing = np.atleast_1d(cut.point_data[name])[split_pois]
+            else:
+                # VTK leaves out of the cut what it won't interpolate
+                crossing = values[first]
             parts.extend([crossing, crossing])
         if detach_pids:
             parts.append(values[detach_pids])
@@ -1009,9 +1017,36 @@ def _carry_line_data(
                 values = np.concatenate([values, values[split_cids]])
             result.cell_data.set_array(values, name)
 
-    info = mesh.active_scalars_info
-    if info.name is not None:
-        preference = info.association.name.lower()
-        data = result.point_data if preference == "point" else result.cell_data
-        if info.name in data:
-            result.set_active_scalars(info.name, preference=preference)
+    _keep_roles(mesh.point_data, result.point_data)
+    _keep_roles(mesh.cell_data, result.cell_data)
+
+
+def _keep_roles(source: pv.DataSetAttributes, target: pv.DataSetAttributes) -> None:
+    """Give each array the role it plays in the data it was carried from.
+
+    Each point or cell added takes a fresh global id beyond the largest, so global
+    ids stay unique.
+
+    Parameters
+    ----------
+    source : :class:`~pyvista.DataSetAttributes`
+        The point or cell data the arrays were carried from.
+    target : :class:`~pyvista.DataSetAttributes`
+        The point or cell data the arrays were carried into. The values of the
+        source come first, followed by those of any point or cell added.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    for role in range(source.NUM_ATTRIBUTES):
+        array = source.GetAbstractAttribute(role)
+        if array is None or (name := array.GetName()) not in target:
+            continue
+        if role == source.GLOBALIDS:
+            # pyvista hands back a view, so the fresh ids land in the array itself
+            ids, n_ids = target[name], array.GetNumberOfTuples()
+            start = ids[:n_ids].max() + 1
+            ids[n_ids:] = np.arange(start, start + ids.size - n_ids)
+        target.SetActiveAttribute(name, role)
