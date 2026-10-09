@@ -1,0 +1,3 @@
+Added typeshed's ``types-rasterio`` stubs to the ``devs`` environment, so
+``mypy`` checks ``geovista.bridge`` against ``rasterio``'s own interface.
+(:user:`claude`)

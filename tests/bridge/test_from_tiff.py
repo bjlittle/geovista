@@ -54,9 +54,10 @@ def test_rgb_band(mocker, rgb, band, unit):
     """Test band behaviour with name units substitution."""
     if rgb:
         band = 3
-    crs = mocker.sentinel.crs
+    crs = mocker.MagicMock(to_wkt=mocker.MagicMock(return_value=mocker.sentinel.wkt))
     data = mocker.sentinel.data
-    mocked_read = mocker.MagicMock(return_value=data)
+    bands = [mocker.sentinel.band] * band
+    mocked_read = mocker.MagicMock(return_value=bands if rgb else data)
     transform = mocker.sentinel.transform
     height, width = pixels_shape = 2, 3
     n_pixels = height * width
@@ -102,7 +103,7 @@ def test_rgb_band(mocker, rgb, band, unit):
     mocked_read.assert_called_once_with(*args, masked=False)
 
     if rgb:
-        mocked_dstack.assert_called_once_with(data)
+        mocked_dstack.assert_called_once_with(bands)
         mocked_reshape.assert_called_once_with(-1, band)
 
     mocked_meshgrid.assert_called_once()
@@ -117,7 +118,7 @@ def test_rgb_band(mocker, rgb, band, unit):
     expected_kwargs = {
         "data": data,
         "name": name.format(units=str(unit)),
-        "crs": crs,
+        "crs": mocker.sentinel.wkt,
         "rgb": rgb,
         "radius": None,
         "zlevel": None,
@@ -140,7 +141,7 @@ def test_extract(mocker, masked, rgb, sieve):
     pixels_shape = height, width = 2, 3
     n_pixels = height * width
     band = 3 if rgb else 1
-    crs = mocker.sentinel.crs
+    crs = mocker.MagicMock(to_wkt=mocker.MagicMock(return_value=mocker.sentinel.wkt))
     dtypes = ["uint8"] * band
     size = mocker.sentinel.size
     transform = mocker.sentinel.transform
@@ -216,7 +217,7 @@ def test_extract(mocker, masked, rgb, sieve):
 
     expected_kwargs = {
         "name": None,
-        "crs": crs,
+        "crs": mocker.sentinel.wkt,
         "rgb": rgb,
         "radius": None,
         "zlevel": None,
@@ -253,3 +254,33 @@ def test_extract(mocker, masked, rgb, sieve):
         assert mocked_sieve.call_count == 0
         assert mocked_extract.call_count == 0
         assert mocked_cast.call_count == 0
+
+
+@pytest.mark.parametrize("crs", [None, "EPSG:4326"])
+def test_crs(tmp_path, crs):
+    """A GeoTIFF without a CRS is read as WGS84, as one in WGS84 is."""
+    rasterio = pytest.importorskip("rasterio")
+    path = tmp_path / "pixels.tif"
+    profile = {
+        "count": 1,
+        "crs": crs,
+        "driver": "GTiff",
+        "dtype": "uint8",
+        "height": 2,
+        # from_origin(10.0, 20.0, 1.0, 1.0), which composes with the "*" that affine
+        # deprecates, so warns under rasterio 1.5.1
+        "transform": rasterio.transform.Affine(1.0, 0.0, 10.0, 0.0, -1.0, 20.0),
+        "width": 3,
+    }
+    with rasterio.open(path, "w", **profile) as dataset:
+        dataset.write(np.arange(6, dtype="uint8").reshape(1, 2, 3))
+
+    mesh = Transform.from_tiff(path)
+
+    expected = Transform.from_2d(
+        [[10.5, 11.5, 12.5], [10.5, 11.5, 12.5]],
+        [[19.5, 19.5, 19.5], [18.5, 18.5, 18.5]],
+        data=np.arange(6, dtype="uint8"),
+    )
+    np.testing.assert_array_equal(mesh.points, expected.points)
+    np.testing.assert_array_equal(mesh.faces, expected.faces)

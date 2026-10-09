@@ -163,6 +163,29 @@ class TestVectors:
         )
         assert np.allclose(result, expected, atol=0.001)
 
+    def test_crs__lists(self):
+        """Check lists in place of arrays with an alternate latlon-type CRS.
+
+        The vectors are in the CRS of the points, so their points are those given,
+        which were used unconverted (typing spec §3.3).
+
+        """
+        mesh = Transform.from_points(
+            list(self.lons),
+            list(self.lats),
+            vectors=(self.u, self.v),
+            crs=self.crs_rotatedlatlon,
+        )
+        result = mesh[NAME_VECTORS].T
+        expected = np.array(
+            [
+                [-0.474, -17.651, -13.786, -32.429],
+                [15.592, 13.943, -5.499, 21.403],
+                [16.02, -13.529, -2.168, 12.461],
+            ]
+        )
+        assert np.allclose(result, expected, atol=0.001)
+
     def test__nonlatlon_crs__fail(self):
         """Check error when attempted with non-latlon CRS."""
         msg = "Cannot determine wind directions : Target CRS type is not supported.*"

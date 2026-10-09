@@ -46,12 +46,12 @@ pixi run download                        # Fetch offline assets
 **`geovista` is the superset environment** — development, testing, docs and all.
 Prefer `pixi run -e geovista ...` over hunting across `test`/`devs`/`docs`.
 
-**Use `--frozen` to reproduce CI.** Every CI job installs with `frozen: true`
-and runs `pixi run --frozen ...`, which resolves strictly from `pixi.lock`
-rather than re-solving the manifest — so `pixi run --frozen -e <env> ...`
-locally is the same environment CI gets. The corollary: after editing any
-dependency, run `pixi lock` *first*, or `--frozen` will silently keep running
-the previous environment.
+**Use `--frozen` to reproduce CI.** Every CI job runs `pixi run --frozen`,
+which resolves strictly from `pixi.lock` — so `pixi run --frozen -e <env>`
+locally is CI's environment, *if* `<env>` is CI's: the test jobs run
+`test-py313`/`test-py314`, whose lock can differ from `geovista`'s (rasterio
+1.5.1 against 1.5.2, #2599). After editing a dependency, run `pixi lock`
+*first*, or `--frozen` silently keeps running the previous environment.
 
 ⚠️ **But `pixi lock` alone will not raise a version ceiling.** It only
 re-solves when the lock is *invalid*, and an already-locked version still
@@ -165,13 +165,13 @@ All Python files must include `from __future__ import annotations` (enforced by 
 - **Versioning**: `setuptools-scm` (no manual version file edits)
 - **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run -e docs python .github/scripts/changelog.py <PR> "changelog/a.rst,changelog/b.rst"` — the fragments are one **comma-separated** argument of repo-relative paths, and either space-separating them or dropping the `changelog/` prefix raises a bare `FileNotFoundError` on the concatenation.
 - **`agentic` label**: ⚠️ **every issue and pull-request you raise must carry
-  it**, alongside the usual `type:` ones — `gh` runs as the repository owner, so
-  nothing else tells agent-generated work apart. `ci-label.yml` adds it
-  automatically only for branches named `agent*`/`ai*`, which the `docs/`,
-  `deps/`, `tests/` prefixes used here never match — so pass `--label agentic`
-  to `gh issue create` / `gh pr create`, or `gh issue edit <n> --add-label
-  agentic` after the fact. It is **not** the `bot` label, which marks
-  deterministic automation: dependabot, and the scheduled `ci-*.yml` workflows.
+  it**, beside the `type:` ones: `gh` runs as the repository owner, so nothing
+  else marks agent work. `ci-label.yml` adds it only for `agent*`/`ai*` branches,
+  never the `docs/`, `deps/`, `tests/` prefixes used here, so pass `--label
+  agentic` (or `gh issue edit <n> --add-label agentic`). It is **not** the `bot`
+  label, which marks dependabot and the scheduled `ci-*.yml` workflows.
+- **Deferred work never lives only in a review or a ledger.** Each deferred
+  minor or follow-up gets an issue (`agentic`), linked from the plan's record.
 - **Python support**: SPEC 0 — drop a minor version three years after its release.
   Ten places declare it, so bump the classifiers, let `tests/test_python_support.py`
   name the rest, then `pixi lock` and re-run the `ci-locks.yml` exports. ⚠️ The
@@ -196,4 +196,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 7 October 2026
+**Last Updated**: 9 October 2026
