@@ -92,8 +92,6 @@ directive output can appear there. Check rendering with the `text` builder.
 
 ## Conventions
 
-### File Formats
-
 Pages are reStructuredText; tutorials are Jupyter notebooks. Cross-reference with
 Sphinx roles (`:ref:`, `:doc:`, `:func:`), and keep substitutions in `src/common.txt`.
 
@@ -125,6 +123,8 @@ tutorial whose reader runs every snippet.
 ⚠️ **A `.md` page builds the day it lands**: `myst_parser` registers `.md` itself, so it
 fails on `toc.not_included` unless a toctree holds it, a page includes it, or it is
 `orphan: true` (#2564), which no spec may be. `developer/plans/` is never built.
+⚠️ **A spec status must cite real work** (#2609): after editing one, run
+`pixi run -e test check-spec-status <PR>`. A `Resolved` item may cite an open issue.
 
 ### RST Style
 
@@ -196,4 +196,4 @@ in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
 
 ---
 
-**Last Updated**: 6 October 2026
+**Last Updated**: 10 October 2026
