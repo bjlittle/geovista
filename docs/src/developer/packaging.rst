@@ -498,6 +498,15 @@ The following tasks are defined for each of our features:
    |                |                                |                                                                                       |
    |                |                                |    $ pixi run tests-unit "not image"                                                  |
    |                |                                |                                                                                       |
+   |                |                                | Runs the unit tests in parallel, one worker per CPU core (see                         |
+   |                |                                | :ref:`tippy-gv-developer-testing-unit-tests-parallel`). Accepts the number of workers |
+   |                |                                | as an optional second argument, where ``0`` runs them serially in a single process    |
+   |                |                                | e.g.,                                                                                 |
+   |                |                                |                                                                                       |
+   |                |                                | .. code:: console                                                                     |
+   |                |                                |                                                                                       |
+   |                |                                |    $ pixi run tests-unit "not image" 0                                                |
+   |                |                                |                                                                                       |
    |                |                                | Note that the ``tests-clean`` task is called prior to running this task.              |
    |                |                                |                                                                                       |
    |                |                                | .. note::                                                                             |
