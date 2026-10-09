@@ -237,6 +237,13 @@ an `ndarray`, and the fifth was `zlevel`. `core.py`, `crs.py`, `filters.py`,
 `geoplotter.py`, `gridlines.py`, `raster.py`, `pantry/data.py` and `pantry/meshes.py`
 still load `numpy` without one.
 
+The rule governs published signatures. Once change 2 had landed, the `ArrayLike` idiom was
+left on 13 of `bridge.py`'s lines. One conversion, at the top of `Transform.from_points`,
+cleared two of them along with a genuine `AttributeError`. The other eleven sat in private
+helpers that only ever receive what a boundary has converted, `_verify_2d` and the
+`_contiguous` nested in `_as_contiguous_1d`, so change 3 annotates them with the `ndarray`
+they receive. The API reference publishes no private members.
+
 (typing-spec-3-4)=
 ### 3.4 Gallery suppressions
 
@@ -298,7 +305,7 @@ account of `geopy` being untyped.
 |---|---|---|---|
 | 1 | The `local` hook, `ci-typing.yml`, the ratchet and its test | 0 | ✅ landed (2026-10-06, {pull}`2565`) |
 | 2 | `transform.py` | 29 | ✅ landed (2026-10-08, {pull}`2580`) |
-| 3 | `bridge.py` | 28 | not started |
+| 3 | `bridge.py` | 28 | in progress ({pull}`2599`) |
 | 4 | `common.py` | 20 | not started |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | not started |
 | 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | not started |
@@ -361,8 +368,8 @@ Out of scope:
   and already fixed on `main`, as are the missing `Camera.zoom` annotations, so what
   remains is a version floor, tracked by {issue}`2568`. It does not gate any of the
   roadmap.
-- **The untyped imports.** 32 errors are imports rather than code: 29 `import-untyped`
-  from distributions that ship no annotations — `lazy_loader` alone accounts for 19, then
+- **The untyped imports.** 32 errors are imports rather than code: 29 `import-untyped` from
+  distributions that ship no annotations — `lazy_loader` alone accounts for 19, then
   `geopy`, `rasterio` and `shapely` 2 each, and one each from `click_default_group`,
   `fastparquet`, `pandas` and `pooch` — plus 3 `import-not-found`. The gallery adds
   `cmocean`, `cartopy` and `h3` on top, which is why the figure here is smaller than a
@@ -371,7 +378,11 @@ Out of scope:
   so they want a targeted `ignore_missing_imports` rather than a fix. The configuration
   carries none for them yet. Change 2 cleared `lazy_loader`'s 19 early, with the override
   of {ref}`§8 <typing-spec-8>` item 5, because the first module to leave the ratchet
-  imports it; the rest is part of change 6.
+  imports it. Change 3 cleared `rasterio`'s 2 with typeshed's `types-rasterio`, not an
+  override: `rasterio` ships no `py.typed`, but typeshed has carried stubs for it since
+  June 2026, and against them `from_tiff` reported eleven lines of its own. conda-forge
+  also carries `types-shapely`, `pandas-stubs` and `types-click-default-group`, and nothing
+  for `geopy` or `pooch`. The rest is part of change 6.
 
 (typing-spec-8)=
 ## 8. Open items
@@ -429,6 +440,12 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    that it accepts at runtime, so change 2 sets the points through a `typing.cast`.
    `pyvista` pull request 9262 widens the key, merged on 2026-09-23 after 0.49.0, so the
    cast comes out with the floor that carries it, the trigger item 2 already waits on.
+7. **Open** ({issue}`2601`) — **The cast in `from_tiff` waits on typeshed.**
+   `types-rasterio` types the rows and columns of `rasterio.transform.xy` as
+   `int | Sequence[int]`. `rasterio` takes arrays, which is what `Transform.from_tiff`
+   passes, so change 3 passes them through a `typing.cast`. It comes out when the stubs
+   accept arrays. The report to typeshed covers two other gaps as well, which the code
+   handles without a cast.
 
 (typing-spec-9)=
 ## 9. References
@@ -450,3 +467,7 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
   {ref}`§8 <typing-spec-8>`: <https://github.com/scientific-python/lazy-loader/issues/165>
 - `lazy_loader` issue 181, the request for a marker and annotations that resolves item 4
   of {ref}`§8 <typing-spec-8>`: <https://github.com/scientific-python/lazy-loader/issues/181>
+- `typeshed` pull request 15884, which added the `rasterio` stubs that change 3 checks
+  `bridge.py` against: <https://github.com/python/typeshed/pull/15884>
+- `typeshed` issue 16504, reporting three gaps in those stubs, cited by item 7 of
+  {ref}`§8 <typing-spec-8>`: <https://github.com/python/typeshed/issues/16504>

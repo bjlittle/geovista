@@ -1,0 +1,7 @@
+``Transform.from_points`` now accepts lists for ``xs`` and ``ys`` when
+``vectors`` share the points' latitude-longitude CRS and it isn't WGS84, as its
+``ArrayLike`` annotation promises. It raised ``AttributeError``.
+``Transform.from_unstructured`` drops points masked alike in ``xs`` and ``ys``
+from their faces whatever their CRS, where it did so for WGS84 alone.
+``geovista.bridge`` also leaves the typing ratchet, so ``mypy`` checks it in
+full. (:user:`claude`)
