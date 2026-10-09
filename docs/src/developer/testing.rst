@@ -38,6 +38,8 @@ infrastructure.
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-lock.yml
 .. |ci-pypi| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-pypi.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-pypi.yml
+.. |ci-spec| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-spec-status.yml/badge.svg
+    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-spec-status.yml
 
 :fa:`file-code` **Reference:**
 
@@ -131,6 +133,18 @@ The following testing workflows are available:
    |           |    ``geovista`` using the ``PyPI`` ecosystem. This :fab:`github` Action provides a critical early warning     |
    |           |    of potential upstream issues that should be resolved as a priority.                                        |
    |           |                                                                                                               |
+   +-----------+---------------------------------------------------------------------------------------------------------------+
+   | |ci-spec| | The `ci-spec-status.yml`_ :fab:`github` Action checks the work that each design specification status cites,   |
+   |           | by asking :fab:`github` about each pull request and issue it references. See :ref:`tippy-gv-developer-specs`. |
+   |           |                                                                                                               |
+   |           | On a ``pull-request`` that changes a specification, it checks that a ``landed`` roadmap row cites merged      |
+   |           | pull requests on its date, and that a **Resolved** or **Abandoned** item cites real work. A status may cite   |
+   |           | the ``pull-request`` itself while it is still open.                                                           |
+   |           |                                                                                                               |
+   |           | Each night it also reports a status the work has moved past, such as an ``in progress`` row whose pull        |
+   |           | request has merged. A finding raises a bespoke :fab:`github` Issue for contributors to investigate.           |
+   |           |                                                                                                               |
+   |           | Also see the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`check-spec-status` task.      |
    +-----------+---------------------------------------------------------------------------------------------------------------+
 
 
@@ -768,6 +782,22 @@ e.g.,
    |                                        |    $ pixi run download rasters                                   |
    |                                        |                                                                  |
    +----------------------------------------+------------------------------------------------------------------+
+   | :guilabel:`check-spec-status`          | Check the work each design specification status cites against    |
+   |                                        | GitHub. See :ref:`tippy-gv-developer-specs` e.g.,                |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run check-spec-status                                  |
+   |                                        |                                                                  |
+   |                                        | Provide the number of a pull request to check as that pull       |
+   |                                        | request, which a status may cite while it is still open, or      |
+   |                                        | ``drift`` to also report a status the work has moved past e.g.,  |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run check-spec-status drift                            |
+   |                                        |                                                                  |
+   +----------------------------------------+------------------------------------------------------------------+
    | :guilabel:`tests-clean`                | Purge both the documentation and unit test image caches,         |
    |                                        | along with any images generated from previous test sessions      |
    |                                        | e.g.,                                                            |
@@ -959,6 +989,7 @@ in, and must not rely on another test having run first in the same process.
 
 .. _Workflow Artifact: https://docs.github.com/en/actions/concepts/workflows-and-actions/workflow-artifacts
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml
+.. _ci-spec-status.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-spec-status.yml
 .. _ci-tests.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests.yml
 .. _ci-tests-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-docs.yml
 .. _ci-tests-lock.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-lock.yml

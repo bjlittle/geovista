@@ -33,6 +33,7 @@ from __future__ import annotations
 import ast
 import contextlib
 from dataclasses import dataclass
+from datetime import date
 import io
 from pathlib import Path
 import re
@@ -1333,6 +1334,14 @@ def sections(text: str) -> dict[str, list[tuple[int, str]]]:
     return found
 
 
+def dated(written: str) -> date | None:
+    """Read an ISO date, or None when it has the shape but no calendar holds it."""
+    try:
+        return date.fromisoformat(written)
+    except ValueError:
+        return None
+
+
 def carried(rest: str) -> str:
     """Read the parenthetical a status opens with, balanced so a link survives."""
     text = rest.lstrip()
@@ -1409,9 +1418,15 @@ def status(path: Path, text: str) -> list[str]:
             problems.append(f"{where(path, number)}: {state!r} is not a status")
         elif state in TERMINAL:
             evidence = carried(rest)
-            if not (DATE.search(evidence) and REFERENCE.search(evidence)):
+            stamp = DATE.search(evidence)
+            if not (stamp and REFERENCE.search(evidence)):
                 problems.append(
                     f"{where(path, number)}: {state} carries no date and reference"
+                )
+            elif dated(stamp[0]) is None:
+                problems.append(
+                    f"{where(path, number)}: {state} carries {stamp[0]}, "
+                    "which is not a date"
                 )
     return problems
 
@@ -1435,6 +1450,25 @@ def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
         f"{LANDED} carries no date and reference",
         "'shipped' is not a status",
         "Resolved carries no date and reference",
+    ]
+
+
+def test_status_finds_a_date_no_calendar_holds(tmp_path):
+    """A date of the right shape is still no date if no calendar holds it."""
+    roadmap = (
+        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Status |\n|---|---|\n"
+        f"| 1 | {LANDED} (2026-02-30, {{pull}}`1`) |\n"
+        f"| 2 | {LANDED} (2026-02-28, {{pull}}`1`) |\n\n"
+        "(demo-spec-2)=\n## 2. Open items\n\n"
+        "1. **Resolved** (2026-13-01, {issue}`2`) - **A.**\n"
+    )
+    path, _ = demo(tmp_path, roadmap)
+
+    problems = status(path, path.read_text(encoding="utf-8"))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"{LANDED} carries 2026-02-30, which is not a date",
+        "Resolved carries 2026-13-01, which is not a date",
     ]
 
 
