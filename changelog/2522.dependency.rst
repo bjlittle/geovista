@@ -2,4 +2,4 @@ Lifted the temporary ``cartopy <0.26`` pin and introduced a ``cartopy >=0.26``
 minimum pin. ``cartopy 0.26`` redefines ``ccrs.PlateCarree()`` from
 ``+proj=eqc`` to ``+proj=latlong``, which flips
 :attr:`pyproj.crs.CRS.is_projected` and would otherwise have rendered a
-``PlateCarree`` scene as a 3D sphere. See :issue:`2511`. (:user:`claude`)
+``PlateCarree`` scene as a 3D sphere. See :pull:`2511`. (:user:`claude`)
