@@ -989,11 +989,13 @@ def _carry_line_data(
     .. versionadded:: 0.6.0
 
     """
+    # pyvista hands back a complex array of one value without its point
+    # dimension, so every array is held to at least one
     for name in mesh.point_data:
-        values = np.asarray(mesh.point_data[name])
+        values = np.atleast_1d(mesh.point_data[name])
         parts = [values]
         if split_cids:
-            crossing = np.asarray(cut.point_data[name])[split_pois]
+            crossing = np.atleast_1d(cut.point_data[name])[split_pois]
             parts.extend([crossing, crossing])
         if detach_pids:
             parts.append(values[detach_pids])
@@ -1002,7 +1004,7 @@ def _carry_line_data(
     # only lines are carried through, so cell data is too when every cell is one
     if mesh.n_cells == mesh.n_lines:
         for name in mesh.cell_data:
-            values = np.asarray(mesh.cell_data[name])
+            values = np.atleast_1d(mesh.cell_data[name])
             if split_cids:
                 values = np.concatenate([values, values[split_cids]])
             result.cell_data.set_array(values, name)

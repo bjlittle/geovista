@@ -245,3 +245,30 @@ def test_active_scalars_are_kept(lons):
     result = slice_lines(_seam_line(lons))
 
     assert result.active_scalars_name == "level"
+
+
+def _line(lons: list[float]) -> pv.PolyData:
+    """Create a bare line through the given longitudes at 10°N."""
+    n_points = len(lons)
+    lines = np.ravel([(2, i, i + 1) for i in range(n_points - 1)])
+    mesh = pv.PolyData(to_cartesian(lons, [10.0] * n_points), lines=lines)
+    to_wkt(mesh, WGS84)
+    return mesh
+
+
+def test_complex_data_follows_a_split():
+    """Complex point and cell data cross the antimeridian with a single crossing.
+
+    PyVista hands back a complex array of one value as 0-dimensional, both from the
+    cut, which has one point here, and from a line of one segment.
+
+    """
+    mesh = _line([170.0, -170.0])
+    mesh.point_data["data"] = np.array([1 + 2j, 3 + 4j])
+    mesh.cell_data["cdata"] = np.array([5 + 6j])
+
+    result = slice_lines(mesh)
+
+    expected = [1 + 2j, 3 + 4j, 2 + 3j, 2 + 3j]
+    np.testing.assert_array_equal(result.point_data["data"], expected)
+    np.testing.assert_array_equal(result.cell_data["cdata"], [5 + 6j, 5 + 6j])
