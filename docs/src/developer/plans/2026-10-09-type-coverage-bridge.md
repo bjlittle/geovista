@@ -1371,7 +1371,7 @@ connectivity was given, and only to WGS84 points, since any transform dropped it
 #1467 moved the rule into the branch for a tuple connectivity, so the code `main` carries,
 dead since #1977, applies it to any tuple. It stays that way: a tuple equal to the points'
 shape builds the mesh that no connectivity builds, and a masked point's coordinates mean
-nothing in any CRS. `8a468ace` parametrizes `test_masked_points_leave_their_faces` over
+nothing in any CRS. `aa7a9c95` parametrizes `test_masked_points_leave_their_faces` over
 both connectivities, all four cases failing on `main`, and rewrites the bugfix fragment to
 say what changes against 0.5.3. The Global Constraints' "Behaviour only widens" holds for
 the `ArrayLike` conversions alone.
@@ -1387,5 +1387,5 @@ explicit connectivity array makes no use of it; the `xy` comment says the stubs 
 
 CI's first run on the branch failed `test_crs`, because `test-py313` and `test-py314`
 lock `rasterio` 1.5.1, whose `from_origin` composes with the `*` that affine deprecates.
-`47a5efd1` builds the transform directly; `from_tiff` itself warns under neither 1.5.1
+`32b84960` builds the transform directly; `from_tiff` itself warns under neither 1.5.1
 nor 1.5.2.
