@@ -7,13 +7,12 @@ pytest-based test suite for GeoVista. Tests cover the core library modules, CLI,
 ## Directory Structure
 
 One directory per `geovista` module — `bridge/`, `cache/`, `cli/`, `common/`,
-`core/`, `crs/`, `geodesic/`, `geometry/`, `geoplotter/`, `gridlines/`,
-`pantry/`, `search/`, `themes/`, `transform/` — plus `test_qt.py` and the root
-`conftest.py` of shared fixtures. Two directories are not modules: `docs/`
-tests the built documentation, and `plotting/` holds the image comparisons —
-gallery examples in `test_examples.py`, per-module plots under `geodesic/`,
-`geoplotter/` and `transform/`, baselines fetched into `unit_image_cache/`
-(git-ignored).
+`core/`, `crs/`, `geodesic/`, `geometry/`, `geoplotter/`, `gridlines/`, `pantry/`,
+`search/`, `themes/`, `transform/` — plus `test_qt.py` and the root `conftest.py` of
+shared fixtures. Two directories are not modules: `docs/` tests the built
+documentation, and `plotting/` holds the image comparisons — gallery examples in
+`test_examples.py`, per-module plots under `geodesic/`, `geoplotter/` and
+`transform/`, baselines fetched into `unit_image_cache/` (git-ignored).
 
 ## Running Tests
 
@@ -82,16 +81,17 @@ fails in a full run. Restore it in a fixture: `copy.deepcopy` round-trips.
   `verify_image_cache` fixture; maximum image size 450px
 - Baselines are fetched via `geovista.cache.CACHE` into
   `tests/plotting/unit_image_cache`; failures land in `test_images_failed/`
+- ⚠️ **Every test that renders carries `@pytest.mark.image`** (house rule, #2596):
+  an unmarked `show()`, `screenshot()` or other draw crashes `-m "not image"` runs.
 
 ⚠️ **Baselines live in a second repo.** `bjlittle/geovista-data` holds the PNGs
 under `assets/`; `src/geovista/cache/registry.txt` lists `<path> <sha256>` and
 `DATA_VERSION` (`src/geovista/cache/__init__.py`) names the **git tag** to fetch
-from. Changing a baseline is therefore a two-repo dance: land the asset PR
-there, let it release, then bump `DATA_VERSION` *and* the registry together — a
-bump to a tag that does not exist yet fails the whole suite at collection, not
-just the image tests. `registry.txt` is **hand-maintained**: grouped by blank
-lines and only roughly sorted, so edit the affected lines in place. Never
-rewrite or re-sort it.
+from. Changing a baseline is therefore a two-repo dance: land the asset PR there,
+let it release, then bump `DATA_VERSION` *and* the registry together — a bump to a
+tag that does not exist yet fails the whole suite at collection, not just the image
+tests. `registry.txt` is **hand-maintained**: grouped by blank lines and only
+roughly sorted, so edit the affected lines in place. Never rewrite or re-sort it.
 
 ⚠️ **Never hand-edit `version.txt` in `geovista-data`, and never tag it by
 hand.** Its `ci-release.yml` does both automatically on merge to `main`: it
@@ -196,4 +196,4 @@ is one an extension walks past unseen (#2559). Use `html.parser.HTMLParser`.
 
 ---
 
-**Last Updated**: 8 October 2026
+**Last Updated**: 9 October 2026
