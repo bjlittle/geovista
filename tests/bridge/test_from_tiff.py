@@ -267,7 +267,9 @@ def test_crs(tmp_path, crs):
         "driver": "GTiff",
         "dtype": "uint8",
         "height": 2,
-        "transform": rasterio.transform.from_origin(10.0, 20.0, 1.0, 1.0),
+        # from_origin(10.0, 20.0, 1.0, 1.0), which composes with the "*" that affine
+        # deprecates, so warns under rasterio 1.5.1
+        "transform": rasterio.transform.Affine(1.0, 0.0, 10.0, 0.0, -1.0, 20.0),
         "width": 3,
     }
     with rasterio.open(path, "w", **profile) as dataset:
