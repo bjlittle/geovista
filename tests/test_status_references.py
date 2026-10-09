@@ -235,6 +235,75 @@ def test_no_drift_item(script, record, item):
     assert check(script, record, spec(items=(item,)), drift=True) == []
 
 
+@pytest.mark.parametrize(
+    "status",
+    [
+        "not started ({issue}`20`, {pull}`10`)",
+        "**Open** ({issue}`20`, {pull}`10`)",
+        "**Deferred** ({issue}`20`, {pull}`13`)",
+    ],
+)
+def test_no_drift_from_a_pull_request(script, record, status):
+    """Test a status tracked by an open issue has not drifted by a pull request.
+
+    These states are held by an issue, so a merged or closed pull request cited
+    beside it as context says nothing about whether the work is still open.
+
+    """
+    text = spec(items=(status,)) if "**" in status else spec(rows=(status,))
+    assert check(script, record, text, drift=True) == []
+
+
+def test_drift_issue_beside_a_pull_request(script, record):
+    """Test only the closed issue is reported when a pull request sits beside it."""
+    text = spec(items=("**Open** ({issue}`21`, {pull}`10`)",))
+    assert check(script, record, text, drift=True) == [
+        "Open, but {issue}`21` has closed"
+    ]
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        "✅ landed (2026-02-30, {pull}`10`)",
+        "**Resolved** (2026-02-30, {pull}`10`)",
+        "**Abandoned** (2026-02-30, {issue}`20`)",
+    ],
+)
+def test_impossible_date(script, record, status):
+    """Test a date no calendar holds is a fault, and the checking carries on."""
+    later = "✅ landed (2026-10-07, {pull}`12`)"
+    if "**" in status:
+        text = spec(rows=(later,), items=(status,))
+        expected = ["{pull}`12` has not merged", "2026-02-30 is not a date"]
+    else:
+        text = spec(rows=(status, later))
+        expected = ["2026-02-30 is not a date", "{pull}`12` has not merged"]
+    assert check(script, record, text) == expected
+
+
+def test_main_findings(script, capsys):
+    """Test the script exits with one when a status does not hold."""
+    assert script.main([], resolve=lambda _repository, _number: None) == 1
+    assert "does not exist" in capsys.readouterr().out
+
+
+def test_main_unexpected(script, capsys):
+    """Test the script exits with two, not one, when it cannot finish checking.
+
+    The nightly workflow opens an issue on one, so a failure of the check
+    itself must never be mistaken for a finding.
+
+    """
+
+    def broken(_repository: str, _number: int) -> None:
+        message = "unexpected"
+        raise RuntimeError(message)
+
+    assert script.main([], resolve=broken) == 2
+    assert "could not finish checking" in capsys.readouterr().err
+
+
 def test_specifications(script):
     """Test the borrowed parser finds the references of the real specifications.
 

@@ -53,6 +53,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import traceback
 from typing import TYPE_CHECKING
 import urllib.error
 import urllib.request
@@ -172,6 +173,11 @@ def _terminal(
     def current(reference: Reference) -> bool:
         return reference.repository == REPOSITORY and reference.number == pull
 
+    written = conventions.DATE.search(evidence)
+    landed = None if written is None else conventions.dated(written[0])
+    if written is not None and landed is None:
+        problems.append(f"{written[0]} is not a date")
+
     if state == conventions.LANDED:
         merged = []
         pending = False
@@ -185,9 +191,7 @@ def _terminal(
                 problems.append(f"{reference.text} has not merged")
             elif work.when is not None:
                 merged.append(work.when)
-        written = conventions.DATE.search(evidence)
-        if merged and written is not None and not pending:
-            landed = date.fromisoformat(written[0])
+        if merged and landed is not None and not pending:
             last = max(merged)
             if abs((landed - last).days) > 1:
                 problems.append(
@@ -212,7 +216,12 @@ def _drift(state: str, works: list[tuple[Reference, Work]]) -> list[str]:
             if work.state != "open":
                 moved = "merged" if work.state == "merged" else "closed"
                 problems.append(f"{state}, but {reference.text} has {moved}")
-        elif state in ("not started", "Open", "Deferred") and work.state != "open":
+        elif (
+            state in ("not started", "Open", "Deferred")
+            # these are held by an issue, and a pull request beside it is context
+            and work.kind == "issue"
+            and work.state != "open"
+        ):
             problems.append(f"{state}, but {reference.text} has closed")
     return problems
 
@@ -325,19 +334,22 @@ def github(token: str | None = None) -> Resolver:
     return resolve
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, resolve: Resolver | None = None) -> int:
     """Check every specification, printing each fault.
 
     Parameters
     ----------
     argv : list of str, optional
         The command line arguments. Defaults to those of the process.
+    resolve : Resolver, optional
+        Look up the work at a repository and number. Defaults to asking GitHub.
 
     Returns
     -------
     int
-        Zero when every status holds, one when any does not, and two when
-        GitHub cannot be asked, as when it is unreachable or rate limited.
+        Zero when every status holds, and one when any does not. Two when the
+        checking could not be finished, as when GitHub is unreachable or rate
+        limited, so that a failure of the check is never taken for a finding.
 
     """
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
@@ -353,8 +365,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
-    resolve = github(token)
+    if resolve is None:
+        resolve = github(os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"))
     specifications = conventions.specifications()
 
     try:
@@ -377,6 +389,12 @@ def main(argv: list[str] | None = None) -> int:
                 'GH_TOKEN="$(gh auth token)"',
                 file=sys.stderr,
             )
+        return 2
+    except Exception:  # noqa: BLE001
+        # the nightly workflow opens an issue on one, so anything unexpected
+        # must leave by another door
+        traceback.print_exc()
+        print("could not finish checking", file=sys.stderr)
         return 2
 
     for problem in problems:
