@@ -63,7 +63,7 @@ Added an awesome new feature. (:user:`bjlittle`)
 ```
 
 ```none
-:user:`ukmo-ccbunney` fixed a nasty bug. Closes :issue:`67`.
+:user:`ukmo-ccbunney` fixed a nasty bug. Closes :issue:`66`.
 ```
 
 ```none
