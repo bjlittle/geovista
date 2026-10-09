@@ -633,12 +633,18 @@ def test_transform_mesh__zlevel_in_a_crs_declared_in_radians():
 
 
 def test_transform_mesh__zlevel_with_a_shifted_meridian():
-    """A target CRS rebased for its central meridian keeps the radius of its own."""
-    crs = f"{PLANAR} +lon_0={REGIONAL_MERIDIAN}"
+    """A target CRS rebased for its central meridian keeps its ellipsoid and unit.
+
+    ``transform_mesh`` rebuilds such a CRS with its central meridian at 0 before it
+    slices. The Airy ellipsoid in kilometres differs from the defaults a rebuild
+    could fall back to, so one that lost either would show here.
+
+    """
+    crs = f"{PLANAR} +ellps=airy +units=km +lon_0={REGIONAL_MERIDIAN}"
 
     result = transform_mesh(_quad(0, 10, 40, 45), crs, zlevel=1)
 
-    expected = ZLEVEL_SCALE * SEMI_MAJOR
+    expected = ZLEVEL_SCALE * AIRY / 1000
     np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-12)
 
 
