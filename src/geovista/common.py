@@ -622,7 +622,12 @@ def nan_mask(data: ArrayLike) -> np.ndarray:
     .. versionadded:: 0.1.0
 
     """
-    data = np.asanyarray(data)
+    if not isinstance(data, np.ndarray):
+        # keep the mask of any masked arrays a sequence holds
+        data = np.ma.asanyarray(data)
+
+        if np.ma.getmask(data) is np.ma.nomask:
+            data = data.data
 
     if np.ma.isMaskedArray(data):
         if data.dtype.char not in np.typecodes["Float"]:
@@ -1227,7 +1232,8 @@ def wrap(
         dtype = np.dtype(np.float64)
 
     lons = np.asanyarray(lons, dtype=dtype)
-    result = ((lons - base + period * 2) % period) + base
+    # arithmetic on a 0D array gives a numpy scalar, so keep the array
+    result = np.asanyarray(((lons - base + period * 2) % period) + base)
 
     mask = np.isclose(result, base + period, rtol=rtol, atol=atol)
     if np.any(mask):

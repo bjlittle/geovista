@@ -145,5 +145,14 @@ def test_0d_array_stays_0d():
     """A 0D array passes the check for an iterable, so it keeps its dimension."""
     result = wrap(np.array(180.0))
 
+    assert isinstance(result, np.ndarray)
     assert result.shape == ()
+    np.testing.assert_array_equal(result, -180.0)
+
+
+def test_0d_array_snaps_to_the_base():
+    """A 0D array within tolerance of the end of the period snaps to the base."""
+    result = wrap(np.array(179.99999999))
+
+    assert isinstance(result, np.ndarray)
     np.testing.assert_array_equal(result, -180.0)
