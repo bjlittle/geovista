@@ -47,6 +47,14 @@ SEMI_MAJOR: float = 6378137.0
 #: The semi-major axis of the Airy 1830 ellipsoid, in metres.
 AIRY: float = 6377563.396
 
+#: A geographic CRS on the WGS84 ellipsoid, with its axes declared in radians.
+RADIANS = (
+    'GEOGCRS["WGS 84 in radians",DATUM["World Geodetic System 1984",'
+    'ELLIPSOID["WGS 84",6378137,298.257223563]],CS[ellipsoidal,2],'
+    'AXIS["longitude",east,ANGLEUNIT["radian",1]],'
+    'AXIS["latitude",north,ANGLEUNIT["radian",1]]]'
+)
+
 #: Whole-globe projections carrying the central meridian in assorted ways.
 #:
 #: Note that "LambertConformal" and "NearsidePerspective" are deliberately
@@ -606,6 +614,22 @@ def test_transform_mesh__zlevel_in_a_rotated_pole_crs():
 
     expected = ZLEVEL_SCALE * np.degrees(1.0)
     np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)
+
+
+def test_transform_mesh__zlevel_in_a_crs_declared_in_radians():
+    """A geographic CRS declared in radians is offset in degrees, as its points are.
+
+    ``pyproj`` returns the coordinates of a geographic CRS declared in radians in
+    degrees, so the radius that matches them is one radian in degrees, 57.2958,
+    rather than 1.
+
+    """
+    result = transform_mesh(_quad(-75, -73, 40, 41), CRS.from_wkt(RADIANS), zlevel=1)
+
+    xs = result.points[:, 0]
+    np.testing.assert_allclose([xs.min(), xs.max()], [-75, -73], rtol=1e-12)
+    expected = ZLEVEL_SCALE * np.degrees(1.0)
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-12)
 
 
 def test_transform_mesh__zlevel_with_a_shifted_meridian():

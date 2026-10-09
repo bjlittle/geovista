@@ -93,7 +93,8 @@ coordinates:
 
 - for a projected CRS, the semi-major axis of its ellipsoid divided by the metres in one
   unit of its first axis;
-- for a geographic CRS, one radian expressed in its angular unit, so 57.2958 for degrees;
+- for a geographic CRS, one radian expressed in the angular unit its coordinates come
+  back in, so 57.2958 for degrees;
 - for a compound or a bound CRS, the `R` of its horizontal component, which `pyproj`
   reports directly.
 
@@ -161,7 +162,8 @@ No CRS that `transform_mesh` can reach is affected, by item 1 of
 
 Units come from the first horizontal axis. A projected CRS uses one unit on both axes, a
 latitude-first geographic CRS such as EPSG:4269 uses degrees on both, and an unusual angular
-unit converts the same way, so radians give 1 and grads 63.66.
+unit converts the same way, so grads give 63.66. A geographic CRS declared in radians is
+the exception: `pyproj` returns its coordinates in degrees, so its `R` is 57.2958 too.
 
 (zlevel-spec-4)=
 ## 4. Roadmap

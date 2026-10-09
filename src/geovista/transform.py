@@ -14,6 +14,7 @@ Notes
 from __future__ import annotations
 
 from copy import deepcopy
+import math
 from typing import TYPE_CHECKING, Any, cast
 
 import lazy_loader as lazy
@@ -583,7 +584,8 @@ def _earth_radius(crs: pyproj.CRS) -> float:
 
     A planar CRS offsets a z-level by this length, so that a level is the same
     proportion of the Earth's radius as it is on the sphere. For a geographic CRS
-    the radius is one radian, expressed in its angular unit.
+    the radius is one radian, expressed in the angular unit its coordinates come
+    back in, which for a CRS declared in radians is degrees.
 
     Parameters
     ----------
@@ -615,7 +617,11 @@ def _earth_radius(crs: pyproj.CRS) -> float:
         )
         raise ValueError(emsg)
 
-    radius: float = (
-        1.0 / factor if crs.is_geographic else ellipsoid.semi_major_metre / factor
-    )
+    radius: float
+    if crs.is_geographic:
+        # pyproj returns the coordinates of a geographic CRS declared in radians
+        # in degrees, and those of any other in its own angular unit
+        radius = math.degrees(1.0) if factor == 1.0 else 1.0 / factor
+    else:
+        radius = ellipsoid.semi_major_metre / factor
     return radius
