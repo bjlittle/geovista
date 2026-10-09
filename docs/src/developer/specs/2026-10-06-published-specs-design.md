@@ -329,7 +329,8 @@ forcing an issue into existence to satisfy a column.
 
 `.github/scripts/check_status_references.py` asks GitHub whether each reference is the work
 it claims, reading statuses with the unit suite's own parser so that a status has one
-definition. A `landed` row cites only pull requests, every one merged, and its date is
+definition. A role names the kind of work it says, `{pull}` a pull request and `{issue}`
+an issue. A `landed` row cites only pull requests, every one merged, and its date is
 within a day of the last of them to merge, the day allowing for an evening merge against
 GitHub's UTC. A **Resolved** item may cite an issue that is still open, since raising it
 can be what settled the item, and its date is when the decision was taken, which can come
@@ -341,8 +342,9 @@ whose pull request has merged or closed, or a `not started` row, **Open** item o
 check as that pull request, or with `drift` for the nightly check.
 
 Dates are ISO, and they are the date the state changed rather than the date the line was
-written. Several references are listed in the order the work happened, so a row whose first
-attempt needed a follow-up says so instead of naming only the one that finished.
+written. A date of the right shape that no calendar holds, such as `2026-02-30`, is a fault.
+Several references are listed in the order the work happened, so a row whose first attempt
+needed a follow-up says so instead of naming only the one that finished.
 
 What this buys is not bookkeeping. A reader who asks why the ratchet has twenty-three
 entries and not the twenty-two {ref}`typing spec §3.2 <typing-spec-3-2>` predicted gets
