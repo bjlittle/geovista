@@ -180,3 +180,175 @@ def test_field_data(coastlines):
     for key, value in metadata.items():
         assert id(result.field_data[key]) != id(value)
         np.testing.assert_array_equal(result.field_data[key], value)
+
+
+def _seam_line(lons: list[float]) -> pv.PolyData:
+    """Create a line through the given longitudes at 10°N, carrying data."""
+    n_points = len(lons)
+    lines = np.ravel([(2, i, i + 1) for i in range(n_points - 1)])
+    mesh = pv.PolyData(to_cartesian(lons, [10.0] * n_points), lines=lines)
+    to_wkt(mesh, WGS84)
+    mesh.point_data["level"] = np.arange(2.0, 2.0 * (n_points + 1), 2.0)
+    mesh.point_data["ids"] = np.arange(n_points, dtype=np.int64) * 3
+    mesh.point_data["names"] = np.array([f"p{i}" for i in range(n_points)])
+    mesh.cell_data["cid"] = np.arange(n_points - 1, dtype=np.int64) + 7
+    mesh.set_active_scalars("level")
+    return mesh
+
+
+def test_point_data_follows_a_split():
+    """A segment split at the antimeridian carries its point data to the split.
+
+    Issue 2583: ``slice_lines`` rebuilt the lines it split from their points,
+    lines and field data alone. The two points it adds take the values VTK's cut
+    interpolated at the crossing, so an integer rounds as VTK rounds it elsewhere,
+    and a string takes a value of its neighbours.
+
+    """
+    mesh = _seam_line([170.0, -170.0])
+
+    result = slice_lines(mesh)
+
+    assert result.n_points == 4
+    np.testing.assert_array_equal(result.point_data["level"], [2.0, 4.0, 3.0, 3.0])
+    np.testing.assert_array_equal(result.point_data["ids"], [0, 3, 2, 2])
+    np.testing.assert_array_equal(result.point_data["names"], ["p0", "p1", "p1", "p1"])
+
+
+def test_point_data_follows_a_duplicated_vertex():
+    """A vertex on the antimeridian lends its point data to its duplicate."""
+    mesh = _seam_line([-170.0, 180.0, 170.0])
+
+    result = slice_lines(mesh)
+
+    assert result.n_points == 4
+    np.testing.assert_array_equal(result.point_data["level"], [2.0, 4.0, 6.0, 4.0])
+    np.testing.assert_array_equal(result.point_data["ids"], [0, 3, 6, 3])
+    np.testing.assert_array_equal(result.point_data["names"], ["p0", "p1", "p2", "p1"])
+
+
+@pytest.mark.parametrize(
+    ("lons", "expected"),
+    [([170.0, -170.0], [7, 7]), ([-170.0, 180.0, 170.0], [7, 8])],
+    ids=["split", "duplicated"],
+)
+def test_cell_data_follows_each_segment(lons, expected):
+    """Both halves of a split segment keep its cell data."""
+    result = slice_lines(_seam_line(lons))
+
+    np.testing.assert_array_equal(result.cell_data["cid"], expected)
+
+
+@pytest.mark.parametrize("lons", [[170.0, -170.0], [-170.0, 180.0, 170.0]])
+def test_active_scalars_are_kept(lons):
+    """The scalars active on the lines stay active once they are sliced."""
+    result = slice_lines(_seam_line(lons))
+
+    assert result.active_scalars_name == "level"
+
+
+def _line(lons: list[float]) -> pv.PolyData:
+    """Create a bare line through the given longitudes at 10°N."""
+    n_points = len(lons)
+    lines = np.ravel([(2, i, i + 1) for i in range(n_points - 1)])
+    mesh = pv.PolyData(to_cartesian(lons, [10.0] * n_points), lines=lines)
+    to_wkt(mesh, WGS84)
+    return mesh
+
+
+def test_complex_data_follows_a_split():
+    """Complex point and cell data cross the antimeridian with a single crossing.
+
+    PyVista hands back a complex array of one value as 0-dimensional, both from the
+    cut, which has one point here, and from a line of one segment.
+
+    """
+    mesh = _line([170.0, -170.0])
+    mesh.point_data["data"] = np.array([1 + 2j, 3 + 4j])
+    mesh.cell_data["cdata"] = np.array([5 + 6j])
+
+    result = slice_lines(mesh)
+
+    expected = [1 + 2j, 3 + 4j, 2 + 3j, 2 + 3j]
+    np.testing.assert_array_equal(result.point_data["data"], expected)
+    np.testing.assert_array_equal(result.cell_data["cdata"], [5 + 6j, 5 + 6j])
+
+
+@pytest.mark.parametrize(
+    ("lons", "global_ids", "pedigree_ids"),
+    [
+        ([170.0, -170.0], [10, 20, 21, 22], [10, 20, 10, 10]),
+        ([-170.0, 180.0, 170.0], [10, 20, 30, 31], [10, 20, 30, 20]),
+    ],
+    ids=["split", "duplicated"],
+)
+def test_point_ids_keep_their_meaning(lons, global_ids, pedigree_ids):
+    """Point ids follow what they identify, and keep their role.
+
+    VTK's cut leaves out global and pedigree ids, as labels it won't interpolate.
+    A global id is unique, so each point added takes a fresh one beyond the largest.
+    A pedigree id traces where a point came from, so a duplicate takes its vertex's
+    and a split point the first vertex's of its segment.
+
+    """
+    mesh = _line(lons)
+    mesh.point_data["gids"] = np.arange(1, len(lons) + 1) * 10
+    mesh.point_data["pids"] = np.arange(1, len(lons) + 1) * 10
+    mesh.GetPointData().SetActiveGlobalIds("gids")
+    mesh.GetPointData().SetActivePedigreeIds("pids")
+
+    result = slice_lines(mesh)
+
+    np.testing.assert_array_equal(result.point_data["gids"], global_ids)
+    np.testing.assert_array_equal(result.point_data["pids"], pedigree_ids)
+    assert result.GetPointData().GetGlobalIds().GetName() == "gids"
+    assert result.GetPointData().GetPedigreeIds().GetName() == "pids"
+
+
+def test_string_pedigree_ids_follow_a_split():
+    """Pedigree ids that are strings take the first vertex's of a split segment."""
+    mesh = _line([170.0, -170.0])
+    mesh.point_data["pids"] = np.array(["a", "b"])
+    mesh.GetPointData().SetActivePedigreeIds("pids")
+
+    result = slice_lines(mesh)
+
+    np.testing.assert_array_equal(result.point_data["pids"], ["a", "b", "a", "a"])
+    assert result.GetPointData().GetPedigreeIds().GetName() == "pids"
+
+
+def test_cell_ids_keep_their_meaning():
+    """The half a split adds takes a fresh global id, but the segment's pedigree id."""
+    mesh = _line([170.0, -170.0])
+    mesh.cell_data["gids"] = np.array([7])
+    mesh.cell_data["pids"] = np.array([7])
+    mesh.GetCellData().SetActiveGlobalIds("gids")
+    mesh.GetCellData().SetActivePedigreeIds("pids")
+
+    result = slice_lines(mesh)
+
+    np.testing.assert_array_equal(result.cell_data["gids"], [7, 8])
+    np.testing.assert_array_equal(result.cell_data["pids"], [7, 7])
+    assert result.GetCellData().GetGlobalIds().GetName() == "gids"
+    assert result.GetCellData().GetPedigreeIds().GetName() == "pids"
+
+
+@pytest.mark.parametrize("lons", [[170.0, -170.0], [-170.0, 180.0, 170.0]])
+def test_roles_are_kept(lons):
+    """Every array keeps the role it plays, on the points and on the cells."""
+    mesh = _line(lons)
+    mesh.point_data.set_array(np.ones((mesh.n_points, 3)), "vectors")
+    mesh.point_data.set_array(np.zeros((mesh.n_points, 2)), "uv")
+    mesh.cell_data.set_array(np.ones(mesh.n_cells), "level")
+    mesh.cell_data.set_array(np.tile([0.0, 0.0, 1.0], (mesh.n_cells, 1)), "normals")
+    mesh.GetPointData().SetActiveVectors("vectors")
+    mesh.GetPointData().SetActiveTCoords("uv")
+    mesh.GetCellData().SetActiveScalars("level")
+    mesh.GetCellData().SetActiveNormals("normals")
+
+    result = slice_lines(mesh)
+
+    assert result.GetPointData().GetVectors().GetName() == "vectors"
+    assert result.GetPointData().GetTCoords().GetName() == "uv"
+    assert result.GetCellData().GetScalars().GetName() == "level"
+    assert result.GetCellData().GetNormals().GetName() == "normals"

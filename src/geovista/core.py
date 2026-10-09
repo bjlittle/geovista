@@ -810,10 +810,12 @@ def slice_lines(
     # use explicit typing for clarity ...
     split_cids: list[int] = []
     split_xyz: list[ArrayLike] = []
+    split_pois: list[int] = []
     detach_cids: list[int] = []
     detach_pids: list[int] = []
+    pois = np.flatnonzero(antimeridian)
 
-    for xyz, cid in zip(poi_xyz, poi_cids, strict=True):
+    for poi, xyz, cid in zip(pois, poi_xyz, poi_cids, strict=True):
         mask = np.all(np.isclose(cid_xyz_1d, xyz), axis=1)
         if np.any(mask):
             # we want to detach the connectivity of a single line segment at the pid
@@ -832,6 +834,7 @@ def slice_lines(
             # i.e., split the segment into two new segments about xyz
             split_cids.append(cid)
             split_xyz.append(xyz)
+            split_pois.append(poi)
 
     result = pv.PolyData()
     points = mesh.points.copy()
@@ -886,10 +889,16 @@ def slice_lines(
         for key in mesh.field_data:
             result.field_data[key] = mesh.field_data[key].copy()
 
-    # TDB: given mesh.points, perform linear interpolation for new intersection points
-
     result.points = points
     result.lines = lines
+    _carry_line_data(
+        mesh,
+        result,
+        intersection,
+        split_cids=split_cids,
+        split_pois=split_pois,
+        detach_pids=detach_pids,
+    )
 
     return result
 
@@ -941,3 +950,103 @@ def slice_mesh(
         result = slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
 
     return result
+
+
+def _carry_line_data(
+    mesh: pv.PolyData,
+    result: pv.PolyData,
+    cut: pv.PolyData,
+    *,
+    split_cids: list[int],
+    split_pois: list[int],
+    detach_pids: list[int],
+) -> None:
+    """Carry the point and cell data of lines into the lines they are sliced into.
+
+    Each point a split adds takes the values the cut interpolated at its crossing,
+    so an integer rounds as VTK rounds it. An array the cut leaves out, such as
+    pedigree ids, takes the value of the first vertex of the segment instead. A
+    point a detach adds takes the values of the vertex it duplicates. Both halves
+    of a split segment keep its cell data, and every array keeps its role.
+
+    Parameters
+    ----------
+    mesh : :class:`~pyvista.PolyData`
+        The lines before they are sliced.
+    result : :class:`~pyvista.PolyData`
+        The sliced lines, whose points and lines are already set.
+    cut : :class:`~pyvista.PolyData`
+        The cut of the lines along the antimeridian, carrying the point data that
+        VTK interpolated at each crossing.
+    split_cids : list of int
+        The cells split in two, in the order their new points were added.
+    split_pois : list of int
+        The point of the cut at which each of those cells was split.
+    detach_pids : list of int
+        The vertices duplicated, in the order their duplicates were added.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # the first vertex of each split segment
+    first = mesh.lines.reshape(-1, 3)[split_cids, 1]
+
+    # pyvista hands back a complex array of one value without its point
+    # dimension, so every array is held to at least one
+    for name in mesh.point_data:
+        values = np.atleast_1d(mesh.point_data[name])
+        parts = [values]
+        if split_cids:
+            if name in cut.point_data:
+                crossing = np.atleast_1d(cut.point_data[name])[split_pois]
+            else:
+                # VTK leaves out of the cut what it won't interpolate
+                crossing = values[first]
+            parts.extend([crossing, crossing])
+        if detach_pids:
+            parts.append(values[detach_pids])
+        result.point_data.set_array(np.concatenate(parts), name)
+
+    # only lines are carried through, so cell data is too when every cell is one
+    if mesh.n_cells == mesh.n_lines:
+        for name in mesh.cell_data:
+            values = np.atleast_1d(mesh.cell_data[name])
+            if split_cids:
+                values = np.concatenate([values, values[split_cids]])
+            result.cell_data.set_array(values, name)
+
+    _keep_roles(mesh.point_data, result.point_data)
+    _keep_roles(mesh.cell_data, result.cell_data)
+
+
+def _keep_roles(source: pv.DataSetAttributes, target: pv.DataSetAttributes) -> None:
+    """Give each array the role it plays in the data it was carried from.
+
+    Each point or cell added takes a fresh global id beyond the largest, so global
+    ids stay unique.
+
+    Parameters
+    ----------
+    source : :class:`~pyvista.DataSetAttributes`
+        The point or cell data the arrays were carried from.
+    target : :class:`~pyvista.DataSetAttributes`
+        The point or cell data the arrays were carried into. The values of the
+        source come first, followed by those of any point or cell added.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    for role in range(source.NUM_ATTRIBUTES):
+        array = source.GetAbstractAttribute(role)
+        if array is None or (name := array.GetName()) not in target:
+            continue
+        if role == source.GLOBALIDS:
+            # pyvista hands back a view, so the fresh ids land in the array itself
+            ids, n_ids = target[name], array.GetNumberOfTuples()
+            start = ids[:n_ids].max() + 1
+            ids[n_ids:] = np.arange(start, start + ids.size - n_ids)
+        target.SetActiveAttribute(name, role)

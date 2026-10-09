@@ -206,14 +206,6 @@ def transform_mesh(
                 mesh.rotate_z(central_meridian, inplace=True)
 
             if carry is not None:
-                if carry not in sliced_mesh.point_data:
-                    # slice_lines rebuilds the lines it splits without their point
-                    # data, so the levels are lost (issue 2583)
-                    emsg = (
-                        "Cannot transform mesh, a per-point 'zlevel' cannot yet "
-                        "follow lines sliced at the seam. Use a scalar 'zlevel'."
-                    )
-                    raise ValueError(emsg)
                 level = np.asarray(sliced_mesh.point_data.pop(carry))
 
             mesh = sliced_mesh
