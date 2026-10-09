@@ -62,3 +62,60 @@ def test_points_masked_on_one_axis_stay(masked):
     mesh = Transform.from_unstructured(xs, ys)
 
     np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 4, 4, 5, 6, 7])
+
+
+def test_masked_connectivity():
+    """Masked connectivity builds faces of different sizes."""
+    connectivity = np.ma.masked_array(
+        [[0, 1, 2, 3], [1, 4, 5, 0]], mask=[[0, 0, 0, 0], [0, 0, 0, 1]]
+    )
+    xs = [0.0, 10.0, 10.0, 0.0, 20.0, 20.0]
+    ys = [0.0, 0.0, 10.0, 10.0, 0.0, 10.0]
+
+    mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
+
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 3, 1, 4, 5])
+
+
+def test_masked_connectivity_drops_faces_of_two_points():
+    """A face left with fewer than three points is dropped, with a warning."""
+    connectivity = np.ma.masked_array(
+        [[0, 1, 2, 3], [1, 4, 5, 0]], mask=[[0, 0, 0, 0], [0, 0, 1, 1]]
+    )
+    xs = [0.0, 10.0, 10.0, 0.0, 20.0, 20.0]
+    ys = [0.0, 0.0, 10.0, 10.0, 0.0, 10.0]
+
+    with pytest.warns(UserWarning, match="defines 1 face with no vertices"):
+        mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
+
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3])
+
+
+def test_start_index_is_found():
+    """One-based connectivity is found from its smallest index."""
+    xs = [0.0, 10.0, 10.0, 0.0]
+    ys = [0.0, 0.0, 10.0, 10.0]
+
+    mesh = Transform.from_unstructured(xs, ys, connectivity=[[1, 2, 3, 4]])
+
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3])
+
+
+def test_fully_masked_connectivity():
+    """A connectivity with every index masked has no start index to find."""
+    connectivity = np.ma.masked_array([[0, 1, 2]], mask=True)
+
+    with pytest.raises(ValueError, match=r"closed interval \[0, 1\], got '--'"):
+        _ = Transform.from_unstructured(
+            [0.0, 10.0, 10.0], [0.0, 0.0, 10.0], connectivity=connectivity
+        )
+
+
+def test_masked_connectivity_must_be_2d():
+    """Masked connectivity is held to two dimensions before any face is built."""
+    connectivity = np.ma.masked_array([[[0, 1, 2, 3]]], mask=[[[0, 0, 0, 1]]])
+
+    with pytest.raises(ValueError, match="got 3D connectivity array"):
+        _ = Transform.from_unstructured(
+            [0.0, 10.0, 10.0, 0.0], [0.0, 0.0, 10.0, 10.0], connectivity=connectivity
+        )

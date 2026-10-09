@@ -129,7 +129,6 @@ module = ["geovista.examples.*"]
 # and that test, when the last entry goes.
 ignore_errors = true
 module = [
-  "geovista.bridge",
   "geovista.cache",
   "geovista.cli",
   "geovista.common",

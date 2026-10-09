@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 import pathlib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 import warnings
 
 import lazy_loader as lazy
@@ -42,8 +42,11 @@ from .crs import WGS84, CRSLike, to_wkt
 from .transform import transform_points
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     import numpy as np
     from numpy.typing import ArrayLike
+    import pyproj
     import pyvista as pv
 
 # lazy import third-party dependencies
@@ -210,12 +213,12 @@ class Transform:  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
-        def _contiguous(bnds: ArrayLike, kind: str) -> np.ndarray:
+        def _contiguous(bnds: np.ndarray, kind: str) -> np.ndarray:
             """Verify and construct a contiguous bounds array.
 
             Parameters
             ----------
-            bnds : ArrayLike
+            bnds : ndarray
                 The bounds array.
             kind : str
                 The kind of bounds array e.g., 'x-axis' or 'y-axis'.
@@ -332,7 +335,7 @@ class Transform:  # numpydoc ignore=PR01
         return np.arange(npts, dtype=np.uint32).reshape(-1, 4)
 
     @staticmethod
-    def _verify_2d(xs: ArrayLike, ys: ArrayLike) -> None:
+    def _verify_2d(xs: np.ndarray, ys: np.ndarray) -> None:
         """Ensure compatible quad-mesh dimensionality and shape.
 
         Verify the fitness of the provided x-values and y-values to create
@@ -340,9 +343,9 @@ class Transform:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        xs : ArrayLike
+        xs : ndarray
             A (M+1, N+1) or (M, N, 4) x-axis array.
-        ys : ArrayLike
+        ys : ndarray
             A (M+1, N+1) or (M, N, 4) y-axis array.
 
         Notes
@@ -989,28 +992,35 @@ class Transform:  # numpydoc ignore=PR01
                     units = str(src.units[0] if rgb else src.units[band - 1])
                     name = name.format(units=units)
 
-            data = src.read(masked=extract) if rgb else src.read(band, masked=extract)
+            masked = bool(extract)
+            data = src.read(masked=masked) if rgb else src.read(band, masked=masked)
 
             if extract:
                 # ignore the mask on the alpha channel, if present
-                mask = data[0].mask & data[1].mask & data[2].mask if rgb else data.mask
+                masks = np.ma.getmaskarray(data)
+                mask = masks[0] & masks[1] & masks[2] if rgb else masks
                 # ensure there is masked data prior to extracting unmasked points
-                extract = np.sum(mask) > 0
-                data = data.data
+                extract = bool(np.sum(mask) > 0)
+                data = np.ma.getdata(data)
 
             if rgb:
-                data = np.dstack(data).reshape(-1, count)
+                data = np.dstack(list(data)).reshape(-1, count)
 
             # transform from pixel offsets to crs coordinates
             cols, rows = np.meshgrid(
                 np.arange(src.width), np.arange(src.height), indexing="xy"
             )
             # rasterio 1.4.0 (regression) expects 1D arrays, fixed in 1.4.1
-            # see https://github.com/rasterio/rasterio/issues/3191
-            xs, ys = rio.transform.xy(src.transform, rows.flatten(), cols.flatten())
+            # see https://github.com/rasterio/rasterio/issues/3191, though the
+            # rasterio stubs accept sequences only (typing spec §8 item 7)
+            coords = rio.transform.xy(
+                src.transform,
+                cast("Sequence[int]", rows.flatten()),
+                cast("Sequence[int]", cols.flatten()),
+            )
 
             # ensure we have arrays, rather than a list of arrays
-            xs, ys = np.asanyarray(xs), np.asanyarray(ys)
+            xs, ys = np.asanyarray(coords[0]), np.asanyarray(coords[1])
 
             # ensure shape is maintained (rasterio 1.4.1 regression)
             if xs.shape != src.shape:
@@ -1019,13 +1029,17 @@ class Transform:  # numpydoc ignore=PR01
             if ys.shape != src.shape:
                 ys = ys.reshape(src.shape)
 
+            # rasterio's crs is no CRSLike, but its wkt is, and the crs is None
+            # for a geotiff without one, which the rasterio stubs leave out
+            crs = src.crs.to_wkt() if src.crs else None
+
             # create the geotiff mesh
             mesh = cls.from_2d(
                 xs,
                 ys,
                 data=data,
                 name=name,
-                crs=src.crs,
+                crs=crs,
                 rgb=rgb,
                 radius=radius,
                 zlevel=zlevel,
@@ -1220,18 +1234,18 @@ class Transform:  # numpydoc ignore=PR01
         cls._verify_connectivity(connectivity_array.shape)
 
         if not ignore_start_index:
-            if start_index is None:
-                start_index = connectivity_array.min()
+            # the smallest index is a numpy integer, or masked if every index is
+            base = connectivity_array.min() if start_index is None else start_index
 
-            if start_index not in [0, 1]:
+            if base not in [0, 1]:
                 emsg = (
                     "Require a 'start_index' in the closed interval [0, 1], got "
-                    f"'{start_index}'."
+                    f"'{base}'."
                 )
                 raise ValueError(emsg)
 
-            if start_index:
-                connectivity_array -= start_index
+            if base:
+                connectivity_array -= base
 
         radius = RADIUS if radius is None else abs(float(radius))
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
@@ -1241,14 +1255,12 @@ class Transform:  # numpydoc ignore=PR01
         # convert lat/lon to cartesian xyz
         geometry = to_cartesian(xs, ys, radius=radius)
 
-        if np.ma.is_masked(connectivity_array):
+        if isinstance(connectivity_array, np.ma.MaskedArray) and np.ma.is_masked(
+            connectivity_array
+        ):
             # create face connectivity from masked vertex indices, thus
             # supporting varied mesh face geometry e.g., triangular, quad,
             # pentagon (et al) cells within a single mesh.
-            connectivity_array = np.atleast_2d(connectivity_array)
-            if (ndim := connectivity_array.ndim) > 2:
-                emsg = f"Masked connectivity must be at most 2D, got {ndim}D."
-                raise ValueError(emsg)
             n_faces = connectivity_array.shape[0]
             n_vertices = np.ma.sum(~connectivity_array.mask, axis=1)
             # ensure at least three vertices per face
@@ -1263,10 +1275,10 @@ class Transform:  # numpydoc ignore=PR01
                 warnings.warn(wmsg, stacklevel=2)
                 n_vertices = n_vertices[valid_faces_mask]
                 connectivity_array = connectivity_array[valid_faces_mask]
-            faces = np.ma.hstack(
+            stacked = np.ma.hstack(
                 [n_vertices.reshape(-1, 1), connectivity_array]
             ).ravel()
-            faces = faces[~faces.mask].data
+            faces = stacked[~stacked.mask].data
         else:
             # create face connectivity serialization e.g., for a quad-mesh,
             # each face we have (4, V0, V1, V2, V3), where "4" is the number
