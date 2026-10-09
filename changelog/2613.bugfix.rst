@@ -1,0 +1,5 @@
+Fixed :func:`geovista.pantry.data.name_reykjanes`, which looked up the sample's
+release location with an online geocoder each time it loaded. The lookup needed
+the network, and returned the nearby town of Grindavík, 4.8 km from the release.
+The location is now read from the sample itself. Closes :issue:`2608`.
+(:user:`bjlittle`)

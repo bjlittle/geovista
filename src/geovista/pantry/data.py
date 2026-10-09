@@ -17,14 +17,13 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from geopy.geocoders import Nominatim
+from geopy.point import Point
 import lazy_loader as lazy
 
 from geovista.cache import CACHE, Decompress
 from geovista.common import LRU_CACHE_SIZE, StrEnumPlus
 
 if TYPE_CHECKING:
-    from geopy.location import Location
     import netCDF4 as nc  # noqa: N813
     from numpy.typing import ArrayLike
 
@@ -97,7 +96,7 @@ class SampleGridXYZ:
     zs: ArrayLike
     data: ArrayLike | None = field(default=None)
     name: str | None = field(default=None)
-    poi: Location | None = field(default=None)
+    poi: Point | None = field(default=None)
     units: str | None = field(default=None)
 
 
@@ -819,11 +818,11 @@ def name_reykjanes() -> SampleGridXYZ:
     units = data.units
     data = np.ma.masked_less_equal(data[:], 0).filled(np.nan)
 
-    # load and parse the point-of-interest
+    # load and parse the point-of-interest, which is recorded as "<lon> <lat>"
+    # e.g., "22.3840W   63.8820N". This is parsed rather than geocoded, as a
+    # geocoder needs the network and answers with the nearest named place
     release_location = dataset.getncattr("release_location")
-    release_location = " ".join(release_location.split()[::-1])
-    geolocator = Nominatim(user_agent="geovista")
-    poi = geolocator.geocode(release_location, language="en")
+    poi = Point(" ".join(release_location.split()[::-1]))
 
     return SampleGridXYZ(xs, ys, zs, data=data, name=name, poi=poi, units=units)
 
