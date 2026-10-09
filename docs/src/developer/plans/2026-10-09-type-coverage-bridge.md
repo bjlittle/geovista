@@ -1389,3 +1389,22 @@ CI's first run on the branch failed `test_crs`, because `test-py313` and `test-p
 lock `rasterio` 1.5.1, whose `from_origin` composes with the `*` that affine deprecates.
 `32b84960` builds the transform directly; `from_tiff` itself warns under neither 1.5.1
 nor 1.5.2.
+
+### Follow-ups
+
+Everything this change deferred is tracked in an issue:
+
+- {issue}`2601`: the `typing.cast` around `rasterio.transform.xy` in `from_tiff`, typing
+  spec §8 item 7, which comes out when typeshed accepts arrays
+  ([python/typeshed#16504](https://github.com/python/typeshed/issues/16504)).
+- {issue}`2603`: a masked point outside a bounded projection's domain raises `ProjError`
+  in `from_unstructured`.
+- {issue}`2604`: 2D points with vectors fail in `from_points`, whatever the vectors' CRS.
+- {issue}`2605`: `from_points`' docstring promises 3D `xs` and `ys`.
+- {issue}`2606`: the warning for faces dropped from masked connectivity says they have no
+  vertices.
+- {issue}`2607`: the seven minors above, as a checklist.
+
+The masked-points rule above stands as a ruling {user}`bjlittle` may still overturn:
+restricting it to `connectivity is None` restores 0.5.3's behaviour, at one line and a
+test parameter.
