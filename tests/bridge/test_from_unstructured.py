@@ -33,19 +33,22 @@ def _points(crs: str) -> tuple[np.ndarray, np.ndarray]:
     return xyz[..., 0], xyz[..., 1]
 
 
+@pytest.mark.parametrize("connectivity", [None, (2, 4)], ids=["shape", "tuple"])
 @pytest.mark.parametrize("crs", [WGS84, PLANAR], ids=["wgs84", "planar"])
-def test_masked_points_leave_their_faces(crs):
+def test_masked_points_leave_their_faces(crs, connectivity):
     """Points masked alike in x and y are dropped from the faces they belong to.
 
-    Regressed by #1977, which sent every point through ``transform_points``
-    and read the mask from what came back, which never has one. A masked point
-    then stayed in its face, with its underlying value as its coordinate.
+    So they are whether the connectivity is taken from the shape of the points
+    or given as a tuple. Regressed by #1977, which sent every point through
+    ``transform_points`` and read the mask from what came back, which never has
+    one. A masked point then stayed in its face, with its underlying value as
+    its coordinate.
 
     """
     xs, ys = _points(crs)
     xs, ys = np.ma.masked_array(xs, mask=MASK), np.ma.masked_array(ys, mask=MASK)
 
-    mesh = Transform.from_unstructured(xs, ys, crs=crs)
+    mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=crs)
 
     np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 3, 4, 5, 6])
 
