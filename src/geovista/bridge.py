@@ -699,6 +699,8 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.2.0
 
         """
+        xs, ys = np.asanyarray(xs), np.asanyarray(ys)
+
         if clean is None:
             clean = BRIDGE_CLEAN
 
