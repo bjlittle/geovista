@@ -327,8 +327,7 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
 
     """
     if not isinstance(mesh, pv.UnstructuredGrid):
-        dtype = type(mesh).split(" ")[1][:-1]
-        emsg = f"Expected a 'pyvista.UnstructuredGrid', got {dtype}."
+        emsg = f"Expected a 'pyvista.UnstructuredGrid', got '{type(mesh).__name__}'."
         raise TypeError(emsg)
 
     alg = pv._vtk.vtkGeometryFilter()  # noqa: SLF001
