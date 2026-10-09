@@ -70,8 +70,8 @@ code below.
    an ellipsoid or an axis unit. A compound CRS (EPSG:7405) and a bound one (a `tmerc`
    string with `+towgs84`) both report the Airy ellipsoid and a metre first axis, a
    rotated pole CRS is a derived geographic one in degrees, and EPSG:4978 is geocentric
-   in metres. An engineering CRS is the one kind without an ellipsoid, and `pyproj`
-   refuses to build a transformer to it, so `transform_mesh` fails before it needs `R`.
+   in metres. An engineering CRS and a vertical one have no ellipsoid, and `pyproj`
+   refuses to build a transformer to either, so `transform_mesh` fails before it needs `R`.
    The guard stays, and is tested on the helper directly.
 2. **The compound bullet of zlevel spec §3.1 needs no special case.** `pyproj` already
    reports the ellipsoid and first axis of the horizontal component of a compound CRS,
@@ -694,3 +694,29 @@ first.
 - Zlevel spec §4 row 1 reads landed, and §8 items 1 and 2 are resolved.
 - `changelog/2591.bugfix.rst` and `changelog/2591.breaking.rst` exist, and the pull
   request carries `agentic` and `type: bug`.
+
+## After the final review
+
+The whole-branch review ran on Opus 5.5 against `8beb68cb..9ef1d0da`, while CI rendered
+Task 3's images, and returned "with fixes": no critical findings, two important and two
+minor. It agreed that the code matches this plan word for word, and that its 16 tests fail
+on the old rule.
+
+| finding | outcome | commit |
+|---|---|---|
+| the breaking fragment told everyone to raise `zscale`, though only a global mesh's offset drops: a smaller one rises, about twice over the North Atlantic and 23 times for 10° across | the fragment and zlevel spec §3.3 give both directions, and the inverse ratio that restores the old depth | `c56be66d` |
+| a vertical CRS was said to reach the `ValueError` guard | not reproduced: in the locked environment `pyproj` refuses EPSG:5703 before `R` is needed, so item 1 keeps its answer, but neither it nor the helper's test calls an engineering CRS the one kind without an ellipsoid any more | `c56be66d` |
+| a geographic CRS declared in radians took `R = 1`, though `pyproj` returns its coordinates in degrees (minor) | fixed at {user}`bjlittle`'s request: one radian in degrees, 57.2958 | `e7e94167` |
+| the shifted-meridian test could not see a rebuild that lost the ellipsoid or the unit (minor) | fixed at {user}`bjlittle`'s request: Airy in kilometres, which a mutant rebuilding a bare `+proj=eqc` now fails | `11b90b4a` |
+
+Of the behaviours the review set aside, two predate this change and are raised for later:
+{issue}`2594`, graticule labels ignoring `zscale` on a planar CRS, and {issue}`2595`,
+targets whose WKT holds non-ASCII text, Web Mercator among them. The rest stand as outside
+the spec, each with its ruling in the ledger. Task 2's quoted text for item 1 is left as it
+was executed; the dry-run note above is corrected in place.
+
+Task 3 met two images rather than one. Besides the ORCA2 gallery image, the UK LAM scene of
+`test_view_poi` in `eqc` crossed its warning threshold, and both `test pypi` jobs failed on
+the same two because they run the image suite too. Each moved by a fraction of a pixel, as
+the camera frames the new scene bounds. {user}`bjlittle` approved both,
+`bjlittle/geovista-data#136` released them as 2026.10.2, and `6c34fe92` serves them.
