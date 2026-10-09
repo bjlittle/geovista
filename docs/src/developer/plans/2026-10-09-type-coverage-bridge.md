@@ -1348,3 +1348,44 @@ git push
   as the pull request's last commit.
 - The typeshed report is filed and linked from the issue §8 item 7 cites.
 - The pull request carries `agentic` and `type: tech-debt`.
+
+## After the final review
+
+The whole-branch review on Opus 5.5 returned "with fixes": no critical findings, one
+important and seven minor. It ran 87 cases against `main` and the branch, and the typing
+edits changed none of them: all 26 `from_tiff` cases matched under `rasterio` 1.5.1 and
+1.5.2, the pantry and FESOM meshes were identical, and every line of the Review Focus
+held.
+
+The important finding was that restoring masked points is not the pure widening that
+correction 4 and the bugfix fragment described. 0.5.3 applied the mask only when no
+connectivity was given, and only to WGS84 points, since any transform dropped it:
+
+| input | v0.5.3 | `main` | this branch |
+|---|---|---|---|
+| connectivity from the points' shape, WGS84 | faces of 4 and 3 | 4 and 4 | 4 and 3 |
+| connectivity given as a tuple, WGS84 | 4 and 4 | 4 and 4 | 4 and 3 |
+| two triangles in `+proj=eqc`, a vertex masked, two cell values | a mesh | a mesh | `ValueError`: the data no longer fits |
+| every point masked | `ValueError`, `start_index … '--'` | both faces | no faces, and a warning |
+
+#1467 moved the rule into the branch for a tuple connectivity, so the code `main` carries,
+dead since #1977, applies it to any tuple. It stays that way: a tuple equal to the points'
+shape builds the mesh that no connectivity builds, and a masked point's coordinates mean
+nothing in any CRS. `8a468ace` parametrizes `test_masked_points_leave_their_faces` over
+both connectivities, all four cases failing on `main`, and rewrites the bugfix fragment to
+say what changes against 0.5.3. The Global Constraints' "Behaviour only widens" holds for
+the `ArrayLike` conversions alone.
+
+Seven minors were left for {user}`bjlittle`: "masked alike" reads as a rule per point,
+though the code compares whole masks (the comment in `from_unstructured`, a test
+docstring); `test_lists` compares points and arrays but not faces;
+`tests/bridge/test_lists.py` breaks the one-file-per-function layout of `tests/AGENTS.md`;
+`test_crs` sends no projected CRS through a real file; the mask is copied even where an
+explicit connectivity array makes no use of it; the `xy` comment says the stubs accept
+"sequences only" where the point is that they refuse arrays; and a `type: ignore`, from
+#676, survives in `from_points`, unmentioned by the plan's rule against them.
+
+CI's first run on the branch failed `test_crs`, because `test-py313` and `test-py314`
+lock `rasterio` 1.5.1, whose `from_origin` composes with the `*` that affine deprecates.
+`47a5efd1` builds the transform directly; `from_tiff` itself warns under neither 1.5.1
+nor 1.5.2.
