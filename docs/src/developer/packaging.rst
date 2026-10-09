@@ -467,7 +467,17 @@ The following tasks are defined for each of our features:
    |                |                                | This task is only available in the :guilabel:`geovista` and                           |
    |                |                                | :guilabel:`geovista-py3xx` environments.                                              |
    +----------------+--------------------------------+---------------------------------------------------------------------------------------+
-   | ``{test}``     | ``tests-clean``                | Purge both the documentation and unit test image caches, along with any images        |
+   | ``{test}``     | ``check-spec-status``          | Check the work each design specification status cites against GitHub e.g.,            |
+   |                |                                |                                                                                       |
+   |                |                                | .. code:: console                                                                     |
+   |                |                                |                                                                                       |
+   |                |                                |    $ pixi run check-spec-status                                                       |
+   |                |                                |                                                                                       |
+   |                |                                | Provide the number of a pull request to check as that pull request, which a status    |
+   |                |                                | may cite while it is still open, or ``drift`` to also report a status the work has    |
+   |                |                                | moved past. See :ref:`tippy-gv-developer-specs`.                                      |
+   |                +--------------------------------+---------------------------------------------------------------------------------------+
+   |                | ``tests-clean``                | Purge both the documentation and unit test image caches, along with any images        |
    |                |                                | generated from previous test sessions e.g.,                                           |
    |                |                                |                                                                                       |
    |                |                                | .. code:: console                                                                     |
