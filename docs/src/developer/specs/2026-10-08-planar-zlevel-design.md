@@ -170,7 +170,7 @@ the exception: `pyproj` returns its coordinates in degrees, so its `R` is 57.295
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The rule in `transform_mesh`, its tests and docstring, and the image baselines it moves | in progress ({pull}`2591`) |
+| 1 | The rule in `transform_mesh`, its tests and docstring, and the image baselines it moves | ✅ landed (2026-10-09, {pull}`2591`) |
 
 Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`. The image baselines live in
 `bjlittle/geovista-data`, so row 1 lands there first: the new images are released there,
