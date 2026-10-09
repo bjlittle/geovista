@@ -371,21 +371,23 @@ def test_transform_mesh__integer_levels_interpolate_as_floats():
     ],
     ids=["antimeridian", "shifted"],
 )
-def test_transform_mesh__zlevel_per_point_on_sliced_lines(lons, tgt_crs):
-    """A per-point zlevel is refused on lines the seam slices, until #2583.
+def test_transform_mesh__zlevel_per_point_follows_sliced_lines(lons, tgt_crs):
+    """A per-point zlevel follows a line through the seam, interpolated at the split.
 
-    ``slice_lines`` rebuilds the lines it splits without their point data, so the
-    levels cannot follow the points through the seam. The refusal leaves the
-    caller's mesh as it was, rotated back from the shifted seam.
+    Issue 2583: ``slice_lines`` rebuilt the lines it split without their point data,
+    so ``transform_mesh`` refused a per-point zlevel on them. The seam falls midway
+    along this line, so the two points the split adds take the mean of its levels.
+    The caller's mesh is left as it was, rotated back from the shifted seam.
 
     """
     mesh = pv.PolyData(to_cartesian(lons, [10.0, 10.0]), lines=[2, 0, 1])
     to_wkt(mesh, WGS84)
     before = mesh.copy(deep=True)
 
-    with pytest.raises(ValueError, match="cannot yet follow lines sliced at the seam"):
-        _ = transform_mesh(mesh, tgt_crs, zlevel=[1.0, 3.0])
+    result = transform_mesh(mesh, tgt_crs, zlevel=[1.0, 3.0])
 
+    expected = np.array([1.0, 3.0, 2.0, 2.0]) * ZLEVEL_SCALE * SEMI_MAJOR
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)
     np.testing.assert_allclose(mesh.points, before.points, atol=1e-12)
     assert list(mesh.point_data) == list(before.point_data)
 

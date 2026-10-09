@@ -180,3 +180,68 @@ def test_field_data(coastlines):
     for key, value in metadata.items():
         assert id(result.field_data[key]) != id(value)
         np.testing.assert_array_equal(result.field_data[key], value)
+
+
+def _seam_line(lons: list[float]) -> pv.PolyData:
+    """Create a line through the given longitudes at 10°N, carrying data."""
+    n_points = len(lons)
+    lines = np.ravel([(2, i, i + 1) for i in range(n_points - 1)])
+    mesh = pv.PolyData(to_cartesian(lons, [10.0] * n_points), lines=lines)
+    to_wkt(mesh, WGS84)
+    mesh.point_data["level"] = np.arange(2.0, 2.0 * (n_points + 1), 2.0)
+    mesh.point_data["ids"] = np.arange(n_points, dtype=np.int64) * 3
+    mesh.point_data["names"] = np.array([f"p{i}" for i in range(n_points)])
+    mesh.cell_data["cid"] = np.arange(n_points - 1, dtype=np.int64) + 7
+    mesh.set_active_scalars("level")
+    return mesh
+
+
+def test_point_data_follows_a_split():
+    """A segment split at the antimeridian carries its point data to the split.
+
+    Issue 2583: ``slice_lines`` rebuilt the lines it split from their points,
+    lines and field data alone. The two points it adds take the values VTK's cut
+    interpolated at the crossing, so an integer rounds as VTK rounds it elsewhere,
+    and a string takes a value of its neighbours.
+
+    """
+    mesh = _seam_line([170.0, -170.0])
+
+    result = slice_lines(mesh)
+
+    assert result.n_points == 4
+    np.testing.assert_array_equal(result.point_data["level"], [2.0, 4.0, 3.0, 3.0])
+    np.testing.assert_array_equal(result.point_data["ids"], [0, 3, 2, 2])
+    np.testing.assert_array_equal(result.point_data["names"], ["p0", "p1", "p1", "p1"])
+
+
+def test_point_data_follows_a_duplicated_vertex():
+    """A vertex on the antimeridian lends its point data to its duplicate."""
+    mesh = _seam_line([-170.0, 180.0, 170.0])
+
+    result = slice_lines(mesh)
+
+    assert result.n_points == 4
+    np.testing.assert_array_equal(result.point_data["level"], [2.0, 4.0, 6.0, 4.0])
+    np.testing.assert_array_equal(result.point_data["ids"], [0, 3, 6, 3])
+    np.testing.assert_array_equal(result.point_data["names"], ["p0", "p1", "p2", "p1"])
+
+
+@pytest.mark.parametrize(
+    ("lons", "expected"),
+    [([170.0, -170.0], [7, 7]), ([-170.0, 180.0, 170.0], [7, 8])],
+    ids=["split", "duplicated"],
+)
+def test_cell_data_follows_each_segment(lons, expected):
+    """Both halves of a split segment keep its cell data."""
+    result = slice_lines(_seam_line(lons))
+
+    np.testing.assert_array_equal(result.cell_data["cid"], expected)
+
+
+@pytest.mark.parametrize("lons", [[170.0, -170.0], [-170.0, 180.0, 170.0]])
+def test_active_scalars_are_kept(lons):
+    """The scalars active on the lines stay active once they are sliced."""
+    result = slice_lines(_seam_line(lons))
+
+    assert result.active_scalars_name == "level"
