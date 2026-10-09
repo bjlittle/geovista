@@ -688,7 +688,52 @@ Codex round are done, dated the day it is committed.
 - Every deferred item has an `agentic` issue, linked from the Follow-ups below and from the
   pull request's description.
 
-## Follow-ups
+## After the final review
 
-None yet. The final review's minors, and any defect it sets aside, each get an `agentic`
-issue listed here before the pull request leaves draft.
+The whole-branch review on Opus 5.5 found nothing critical or important, and four minors.
+It held every line of the Review Focus, reproduced the 67 errors on 19 lines and the eight
+lines of the idiom, ran 900 random cases through `to_cartesian` and `vectors_to_cartesian`
+on `main` and the branch with every output bit-identical, and fingerprinted the 21 pantry
+meshes itself (`21 []`).
+
+Two of the minors were re-graded important by their effect, and `d43a67a5` fixes them:
+
+- `nan_mask` converted a list with `np.asanyarray`, which drops the mask of any masked
+  arrays the list holds, so `nan_mask([np.ma.masked_array([1.0, 2.0], mask=[False,
+  True])])` came back `[[1., 2.]]`, the masked value passed off as data, on the very path
+  this change advertises. A list now goes through `np.ma.asanyarray`, and is unwrapped
+  when nothing in it is masked, so a plain list still converts as `np.asanyarray` would.
+  `test_list_keeps_its_mask` failed first, for floats and ints. A `np.ma.masked` element in
+  a list still draws numpy's own "converting a masked element to nan" warning, with the
+  right result.
+- `wrap` returned a NumPy scalar for a 0D array, since arithmetic on one gives a scalar,
+  and so raised `TypeError` at `result[mask] = base` for a value that snaps to the base,
+  `wrap(np.array(179.99999999))`. `main` did the same, but `test_0d_array_stays_0d`, which
+  task 3 added, checked only the shape a scalar shares. The result is now kept an array;
+  the test checks the type, and `test_0d_array_snaps_to_the_base` failed first.
+
+The non-image suite then passed 2760, and the pantry still matched `main`.
+
+A correction to the Architecture and to task 3's commit: the typing edits change no
+behaviour but `triangulated`'s for every input the suite or `src/` gives them, not for
+every input. `np.atleast_1d` in `wrap` also changes two exotic ones: a non-iterable object
+with `__array__` comes back without the extra dimension `[lons]` gave it, and a complex
+scalar, which raised `TypeError`, now wraps under numpy's `ComplexWarning`.
+
+The review declined to judge five behaviours, each ruled on and left standing: a pandas
+`Series` comes back from the two converted functions as an array, as typing spec §3.3's
+conversion makes it; a 2-tuple of vectors fails to unpack before the shape check, both
+`ValueError`; `wrap` ignores an integer `dtype` (older, filed below); `triangulated` calls
+an empty mesh triangulated (older, and vacuously true); and §3.3's count of six stays,
+corrected by the paragraph after it, as change 2 did. It also offered
+`isinstance(cast("object", mesh), pv.UnstructuredGrid)` in place of correction 3's
+widening, keeping the narrow annotation. The widening stays: it says in the signature what
+the function takes, and the docstring what it refuses.
+
+### Follow-ups
+
+Everything this change deferred is tracked in an issue:
+
+- {issue}`2614`: `wrap`'s `dtype` annotation, `np.dtype | None`, refuses the data-types
+  its docstring accepts (`np.float32`, `"f4"`), and an integer `dtype` is ignored. Both
+  predate this change.
