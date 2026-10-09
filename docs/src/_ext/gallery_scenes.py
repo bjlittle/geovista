@@ -22,6 +22,12 @@ has changed since the previous build, see :func:`invalidate`.
 
 Notes
 -----
+Unregistering the ``trame`` component is a workaround. Once ``pyvista`` only
+exports a scene for a plot that is not rendered static, see
+https://github.com/pyvista/pyvista/issues/9384, the examples in :data:`STATIC`
+can use ``PYVISTA_GALLERY_FORCE_STATIC`` instead, and :func:`reset` and
+:func:`invalidate` can go.
+
 .. versionadded:: 0.6.0
 
 """
