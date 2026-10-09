@@ -719,6 +719,11 @@ pyyaml = ">=6.0.3,<7"
 # no python bindings, so this must come from pypi
 playwright = ">=1.63.0,<2"
 
+[tool.pixi.feature.test.tasks.check-spec-status]
+args = [{ "arg" = "option", "default" = "" }]
+cmd = "python .github/scripts/check_status_references.py{% if option == 'drift' %} --drift{% elif option | length %} --pull {{ option }}{% endif %}"
+description = "Check the work each specification status cites against GitHub"
+
 [tool.pixi.feature.test.tasks.tests-clean]
 cmd = "rm -rf docs/image_cache tests/plotting/unit_image_cache test_images test_images_failed"
 description = "Purge all documentation and image unit test caches"

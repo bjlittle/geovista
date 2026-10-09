@@ -1,0 +1,120 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/peter-evans/create-issue-from-file
+#   - https://github.com/prefix-dev/setup-pixi
+
+name: ci-spec-status
+
+on:
+  pull_request:
+    paths:
+      - ".github/scripts/check_status_references.py"
+      - ".github/workflows/ci-spec-status.yml"
+      - "docs/src/developer/specs/**"
+      - "tests/test_spec_conventions.py"
+
+  schedule:
+    # every day @ 00h20
+    - cron: "20 0 * * *"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+permissions: {}
+
+jobs:
+  references:
+    # a status may cite the pull request that writes it, while still open
+    if: ${{ github.event_name == 'pull_request' }}
+    name: "status references"
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        with:
+          environments: "test"
+          frozen: true
+
+      - name: "check status references"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          pixi run --frozen --environment test check-spec-status "${PR_NUMBER}"
+
+  drift:
+    # drift appears when other work lands, so look for it on main each night
+    if: ${{ github.event_name != 'pull_request' }}
+    name: "status drift"
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: read
+      issues: write  # required for peter-evans/create-issue-from-file
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        with:
+          environments: "test"
+          frozen: true
+
+      - name: "check status drift"
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          status=0
+          pixi run --frozen --environment test check-spec-status drift > status.txt 2>&1 || status=$?
+          cat status.txt
+          {
+            echo "The nightly check of the specification statuses found the work they"
+            echo "cite has moved on, or is not what they say. Run"
+            echo "\`pixi run -e test check-spec-status drift\` to reproduce it."
+            echo
+            echo '```'
+            cat status.txt
+            echo '```'
+          } > status.md
+          echo "exit_code=${status}" >> "${GITHUB_OUTPUT}"
+
+      # exit code 2 is GitHub being unreachable, which is not worth an issue
+      - name: "report failure"
+        if: ${{ steps.check.outputs.exit_code == '1' }}
+        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710
+        with:
+          title: "chore: specification status drift"
+          content-filepath: ./status.md
+          labels: |
+            bot
+            new: issue
+            type: documentation
+
+      - name: "exit action"
+        if: ${{ steps.check.outputs.exit_code != '0' }}
+        env:
+          EXIT_CODE: ${{ steps.check.outputs.exit_code }}
+        run: |
+          exit "${EXIT_CODE}"
