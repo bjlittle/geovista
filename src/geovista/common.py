@@ -622,6 +622,8 @@ def nan_mask(data: ArrayLike) -> np.ndarray:
     .. versionadded:: 0.1.0
 
     """
+    data = np.asanyarray(data)
+
     if np.ma.isMaskedArray(data):
         if data.dtype.char not in np.typecodes["Float"]:
             data = np.ma.asanyarray(data, dtype=float)
@@ -902,19 +904,21 @@ def vectors_to_cartesian(
 
     radius += radius * zlevel_array * zscale
 
+    lons, lats = np.asanyarray(lons), np.asanyarray(lats)
+    u, v, w = (np.asanyarray(component) for component in vectors)
+
     if lons.shape != lats.shape:
         msg = f"'lons' and 'lats' do not have same shape: {lons.shape} != {lats.shape}."
         raise ValueError(msg)
 
-    if any(x.shape != lons.shape for x in vectors):
+    if any(x.shape != lons.shape for x in (u, v, w)):
         msg = (
             "some 'vectors' do not have same shape as 'lons' : "
-            f"{[x.shape for x in vectors]} != {lons.shape}."
+            f"{[x.shape for x in (u, v, w)]} != {lons.shape}."
         )
         raise ValueError(msg)
 
     lons, lats = (np.deg2rad(arr) for arr in (lons, lats))
-    u, v, w = vectors
 
     coslons = np.cos(lons)
     sinlons = np.sin(lons)

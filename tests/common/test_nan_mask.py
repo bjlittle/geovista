@@ -37,3 +37,11 @@ def test_to_float(dtype):
     result = nan_mask(data)
     assert result.dtype == float
     assert ma.isMaskedArray(result) is False
+
+
+def test_list():
+    """A list comes back as the array its annotation promises (typing spec §3.3)."""
+    result = nan_mask([1.0, 2.0])
+
+    assert isinstance(result, np.ndarray)
+    np.testing.assert_array_equal(result, [1.0, 2.0])
