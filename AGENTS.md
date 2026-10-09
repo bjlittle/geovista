@@ -46,12 +46,12 @@ pixi run download                        # Fetch offline assets
 **`geovista` is the superset environment** — development, testing, docs and all.
 Prefer `pixi run -e geovista ...` over hunting across `test`/`devs`/`docs`.
 
-**Use `--frozen` to reproduce CI.** Every CI job installs with `frozen: true`
-and runs `pixi run --frozen ...`, which resolves strictly from `pixi.lock`
-rather than re-solving the manifest — so `pixi run --frozen -e <env> ...`
-locally is the same environment CI gets. The corollary: after editing any
-dependency, run `pixi lock` *first*, or `--frozen` will silently keep running
-the previous environment.
+**Use `--frozen` to reproduce CI.** Every CI job runs `pixi run --frozen`,
+which resolves strictly from `pixi.lock` — so `pixi run --frozen -e <env>`
+locally is CI's environment, *if* `<env>` is CI's: the test jobs run
+`test-py313`/`test-py314`, whose lock can differ from `geovista`'s (rasterio
+1.5.1 against 1.5.2, #2599). After editing a dependency, run `pixi lock`
+*first*, or `--frozen` silently keeps running the previous environment.
 
 ⚠️ **But `pixi lock` alone will not raise a version ceiling.** It only
 re-solves when the lock is *invalid*, and an already-locked version still
@@ -196,4 +196,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 7 October 2026
+**Last Updated**: 9 October 2026
