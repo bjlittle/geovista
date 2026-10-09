@@ -25,12 +25,10 @@ pytest tests/core/             # direct; also -m "not image", -k "test_slice_cel
 
 The pixi tasks run from the repo root; pytest reads `pyproject.toml` either way.
 
-⚠️ **`tests-unit` and the `ci-tests*.yml` runs use `pytest-xdist`**; plain `pytest`
-stays serial. The hazard is an *empty* cache: `pooch.Decompress` writes its target
-in place, so a peer worker read it half-written, once silently as a wrong image.
-Use `geovista.cache.Decompress`. Import-time setup (`tests/plotting/__init__.py`)
-runs once per worker, at once: make filesystem side effects atomic (temp name, then
-`replace`). Probe cold with an empty `GEOVISTA_CACHEDIR`; race behind a barrier.
+⚠️ **`tests-unit` and `ci-tests*.yml` use `pytest-xdist`**; plain `pytest` stays serial.
+An *empty* cache is the hazard, so use `geovista.cache.Decompress`, never pooch's.
+Import-time setup (`tests/plotting/__init__.py`) runs in every worker at once, so make
+its side effects atomic. Probe with an empty `GEOVISTA_CACHEDIR`; race behind a barrier.
 
 ## Configuration
 
@@ -77,12 +75,12 @@ fails in a full run. Restore it in a fixture: `copy.deepcopy` round-trips.
 
 ### Image Tests
 
-- Plotting tests use `pytest-pyvista` baseline comparison through the
-  `verify_image_cache` fixture; maximum image size 450px
-- Baselines are fetched via `geovista.cache.CACHE` into
-  `tests/plotting/unit_image_cache`; failures land in `test_images_failed/`
-- ⚠️ **Every test that renders carries `@pytest.mark.image`** (house rule, #2596):
-  an unmarked `show()`, `screenshot()` or other draw crashes `-m "not image"` runs.
+`verify_image_cache` compares 450px baselines that `CACHE` fetches into
+`tests/plotting/unit_image_cache`; failures land in `test_images_failed/`.
+
+⚠️ **A test that draws is marked `image`**, even via a helper or fixture, or `-m "not
+image"` segfaults with no display (#2596). Drawing is `show`, `screenshot`, `render`,
+`plot` or `export_*`; `example` implies `image`. `tests/test_image_marker.py` gates it.
 
 ⚠️ **Baselines live in a second repo.** `bjlittle/geovista-data` holds the PNGs
 under `assets/`; `src/geovista/cache/registry.txt` lists `<path> <sha256>` and

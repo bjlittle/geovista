@@ -109,6 +109,7 @@ def test_unknown(scenes):
     assert _registered()
 
 
+@pytest.mark.image
 @pytest.mark.parametrize(
     ("fname", "exported"), [("reykjanes.py", False), ("icon.py", True)]
 )

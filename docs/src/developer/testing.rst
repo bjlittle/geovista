@@ -213,6 +213,19 @@ selection for execution:
 
    ``pytest`` must be executed from within the :bash:`geovista` root directory.
 
+.. important::
+   :class: dropdown, toggle-shown
+
+   Mark every unit test that draws with ``image``. That includes any test that
+   calls ``show``, ``screenshot``, ``render``, ``plot`` or an ``export_*``
+   method, directly or through a helper or fixture. Rendering needs a display
+   or a GPU, and crashes without one, so ``pytest -m "not image"`` is only safe
+   on such a machine if the marker is never missing. Every test marked
+   ``example`` must also be marked ``image``.
+
+   The :bash:`tests/test_image_marker.py` unit test reads the source of every
+   test module and fails on a test that breaks either rule.
+
 
 .. _gv-developer-testing-image-tests-fixtures:
 .. _tippy-gv-developer-testing-image-tests-fixtures:
