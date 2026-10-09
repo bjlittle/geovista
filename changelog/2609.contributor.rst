@@ -1,0 +1,6 @@
+The work that each design specification status cites is now checked against
+GitHub. A ``landed`` roadmap row must cite merged pull requests on its date, a
+**Resolved** item must cite real work, and each night a status left behind by
+its work is reported. The ``ci-spec-status`` workflow runs the check, and
+``pixi run -e test check-spec-status`` runs it locally. Closes :issue:`2575`.
+(:user:`bjlittle`)

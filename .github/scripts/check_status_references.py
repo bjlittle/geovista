@@ -337,7 +337,7 @@ def main(argv: list[str] | None = None) -> int:
     -------
     int
         Zero when every status holds, one when any does not, and two when
-        GitHub cannot be reached.
+        GitHub cannot be asked, as when it is unreachable or rate limited.
 
     """
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
@@ -370,7 +370,13 @@ def main(argv: list[str] | None = None) -> int:
             )
         ]
     except (urllib.error.URLError, TimeoutError) as error:
-        print(f"could not reach GitHub: {error}", file=sys.stderr)
+        print(f"could not ask GitHub: {error}", file=sys.stderr)
+        if isinstance(error, urllib.error.HTTPError) and error.code in (403, 429):
+            print(
+                "set GITHUB_TOKEN or GH_TOKEN to raise the rate limit, e.g. "
+                'GH_TOKEN="$(gh auth token)"',
+                file=sys.stderr,
+            )
         return 2
 
     for problem in problems:

@@ -262,7 +262,8 @@ The suite asserts:
    and at least one reference: an `{issue}` or `{pull}` role, or a link to an issue or pull
    request in another repository. This is the one rule a specification breaks by *not*
    editing it: a row goes stale by the work landing elsewhere, so the check has to read the
-   column rather than the diff.
+   column rather than the diff. Whether the reference is real is not this suite's question,
+   since answering it means asking GitHub; {ref}`§3.6 <docs-spec-3-6>` says what answers it.
 
 It also holds the publication of {ref}`§3.1 <docs-spec-3-1>` in place: no specification
 carries `orphan: true`, the index's toctree lists every specification, and its namespace
@@ -325,6 +326,19 @@ A terminal status — `landed`, **Resolved**, **Abandoned** — always carries a
 reference. The two non-terminal ones may carry neither: **Open** with nothing beside it is
 a true statement about work nobody has started, and the convention is not improved by
 forcing an issue into existence to satisfy a column.
+
+`.github/scripts/check_status_references.py` asks GitHub whether each reference is the work
+it claims, reading statuses with the unit suite's own parser so that a status has one
+definition. A `landed` row cites only pull requests, every one merged, and its date is
+within a day of the last of them to merge, the day allowing for an evening merge against
+GitHub's UTC. A **Resolved** item may cite an issue that is still open, since raising it
+can be what settled the item, and its date is when the decision was taken, which can come
+before the merge that records it. On a pull request, a status may cite that pull request
+while it is still open. Each night the script also reports drift: an `in progress` row
+whose pull request has merged or closed, or a `not started` row, **Open** item or
+**Deferred** item whose issue has closed. The `ci-spec-status` workflow runs both, and
+`pixi run -e test check-spec-status` runs either locally, with a pull request number to
+check as that pull request, or with `drift` for the nightly check.
 
 Dates are ISO, and they are the date the state changed rather than the date the line was
 written. Several references are listed in the order the work happened, so a row whose first
@@ -427,6 +441,12 @@ A trigger assertion fails with a message naming its roadmap rows and what firing
 the person whose change carries the count past the ceiling is told which decision they have
 just made rather than which number no longer matches.
 
+`.github/scripts/check_status_references.py` does the one check this suite cannot, resolving
+each status reference against GitHub as {ref}`§3.6 <docs-spec-3-6>` describes. It is a
+script rather than a test, so a network outage fails a workflow and not the suite.
+`tests/test_status_references.py` runs its rules against a fixed record of the work, and
+asserts that the parser it borrows still finds the references in the real specifications.
+
 (docs-spec-7)=
 ## 7. Scope
 
@@ -458,13 +478,14 @@ that was taken from one that was dropped.
    against; `docs spec` became that namespace with change 1, which brought the count to
    fifteen, still too few to measure a better number from. Revising it is a change to this
    document.
-3. **Open** ({issue}`2575`) — **Nothing proves the references in a status line point at
-   real work.** {ref}`§3.5 <docs-spec-3-5>`'s seventh assertion checks that a terminal
-   status carries a date and a reference, not that {pull}`2565` is the pull request that
-   landed that row, or that it exists. Reaching GitHub from a test would make the suite
-   fail on a network outage, and row 5 of {ref}`§4 <docs-spec-4>` is where reference
-   checking belongs if it is ever wanted. Until then this is review's job, and saying so is
-   the admission the rule in {ref}`§2 <docs-spec-2>` asks for.
+3. **Resolved** (2026-10-09, {pull}`2609`) — **Nothing proved the references in a status
+   line point at real work.** {ref}`§3.5 <docs-spec-3-5>`'s seventh assertion checks that a
+   terminal status carries a date and a reference, not that the work it names exists or did
+   what the status says. Raised as {issue}`2575`, this is now checked against GitHub on each
+   pull request that touches a specification, and nightly for drift, as
+   {ref}`§3.6 <docs-spec-3-6>` describes, which keeps the network out of the unit suite. Row
+   5 of {ref}`§4 <docs-spec-4>` no longer owns reference checking. It keeps the form of a
+   reference, which is all that `tephpy`'s `check_github_references.py` checks.
 4. **Resolved** (2026-10-07, {pull}`2573`) — **The status rule accepted only this
    repository's roles.** The seventh assertion of {ref}`§3.5 <docs-spec-3-5>` asked a
    terminal status for an `{issue}` or `{pull}` role, and the type coverage specification
