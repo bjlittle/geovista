@@ -54,7 +54,6 @@ RATCHET_BASELINE = frozenset(
     {
         "geovista.cache",
         "geovista.cli",
-        "geovista.common",
         "geovista.config",
         "geovista.core",
         "geovista.crs",

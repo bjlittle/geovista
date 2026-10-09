@@ -19,3 +19,8 @@ def test_triangulated(lam_uk):
     """Test detection of triangulated mesh."""
     mesh = lam_uk.triangulate()
     assert triangulated(mesh)
+
+
+def test_returns_bool(lam_uk):
+    """The result is the bool its annotation promises, not a numpy bool."""
+    assert type(triangulated(lam_uk)) is bool

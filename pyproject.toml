@@ -131,7 +131,6 @@ ignore_errors = true
 module = [
   "geovista.cache",
   "geovista.cli",
-  "geovista.common",
   "geovista.config",
   "geovista.core",
   "geovista.crs",

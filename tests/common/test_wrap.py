@@ -131,3 +131,19 @@ def test_custom_base():
     expected = np.concatenate([np.arange(180, 360, 10), np.arange(0, 190, 10)])
     result = wrap(lons, base=0)
     np.testing.assert_array_equal(result, expected.astype(DTYPE))
+
+
+def test_scalar_is_1d():
+    """A scalar longitude comes back as a 1D array of one."""
+    result = wrap(180)
+
+    assert result.shape == (1,)
+    np.testing.assert_array_equal(result, [-180.0])
+
+
+def test_0d_array_stays_0d():
+    """A 0D array passes the check for an iterable, so it keeps its dimension."""
+    result = wrap(np.array(180.0))
+
+    assert result.shape == ()
+    np.testing.assert_array_equal(result, -180.0)

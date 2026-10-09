@@ -37,3 +37,10 @@ def test_to_radians(radians):
     """Test conversion from XYZ cartesian point to geographical radians."""
     lonlat = to_lonlat(radians.xyz, radians=True)
     np.testing.assert_array_almost_equal(lonlat, radians.expected)
+
+
+def test_list(degrees):
+    """A point given as a list is the point given as an array (typing spec §3.3)."""
+    point = np.asarray(degrees.xyz, dtype=float)
+
+    np.testing.assert_array_equal(to_lonlat(point.tolist()), to_lonlat(point))
