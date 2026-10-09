@@ -41,6 +41,20 @@ PLANAR = "+proj=eqc"
 #: A second planar target CRS, for a cloud moved between planar CRSs.
 ROBIN = "+proj=robin"
 
+#: The semi-major axis of the WGS84 and GRS80 ellipsoids, in metres.
+SEMI_MAJOR: float = 6378137.0
+
+#: The semi-major axis of the Airy 1830 ellipsoid, in metres.
+AIRY: float = 6377563.396
+
+#: A geographic CRS on the WGS84 ellipsoid, with its axes declared in radians.
+RADIANS = (
+    'GEOGCRS["WGS 84 in radians",DATUM["World Geodetic System 1984",'
+    'ELLIPSOID["WGS 84",6378137,298.257223563]],CS[ellipsoidal,2],'
+    'AXIS["longitude",east,ANGLEUNIT["radian",1]],'
+    'AXIS["latitude",north,ANGLEUNIT["radian",1]]]'
+)
+
 #: Whole-globe projections carrying the central meridian in assorted ways.
 #:
 #: Note that "LambertConformal" and "NearsidePerspective" are deliberately
@@ -95,6 +109,13 @@ def lifted_cloud():
     return gv.Transform.from_points(
         [10.0, 20.0, 30.0], [30.0, 40.0, 50.0], zlevel=[2, 3, 4], zscale=0.5
     )
+
+
+def _quad(lon_min, lon_max, lat_min, lat_max) -> pv.PolyData:
+    """Create a small quad mesh over the given extent, in degrees."""
+    lons = np.linspace(lon_min, lon_max, 5)
+    lats = np.linspace(lat_min, lat_max, 5)
+    return gv.Transform.from_1d(lons, lats)
 
 
 def _cell_widths(mesh) -> np.ndarray:
@@ -496,3 +517,160 @@ def test_transform_mesh__cloud_carries_the_zscale_given_in_a_planar_crs(lifted_c
 
     radii = np.linalg.norm(result.points, axis=1)
     np.testing.assert_allclose(radii, 1 + np.array([2.0, 3.0, 4.0]) * 0.25, rtol=1e-9)
+
+
+@pytest.mark.parametrize(
+    "extent",
+    [(-180, 180, -90, 90), (0, 40, 30, 50), (0, 10, 40, 45), (40, 50, 30, 50)],
+    ids=["global", "regional", "small", "tile"],
+)
+def test_transform_mesh__zlevel_ignores_the_extent(extent):
+    """A level sits at one height in a planar CRS, whatever the extent of the mesh.
+
+    Issue 2588: the offset scaled with a quarter of the mesh's own extent, so meshes
+    of different sizes at the same level sat at different heights.
+
+    """
+    result = transform_mesh(_quad(*extent), PLANAR, zlevel=1)
+
+    expected = ZLEVEL_SCALE * SEMI_MAJOR
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-12)
+
+
+def test_transform_mesh__zlevel_orders_layers_across_extents():
+    """A small mesh at a higher level sits above a global mesh at a lower one."""
+    upper = transform_mesh(_quad(0, 10, 40, 45), PLANAR, zlevel=2)
+    lower = transform_mesh(_quad(-180, 180, -90, 90), PLANAR, zlevel=1)
+
+    assert upper.points[:, 2].min() > lower.points[:, 2].max()
+
+
+def test_transform_mesh__zlevel_in_degrees_survives_a_small_extent():
+    """A small mesh in a CRS measured in degrees is lifted, not left at zero."""
+    result = transform_mesh(_quad(0, 3, 40, 42), "EPSG:4269", zlevel=5)
+
+    expected = 5 * ZLEVEL_SCALE * np.degrees(1.0)
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-12)
+
+
+def test_transform_mesh__cloud_feature_keeps_the_depths_of_the_whole():
+    """A feature taken from a cloud sits at the depths it has in the whole cloud.
+
+    Issue 2588: an oceanographer plotting eddies extracted from an ORCA2 cloud saw
+    each feature's depths compressed, since a smaller cloud brought a smaller scale.
+
+    """
+    lons, lats = np.linspace(-60.0, 20.0, 9), np.linspace(10.0, 70.0, 9)
+    depths = -np.linspace(0.0, 5000.0, 9)
+    whole = gv.Transform.from_points(lons, lats, zlevel=depths, zscale=1e-5)
+    part = slice(3, 5)
+    feature = gv.Transform.from_points(
+        lons[part], lats[part], zlevel=depths[part], zscale=1e-5
+    )
+    expected = transform_mesh(whole, PLANAR).points[part, 2]
+
+    result = transform_mesh(feature, PLANAR)
+
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)
+
+
+def test_transform_mesh__zlevel_is_the_proportion_the_globe_gives(lifted_cloud):
+    """A planar z is the proportion of the Earth's radius the sphere lifts it by."""
+    lifts = np.linalg.norm(lifted_cloud.points, axis=1) - 1
+
+    result = transform_mesh(lifted_cloud, PLANAR)
+
+    np.testing.assert_allclose(result.points[:, 2] / SEMI_MAJOR, lifts, rtol=1e-9)
+
+
+@pytest.mark.parametrize(
+    ("crs", "extent", "radius"),
+    [
+        ("+proj=eqc +units=km", (-75, -73, 40, 41), SEMI_MAJOR / 1000),
+        ("EPSG:2263", (-75, -73, 40, 41), SEMI_MAJOR / 0.3048006096012192),
+        ("EPSG:4269", (-75, -73, 40, 41), np.degrees(1.0)),
+        ("EPSG:7405", (-3, -1, 52, 53), AIRY),
+    ],
+    ids=["kilometre", "us-survey-foot", "degree", "compound"],
+)
+def test_transform_mesh__zlevel_in_the_units_of_the_crs(crs, extent, radius):
+    """The offset is the radius of the Earth, measured in the units of the CRS."""
+    result = transform_mesh(_quad(*extent), crs, zlevel=1)
+
+    np.testing.assert_allclose(result.points[:, 2], ZLEVEL_SCALE * radius, rtol=1e-9)
+
+
+def test_transform_mesh__zlevel_in_a_rotated_pole_crs():
+    """A rotated pole CRS is geographic, so the offset is one radian in degrees.
+
+    geovista cannot find the central meridian of a rotated pole CRS, and warns
+    that it assumes 0, as ``test_central_meridian__rotated_pole_warns`` pins.
+
+    """
+    crs = ccrs.RotatedPole(pole_longitude=MERIDIAN, pole_latitude=45)
+
+    with pytest.warns(UserWarning, match="central meridian"):
+        result = transform_mesh(_quad(-75, -73, 40, 41), crs, zlevel=1)
+
+    expected = ZLEVEL_SCALE * np.degrees(1.0)
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)
+
+
+def test_transform_mesh__zlevel_in_a_crs_declared_in_radians():
+    """A geographic CRS declared in radians is offset in degrees, as its points are.
+
+    ``pyproj`` returns the coordinates of a geographic CRS declared in radians in
+    degrees, so the radius that matches them is one radian in degrees, 57.2958,
+    rather than 1.
+
+    """
+    result = transform_mesh(_quad(-75, -73, 40, 41), CRS.from_wkt(RADIANS), zlevel=1)
+
+    xs = result.points[:, 0]
+    np.testing.assert_allclose([xs.min(), xs.max()], [-75, -73], rtol=1e-12)
+    expected = ZLEVEL_SCALE * np.degrees(1.0)
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-12)
+
+
+def test_transform_mesh__zlevel_with_a_shifted_meridian():
+    """A target CRS rebased for its central meridian keeps its ellipsoid and unit.
+
+    ``transform_mesh`` rebuilds such a CRS with its central meridian at 0 before it
+    slices. The Airy ellipsoid in kilometres differs from the defaults a rebuild
+    could fall back to, so one that lost either would show here.
+
+    """
+    crs = f"{PLANAR} +ellps=airy +units=km +lon_0={REGIONAL_MERIDIAN}"
+
+    result = transform_mesh(_quad(0, 10, 40, 45), crs, zlevel=1)
+
+    expected = ZLEVEL_SCALE * AIRY / 1000
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-12)
+
+
+def test_transform_mesh__data_above_the_coastlines_whatever_its_extent():
+    """Data raised above the default level of the coastlines draws above them.
+
+    On a planar CRS the plotter adds its base layer at zlevel -1 with a zscale of
+    1e-3, and its coastlines at zlevel 3, both over the whole globe. Issue 2588: a
+    small dataset at zlevel 4 still drew beneath them.
+
+    """
+    world = _quad(-180, 180, -90, 90)
+    base = transform_mesh(world.copy(), PLANAR, zlevel=-1, zscale=1e-3)
+    coastlines = transform_mesh(world.copy(), PLANAR, zlevel=3)
+
+    data = transform_mesh(_quad(0, 10, 40, 45), PLANAR, zlevel=4)
+
+    assert base.points[:, 2].max() < coastlines.points[:, 2].min()
+    assert coastlines.points[:, 2].max() < data.points[:, 2].min()
+
+
+def test_transform_mesh__cloud_between_units(lifted_cloud):
+    """A cloud moved from metres to kilometres keeps its depths in proportion."""
+    metres = transform_mesh(lifted_cloud.copy(), PLANAR)
+
+    result = transform_mesh(metres, "+proj=eqc +units=km")
+
+    expected = metres.points[:, 2] / 1000
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)

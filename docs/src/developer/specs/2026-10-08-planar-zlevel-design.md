@@ -93,8 +93,10 @@ coordinates:
 
 - for a projected CRS, the semi-major axis of its ellipsoid divided by the metres in one
   unit of its first axis;
-- for a geographic CRS, one radian expressed in its angular unit, so 57.2958 for degrees;
-- for a compound CRS, the `R` of its horizontal component.
+- for a geographic CRS, one radian expressed in the angular unit its coordinates come
+  back in, so 57.2958 for degrees;
+- for a compound or a bound CRS, the `R` of its horizontal component, which `pyproj`
+  reports directly.
 
 On the globe, `to_cartesian` lifts a point by `radius * zlevel * zscale`, so the rule gives
 a level the same proportion of the Earth's radius in either. `pyproj` supplies both inputs,
@@ -136,10 +138,13 @@ zero still leaves z at zero.
 
 For a global mesh, every planar offset shrinks by the ratio of `R` to the old length: to
 0.64 of what it was in `eqc`, which is exactly 2/π, to 0.75 in `robin` and to 0.71 in
-`moll`. A regional mesh rises to meet it. In `eqc` the coastlines sit 1.9 km above the base
-map rather than 3.0 km, and the base layer 6.4 km below it rather than 10.0 km. Every layer
-shrinks by the same factor, so the plotter's layers keep their order: base layer, then
-data, then coastlines and graticule. Beside a map 40,075 km across these offsets are small,
+`moll`. A smaller mesh rises to meet it, the more so the smaller it is: in `eqc` a level
+lifts a mesh over the North Atlantic about twice as high as before, one 10° across 23 times
+as high, and one 1° across 229 times. In `eqc` the coastlines sit 1.9 km above the plane at
+z = 0 rather than 3.0 km, and the base layer 6.4 km below it rather than 10.0 km. The
+plotter's own layers all span the globe and shrink by the same factor, so they keep their
+order: base layer, then data, then coastlines and graticule. Beside a map 40,075 km across
+these offsets are small,
 so the image tests should change only where offsets are large, and item 2 of
 {ref}`§8 <zlevel-spec-8>` records what they actually show.
 
@@ -152,19 +157,20 @@ what they were, and its deepest point, at 5,275 m, moves from z = −211,365 to 
 
 A CRS that offers no ellipsoid, or no unit on its first axis, has no `R` to compute, and
 `transform_mesh` then raises a `ValueError` naming the CRS rather than guessing a scale.
-Whether any CRS that `transform_mesh` can reach is affected is item 1 of
-{ref}`§8 <zlevel-spec-8>`.
+No CRS that `transform_mesh` can reach is affected, by item 1 of
+{ref}`§8 <zlevel-spec-8>`, so the guard is tested on the helper directly.
 
 Units come from the first horizontal axis. A projected CRS uses one unit on both axes, a
 latitude-first geographic CRS such as EPSG:4269 uses degrees on both, and an unusual angular
-unit converts the same way, so radians give 1 and grads 63.66.
+unit converts the same way, so grads give 63.66. A geographic CRS declared in radians is
+the exception: `pyproj` returns its coordinates in degrees, so its `R` is 57.2958 too.
 
 (zlevel-spec-4)=
 ## 4. Roadmap
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The rule in `transform_mesh`, its tests and docstring, and the image baselines it moves | not started ({issue}`2588`) |
+| 1 | The rule in `transform_mesh`, its tests and docstring, and the image baselines it moves | ✅ landed (2026-10-09, {pull}`2591`) |
 
 Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`. The image baselines live in
 `bjlittle/geovista-data`, so row 1 lands there first: the new images are released there,
@@ -221,13 +227,19 @@ yet.
 
 Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 
-1. **Open** ({issue}`2588`) — **Can a CRS that `transform_mesh` reaches lack an ellipsoid
-   or an axis unit?** Every CRS measured for {ref}`§3.1 <zlevel-spec-3-1>` has both. The
-   plan's dry run checks compound, bound and engineering CRSs, and the `ValueError` of
-   {ref}`§3.4 <zlevel-spec-3-4>` gets a test only if one of them reaches it.
-2. **Open** ({issue}`2588`) — **Which image baselines move?** The ORCA2 `eqc` gallery image
-   will, by {ref}`§3.3 <zlevel-spec-3-3>`. The other offsets are small beside their maps,
-   and CI decides.
+1. **Resolved** (2026-10-08, {pull}`2591`) — **Can a CRS that `transform_mesh` reaches
+   lack an ellipsoid or an axis unit?** No. A compound CRS and a bound one report the
+   ellipsoid and first axis of their horizontal component, a rotated pole CRS is a
+   derived geographic one in degrees, and a geocentric one is in metres. An engineering
+   CRS and a vertical one, such as EPSG:5703, have no ellipsoid, and `pyproj` refuses to
+   build a transformer to either, so `transform_mesh` fails before it needs `R`. The
+   `ValueError` of {ref}`§3.4 <zlevel-spec-3-4>` is tested on the helper directly.
+2. **Resolved** (2026-10-09, {pull}`2591`) — **Which image baselines move?** Two, each by
+   a fraction of a pixel, as the camera frames the new scene bounds. One is the ORCA2 `eqc`
+   gallery image, whose cloud is 1.59 times deeper by {ref}`§3.3 <zlevel-spec-3-3>`. The
+   other is the UK LAM scene of `test_view_poi` in `eqc`, whose mesh at `zlevel=10` rises
+   to about 6.4 km. {user}`bjlittle` approved both, and `bjlittle/geovista-data` released
+   them as 2026.10.2.
 
 (zlevel-spec-9)=
 ## 9. References

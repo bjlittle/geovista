@@ -46,7 +46,7 @@ type FileLike = str | os.PathLike[str]
 BASE_URL: str = "https://github.com/bjlittle/geovista-data/raw/{version}/assets/"
 """Base URL for :mod:`geovista` resources."""
 
-DATA_VERSION: str = "2026.10.1"
+DATA_VERSION: str = "2026.10.2"
 """The ``geovista-data`` repository version for :mod:`geovista` resources."""
 
 GEOVISTA_CACHEDIR: str = "GEOVISTA_CACHEDIR"
