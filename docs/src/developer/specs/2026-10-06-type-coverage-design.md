@@ -248,6 +248,9 @@ Change 4 found the idiom on eight of `common.py`'s lines, not the six counted ab
 two public functions and both real bugs. `vectors_to_cartesian` read `.shape` from points
 and vector components it never converted, so lists raised `AttributeError`, and `nan_mask`
 handed a list back unchanged where it promises an array. Both now convert at the boundary.
+`nan_mask` converts a list with `np.ma.asanyarray`, because `np.asanyarray` drops the mask
+of any masked array the list holds, and any function that handles masked data needs the
+same care.
 
 Change 4 also met a pattern this rule does not cover: a runtime type check on an annotated
 parameter. `mypy` reports the check's body unreachable, because the annotation says the
