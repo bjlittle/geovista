@@ -1,0 +1,5 @@
+Every unit test that renders is now marked ``image``, so ``pytest -m "not
+image"`` runs safely on a machine without a display. A new unit test,
+``tests/test_image_marker.py``, fails any test that draws without the marker,
+and any test marked ``example`` but not ``image``. Closes :issue:`2596`.
+(:user:`bjlittle`)
