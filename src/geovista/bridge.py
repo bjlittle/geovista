@@ -1171,6 +1171,16 @@ class Transform:  # numpydoc ignore=PR01
         # flatten the points to 1D with shape (M,)
         xs, ys = xs.ravel(), ys.ravel()
 
+        # points masked alike in x and y are left out of their faces, so copy the
+        # mask now, as the transform drops it
+        mask: np.ndarray | None = None
+        if (
+            np.ma.is_masked(xs)
+            and np.ma.is_masked(ys)
+            and np.array_equal(np.ma.getmaskarray(xs), np.ma.getmaskarray(ys))
+        ):
+            mask = np.ma.getmaskarray(xs).copy()
+
         if crs is None:
             crs = WGS84
 
@@ -1182,6 +1192,7 @@ class Transform:  # numpydoc ignore=PR01
             # default to the shape of the points
             connectivity = shape
 
+        connectivity_array: np.ndarray
         if isinstance(connectivity, tuple):
             ignore_start_index = True
             npts = np.prod(connectivity)
@@ -1196,17 +1207,11 @@ class Transform:  # numpydoc ignore=PR01
                 raise ValueError(emsg)
 
             # generate connectivity array
-            if (
-                np.ma.is_masked(xs)
-                and np.ma.is_masked(ys)
-                and np.array_equal(xs.mask, ys.mask)
-            ):
-                connectivity_array = np.ma.arange(npts, dtype=dtype).reshape(
-                    connectivity
+            connectivity_array = np.arange(npts, dtype=dtype).reshape(connectivity)
+            if mask is not None:
+                connectivity_array = np.ma.masked_array(
+                    connectivity_array, mask=mask.reshape(connectivity)
                 )
-                connectivity_array.mask = np.copy(xs.mask)
-            else:
-                connectivity_array = np.arange(npts, dtype=dtype).reshape(connectivity)
         else:
             ignore_start_index = False
             # copy connectivity to avoid memory corruption within vtk
