@@ -67,3 +67,13 @@ def test_point_distance__origin(lfric, origin):
     result = distance(mesh, origin=origin, mean=False)
     assert result.size == lfric.n_points
     assert np.isclose(np.sum(result), lfric.n_points * RADIUS)
+
+
+def test_origin_list(lfric):
+    """An origin given as a list is the origin given as an array (typing spec §3.3)."""
+    expected = distance(lfric, origin=np.array([1.0, 2.0, 3.0]), mean=False)
+
+    result = distance(lfric, origin=[1.0, 2.0, 3.0], mean=False)
+
+    assert result.shape == (lfric.n_points,)
+    np.testing.assert_array_equal(result, expected)

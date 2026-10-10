@@ -300,7 +300,7 @@ def active_kernel() -> bool:
 
 
 def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
-    mesh: pv.UnstructuredGrid,
+    mesh: pv.DataSet,
     /,
     *,
     clean: bool | None = False,
@@ -309,8 +309,9 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
 
     Parameters
     ----------
-    mesh :  :class:`~pyvista.UnstructuredGrid`
-        The unstructured grid to be converted.
+    mesh : :class:`~pyvista.DataSet`
+        The unstructured grid to be converted. Any other kind of dataset raises
+        :class:`TypeError`.
     clean : bool, default=False
         Specify whether to merge duplicate points, remove unused points,
         and/or remove degenerate cells in the resultant mesh. See
@@ -327,14 +328,13 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
 
     """
     if not isinstance(mesh, pv.UnstructuredGrid):
-        dtype = type(mesh).split(" ")[1][:-1]
-        emsg = f"Expected a 'pyvista.UnstructuredGrid', got {dtype}."
+        emsg = f"Expected a 'pyvista.UnstructuredGrid', got '{type(mesh).__name__}'."
         raise TypeError(emsg)
 
     alg = pv._vtk.vtkGeometryFilter()  # noqa: SLF001
     alg.AddInputData(mesh)
     alg.Update()
-    result = pv.core.filters._get_output(alg)  # noqa: SLF001
+    result: pv.PolyData = pv.core.filters._get_output(alg)  # noqa: SLF001
 
     if clean:
         result = result.clean()
@@ -387,7 +387,7 @@ def distance(
         raise ValueError(emsg)
 
     pts = mesh.points - origin
-    result = np.sqrt(np.sum(pts * pts, axis=1))
+    result: float | np.ndarray = np.sqrt(np.sum(pts * pts, axis=1))
 
     if mean:
         result = np.mean(result)
@@ -544,13 +544,13 @@ def from_cartesian(
                 poi_cells = cast_UnstructuredGrid_to_PolyData(
                     mesh.extract_points(poi_pids)
                 )
-                cell_pids = [
+                poi_cell_pids = [
                     mesh.get_cell(cid).point_ids for cid in poi_cells[VTK_CELL_IDS]
                 ]
-                mask_positive = lons[cell_pids] > 0
+                mask_positive = lons[poi_cell_pids] > 0
                 if np.any(mask_positive):
                     select_mask = np.sum(mask_positive, axis=1).astype(bool)
-                    select_pids = np.asanyarray(cell_pids)[select_mask]
+                    select_pids = np.asanyarray(poi_cell_pids)[select_mask]
                     pids = select_pids[~mask_positive[select_mask]]
 
                     lons[pids] = 180
@@ -622,6 +622,13 @@ def nan_mask(data: ArrayLike) -> np.ndarray:
     .. versionadded:: 0.1.0
 
     """
+    if not isinstance(data, np.ndarray):
+        # keep the mask of any masked arrays a sequence holds
+        data = np.ma.asanyarray(data)
+
+        if np.ma.getmask(data) is np.ma.nomask:
+            data = data.data
+
     if np.ma.isMaskedArray(data):
         if data.dtype.char not in np.typecodes["Float"]:
             data = np.ma.asanyarray(data, dtype=float)
@@ -831,13 +838,13 @@ def to_cartesian(
         )
         raise ValueError(emsg) from err
 
-    radius += radius * zlevel_array * zscale
+    radii = radius + radius * zlevel_array * zscale
 
     x_rad = np.radians(lons)
     y_rad = np.radians(90.0 - lats)
-    x = np.ravel(radius * np.sin(y_rad) * np.cos(x_rad))
-    y = np.ravel(radius * np.sin(y_rad) * np.sin(x_rad))
-    z = np.ravel(radius * np.cos(y_rad))
+    x = np.ravel(radii * np.sin(y_rad) * np.cos(x_rad))
+    y = np.ravel(radii * np.sin(y_rad) * np.sin(x_rad))
+    z = np.ravel(radii * np.cos(y_rad))
     xyz = [x, y, z]
 
     return np.vstack(xyz).T if stacked else np.array(xyz)
@@ -900,21 +907,23 @@ def vectors_to_cartesian(
         msg = f"'zlevel' may not be multiple, has shape {zlevel_array.shape}."
         raise ValueError(msg)
 
-    radius += radius * zlevel_array * zscale
+    radii = radius + radius * zlevel_array * zscale
+
+    lons, lats = np.asanyarray(lons), np.asanyarray(lats)
+    u, v, w = (np.asanyarray(component) for component in vectors)
 
     if lons.shape != lats.shape:
         msg = f"'lons' and 'lats' do not have same shape: {lons.shape} != {lats.shape}."
         raise ValueError(msg)
 
-    if any(x.shape != lons.shape for x in vectors):
+    if any(x.shape != lons.shape for x in (u, v, w)):
         msg = (
             "some 'vectors' do not have same shape as 'lons' : "
-            f"{[x.shape for x in vectors]} != {lons.shape}."
+            f"{[x.shape for x in (u, v, w)]} != {lons.shape}."
         )
         raise ValueError(msg)
 
     lons, lats = (np.deg2rad(arr) for arr in (lons, lats))
-    u, v, w = vectors
 
     coslons = np.cos(lons)
     sinlons = np.sin(lons)
@@ -929,7 +938,7 @@ def vectors_to_cartesian(
     wz = v * coslats + w * sinlats
     # NOTE: for better efficiency, we *COULD* handle the w=0 special case separately.
     # Right now, for simplicity, we just don't bother.
-    return (radius * wx, radius * wy, radius * wz)
+    return (radii * wx, radii * wy, radii * wz)
 
 
 def to_lonlat(
@@ -978,6 +987,7 @@ def to_lonlat(
         )
         raise ValueError(emsg)
 
+    result: np.ndarray
     (result,) = to_lonlats(point, radians=radians, radius=radius, rtol=rtol, atol=atol)
 
     return result
@@ -1120,8 +1130,7 @@ def triangulated(surface: pv.PolyData) -> bool:
     .. versionadded:: 0.1.0
 
     """
-    result: bool = np.all(np.diff(_face_offsets(surface)) == 3)
-    return result
+    return bool(np.all(np.diff(_face_offsets(surface)) == 3))
 
 
 def vtk_warnings_off() -> None:
@@ -1205,7 +1214,7 @@ def wrap(
 
     """
     if not isinstance(lons, Iterable):
-        lons = [lons]
+        lons = np.atleast_1d(lons)
 
     if base is None:
         base = BASE
@@ -1220,10 +1229,11 @@ def wrap(
         atol = WRAP_ATOL
 
     if dtype is None:
-        dtype = np.float64
+        dtype = np.dtype(np.float64)
 
     lons = np.asanyarray(lons, dtype=dtype)
-    result = ((lons - base + period * 2) % period) + base
+    # arithmetic on a 0D array gives a numpy scalar, so keep the array
+    result = np.asanyarray(((lons - base + period * 2) % period) + base)
 
     mask = np.isclose(result, base + period, rtol=rtol, atol=atol)
     if np.any(mask):

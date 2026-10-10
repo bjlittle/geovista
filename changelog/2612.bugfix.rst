@@ -1,0 +1,10 @@
+``vectors_to_cartesian`` now accepts lists for its longitudes, latitudes and
+vector components, as its ``ArrayLike`` annotation promises. It raised
+``AttributeError``. ``cast_UnstructuredGrid_to_PolyData`` raises the
+``TypeError`` it intends for anything other than an unstructured grid, where it
+raised ``AttributeError``. ``nan_mask`` returns an array when given a list, and
+fills any masked arrays in the list with NaN. ``triangulated`` returns a
+``bool`` rather than a NumPy bool. ``wrap`` returns an array for a 0D array,
+where it returned a NumPy scalar and raised ``TypeError`` for a value close to
+the end of the period. ``geovista.common`` also leaves the typing ratchet, so
+``mypy`` checks it in full. (:user:`claude`)

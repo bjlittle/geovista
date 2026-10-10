@@ -37,3 +37,28 @@ def test_to_float(dtype):
     result = nan_mask(data)
     assert result.dtype == float
     assert ma.isMaskedArray(result) is False
+
+
+def test_list():
+    """A list comes back as the array its annotation promises (typing spec §3.3)."""
+    result = nan_mask([1.0, 2.0])
+
+    assert isinstance(result, np.ndarray)
+    np.testing.assert_array_equal(result, [1.0, 2.0])
+
+
+@pytest.mark.parametrize(
+    ("data", "expected"),
+    [
+        ([ma.masked_array([1.0, 2.0], mask=[False, True])], [[1.0, np.nan]]),
+        ([ma.masked_array([1, 2], mask=[True, False])], [[np.nan, 2.0]]),
+    ],
+    ids=["float", "int"],
+)
+def test_list_keeps_its_mask(data, expected):
+    """The masked arrays a list holds are filled with NaN, as an array would be."""
+    result = nan_mask(data)
+
+    assert isinstance(result, np.ndarray)
+    assert not ma.isMaskedArray(result)
+    np.testing.assert_array_equal(result, expected)

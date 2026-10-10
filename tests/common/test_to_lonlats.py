@@ -65,3 +65,10 @@ def test_radius(manydegrees):
     radii = np.ones(xyz.shape[0])
     lonlats = to_lonlats(xyz, radius=radii)
     np.testing.assert_array_almost_equal(lonlats, manydegrees.expected)
+
+
+def test_nested_lists(manydegrees):
+    """Nested lists are the points given as an array (typing spec §3.3)."""
+    points = np.asarray(manydegrees.xyz, dtype=float)
+
+    np.testing.assert_array_equal(to_lonlats(points.tolist()), to_lonlats(points))

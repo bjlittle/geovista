@@ -244,6 +244,21 @@ helpers that only ever receive what a boundary has converted, `_verify_2d` and t
 `_contiguous` nested in `_as_contiguous_1d`, so change 3 annotates them with the `ndarray`
 they receive. The API reference publishes no private members.
 
+Change 4 found the idiom on eight of `common.py`'s lines, not the six counted above, all in
+two public functions and both real bugs. `vectors_to_cartesian` read `.shape` from points
+and vector components it never converted, so lists raised `AttributeError`, and `nan_mask`
+handed a list back unchanged where it promises an array. Both now convert at the boundary.
+`nan_mask` converts a list with `np.ma.asanyarray`, because `np.asanyarray` drops the mask
+of any masked array the list holds, and any function that handles masked data needs the
+same care.
+
+Change 4 also met a pattern this rule does not cover: a runtime type check on an annotated
+parameter. `mypy` reports the check's body unreachable, because the annotation says the
+check can never fail. The parameter is annotated instead with the type the function
+accepts before it validates, `pv.DataSet` for `cast_UnstructuredGrid_to_PolyData`, which
+keeps the check reachable without a `type: ignore`. That check was broken as well, and
+raised `AttributeError` where it meant `TypeError`.
+
 (typing-spec-3-4)=
 ### 3.4 Gallery suppressions
 
@@ -306,7 +321,7 @@ account of `geopy` being untyped.
 | 1 | The `local` hook, `ci-typing.yml`, the ratchet and its test | 0 | ✅ landed (2026-10-06, {pull}`2565`) |
 | 2 | `transform.py` | 29 | ✅ landed (2026-10-08, {pull}`2580`) |
 | 3 | `bridge.py` | 28 | ✅ landed (2026-10-09, {pull}`2599`) |
-| 4 | `common.py` | 20 | not started |
+| 4 | `common.py` | 20 | ✅ landed (2026-10-10, {pull}`2612`) |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | not started |
 | 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | not started |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
