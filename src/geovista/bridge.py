@@ -1112,7 +1112,9 @@ class Transform:  # numpydoc ignore=PR01
             ``M*N`` points (at most) in the mesh geometry. If no connectivity is
             provided, and the `xs` and `ys` are 2D, then their shape is used
             to determine the connectivity. Also, note that masked connectivity
-            may be used to define a mesh consisting of different shaped faces.
+            may be used to define a mesh consisting of different shaped faces. A
+            face that is left with fewer than three vertices is dropped, with a
+            warning.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh face or nodes.
         start_index : int, default=0
@@ -1267,10 +1269,10 @@ class Transform:  # numpydoc ignore=PR01
             valid_faces_mask = n_vertices > 2
             if not np.all(valid_faces_mask):
                 n_invalid = n_faces - np.sum(valid_faces_mask)
-                plural = "s" if n_invalid > 1 else ""
+                noun, verb = ("faces", "are") if n_invalid > 1 else ("face", "is")
                 wmsg = (
-                    f"geovista masked connectivity defines {n_invalid:,} face{plural} "
-                    "with no vertices."
+                    f"geovista masked connectivity defines {n_invalid:,} {noun} "
+                    f"with fewer than three vertices, which {verb} dropped."
                 )
                 warnings.warn(wmsg, stacklevel=2)
                 n_vertices = n_vertices[valid_faces_mask]
