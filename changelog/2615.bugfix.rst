@@ -1,0 +1,4 @@
+Fixed the warning from :meth:`geovista.bridge.Transform.from_unstructured` when
+masked connectivity leaves a face with fewer than three vertices. It said the
+dropped face had no vertices, even when it had one or two, and now says it has
+fewer than three. Closes :issue:`2606`. (:user:`bjlittle`)

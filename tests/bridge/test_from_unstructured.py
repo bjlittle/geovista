@@ -88,7 +88,24 @@ def test_masked_connectivity_drops_faces_of_two_points():
     xs = [0.0, 10.0, 10.0, 0.0, 20.0, 20.0]
     ys = [0.0, 0.0, 10.0, 10.0, 0.0, 10.0]
 
-    with pytest.warns(UserWarning, match="defines 1 face with no vertices"):
+    wmsg = "defines 1 face with fewer than three vertices, which is dropped"
+    with pytest.warns(UserWarning, match=wmsg):
+        mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
+
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3])
+
+
+def test_masked_connectivity_drops_faces_of_any_too_few_points():
+    """Faces left with one point, or none, are dropped and counted together."""
+    connectivity = np.ma.masked_array(
+        [[0, 1, 2, 3], [1, 4, 5, 0], [2, 5, 4, 1], [3, 2, 1, 0]],
+        mask=[[0, 0, 0, 0], [0, 0, 1, 1], [0, 1, 1, 1], [1, 1, 1, 1]],
+    )
+    xs = [0.0, 10.0, 10.0, 0.0, 20.0, 20.0]
+    ys = [0.0, 0.0, 10.0, 10.0, 0.0, 10.0]
+
+    wmsg = "defines 3 faces with fewer than three vertices, which are dropped"
+    with pytest.warns(UserWarning, match=wmsg):
         mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
 
     np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3])
