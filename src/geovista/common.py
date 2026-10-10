@@ -24,7 +24,7 @@ import lazy_loader as lazy
 
 if TYPE_CHECKING:
     import numpy as np
-    from numpy.typing import ArrayLike
+    from numpy.typing import ArrayLike, DTypeLike
     import pyvista as pv
 
 # lazy import third-party dependencies
@@ -1164,7 +1164,7 @@ def wrap(
     period: float | None = None,
     rtol: float | None = None,
     atol: float | None = None,
-    dtype: np.dtype | None = None,
+    dtype: DTypeLike | None = None,
 ) -> np.ndarray:
     """Transform longitudes to be in the half-open interval ``[base, base + period)``.
 
@@ -1187,8 +1187,11 @@ def wrap(
         that is ``base + period`` - to be considered equal to the wrap
         meridian. Necessary to prevent cell smearing. See `atol` in
         :func:`numpy.isclose`. Defaults to :data:`WRAP_ATOL`.
-    dtype : data-type, default=float64
-        The resultant longitude `dtype`.
+    dtype : :data:`~numpy.typing.DTypeLike`, optional
+        The data-type of the wrapped longitudes. Defaults to ``float64``. The
+        longitudes are wrapped in the `dtype` when it is floating point.
+        Otherwise they are wrapped as ``float64`` and then converted, so an
+        integer `dtype` truncates each wrapped longitude towards zero.
 
     Returns
     -------
@@ -1228,10 +1231,12 @@ def wrap(
     if atol is None:
         atol = WRAP_ATOL
 
-    if dtype is None:
-        dtype = np.dtype(np.float64)
+    dtype = np.dtype(np.float64 if dtype is None else dtype)
+    # wrapping is floating point arithmetic, so converting the longitudes to
+    # any other dtype beforehand would wrap different values
+    floating = np.issubdtype(dtype, np.floating)
 
-    lons = np.asanyarray(lons, dtype=dtype)
+    lons = np.asanyarray(lons, dtype=dtype if floating else np.float64)
     # arithmetic on a 0D array gives a numpy scalar, so keep the array
     result = np.asanyarray(((lons - base + period * 2) % period) + base)
 
@@ -1240,4 +1245,4 @@ def wrap(
         # snap to the base for values within tolerances
         result[mask] = base
 
-    return result
+    return result if floating else result.astype(dtype)
