@@ -362,8 +362,19 @@ these two, leaving nine.
 | 3 | `bridge.py` | 28 | ✅ landed (2026-10-09, {pull}`2599`) |
 | 4 | `common.py` | 20 | ✅ landed (2026-10-10, {pull}`2612`) |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | ✅ landed (2026-10-11, {pull}`2619`) |
-| 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | not started |
+| 6 | The seventeen library modules left in the ratchet, in three parts | 51 | in progress ({pull}`2631`) |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
+
+Row 6 is split into three pull requests ({user}`bjlittle`, 2026-10-11), and lands with the
+last of them. 6a takes the untyped imports and retires `cache`, `cli`, `config`, `geometry`
+and `qt` ({pull}`2631`). 6b takes the mesh modules, `core`, `search`, `filters`,
+`gridlines` and `crs`, and 6c takes the rest: `pantry` and its three modules, `raster`,
+`report` and `themes`. The row's count of 51 does not reproduce. Lifted at the census
+commit, the seventeen modules report 71 lines, 46 of code and 25 of imports, 14 of those
+`lazy_loader`, and on `main` before change 6 they reported 53. Ten of them load `numpy` or
+`pyvista` lazily without importing it under `TYPE_CHECKING`
+({ref}`§3.3 <typing-spec-3-3>`), and once they do, the count is 69. The three parts divide
+that 69 between them.
 
 Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`: a landed row names the date and the
 pull request that landed it. This is a living document, so a change that measures something
@@ -436,7 +447,11 @@ Out of scope:
   override: `rasterio` ships no `py.typed`, but typeshed has carried stubs for it since
   June 2026, and against them `from_tiff` reported eleven lines of its own. conda-forge
   also carries `types-shapely`, `pandas-stubs` and `types-click-default-group`, and nothing
-  for `geopy` or `pooch`. The rest is part of change 6.
+  for `geopy` or `pooch`. Change 6 took the three stub packages into the `devs` feature,
+  and they revealed two errors in `geometry.py`. `pooch`, `geopy` and `fastparquet` ship no
+  annotations and have no stubs, so one override covers them until they do
+  ({ref}`§8 <typing-spec-8>` item 9). The two site configurations share a second with
+  `pyvistaqt`, which ships `py.typed` but is in no locked environment ({issue}`2630`).
 
 (typing-spec-8)=
 ## 8. Open items
@@ -501,12 +516,20 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    passes, so change 3 passes them through a `typing.cast`. It comes out when the stubs
    accept arrays. The report to typeshed covers two other gaps as well, which the code
    handles without a cast.
-8. **Open** ({issue}`2568`) — **Two typed locals in `geoplotter.py` wait on the same
+8. **Open** ({issue}`2568`) — **Three typed locals wait on the same
    `pyvista` release.** `pyvista` 0.49 leaves `GPUInfo.__init__` unannotated, and its
    `_Wrapped` decorator, item 2's cause, breaks `self.reset_camera(render=False)`. So
    `_warn_opacity` and `view_poi` call each through a local annotated `Callable`.
-   `pyvista` `main` fixes both, and the locals come out with the floor that carries
-   them, the trigger items 2 and 6 already wait on.
+   Change 6 added the third, for `p.add_axes()` in the `plot` command of `cli.py`.
+   `pyvista` `main` fixes both defects, and the three locals come out with the floor
+   that carries them, the trigger items 2 and 6 already wait on.
+9. **Open** ({issue}`2629`) — **Three dependencies ship no annotations.** The latest
+   releases of `pooch` (1.9.0), `geopy` (2.5.0) and `fastparquet` (2026.9.0; the lock has
+   2026.5.0) carry no `py.typed` and have no stubs on conda-forge or in typeshed, so one
+   `ignore_missing_imports` override makes each import `Any`. Only `pooch`'s entry is live
+   so far: `geopy` and `fastparquet` are imported only by `pantry/data.py`, which leaves
+   the ratchet later in change 6. Each name comes out when its distribution or a stub
+   package types it. `pooch` has an open upstream issue asking for annotations.
 
 (typing-spec-9)=
 ## 9. References

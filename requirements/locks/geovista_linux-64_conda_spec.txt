@@ -34,10 +34,12 @@ https://conda.anaconda.org/conda-forge/linux-64/libblas-3.11.0-11_h4a7cf45_openb
 https://conda.anaconda.org/conda-forge/linux-64/liblapack-3.11.0-11_h47877c9_openblas.conda#5622a13917855ce4b953b9e655cf9262
 https://conda.anaconda.org/conda-forge/linux-64/libcblas-3.11.0-11_h0358290_openblas.conda#73a248c30811075059b5aeda766c2624
 https://conda.anaconda.org/conda-forge/linux-64/numpy-2.5.4-py314hd3a7d6b_0.conda#533d72030f9dbe5f9a439c7f9673940b
+https://conda.anaconda.org/conda-forge/noarch/types-shapely-2.1.0.20260402-pyhcf101f3_0.conda#881262e1e2db2323071c4964c5028c7f
 https://conda.anaconda.org/conda-forge/noarch/click-8.5.0-pyh5ded981_0.conda#dea5b13a211bbf99876deb980b408a66
 https://conda.anaconda.org/conda-forge/noarch/attrs-26.1.0-pyhcf101f3_0.conda#c6b0543676ecb1fb2d7643941fe375f2
 https://conda.anaconda.org/conda-forge/noarch/affine-3.0.1-pyhecae5ae_0.conda#aeb404cab9e719a49264ab40928f80c8
 https://conda.anaconda.org/conda-forge/noarch/types-rasterio-1.5.2.20261005-pyhc364b38_0.conda#de6f9571481762b4893e860948292fdc
+https://conda.anaconda.org/conda-forge/noarch/types-click-default-group-1.2.0.20260518-pyhcf101f3_0.conda#ff6c5b209975729a64ad9208a3d1d255
 https://conda.anaconda.org/conda-forge/noarch/trame-common-1.2.4-pyhd8ed1ab_0.conda#318cb27614ee757c0a0c9d2a5818a477
 https://conda.anaconda.org/conda-forge/noarch/trame-client-3.13.2-pyhd8ed1ab_0.conda#4faea3a5fce245161537c7c4c3baa208
 https://conda.anaconda.org/conda-forge/noarch/trame-vuetify-3.2.5-pyhd8ed1ab_0.conda#a668f536b98fb5ec2987d1ef629e97a1
@@ -332,6 +334,8 @@ https://conda.anaconda.org/conda-forge/noarch/identify-2.6.20-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/noarch/cfgv-3.5.0-pyhd8ed1ab_0.conda#381bd45fb7aa032691f3063aff47e3a1
 https://conda.anaconda.org/conda-forge/noarch/pre-commit-4.6.2-pyha770c72_0.conda#c36b88db560b4e74f294380613f1a239
 https://conda.anaconda.org/conda-forge/noarch/pip-25.3-pyh145f28c_0.conda#bf47878473e5ab9fdb4115735230e191
+https://conda.anaconda.org/conda-forge/noarch/types-pytz-2026.5.0.20261006-pyh5ded981_0.conda#e2c2b7e527f0932efc8dfa1d1fb3e960
+https://conda.anaconda.org/conda-forge/noarch/pandas-stubs-3.0.5.260914-pyhd8ed1ab_1.conda#db4b37d06af8c57b004328c61efc5a3d
 https://conda.anaconda.org/conda-forge/noarch/numpydoc-1.11.0-pyh5ded981_1.conda#7749306664bf40b80ffc297ff6d4af29
 https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py314h12ceea2_2.conda#6b75e66981d66ebc1709356e7c8fd6a7
 https://conda.anaconda.org/conda-forge/linux-64/netcdf4-1.7.4-nompi_py311hd34d2e2_111.conda#d697ebf773f33945402fe3e1fda13635

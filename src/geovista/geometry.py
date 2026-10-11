@@ -32,12 +32,11 @@ from .crs import WGS84, to_wkt
 from .pantry import fetch_coastlines
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Iterable
 
     import numpy as np
     import pyvista as pv
     from shapely import LineString, MultiLineString
-    from shapely.geometry.base import GeometrySequence
 
 # lazy import third-party dependencies
 cartopy = lazy.load("cartopy")
@@ -143,13 +142,13 @@ def load_coastline_geometries(*, resolution: str | None = None) -> list[np.ndarr
     reader = cartopy.io.shapereader.Reader(fname)
 
     def unpack(
-        geometries: Generator[LineString | MultiLineString] | list[GeometrySequence],
+        geometries: Iterable[LineString | MultiLineString],
     ) -> None:
         """Unpack the geometries coordinates.
 
         Parameters
         ----------
-        geometries : Generator of LineString or MultiLineString
+        geometries : iterable of LineString or MultiLineString
             The geometries to unpack.
 
         """
