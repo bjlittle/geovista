@@ -163,7 +163,7 @@ All Python files must include `from __future__ import annotations` (enforced by 
 ## Conventions
 
 - **Versioning**: `setuptools-scm` (no manual version file edits)
-- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run -e docs python .github/scripts/changelog.py <PR> "changelog/a.rst,changelog/b.rst"` — the fragments are one **comma-separated** argument of repo-relative paths, and either space-separating them or dropping the `changelog/` prefix raises a bare `FileNotFoundError` on the concatenation.
+- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ **A fragment an agent writes credits the agent — ``(:user:`claude`)`` — never the owner**: `gh` runs as `bjlittle`, so the PR author is no guide, and the credit is what shows a reader of the changelog that an agent did the work. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run -e docs python .github/scripts/changelog.py <PR> "changelog/a.rst,changelog/b.rst"` — the fragments are one **comma-separated** argument of repo-relative paths, and either space-separating them or dropping the `changelog/` prefix raises a bare `FileNotFoundError` on the concatenation.
 - **`agentic` label**: ⚠️ **every issue and pull-request you raise must carry
   it**, beside the `type:` ones: `gh` runs as the repository owner, so nothing
   else marks agent work. `ci-label.yml` adds it only for `agent*`/`ai*` branches,
@@ -196,4 +196,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 9 October 2026
+**Last Updated**: 11 October 2026
