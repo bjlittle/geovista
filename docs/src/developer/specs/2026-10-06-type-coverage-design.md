@@ -266,6 +266,16 @@ annotation. {pull}`2616` widened the annotation to `DTypeLike` instead, for the 
 {ref}`§5 <typing-spec-5>` gives against tightening a published contract to match an
 implementation. {issue}`2614` tracked it.
 
+Change 5 found the idiom where `mypy` could not see it. `geoplotter.py` loaded `numpy` and
+`pyproj` with `lazy.load` and imported neither under `TYPE_CHECKING`, so both were `Any`
+and the module reported 15 lines where it had 16. `_add_graticule_labels` indexed
+`GraticuleGrid.lonlat` as an array and multiplied its `mask` by an integer, which repeats
+a list instead of scaling it; both now convert where they are used. `npoints_by_idx`
+converts its points too. `BBox` called it about five hundred times with lists that grow to
+tens of thousands of points, though, and converting them on every call made `BBox` ten
+times slower. `BBox` now indexes its own lists and calls `npoints` directly: a private
+caller on a hot path can step past a converting boundary instead of paying for it.
+
 (typing-spec-3-4)=
 ### 3.4 Gallery suppressions
 
@@ -287,36 +297,36 @@ corrections:
   `pv.Plotter.camera?`, and since `GeoPlotterBase` precedes `pv.Plotter` among
   `GeoPlotter`'s bases, that declaration shadows `pyvista`'s own `camera` and every access
   through it fails. `geoplotter.py` is in the ratchet, so the annotation is never reported
-  where it is written, only where it does damage. Corrected to `pv.Camera` on a copy of
-  the tree, all 45 clear and 44 `no-untyped-call` take their place, because `Camera.zoom`
-  has no annotations in 0.49.0. That residue is upstream, and `pyvista` `main` already
-  annotates it. Tracked by {issue}`2569`.
+  where it is written, only where it does damage. Change 5 removed the declaration
+  ({ref}`§3.5 <typing-spec-3-5>`). All 45 cleared, and 44 `no-untyped-call` took their
+  place, because `Camera.zoom` has no annotations in 0.49.0. That residue is upstream, and
+  `pyvista` `main` already annotates it. Tracked by {issue}`2569`.
 
-Both are disabled for the gallery alone, leaving the 28 genuine errors visible:
+Both are disabled for the gallery alone, which leaves its genuine errors visible, 35 of
+them after change 5:
 
 ```toml
 [[tool.mypy.overrides]]
-# typing spec §3.4 -- two "pyvista" stub defects, both verified against the
-# runtime on 2026-10-06 with pyvista 0.49.0: "_Wrapped" loses the descriptor
-# protocol, and "Plotter.camera" resolves only partially so ".zoom" is
-# unreachable. Confined to the gallery, whose scripts are published as
+# typing spec §3.4 -- two "pyvista" 0.49 defects, both fixed on its "main":
+# "_Wrapped" loses the descriptor protocol, and "Camera.zoom" carries no
+# annotations. Confined to the gallery, whose scripts are published as
 # example code, so a "type: ignore" comment in one is a directive a reader
-# is invited to copy. Withdraw when upstream fixes them.
-disable_error_code = ["attr-defined", "call-arg"]
+# is invited to copy. Withdraw when the "pyvista" floor carries both fixes.
+disable_error_code = ["call-arg", "no-untyped-call"]
 module = ["geovista.examples.*"]
 ```
 
-The comment is quoted as it stands in `pyproject.toml` rather than as it should read,
-because a specification that quotes the code has to quote what the code says;
-{issue}`2569` corrects it. The two
-halves retire on different triggers. `attr-defined` goes with the one-line correction,
-which falls to change 5 since `geoplotter.py` is in it, and the override then carries
-`no-untyped-call` in its place for the 44 `zoom` calls. `call-arg` goes when the
-`pyvista` floor reaches the release carrying the fix, and the `zoom` annotations are on
-the same `main`, so from that release the gallery override has nothing left to hold.
+The comment is quoted as it stands in `pyproject.toml`, because a specification that
+quotes the code has to quote what the code says. Both codes now name upstream defects
+fixed on `pyvista` `main`, so the override goes when the floor reaches the release that
+carries them ({issue}`2568`). Change 5 also adds seven errors in `uber_h3.py`, which keeps
+the plotter's actors in fields typed `str | PolyData`. They appeared once `add_mesh`
+admitted it can return `None`, and change 7 corrects them with the rest of the gallery.
 
-Neither code appears in the library, where `attr-defined` is zero and `call-arg` is one, so
-the suppression is confined to where the plotting calls are. This extends a pattern already
+In the library, measured on 2026-10-11 with the whole ratchet lifted, `attr-defined` is
+zero, `call-arg` is one, in `cli.py`, and `no-untyped-call` is four, in `raster.py` and
+`themes.py`, all in modules change 6 retires, so the suppression stays confined to where
+the plotting calls are. This extends a pattern already
 in `pyproject.toml`, where `union-attr` is disabled for `geovista.examples.grid.*` on
 account of `geopy` being untyped.
 
@@ -349,7 +359,7 @@ these two, leaving nine.
 | 2 | `transform.py` | 29 | ✅ landed (2026-10-08, {pull}`2580`) |
 | 3 | `bridge.py` | 28 | ✅ landed (2026-10-09, {pull}`2599`) |
 | 4 | `common.py` | 20 | ✅ landed (2026-10-10, {pull}`2612`) |
-| 5 | `geoplotter.py`, `geodesic.py` | 38 | not started |
+| 5 | `geoplotter.py`, `geodesic.py` | 38 | in progress ({pull}`2619`) |
 | 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | not started |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
 
@@ -441,8 +451,8 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    `pyvista` pull request 9162 fixes it, and the pin in `pyproject.toml` is
    `>=0.48.0,<0.50.0`, so what matters is the floor rather than the ceiling. Withdraw
    that half of the override when the floor reaches the release carrying the fix.
-3. **Open** ({issue}`2569`, owned by change 5 of {ref}`§4 <typing-spec-4>`) — **The
-   `attr-defined` suppression hides a bug of ours.** It is labelled upstream in
+3. **Resolved** (2026-10-11, {pull}`2619`) — **The
+   `attr-defined` suppression hid a bug of ours.** It is labelled upstream in
    `pyproject.toml`, and the cause is one annotation in `geoplotter.py`, described in
    {ref}`§3.4 <typing-spec-3-4>`. Until it is corrected, 45 errors in the gallery sit
    under a comment that sends the next reader to the wrong repository. This item and
@@ -455,7 +465,8 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    unbound type in the message, `pv.Plotter.camera?`, is the annotation's own text. The
    same check found that {ref}`§3.4 <typing-spec-3-4>` had been showing a one-line
    paraphrase of the override's comment while saying it quoted it; it now quotes
-   `pyproject.toml` verbatim.
+   `pyproject.toml` verbatim. Change 5 removed the annotation and swapped `attr-defined`
+   for `no-untyped-call` in the override, whose comment now names its real causes.
 4. **Resolved** (2026-10-07,
    [`lazy-loader` issue 181](https://github.com/scientific-python/lazy-loader/issues/181))
    — **Whether to pursue `lazy_loader` upstream.** Yes, after measuring. It is 19 of the
@@ -488,6 +499,12 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    passes, so change 3 passes them through a `typing.cast`. It comes out when the stubs
    accept arrays. The report to typeshed covers two other gaps as well, which the code
    handles without a cast.
+8. **Open** ({issue}`2568`) — **Two typed locals in `geoplotter.py` wait on the same
+   `pyvista` release.** `pyvista` 0.49 leaves `GPUInfo.__init__` unannotated, and its
+   `_Wrapped` decorator, item 2's cause, breaks `self.reset_camera(render=False)`. So
+   `_warn_opacity` and `view_poi` call each through a local annotated `Callable`.
+   `pyvista` `main` fixes both, and the locals come out with the floor that carries
+   them, the trigger items 2 and 6 already wait on.
 
 (typing-spec-9)=
 ## 9. References
