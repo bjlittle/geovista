@@ -106,6 +106,7 @@ class Transform:  # numpydoc ignore=PR01
         /,
         *,
         rgb: bool = False,
+        kept: np.ndarray | None = None,
     ) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 
@@ -121,6 +122,10 @@ class Transform:  # numpydoc ignore=PR01
             The number of cells in the mesh.
         rgb : bool, default=False
             Whether the data is an ``RGB`` or ``RGBA`` image.
+        kept : ndarray, optional
+            A boolean array that is ``True`` for each face given that became a
+            cell of the mesh. Data that fits neither the points nor the cells, but
+            has a value for each face given, keeps only the values of the cells.
 
         Returns
         -------
@@ -139,7 +144,17 @@ class Transform:  # numpydoc ignore=PR01
                 emsg = f"RGB/RGBA image data must be at least 2D, got {data.ndim}D."
                 raise ValueError(emsg)
 
-            size = data.size // data.shape[-1] if rgb else data.size
+            # the colour channels cannot be inferred once no value is left
+            channels = data.shape[-1] if rgb else 1
+            size = data.size // channels
+
+            if (
+                kept is not None
+                and size == kept.size
+                and size not in (n_points, n_cells)
+            ):
+                cells: np.ndarray = data.reshape(size, channels)[kept]
+                data, size = cells, len(cells)
 
             if size not in (n_points, n_cells):
                 emsg = (
@@ -152,7 +167,7 @@ class Transform:  # numpydoc ignore=PR01
 
             if rgb:
                 # reshape to be (N, 3) or (N, 4) for RGB or RGBA image data
-                data = data.reshape(size, -1)
+                data = data.reshape(size, channels)
 
         return data
 
@@ -333,6 +348,99 @@ class Transform:  # numpydoc ignore=PR01
         npts = np.prod(shape) * 4
 
         return np.arange(npts, dtype=np.uint32).reshape(-1, 4)
+
+    @staticmethod
+    def _drop_masked_faces(
+        connectivity: np.ndarray, mask: np.ndarray, /
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Drop the faces of the connectivity that use a masked point.
+
+        Such a face would have a vertex with no position. Note that a warning is
+        raised for the faces that are dropped.
+
+        Parameters
+        ----------
+        connectivity : ndarray
+            The ``(M, N)`` zero-based connectivity of the ``M`` faces. An index
+            that the connectivity masks is no use of its point.
+        mask : ndarray
+            The boolean mask of the points, which is ``True`` for each point with
+            no position.
+
+        Returns
+        -------
+        tuple of ndarray
+            The connectivity of the faces that remain, and an ``(M,)`` boolean
+            array that is ``True`` for each of them.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        uses = np.isin(np.ma.getdata(connectivity), np.flatnonzero(mask))
+        uses &= ~np.ma.getmaskarray(connectivity)
+        kept = ~uses.any(axis=1)
+
+        if not np.all(kept):
+            n_dropped = kept.size - np.sum(kept)
+            many = n_dropped > 1
+            noun, verb, be = ("faces", "use", "are") if many else ("face", "uses", "is")
+            wmsg = (
+                f"geovista connectivity defines {n_dropped:,} {noun} that {verb} "
+                f"a masked point, which {be} dropped."
+            )
+            # warn where the bridge method that called this one was called
+            warnings.warn(wmsg, stacklevel=3)
+            connectivity = connectivity[kept]
+
+        return connectivity, kept
+
+    @staticmethod
+    def _transform_unmasked(
+        xs: np.ndarray, ys: np.ndarray, crs: CRSLike, mask: np.ndarray | None, /
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Transform the points to WGS84, apart from those that are masked.
+
+        The values of a masked point mean nothing, and may lie outside the domain
+        of the `crs`. It is given the position of the first point that is not
+        masked, where it cannot stretch the bounds of the mesh.
+
+        Parameters
+        ----------
+        xs : ndarray
+            The 1D x-values of the points, in canonical `crs` units.
+        ys : ndarray
+            The 1D y-values of the points, in canonical `crs` units.
+        crs : CRSLike
+            The Coordinate Reference System of the `xs` and `ys`.
+        mask : ndarray or None
+            The boolean mask of the points, which is ``True`` for each point to
+            leave out of the transform. Every point is transformed when ``None``.
+
+        Returns
+        -------
+        tuple of ndarray
+            The longitudes and latitudes of the points.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        if mask is None:
+            transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
+        else:
+            keep = ~mask
+            points = transform_points(
+                src_crs=crs, tgt_crs=WGS84, xs=xs[keep], ys=ys[keep]
+            )
+            transformed = np.zeros((xs.size, 3), dtype=points.dtype)
+            transformed[keep] = points
+            if keep.any():
+                transformed[mask] = points[0]
+
+        return transformed[:, 0], transformed[:, 1]
 
     @staticmethod
     def _verify_2d(xs: np.ndarray, ys: np.ndarray) -> None:
@@ -529,6 +637,10 @@ class Transform:  # numpydoc ignore=PR01
         The provided `xs` and `ys` define the four vertices of each quad-face
         in the mesh for the native `crs`, which will then be projected to
         geographic longitude and latitude values.
+
+        Should `xs` and `ys` carry the same mask, a quad-face with a masked vertex
+        is dropped, with a warning, and `data` with a value for each quad-face
+        keeps only the values of the faces that remain.
 
         Parameters
         ----------
@@ -1114,9 +1226,12 @@ class Transform:  # numpydoc ignore=PR01
             to determine the connectivity. Also, note that masked connectivity
             may be used to define a mesh consisting of different shaped faces. A
             face that is left with fewer than three vertices is dropped, with a
-            warning.
+            warning. So is a face of a connectivity array that uses a masked
+            point, should `xs` and `ys` carry the same mask.
         data : ArrayLike, optional
-            Data to be optionally attached to the mesh face or nodes.
+            Data to be optionally attached to the mesh face or nodes. Should any
+            face be dropped, data with a value for each face of the `connectivity`
+            keeps only the values of the faces that remain.
         start_index : int, default=0
             Specify the base index of the provided `connectivity` in the
             closed interval [0, 1]. For example, if `start_index=1`, then
@@ -1191,8 +1306,8 @@ class Transform:  # numpydoc ignore=PR01
             # default to the shape of the points
             connectivity = shape
 
-        # points masked alike in x and y have no position: a shape leaves them out
-        # of their faces, and one that no face uses is left out of the transform
+        # points masked alike in x and y have no position, so they are left out of
+        # every face and out of the transform
         mask: np.ndarray | None = None
         if (
             np.ma.is_masked(xs)
@@ -1242,6 +1357,14 @@ class Transform:  # numpydoc ignore=PR01
             if base:
                 connectivity_array -= base
 
+        # the faces given that are still in the mesh
+        kept = np.ones(connectivity_array.shape[0], dtype=bool)
+
+        if mask is not None:
+            # a face that uses a masked point is dropped, which leaves the faces of
+            # a shape alone, as their masked points have left them already
+            connectivity_array, kept = cls._drop_masked_faces(connectivity_array, mask)
+
         if isinstance(connectivity_array, np.ma.MaskedArray) and np.ma.is_masked(
             connectivity_array
         ):
@@ -1262,6 +1385,7 @@ class Transform:  # numpydoc ignore=PR01
                 warnings.warn(wmsg, stacklevel=2)
                 n_vertices = n_vertices[valid_faces_mask]
                 connectivity_array = connectivity_array[valid_faces_mask]
+                kept[kept] = valid_faces_mask
             stacked = np.ma.hstack(
                 [n_vertices.reshape(-1, 1), connectivity_array]
             ).ravel()
@@ -1285,29 +1409,8 @@ class Transform:  # numpydoc ignore=PR01
         if crs is None:
             crs = WGS84
 
-        # the values of a masked point mean nothing, and may lie outside the domain
-        # of the crs, so one that no face uses is left out of the transform, and a
-        # face that was dropped uses none
-        unused: np.ndarray | None = None
-        if mask is not None:
-            used = np.isin(np.arange(mask.size), np.ma.compressed(connectivity_array))
-            unused = mask & ~used
-
-        # transform spatial points to WGS84 with shape (M, 3)
-        if unused is None or not unused.any():
-            transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
-        else:
-            keep = ~unused
-            points = transform_points(
-                src_crs=crs, tgt_crs=WGS84, xs=xs[keep], ys=ys[keep]
-            )
-            transformed = np.zeros((xs.size, 3), dtype=points.dtype)
-            transformed[keep] = points
-            if keep.any():
-                # an unused point stays in the mesh, so stand it on the first that
-                # is transformed, where it cannot stretch the bounds
-                transformed[unused] = points[0]
-        xs, ys = transformed[:, 0], transformed[:, 1]
+        # transform spatial points to WGS84, apart from the masked ones
+        xs, ys = cls._transform_unmasked(xs, ys, crs, mask)
 
         radius = RADIUS if radius is None else abs(float(radius))
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
@@ -1328,13 +1431,18 @@ class Transform:  # numpydoc ignore=PR01
 
         # attach any optional data to the mesh
         if data is not None:
-            data = cls._as_compatible_data(data, mesh.n_points, mesh.n_cells, rgb=rgb)
+            data = cls._as_compatible_data(
+                data, mesh.n_points, mesh.n_cells, rgb=rgb, kept=kept
+            )
             if not name:
                 size = data.size // data.shape[-1] if rgb else data.size
                 name = NAME_POINTS if size == mesh.n_points else NAME_CELLS
 
-            mesh.field_data[GV_FIELD_NAME] = np.array([name])
-            mesh[name] = data
+            # pyvista refuses an empty array of colours, so attach none when no
+            # face is left to carry one
+            if data.size or not rgb:
+                mesh.field_data[GV_FIELD_NAME] = np.array([name])
+                mesh[name] = data
 
         # clean the mesh
         if clean:
