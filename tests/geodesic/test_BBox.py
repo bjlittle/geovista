@@ -344,3 +344,10 @@ def test_enclosed__flat_mesh(preference):
     expected = bbox.enclosed(sphere, preference=preference).n_cells
 
     assert bbox.enclosed(flat, preference=preference).n_cells == expected
+
+
+def test_crs_none_is_wgs84():
+    """A crs of None is the WGS84 default its docstring promises."""
+    xs, ys = [-10, 10, 10, -10], [-10, -10, 10, 10]
+
+    assert BBox(xs, ys, crs=None) == BBox(xs, ys)

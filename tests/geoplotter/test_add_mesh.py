@@ -10,8 +10,10 @@ from __future__ import annotations
 import cartopy.crs as ccrs
 import numpy as np
 import pytest
+import pyvista as pv
 
 import geovista as gv
+from geovista.crs import from_wkt
 from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
 from geovista.transform import transform_mesh
 
@@ -86,3 +88,21 @@ def test_flat_mesh_zlevel():
     p.add_mesh(flat, zlevel=1)
 
     assert p.mesh.bounds[:4] == pytest.approx(expected)
+
+
+def test_empty_mesh_returns_none():
+    """An empty mesh is not added, and nothing is returned for it."""
+    p = GeoPlotter()
+
+    assert p.add_mesh(pv.PolyData()) is None
+    assert not p.actors
+
+
+def test_central_meridian_recentred(lfric):
+    """A mesh is sliced and transformed for a CRS with a central meridian."""
+    p = GeoPlotter(crs="+proj=robin +lon_0=180")
+
+    actor = p.add_mesh(lfric)
+
+    assert actor is not None
+    assert from_wkt(actor.mapper.dataset) == p.crs

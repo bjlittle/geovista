@@ -388,9 +388,11 @@ observed:
   roles, and both grow with the number of citations. Row 3 shares its grammar, `tephpy`
   keeping one definition of a citation because two would disagree silently in both
   directions, and row 4 checks its output. *Asserted:* the test fails when the citations
-  outside the specification collection, hand-written roles included, exceed thirty-five,
-  five times the seven there were when this was written and the point at which reading
-  them all stops being something anyone does.
+  outside the specification collection, hand-written roles included, exceed seventy, ten
+  times the seven there were when this was written. The first ceiling was thirty-five,
+  meant as the point at which reading them all stops being something anyone does. Change
+  5 of the type coverage roadmap passed it, and the ceiling was doubled rather than the
+  rows built (item 2 of {ref}`§8 <docs-spec-8>`).
 - **Row 4** carries a pairing of its own. The input gate cannot tell whether the transform
   ran at all, and the output gate cannot tell a right target from a wrong one. *Asserted:*
   the test fails when a transform extension is registered in `conf.py` and the output gate
@@ -474,12 +476,16 @@ that was taken from one that was dropped.
    not widened in advance for a form nobody has asked for. Row 2 owns it because the
    transform retires the roles, and this assertion with them.
 2. **Open** (owned by rows 2 to 4 of {ref}`§4 <docs-spec-4>`) — **The threshold of
-   thirty-five citations is a judgement, not a measurement.** It was five times the seven
-   citations there were when it was set, chosen to fire before review stops being credible
-   rather than at the point it does. This item once waited on a second namespace to measure
-   against; `docs spec` became that namespace with change 1, which brought the count to
-   fifteen, still too few to measure a better number from. Revising it is a change to this
-   document.
+   seventy citations is a judgement, not a measurement.** It was first thirty-five, five
+   times the seven citations there were when it was set, chosen to fire before review
+   stops being credible rather than at the point it does. This item once waited on a second
+   namespace to measure against; `docs spec` became that namespace with change 1, which
+   brought the count to fifteen, still too few to measure a better number from. Change 5 of
+   the type coverage roadmap ({pull}`2619`) took the count from 29 to 37 on 2026-10-11, eight
+   citations in code comments and test docstrings that point a reader at the rule behind a
+   line. {user}`bjlittle` chose to double the threshold rather than build rows 2 to 4,
+   leaving room for the roadmap's last two changes, which cite the same way. Revising it
+   again is a change to this document.
 3. **Resolved** (2026-10-09, {pull}`2609`) — **Nothing proved the references in a status
    line point at real work.** {ref}`§3.5 <docs-spec-3-5>`'s seventh assertion checks that a
    terminal status carries a date and a reference, not that the work it names exists or did

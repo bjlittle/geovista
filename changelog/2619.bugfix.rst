@@ -1,0 +1,8 @@
+``geovista.geodesic.BBox`` treats ``crs=None`` as WGS84, as documented, where it
+raised ``CRSError``, and ``npoints`` and ``npoints_by_idx`` treat ``npts=None`` as
+``GEODESIC_NPTS``, where they raised ``TypeError``. Graticule labels accept a
+``GraticuleGrid`` whose points or mask are lists, where they raised ``TypeError``
+or ``ValueError``. ``GeoPlotter.add_mesh``, ``add_points``, ``add_base_layer`` and
+``add_coastlines`` are annotated to return ``None`` for an empty mesh, which they
+already did. ``geovista.geodesic`` and ``geovista.geoplotter`` also leave the
+typing ratchet, so ``mypy`` checks them in full. (:user:`claude`)
