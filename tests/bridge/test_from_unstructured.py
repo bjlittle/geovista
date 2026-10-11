@@ -266,6 +266,29 @@ def test_rgb_cell_data_follows_the_faces_that_remain():
     np.testing.assert_array_equal(mesh.cell_data["cells"], [[10, 20, 30]])
 
 
+@pytest.mark.parametrize("channels", [3, 4], ids=["rgb", "rgba"])
+def test_rgb_cell_data_when_every_face_is_dropped(channels):
+    """No colour is attached when no face is left to carry one.
+
+    The mesh is still built. PyVista holds no empty array of colours, so the
+    cell data that plain values would leave empty is left out.
+
+    """
+    mask = np.array(MASK)
+    mask[0, 0] = True
+    xs, ys = np.ma.masked_array(LONS, mask=mask), np.ma.masked_array(LATS, mask=mask)
+    connectivity = np.arange(8).reshape(2, 4)
+    data = np.ones((2, channels), dtype=np.uint8)
+
+    with pytest.warns(UserWarning, match="use a masked point"):
+        mesh = Transform.from_unstructured(
+            xs, ys, connectivity=connectivity, data=data, name="cells", rgb=True
+        )
+
+    assert mesh.n_cells == 0
+    assert "cells" not in mesh.cell_data
+
+
 def test_cell_data_follows_faces_with_enough_points():
     """A face dropped for having too few points takes its value with it."""
     connectivity = np.ma.masked_array(

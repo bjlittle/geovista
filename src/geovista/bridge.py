@@ -144,15 +144,16 @@ class Transform:  # numpydoc ignore=PR01
                 emsg = f"RGB/RGBA image data must be at least 2D, got {data.ndim}D."
                 raise ValueError(emsg)
 
-            size = data.size // data.shape[-1] if rgb else data.size
+            # the colour channels cannot be inferred once no value is left
+            channels = data.shape[-1] if rgb else 1
+            size = data.size // channels
 
             if (
                 kept is not None
                 and size == kept.size
                 and size not in (n_points, n_cells)
             ):
-                rows = data.reshape(size, -1) if rgb else data.ravel()
-                cells: np.ndarray = rows[kept]
+                cells: np.ndarray = data.reshape(size, channels)[kept]
                 data, size = cells, len(cells)
 
             if size not in (n_points, n_cells):
@@ -166,7 +167,7 @@ class Transform:  # numpydoc ignore=PR01
 
             if rgb:
                 # reshape to be (N, 3) or (N, 4) for RGB or RGBA image data
-                data = data.reshape(size, -1)
+                data = data.reshape(size, channels)
 
         return data
 
@@ -1437,8 +1438,11 @@ class Transform:  # numpydoc ignore=PR01
                 size = data.size // data.shape[-1] if rgb else data.size
                 name = NAME_POINTS if size == mesh.n_points else NAME_CELLS
 
-            mesh.field_data[GV_FIELD_NAME] = np.array([name])
-            mesh[name] = data
+            # pyvista refuses an empty array of colours, so attach none when no
+            # face is left to carry one
+            if data.size or not rgb:
+                mesh.field_data[GV_FIELD_NAME] = np.array([name])
+                mesh[name] = data
 
         # clean the mesh
         if clean:
