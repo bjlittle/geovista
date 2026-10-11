@@ -319,7 +319,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             point_labels_args = {}
 
         labels = graticule.labels
-        lonlat = graticule.lonlat
+        lonlat = np.asanyarray(graticule.lonlat)
 
         xyz = to_cartesian(
             lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
@@ -328,7 +328,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         to_wkt(mesh, WGS84)
 
         if graticule.mask is not None:
-            mask = graticule.mask * REMESH_SEAM
+            mask = np.asanyarray(graticule.mask) * REMESH_SEAM
             mesh.point_data[GV_REMESH_POINT_IDS] = mask
             mesh.set_active_scalars(name=None)
 
