@@ -162,6 +162,29 @@ def test_masked_connectivity_does_not_use_a_masked_point():
     np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 3, 4, 5, 6])
 
 
+def test_masked_point_of_a_dropped_face_outside_the_domain():
+    """A dropped face uses none of its points, so a masked one is no error.
+
+    Masked connectivity leaves the second face with two points, and one of them
+    is masked over a value the projection cannot reach.
+
+    """
+    mask = np.zeros((2, 4), dtype=bool)
+    mask[1, 1] = True
+    xs, ys = _points(ORTHO)
+    xs[mask], ys[mask] = OFF_DISK, OFF_DISK
+    xs, ys = np.ma.masked_array(xs, mask=mask), np.ma.masked_array(ys, mask=mask)
+    connectivity = np.ma.masked_array(
+        np.arange(8).reshape(2, 4), mask=[[0, 0, 0, 0], [0, 0, 1, 1]]
+    )
+
+    wmsg = "defines 1 face with fewer than three vertices, which is dropped"
+    with pytest.warns(UserWarning, match=wmsg):
+        mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
+
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3])
+
+
 def test_used_masked_point_outside_the_domain_raises():
     """A masked point that a face uses is still transformed, so it still raises.
 

@@ -1242,40 +1242,6 @@ class Transform:  # numpydoc ignore=PR01
             if base:
                 connectivity_array -= base
 
-        if crs is None:
-            crs = WGS84
-
-        # the values of a masked point mean nothing, and may lie outside the domain
-        # of the crs, so one that no face uses is left out of the transform
-        unused: np.ndarray | None = None
-        if mask is not None:
-            used = np.isin(np.arange(mask.size), np.ma.compressed(connectivity_array))
-            unused = mask & ~used
-
-        # transform spatial points to WGS84 with shape (M, 3)
-        if unused is None or not unused.any():
-            transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
-        else:
-            keep = ~unused
-            points = transform_points(
-                src_crs=crs, tgt_crs=WGS84, xs=xs[keep], ys=ys[keep]
-            )
-            transformed = np.zeros((xs.size, 3), dtype=points.dtype)
-            transformed[keep] = points
-            if keep.any():
-                # an unused point stays in the mesh, so stand it on the first that
-                # is transformed, where it cannot stretch the bounds
-                transformed[unused] = points[0]
-        xs, ys = transformed[:, 0], transformed[:, 1]
-
-        radius = RADIUS if radius is None else abs(float(radius))
-        zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
-        zlevel = 0 if zlevel is None else int(zlevel)
-        radius += radius * zlevel * zscale
-
-        # convert lat/lon to cartesian xyz
-        geometry = to_cartesian(xs, ys, radius=radius)
-
         if isinstance(connectivity_array, np.ma.MaskedArray) and np.ma.is_masked(
             connectivity_array
         ):
@@ -1315,6 +1281,41 @@ class Transform:  # numpydoc ignore=PR01
                     connectivity_array,
                 ]
             )
+
+        if crs is None:
+            crs = WGS84
+
+        # the values of a masked point mean nothing, and may lie outside the domain
+        # of the crs, so one that no face uses is left out of the transform, and a
+        # face that was dropped uses none
+        unused: np.ndarray | None = None
+        if mask is not None:
+            used = np.isin(np.arange(mask.size), np.ma.compressed(connectivity_array))
+            unused = mask & ~used
+
+        # transform spatial points to WGS84 with shape (M, 3)
+        if unused is None or not unused.any():
+            transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
+        else:
+            keep = ~unused
+            points = transform_points(
+                src_crs=crs, tgt_crs=WGS84, xs=xs[keep], ys=ys[keep]
+            )
+            transformed = np.zeros((xs.size, 3), dtype=points.dtype)
+            transformed[keep] = points
+            if keep.any():
+                # an unused point stays in the mesh, so stand it on the first that
+                # is transformed, where it cannot stretch the bounds
+                transformed[unused] = points[0]
+        xs, ys = transformed[:, 0], transformed[:, 1]
+
+        radius = RADIUS if radius is None else abs(float(radius))
+        zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
+        zlevel = 0 if zlevel is None else int(zlevel)
+        radius += radius * zlevel * zscale
+
+        # convert lat/lon to cartesian xyz
+        geometry = to_cartesian(xs, ys, radius=radius)
 
         # create the mesh
         mesh = pv.PolyData(geometry, faces=faces)
