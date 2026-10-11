@@ -362,8 +362,19 @@ these two, leaving nine.
 | 3 | `bridge.py` | 28 | ✅ landed (2026-10-09, {pull}`2599`) |
 | 4 | `common.py` | 20 | ✅ landed (2026-10-10, {pull}`2612`) |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | ✅ landed (2026-10-11, {pull}`2619`) |
-| 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | in progress ({pull}`2631`) |
+| 6 | The seventeen library modules left in the ratchet, in three parts | 51 | in progress ({pull}`2631`) |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
+
+Row 6 is split into three pull requests ({user}`bjlittle`, 2026-10-11), and lands with the
+last of them. 6a takes the untyped imports and retires `cache`, `cli`, `config`, `geometry`
+and `qt` ({pull}`2631`). 6b takes the mesh modules, `core`, `search`, `filters`,
+`gridlines` and `crs`, and 6c takes the rest: `pantry` and its three modules, `raster`,
+`report` and `themes`. The row's count of 51 does not reproduce. Lifted at the census
+commit, the seventeen modules report 71 lines, 46 of code and 25 of imports, 14 of those
+`lazy_loader`, and on `main` before change 6 they reported 53. Ten of them load `numpy` or
+`pyvista` lazily without importing it under `TYPE_CHECKING`
+({ref}`§3.3 <typing-spec-3-3>`), and once they do, the count is 69. The three parts divide
+that 69 between them.
 
 Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`: a landed row names the date and the
 pull request that landed it. This is a living document, so a change that measures something
