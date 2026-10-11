@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import numpy as np
+from pyproj.exceptions import ProjError
 import pytest
 
 from geovista.bridge import Transform
@@ -16,6 +17,12 @@ from geovista.transform import transform_points
 
 #: A planar CRS, whose coordinates are metres.
 PLANAR = "+proj=eqc"
+
+#: An orthographic projection, which cannot reach the far side of the globe.
+ORTHO = "+proj=ortho +lat_0=0 +lon_0=0"
+
+#: A coordinate in metres that lies far outside the disk of ``ORTHO``.
+OFF_DISK = 1e9
 
 #: Two quads, side by side, as (2, 4) longitudes and latitudes.
 LONS = [[0.0, 10.0, 10.0, 0.0], [20.0, 30.0, 30.0, 20.0]]
@@ -51,6 +58,90 @@ def test_masked_points_leave_their_faces(crs, connectivity):
     mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=crs)
 
     np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 3, 4, 5, 6])
+
+
+@pytest.mark.parametrize("connectivity", [None, (2, 4)], ids=["shape", "tuple"])
+def test_masked_point_outside_the_domain(connectivity):
+    """A masked point that a bounded projection cannot reach is no error.
+
+    Its coordinates mean nothing, so a fill value outside the domain is
+    ordinary. Every point went through ``transform_points``, which checks for
+    errors, before the mask was used (#2603).
+
+    """
+    xs, ys = _points(ORTHO)
+    xs[1, 3] = ys[1, 3] = OFF_DISK
+    xs, ys = np.ma.masked_array(xs, mask=MASK), np.ma.masked_array(ys, mask=MASK)
+
+    mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
+
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 3, 4, 5, 6])
+
+
+@pytest.mark.parametrize(
+    "crs", [WGS84, PLANAR, ORTHO], ids=["wgs84", "planar", "ortho"]
+)
+def test_masked_points_do_not_stretch_the_bounds(crs):
+    """The bounds of the mesh are those of the points that are not masked.
+
+    A masked point belongs to no face, but stays in the mesh. Here the first
+    and last points are masked, over values that lie far to the south-west of
+    the two quads.
+
+    """
+    mask = np.array(MASK)
+    mask[0, 0] = True
+    xs, ys = _points(crs)
+    far = transform_points(src_crs=WGS84, tgt_crs=crs, xs=-80.0, ys=-60.0)
+    xs[mask], ys[mask] = far[0, 0], far[0, 1]
+    xs, ys = np.ma.masked_array(xs, mask=mask), np.ma.masked_array(ys, mask=mask)
+
+    mesh = Transform.from_unstructured(xs, ys, crs=crs)
+
+    # x spans cos(10)cos(30) to cos(10), y spans 0 to sin(30), z spans 0 to sin(10)
+    expected = [0.8528685, 0.9848078, 0.0, 0.5, 0.0, 0.1736482]
+    np.testing.assert_allclose(mesh.bounds, expected, atol=1e-6)
+
+
+def test_unmasked_point_outside_the_domain_raises():
+    """A mask elsewhere does not excuse a point the projection cannot reach."""
+    xs, ys = _points(ORTHO)
+    xs[1, 2] = ys[1, 2] = OFF_DISK
+    xs, ys = np.ma.masked_array(xs, mask=MASK), np.ma.masked_array(ys, mask=MASK)
+
+    with pytest.raises(ProjError, match="outside of projection domain"):
+        _ = Transform.from_unstructured(xs, ys, crs=ORTHO)
+
+
+@pytest.mark.parametrize("crs", [WGS84, ORTHO], ids=["wgs84", "ortho"])
+def test_every_point_masked(crs):
+    """With every point masked there is nothing to transform, and no face."""
+    xs = np.ma.masked_array(np.full((2, 4), OFF_DISK), mask=True)
+    ys = np.ma.masked_array(np.full((2, 4), OFF_DISK), mask=True)
+
+    wmsg = "defines 2 faces with fewer than three vertices, which are dropped"
+    with pytest.warns(UserWarning, match=wmsg):
+        mesh = Transform.from_unstructured(xs, ys, crs=crs)
+
+    assert mesh.n_cells == 0
+
+
+def test_explicit_connectivity_keeps_masked_points():
+    """A mask on the points is not applied to connectivity given as an array.
+
+    A masked point then still belongs to its face, so it keeps the position
+    that its own values give it.
+
+    """
+    xs, ys = np.ma.masked_array(LONS, mask=MASK), np.ma.masked_array(LATS, mask=MASK)
+    connectivity = np.arange(8).reshape(2, 4)
+
+    mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
+
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 4, 4, 5, 6, 7])
+    # the last point is at 20E 10N: cos(10)cos(20), cos(10)sin(20), sin(10)
+    expected = [0.9254166, 0.3368241, 0.1736482]
+    np.testing.assert_allclose(mesh.points[7], expected, atol=1e-6)
 
 
 @pytest.mark.parametrize("masked", ["xs", "ys"])
