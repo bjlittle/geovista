@@ -750,7 +750,7 @@ class BBox:  # numpydoc ignore=PR01
 
         """
         if surface is not None:
-            radius = distance(surface)
+            radius = float(distance(surface))
 
         radius = RADIUS if radius is None else abs(float(radius))
 
@@ -1106,7 +1106,7 @@ def line(
 
     """
     if surface is not None:
-        radius = distance(surface)
+        radius = float(distance(surface))
     else:
         radius = RADIUS if radius is None else abs(float(radius))
 

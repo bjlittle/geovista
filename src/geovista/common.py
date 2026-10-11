@@ -18,7 +18,7 @@ from enum import StrEnum
 import importlib
 import pkgutil
 import sys
-from typing import TYPE_CHECKING, Literal, overload
+from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
@@ -340,36 +340,6 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
         result = result.clean()
 
     return result
-
-
-@overload
-def distance(  # numpydoc ignore=GL08
-    mesh: pv.PolyData,
-    /,
-    *,
-    origin: ArrayLike | None = ...,
-    mean: Literal[True] = ...,
-) -> float: ...
-
-
-@overload
-def distance(  # numpydoc ignore=GL08
-    mesh: pv.PolyData,
-    /,
-    *,
-    origin: ArrayLike | None = ...,
-    mean: Literal[False] | None,
-) -> np.ndarray: ...
-
-
-@overload
-def distance(  # numpydoc ignore=GL08
-    mesh: pv.PolyData,
-    /,
-    *,
-    origin: ArrayLike | None = ...,
-    mean: bool | None = ...,
-) -> float | np.ndarray: ...
 
 
 def distance(

@@ -812,7 +812,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 to_wkt(mesh, self.crs)
             elif not projected(mesh) and zlevel:
                 if not cloud:
-                    radius = distance(mesh)
+                    radius = float(distance(mesh))
 
                 mesh = resize(
                     mesh, radius=radius, zlevel=int(np.asarray(zlevel)), zscale=zscale

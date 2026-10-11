@@ -866,7 +866,16 @@ def geovista_skip_member(
 
     Note that the directive will be at the same level as the rubric.
 
+    A private base is also dropped from a class, as the API reference can neither
+    link it nor document it, e.g., the base ``GeoPlotterBase`` has for ``mypy``
+    alone.
+
     """
+    if what == "class":
+        obj.bases = [
+            base for base in obj.bases if not base.rpartition(".")[2].startswith("_")
+        ]
+
     plot_docstring = app.builder.config.plot_docstring
     targets = ["class", "function", "method", "property", "module"]
 
