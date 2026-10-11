@@ -162,8 +162,8 @@ def test_masked_connectivity_does_not_use_a_masked_point():
     np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 3, 4, 5, 6])
 
 
-def test_masked_point_of_a_dropped_face_outside_the_domain():
-    """A dropped face uses none of its points, so a masked one is no error.
+def test_face_with_too_few_points_that_uses_a_masked_point():
+    """A face with both faults is dropped once, for its masked point.
 
     Masked connectivity leaves the second face with two points, and one of them
     is masked over a value the projection cannot reach.
@@ -178,17 +178,18 @@ def test_masked_point_of_a_dropped_face_outside_the_domain():
         np.arange(8).reshape(2, 4), mask=[[0, 0, 0, 0], [0, 0, 1, 1]]
     )
 
-    wmsg = "defines 1 face with fewer than three vertices, which is dropped"
+    wmsg = "defines 1 face that uses a masked point, which is dropped"
     with pytest.warns(UserWarning, match=wmsg):
         mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
 
     np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3])
 
 
-def test_used_masked_point_outside_the_domain_raises():
-    """A masked point that a face uses is still transformed, so it still raises.
+def test_face_that_uses_a_masked_point_outside_the_domain():
+    """A face that uses a masked point is dropped before the point can raise.
 
-    That holds beside a masked point that no face uses, which is left out.
+    The last point is masked over a value the projection cannot reach, as is
+    the fourth, which no face uses.
 
     """
     mask = np.array(MASK)
@@ -196,29 +197,111 @@ def test_used_masked_point_outside_the_domain_raises():
     xs, ys = _points(ORTHO)
     xs[mask], ys[mask] = OFF_DISK, OFF_DISK
     xs, ys = np.ma.masked_array(xs, mask=mask), np.ma.masked_array(ys, mask=mask)
-    # the second face uses the last point, and no face uses the fourth
     connectivity = [[0, 1, 2], [4, 5, 7]]
 
-    with pytest.raises(ProjError, match="outside of projection domain"):
-        _ = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
+    wmsg = "defines 1 face that uses a masked point, which is dropped"
+    with pytest.warns(UserWarning, match=wmsg):
+        mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
+
+    np.testing.assert_array_equal(mesh.faces, [3, 0, 1, 2])
 
 
-def test_explicit_connectivity_keeps_masked_points():
-    """A mask on the points is not applied to connectivity given as an array.
+def test_face_that_uses_a_masked_point_is_dropped():
+    """A face of a connectivity array that uses a masked point is dropped.
 
-    A masked point then still belongs to its face, so it keeps the position
-    that its own values give it.
+    The point has no position, so the face would have a vertex with none. Before,
+    the face was built from the value under the mask (#2621).
 
     """
     xs, ys = np.ma.masked_array(LONS, mask=MASK), np.ma.masked_array(LATS, mask=MASK)
     connectivity = np.arange(8).reshape(2, 4)
 
-    mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
+    wmsg = "defines 1 face that uses a masked point, which is dropped"
+    with pytest.warns(UserWarning, match=wmsg):
+        mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
 
-    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 4, 4, 5, 6, 7])
-    # the last point is at 20E 10N: cos(10)cos(20), cos(10)sin(20), sin(10)
-    expected = [0.9254166, 0.3368241, 0.1736482]
-    np.testing.assert_allclose(mesh.points[7], expected, atol=1e-6)
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3])
+
+
+def test_every_face_uses_a_masked_point():
+    """With a masked point in every face, the mesh keeps its points and no face."""
+    mask = np.array(MASK)
+    mask[0, 0] = True
+    xs, ys = np.ma.masked_array(LONS, mask=mask), np.ma.masked_array(LATS, mask=mask)
+    connectivity = np.arange(8).reshape(2, 4)
+
+    wmsg = "defines 2 faces that use a masked point, which are dropped"
+    with pytest.warns(UserWarning, match=wmsg):
+        mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
+
+    assert mesh.n_cells == 0
+    assert mesh.n_points == 8
+
+
+def test_cell_data_follows_the_faces_that_remain():
+    """Data with a value for each face given keeps those of the faces that remain."""
+    mask = np.array(MASK)[::-1]
+    xs, ys = np.ma.masked_array(LONS, mask=mask), np.ma.masked_array(LATS, mask=mask)
+    connectivity = np.arange(8).reshape(2, 4)
+
+    with pytest.warns(UserWarning, match="uses a masked point"):
+        mesh = Transform.from_unstructured(
+            xs, ys, connectivity=connectivity, data=[10.0, 20.0], name="cells"
+        )
+
+    np.testing.assert_array_equal(mesh.cell_data["cells"], [20.0])
+
+
+def test_rgb_cell_data_follows_the_faces_that_remain():
+    """A colour for each face given keeps those of the faces that remain."""
+    xs, ys = np.ma.masked_array(LONS, mask=MASK), np.ma.masked_array(LATS, mask=MASK)
+    connectivity = np.arange(8).reshape(2, 4)
+    data = np.array([[10, 20, 30], [40, 50, 60]], dtype=np.uint8)
+
+    with pytest.warns(UserWarning, match="uses a masked point"):
+        mesh = Transform.from_unstructured(
+            xs, ys, connectivity=connectivity, data=data, name="cells", rgb=True
+        )
+
+    np.testing.assert_array_equal(mesh.cell_data["cells"], [[10, 20, 30]])
+
+
+def test_cell_data_follows_faces_with_enough_points():
+    """A face dropped for having too few points takes its value with it."""
+    connectivity = np.ma.masked_array(
+        [[0, 1, 2, 3], [1, 4, 5, 0]], mask=[[0, 0, 0, 0], [0, 0, 1, 1]]
+    )
+    xs = [0.0, 10.0, 10.0, 0.0, 20.0, 20.0]
+    ys = [0.0, 0.0, 10.0, 10.0, 0.0, 10.0]
+
+    with pytest.warns(UserWarning, match="fewer than three vertices"):
+        mesh = Transform.from_unstructured(
+            xs, ys, connectivity=connectivity, data=[10.0, 20.0], name="cells"
+        )
+
+    np.testing.assert_array_equal(mesh.cell_data["cells"], [10.0])
+
+
+def test_data_that_fits_the_points_stays_on_the_points():
+    """Data is point data when it fits both the points and the faces given.
+
+    Five points make five triangles, and the two that use the masked last point
+    are dropped.
+
+    """
+    mask = [False, False, False, False, True]
+    xs = np.ma.masked_array([0.0, 10.0, 10.0, 0.0, 20.0], mask=mask)
+    ys = np.ma.masked_array([0.0, 0.0, 10.0, 10.0, 5.0], mask=mask)
+    connectivity = [[0, 1, 2], [0, 2, 3], [0, 1, 3], [1, 4, 2], [1, 2, 4]]
+    data = [1.0, 2.0, 3.0, 4.0, 5.0]
+
+    with pytest.warns(UserWarning, match="defines 2 faces that use a masked point"):
+        mesh = Transform.from_unstructured(
+            xs, ys, connectivity=connectivity, start_index=0, data=data, name="values"
+        )
+
+    assert mesh.n_cells == 3
+    np.testing.assert_array_equal(mesh.point_data["values"], data)
 
 
 @pytest.mark.parametrize("masked", ["xs", "ys"])
