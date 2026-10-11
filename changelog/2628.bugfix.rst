@@ -1,0 +1,8 @@
+Fixed :meth:`geovista.bridge.Transform.from_unstructured` and
+:meth:`geovista.bridge.Transform.from_2d` building a face from the value under
+a mask. When ``xs`` and ``ys`` carry the same mask, a face of a connectivity
+array or of the grid that uses a masked point is now dropped, with a warning.
+Before, it took the fill value as a vertex, or raised ``ProjError`` outside the
+domain of a bounded projection. When any face is dropped, ``data`` with a value
+for each face keeps only the values of the faces that remain. Closes
+:issue:`2621`. (:user:`claude`)
