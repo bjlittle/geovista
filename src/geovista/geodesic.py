@@ -241,7 +241,7 @@ class BBox:  # numpydoc ignore=PR01
         """The x points of the bounding-box in canonical CRS units."""
         self.ys = ys
         """The y points of the bounding-box in canonical CRS units."""
-        self.crs = crs
+        self.crs = WGS84 if crs is None else crs
         """The coordinate reference system of the bounding-box points."""
         self.ellps = ellps
         """The ellipsoid defining the geodesic surface."""
@@ -1253,6 +1253,9 @@ def npoints(
            [21.84 , 23.62 , 25.34 , 26.98 , 28.53 ]], dtype=float16)
 
     """
+    if npts is None:
+        npts = GEODESIC_NPTS
+
     if geod is None:
         geod = pyproj.Geod(ellps=ELLIPSE)
 
