@@ -361,7 +361,7 @@ these two, leaving nine.
 | 2 | `transform.py` | 29 | ✅ landed (2026-10-08, {pull}`2580`) |
 | 3 | `bridge.py` | 28 | ✅ landed (2026-10-09, {pull}`2599`) |
 | 4 | `common.py` | 20 | ✅ landed (2026-10-10, {pull}`2612`) |
-| 5 | `geoplotter.py`, `geodesic.py` | 38 | in progress ({pull}`2619`) |
+| 5 | `geoplotter.py`, `geodesic.py` | 38 | ✅ landed (2026-10-11, {pull}`2619`) |
 | 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | not started |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
 
