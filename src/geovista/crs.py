@@ -91,12 +91,12 @@ WGS84 = CRS.from_user_input("epsg:4326")
 """Geographic WGS84."""
 
 
-def from_wkt(mesh: pv.PolyData) -> CRS | None:
+def from_wkt(mesh: pv.DataObject) -> CRS | None:
     """Get the :class:`~pyproj.crs.CRS` associated with the mesh.
 
     Parameters
     ----------
-    mesh : :class:`~pyvista.PolyData`
+    mesh : :class:`~pyvista.DataObject`
         The mesh containing the :class:`~pyproj.crs.CRS` serialized as OGC
         Well-Known-Text (WKT).
 
@@ -298,12 +298,12 @@ def get_central_meridian(crs: CRS) -> float | None:
     return float(value) * degrees
 
 
-def has_wkt(mesh: pv.PolyData) -> bool:
+def has_wkt(mesh: pv.DataObject) -> bool:
     """Determine whether the provided mesh has a CRS serialized as WKT attached.
 
     Parameters
     ----------
-    mesh : :class:`~pyvista.PolyData`
+    mesh : :class:`~pyvista.DataObject`
         The mesh to be inspected for a serialized :class:`~pyproj.crs.CRS`.
 
     Returns
@@ -446,14 +446,14 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
     return CRS.from_json_dict(crs_json)
 
 
-def to_wkt(mesh: pv.PolyData, crs: CRS) -> None:
+def to_wkt(mesh: pv.DataObject, crs: CRS) -> None:
     """Attach serialized :class:`~pyproj.crs.CRS` as Well-Known-Text (WKT) to the mesh.
 
     The serialized OGC WKT is attached to the ``field_data`` of the mesh in-place.
 
     Parameters
     ----------
-    mesh : :class:`~pyvista.PolyData`
+    mesh : :class:`~pyvista.DataObject`
         The mesh to contain the serialized OGC WKT.
     crs : :class:`~pyproj.crs.CRS`
         The Coordinate Reference System to be serialized.

@@ -320,6 +320,26 @@ the suppression is confined to where the plotting calls are. This extends a patt
 in `pyproject.toml`, where `union-attr` is disabled for `geovista.examples.grid.*` on
 account of `geopy` being untyped.
 
+(typing-spec-3-5)=
+### 3.5 Where geovista departs from pyvista
+
+`GeoPlotterBase` is a mixin. `GeoPlotter` combines it with `pyvista`'s `Plotter`, and
+`geovista.qt` with the `pyvistaqt` plotters, but `mypy` had no way to know that. So the
+mixin declared what it borrowed: `Callable[..., None]` for `add_text`, `add_point_labels`
+and `reset_camera`, `Theme` for `theme`, and for `camera` an annotation that isn't a type
+({ref}`§3.4 <typing-spec-3-4>`). Each one clashed with `pyvista`'s own definition. Change 5
+gives the mixin `pv.BasePlotter` as its base under `TYPE_CHECKING`, and `object` at
+runtime. The declarations go, and so do the three `type: ignore` comments they needed.
+
+What remains is deliberate. `add_mesh` and `add_points` take the mesh or the points
+positionally and everything else by keyword, where `pyvista` accepts a long run of
+positional arguments, and `add_mesh` adds nothing for an empty mesh and returns `None`.
+Matching `pyvista` would change `geovista`'s public API, so both `def` lines carry
+`# type: ignore[override]`, citing this section. `add_mesh`, `add_points`,
+`add_base_layer` and `add_coastlines`, which return what `add_mesh` returns, are annotated
+`pv.Actor | None`. Change 5 removes three `type: ignore` comments from the library and adds
+these two, leaving nine.
+
 (typing-spec-4)=
 ## 4. Roadmap
 

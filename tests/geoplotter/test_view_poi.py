@@ -48,3 +48,16 @@ def test_flat_crs_camera():
     assert position[:2] == pytest.approx(focal_point[:2])
     assert direction[:2] == pytest.approx([0.0, 0.0])
     assert direction[2] < 0
+
+
+def test_spherical_camera(lfric):
+    """On a sphere, the camera looks at the POI from straight above it."""
+    p = GeoPlotter()
+    p.add_mesh(lfric)
+
+    p.view_poi(x=30, y=10)
+
+    position = np.array(p.camera.position)
+    expected = gv.common.to_cartesian(30, 10)[0]
+    np.testing.assert_allclose(position / np.linalg.norm(position), expected, atol=1e-6)
+    np.testing.assert_allclose(p.camera.focal_point, (0, 0, 0))

@@ -75,7 +75,9 @@ from .transform import transform_mesh, transform_point
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    import numpy as np
     from numpy.typing import ArrayLike
+    import pyproj
     import pyvista as pv
     from pyvista.plotting.themes import Theme
 
@@ -154,7 +156,14 @@ def _lfric_mesh(
     return mesh
 
 
-class GeoPlotterBase:  # numpydoc ignore=PR01
+if TYPE_CHECKING:
+    # the mixin is only ever combined with a plotter, which mypy needs to know
+    _PlotterBase = pv.BasePlotter
+else:
+    _PlotterBase = object
+
+
+class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
     """Base class with common behaviour for a geospatial aware plotter.
 
     See :class:`pyvista.Plotter`.
@@ -165,16 +174,13 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
     """
 
-    if TYPE_CHECKING:
-        theme: Theme
-
     def __init__(
         self,
-        *args: Any | None,
+        *args: Any,
         crs: CRSLike | None = None,
         manifold: BBox | None = None,
         theme: Theme | str | None = None,
-        **kwargs: Any | None,
+        **kwargs: Any,
     ) -> None:
         """Create geospatial aware plotter.
 
@@ -337,7 +343,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             mesh.set_active_scalars(name=None)
             mesh = self._manifold(mesh)
             idxs = mesh[GV_POINT_IDS]
-            labels = np.array(labels)[idxs]
+            labels = np.array(labels)[idxs].tolist()
 
         if mesh.n_points:
             # the point-cloud won't be sliced, however it's important that the
@@ -358,7 +364,6 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             # opinionated over-ride to disable label visibility filter
             point_labels_args["always_visible"] = False
 
-            self.add_point_labels: Callable[..., None]
             self.add_point_labels(xyz, labels, name=name, **point_labels_args)
 
     def _warn_opacity(self) -> None:
@@ -373,11 +378,12 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         """
         if not self._missing_opacity:
-            info = pv.GPUInfo()
+            # typing spec §8 -- pyvista 0.49 leaves GPUInfo.__init__ unannotated
+            gpu_info: Callable[[], pv.GPUInfo] = pv.GPUInfo
+            info = gpu_info()
             renderer_version = info.renderer, info.version
 
             if renderer_version in OPACITY_BLACKLIST:
-                self.add_text: Callable[..., None]
                 self.add_text(
                     "Requires GPU opacity support",
                     position="lower_right",
@@ -398,7 +404,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         rtol: float | None = None,
         atol: float | None = None,
         **kwargs: Any | None,
-    ) -> pv.Actor:
+    ) -> pv.Actor | None:
         """Generate a cubed-sphere base layer mesh and add to the plotter scene.
 
         Optionally, a `mesh` may be provided (e.g. if one is available that
@@ -437,8 +443,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         Returns
         -------
-        Actor
-            The rendered actor added to the plotter scene.
+        Actor or None
+            The rendered actor added to the plotter scene, or ``None`` when the
+            mesh is empty and nothing is added.
 
         Notes
         -----
@@ -485,7 +492,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         rtol: float | None = None,
         atol: float | None = None,
         **kwargs: Any | None,
-    ) -> pv.Actor:
+    ) -> pv.Actor | None:
         """Generate coastlines and add to the plotter scene.
 
         Parameters
@@ -514,8 +521,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         Returns
         -------
-        Actor
-            The rendered actor added to the plotter scene.
+        Actor or None
+            The rendered actor added to the plotter scene, or ``None`` when the
+            mesh is empty and nothing is added.
 
         Notes
         -----
@@ -677,7 +685,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             name=name,
         )
 
-    def add_mesh(
+    def add_mesh(  # type: ignore[override]  # typing spec §3.5
         self,
         mesh: Any,
         /,
@@ -687,8 +695,8 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         zscale: float | None = None,
         rtol: float | None = None,
         atol: float | None = None,
-        **kwargs: Any | None,
-    ) -> pv.Actor:
+        **kwargs: Any,
+    ) -> pv.Actor | None:
         """Add the `mesh` to the plotter scene.
 
         See :meth:`pyvista.Plotter.add_mesh`.
@@ -719,8 +727,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         Returns
         -------
-        Actor
-            The rendered actor added to the plotter scene.
+        Actor or None
+            The rendered actor added to the plotter scene, or ``None`` when the
+            mesh is empty and nothing is added.
 
         Notes
         -----
@@ -760,13 +769,17 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 warn(wmsg, stacklevel=2)
 
             tgt_crs = self.crs
-            transform_required = src_crs and src_crs != tgt_crs
+            transform_required = src_crs is not None and src_crs != tgt_crs
+            src_planar = src_crs is not None and planar(src_crs)
             central_meridian = get_central_meridian(tgt_crs) or 0
 
-            if transform_required and not cloud and not planar(src_crs):
+            if transform_required and not cloud and not src_planar:
                 if central_meridian:
                     mesh.rotate_z(-central_meridian, inplace=True)
-                    tgt_crs = set_central_meridian(tgt_crs, 0)
+                    centred = set_central_meridian(tgt_crs, 0)
+                    # get_central_meridian found one, so it can be reset
+                    assert centred is not None
+                    tgt_crs = centred
 
                 # the sliced_mesh is guaranteed to be a new instance,
                 # even if not bisected
@@ -801,7 +814,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 if not cloud:
                     radius = distance(mesh)
 
-                mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
+                mesh = resize(
+                    mesh, radius=radius, zlevel=int(np.asarray(zlevel)), zscale=zscale
+                )
 
         def _check(option: str) -> bool:
             """Determine whether the keyword argument is present and not ``None``.
@@ -834,7 +849,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         scalar_bar_args = (
             {
                 "outline": True,
-                "background_color": self.background_color,  # type: ignore[attr-defined]
+                "background_color": self.background_color,
                 "fill": True,
             }
             if self.theme.name.startswith("geovista")
@@ -843,7 +858,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         # Always honour any requested scalar bar options.
         if "scalar_bar_args" in kwargs:
-            scalar_bar_args.update(kwargs["scalar_bar_args"])  # type: ignore[arg-type]
+            scalar_bar_args.update(kwargs["scalar_bar_args"])
 
         if scalar_bar_args:
             kwargs["scalar_bar_args"] = scalar_bar_args
@@ -862,7 +877,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                     info.name, preference=info.association.name.lower()
                 )
 
-            result = super().add_mesh(mesh, **kwargs)  # type: ignore[misc]
+            result = super().add_mesh(mesh, **kwargs)
 
         return result
 
@@ -1308,7 +1323,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
                 name=labels_name,
             )
 
-    def add_points(
+    def add_points(  # type: ignore[override]  # typing spec §3.5
         self,
         points: ArrayLike | pv.PolyData | None = None,
         *,
@@ -1321,7 +1336,7 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         **kwargs: Any | None,
-    ) -> pv.Actor:
+    ) -> pv.Actor | None:
         """Add points to the plotter scene.
 
         See :meth:`pyvista.Plotter.add_points`.
@@ -1369,8 +1384,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
 
         Returns
         -------
-        Actor
-            The rendered actor added to the plotter scene.
+        Actor or None
+            The rendered actor added to the plotter scene, or ``None`` when the
+            mesh is empty and nothing is added.
 
         Notes
         -----
@@ -1531,7 +1547,6 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
         >>> p.show()
 
         """
-        self.camera: pv.Plotter.camera
         camera = self.camera
 
         if crs is None:
@@ -1577,8 +1592,9 @@ class GeoPlotterBase:  # numpydoc ignore=PR01
             u_hat = xyz / np.linalg.norm(xyz)
             # set the new camera position at the same magnitude from the focal point
             camera.position = u_hat * np.linalg.norm(camera.position)
-            self.reset_camera: Callable[..., None]
-            self.reset_camera(render=False)
+            # typing spec §8 -- pyvista 0.49's _Wrapped drops the descriptor protocol
+            reset_camera: Callable[..., None] = self.reset_camera
+            reset_camera(render=False)
             clip = camera.clipping_range
             # defensive: extend far clip range to ensure no accidental
             # back culling of any potential forth-coming actors that
