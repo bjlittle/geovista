@@ -510,13 +510,15 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    `_Wrapped` decorator, item 2's cause, breaks `self.reset_camera(render=False)`. So
    `_warn_opacity` and `view_poi` call each through a local annotated `Callable`.
    Change 6 added the third, for `p.add_axes()` in the `plot` command of `cli.py`.
-   `pyvista` `main` fixes both, and the locals come out with the floor that carries
-   them, the trigger items 2 and 6 already wait on.
-9. **Open** ({issue}`2629`) — **Three dependencies ship no annotations.** `pooch` 1.9.0,
-   `geopy` 2.5.0 and `fastparquet` 2026.9.0 carry no `py.typed` and have no stubs on
-   conda-forge or in typeshed, so one `ignore_missing_imports` override makes each import
-   `Any`. Each name comes out when its distribution or a stub package types it. `pooch`
-   has an open upstream issue asking for annotations.
+   `pyvista` `main` fixes both defects, and the three locals come out with the floor
+   that carries them, the trigger items 2 and 6 already wait on.
+9. **Open** ({issue}`2629`) — **Three dependencies ship no annotations.** The latest
+   releases of `pooch` (1.9.0), `geopy` (2.5.0) and `fastparquet` (2026.9.0; the lock has
+   2026.5.0) carry no `py.typed` and have no stubs on conda-forge or in typeshed, so one
+   `ignore_missing_imports` override makes each import `Any`. Only `pooch`'s entry is live
+   so far: `geopy` and `fastparquet` are imported only by `pantry/data.py`, which leaves
+   the ratchet later in change 6. Each name comes out when its distribution or a stub
+   package types it. `pooch` has an open upstream issue asking for annotations.
 
 (typing-spec-9)=
 ## 9. References
