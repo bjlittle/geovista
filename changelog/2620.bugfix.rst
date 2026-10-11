@@ -1,0 +1,7 @@
+Fixed :meth:`geovista.bridge.Transform.from_unstructured` raising ``ProjError``
+for a masked point outside the domain of a bounded projection, such as an
+off-disk fill value in ``+proj=ortho``. The points that it drops from their
+faces, when ``xs`` and ``ys`` carry the same mask, are no longer transformed.
+They stay in the mesh at the position of the first point that isn't masked, so
+their fill values no longer stretch its bounds. Closes :issue:`2603`.
+(:user:`bjlittle`)
