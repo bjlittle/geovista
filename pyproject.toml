@@ -90,6 +90,21 @@ module = ["lazy_loader"]
 
 
 [[tool.mypy.overrides]]
+# typing spec §8 item 9 -- three distributions ship no annotations and have
+# no stubs (#2629). Withdraw each name when its distribution, typeshed or
+# conda-forge provides them.
+ignore_missing_imports = true
+module = ["fastparquet", "geopy.*", "pooch"]
+
+
+[[tool.mypy.overrides]]
+# typing spec §7 -- meant to be absent: the optional site configuration, and
+# "pyvistaqt", which ships "py.typed" but is in no locked environment (#2630).
+ignore_missing_imports = true
+module = ["geovista.siteconfig", "geovistaconfig", "pyvistaqt"]
+
+
+[[tool.mypy.overrides]]
 # Problem caused by the click module - out of our control. "click" ships
 # "py.typed", but "main.command" is still an untyped decorator: removing
 # this raises three "untyped-decorator" errors. See typing spec §3.1.
@@ -128,9 +143,7 @@ module = ["geovista.examples.*"]
 # and that test, when the last entry goes.
 ignore_errors = true
 module = [
-  "geovista.cache",
   "geovista.cli",
-  "geovista.config",
   "geovista.core",
   "geovista.crs",
   "geovista.filters",
@@ -140,7 +153,6 @@ module = [
   "geovista.pantry.data",
   "geovista.pantry.meshes",
   "geovista.pantry.textures",
-  "geovista.qt",
   "geovista.raster",
   "geovista.report",
   "geovista.search",
