@@ -179,7 +179,8 @@ class Transform:  # numpydoc ignore=PR01
 
         Verify and return a contiguous (N+1,) x-axis and (M+1,) y-axis
         bounds array, that will be then used afterwards to build a (M, N)
-        contiguous quad-mesh consisting of M*N faces.
+        contiguous quad-mesh consisting of M*N faces. A masked bound is a gap
+        in its axis, so neither array may have one.
 
         Parameters
         ----------
@@ -226,6 +227,17 @@ class Transform:  # numpydoc ignore=PR01
                 "Require a 1D y-axis array with minimal shape '(2,)' i.e., "
                 "one face with two y-value bounds."
             )
+            raise ValueError(emsg)
+
+        # a masked bound is a gap in its axis, and would pass for contiguous below
+        if n_masked := np.ma.count_masked(xs):
+            emsg = (
+                f"Require an x-axis array with no masked bounds, got '{n_masked:,d}'."
+            )
+            raise ValueError(emsg)
+
+        if n_masked := np.ma.count_masked(ys):
+            emsg = f"Require a y-axis array with no masked bounds, got '{n_masked:,d}'."
             raise ValueError(emsg)
 
         def _contiguous(bnds: np.ndarray, kind: str) -> np.ndarray:
@@ -543,6 +555,9 @@ class Transform:  # numpydoc ignore=PR01
 
         The provided `xs` and `ys` will be projected from their `crs` to
         geographic longitude and latitude values.
+
+        Neither `xs` nor `ys` may have a masked value, as a masked boundary is a
+        gap in its axis.
 
         Parameters
         ----------
