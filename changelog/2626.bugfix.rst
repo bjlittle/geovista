@@ -1,0 +1,7 @@
+Fixed :meth:`geovista.bridge.Transform.from_unstructured` transforming a masked
+point that no face uses, when the connectivity is given as an array. Such a
+point raised ``ProjError`` outside the domain of a bounded projection, such as
+``+proj=ortho``, and stretched the bounds of the mesh inside it. It is now left
+out of the transform when ``xs`` and ``ys`` carry the same mask, and stays in
+the mesh at the position of the first point that is transformed. Closes
+:issue:`2625`. (:user:`claude`)
