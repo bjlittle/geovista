@@ -157,7 +157,8 @@ def _lfric_mesh(
 
 
 if TYPE_CHECKING:
-    # the mixin is only ever combined with a plotter, which mypy needs to know
+    # mypy needs to know the mixin is combined with a plotter, which is true of
+    # every class but GeoMultiPlotter (#2622)
     _PlotterBase = pv.BasePlotter
 else:
     _PlotterBase = object

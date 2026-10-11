@@ -269,11 +269,11 @@ implementation. {issue}`2614` tracked it.
 Change 5 found the idiom where `mypy` could not see it. `geoplotter.py` loaded `numpy` and
 `pyproj` with `lazy.load` and imported neither under `TYPE_CHECKING`, so both were `Any`
 and the module reported 15 lines where it had 16. `_add_graticule_labels` indexed
-`GraticuleGrid.lonlat` as an array and multiplied its `mask` by an integer, which repeats
-a list instead of scaling it; both now convert where they are used. `npoints_by_idx`
-converts its points too. `BBox` called it about five hundred times with lists that grow to
-tens of thousands of points, though, and converting them on every call made `BBox` ten
-times slower. `BBox` now indexes its own lists and calls `npoints` directly: a private
+`GraticuleGrid.lonlat` as an array, so a list raised `TypeError`, and multiplied its
+`mask` by `REMESH_SEAM`, which is −1, so a list mask became empty and raised `ValueError`;
+both now convert where they are used. `npoints_by_idx` converts its points too. `BBox`
+called it 259 times with lists that grow to tens of thousands of points, though, and
+converting them on every call made `BBox` ten times slower. `BBox` now indexes its own lists and calls `npoints` directly: a private
 caller on a hot path can step past a converting boundary instead of paying for it.
 
 (typing-spec-3-4)=
@@ -334,7 +334,9 @@ account of `geopy` being untyped.
 ### 3.5 Where geovista departs from pyvista
 
 `GeoPlotterBase` is a mixin. `GeoPlotter` combines it with `pyvista`'s `Plotter`, and
-`geovista.qt` with the `pyvistaqt` plotters, but `mypy` had no way to know that. So the
+`geovista.qt` with `pyvistaqt`'s `QtInteractor` and `BackgroundPlotter`, both plotters
+too, and with its `MultiPlotter`, which is not ({issue}`2622`). `mypy` had no way to know
+any of that. So the
 mixin declared what it borrowed: `Callable[..., None]` for `add_text`, `add_point_labels`
 and `reset_camera`, `Theme` for `theme`, and for `camera` an annotation that isn't a type
 ({ref}`§3.4 <typing-spec-3-4>`). Each one clashed with `pyvista`'s own definition. Change 5
