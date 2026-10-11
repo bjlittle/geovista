@@ -1193,11 +1193,63 @@ Codex round are done.
 - Every deferred item has an `agentic` issue, linked from the Follow-ups below and from the
   pull request's description.
 
+## During execution
+
+Three things the plan did not foresee, each ruled on in the ledger.
+
+- **The citation ceiling.** Task 4 took the count of citations outside the specifications
+  from 29 to 37, past docs spec §4's ceiling of 35, which fails
+  `test_rows_2_to_4_wait_until_the_corpus_outgrows_review`. Eight are this change's: the
+  two `§3.5` and two `§8` comments in `geoplotter.py`, and four test docstrings.
+  {user}`bjlittle` chose to raise the ceiling in this pull request rather than build docs
+  spec rows 2 to 4; it is seventy, ten times the seven it started from, with the reason in
+  docs spec §4 and item 2 of its §8.
+- **`distance`'s overloads.** The `-W` documentation build failed on them: sphinx-autoapi
+  renders them as a second, undocumented `distance` whose types read `pv` and `np`. They
+  are gone, and the three callers that want the mean take `float(distance(...))`, which
+  `mypy` accepts as well. Task 3's commit message still describes the overloads.
+- **The private base in the API reference.** The same build showed `GeoPlotterBase` with
+  `Bases: _PlotterBase`, which nothing can link. `conf.py`'s autoapi hook, which already
+  rewrites docstrings, now drops private bases from a class; `GeoPlotterBase` is the only
+  class with one.
+
+The branch was rebased onto `aac779fa` to take {pull}`2616` and {pull}`2617`; the one
+conflict, two paragraphs added after the same paragraph of typing spec §3.3, keeps both.
+It was rebased again onto `19f5209b`, for {pull}`2620`, {pull}`2624` and {pull}`2626`,
+without conflict; none of the three touches a specification.
+
+## After the final review
+
+The whole-branch review on Opus 5.5 found nothing critical or important, and six minors.
+It reproduced `BBox`'s digests for five shapes, the gallery's 35 errors, the library's
+codes and `type: ignore` count, and every line of the Review Focus at the locked `numpy`.
+
+Three minors were statements this change publishes that were false, so `6987e52c` corrects
+them: `BBox` calls `npoints` 259 times, not about five hundred (counted, with 132,098
+points in the mesh); a list mask became empty and raised `ValueError`, since `REMESH_SEAM`
+is −1, rather than being quietly repeated, as the fragment had it; and `GeoPlotterBase`
+is combined with a plotter everywhere but `GeoMultiPlotter`, whose `pyvistaqt` base is a
+plain class (read from the 0.13.1 wheel), so the comment and typing spec §3.5 now say so.
+
+Two were ruled on and stand. At the `numpy >=2.2.6` floor, `int(np.asarray([3]))` warns
+rather than raising, so a one-element list `zlevel` is accepted there with a
+`DeprecationWarning` where `main` raised; that is a widening, noted on {issue}`2618`. And
+`npoints_by_idx` given a pandas `Series` with a shuffled index now reads by position, as
+the conversion typing spec §3.3 prescribes makes it.
+
+The last minor, `**kwargs: Any | None` beside `**kwargs: Any` in `geoplotter.py`, goes to
+an issue with the pre-existing one-element tuple annotation of `npoints` that the review
+declined to judge.
+
 ## Follow-ups
+
+Everything this change deferred is tracked in an issue:
 
 - {issue}`2618`: `add_mesh` raises on an array `zlevel` when the mesh needs no
   transform, because `core.resize` takes only an `int`. Deferred by {user}`bjlittle`'s
-  ruling; task 4 keeps the exceptions it raised.
-
-The final review's minors, and any defect it sets aside, each get an `agentic` issue
-listed here before the pull request leaves draft.
+  ruling; task 4 keeps the exceptions it raised. The `numpy` floor's widening is noted
+  there.
+- {issue}`2622`: `GeoMultiPlotter` mixes `GeoPlotterBase` into `pyvistaqt`'s
+  `MultiPlotter`, which is not a plotter, so its `add_mesh` cannot work. Found by reading
+  the source; nobody here has Qt to confirm it.
+- {issue}`2623`: the two annotation tidy-ups, the `**kwargs` and `npoints`' return.
