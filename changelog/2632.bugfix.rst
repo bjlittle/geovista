@@ -1,0 +1,5 @@
+Fixed :meth:`geovista.bridge.Transform.from_1d` ignoring a mask on its bounds.
+A masked bound was used as its fill value, or became a NaN point in the mesh,
+with no warning. It is a gap in a contiguous axis, so ``from_1d`` now raises a
+``ValueError`` that names the axis and counts the masked bounds. Closes
+:issue:`2627`. (:user:`claude`)
