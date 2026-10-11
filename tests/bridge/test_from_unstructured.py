@@ -79,14 +79,17 @@ def test_masked_point_outside_the_domain(connectivity):
 
 
 @pytest.mark.parametrize(
+    "connectivity", [None, [[1, 2, 3], [4, 5, 6]]], ids=["shape", "array"]
+)
+@pytest.mark.parametrize(
     "crs", [WGS84, PLANAR, ORTHO], ids=["wgs84", "planar", "ortho"]
 )
-def test_masked_points_do_not_stretch_the_bounds(crs):
+def test_masked_points_do_not_stretch_the_bounds(crs, connectivity):
     """The bounds of the mesh are those of the points that are not masked.
 
-    A masked point belongs to no face, but stays in the mesh. Here the first
-    and last points are masked, over values that lie far to the south-west of
-    the two quads.
+    A masked point that belongs to no face still stays in the mesh. Here the
+    first and last points are masked, over values that lie far to the south-west
+    of the two quads, and the connectivity array uses neither of them.
 
     """
     mask = np.array(MASK)
@@ -96,7 +99,10 @@ def test_masked_points_do_not_stretch_the_bounds(crs):
     xs[mask], ys[mask] = far[0, 0], far[0, 1]
     xs, ys = np.ma.masked_array(xs, mask=mask), np.ma.masked_array(ys, mask=mask)
 
-    mesh = Transform.from_unstructured(xs, ys, crs=crs)
+    # the array leaves out the first point, so it cannot be told from one-based
+    mesh = Transform.from_unstructured(
+        xs, ys, connectivity=connectivity, start_index=0, crs=crs
+    )
 
     # x spans cos(10)cos(30) to cos(10), y spans 0 to sin(30), z spans 0 to sin(10)
     expected = [0.8528685, 0.9848078, 0.0, 0.5, 0.0, 0.1736482]
@@ -124,6 +130,77 @@ def test_every_point_masked(crs):
         mesh = Transform.from_unstructured(xs, ys, crs=crs)
 
     assert mesh.n_cells == 0
+
+
+@pytest.mark.parametrize("base", [0, 1], ids=["zero-based", "one-based"])
+def test_unused_masked_point_outside_the_domain(base):
+    """A masked point that no face of a connectivity array uses is no error.
+
+    Nothing depends on its coordinates, but every point of a connectivity array
+    went through ``transform_points``, which checks for errors (#2625).
+
+    """
+    xs, ys = _points(ORTHO)
+    xs[1, 3] = ys[1, 3] = OFF_DISK
+    xs, ys = np.ma.masked_array(xs, mask=MASK), np.ma.masked_array(ys, mask=MASK)
+    connectivity = np.array([[0, 1, 2], [4, 5, 6]]) + base
+
+    mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
+
+    np.testing.assert_array_equal(mesh.faces, [3, 0, 1, 2, 3, 4, 5, 6])
+
+
+def test_masked_connectivity_does_not_use_a_masked_point():
+    """A masked index is no use of the point, so a mask on both is no error."""
+    xs, ys = _points(ORTHO)
+    xs[1, 3] = ys[1, 3] = OFF_DISK
+    xs, ys = np.ma.masked_array(xs, mask=MASK), np.ma.masked_array(ys, mask=MASK)
+    connectivity = np.ma.masked_array(np.arange(8).reshape(2, 4), mask=MASK)
+
+    mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
+
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 3, 4, 5, 6])
+
+
+def test_masked_point_of_a_dropped_face_outside_the_domain():
+    """A dropped face uses none of its points, so a masked one is no error.
+
+    Masked connectivity leaves the second face with two points, and one of them
+    is masked over a value the projection cannot reach.
+
+    """
+    mask = np.zeros((2, 4), dtype=bool)
+    mask[1, 1] = True
+    xs, ys = _points(ORTHO)
+    xs[mask], ys[mask] = OFF_DISK, OFF_DISK
+    xs, ys = np.ma.masked_array(xs, mask=mask), np.ma.masked_array(ys, mask=mask)
+    connectivity = np.ma.masked_array(
+        np.arange(8).reshape(2, 4), mask=[[0, 0, 0, 0], [0, 0, 1, 1]]
+    )
+
+    wmsg = "defines 1 face with fewer than three vertices, which is dropped"
+    with pytest.warns(UserWarning, match=wmsg):
+        mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
+
+    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3])
+
+
+def test_used_masked_point_outside_the_domain_raises():
+    """A masked point that a face uses is still transformed, so it still raises.
+
+    That holds beside a masked point that no face uses, which is left out.
+
+    """
+    mask = np.array(MASK)
+    mask[0, 3] = True
+    xs, ys = _points(ORTHO)
+    xs[mask], ys[mask] = OFF_DISK, OFF_DISK
+    xs, ys = np.ma.masked_array(xs, mask=mask), np.ma.masked_array(ys, mask=mask)
+    # the second face uses the last point, and no face uses the fourth
+    connectivity = [[0, 1, 2], [4, 5, 7]]
+
+    with pytest.raises(ProjError, match="outside of projection domain"):
+        _ = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
 
 
 def test_explicit_connectivity_keeps_masked_points():
