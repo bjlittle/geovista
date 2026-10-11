@@ -487,6 +487,40 @@ Message, humanized: `docs: correct the typing spec against change 6a's measureme
 - Typing spec §4, §7 and §8 agree with the measurements, and row 6 reads in progress.
 - Every deferred item has an `agentic` issue, linked below and from the pull request.
 
+## During execution
+
+{user}`bjlittle` allowed `pyvistaqt` and a Qt binding to be installed temporarily, so that
+`geovista.qt` could be exercised for real. In a scratch environment with `pyvistaqt`
+0.13.1 and `pyside6` 6.11.2, `mypy` passes `qt.py` against the real types, and its
+`disallow_subclassing_any` override proves unnecessary. Under `QT_QPA_PLATFORM=offscreen`,
+`GeoQtInteractor` and `GeoBackgroundPlotter` add a mesh, while `GeoMultiPlotter.add_mesh`
+raises `AttributeError` on `self.theme`, which confirms {issue}`2622`. `pyside6` 6.11.2
+pins `qt6-main` 6.11.2, a downgrade of the 6.12.0 under `vtk-base` 9.7.0. Both findings
+are recorded on their issues, and the branch does not carry either package.
+
+The branch was rebased onto `b586ef1c`, for {pull}`2628` and {pull}`2632`, without
+conflict; neither touches a specification.
+
+## After the final review
+
+The whole-branch review on Opus 5.5 found nothing critical or important, and six minors.
+It reproduced the lock's four additions, the exports, every live override entry, both
+mutants `test_axes` should catch, and the `-W` documentation build.
+
+Three minors were statements this change publishes that were not true, so `59ad7930`
+corrects them: the fragment called `pandas-stubs` typeshed's, though pandas-dev maintains
+it, and claimed `pandas` is now checked, though its one import, in `pantry/data.py`,
+stays in the ratchet; typing spec §8 item 8 counted three typed locals but said `pyvista`
+fixes "both"; and item 9 now names the releases it measured (the lock has `fastparquet`
+2026.5.0, the latest is 2026.9.0) and says that only `pooch`'s entry is live until
+`pantry/data.py` leaves the ratchet.
+
+Two stand as rulings. `geopy.*` is not the narrowest form that works, as Review Focus 2
+claimed; `geopy.point` clears the same import. It stays, within the rule that an override
+is never wider than its distribution, since {issue}`2629` retires names a distribution at
+a time. And `types-shapely` 2.1 sits beside `shapely` 2.2 under a `<2.2` pip pin, which
+follows the repository's convention and is dependabot's to move.
+
 ## Follow-ups
 
 - {issue}`2629`: the override for `pooch`, `geopy` and `fastparquet`, until they ship
