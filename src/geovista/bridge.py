@@ -1187,11 +1187,16 @@ class Transform:  # numpydoc ignore=PR01
         # flatten the points to 1D with shape (M,)
         xs, ys = xs.ravel(), ys.ravel()
 
-        # points masked alike in x and y are left out of their faces, so copy the
-        # mask now, as the transform drops it
+        if connectivity is None:
+            # default to the shape of the points
+            connectivity = shape
+
+        # points masked alike in x and y are left out of their faces when the
+        # connectivity is a shape, so copy the mask now, as the transform drops it
         mask: np.ndarray | None = None
         if (
-            np.ma.is_masked(xs)
+            isinstance(connectivity, tuple)
+            and np.ma.is_masked(xs)
             and np.ma.is_masked(ys)
             and np.array_equal(np.ma.getmaskarray(xs), np.ma.getmaskarray(ys))
         ):
@@ -1201,12 +1206,22 @@ class Transform:  # numpydoc ignore=PR01
             crs = WGS84
 
         # transform spatial points to WGS84 with shape (M, 3)
-        transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
+        if mask is None:
+            transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
+        else:
+            # the values of a masked point mean nothing, and may lie outside the
+            # domain of the crs, so only the other points are transformed
+            keep = ~mask
+            points = transform_points(
+                src_crs=crs, tgt_crs=WGS84, xs=xs[keep], ys=ys[keep]
+            )
+            transformed = np.zeros((xs.size, 3), dtype=points.dtype)
+            transformed[keep] = points
+            if keep.any():
+                # a masked point stays in the mesh, so stand it on the first that
+                # is not masked, where it cannot stretch the bounds
+                transformed[mask] = points[0]
         xs, ys = transformed[:, 0], transformed[:, 1]
-
-        if connectivity is None:
-            # default to the shape of the points
-            connectivity = shape
 
         connectivity_array: np.ndarray
         if isinstance(connectivity, tuple):
