@@ -59,7 +59,6 @@ RATCHET_BASELINE = frozenset(
         "geovista.crs",
         "geovista.examples.*",
         "geovista.filters",
-        "geovista.geodesic",
         "geovista.geometry",
         "geovista.geoplotter",
         "geovista.gridlines",

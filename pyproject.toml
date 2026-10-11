@@ -135,7 +135,6 @@ module = [
   "geovista.core",
   "geovista.crs",
   "geovista.filters",
-  "geovista.geodesic",
   "geovista.geometry",
   "geovista.geoplotter",
   "geovista.gridlines",

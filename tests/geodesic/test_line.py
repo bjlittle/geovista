@@ -127,3 +127,12 @@ def test_field_data():
     assert from_wkt(result) == WGS84
     expected = RADIUS + RADIUS * ZLEVEL_SCALE
     assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
+
+
+def test_close_none_is_open():
+    """A close of None leaves the line open, as False does."""
+    expected = line([0, 10, 20], [0, 10, 0])
+
+    result = line([0, 10, 20], [0, 10, 0], close=None)
+
+    np.testing.assert_array_equal(result.lines, expected.lines)

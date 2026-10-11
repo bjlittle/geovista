@@ -430,6 +430,7 @@ class BBox:  # numpydoc ignore=PR01
         """
         if self._mesh is None:
             self._generate_bbox_mesh()
+        assert self._mesh is not None
         return self._mesh
 
     @property
@@ -646,7 +647,9 @@ class BBox:  # numpydoc ignore=PR01
         # corner indices
         c1_idx, c2_idx, c3_idx, c4_idx = range(4)
 
-        def bbox_extend(lons: Sequence[float], lats: Sequence[float]) -> None:
+        def bbox_extend(
+            lons: Sequence[float] | np.ndarray, lats: Sequence[float] | np.ndarray
+        ) -> None:
             """Register the bounding box longitudes and latitudes.
 
             Parameters
@@ -688,11 +691,12 @@ class BBox:  # numpydoc ignore=PR01
             row_slice = np.s_[:] if row is None else np.s_[row]
             column_slice = np.s_[:] if column is None else np.s_[column]
 
-            glons, glats = npoints_by_idx(
-                self._bbox_lons,
-                self._bbox_lats,
-                start_idx=idx1,
-                end_idx=idx2,
+            # index the growing lists directly, as npoints_by_idx would convert them
+            glons, glats = npoints(
+                self._bbox_lons[idx1],
+                self._bbox_lats[idx1],
+                self._bbox_lons[idx2],
+                self._bbox_lats[idx2],
                 npts=self._npts,
                 geod=self._geod,
             )
@@ -768,10 +772,6 @@ class BBox:  # numpydoc ignore=PR01
             outer_faces = inner_faces + self._n_points
             faces = np.vstack([inner_faces, outer_faces])
             bbox_faces = np.hstack([faces_n, faces])
-
-            # convert bbox lons/lats to ndarray (internal convenience i.e., boundary)
-            self._bbox_lons = np.asanyarray(self._bbox_lons)
-            self._bbox_lats = np.asanyarray(self._bbox_lats)
 
             # calculate the radii of the inner and outer bbox faces
             offset = self._surface_radius * BBOX_RADIUS_RATIO
@@ -880,8 +880,8 @@ class BBox:  # numpydoc ignore=PR01
         radius = self._surface_radius + self._surface_radius * ZLEVEL_SCALE
 
         edge_idxs = self._bbox_face_edge_idxs()
-        edge_lons = self._bbox_lons[edge_idxs]
-        edge_lats = self._bbox_lats[edge_idxs]
+        edge_lons = np.asanyarray(self._bbox_lons)[edge_idxs]
+        edge_lats = np.asanyarray(self._bbox_lats)[edge_idxs]
         edge_xyz = to_cartesian(edge_lons, edge_lats, radius=radius)
         edge = pv.lines_from_points(edge_xyz, close=True)
 
@@ -1178,7 +1178,7 @@ def line(
     line_lats.append(lats[-1])
 
     xyz = to_cartesian(line_lons, line_lats, radius=radius)
-    lines = pv.lines_from_points(xyz, close=close)
+    lines = pv.lines_from_points(xyz, close=bool(close))
 
     lines.field_data[GV_FIELD_RADIUS] = np.array([radius])
     to_wkt(lines, WGS84)
@@ -1268,7 +1268,7 @@ def npoints(
         end_lon,
         end_lat,
         npts,
-        radians=radians,
+        radians=bool(radians),
         initial_idx=initial_idx,
         terminus_idx=terminus_idx,
     )
@@ -1351,6 +1351,7 @@ def npoints_by_idx(
     if geod is None:
         geod = pyproj.Geod(ellps=ELLIPSE)
 
+    lons, lats = np.asanyarray(lons), np.asanyarray(lats)
     start_lonlat = lons[start_idx], lats[start_idx]
     end_lonlat = lons[end_idx], lats[end_idx]
 
