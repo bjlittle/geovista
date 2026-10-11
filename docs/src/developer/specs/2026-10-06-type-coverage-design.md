@@ -259,6 +259,13 @@ accepts before it validates, `pv.DataSet` for `cast_UnstructuredGrid_to_PolyData
 keeps the check reachable without a `type: ignore`. That check was broken as well, and
 raised `AttributeError` where it meant `TypeError`.
 
+The review of change 4 also found an annotation narrower than its docstring. `wrap`
+documents any NumPy data-type for `dtype` but was annotated `np.dtype | None`, so `mypy`
+refused `np.float32` and `"f4"`, and change 4 had altered the function's default to fit that
+annotation. {pull}`2616` widened the annotation to `DTypeLike` instead, for the reason
+{ref}`§5 <typing-spec-5>` gives against tightening a published contract to match an
+implementation. {issue}`2614` tracked it.
+
 (typing-spec-3-4)=
 ### 3.4 Gallery suppressions
 

@@ -85,6 +85,7 @@ def test_base180__dtype(base180, dtype):
     result = wrap(lons, dtype=dtype)
     if dtype is None:
         dtype = DTYPE
+    assert result.dtype == np.dtype(dtype)
     np.testing.assert_array_equal(result, expected.astype(dtype))
 
 
@@ -103,7 +104,48 @@ def test_base0__dtype(base0, dtype):
     result = wrap(lons, base=0, dtype=dtype)
     if dtype is None:
         dtype = DTYPE
+    assert result.dtype == np.dtype(dtype)
     np.testing.assert_array_equal(result, expected.astype(dtype))
+
+
+@pytest.mark.parametrize(
+    ("dtype", "expected"),
+    [
+        ("f4", np.float32),
+        ("float64", np.float64),
+        (float, np.float64),
+        ("i4", np.int32),
+        (int, np.int_),
+        (np.dtype(np.int64), np.int64),
+    ],
+)
+def test_dtype_like(dtype, expected):
+    """Test any data-type that numpy understands gives the result its dtype."""
+    result = wrap([179, 180, 181], dtype=dtype)
+    assert result.dtype == np.dtype(expected)
+    np.testing.assert_array_equal(result, [179, -180, -179])
+
+
+@pytest.mark.parametrize("dtype", [int, np.int32, np.int64])
+def test_integer_dtype_wraps_before_it_converts(dtype):
+    """Test an integer dtype converts the wrapped longitudes, not the input.
+
+    Converting first would truncate 179.999 to 179, which no longer snaps to the
+    wrap meridian, and 181.5 to 181, which wraps to a different longitude.
+
+    """
+    result = wrap([179.0, 179.999, 180.0, 181.5], dtype=dtype)
+    assert result.dtype == np.dtype(dtype)
+    np.testing.assert_array_equal(result, [179, -180, -180, -178])
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_floating_dtype_wraps_in_that_dtype(dtype):
+    """Test a floating dtype is the dtype the longitudes are wrapped in."""
+    lons = np.array([179.0, 179.999, 180.0, 181.5], dtype=dtype)
+    result = wrap(lons, dtype=dtype)
+    assert result.dtype == np.dtype(dtype)
+    np.testing.assert_array_equal(result, np.array([179, -180, -180, -178.5], dtype))
 
 
 @pytest.mark.parametrize(

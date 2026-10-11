@@ -1,0 +1,5 @@
+Fixed the ``dtype`` argument of :func:`geovista.common.wrap`. Its type annotation
+now accepts any data-type that NumPy understands, such as ``np.float32`` or
+``"f4"``, as its documentation always said. An integer ``dtype`` is now honoured:
+the longitudes are wrapped before they are converted, where they were truncated
+first and returned as ``float64``. Closes :issue:`2614`. (:user:`bjlittle`)
