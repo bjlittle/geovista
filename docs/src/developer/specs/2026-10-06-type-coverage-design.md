@@ -362,7 +362,7 @@ these two, leaving nine.
 | 3 | `bridge.py` | 28 | ✅ landed (2026-10-09, {pull}`2599`) |
 | 4 | `common.py` | 20 | ✅ landed (2026-10-10, {pull}`2612`) |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | ✅ landed (2026-10-11, {pull}`2619`) |
-| 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | not started |
+| 6 | `core.py`, `search.py` and the remaining fourteen modules | 51 | in progress ({pull}`2631`) |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
 
 Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`: a landed row names the date and the
@@ -436,7 +436,11 @@ Out of scope:
   override: `rasterio` ships no `py.typed`, but typeshed has carried stubs for it since
   June 2026, and against them `from_tiff` reported eleven lines of its own. conda-forge
   also carries `types-shapely`, `pandas-stubs` and `types-click-default-group`, and nothing
-  for `geopy` or `pooch`. The rest is part of change 6.
+  for `geopy` or `pooch`. Change 6 took the three stub packages into the `devs` feature,
+  and they revealed two errors in `geometry.py`. `pooch`, `geopy` and `fastparquet` ship no
+  annotations and have no stubs, so one override covers them until they do
+  ({ref}`§8 <typing-spec-8>` item 9). The two site configurations share a second with
+  `pyvistaqt`, which ships `py.typed` but is in no locked environment ({issue}`2630`).
 
 (typing-spec-8)=
 ## 8. Open items
@@ -501,12 +505,18 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    passes, so change 3 passes them through a `typing.cast`. It comes out when the stubs
    accept arrays. The report to typeshed covers two other gaps as well, which the code
    handles without a cast.
-8. **Open** ({issue}`2568`) — **Two typed locals in `geoplotter.py` wait on the same
+8. **Open** ({issue}`2568`) — **Three typed locals wait on the same
    `pyvista` release.** `pyvista` 0.49 leaves `GPUInfo.__init__` unannotated, and its
    `_Wrapped` decorator, item 2's cause, breaks `self.reset_camera(render=False)`. So
    `_warn_opacity` and `view_poi` call each through a local annotated `Callable`.
+   Change 6 added the third, for `p.add_axes()` in the `plot` command of `cli.py`.
    `pyvista` `main` fixes both, and the locals come out with the floor that carries
    them, the trigger items 2 and 6 already wait on.
+9. **Open** ({issue}`2629`) — **Three dependencies ship no annotations.** `pooch` 1.9.0,
+   `geopy` 2.5.0 and `fastparquet` 2026.9.0 carry no `py.typed` and have no stubs on
+   conda-forge or in typeshed, so one `ignore_missing_imports` override makes each import
+   `Any`. Each name comes out when its distribution or a stub package types it. `pooch`
+   has an open upstream issue asking for annotations.
 
 (typing-spec-9)=
 ## 9. References

@@ -1,0 +1,6 @@
+Added typeshed's ``types-shapely``, ``pandas-stubs`` and
+``types-click-default-group`` stubs to the ``devs`` environment, so ``mypy`` checks
+``geovista``'s use of ``shapely``, ``pandas`` and ``click-default-group`` against
+their real interfaces. ``geovista.cache``, ``geovista.cli``, ``geovista.config``,
+``geovista.geometry`` and ``geovista.qt`` also leave the typing ratchet.
+(:user:`claude`)
