@@ -31,7 +31,9 @@ from .geoplotter import GeoPlotter
 from .report import Report
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
+
+    import pyvista as pv
 
 # lazy import third-party dependencies
 pv = lazy.load("pyvista")
@@ -735,5 +737,7 @@ def plot(fname: str, axes: bool, base: bool) -> None:  # numpydoc ignore=PR01
     if base:
         p.add_base_layer()
     if axes:
-        p.add_axes()
+        # typing spec §8 item 8 -- pyvista 0.49's _Wrapped drops the descriptor protocol
+        add_axes: Callable[..., object] = p.add_axes
+        add_axes()
     p.show()
