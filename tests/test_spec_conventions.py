@@ -1580,8 +1580,9 @@ def test_the_index_names_every_prefix(names):
 
 
 #: Citations outside the specifications past which rows 2 to 4 of the roadmap
-#: activate: five times the seven there were when the threshold was set.
-CEILING = 35
+#: activate: ten times the seven there were when the threshold was set, doubled
+#: from thirty-five when the type coverage roadmap passed it.
+CEILING = 70
 
 #: The entry point by which the rendered-output gate of row 4 is wired in.
 OUTPUT_GATE = "check_rendered_citations"
