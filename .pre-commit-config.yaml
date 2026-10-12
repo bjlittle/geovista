@@ -39,7 +39,7 @@ repos:
         additional_dependencies: [black==26.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.16.10"
+    rev: "v0.17.0"
     hooks:
       # Both hooks default to "types_or: [python, pyi, jupyter]", which keeps
       # the committed tutorial notebook covered.
