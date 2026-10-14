@@ -43,7 +43,7 @@ jobs:
           persist-credentials: false
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        uses: prefix-dev/setup-pixi@9dabb60412d3d2d967a8d682f7ce01317af40514
         with:
           environments: "geovista"
           frozen: true
