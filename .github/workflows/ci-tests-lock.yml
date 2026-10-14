@@ -55,7 +55,7 @@ jobs:
       - uses: pyvista/setup-headless-display-action@c103a2ff45650d38cb71684b5dc6cdfeb9442c79
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e
+        uses: prefix-dev/setup-pixi@9dabb60412d3d2d967a8d682f7ce01317af40514
         with:
           cache-write: false
           run-install: false
@@ -65,7 +65,7 @@ jobs:
           pixi update --json | pixi exec pixi-diff-to-markdown > diff.md
 
       - name: "upload artifacts"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ci-tests-lock-artifacts-${{ github.job }}-${{ strategy.job-index }}
           path: |
@@ -107,7 +107,7 @@ jobs:
 
       - name: "upload failed images"
         if: ${{ failure() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ci-tests-lock-failed-images-${{ github.job }}-${{ strategy.job-index }}
           path: ${{ github.workspace }}/test_images_failed
