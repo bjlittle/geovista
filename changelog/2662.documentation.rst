@@ -1,0 +1,4 @@
+The image tests section of the developer guide now explains that CI renders with
+Mesa's ``llvmpipe`` software rasterizer, and how to check for and select it
+locally, so that new baseline images match CI and a local comparison isn't
+thrown by a hardware GPU. (:user:`claude`)
