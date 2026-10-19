@@ -5,13 +5,22 @@
 name: ci-auto-approve
 
 on:
-  issue_comment:
+  # `issue_comment` runs with secrets for a comment from anyone, which is why
+  # zizmor flags it. The trigger is safe here because the job checks nothing out
+  # and runs no code from the pull-request: the workflow is always the one on
+  # the default branch, the comment reaches the shell only through `env`, and
+  # the job is skipped unless the commenter is a collaborator.
+  issue_comment:  # zizmor: ignore[dangerous-triggers]
     types: [created]
 
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Keyed by the pull-request, not by `github.ref`. An `issue_comment` event
+  # carries the default branch, so a ref-keyed group would put every comment in
+  # the repository in one queue, and any comment would cancel an approval still
+  # in progress.
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
   cancel-in-progress: true
 
 defaults:
@@ -25,7 +34,13 @@ jobs:
     name: "auto-approve"
     runs-on: ubuntu-latest
 
-    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '@geovista-bot auto-approve') }}
+    # A collaborator only: the `verify` step approves any pull-request a bot
+    # opened, whoever asks.
+    if: >-
+      ${{ github.event.issue.pull_request
+      && contains(github.event.comment.body, '@geovista-bot auto-approve')
+      && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'),
+      github.event.comment.author_association) }}
 
     permissions:
       pull-requests: write

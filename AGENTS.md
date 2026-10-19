@@ -103,6 +103,10 @@ with `--browser-strict`; follow the pattern for any new guarded suite.
 the 19 workflows set it, so in a multi-command `run:` only the last command's
 status reaches the job — keep the real check last, or `set -o errexit` first.
 
+⚠️ **On `issues`, `issue_comment` and `pull_request_target`, `github.ref` is the
+default or base branch**, so key `concurrency` on the issue or PR number. Suppress
+zizmor's `dangerous-triggers` inline, with why the trigger is safe beside it (#2636).
+
 ⚠️ **Every `docs` build task wipes the build first.** `make` and `doctest`
 both `depends-on` `clean`, and `serve-html`, `tests-doc` and
 `tests-docs-browser` all chain through `make` — so `pixi run -e docs make` is
@@ -145,9 +149,9 @@ regression: drop it once the upstream inventory gains the target (#2555).
   just classes and functions — must be added there or it will not be rendered.
   ruff (`RUF022`) enforces the sort order.
 
-### Copyright Header
+### Copyright Header and Required Import
 
-Every Python file must begin with:
+Every Python file must begin with this header, and include `from __future__ import annotations` (enforced by ruff):
 
 ```python
 # Copyright (c) 2021, GeoVista Contributors.
@@ -155,10 +159,6 @@ Every Python file must begin with:
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 ```
-
-### Required Import
-
-All Python files must include `from __future__ import annotations` (enforced by ruff).
 
 ## Conventions
 
@@ -196,4 +196,4 @@ All Python files must include `from __future__ import annotations` (enforced by 
 
 ---
 
-**Last Updated**: 11 October 2026
+**Last Updated**: 19 October 2026
