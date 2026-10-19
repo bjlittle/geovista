@@ -87,11 +87,12 @@ gallery's `pv.Plotter.camera?` was `geoplotter.py:1534`, #2569): a `name?` is an
 unbound annotation, so grep for its text. `pyproj` types are thin, so returning
 one from a `-> bool` trips `no-any-return`; bind an annotated local first.
 
-⚠️ **Image tests segfault without a GPU/display**, so a green local run proves
-nothing about them — they are only meaningfully exercised in CI. `pytest.ini`
-sets `filterwarnings = ["error", ...]`, so *any* new `warnings.warn` in library
-code can fail an image test even when unit tests pass. Warn only when the
-condition is genuinely exceptional, and check CI before calling such work done.
+⚠️ **Probe for a renderer before trusting a local image run**, as hosts differ:
+`pixi run -e geovista python -c "import pyvista as pv; print(pv.GPUInfo().renderer)"`.
+If it fails, use `xvfb-run -a` as CI does, or leave image tests to CI. A GPU draws some
+scenes past tolerance, so match CI with `CI=true GALLIUM_DRIVER=llvmpipe` (re-probe for
+`llvmpipe`), as `CI` applies `test_examples.py`'s CI-only tolerances. `pytest.ini` makes
+warnings errors, so a new library `warnings.warn` can fail an image test: warn rarely.
 
 ⚠️ **A suite that skips is a suite that passes.** Where a test guards itself on
 a prerequisite — a display, a browser, a built artefact — CI must *require* that
@@ -120,13 +121,12 @@ cd docs && pixi run -e docs sphinx-build -b html \
   -d _build/doctrees src _build/html
 ```
 
-⚠️ **`intersphinx` is no longer allowed to fail the build (#2517).** Each
-mapping in `conf.py` is `(url, (None, "_inventory/<name>.inv"))`, so an
-unreachable remote falls back on the vendored copy. Add a mapping and you
-**must** add its inventory: `pixi run -e docs fetch-inventories` (monthly in
-`ci-inventories.yml`). Should every location fail, `intersphinx_resilience`
-disables `nitpicky` for the rest of the build, so check the job summary before
-trusting a green docs run.
+⚠️ **`intersphinx` is no longer allowed to fail the build (#2517).** Each mapping in
+`conf.py` is `(url, (None, "_inventory/<name>.inv"))`, so an unreachable remote
+falls back on the vendored copy. Add a mapping and you **must** add its inventory:
+`pixi run -e docs fetch-inventories` (monthly in `ci-inventories.yml`). Should every
+location fail, `intersphinx_resilience` disables `nitpicky` for the rest of the
+build, so check the job summary before trusting a green docs run.
 
 ⚠️ **`nitpick_ignore_regex` entries are prefix matches.** Sphinx applies them
 with `re.match`, anchored at the start only, so `(r"py:mod", r"pyvista")` also
