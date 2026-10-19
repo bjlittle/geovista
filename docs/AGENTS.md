@@ -124,7 +124,8 @@ tutorial whose reader runs every snippet.
 fails on `toc.not_included` unless a toctree holds it, a page includes it, or it is
 `orphan: true` (#2564), which no spec may be. `developer/plans/` is never built.
 ⚠️ **A spec status must cite real work** (#2609): after editing one, run
-`pixi run -e test check-spec-status <PR>`. A `Resolved` item may cite an open issue.
+`pixi run -e test check-spec-status <PR>`. A `Resolved` item may cite an open issue. No
+state says *partly landed*, so a row spanning PRs is split into one per PR (6a–6c, #2659).
 
 ### RST Style
 
@@ -173,9 +174,8 @@ The two halves retire separately. The duplicate buttons are sphinx-book-theme
 [#988](https://github.com/executablebooks/sphinx-book-theme/issues/988), fixed on `main`
 by [#987](https://github.com/executablebooks/sphinx-book-theme/pull/987) but unreleased as
 of `1.4.0`; the breakpoint stranding is *not* fixed by it (verified against a DOM without
-the redundant navbar), is
-[#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), and so outlives
-it. Re-check both on every theme bump.
+the redundant navbar), is [#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012),
+and so outlives it. Re-check both on every theme bump.
 
 Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
 `ci-tests-docs.yml` — the image tests compare pyvista scenes, not page furniture. Run
@@ -196,4 +196,4 @@ in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
 
 ---
 
-**Last Updated**: 10 October 2026
+**Last Updated**: 19 October 2026
