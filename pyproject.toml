@@ -671,7 +671,7 @@ cwd = "docs"
 depends-on = [{ "task" = "make", "args" = ["{{ option }}"] }]
 description = "Build the documentation and start local HTTP server on port:11000"
 
-[tool.pixi.feature.geovista.tasks.tests-doc]
+[tool.pixi.feature.geovista.tasks.tests-docs]
 cmd = "pytest --doc_mode"
 depends-on = [
   { "task" = "tests-clean" },

@@ -828,11 +828,11 @@ the above :ref:`tippy-gv-developer-documentation-building` ``make`` command task
    |                                        | Note that the :guilabel:`clean` and :guilabel:`make` tasks are called prior to      |
    |                                        | running this task.                                                                  |
    +----------------------------------------+-------------------------------------------------------------------------------------+
-   | :guilabel:`tests-doc`                  | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g., |
+   | :guilabel:`tests-docs`                 | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g., |
    |                                        |                                                                                     |
    |                                        | .. code:: console                                                                   |
    |                                        |                                                                                     |
-   |                                        |    $ pixi run tests-doc                                                             |
+   |                                        |    $ pixi run tests-docs                                                            |
    |                                        |                                                                                     |
    |                                        | This task calls :bash:`pytest --doc_mode` to perform the documentation image tests  |
    |                                        | using the `pytest-pyvista`_ plugin. Refer to the :toml:`[tool.pytest.ini_options]`  |

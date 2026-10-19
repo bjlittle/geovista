@@ -19,7 +19,7 @@ documentation, and `plotting/` holds the image comparisons — gallery examples 
 ```bash
 pixi run -e test tests-unit    # all unit tests; also "image", "not image"
 pixi run -e test tests-unit "" 0  # serial: the 2nd arg is the xdist worker count
-pixi run -e geovista tests-doc # documentation image tests
+pixi run -e geovista tests-docs # documentation image tests
 pytest tests/core/             # direct; also -m "not image", -k "test_slice_cells"
 ```
 
