@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import ast
 import contextlib
-import datetime
+import datetime as dt
 import importlib
 from importlib.metadata import version as get_version
 import os
@@ -237,7 +237,7 @@ gettext_compact = False
 # See https://www.sphinx-doc.org/en/master/config.html#project-information
 
 project = "GeoVista"
-now = datetime.datetime.now(datetime.UTC)
+now = dt.datetime.now(dt.UTC)
 copyright_years = f"2021 - {now.year}"
 copyright = f"{copyright_years}, {project} Contributors"  # noqa: A001
 # Explicitly unset to save rendering by sphinx as an additional line on the
