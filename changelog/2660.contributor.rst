@@ -1,0 +1,3 @@
+The ``tests-doc`` pixi task is now ``tests-docs``, in line with
+``tests-docs-browser`` and ``tests-docs-browser-install``. Run the documentation
+image tests with ``pixi run tests-docs``. (:user:`claude`)
