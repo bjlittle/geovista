@@ -98,6 +98,7 @@
 .. _geovista-media: https://github.com/bjlittle/geovista-media
 .. _geovista-slam: https://github.com/bjlittle/geovista-slam
 .. _iris: https://github.com/scitools/iris
+.. _llvmpipe: https://docs.mesa3d.org/drivers/llvmpipe.html
 .. _matplotlib: https://github.com/matplotlib/matplotlib
 .. _myst-nb: https://github.com/executablebooks/MyST-NB
 .. _myst-parser: https://github.com/executablebooks/MyST-Parser

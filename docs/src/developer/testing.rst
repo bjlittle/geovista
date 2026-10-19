@@ -376,6 +376,54 @@ The :bash:`tests/plotting/unit_image_cache` symbolic-link to the :data:`~geovist
 manager image cache is automatically verified and managed by the :python:`tests.plotting` module.
 
 
+.. _gv-developer-testing-image-tests-rendering:
+.. _tippy-gv-developer-testing-image-tests-rendering:
+
+Rendering
+~~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`pyproject.toml`
+- :bash:`tests/plotting/test_examples.py`
+
+CI renders the image tests with `llvmpipe`_, Mesa's software rasterizer, and the
+baseline images match its output. The ``pixi`` environment carries the same Mesa
+build. A hardware GPU, though, draws some scenes differently enough to exceed the
+image tolerances, so generate and compare images with ``llvmpipe`` wherever you can.
+
+To see which renderer VTK will use e.g.,
+
+.. code:: console
+
+   $ pixi run python -c "import pyvista as pv; print(pv.GPUInfo().renderer)"
+
+If it names a hardware GPU, set the
+`GALLIUM_DRIVER <https://docs.mesa3d.org/envvars.html>`__ environment variable to
+select ``llvmpipe``, and run the command again to confirm it e.g.,
+
+.. code:: console
+
+   $ GALLIUM_DRIVER=llvmpipe pixi run python -c "import pyvista as pv; print(pv.GPUInfo().renderer)"
+   llvmpipe (LLVM 23.1.3, 256 bits)
+
+The variable only takes effect where the OpenGL driver in use is Mesa's. Where it
+has no effect, rely on CI to compare images. If the command fails instead, VTK has
+nothing to render with, so run under :bash:`xvfb-run -a`, as CI does.
+
+A few gallery examples have image tolerances relaxed in CI only. These are the
+``thresholds`` in :bash:`tests/plotting/test_examples.py`, applied when the
+:guilabel:`CI` environment variable is ``true``. Set both variables to reproduce a
+CI run e.g.,
+
+.. code:: console
+
+   $ CI=true GALLIUM_DRIVER=llvmpipe pixi run tests-unit "image"
+
+The same applies to the documentation image tests of the :guilabel:`tests-docs`
+task, see :ref:`tippy-gv-developer-documentation-pixi-workflow`.
+
+
 .. _gv-developer-testing-image-tests-generation:
 .. _tippy-gv-developer-testing-image-tests-generation:
 
@@ -428,8 +476,9 @@ Typically, we recommend the following:
 
 To register a new baseline image for a unit test:
 
-#. Generate the baseline image using the ``--generated_image_dir`` option to the
-   ``pytest-pyvista`` plugin
+#. Generate the baseline image with ``llvmpipe`` (see
+   :ref:`tippy-gv-developer-testing-image-tests-rendering`), using the
+   ``--generated_image_dir`` option to the ``pytest-pyvista`` plugin
 #. Add the new baseline image to the :bash:`assets/tests/unit` directory of the
    :fab:`github` `geovista-data`_ repository via a :fa:`code-pull-request` ``pull-request``
 #. Once the :fa:`code-pull-request` ``pull-request`` has been reviewed and merged,
