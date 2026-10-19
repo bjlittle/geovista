@@ -79,7 +79,7 @@ fails in a full run. Restore it in a fixture: `copy.deepcopy` round-trips.
 `tests/plotting/unit_image_cache`; failures land in `test_images_failed/`.
 
 ⚠️ **A test that draws is marked `image`**, even via a helper or fixture, or `-m "not
-image"` segfaults with no display (#2596). Drawing is `show`, `screenshot`, `render`,
+image"` segfaults without a renderer (#2596). Drawing is `show`, `screenshot`, `render`,
 `plot` or `export_*`; `example` implies `image`. `tests/test_image_marker.py` gates it.
 
 ⚠️ **Baselines live in a second repo.** `bjlittle/geovista-data` holds the PNGs
@@ -153,8 +153,8 @@ way its modules reach a test.
 
 ⚠️ **The default `html-noplot` build has no carousel.** `plot_gallery=False`
 leaves `geovista_carousel` nothing to render, so its tests skip. Only
-`html-gallery` covers them, and rendering thumbnails needs a display, so like
-the image tests the carousel is only meaningfully exercised in CI.
+`html-gallery` covers them, and rendering thumbnails needs a renderer, so like
+the image tests the carousel runs locally only where the root probe finds one.
 
 ⚠️ **A setting applied in emitted JavaScript is invisible to the build.**
 `tippy_skip_anchor_classes` is consulted in the browser as a tooltip is
