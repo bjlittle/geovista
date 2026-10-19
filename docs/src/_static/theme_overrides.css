@@ -8,3 +8,14 @@
     text-align: left;
     margin-left: max(45px, 15%);
 }
+
+/*
+ * Paint the whole card the colour pydata-sphinx-theme paints its body.
+ * sphinx-design leaves a card transparent, so an image beside the body, as on
+ * the landing page, otherwise sits on the page background: a darker strip in
+ * dark mode, where sphinx-book-theme sets that background apart from the body.
+ * The selector mirrors the theme's own for the body, which it outranks.
+ */
+.bd-content .sd-card {
+    background-color: var(--pst-color-on-background);
+}
