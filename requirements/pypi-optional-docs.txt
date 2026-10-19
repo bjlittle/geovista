@@ -18,10 +18,10 @@ sphinx-tippy <0.5
 sphinx-togglebutton <0.5
 sphinxcontrib-bibtex <2.8
 sphinxcontrib-mermaid <2.2
-pydata-sphinx-theme >=0.20.0,<0.21
+pydata-sphinx-theme >=0.20.0,<0.24
 ipywidgets <8.2
 jupyter-server-proxy <4.7
 nest-asyncio2 <1.8
-trame-pyvista <0.2
+trame-pyvista <0.3
 sphinx-vtk-xref <0.5
 wurlitzer <3.2
