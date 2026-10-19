@@ -108,7 +108,7 @@ default or base branch**, so key `concurrency` on the issue or PR number. Suppre
 zizmor's `dangerous-triggers` inline, with why the trigger is safe beside it (#2636).
 
 ⚠️ **Every `docs` build task wipes the build first.** `make` and `doctest`
-both `depends-on` `clean`, and `serve-html`, `tests-doc` and
+both `depends-on` `clean`, and `serve-html`, `tests-docs` and
 `tests-docs-browser` all chain through `make` — so `pixi run -e docs make` is
 never incremental, and running the browser tests destroys the build you were
 inspecting. For an incremental rebuild, invoke sphinx directly:

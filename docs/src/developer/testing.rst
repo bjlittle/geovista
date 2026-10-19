@@ -84,7 +84,7 @@ The following testing workflows are available:
    |           | :ref:`tippy-gv-developer-testing-browser-tests` for the **latest** `SPEC 0`_ supported distribution of        |
    |           | ``python``.                                                                                                   |
    |           |                                                                                                               |
-   |           | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` :guilabel:`tests-doc`        |
+   |           | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` :guilabel:`tests-docs`       |
    |           | task, and the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`tests-docs-browser` task.    |
    |           |                                                                                                               |
    |           | .. note::                                                                                                     |

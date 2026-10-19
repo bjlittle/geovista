@@ -402,11 +402,11 @@ The following tasks are defined for each of our features:
    |                |                                |                                                                                       |
    |                |                                | This task is an alias for the :bash:`make serve-html` command.                        |
    +----------------+--------------------------------+---------------------------------------------------------------------------------------+
-   | ``{geovista}`` | ``tests-doc``                  | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g.,   |
+   | ``{geovista}`` | ``tests-docs``                 | Perform documentation image tests of ``pyvista-plot`` directive static scenes e.g.,   |
    |                |                                |                                                                                       |
    |                |                                | .. code:: console                                                                     |
    |                |                                |                                                                                       |
-   |                |                                |    $ pixi run tests-doc                                                               |
+   |                |                                |    $ pixi run tests-docs                                                              |
    |                |                                |                                                                                       |
    |                |                                | This task calls :bash:`pytest --doc_mode` to perform the documentation image tests    |
    |                |                                | using the `pytest-pyvista`_ plugin. Refer to the :toml:`[tool.pytest.ini_options]`    |
