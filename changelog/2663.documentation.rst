@@ -1,0 +1,5 @@
+In dark mode, the icon on each card of the landing page and of the developer,
+reference and next steps pages now sits on the colour of its card instead of a
+darker strip. The cards had looked uniform only because ``pydata-sphinx-theme``
+0.15.4 asked for a colour it never defined, which 0.20.0 replaced with a real
+one. (:user:`claude`)
