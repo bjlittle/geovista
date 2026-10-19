@@ -1,0 +1,6 @@
+Row 6 of the type coverage roadmap is now three rows, 6a, 6b and 6c, one for
+each pull request it was split into. Once 6a landed, no single status was true
+of the row, and the nightly status check reported it as in progress against a
+merged pull request. Each row now has its own status and counts the lines its
+change clears, measured again: 11, 38 and 19. They total 68, one fewer than the
+specification said. Closes :issue:`2655`. (:user:`claude`)
