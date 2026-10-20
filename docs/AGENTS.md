@@ -32,9 +32,8 @@ make serve-html  # local HTTP server at http://localhost:11000
 ```
 
 Each has a pixi task of the same name, run from the repo root as
-`pixi run -e docs <task>`; `make` builds `html-noplot`.
-
-The Makefile exports `PYVISTA_OFF_SCREEN`/`PYDEVD_DISABLE_FILE_VALIDATION`, passing
+`pixi run -e docs <task>`; `make` builds `html-noplot`. The Makefile exports
+`PYVISTA_OFF_SCREEN`/`PYDEVD_DISABLE_FILE_VALIDATION`, passing
 `--fail-on-warning --keep-going --show-traceback`; ⚠️ RTD bypasses it, and parallel
 gallery workers see only the env, so `conf.py` must export what they need (#2585).
 
@@ -85,6 +84,9 @@ only sees `[tool.mypy] files = ["src/geovista"]`, and `numpydoc-validation` is
 dict. That `setup()` must also return `parallel_read_safe` and `parallel_write_safe`, or
 `--jobs` warns twice and reads serially, failing `--fail-on-warning`; and must
 `env.note_dependency(__file__)` for doctree content, its modules being no source sphinx sees.
+⚠️ **Declared safety proves nothing**: under RTD's `--jobs`, `sphinx-tippy` lost the tips
+of pages a worker wrote and the merged reads reordered `viewcode` and `env.all_docs`, all
+unwarned. `src/_ext/parallel_build.py` restores parity; diff a `--jobs` build with a serial one.
 
 ⚠️ **`sphinx-llms-txt` concatenates `_sources/*` verbatim** — page *source*, so
 `llms-full.txt` carries `.. readingtime::` rather than the banner, and no
@@ -160,15 +162,14 @@ reason.** `sphinx-tippy`'s predated its conda-forge package and, by #2549, let a
 missing extension drop every tooltip while the build still exited 0. Check
 conda-forge before adding one, and again before keeping one.
 
-⚠️ **`src/_static/sidebar_toggle.js` is a workaround, not a feature.**
-`sphinx-book-theme` renders a second `.primary-toggle`/`.secondary-toggle` pair
-and hides `pydata-sphinx-theme`'s, but both themes bind with
-`document.querySelector(...)` — the *first* match, i.e. the hidden one — so the
-visible buttons are inert and both sidebars are unreachable on a phone. The shim
-forwards clicks to the bound button of each pair, self-retires when only one
-remains, and closes the primary dialog at `(min-width: 992px)`, where it
-inherits the sidebar's collapsed state and sits open but invisible over a page
-it blocks.
+⚠️ **`src/_static/sidebar_toggle.js` is a workaround, not a feature.** `sphinx-book-theme`
+renders a second `.primary-toggle`/`.secondary-toggle` pair and hides
+`pydata-sphinx-theme`'s, but both themes bind with `document.querySelector(...)` — the
+*first* match, i.e. the hidden one — so the visible buttons are inert and both sidebars
+are unreachable on a phone. The shim forwards clicks to the bound button of each pair,
+self-retires when only one remains, and closes the primary dialog at
+`(min-width: 992px)`, where it inherits the sidebar's collapsed state and sits open but
+invisible over a page it blocks.
 
 The two halves retire separately. The duplicate buttons are sphinx-book-theme
 [#988](https://github.com/executablebooks/sphinx-book-theme/issues/988), fixed on `main`
@@ -182,7 +183,6 @@ Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
 `pixi run -e geovista tests-docs-browser`; `tests/AGENTS.md` has the gotchas, including
 why CI must pass `--browser-strict`. The suite needs a *local* build, never a Read the
 Docs URL — RTD's addons re-inject the page after `load`.
-
 Developer-facing docs live in `docs/src/developer/`: the theme shim and tooltips
 in `documentation.rst` (:fa:`palette` Theme, :fa:`comments` Tooltips), the suite
 in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
@@ -196,4 +196,4 @@ in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
 
 ---
 
-**Last Updated**: 19 October 2026
+**Last Updated**: 20 October 2026

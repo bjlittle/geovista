@@ -27,7 +27,10 @@ build:
       - git stash pop || true
     build:
       html:
-        - xvfb-run -a -s "-screen 0 1024x768x24" pixi run --frozen --environment docs sphinx-build -T -b html docs/src $READTHEDOCS_OUTPUT/html
+        # read pages in parallel, one process per usable CPU. "nproc" counts
+        # the CPUs this process may run on, as "conf.py" does for the gallery
+        # workers, whereas "--jobs auto" counts every CPU on the host
+        - xvfb-run -a -s "-screen 0 1024x768x24" pixi run --frozen --environment docs sphinx-build -T --jobs "$(nproc)" -b html docs/src $READTHEDOCS_OUTPUT/html
 
 sphinx:
   configuration: docs/src/conf.py

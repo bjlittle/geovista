@@ -173,6 +173,7 @@ extensions = [
     "intersphinx_resilience",
     "gallery_scenes",
     "numpydoc",
+    "parallel_build",
     "readingtime",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
