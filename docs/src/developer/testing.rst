@@ -515,9 +515,10 @@ The browser unit tests drive a headless ``chromium`` browser over a **built**
 documentation site using `playwright`_, in order to cover the theme chrome that is
 assembled in the browser and is therefore beyond the reach of any other unit test
 i.e., the primary and secondary sidebar toggles, the dialogs that they open, the
-:ref:`tippy-gv-examples` gallery carousel, and the
+:ref:`tippy-gv-examples` gallery carousel, the
 :ref:`tippy-gv-developer-documentation-cross-references-tooltips`, which are
-attached to a page only once it has loaded.
+attached to a page only once it has loaded, and the colours of the section cards,
+which the theme switches between light and dark mode.
 
 .. note::
    :class: dropdown, toggle-shown
