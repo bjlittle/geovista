@@ -89,10 +89,10 @@ one from a `-> bool` trips `no-any-return`; bind an annotated local first.
 
 ⚠️ **Probe for a renderer before trusting a local image run**, as hosts differ:
 `pixi run -e geovista python -c "import pyvista as pv; print(pv.GPUInfo().renderer)"`.
-If it fails, use `xvfb-run -a` as CI does, or leave image tests to CI. A GPU draws some
-scenes past tolerance, so match CI with `CI=true GALLIUM_DRIVER=llvmpipe` (re-probe for
-`llvmpipe`), as `CI` applies `test_examples.py`'s CI-only tolerances. `pytest.ini` makes
-warnings errors, so a new library `warnings.warn` can fail an image test: warn rarely.
+If it fails, `xvfb-run -a` renders as CI does (apt `xvfb`; the env ships Mesa). For EGL with
+no X, set `__EGL_VENDOR_LIBRARY_FILENAMES` to the env's `share/glvnd/egl_vendor.d/50_mesa.json`,
+but its FXAA warning fails `plotter_manifold`. A GPU misses some baselines, so match CI with
+`CI=true GALLIUM_DRIVER=llvmpipe` (renderer and tolerances). Warnings are errors: warn rarely.
 
 ⚠️ **A suite that skips is a suite that passes.** Where a test guards itself on
 a prerequisite — a display, a browser, a built artefact — CI must *require* that
