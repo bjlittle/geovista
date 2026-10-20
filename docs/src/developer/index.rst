@@ -29,6 +29,17 @@ clarify the various steps involved in how to contribute to ``geovista``.
 
         Towncrier guidelines.
 
+    .. grid-item-card:: Codecraft 🚧
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-developer-codecraft
+        :link-type: ref
+        :img-top: ../_static/images/icons/codecraft.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Maintenance guidelines.
+
     .. grid-item-card:: Documentation
         :class-title: custom-title
         :class-body: custom-body
@@ -51,21 +62,6 @@ clarify the various steps involved in how to contribute to ``geovista``.
 
         Packaging guidelines.
 
-    .. grid-item-card:: Testing
-        :class-title: custom-title
-        :class-body: custom-body
-        :link: gv-developer-testing
-        :link-type: ref
-        :img-top: ../_static/images/icons/testing.svg
-        :class-img-top: dark-light
-        :class-card: sd-rounded-3
-
-        Testing guidelines.
-
-
-.. grid:: 1 1 2 2
-    :gutter: 2
-
     .. grid-item-card:: Specifications
         :class-title: custom-title
         :class-body: custom-body
@@ -77,16 +73,16 @@ clarify the various steps involved in how to contribute to ``geovista``.
 
         Living design documents.
 
-    .. grid-item-card:: Codecraft 🚧
+    .. grid-item-card:: Testing
         :class-title: custom-title
         :class-body: custom-body
-        :link: gv-developer-codecraft
+        :link: gv-developer-testing
         :link-type: ref
-        :img-top: ../_static/images/icons/codecraft.svg
+        :img-top: ../_static/images/icons/testing.svg
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
-        Maintenance guidelines.
+        Testing guidelines.
 
 
 .. toctree::
