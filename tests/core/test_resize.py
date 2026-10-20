@@ -135,9 +135,10 @@ def test_resize_cloud__zlevel_per_point(zlevel):
     zscale = 1
     cloud = Transform.from_points([0, 10, 20], [0, 10, 20], zscale=zscale)
     result = resize(cloud, zlevel=zlevel)
-    expected = RADIUS + np.asarray(zlevel) * zscale
+    expected = RADIUS + RADIUS * np.asarray(zlevel) * zscale
     assert np.allclose(distance(result, mean=False), expected)
     assert np.isclose(result[GV_FIELD_RADIUS], RADIUS)
+    assert np.isclose(result[GV_FIELD_ZSCALE], zscale)
     assert id(cloud) != id(result)
 
 
@@ -148,7 +149,7 @@ def test_resize_cloud__zlevel_per_point_adds():
         [0, 10, 20], [0, 10, 20], zlevel=[1, 2, 3], zscale=zscale
     )
     result = resize(cloud, zlevel=np.array([3, 2, 1]))
-    assert np.allclose(distance(result, mean=False), RADIUS + 4 * zscale)
+    assert np.allclose(distance(result, mean=False), RADIUS + RADIUS * 4 * zscale)
 
 
 def test_resize_cloud__zlevel_broadcast():
@@ -156,7 +157,7 @@ def test_resize_cloud__zlevel_broadcast():
     zscale = 1
     cloud = Transform.from_points([0, 10, 20], [0, 10, 20], zscale=zscale)
     result = resize(cloud, zlevel=np.array([2]))
-    assert np.allclose(distance(result, mean=False), RADIUS + 2 * zscale)
+    assert np.allclose(distance(result, mean=False), RADIUS + RADIUS * 2 * zscale)
 
 
 def test_resize_cloud__zlevel_single_point():
@@ -164,7 +165,7 @@ def test_resize_cloud__zlevel_single_point():
     zscale = 1
     cloud = Transform.from_points([0], [0], zscale=zscale)
     result = resize(cloud, zlevel=np.array([2]))
-    assert np.allclose(distance(result, mean=False), RADIUS + 2 * zscale)
+    assert np.allclose(distance(result, mean=False), RADIUS + RADIUS * 2 * zscale)
 
 
 def test_resize_cloud__zlevel_zeros(lam_uk_cloud):
@@ -187,3 +188,27 @@ def test_resize__zlevel_array_fail(lfric, zlevel):
     emsg = "Cannot resize mesh, a 'zlevel' that is not a scalar requires a point cloud"
     with pytest.raises(ValueError, match=emsg):
         _ = resize(lfric, zlevel=zlevel)
+
+
+@pytest.mark.parametrize("zlevel", [0.5, np.float64(1.7), np.array(-2.5)])
+def test_resize__zlevel_float(lfric, zlevel):
+    """Test resize mesh by a z-level that is not a whole number."""
+    result = resize(lfric, zlevel=zlevel)
+    expected = RADIUS + RADIUS * float(zlevel) * ZLEVEL_SCALE
+    assert np.isclose(distance(result), expected)
+
+
+def test_resize_cloud__zlevel_float():
+    """Test resize cloud points alike by a scalar and a one element z-level."""
+    cloud = Transform.from_points([0, 10, 20], [0, 10, 20], zscale=1)
+    scalar = resize(cloud, zlevel=0.5)
+    array = resize(cloud, zlevel=[0.5])
+    assert np.allclose(distance(scalar, mean=False), RADIUS + RADIUS * 0.5)
+    assert np.allclose(scalar.points, array.points)
+
+
+def test_resize__zlevel_0d(lfric):
+    """Test resize mesh by a z-level given as a 0-d array."""
+    result = resize(lfric, zlevel=np.array(2))
+    expected = RADIUS + RADIUS * 2 * ZLEVEL_SCALE
+    assert np.isclose(distance(result), expected)

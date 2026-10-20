@@ -491,7 +491,7 @@ def resize(
     /,
     *,
     radius: float | None = None,
-    zlevel: int | ArrayLike | None = None,
+    zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
     inplace: bool | None = False,
 ) -> pv.PolyData:
@@ -503,13 +503,12 @@ def resize(
         The mesh to be resized to the provided ``radius``.
     radius : float, optional
         The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
-    zlevel : int or ArrayLike, default=0
+    zlevel : float or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
         For a point cloud, `zlevel` adds to the z-level each of its points
-        already carries, and if it is not a scalar, then its shape must match
-        or broadcast with the shape of the ``mesh.points``. Any other mesh
-        requires a scalar.
+        already carries, and if it is not a scalar, then it must broadcast to
+        the shape ``(mesh.n_points,)``. Any other mesh requires a scalar.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
@@ -565,8 +564,6 @@ def resize(
                 f"broadcast to its {mesh.n_points:,} points."
             )
             raise ValueError(emsg) from None
-    else:
-        level = level.astype(int)
 
     if cloud:
         update = bool(np.any(level))

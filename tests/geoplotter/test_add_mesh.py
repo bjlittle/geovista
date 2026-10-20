@@ -13,7 +13,7 @@ import pytest
 import pyvista as pv
 
 import geovista as gv
-from geovista.common import RADIUS, distance
+from geovista.common import RADIUS, ZLEVEL_SCALE, distance
 from geovista.crs import from_wkt
 from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
 from geovista.transform import transform_mesh
@@ -123,7 +123,7 @@ def test_cloud_zlevel_per_point(zlevel):
     actor = p.add_mesh(cloud, zlevel=zlevel)
 
     assert actor is not None
-    expected = RADIUS + np.asarray(zlevel) * zscale
+    expected = RADIUS + RADIUS * np.asarray(zlevel) * zscale
     assert np.allclose(distance(actor.mapper.dataset, mean=False), expected)
 
 
@@ -136,7 +136,7 @@ def test_cloud_zlevel_single_point():
     actor = p.add_mesh(cloud, zlevel=np.array([2]))
 
     assert actor is not None
-    expected = RADIUS + 2 * zscale
+    expected = RADIUS + RADIUS * 2 * zscale
     assert np.allclose(distance(actor.mapper.dataset, mean=False), expected)
 
 
@@ -152,3 +152,30 @@ def test_surface_zlevel_array_fail():
     emsg = "a 'zlevel' that is not a scalar requires a point cloud"
     with pytest.raises(ValueError, match=emsg):
         _ = p.add_mesh(mesh, zlevel=np.arange(mesh.n_points))
+
+
+def test_cloud_zlevel_zeros_shape_fail():
+    """A z-level of zeros that doesn't broadcast to a cloud is refused.
+
+    The same cloud and z-level are refused when the cloud needs a transform.
+
+    """
+    cloud = gv.Transform.from_points([0, 10, 20], [0, 10, 20])
+    p = GeoPlotter()
+
+    emsg = r"'zlevel' with shape \(5,\) does not broadcast"
+    with pytest.raises(ValueError, match=emsg):
+        _ = p.add_mesh(cloud, zlevel=np.zeros(5))
+
+
+def test_surface_zlevel_0d():
+    """A mesh that is no cloud is lifted by a z-level given as a 0-d array."""
+    mesh = gv.Transform.from_1d([0, 10, 20], [0, 10, 20])
+    radius = distance(mesh)
+    p = GeoPlotter()
+
+    actor = p.add_mesh(mesh, zlevel=np.array(2))
+
+    assert actor is not None
+    expected = radius + radius * 2 * ZLEVEL_SCALE
+    assert np.isclose(distance(actor.mapper.dataset), expected)
