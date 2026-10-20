@@ -31,3 +31,15 @@ def test_single_mesh_pass_thru():
     """Test a single :class:`~pyvista.PolyData` is returned as it is."""
     mesh = pv.Sphere()
     assert combine(mesh) is mesh
+
+
+@pytest.mark.parametrize(
+    "meshes",
+    [(pv.MultiBlock(),), (pv.MultiBlock(), pv.Sphere())],
+    ids=["single", "first"],
+)
+def test_multiblock_fail(meshes):
+    """Test trap of a :class:`~pyvista.MultiBlock`, which is not a dataset."""
+    emsg = "Can only combine 'pyvista.PolyData' meshes, input mesh #1 has type"
+    with pytest.raises(TypeError, match=emsg):
+        _ = combine(*meshes)

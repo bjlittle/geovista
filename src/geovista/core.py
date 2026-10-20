@@ -391,10 +391,21 @@ def combine(
         emsg = "Expected one or more meshes to combine."
         raise ValueError(emsg)
 
-    if len(meshes) == 1 and isinstance(meshes[0], pv.PolyData):
-        return meshes[0]
+    # check every mesh before any is read
+    polys: list[pv.PolyData] = []
+    for i, dataset in enumerate(meshes):
+        if not isinstance(dataset, pv.PolyData):
+            emsg = (
+                f"Can only combine 'pyvista.PolyData' meshes, input mesh "
+                f"#{i + 1} has type '{dataset.__class__.__name__}'."
+            )
+            raise TypeError(emsg)
+        polys.append(dataset)
 
-    first = meshes[0]
+    if len(polys) == 1:
+        return polys[0]
+
+    first = polys[0]
     combined_points, combined_faces = [], []
     n_points = 0
 
@@ -407,14 +418,7 @@ def combine(
         common_field_data = set(first.field_data.keys())
         active_scalars_info = {first.active_scalars_info}
 
-    for i, mesh in enumerate(meshes):
-        if not isinstance(mesh, pv.PolyData):
-            emsg = (
-                f"Can only combine 'pyvista.PolyData' meshes, input mesh "
-                f"#{i + 1} has type '{mesh.__class__.__name__}'."
-            )
-            raise TypeError(emsg)
-
+    for i, mesh in enumerate(polys):
         if mesh.n_lines:
             emsg = (
                 f"Can only combine meshes with cells, input mesh #{i + 1} "
