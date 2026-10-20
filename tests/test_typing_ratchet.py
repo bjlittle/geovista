@@ -52,7 +52,6 @@ SOURCE = ROOT / "src"
 #: and goes with change 7 of the roadmap.
 RATCHET_BASELINE = frozenset(
     {
-        "geovista.core",
         "geovista.examples.*",
         "geovista.pantry",
         "geovista.pantry.data",
