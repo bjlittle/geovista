@@ -24,3 +24,13 @@ def test__no_crs():
     """Test mesh with no CRS to de-serialize."""
     mesh = pv.Plane()
     assert from_wkt(mesh) is None
+
+
+def test__stored_before_escaping(sphere):
+    """Test a mesh whose ASCII WKT was stored verbatim still reads.
+
+    Meshes serialized before :issue:`2595` hold the WKT as it came from pyproj.
+
+    """
+    sphere.field_data[GV_FIELD_CRS] = [WGS84.to_wkt()]
+    assert from_wkt(sphere) == WGS84

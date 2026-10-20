@@ -20,7 +20,7 @@ from geovista.common import (
     from_cartesian,
     to_cartesian,
 )
-from geovista.crs import WGS84, projected, to_wkt
+from geovista.crs import WGS84, from_wkt, projected, to_wkt
 from geovista.transform import _ZLEVEL, transform_mesh
 
 #: Fraction of the projection width above which a cell is considered torn.
@@ -676,3 +676,10 @@ def test_transform_mesh__cloud_between_units(lifted_cloud):
 
     expected = metres.points[:, 2] / 1000
     np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)
+
+
+@pytest.mark.parametrize("tgt_crs", ["EPSG:3857", "EPSG:27700", "EPSG:32630"])
+def test_transform_mesh__non_ascii_wkt(regional_mesh, tgt_crs):
+    """A target CRS whose OGC WKT holds non-ASCII text. See :issue:`2595`."""
+    result = transform_mesh(regional_mesh, tgt_crs)
+    assert from_wkt(result) == CRS.from_user_input(tgt_crs)
