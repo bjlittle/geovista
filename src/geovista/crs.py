@@ -114,10 +114,14 @@ def from_wkt(mesh: pv.DataObject) -> CRS | None:
     crs = None
 
     if has_wkt(mesh):
-        # reverse the escaping of to_wkt, which leaves the ASCII WKT of a mesh
-        # serialized before it unchanged, as that holds no backslash
         wkt = str(mesh.field_data[GV_FIELD_CRS][0])
-        crs = CRS.from_wkt(wkt.encode("ascii").decode("unicode_escape"))
+        # reverse the escaping of to_wkt. Text that is not ASCII was stored raw,
+        # by VTK or another tool, and WKT that geovista stored before escaping
+        # is unchanged by it, unless that holds a backslash, which no WKT from
+        # the PROJ database does
+        if wkt.isascii():
+            wkt = wkt.encode("ascii").decode("unicode_escape")
+        crs = CRS.from_wkt(wkt)
 
     return crs
 
@@ -452,8 +456,9 @@ def to_wkt(mesh: pv.DataObject, crs: CRS) -> None:
     """Attach serialized :class:`~pyproj.crs.CRS` as Well-Known-Text (WKT) to the mesh.
 
     The serialized OGC WKT is attached to the ``field_data`` of the mesh in-place.
-    VTK only accepts ASCII text, so any non-ASCII character is escaped, as is any
-    backslash, and :func:`from_wkt` reverses the escaping.
+    :mod:`pyvista` only accepts ASCII text in a string array, so any non-ASCII
+    character is escaped, as is any backslash, and :func:`from_wkt` reverses the
+    escaping.
 
     Parameters
     ----------
@@ -468,6 +473,6 @@ def to_wkt(mesh: pv.DataObject, crs: CRS) -> None:
 
     """
     # the usage of many EPSG definitions holds non-ASCII text, such as the
-    # degree sign in the area of EPSG:3857, which VTK refuses
+    # degree sign in the area of EPSG:3857, which pyvista refuses
     wkt = crs.to_wkt().encode("unicode_escape").decode("ascii")
     mesh.field_data[GV_FIELD_CRS] = np.array([wkt])

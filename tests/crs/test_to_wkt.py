@@ -32,8 +32,8 @@ def test_non_ascii(sphere, code):
     to_wkt(sphere, crs)
     assert str(sphere.field_data[GV_FIELD_CRS][0]).isascii()
     result = from_wkt(sphere)
-    assert result == crs
     assert result is not None
+    assert result == crs
     # pyproj's own round trip of the text, which differs for EPSG:3857
     assert result.to_wkt() == CRS.from_wkt(crs.to_wkt()).to_wkt()
 

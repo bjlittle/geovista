@@ -7,7 +7,9 @@
 
 from __future__ import annotations
 
+from pyproj import CRS
 import pyvista as pv
+from vtkmodules.vtkCommonCore import vtkStringArray
 
 from geovista.common import GV_FIELD_CRS
 from geovista.crs import WGS84, from_wkt
@@ -34,3 +36,17 @@ def test__stored_before_escaping(sphere):
     """
     sphere.field_data[GV_FIELD_CRS] = [WGS84.to_wkt()]
     assert from_wkt(sphere) == WGS84
+
+
+def test__stored_raw_by_vtk(sphere):
+    """Test a mesh whose non-ASCII WKT was stored raw by VTK still reads.
+
+    pyvista refuses such text, but VTK and other tools store it as it is.
+
+    """
+    crs = CRS.from_user_input("EPSG:3857")
+    array = vtkStringArray()
+    array.SetName(GV_FIELD_CRS)
+    array.InsertNextValue(crs.to_wkt())
+    sphere.GetFieldData().AddArray(array)
+    assert from_wkt(sphere) == crs

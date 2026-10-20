@@ -107,7 +107,11 @@ GV_CELL_IDS: str = "gvOriginalCellIds"
 """Name of the geovista cell indices array."""
 
 GV_FIELD_CRS: str = "gvCRS"
-"""The field array name of the CF serialized pyproj CRS."""
+"""The field array name of the OGC WKT of the mesh CRS.
+
+Any non-ASCII character and backslash in the WKT is escaped, see
+:func:`geovista.crs.to_wkt`.
+"""
 
 GV_FIELD_NAME: str = "gvName"
 """The field array name of the mesh containing field, point and/or cell data."""
