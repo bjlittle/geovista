@@ -109,8 +109,8 @@ GV_CELL_IDS: str = "gvOriginalCellIds"
 GV_FIELD_CRS: str = "gvCRS"
 """The field array name of the OGC WKT of the mesh CRS.
 
-Any non-ASCII character and backslash in the WKT is escaped, see
-:func:`geovista.crs.to_wkt`.
+A WKT holding a non-ASCII character or a backslash is escaped, and the array then
+has a second element naming the codec, see :func:`geovista.crs.to_wkt`.
 """
 
 GV_FIELD_NAME: str = "gvName"

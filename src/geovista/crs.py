@@ -90,6 +90,10 @@ PlateCarree = CRS.from_user_input("epsg:32662")
 WGS84 = CRS.from_user_input("epsg:4326")
 """Geographic WGS84."""
 
+# the codec that escapes a stored WKT, and the second element of the field array
+# that marks the WKT as escaped
+_WKT_ENCODING: str = "unicode_escape"
+
 
 def from_wkt(mesh: pv.DataObject) -> CRS | None:
     """Get the :class:`~pyproj.crs.CRS` associated with the mesh.
@@ -114,13 +118,13 @@ def from_wkt(mesh: pv.DataObject) -> CRS | None:
     crs = None
 
     if has_wkt(mesh):
-        wkt = str(mesh.field_data[GV_FIELD_CRS][0])
-        # reverse the escaping of to_wkt. Text that is not ASCII was stored raw,
-        # by VTK or another tool, and WKT that geovista stored before escaping
-        # is unchanged by it, unless that holds a backslash, which no WKT from
-        # the PROJ database does
-        if wkt.isascii():
-            wkt = wkt.encode("ascii").decode("unicode_escape")
+        stored = mesh.field_data[GV_FIELD_CRS]
+        wkt = str(stored[0])
+        # reverse the escaping of to_wkt, which it marks. Unmarked WKT is read as
+        # it is, whether geovista stored it before the escaping, or another tool
+        # stored it raw
+        if stored.size > 1 and str(stored[1]) == _WKT_ENCODING:
+            wkt = wkt.encode("ascii").decode(_WKT_ENCODING)
         crs = CRS.from_wkt(wkt)
 
     return crs
@@ -456,9 +460,10 @@ def to_wkt(mesh: pv.DataObject, crs: CRS) -> None:
     """Attach serialized :class:`~pyproj.crs.CRS` as Well-Known-Text (WKT) to the mesh.
 
     The serialized OGC WKT is attached to the ``field_data`` of the mesh in-place.
-    :mod:`pyvista` only accepts ASCII text in a string array, so any non-ASCII
-    character is escaped, as is any backslash, and :func:`from_wkt` reverses the
-    escaping.
+    :mod:`pyvista` only accepts ASCII text in a string array, so a WKT that holds a
+    non-ASCII character or a backslash is escaped with the ``unicode_escape``
+    codec, and a second element of the array names the codec. :func:`from_wkt`
+    reverses the escaping.
 
     Parameters
     ----------
@@ -473,6 +478,9 @@ def to_wkt(mesh: pv.DataObject, crs: CRS) -> None:
 
     """
     # the usage of many EPSG definitions holds non-ASCII text, such as the
-    # degree sign in the area of EPSG:3857, which pyvista refuses
-    wkt = crs.to_wkt().encode("unicode_escape").decode("ascii")
-    mesh.field_data[GV_FIELD_CRS] = np.array([wkt])
+    # degree sign in the area of EPSG:3857, which pyvista refuses. Only escaped
+    # WKT is marked, so from_wkt reads any other as it is
+    wkt = crs.to_wkt()
+    escaped = wkt.encode(_WKT_ENCODING).decode("ascii")
+    stored = [wkt] if escaped == wkt else [escaped, _WKT_ENCODING]
+    mesh.field_data[GV_FIELD_CRS] = np.array(stored)

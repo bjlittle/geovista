@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from pyproj import CRS
+import pytest
 import pyvista as pv
 from vtkmodules.vtkCommonCore import vtkStringArray
 
@@ -50,3 +51,21 @@ def test__stored_raw_by_vtk(sphere):
     array.InsertNextValue(crs.to_wkt())
     sphere.GetFieldData().AddArray(array)
     assert from_wkt(sphere) == crs
+
+
+@pytest.mark.parametrize("name", [r"WGS\u00b0 84", r"WGS\unit 84", "WGS\\"])
+def test__stored_before_escaping_with_backslash(sphere, tmp_path, name):
+    """Test unmarked ASCII WKT holding a backslash is read as it is.
+
+    A mesh serialized before :issue:`2595` holds the WKT verbatim, and a CRS of
+    the user's own may name itself with a backslash.
+
+    """
+    crs = CRS.from_wkt(WGS84.to_wkt().replace('"WGS 84"', f'"{name}"', 1))
+    sphere.field_data[GV_FIELD_CRS] = [crs.to_wkt()]
+    fname = tmp_path / "mesh.vtp"
+    sphere.save(fname)
+    for mesh in (sphere, pv.read(fname)):
+        result = from_wkt(mesh)
+        assert result is not None
+        assert result.name == name
