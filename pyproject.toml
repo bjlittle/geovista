@@ -150,7 +150,6 @@ module = [
   "geovista.pantry.textures",
   "geovista.raster",
   "geovista.report",
-  "geovista.search",
   "geovista.themes",
   "geovista.examples.*",
 ]
