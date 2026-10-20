@@ -163,9 +163,14 @@ the gallery is spent reading, as that is when the docstring and inline plots
 render and the tutorial notebook runs. The :bash:`Makefile` targets still read
 the pages one at a time.
 
-Some extensions build different documentation in parallel, and the
-:bash:`parallel_build` extension makes up for each of them:
+Reading in parallel needs more memory, and some extensions build different
+documentation in parallel. The :bash:`parallel_build` extension makes up for
+each of them:
 
+- `sphinx-gallery`_ keeps its idle worker processes, and their memory, for five
+  minutes after running the examples. Beside the processes reading the pages
+  and the kernel running the tutorial notebook, that was more than Read the
+  Docs allows, so the workers are stopped before the pages are read.
 - ``sphinx-tippy`` collects the tooltips of a page as it writes the page, so a
   page written by a worker process would lose them. The pages are written one
   at a time instead, which costs little, while still being read in parallel.

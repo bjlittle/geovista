@@ -267,6 +267,44 @@ def test_module_code_documented_only(parity):
     assert not (html / "_modules" / "fractions.html").exists()
 
 
+def _alive(pid: int) -> bool:
+    """Report whether the process is running, rather than a zombie or gone."""
+    try:
+        state = Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()[0]
+    except FileNotFoundError:
+        return False
+    return state != "Z"
+
+
+def test_gallery_workers_released(require, monkeypatch):
+    """Test the idle gallery workers stop before the pages are read.
+
+    sphinx-gallery runs the examples in a reusable pool of loky workers, which
+    otherwise stay alive and keep their memory for five minutes, and so through
+    reading the pages beside the processes reading them.
+
+    """
+    try:
+        from joblib import Parallel, delayed  # noqa: PLC0415
+    except ImportError:
+        require("joblib is not installed")
+
+    if not Path("/proc").is_dir():
+        pytest.skip("requires /proc to inspect the workers")
+
+    monkeypatch.syspath_prepend(str(EXT))
+    import parallel_build  # noqa: PLC0415
+
+    # as sphinx-gallery runs the examples
+    pids = set(Parallel(n_jobs=2, backend="loky")(delayed(os.getpid)() for _ in "ab"))
+    assert pids
+    assert all(_alive(pid) for pid in pids)
+
+    parallel_build.release_gallery_workers(None, None, [])
+
+    assert not any(_alive(pid) for pid in pids)
+
+
 def test_read_in_parallel(parity):
     """Test the pages are still read by more than one process."""
     html, _ = parity

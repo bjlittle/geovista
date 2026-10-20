@@ -3,13 +3,20 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Keep the output of a parallel build the same as that of a serial one.
+"""Keep a parallel build within memory, and its output the same as a serial one.
 
 ``sphinx-build --jobs`` reads, and then writes, the pages in worker processes.
 The build spends most of its time reading, as that is when the plots render and
-the tutorial notebook runs. A parallel build differs from a serial one in four
-ways, and each is handled here:
+the tutorial notebook runs. Reading in parallel needs more memory than reading
+serially, and the output of a parallel build differs in four ways. This
+extension handles each:
 
+- sphinx-gallery leaves its idle workers alive for five minutes after it runs
+  the examples, which outlasts reading the pages. Beside the processes reading
+  them, the kernel running the tutorial notebook then died on Read the Docs,
+  whose builders have about 7.7 GB. The workers are stopped before the pages
+  are read, so a parallel build needs less memory than a serial one did with
+  them.
 - ``sphinx-tippy`` collects the tips of a page as it writes the page, and saves
   them all once the build finishes. Nothing carries the tips of a page written
   by a worker back to the main process, so they are lost. The pages are written
@@ -39,6 +46,8 @@ Notes
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
+from joblib.externals.loky import reusable_executor
 
 if TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -112,6 +121,38 @@ def sort_docs(app: Sphinx, env: BuildEnvironment) -> None:  # noqa: ARG001
     env.all_docs = dict(sorted(env.all_docs.items()))
 
 
+def release_gallery_workers(
+    app: Sphinx,  # noqa: ARG001
+    env: BuildEnvironment,  # noqa: ARG001
+    docnames: list[str],  # noqa: ARG001
+) -> None:
+    """Stop the idle workers that ran the gallery examples.
+
+    sphinx-gallery runs the examples in the reusable pool of ``loky`` workers,
+    which keeps an idle worker, and its memory, for five minutes. That outlasts
+    reading the pages, when the processes reading them and the kernel running
+    the tutorial notebook need the memory, of which Read the Docs has about
+    7.7 GB.
+
+    Parameters
+    ----------
+    app : Sphinx
+        The sphinx application.
+    env : BuildEnvironment
+        The build environment.
+    docnames : list of str
+        The pages about to be read.
+
+    """
+    # asking loky for the pool would create one, and its resource tracker, in a
+    # build with none, so take the pool it holds. a rename stops the release,
+    # which the unit test of this function reports
+    executor = getattr(reusable_executor, "_executor", None)
+
+    if executor is not None:
+        executor.shutdown(wait=True)
+
+
 def serial_write(app: Sphinx, builder: Builder) -> None:  # noqa: ARG001
     """Write the pages serially, so that ``sphinx-tippy`` keeps their tips.
 
@@ -143,9 +184,10 @@ def setup(app: Sphinx) -> dict[str, bool]:
     -------
     dict
         A dictionary declaring the extension safe for parallel reading and
-        writing. Both hooks run in the main process.
+        writing. Every hook runs in the main process.
 
     """
+    app.connect("env-before-read-docs", release_gallery_workers)
     app.connect("env-updated", drop_unused_modules)
     app.connect("env-updated", relink_modules)
     app.connect("env-updated", sort_docs)
