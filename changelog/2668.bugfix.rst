@@ -1,0 +1,6 @@
+Fixed :meth:`geovista.geoplotter.GeoPlotterBase.add_mesh` raising on a
+``zlevel`` array when the mesh needs no transform, as a point cloud on a
+plotter with the same CRS does. :func:`geovista.core.resize` now takes a
+``zlevel`` at each point of a cloud, and raises a ``ValueError`` for an array
+given with any other mesh, which needs a single radius on the sphere. Closes
+:issue:`2618`. (:user:`claude`)
