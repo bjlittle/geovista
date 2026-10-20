@@ -1,0 +1,7 @@
+Fixed :func:`geovista.crs.to_wkt` failing for a CRS whose OGC WKT holds
+non-ASCII text, which pyvista refuses. That is 3372 of the 7468 EPSG CRSs,
+including Web Mercator (EPSG:3857), the British National Grid (EPSG:27700)
+and the UTM zones, so neither :func:`geovista.transform.transform_mesh` nor
+:class:`geovista.geoplotter.GeoPlotter` could target them. The WKT is now
+stored escaped, and a mesh serialized before still reads. Closes
+:issue:`2595`. (:user:`claude`)
