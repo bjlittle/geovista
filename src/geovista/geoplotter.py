@@ -712,7 +712,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius`/vertical by a proportional amount e.g.,
             ``radius * zlevel * zscale``. If `zlevel` is not a scalar, then its shape
-            must match or broadcast with the shape of the ``mesh.points``.
+            must match or broadcast with the shape of the ``mesh.points``, and a
+            mesh that needs no transform must be a point cloud.
             Defaults to ``0``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -811,13 +812,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                     inplace=not cloud,
                 )
                 to_wkt(mesh, self.crs)
-            elif not projected(mesh) and zlevel:
+            elif not projected(mesh) and np.any(zlevel):
                 if not cloud:
                     radius = float(distance(mesh))
 
-                mesh = resize(
-                    mesh, radius=radius, zlevel=int(np.asarray(zlevel)), zscale=zscale
-                )
+                mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
 
         def _check(option: str) -> bool:
             """Determine whether the keyword argument is present and not ``None``.

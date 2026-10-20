@@ -491,7 +491,7 @@ def resize(
     /,
     *,
     radius: float | None = None,
-    zlevel: int | None = None,
+    zlevel: int | ArrayLike | None = None,
     zscale: float | None = None,
     inplace: bool | None = False,
 ) -> pv.PolyData:
@@ -503,9 +503,13 @@ def resize(
         The mesh to be resized to the provided ``radius``.
     radius : float, optional
         The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
-    zlevel : int, default=0
+    zlevel : int or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        For a point cloud, `zlevel` adds to the z-level each of its points
+        already carries, and if it is not a scalar, then its shape must match
+        or broadcast with the shape of the ``mesh.points``. Any other mesh
+        requires a scalar.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
@@ -544,10 +548,28 @@ def resize(
     else:
         zscale = float(zscale)
 
-    zlevel = 0 if zlevel is None else int(zlevel)
+    level = np.asanyarray(0 if zlevel is None else zlevel)
+
+    if level.ndim:
+        if not cloud:
+            emsg = (
+                "Cannot resize mesh, a 'zlevel' that is not a scalar requires a "
+                "point cloud."
+            )
+            raise ValueError(emsg)
+        try:
+            level = np.broadcast_to(level, (mesh.n_points,))
+        except ValueError:
+            emsg = (
+                f"Cannot resize mesh, 'zlevel' with shape {level.shape} does not "
+                f"broadcast to its {mesh.n_points:,} points."
+            )
+            raise ValueError(emsg) from None
+    else:
+        level = level.astype(int)
 
     if cloud:
-        update = bool(zlevel)
+        update = bool(np.any(level))
         if not update:
             update = GV_FIELD_ZSCALE not in mesh.field_data or not np.isclose(
                 mesh[GV_FIELD_ZSCALE], zscale
@@ -557,15 +579,15 @@ def resize(
                 mesh[GV_FIELD_RADIUS], radius
             )
     else:
-        new_radius = radius + radius * zlevel * zscale
+        new_radius = radius + radius * level * zscale
         update = bool(new_radius) and not np.isclose(distance(mesh), new_radius)
 
     if update:
         lonlat = from_cartesian(mesh)
         if cloud:
-            zlevel += lonlat[:, 2]
+            level = level + lonlat[:, 2]
         xyz = to_cartesian(
-            lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
+            lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=level, zscale=zscale
         )
         if not inplace:
             mesh = mesh.copy()

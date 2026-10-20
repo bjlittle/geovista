@@ -13,6 +13,7 @@ import pytest
 import pyvista as pv
 
 import geovista as gv
+from geovista.common import RADIUS, distance
 from geovista.crs import from_wkt
 from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
 from geovista.transform import transform_mesh
@@ -106,3 +107,48 @@ def test_central_meridian_recentred(lfric):
 
     assert actor is not None
     assert from_wkt(actor.mapper.dataset) == p.crs
+
+
+@pytest.mark.parametrize("zlevel", [[1, 2, 3], (1, 2, 3), np.array([1, 2, 3])])
+def test_cloud_zlevel_per_point(zlevel):
+    """A cloud that needs no transform is lifted by a z-level at each point.
+
+    See :issue:`2618`.
+
+    """
+    zscale = 1
+    cloud = gv.Transform.from_points([0, 10, 20], [0, 10, 20], zscale=zscale)
+    p = GeoPlotter()
+
+    actor = p.add_mesh(cloud, zlevel=zlevel)
+
+    assert actor is not None
+    expected = RADIUS + np.asarray(zlevel) * zscale
+    assert np.allclose(distance(actor.mapper.dataset, mean=False), expected)
+
+
+def test_cloud_zlevel_single_point():
+    """A one point cloud is lifted by a one element z-level. See :issue:`2618`."""
+    zscale = 1
+    cloud = gv.Transform.from_points([0], [0], zscale=zscale)
+    p = GeoPlotter()
+
+    actor = p.add_mesh(cloud, zlevel=np.array([2]))
+
+    assert actor is not None
+    expected = RADIUS + 2 * zscale
+    assert np.allclose(distance(actor.mapper.dataset, mean=False), expected)
+
+
+def test_surface_zlevel_array_fail():
+    """A mesh that is no cloud and needs no transform requires a scalar z-level.
+
+    See :issue:`2618`.
+
+    """
+    mesh = gv.Transform.from_1d([0, 10, 20], [0, 10, 20])
+    p = GeoPlotter()
+
+    emsg = "a 'zlevel' that is not a scalar requires a point cloud"
+    with pytest.raises(ValueError, match=emsg):
+        _ = p.add_mesh(mesh, zlevel=np.arange(mesh.n_points))

@@ -127,3 +127,63 @@ def test_resize_cloud__radius(lam_uk_cloud, radius):
     assert np.isclose(distance(result), radius)
     assert np.isclose(result[GV_FIELD_RADIUS], radius)
     assert np.isclose(result[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
+
+
+@pytest.mark.parametrize("zlevel", [[1, 2, 3], (1, 2, 3), np.array([1, 2, 3])])
+def test_resize_cloud__zlevel_per_point(zlevel):
+    """Test resize cloud points by a z-level at each point."""
+    zscale = 1
+    cloud = Transform.from_points([0, 10, 20], [0, 10, 20], zscale=zscale)
+    result = resize(cloud, zlevel=zlevel)
+    expected = RADIUS + np.asarray(zlevel) * zscale
+    assert np.allclose(distance(result, mean=False), expected)
+    assert np.isclose(result[GV_FIELD_RADIUS], RADIUS)
+    assert id(cloud) != id(result)
+
+
+def test_resize_cloud__zlevel_per_point_adds():
+    """Test resize adds a z-level at each point to the level it carries."""
+    zscale = 1
+    cloud = Transform.from_points(
+        [0, 10, 20], [0, 10, 20], zlevel=[1, 2, 3], zscale=zscale
+    )
+    result = resize(cloud, zlevel=np.array([3, 2, 1]))
+    assert np.allclose(distance(result, mean=False), RADIUS + 4 * zscale)
+
+
+def test_resize_cloud__zlevel_broadcast():
+    """Test resize cloud points by a z-level that broadcasts to the points."""
+    zscale = 1
+    cloud = Transform.from_points([0, 10, 20], [0, 10, 20], zscale=zscale)
+    result = resize(cloud, zlevel=np.array([2]))
+    assert np.allclose(distance(result, mean=False), RADIUS + 2 * zscale)
+
+
+def test_resize_cloud__zlevel_single_point():
+    """Test resize a one point cloud by a one element z-level."""
+    zscale = 1
+    cloud = Transform.from_points([0], [0], zscale=zscale)
+    result = resize(cloud, zlevel=np.array([2]))
+    assert np.allclose(distance(result, mean=False), RADIUS + 2 * zscale)
+
+
+def test_resize_cloud__zlevel_zeros(lam_uk_cloud):
+    """Test resize not performed for a z-level of zero at each point."""
+    result = resize(lam_uk_cloud, zlevel=np.zeros(lam_uk_cloud.n_points))
+    assert id(result) == id(lam_uk_cloud)
+
+
+def test_resize_cloud__zlevel_shape_fail():
+    """Test trap of a z-level that does not broadcast to the cloud points."""
+    cloud = Transform.from_points([0, 10, 20], [0, 10, 20])
+    emsg = r"Cannot resize mesh, 'zlevel' with shape \(2,\) does not broadcast"
+    with pytest.raises(ValueError, match=emsg):
+        _ = resize(cloud, zlevel=[1, 2])
+
+
+@pytest.mark.parametrize("zlevel", [[1], np.array([1]), np.array([1, 2])])
+def test_resize__zlevel_array_fail(lfric, zlevel):
+    """Test trap of a z-level that is not a scalar for a mesh that is no cloud."""
+    emsg = "Cannot resize mesh, a 'zlevel' that is not a scalar requires a point cloud"
+    with pytest.raises(ValueError, match=emsg):
+        _ = resize(lfric, zlevel=zlevel)
