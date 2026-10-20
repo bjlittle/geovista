@@ -31,6 +31,7 @@ from .common import (
 from .crs import WGS84, to_wkt
 
 if TYPE_CHECKING:
+    import numpy as np
     from numpy.typing import ArrayLike
     import pyvista as pv
 
@@ -371,13 +372,11 @@ def create_meridians(
         grid_points.append(lonlat)
         grid_labels.extend(labels)
 
-    grid_points = np.vstack(grid_points)
-
     if mask is not None:
         mask = np.tile(mask, grid_lats.size)
 
     return GraticuleGrid(
-        blocks=blocks, lonlat=grid_points, labels=grid_labels, mask=mask
+        blocks=blocks, lonlat=np.vstack(grid_points), labels=grid_labels, mask=mask
     )
 
 
@@ -577,19 +576,19 @@ def create_parallels(
         grid_labels.extend(labels)
 
     if not poles_parallel and poles_label:
-        lonlat = []
+        poles: list[list[float]] = []
         if 90 in lats:
-            lonlat.append([0, 90])
+            poles.append([0, 90])
         if -90 in lats:
-            lonlat.append([0, -90])
-        if lonlat:
-            lonlat = np.array(lonlat, dtype=float)
+            poles.append([0, -90])
+        if poles:
+            lonlat = np.array(poles, dtype=float)
             grid_points.append(lonlat)
             pole_labels = create_parallel_labels(
                 list(lonlat[:, 1]), poles_parallel=True
             )
             grid_labels.extend(pole_labels)
 
-    grid_points = np.vstack(grid_points)
-
-    return GraticuleGrid(blocks=blocks, lonlat=grid_points, labels=grid_labels)
+    return GraticuleGrid(
+        blocks=blocks, lonlat=np.vstack(grid_points), labels=grid_labels
+    )

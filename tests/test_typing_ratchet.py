@@ -54,7 +54,6 @@ RATCHET_BASELINE = frozenset(
     {
         "geovista.core",
         "geovista.examples.*",
-        "geovista.gridlines",
         "geovista.pantry",
         "geovista.pantry.data",
         "geovista.pantry.meshes",

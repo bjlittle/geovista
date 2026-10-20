@@ -144,7 +144,6 @@ module = ["geovista.examples.*"]
 ignore_errors = true
 module = [
   "geovista.core",
-  "geovista.gridlines",
   "geovista.pantry",
   "geovista.pantry.data",
   "geovista.pantry.meshes",
