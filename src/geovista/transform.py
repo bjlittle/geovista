@@ -95,8 +95,8 @@ def transform_mesh(
         `radius`/vertical by a proportional amount e.g., ``radius * zlevel * zscale``.
         In a planar CRS the offset is ``zlevel * zscale`` times the radius of the
         Earth in the units of that CRS, the same proportion as on the sphere.
-        If `zlevel` is not a scalar, then its shape must match or broadcast
-        with the shape of the ``mesh.points``. For a point cloud, `zlevel` adds to
+        If `zlevel` is not a scalar, then it must broadcast to the shape
+        ``(mesh.n_points,)``. For a point cloud, `zlevel` adds to
         the z-level each of its points already carries.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to the multiplier
