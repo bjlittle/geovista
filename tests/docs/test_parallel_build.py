@@ -187,7 +187,7 @@ def test_tippy_loses_the_tips_of_a_page_written_by_a_worker(bare):
     """Test sphinx-tippy alone loses the tips of a page written in parallel.
 
     When this fails, sphinx-tippy writes in parallel safely, and the serial
-    write in the extension can go.
+    write in the extension can go. See sphinx-extensions2/sphinx-tippy#9.
 
     """
     assert _missing_tips(bare)
@@ -197,7 +197,8 @@ def test_viewcode_renders_a_module_nothing_documented_is_in(bare):
     """Test viewcode alone renders a module a parallel read only passed through.
 
     When this fails, viewcode merges its parallel reads as a serial read would
-    leave them, and the pruning in the extension can go.
+    leave them, and the pruning in the extension can go. See
+    sphinx-doc/sphinx#14675.
 
     """
     assert (bare / "_modules" / "fractions.html").is_file()
@@ -221,7 +222,7 @@ def test_viewcode_links_back_to_the_module_first_read(bare):
     The page re-exporting the function is read first, so viewcode links back
     to the function by that module, which its own page does not use. A serial
     build does the same. When this fails, viewcode links back correctly, and
-    the relinking in the extension can go.
+    the relinking in the extension can go. See sphinx-doc/sphinx#6651.
 
     """
     assert _broken_back_links(bare) == ["../api.html#parity_reexport.double"]
@@ -234,7 +235,8 @@ def test_sphinx_records_the_pages_in_the_order_their_reads_merge(bare):
     last. A serial build records them in the order it reads them, which is
     sorted, and ``sphinx-llms-txt`` follows this order where a page has no
     toctree. When this fails, sphinx records the pages in a stable order, and
-    the sorting in the extension can go.
+    the sorting in the extension can go. See jdillard/sphinx-llms-txt#76,
+    whose fix would make the order of the pages irrelevant to it.
 
     """
     docs = _docs(bare)
@@ -281,7 +283,8 @@ def test_gallery_workers_released(require, monkeypatch):
 
     sphinx-gallery runs the examples in a reusable pool of loky workers, which
     otherwise stay alive and keep their memory for five minutes, and so through
-    reading the pages beside the processes reading them.
+    reading the pages beside the processes reading them. See
+    sphinx-gallery/sphinx-gallery#1658.
 
     """
     try:

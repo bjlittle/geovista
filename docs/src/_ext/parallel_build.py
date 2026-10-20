@@ -60,6 +60,8 @@ __all__ = ["setup"]
 def drop_unused_modules(app: Sphinx, env: BuildEnvironment) -> None:  # noqa: ARG001
     """Discard each ``viewcode`` module holding none of the documented objects.
 
+    Reported upstream as sphinx-doc/sphinx#14675.
+
     Parameters
     ----------
     app : Sphinx
@@ -79,6 +81,8 @@ def drop_unused_modules(app: Sphinx, env: BuildEnvironment) -> None:  # noqa: AR
 
 def relink_modules(app: Sphinx, env: BuildEnvironment) -> None:  # noqa: ARG001
     """Link each ``viewcode`` module back to its objects by its own name.
+
+    Reported upstream as sphinx-doc/sphinx#6651.
 
     Parameters
     ----------
@@ -110,6 +114,8 @@ def relink_modules(app: Sphinx, env: BuildEnvironment) -> None:  # noqa: ARG001
 def sort_docs(app: Sphinx, env: BuildEnvironment) -> None:  # noqa: ARG001
     """Record the pages in the order a serial build reads them.
 
+    Reported upstream as jdillard/sphinx-llms-txt#76.
+
     Parameters
     ----------
     app : Sphinx
@@ -132,7 +138,7 @@ def release_gallery_workers(
     which keeps an idle worker, and its memory, for five minutes. That outlasts
     reading the pages, when the processes reading them and the kernel running
     the tutorial notebook need the memory, of which Read the Docs has about
-    7.7 GB.
+    7.7 GB. Reported upstream as sphinx-gallery/sphinx-gallery#1658.
 
     Parameters
     ----------
@@ -159,7 +165,7 @@ def serial_write(app: Sphinx, builder: Builder) -> None:  # noqa: ARG001
     Sphinx has decided to write in parallel by the time this runs, so turning
     it off here raises none of the warnings that declaring ``sphinx-tippy``
     unsafe for parallel writing would, and which ``--fail-on-warning`` would
-    turn into a failure.
+    turn into a failure. Reported upstream as sphinx-extensions2/sphinx-tippy#9.
 
     Parameters
     ----------
