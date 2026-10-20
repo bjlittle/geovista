@@ -574,6 +574,34 @@ Message, humanized: `docs: land typing roadmap row 6b`.
 - Typing spec §3.3, §8 and §9 record what the change found, and row 6b reads landed.
 - Every deferred item has an `agentic` issue, linked below and from the pull request.
 
+## During execution
+
+Tasks 1 to 5 ran natively in one session, and each step's output matched its `Expected:`
+line, with two exceptions. `mypy` checks 86 source files in the repository's own checkout,
+where `main` reports 86 too; the 85 above is the scratch tree's file set. And the comment on
+`_keep_roles`'s typed local says the slice is refused as the key of an assignment, which is
+what §8 item 6 describes, where the dry run had said "a slice index". The non-image suite
+reached 2914 passed and the image suite 92, both locally.
+
+## After the final review
+
+The whole-branch review on Opus 5.5 found nothing critical or important, and three minors.
+It reproduced each new test failing on `3141c971`, the mutants `test_active_scalars_kept`
+should catch, every typed local's defect against pyvista 0.49.1, and the dates §8 item 10
+gives.
+
+Two minors were statements this change publishes that were not true, so they were fixed.
+`combine(pv.MultiBlock())` raised `AttributeError` from reading the first mesh's data,
+where the fragment promises `TypeError` for any single mesh that is not a `PolyData`;
+`combine` now checks every mesh's type before it reads any, and `test_multiblock_fail`
+covers a lone `MultiBlock` and one leading a `PolyData`. And §8 item 6 still said only the
+cast comes out with the release, and called the slice key "the same reason"; it now names
+both, and the slice.
+
+The third is a defect in this plan, which stands as frozen: task 1's Interfaces gives
+`projected` a `pv.DataObject`, but the code rightly keeps `pv.PolyData`, since `projected`
+makes no runtime type check for change 4's rule to apply to.
+
 ## Follow-ups
 
 - {issue}`2675`: `slice_cells` drops a point array that shares a cell array's name, and

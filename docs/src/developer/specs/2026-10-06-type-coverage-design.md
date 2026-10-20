@@ -515,10 +515,11 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    `core.py`, wait on the same `pyvista` release.** `pyvista` 0.49 annotates
    `pyvista_ndarray.__setitem__` with `key: int | NumpyArray[int]`, which refuses the
    tuple index of `mesh.points[:, 0]` that it accepts at runtime, so change 2 sets the
-   points through a `typing.cast`. Change 6b types the ids that `_keep_roles` assigns
-   through a slice as any array, for the same reason.
+   points through a `typing.cast`. The annotation refuses a slice key in the same way, so
+   change 6b types the ids that `_keep_roles` assigns through one as any array.
    `pyvista` pull request 9262 widens the key, merged on 2026-09-23 after 0.49.0, so the
-   cast comes out with the floor that carries it, the trigger item 2 already waits on.
+   cast and the local come out with the floor that carries it, the trigger item 2 already
+   waits on.
 7. **Open** ({issue}`2601`) — **The cast in `from_tiff` waits on typeshed.**
    `types-rasterio` types the rows and columns of `rasterio.transform.xy` as
    `int | Sequence[int]`. `rasterio` takes arrays, which is what `Transform.from_tiff`
