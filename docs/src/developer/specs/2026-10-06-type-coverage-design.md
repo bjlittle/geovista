@@ -371,7 +371,7 @@ these two, leaving nine.
 | 4 | `common.py` | 20 | ✅ landed (2026-10-10, {pull}`2612`) |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | ✅ landed (2026-10-11, {pull}`2619`) |
 | 6a | The untyped imports, and `cache`, `cli`, `config`, `geometry`, `qt` | 11 | ✅ landed (2026-10-11, {pull}`2631`) |
-| 6b | `core`, `search`, `filters`, `gridlines`, `crs` | 38 | not started |
+| 6b | `core`, `search`, `filters`, `gridlines`, `crs` | 38 | ✅ landed (2026-10-21, {pull}`2676`) |
 | 6c | `pantry` and its three modules, `raster`, `report`, `themes` | 19 | not started |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
 
