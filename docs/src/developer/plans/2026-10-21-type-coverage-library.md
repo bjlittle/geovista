@@ -596,6 +596,38 @@ Message, humanized: `docs: land typing roadmap row 6c`.
 - Typing spec §3.3, §3.4, §3.5 and §8 record what the change found, and row 6c reads landed.
 - Every deferred item has an `agentic` issue, linked below and from the pull request.
 
+## During execution
+
+Tasks 1 to 5 ran natively in one session, and each step's output matched its `Expected:`
+line, with two exceptions. `taplo-format` collapses the ratchet's `module` list onto one
+line once it is short enough, so tasks 3 and 4 edited it as a list. And task 4's step 3
+reported 11 errors, not 4: with `__slots__ = ()` in place and no `Theme` base yet, `mypy`
+read `mixin_state`'s seven assignments against the empty slots. The dry run had added both
+together. All eleven cleared in step 5. Typing spec §3.2 also gained a sentence saying the
+ratchet now holds the gallery alone. The non-image suite reached 2940 passed and the image
+suite 92, both locally.
+
+## After the final review
+
+The whole-branch review on Opus 5.5 found nothing critical, two important findings and five
+minors. It reproduced the theme tests failing on `f91aae01`, the MRO swap reaching nothing
+but `_all__slots__`, every typed local's pyvista 0.49 defect and its annotation on
+`pyvista` `main`, and the spec's counts.
+
+Both important findings were real. `Report` wrapped any `additional` that was not a list,
+so a tuple or set, which `scooby` accepts, became one bogus package and raised `TypeError`;
+it now wraps only a single `str` or module, as `scooby` does. And `test_additional` could
+not fail, since `scooby` is a core package; it now reports `pytest`, which is neither core
+nor optional, with tuple and set cases, beside `test_no_additional`.
+
+Three minors were statements this change makes that were not true, so they were fixed too:
+the themes now refuse an unknown attribute, which §3.5's "nothing they do" and the fragment
+left out; "a texture always converts to an image" is false of an empty one; and
+`tests/AGENTS.md` did not list `raster/` and `report/`. The other two were test gaps, closed
+with `tests/themes/test_ThemeMixin.py`, which pins the runtime base, the MRO order and the
+refused attribute as change 5's `test_GeoPlotterBase.py` does, and a `save` test. The suite
+reached 2950 passed.
+
 ## Follow-ups
 
 - {issue}`2568`: comment with the three errors `pyvista` `main` raises outside 6c

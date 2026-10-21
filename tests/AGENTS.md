@@ -8,7 +8,7 @@ pytest-based test suite for GeoVista. Tests cover the core library modules, CLI,
 
 One directory per `geovista` module — `bridge/`, `cache/`, `cli/`, `common/`,
 `core/`, `crs/`, `geodesic/`, `geometry/`, `geoplotter/`, `gridlines/`, `pantry/`,
-`search/`, `themes/`, `transform/` — plus `test_qt.py` and the root `conftest.py` of
+`raster/`, `report/`, `search/`, `themes/`, `transform/` — plus `test_qt.py` and the root `conftest.py` of
 shared fixtures. Two directories are not modules: `docs/` tests the built
 documentation, and `plotting/` holds the image comparisons — gallery examples in
 `test_examples.py`, per-module plots under `geodesic/`, `geoplotter/` and

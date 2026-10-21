@@ -371,11 +371,13 @@ Change 6c does the same for `ThemeMixin`, which the two `geovista` themes combin
 `pyvista`'s `Theme` and `DocumentTheme`. It sets theme properties on `self`, so `mypy`
 declared them on the mixin, where they clashed with the theme's, and couldn't see
 `self.font` at all. With `Theme` as its base under `TYPE_CHECKING`, each theme has to list
-the mixin first, or its bases have no consistent order. That changes their MRO but nothing
-they do, since the mixin adds only `mixin_state`. Five `type: ignore` comments go, leaving
-four in the library. The mixin also lacked `__slots__`, and `pyvista` gathers the slots of
-every class in a theme's MRO to compare, convert or save it, so `==`, `to_dict` and `save`
-raised `AttributeError` on both themes. It now declares that it has none.
+the mixin first, or its bases have no consistent order. That changes their MRO, which
+nothing reads but the slot gathering below, since the mixin adds only `mixin_state`. Five
+`type: ignore` comments go, leaving four in the library. The mixin also lacked
+`__slots__`, and `pyvista` gathers the slots of every class in a theme's MRO to compare,
+convert or save it, so `==`, `to_dict` and `save` raised `AttributeError` on both themes.
+It now declares that it has none, so the themes, like `pyvista`'s, refuse an attribute
+they don't have, where a misspelt one was accepted silently.
 
 (typing-spec-4)=
 ## 4. Roadmap
