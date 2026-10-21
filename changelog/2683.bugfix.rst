@@ -1,0 +1,5 @@
+Fixed :meth:`geovista.bridge.Transform.from_points` failing for 2D points with
+``vectors``, whatever the CRS of the vectors, and for 3D points with or without
+them, although it documents both. The points of a cloud are now taken as one
+sequence, and a ``zlevel`` array still broadcasts against their shape. Closes
+:issue:`2604` and :issue:`2605`. (:user:`claude`)
