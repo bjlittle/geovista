@@ -28,10 +28,63 @@ def test_mesh_fail():
         _ = combine(pv.Sphere(), pv.ImageData(dimensions=(2, 2, 2)))
 
 
-def test_single_mesh_pass_thru():
-    """Test a single :class:`~pyvista.PolyData` is returned as it is."""
+def _duplicated() -> pv.PolyData:
+    """Return two triangles with 6 points, 4 of them distinct."""
+    points = np.array(
+        [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]],
+        dtype=float,
+    )
+    return pv.PolyData(points, faces=[3, 0, 1, 2, 3, 3, 5, 4])
+
+
+def test_single_mesh_is_a_new_mesh():
+    """Test a single mesh is combined into a new mesh with its cells and data."""
     mesh = pv.Sphere()
-    assert combine(mesh) is mesh
+    mesh.point_data["data"] = np.arange(mesh.n_points)
+
+    result = combine(mesh)
+
+    assert result is not mesh
+    np.testing.assert_array_equal(result.points, mesh.points)
+    np.testing.assert_array_equal(result.faces, mesh.faces)
+    np.testing.assert_array_equal(result.point_data["data"], mesh.point_data["data"])
+
+
+@pytest.mark.parametrize("meshes", [1, 2], ids=["single", "pair"])
+def test_lines_fail(meshes):
+    """Test trap of a mesh with lines, however many meshes are combined."""
+    emsg = f"Can only combine meshes with cells, input mesh #{meshes} contains lines"
+    with pytest.raises(TypeError, match=emsg):
+        _ = combine(*[pv.Sphere()] * (meshes - 1), pv.Line())
+
+
+@pytest.mark.parametrize("meshes", [1, 2], ids=["single", "pair"])
+def test_vertices_fail(meshes):
+    """Test trap of a point cloud, whose vertices pyvista counts as cells."""
+    cloud = pv.PolyData(np.random.default_rng(0).random((5, 3)))
+    emsg = f"Can only combine meshes with cells, input mesh #{meshes} contains vert"
+    with pytest.raises(TypeError, match=emsg):
+        _ = combine(*[pv.Sphere()] * (meshes - 1), cloud)
+
+
+def test_single_mesh_clean():
+    """Test a single mesh is cleaned, and the mesh given is left as it is."""
+    mesh = _duplicated()
+
+    result = combine(mesh, clean=True)
+
+    assert result.n_points == 4
+    assert mesh.n_points == 6
+
+
+def test_single_mesh_no_data():
+    """Test a single mesh combined without data carries none."""
+    mesh = _duplicated()
+    mesh.point_data["data"] = np.arange(mesh.n_points)
+
+    result = combine(mesh, data=False)
+
+    assert not result.point_data.keys()
 
 
 @pytest.mark.parametrize(

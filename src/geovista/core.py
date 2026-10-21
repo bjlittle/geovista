@@ -358,10 +358,11 @@ def combine(
     data: bool | None = True,
     clean: bool | None = False,
 ) -> pv.PolyData:
-    """Combine two or more meshes into one mesh.
+    """Combine one or more meshes into one mesh.
 
-    Only meshes with cells will be combined. Support is not yet provided for combining
-    meshes that consist of only points or lines.
+    Only meshes with cells will be combined. Support is not yet provided for meshes
+    that contain vertices or lines, such as a point cloud. A single mesh is checked
+    and combined into a new mesh, like any other.
 
     Note that no check is performed to ensure that mesh cells do not overlap.
     However, meshes may share coincident points. Coincident point data from the
@@ -405,9 +406,6 @@ def combine(
             raise TypeError(emsg)
         polys.append(dataset)
 
-    if len(polys) == 1:
-        return polys[0]
-
     first = polys[0]
     combined_points, combined_faces = [], []
     n_points = 0
@@ -426,6 +424,14 @@ def combine(
             emsg = (
                 f"Can only combine meshes with cells, input mesh #{i + 1} "
                 "contains lines."
+            )
+            raise TypeError(emsg)
+
+        # pyvista counts the vertices of a point cloud as its cells
+        if mesh.n_verts:
+            emsg = (
+                f"Can only combine meshes with cells, input mesh #{i + 1} "
+                "contains vertices."
             )
             raise TypeError(emsg)
 
