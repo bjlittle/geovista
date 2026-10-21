@@ -146,7 +146,7 @@ module = [
 
 From that point the check is live for every module added afterwards, the three that report
 nothing today having little in them to check. Each subsequent change deletes one entry and
-fixes what it exposes.
+fixes what it exposes. Since change 6c the list holds the gallery alone.
 
 A ratchet with nothing holding it becomes a dumping ground, so the list is mirrored in a
 test that permits removals and refuses additions:
@@ -284,6 +284,12 @@ a `pv.DataSet`. `combine` handed a single mesh back before its check, so
 `find_nearest_cell` documents `z` as optional and zero by default, and accepted `None`,
 which VTK refused with `TypeError` on a projected mesh. `None` now means zero.
 
+Change 6c applied the rule a third time: `set_plot_theme` checks for a `Theme` or a `str`
+at runtime, so it takes an `object`. It also met an annotation narrower than its
+behaviour, outside `geovista`: `scooby.Report` wraps a single package in a list at
+runtime, but is annotated for a list only, so `geovista.Report`, which promises either,
+wraps it itself.
+
 (typing-spec-3-4)=
 ### 3.4 Gallery suppressions
 
@@ -334,7 +340,8 @@ admitted it can return `None`, and change 7 corrects them with the rest of the g
 In the library, measured on 2026-10-11 with the whole ratchet lifted, `attr-defined` is
 zero, `call-arg` is one, in `cli.py`, and `no-untyped-call` is four, in `raster.py` and
 `themes.py`, all in modules change 6 retires, so the suppression stays confined to where
-the plotting calls are. This extends a pattern already
+the plotting calls are. Change 6c met those four, and two more that `report.py`'s `pyvista`
+import revealed, with typed locals ({ref}`§8 <typing-spec-8>` item 8). This extends a pattern already
 in `pyproject.toml`, where `union-attr` is disabled for `geovista.examples.grid.*` on
 account of `geopy` being untyped.
 
@@ -359,6 +366,16 @@ Matching `pyvista` would change `geovista`'s public API, so both `def` lines car
 `add_base_layer` and `add_coastlines`, which return what `add_mesh` returns, are annotated
 `pv.Actor | None`. Change 5 removes three `type: ignore` comments from the library and adds
 these two, leaving nine.
+
+Change 6c does the same for `ThemeMixin`, which the two `geovista` themes combine with
+`pyvista`'s `Theme` and `DocumentTheme`. It sets theme properties on `self`, so `mypy`
+declared them on the mixin, where they clashed with the theme's, and couldn't see
+`self.font` at all. With `Theme` as its base under `TYPE_CHECKING`, each theme has to list
+the mixin first, or its bases have no consistent order. That changes their MRO but nothing
+they do, since the mixin adds only `mixin_state`. Five `type: ignore` comments go, leaving
+four in the library. The mixin also lacked `__slots__`, and `pyvista` gathers the slots of
+every class in a theme's MRO to compare, convert or save it, so `==`, `to_dict` and `save`
+raised `AttributeError` on both themes. It now declares that it has none.
 
 (typing-spec-4)=
 ## 4. Roadmap
@@ -526,20 +543,23 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    passes, so change 3 passes them through a `typing.cast`. It comes out when the stubs
    accept arrays. The report to typeshed covers two other gaps as well, which the code
    handles without a cast.
-8. **Open** ({issue}`2568`) — **Three typed locals wait on the same
-   `pyvista` release.** `pyvista` 0.49 leaves `GPUInfo.__init__` unannotated, and its
-   `_Wrapped` decorator, item 2's cause, breaks `self.reset_camera(render=False)`. So
-   `_warn_opacity` and `view_poi` call each through a local annotated `Callable`.
-   Change 6a added the third, for `p.add_axes()` in the `plot` command of `cli.py`.
-   `pyvista` `main` fixes both defects, and the three locals come out with the floor
-   that carries them, the trigger items 2 and 6 already wait on.
+8. **Open** ({issue}`2568`) — **Nine typed locals wait on the same `pyvista` release.**
+   `pyvista` 0.49 leaves `GPUInfo.__init__`, `GPUInfo.get_info`, `Texture.__init__`,
+   `Texture.to_image` and `Theme.__init__` unannotated, and its `_Wrapped` decorator, item
+   2's cause, breaks `self.reset_camera(render=False)`. So `_warn_opacity` and `view_poi`
+   call `GPUInfo` and `reset_camera` through locals annotated `Callable`. Change 6a added
+   a third, for `p.add_axes()` in the `plot` command of `cli.py`, and change 6c six more:
+   two in `Report`, two in `wrap_texture` and one in each theme's `__init__`. `pyvista`
+   `main` fixes every defect, and the locals come out with the floor that carries them,
+   the trigger items 2 and 6 already wait on. `main` types `to_image` as returning
+   `ImageData | None`, so the local in `wrap_texture` already allows `None`.
 9. **Open** ({issue}`2629`) — **Three dependencies ship no annotations.** The latest
    releases of `pooch` (1.9.0), `geopy` (2.5.0) and `fastparquet` (2026.9.0; the lock has
    2026.5.0) carry no `py.typed` and have no stubs on conda-forge or in typeshed, so one
-   `ignore_missing_imports` override makes each import `Any`. Only `pooch`'s entry is live
-   so far: `geopy` and `fastparquet` are imported only by `pantry/data.py`, which leaves
-   the ratchet in change 6c. Each name comes out when its distribution or a stub
-   package types it. `pooch` has an open upstream issue asking for annotations.
+   `ignore_missing_imports` override makes each import `Any`. All three entries have been
+   live since change 6c took `pantry/data.py`, which imports `geopy` and `fastparquet`,
+   out of the ratchet. Each name comes out when its distribution or a stub package types
+   it. `pooch` has an open upstream issue asking for annotations.
 10. **Open** ({issue}`2568`) — **Four typed locals wait on the same `pyvista` release.**
     `pyvista` 0.49 types its arrays with Python's `int`, `bool` and `float` as the dtype.
     `numpy.float64` subclasses `float`, so a float array passes into `pyvista`, but
