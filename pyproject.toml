@@ -142,12 +142,7 @@ module = ["geovista.examples.*"]
 # "tests/test_typing_ratchet.py" holds it to that. Delete the whole block,
 # and that test, when the last entry goes.
 ignore_errors = true
-module = [
-  "geovista.raster",
-  "geovista.report",
-  "geovista.themes",
-  "geovista.examples.*",
-]
+module = ["geovista.report", "geovista.themes", "geovista.examples.*"]
 
 
 [tool.numpydoc_validation]

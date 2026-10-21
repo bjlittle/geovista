@@ -53,7 +53,6 @@ SOURCE = ROOT / "src"
 RATCHET_BASELINE = frozenset(
     {
         "geovista.examples.*",
-        "geovista.raster",
         "geovista.report",
         "geovista.themes",
     }
