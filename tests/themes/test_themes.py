@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import copy
+import json
 
 import pytest
 import pyvista as pv
@@ -101,3 +102,11 @@ def test_to_dict(theme):
     result = instance.to_dict()
     assert result["name"] == instance.name
     assert result["title"] == "GeoVista"
+
+
+@pytest.mark.parametrize("theme", themes)
+def test_save(theme, tmp_path):
+    """Test a theme saves as JSON."""
+    fname = tmp_path / "theme.json"
+    theme().save(fname)
+    assert json.loads(fname.read_text())["title"] == "GeoVista"

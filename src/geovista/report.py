@@ -147,7 +147,7 @@ class Report(scooby.Report):  # numpydoc ignore=PR01
             text_width = TEXT_WIDTH
 
         # scooby takes a single package too, though it is annotated for a list
-        if additional is not None and not isinstance(additional, list):
+        if isinstance(additional, (str, types.ModuleType)):
             additional = [additional]
 
         # mandatory packages

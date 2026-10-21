@@ -68,7 +68,7 @@ def wrap_texture(
         # leaves Texture.to_image and Texture.__init__ unannotated
         to_image: Callable[[], pv.ImageData | None] = texture.to_image
         grid = to_image()
-        # a texture always converts to an image
+        # a texture with pixels converts to an image
         assert grid is not None
         shape = (grid.dimensions[1], grid.dimensions[0], texture.n_components)
         # convert grid to an rgb image (un-do pyvista.Texture._from_array mangling)

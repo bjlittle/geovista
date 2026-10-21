@@ -8,20 +8,25 @@
 from __future__ import annotations
 
 import pytest
-import scooby
 
 from geovista.report import Report
 
 
 @pytest.mark.parametrize(
     "additional",
-    ["scooby", scooby, ["scooby"], [scooby]],
-    ids=["name", "module", "names", "modules"],
+    ["pytest", pytest, ["pytest"], [pytest], ("pytest",), {"pytest"}],
+    ids=["name", "module", "names", "modules", "tuple", "set"],
 )
 def test_additional(additional):
-    """Test a single package or a list of them is reported."""
+    """Test a single package or a collection of them is reported."""
     report = Report(additional=additional, gpu=False)
-    assert "scooby" in report.packages
+    assert "pytest" in report.packages
+
+
+def test_no_additional():
+    """Test a package that is neither core nor optional is not reported."""
+    report = Report(gpu=False)
+    assert "pytest" not in report.packages
 
 
 def test_gpu(mocker):
