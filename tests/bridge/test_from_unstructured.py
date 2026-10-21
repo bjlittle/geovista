@@ -327,13 +327,21 @@ def test_data_that_fits_the_points_stays_on_the_points():
     np.testing.assert_array_equal(mesh.point_data["values"], data)
 
 
-@pytest.mark.parametrize("masked", ["xs", "ys"])
+@pytest.mark.parametrize("masked", ["xs", "ys", "differently"])
 def test_points_masked_on_one_axis_stay(masked):
-    """A mask on only one of x and y is not a mask on the point."""
+    """Points stay unless `xs` and `ys` carry the same mask.
+
+    The masks are compared whole, so a point masked in both stays when the masks
+    differ elsewhere, as point 7 does here with point 6 masked in `xs` alone.
+
+    """
     xs, ys = np.array(LONS), np.array(LATS)
     if masked == "xs":
         xs = np.ma.masked_array(xs, mask=MASK)
+    elif masked == "ys":
+        ys = np.ma.masked_array(ys, mask=MASK)
     else:
+        xs = np.ma.masked_array(xs, mask=[[0, 0, 0, 0], [0, 0, 1, 1]])
         ys = np.ma.masked_array(ys, mask=MASK)
 
     mesh = Transform.from_unstructured(xs, ys)
