@@ -1,0 +1,5 @@
+Fixed :meth:`geovista.geoplotter.GeoPlotterBase.add_mesh` refusing a
+``zlevel`` at each point of a surface that crosses the seam of a CRS it
+transforms the surface to. The levels are now carried through the seam, as
+:func:`geovista.transform.transform_mesh` carries them through its own.
+Closes :issue:`2669`. (:user:`claude`)
