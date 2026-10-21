@@ -1,0 +1,7 @@
+Fixed :func:`geovista.core.combine` dropping a point array that shares its
+name with a cell array, and raising for one that shares it with a field array,
+which also cost :func:`geovista.core.slice_cells` the point array. Fixed
+:func:`geovista.core.slice_cells` returning the ``vtkOriginalPointIds`` and
+``vtkOriginalCellIds`` arrays that VTK adds, which
+:func:`geovista.transform.transform_mesh` then passed on for a global mesh.
+Closes :issue:`2675`. (:user:`claude`)
