@@ -349,7 +349,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         if mesh.n_points:
             # the point-cloud won't be sliced, however it's important that the
             # central-meridian rotation is performed here
-            mesh = transform_mesh(mesh, tgt_crs=self.crs, zlevel=zlevel, inplace=True)
+            mesh = transform_mesh(
+                mesh, tgt_crs=self.crs, zlevel=zlevel, zscale=zscale, inplace=True
+            )
 
             xyz = mesh.points
 

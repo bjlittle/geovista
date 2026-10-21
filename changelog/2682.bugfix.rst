@@ -1,0 +1,4 @@
+Fixed the graticule labels of :class:`geovista.geoplotter.GeoPlotter` on a
+planar CRS, which ignored the ``zscale`` the graticule was given and so sat at
+a different height from their gridlines. Closes :issue:`2594`.
+(:user:`claude`)
