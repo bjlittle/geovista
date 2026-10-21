@@ -3,20 +3,13 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Tests that the "mypy" ratchet only ever shrinks.
+"""Tests that "mypy" checks the whole package, in CI as in the hook.
 
 GeoVista type checks in strict mode against the locked pixi environment, where
-the third-party types are real. That check reports errors in 22 of the 25
-library modules and in the example gallery, which cannot be corrected in one
-reviewable change, so the affected modules are listed once under
-``ignore_errors`` and retired one change at a time.
-
-A ratchet with nothing holding it becomes a dumping ground. These tests read
-the manifest as text and hold the list to shrinking: an entry may be removed,
-and nothing may be added — a module already retired included, which is why the
-baseline below is kept level with the manifest rather than left standing as a
-high-water mark. They are deleted along with the override block when the last
-entry goes.
+the third-party types are real. The modules that once reported errors were
+listed under ``ignore_errors`` and retired one change at a time, until none was
+left. These tests keep it that way: no override may ignore a module's errors,
+and the workflow that runs "mypy" for "pre-commit.ci" must keep running it.
 
 See "docs/src/developer/specs/2026-10-06-type-coverage-design.md", section 3.2.
 
@@ -27,15 +20,12 @@ from __future__ import annotations
 from functools import cache
 from pathlib import Path
 import tomllib
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import pytest
 import yaml
 
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-#: The repository root, holding the manifest the ratchet lives in.
+#: The repository root, holding the manifest.
 ROOT = Path(__file__).parents[1]
 #: The manifest declaring the "mypy" configuration and its overrides.
 PYPROJECT = ROOT / "pyproject.toml"
@@ -43,18 +33,6 @@ PYPROJECT = ROOT / "pyproject.toml"
 PRE_COMMIT = ROOT / ".pre-commit-config.yaml"
 #: The workflow carrying the coverage "pre-commit.ci" cannot provide.
 WORKFLOW = ROOT / ".github" / "workflows" / "ci-typing.yml"
-#: The package root, against which each ratchet entry is resolved.
-SOURCE = ROOT / "src"
-
-#: Every module "mypy" was told to ignore when the ratchet was banked, on
-#: 2026-10-06. Entries come off as each change retires a module; none may be
-#: added. "geovista.examples.*" is the one entry that is not a library module,
-#: and goes with change 7 of the roadmap.
-RATCHET_BASELINE = frozenset(
-    {
-        "geovista.examples.*",
-    }
-)
 
 
 def _modules(override: dict[str, Any]) -> tuple[str, ...]:
@@ -84,9 +62,8 @@ def _ignored() -> frozenset[str]:
     Returns
     -------
     frozenset of str
-        Collected from *all* override blocks rather than from the ratchet
-        alone, so that a second block carrying ``ignore_errors`` cannot route
-        around the baseline.
+        Collected from every override block, so that no block carrying
+        ``ignore_errors`` goes unseen.
 
     """
     manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
@@ -97,30 +74,6 @@ def _ignored() -> frozenset[str]:
         if override.get("ignore_errors", False)
         for module in _modules(override)
     )
-
-
-def _drift(
-    ignored: Iterable[str], baseline: Iterable[str]
-) -> tuple[frozenset[str], frozenset[str]]:
-    """Return what the ratchet has gained and lost against a baseline.
-
-    Parameters
-    ----------
-    ignored : iterable of str
-        The modules currently carrying ``ignore_errors``.
-    baseline : iterable of str
-        The modules the baseline lists.
-
-    Returns
-    -------
-    tuple of frozenset of str
-        What was added, and what was retired. Both halves are reported: a
-        baseline keeping a name the manifest has dropped is a high-water
-        mark, and a high-water mark lets a retired module back in silently.
-
-    """
-    ignored, baseline = frozenset(ignored), frozenset(baseline)
-    return ignored - baseline, baseline - ignored
 
 
 def _commands(step: dict[str, Any]) -> tuple[str, ...]:
@@ -190,79 +143,17 @@ def _hook() -> dict[str, Any]:
     return hooks[0]
 
 
-def _resolve(module: str) -> Path | None:
-    """Return the file a ratchet entry names, if it still exists.
+def test_no_module_ignores_errors():
+    """No override may tell "mypy" to ignore a module's errors.
 
-    Parameters
-    ----------
-    module : str
-        A dotted module name, optionally ending in the ``.*`` wildcard.
-
-    Returns
-    -------
-    Path or None
-        The module file, or the package's "__init__.py", or ``None`` when the
-        entry names nothing.
+    The typing ratchet listed every module that reported errors under
+    ``ignore_errors`` and only ever shrank, until change 7 of the roadmap
+    retired its last entry. An override that brought ``ignore_errors`` back
+    would hand back the coverage those changes won, in one line of the
+    manifest.
 
     """
-    relative = Path(*module.removesuffix(".*").split("."))
-    for candidate in (
-        SOURCE / relative.with_suffix(".py"),
-        SOURCE / relative / "__init__.py",
-    ):
-        if candidate.is_file():
-            return candidate
-    return None
-
-
-def test_ratchet_only_shrinks():
-    """An entry may be removed from the ratchet; none may be added.
-
-    The baseline is a running copy of the list rather than a high-water
-    mark, so a retirement edits both in the same change. A high-water mark
-    would keep the name a retirement took out, and putting that module back
-    under ``ignore_errors`` later would pass this test untouched — giving
-    back the coverage the retirement won, with no diff here to review. The
-    cost is one line per retirement. What it buys is that re-entry has to be
-    written into a list documented as only ever shrinking, in front of a
-    reviewer watching it grow.
-
-    """
-    added, retired = _drift(_ignored(), RATCHET_BASELINE)
-    assert not added, f"added to the typing ratchet: {sorted(added)}"
-    assert not retired, (
-        f"no longer ignored: {sorted(retired)} -- take them out of "
-        "RATCHET_BASELINE in this change, so they cannot come back unseen"
-    )
-
-
-@pytest.mark.parametrize("module", sorted(_ignored()))
-def test_ratchet_entry_resolves(module):
-    """Every entry names a module that still exists.
-
-    "mypy" does not warn on an override matching nothing, so a renamed or
-    deleted module leaves an entry that can never be retired.
-
-    """
-    assert _resolve(module) is not None, f"{module!r} names nothing under 'src'"
-
-
-def test_ratchet_reads_a_bare_module_string():
-    """A "module" written as a string yields the module, not its characters."""
-    assert _modules({"module": "geovista.cli"}) == ("geovista.cli",)
-    assert _modules({"module": ["geovista.qt"]}) == ("geovista.qt",)
-    assert _modules({}) == ()
-
-
-def test_ratchet_is_not_empty():
-    """Guard the suite against passing vacuously once the list is gone.
-
-    ``test_ratchet_only_shrinks`` is satisfied by an empty ratchet, which is
-    the intended end state. Reaching it must delete this module rather than
-    leave three tests quietly asserting nothing.
-
-    """
-    assert _ignored(), "the ratchet is empty: delete this module and the override"
+    assert not _ignored(), f"errors ignored in: {sorted(_ignored())}"
 
 
 def test_mypy_hook_is_skipped_on_pre_commit_ci():
@@ -319,34 +210,11 @@ def test_ci_typing_runs_the_hook_command():
     assert all(step["with"].get("frozen") for step in setup), "install from the lock"
 
 
-def test_a_retired_module_cannot_return_unnoticed():
-    """A name the baseline no longer carries reads as an addition.
-
-    This is what a high-water-mark baseline gives away. Once a module is
-    cleaned and taken off ``ignore_errors``, a baseline that still lists it
-    accepts it back silently — handing back the coverage the retirement won,
-    with nothing in the diff for a reviewer to catch.
-
-    """
-    added, retired = _drift(
-        {"geovista.bridge", "geovista.transform"}, {"geovista.bridge"}
-    )
-    assert added == {"geovista.transform"}
-    assert not retired
-
-
-def test_a_retirement_must_take_the_baseline_with_it():
-    """Retiring a module without updating the baseline is itself a failure.
-
-    The two move together, so that re-entry has to be written back into a
-    list documented as only ever shrinking, where review can see it.
-
-    """
-    added, retired = _drift(
-        {"geovista.bridge"}, {"geovista.bridge", "geovista.transform"}
-    )
-    assert retired == {"geovista.transform"}
-    assert not added
+def test_a_bare_module_string_is_read_whole():
+    """A "module" written as a string yields the module, not its characters."""
+    assert _modules({"module": "geovista.cli"}) == ("geovista.cli",)
+    assert _modules({"module": ["geovista.qt"]}) == ("geovista.qt",)
+    assert _modules({}) == ()
 
 
 @pytest.mark.parametrize(
@@ -392,15 +260,15 @@ def test_ci_typing_cannot_tolerate_its_own_failure():
     assert not tolerated, f"green whatever happens: {tolerated}"
 
 
-def test_the_ratchet_is_the_only_suppression():
-    """Nothing at the top of "[tool.mypy]" may silence what the ratchet counts.
+def test_no_global_suppression():
+    """Nothing at the top of "[tool.mypy]" may silence a module's errors.
 
-    ``test_ratchet_only_shrinks`` reads the override blocks, so a suppression
-    written above them is invisible to it. A top-level ``ignore_errors``
-    silences every module at once, ``disable_error_code`` silences a class of
-    error everywhere, and narrowing ``files`` or filling ``exclude`` drops
-    modules from the run altogether. Each leaves the ratchet list untouched,
-    and each would otherwise leave the whole suite green.
+    ``test_no_module_ignores_errors`` reads the override blocks, so a
+    suppression written above them is invisible to it. A top-level
+    ``ignore_errors`` silences every module at once, ``disable_error_code``
+    silences a class of error everywhere, and narrowing ``files`` or filling
+    ``exclude`` drops modules from the run altogether. Each would otherwise
+    leave the whole suite green.
 
     """
     manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))

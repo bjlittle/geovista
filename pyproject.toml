@@ -131,14 +131,6 @@ disable_error_code = ["call-arg", "no-untyped-call"]
 module = ["geovista.examples.*"]
 
 
-[[tool.mypy.overrides]]
-# typing spec §3.2 -- the ratchet. This list only ever shrinks, and
-# "tests/test_typing_ratchet.py" holds it to that. Delete the whole block,
-# and that test, when the last entry goes.
-ignore_errors = true
-module = ["geovista.examples.*"]
-
-
 [tool.numpydoc_validation]
 checks = [
   "all", # Enable all numpydoc validation rules, apart from the following:
