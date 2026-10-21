@@ -449,7 +449,17 @@ def from_cartesian(
 
     """
     cloud = point_cloud(mesh)
-    radius = distance(mesh, mean=not cloud)
+    radius = distance(mesh, mean=False)
+
+    if not cloud:
+        mean = distance(mesh)
+        # a surface at one radius, to the precision of its points, is read at
+        # that radius, which gives the points of a parallel one latitude. One
+        # at uneven radii is read at the radius of each point, or a point off
+        # the mean would take the wrong latitude
+        resolution = float(np.finfo(mesh.points.dtype).resolution)
+        if np.allclose(radius, mean, rtol=resolution, atol=0):
+            radius = mean
 
     lons, lats = to_lonlats(
         mesh.points, radius=radius, stacked=False, rtol=rtol, atol=atol
