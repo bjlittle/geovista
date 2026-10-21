@@ -436,7 +436,7 @@ observed:
 {ref}`§3.6 <docs-spec-3-6>`, and the roadmap triggers of {ref}`§4 <docs-spec-4>`.
 
 It sits in `tests/` rather than `tests/docs/` because it reads source files and needs no
-built artefact, which puts it beside `tests/test_typing_ratchet.py`. That is the right
+built artefact, which puts it beside `tests/test_ci_typing.py`. That is the right
 neighbourhood: both exist to stop a convention decaying quietly. `tests/docs` guards
 the rendered output and skips without a browser; a gate that can skip is a gate that can
 pass by not running.
