@@ -1,0 +1,5 @@
+Fixed :func:`geovista.core.combine` returning a single mesh as it was, without
+the checks, ``clean`` or ``data`` it applies to two or more. A single mesh is
+now combined into a new mesh like any other. A mesh with vertices, such as a
+point cloud, is now refused as one with lines is, where before its points were
+added with no cell referencing them. Closes :issue:`2679`. (:user:`claude`)
