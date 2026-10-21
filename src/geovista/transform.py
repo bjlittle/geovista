@@ -127,8 +127,6 @@ def transform_mesh(
     .. versionadded:: 0.3.0
 
     """
-    from .core import slice_mesh  # noqa: PLC0415
-
     src_crs = from_wkt(mesh)
 
     if src_crs is None:
@@ -145,10 +143,7 @@ def transform_mesh(
 
     original_tgt_crs = deepcopy(tgt_crs)
     transform_required = src_crs != tgt_crs
-    central_meridian = get_central_meridian(tgt_crs) or 0
     cloud = point_cloud(mesh)
-
-    level = np.asanyarray(0 if zlevel is None else zlevel)
 
     if zscale is None:
         if cloud and GV_FIELD_ZSCALE in mesh.field_data:
@@ -160,55 +155,13 @@ def transform_mesh(
         radius = float(mesh[GV_FIELD_RADIUS][0])
 
     if transform_required:
-        if level.ndim:
-            try:
-                level = np.broadcast_to(level, (mesh.n_points,))
-            except ValueError:
-                emsg = (
-                    f"Cannot transform mesh, 'zlevel' with shape {level.shape} does "
-                    f"not broadcast to its {mesh.n_points:,} points."
-                )
-                raise ValueError(emsg) from None
+        level = _point_levels(mesh, zlevel)
 
         # slice the mesh to break connectivity, but not for a point-cloud
         if slice_connectivity:
-            if central_meridian:
-                mesh.rotate_z(-central_meridian, inplace=True)
-                rebased = set_central_meridian(tgt_crs, 0)
-                # both helpers locate the same parameter, and refuse the same
-                # non-degree prime meridian, so one that reads can be rewritten
-                assert rebased is not None
-                tgt_crs = rebased
-
-            carry: str | None = None
-            if not cloud:
-                # the sliced_mesh is guaranteed to be a new instance, even if not
-                # bisected, and a per-point zlevel travels through the slice as
-                # point data, so a point the seam duplicates keeps its level. It
-                # travels under a name no array of the caller's has, so only what
-                # is added here is removed, and as floats, so a level the seam
-                # interpolates is not rounded
-                if level.ndim:
-                    carry = _ZLEVEL
-                    while carry in mesh.point_data:
-                        carry = f"_{carry}"
-                    mesh.point_data[carry] = level.astype(float)
-                try:
-                    sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
-                finally:
-                    if carry is not None:
-                        mesh.point_data.pop(carry, None)
-            else:
-                sliced_mesh = mesh.copy()
-
-            if central_meridian:
-                # undo rotation of original mesh
-                mesh.rotate_z(central_meridian, inplace=True)
-
-            if carry is not None:
-                level = np.asarray(sliced_mesh.point_data.pop(carry))
-
-            mesh = sliced_mesh
+            mesh, tgt_crs, level = _slice_seam(
+                mesh, tgt_crs, level=level, rtol=rtol, atol=atol
+            )
 
         # now perform the CRS transformation
         if src_crs == WGS84:
@@ -478,6 +431,134 @@ def transform_points(
         result = result.reshape(tuple(shape))
 
     return result
+
+
+def _point_levels(mesh: pv.PolyData, zlevel: float | ArrayLike | None) -> NDArray[Any]:
+    """Determine the z-level of a mesh, as a scalar or one for each of its points.
+
+    Parameters
+    ----------
+    mesh : :class:`~pyvista.PolyData`
+        The mesh the z-level is given for.
+    zlevel : float or ArrayLike, optional
+        The z-level, either a scalar or an array that broadcasts to the points of
+        the `mesh`. Defaults to ``0``.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The z-level as a 0-d array, or as one for each point of the `mesh`.
+
+    Raises
+    ------
+    ValueError
+        If an array `zlevel` does not broadcast to the points of the `mesh`.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    level = np.asanyarray(0 if zlevel is None else zlevel)
+
+    if level.ndim:
+        try:
+            level = np.broadcast_to(level, (mesh.n_points,))
+        except ValueError:
+            emsg = (
+                f"Cannot transform mesh, 'zlevel' with shape {level.shape} does "
+                f"not broadcast to its {mesh.n_points:,} points."
+            )
+            raise ValueError(emsg) from None
+
+    return level
+
+
+def _slice_seam(
+    mesh: pv.PolyData,
+    tgt_crs: pyproj.CRS,
+    /,
+    *,
+    level: NDArray[Any],
+    rtol: float | None = None,
+    atol: float | None = None,
+) -> tuple[pv.PolyData, pyproj.CRS, NDArray[Any]]:
+    """Cut a mesh along the seam of a CRS, carrying a z-level at each point.
+
+    The mesh is rotated so that the central meridian of the CRS is at zero, cut
+    along the antimeridian, then rotated back, so the mesh given is left as it
+    was. A point cloud has no connectivity to break, so it is copied instead.
+
+    Parameters
+    ----------
+    mesh : :class:`~pyvista.PolyData`
+        The mesh to cut, on the sphere.
+    tgt_crs : :class:`~pyproj.crs.CRS`
+        The CRS whose seam the `mesh` is cut along.
+    level : :class:`~numpy.ndarray`
+        The z-level, as a 0-d array or as one for each point of the `mesh`, see
+        :func:`_point_levels`.
+    rtol : float, optional
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
+    atol : float, optional
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
+
+    Returns
+    -------
+    tuple of :class:`~pyvista.PolyData`, :class:`~pyproj.crs.CRS` and \
+    :class:`~numpy.ndarray`
+        The cut mesh, a new instance even if not bisected, still rotated; the
+        CRS with its central meridian at zero, to transform the cut mesh to; and
+        the z-level, for each point of the cut mesh if one was given for each
+        point of the `mesh`.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # core imports this module through search, so it is imported here
+    from .core import slice_mesh  # noqa: PLC0415
+
+    central_meridian = get_central_meridian(tgt_crs) or 0
+
+    if central_meridian:
+        mesh.rotate_z(-central_meridian, inplace=True)
+        rebased = set_central_meridian(tgt_crs, 0)
+        # both helpers locate the same parameter, and refuse the same
+        # non-degree prime meridian, so one that reads can be rewritten
+        assert rebased is not None
+        tgt_crs = rebased
+
+    carry: str | None = None
+    if not point_cloud(mesh):
+        # a per-point zlevel travels through the slice as point data, so a point
+        # the seam duplicates keeps its level. It travels under a name no array
+        # of the caller's has, so only what is added here is removed, and as
+        # floats, so a level the seam interpolates is not rounded
+        if level.ndim:
+            carry = _ZLEVEL
+            while carry in mesh.point_data:
+                carry = f"_{carry}"
+            mesh.point_data[carry] = level.astype(float)
+        try:
+            sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
+        finally:
+            if carry is not None:
+                mesh.point_data.pop(carry, None)
+    else:
+        sliced_mesh = mesh.copy()
+
+    if central_meridian:
+        # undo rotation of original mesh
+        mesh.rotate_z(central_meridian, inplace=True)
+
+    if carry is not None:
+        level = np.asarray(sliced_mesh.point_data.pop(carry))
+
+    return sliced_mesh, tgt_crs, level
 
 
 def _carried_zlevels(
