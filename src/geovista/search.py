@@ -356,10 +356,8 @@ def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:
         # NOTE: pyvista 0.38.0: cell_point_ids(idx) -> get_cell(idx).point_ids
         pids.extend(mesh.get_cell(idx).point_ids)
 
-    # determine the unique points
-    pids = np.unique(list(pids))
     # get the cell-ids of cells containing at least one common point
-    result = set(mesh.extract_points(pids)[VTK_CELL_IDS])
+    result = set(mesh.extract_points(np.unique(pids))[VTK_CELL_IDS])
     # remove the original cell/s
     result -= set(cid)
 
@@ -412,8 +410,14 @@ def find_nearest_cell(
 
     """
     crs = from_wkt(mesh)
-    poi = to_cartesian(x, y)[0] if crs in [WGS84, None] else (x, y, z)
+    poi = (
+        to_cartesian(x, y)[0]
+        if crs in [WGS84, None]
+        else np.array([x, y, 0 if z is None else z], dtype=float)
+    )
     cid = mesh.find_closest_cell(poi)
+    # a single point has a single closest cell
+    assert isinstance(cid, int)
 
     # NOTE: pyvista 0.38.0: cell_point_ids(cid) -> get_cell(cid).point_ids
     pids = np.asanyarray(mesh.get_cell(cid).point_ids)

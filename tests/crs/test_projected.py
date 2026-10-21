@@ -54,3 +54,9 @@ def test_flat_geographic__with_crs(sphere, crs):
     assert not crs.is_projected
     to_wkt(sphere, crs)
     assert projected(sphere)
+
+
+@pytest.mark.parametrize("mesh", [pv.Plane(), pv.Sphere()], ids=["planar", "sphere"])
+def test_bool__no_crs(mesh):
+    """Test that the result is a Python bool, not a NumPy one."""
+    assert type(projected(mesh)) is bool

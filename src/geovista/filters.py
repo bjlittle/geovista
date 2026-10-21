@@ -16,7 +16,7 @@ Notes
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import lazy_loader as lazy
 
@@ -35,6 +35,8 @@ from .common import (
 from .common import cast_UnstructuredGrid_to_PolyData as cast
 
 if TYPE_CHECKING:
+    import numpy as np
+    from numpy.typing import NDArray
     import pyvista as pv
 
     # this is a type alias
@@ -114,7 +116,7 @@ def remesh(
         raise ValueError(emsg)
 
     meridian = wrap(meridian)[0]
-    radius = distance(mesh)
+    radius = float(distance(mesh))
 
     poly0: pv.PolyData = mesh.copy(deep=True)
 
@@ -166,8 +168,10 @@ def remesh(
         delta = lons - meridian
         lower_mask = (delta < 0) & (delta > -180)
         upper_mask = delta > 180
-        west_mask = lower_mask | upper_mask
-        east_mask = ~west_mask
+        # pyvista 0.49 annotates "extract_cells" to refuse a numpy boolean mask,
+        # which it accepts at runtime, so the masks are typed as any array
+        west_mask: NDArray[Any] = lower_mask | upper_mask
+        east_mask: NDArray[Any] = ~west_mask
 
         # the vtkIntersectionPolyDataFilter is configured to *always* generate
         # the boundary mask point array as we require it internally, regardless

@@ -23,6 +23,7 @@ from pyproj import CRS
 from .common import GV_FIELD_CRS
 
 if TYPE_CHECKING:
+    import numpy as np
     import pyvista as pv
 
 # lazy import third-party dependencies
@@ -391,7 +392,9 @@ def projected(mesh: pv.PolyData) -> bool:
     if crs is None:
         xmin, xmax, ymin, ymax, zmin, zmax = mesh.bounds
         xdelta, ydelta, zdelta = (xmax - xmin), (ymax - ymin), (zmax - zmin)
-        result = np.isclose(xdelta, 0) or np.isclose(ydelta, 0) or np.isclose(zdelta, 0)
+        result = bool(
+            np.isclose(xdelta, 0) or np.isclose(ydelta, 0) or np.isclose(zdelta, 0)
+        )
     else:
         result = planar(crs)
 

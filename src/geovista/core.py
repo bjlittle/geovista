@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import copy
 from enum import Enum, auto, unique
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
 import warnings
 
 import lazy_loader as lazy
@@ -44,7 +44,8 @@ from .filters import remesh
 from .search import find_cell_neighbours
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
+    import numpy as np
+    from numpy.typing import ArrayLike, NDArray
     import pyvista as pv
 
 # lazy import third-party dependencies
@@ -83,6 +84,24 @@ class SliceBias(Enum):
 
     EAST = auto()
     """Preference for a slice to bias cells east of the chosen meridian."""
+
+
+def _preference(association: pv.FieldAssociation) -> Literal["cell", "point"]:
+    """Name the association of active scalars, as a slice restores them.
+
+    Parameters
+    ----------
+    association : :class:`~pyvista.FieldAssociation`
+        The association of the active scalars of a mesh.
+
+    Returns
+    -------
+    str
+        ``"cell"`` for cell data, otherwise ``"point"``, which is also the association
+        :mod:`pyvista` reports for a mesh with no active scalars.
+
+    """
+    return "cell" if association == pv.FieldAssociation.CELL else "point"
 
 
 class MeridianSlice:  # numpydoc ignore=PR01
@@ -136,11 +155,11 @@ class MeridianSlice:  # numpydoc ignore=PR01
         mesh[GV_POINT_IDS] = np.arange(mesh.n_points)
         mesh.set_active_scalars(name=None)
         mesh.set_active_scalars(
-            self._info.name, preference=self._info.association.name.lower()
+            self._info.name, preference=_preference(self._info.association)
         )
         self.mesh = mesh
         """The mesh to be sliced along the meridian."""
-        self.radius = distance(mesh)
+        self.radius = float(distance(mesh))
         """The radius of the mesh."""
         self.meridian = wrap(meridian)[0]
         """The meridian (degrees longitude) along which to slice the mesh."""
@@ -162,7 +181,7 @@ class MeridianSlice:  # numpydoc ignore=PR01
         """The set of cell ids that are bisected by the meridian."""
 
     def _intersection(
-        self, bias: SliceBias, n_points: float | None = None
+        self, bias: SliceBias, n_points: int | None = None
     ) -> pv.PolyData:
         """Perform the meridian intersection with the mesh.
 
@@ -177,7 +196,7 @@ class MeridianSlice:  # numpydoc ignore=PR01
         bias : SliceBias
             Whether the spline is west, east or exactly along the slice
             meridian.
-        n_points : float, optional
+        n_points : int, optional
             The number of interpolation points along the spline, which defines
             the plane of intersection through the mesh. Defaults to
             :data:`SPLINE_N_POINTS`.
@@ -264,7 +283,7 @@ class MeridianSlice:  # numpydoc ignore=PR01
 
             if mesh.n_cells:
                 mesh.set_active_scalars(
-                    self._info.name, preference=self._info.association.name.lower()
+                    self._info.name, preference=_preference(self._info.association)
                 )
 
         return mesh
@@ -332,7 +351,7 @@ def add_texture_coords(
 
 
 def combine(
-    *meshes: pv.PolyData,
+    *meshes: pv.DataSet,
     data: bool | None = True,
     clean: bool | None = False,
 ) -> pv.PolyData:
@@ -372,10 +391,21 @@ def combine(
         emsg = "Expected one or more meshes to combine."
         raise ValueError(emsg)
 
-    if len(meshes) == 1:
-        return meshes[0]
+    # check every mesh before any is read
+    polys: list[pv.PolyData] = []
+    for i, dataset in enumerate(meshes):
+        if not isinstance(dataset, pv.PolyData):
+            emsg = (
+                f"Can only combine 'pyvista.PolyData' meshes, input mesh "
+                f"#{i + 1} has type '{dataset.__class__.__name__}'."
+            )
+            raise TypeError(emsg)
+        polys.append(dataset)
 
-    first: pv.PolyData = meshes[0]
+    if len(polys) == 1:
+        return polys[0]
+
+    first = polys[0]
     combined_points, combined_faces = [], []
     n_points = 0
 
@@ -388,14 +418,7 @@ def combine(
         common_field_data = set(first.field_data.keys())
         active_scalars_info = {first.active_scalars_info}
 
-    for i, mesh in enumerate(meshes):
-        if not isinstance(mesh, pv.PolyData):
-            emsg = (
-                f"Can only combine 'pyvista.PolyData' meshes, input mesh "
-                f"#{i + 1} has type '{mesh.__class__.__name__}'."
-            )
-            raise TypeError(emsg)
-
+    for i, mesh in enumerate(polys):
         if mesh.n_lines:
             emsg = (
                 f"Can only combine meshes with cells, input mesh #{i + 1} "
@@ -410,7 +433,9 @@ def combine(
             raise TypeError(emsg)
 
         combined_points.append(mesh.points.copy())
-        faces = mesh.faces.copy()
+        # pyvista 0.49 annotates the faces with a Python int dtype, which refuses
+        # numpy's in-place arithmetic, so they are typed as any array
+        faces: NDArray[Any] = mesh.faces.copy()
 
         if n_points:
             offsets = _face_offsets(mesh)
@@ -471,7 +496,7 @@ def combine(
         # common active scalar array from the input meshes
         combined.active_scalars_name = None
         for info in active_scalars_info:
-            association = info.association.name.lower()
+            association = _preference(info.association)
             common_data = (
                 common_cell_data if association == "cell" else common_point_data
             )
@@ -576,7 +601,7 @@ def resize(
                 mesh[GV_FIELD_RADIUS], radius
             )
     else:
-        new_radius = radius + radius * level * zscale
+        new_radius = radius + radius * float(level) * zscale
         update = bool(new_radius) and not np.isclose(distance(mesh), new_radius)
 
     if update:
@@ -599,7 +624,7 @@ def resize(
 
 
 def slice_cells(
-    mesh: pv.PolyData,
+    mesh: pv.DataSet,
     /,
     *,
     meridian: float | None = None,
@@ -692,7 +717,7 @@ def slice_cells(
         # TODO @bjlittle: Investigate defensive removal of cells that span the meridian
         #                 and should have been remeshed, but haven't due to their
         #                 geometry ?
-        cids = set(find_cell_neighbours(result, remeshed[GV_CELL_IDS]))
+        cids = set(find_cell_neighbours(result, remeshed[GV_CELL_IDS].tolist()))
         cids = cids.difference(set(remeshed_ids))
         if cids:
             neighbours = cast(result.extract_cells(list(cids)))
@@ -701,7 +726,9 @@ def slice_cells(
             xdelta = []
             for cid in range(neighbours.n_cells):
                 # NOTE: pyvista 0.38.0: cell_points(cid) -> get_cell(cid).points
-                cxpts = neighbours.get_cell(cid).points[:, 0]
+                # pyvista 0.49 annotates the points with a Python float dtype,
+                # which refuses numpy's reductions, so they are typed as any array
+                cxpts: NDArray[Any] = neighbours.get_cell(cid).points[:, 0]
                 cxmin, cxmax = cxpts.min(), cxpts.max()
                 xdelta.append(cxmax - cxmin)
             xdelta_array = np.array(xdelta)
@@ -725,7 +752,7 @@ def slice_cells(
         result = combine(result, *meshes)
 
     result.set_active_scalars(name=None)
-    result.set_active_scalars(info.name, preference=info.association.name.lower())
+    result.set_active_scalars(info.name, preference=_preference(info.association))
 
     return result
 
@@ -801,7 +828,7 @@ def slice_lines(
             mesh = mesh.copy(deep=True)
         return mesh
 
-    radius = distance(mesh)
+    radius = float(distance(mesh))
     line = pv.Line(pointa=(radius, 0, 0), pointb=(-radius, 0, 0))
     spline = pv.Spline(line.points, n_points=n_points + 2)
     intersection = mesh.slice_along_line(spline)
@@ -819,8 +846,10 @@ def slice_lines(
 
     # there is 1 cid per intersection poi (N,)
     poi_cids = mesh.find_closest_cell(poi_xyz)
+    # several points have an array of closest cells
+    assert isinstance(poi_cids, np.ndarray)
     # there are 2 pids per cid i.e., by defn, each line has 2 end-points
-    cid_pids = [mesh.get_cell(cid).point_ids for cid in poi_cids]
+    cid_pids = [mesh.get_cell(cid).point_ids for cid in poi_cids.tolist()]
     # flatten the pids (2N,)
     cid_pids_1d = np.concatenate(cid_pids)
     # flatten the cartesian points (2N, 3)
@@ -834,7 +863,7 @@ def slice_lines(
     detach_pids: list[int] = []
     pois = np.flatnonzero(antimeridian)
 
-    for poi, xyz, cid in zip(pois, poi_xyz, poi_cids, strict=True):
+    for poi, xyz, cid in zip(pois.tolist(), poi_xyz, poi_cids.tolist(), strict=True):
         mask = np.all(np.isclose(cid_xyz_1d, xyz), axis=1)
         if np.any(mask):
             # we want to detach the connectivity of a single line segment at the pid
@@ -847,7 +876,7 @@ def slice_lines(
                 raise ValueError(emsg)
 
             detach_cids.append(cid)
-            detach_pids.append(intersection_pid[0])
+            detach_pids.append(int(intersection_pid[0]))
         else:
             # we want to break the connectivity of the line segment @ xyz
             # i.e., split the segment into two new segments about xyz
@@ -856,7 +885,7 @@ def slice_lines(
             split_pois.append(poi)
 
     result = pv.PolyData()
-    points = mesh.points.copy()
+    points: NDArray[Any] = mesh.points.copy()
     lines = mesh.lines.copy().reshape(-1, 3)
 
     if split_cids:
@@ -1015,7 +1044,7 @@ def _carry_line_data(
     # pyvista hands back a complex array of one value without its point
     # dimension, so every array is held to at least one
     for name in mesh.point_data:
-        values = np.atleast_1d(mesh.point_data[name])
+        values: NDArray[Any] = np.atleast_1d(mesh.point_data[name])
         parts = [values]
         if split_cids:
             if name in cut.point_data:
@@ -1064,8 +1093,12 @@ def _keep_roles(source: pv.DataSetAttributes, target: pv.DataSetAttributes) -> N
         if array is None or (name := array.GetName()) not in target:
             continue
         if role == source.GLOBALIDS:
-            # pyvista hands back a view, so the fresh ids land in the array itself
-            ids, n_ids = target[name], array.GetNumberOfTuples()
+            # pyvista hands back a view, so the fresh ids land in the array itself.
+            # pyvista 0.49 annotates an assignment to its arrays to refuse a slice
+            # as the key, which it accepts at runtime, so the ids are typed as any
+            # array
+            ids: NDArray[Any] = target[name]
+            n_ids = array.GetNumberOfTuples()
             start = ids[:n_ids].max() + 1
             ids[n_ids:] = np.arange(start, start + ids.size - n_ids)
         target.SetActiveAttribute(name, role)

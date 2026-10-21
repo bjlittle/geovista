@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import pytest
 
+from geovista.bridge import Transform
 from geovista.common import from_cartesian, to_lonlat
 from geovista.search import find_nearest_cell
+from geovista.transform import transform_mesh
 
 
 def test_cell_centers(lam_uk):
@@ -64,3 +66,11 @@ def test_vertex__single_fail(lam_uk):
     emsg = "Expected to find 1 cell"
     with pytest.raises(ValueError, match=emsg):
         _ = find_nearest_cell(lam_uk, *lonlat, single=True)
+
+
+@pytest.mark.parametrize("z", [0, None])
+def test_planar_z(z):
+    """Test a POI with no z-coordinate on a projected mesh defaults to zero."""
+    mesh = transform_mesh(Transform.from_1d([0, 10, 20], [0, 10, 20]), "+proj=eqc")
+    x, y, _ = mesh.cell_centers().points[3]
+    assert find_nearest_cell(mesh, x, y, z=z) == [3]

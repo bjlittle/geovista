@@ -276,6 +276,14 @@ called it 259 times with lists that grow to tens of thousands of points, though,
 converting them on every call made `BBox` ten times slower. `BBox` now indexes its own lists and calls `npoints` directly: a private
 caller on a hot path can step past a converting boundary instead of paying for it.
 
+Change 6b met change 4's runtime check twice more, in `core.py`. `combine` and
+`slice_cells` check for the `pv.PolyData` they were annotated to receive, so both now take
+a `pv.DataSet`. `combine` handed a single mesh back before its check, so
+`combine(pv.ImageData(...))` returned an `ImageData` from a function annotated to return
+`PolyData`. It now raises `TypeError`, as it does for any other mesh it can't combine.
+`find_nearest_cell` documents `z` as optional and zero by default, and accepted `None`,
+which VTK refused with `TypeError` on a projected mesh. `None` now means zero.
+
 (typing-spec-3-4)=
 ### 3.4 Gallery suppressions
 
@@ -363,7 +371,7 @@ these two, leaving nine.
 | 4 | `common.py` | 20 | ✅ landed (2026-10-10, {pull}`2612`) |
 | 5 | `geoplotter.py`, `geodesic.py` | 38 | ✅ landed (2026-10-11, {pull}`2619`) |
 | 6a | The untyped imports, and `cache`, `cli`, `config`, `geometry`, `qt` | 11 | ✅ landed (2026-10-11, {pull}`2631`) |
-| 6b | `core`, `search`, `filters`, `gridlines`, `crs` | 38 | not started |
+| 6b | `core`, `search`, `filters`, `gridlines`, `crs` | 38 | ✅ landed (2026-10-21, {pull}`2676`) |
 | 6c | `pantry` and its three modules, `raster`, `report`, `themes` | 19 | not started |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
 
@@ -503,12 +511,15 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    imports `lazy_loader`, as most library modules do, and could not leave the ratchet
    without it. It comes out when the floor reaches a release carrying the marker, or when
    PEP 810 replaces `lazy_loader`, whichever is first.
-6. **Open** ({issue}`2568`) — **The cast in `transform_mesh` waits on the same `pyvista`
-   release.** `pyvista` 0.49 annotates `pyvista_ndarray.__setitem__` with
-   `key: int | NumpyArray[int]`, which refuses the tuple index of `mesh.points[:, 0]`
-   that it accepts at runtime, so change 2 sets the points through a `typing.cast`.
+6. **Open** ({issue}`2568`) — **The cast in `transform_mesh`, and a typed local in
+   `core.py`, wait on the same `pyvista` release.** `pyvista` 0.49 annotates
+   `pyvista_ndarray.__setitem__` with `key: int | NumpyArray[int]`, which refuses the
+   tuple index of `mesh.points[:, 0]` that it accepts at runtime, so change 2 sets the
+   points through a `typing.cast`. The annotation refuses a slice key in the same way, so
+   change 6b types the ids that `_keep_roles` assigns through one as any array.
    `pyvista` pull request 9262 widens the key, merged on 2026-09-23 after 0.49.0, so the
-   cast comes out with the floor that carries it, the trigger item 2 already waits on.
+   cast and the local come out with the floor that carries it, the trigger item 2 already
+   waits on.
 7. **Open** ({issue}`2601`) — **The cast in `from_tiff` waits on typeshed.**
    `types-rasterio` types the rows and columns of `rasterio.transform.xy` as
    `int | Sequence[int]`. `rasterio` takes arrays, which is what `Transform.from_tiff`
@@ -529,6 +540,17 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    so far: `geopy` and `fastparquet` are imported only by `pantry/data.py`, which leaves
    the ratchet in change 6c. Each name comes out when its distribution or a stub
    package types it. `pooch` has an open upstream issue asking for annotations.
+10. **Open** ({issue}`2568`) — **Four typed locals wait on the same `pyvista` release.**
+    `pyvista` 0.49 types its arrays with Python's `int`, `bool` and `float` as the dtype.
+    `numpy.float64` subclasses `float`, so a float array passes into `pyvista`, but
+    `numpy.intp` and `numpy.bool` subclass neither `int` nor `bool`, so `extract_cells`
+    refuses every real mask or index array. For the same reason, numpy's own methods
+    refuse arrays that `pyvista` hands back: `+=` on a mesh's faces, and `min` on a
+    cell's points. Change 6b types the two masks in `filters.remesh`, the faces in
+    `core.combine` and the points in `core.slice_cells` as any array. `pyvista` pull
+    requests 9344 and 9351 replace the annotations. Both merged on 2026-09-29, after the
+    0.49 release branch was cut on 2026-09-07, so 0.49.1 doesn't carry them, and the
+    locals come out with the floor that does, the trigger items 2, 6 and 8 wait on.
 
 (typing-spec-9)=
 ## 9. References
@@ -546,6 +568,10 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 - `pyvista` pull request 9262, which widens the index `pyvista_ndarray.__setitem__`
   accepts, cited by item 6 of {ref}`§8 <typing-spec-8>`:
   <https://github.com/pyvista/pyvista/pull/9262>
+- `pyvista` pull requests 9344 and 9351, which replace the array aliases that item 10 of
+  {ref}`§8 <typing-spec-8>` waits on:
+  <https://github.com/pyvista/pyvista/pull/9344> and
+  <https://github.com/pyvista/pyvista/pull/9351>
 - `lazy_loader` issue 165, on its relation to PEP 810, cited by item 4 of
   {ref}`§8 <typing-spec-8>`: <https://github.com/scientific-python/lazy-loader/issues/165>
 - `lazy_loader` issue 181, the request for a marker and annotations that resolves item 4

@@ -1,0 +1,8 @@
+:func:`geovista.core.combine` raises ``TypeError`` for a single mesh that isn't
+a :class:`~pyvista.PolyData`, where it returned the mesh unchecked, and
+:func:`geovista.search.find_nearest_cell` treats ``z=None`` as zero, as
+documented, where it raised ``TypeError`` on a projected mesh.
+:func:`geovista.crs.projected` returns a Python ``bool``. ``geovista.core``,
+``geovista.crs``, ``geovista.filters``, ``geovista.gridlines`` and
+``geovista.search`` also leave the typing ratchet, so ``mypy`` checks them in
+full. (:user:`claude`)
