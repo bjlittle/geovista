@@ -90,11 +90,11 @@ module = ["lazy_loader"]
 
 
 [[tool.mypy.overrides]]
-# typing spec §8 item 9 -- three distributions ship no annotations and have
+# typing spec §8 item 9 -- six distributions ship no annotations and have
 # no stubs (#2629). Withdraw each name when its distribution, typeshed or
 # conda-forge provides them.
 ignore_missing_imports = true
-module = ["fastparquet", "geopy.*", "pooch"]
+module = ["cartopy.*", "cmocean.*", "fastparquet", "geopy.*", "h3", "pooch"]
 
 
 [[tool.mypy.overrides]]
@@ -119,12 +119,6 @@ module = "geovista.cli"
 # which report identically with and without it. See typing spec §3.1.
 disallow_subclassing_any = false
 module = ["geovista.qt"]
-
-
-[[tool.mypy.overrides]]
-# Problem caused by geopy being untyped.
-disable_error_code = ["union-attr"]
-module = ["geovista.examples.grid.*"]
 
 
 [[tool.mypy.overrides]]

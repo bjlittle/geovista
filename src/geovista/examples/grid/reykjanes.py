@@ -96,14 +96,15 @@ def main() -> None:
         font_size=10,
     )
 
-    # Mark the event release location.
-    p.add_points(
-        xs=sample.poi.longitude,
-        ys=sample.poi.latitude,
-        render_points_as_spheres=True,
-        color="red",
-        point_size=10,
-    )
+    # Mark the event release location, which the sample records.
+    if sample.poi is not None:
+        p.add_points(
+            xs=sample.poi.longitude,
+            ys=sample.poi.latitude,
+            render_points_as_spheres=True,
+            color="red",
+            point_size=10,
+        )
 
     # Define a specific camera position and orientation.
     cpos = pv.CameraPosition(

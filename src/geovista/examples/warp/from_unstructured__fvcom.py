@@ -46,6 +46,8 @@ for further details.
 
 from __future__ import annotations
 
+import numpy as np
+
 import geovista as gv
 from geovista.pantry.data import fvcom_tamar
 
@@ -71,7 +73,7 @@ def main() -> None:
     )
 
     # Warp the mesh nodes by the bathymetry.
-    mesh.point_data["node"] = sample.node
+    mesh.point_data["node"] = np.asanyarray(sample.node)
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
     mesh.warp_by_scalar(scalars="node", inplace=True, factor=2e-5)
 

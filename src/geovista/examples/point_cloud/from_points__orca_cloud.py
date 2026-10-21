@@ -38,6 +38,8 @@ Earth base layer with opacity.
 
 from __future__ import annotations
 
+import numpy as np
+
 import geovista as gv
 from geovista.pantry.data import nemo_orca2_gradient
 from geovista.pantry.meshes import ZLEVEL_SCALE_CLOUD
@@ -60,7 +62,7 @@ def main() -> None:
         sample.lats,
         data=sample.zlevel,
         name=f"{sample.name} / {sample.units}",
-        zlevel=-sample.zlevel,
+        zlevel=-np.asanyarray(sample.zlevel),
         zscale=ZLEVEL_SCALE_CLOUD,
     )
 
