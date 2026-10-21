@@ -64,7 +64,11 @@ def fetch_coastlines(resolution: str | None = None) -> pv.PolyData:
     processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"natural_earth/physical/{fname}.bz2", processor=processor)
 
-    return pv.read(resource)
+    mesh = pv.read(resource)
+    # the resource is a single mesh of lines
+    assert isinstance(mesh, pv.PolyData)
+
+    return mesh
 
 
 def fetch_raster(fname: str) -> Path:

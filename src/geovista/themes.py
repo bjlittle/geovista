@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import copy
 import os
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import lazy_loader as lazy
 from pyvista.plotting.theme_registry import (
@@ -38,6 +38,11 @@ from pyvista.plotting.theme_registry import (
 from pyvista.plotting.themes import DocumentTheme, Theme
 
 import geovista.config as gvc
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    import pyvista as pv
 
 # lazy import third-party dependencies
 pv = lazy.load("pyvista")
@@ -55,8 +60,15 @@ __all__ = [
 # support theme restoration with a stack of previous themes
 _cached_themes: list[Theme] = []
 
+if TYPE_CHECKING:
+    # mypy needs to know the mixin is combined with a theme, which is true of
+    # every class that uses it
+    _ThemeBase = Theme
+else:
+    _ThemeBase = object
 
-class ThemeMixin:
+
+class ThemeMixin(_ThemeBase):
     """Common ``geovista`` plotting theme property state.
 
     Notes
@@ -65,6 +77,10 @@ class ThemeMixin:
 
     """
 
+    # pyvista gathers the slots of every class a theme derives from, so the mixin
+    # declares that it has none
+    __slots__ = ()
+
     def mixin_state(self) -> None:
         """Configure common property state."""
         self.allow_empty_mesh = True
@@ -72,14 +88,14 @@ class ThemeMixin:
         self.cmap = "balance"
         self.color = "lightgray"
         self.edge_color = "gray"
-        self.font.label_size = None  # type: ignore[attr-defined]
-        self.font.title_size = None  # type: ignore[attr-defined]
-        self.font.color = "black"  # type: ignore[attr-defined]
+        self.font.label_size = None
+        self.font.title_size = None
+        self.font.color = "black"
         self.outline_color = "black"
         self.title = "GeoVista"
 
 
-class GeoVistaTheme(Theme, ThemeMixin):  # type: ignore[misc]
+class GeoVistaTheme(ThemeMixin, Theme):
     """Default ``geovista`` plot theme.
 
     Notes
@@ -105,12 +121,14 @@ class GeoVistaTheme(Theme, ThemeMixin):  # type: ignore[misc]
 
     def __init__(self) -> None:
         """Default plotting theme for ``geovista``."""
-        super().__init__()
+        # typing spec §8 -- pyvista 0.49 leaves Theme.__init__ unannotated
+        init: Callable[[], None] = super().__init__
+        init()
         # apply common theme state to the theme instance
         self.mixin_state()
 
 
-class GeoVistaDocumentTheme(DocumentTheme, ThemeMixin):  # type: ignore[misc]
+class GeoVistaDocumentTheme(ThemeMixin, DocumentTheme):
     """Theme used for building the documentation.
 
     Notes
@@ -136,7 +154,9 @@ class GeoVistaDocumentTheme(DocumentTheme, ThemeMixin):  # type: ignore[misc]
 
     def __init__(self) -> None:
         """Documentation plotting theme for ``geovista``."""
-        super().__init__()
+        # typing spec §8 -- pyvista 0.49 leaves Theme.__init__ unannotated
+        init: Callable[[], None] = super().__init__
+        init()
         # apply common theme state to the theme instance
         self.mixin_state()
 
@@ -166,6 +186,7 @@ def resolve_theme_name(name: str) -> Theme | None:
     .. versionadded:: 0.6.0
 
     """
+    theme: Theme | None
     if ":" in name:
         cls = _resolve_dotted_path(name)
         theme = cls()
@@ -205,7 +226,7 @@ def restore_plot_theme() -> Theme | None:
 
 
 def set_plot_theme(
-    theme: Theme | str,
+    theme: object,
     /,
     *,
     bootstrap: bool | None = False,

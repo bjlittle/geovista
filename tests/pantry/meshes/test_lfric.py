@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import pytest
+from pyvista import PolyData
 
 from geovista.pantry.meshes import LFRIC_RESOLUTION, lfric
 
@@ -20,7 +21,7 @@ def test_resolution_warning(mocker):
     )
     resource = mocker.sentinel.resource
     _ = mocker.patch("geovista.cache.CACHE.fetch", return_value=resource)
-    mesh = mocker.sentinel.mesh
+    mesh = mocker.MagicMock(spec=PolyData)
     _ = mocker.patch("pyvista.read", return_value=mesh)
     bad = "r24"
     wmsg = f"geovista detected unknown LFRic cubed-sphere resolution {bad!r}"

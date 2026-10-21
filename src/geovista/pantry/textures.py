@@ -62,10 +62,8 @@ def _fetch_texture(fname: str, /, *, location: bool | None = False) -> TextureLi
     .. versionadded:: 0.1.0
 
     """
-    resource = CACHE.fetch(f"pantry/textures/{fname}")
-    if not location:
-        resource = pv.read_texture(resource)
-    return resource
+    resource: str = CACHE.fetch(f"pantry/textures/{fname}")
+    return resource if location else pv.read_texture(resource)
 
 
 def black_marble(*, location: bool | None = False) -> TextureLike:

@@ -13,13 +13,17 @@ Notes
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import lazy_loader as lazy
 
 from .common import wrap
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    import numpy as np
+    from numpy.typing import NDArray
     import pyvista as pv
 
 # lazy import third-party dependencies
@@ -60,11 +64,18 @@ def wrap_texture(
     meridian = wrap(central_meridian)[0]
 
     if not np.isclose(meridian, 0):
-        # get the texture as a pyvista.ImageData
-        grid = texture.to_image()
+        # get the texture as a pyvista.ImageData. typing spec §8 -- pyvista 0.49
+        # leaves Texture.to_image and Texture.__init__ unannotated
+        to_image: Callable[[], pv.ImageData | None] = texture.to_image
+        grid = to_image()
+        # a texture with pixels converts to an image
+        assert grid is not None
         shape = (grid.dimensions[1], grid.dimensions[0], texture.n_components)
         # convert grid to an rgb image (un-do pyvista.Texture._from_array mangling)
-        image = np.flip(grid.active_scalars.reshape(shape), axis=0)
+        scalars = grid.active_scalars
+        # the pixels of a texture's image are its active scalars
+        assert scalars is not None
+        image = np.flip(scalars.reshape(shape), axis=0)
         width = image.shape[1]
         # calculate the rendering window over the tiled image centered around
         # the meridian
@@ -75,6 +86,7 @@ def wrap_texture(
         tiled = np.concatenate([image, image, image], axis=1)
         # now extract the image based on the central meridian
         image = tiled[:, start:end]
-        texture = pv.Texture(image)
+        as_texture: Callable[[NDArray[Any]], pv.Texture] = pv.Texture
+        texture = as_texture(image)
 
     return texture

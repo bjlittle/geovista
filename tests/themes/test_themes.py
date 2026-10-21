@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import copy
+import json
 
 import pytest
 import pyvista as pv
@@ -86,3 +87,26 @@ def test_allow_empty_mesh__by_name(name):
 def test_registered(name):
     """Test the theme is discoverable and auto-registered."""
     assert name in registered
+
+
+@pytest.mark.parametrize("theme", themes)
+def test_equal(theme):
+    """Test a theme compares equal to another instance of itself."""
+    assert theme() == theme()
+
+
+@pytest.mark.parametrize("theme", themes)
+def test_to_dict(theme):
+    """Test a theme converts to the dictionary it is saved as."""
+    instance = theme()
+    result = instance.to_dict()
+    assert result["name"] == instance.name
+    assert result["title"] == "GeoVista"
+
+
+@pytest.mark.parametrize("theme", themes)
+def test_save(theme, tmp_path):
+    """Test a theme saves as JSON."""
+    fname = tmp_path / "theme.json"
+    theme().save(fname)
+    assert json.loads(fname.read_text())["title"] == "GeoVista"

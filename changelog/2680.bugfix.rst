@@ -1,0 +1,9 @@
+:class:`geovista.themes.GeoVistaTheme` and
+:class:`geovista.themes.GeoVistaDocumentTheme` compare with ``==`` and convert
+with ``to_dict()`` and ``save()``, where each raised ``AttributeError``. Like
+``pyvista``'s themes, they now refuse an attribute they don't have, so a misspelt
+one raises ``AttributeError`` instead of being set silently.
+``geovista.pantry`` and its modules, ``geovista.raster``, ``geovista.report`` and
+``geovista.themes`` also leave the typing ratchet, so ``mypy`` checks the whole
+library in full, and ``geovista.themes`` loses its five ``type: ignore``
+comments. (:user:`claude`)
