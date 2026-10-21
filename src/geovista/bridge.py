@@ -829,7 +829,7 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.2.0
 
         """
-        xs, ys = np.asanyarray(xs), np.asanyarray(ys)
+        xs, ys = np.atleast_1d(xs), np.atleast_1d(ys)
 
         if clean is None:
             clean = BRIDGE_CLEAN
@@ -840,9 +840,14 @@ class Transform:  # numpydoc ignore=PR01
         if crs is None:
             crs = WGS84
 
-        # transform spatial points to WGS84 with shape (M, 3) or (M, N, 3)
+        # a point cloud has no topology, so points of any shape are transformed
+        # to WGS84 as one sequence, then given the shape of the xs back for a
+        # zlevel array to broadcast against
+        shape = xs.shape
+        xs, ys = xs.ravel(), ys.ravel()
         transformed = transform_points(src_crs=crs, tgt_crs=WGS84, xs=xs, ys=ys)
-        lons, lats = transformed[..., 0], transformed[..., 1]
+        lons = transformed[:, 0].reshape(shape)
+        lats = transformed[:, 1].reshape(shape)
 
         # convert lat/lon to cartesian xyz
         xyz = to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
@@ -879,8 +884,8 @@ class Transform:  # numpydoc ignore=PR01
                 emsg = "'vectors' must be an iterable of 2 or 3 array-likes."
                 raise ValueError(emsg)
 
-            # unpack vector components to UVW
-            components = [np.asanyarray(component) for component in vectors]
+            # unpack vector components to UVW, one for each point in sequence
+            components = [np.asanyarray(component).ravel() for component in vectors]
             us, vs = components[:2]
             ws = components[2] if len(components) == 3 else np.zeros_like(us)
 
@@ -895,8 +900,8 @@ class Transform:  # numpydoc ignore=PR01
             vectors_crs = pyproj.CRS.from_user_input(vectors_crs)
 
             if vectors_crs == WGS84:
-                vector_xs = lons
-                vector_ys = lats
+                vector_xs = lons.ravel()
+                vector_ys = lats.ravel()
                 post_rotate_matrix = None
             else:
                 # The supplied UVW vectors are for a "different" orientation
@@ -949,9 +954,6 @@ class Transform:  # numpydoc ignore=PR01
                     )
                     vector_xs, vector_ys = transformed[:, 0], transformed[:, 1]
 
-            # TODO @pp-mo: Should we pass flattened arrays here, and reshape as-per
-            #              the inputs (and xyz)? Not clear if multidimensional
-            #              input is used or needed
             xx, yy, zz = vectors_to_cartesian(
                 lons=vector_xs,
                 lats=vector_ys,

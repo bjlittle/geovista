@@ -16,6 +16,34 @@ from geovista.bridge import NAME_POINTS, NAME_VECTORS, Transform
 from geovista.common import GV_FIELD_CRS, GV_FIELD_RADIUS, RADIUS, to_cartesian, wrap
 from geovista.crs import WGS84
 
+#: The vectors of :class:`TestVectors` given ``(u, v, w)`` in true lat-lon.
+EXPECTED_UVW = np.array(
+    [
+        [10.385, -29.006, -6.416, -41.658],
+        [10.947, -1.769, -13.627, -54.169],
+        [22.301, 21.668, -3.759, -4.515],
+    ]
+)
+
+#: The vectors of :class:`TestVectors` given ``(u, v)`` on a rotated pole.
+EXPECTED_UV_CRS = np.array(
+    [
+        [-0.474, -17.651, -13.786, -32.429],
+        [15.592, 13.943, -5.499, 21.403],
+        [16.02, -13.529, -2.168, 12.461],
+    ]
+)
+
+#: The vectors of :class:`TestVectors` given ``(u, v)`` on a rotated pole, with
+#: the points in true lat-lon.
+EXPECTED_UV_VECTORS_CRS = np.array(
+    [
+        [-4.066, 25.821, -8.955, -38.46],
+        [16.031, -2.79, -11.93, 1.87],
+        [15.049, 3.804, 1.578, 13.504],
+    ]
+)
+
 
 def test_defaults(lam_uk_sample, wgs84_wkt):
     """Test expected defaults are honoured."""
@@ -79,6 +107,25 @@ def test_scalar():
     np.testing.assert_array_equal(Transform.from_points([0], [90]).points, expected)
 
 
+def test_points_3d():
+    """Test 3D points build the cloud of the same points in 1D."""
+    lons = np.array([0.0, 90.0, 180.0, -90.0]).reshape(1, 2, 2)
+    lats = np.zeros((1, 2, 2))
+    result = Transform.from_points(lons, lats)
+    expected = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, -1.0, 0.0]]
+    np.testing.assert_allclose(result.points, expected, atol=1e-15)
+
+
+def test_points_3d_zlevel():
+    """Test a zlevel broadcasts against the shape of 3D points."""
+    lons = np.array([0.0, 90.0, 0.0, 90.0]).reshape(2, 1, 2)
+    lats = np.zeros((2, 1, 2))
+    zlevel = np.array([0, 1]).reshape(2, 1, 1)
+    result = Transform.from_points(lons, lats, zlevel=zlevel, zscale=1)
+    expected = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0], [0.0, 2.0, 0.0]]
+    np.testing.assert_allclose(result.points, expected, atol=1e-15)
+
+
 class TestVectors:
     """Check calculations on attached vectors.
 
@@ -106,14 +153,7 @@ class TestVectors:
             self.lons, self.lats, vectors=(self.u, self.v, self.w)
         )
         result = mesh[NAME_VECTORS].T
-        expected = np.array(
-            [
-                [10.385, -29.006, -6.416, -41.658],
-                [10.947, -1.769, -13.627, -54.169],
-                [22.301, 21.668, -3.759, -4.515],
-            ]
-        )
-        assert np.allclose(result, expected, atol=0.001)
+        assert np.allclose(result, EXPECTED_UVW, atol=0.001)
 
     def test_nonarrays(self):
         """Check basic operation with lists of numbers in place of array vectors."""
@@ -123,14 +163,7 @@ class TestVectors:
             vectors=(list(self.u), list(self.v), list(self.w)),
         )
         result = mesh[NAME_VECTORS].T
-        expected = np.array(
-            [
-                [10.385, -29.006, -6.416, -41.658],
-                [10.947, -1.769, -13.627, -54.169],
-                [22.301, 21.668, -3.759, -4.515],
-            ]
-        )
-        assert np.allclose(result, expected, atol=0.001)
+        assert np.allclose(result, EXPECTED_UVW, atol=0.001)
 
     def test_basic__2d_uv(self):
         """Check operation with only 2 input component arrays (no W)."""
@@ -154,14 +187,7 @@ class TestVectors:
             crs=self.crs_rotatedlatlon,
         )
         result = mesh[NAME_VECTORS].T
-        expected = np.array(
-            [
-                [-0.474, -17.651, -13.786, -32.429],
-                [15.592, 13.943, -5.499, 21.403],
-                [16.02, -13.529, -2.168, 12.461],
-            ]
-        )
-        assert np.allclose(result, expected, atol=0.001)
+        assert np.allclose(result, EXPECTED_UV_CRS, atol=0.001)
 
     def test_crs__lists(self):
         """Check lists in place of arrays with an alternate latlon-type CRS.
@@ -177,14 +203,7 @@ class TestVectors:
             crs=self.crs_rotatedlatlon,
         )
         result = mesh[NAME_VECTORS].T
-        expected = np.array(
-            [
-                [-0.474, -17.651, -13.786, -32.429],
-                [15.592, 13.943, -5.499, 21.403],
-                [16.02, -13.529, -2.168, 12.461],
-            ]
-        )
-        assert np.allclose(result, expected, atol=0.001)
+        assert np.allclose(result, EXPECTED_UV_CRS, atol=0.001)
 
     def test__nonlatlon_crs__fail(self):
         """Check error when attempted with non-latlon CRS."""
@@ -225,14 +244,7 @@ class TestVectors:
             vectors_crs=self.crs_rotatedlatlon,
         )
         result = mesh[NAME_VECTORS].T
-        expected = np.array(
-            [
-                [-4.066, 25.821, -8.955, -38.46],
-                [16.031, -2.79, -11.93, 1.87],
-                [15.049, 3.804, 1.578, 13.504],
-            ]
-        )
-        assert np.allclose(result, expected, atol=0.001)
+        assert np.allclose(result, EXPECTED_UV_VECTORS_CRS, atol=0.001)
 
     def test__vectors_array_name(self):
         """Check operation with alternate vectors array name."""
@@ -243,11 +255,37 @@ class TestVectors:
             vectors_name="squiggle",
         )
         result = mesh["squiggle"].T
-        expected = np.array(
-            [
-                [10.385, -29.006, -6.416, -41.658],
-                [10.947, -1.769, -13.627, -54.169],
-                [22.301, 21.668, -3.759, -4.515],
-            ]
+        assert np.allclose(result, EXPECTED_UVW, atol=0.001)
+
+    @pytest.mark.parametrize("shape", [(2, 2), (1, 2, 2)])
+    def test_shaped_points(self, shape):
+        """Check points and vectors of any shape, as the same points in 1D."""
+        lons, lats, u, v, w = (
+            values.reshape(shape)
+            for values in (self.lons, self.lats, self.u, self.v, self.w)
         )
-        assert np.allclose(result, expected, atol=0.001)
+        mesh = Transform.from_points(lons, lats, vectors=(u, v, w))
+        result = mesh[NAME_VECTORS].T
+        assert np.allclose(result, EXPECTED_UVW, atol=0.001)
+
+    def test_shaped_points__crs(self):
+        """Check 2D points and vectors in an alternate latlon-type CRS."""
+        lons, lats, u, v = (
+            values.reshape(2, 2) for values in (self.lons, self.lats, self.u, self.v)
+        )
+        mesh = Transform.from_points(
+            lons, lats, vectors=(u, v), crs=self.crs_rotatedlatlon
+        )
+        result = mesh[NAME_VECTORS].T
+        assert np.allclose(result, EXPECTED_UV_CRS, atol=0.001)
+
+    def test_shaped_points__vectors_crs(self):
+        """Check 2D points and vectors with a different CRS for the vectors."""
+        lons, lats, u, v = (
+            values.reshape(2, 2) for values in (self.lons, self.lats, self.u, self.v)
+        )
+        mesh = Transform.from_points(
+            lons, lats, vectors=(u, v), vectors_crs=self.crs_rotatedlatlon
+        )
+        result = mesh[NAME_VECTORS].T
+        assert np.allclose(result, EXPECTED_UV_VECTORS_CRS, atol=0.001)
