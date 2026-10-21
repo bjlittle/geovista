@@ -22,16 +22,23 @@ LABELS = ["0°", "90°E"]
 
 
 def _labelled(
-    mocker, lonlat, *, mask=None, manifold=None
+    mocker,
+    lonlat,
+    *,
+    mask=None,
+    manifold=None,
+    crs=None,
+    zlevel=None,
+    zscale=None,
 ) -> tuple[np.ndarray, list[str]]:
     """Return the points and labels passed on to add_point_labels."""
-    p = GeoPlotter(manifold=manifold)
+    p = GeoPlotter(manifold=manifold, crs=crs)
     spy = mocker.spy(p, "add_point_labels")
     graticule = GraticuleGrid(
         blocks=pv.MultiBlock(), lonlat=lonlat, labels=LABELS, mask=mask
     )
 
-    p._add_graticule_labels(graticule)
+    p._add_graticule_labels(graticule, zlevel=zlevel, zscale=zscale)
 
     points, labels = spy.call_args.args
     return points, labels
@@ -62,3 +69,14 @@ def test_manifold_keeps_the_labels_inside(mocker):
     _, labels = _labelled(mocker, np.array(LONLAT), manifold=manifold)
 
     assert list(labels) == ["0°"]
+
+
+def test_planar_labels_honour_zscale(mocker):
+    """On a planar CRS the labels are lifted by the zscale they are given."""
+    points, _ = _labelled(
+        mocker, np.array(LONLAT), crs="+proj=eqc", zlevel=3, zscale=1e-3
+    )
+
+    # zlevel 3, zscale 1e-3 and the WGS84 semi-major axis of 6378137 m,
+    # which is the height add_mesh gives a gridline on the same terms
+    np.testing.assert_allclose(points[:, 2], 19134.411)
