@@ -406,7 +406,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         zscale: float | None = None,
         rtol: float | None = None,
         atol: float | None = None,
-        **kwargs: Any | None,
+        **kwargs: Any,
     ) -> pv.Actor | None:
         """Generate a cubed-sphere base layer mesh and add to the plotter scene.
 
@@ -494,7 +494,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         zscale: float | None = None,
         rtol: float | None = None,
         atol: float | None = None,
-        **kwargs: Any | None,
+        **kwargs: Any,
     ) -> pv.Actor | None:
         """Generate coastlines and add to the plotter scene.
 
@@ -1337,7 +1337,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         style: str | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
-        **kwargs: Any | None,
+        **kwargs: Any,
     ) -> pv.Actor | None:
         """Add points to the plotter scene.
 
