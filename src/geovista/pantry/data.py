@@ -25,6 +25,7 @@ from geovista.common import LRU_CACHE_SIZE, StrEnumPlus
 
 if TYPE_CHECKING:
     import netCDF4 as nc  # noqa: N813
+    import numpy as np
     from numpy.typing import ArrayLike
 
 # lazy import third-party dependencies
@@ -149,7 +150,7 @@ class SampleVectorsXYUVW:
     lats: ArrayLike
     u: ArrayLike
     v: ArrayLike
-    w: ArrayLike = field(default=None)
+    w: ArrayLike | None = field(default=None)
     name: str | None = field(default=None)
     units: str | None = field(default=None)
     steps: int | None = field(default=None)
@@ -813,10 +814,10 @@ def name_reykjanes() -> SampleGridXYZ:
     zs = np.insert(bnds[:, 1], 0, bnds[0, 0])
 
     # load the grid payload
-    data = dataset.variables["SULPHUR_DIOXIDE_AIR_CONCENTRATION"]
-    name = capitalise(data.long_name)
-    units = data.units
-    data = np.ma.masked_less_equal(data[:], 0).filled(np.nan)
+    variable = dataset.variables["SULPHUR_DIOXIDE_AIR_CONCENTRATION"]
+    name = capitalise(variable.long_name)
+    units = variable.units
+    data = np.ma.masked_less_equal(variable[:], 0).filled(np.nan)
 
     # load and parse the point-of-interest, which is recorded as "<lon> <lat>"
     # e.g., "22.3840W   63.8820N". This is parsed rather than geocoded, as a

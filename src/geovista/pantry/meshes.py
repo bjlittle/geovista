@@ -24,6 +24,7 @@ from geovista.common import Preference
 import geovista.pantry.data
 
 if TYPE_CHECKING:
+    import numpy as np
     import pyvista as pv
 
 # lazy import third-party dependencies
@@ -149,7 +150,10 @@ def cloud_amount(
     mesh = _lfric_sample_to_mesh(sample)
 
     if preference != geovista.pantry.data.CloudPreference.MESH:
-        mesh[sample.name] = sample.data
+        # every preference but the mesh carries a named payload
+        assert sample.name is not None
+        assert sample.data is not None
+        mesh[sample.name] = np.asanyarray(sample.data)
 
     return mesh
 
@@ -263,8 +267,10 @@ def fvcom_tamar(
     )
 
     if warp:
+        # the sample names its payload, which the warp needs
+        assert name is not None
         if preference == Preference.CELL:
-            mesh.point_data[name] = sample.node
+            mesh.point_data[name] = np.asanyarray(sample.node)
 
         mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
         mesh.warp_by_scalar(scalars=name, inplace=True, factor=factor)
@@ -480,8 +486,11 @@ def lfric(*, resolution: str | None = None) -> pv.PolyData:
     fname = f"lfric_{resolution}.vtk"
     processor = Decompress(method="auto", name=fname)
     resource = CACHE.fetch(f"pantry/meshes/{fname}.bz2", processor=processor)
+    mesh = pv.read(resource)
+    # the resource is a single mesh of cells
+    assert isinstance(mesh, pv.PolyData)
 
-    return pv.read(resource)
+    return mesh
 
 
 def lfric_orog(
@@ -610,7 +619,7 @@ def nemo_orca2_cloud(*, zscale: float | None = None) -> pv.PolyData:
         sample.lats,
         data=sample.zlevel,
         name=sample.name,
-        zlevel=-sample.zlevel,
+        zlevel=-np.asanyarray(sample.zlevel),
         zscale=zscale,
     )
 
