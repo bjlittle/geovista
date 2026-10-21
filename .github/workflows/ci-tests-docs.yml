@@ -58,7 +58,7 @@ jobs:
       - uses: pyvista/setup-headless-display-action@c103a2ff45650d38cb71684b5dc6cdfeb9442c79
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@9dabb60412d3d2d967a8d682f7ce01317af40514
+        uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94
         with:
           environments: "geovista-${{ matrix.version }}"
           frozen: true
@@ -116,7 +116,7 @@ jobs:
       - uses: pyvista/setup-headless-display-action@c103a2ff45650d38cb71684b5dc6cdfeb9442c79
 
       - name: "setup pixi"
-        uses: prefix-dev/setup-pixi@9dabb60412d3d2d967a8d682f7ce01317af40514
+        uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94
         with:
           environments: "geovista-${{ matrix.version }}"
           frozen: true
