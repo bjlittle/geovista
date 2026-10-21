@@ -608,3 +608,5 @@ makes no runtime type check for change 4's rule to apply to.
   leaks VTK's id arrays through `slice_mesh`, both found while writing task 4's test.
 - {issue}`2568`: gains §8 item 10's four typed locals and item 6's second, to withdraw with
   the `pyvista` floor. Comment on it when the pull request opens.
+- {issue}`2679`: `combine` returns a single `PolyData` without its per-mesh checks, and
+  ignores `clean` for it, which the final review set aside as older than this change.
