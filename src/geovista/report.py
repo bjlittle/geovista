@@ -14,9 +14,15 @@ Notes
 from __future__ import annotations
 
 import types
+from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 import scooby
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    import pyvista as pv
 
 # lazy import third-party dependencies
 pv = lazy.load("pyvista")
@@ -140,16 +146,23 @@ class Report(scooby.Report):  # numpydoc ignore=PR01
         if text_width is None:
             text_width = TEXT_WIDTH
 
+        # scooby takes a single package too, though it is annotated for a list
+        if additional is not None and not isinstance(additional, list):
+            additional = [additional]
+
         # mandatory packages
-        core = PACKAGES_CORE
+        core: list[PackageLike] = list(PACKAGES_CORE)
 
         # optional packages
-        optional = PACKAGES_OPTIONAL
+        optional: list[PackageLike] = list(PACKAGES_OPTIONAL)
 
         # attempt to detect gpu hardware details
         if gpu:
             try:
-                extra_meta = pv.GPUInfo().get_info()
+                # typing spec §8 -- pyvista 0.49 leaves GPUInfo unannotated
+                gpu_info: Callable[[], pv.GPUInfo] = pv.GPUInfo
+                get_info: Callable[[], list[tuple[str, str]]] = gpu_info().get_info
+                extra_meta = get_info()
             except:  # noqa: E722
                 # bare except required in order to handle rendering faults
                 extra_meta = [
@@ -166,6 +179,6 @@ class Report(scooby.Report):  # numpydoc ignore=PR01
             optional=optional,
             ncol=ncol,
             text_width=text_width,
-            sort=sort,
+            sort=bool(sort),
             extra_meta=extra_meta,
         )
