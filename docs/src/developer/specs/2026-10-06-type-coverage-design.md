@@ -151,8 +151,8 @@ block and its test. The test's guards on `ci-typing.yml`, the `mypy` hook and th
 `[tool.mypy]` moved to `tests/test_ci_typing.py`, beside one that refuses any override
 carrying `ignore_errors`, so the end state is held as firmly as the descent was.
 
-A ratchet with nothing holding it becomes a dumping ground, so the list is mirrored in a
-test that permits removals and refuses additions:
+A ratchet with nothing holding it becomes a dumping ground, so the list was mirrored in a
+test that permitted removals and refused additions:
 
 ```python
 RATCHET_BASELINE = frozenset({"geovista.bridge", "geovista.common", ...})
@@ -349,9 +349,7 @@ In the library, measured on 2026-10-11 with the whole ratchet lifted, `attr-defi
 zero, `call-arg` is one, in `cli.py`, and `no-untyped-call` is four, in `raster.py` and
 `themes.py`, all in modules change 6 retires, so the suppression stays confined to where
 the plotting calls are. Change 6c met those four, and two more that `report.py`'s `pyvista`
-import revealed, with typed locals ({ref}`§8 <typing-spec-8>` item 8). This extends a pattern already
-in `pyproject.toml`, where `union-attr` is disabled for `geovista.examples.grid.*` on
-account of `geopy` being untyped.
+import revealed, with typed locals ({ref}`§8 <typing-spec-8>` item 8).
 
 (typing-spec-3-5)=
 ### 3.5 Where geovista departs from pyvista
@@ -555,13 +553,16 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    passes, so change 3 passes them through a `typing.cast`. It comes out when the stubs
    accept arrays. The report to typeshed covers two other gaps as well, which the code
    handles without a cast.
-8. **Open** ({issue}`2568`) — **Nine typed locals wait on the same `pyvista` release.**
+8. **Open** ({issue}`2568`) — **Ten typed locals wait on the same `pyvista` release.**
    `pyvista` 0.49 leaves `GPUInfo.__init__`, `GPUInfo.get_info`, `Texture.__init__`,
-   `Texture.to_image` and `Theme.__init__` unannotated, and its `_Wrapped` decorator, item
-   2's cause, breaks `self.reset_camera(render=False)`. So `_warn_opacity` and `view_poi`
-   call `GPUInfo` and `reset_camera` through locals annotated `Callable`. Change 6a added
-   a third, for `p.add_axes()` in the `plot` command of `cli.py`, and change 6c six more:
-   two in `Report`, two in `wrap_texture` and one in each theme's `__init__`. `pyvista`
+   `Texture.to_image`, `Theme.__init__` and `PolyData.append_polydata` unannotated, and its
+   `_Wrapped` decorator, item 2's cause, breaks `self.reset_camera(render=False)`. So
+   `_warn_opacity` and `view_poi` call `GPUInfo` and `reset_camera` through locals
+   annotated `Callable`. Change 6a added a third, for `p.add_axes()` in the `plot` command
+   of `cli.py`, and change 6c six more: two in `Report`, two in `wrap_texture` and one in
+   each theme's `__init__`. Change 7
+   added the last, in the gallery: `uber_h3.py` binds what `append_polydata` returns to a
+   local annotated `PolyData`, an ordinary line for an example, not a `Callable`. `pyvista`
    `main` fixes every defect, and the locals come out with the floor that carries them,
    the trigger items 2 and 6 already wait on. `main` types `to_image` as returning
    `ImageData | None`, so the local in `wrap_texture` already allows `None`.
@@ -572,8 +573,9 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    override makes each import `Any`. Change 6c brought the entries for `geopy` and
    `fastparquet` to life by taking `pantry/data.py` out of the ratchet, and change 7 added
    the last three, which only the gallery imports. Each name comes out when its
-   distribution or a stub package types it. `pooch`, `cartopy` and `h3` have open
-   upstream issues asking for annotations; `cmocean` has none.
+   distribution or a stub package types it. `pooch`, `cartopy`, `cmocean` and `h3` have
+   open upstream issues asking for annotations; `cmocean`'s offers a stub file for its
+   colormaps, which would not lift the override without a `py.typed` marker.
 10. **Open** ({issue}`2568`) — **Four typed locals wait on the same `pyvista` release.**
     `pyvista` 0.49 types its arrays with Python's `int`, `bool` and `float` as the dtype.
     `numpy.float64` subclasses `float`, so a float array passes into `pyvista`, but

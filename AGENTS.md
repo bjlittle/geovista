@@ -77,7 +77,7 @@ pre-commit install`, then `pre-commit run --files <paths>` before pushing.
 environment, so `git commit` aborts with "`pre-commit` not found" — commit
 through it instead: `pixi run --frozen -e geovista git commit ...`.
 
-⚠️ **`mypy` checks the whole package, and nothing may ignore a module.**
+⚠️ **`mypy` checks the whole package, and no override may ignore a module.**
 The hook is `local`, running `pixi run --frozen -e geovista mypy` in the locked
 environment where third-party types are real; `pre-commit.ci` has no `pixi`, so
 `ci-typing.yml` carries it. The typing ratchet is retired, and

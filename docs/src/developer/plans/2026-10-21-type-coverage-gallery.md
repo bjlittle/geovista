@@ -340,9 +340,36 @@ Message, humanized: `docs: land typing roadmap row 7`.
   checked package, and row 7 reads landed.
 - Every deferred item has an `agentic` issue, linked below and from the pull request.
 
+## During execution
+
+Tasks 1 to 3 ran natively in one session, and each step's output matched its `Expected:`
+line. Task 3 also put typing spec §6 into the past tense: it said `tests/test_typing_ratchet.py`
+holds the ratchet, and that CI fails on errors outside it. Git records the old test file's
+move to `tests/test_ci_typing.py` as a rename.
+
+## After the final review
+
+The whole-branch review on Opus 5.5 found nothing critical, one important finding and four
+minors. It reproduced the gallery against `pyvista` `main` with no errors, exercised each of
+`uber_h3.py`'s seven checkboxes off-screen, diffed the thirteen carried tests against their
+originals, and showed `test_no_module_ignores_errors` failing on every way of writing an
+`ignore_errors` override.
+
+The important finding and three minors were statements this change made or left that were
+not true, so all four were fixed: §3.4 still described the `examples.grid.*` override as
+present; §8 item 9 and the #2629 comment said `cmocean` has no upstream issue, where
+`matplotlib/cmocean` issue 120 asks for type checker support; §8 item 8 did not count the
+annotated local for `append_polydata`, which makes ten; and §3.2 described the deleted test
+in the present tense. The fourth minor was that `AGENTS.md` said nothing may ignore a module,
+while an inline `# mypy: ignore-errors` comment still can, as can a per-module
+`disable_error_code`. Both predate this change. `AGENTS.md` now says no override may, and
+{issue}`2687` tracks guarding the other two.
+
 ## Follow-ups
 
 - {issue}`2629`: comment that §8 item 9's override now covers `cmocean`, `cartopy` and `h3`
   as well, with their upstream status.
 - {issue}`2568`: §3.4's gallery override stays until the `pyvista` floor carries the
   `_Wrapped` and `Camera.zoom` fixes; nothing changes there.
+- {issue}`2687`: guard the two ways to silence `mypy` that `tests/test_ci_typing.py` doesn't
+  see, an inline `# mypy:` comment and a per-module `disable_error_code`.
