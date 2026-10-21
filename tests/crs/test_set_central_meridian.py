@@ -84,12 +84,32 @@ def test_set_central_meridian__non_degree_parameter(meridian):
 
     ``EPSG:29701`` expresses its longitude of projection centre in grad, so a
     meridian in degrees written there verbatim would be reinterpreted as grad.
+    PROJ gives the parameter in degrees east of the Paris prime meridian, which is
+    ``2.33722917`` degrees east of Greenwich.
 
     """
     result = set_central_meridian(CRS.from_user_input("epsg:29701"), meridian)
 
     assert result is not None
-    assert _proj_central_meridian(result) == pytest.approx(meridian, abs=1e-6)
+    assert get_central_meridian(result) == pytest.approx(meridian, abs=1e-6)
+    expected = meridian - 2.33722917
+    assert _proj_central_meridian(result) == pytest.approx(expected, abs=1e-6)
+
+
+@pytest.mark.parametrize("meridian", [0, 10.0, -45.0])
+def test_set_central_meridian__non_greenwich_prime_meridian(meridian):
+    """Test that a meridian east of Greenwich is written east of the prime meridian.
+
+    ``EPSG:31251`` is centred east of Ferro, which is 17 degrees 40 minutes west
+    of Greenwich, so its parameter is that much greater. See :issue:`2518`.
+
+    """
+    result = set_central_meridian(CRS.from_user_input("epsg:31251"), meridian)
+
+    assert result is not None
+    assert get_central_meridian(result) == pytest.approx(meridian, abs=1e-9)
+    expected = meridian + 17 + 2 / 3
+    assert _proj_central_meridian(result) == pytest.approx(expected, abs=1e-9)
 
 
 def test_set_central_meridian__no_central_meridian():

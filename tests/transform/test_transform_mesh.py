@@ -131,6 +131,23 @@ def _torn_cells(mesh) -> int:
     return int((_cell_widths(mesh) > TORN).sum())
 
 
+def test_transform_mesh__prime_meridian_seam(global_mesh):
+    """Test that a projection on a non-Greenwich prime meridian is cut at its seam.
+
+    Robinson 28 degrees east of Ferro is Robinson 10 degrees 20 minutes east of
+    Greenwich, so the two cut the mesh at the same seam. See :issue:`2518`.
+
+    """
+    ferro = transform_mesh(global_mesh.copy(), "+proj=robin +lon_0=28 +pm=ferro")
+    # PROJ puts Ferro at -17.666666666666668, and the seam is cut where the
+    # central meridian says to the last bit, so the two are given it alike
+    lon_0 = 28 - (17 + 2 / 3)
+    greenwich = transform_mesh(global_mesh.copy(), f"+proj=robin +lon_0={lon_0}")
+
+    assert ferro.n_points == greenwich.n_points
+    np.testing.assert_allclose(ferro.points, greenwich.points, atol=1e-3)
+
+
 @pytest.mark.parametrize(
     "projection", [p for _, p in PROJECTIONS], ids=[n for n, _ in PROJECTIONS]
 )

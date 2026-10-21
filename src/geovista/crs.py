@@ -193,6 +193,45 @@ def _degrees_per_unit(unit: Any) -> float | None:  # noqa: ANN401
     return None
 
 
+def _prime_meridian(crs_json: dict[str, Any]) -> float | None:
+    """Calculate the longitude of the prime meridian of a projected `crs_json`.
+
+    The parameters of a projection are given relative to the prime meridian of
+    its base CRS, which is Greenwich for most, but not all e.g. "EPSG:31251" is
+    on Ferro.
+
+    Parameters
+    ----------
+    crs_json : dict
+        The Coordinate Reference System serialized as PROJ JSON, as returned by
+        :meth:`pyproj.crs.CRS.to_json_dict`.
+
+    Returns
+    -------
+    float or None
+        The degrees east of Greenwich of the prime meridian, ``0`` if there is
+        none, or ``None`` if its unit is not angular.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    base = crs_json.get("base_crs") or {}
+    datum = base.get("datum") or {}
+    prime_meridian = datum.get("prime_meridian") or {}
+    longitude = prime_meridian.get("longitude", 0)
+
+    # a prime meridian in a unit other than degrees is serialized as a mapping
+    # e.g. Paris is 2.5969213 grad east of Greenwich
+    if isinstance(longitude, dict):
+        if (degrees := _degrees_per_unit(longitude.get("unit"))) is None:
+            return None
+        return float(longitude["value"]) * degrees
+
+    return float(longitude)
+
+
 def _find_central_meridian(
     crs_json: dict[str, Any],
 ) -> tuple[dict[str, Any], str, float] | None:
@@ -306,7 +345,14 @@ def get_central_meridian(crs: CRS) -> float | None:
         if not value:
             return None
 
-    return float(value) * degrees
+        return float(value) * degrees
+
+    # a projection parameter is a longitude east of the prime meridian, which
+    # may not be Greenwich
+    if (prime_meridian := _prime_meridian(crs_json)) is None:
+        return None
+
+    return float(value) * degrees + prime_meridian
 
 
 def has_wkt(mesh: pv.DataObject) -> bool:
@@ -440,6 +486,13 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
     # silently reinterpreting its units
     if key == "longitude" and isinstance(mapping[key], dict):
         return None
+
+    if key != "longitude":
+        # a projection parameter is a longitude east of the prime meridian, so
+        # the meridian, which is east of Greenwich, is rebased onto it
+        if (prime_meridian := _prime_meridian(crs_json)) is None:
+            return None
+        meridian -= prime_meridian
 
     if not mapping.get("id") and mapping.get("name") == PROJ_CENTRAL_MERIDIAN:
         # a PROJ-native parameter is not honoured when rebuilding a CRS from its
