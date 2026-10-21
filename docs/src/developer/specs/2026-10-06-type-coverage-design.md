@@ -398,7 +398,7 @@ they don't have, where a misspelt one was accepted silently.
 | 6a | The untyped imports, and `cache`, `cli`, `config`, `geometry`, `qt` | 11 | ✅ landed (2026-10-11, {pull}`2631`) |
 | 6b | `core`, `search`, `filters`, `gridlines`, `crs` | 38 | ✅ landed (2026-10-21, {pull}`2676`) |
 | 6c | `pantry` and its three modules, `raster`, `report`, `themes` | 19 | ✅ landed (2026-10-21, {pull}`2680`) |
-| 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
+| 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | ✅ landed (2026-10-21, {pull}`2681`) |
 
 Row 6, the seventeen library modules left in the ratchet, was split into three pull
 requests ({user}`bjlittle`, 2026-10-11). Its count of 51 does not reproduce. Lifted at the
