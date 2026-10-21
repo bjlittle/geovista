@@ -1,0 +1,5 @@
+Read the Docs now reads the documentation pages in parallel, with one process
+per CPU. The new ``parallel_build`` extension in ``docs/src/_ext`` keeps such a
+build within the memory Read the Docs allows, and its output the same as that of
+a serial build. It also mends the links from the ``geovista.themes`` module code
+back to the documentation of its objects. (:user:`claude`)

@@ -146,6 +146,55 @@ The change also applies to an incremental build, which runs again each example
 that has been added to or removed from ``STATIC`` since the last build.
 
 
+.. _gv-developer-documentation-parallel:
+.. _tippy-gv-developer-documentation-parallel:
+
+:fa:`truck-fast` Parallel Build
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:fa:`file-code` **Reference:**
+
+- :bash:`.readthedocs.yml`
+- :bash:`docs/src/_ext/parallel_build.py`
+
+Read the Docs runs ``sphinx-build`` with ``--jobs``, so it reads the pages in
+parallel, with one process for each available CPU. Most of a full build outside
+the gallery is spent reading, as that is when the docstring and inline plots
+render and the tutorial notebook runs. The :bash:`Makefile` targets still read
+the pages one at a time.
+
+Reading in parallel needs more memory, and some extensions build different
+documentation in parallel. The :bash:`parallel_build` extension makes up for
+each of them:
+
+- `sphinx-gallery`_ keeps its idle worker processes, and their memory, for five
+  minutes after running the examples. Beside the processes reading the pages
+  and the kernel running the tutorial notebook, that was more than Read the
+  Docs allows, so the workers are stopped before the pages are read.
+- ``sphinx-tippy`` collects the tooltips of a page as it writes the page, so a
+  page written by a worker process would lose them. The pages are written one
+  at a time instead, which costs little, while still being read in parallel.
+- ``sphinx.ext.viewcode`` would render the source of a third-party module that
+  a re-exported object resolves to, such as ``pooch.core``, and would link the
+  source of a module back to its objects by whichever module the merged reads
+  reached first. Linking each module back by its own name also fixes the links
+  of ``geovista.themes``, which a serial build gets wrong.
+- ``sphinx-llms-txt`` would list some pages in the order in which the parallel
+  reads are merged, rather than the sorted order of a serial build.
+
+:bash:`tests/docs/test_parallel_build.py` builds a small project in parallel,
+with and without the extension. Once a test of the build without it fails,
+the upstream behaviour has changed and that part of the extension can go.
+
+.. attention::
+   :class: dropdown
+
+   An extension that declares itself safe for parallel reading and writing may
+   still change the documentation in a parallel build, without a warning. Before
+   adding an extension, compare the files and contents of a build with
+   ``--jobs 2`` against those of a serial build.
+
+
 :fab:`readme` Render
 ~~~~~~~~~~~~~~~~~~~~
 
