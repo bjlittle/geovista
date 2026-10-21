@@ -90,11 +90,11 @@ module = ["lazy_loader"]
 
 
 [[tool.mypy.overrides]]
-# typing spec §8 item 9 -- three distributions ship no annotations and have
+# typing spec §8 item 9 -- six distributions ship no annotations and have
 # no stubs (#2629). Withdraw each name when its distribution, typeshed or
 # conda-forge provides them.
 ignore_missing_imports = true
-module = ["fastparquet", "geopy.*", "pooch"]
+module = ["cartopy.*", "cmocean.*", "fastparquet", "geopy.*", "h3", "pooch"]
 
 
 [[tool.mypy.overrides]]
@@ -122,26 +122,12 @@ module = ["geovista.qt"]
 
 
 [[tool.mypy.overrides]]
-# Problem caused by geopy being untyped.
-disable_error_code = ["union-attr"]
-module = ["geovista.examples.grid.*"]
-
-
-[[tool.mypy.overrides]]
 # typing spec §3.4 -- two "pyvista" 0.49 defects, both fixed on its "main":
 # "_Wrapped" loses the descriptor protocol, and "Camera.zoom" carries no
 # annotations. Confined to the gallery, whose scripts are published as
 # example code, so a "type: ignore" comment in one is a directive a reader
 # is invited to copy. Withdraw when the "pyvista" floor carries both fixes.
 disable_error_code = ["call-arg", "no-untyped-call"]
-module = ["geovista.examples.*"]
-
-
-[[tool.mypy.overrides]]
-# typing spec §3.2 -- the ratchet. This list only ever shrinks, and
-# "tests/test_typing_ratchet.py" holds it to that. Delete the whole block,
-# and that test, when the last entry goes.
-ignore_errors = true
 module = ["geovista.examples.*"]
 
 

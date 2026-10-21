@@ -146,10 +146,13 @@ module = [
 
 From that point the check is live for every module added afterwards, the three that report
 nothing today having little in them to check. Each subsequent change deletes one entry and
-fixes what it exposes. Since change 6c the list holds the gallery alone.
+fixes what it exposes. Change 7 retired the last entry, the gallery, and with it the
+block and its test. The test's guards on `ci-typing.yml`, the `mypy` hook and the top of
+`[tool.mypy]` moved to `tests/test_ci_typing.py`, beside one that refuses any override
+carrying `ignore_errors`, so the end state is held as firmly as the descent was.
 
-A ratchet with nothing holding it becomes a dumping ground, so the list is mirrored in a
-test that permits removals and refuses additions:
+A ratchet with nothing holding it becomes a dumping ground, so the list was mirrored in a
+test that permitted removals and refused additions:
 
 ```python
 RATCHET_BASELINE = frozenset({"geovista.bridge", "geovista.common", ...})
@@ -336,14 +339,17 @@ fixed on `pyvista` `main`, so the override goes when the floor reaches the relea
 carries them ({issue}`2568`). Change 5 also adds seven errors in `uber_h3.py`, which keeps
 the plotter's actors in fields typed `str | PolyData`. They appeared once `add_mesh`
 admitted it can return `None`, and change 7 corrects them with the rest of the gallery.
+It did, by letting `uber_h3.py`'s asset type hold an actor or `None`. Change 7 also found
+that `_Wrapped` reports `arg-type`, not `call-arg`, when a call passes its first argument
+positionally, so the two gallery calls that did now pass it by keyword, which the override
+already covers. And the `union-attr` override on `geovista.examples.grid.*`, which blamed
+`geopy`, was hiding four reads of an optional point of interest, so it went too.
 
 In the library, measured on 2026-10-11 with the whole ratchet lifted, `attr-defined` is
 zero, `call-arg` is one, in `cli.py`, and `no-untyped-call` is four, in `raster.py` and
 `themes.py`, all in modules change 6 retires, so the suppression stays confined to where
 the plotting calls are. Change 6c met those four, and two more that `report.py`'s `pyvista`
-import revealed, with typed locals ({ref}`§8 <typing-spec-8>` item 8). This extends a pattern already
-in `pyproject.toml`, where `union-attr` is disabled for `geovista.examples.grid.*` on
-account of `geopy` being untyped.
+import revealed, with typed locals ({ref}`§8 <typing-spec-8>` item 8).
 
 (typing-spec-3-5)=
 ### 3.5 Where geovista departs from pyvista
@@ -392,7 +398,7 @@ they don't have, where a misspelt one was accepted silently.
 | 6a | The untyped imports, and `cache`, `cli`, `config`, `geometry`, `qt` | 11 | ✅ landed (2026-10-11, {pull}`2631`) |
 | 6b | `core`, `search`, `filters`, `gridlines`, `crs` | 38 | ✅ landed (2026-10-21, {pull}`2676`) |
 | 6c | `pantry` and its three modules, `raster`, `report`, `themes` | 19 | ✅ landed (2026-10-21, {pull}`2680`) |
-| 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | not started |
+| 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | ✅ landed (2026-10-21, {pull}`2681`) |
 
 Row 6, the seventeen library modules left in the ratchet, was split into three pull
 requests ({user}`bjlittle`, 2026-10-11). Its count of 51 does not reproduce. Lifted at the
@@ -434,16 +440,18 @@ published signatures and each adds tests exercising the widened input.
 (typing-spec-6)=
 ## 6. Testing
 
-`tests/test_typing_ratchet.py` holds the ratchet to {ref}`§3.2 <typing-spec-3-2>`, failing
-when a module is added to the ignore list and passing when one is removed. It is deleted
-with the last entry.
+`tests/test_typing_ratchet.py` held the ratchet to {ref}`§3.2 <typing-spec-3-2>`, failing
+when a module was added to the ignore list and passing when one was removed. Change 7
+deleted it with the last entry, and `tests/test_ci_typing.py` now fails if any override
+ignores a module's errors, and keeps that test's guards on `ci-typing.yml` and the `mypy`
+hook.
 
 Changes 2 to 4 of the roadmap each add tests passing lists where arrays were passed before,
 so that the widened contract of {ref}`§3.3 <typing-spec-3-3>` is exercised rather than
 merely annotated.
 
-The check itself is verified by `ci-typing.yml`, which fails the pull request on any error
-outside the ratchet.
+The check itself is verified by `ci-typing.yml`, which fails the pull request on any
+error.
 
 (typing-spec-7)=
 ## 7. Scope
@@ -545,23 +553,29 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    passes, so change 3 passes them through a `typing.cast`. It comes out when the stubs
    accept arrays. The report to typeshed covers two other gaps as well, which the code
    handles without a cast.
-8. **Open** ({issue}`2568`) — **Nine typed locals wait on the same `pyvista` release.**
+8. **Open** ({issue}`2568`) — **Ten typed locals wait on the same `pyvista` release.**
    `pyvista` 0.49 leaves `GPUInfo.__init__`, `GPUInfo.get_info`, `Texture.__init__`,
-   `Texture.to_image` and `Theme.__init__` unannotated, and its `_Wrapped` decorator, item
-   2's cause, breaks `self.reset_camera(render=False)`. So `_warn_opacity` and `view_poi`
-   call `GPUInfo` and `reset_camera` through locals annotated `Callable`. Change 6a added
-   a third, for `p.add_axes()` in the `plot` command of `cli.py`, and change 6c six more:
-   two in `Report`, two in `wrap_texture` and one in each theme's `__init__`. `pyvista`
+   `Texture.to_image`, `Theme.__init__` and `PolyData.append_polydata` unannotated, and its
+   `_Wrapped` decorator, item 2's cause, breaks `self.reset_camera(render=False)`. So
+   `_warn_opacity` and `view_poi` call `GPUInfo` and `reset_camera` through locals
+   annotated `Callable`. Change 6a added a third, for `p.add_axes()` in the `plot` command
+   of `cli.py`, and change 6c six more: two in `Report`, two in `wrap_texture` and one in
+   each theme's `__init__`. Change 7
+   added the last, in the gallery: `uber_h3.py` binds what `append_polydata` returns to a
+   local annotated `PolyData`, an ordinary line for an example, not a `Callable`. `pyvista`
    `main` fixes every defect, and the locals come out with the floor that carries them,
    the trigger items 2 and 6 already wait on. `main` types `to_image` as returning
    `ImageData | None`, so the local in `wrap_texture` already allows `None`.
-9. **Open** ({issue}`2629`) — **Three dependencies ship no annotations.** The latest
-   releases of `pooch` (1.9.0), `geopy` (2.5.0) and `fastparquet` (2026.9.0; the lock has
-   2026.5.0) carry no `py.typed` and have no stubs on conda-forge or in typeshed, so one
-   `ignore_missing_imports` override makes each import `Any`. All three entries have been
-   live since change 6c took `pantry/data.py`, which imports `geopy` and `fastparquet`,
-   out of the ratchet. Each name comes out when its distribution or a stub package types
-   it. `pooch` has an open upstream issue asking for annotations.
+9. **Open** ({issue}`2629`) — **Six dependencies ship no annotations.** The latest
+   releases of `pooch` (1.9.0), `geopy` (2.5.0), `fastparquet` (2026.9.0; the lock has
+   2026.5.0), `cartopy` (0.26.0), `cmocean` (4.0.3) and `h3` (4.5.0) carry no `py.typed`
+   and have no stubs on conda-forge or in typeshed, so one `ignore_missing_imports`
+   override makes each import `Any`. Change 6c brought the entries for `geopy` and
+   `fastparquet` to life by taking `pantry/data.py` out of the ratchet, and change 7 added
+   the last three, which only the gallery imports. Each name comes out when its
+   distribution or a stub package types it. `pooch`, `cartopy`, `cmocean` and `h3` have
+   open upstream issues asking for annotations; `cmocean`'s offers a stub file for its
+   colormaps, which would not lift the override without a `py.typed` marker.
 10. **Open** ({issue}`2568`) — **Four typed locals wait on the same `pyvista` release.**
     `pyvista` 0.49 types its arrays with Python's `int`, `bool` and `float` as the dtype.
     `numpy.float64` subclasses `float`, so a float array passes into `pyvista`, but

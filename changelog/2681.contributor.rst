@@ -1,0 +1,5 @@
+The example gallery is type checked in full, and the typing ratchet that held its
+errors is retired, so ``mypy`` now checks every module in ``src/geovista``.
+``tests/test_ci_typing.py`` keeps the ratchet's guards on the CI workflow, and
+refuses any override that would ignore a module's errors again.
+(:user:`claude`)

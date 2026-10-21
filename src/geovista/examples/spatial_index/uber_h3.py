@@ -107,7 +107,6 @@ except ImportError:
 
 import numpy as np
 from numpy import ma
-from numpy.typing import ArrayLike
 from pyvista import Actor, PolyData
 
 import geovista as gv
@@ -123,7 +122,7 @@ from geovista.geodesic import line
 MDI = -1
 
 # Convenient type aliases
-type H3AssetLike = str | PolyData
+type H3AssetLike = str | PolyData | Actor | None
 type H3Indexes = set[str]
 
 
@@ -149,9 +148,9 @@ class H3Asset:
 class GeoSurface:
     """Geometry and topology of a geo-located surface."""
 
-    lons: ArrayLike
-    lats: ArrayLike
-    connectivity: ArrayLike
+    lons: tuple[float, ...]
+    lats: tuple[float, ...]
+    connectivity: list[list[int]]
 
 
 # %%
@@ -249,7 +248,8 @@ def generate_geodesic_edges(surface: GeoSurface) -> PolyData:
         meshes.append(line(lons, lats))
 
     # Combine the geodesic lines into one mesh.
-    return meshes[0].append_polydata(*meshes[1:])
+    mesh: PolyData = meshes[0].append_polydata(*meshes[1:])
+    return mesh
 
 
 # %%
@@ -381,7 +381,7 @@ def add_checkboxes(plotter: gv.GeoPlotter, colors: H3Asset, actors: H3Asset) -> 
 
     for i, slot in enumerate(sorted(H3Asset.__slots__)):
         plotter.add_checkbox_button_widget(
-            partial(callback, getattr(actors, slot)),
+            callback=partial(callback, getattr(actors, slot)),
             value=True,
             color_on=getattr(colors, slot),
             color_off=color_off,

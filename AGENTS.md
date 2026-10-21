@@ -77,14 +77,13 @@ pre-commit install`, then `pre-commit run --files <paths>` before pushing.
 environment, so `git commit` aborts with "`pre-commit` not found" — commit
 through it instead: `pixi run --frozen -e geovista git commit ...`.
 
-⚠️ **`mypy` is green because modules are ratcheted, not because they pass.**
+⚠️ **`mypy` checks the whole package, and no override may ignore a module.**
 The hook is `local`, running `pixi run --frozen -e geovista mypy` in the locked
 environment where third-party types are real; `pre-commit.ci` has no `pixi`, so
-`ci-typing.yml` carries it. Their errors sit under `ignore_errors`, which
-`tests/test_typing_ratchet.py` only lets shrink, so `mypy <file>` passes on a
-ratcheted module and a bad annotation there shows only where it is used (the
-gallery's `pv.Plotter.camera?` was `geoplotter.py:1534`, #2569): a `name?` is an
-unbound annotation, so grep for its text. `pyproj` types are thin, so returning
+`ci-typing.yml` carries it. The typing ratchet is retired, and
+`tests/test_ci_typing.py` refuses any `ignore_errors` override, so meet an upstream
+defect with a typed local and a typing spec §8 item instead. A `name?` in a message
+is an unbound annotation, so grep for its text. `pyproj` types are thin, so returning
 one from a `-> bool` trips `no-any-return`; bind an annotated local first.
 
 ⚠️ **Probe for a renderer before trusting a local image run**, as hosts differ:

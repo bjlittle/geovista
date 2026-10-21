@@ -92,7 +92,7 @@ def main() -> None:
 
     sargs = {"fmt": "%.1f"}
     p.add_mesh(mesh, cmap="speed_r", scalar_bar_args=sargs, smooth_shading=True)
-    p.add_logo_widget(fetch_raster("japan_map.png"), position=(0.8, 0.8))
+    p.add_logo_widget(logo=fetch_raster("japan_map.png"), position=(0.8, 0.8))
     p.add_text(
         "Mount Fuji, Digital Elevation Model GeoTIFF",
         position="upper_left",

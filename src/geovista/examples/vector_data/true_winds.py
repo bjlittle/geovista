@@ -65,10 +65,10 @@ def main() -> None:
     # Create the polar grid points.
     x = np.linspace(-5.0e6, 5.0e6, 20)
     y = np.linspace(-4.0e6, 2.0e6, 20)
-    xs, ys = np.meshgrid(x, y)
+    xx, yy = np.meshgrid(x, y)
 
     # Create the eastward (us) and northward (vs) wind vector components.
-    xs, ys = xs.flatten(), ys.flatten()
+    xs, ys = xx.flatten(), yy.flatten()
     us, vs = 4.0 * np.ones_like(xs), np.zeros_like(ys)
 
     # Create the point cloud mesh with attached wind vectors.

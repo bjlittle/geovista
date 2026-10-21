@@ -50,6 +50,7 @@ generally much smaller in magnitude, and tend not to be very visible otherwise.
 
 from __future__ import annotations
 
+import numpy as np
 import pyvista as pv
 
 import geovista as gv
@@ -68,7 +69,7 @@ def main() -> None:
     sample = lfric_winds()
 
     # Provide all three components, but with exaggerated upwards scaling bias.
-    vectors = (sample.u, sample.v, sample.w * 1500.0)
+    vectors = (sample.u, sample.v, np.asanyarray(sample.w) * 1500.0)
 
     # Create the point cloud mesh with attached wind vectors from the
     # sample eastward (u), northward (v), and upward (w) components.
