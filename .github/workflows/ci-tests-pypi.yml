@@ -3,7 +3,6 @@
 #   - https://github.com/actions/checkout
 #   - https://github.com/actions/setup-python
 #   - https://github.com/actions/upload-artifact
-#   - https://github.com/pyvista/setup-headless-display-action
 
 name: ci-tests-pypi
 
@@ -31,6 +30,9 @@ env:
   ALLOW_PLOTTING: true
   CARTOPY_SHARE_DIR: ~/.local/share/cartopy
   GEOVISTA_POOCH_MUTE: true
+  # "xvfb-run" provides the display, from the xvfb and mesa the runner
+  # image ships, so no step installs them; pyvista renders off screen
+  PYVISTA_OFF_SCREEN: true
   PY_COLORS: "1"
   SHELLOPTS: "errexit:pipefail"
 
@@ -54,8 +56,6 @@ jobs:
     - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
       with:
         python-version: ${{ matrix.version }}
-
-    - uses: pyvista/setup-headless-display-action@c103a2ff45650d38cb71684b5dc6cdfeb9442c79
 
     - name: "pip install"
       run: |
