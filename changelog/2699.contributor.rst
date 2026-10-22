@@ -1,0 +1,6 @@
+The test and docs workflows no longer run
+``pyvista/setup-headless-display-action``. Each job already wrapped its tests
+in ``xvfb-run``, and the runner image ships ``xvfb`` and ``mesa``, so the
+action only added an ``apt`` install and a second X server. The workflows set
+``PYVISTA_OFF_SCREEN`` themselves, which saves about 15 seconds per job.
+(:user:`claude`)
