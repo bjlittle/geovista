@@ -145,8 +145,9 @@ jobs:
       # "html-gallery" is the cheapest build that renders the gallery, and so
       # the only one carrying the carousel the tests cover. "strict" requires
       # every prerequisite that this job has deliberately provided, otherwise
-      # losing one would skip its tests and leave the job green regardless
+      # losing one would skip its tests and leave the job green regardless.
+      # "logical" gives one xdist worker per cpu of the runner, as in ci-tests
       - name: "test docs chrome (${{ matrix.version }})"
         run: |
           xvfb-run -a geovista --report
-          xvfb-run -a pixi run --frozen tests-docs-browser html-gallery strict
+          xvfb-run -a pixi run --frozen tests-docs-browser html-gallery strict logical

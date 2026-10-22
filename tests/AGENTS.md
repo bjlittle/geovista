@@ -25,7 +25,8 @@ pytest tests/core/             # direct; also -m "not image", -k "test_slice_cel
 
 The pixi tasks run from the repo root; pytest reads `pyproject.toml` either way.
 
-⚠️ **`tests-unit` and `ci-tests*.yml` use `pytest-xdist`**; plain `pytest` stays serial.
+⚠️ **`tests-unit`, `tests-docs-browser` and `ci-tests*.yml` use `pytest-xdist`**;
+plain `pytest` stays serial.
 An *empty* cache is the hazard, so use `geovista.cache.Decompress`, never pooch's.
 Import-time setup (`tests/plotting/__init__.py`) runs in every worker at once, so make
 its side effects atomic. Probe with an empty `GEOVISTA_CACHEDIR`; race behind a barrier.

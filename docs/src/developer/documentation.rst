@@ -908,8 +908,8 @@ the above :ref:`tippy-gv-developer-documentation-building` ``make`` command task
    |                                        |                                                                                     |
    |                                        |    $ pixi run tests-docs-browser                                                    |
    |                                        |                                                                                     |
-   |                                        | This task calls :bash:`pytest tests/docs -m browser` to drive a headless            |
-   |                                        | ``chromium`` browser over the built documentation using `playwright`_.              |
+   |                                        | This task calls :bash:`pytest tests/docs` to drive a headless ``chromium`` browser  |
+   |                                        | over the built documentation using `playwright`_.                                   |
    |                                        |                                                                                     |
    |                                        | Accepts a documentation build target as an optional argument, which is              |
    |                                        | built first. Defaults to ``html-noplot`` e.g.,                                      |
@@ -917,6 +917,16 @@ the above :ref:`tippy-gv-developer-documentation-building` ``make`` command task
    |                                        | .. code:: console                                                                   |
    |                                        |                                                                                     |
    |                                        |    $ pixi run tests-docs-browser html-gallery                                       |
+   |                                        |                                                                                     |
+   |                                        | A non-empty second argument passes ``--browser-strict``, which fails rather than    |
+   |                                        | skips a test whose prerequisite is missing. The tests run in parallel, one worker   |
+   |                                        | per CPU core, each launching its own browser over the one build. The optional third |
+   |                                        | argument is the number of workers, where ``0`` runs them serially in a single       |
+   |                                        | process e.g.,                                                                       |
+   |                                        |                                                                                     |
+   |                                        | .. code:: console                                                                   |
+   |                                        |                                                                                     |
+   |                                        |    $ pixi run tests-docs-browser html-noplot "" 0                                   |
    |                                        |                                                                                     |
    |                                        | Note that the :guilabel:`make` task is called prior to running this task.           |
    |                                        |                                                                                     |

@@ -1,0 +1,5 @@
+The :guilabel:`tests-docs-browser` task runs ``tests/docs`` in parallel with
+``pytest-xdist``, taking the number of workers as its third argument, where
+``0`` runs serially. Each worker launches its own browser over the one build.
+The browser tests took about 28 seconds on four workers, against 74 serially.
+(:user:`claude`)
