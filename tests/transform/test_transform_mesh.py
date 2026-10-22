@@ -119,16 +119,47 @@ def _quad(lon_min, lon_max, lat_min, lat_max) -> pv.PolyData:
 
 
 def _cell_widths(mesh) -> np.ndarray:
-    """Calculate each cell width as a fraction of the projection width."""
-    points, faces = mesh.points, mesh.faces.reshape(-1, 5)[:, 1:]
-    xs = points[faces, 0]
-    span = points[:, 0].max() - points[:, 0].min()
-    return (xs.max(axis=1) - xs.min(axis=1)) / span
+    """Calculate each cell width as a fraction of the projection width.
+
+    A seam that bisects cells leaves triangles among the quads, so each face is
+    measured whatever its number of points.
+
+    """
+    xs = mesh.points[:, 0]
+    span = xs.max() - xs.min()
+    return np.array([np.ptp(xs[face]) for face in mesh.irregular_faces]) / span
 
 
 def _torn_cells(mesh) -> int:
     """Count cells spanning an implausible fraction of the projection width."""
     return int((_cell_widths(mesh) > TORN).sum())
+
+
+@pytest.mark.parametrize(
+    ("pm", "lon_0"),
+    [
+        # PROJ puts Ferro at 17 degrees 40 minutes west
+        ("ferro", 28),
+        # and Paris at 2 degrees 20 minutes 14.025 seconds east, where EPSG gives
+        # 2.5969213 grad, which is 3.3e-9 degrees more
+        ("paris", 20),
+    ],
+)
+def test_transform_mesh__prime_meridian_seam(global_mesh, pm, lon_0):
+    """Test that a projection on a non-Greenwich prime meridian is cut at its seam.
+
+    The seam must be cut where PROJ puts the central meridian, east of Greenwich
+    and to the last digits, or the cells beside it stretch across the projection.
+    See :issue:`2518`.
+
+    This seam bisects cells, which leaves triangles at the poles as wide as a third
+    of the projection, as it does for a Greenwich CRS, so a torn cell is one wider
+    than half.
+
+    """
+    result = transform_mesh(global_mesh, f"+proj=robin +lon_0={lon_0} +pm={pm}")
+
+    assert not (_cell_widths(result) > 0.5).any()
 
 
 @pytest.mark.parametrize(

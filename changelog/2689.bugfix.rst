@@ -1,0 +1,6 @@
+Fixed :func:`geovista.crs.get_central_meridian` giving the central meridian of
+a projected CRS east of its own prime meridian rather than of Greenwich, which
+made :func:`geovista.transform.transform_mesh` cut a mesh at the wrong seam
+for the 59 EPSG CRSs on a prime meridian such as Ferro or Paris.
+:func:`geovista.crs.set_central_meridian` takes the prime meridian off again,
+so the two still round-trip. Closes :issue:`2518`. (:user:`claude`)

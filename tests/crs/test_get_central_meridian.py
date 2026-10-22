@@ -95,7 +95,8 @@ def test_central_meridian__geographic(crs):
         # EPSG:8833, longitude of origin
         ("epsg:3413", -45.0),  # polar stereographic variant B, NSIDC sea ice
         ("epsg:3032", 70.0),  # polar stereographic variant B, antarctic
-        ("epsg:2065", 42.5),  # krovak
+        # krovak, 42.5 degrees east of the Ferro prime meridian (see gh#2518)
+        ("epsg:2065", 42.5 - 17 - 2 / 3),
         # EPSG:8802, longitude of natural origin, implied by the UTM zone
         ("epsg:32615", -93.0),
     ],
@@ -108,14 +109,16 @@ def test_central_meridian__epsg_registry(code, expected):
     :mod:`cartopy.crs` never emits.
 
     """
-    assert get_central_meridian(CRS.from_user_input(code)) == expected
+    assert get_central_meridian(CRS.from_user_input(code)) == pytest.approx(expected)
 
 
 def test_central_meridian__non_degree_parameter():
     """Test that a projection parameter in a non-degree unit is converted.
 
     ``EPSG:29701`` expresses its longitude of projection centre as ``49`` grad,
-    which is ``44.1`` degrees, so the value must not be taken at face value.
+    which is ``44.1`` degrees, so the value must not be taken at face value. It
+    is east of the Paris prime meridian, which PROJ applies as 2 degrees 20 minutes
+    14.025 seconds east of Greenwich, so the central meridian is ``46.437229...``.
 
     """
     crs = CRS.from_user_input("epsg:29701")
@@ -127,7 +130,52 @@ def test_central_meridian__non_degree_parameter():
 
     assert param["value"] == 49
     assert param["unit"]["name"] == "grad"
-    assert get_central_meridian(crs) == pytest.approx(44.1)
+    paris = 2 + 20 / 60 + 14.025 / 3600
+    assert get_central_meridian(crs) == pytest.approx(44.1 + paris, abs=1e-12)
+
+
+@pytest.mark.parametrize(
+    "crs",
+    [
+        # MGI (Ferro) / Austria GK West Zone: 28 degrees east of Ferro
+        "epsg:31251",
+        # MGI / Austria GK West, the same projection on Greenwich
+        "epsg:31254",
+        # 28 degrees east of Ferro, given as a PROJ string
+        "+proj=robin +lon_0=28 +pm=ferro",
+    ],
+)
+def test_central_meridian__non_greenwich_prime_meridian(crs):
+    """Test that the central meridian is east of Greenwich, not the prime meridian.
+
+    Ferro is 17 degrees 40 minutes west of Greenwich, so each of these is centred
+    10 degrees 20 minutes east of it. See :issue:`2518`.
+
+    """
+    result = get_central_meridian(CRS.from_user_input(crs))
+    assert result == pytest.approx(10 + 1 / 3, abs=1e-9)
+
+
+@pytest.mark.parametrize(
+    ("code", "expected"),
+    [
+        # Lisbon 1890 (Lisbon) / Portugal Bonne: 1 degree east of Lisbon, which
+        # is 9.13190611111111 degrees west of Greenwich
+        ("epsg:2963", 1 - 9.13190611111111),
+        # Carthage (Paris) / Tunisia Mining Grid: 7.83445 grad east of Paris,
+        # which is 2.5969213 grad east of Greenwich, at 0.9 degrees a grad
+        ("epsg:22300", (7.83445 + 2.5969213) * 0.9),
+    ],
+)
+def test_central_meridian__no_proj_string(code, expected):
+    """Test the prime meridian of a CRS that PROJ cannot write as a PROJ string.
+
+    PROJ has no definition to name the prime meridian it applies, so its value
+    is taken from the PROJ JSON. See :issue:`2518`.
+
+    """
+    result = get_central_meridian(CRS.from_user_input(code))
+    assert result == pytest.approx(expected, abs=1e-9)
 
 
 def test_central_meridian__non_degree_prime_meridian():
