@@ -5,7 +5,6 @@
 #   - https://github.com/actions/upload-artifact
 #   - https://github.com/codecov/codecov-action
 #   - https://github.com/prefix-dev/setup-pixi
-#   - https://github.com/pyvista/setup-headless-display-action
 
 name: ci-tests
 
@@ -31,6 +30,11 @@ defaults:
     shell: bash -l {0}
 
 permissions: {}
+
+# "xvfb-run" provides the display, from the xvfb and mesa the runner image
+# ships, so no step installs them; pyvista renders off screen within it
+env:
+  PYVISTA_OFF_SCREEN: true
 
 jobs:
   tests:
@@ -64,8 +68,6 @@ jobs:
         run: |
           echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
 
-      - uses: pyvista/setup-headless-display-action@c103a2ff45650d38cb71684b5dc6cdfeb9442c79
-
       - name: "setup pixi"
         uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94
         with:
@@ -87,7 +89,7 @@ jobs:
         env:
           PY_COLORS: "1"
         run: |
-          geovista --report
+          xvfb-run -a geovista --report
           xvfb-run -a pixi run --frozen pytest -m "${{ matrix.marker }}" --numprocesses logical --dist worksteal --failed_image_dir test_images_failed ${{ matrix.coverage }}
 
       - name: "upload failed images"

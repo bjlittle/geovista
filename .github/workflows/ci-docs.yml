@@ -1,7 +1,6 @@
 # Reference:
 #   - https://github.com/actions/checkout
 #   - https://github.com/prefix-dev/setup-pixi
-#   - https://github.com/pyvista/setup-headless-display-action
 
 name: ci-docs
 
@@ -25,6 +24,11 @@ concurrency:
   cancel-in-progress: true
 
 permissions: {}
+
+# "xvfb-run" provides the display, from the xvfb and mesa the runner image
+# ships, so no step installs them; pyvista renders off screen within it
+env:
+  PYVISTA_OFF_SCREEN: true
 
 jobs:
   tests:
@@ -55,8 +59,6 @@ jobs:
         run: |
           echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
 
-      - uses: pyvista/setup-headless-display-action@c103a2ff45650d38cb71684b5dc6cdfeb9442c79
-
       - name: "setup pixi"
         uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94
         with:
@@ -76,5 +78,5 @@ jobs:
 
       - name: "${{ matrix.session }} (${{ matrix.version }})"
         run: |
-          geovista --report
+          xvfb-run -a geovista --report
           xvfb-run -a pixi run --frozen make ${{ matrix.session }}
