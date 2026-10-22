@@ -1,0 +1,4 @@
+The browser tests of ``ci-tests-docs`` install chromium without
+``--with-deps``. On the runner image that flag only added fonts and a
+``libnss3`` upgrade, and fetching them from a slow apt mirror made the
+install step take anywhere from 17 seconds to 12 minutes. (:user:`claude`)
