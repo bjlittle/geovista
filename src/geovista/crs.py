@@ -13,6 +13,7 @@ Notes
 
 from __future__ import annotations
 
+from functools import cache
 from typing import TYPE_CHECKING, Any
 import warnings
 
@@ -193,17 +194,56 @@ def _degrees_per_unit(unit: Any) -> float | None:  # noqa: ANN401
     return None
 
 
-def _prime_meridian(crs_json: dict[str, Any]) -> float | None:
-    """Calculate the longitude of the prime meridian of a projected `crs_json`.
+@cache
+def _applied_prime_meridian(pm: str) -> float:
+    """Calculate the longitude PROJ applies for the prime meridian `pm`.
+
+    Parameters
+    ----------
+    pm : str
+        The prime meridian as a PROJ definition gives it, either by name, as
+        ``paris``, or in degrees.
+
+    Returns
+    -------
+    float
+        The degrees east of Greenwich that PROJ places the prime meridian at.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # the two differ by their prime meridian alone, so the longitude PROJ gives
+    # the origin of the one is where it puts the prime meridian
+    transformer = pyproj.Transformer.from_crs(
+        f"+proj=longlat +ellps=WGS84 +pm={pm}",
+        "+proj=longlat +ellps=WGS84",
+        always_xy=True,
+    )
+    longitude: float = transformer.transform(0.0, 0.0)[0]
+    return longitude
+
+
+def _prime_meridian(crs: CRS, crs_json: dict[str, Any]) -> float | None:
+    """Calculate the longitude of the prime meridian of a projected `crs`.
 
     The parameters of a projection are given relative to the prime meridian of
     its base CRS, which is Greenwich for most, but not all e.g. "EPSG:31251" is
     on Ferro.
 
+    PROJ applies a prime meridian that its definition names from its own table,
+    which can differ in its last digits from the EPSG value that PROJ JSON carries
+    e.g. Paris is 2°20'14.025" east in the one, and 2.5969213 grad in the other,
+    which is 3.3e-9 degrees more. The value PROJ applies is the one returned, so
+    that a seam is cut where PROJ puts it.
+
     Parameters
     ----------
+    crs : :class:`~pyproj.crs.CRS`
+        The Coordinate Reference System.
     crs_json : dict
-        The Coordinate Reference System serialized as PROJ JSON, as returned by
+        The `crs` serialized as PROJ JSON, as returned by
         :meth:`pyproj.crs.CRS.to_json_dict`.
 
     Returns
@@ -221,6 +261,17 @@ def _prime_meridian(crs_json: dict[str, Any]) -> float | None:
     datum = base.get("datum") or {}
     prime_meridian = datum.get("prime_meridian") or {}
     longitude = prime_meridian.get("longitude", 0)
+
+    if not longitude:
+        return 0.0
+
+    with warnings.catch_warnings():
+        # a PROJ definition is lossy by nature, which is not news here
+        warnings.simplefilter("ignore", UserWarning)
+        pm = crs.to_dict().get("pm")
+
+    if pm is not None:
+        return _applied_prime_meridian(str(pm))
 
     # a prime meridian in a unit other than degrees is serialized as a mapping
     # e.g. Paris is 2.5969213 grad east of Greenwich
@@ -349,7 +400,7 @@ def get_central_meridian(crs: CRS) -> float | None:
 
     # a projection parameter is a longitude east of the prime meridian, which
     # may not be Greenwich
-    if (prime_meridian := _prime_meridian(crs_json)) is None:
+    if (prime_meridian := _prime_meridian(crs, crs_json)) is None:
         return None
 
     return float(value) * degrees + prime_meridian
@@ -490,7 +541,7 @@ def set_central_meridian(crs: CRS, meridian: float) -> CRS | None:
     if key != "longitude":
         # a projection parameter is a longitude east of the prime meridian, so
         # the meridian, which is east of Greenwich, is rebased onto it
-        if (prime_meridian := _prime_meridian(crs_json)) is None:
+        if (prime_meridian := _prime_meridian(crs, crs_json)) is None:
             return None
         meridian -= prime_meridian
 

@@ -117,8 +117,8 @@ def test_central_meridian__non_degree_parameter():
 
     ``EPSG:29701`` expresses its longitude of projection centre as ``49`` grad,
     which is ``44.1`` degrees, so the value must not be taken at face value. It
-    is east of the Paris prime meridian, ``2.5969213`` grad or ``2.33722917``
-    degrees east of Greenwich, so the central meridian is ``46.43722917``.
+    is east of the Paris prime meridian, which PROJ applies as 2 degrees 20 minutes
+    14.025 seconds east of Greenwich, so the central meridian is ``46.437229...``.
 
     """
     crs = CRS.from_user_input("epsg:29701")
@@ -130,7 +130,8 @@ def test_central_meridian__non_degree_parameter():
 
     assert param["value"] == 49
     assert param["unit"]["name"] == "grad"
-    assert get_central_meridian(crs) == pytest.approx(46.43722917)
+    paris = 2 + 20 / 60 + 14.025 / 3600
+    assert get_central_meridian(crs) == pytest.approx(44.1 + paris, abs=1e-12)
 
 
 @pytest.mark.parametrize(
