@@ -9,11 +9,12 @@ from __future__ import annotations
 
 import cartopy.crs as ccrs
 import numpy as np
+from pyproj import Transformer
 import pytest
 import pyvista as pv
 
 import geovista as gv
-from geovista.common import RADIUS, ZLEVEL_SCALE, distance
+from geovista.common import RADIUS, ZLEVEL_SCALE, distance, from_cartesian
 from geovista.crs import from_wkt
 from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
 from geovista.transform import transform_mesh
@@ -179,3 +180,27 @@ def test_surface_zlevel_0d():
     assert actor is not None
     expected = radius + radius * 2 * ZLEVEL_SCALE
     assert np.isclose(distance(actor.mapper.dataset), expected)
+
+
+@pytest.mark.parametrize("lon_0", [0, 90])
+def test_surface_zlevel_follows_the_slice(lon_0):
+    """A surface the seam cuts is lifted by a z-level at each point.
+
+    The levels vary with latitude, so a level that landed on the wrong point of
+    those the seam adds would show. See :issue:`2669`.
+
+    """
+    mesh = gv.Transform.from_1d(np.linspace(-180, 180, 9), np.linspace(-90, 90, 5))
+    zlevel = 1 + np.abs(from_cartesian(mesh)[:, 1]) / 90
+    crs = f"+proj=eqc +lon_0={lon_0}"
+    p = GeoPlotter(crs=crs)
+
+    actor = p.add_mesh(mesh, zlevel=zlevel)
+
+    result = actor.mapper.dataset
+    assert result.n_points > mesh.n_points
+    inverse = Transformer.from_crs(crs, "EPSG:4326", always_xy=True)
+    _, lats = inverse.transform(result.points[:, 0], result.points[:, 1])
+    # the semi-major axis of the GRS80 ellipsoid of the CRS is 6378137 m
+    expected = (1 + np.abs(lats) / 90) * ZLEVEL_SCALE * 6378137
+    np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)

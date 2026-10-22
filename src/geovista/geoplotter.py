@@ -42,7 +42,7 @@ from .common import (
     vtk_warnings_off,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
-from .core import add_texture_coords, resize, slice_mesh
+from .core import add_texture_coords, resize
 from .crs import (
     WGS84,
     CRSLike,
@@ -51,7 +51,6 @@ from .crs import (
     has_wkt,
     planar,
     projected,
-    set_central_meridian,
     to_wkt,
 )
 from .geodesic import BBox
@@ -70,7 +69,12 @@ from .pantry.meshes import (
 )
 from .raster import wrap_texture
 from .themes import resolve_theme_name
-from .transform import transform_mesh, transform_point
+from .transform import (
+    _point_levels,
+    _slice_seam,
+    transform_mesh,
+    transform_point,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -778,22 +782,13 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             central_meridian = get_central_meridian(tgt_crs) or 0
 
             if transform_required and not cloud and not src_planar:
-                if central_meridian:
-                    mesh.rotate_z(-central_meridian, inplace=True)
-                    centred = set_central_meridian(tgt_crs, 0)
-                    # get_central_meridian found one, so it can be reset
-                    assert centred is not None
-                    tgt_crs = centred
-
-                # the sliced_mesh is guaranteed to be a new instance,
-                # even if not bisected
-                sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
-
-                if central_meridian:
-                    # undo rotation of original mesh
-                    mesh.rotate_z(central_meridian, inplace=True)
-
-                mesh = sliced_mesh
+                # the seam is cut here, before any texture coordinates are added,
+                # and a per-point zlevel is carried through the cut to the points
+                # it adds, which is what transform_mesh is then given
+                level = _point_levels(mesh, zlevel)
+                mesh, tgt_crs, zlevel = _slice_seam(
+                    mesh, tgt_crs, level=level, rtol=rtol, atol=atol
+                )
 
             if "texture" in kwargs and kwargs["texture"] is not None:
                 mesh = add_texture_coords(mesh, antimeridian=True)
