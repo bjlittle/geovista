@@ -219,8 +219,8 @@ fetched from the run and reviewed before any new baseline is proposed.
 In scope are the planar offset in `transform_mesh`, its docstring, its tests, the image
 baselines it moves and the changelog. Out of scope are the globe, which does not change; the
 default levels of `GeoPlotter`, which keep their order; {issue}`2583`, the point data that
-`slice_lines` drops; and making `R` public, which nothing outside `transform_mesh` needs
-yet.
+`slice_lines` dropped, which {pull}`2597` has since carried through; and making `R` public,
+which nothing outside `transform_mesh` needs yet.
 
 (zlevel-spec-8)=
 ## 8. Open items
