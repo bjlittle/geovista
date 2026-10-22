@@ -358,10 +358,11 @@ def combine(
     data: bool | None = True,
     clean: bool | None = False,
 ) -> pv.PolyData:
-    """Combine two or more meshes into one mesh.
+    """Combine one or more meshes into one mesh.
 
-    Only meshes with cells will be combined. Support is not yet provided for combining
-    meshes that consist of only points or lines.
+    Only meshes with cells will be combined. Support is not yet provided for meshes
+    that contain vertices, lines or strips, such as a point cloud. A single mesh is
+    checked and combined into a new mesh, like any other.
 
     Note that no check is performed to ensure that mesh cells do not overlap.
     However, meshes may share coincident points. Coincident point data from the
@@ -405,9 +406,6 @@ def combine(
             raise TypeError(emsg)
         polys.append(dataset)
 
-    if len(polys) == 1:
-        return polys[0]
-
     first = polys[0]
     combined_points, combined_faces = [], []
     n_points = 0
@@ -426,6 +424,22 @@ def combine(
             emsg = (
                 f"Can only combine meshes with cells, input mesh #{i + 1} "
                 "contains lines."
+            )
+            raise TypeError(emsg)
+
+        # only the faces of a mesh are combined, so its strips would be lost
+        if mesh.n_strips:
+            emsg = (
+                f"Can only combine meshes with cells, input mesh #{i + 1} "
+                "contains strips."
+            )
+            raise TypeError(emsg)
+
+        # pyvista counts the vertices of a point cloud as its cells
+        if mesh.n_verts:
+            emsg = (
+                f"Can only combine meshes with cells, input mesh #{i + 1} "
+                "contains vertices."
             )
             raise TypeError(emsg)
 
@@ -497,6 +511,18 @@ def combine(
         combine_data(common_cell_data, lambda mesh: mesh.cell_data)
         for name in common_field_data:
             combined.field_data[name] = first.field_data[name]
+
+    # remove degenerate points and faces
+    if clean:
+        combined.clean(inplace=True)
+
+    if data:
+        # each array plays the role it plays in the first mesh, such as its active
+        # vectors, normals or texture coordinates. This follows the cleaning, which
+        # drops a point array of global ids, and global ids keep their values, as
+        # they belong to the meshes they came from
+        _keep_roles(first.point_data, combined.point_data, fresh_ids=False)
+        _keep_roles(first.cell_data, combined.cell_data, fresh_ids=False)
         # determine a sensible active scalar array, by opting for the first
         # common active scalar array from the input meshes
         combined.active_scalars_name = None
@@ -508,10 +534,6 @@ def combine(
             if info.name in common_data:
                 combined.set_active_scalars(info.name, preference=association)
                 break
-
-    # remove degenerate points and faces
-    if clean:
-        combined.clean(inplace=True)
 
     return combined
 
@@ -1082,11 +1104,13 @@ def _carry_line_data(
     _keep_roles(mesh.cell_data, result.cell_data)
 
 
-def _keep_roles(source: pv.DataSetAttributes, target: pv.DataSetAttributes) -> None:
+def _keep_roles(
+    source: pv.DataSetAttributes,
+    target: pv.DataSetAttributes,
+    *,
+    fresh_ids: bool = True,
+) -> None:
     """Give each array the role it plays in the data it was carried from.
-
-    Each point or cell added takes a fresh global id beyond the largest, so global
-    ids stay unique.
 
     Parameters
     ----------
@@ -1095,6 +1119,11 @@ def _keep_roles(source: pv.DataSetAttributes, target: pv.DataSetAttributes) -> N
     target : :class:`~pyvista.DataSetAttributes`
         The point or cell data the arrays were carried into. The values of the
         source come first, followed by those of any point or cell added.
+    fresh_ids : bool, default=True
+        Whether each point or cell added takes a fresh global id beyond the
+        largest, so global ids stay unique, as for the points a slice adds.
+        Otherwise global ids keep their values, as for the meshes
+        :func:`combine` joins, whose ids are their own.
 
     Notes
     -----
@@ -1105,7 +1134,7 @@ def _keep_roles(source: pv.DataSetAttributes, target: pv.DataSetAttributes) -> N
         array = source.GetAbstractAttribute(role)
         if array is None or (name := array.GetName()) not in target:
             continue
-        if role == source.GLOBALIDS:
+        if fresh_ids and role == source.GLOBALIDS:
             # pyvista hands back a view, so the fresh ids land in the array itself.
             # pyvista 0.49 annotates an assignment to its arrays to refuse a slice
             # as the key, which it accepts at runtime, so the ids are typed as any

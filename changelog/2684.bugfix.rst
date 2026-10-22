@@ -1,0 +1,7 @@
+Fixed :func:`geovista.core.combine` returning a single mesh as it was, without
+the checks, ``clean`` or ``data`` it applies to two or more. A single mesh is
+now combined into a new mesh like any other. A mesh with vertices, such as a
+point cloud, or with strips, is now refused as one with lines is, where before
+its points or strips were dropped without a word. Each array combined now keeps
+the role it plays in the first mesh, such as its active vectors, normals or
+texture coordinates. Closes :issue:`2679`. (:user:`claude`)
