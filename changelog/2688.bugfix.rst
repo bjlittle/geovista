@@ -1,0 +1,5 @@
+Fixed :func:`geovista.common.from_cartesian` reading a surface at the mean
+radius of its points, which gave the wrong latitudes for one whose points sit
+at uneven radii, such as a surface :func:`geovista.transform.transform_mesh`
+lifts by a ``zlevel`` at each point onto the sphere. Each point of such a
+surface is now read at its own radius. Closes :issue:`2670`. (:user:`claude`)

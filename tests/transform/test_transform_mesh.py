@@ -683,3 +683,23 @@ def test_transform_mesh__non_ascii_wkt(regional_mesh, tgt_crs):
     """A target CRS whose OGC WKT holds non-ASCII text. See :issue:`2595`."""
     result = transform_mesh(regional_mesh, tgt_crs)
     assert from_wkt(result) == CRS.from_user_input(tgt_crs)
+
+
+def test_transform_mesh__zlevel_per_point_to_wgs84_reads_back():
+    """A surface lifted at each point onto the sphere keeps its latitudes.
+
+    Each point sits at its own radius, so reading one at the mean radius of all
+    of them would move its latitude. See :issue:`2670`.
+
+    """
+    surface = transform_mesh(
+        gv.Transform.from_1d(np.linspace(-180, 180, 9), np.linspace(-90, 90, 5)),
+        PLANAR,
+    )
+    zlevel = np.linspace(0, 100, surface.n_points)
+
+    result = transform_mesh(surface, "EPSG:4326", zlevel=zlevel)
+
+    inverse = Transformer.from_crs(PLANAR, "EPSG:4326", always_xy=True)
+    _, expected = inverse.transform(surface.points[:, 0], surface.points[:, 1])
+    np.testing.assert_allclose(from_cartesian(result)[:, 1], expected, atol=1e-9)

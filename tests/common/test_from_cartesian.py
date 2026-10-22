@@ -34,6 +34,36 @@ def test_defaults(lam_uk_sample, lam_uk):
     assert np.sum(lonlats[:, 2]) == 0
 
 
+def test_surface_at_uneven_radii():
+    """Test each point of a surface is read at its own radius, not their mean.
+
+    See :issue:`2670`.
+
+    """
+    lons = np.array([-30.0, 0.0, 30.0, 30.0, 0.0, -30.0])
+    lats = np.array([0.0, 0.0, 0.0, 45.0, 45.0, 45.0])
+    xyz = to_cartesian(lons, lats, zlevel=np.linspace(0, 1, 6), zscale=1)
+    mesh = pv.PolyData(xyz, faces=[4, 0, 1, 4, 5, 4, 1, 2, 3, 4])
+
+    lonlats = from_cartesian(mesh)
+
+    np.testing.assert_allclose(lonlats[:, 0], lons, atol=1e-12)
+    np.testing.assert_allclose(lonlats[:, 1], lats, atol=1e-12)
+    assert np.sum(lonlats[:, 2]) == 0
+
+
+@pytest.mark.parametrize("dtype", [np.int32, np.int64])
+def test_integer_points(dtype):
+    """Test a surface whose points pyvista keeps as integers is read."""
+    mesh = pv.PolyData(np.eye(3, dtype=dtype), faces=[3, 0, 1, 2], force_float=False)
+    assert mesh.points.dtype == dtype
+
+    lonlats = from_cartesian(mesh)
+
+    np.testing.assert_allclose(lonlats[:, 0], [0, 90, 0])
+    np.testing.assert_allclose(lonlats[:, 1], [0, 0, 90])
+
+
 def test_cloud_defaults__no_field_data(lam_uk_sample, lam_uk):
     """Test expected defaults are honoured for a point-cloud."""
     sample_lons, sample_lats = lam_uk_sample
