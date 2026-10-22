@@ -123,6 +123,18 @@ def test_point_and_cell_arrays_share_a_name():
     np.testing.assert_array_equal(result.cell_data["data"], expected)
 
 
+def test_single_mesh_arrays_share_a_name():
+    """Test a single mesh keeps a point array and a cell array of the same name."""
+    mesh = pv.Plane(i_resolution=1, j_resolution=1)
+    mesh.point_data["temperature"] = np.arange(mesh.n_points, dtype=float)
+    mesh.cell_data["temperature"] = np.array([10.0])
+
+    result = combine(mesh)
+
+    np.testing.assert_array_equal(result.point_data["temperature"], [0, 1, 2, 3])
+    np.testing.assert_array_equal(result.cell_data["temperature"], [10.0])
+
+
 def test_point_and_field_arrays_share_a_name():
     """Test a point array and a field array of the same name are both combined."""
     meshes = _spheres_with("field")
