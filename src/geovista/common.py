@@ -456,8 +456,12 @@ def from_cartesian(
         # a surface at one radius, to the precision of its points, is read at
         # that radius, which gives the points of a parallel one latitude. One
         # at uneven radii is read at the radius of each point, or a point off
-        # the mean would take the wrong latitude
-        resolution = float(np.finfo(mesh.points.dtype).resolution)
+        # the mean would take the wrong latitude. Points kept as integers are
+        # exact, so their radii carry only the rounding of the float64 distance
+        dtype = mesh.points.dtype
+        if not np.issubdtype(dtype, np.floating):
+            dtype = np.dtype(np.float64)
+        resolution = float(np.finfo(dtype).resolution)
         if np.allclose(radius, mean, rtol=resolution, atol=0):
             radius = mean
 

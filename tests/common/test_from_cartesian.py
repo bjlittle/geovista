@@ -52,6 +52,18 @@ def test_surface_at_uneven_radii():
     assert np.sum(lonlats[:, 2]) == 0
 
 
+@pytest.mark.parametrize("dtype", [np.int32, np.int64])
+def test_integer_points(dtype):
+    """Test a surface whose points pyvista keeps as integers is read."""
+    mesh = pv.PolyData(np.eye(3, dtype=dtype), faces=[3, 0, 1, 2], force_float=False)
+    assert mesh.points.dtype == dtype
+
+    lonlats = from_cartesian(mesh)
+
+    np.testing.assert_allclose(lonlats[:, 0], [0, 90, 0])
+    np.testing.assert_allclose(lonlats[:, 1], [0, 0, 90])
+
+
 def test_cloud_defaults__no_field_data(lam_uk_sample, lam_uk):
     """Test expected defaults are honoured for a point-cloud."""
     sample_lons, sample_lats = lam_uk_sample
