@@ -85,6 +85,23 @@ def test_attach_point_data(lam_uk_sample, name):
     np.testing.assert_array_equal(result[expected], data)
 
 
+@pytest.mark.parametrize(
+    "vectors",
+    [
+        5,
+        ([1.0],),
+        ([1.0], [1.0], [1.0], [1.0]),
+        (component for component in ([1.0], [1.0])),
+    ],
+    ids=["scalar", "one", "four", "generator"],
+)
+def test_vectors_fail(vectors):
+    """Test trap of vectors that are not 2 or 3 components, or have no length."""
+    emsg = "'vectors' must be an iterable of 2 or 3 array-likes"
+    with pytest.raises(ValueError, match=emsg):
+        _ = Transform.from_points([0.0], [0.0], vectors=vectors)
+
+
 @pytest.mark.parametrize("proj", ["eqc", "robin", "moll"])
 def test_transform_points(lam_uk_sample, wgs84_wkt, proj):
     """Test projection of native crs to wgs84."""

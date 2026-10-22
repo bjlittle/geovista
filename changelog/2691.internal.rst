@@ -1,0 +1,5 @@
+Tidied the minors left by the final review of typing change 3
+(:pull:`2599`), in :class:`geovista.bridge.Transform` and its tests. A
+``vectors`` given to :meth:`geovista.bridge.Transform.from_points` as a
+generator now raises the ``ValueError`` that states the rule, rather than a
+bare ``TypeError``. Closes :issue:`2607`. (:user:`claude`)

@@ -3,7 +3,13 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Unit-tests for lists given to :class:`geovista.Transform` where arrays may be."""
+"""Unit-tests for lists given to :class:`geovista.Transform` where arrays may be.
+
+The cases test one contract across every factory, that a list builds the mesh an
+array does (typing spec §3.3), so they sit together rather than in the file of
+each factory.
+
+"""
 
 from __future__ import annotations
 
@@ -60,6 +66,9 @@ def test_lists(factory, args, kwargs):
     result = factory(*args, **kwargs)
 
     np.testing.assert_array_equal(result.points, expected.points)
+    # a structured grid has cells, but no faces
+    if hasattr(expected, "faces"):
+        np.testing.assert_array_equal(result.faces, expected.faces)
     assert result.array_names == expected.array_names
     for name in expected.array_names:
         np.testing.assert_array_equal(result[name], expected[name])

@@ -19,7 +19,6 @@ Notes
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 import pathlib
 from typing import TYPE_CHECKING, cast
 import warnings
@@ -877,10 +876,14 @@ class Transform:  # numpydoc ignore=PR01
             if not vectors_name:
                 vectors_name = NAME_VECTORS
 
-            if (
-                not isinstance(vectors, Iterable)  # type: ignore[redundant-expr]
-                or len(vectors) not in (2, 3)
-            ):
+            # a caller may pass anything at runtime, and something without a
+            # length, such as a scalar or a generator, is no tuple of components
+            try:
+                n_components = len(vectors)
+            except TypeError:
+                n_components = 0
+
+            if n_components not in (2, 3):
                 emsg = "'vectors' must be an iterable of 2 or 3 array-likes."
                 raise ValueError(emsg)
 
@@ -1153,7 +1156,8 @@ class Transform:  # numpydoc ignore=PR01
             )
             # rasterio 1.4.0 (regression) expects 1D arrays, fixed in 1.4.1
             # see https://github.com/rasterio/rasterio/issues/3191, though the
-            # rasterio stubs accept sequences only (typing spec §8 item 7)
+            # rasterio stubs accept an int or a sequence of them, and refuse an
+            # array (typing spec §8 item 7)
             coords = rio.transform.xy(
                 src.transform,
                 cast("Sequence[int]", rows.flatten()),
@@ -1335,8 +1339,9 @@ class Transform:  # numpydoc ignore=PR01
             # default to the shape of the points
             connectivity = shape
 
-        # points masked alike in x and y have no position, so they are left out of
-        # every face and out of the transform
+        # when xs and ys carry the same mask, its points have no position, so they
+        # are left out of every face and out of the transform. The masks are
+        # compared whole, so masks that differ anywhere mask no point at all
         mask: np.ndarray | None = None
         if (
             np.ma.is_masked(xs)

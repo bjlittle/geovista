@@ -256,9 +256,12 @@ def test_extract(mocker, masked, rgb, sieve):
         assert mocked_cast.call_count == 0
 
 
-@pytest.mark.parametrize("crs", [None, "EPSG:4326"])
-def test_crs(tmp_path, crs):
-    """A GeoTIFF without a CRS is read as WGS84, as one in WGS84 is."""
+@pytest.mark.parametrize(
+    ("crs", "expected_crs"),
+    [(None, None), ("EPSG:4326", None), ("EPSG:3857", "EPSG:3857")],
+)
+def test_crs(tmp_path, crs, expected_crs):
+    """A GeoTIFF is read in its own CRS, and as WGS84 without one."""
     rasterio = pytest.importorskip("rasterio")
     path = tmp_path / "pixels.tif"
     profile = {
@@ -281,6 +284,7 @@ def test_crs(tmp_path, crs):
         [[10.5, 11.5, 12.5], [10.5, 11.5, 12.5]],
         [[19.5, 19.5, 19.5], [18.5, 18.5, 18.5]],
         data=np.arange(6, dtype="uint8"),
+        crs=expected_crs,
     )
     np.testing.assert_array_equal(mesh.points, expected.points)
     np.testing.assert_array_equal(mesh.faces, expected.faces)

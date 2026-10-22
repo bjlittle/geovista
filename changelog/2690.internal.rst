@@ -1,5 +1,5 @@
-Tidied two annotations left by typing change 5: the keywords of three
-:class:`~geovista.geoplotter.GeoPlotterBase` methods, and the return type of
-:func:`geovista.geodesic.npoints` and :func:`geovista.geodesic.npoints_by_idx`,
-which promised one longitude and one latitude. Closes :issue:`2623`.
-(:user:`claude`)
+Tidied two annotations left by typing change 5 (:pull:`2619`): the keywords
+of three :class:`~geovista.geoplotter.GeoPlotterBase` methods, and the return
+type of :func:`geovista.geodesic.npoints` and
+:func:`geovista.geodesic.npoints_by_idx`, which promised one longitude and one
+latitude. Closes :issue:`2623`. (:user:`claude`)
