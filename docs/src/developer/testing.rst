@@ -719,8 +719,9 @@ The following ``pytest`` `fixtures`_ are available to browser unit tests:
    +------------------+--------------------------------------------------------------------------------------------+
    | Fixture          | Description                                                                                |
    +==================+============================================================================================+
-   | ``browser``      | A launched headless ``chromium`` browser, shared for the duration of the                   |
-   |                  | test session and closed on teardown.                                                       |
+   | ``browser``      | A launched headless ``chromium`` browser, shared for the duration of the test session and  |
+   |                  | closed on teardown. Under ``pytest-xdist`` each worker is a session of its own, and so     |
+   |                  | launches its own browser.                                                                  |
    +------------------+--------------------------------------------------------------------------------------------+
    | ``goto``         | A factory that opens a built page at a given viewport width, defaulting                    |
    |                  | to :bash:`index.html` e.g., :python:`page = goto(390)`.                                    |
@@ -1016,6 +1017,10 @@ several times faster than a serial run on a multi-core machine:
 Plain ``pytest`` still runs serially, which suits debugging with ``--pdb`` or
 stopping at the first failure with ``-x``. To run the task serially, pass ``0``
 as its second argument.
+
+The :guilabel:`tests-docs-browser` task runs the
+:ref:`tippy-gv-developer-testing-browser-tests` in parallel too, and takes the
+number of workers as its third argument.
 
 Each worker is a separate process with its own module state, and takes the next
 free test as it finishes one. A unit test must pass whatever order the tests run
