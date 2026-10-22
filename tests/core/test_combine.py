@@ -133,3 +133,51 @@ def test_point_and_field_arrays_share_a_name():
     expected = np.tile(np.arange(n_points, dtype=float), 2)
     np.testing.assert_array_equal(result.point_data["data"], expected)
     assert list(result.field_data["data"]) == ["note"]
+
+
+def _strip() -> pv.PolyData:
+    """Return a mesh of one triangle strip."""
+    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]], dtype=float)
+    return pv.PolyData(points, strips=[4, 0, 1, 2, 3])
+
+
+def _polygon_and_strip() -> pv.PolyData:
+    """Return a mesh of one triangle and one triangle strip."""
+    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]], dtype=float)
+    return pv.PolyData(points, faces=[3, 0, 1, 2], strips=[4, 0, 1, 2, 3])
+
+
+@pytest.mark.parametrize(
+    ("meshes", "position"),
+    [
+        ((_strip(),), 1),
+        ((_polygon_and_strip(),), 1),
+        ((pv.Sphere(), _strip()), 2),
+    ],
+    ids=["single", "mixed", "pair"],
+)
+def test_strips_fail(meshes, position):
+    """Test trap of a mesh with strips, which only its faces would be copied of."""
+    emsg = f"Can only combine meshes with cells, input mesh #{position} contains strips"
+    with pytest.raises(TypeError, match=emsg):
+        _ = combine(*meshes)
+
+
+def _plane_with_wind() -> pv.PolyData:
+    """Return a plane with active normals, texture coordinates and vectors."""
+    mesh = pv.Plane(i_resolution=1, j_resolution=1)
+    mesh.point_data["wind"] = np.tile([1.0, 0.0, 0.0], (mesh.n_points, 1))
+    mesh.set_active_vectors("wind")
+    return mesh
+
+
+@pytest.mark.parametrize("n_meshes", [1, 2], ids=["single", "pair"])
+def test_roles_kept(n_meshes):
+    """Test each array keeps the role it plays in the first mesh."""
+    meshes = [_plane_with_wind() for _ in range(n_meshes)]
+
+    result = combine(*meshes)
+
+    assert result.point_data.active_vectors_name == "wind"
+    assert result.point_data.active_normals_name == "Normals"
+    assert result.point_data.active_texture_coordinates_name == "TextureCoordinates"

@@ -361,8 +361,8 @@ def combine(
     """Combine one or more meshes into one mesh.
 
     Only meshes with cells will be combined. Support is not yet provided for meshes
-    that contain vertices or lines, such as a point cloud. A single mesh is checked
-    and combined into a new mesh, like any other.
+    that contain vertices, lines or strips, such as a point cloud. A single mesh is
+    checked and combined into a new mesh, like any other.
 
     Note that no check is performed to ensure that mesh cells do not overlap.
     However, meshes may share coincident points. Coincident point data from the
@@ -424,6 +424,14 @@ def combine(
             emsg = (
                 f"Can only combine meshes with cells, input mesh #{i + 1} "
                 "contains lines."
+            )
+            raise TypeError(emsg)
+
+        # only the faces of a mesh are combined, so its strips would be lost
+        if mesh.n_strips:
+            emsg = (
+                f"Can only combine meshes with cells, input mesh #{i + 1} "
+                "contains strips."
             )
             raise TypeError(emsg)
 
@@ -503,6 +511,10 @@ def combine(
         combine_data(common_cell_data, lambda mesh: mesh.cell_data)
         for name in common_field_data:
             combined.field_data[name] = first.field_data[name]
+        # each array plays the role it plays in the first mesh, such as its active
+        # vectors, normals or texture coordinates, and the scalars are chosen below
+        _keep_roles(first.point_data, combined.point_data)
+        _keep_roles(first.cell_data, combined.cell_data)
         # determine a sensible active scalar array, by opting for the first
         # common active scalar array from the input meshes
         combined.active_scalars_name = None
