@@ -132,13 +132,15 @@ jobs:
         with:
           cache_period: ${{ env.CACHE_PERIOD }}
 
-      # deliberately not cached: the system libraries are installed into the
-      # runner and so cannot be, which leaves only the browser download to
-      # save - noise beside the gallery build, and a tag-triggered workflow
-      # with a writable cache is a poisoning vector
+      # no "--with-deps": the runner image ships chrome, so its shared libraries
+      # are already present, and all apt would add is fonts and an nss upgrade,
+      # fetched from a mirror that has taken over 11 minutes for 20 MB. a missing
+      # library fails to launch chromium, which "strict" below makes a failure.
+      # deliberately not cached: the browser download takes seconds, and a
+      # tag-triggered workflow with a writable cache is a poisoning vector
       - name: "install chromium"
         run: |
-          pixi run --frozen playwright install --with-deps chromium
+          pixi run --frozen playwright install chromium
 
       # "html-gallery" is the cheapest build that renders the gallery, and so
       # the only one carrying the carousel the tests cover. "strict" requires
