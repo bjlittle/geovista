@@ -268,7 +268,12 @@ def _prime_meridian(crs: CRS, crs_json: dict[str, Any]) -> float | None:
     with warnings.catch_warnings():
         # a PROJ definition is lossy by nature, which is not news here
         warnings.simplefilter("ignore", UserWarning)
-        pm = crs.to_dict().get("pm")
+        try:
+            pm = crs.to_dict().get("pm")
+        except pyproj.exceptions.CRSError:
+            # PROJ cannot write every CRS as a definition e.g. "EPSG:22300", so
+            # there is no prime meridian it names, and the PROJ JSON is used
+            pm = None
 
     if pm is not None:
         return _applied_prime_meridian(str(pm))

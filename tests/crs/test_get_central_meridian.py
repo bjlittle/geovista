@@ -156,6 +156,28 @@ def test_central_meridian__non_greenwich_prime_meridian(crs):
     assert result == pytest.approx(10 + 1 / 3, abs=1e-9)
 
 
+@pytest.mark.parametrize(
+    ("code", "expected"),
+    [
+        # Lisbon 1890 (Lisbon) / Portugal Bonne: 1 degree east of Lisbon, which
+        # is 9.13190611111111 degrees west of Greenwich
+        ("epsg:2963", 1 - 9.13190611111111),
+        # Carthage (Paris) / Tunisia Mining Grid: 7.83445 grad east of Paris,
+        # which is 2.5969213 grad east of Greenwich, at 0.9 degrees a grad
+        ("epsg:22300", (7.83445 + 2.5969213) * 0.9),
+    ],
+)
+def test_central_meridian__no_proj_string(code, expected):
+    """Test the prime meridian of a CRS that PROJ cannot write as a PROJ string.
+
+    PROJ has no definition to name the prime meridian it applies, so its value
+    is taken from the PROJ JSON. See :issue:`2518`.
+
+    """
+    result = get_central_meridian(CRS.from_user_input(code))
+    assert result == pytest.approx(expected, abs=1e-9)
+
+
 def test_central_meridian__non_degree_prime_meridian():
     """Test that a prime meridian in a non-degree unit is not misreported.
 

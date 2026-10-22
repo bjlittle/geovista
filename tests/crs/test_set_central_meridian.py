@@ -144,3 +144,17 @@ def test_set_central_meridian__as_proj_applies(crs):
 
     assert get_central_meridian(crs) == pytest.approx(_applied(crs), abs=1e-12)
     assert _applied(set_central_meridian(crs, 0)) == pytest.approx(0, abs=1e-12)
+
+
+@pytest.mark.parametrize("code", ["epsg:2963", "epsg:22300"])
+def test_set_central_meridian__no_proj_string(code):
+    """Test a CRS that PROJ cannot write as a PROJ string is rebased.
+
+    ``EPSG:2963`` is on Lisbon and ``EPSG:22300`` on Paris, so the meridian is
+    rebased on a prime meridian taken from the PROJ JSON. See :issue:`2518`.
+
+    """
+    result = set_central_meridian(CRS.from_user_input(code), 10.0)
+
+    assert result is not None
+    assert get_central_meridian(result) == pytest.approx(10.0, abs=1e-9)
