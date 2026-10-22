@@ -125,9 +125,9 @@ tutorial whose reader runs every snippet.
 ⚠️ **A `.md` page builds the day it lands**: `myst_parser` registers `.md` itself, so it
 fails on `toc.not_included` unless a toctree holds it, a page includes it, or it is
 `orphan: true` (#2564), which no spec may be. `developer/plans/` is never built.
-⚠️ **A spec status must cite real work** (#2609): after editing one, run
-`pixi run -e test check-spec-status <PR>`. A `Resolved` item may cite an open issue. No
-state says *partly landed*, so a row spanning PRs is split into one per PR (6a–6c, #2659).
+⚠️ **A spec status must cite real work** (#2609): run `pixi run -e test check-spec-status <PR>`
+after editing one. A `Resolved` item may cite an open issue; the PR closing a cited issue marks
+it `Resolved` (in specs; plans are frozen). One row per PR, none *partly landed* (6a–6c, #2659).
 
 ### RST Style
 
@@ -196,4 +196,4 @@ in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
 
 ---
 
-**Last Updated**: 20 October 2026
+**Last Updated**: 21 October 2026
