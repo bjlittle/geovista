@@ -193,3 +193,46 @@ def test_roles_kept(n_meshes):
     assert result.point_data.active_vectors_name == "wind"
     assert result.point_data.active_normals_name == "Normals"
     assert result.point_data.active_texture_coordinates_name == "TextureCoordinates"
+
+
+def _plane_with_ids(offset: float, start: int) -> pv.PolyData:
+    """Return a one-cell plane whose points and cell carry global ids from `start`."""
+    mesh = pv.Plane(center=(offset, 0, 0), i_resolution=1, j_resolution=1)
+    mesh.point_data["point_ids"] = np.arange(start, start + mesh.n_points)
+    mesh.cell_data["cell_ids"] = np.array([start])
+    mesh.point_data.SetActiveAttribute("point_ids", mesh.point_data.GLOBALIDS)
+    mesh.cell_data.SetActiveAttribute("cell_ids", mesh.cell_data.GLOBALIDS)
+    return mesh
+
+
+@pytest.mark.parametrize("clean", [False, True])
+@pytest.mark.parametrize(
+    ("starts", "point_ids", "cell_ids"),
+    [
+        ((100,), [100, 101, 102, 103], [100]),
+        ((100, 200), [100, 101, 102, 103, 200, 201, 202, 203], [100, 200]),
+    ],
+    ids=["single", "pair"],
+)
+def test_global_ids_kept(starts, point_ids, cell_ids, clean):
+    """Test global ids keep the values and the role they have in their meshes.
+
+    The planes lie apart, so cleaning merges no point of one into the other, though
+    it may reorder them, so each id is checked against the point it belongs to.
+
+    """
+    meshes = [_plane_with_ids(2.0 * i, start) for i, start in enumerate(starts)]
+    owner = {
+        tuple(point): pid
+        for mesh in meshes
+        for point, pid in zip(mesh.points, mesh.point_data["point_ids"], strict=True)
+    }
+
+    result = combine(*meshes, clean=clean)
+
+    ids = result.point_data["point_ids"]
+    np.testing.assert_array_equal(np.sort(ids), point_ids)
+    assert [owner[tuple(point)] for point in result.points] == list(ids)
+    np.testing.assert_array_equal(result.cell_data["cell_ids"], cell_ids)
+    assert result.point_data.GetGlobalIds().GetName() == "point_ids"
+    assert result.cell_data.GetGlobalIds().GetName() == "cell_ids"
