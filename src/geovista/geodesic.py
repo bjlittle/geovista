@@ -1197,7 +1197,7 @@ def npoints(
     include_start: bool | None = False,
     include_end: bool | None = False,
     geod: pyproj.Geod | None = None,
-) -> tuple[tuple[float], tuple[float]]:
+) -> tuple[tuple[float, ...], tuple[float, ...]]:
     """Calculate geodesic mid-points between provided start and end points.
 
     Given a single start-point and end-point, calculate the equally spaced
@@ -1289,7 +1289,7 @@ def npoints_by_idx(
     include_start: bool | None = False,
     include_end: bool | None = False,
     geod: pyproj.Geod | None = None,
-) -> tuple[tuple[float], tuple[float]]:
+) -> tuple[tuple[float, ...], tuple[float, ...]]:
     """Calculate geodesic mid-points between provided start and end indices.
 
     Given a single start-point index and end-point index, calculate the equally
