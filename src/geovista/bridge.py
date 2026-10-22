@@ -884,8 +884,20 @@ class Transform:  # numpydoc ignore=PR01
                 emsg = "'vectors' must be an iterable of 2 or 3 array-likes."
                 raise ValueError(emsg)
 
+            # each component follows the points, so it must have their shape before
+            # both are taken as one sequence, or a component of the right size
+            # but another layout would land its values on the wrong points
+            components = [np.asanyarray(component) for component in vectors]
+            if any(component.shape != shape for component in components):
+                shapes = [component.shape for component in components]
+                emsg = (
+                    "Cannot build vectors, each component of 'vectors' requires the "
+                    f"shape of 'xs' {shape}, got {shapes}."
+                )
+                raise ValueError(emsg)
+
             # unpack vector components to UVW, one for each point in sequence
-            components = [np.asanyarray(component).ravel() for component in vectors]
+            components = [component.ravel() for component in components]
             us, vs = components[:2]
             ws = components[2] if len(components) == 3 else np.zeros_like(us)
 

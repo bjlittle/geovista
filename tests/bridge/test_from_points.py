@@ -289,3 +289,14 @@ class TestVectors:
         )
         result = mesh[NAME_VECTORS].T
         assert np.allclose(result, EXPECTED_UV_VECTORS_CRS, atol=0.001)
+
+    @pytest.mark.parametrize(
+        ("points", "component"), [((4,), (2, 2)), ((2, 2), (4,))], ids=["1d", "2d"]
+    )
+    def test_shaped_points__component_shape_fail(self, points, component):
+        """Check a component of the right size but another shape is refused."""
+        lons, lats = self.lons.reshape(points), self.lats.reshape(points)
+        vectors = (self.u.reshape(component), self.v.reshape(points))
+        emsg = "each component of 'vectors' requires the shape of 'xs'"
+        with pytest.raises(ValueError, match=emsg):
+            _ = Transform.from_points(lons, lats, vectors=vectors)
