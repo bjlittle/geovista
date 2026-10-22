@@ -69,3 +69,21 @@ def test_no_vtk_arrays(grid, seam):
     names = [*result.point_data, *result.cell_data]
     assert not [name for name in names if name.startswith("vtk")]
     assert {"points", "cells"} <= set(names)
+
+
+@SEAMS
+@pytest.mark.parametrize("association", ["point", "cell"])
+def test_active_vtk_ids(grid, seam, association):
+    """Test a mesh whose active scalars are VTK's ids is sliced, without them.
+
+    The ids are purged, so the result has no active scalars to restore.
+
+    """
+    mesh = grid.extract_surface(algorithm="dataset_surface")
+    name = f"vtkOriginal{association.capitalize()}Ids"
+    mesh.set_active_scalars(name, preference=association)
+
+    result = slice_cells(mesh, **seam)
+
+    assert result.active_scalars_name is None
+    assert name not in [*result.point_data, *result.cell_data]

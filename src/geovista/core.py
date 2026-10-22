@@ -759,7 +759,13 @@ def slice_cells(
         sanitize_vtk(result)
 
     result.set_active_scalars(name=None)
-    result.set_active_scalars(info.name, preference=_preference(info.association))
+    association = _preference(info.association)
+    survivors = result.cell_data if association == "cell" else result.point_data
+
+    # the active scalars are restored only if they survived, as they may have
+    # been ids that VTK added, which are purged, or dropped by combine
+    if info.name is not None and info.name in survivors:
+        result.set_active_scalars(info.name, preference=association)
 
     return result
 
