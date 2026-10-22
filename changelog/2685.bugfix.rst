@@ -3,5 +3,6 @@ name with a cell array, and raising for one that shares it with a field array,
 which also cost :func:`geovista.core.slice_cells` the point array. Fixed
 :func:`geovista.core.slice_cells` returning the ``vtkOriginalPointIds`` and
 ``vtkOriginalCellIds`` arrays that VTK adds, which
-:func:`geovista.transform.transform_mesh` then passed on for a global mesh.
+:func:`geovista.transform.transform_mesh` then passed on for a global mesh,
+and raising a ``KeyError`` for a mesh whose active scalars were one of them.
 Closes :issue:`2675`. (:user:`claude`)
