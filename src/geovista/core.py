@@ -35,6 +35,7 @@ from .common import (
     distance,
     from_cartesian,
     point_cloud,
+    sanitize_vtk,
     to_cartesian,
     wrap,
 )
@@ -44,6 +45,8 @@ from .filters import remesh
 from .search import find_cell_neighbours
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import numpy as np
     from numpy.typing import ArrayLike, NDArray
     import pyvista as pv
@@ -467,31 +470,33 @@ def combine(
     faces = np.hstack(combined_faces)
     combined = pv.PolyData(points, faces=faces)
 
-    def combine_data(names: set[str], *, field: bool | None = False) -> None:
-        """Combine point, cell or field data from the meshes onto a single mesh.
+    def combine_data(
+        names: set[str], attributes: Callable[[pv.PolyData], pv.DataSetAttributes]
+    ) -> None:
+        """Combine point or cell data from the meshes onto a single mesh.
 
         Parameters
         ----------
         names : set of str
-            The names of the point, cell or field data to be combined.
-        field : bool, optional
-            Whether the data is field data. Defaults to False.
+            The names of the point or cell data to be combined.
+        attributes : callable
+            Returns the point or cell data of a mesh, where each array is read
+            and written whatever other array shares its name.
 
         """
         for name in names:
-            if field:
-                combined.field_data[name] = first[name]
-            else:
-                data = [mesh[name] for mesh in meshes]
-                combined[name] = (
-                    np.vstack(data) if data[0].ndim > 1 else np.hstack(data)
-                )
+            data = [attributes(mesh)[name] for mesh in polys]
+            attributes(combined)[name] = (
+                np.vstack(data) if data[0].ndim > 1 else np.hstack(data)
+            )
 
     if data:
-        # attach any common combined data
-        combine_data(common_point_data)
-        combine_data(common_cell_data)
-        combine_data(common_field_data, field=True)
+        # attach any common combined data, by association, as a point, cell and
+        # field array may share a name
+        combine_data(common_point_data, lambda mesh: mesh.point_data)
+        combine_data(common_cell_data, lambda mesh: mesh.cell_data)
+        for name in common_field_data:
+            combined.field_data[name] = first.field_data[name]
         # determine a sensible active scalar array, by opting for the first
         # common active scalar array from the input meshes
         combined.active_scalars_name = None
@@ -750,9 +755,17 @@ def slice_cells(
         for field in mesh.field_data:
             result.field_data[field] = copy.deepcopy(mesh.field_data[field])
         result = combine(result, *meshes)
+        # purge the ids VTK adds as it extracts and removes cells
+        sanitize_vtk(result)
 
     result.set_active_scalars(name=None)
-    result.set_active_scalars(info.name, preference=_preference(info.association))
+    association = _preference(info.association)
+    survivors = result.cell_data if association == "cell" else result.point_data
+
+    # the active scalars are restored only if they survived, as they may have
+    # been ids that VTK added, which are purged, or dropped by combine
+    if info.name is not None and info.name in survivors:
+        result.set_active_scalars(info.name, preference=association)
 
     return result
 
