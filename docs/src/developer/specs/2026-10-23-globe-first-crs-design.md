@@ -306,6 +306,10 @@ are `nzmg` and PROJ's modified stereographics, `alsk`, `gs48`, `gs50`, `lee_os` 
 `mil_os`. Their domain is their published region, as a lat/lon box or a cap. A lat/lon
 box is still four planes: two parallels and two meridian half-planes.
 
+A national grid, such as the British National Grid, is a transverse Mercator or a conic
+with a published area of use, and its domain is that area of use, as a lat/lon box
+({ref}`§4.8 <crs-spec-4-8>`).
+
 Each PROJ method maps to one class and to the parameters that set its domain, read from
 the CRS: `lat_0` and `lon_0` for a cap, `lon_0`, `lat_0` and `alpha` or `lonc` for a band,
 `o_lat_p` and `o_lon_p` for an oblique frame, `h` for a perspective horizon. The registry
@@ -423,11 +427,11 @@ it. Placing labels along a domain's edge, as `cartopy` can, is part of the parit
 
 The engine works on the sphere in the geographic frame of the target CRS's own datum. A
 mesh's vertices go from their source CRS to the target's base geographic CRS by a single
-datum operation, chosen once per scene for the extent of the meshes it holds. The domain
-and its seams are then cut in that frame, and the map projection alone is applied last,
-so a seam lands where the projection puts its discontinuity, to the last digit. The
-operation is recorded with the result ({ref}`§4.6 <crs-spec-4-6>`) and is part of the
-cache key ({ref}`§4.5 <crs-spec-4-5>`).
+datum operation for the whole scene, chosen by the policy below. The domain and its seams
+are then cut in that frame, and the map projection alone is applied last, so a seam lands
+where the projection puts its discontinuity, to the last digit. The operation is recorded
+with the result ({ref}`§4.6 <crs-spec-4-6>`) and is part of the cache key
+({ref}`§4.5 <crs-spec-4-5>`).
 
 PROJ is never left to choose an operation point by point. Measured on 2026-10-23, WGS84 to
 the British National Grid, EPSG:27700, at 52°N moves a point 129 m east of where the
@@ -437,8 +441,34 @@ That is a quiet 129 m step inside the domain of a UK model, and it is in today's
 `geovista` too ({issue}`2714`). A point the chosen operation cannot take is counted and
 reported, never given a different operation.
 
-Which operation is chosen, and what happens when the grids it needs are not installed,
-are left to the builder, provided the choice is recorded and the same for every point.
+The operation is chosen by one policy:
+
+1. **The extent is the data's.** It is the extent of the scene's data meshes, after the
+   domain has clipped them. The built-in layers, such as coastlines, do not widen it.
+2. **The most accurate operation that covers it.** Of the operations whose area of use
+   covers the extent, the most accurate is chosen, and applied to every point.
+3. **Coverage before accuracy, and never a mix.** Where no operation's area of use covers
+   the extent, the most accurate operation that can transform every point of it is
+   chosen instead, with a warning that the extent exceeds its area of use. PROJ's
+   ballpark operation, which applies no datum shift, is chosen only when no other
+   operation exists.
+4. **A national grid's domain is its area of use.** The domain of a national grid is the
+   area of use of its EPSG definition ({ref}`§4.3 <crs-spec-4-3>`). Anything outside it is
+   a removal the CRS implies ({ref}`§4.6 <crs-spec-4-6>`), and what remains is covered by
+   the grid's own operations.
+5. **The record explains the choice.** It names the operation, its accuracy and any grid
+   it used. PROJ may fetch grids over the network on demand, so the same code can choose
+   differently on two machines, and the record is what explains the difference.
+   `geovista` leaves PROJ's network setting to the user.
+
+Measured for EPSG:27700 on 2026-10-23, PROJ offers nine operations from WGS84. The most
+accurate, at 1 m, is grid-based, and its area of use is exactly the area of use of
+EPSG:27700, from 9.01°W to 2.01°E and from 49.75°N to 61.01°N. It raises beyond its grid,
+at 2.125°E for instance. Seven parametric operations, accurate to between 2 m and 35 m,
+transform any point, though each one's area of use lies within the UK. The ninth is the
+ballpark operation, which today's choice point by point falls back to east of 2°E. Under
+the policy, a scene on the British National Grid is clipped to the area of use, and every
+point that remains takes the 1 m operation.
 
 (crs-spec-4-9)=
 ### 4.9 Units
@@ -505,7 +535,9 @@ Every geometric result is checked against a reference that is independent of
   predicate, so that no kept vertex raises in PROJ and no vertex PROJ can project is
   removed;
 - **the datum**, by checking that a mesh crossing the edge of an operation's area of use,
-  such as a UK model across 2°E on the British National Grid, has no step.
+  such as a UK model across 2°E on the British National Grid, has no step: either one
+  operation takes every point it keeps, or the domain removes, and records, what that
+  operation cannot take.
 
 A **coverage test** records the outcome of every PROJ method and every `cartopy` class on
 a global mesh, measured as {ref}`§3.1 <crs-spec-3-1>` describes, and only lets the set
@@ -568,8 +600,8 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    polar stereographic and a gnomonic view, and the default band of a transverse
    Mercator. A transverse Mercator band is a full ring around the globe, so its default
    presumably takes only the half of the ring on the central meridian's side, from pole to
-   pole. Its half-width, and whether a national grid instead takes the area of use of its
-   EPSG definition, are both open.
+   pole, and its half-width is open. A national grid takes the area of use of its EPSG
+   definition ({ref}`§4.8 <crs-spec-4-8>`).
 3. **Open** — **Physical or normalised render units.** Rendering at the Earth's radius in
    metres makes every coordinate physical, but VTK's precision and cameras at that scale
    need checking against rendering at a normalised radius of 1.
