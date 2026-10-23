@@ -1,0 +1,3 @@
+Published the repository checks specification, which gives every check
+``geovista`` enforces on its own repository a section on one page of the
+developer guide, and has each failure link to its section. (:user:`claude`)
