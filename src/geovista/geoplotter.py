@@ -787,6 +787,17 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 mesh, tgt_crs, zlevel = _slice_seam(
                     mesh, tgt_crs, level=level, rtol=rtol, atol=atol
                 )
+            elif (
+                not transform_required
+                and not projected(mesh)
+                and (np.ndim(zlevel) or np.any(zlevel))
+            ):
+                # resized before any texture coordinates are added, as they add
+                # points at the antimeridian that a per-point zlevel cannot name
+                if not cloud:
+                    radius = float(distance(mesh))
+
+                mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
 
             if "texture" in kwargs and kwargs["texture"] is not None:
                 mesh = add_texture_coords(mesh, antimeridian=True)
@@ -807,11 +818,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                     inplace=not cloud,
                 )
                 to_wkt(mesh, self.crs)
-            elif not projected(mesh) and (np.ndim(zlevel) or np.any(zlevel)):
-                if not cloud:
-                    radius = float(distance(mesh))
-
-                mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
 
         def _check(option: str) -> bool:
             """Determine whether the keyword argument is present and not ``None``.

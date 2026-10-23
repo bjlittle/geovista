@@ -228,6 +228,20 @@ def test_resize__zlevel_per_point_records_no_radius(lfric):
     assert GV_FIELD_RADIUS not in result.field_data
 
 
+@pytest.mark.parametrize("zlevel", [0, [0]])
+def test_resize__zlevel_flattens_an_uneven_surface(lfric, zlevel):
+    """Test a surface lifted at each point is flattened by a scalar z-level.
+
+    Its mean radius already matches the target, so only its points show it
+    needs resizing.
+
+    """
+    lifted = resize(lfric, zlevel=np.linspace(-10, 10, lfric.n_points))
+    result = resize(lifted, zlevel=zlevel)
+    assert np.allclose(distance(result, mean=False), RADIUS)
+    assert np.allclose(from_cartesian(result), from_cartesian(lfric))
+
+
 def test_resize__zlevel_shape_fail(lfric):
     """Test trap of a z-level that does not broadcast to the points of a surface."""
     emsg = r"Cannot resize mesh, 'zlevel' with shape \(2,\) does not broadcast"

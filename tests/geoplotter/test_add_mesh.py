@@ -156,6 +156,27 @@ def test_surface_zlevel_array():
     assert np.allclose(distance(actor.mapper.dataset, mean=False), expected)
 
 
+def test_surface_zlevel_array_texture():
+    """A textured surface that needs no transform is lifted at each point.
+
+    Its texture coordinates add points at the antimeridian, which take the
+    level of the point they duplicate.
+
+    """
+    mesh = gv.Transform.from_1d(np.linspace(-180, 180, 9), [-20, 0, 20])
+    level = 1 + np.abs(from_cartesian(mesh)[:, 1]) / 90
+    texture = pv.Texture(np.zeros((8, 16, 3), dtype=np.uint8))
+    p = GeoPlotter()
+
+    actor = p.add_mesh(mesh, zlevel=level, texture=texture)
+    result = actor.mapper.dataset
+    expected = 1 + np.abs(from_cartesian(result)[:, 1]) / 90
+    assert result.n_points > mesh.n_points
+    assert np.allclose(
+        distance(result, mean=False), RADIUS + RADIUS * expected * ZLEVEL_SCALE
+    )
+
+
 def test_cloud_zlevel_zeros_shape_fail():
     """A z-level of zeros that doesn't broadcast to a cloud is refused.
 

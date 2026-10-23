@@ -635,7 +635,10 @@ def resize(
         )
     else:
         new_radius = radius + radius * float(level) * zscale
-        update = bool(new_radius) and not np.isclose(distance(mesh), new_radius)
+        # every point, as a surface lifted at each point may have the mean radius
+        update = bool(new_radius) and not np.allclose(
+            distance(mesh, mean=False), new_radius
+        )
 
     if update:
         lonlat = from_cartesian(mesh)
