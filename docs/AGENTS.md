@@ -141,10 +141,10 @@ between parenthesising the condition and the message. Keep fenced code under 88 
 ⚠️ **A reformat silently desyncs `:emphasize-lines:`.** The `black` 26 reflow in
 #2557 left `testing.rst` pointing past a now 3-line block; only the build sees it.
 
-⚠️ **A new `:fa:`/`:fab:` icon must be added to `src/_static/color.css`.** The selector
-list there ending `.fa-windows { color: #80d050 !important; }` brands every icon green;
-one absent renders in the default text colour, unwarned. Confirm the emitted class with
-`grep -o '<[^>]*fa-<name>[^>]*>' _build/html/<page>.html` — it is `fa fa-<name>`, sorted.
+⚠️ **A new `:fa:`/`:fab:` icon must be added to `src/_static/color.css`**, whose list
+ending `.fa-windows { color: #80d050 !important; }` brands icons green; one absent is
+unbranded, unwarned (`grep -o '<[^>]*fa-<name>[^>]*>'` the page: `fa fa-<name>`). A card's
+`:img-top:` is its page title's glyph, from Font Awesome, filled `#80d050` (#2707).
 
 ## Dependencies
 

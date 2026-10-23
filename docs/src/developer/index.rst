@@ -67,7 +67,7 @@ clarify the various steps involved in how to contribute to ``geovista``.
         :class-body: custom-body
         :link: gv-developer-checks
         :link-type: ref
-        :img-top: ../_static/images/icons/glossary.svg
+        :img-top: ../_static/images/icons/checks.svg
         :class-img-top: dark-light
         :class-card: sd-rounded-3
 
