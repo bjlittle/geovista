@@ -40,17 +40,16 @@ def test_pyvistaqt_mixin(mocker):
     class BackgroundPlotter:
         dummy = slot
 
-    class MultiPlotter:
-        dummy = slot
-
     module = mocker.MagicMock(
         QtInteractor=QtInteractor,
         BackgroundPlotter=BackgroundPlotter,
-        MultiPlotter=MultiPlotter,
     )
     mocker.patch.dict("sys.modules", pyvistaqt=module)
     import geovista.qt  # noqa: PLC0415
 
     assert geovista.qt.GeoBackgroundPlotter().dummy == slot
-    assert geovista.qt.GeoMultiPlotter().dummy == slot
     assert geovista.qt.GeoQtInteractor().dummy == slot
+    # pyvistaqt's MultiPlotter is no plotter, so GeoMultiPlotter could not add a
+    # mesh, and pyvistaqt deprecates it. A shaped GeoBackgroundPlotter has
+    # subplots instead (#2622)
+    assert not hasattr(geovista.qt, "GeoMultiPlotter")

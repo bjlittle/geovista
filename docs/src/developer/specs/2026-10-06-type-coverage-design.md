@@ -356,8 +356,8 @@ import revealed, with typed locals ({ref}`§8 <typing-spec-8>` item 8).
 
 `GeoPlotterBase` is a mixin. `GeoPlotter` combines it with `pyvista`'s `Plotter`, and
 `geovista.qt` with `pyvistaqt`'s `QtInteractor` and `BackgroundPlotter`, both plotters
-too, and with its `MultiPlotter`, which is not ({issue}`2622`). `mypy` had no way to know
-any of that. So the
+too. It was also combined with `pyvistaqt`'s `MultiPlotter`, which is not, until
+`GeoMultiPlotter` was removed ({issue}`2622`). `mypy` had no way to know any of that. So the
 mixin declared what it borrowed: `Callable[..., None]` for `add_text`, `add_point_labels`
 and `reset_camera`, `Theme` for `theme`, and for `camera` an annotation that isn't a type
 ({ref}`§3.4 <typing-spec-3-4>`). Each one clashed with `pyvista`'s own definition. Change 5
