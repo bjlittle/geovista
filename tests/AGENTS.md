@@ -127,7 +127,8 @@ browser, and *derive* what they govern rather than list it, so a new page, `pyXY
 feature or spec is covered the day it lands and an exemption carries its reason.
 Guard such a gate on nothing: a skip retires the rule in silence. A gate reading
 its own source builds its counterexamples, as `SECTION = "\N{SECTION SIGN}"` does.
-The `reading` fixture comes from `tests/docs/conftest.py`.
+The `reading` fixture comes from `tests/docs/conftest.py`. ⚠️ A new gate declares
+`CHECK = "<name>"` and gets a row and section in `docs/src/developer/checks.rst`.
 
 ⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** CI installs
 every prerequisite and builds the gallery deliberately; without the option, a
