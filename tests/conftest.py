@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
+import pyproj
 import pytest
 import pyvista as pv
 
@@ -242,6 +243,21 @@ def lfric_sst_eqc():
     mesh = transform_mesh(mesh, tgt_crs="+proj=eqc")
     mesh.set_active_scalars(name)
     return mesh
+
+
+@pytest.fixture
+def no_network():
+    """Fixture to turn off PROJ's network access, as pyproj's wheels ship it.
+
+    A conda environment turns it on, and PROJ then fetches any grid it lacks. A
+    wheel leaves it off, and an operation whose grid is not installed is then
+    unavailable.
+
+    """
+    enabled = pyproj.network.is_network_enabled()
+    pyproj.network.set_network_enabled(False)
+    yield
+    pyproj.network.set_network_enabled(enabled)
 
 
 @pytest.fixture

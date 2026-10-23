@@ -7,10 +7,13 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 from pyproj import CRS, Transformer
 from pyproj.enums import WktVersion
 from pyproj.exceptions import CRSError, ProjError
+from pyproj.transformer import TransformerGroup
 import pytest
 
 from geovista.common import wrap
@@ -301,3 +304,48 @@ def test_same_datum_by_another_name_needs_no_operation_chosen():
     lons, lats = Transformer.from_crs(utm, WGS84, always_xy=True).transform(xs, ys)
     np.testing.assert_allclose(result[:, 0], lons, atol=1e-9)
     np.testing.assert_allclose(result[:, 1], lats, atol=1e-9)
+
+
+@pytest.mark.usefixtures("no_network")
+def test_most_accurate_available_datum_operation():
+    """An operation whose grid is not installed is passed over, unwarned.
+
+    pyproj's wheels have neither PROJ's grids nor its network access, so the 1 m
+    operation to the British National Grid is unavailable, and the 2 m one is the
+    most accurate there is, as PROJ itself would take. PROJ's warning that the best
+    is missing was raised before one could be taken.
+
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        group = TransformerGroup(WGS84, "EPSG:27700", always_xy=True)
+    # the 1 m operation's grid is missing, else this tests nothing
+    assert not group.best_available
+    lons = np.array([-2.0, -1.0, 0.0, 1.0])
+    lats = np.full(lons.shape, 52.0)
+
+    result = transform_points(src_crs=WGS84, tgt_crs="EPSG:27700", xs=lons, ys=lats)
+
+    best = Transformer.from_crs(WGS84, "EPSG:27700", always_xy=True)
+    x, y = best.transform(lons, lats)
+    np.testing.assert_allclose(result[:, 0], x, atol=1e-6)
+    np.testing.assert_allclose(result[:, 1], y, atol=1e-6)
+
+
+@pytest.mark.parametrize("src_crs", ["EPSG:4807", "EPSG:27572"])
+def test_datum_operation_area_in_degrees_from_greenwich(src_crs):
+    """Points are located in degrees from Greenwich, to test an area of use.
+
+    NTF (Paris) measures in grads from the Paris meridian, and its point at 2°E 48°N
+    is 53.3 grad north, which was compared with the 51.1° northern edge of France,
+    and so warned about as outside it. Its Lambert zone II is located through it.
+
+    """
+    lon, lat = 2.0, 48.0
+    to_src = Transformer.from_crs(WGS84, src_crs, always_xy=True)
+    x, y = to_src.transform(lon, lat)
+
+    result = transform_points(src_crs=src_crs, tgt_crs=WGS84, xs=[x], ys=[y])
+
+    expected = Transformer.from_crs(src_crs, WGS84, always_xy=True).transform(x, y)
+    np.testing.assert_allclose(result[0, :2], expected, atol=1e-9)

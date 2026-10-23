@@ -226,11 +226,11 @@ def _applied_prime_meridian(pm: str) -> float:
 
 
 def _prime_meridian(crs: CRS, crs_json: dict[str, Any]) -> float | None:
-    """Calculate the longitude of the prime meridian of a projected `crs`.
+    """Calculate the longitude of the prime meridian of a projected or geographic CRS.
 
     The parameters of a projection are given relative to the prime meridian of
     its base CRS, which is Greenwich for most, but not all e.g. "EPSG:31251" is
-    on Ferro.
+    on Ferro. The longitudes of a geographic CRS are given relative to its own.
 
     PROJ applies a prime meridian that its definition names from its own table,
     which can differ in its last digits from the EPSG value that PROJ JSON carries
@@ -257,7 +257,8 @@ def _prime_meridian(crs: CRS, crs_json: dict[str, Any]) -> float | None:
     .. versionadded:: 0.6.0
 
     """
-    base = crs_json.get("base_crs") or {}
+    # a geographic CRS is its own base
+    base = crs_json.get("base_crs") or crs_json
     datum = base.get("datum") or {}
     prime_meridian = datum.get("prime_meridian") or {}
     longitude = prime_meridian.get("longitude", 0)

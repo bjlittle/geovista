@@ -35,6 +35,7 @@ from .common import (
 from .crs import (
     WGS84,
     CRSLike,
+    _prime_meridian,
     from_wkt,
     get_central_meridian,
     planar,
@@ -174,8 +175,11 @@ def transform_mesh(
 
         if src_crs == WGS84:
             # the datum operation is taken where each point is, before the mesh is
-            # rotated to the central meridian or cut, see issue #2714
-            mesh = _apply_datum(mesh, tgt_crs)
+            # rotated to the central meridian or cut, see issue #2714. A cut leaves
+            # the mesh given as it was, so then it is moved as a copy
+            mesh = _apply_datum(
+                mesh, tgt_crs, inplace=bool(inplace) and not slice_connectivity
+            )
 
         # points moved onto the target's datum are only projected from here
         projection_crs = tgt_crs.geodetic_crs if _DATUM in mesh.field_data else None
@@ -196,11 +200,15 @@ def transform_mesh(
             # a cloud carries a z-level at each point, which zlevel adds to
             level = level + _carried_zlevels(mesh, xyz, src_crs)
 
+        src_xs, src_ys = xyz[:, 0], xyz[:, 1]
+
+        if projection_crs is not None:
+            # the sphere is in degrees east of Greenwich, whatever the datum, so
+            # the points are given in the units of the target's geographic CRS
+            src_xs, src_ys = _from_greenwich(projection_crs, src_xs, src_ys)
+
         transformed = transform_points(
-            src_crs=projection_crs or src_crs,
-            tgt_crs=tgt_crs,
-            xs=xyz[:, 0],
-            ys=xyz[:, 1],
+            src_crs=projection_crs or src_crs, tgt_crs=tgt_crs, xs=src_xs, ys=src_ys
         )
 
         xs, ys = transformed[:, 0], transformed[:, 1]
@@ -474,7 +482,8 @@ def _transformer(
     It is the most accurate operation whose area of use covers every point. Where
     none does, it is the most accurate operation that can transform every point,
     with a warning. PROJ's ballpark operation, which applies no datum shift, is
-    used only when there is no other.
+    used only when there is no other. An operation whose grid is not installed, as
+    none is with pyproj's wheels, is passed over, as PROJ itself passes it over.
 
     Parameters
     ----------
@@ -540,7 +549,9 @@ def _transformer(
     return candidates[0]
 
 
-def _apply_datum(mesh: pv.PolyData, tgt_crs: pyproj.CRS) -> pv.PolyData:
+def _apply_datum(
+    mesh: pv.PolyData, tgt_crs: pyproj.CRS, *, inplace: bool = False
+) -> pv.PolyData:
     """Move a mesh on the sphere onto the datum of the target CRS.
 
     A datum operation must be taken where each point is. Rotating a mesh to the
@@ -554,13 +565,16 @@ def _apply_datum(mesh: pv.PolyData, tgt_crs: pyproj.CRS) -> pv.PolyData:
         The mesh, on the sphere of WGS84.
     tgt_crs : :class:`~pyproj.crs.CRS`
         The target CRS.
+    inplace : bool, default=False
+        Move the points of the `mesh` itself, rather than those of a copy.
 
     Returns
     -------
     :class:`~pyvista.PolyData`
         The mesh as it is when there is no datum to change, or it has been moved
-        already. Otherwise a copy, with each point moved onto the datum of the
-        target at the same radius, and marked as moved.
+        already. Otherwise the mesh, or a copy, with each point moved onto the datum
+        of the target at the same radius, in degrees east of Greenwich, and marked
+        as moved.
 
     Notes
     -----
@@ -580,16 +594,17 @@ def _apply_datum(mesh: pv.PolyData, tgt_crs: pyproj.CRS) -> pv.PolyData:
     moved = transform_points(
         src_crs=WGS84, tgt_crs=geographic, xs=lonlat[:, 0], ys=lonlat[:, 1]
     )
+    # a geographic CRS may measure in another unit, from another meridian, such as
+    # NTF (Paris) in grads east of Paris, but the sphere is in degrees from Greenwich
+    lons, lats = _to_greenwich(geographic, moved[:, 0], moved[:, 1])
     radius = np.asarray(distance(mesh, mean=False))
 
-    result = mesh.copy()
+    result = mesh if inplace else mesh.copy()
     # pyvista 0.49 annotates "pyvista_ndarray.__setitem__" to refuse the slice
     # index it accepts at runtime, so the points are set through a cast
     points = cast("NDArray[Any]", result.points)
     # each point keeps its own radius, which carries any z-level it was lifted by
-    points[:] = (
-        to_cartesian(moved[:, 0], moved[:, 1], radius=1.0) * radius[:, np.newaxis]
-    )
+    points[:] = to_cartesian(lons, lats, radius=1.0) * radius[:, np.newaxis]
     result.field_data[_DATUM] = np.array([1])
 
     return result
@@ -644,9 +659,10 @@ def _datum_operations(
     Returns
     -------
     list of :class:`~pyproj.transformer.Transformer`
-        The operations, most accurate first, apart from PROJ's ballpark operation.
-        Empty when the CRSs share a datum, as a projection alone needs no choice,
-        or when the ballpark operation is the only one.
+        The available operations, most accurate first, apart from PROJ's ballpark
+        operation. An operation whose grid is not installed is unavailable. Empty
+        when the CRSs share a datum, as a projection alone needs no choice, or when
+        the ballpark operation is the only one.
 
     Notes
     -----
@@ -658,9 +674,19 @@ def _datum_operations(
     if src_datum is None or tgt_datum is None or src_datum == tgt_datum:
         return []
 
-    group = pyproj.transformer.TransformerGroup(
-        src_crs, tgt_crs, always_xy=True, allow_ballpark=False
-    )
+    with warnings.catch_warnings():
+        # PROJ warns when the most accurate operation's grid is not installed, as
+        # none is with pyproj's wheels, but the most accurate of those available is
+        # taken instead, as PROJ itself would take it
+        warnings.filterwarnings(
+            "ignore",
+            message="Best transformation is not available",
+            category=UserWarning,
+        )
+        group = pyproj.transformer.TransformerGroup(
+            src_crs, tgt_crs, always_xy=True, allow_ballpark=False
+        )
+
     operations = group.transformers
 
     # one datum can go by two names, such as WGS84 and EPSG:4326's ensemble of it,
@@ -763,21 +789,112 @@ def _lonlats(
     Returns
     -------
     tuple of :class:`~numpy.ndarray`
-        The longitudes and latitudes of the points, in degrees, on the datum of the
-        `crs`. An area of use is given on WGS84, but the difference between datums
-        is far smaller than the precision of an area of use.
+        The longitudes and latitudes of the points, in degrees east of Greenwich, on
+        the datum of the `crs`. An area of use is given on WGS84, but the difference
+        between datums is far smaller than the precision of an area of use.
 
     Notes
     -----
     .. versionadded:: 0.6.0
 
     """
-    if crs.is_geographic:
-        return xs, ys
+    geographic = crs.geodetic_crs or crs
 
-    geographic = pyproj.Transformer.from_crs(crs, crs.geodetic_crs, always_xy=True)
-    lons, lats = geographic.transform(xs, ys)
-    return np.asarray(lons), np.asarray(lats)
+    if not crs.is_geographic:
+        transformer = pyproj.Transformer.from_crs(crs, geographic, always_xy=True)
+        xs, ys = (np.asarray(values) for values in transformer.transform(xs, ys))
+
+    # an area of use is in degrees east of Greenwich, which a geographic CRS need
+    # not be, such as NTF (Paris) in grads east of Paris
+    return _to_greenwich(geographic, xs, ys)
+
+
+def _angles(crs: pyproj.CRS) -> tuple[float, float, float]:
+    """Find how a geographic CRS measures its longitudes and latitudes.
+
+    Parameters
+    ----------
+    crs : :class:`~pyproj.crs.CRS`
+        The geographic CRS.
+
+    Returns
+    -------
+    tuple of float
+        The degrees east of Greenwich of its prime meridian, and the degrees in a
+        unit of its longitude and of its latitude. Most are in degrees east of
+        Greenwich, but not all, such as NTF (Paris), in grads east of Paris.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # there is no prime meridian only where its unit is not angular, which none is
+    prime_meridian = _prime_meridian(crs, crs.to_json_dict()) or 0.0
+    degrees = {"east": 1.0, "north": 1.0}
+
+    for axis in crs.axis_info:
+        if axis.direction in degrees and axis.unit_name != "degree":
+            degrees[axis.direction] = math.degrees(axis.unit_conversion_factor)
+
+    return prime_meridian, degrees["east"], degrees["north"]
+
+
+def _to_greenwich(
+    crs: pyproj.CRS, lons: NDArray[Any], lats: NDArray[Any]
+) -> tuple[NDArray[Any], NDArray[Any]]:
+    """Convert the longitudes and latitudes of a geographic CRS to degrees.
+
+    Parameters
+    ----------
+    crs : :class:`~pyproj.crs.CRS`
+        The geographic CRS.
+    lons : :class:`~numpy.ndarray`
+        The longitudes, in the unit of the `crs`, east of its prime meridian.
+    lats : :class:`~numpy.ndarray`
+        The latitudes, in the unit of the `crs`.
+
+    Returns
+    -------
+    tuple of :class:`~numpy.ndarray`
+        The longitudes, in degrees east of Greenwich, and the latitudes, in degrees.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    prime_meridian, east, north = _angles(crs)
+    return lons * east + prime_meridian, lats * north
+
+
+def _from_greenwich(
+    crs: pyproj.CRS, lons: NDArray[Any], lats: NDArray[Any]
+) -> tuple[NDArray[Any], NDArray[Any]]:
+    """Convert longitudes and latitudes in degrees to those of a geographic CRS.
+
+    Parameters
+    ----------
+    crs : :class:`~pyproj.crs.CRS`
+        The geographic CRS.
+    lons : :class:`~numpy.ndarray`
+        The longitudes, in degrees east of Greenwich.
+    lats : :class:`~numpy.ndarray`
+        The latitudes, in degrees.
+
+    Returns
+    -------
+    tuple of :class:`~numpy.ndarray`
+        The longitudes, in the unit of the `crs`, east of its prime meridian, and the
+        latitudes, in the unit of the `crs`.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    prime_meridian, east, north = _angles(crs)
+    return (lons - prime_meridian) / east, lats / north
 
 
 def _covers(
