@@ -17,7 +17,9 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import shutil
 import sys
+import tomllib
 from typing import TYPE_CHECKING
 
 from click.testing import CliRunner
@@ -162,19 +164,21 @@ def test_no_configuration_prints_no_breadcrumb(script, tmp_path, monkeypatch, su
     assert "gv-developer-checks-" not in out + written
 
 
-def test_the_repository_configuration_is_read(script, monkeypatch):
-    """The repository's own configuration and fragments pass the check.
+def test_the_repository_configuration_is_read(script, tmp_path, monkeypatch):
+    """A fragment valid under the repository's own configuration passes the check.
 
-    A fragment already merged is valid by construction, so this holds the check
-    to the configuration it really runs with.
+    The configuration and template are copied into a project of the test's own,
+    with a fragment of a type the configuration declares, as a release removes
+    every fragment from the repository and leaves only the template.
 
     """
-    fragment = next(
-        path
-        for path in sorted((REPO / "changelog").glob("*.*.rst"))
-        if path.name.partition(".")[0].isdigit()
-        and ":user:" in path.read_text(encoding="utf-8")
-    )
-    monkeypatch.chdir(REPO)
-    code, out = _run(script, fragment.name.partition(".")[0], fragment.name)
+    root = tmp_path / "repository"
+    (root / "changelog").mkdir(parents=True)
+    shutil.copy(REPO / "pyproject.toml", root / "pyproject.toml")
+    shutil.copy(REPO / "changelog" / "template.rst", root / "changelog")
+    config = tomllib.loads((REPO / "pyproject.toml").read_text(encoding="utf-8"))
+    kind = config["tool"]["towncrier"]["type"][0]["directory"]
+    fragment = _write(root, f"1234.{kind}.rst")
+    monkeypatch.chdir(root)
+    code, out = _run(script, "1234", fragment)
     assert code == 0, out
