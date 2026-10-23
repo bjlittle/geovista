@@ -254,8 +254,8 @@ text, in every run of the unit tests.
 **When it fails:** Add a row and a section for a new check, or remove those of a
 check that has gone. A section carries both of its labels,
 ``gv-developer-checks-<name>`` and ``tippy-gv-developer-checks-<name>``. The
-gate also fails when a ``CHECK`` is not a literal string, since it reads the
-source rather than running it; when a name is not lower-case words joined by
+gate also fails when a ``CHECK`` is not a literal string assigned at the top of
+its module, since it reads the source rather than running it; when a name is not lower-case words joined by
 hyphens, since it becomes the stem of the labels; and when two modules declare
 the same name, since one module enforces one check.
 
@@ -271,8 +271,8 @@ Changelog Fragment
 ------------------
 
 **The rule:** Every pull request adds a ``towncrier`` news fragment, named
-``<PR>.<type>.rst`` for its own number and a configured type, that credits its
-author with a ``:user:`` role.
+``<PR>.<type>.rst`` for its own number and a configured type, that carries a
+``:user:`` attribution.
 
 **Why:** The changelog of each release is built from the fragments, so a change
 without one is missing from the release notes.

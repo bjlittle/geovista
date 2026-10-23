@@ -17,16 +17,11 @@ See "docs/src/developer/specs/2026-10-23-repository-checks-design.md".
 from __future__ import annotations
 
 import ast
-import importlib.util
 from pathlib import Path
 import re
 import sys
-from typing import TYPE_CHECKING
 
 import pytest
-
-if TYPE_CHECKING:
-    from types import ModuleType
 
 #: The section of the repository checks page that documents this check.
 CHECK = "repository-checks"
@@ -65,15 +60,6 @@ def test_skips():
 def test_passes():
     pass
 """
-
-
-@pytest.fixture(scope="module")
-def breadcrumb() -> ModuleType:
-    """Load the breadcrumb module, which is no importable module."""
-    spec = importlib.util.spec_from_file_location("breadcrumb", BREADCRUMB)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def test_breadcrumb_names_the_section(breadcrumb):
@@ -159,9 +145,11 @@ def declared(root: Path) -> dict[str | None, list[Path]]:
     Returns
     -------
     dict
-        Each name, with the modules declaring it. A ``CHECK`` that is not a
-        literal string is gathered under ``None``, so that it is reported rather
-        than taken for a module with no check.
+        Each name, with the modules declaring it. A ``CHECK`` the gate cannot
+        read, as it is not a literal string assigned at the top of its module,
+        is gathered under ``None``, so that it is reported rather than taken for
+        a module with no check. That covers unpacking, a binding inside a block,
+        and an import, any of which the pytest hook would still read.
 
     """
     modules = [
@@ -171,6 +159,7 @@ def declared(root: Path) -> dict[str | None, list[Path]]:
     found: dict[str | None, list[Path]] = {}
     for module in modules:
         tree = ast.parse(module.read_text(encoding="utf-8"))
+        read: set[int] = set()
         for node in tree.body:
             if isinstance(node, ast.Assign):
                 targets, value = node.targets, node.value
@@ -178,16 +167,104 @@ def declared(root: Path) -> dict[str | None, list[Path]]:
                 targets, value = [node.target], node.value
             else:
                 continue
-            if any(isinstance(t, ast.Name) and t.id == CONSTANT for t in targets):
+            named = [t for t in targets if isinstance(t, ast.Name) and t.id == CONSTANT]
+            if named:
+                read.update(id(target) for target in named)
                 literal = isinstance(value, ast.Constant) and isinstance(
                     value.value, str
                 )
                 name = value.value if literal else None
                 found.setdefault(name, []).append(module.relative_to(root))
+        # any other binding of the module's name, which the gate cannot read
+        if any(id(node) not in read for node in _bindings(tree)):
+            found.setdefault(None, []).append(module.relative_to(root))
     return found
 
 
-def documented(text: str) -> tuple[list[str], list[str]]:
+def _bindings(tree: ast.Module) -> list[ast.AST]:
+    """Find every node that binds ``CHECK`` in a module's own namespace.
+
+    That is what the pytest hook reads, as ``item.module.CHECK``, so this follows
+    Python's scopes. A function, a lambda or a class runs its body in a scope of
+    its own, which binds nothing in the module unless that scope itself declares
+    the name ``global``. Its decorators, defaults and bases run in the enclosing
+    scope, though. A comprehension's loop targets are its own, but an assignment
+    expression inside it binds the enclosing scope. An import binds the name it
+    is given ``as``, or the first part of the module it imports.
+
+    Parameters
+    ----------
+    tree : ast.Module
+        The parsed module.
+
+    Returns
+    -------
+    list of ast.AST
+        The binding nodes, each an ``ast.Name`` stored to or an ``ast.alias``.
+
+    """
+    found: list[ast.AST] = []
+    scopes = ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda | ast.ClassDef
+
+    def declared(scope: ast.AST) -> set[str]:
+        """Return the names a scope itself declares global, not its inner ones."""
+        names: set[str] = set()
+        pending = list(ast.iter_child_nodes(scope))
+        while pending:
+            node = pending.pop()
+            if isinstance(node, ast.Global):
+                names.update(node.names)
+            if not isinstance(node, scopes):
+                pending.extend(ast.iter_child_nodes(node))
+        return names
+
+    def visit(node: ast.AST, *, module: bool, shared: set[str]) -> None:
+        enclosing = {"module": module, "shared": shared}
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda):
+            outer = [*node.args.defaults, *node.args.kw_defaults]
+            if not isinstance(node, ast.Lambda):
+                outer += node.decorator_list
+            for part in outer:
+                if part is not None:
+                    visit(part, **enclosing)
+            body = [node.body] if isinstance(node, ast.Lambda) else node.body
+            for part in body:
+                visit(part, module=False, shared=declared(node))
+        elif isinstance(node, ast.ClassDef):
+            for part in [*node.decorator_list, *node.bases, *node.keywords]:
+                visit(part, **enclosing)
+            for part in node.body:
+                visit(part, module=False, shared=declared(node))
+        elif isinstance(
+            node, ast.ListComp | ast.SetComp | ast.DictComp | ast.GeneratorExp
+        ):
+            # the loop targets are the comprehension's own, so they are skipped
+            for generator in node.generators:
+                for part in [generator.iter, *generator.ifs]:
+                    visit(part, **enclosing)
+            for name in ("elt", "key", "value"):
+                if (part := getattr(node, name, None)) is not None:
+                    visit(part, **enclosing)
+        else:
+            stored = (
+                isinstance(node, ast.Name)
+                and node.id == CONSTANT
+                and isinstance(node.ctx, ast.Store)
+            )
+            imported = (
+                isinstance(node, ast.alias)
+                and (node.asname or node.name.partition(".")[0]) == CONSTANT
+            )
+            if (stored or imported) and (module or CONSTANT in shared):
+                found.append(node)
+            for child in ast.iter_child_nodes(node):
+                visit(child, **enclosing)
+
+    visit(tree, module=True, shared=set())
+    return found
+
+
+def documented(text: str) -> tuple[list[str], list[str], set[str]]:
     """Read the sections and the rows of the repository checks page.
 
     Parameters
@@ -197,10 +274,11 @@ def documented(text: str) -> tuple[list[str], list[str]]:
 
     Returns
     -------
-    tuple of list
+    tuple
         The names of the sections carrying both labels, and the names the rows
         of the lookup table link to, which are the cross-references before the
-        first section. Each in page order, with any duplicate kept.
+        first section, each in page order with any duplicate kept; and every name
+        that has any label, so that a half-deleted section is still seen.
 
     """
     lines = text.splitlines()
@@ -212,7 +290,8 @@ def documented(text: str) -> tuple[list[str], list[str]]:
     tippy = {m["name"] for _, m in labels if m["tippy"]}
     sections = [name for name in plain if name in tippy]
     rows = [m["name"] for line in lines[:first] for m in ROW.finditer(line)]
-    return sections, rows
+    labelled = {m["name"] for _, m in labels}
+    return sections, rows, labelled
 
 
 def disagreements(root: Path, page: Path) -> list[str]:
@@ -232,10 +311,11 @@ def disagreements(root: Path, page: Path) -> list[str]:
 
     """
     found = declared(root)
-    sections, rows = documented(page.read_text(encoding="utf-8"))
+    sections, rows, labelled = documented(page.read_text(encoding="utf-8"))
     names = {name for name in found if name is not None}
     messages = [
-        f"{module}: {CONSTANT} is not a literal string: {SEE}"
+        f"{module}: {CONSTANT} is not a literal string assigned at the top of the "
+        f"module: {SEE}"
         for module in found.get(None, [])
     ]
     for name in sorted(names):
@@ -255,7 +335,7 @@ def disagreements(root: Path, page: Path) -> list[str]:
             messages.append(f"{name!r} has no row in the lookup table: {SEE}")
     messages += [
         f"the section for {name!r} documents no check: {SEE}"
-        for name in sorted(set(sections) - names)
+        for name in sorted(labelled - names)
     ]
     messages += [
         f"the row for {name!r} links to no check: {SEE}"
@@ -340,6 +420,81 @@ def test_a_computed_check_fails(tmp_path):
     page = _tree(tmp_path, {"tests/test_a.py": '"a" + "b"'}, [], [])
     found = disagreements(tmp_path, page)
     assert any("test_a.py" in message and "literal" in message for message in found)
+
+
+def test_a_half_deleted_section_fails(tmp_path):
+    """A label left behind by a check that has gone is reported too."""
+    page = _tree(tmp_path, {}, [], [".. _gv-developer-checks-gone:"])
+    found = disagreements(tmp_path, page)
+    assert any("'gone'" in message and "no check" in message for message in found)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        pytest.param('CHECK, OTHER = "hidden", 1\n', id="tuple"),
+        pytest.param('if True:\n    CHECK = "nested"\n', id="nested"),
+        pytest.param("from elsewhere import CHECK\n", id="imported"),
+        pytest.param("from elsewhere import other as CHECK\n", id="imported-as"),
+        pytest.param('with open(".") as f:\n    CHECK = "nested"\n', id="with"),
+        pytest.param('def f():\n    global CHECK\n    CHECK = "late"\n', id="global"),
+        pytest.param(
+            'values = [(CHECK := "hidden") for _ in range(1)]\n',
+            id="comprehension-walrus",
+        ),
+        pytest.param(
+            'def f(value=(CHECK := "hidden")):\n    pass\n', id="default-walrus"
+        ),
+        pytest.param(
+            'class A:\n    global CHECK\n    CHECK = "hidden"\n', id="class-global"
+        ),
+    ],
+)
+def test_a_check_bound_out_of_reach_fails(tmp_path, source):
+    """The hook reads any CHECK a module binds, so the gate reports any it can't.
+
+    A name bound by unpacking, inside a block, or by an import, is one the gate
+    cannot read from the source, yet a failure would still link to its section.
+
+    """
+    module = tmp_path / "tests" / "test_a.py"
+    module.parent.mkdir(parents=True)
+    module.write_text(source, encoding="utf-8")
+    page = _tree(tmp_path, {}, [], [])
+    found = disagreements(tmp_path, page)
+    assert any("test_a.py" in message and "literal" in message for message in found)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        pytest.param('def f():\n    CHECK = "local"\n', id="function-local"),
+        pytest.param('class A:\n    CHECK = "attribute"\n', id="class-attribute"),
+        pytest.param("x = [CHECK for CHECK in range(3)]\n", id="comprehension"),
+        pytest.param("f = lambda CHECK: CHECK\n", id="lambda"),
+        pytest.param(
+            "from upstream import CHECK as dependency_check\n", id="imported-as"
+        ),
+        pytest.param(
+            'CHECK = "demo"\n'
+            "def outer():\n"
+            '    CHECK = "local"\n'
+            "    def inner():\n"
+            "        global CHECK\n"
+            "        return CHECK\n"
+            "    return inner()\n",
+            id="nested-global",
+        ),
+    ],
+)
+def test_a_name_that_binds_no_module_check_passes(tmp_path, source):
+    """Only a binding of the module's own CHECK is one the hook would read."""
+    module = tmp_path / "tests" / "test_a.py"
+    module.parent.mkdir(parents=True)
+    module.write_text(source, encoding="utf-8")
+    names = [name for name in declared(tmp_path) if name is not None]
+    page = _tree(tmp_path, {}, names, [_labels(name) for name in names])
+    assert disagreements(tmp_path, page) == []
 
 
 def test_an_ill_formed_name_fails(tmp_path):

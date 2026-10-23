@@ -1,0 +1,5 @@
+The repository checks gate now reports a section left with only one of its
+labels, and a ``CHECK`` it cannot read because it is unpacked, bound inside a
+block or imported. The nightly specification status issue links to its check's
+section, and the status workflow runs when the breadcrumb changes.
+(:user:`claude`)
