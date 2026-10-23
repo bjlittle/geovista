@@ -45,6 +45,9 @@ import pytest
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, Mapping
 
+#: The section of the repository checks page that documents this check.
+CHECK = "spec-conventions"
+
 #: The repository root, beneath which the corpus is derived.
 REPO = Path(__file__).parents[1]
 

@@ -25,6 +25,9 @@ from pathlib import Path
 
 import pytest
 
+#: The section of the repository checks page that documents this check.
+CHECK = "reading-time-banner"
+
 #: The documentation source, which is the corpus this gate is derived from.
 DOCS = Path(__file__).parents[2] / "docs" / "src"
 

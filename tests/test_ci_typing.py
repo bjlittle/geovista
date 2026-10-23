@@ -28,6 +28,9 @@ from typing import Any
 import pytest
 import yaml
 
+#: The section of the repository checks page that documents this check.
+CHECK = "strict-typing"
+
 #: The repository root, holding the manifest.
 ROOT = Path(__file__).parents[1]
 #: The manifest declaring the "mypy" configuration and its overrides.

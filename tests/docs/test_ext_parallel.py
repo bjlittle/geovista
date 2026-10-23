@@ -22,6 +22,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+#: The section of the repository checks page that documents this check.
+CHECK = "parallel-safe-extensions"
+
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import NoReturn

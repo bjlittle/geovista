@@ -33,6 +33,9 @@ from typing import Any
 import pytest
 import yaml
 
+#: The section of the repository checks page that documents this check.
+CHECK = "python-support"
+
 #: The repository root, holding the manifest and the workflows.
 ROOT = Path(__file__).parents[1]
 #: The manifest declaring the classifiers, the floor and the pixi environments.
