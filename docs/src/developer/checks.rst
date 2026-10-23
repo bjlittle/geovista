@@ -83,7 +83,10 @@ marker never fails a test there.
 of every test module, in every run of the unit tests.
 
 **When it fails.** The message names each test that renders unmarked. Add the
-marker.
+marker. Two other faults are reported too: a test marked ``example`` but not
+``image``, as the gallery image tests are a subset of the image tests, so mark
+it ``image`` as well; and an entry in ``EXEMPT`` naming a test that no longer
+exists, which you remove.
 
 **Declaring an exception.** A test that only appears to draw goes in ``EXEMPT``
 in :bash:`tests/test_image_marker.py`, with the reason as its value. A reviewer
@@ -107,7 +110,8 @@ round to.
 
 **What enforces it.** :bash:`tests/docs/test_readingtime_coverage.py`, which
 reads every page under :bash:`docs/src` as text, so a new page is covered the
-day it lands. It needs neither ``sphinx`` nor a build, and never skips.
+day it lands. It needs neither ``sphinx`` nor a build, so it runs in every run of
+the unit tests and never skips.
 
 **When it fails.** Add the banner to the page named, or remove a second one.
 
@@ -189,7 +193,10 @@ declares that it is safe to read and to write in parallel.
 which fails a build run with ``--fail-on-warning``.
 
 **What enforces it.** :bash:`tests/docs/test_ext_parallel.py`, which discovers
-the extensions, so a new one is covered the day it lands.
+the extensions, so a new one is covered the day it lands. It needs ``sphinx``, so
+it skips in the unit test environments and runs where ``sphinx`` is installed: in
+the :guilabel:`test docs chrome` job of ``ci-tests-docs.yml``, and locally with
+``pixi run -e geovista``. Run it there before you push a change to an extension.
 
 **When it fails.** Return ``parallel_read_safe`` and ``parallel_write_safe`` from
 the extension's ``setup``.
@@ -245,7 +252,12 @@ leave a section describing a rule nobody enforces.
 text, in every run of the unit tests.
 
 **When it fails.** Add a row and a section for a new check, or remove those of a
-check that has gone. A section carries both of its labels.
+check that has gone. A section carries both of its labels,
+``gv-developer-checks-<name>`` and ``tippy-gv-developer-checks-<name>``. The
+gate also fails when a ``CHECK`` is not a literal string, since it reads the
+source rather than running it; when a name is not lower-case words joined by
+hyphens, since it becomes the stem of the labels; and when two modules declare
+the same name, since one module enforces one check.
 
 **Declaring an exception.** None.
 

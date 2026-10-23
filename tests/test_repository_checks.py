@@ -294,7 +294,8 @@ def _labels(name: str) -> str:
 def test_the_page_and_the_checks_agree():
     """Every check has a row and a section, and every row and section a check."""
     assert disagreements(REPO, PAGE) == []
-    assert len(declared(REPO)) == 9
+    # a gate that read no check would agree with an empty page
+    assert declared(REPO), "the gate found no CHECK to hold the page to"
 
 
 def test_a_section_without_a_check_fails(tmp_path):
