@@ -449,6 +449,34 @@ For further details refer to the following TOML tables:
 * :toml:`[tool.ruff.lint.per-file-ignores]`
 
 
+.. _gv-developer-documentation-title-style:
+.. _tippy-gv-developer-documentation-title-style:
+
+:fa:`spell-check` Title Style
+-----------------------------
+
+Hand-authored page and section titles use Chicago Manual of Style headline style,
+with one deviation, the same rule as the `tephpy title style`_:
+
+- Capitalize the first and last words, all major words, and prepositions of four
+  letters or more.
+- Lowercase articles, coordinating conjunctions, the infinitive "to", and
+  prepositions of three letters or fewer.
+
+The deviation is the length threshold. The Chicago Manual of Style lowercases a
+preposition however long it is, whereas ``geovista`` capitalizes the longer ones, as
+in "Where geovista Departs From pyvista", while keeping the short ones down, as in
+"What Changes in transform_mesh". Both parts of a hyphenated compound are
+capitalized, as in "Reading-Time Banner".
+
+Keep the literal case of code and API identifiers, filenames, paths and commands;
+of project names, such as ``geovista``, ``pyvista`` and ``pixi``; and of acronyms
+and scientific symbols. The rule applies to page titles, section titles, rubrics,
+card titles and link text that names a section. It does not apply to generated API
+pages, numpydoc section headers, changelog entries, or anything that is a full
+sentence, such as captions and admonition text, which use sentence case.
+
+
 .. _gv-developer-documentation-cross-references:
 .. _tippy-gv-developer-documentation-cross-references:
 
@@ -1119,5 +1147,6 @@ e.g.,
 .. _single preview rule: https://docs.astral.sh/ruff/preview/#selecting-single-preview-rules
 .. _sphinx linkcheck builder: https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.linkcheck.CheckExternalLinksBuilder
 .. _sphinx-book-theme: https://sphinx-book-theme.readthedocs.io/en/stable/
+.. _tephpy title style: https://tephpy.readthedocs.io/en/latest/developer/docs-style.html#title-style
 .. _ukiyo-e: https://en.wikipedia.org/wiki/Ukiyo-e
 .. _widgets: https://docs.pyvista.org/examples/03-widgets/

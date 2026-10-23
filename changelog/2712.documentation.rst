@@ -1,0 +1,4 @@
+Added a :ref:`title style <gv-developer-documentation-title-style>` to the
+documentation guide: Chicago Manual of Style headline style, with prepositions of
+four letters or more capitalized, as ``tephpy`` titles its pages. The headings of
+the design specifications now follow it. (:user:`claude`)

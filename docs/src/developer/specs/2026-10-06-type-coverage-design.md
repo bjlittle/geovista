@@ -1,4 +1,4 @@
-# geovista type coverage — design specification
+# geovista Type Coverage — Design Specification
 
 ```{readingtime}
 ```
@@ -81,7 +81,7 @@ guarding the other twenty-two has been reporting success throughout.
 ## 3. Architecture
 
 (typing-spec-3-1)=
-### 3.1 Where the check runs
+### 3.1 Where the Check Runs
 
 The `mirrors-mypy` hook is replaced by a `local` hook that invokes the pixi environment's
 own `mypy`:
@@ -122,7 +122,7 @@ suppression on `geovista.examples.grid.*` is unchanged too; it predates this spe
 identical 36 and 5 errors either way, so those two names come off its `module` list.
 
 (typing-spec-3-2)=
-### 3.2 The ratchet
+### 3.2 The Ratchet
 
 The twenty-two modules carrying errors are listed once with `ignore_errors`, alongside the
 gallery. With the library ignored and the {ref}`§3.4 <typing-spec-3-4>` suppression
@@ -185,7 +185,7 @@ than trusting it to review, and reads `pyproject.toml` as text so that it needs 
 built artefact nor a network.
 
 (typing-spec-3-3)=
-### 3.3 The ArrayLike contract
+### 3.3 The ArrayLike Contract
 
 295 of the 492 library errors, spread over 61 lines, are one idiom. A parameter is annotated
 `ArrayLike`, which is correct for a public boundary, and the body then treats it as an
@@ -294,7 +294,7 @@ runtime, but is annotated for a list only, so `geovista.Report`, which promises 
 wraps it itself.
 
 (typing-spec-3-4)=
-### 3.4 Gallery suppressions
+### 3.4 Gallery Suppressions
 
 122 of the 150 errors in `examples/` are two defects, measured on 2026-10-06 against
 `pyvista` 0.49.0 with the override below lifted. Their causes differ, and this section got
@@ -352,7 +352,7 @@ the plotting calls are. Change 6c met those four, and two more that `report.py`'
 import revealed, with typed locals ({ref}`§8 <typing-spec-8>` item 8).
 
 (typing-spec-3-5)=
-### 3.5 Where geovista departs from pyvista
+### 3.5 Where geovista Departs From pyvista
 
 `GeoPlotterBase` is a mixin. `GeoPlotter` combines it with `pyvista`'s `Plotter`, and
 `geovista.qt` with `pyvistaqt`'s `QtInteractor` and `BackgroundPlotter`, both plotters
@@ -420,7 +420,7 @@ Each change carries a towncrier fragment and the `agentic` label. Changes 2 to 4
 published signatures and each adds tests exercising the widened input.
 
 (typing-spec-5)=
-## 5. Alternatives considered
+## 5. Alternatives Considered
 
 - **`additional_dependencies` on the `mirrors-mypy` hook.** The route `tephpy` takes, and
   the one this work began with. Self-contained and runs unchanged on `pre-commit.ci`. It is
@@ -492,7 +492,7 @@ Out of scope:
   `pyvistaqt`, which ships `py.typed` but is in no locked environment ({issue}`2630`).
 
 (typing-spec-8)=
-## 8. Open items
+## 8. Open Items
 
 Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 

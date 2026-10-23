@@ -1,4 +1,4 @@
-# geovista planar z-levels — design specification
+# geovista Planar z-Levels — Design Specification
 
 ```{readingtime}
 ```
@@ -80,7 +80,7 @@ below them has depended on its extent.
 ## 3. Design
 
 (zlevel-spec-3-1)=
-### 3.1 The rule
+### 3.1 The Rule
 
 In a planar CRS, a point at level `zlevel` sits at
 
@@ -117,7 +117,7 @@ as `CRS.ellipsoid.semi_major_metre` and the `unit_conversion_factor` of the firs
 which run to infinity towards a pole, need no special case.
 
 (zlevel-spec-3-2)=
-### 3.2 What changes in transform_mesh
+### 3.2 What Changes in transform_mesh
 
 `transform_mesh` computes `R` for its target CRS with a private helper, and uses it in place
 of the extent. The bounds, the floor division and the `TODO` beside them go.
@@ -180,7 +180,7 @@ inconsistency and `breaking` for the size of every planar offset, which anyone w
 `zscale` for a projection will see shrink.
 
 (zlevel-spec-5)=
-## 5. Alternatives considered
+## 5. Alternatives Considered
 
 - **The projected extent of the CRS's domain, divided by four.** It keeps today's z for a
   global mesh in `eqc`, `robin` and `moll` exactly. But it has to sample the domain, it needs
@@ -223,7 +223,7 @@ default levels of `GeoPlotter`, which keep their order; {issue}`2583`, the point
 which nothing outside `transform_mesh` needs yet.
 
 (zlevel-spec-8)=
-## 8. Open items
+## 8. Open Items
 
 Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 
