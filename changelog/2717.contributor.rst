@@ -1,0 +1,4 @@
+Published the globe-first CRS foundation specification, which designs how
+``geovista`` takes a mesh from the globe into any projection it supports,
+starting from a measurement of every PROJ projection method and ``cartopy``
+class on a global mesh. (:user:`claude`)
