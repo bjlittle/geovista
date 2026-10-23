@@ -1,0 +1,8 @@
+Removed ``geovista.qt.GeoMultiPlotter``, without a deprecation period. It mixed
+the ``geovista`` plotter API into ``pyvistaqt``'s ``MultiPlotter``, which is a
+grid of plotters rather than a plotter itself, so adding a mesh to it always
+raised an ``AttributeError``. ``pyvistaqt`` has also deprecated
+``MultiPlotter``, for removal in its 0.14 release. For subplots, give
+:class:`~geovista.qt.GeoBackgroundPlotter` a ``shape`` instead, e.g.,
+``GeoBackgroundPlotter(shape=(1, 2))``, and select each subplot with
+``subplot``. (:user:`claude`)

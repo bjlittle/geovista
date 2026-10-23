@@ -46,16 +46,3 @@ class GeoBackgroundPlotter(GeoPlotterBase, pvqt.BackgroundPlotter):
     .. versionadded:: 0.1.0
 
     """
-
-
-class GeoMultiPlotter(GeoPlotterBase, pvqt.MultiPlotter):
-    """A Qt interactive multi-plotter.
-
-    See :class:`geovista.geoplotter.GeoPlotterBase` and
-    :class:`pyvistaqt.MultiPlotter`.
-
-    Notes
-    -----
-    .. versionadded:: 0.1.0
-
-    """
