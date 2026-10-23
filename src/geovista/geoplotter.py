@@ -70,6 +70,7 @@ from .pantry.meshes import (
 from .raster import wrap_texture
 from .themes import resolve_theme_name
 from .transform import (
+    _carry_levels,
     _point_levels,
     _slice_seam,
     transform_mesh,
@@ -718,9 +719,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius`/vertical by a proportional amount e.g.,
             ``radius * zlevel * zscale``. If `zlevel` is not a scalar, then it must
-            broadcast to the shape ``(mesh.n_points,)``, and a mesh that needs no
-            transform must be a point cloud.
-            Defaults to ``0``.
+            broadcast to the shape ``(mesh.n_points,)``. Defaults to ``0``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -781,6 +780,12 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             src_planar = src_crs is not None and planar(src_crs)
             central_meridian = get_central_meridian(tgt_crs) or 0
 
+            resize_required = (
+                not transform_required
+                and not projected(mesh)
+                and bool(np.ndim(zlevel) or np.any(zlevel))
+            )
+
             if transform_required and not cloud and not src_planar:
                 # the seam is cut here, before any texture coordinates are added,
                 # and a per-point zlevel is carried through the cut to the points
@@ -789,9 +794,27 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 mesh, tgt_crs, zlevel = _slice_seam(
                     mesh, tgt_crs, level=level, rtol=rtol, atol=atol
                 )
+            elif resize_required and not cloud:
+                # the radius of the surface, taken before any texture seam is cut
+                radius = float(distance(mesh))
 
             if "texture" in kwargs and kwargs["texture"] is not None:
-                mesh = add_texture_coords(mesh, antimeridian=True)
+                if resize_required and not cloud:
+                    # the seam cut adds points along the chords of the cells it
+                    # crosses, inside the sphere, so a per-point zlevel is carried
+                    # to them, and the resize below lifts them with the rest
+                    level = np.asanyarray(zlevel)
+                    if level.size == 1:
+                        level = level.reshape(())
+                    else:
+                        level = _point_levels(mesh, level, action="resize")
+                    mesh, zlevel = _carry_levels(
+                        mesh,
+                        level,
+                        lambda mesh: add_texture_coords(mesh, antimeridian=True),
+                    )
+                else:
+                    mesh = add_texture_coords(mesh, antimeridian=True)
                 texture = wrap_texture(
                     kwargs["texture"], central_meridian=central_meridian
                 )
@@ -809,10 +832,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                     inplace=not cloud,
                 )
                 to_wkt(mesh, self.crs)
-            elif not projected(mesh) and (np.ndim(zlevel) or np.any(zlevel)):
-                if not cloud:
-                    radius = float(distance(mesh))
-
+            elif resize_required:
                 mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
 
         def _check(option: str) -> bool:

@@ -141,18 +141,80 @@ def test_cloud_zlevel_single_point():
     assert np.allclose(distance(actor.mapper.dataset, mean=False), expected)
 
 
-def test_surface_zlevel_array_fail():
-    """A mesh that is no cloud and needs no transform requires a scalar z-level.
+def test_surface_zlevel_array():
+    """A surface that needs no transform is lifted at each point, as when it does.
 
-    See :issue:`2618`.
+    See :issue:`2693`.
 
     """
     mesh = gv.Transform.from_1d([0, 10, 20], [0, 10, 20])
+    level = np.arange(mesh.n_points)
     p = GeoPlotter()
 
-    emsg = "a 'zlevel' that is not a scalar requires a point cloud"
-    with pytest.raises(ValueError, match=emsg):
-        _ = p.add_mesh(mesh, zlevel=np.arange(mesh.n_points))
+    actor = p.add_mesh(mesh, zlevel=level)
+    expected = RADIUS + RADIUS * level * ZLEVEL_SCALE
+    assert np.allclose(distance(actor.mapper.dataset, mean=False), expected)
+
+
+def test_surface_zlevel_array_texture():
+    """A textured surface that needs no transform is lifted at each point.
+
+    Its texture coordinates add points at the antimeridian, which take the
+    level of the point they duplicate.
+
+    """
+    mesh = gv.Transform.from_1d(np.linspace(-180, 180, 9), [-20, 0, 20])
+    level = 1 + np.abs(from_cartesian(mesh)[:, 1]) / 90
+    texture = pv.Texture(np.zeros((8, 16, 3), dtype=np.uint8))
+    p = GeoPlotter()
+
+    actor = p.add_mesh(mesh, zlevel=level, texture=texture)
+    result = actor.mapper.dataset
+    expected = 1 + np.abs(from_cartesian(result)[:, 1]) / 90
+    assert result.n_points > mesh.n_points
+    assert np.allclose(
+        distance(result, mean=False), RADIUS + RADIUS * expected * ZLEVEL_SCALE
+    )
+
+
+@pytest.mark.parametrize("zlevel", [1, np.ones(12)])
+def test_surface_zlevel_texture_cuts_cells(zlevel):
+    """A textured surface is lifted whole where its seam cuts through cells.
+
+    The cut interpolates new points along the chords of the cells it crosses,
+    inside the sphere, so they are lifted with the rest, from the radius the
+    surface had before the cut.
+
+    """
+    mesh = gv.Transform.from_1d([140, 160, 200, 220], [-20, 0, 20])
+    texture = pv.Texture(np.zeros((8, 16, 3), dtype=np.uint8))
+    p = GeoPlotter()
+
+    actor = p.add_mesh(mesh, zlevel=zlevel, texture=texture)
+    result = actor.mapper.dataset
+    assert result.n_points > mesh.n_points
+    assert np.allclose(distance(result, mean=False), RADIUS + RADIUS * ZLEVEL_SCALE)
+
+
+def test_surface_zlevel_array_texture_cuts_cells():
+    """A textured surface lifted at each point lifts the points its seam adds.
+
+    Each added point takes a level between those of the points it lies between.
+
+    """
+    mesh = gv.Transform.from_1d([140, 160, 200, 220], [-20, 0, 20])
+    level = 1 + np.abs(from_cartesian(mesh)[:, 1]) / 90
+    texture = pv.Texture(np.zeros((8, 16, 3), dtype=np.uint8))
+    p = GeoPlotter()
+
+    actor = p.add_mesh(mesh, zlevel=level, texture=texture)
+    radii = distance(actor.mapper.dataset, mean=False)
+    lowest, highest = RADIUS + RADIUS * np.array([level.min(), level.max()]) * (
+        ZLEVEL_SCALE
+    )
+    assert actor.mapper.dataset.n_points > mesh.n_points
+    assert np.all(radii >= lowest - 1e-12)
+    assert np.all(radii <= highest + 1e-12)
 
 
 def test_cloud_zlevel_zeros_shape_fail():

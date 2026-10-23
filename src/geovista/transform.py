@@ -41,6 +41,8 @@ from .crs import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import numpy as np
     from numpy.typing import ArrayLike, NDArray
     import pyproj
@@ -433,7 +435,12 @@ def transform_points(
     return result
 
 
-def _point_levels(mesh: pv.PolyData, zlevel: float | ArrayLike | None) -> NDArray[Any]:
+def _point_levels(
+    mesh: pv.PolyData,
+    zlevel: float | ArrayLike | None,
+    *,
+    action: str = "transform",
+) -> NDArray[Any]:
     """Determine the z-level of a mesh, as a scalar or one for each of its points.
 
     Parameters
@@ -443,6 +450,8 @@ def _point_levels(mesh: pv.PolyData, zlevel: float | ArrayLike | None) -> NDArra
     zlevel : float or ArrayLike, optional
         The z-level, either a scalar or an array that broadcasts to the points of
         the `mesh`. Defaults to ``0``.
+    action : str, default="transform"
+        What is done to the `mesh`, for the error message.
 
     Returns
     -------
@@ -466,12 +475,67 @@ def _point_levels(mesh: pv.PolyData, zlevel: float | ArrayLike | None) -> NDArra
             level = np.broadcast_to(level, (mesh.n_points,))
         except ValueError:
             emsg = (
-                f"Cannot transform mesh, 'zlevel' with shape {level.shape} does "
+                f"Cannot {action} mesh, 'zlevel' with shape {level.shape} does "
                 f"not broadcast to its {mesh.n_points:,} points."
             )
             raise ValueError(emsg) from None
 
     return level
+
+
+def _carry_levels(
+    mesh: pv.PolyData,
+    level: NDArray[Any],
+    cut: Callable[[pv.PolyData], pv.PolyData],
+) -> tuple[pv.PolyData, NDArray[Any]]:
+    """Cut a mesh, carrying a z-level at each point through the cut.
+
+    A per-point z-level travels through the cut as point data, so a point the
+    cut duplicates keeps its level, and a point it interpolates takes a level
+    between those of its neighbours. It travels under a name no array of the
+    caller's has, so only what is added here is removed, and as floats, so an
+    interpolated level is not rounded.
+
+    Parameters
+    ----------
+    mesh : :class:`~pyvista.PolyData`
+        The mesh to cut, which is left as it was.
+    level : :class:`~numpy.ndarray`
+        The z-level, as a 0-d array or as one for each point of the `mesh`, see
+        :func:`_point_levels`.
+    cut : callable
+        Cuts the mesh it is given, returning the cut mesh.
+
+    Returns
+    -------
+    tuple of :class:`~pyvista.PolyData` and :class:`~numpy.ndarray`
+        The cut mesh, and the z-level, for each point of the cut mesh if one was
+        given for each point of the `mesh`.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    carry: str | None = None
+
+    if level.ndim:
+        carry = _ZLEVEL
+        while carry in mesh.point_data:
+            carry = f"_{carry}"
+        mesh.point_data[carry] = level.astype(float)
+
+    try:
+        result = cut(mesh)
+        if carry is not None:
+            # read before it is removed, in case the cut returned the mesh itself
+            level = np.array(result.point_data[carry])
+            result.point_data.pop(carry, None)
+    finally:
+        if carry is not None:
+            mesh.point_data.pop(carry, None)
+
+    return result, level
 
 
 def _slice_seam(
@@ -532,31 +596,16 @@ def _slice_seam(
         assert rebased is not None
         tgt_crs = rebased
 
-    carry: str | None = None
     if not point_cloud(mesh):
-        # a per-point zlevel travels through the slice as point data, so a point
-        # the seam duplicates keeps its level. It travels under a name no array
-        # of the caller's has, so only what is added here is removed, and as
-        # floats, so a level the seam interpolates is not rounded
-        if level.ndim:
-            carry = _ZLEVEL
-            while carry in mesh.point_data:
-                carry = f"_{carry}"
-            mesh.point_data[carry] = level.astype(float)
-        try:
-            sliced_mesh = slice_mesh(mesh, rtol=rtol, atol=atol)
-        finally:
-            if carry is not None:
-                mesh.point_data.pop(carry, None)
+        sliced_mesh, level = _carry_levels(
+            mesh, level, lambda mesh: slice_mesh(mesh, rtol=rtol, atol=atol)
+        )
     else:
         sliced_mesh = mesh.copy()
 
     if central_meridian:
         # undo rotation of original mesh
         mesh.rotate_z(central_meridian, inplace=True)
-
-    if carry is not None:
-        level = np.asarray(sliced_mesh.point_data.pop(carry))
 
     return sliced_mesh, tgt_crs, level
 

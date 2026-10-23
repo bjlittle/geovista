@@ -21,6 +21,7 @@ from geovista.common import (
     RADIUS,
     ZLEVEL_SCALE,
     distance,
+    from_cartesian,
 )
 from geovista.core import resize
 
@@ -182,12 +183,70 @@ def test_resize_cloud__zlevel_shape_fail():
         _ = resize(cloud, zlevel=[1, 2])
 
 
-@pytest.mark.parametrize("zlevel", [[1], np.array([1]), np.array([1, 2])])
-def test_resize__zlevel_array_fail(lfric, zlevel):
-    """Test trap of a z-level that is not a scalar for a mesh that is no cloud."""
-    emsg = "Cannot resize mesh, a 'zlevel' that is not a scalar requires a point cloud"
+def test_resize__zlevel_per_point(lfric):
+    """Test resize a surface by a z-level at each point, keeping where it is."""
+    level = np.linspace(-10, 10, lfric.n_points)
+    result = resize(lfric, zlevel=level)
+    expected = RADIUS + RADIUS * level * ZLEVEL_SCALE
+    assert np.allclose(distance(result, mean=False), expected)
+    assert np.allclose(from_cartesian(result), from_cartesian(lfric))
+
+
+def test_resize__zlevel_per_point_replaces(lfric):
+    """Test a surface lifted at each point takes new levels, not the sum of both.
+
+    A scalar z-level resizes a surface to that level whatever level it was at,
+    so a z-level at each point does the same, which needs the surface's points
+    read back at their own radii (#2688).
+
+    """
+    first = np.linspace(-10, 10, lfric.n_points)
+    second = first[::-1]
+    result = resize(resize(lfric, zlevel=first), zlevel=second)
+    assert np.allclose(result.points, resize(lfric, zlevel=second).points)
+
+
+@pytest.mark.parametrize("zlevel", [[1], np.array([1])])
+def test_resize__zlevel_one_element(lfric, zlevel):
+    """Test resize a surface alike by a scalar and a one element z-level."""
+    result = resize(lfric, zlevel=zlevel)
+    scalar = resize(lfric, zlevel=1)
+    assert np.allclose(result.points, scalar.points)
+    assert_array_equal(result[GV_FIELD_RADIUS], scalar[GV_FIELD_RADIUS])
+
+
+def test_resize__zlevel_per_point_zeros(lfric):
+    """Test no resize of a surface already at the levels it is given."""
+    result = resize(lfric, zlevel=np.zeros(lfric.n_points))
+    assert id(result) == id(lfric)
+
+
+def test_resize__zlevel_per_point_records_no_radius(lfric):
+    """Test a surface at a radius for each point records no single radius."""
+    level = np.linspace(-10, 10, lfric.n_points)
+    result = resize(resize(lfric, zlevel=1), zlevel=level)
+    assert GV_FIELD_RADIUS not in result.field_data
+
+
+@pytest.mark.parametrize("zlevel", [0, [0]])
+def test_resize__zlevel_flattens_an_uneven_surface(lfric, zlevel):
+    """Test a surface lifted at each point is flattened by a scalar z-level.
+
+    Its mean radius already matches the target, so only its points show it
+    needs resizing.
+
+    """
+    lifted = resize(lfric, zlevel=np.linspace(-10, 10, lfric.n_points))
+    result = resize(lifted, zlevel=zlevel)
+    assert np.allclose(distance(result, mean=False), RADIUS)
+    assert np.allclose(from_cartesian(result), from_cartesian(lfric))
+
+
+def test_resize__zlevel_shape_fail(lfric):
+    """Test trap of a z-level that does not broadcast to the points of a surface."""
+    emsg = r"Cannot resize mesh, 'zlevel' with shape \(2,\) does not broadcast"
     with pytest.raises(ValueError, match=emsg):
-        _ = resize(lfric, zlevel=zlevel)
+        _ = resize(lfric, zlevel=[1, 2])
 
 
 @pytest.mark.parametrize("zlevel", [0.5, np.float64(1.7), np.array(-2.5)])

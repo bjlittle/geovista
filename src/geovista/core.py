@@ -558,9 +558,10 @@ def resize(
     zlevel : float or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
         `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
-        For a point cloud, `zlevel` adds to the z-level each of its points
-        already carries, and if it is not a scalar, then it must broadcast to
-        the shape ``(mesh.n_points,)``. Any other mesh requires a scalar.
+        If `zlevel` is not a scalar, then it must broadcast to the shape
+        ``(mesh.n_points,)``. For a point cloud, `zlevel` adds to the z-level
+        each of its points already carries. Any other mesh is resized to
+        `zlevel`, whatever level it was at.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
@@ -601,13 +602,11 @@ def resize(
 
     level = np.asanyarray(0 if zlevel is None else zlevel)
 
+    if not cloud and level.size == 1:
+        # one level for every point of a surface leaves it at one radius
+        level = level.reshape(())
+
     if level.ndim:
-        if not cloud:
-            emsg = (
-                "Cannot resize mesh, a 'zlevel' that is not a scalar requires a "
-                "point cloud."
-            )
-            raise ValueError(emsg)
         try:
             level = np.broadcast_to(level, (mesh.n_points,))
         except ValueError:
@@ -627,9 +626,19 @@ def resize(
             update = GV_FIELD_RADIUS not in mesh.field_data or not np.isclose(
                 mesh[GV_FIELD_RADIUS], radius
             )
+    elif level.ndim:
+        # a surface at a radius for each point, which from_cartesian reads back
+        # at the radius of each point, so its positions survive the next resize
+        new_radii = radius + radius * level * zscale
+        update = bool(np.all(new_radii)) and not np.allclose(
+            distance(mesh, mean=False), new_radii
+        )
     else:
         new_radius = radius + radius * float(level) * zscale
-        update = bool(new_radius) and not np.isclose(distance(mesh), new_radius)
+        # every point, as a surface lifted at each point may have the mean radius
+        update = bool(new_radius) and not np.allclose(
+            distance(mesh, mean=False), new_radius
+        )
 
     if update:
         lonlat = from_cartesian(mesh)
@@ -643,9 +652,12 @@ def resize(
         mesh.points = xyz
         if cloud:
             mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
+            mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+        elif level.ndim:
+            # no single radius describes the surface any more
+            mesh.field_data.pop(GV_FIELD_RADIUS, None)
         else:
-            radius = new_radius
-        mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+            mesh.field_data[GV_FIELD_RADIUS] = np.array([new_radius])
 
     return mesh
 

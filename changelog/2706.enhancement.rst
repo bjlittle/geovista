@@ -1,0 +1,4 @@
+:func:`geovista.core.resize` and :meth:`geovista.geoplotter.GeoPlotterBase.add_mesh`
+now lift a surface by a ``zlevel`` for each point, as they already did a point
+cloud, rather than refusing it. As with a scalar ``zlevel``, the levels replace
+any level the surface was at. (:user:`claude`)
