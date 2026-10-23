@@ -7,3 +7,4 @@ pytest-pretty <1.4
 pytest-pyvista <0.4
 pytest-xdist <3.9
 pyyaml <6.1
+towncrier <26.10
