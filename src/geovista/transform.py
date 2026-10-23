@@ -821,8 +821,9 @@ def _angles(crs: pyproj.CRS) -> tuple[float, float, float]:
     -------
     tuple of float
         The degrees east of Greenwich of its prime meridian, and the degrees in a
-        unit of its longitude and of its latitude. Most are in degrees east of
-        Greenwich, but not all, such as NTF (Paris), in grads east of Paris.
+        unit of its longitude and of its latitude, as :mod:`pyproj` gives and takes
+        them. Most are in degrees east of Greenwich, but not all, such as NTF
+        (Paris), in grads east of Paris.
 
     Notes
     -----
@@ -834,8 +835,13 @@ def _angles(crs: pyproj.CRS) -> tuple[float, float, float]:
     degrees = {"east": 1.0, "north": 1.0}
 
     for axis in crs.axis_info:
-        if axis.direction in degrees and axis.unit_name != "degree":
-            degrees[axis.direction] = math.degrees(axis.unit_conversion_factor)
+        factor = axis.unit_conversion_factor
+        # pyproj gives and takes the coordinates of an axis declared in radians in
+        # degrees, as _earth_radius allows for, and those of an axis in any other
+        # angular unit, such as grads, in that unit
+        radians = factor == 1.0
+        if axis.direction in degrees and axis.unit_name != "degree" and not radians:
+            degrees[axis.direction] = math.degrees(factor)
 
     return prime_meridian, degrees["east"], degrees["north"]
 

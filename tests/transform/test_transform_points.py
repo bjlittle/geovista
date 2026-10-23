@@ -349,3 +349,27 @@ def test_datum_operation_area_in_degrees_from_greenwich(src_crs):
 
     expected = Transformer.from_crs(src_crs, WGS84, always_xy=True).transform(x, y)
     np.testing.assert_allclose(result[0, :2], expected, atol=1e-9)
+
+
+@pytest.mark.parametrize(
+    ("src_crs", "tgt_crs"),
+    [("EPSG:4326", "EPSG:27700"), ("EPSG:27700", "EPSG:4326")],
+    ids=["geographic", "projected"],
+)
+def test_datum_operation_area_of_a_crs_declared_in_radians(
+    in_radians, src_crs, tgt_crs
+):
+    """Points of a CRS whose geographic axes are in radians are located in degrees.
+
+    ``pyproj`` gives and takes the coordinates of such a CRS in degrees, which were
+    scaled as if they were radians, and so warned about as outside Great Britain.
+
+    """
+    src_crs = in_radians(src_crs)
+    to_src = Transformer.from_crs(WGS84, src_crs, always_xy=True)
+    x, y = to_src.transform(-2.0, 52.0)
+
+    result = transform_points(src_crs=src_crs, tgt_crs=tgt_crs, xs=[x], ys=[y])
+
+    expected = Transformer.from_crs(src_crs, tgt_crs, always_xy=True).transform(x, y)
+    np.testing.assert_allclose(result[0, :2], expected, atol=1e-6)

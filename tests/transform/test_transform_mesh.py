@@ -784,6 +784,27 @@ def test_transform_mesh__datum_in_another_angular_unit():
     np.testing.assert_allclose(result.points[:, 1], y, atol=1e-3)
 
 
+@pytest.mark.parametrize("slice_connectivity", [True, False], ids=["cut", "uncut"])
+def test_transform_mesh__datum_to_a_crs_declared_in_radians(
+    in_radians, slice_connectivity
+):
+    """A target on a geographic CRS declared in radians is projected where it is.
+
+    ``pyproj`` gives the coordinates of such a CRS in degrees, which were scaled as
+    if they were radians, putting the mesh 5,840 km out, or past a pole, where the
+    cut found no cells to combine.
+
+    """
+    tgt_crs = in_radians("EPSG:27700")
+
+    result = transform_mesh(_gb_line(), tgt_crs, slice_connectivity=slice_connectivity)
+
+    lats = np.full(GB_LONS.shape, 52.0)
+    x, y = Transformer.from_crs(WGS84, tgt_crs, always_xy=True).transform(GB_LONS, lats)
+    np.testing.assert_allclose(result.points[:, 0], x, atol=1e-3)
+    np.testing.assert_allclose(result.points[:, 1], y, atol=1e-3)
+
+
 def test_transform_mesh__datum_inplace():
     """A mesh moved onto another datum in place is the mesh transformed."""
     mesh = _gb_line()

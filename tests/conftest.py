@@ -246,6 +246,33 @@ def lfric_sst_eqc():
 
 
 @pytest.fixture
+def in_radians():
+    """Fixture to declare the geographic axes of a CRS in radians.
+
+    ``pyproj`` gives and takes the coordinates of a geographic CRS declared in
+    radians in degrees, as it does those declared in degrees, whereas it gives and
+    takes those of a CRS in any other angular unit, such as grads, in that unit.
+
+    """
+
+    def declare(crs: str) -> pyproj.CRS:
+        spec = pyproj.CRS.from_user_input(crs).to_json_dict()
+        spec.pop("id", None)
+        # a projected CRS declares its geographic axes in its base CRS
+        geographic = spec.get("base_crs", spec)
+        geographic.pop("id", None)
+        for axis in geographic["coordinate_system"]["axis"]:
+            axis["unit"] = {
+                "type": "AngularUnit",
+                "name": "radian",
+                "conversion_factor": 1.0,
+            }
+        return pyproj.CRS.from_json_dict(spec)
+
+    return declare
+
+
+@pytest.fixture
 def no_network():
     """Fixture to turn off PROJ's network access, as pyproj's wheels ship it.
 
