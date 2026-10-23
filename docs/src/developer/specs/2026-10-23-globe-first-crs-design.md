@@ -1,4 +1,4 @@
-# geovista globe-first CRS foundation — design specification
+# geovista Globe-First CRS Foundation — Design Specification
 
 ```{readingtime}
 ```
@@ -107,10 +107,10 @@ These were decided with {user}`bjlittle` while the design was written.
     view of {user}`bjlittle`, a core developer of `cf-units`.
 
 (crs-spec-3)=
-## 3. What exists today
+## 3. What Exists Today
 
 (crs-spec-3-1)=
-### 3.1 How it was measured
+### 3.1 How It Was Measured
 
 Each of the 161 PROJ projection methods that `proj -lP` lists with a classification, and
 each of `cartopy` 0.26's 38 projection classes through its PROJ definition, took a global
@@ -129,7 +129,7 @@ graticule and textured base layer. The one exception was `vandg`, whose coastlin
 `ProjError`.
 
 (crs-spec-3-2)=
-### 3.2 The six classes of failure
+### 3.2 The Six Classes of Failure
 
 The 70 failing PROJ methods and 21 failing `cartopy` classes fall into six classes, each
 needing something different on the globe before it can be projected. One method,
@@ -174,7 +174,7 @@ non-finite, folded or runaway, made 28 of the 70 render cleanly but with jagged 
 That fallback is rejected as a default ({ref}`§7 <crs-spec-7>`).
 
 (crs-spec-3-3)=
-### 3.3 The globe and the vertical
+### 3.3 The Globe and the Vertical
 
 The radius of the globe defaults to 1 (`common.RADIUS`), and nothing records its units.
 At an Earth radius of 6.371×10⁶ m the projection path holds, including a seam that
@@ -192,7 +192,7 @@ body, such as Mars, fails because PROJ will not transform between bodies.
 ## 4. Design
 
 (crs-spec-4-1)=
-### 4.1 The globe model
+### 4.1 The Globe Model
 
 Each scene has one globe model, and every layer takes its geometry from it: data meshes,
 coastlines, graticule, base layer, and later regions and region solids. Nothing assumes a
@@ -214,7 +214,7 @@ result is the same at radius 1 and at the Earth's radius. The `zlevel` and `zsca
 physical units, and what replaces `zlevel`, belong to project 4.
 
 (crs-spec-4-2)=
-### 4.2 The cutting engine
+### 4.2 The Cutting Engine
 
 Almost every operation of this design is a cut by a plane on the sphere. A plane through
 the centre meets the sphere in a great circle, and a plane off the centre meets it in a
@@ -273,7 +273,7 @@ of the foundation: its booleans need closed solids, so it cannot cut an open dat
 It belongs to the region solids of project 4.
 
 (crs-spec-4-3)=
-### 4.3 Projection domains
+### 4.3 Projection Domains
 
 A projection's domain is its valid region on the globe, together with its seams. Most
 failing projections are a normal-aspect projection seen through a rotation of the sphere:
@@ -328,7 +328,7 @@ Each domain has defaults and overrides ({ref}`§5 <crs-spec-5>`). A domain's lim
 angles on the globe, never distances in projected units.
 
 (crs-spec-4-4)=
-### 4.4 The CRS interface
+### 4.4 The CRS Interface
 
 There are three ways in, and one engine underneath.
 
@@ -356,7 +356,7 @@ are left to the builder, provided each class's options match `cartopy`'s where `
 has them.
 
 (crs-spec-4-5)=
-### 4.5 Cut once, map many
+### 4.5 Cut Once, Map Many
 
 The geometry of a projected scene depends on the mesh's geometry, the CRS, the datum
 operation, the domain and the globe model, and not on the mesh's values. So the work is
@@ -382,7 +382,7 @@ The mapping is also the record of what was kept, cut and removed, which
 {ref}`§4.6 <crs-spec-4-6>` relies on.
 
 (crs-spec-4-6)=
-### 4.6 Accounting for every cell
+### 4.6 Accounting for Every Cell
 
 Every operation reports what it did, and nothing is removed in silence:
 
@@ -410,7 +410,7 @@ both. Area weights for statistics never need refinement, since they can be compu
 exactly from each cell's spherical polygon.
 
 (crs-spec-4-7)=
-### 4.7 Lines, points and the built-in layers
+### 4.7 Lines, Points and the Built-In Layers
 
 Coastlines, the graticule, the base layer and every other built-in layer go through the
 same engine and take the scene's globe model. Lines are clipped to the domain and cut at
@@ -433,6 +433,14 @@ where the projection puts its discontinuity, to the last digit. The operation is
 with the result ({ref}`§4.6 <crs-spec-4-6>`) and is part of the cache key
 ({ref}`§4.5 <crs-spec-4-5>`).
 
+On the sphere a longitude is always east of Greenwich, and every angle is in the engine's
+canonical angular unit ({ref}`§4.9 <crs-spec-4-9>`), whatever the base geographic CRS
+measures in. Not every one measures in degrees from Greenwich. NTF (Paris), the base of
+Lambert zone II, EPSG:27572, measures in grads east of Paris, so its coordinates are
+converted as they reach the sphere, and converted back for the projection. Measured on
+2026-10-24, reading them as degrees from Greenwich put a mesh projected to EPSG:27572
+17.8 km out ({pull}`2718`).
+
 PROJ is never left to choose an operation point by point. Measured on 2026-10-23, WGS84 to
 the British National Grid, EPSG:27700, at 52°N moves a point 129 m east of where the
 projection alone would put it up to 2.0°E, and not at all from 2.125°E. There the best
@@ -445,8 +453,11 @@ The operation is chosen by one policy:
 
 1. **The extent is the data's.** It is the extent of the scene's data meshes, after the
    domain has clipped them. The built-in layers, such as coastlines, do not widen it.
-2. **The most accurate operation that covers it.** Of the operations whose area of use
-   covers the extent, the most accurate is chosen, and applied to every point.
+2. **The most accurate available operation that covers it.** Of the operations whose
+   area of use covers the extent, the most accurate available one is chosen, and applied
+   to every point. An operation that needs a grid is available only where the grid is
+   installed. One that is not available is passed over without a warning, as PROJ passes
+   it over, and the record says so (item 5).
 3. **Coverage before accuracy, and never a mix.** Where no operation's area of use covers
    the extent, the most accurate operation that can transform every point of it is
    chosen instead, with a warning that the extent exceeds its area of use. PROJ's
@@ -457,9 +468,11 @@ The operation is chosen by one policy:
    a removal the CRS implies ({ref}`§4.6 <crs-spec-4-6>`), and what remains is covered by
    the grid's own operations.
 5. **The record explains the choice.** It names the operation, its accuracy and any grid
-   it used. PROJ may fetch grids over the network on demand, so the same code can choose
-   differently on two machines, and the record is what explains the difference.
-   `geovista` leaves PROJ's network setting to the user.
+   it used, and any more accurate operation it passed over for a missing grid. PROJ may
+   fetch grids over the network on demand, while `pyproj`'s wheels ship none and leave
+   the network off, so the same code can choose differently on two machines, and the
+   record is what explains the difference. `geovista` leaves PROJ's network setting to
+   the user.
 
 Measured for EPSG:27700 on 2026-10-23, PROJ offers nine operations from WGS84. The most
 accurate, at 1 m, is grid-based, and its area of use is exactly the area of use of
@@ -468,7 +481,10 @@ at 2.125°E for instance. Seven parametric operations, accurate to between 2 m a
 transform any point, though each one's area of use lies within the UK. The ninth is the
 ballpark operation, which today's choice point by point falls back to east of 2°E. Under
 the policy, a scene on the British National Grid is clipped to the area of use, and every
-point that remains takes the 1 m operation.
+point that remains takes the 1 m operation. Where its grid is not installed, as with
+`pyproj`'s wheels, the most accurate available operation is accurate to 2 m. Its area of
+use ends at 1.92°E and 60.94°N, inside that of EPSG:27700, so a scene that reaches past
+it takes the 2 m operation with the warning of item 3.
 
 (crs-spec-4-9)=
 ### 4.9 Units
@@ -497,7 +513,7 @@ Units for data values, such as a temperature or a concentration, stay with the d
 `geovista` reads them only to label a scalar bar.
 
 (crs-spec-5)=
-## 5. Defaults, and where cartopy departs from PROJ
+## 5. Defaults, and Where cartopy Departs From PROJ
 
 Defaults follow `cartopy`, so existing plots look the same, except where a default smells.
 Each departure below was measured on 2026-10-23 against `cartopy` 0.26 and PROJ 9.9, and
@@ -556,7 +572,7 @@ sign it off against data they already understand. That is the human half of neve
 quietly wrong.
 
 (crs-spec-7)=
-## 7. Alternatives considered
+## 7. Alternatives Considered
 
 - **Build on `cartopy`.** Rejected. Its domains are boundaries in projected space, applied
   with planar geometry through `shapely`, and that is the approach this design replaces.
@@ -587,7 +603,7 @@ quietly wrong.
   grad-based prime meridians of {issue}`2518`.
 
 (crs-spec-8)=
-## 8. Open items
+## 8. Open Items
 
 Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 
@@ -692,7 +708,8 @@ fragment.
 
 - {issue}`140`, {issue}`1402`, {issue}`2674` and {issue}`2519`, the four CRS issues this
   design closes
-- {issue}`2714`, the datum step that the review of this design found
+- {issue}`2714`, the datum step that the review of this design found, and {pull}`2718`,
+  whose review found the missing grids of `pyproj`'s wheels and the grads of NTF (Paris)
 - {issue}`15`, {issue}`59`, {issue}`229`, {issue}`377`, {issue}`843`, {issue}`1029`,
   {issue}`1532`, {issue}`1869` and {issue}`1986`, which shaped it
 - {pull}`2294`, the draft that maps depth onto the radius, and {pull}`2689`, whose review
