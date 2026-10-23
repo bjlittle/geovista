@@ -718,9 +718,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             The z-axis level. Used in combination with the `zscale` to offset the
             `radius`/vertical by a proportional amount e.g.,
             ``radius * zlevel * zscale``. If `zlevel` is not a scalar, then it must
-            broadcast to the shape ``(mesh.n_points,)``, and a mesh that needs no
-            transform must be a point cloud.
-            Defaults to ``0``.
+            broadcast to the shape ``(mesh.n_points,)``. Defaults to ``0``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.

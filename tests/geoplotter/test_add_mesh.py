@@ -141,18 +141,19 @@ def test_cloud_zlevel_single_point():
     assert np.allclose(distance(actor.mapper.dataset, mean=False), expected)
 
 
-def test_surface_zlevel_array_fail():
-    """A mesh that is no cloud and needs no transform requires a scalar z-level.
+def test_surface_zlevel_array():
+    """A surface that needs no transform is lifted at each point, as when it does.
 
-    See :issue:`2618`.
+    See :issue:`2693`.
 
     """
     mesh = gv.Transform.from_1d([0, 10, 20], [0, 10, 20])
+    level = np.arange(mesh.n_points)
     p = GeoPlotter()
 
-    emsg = "a 'zlevel' that is not a scalar requires a point cloud"
-    with pytest.raises(ValueError, match=emsg):
-        _ = p.add_mesh(mesh, zlevel=np.arange(mesh.n_points))
+    actor = p.add_mesh(mesh, zlevel=level)
+    expected = RADIUS + RADIUS * level * ZLEVEL_SCALE
+    assert np.allclose(distance(actor.mapper.dataset, mean=False), expected)
 
 
 def test_cloud_zlevel_zeros_shape_fail():
