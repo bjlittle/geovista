@@ -8,6 +8,7 @@ name: ci-spec-status
 on:
   pull_request:
     paths:
+      - ".github/scripts/breadcrumb.py"
       - ".github/scripts/check_status_references.py"
       - ".github/workflows/ci-spec-status.yml"
       - "docs/src/developer/specs/**"
@@ -95,8 +96,11 @@ jobs:
             echo "\`pixi run -e test check-spec-status drift\` to reproduce it."
             echo
             echo '```'
-            cat status.txt
+            grep -v -e "^Why this check exists" -e "#gv-developer-checks-" status.txt || true
             echo '```'
+            echo
+            # the breadcrumb is left out of the fence, so its link can be followed
+            grep -A1 "^Why this check exists" status.txt || true
           } > status.md
           echo "exit_code=${status}" >> "${GITHUB_OUTPUT}"
 

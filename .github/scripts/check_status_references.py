@@ -87,11 +87,14 @@ LINK = re.compile(
 )
 
 
-def _load(path: Path, name: str = "spec_conventions") -> ModuleType:
-    """Load the module at `path`, registered so that its dataclasses resolve."""
+def _load(
+    path: Path, name: str = "spec_conventions", *, register: bool = True
+) -> ModuleType:
+    """Load the module at `path`, registered, if asked, so its dataclasses resolve."""
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
+    if register:
+        sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
@@ -99,7 +102,9 @@ def _load(path: Path, name: str = "spec_conventions") -> ModuleType:
 conventions = _load(CONVENTIONS)
 
 #: The link a finding ends with, to this check's section (checks spec §3.3).
-breadcrumb = _load(Path(__file__).parent / "breadcrumb.py", "breadcrumb")
+breadcrumb = _load(
+    Path(__file__).parent / "breadcrumb.py", "breadcrumb", register=False
+)
 
 
 @dataclass(frozen=True)

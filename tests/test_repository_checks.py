@@ -17,16 +17,11 @@ See "docs/src/developer/specs/2026-10-23-repository-checks-design.md".
 from __future__ import annotations
 
 import ast
-import importlib.util
 from pathlib import Path
 import re
 import sys
-from typing import TYPE_CHECKING
 
 import pytest
-
-if TYPE_CHECKING:
-    from types import ModuleType
 
 #: The section of the repository checks page that documents this check.
 CHECK = "repository-checks"
@@ -65,15 +60,6 @@ def test_skips():
 def test_passes():
     pass
 """
-
-
-@pytest.fixture(scope="module")
-def breadcrumb() -> ModuleType:
-    """Load the breadcrumb module, which is no importable module."""
-    spec = importlib.util.spec_from_file_location("breadcrumb", BREADCRUMB)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def test_breadcrumb_names_the_section(breadcrumb):
@@ -159,9 +145,11 @@ def declared(root: Path) -> dict[str | None, list[Path]]:
     Returns
     -------
     dict
-        Each name, with the modules declaring it. A ``CHECK`` that is not a
-        literal string is gathered under ``None``, so that it is reported rather
-        than taken for a module with no check.
+        Each name, with the modules declaring it. A ``CHECK`` the gate cannot
+        read, as it is not a literal string assigned at the top of its module,
+        is gathered under ``None``, so that it is reported rather than taken for
+        a module with no check. That covers unpacking, a binding inside a block,
+        and an import, any of which the pytest hook would still read.
 
     """
     modules = [
@@ -171,6 +159,7 @@ def declared(root: Path) -> dict[str | None, list[Path]]:
     found: dict[str | None, list[Path]] = {}
     for module in modules:
         tree = ast.parse(module.read_text(encoding="utf-8"))
+        read: set[int] = set()
         for node in tree.body:
             if isinstance(node, ast.Assign):
                 targets, value = node.targets, node.value
@@ -178,16 +167,32 @@ def declared(root: Path) -> dict[str | None, list[Path]]:
                 targets, value = [node.target], node.value
             else:
                 continue
-            if any(isinstance(t, ast.Name) and t.id == CONSTANT for t in targets):
+            named = [t for t in targets if isinstance(t, ast.Name) and t.id == CONSTANT]
+            if named:
+                read.update(id(target) for target in named)
                 literal = isinstance(value, ast.Constant) and isinstance(
                     value.value, str
                 )
                 name = value.value if literal else None
                 found.setdefault(name, []).append(module.relative_to(root))
+        # any other binding of the name, which the gate cannot read
+        for node in ast.walk(tree):
+            stored = (
+                isinstance(node, ast.Name)
+                and node.id == CONSTANT
+                and isinstance(node.ctx, ast.Store)
+                and id(node) not in read
+            )
+            imported = isinstance(node, ast.alias) and CONSTANT in {
+                node.asname,
+                node.name,
+            }
+            if stored or imported:
+                found.setdefault(None, []).append(module.relative_to(root))
     return found
 
 
-def documented(text: str) -> tuple[list[str], list[str]]:
+def documented(text: str) -> tuple[list[str], list[str], set[str]]:
     """Read the sections and the rows of the repository checks page.
 
     Parameters
@@ -197,10 +202,11 @@ def documented(text: str) -> tuple[list[str], list[str]]:
 
     Returns
     -------
-    tuple of list
+    tuple
         The names of the sections carrying both labels, and the names the rows
         of the lookup table link to, which are the cross-references before the
-        first section. Each in page order, with any duplicate kept.
+        first section, each in page order with any duplicate kept; and every name
+        that has any label, so that a half-deleted section is still seen.
 
     """
     lines = text.splitlines()
@@ -212,7 +218,8 @@ def documented(text: str) -> tuple[list[str], list[str]]:
     tippy = {m["name"] for _, m in labels if m["tippy"]}
     sections = [name for name in plain if name in tippy]
     rows = [m["name"] for line in lines[:first] for m in ROW.finditer(line)]
-    return sections, rows
+    labelled = {m["name"] for _, m in labels}
+    return sections, rows, labelled
 
 
 def disagreements(root: Path, page: Path) -> list[str]:
@@ -232,10 +239,11 @@ def disagreements(root: Path, page: Path) -> list[str]:
 
     """
     found = declared(root)
-    sections, rows = documented(page.read_text(encoding="utf-8"))
+    sections, rows, labelled = documented(page.read_text(encoding="utf-8"))
     names = {name for name in found if name is not None}
     messages = [
-        f"{module}: {CONSTANT} is not a literal string: {SEE}"
+        f"{module}: {CONSTANT} is not a literal string assigned at the top of the "
+        f"module: {SEE}"
         for module in found.get(None, [])
     ]
     for name in sorted(names):
@@ -255,7 +263,7 @@ def disagreements(root: Path, page: Path) -> list[str]:
             messages.append(f"{name!r} has no row in the lookup table: {SEE}")
     messages += [
         f"the section for {name!r} documents no check: {SEE}"
-        for name in sorted(set(sections) - names)
+        for name in sorted(labelled - names)
     ]
     messages += [
         f"the row for {name!r} links to no check: {SEE}"
@@ -338,6 +346,36 @@ def test_a_section_missing_its_tippy_label_fails(tmp_path):
 def test_a_computed_check_fails(tmp_path):
     """A name the gate cannot read is a fault, not a module with no check."""
     page = _tree(tmp_path, {"tests/test_a.py": '"a" + "b"'}, [], [])
+    found = disagreements(tmp_path, page)
+    assert any("test_a.py" in message and "literal" in message for message in found)
+
+
+def test_a_half_deleted_section_fails(tmp_path):
+    """A label left behind by a check that has gone is reported too."""
+    page = _tree(tmp_path, {}, [], [".. _gv-developer-checks-gone:"])
+    found = disagreements(tmp_path, page)
+    assert any("'gone'" in message and "no check" in message for message in found)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        pytest.param('CHECK, OTHER = "hidden", 1\n', id="tuple"),
+        pytest.param('if True:\n    CHECK = "nested"\n', id="nested"),
+        pytest.param("from elsewhere import CHECK\n", id="imported"),
+    ],
+)
+def test_a_check_bound_out_of_reach_fails(tmp_path, source):
+    """The hook reads any CHECK a module binds, so the gate reports any it can't.
+
+    A name bound by unpacking, inside a block, or by an import, is one the gate
+    cannot read from the source, yet a failure would still link to its section.
+
+    """
+    module = tmp_path / "tests" / "test_a.py"
+    module.parent.mkdir(parents=True)
+    module.write_text(source, encoding="utf-8")
+    page = _tree(tmp_path, {}, [], [])
     found = disagreements(tmp_path, page)
     assert any("test_a.py" in message and "literal" in message for message in found)
 

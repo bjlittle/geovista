@@ -85,6 +85,19 @@ def load_breadcrumb() -> ModuleType:
 BREADCRUMB = load_breadcrumb()
 
 
+@pytest.fixture(scope="session")
+def breadcrumb() -> ModuleType:
+    """Provide the breadcrumb module, loaded once for the hook and the tests.
+
+    Returns
+    -------
+    ModuleType
+        The module, defining ``breadcrumb``.
+
+    """
+    return BREADCRUMB
+
+
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_makereport(item, call):  # noqa: ARG001
     """End a failure of a repository check with a link to its section.
