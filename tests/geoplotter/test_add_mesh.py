@@ -196,6 +196,22 @@ def test_surface_zlevel_texture_cuts_cells(zlevel):
     assert np.allclose(distance(result, mean=False), RADIUS + RADIUS * ZLEVEL_SCALE)
 
 
+def test_surface_texture_cuts_cells():
+    """A textured surface at no level keeps the points its seam adds on the sphere.
+
+    See :issue:`2708`.
+
+    """
+    mesh = gv.Transform.from_1d([140, 160, 200, 220], [-20, 0, 20])
+    texture = pv.Texture(np.zeros((8, 16, 3), dtype=np.uint8))
+    p = GeoPlotter()
+
+    actor = p.add_mesh(mesh, texture=texture)
+    result = actor.mapper.dataset
+    assert result.n_points > mesh.n_points
+    assert np.allclose(distance(result, mean=False), RADIUS)
+
+
 def test_surface_zlevel_array_texture_cuts_cells():
     """A textured surface lifted at each point lifts the points its seam adds.
 

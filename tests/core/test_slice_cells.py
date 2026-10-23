@@ -13,8 +13,8 @@ import pyvista as pv
 from pyvista import ImageData
 
 from geovista.bridge import Transform
-from geovista.common import point_cloud
-from geovista.core import slice_cells
+from geovista.common import RADIUS, distance, point_cloud
+from geovista.core import resize, slice_cells
 
 
 def test_mesh_fail():
@@ -87,3 +87,35 @@ def test_active_vtk_ids(grid, seam, association):
 
     assert result.active_scalars_name is None
     assert name not in [*result.point_data, *result.cell_data]
+
+
+def test_points_of_the_cut_are_on_the_sphere():
+    """The points a cut adds between the points of a cell are on the sphere.
+
+    The cut interpolates them along the chords of the cells it crosses, which
+    are inside the sphere, so each is moved back out to its radius (#2708).
+
+    """
+    mesh = Transform.from_1d([140, 160, 200, 220], [-20, 0, 20])
+    result = slice_cells(mesh, antimeridian=True)
+    assert result.n_points > mesh.n_points
+    assert np.allclose(distance(result, mean=False), RADIUS)
+
+
+def test_points_of_the_cut_take_the_radius_between_their_neighbours():
+    """On a surface at a radius for each point, an added point lies between."""
+    mesh = Transform.from_1d([140, 160, 200, 220], [-20, 0, 20])
+    lifted = resize(mesh, zlevel=np.linspace(0, 1000, mesh.n_points))
+    radii = distance(lifted, mean=False)
+    result = slice_cells(lifted, antimeridian=True)
+    cut = distance(result, mean=False)
+    assert result.n_points > lifted.n_points
+    assert np.all(cut >= radii.min() - 1e-12)
+    assert np.all(cut <= radii.max() + 1e-12)
+
+
+def test_the_cut_leaves_no_array_of_its_own():
+    """The radius travels through the cut, but is not left on the mesh."""
+    mesh = Transform.from_1d([140, 160, 200, 220], [-20, 0, 20])
+    result = slice_cells(mesh, antimeridian=True)
+    assert not [name for name in result.point_data if "Radius" in name]
