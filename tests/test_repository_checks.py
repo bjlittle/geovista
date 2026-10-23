@@ -19,6 +19,7 @@ from __future__ import annotations
 import ast
 import importlib.util
 from pathlib import Path
+import re
 import sys
 from typing import TYPE_CHECKING
 
@@ -126,3 +127,223 @@ def test_hook_ignores_a_module_without_check(pytester, monkeypatch):
     )
     assert result.ret == pytest.ExitCode.TESTS_FAILED
     assert "gv-developer-checks-" not in result.stdout.str()
+
+
+#: The page that documents every repository check.
+PAGE = REPO / "docs" / "src" / "developer" / "checks.rst"
+
+#: A well-formed name: lower-case words joined by hyphens.
+NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
+
+#: The label of a check's section, and of its tooltip.
+LABEL = re.compile(r"^\.\. _(?P<tippy>tippy-)?gv-developer-checks-(?P<name>[^:]+):$")
+
+#: The target of a row's cross-reference to a check's section.
+ROW = re.compile(r":ref:`[^`<]*<gv-developer-checks-(?P<name>[^>]+)>`")
+
+#: How a check's module declares it.
+CONSTANT = "CHECK"
+
+#: Where every message points, for the rules the gate holds.
+SEE = "see checks spec §3.4"
+
+
+def declared(root: Path) -> dict[str | None, list[Path]]:
+    """Gather the name each check module declares, and where.
+
+    Parameters
+    ----------
+    root : Path
+        The repository root, whose ``tests`` and ``.github/scripts`` are read.
+
+    Returns
+    -------
+    dict
+        Each name, with the modules declaring it. A ``CHECK`` that is not a
+        literal string is gathered under ``None``, so that it is reported rather
+        than taken for a module with no check.
+
+    """
+    modules = [
+        *sorted((root / "tests").rglob("*.py")),
+        *sorted((root / ".github" / "scripts").glob("*.py")),
+    ]
+    found: dict[str | None, list[Path]] = {}
+    for module in modules:
+        tree = ast.parse(module.read_text(encoding="utf-8"))
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                targets, value = node.targets, node.value
+            elif isinstance(node, ast.AnnAssign) and node.value is not None:
+                targets, value = [node.target], node.value
+            else:
+                continue
+            if any(isinstance(t, ast.Name) and t.id == CONSTANT for t in targets):
+                literal = isinstance(value, ast.Constant) and isinstance(
+                    value.value, str
+                )
+                name = value.value if literal else None
+                found.setdefault(name, []).append(module.relative_to(root))
+    return found
+
+
+def documented(text: str) -> tuple[list[str], list[str]]:
+    """Read the sections and the rows of the repository checks page.
+
+    Parameters
+    ----------
+    text : str
+        The page, as text.
+
+    Returns
+    -------
+    tuple of list
+        The names of the sections carrying both labels, and the names the rows
+        of the lookup table link to, which are the cross-references before the
+        first section. Each in page order, with any duplicate kept.
+
+    """
+    lines = text.splitlines()
+    labels = [
+        (i, match) for i, line in enumerate(lines) if (match := LABEL.match(line))
+    ]
+    first = labels[0][0] if labels else len(lines)
+    plain = [m["name"] for _, m in labels if not m["tippy"]]
+    tippy = {m["name"] for _, m in labels if m["tippy"]}
+    sections = [name for name in plain if name in tippy]
+    rows = [m["name"] for line in lines[:first] for m in ROW.finditer(line)]
+    return sections, rows
+
+
+def disagreements(root: Path, page: Path) -> list[str]:
+    """Report every way the checks and the page disagree.
+
+    Parameters
+    ----------
+    root : Path
+        The repository root.
+    page : Path
+        The repository checks page.
+
+    Returns
+    -------
+    list of str
+        One message for each fault, empty when they agree.
+
+    """
+    found = declared(root)
+    sections, rows = documented(page.read_text(encoding="utf-8"))
+    names = {name for name in found if name is not None}
+    messages = [
+        f"{module}: {CONSTANT} is not a literal string: {SEE}"
+        for module in found.get(None, [])
+    ]
+    for name in sorted(names):
+        modules = ", ".join(str(module) for module in found[name])
+        if not NAME.fullmatch(name):
+            messages.append(
+                f"{name!r} in {modules} is not lower-case words joined by hyphens: "
+                f"{SEE}"
+            )
+        if len(found[name]) > 1:
+            messages.append(
+                f"{name!r} is declared by {len(found[name])} modules, {modules}: {SEE}"
+            )
+        if name not in sections:
+            messages.append(f"{name!r} has no section carrying both labels: {SEE}")
+        if name not in rows:
+            messages.append(f"{name!r} has no row in the lookup table: {SEE}")
+    messages += [
+        f"the section for {name!r} documents no check: {SEE}"
+        for name in sorted(set(sections) - names)
+    ]
+    messages += [
+        f"the row for {name!r} links to no check: {SEE}"
+        for name in sorted(set(rows) - names)
+    ]
+    messages += [
+        f"{name!r} has {kind} more than once: {SEE}"
+        for kind, entries in (("a section", sections), ("a row", rows))
+        for name in sorted({entry for entry in entries if entries.count(entry) > 1})
+    ]
+    return messages
+
+
+def _tree(
+    root: Path, checks: dict[str, str], rows: list[str], sections: list[str]
+) -> Path:
+    """Write a repository of checks and a page documenting them, for the gate."""
+    for relative, value in checks.items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"CHECK = {value}\n", encoding="utf-8")
+    lines = [".. _gv-developer-checks:", "", "Checks", "======", ""]
+    lines += [f"* :ref:`{name} <gv-developer-checks-{name}>`" for name in rows]
+    for labels in sections:
+        lines += ["", *labels.split("|"), "", "Section", "-------"]
+    page = root / "checks.rst"
+    page.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return page
+
+
+def _labels(name: str) -> str:
+    """Return both labels of a section, as "_tree" takes them."""
+    return f".. _gv-developer-checks-{name}:|.. _tippy-gv-developer-checks-{name}:"
+
+
+def test_the_page_and_the_checks_agree():
+    """Every check has a row and a section, and every row and section a check."""
+    assert disagreements(REPO, PAGE) == []
+    assert len(declared(REPO)) == 9
+
+
+def test_a_section_without_a_check_fails(tmp_path):
+    """A check that has gone takes its row and section with it."""
+    page = _tree(tmp_path, {}, ["gone"], [_labels("gone")])
+    found = disagreements(tmp_path, page)
+    assert any("'gone'" in message and "no check" in message for message in found)
+
+
+def test_a_check_without_a_section_fails(tmp_path):
+    """A new check has a section for its failures to link to."""
+    page = _tree(tmp_path, {"tests/test_a.py": '"new"'}, ["new"], [])
+    found = disagreements(tmp_path, page)
+    assert any("'new'" in message and "no section" in message for message in found)
+
+
+def test_a_check_without_a_row_fails(tmp_path):
+    """A new check has a row in the lookup table."""
+    page = _tree(tmp_path, {"tests/test_a.py": '"new"'}, [], [_labels("new")])
+    found = disagreements(tmp_path, page)
+    assert any("'new'" in message and "no row" in message for message in found)
+
+
+def test_a_name_declared_twice_fails(tmp_path):
+    """One module enforces one check, so a name is declared once."""
+    checks = {"tests/test_a.py": '"twice"', ".github/scripts/s.py": '"twice"'}
+    page = _tree(tmp_path, checks, ["twice"], [_labels("twice")])
+    found = disagreements(tmp_path, page)
+    assert any("'twice'" in message and "2 modules" in message for message in found)
+
+
+def test_a_section_missing_its_tippy_label_fails(tmp_path):
+    """A section carries both labels, as every section of the guide does."""
+    labels = ".. _gv-developer-checks-new:"
+    page = _tree(tmp_path, {"tests/test_a.py": '"new"'}, ["new"], [labels])
+    found = disagreements(tmp_path, page)
+    assert any("'new'" in message and "no section" in message for message in found)
+
+
+def test_a_computed_check_fails(tmp_path):
+    """A name the gate cannot read is a fault, not a module with no check."""
+    page = _tree(tmp_path, {"tests/test_a.py": '"a" + "b"'}, [], [])
+    found = disagreements(tmp_path, page)
+    assert any("test_a.py" in message and "literal" in message for message in found)
+
+
+def test_an_ill_formed_name_fails(tmp_path):
+    """A name is the stem of a label, so it is lower-case words and hyphens."""
+    name = "Image_Marker"
+    page = _tree(tmp_path, {"tests/test_a.py": f'"{name}"'}, [name], [_labels(name)])
+    found = disagreements(tmp_path, page)
+    assert any(f"'{name}'" in message and "hyphens" in message for message in found)
