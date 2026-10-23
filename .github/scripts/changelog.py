@@ -306,12 +306,10 @@ def main(pr: str, changelog: str, verbose: bool) -> None:
     except ConfigError as e:
         failure(f'**towncrier** exception:\n"{e.message}"', finding=False)
 
-    # enumerate the configured changelog types
+    # enumerate the configured changelog types, which towncrier defaults when
+    # none are configured, so there is always at least one
     types = config.types.keys()
     debug(f"{types=}", verbose=verbose)
-
-    if not types:
-        failure("There are no configured **towncrier** types.", finding=False)
 
     # the directory containing the changelog new fragment files
     base_directory = Path(base_directory)

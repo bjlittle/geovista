@@ -697,6 +697,8 @@ pytest-pyvista = ">=0.3.1,<0.4"
 pytest-xdist = ">=3.8.0,<4"
 # required by "tests/test_python_support.py", which reads the workflow matrices
 pyyaml = ">=6.0.3,<7"
+# required by "tests/test_changelog_script.py", which runs the changelog check
+towncrier = ">=24.8.0,<27"
 
 [tool.pixi.feature.test.pypi-dependencies]
 # the conda-forge "playwright" is the node package, which provides the cli but

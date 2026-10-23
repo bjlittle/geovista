@@ -1,0 +1,3 @@
+The changelog fragment check, ``.github/scripts/changelog.py``, is now tested
+against ``towncrier`` itself, which joins the ``test`` dependencies, for each rule
+a fragment can break and each way the check can fail to run. (:user:`claude`)
