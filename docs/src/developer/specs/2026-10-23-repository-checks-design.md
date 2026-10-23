@@ -219,10 +219,10 @@ a breadcrumb reaches a failure the tool reports itself.
 - The hook is tested with `pytester`: a failing test in a module declaring `CHECK` reports
   the breadcrumb, and one in a module without it does not.
 - Each script's findings are tested to print the breadcrumb, and its failures to run to
-  print none. `check_status_references.py` is tested in `tests/test_status_references.py`
-  already. `changelog.py` has no tests yet, and imports `towncrier`, which is only in the
-  `docs` environment, so its test stands a stub for `towncrier` in `sys.modules`. The
-  unit test environments gain no dependency, and the test never skips.
+  print none. `check_status_references.py` is tested in `tests/test_status_references.py`.
+  `changelog.py` is tested in `tests/test_changelog_script.py`, against `towncrier`
+  itself, which the `test` feature carries for it, in a project the tests build and
+  against this repository's own configuration.
 - The page is built with `--fail-on-warning`, which checks its labels and links.
 
 (checks-spec-7)=
@@ -240,12 +240,12 @@ this specification documents the rules as they stand.
 
 Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 
-1. **Open** ({issue}`2704`) — **`changelog.py` is tested only for its breadcrumb.** The stub
-   of {ref}`§6 <checks-spec-6>` lets a test drive a finding without `towncrier`, but the
-   script's reading of `[tool.towncrier]`, and the findings themselves, stay untested.
-   {user}`bjlittle` is open to adding `towncrier` to the `test` feature so they can be
-   tested for real, which would retire the stub. It is kept separate because it is a
-   dependency change of its own.
+1. **Resolved** (2026-10-23, {pull}`2716`) — **`changelog.py` is tested only for its
+   breadcrumb.** A stub let a test drive a finding without `towncrier`, but left the
+   script's reading of `[tool.towncrier]`, and the findings themselves, untested.
+   {user}`bjlittle` agreed to add `towncrier` to the `test` feature, so the script is now
+   tested against it for every finding and both failures to run, and the stub is gone.
+   Raised as {issue}`2704`.
 
 (checks-spec-9)=
 ## 9. References
