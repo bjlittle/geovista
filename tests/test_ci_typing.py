@@ -21,10 +21,10 @@ from __future__ import annotations
 
 from functools import cache
 from pathlib import Path
+import re
 import tomllib
 from typing import Any
 
-from mypy.util import get_mypy_comments
 import pytest
 import yaml
 
@@ -48,6 +48,22 @@ RELAXED = {
     "geovista.examples.*": {"disable_error_code": ["call-arg", "no-untyped-call"]},
     "geovista.qt": {"disallow_subclassing_any": False},
 }
+
+#: A line that reads as inline "mypy" configuration. "mypy" honours one only at
+#: the start of a line and spelled exactly ``# mypy:``, but an indented or
+#: respaced one is as likely a mistake, so this matches more than "mypy" does.
+INLINE = re.compile(r"^\s*#\s*mypy\s*:", flags=re.IGNORECASE)
+
+#: Lines that do and do not configure "mypy", for holding :data:`INLINE` to
+#: the parser "mypy" itself uses.
+SAMPLES = (
+    "# mypy: ignore-errors",
+    'x = 1\n# mypy: disable-error-code="arg-type"',
+    "    # mypy: ignore-errors",
+    "#mypy: ignore-errors",
+    "x = 1  # mypy: ignore-errors",
+    "# not mypy: ignore-errors",
+)
 
 #: The override settings that relax nothing "mypy" checks in a module: which
 #: modules a block applies to, and whether an import of them may be missing.
@@ -132,12 +148,31 @@ def _inline(path: Path) -> list[tuple[int, str]]:
     Returns
     -------
     list of tuple
-        The line number and text of each ``# mypy:`` comment, found by the
-        parser "mypy" itself uses, so that the test and the checker agree on
-        what counts.
+        The line number and text of each line :data:`INLINE` matches.
 
     """
-    return list(get_mypy_comments(path.read_text(encoding="utf-8")))
+    return _matches(path.read_text(encoding="utf-8"))
+
+
+def _matches(text: str) -> list[tuple[int, str]]:
+    """Return each line of ``text`` that reads as inline configuration.
+
+    Parameters
+    ----------
+    text : str
+        The source of a module.
+
+    Returns
+    -------
+    list of tuple
+        The line number, counted from one, and text of each matching line.
+
+    """
+    return [
+        (number, line)
+        for number, line in enumerate(text.splitlines(), start=1)
+        if INLINE.match(line)
+    ]
 
 
 def _commands(step: dict[str, Any]) -> tuple[str, ...]:
@@ -244,7 +279,21 @@ def test_inline_configuration_is_found(tmp_path):
     """A ``# mypy:`` comment is found wherever "mypy" would honour it."""
     module = tmp_path / "module.py"
     module.write_text('"""Doc."""\n\nx = 1\n# mypy: ignore-errors\n', encoding="utf-8")
-    assert _inline(module) == [(4, "ignore-errors")]
+    assert _inline(module) == [(4, "# mypy: ignore-errors")]
+
+
+@pytest.mark.parametrize("sample", SAMPLES)
+def test_inline_matches_whatever_mypy_honours(sample):
+    """Every line "mypy" reads as configuration, :data:`INLINE` matches too.
+
+    "mypy" is in the pixi environments, where this runs, but not in the
+    ``test`` extra the "pip" workflow installs, so the guard itself carries
+    its own pattern rather than importing the parser.
+
+    """
+    util = pytest.importorskip("mypy.util")
+    honoured = {line for line, _ in util.get_mypy_comments(sample)}
+    assert honoured <= {line for line, _ in _matches(sample)}
 
 
 def test_only_the_known_overrides_relax_strict():
