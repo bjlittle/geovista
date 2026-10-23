@@ -1,0 +1,6 @@
+Fixed the points that :func:`geovista.core.slice_cells` adds where a meridian
+crosses the interior of cells, which were left inside the sphere, along the
+chords of those cells. A textured surface added to a
+:class:`~geovista.geoplotter.GeoPlotter` with no transform and no ``zlevel`` was
+cut this way, leaving a seam below its surface. Each added point now takes the
+radius interpolated from its neighbours. (:user:`claude`)
