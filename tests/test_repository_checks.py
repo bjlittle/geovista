@@ -184,11 +184,13 @@ def declared(root: Path) -> dict[str | None, list[Path]]:
 def _bindings(tree: ast.Module) -> list[ast.AST]:
     """Find every node that binds ``CHECK`` in a module's own namespace.
 
-    That is what the pytest hook reads, as ``item.module.CHECK``. A function, a
-    lambda or a class has a namespace of its own, so a name bound in one binds
-    nothing in the module, unless a function declares it ``global``. A
-    comprehension's targets are its own too. An import binds the name it is
-    given ``as``, or the first part of the module it imports.
+    That is what the pytest hook reads, as ``item.module.CHECK``, so this follows
+    Python's scopes. A function, a lambda or a class runs its body in a scope of
+    its own, which binds nothing in the module unless that scope itself declares
+    the name ``global``. Its decorators, defaults and bases run in the enclosing
+    scope, though. A comprehension's loop targets are its own, but an assignment
+    expression inside it binds the enclosing scope. An import binds the name it
+    is given ``as``, or the first part of the module it imports.
 
     Parameters
     ----------
@@ -202,38 +204,63 @@ def _bindings(tree: ast.Module) -> list[ast.AST]:
 
     """
     found: list[ast.AST] = []
+    scopes = ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda | ast.ClassDef
 
-    def scan(node: ast.AST, *, module: bool, shared: set[str]) -> None:
-        for child in ast.iter_child_nodes(node):
-            if isinstance(child, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda):
-                declared = {
-                    name
-                    for inner in ast.walk(child)
-                    if isinstance(inner, ast.Global)
-                    for name in inner.names
-                }
-                scan(child, module=False, shared=declared)
-            elif isinstance(child, ast.ClassDef):
-                scan(child, module=False, shared=set())
-            elif isinstance(
-                child, ast.ListComp | ast.SetComp | ast.DictComp | ast.GeneratorExp
-            ):
-                continue
-            else:
-                stored = (
-                    isinstance(child, ast.Name)
-                    and child.id == CONSTANT
-                    and isinstance(child.ctx, ast.Store)
-                )
-                imported = (
-                    isinstance(child, ast.alias)
-                    and (child.asname or child.name.partition(".")[0]) == CONSTANT
-                )
-                if (stored or imported) and (module or CONSTANT in shared):
-                    found.append(child)
-                scan(child, module=module, shared=shared)
+    def declared(scope: ast.AST) -> set[str]:
+        """Return the names a scope itself declares global, not its inner ones."""
+        names: set[str] = set()
+        pending = list(ast.iter_child_nodes(scope))
+        while pending:
+            node = pending.pop()
+            if isinstance(node, ast.Global):
+                names.update(node.names)
+            if not isinstance(node, scopes):
+                pending.extend(ast.iter_child_nodes(node))
+        return names
 
-    scan(tree, module=True, shared=set())
+    def visit(node: ast.AST, *, module: bool, shared: set[str]) -> None:
+        enclosing = {"module": module, "shared": shared}
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda):
+            outer = [*node.args.defaults, *node.args.kw_defaults]
+            if not isinstance(node, ast.Lambda):
+                outer += node.decorator_list
+            for part in outer:
+                if part is not None:
+                    visit(part, **enclosing)
+            body = [node.body] if isinstance(node, ast.Lambda) else node.body
+            for part in body:
+                visit(part, module=False, shared=declared(node))
+        elif isinstance(node, ast.ClassDef):
+            for part in [*node.decorator_list, *node.bases, *node.keywords]:
+                visit(part, **enclosing)
+            for part in node.body:
+                visit(part, module=False, shared=declared(node))
+        elif isinstance(
+            node, ast.ListComp | ast.SetComp | ast.DictComp | ast.GeneratorExp
+        ):
+            # the loop targets are the comprehension's own, so they are skipped
+            for generator in node.generators:
+                for part in [generator.iter, *generator.ifs]:
+                    visit(part, **enclosing)
+            for name in ("elt", "key", "value"):
+                if (part := getattr(node, name, None)) is not None:
+                    visit(part, **enclosing)
+        else:
+            stored = (
+                isinstance(node, ast.Name)
+                and node.id == CONSTANT
+                and isinstance(node.ctx, ast.Store)
+            )
+            imported = (
+                isinstance(node, ast.alias)
+                and (node.asname or node.name.partition(".")[0]) == CONSTANT
+            )
+            if (stored or imported) and (module or CONSTANT in shared):
+                found.append(node)
+            for child in ast.iter_child_nodes(node):
+                visit(child, **enclosing)
+
+    visit(tree, module=True, shared=set())
     return found
 
 
@@ -411,6 +438,16 @@ def test_a_half_deleted_section_fails(tmp_path):
         pytest.param("from elsewhere import other as CHECK\n", id="imported-as"),
         pytest.param('with open(".") as f:\n    CHECK = "nested"\n', id="with"),
         pytest.param('def f():\n    global CHECK\n    CHECK = "late"\n', id="global"),
+        pytest.param(
+            'values = [(CHECK := "hidden") for _ in range(1)]\n',
+            id="comprehension-walrus",
+        ),
+        pytest.param(
+            'def f(value=(CHECK := "hidden")):\n    pass\n', id="default-walrus"
+        ),
+        pytest.param(
+            'class A:\n    global CHECK\n    CHECK = "hidden"\n', id="class-global"
+        ),
     ],
 )
 def test_a_check_bound_out_of_reach_fails(tmp_path, source):
@@ -438,6 +475,16 @@ def test_a_check_bound_out_of_reach_fails(tmp_path, source):
         pytest.param(
             "from upstream import CHECK as dependency_check\n", id="imported-as"
         ),
+        pytest.param(
+            'CHECK = "demo"\n'
+            "def outer():\n"
+            '    CHECK = "local"\n'
+            "    def inner():\n"
+            "        global CHECK\n"
+            "        return CHECK\n"
+            "    return inner()\n",
+            id="nested-global",
+        ),
     ],
 )
 def test_a_name_that_binds_no_module_check_passes(tmp_path, source):
@@ -445,7 +492,8 @@ def test_a_name_that_binds_no_module_check_passes(tmp_path, source):
     module = tmp_path / "tests" / "test_a.py"
     module.parent.mkdir(parents=True)
     module.write_text(source, encoding="utf-8")
-    page = _tree(tmp_path, {}, [], [])
+    names = [name for name in declared(tmp_path) if name is not None]
+    page = _tree(tmp_path, {}, names, [_labels(name) for name in names])
     assert disagreements(tmp_path, page) == []
 
 
