@@ -175,20 +175,65 @@ def declared(root: Path) -> dict[str | None, list[Path]]:
                 )
                 name = value.value if literal else None
                 found.setdefault(name, []).append(module.relative_to(root))
-        # any other binding of the name, which the gate cannot read
-        for node in ast.walk(tree):
-            stored = (
-                isinstance(node, ast.Name)
-                and node.id == CONSTANT
-                and isinstance(node.ctx, ast.Store)
-                and id(node) not in read
-            )
-            imported = isinstance(node, ast.alias) and CONSTANT in {
-                node.asname,
-                node.name,
-            }
-            if stored or imported:
-                found.setdefault(None, []).append(module.relative_to(root))
+        # any other binding of the module's name, which the gate cannot read
+        if any(id(node) not in read for node in _bindings(tree)):
+            found.setdefault(None, []).append(module.relative_to(root))
+    return found
+
+
+def _bindings(tree: ast.Module) -> list[ast.AST]:
+    """Find every node that binds ``CHECK`` in a module's own namespace.
+
+    That is what the pytest hook reads, as ``item.module.CHECK``. A function, a
+    lambda or a class has a namespace of its own, so a name bound in one binds
+    nothing in the module, unless a function declares it ``global``. A
+    comprehension's targets are its own too. An import binds the name it is
+    given ``as``, or the first part of the module it imports.
+
+    Parameters
+    ----------
+    tree : ast.Module
+        The parsed module.
+
+    Returns
+    -------
+    list of ast.AST
+        The binding nodes, each an ``ast.Name`` stored to or an ``ast.alias``.
+
+    """
+    found: list[ast.AST] = []
+
+    def scan(node: ast.AST, *, module: bool, shared: set[str]) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda):
+                declared = {
+                    name
+                    for inner in ast.walk(child)
+                    if isinstance(inner, ast.Global)
+                    for name in inner.names
+                }
+                scan(child, module=False, shared=declared)
+            elif isinstance(child, ast.ClassDef):
+                scan(child, module=False, shared=set())
+            elif isinstance(
+                child, ast.ListComp | ast.SetComp | ast.DictComp | ast.GeneratorExp
+            ):
+                continue
+            else:
+                stored = (
+                    isinstance(child, ast.Name)
+                    and child.id == CONSTANT
+                    and isinstance(child.ctx, ast.Store)
+                )
+                imported = (
+                    isinstance(child, ast.alias)
+                    and (child.asname or child.name.partition(".")[0]) == CONSTANT
+                )
+                if (stored or imported) and (module or CONSTANT in shared):
+                    found.append(child)
+                scan(child, module=module, shared=shared)
+
+    scan(tree, module=True, shared=set())
     return found
 
 
@@ -363,6 +408,9 @@ def test_a_half_deleted_section_fails(tmp_path):
         pytest.param('CHECK, OTHER = "hidden", 1\n', id="tuple"),
         pytest.param('if True:\n    CHECK = "nested"\n', id="nested"),
         pytest.param("from elsewhere import CHECK\n", id="imported"),
+        pytest.param("from elsewhere import other as CHECK\n", id="imported-as"),
+        pytest.param('with open(".") as f:\n    CHECK = "nested"\n', id="with"),
+        pytest.param('def f():\n    global CHECK\n    CHECK = "late"\n', id="global"),
     ],
 )
 def test_a_check_bound_out_of_reach_fails(tmp_path, source):
@@ -378,6 +426,27 @@ def test_a_check_bound_out_of_reach_fails(tmp_path, source):
     page = _tree(tmp_path, {}, [], [])
     found = disagreements(tmp_path, page)
     assert any("test_a.py" in message and "literal" in message for message in found)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        pytest.param('def f():\n    CHECK = "local"\n', id="function-local"),
+        pytest.param('class A:\n    CHECK = "attribute"\n', id="class-attribute"),
+        pytest.param("x = [CHECK for CHECK in range(3)]\n", id="comprehension"),
+        pytest.param("f = lambda CHECK: CHECK\n", id="lambda"),
+        pytest.param(
+            "from upstream import CHECK as dependency_check\n", id="imported-as"
+        ),
+    ],
+)
+def test_a_name_that_binds_no_module_check_passes(tmp_path, source):
+    """Only a binding of the module's own CHECK is one the hook would read."""
+    module = tmp_path / "tests" / "test_a.py"
+    module.parent.mkdir(parents=True)
+    module.write_text(source, encoding="utf-8")
+    page = _tree(tmp_path, {}, [], [])
+    assert disagreements(tmp_path, page) == []
 
 
 def test_an_ill_formed_name_fails(tmp_path):
