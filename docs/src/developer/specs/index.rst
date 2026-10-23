@@ -24,6 +24,8 @@ of different documents.
 
     * - Citation
       - Document
+    * - ``checks spec §…``
+      - :doc:`2026-10-23-repository-checks-design`
     * - ``docs spec §…``
       - :doc:`2026-10-06-published-specs-design`
     * - ``typing spec §…``
@@ -81,3 +83,4 @@ work has moved past, such as an **Open** item whose issue has closed.
     2026-10-06-published-specs-design
     2026-10-06-type-coverage-design
     2026-10-08-planar-zlevel-design
+    2026-10-23-repository-checks-design
