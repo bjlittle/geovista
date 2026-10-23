@@ -66,7 +66,7 @@ def spec(rows: tuple[str, ...] = (), items: tuple[str, ...] = ()) -> str:
     lines = ["# A specification", "", "## 4. Roadmap", ""]
     lines += ["| # | Scope | Status |", "|---|---|---|"]
     lines += [f"| {index} | Work | {row} |" for index, row in enumerate(rows, 1)]
-    lines += ["", "## 8. Open items", ""]
+    lines += ["", "## 8. Open Items", ""]
     lines += [
         f"{index}. {item} — **A question.** An answer."
         for index, item in enumerate(items, 1)

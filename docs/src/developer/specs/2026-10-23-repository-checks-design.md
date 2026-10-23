@@ -1,4 +1,4 @@
-# geovista repository checks — design specification
+# geovista Repository Checks — Design Specification
 
 ```{readingtime}
 ```
@@ -85,7 +85,7 @@ failure point at its section.
 ## 3. Design
 
 (checks-spec-3-1)=
-### 3.1 The page
+### 3.1 The Page
 
 The page opens with one line telling a reader who has just failed a check to find it
 below. A lookup table follows, split by where the failure is seen: a test, a pre-commit
@@ -108,7 +108,7 @@ The page joins the developer guide's toctree, with a card on its index like its
 neighbours. The page states that third-party tools are not yet covered.
 
 (checks-spec-3-2)=
-### 3.2 Naming a check
+### 3.2 Naming a Check
 
 Each check declares its name once, as a module-level constant in the module that enforces
 it:
@@ -126,7 +126,7 @@ that tests a check's script, such as `tests/test_status_references.py`, declares
 gate of {ref}`§3.4 <checks-spec-3-4>` is named `repository-checks`.
 
 (checks-spec-3-3)=
-### 3.3 The breadcrumb
+### 3.3 The Breadcrumb
 
 Every failure of a check ends with the same two lines, naming its section:
 
@@ -157,7 +157,7 @@ whose section links on to it. The nightly drift run files what the status script
 an issue, so the breadcrumb reaches that issue too.
 
 (checks-spec-3-4)=
-### 3.4 The gate
+### 3.4 The Gate
 
 A test reads every `CHECK` declared under `tests/` and `.github/scripts/`, and the page,
 and fails unless the two agree:
@@ -194,7 +194,7 @@ exception. Adding it fills the hook and documentation build groups of
 a breadcrumb reaches a failure the tool reports itself.
 
 (checks-spec-5)=
-## 5. Alternatives considered
+## 5. Alternatives Considered
 
 - **A page per kind of failure.** Grouping by where a check fails is useful, but on
   separate pages a reader in one group would not see a similar check in another.
@@ -236,7 +236,7 @@ reading-time banner and the changelog fragment. So is changing what any check en
 this specification documents the rules as they stand.
 
 (checks-spec-8)=
-## 8. Open items
+## 8. Open Items
 
 Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 

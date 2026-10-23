@@ -1,4 +1,4 @@
-# geovista design specifications — publication and conventions
+# geovista Design Specifications — Publication and Conventions
 
 ```{readingtime}
 ```
@@ -125,7 +125,7 @@ anything once the page is excluded, and a plan is frozen, which means not editin
 tidy a marker that has stopped mattering.
 
 (docs-spec-3-2)=
-### 3.2 The citation namespace
+### 3.2 The Citation Namespace
 
 `docs/src/developer/specs/index.rst` carries the toctree and introduces the collection. It
 states two things a reader cannot infer from any single document. First, that **these are
@@ -168,21 +168,21 @@ link. Writing the seven correctly cost seven edits; leaving them would have cost
 gap in whatever is built on top.
 
 (docs-spec-3-3)=
-### 3.3 Section anchors
+### 3.3 Section Anchors
 
 Every numbered heading carries an explicit MyST target immediately above it, keyed to the
 section number with dots replaced by hyphens and prefixed by the document's slug:
 
 ```markdown
 (docs-spec-3-2)=
-### 3.2 The citation namespace
+### 3.2 The Citation Namespace
 ```
 
 The target becomes the section's HTML `id`, so
 `…/2026-10-06-published-specs-design.html#docs-spec-3-2` addresses this section directly.
 
 Two reasons this is not optional. `docutils` derives its slug from the heading *text* and
-discards the number, so `### 3.2 The citation namespace` would otherwise be addressable
+discards the number, so `### 3.2 The Citation Namespace` would otherwise be addressable
 only as `#the-citation-namespace`. Each specification renders as one long page, so a
 citation landing at the top rather than at the section it names has not really resolved.
 And prose-derived slugs collide silently: two sections both titled *Testing* produce one
@@ -194,7 +194,7 @@ Both specifications satisfy it, and change 1 of {ref}`§4 <docs-spec-4>` added t
 assertion, so the next document is governed rather than merely well written.
 
 (docs-spec-3-4)=
-### 3.4 Cross-references inside a specification
+### 3.4 Cross-References Inside a Specification
 
 A specification names its own sections constantly, and does it with a hand-written role:
 
@@ -223,7 +223,7 @@ whose machinery does not exist yet. When the transform lands it makes those cita
 again, the roles collapse to plain text, and this assertion retires with them.
 
 (docs-spec-3-5)=
-### 3.5 What holds the conventions
+### 3.5 What Holds the Conventions
 
 A convention that nothing checks decays. Renumbering a section strands every citation that
 named the old number, and the failure is invisible, because a stale citation is still a
@@ -288,7 +288,7 @@ narrows that class is the rule in {ref}`§3.2 <docs-spec-3-2>` giving the unqual
 local meaning, together with review, and nothing here should be read as claiming otherwise.
 
 (docs-spec-3-6)=
-### 3.6 Status, dates and the work that closed it
+### 3.6 Status, Dates and the Work That Closed It
 
 A roadmap row that says `landed` records that something happened and throws away which
 thing. The change is in the history somewhere, with a number, a date, an argument in its
@@ -404,7 +404,7 @@ observed:
   it should not be, that is because someone did not re-read this table.
 
 (docs-spec-5)=
-## 5. Alternatives considered
+## 5. Alternatives Considered
 
 - **Hand-writing a cross-reference role for every citation**, rather than deriving the
   target at build time. Rejected for {ref}`§3.4 <docs-spec-3-4>`'s reason: it manufactures
@@ -463,7 +463,7 @@ specification content is contributor material; and `docs/AGENTS.md`, which cover
 and building the documentation rather than this one collection inside it.
 
 (docs-spec-8)=
-## 8. Open items
+## 8. Open Items
 
 Each carries the grammar of {ref}`§3.6 <docs-spec-3-6>`, so a reader can tell a decision
 that was taken from one that was dropped.

@@ -1363,8 +1363,9 @@ def statuses(text: str) -> Iterator[tuple[int, str, str]]:
 
     A cell is read from any table whose header names a Status column, wherever
     the table sits, and the table ends where its rows do. An open item is any
-    top-level list item under "Open items", numbered or bulleted, so an item that
-    has lost its state is reported rather than passed over.
+    top-level list item under "Open Items", however its heading is cased, numbered
+    or bulleted, so an item that has lost its state is reported rather than passed
+    over.
 
     Parameters
     ----------
@@ -1394,7 +1395,15 @@ def statuses(text: str) -> Iterator[tuple[int, str, str]]:
             table = []
     item: list[str] = []
     start = 0
-    for number, line in [*sections(text).get("Open items", []), (0, "")]:
+    # matched without regard to case, as a heading in headline style and one in
+    # sentence case name the same section, and missing it would stop its check
+    items = [
+        line
+        for title, lines in sections(text).items()
+        if title.casefold() == "open items"
+        for line in lines
+    ]
+    for number, line in [*items, (0, "")]:
         opened = ITEM.match(line)
         if opened or not line.strip():
             if item:
@@ -1440,7 +1449,7 @@ def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
         "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Status |\n|---|---|\n"
         f"| 1 | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
         f"| 2 | {LANDED} (2026-01-01) |\n| 3 | shipped |\n| 4 | candidate |\n\n"
-        "(demo-spec-2)=\n## 2. Open items\n\n"
+        "(demo-spec-2)=\n## 2. Open Items\n\n"
         "1. **Resolved** (2026-01-01, [x](https://github.com/o/r/issues/1)) - **A.**\n"
         "2. **Resolved** (no date,\n   {issue}`2`) - **B.**\n"
         "3. **Open** - **C.**\n"
@@ -1456,13 +1465,28 @@ def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
     ]
 
 
+@pytest.mark.parametrize("title", ["Open Items", "Open items"])
+def test_statuses_reads_open_items_whatever_their_case(title):
+    """An open item is read under its heading however the heading is cased.
+
+    The specifications title their headings in headline style, as the title
+    style of the documentation guide says, and a heading written before it was
+    adopted is in sentence case. Either way its items are statuses, and missing
+    them would silently stop their check.
+
+    """
+    text = f"(demo-spec-8)=\n## 8. {title}\n\n1. **Open** - **An item.**\n"
+
+    assert [kind for _, kind, _ in statuses(text)] == ["item"]
+
+
 def test_status_finds_a_date_no_calendar_holds(tmp_path):
     """A date of the right shape is still no date if no calendar holds it."""
     roadmap = (
         "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Status |\n|---|---|\n"
         f"| 1 | {LANDED} (2026-02-30, {{pull}}`1`) |\n"
         f"| 2 | {LANDED} (2026-02-28, {{pull}}`1`) |\n\n"
-        "(demo-spec-2)=\n## 2. Open items\n\n"
+        "(demo-spec-2)=\n## 2. Open Items\n\n"
         "1. **Resolved** (2026-13-01, {issue}`2`) - **A.**\n"
     )
     path, _ = demo(tmp_path, roadmap)
@@ -1480,7 +1504,7 @@ def test_status_reads_bullets_and_any_status_table(tmp_path):
     body = (
         "(demo-spec-1)=\n## 1. Plan and status\n\n| # | Status |\n|---|---|\n"
         "| 1 | shipped |\n\n"
-        "(demo-spec-2)=\n## 2. Open items\n\n"
+        "(demo-spec-2)=\n## 2. Open Items\n\n"
         "- **shipped** - **A.**\n"
         "- **Resolved** (no date) - **B.**\n"
         "* plain text, its state forgotten\n"

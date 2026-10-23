@@ -94,8 +94,8 @@ directive output can appear there. Check rendering with the `text` builder.
 
 ## Conventions
 
-Pages are reStructuredText; tutorials are Jupyter notebooks. Cross-reference with
-Sphinx roles (`:ref:`, `:doc:`, `:func:`), and keep substitutions in `src/common.txt`.
+Pages are reStructuredText, tutorials notebooks; cross-reference with roles (`:ref:`),
+keep substitutions in `src/common.txt`, and title by `documentation.rst`'s Title Style.
 
 ### Do Not Edit (Generated)
 
