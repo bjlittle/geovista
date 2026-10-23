@@ -70,9 +70,10 @@ fails in a full run. Restore it in a fixture: `copy.deepcopy` round-trips.
 
 ### Fixtures
 
-- Shared fixtures live in `conftest.py` at the appropriate directory level
-- Root `conftest.py` provides: `lam_uk`, `lam_polar`, `lfric`, `lfric_sst`, `lfric_sst_eqc`, `coastlines`, `sphere`, `wgs84_wkt`, `plot_nodeid`, `lam_uk_cloud`, `lam_uk_sample`
-- Use `request.param` with `pytest.fixture` for parametrized indirect fixtures
+- Shared fixtures live in the `conftest.py` of the directory that needs them; the root one provides `lam_uk`, `lam_polar`, `lfric`, `lfric_sst`, `lfric_sst_eqc`, `coastlines`, `sphere`, `wgs84_wkt`, `plot_nodeid`, `lam_uk_cloud`, `lam_uk_sample`, `no_network`
+- ⚠️ **pyproj's wheels have no PROJ grids, and conda-forge's PROJ fetches them**, as
+  activation sets `PROJ_NETWORK=ON`, so a datum test can pass here and fail `ci-tests-pypi`
+  (#2718). Request `no_network`, or run `pixi run -e geovista env PROJ_NETWORK=OFF pytest`.
 
 ### Image Tests
 
@@ -92,13 +93,11 @@ tag that does not exist yet fails the whole suite at collection, not just the im
 tests. `registry.txt` is **hand-maintained**: grouped by blank lines and only
 roughly sorted, so edit the affected lines in place. Never rewrite or re-sort it.
 
-⚠️ **Never hand-edit `version.txt` in `geovista-data`, and never tag it by
-hand.** Its `ci-release.yml` does both automatically on merge to `main`: it
-derives `YYYY.MM` from the current date and sets the serial to `0`, *unless*
-`version.txt` already carries the current month, in which case it increments the
-serial. So a manual bump to the version you want is self-defeating — it pushes
-the release one serial past it. Predict the tag from the date and what is on
-`main`, then bake that into `DATA_VERSION`.
+⚠️ **Never hand-edit `version.txt` in `geovista-data`, nor tag it.** On merge to
+`main` its `ci-release.yml` sets `YYYY.MM` from the date with serial `0`, or bumps
+the serial if `version.txt` already has this month, so a manual bump lands one
+serial past the one you wanted. Predict the tag from the date and `main`, then
+bake that into `DATA_VERSION`.
 
 ### Documentation Tests
 
@@ -196,4 +195,4 @@ is one an extension walks past unseen (#2559). Use `html.parser.HTMLParser`.
 
 ---
 
-**Last Updated**: 9 October 2026
+**Last Updated**: 24 October 2026
