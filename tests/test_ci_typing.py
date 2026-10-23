@@ -9,7 +9,9 @@ GeoVista type checks in strict mode against the locked pixi environment, where
 the third-party types are real. The modules that once reported errors were
 listed under ``ignore_errors`` and retired one change at a time, until none was
 left. These tests keep it that way: no override may ignore a module's errors,
-and the workflow that runs "mypy" for "pre-commit.ci" must keep running it.
+no module may configure "mypy" inline, the per-module relaxations stay the
+ones the specification gives reasons for, and the workflow that runs "mypy"
+for "pre-commit.ci" must keep running it.
 
 See "docs/src/developer/specs/2026-10-06-type-coverage-design.md", section 3.2.
 
@@ -22,6 +24,7 @@ from pathlib import Path
 import tomllib
 from typing import Any
 
+from mypy.util import get_mypy_comments
 import pytest
 import yaml
 
@@ -33,6 +36,22 @@ PYPROJECT = ROOT / "pyproject.toml"
 PRE_COMMIT = ROOT / ".pre-commit-config.yaml"
 #: The workflow carrying the coverage "pre-commit.ci" cannot provide.
 WORKFLOW = ROOT / ".github" / "workflows" / "ci-typing.yml"
+#: The package "mypy" checks, as "[tool.mypy]" names it in "files".
+PACKAGE = ROOT / "src" / "geovista"
+
+#: Every per-module setting that relaxes strict mode, by the module it is set
+#: for. "pyproject.toml" gives the reason for each, citing typing spec §3.1 for
+#: the first two and typing spec §3.4 for the gallery. Adding, changing or
+#: withdrawing one is a change to this table, as a ratchet entry was.
+RELAXED = {
+    "geovista.cli": {"disallow_untyped_decorators": False},
+    "geovista.examples.*": {"disable_error_code": ["call-arg", "no-untyped-call"]},
+    "geovista.qt": {"disallow_subclassing_any": False},
+}
+
+#: The override settings that relax nothing "mypy" checks in a module: which
+#: modules a block applies to, and whether an import of them may be missing.
+NEUTRAL = frozenset({"ignore_missing_imports", "module"})
 
 
 def _modules(override: dict[str, Any]) -> tuple[str, ...]:
@@ -74,6 +93,51 @@ def _ignored() -> frozenset[str]:
         if override.get("ignore_errors", False)
         for module in _modules(override)
     )
+
+
+def _relaxed(overrides: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Return every setting an override relaxes, by module.
+
+    Parameters
+    ----------
+    overrides : list of dict
+        The ``[[tool.mypy.overrides]]`` blocks, as parsed.
+
+    Returns
+    -------
+    dict
+        For each module named by a block carrying anything but the settings in
+        :data:`NEUTRAL`, those settings, merged across every block that names
+        it. ``disable_error_code`` is one of them, and silences a code for a
+        module as surely as ``ignore_errors`` silences them all.
+
+    """
+    relaxed: dict[str, dict[str, Any]] = {}
+    for override in overrides:
+        settings = {k: v for k, v in override.items() if k not in NEUTRAL}
+        if settings:
+            for module in _modules(override):
+                relaxed.setdefault(module, {}).update(settings)
+    return relaxed
+
+
+def _inline(path: Path) -> list[tuple[int, str]]:
+    """Return the inline configuration "mypy" reads from a module.
+
+    Parameters
+    ----------
+    path : Path
+        The module.
+
+    Returns
+    -------
+    list of tuple
+        The line number and text of each ``# mypy:`` comment, found by the
+        parser "mypy" itself uses, so that the test and the checker agree on
+        what counts.
+
+    """
+    return list(get_mypy_comments(path.read_text(encoding="utf-8")))
 
 
 def _commands(step: dict[str, Any]) -> tuple[str, ...]:
@@ -154,6 +218,66 @@ def test_no_module_ignores_errors():
 
     """
     assert not _ignored(), f"errors ignored in: {sorted(_ignored())}"
+
+
+def test_no_module_configures_mypy_inline():
+    """No module may carry a ``# mypy:`` comment.
+
+    ``# mypy: ignore-errors`` at the head of a module stops it being checked,
+    and ``# mypy: disable-error-code=...`` silences a code in it, yet neither
+    touches the manifest the other tests read, and the hook refusing a bare
+    type-ignore comment does not match them. Any other inline flag changes how
+    one module is checked out of sight of "[tool.mypy]", so none is allowed.
+
+    """
+    modules = sorted({*PACKAGE.rglob("*.py"), *PACKAGE.rglob("*.pyi")})
+    assert modules, f"no modules found under {PACKAGE}"
+    found = {
+        f"{module.relative_to(ROOT)}:{line}": text
+        for module in modules
+        for line, text in _inline(module)
+    }
+    assert not found, f"configure mypy in pyproject.toml, not inline: {found}"
+
+
+def test_inline_configuration_is_found(tmp_path):
+    """A ``# mypy:`` comment is found wherever "mypy" would honour it."""
+    module = tmp_path / "module.py"
+    module.write_text('"""Doc."""\n\nx = 1\n# mypy: ignore-errors\n', encoding="utf-8")
+    assert _inline(module) == [(4, "ignore-errors")]
+
+
+def test_only_the_known_overrides_relax_strict():
+    """Each per-module relaxation of strict mode is one the specification gives.
+
+    ``test_no_module_ignores_errors`` sees ``ignore_errors`` and nothing else,
+    so a block disabling an error code for a module passed unseen. That is how
+    a ``union-attr`` override on ``geovista.examples.grid.*`` hid four reads of
+    an optional point of interest until change 7 of the roadmap removed it.
+    Settings such as ``disallow_untyped_defs = false`` relax a module in the
+    same way. Pinning them all means a new one cannot arrive unnoticed.
+
+    """
+    manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
+    relaxed = _relaxed(manifest["tool"]["mypy"].get("overrides", []))
+    changed = {
+        module: relaxed.get(module)
+        for module in sorted(relaxed.keys() | RELAXED.keys())
+        if relaxed.get(module) != RELAXED.get(module)
+    }
+    assert not changed, f"relaxations differ from RELAXED: {changed}"
+
+
+def test_a_neutral_override_relaxes_nothing():
+    """Only the settings that change what is checked count as relaxing it."""
+    overrides = [
+        {"module": "a", "ignore_missing_imports": True},
+        {"module": ["b.*"], "disable_error_code": ["x"]},
+        {"module": ["b.*"], "disallow_untyped_defs": False},
+    ]
+    assert _relaxed(overrides) == {
+        "b.*": {"disable_error_code": ["x"], "disallow_untyped_defs": False}
+    }
 
 
 def test_mypy_hook_is_skipped_on_pre_commit_ci():

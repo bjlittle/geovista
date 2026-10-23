@@ -444,7 +444,11 @@ published signatures and each adds tests exercising the widened input.
 when a module was added to the ignore list and passing when one was removed. Change 7
 deleted it with the last entry, and `tests/test_ci_typing.py` now fails if any override
 ignores a module's errors, and keeps that test's guards on `ci-typing.yml` and the `mypy`
-hook.
+hook. It also fails on a `# mypy:` comment anywhere in the package, and on any per-module
+relaxation of strict mode beyond the three this specification gives reasons for:
+`geovista.cli`'s and `geovista.qt`'s in {ref}`§3.1 <typing-spec-3-1>`, and the gallery's
+in {ref}`§3.4 <typing-spec-3-4>`. Adding, changing or withdrawing one is then a change to
+the test ({issue}`2687`).
 
 Changes 2 to 4 of the roadmap each add tests passing lists where arrays were passed before,
 so that the widened contract of {ref}`§3.3 <typing-spec-3-3>` is exercised rather than
