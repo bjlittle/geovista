@@ -282,3 +282,24 @@ def test_surface_zlevel_follows_the_slice(lon_0):
     # the semi-major axis of the GRS80 ellipsoid of the CRS is 6378137 m
     expected = (1 + np.abs(lats) / 90) * ZLEVEL_SCALE * 6378137
     np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-9)
+
+
+def test_datum_at_true_positions():
+    """A surface added to a plotter takes each datum shift where it is.
+
+    See :issue:`2714`.
+
+    """
+    lons, lats = np.array([-3.0, 0.0, 1.9]), np.array([51.0, 52.0, 53.0])
+    mesh = gv.Transform.from_1d(lons, lats)
+    expected = gv.Transform.from_1d(lons, lats)
+    p = GeoPlotter(crs="EPSG:27700")
+
+    actor = p.add_mesh(mesh)
+
+    xyz = from_cartesian(expected)
+    x, y = Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True).transform(
+        xyz[:, 0], xyz[:, 1]
+    )
+    np.testing.assert_allclose(actor.mapper.dataset.points[:, 0], x, atol=1e-3)
+    np.testing.assert_allclose(actor.mapper.dataset.points[:, 1], y, atol=1e-3)

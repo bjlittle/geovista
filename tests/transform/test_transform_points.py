@@ -8,12 +8,14 @@
 from __future__ import annotations
 
 import numpy as np
-from pyproj import Transformer
+from pyproj import CRS, Transformer
+from pyproj.enums import WktVersion
 from pyproj.exceptions import CRSError, ProjError
 import pytest
 
 from geovista.common import wrap
 from geovista.crs import WGS84
+import geovista.transform
 from geovista.transform import transform_points
 
 
@@ -119,7 +121,7 @@ def test_transform(mocker, zoffset, reshape, roundtrip):
     else:
         shape = (size,)
     shape = (*shape, 3)
-    spy_from_crs = mocker.spy(Transformer, "from_crs")
+    spy_transformer = mocker.spy(geovista.transform, "_transformer")
     spy_transform = mocker.spy(Transformer, "transform")
     if roundtrip:
         points = transform_points(
@@ -141,7 +143,7 @@ def test_transform(mocker, zoffset, reshape, roundtrip):
         expected = expected.reshape(shape)
     np.testing.assert_array_almost_equal(result, expected)
     call_count = 2 if roundtrip else 0
-    assert spy_from_crs.call_count == call_count
+    assert spy_transformer.call_count == call_count
     assert spy_transform.call_count == call_count
     assert result.shape == shape
 
@@ -199,3 +201,103 @@ def test_trapped_point_raises():
         _ = transform_points(
             src_crs=WGS84, tgt_crs=ORTHO, xs=[180.0], ys=[0.0], trap=True
         )
+
+
+#: Longitudes along 52°N either side of 2.01°E, where the grid of the 1 m operation
+#: from WGS84 to the British National Grid ends.
+GRID_EDGE_LONS = np.array([1.75, 2.0, 2.125, 2.25])
+
+#: The British National Grid's projection alone, with no datum shift.
+BNG_PROJECTION = (
+    "+proj=pipeline +step +proj=unitconvert +xy_in=deg +xy_out=rad "
+    "+step +proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 "
+    "+ellps=airy"
+)
+
+
+def test_one_datum_operation_across_a_grid_edge():
+    """Points either side of a datum grid's edge take one operation.
+
+    Chosen point by point, those east of the grid fell back to no datum shift, a step
+    of 129 m. No operation's area of use covers them all, so the most accurate one that
+    can take every point is used, with a warning. See :issue:`2714`.
+
+    """
+    lats = np.full(GRID_EDGE_LONS.shape, 52.0)
+
+    with pytest.warns(UserWarning, match="area of use"):
+        result = transform_points(
+            src_crs=WGS84, tgt_crs="EPSG:27700", xs=GRID_EDGE_LONS, ys=lats
+        )
+
+    x, _ = Transformer.from_pipeline(BNG_PROJECTION).transform(GRID_EDGE_LONS, lats)
+    shift = result[:, 0] - np.asarray(x)
+    # the OSGB36 datum shift is about 125 m east here, for every point alike
+    assert np.all(shift > 100)
+    assert np.ptp(shift) < 10
+
+
+def test_one_datum_operation_from_a_grid_edge():
+    """Points of a national grid either side of its datum grid's edge take one too."""
+    lats = np.full(GRID_EDGE_LONS.shape, 52.0)
+    xs, ys = Transformer.from_pipeline(BNG_PROJECTION).transform(GRID_EDGE_LONS, lats)
+
+    with pytest.warns(UserWarning, match="area of use"):
+        result = transform_points(
+            src_crs="EPSG:27700", tgt_crs=WGS84, xs=np.asarray(xs), ys=np.asarray(ys)
+        )
+
+    # undoing the projection alone leaves the datum shift, the same for every point
+    shift = result[:, 0] - GRID_EDGE_LONS
+    assert np.all(np.abs(shift) > 1e-3)
+    assert np.ptp(shift) < 1e-4
+
+
+def test_most_accurate_datum_operation_inside_its_area():
+    """Points inside the area of the most accurate operation take it, unwarned."""
+    lons = np.array([-2.0, -1.0, 0.0, 1.0])
+    lats = np.full(lons.shape, 52.0)
+
+    result = transform_points(src_crs=WGS84, tgt_crs="EPSG:27700", xs=lons, ys=lats)
+
+    best = Transformer.from_crs(WGS84, "EPSG:27700", always_xy=True)
+    x, y = best.transform(lons, lats)
+    np.testing.assert_allclose(result[:, 0], x, atol=1e-6)
+    np.testing.assert_allclose(result[:, 1], y, atol=1e-6)
+
+
+def test_same_datum_needs_no_operation_chosen():
+    """A target on the source's datum is only projected, wherever the points are.
+
+    UTM zone 30N has an area of use of 6°W to 0°, but it changes no datum, so points
+    far outside that area are projected without a warning.
+
+    """
+    lons, lats = np.array([20.0, 25.0]), np.array([40.0, 45.0])
+
+    result = transform_points(src_crs=WGS84, tgt_crs="EPSG:32630", xs=lons, ys=lats)
+
+    x, y = Transformer.from_crs(WGS84, "EPSG:32630", always_xy=True).transform(
+        lons, lats
+    )
+    np.testing.assert_allclose(result[:, 0], x, atol=1e-6)
+    np.testing.assert_allclose(result[:, 1], y, atol=1e-6)
+
+
+def test_same_datum_by_another_name_needs_no_operation_chosen():
+    """A projection on WGS84 by another name than EPSG:4326's is only projected.
+
+    A GeoTIFF's UTM CRS names the WGS84 datum, not EPSG:4326's ensemble of it, and
+    PROJ offers only the projection's inverse between them, which changes no datum.
+    Points beyond the UTM zone are not warned about.
+
+    """
+    # a GeoTIFF's CRS, as GDAL writes EPSG:32618 in WKT1
+    utm = CRS.from_wkt(CRS.from_epsg(32618).to_wkt(WktVersion.WKT1_GDAL))
+    xs, ys = np.array([1_500_000.0, 1_600_000.0]), np.array([4_500_000.0, 4_600_000.0])
+
+    result = transform_points(src_crs=utm, tgt_crs=WGS84, xs=xs, ys=ys)
+
+    lons, lats = Transformer.from_crs(utm, WGS84, always_xy=True).transform(xs, ys)
+    np.testing.assert_allclose(result[:, 0], lons, atol=1e-9)
+    np.testing.assert_allclose(result[:, 1], lats, atol=1e-9)

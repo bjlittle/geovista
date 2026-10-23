@@ -16,6 +16,7 @@ from __future__ import annotations
 from copy import deepcopy
 import math
 from typing import TYPE_CHECKING, Any, cast
+import warnings
 
 import lazy_loader as lazy
 
@@ -25,6 +26,7 @@ from .common import (
     GV_POINT_ZLEVEL,
     RADIUS,
     ZLEVEL_SCALE,
+    distance,
     from_cartesian,
     point_cloud,
     to_cartesian,
@@ -61,6 +63,17 @@ __all__ = [
 #: The name a per-point zlevel travels through the seam slice under, prefixed
 #: with underscores until no array of the mesh has it.
 _ZLEVEL = "gvTransformZLevel"
+
+#: The name of the field array that marks a mesh on the sphere whose points have
+#: been moved onto the datum of the target CRS, so that it is not moved twice.
+_DATUM = "gvTransformDatum"
+
+#: The bounds of an area of use for the whole globe, in degrees.
+_GLOBE: tuple[float, float, float, float] = (-180.0, -90.0, 180.0, 90.0)
+
+#: The tolerance, in degrees, within which a point counts as on an edge of an area of
+#: use, so that rounding does not put it outside.
+_EDGE = 1e-9
 
 
 def transform_mesh(
@@ -159,6 +172,14 @@ def transform_mesh(
     if transform_required:
         level = _point_levels(mesh, zlevel)
 
+        if src_crs == WGS84:
+            # the datum operation is taken where each point is, before the mesh is
+            # rotated to the central meridian or cut, see issue #2714
+            mesh = _apply_datum(mesh, tgt_crs)
+
+        # points moved onto the target's datum are only projected from here
+        projection_crs = tgt_crs.geodetic_crs if _DATUM in mesh.field_data else None
+
         # slice the mesh to break connectivity, but not for a point-cloud
         if slice_connectivity:
             mesh, tgt_crs, level = _slice_seam(
@@ -176,7 +197,10 @@ def transform_mesh(
             level = level + _carried_zlevels(mesh, xyz, src_crs)
 
         transformed = transform_points(
-            src_crs=src_crs, tgt_crs=tgt_crs, xs=xyz[:, 0], ys=xyz[:, 1]
+            src_crs=projection_crs or src_crs,
+            tgt_crs=tgt_crs,
+            xs=xyz[:, 0],
+            ys=xyz[:, 1],
         )
 
         xs, ys = transformed[:, 0], transformed[:, 1]
@@ -208,6 +232,7 @@ def transform_mesh(
             _record_zlevels(mesh, level, tgt_crs, radius=radius, zscale=zscale)
 
         # TODO @bjlittle: Check whether to clean other field_data metadata.
+        mesh.field_data.pop(_DATUM, None)
         to_wkt(mesh, original_tgt_crs)
 
     return mesh
@@ -413,7 +438,7 @@ def transform_points(
     if src_crs == tgt_crs:
         result = combine(xs, ys, zs)
     else:
-        transformer = pyproj.Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
+        transformer = _transformer(src_crs, tgt_crs, xs, ys)
         if xs.size == 1:
             # unpack to avoid "conversion of an array with ndim > 0 to a scalar"
             # deprecation (numpy 1.25)
@@ -433,6 +458,370 @@ def transform_points(
         result = result.reshape(tuple(shape))
 
     return result
+
+
+def _transformer(
+    src_crs: pyproj.CRS, tgt_crs: pyproj.CRS, xs: NDArray[Any], ys: NDArray[Any]
+) -> pyproj.Transformer:
+    """Choose the one operation that transforms every point between two CRSs.
+
+    Between CRSs on different datums, PROJ chooses an operation for each point,
+    the best whose area of use holds it, and so neighbouring points can take
+    different ones. Past the edge of a datum grid that falls back to no datum
+    shift at all, a step of 129 m on the British National Grid, so one operation is
+    chosen for every point instead. See :issue:`2714`.
+
+    It is the most accurate operation whose area of use covers every point. Where
+    none does, it is the most accurate operation that can transform every point,
+    with a warning. PROJ's ballpark operation, which applies no datum shift, is
+    used only when there is no other.
+
+    Parameters
+    ----------
+    src_crs : :class:`~pyproj.crs.CRS`
+        The source CRS of the points.
+    tgt_crs : :class:`~pyproj.crs.CRS`
+        The target CRS of the points.
+    xs : :class:`~numpy.ndarray`
+        The x-values of the points, in canonical `src_crs` units.
+    ys : :class:`~numpy.ndarray`
+        The y-values of the points, in canonical `src_crs` units.
+
+    Returns
+    -------
+    :class:`~pyproj.transformer.Transformer`
+        The transformer of the chosen operation, with the axis order x then y.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    candidates = _datum_operations(src_crs, tgt_crs)
+
+    if not candidates:
+        # no datum to change, or nothing but the ballpark operation to change it
+        return pyproj.Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
+
+    finite = np.isfinite(xs) & np.isfinite(ys)
+    xs, ys = xs[finite], ys[finite]
+    lonlats: tuple[NDArray[Any], NDArray[Any]] | None = None
+
+    for candidate in candidates:
+        bounds = _bounds(candidate)
+        # an operation for the whole globe covers any points, unlocated
+        if bounds == _GLOBE:
+            return candidate
+        if lonlats is None:
+            lonlats = _lonlats(src_crs, xs, ys)
+        if _covers(bounds, *lonlats):
+            return candidate
+
+    for candidate in candidates:
+        try:
+            candidate.transform(xs, ys, errcheck=True)
+        except pyproj.exceptions.ProjError:
+            # a grid-based operation refuses a point beyond its grid
+            continue
+        accuracy = (
+            f"accurate to {candidate.accuracy:g} m"
+            if candidate.accuracy >= 0
+            else "of unknown accuracy"
+        )
+        wmsg = (
+            f"geovista transformed points from {src_crs.name!r} to "
+            f"{tgt_crs.name!r} with {candidate.description!r}, {accuracy}, whose "
+            "area of use does not cover every point, as no operation's does."
+        )
+        warnings.warn(wmsg, stacklevel=3)
+        return candidate
+
+    # no operation takes every point, so the most accurate refuses those it cannot
+    return candidates[0]
+
+
+def _apply_datum(mesh: pv.PolyData, tgt_crs: pyproj.CRS) -> pv.PolyData:
+    """Move a mesh on the sphere onto the datum of the target CRS.
+
+    A datum operation must be taken where each point is. Rotating a mesh to the
+    target's central meridian first, as the seam slicing does, would take each
+    shift from the wrong place, so the points are moved first, and only projected
+    afterwards. See :issue:`2714`.
+
+    Parameters
+    ----------
+    mesh : :class:`~pyvista.PolyData`
+        The mesh, on the sphere of WGS84.
+    tgt_crs : :class:`~pyproj.crs.CRS`
+        The target CRS.
+
+    Returns
+    -------
+    :class:`~pyvista.PolyData`
+        The mesh as it is when there is no datum to change, or it has been moved
+        already. Otherwise a copy, with each point moved onto the datum of the
+        target at the same radius, and marked as moved.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    geographic = tgt_crs.geodetic_crs
+
+    if geographic is None or _DATUM in mesh.field_data:
+        return mesh
+
+    if not any(_moves(operation) for operation in _datum_operations(WGS84, geographic)):
+        # no datum to change, or a null transformation between two of its names
+        return mesh
+
+    lonlat = from_cartesian(mesh)
+    moved = transform_points(
+        src_crs=WGS84, tgt_crs=geographic, xs=lonlat[:, 0], ys=lonlat[:, 1]
+    )
+    radius = np.asarray(distance(mesh, mean=False))
+
+    result = mesh.copy()
+    # pyvista 0.49 annotates "pyvista_ndarray.__setitem__" to refuse the slice
+    # index it accepts at runtime, so the points are set through a cast
+    points = cast("NDArray[Any]", result.points)
+    # each point keeps its own radius, which carries any z-level it was lifted by
+    points[:] = (
+        to_cartesian(moved[:, 0], moved[:, 1], radius=1.0) * radius[:, np.newaxis]
+    )
+    result.field_data[_DATUM] = np.array([1])
+
+    return result
+
+
+def _moves(operation: pyproj.Transformer) -> bool:
+    """Determine whether a datum operation moves a point at all.
+
+    Parameters
+    ----------
+    operation : :class:`~pyproj.transformer.Transformer`
+        A datum operation between two geographic CRSs, with the axis order
+        longitude then latitude.
+
+    Returns
+    -------
+    bool
+        Whether the point at the centre of the operation's area of use moves. A null
+        transformation, between two names of one datum, moves no point.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    west, south, east, north = _bounds(operation)
+
+    if west > east:
+        # the area crosses the antimeridian
+        east += 360.0
+
+    lon, lat = float(wrap((west + east) / 2)[0]), (south + north) / 2
+    x, y = operation.transform(lon, lat)
+    return not (
+        np.isclose(x, lon, rtol=0, atol=1e-12)
+        and np.isclose(y, lat, rtol=0, atol=1e-12)
+    )
+
+
+def _datum_operations(
+    src_crs: pyproj.CRS, tgt_crs: pyproj.CRS
+) -> list[pyproj.Transformer]:
+    """List the operations PROJ offers between CRSs on different datums.
+
+    Parameters
+    ----------
+    src_crs : :class:`~pyproj.crs.CRS`
+        The source CRS.
+    tgt_crs : :class:`~pyproj.crs.CRS`
+        The target CRS.
+
+    Returns
+    -------
+    list of :class:`~pyproj.transformer.Transformer`
+        The operations, most accurate first, apart from PROJ's ballpark operation.
+        Empty when the CRSs share a datum, as a projection alone needs no choice,
+        or when the ballpark operation is the only one.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    src_datum, tgt_datum = src_crs.datum, tgt_crs.datum
+
+    if src_datum is None or tgt_datum is None or src_datum == tgt_datum:
+        return []
+
+    group = pyproj.transformer.TransformerGroup(
+        src_crs, tgt_crs, always_xy=True, allow_ballpark=False
+    )
+    operations = group.transformers
+
+    # one datum can go by two names, such as WGS84 and EPSG:4326's ensemble of it,
+    # and then PROJ offers an operation of conversions alone, which needs no choice
+    if any(not _transforms(operation) for operation in operations):
+        return []
+
+    return sorted(operations, key=_accuracy)
+
+
+def _transforms(operation: pyproj.Transformer) -> bool:
+    """Determine whether an operation changes datum.
+
+    Parameters
+    ----------
+    operation : :class:`~pyproj.transformer.Transformer`
+        The operation.
+
+    Returns
+    -------
+    bool
+        Whether it, or any of its steps, is a transformation between datums, rather
+        than a conversion, such as a projection, within one.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if steps := operation.operations:
+        return any(step.type_name == "Transformation" for step in steps)
+
+    return bool(operation.to_json_dict().get("type") == "Transformation")
+
+
+def _bounds(operation: pyproj.Transformer) -> tuple[float, float, float, float]:
+    """Find the bounds of an operation's area of use.
+
+    Parameters
+    ----------
+    operation : :class:`~pyproj.transformer.Transformer`
+        The operation.
+
+    Returns
+    -------
+    tuple of float
+        The west, south, east and north bounds of its area of use, in degrees, or
+        those of the whole globe when PROJ does not know its area of use.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    try:
+        west, south, east, north = operation.area_of_use.bounds
+    except AttributeError:
+        # pyproj annotates the area of use as always known, but PROJ leaves some
+        # unknown, such as that of an operation from "+proj=eqc"
+        return _GLOBE
+    return west, south, east, north
+
+
+def _accuracy(transformer: pyproj.Transformer) -> float:
+    """Rank an operation by its accuracy.
+
+    Parameters
+    ----------
+    transformer : :class:`~pyproj.transformer.Transformer`
+        The operation.
+
+    Returns
+    -------
+    float
+        Its accuracy in metres, or infinity when it is unknown, which PROJ reports
+        as -1, so that an unknown accuracy ranks last.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    return transformer.accuracy if transformer.accuracy >= 0 else math.inf
+
+
+def _lonlats(
+    crs: pyproj.CRS, xs: NDArray[Any], ys: NDArray[Any]
+) -> tuple[NDArray[Any], NDArray[Any]]:
+    """Find the longitudes and latitudes of points, to test an area of use.
+
+    Parameters
+    ----------
+    crs : :class:`~pyproj.crs.CRS`
+        The CRS of the points.
+    xs : :class:`~numpy.ndarray`
+        The x-values of the points, in canonical `crs` units.
+    ys : :class:`~numpy.ndarray`
+        The y-values of the points, in canonical `crs` units.
+
+    Returns
+    -------
+    tuple of :class:`~numpy.ndarray`
+        The longitudes and latitudes of the points, in degrees, on the datum of the
+        `crs`. An area of use is given on WGS84, but the difference between datums
+        is far smaller than the precision of an area of use.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if crs.is_geographic:
+        return xs, ys
+
+    geographic = pyproj.Transformer.from_crs(crs, crs.geodetic_crs, always_xy=True)
+    lons, lats = geographic.transform(xs, ys)
+    return np.asarray(lons), np.asarray(lats)
+
+
+def _covers(
+    bounds: tuple[float, float, float, float], lons: NDArray[Any], lats: NDArray[Any]
+) -> bool:
+    """Determine whether an area of use holds every point.
+
+    Parameters
+    ----------
+    bounds : tuple of float
+        The west, south, east and north bounds of an operation's area of use, in
+        degrees.
+    lons : :class:`~numpy.ndarray`
+        The longitudes of the points, in degrees.
+    lats : :class:`~numpy.ndarray`
+        The latitudes of the points, in degrees.
+
+    Returns
+    -------
+    bool
+        Whether every point lies within the area of use.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    lons = wrap(lons)
+    # a point on an edge, give or take rounding, lies within it
+    west, south, east, north = (
+        bounds[0] - _EDGE,
+        bounds[1] - _EDGE,
+        bounds[2] + _EDGE,
+        bounds[3] + _EDGE,
+    )
+
+    # an area of use that crosses the antimeridian has its west edge east of its east
+    if west <= east:
+        inside = (lons >= west) & (lons <= east)
+    else:
+        inside = (lons >= west) | (lons <= east)
+
+    inside &= (lats >= south) & (lats <= north)
+    return bool(np.all(inside))
 
 
 def _point_levels(
