@@ -260,8 +260,11 @@ notice. It is verified per class ({ref}`§6 <crs-spec-6>`, and {ref}`§8 <crs-sp
 item 6).
 
 The exact cut of a crossing cell puts new points on the cell's straight edges, which are
-chords inside the sphere. Whether those points are moved out to the surface, and how,
-is left to the builder, provided a point on a great-circle cut stays on its plane.
+chords inside the sphere. Today's seam cut moves each of them back out to the radius
+interpolated for it ({pull}`2715`). That radial move keeps a point on a great-circle cut,
+whose plane passes through the centre, but would lift a point on a small-circle cut off
+its circle. So how the engine moves them is left to the builder, provided each point stays
+on the circle it was cut on, at the radius interpolated for it.
 
 VTK, through `pyvista`, does the clipping and cutting. `pyvista` 0.49 made clipping by a
 plane, clipping by a surface, transforms and extraction faster, and `pyvista` 0.49 is the
