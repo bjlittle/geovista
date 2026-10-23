@@ -1,0 +1,4 @@
+``tests/test_ci_typing.py`` now fails on a ``# mypy:`` comment anywhere in the
+package, and on any per-module relaxation of strict mode beyond the three the
+type coverage specification gives reasons for, so neither can silence ``mypy``
+unseen. (:user:`claude`)
