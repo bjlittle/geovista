@@ -745,9 +745,26 @@ def slice_cells(
         result[GV_REMESH_POINT_IDS] = result[GV_POINT_IDS].copy()
 
     if mesh_split.n_cells:
+        # the cut interpolates the points it adds along the chords of the cells
+        # it crosses, which are inside the sphere, so the radius of each point
+        # travels through it as point data, and each point is put back at the
+        # radius interpolated for it (#2708)
+        carry = "gvSliceRadius"
+        while carry in mesh_split.point_data:
+            carry = f"_{carry}"
+        mesh_split.point_data[carry] = np.asarray(distance(mesh_split, mean=False))
         remeshed, remeshed_west, remeshed_east = remesh(
             mesh_split, meridian=meridian, rtol=rtol, atol=atol
         )
+        remeshed.point_data.pop(carry, None)
+        for part in (remeshed_west, remeshed_east):
+            if carry in part.point_data:
+                radii = np.asarray(part.point_data.pop(carry))
+                norms = np.linalg.norm(part.points, axis=1)
+                scale = np.divide(
+                    radii, norms, out=np.ones_like(norms), where=norms > 0
+                )
+                part.points = part.points * scale[:, np.newaxis]
         meshes.extend([remeshed_west, remeshed_east])
         remeshed_ids = np.hstack([remeshed_ids, remeshed[GV_CELL_IDS]])
         if GV_REMESH_POINT_IDS not in result.point_data:
