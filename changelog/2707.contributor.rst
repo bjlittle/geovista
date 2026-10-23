@@ -1,0 +1,4 @@
+Added the :ref:`repository checks <gv-developer-checks>` page to the developer
+guide. It gives every check ``geovista`` enforces on its own repository a section
+saying why the rule exists and how to declare an exception, and a failure of any
+of them now ends with a link to its section. (:user:`claude`)

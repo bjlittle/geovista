@@ -285,7 +285,9 @@ def test_impossible_date(script, record, status):
 def test_main_findings(script, capsys):
     """Test the script exits with one when a status does not hold."""
     assert script.main([], resolve=lambda _repository, _number: None) == 1
-    assert "does not exist" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "does not exist" in out
+    assert "checks.html#gv-developer-checks-spec-statuses" in out
 
 
 def test_main_unexpected(script, capsys):
@@ -301,7 +303,9 @@ def test_main_unexpected(script, capsys):
         raise RuntimeError(message)
 
     assert script.main([], resolve=broken) == 2
-    assert "could not finish checking" in capsys.readouterr().err
+    captured = capsys.readouterr()
+    assert "could not finish checking" in captured.err
+    assert "gv-developer-checks-" not in captured.out + captured.err
 
 
 def test_specifications(script):

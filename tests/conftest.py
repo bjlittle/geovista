@@ -8,6 +8,9 @@
 from __future__ import annotations
 
 from contextlib import suppress
+import importlib.util
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -23,6 +26,15 @@ from geovista.pantry.meshes import lam_uk as sample_lam_uk
 from geovista.pantry.meshes import lfric as sample_lfric
 from geovista.pantry.meshes import lfric_sst as sample_lfric_sst
 from geovista.transform import transform_mesh
+
+if TYPE_CHECKING:
+    from types import ModuleType
+
+#: Fixtures this suite takes from pytest's own plugins.
+pytest_plugins = ("pytester",)
+
+#: The module holding the text of the repository check breadcrumb.
+BREADCRUMB_PATH = Path(__file__).parents[1] / ".github" / "scripts" / "breadcrumb.py"
 
 #: The option requiring, rather than skipping, each prerequisite of the
 #: "tests/docs" browser tests.
@@ -52,6 +64,65 @@ def pytest_addoption(parser):
             "a plotting documentation build target"
         ),
     )
+
+
+def load_breadcrumb() -> ModuleType:
+    """Load the breadcrumb module, which the CI scripts load by path too.
+
+    Returns
+    -------
+    ModuleType
+        The module, defining ``breadcrumb``.
+
+    """
+    spec = importlib.util.spec_from_file_location("breadcrumb", BREADCRUMB_PATH)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+#: The breadcrumb that ends a failure of a repository check.
+BREADCRUMB = load_breadcrumb()
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_makereport(item, call):  # noqa: ARG001
+    """End a failure of a repository check with a link to its section.
+
+    A test module that holds the repository to a rule of ``geovista``'s own
+    declares ``CHECK``, the name of the rule's section on the repository checks
+    page. Any of its tests that fails, in a fixture or in the test itself, has
+    the breadcrumb of checks spec §3.3 added to its report, so the individual
+    assertions need not repeat it. It travels in the report, so a test run by a
+    "pytest-xdist" worker carries it too.
+
+    Parameters
+    ----------
+    item : pytest.Item
+        The test whose report is made.
+    call : pytest.CallInfo
+        The call that was made, for each of setup, call and teardown.
+
+    Yields
+    ------
+    None
+        Control, to pytest's own report maker.
+
+    Returns
+    -------
+    pytest.TestReport
+        The report, with the breadcrumb added where the test failed.
+
+    """
+    report = yield
+    name = getattr(getattr(item, "module", None), "CHECK", None)
+    if report.failed and isinstance(name, str):
+        hint = BREADCRUMB.breadcrumb(name)
+        if hasattr(report.longrepr, "addsection"):
+            report.longrepr.addsection("repository check", hint)
+        else:
+            report.sections.append(("repository check", hint))
+    return report
 
 
 @pytest.fixture

@@ -36,6 +36,9 @@ from pathlib import Path
 
 import pytest
 
+#: The section of the repository checks page that documents this check.
+CHECK = "image-marker"
+
 TESTS = Path(__file__).parent
 """The root of the corpus."""
 

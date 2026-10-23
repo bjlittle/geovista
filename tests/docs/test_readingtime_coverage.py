@@ -25,6 +25,9 @@ from pathlib import Path
 
 import pytest
 
+#: The section of the repository checks page that documents this check.
+CHECK = "reading-time-banner"
+
 #: The documentation source, which is the corpus this gate is derived from.
 DOCS = Path(__file__).parents[2] / "docs" / "src"
 
@@ -72,6 +75,7 @@ EXEMPT = (
     "reference/bindings.rst",  # a key-binding table, one copy per platform tab
     "reference/environment.rst",  # a table of environment variables
     "reference/glossary.rst",  # a glossary, consulted rather than read in order
+    "developer/checks.rst",  # a table of checks, each consulted on its own
     # included: the body is another page, which carries the banner itself
     "developer/towncrier.rst",  # an include of "changelog.md"
 )

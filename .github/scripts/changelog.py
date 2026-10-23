@@ -15,20 +15,52 @@ Notes
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import importlib.util
 import os
 from pathlib import Path
 import re
 import sys
+from typing import TYPE_CHECKING
 
 import click
 from towncrier._settings import ConfigError, load_config_from_options
 
+if TYPE_CHECKING:
+    from types import ModuleType
+
+CHECK = "changelog-fragment"
 EXT = "rst"
 GITHUB_STEP_SUMMARY = os.getenv("GITHUB_STEP_SUMMARY")
 PATTERN_AUTHOR = re.compile(r":user:`[^`]+`", flags=re.MULTILINE)
 PATTERN_PR = re.compile(r"^\d+$")
 PULL = "https://github.com/bjlittle/geovista/pull"
-URL = "https://geovista.readthedocs.io/en/latest/developer/towncrier.html#changelog"
+
+
+def _load_breadcrumb() -> ModuleType:
+    """Load the repository check breadcrumb, which is no importable module.
+
+    It is loaded by path rather than imported, so that a test loading this
+    script by path finds it too.
+
+    Returns
+    -------
+    ModuleType
+        The module, defining ``breadcrumb``.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    spec = importlib.util.spec_from_file_location(
+        "breadcrumb", Path(__file__).parent / "breadcrumb.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+BREADCRUMB = _load_breadcrumb()
 
 
 @dataclass
@@ -61,7 +93,7 @@ def debug(msg: str, verbose: bool | None = True) -> None:
         summary(f"📢 {msg}")
 
 
-def failure(msg: str | list[str], url: bool | None = True) -> None:
+def failure(msg: str | list[str], finding: bool | None = True) -> None:
     """Write markdown message with failure icon to GHA step summary stream.
 
     Exits with a non-zero status.
@@ -70,8 +102,11 @@ def failure(msg: str | list[str], url: bool | None = True) -> None:
     ----------
     msg : str or list of str
         The string message/s to be reported.
-    url : bool, default=True
-        Whether to report changelog documentation URL.
+    finding : bool, default=True
+        Whether the failure is a finding, a rule of the changelog check that
+        the pull-request breaks, rather than a failure to run the check. A
+        finding ends with the link to the check's section on the repository
+        checks page.
 
     Notes
     -----
@@ -87,9 +122,8 @@ def failure(msg: str | list[str], url: bool | None = True) -> None:
     for part in msg:
         summary(f"❌ {part}")
 
-    if url:
-        info = f"For further details see the [changelog]({URL}) documentation."
-        summary(f"\nℹ️ {info}")
+    if finding:
+        summary(f"\nℹ️ {BREADCRUMB.breadcrumb(CHECK)}")
 
     sys.exit(1)
 
@@ -260,7 +294,7 @@ def main(pr: str, changelog: str, verbose: bool) -> None:
     debug(f"argument: changelog=<{changelog}>", verbose=verbose)
 
     if not len(pr):
-        failure("Unable to collect PR number.")
+        failure("Unable to collect PR number.", finding=False)
 
     try:
         # locate and parse the towncrier configuration
@@ -270,14 +304,14 @@ def main(pr: str, changelog: str, verbose: bool) -> None:
         debug(f"{base_directory=}", verbose=verbose)
         debug(f"{config=}", verbose=verbose)
     except ConfigError as e:
-        failure(f'**towncrier** exception:\n"{e.message}"', url=False)
+        failure(f'**towncrier** exception:\n"{e.message}"', finding=False)
 
     # enumerate the configured changelog types
     types = config.types.keys()
     debug(f"{types=}", verbose=verbose)
 
     if not types:
-        failure("There are no configured **towncrier** types.")
+        failure("There are no configured **towncrier** types.", finding=False)
 
     # the directory containing the changelog new fragment files
     base_directory = Path(base_directory)

@@ -62,6 +62,17 @@ clarify the various steps involved in how to contribute to ``geovista``.
 
         Packaging guidelines.
 
+    .. grid-item-card:: Repository Checks
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-developer-checks
+        :link-type: ref
+        :img-top: ../_static/images/icons/checks.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        Why a check failed.
+
     .. grid-item-card:: Specifications
         :class-title: custom-title
         :class-body: custom-body
@@ -93,5 +104,6 @@ clarify the various steps involved in how to contribute to ``geovista``.
     documentation
     packaging
     testing
+    checks
     codecraft
     specs/index

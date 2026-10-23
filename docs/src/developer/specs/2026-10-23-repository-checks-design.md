@@ -57,7 +57,7 @@ failure point at its section.
 ## 2. Decisions
 
 - **One page, for a reader who has just failed a check.** The page is
-  `docs/src/developer/checks.rst`, titled "Repository checks". A reader arrives from a
+  `docs/src/developer/checks.rst`, titled "Repository Checks". A reader arrives from a
   failure and reads one section, so the page is built to be dipped into rather than read
   through. Chosen by {user}`bjlittle` on 2026-10-23, over a page per kind of failure,
   because separate pages make it harder to find a similar check in another group.
@@ -180,7 +180,7 @@ that drives a failure covers them.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The page, the nine `CHECK` names, the breadcrumb hook and script output, and the gate | not started |
+| 1 | The page, the nine `CHECK` names, the breadcrumb hook and script output, and the gate | ✅ landed (2026-10-23, {pull}`2707`) |
 | 2 | Third-party tools: `ruff`, `mypy` type-ignore comments, `filterwarnings`, `nitpick_ignore_regex`, `zizmor`, `codespell`, `numpydoc` and `repo-review` | candidate |
 
 Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`.
