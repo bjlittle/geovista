@@ -62,7 +62,7 @@ clarify the various steps involved in how to contribute to ``geovista``.
 
         Packaging guidelines.
 
-    .. grid-item-card:: Repository checks
+    .. grid-item-card:: Repository Checks
         :class-title: custom-title
         :class-body: custom-body
         :link: gv-developer-checks

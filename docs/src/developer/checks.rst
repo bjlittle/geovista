@@ -3,7 +3,7 @@
 .. _gv-developer-checks:
 .. _tippy-gv-developer-checks:
 
-:fa:`shield-halved` Repository checks
+:fa:`shield-halved` Repository Checks
 =====================================
 
 If a check has failed, find it below. Each section says what the check holds
@@ -23,10 +23,10 @@ this page.
    :ref:`checks spec §4 <checks-spec-4>` describes.
 
 
-Where it failed
+Where It Failed
 ---------------
 
-.. rubric:: A test failed
+.. rubric:: A Test Failed
 
 .. list-table::
     :header-rows: 1
@@ -34,22 +34,22 @@ Where it failed
 
     * - Check
       - Where an exception goes
-    * - :ref:`Image marker <gv-developer-checks-image-marker>`
+    * - :ref:`Image Marker <gv-developer-checks-image-marker>`
       - ``EXEMPT`` in :bash:`tests/test_image_marker.py`
-    * - :ref:`Reading-time banner <gv-developer-checks-reading-time-banner>`
+    * - :ref:`Reading-Time Banner <gv-developer-checks-reading-time-banner>`
       - ``EXEMPT`` in :bash:`tests/docs/test_readingtime_coverage.py`
-    * - :ref:`Strict typing <gv-developer-checks-strict-typing>`
+    * - :ref:`Strict Typing <gv-developer-checks-strict-typing>`
       - ``RELAXED`` in :bash:`tests/test_ci_typing.py`
-    * - :ref:`Python support <gv-developer-checks-python-support>`
+    * - :ref:`Python Support <gv-developer-checks-python-support>`
       - none
-    * - :ref:`Parallel-safe extensions <gv-developer-checks-parallel-safe-extensions>`
+    * - :ref:`Parallel-Safe Extensions <gv-developer-checks-parallel-safe-extensions>`
       - none
-    * - :ref:`Specification conventions <gv-developer-checks-spec-conventions>`
+    * - :ref:`Specification Conventions <gv-developer-checks-spec-conventions>`
       - none
-    * - :ref:`Repository checks <gv-developer-checks-repository-checks>`
+    * - :ref:`Repository Checks <gv-developer-checks-repository-checks>`
       - none
 
-.. rubric:: A CI job failed
+.. rubric:: A CI Job Failed
 
 .. list-table::
     :header-rows: 1
@@ -57,16 +57,16 @@ Where it failed
 
     * - Check
       - Where an exception goes
-    * - :ref:`Changelog fragment <gv-developer-checks-changelog-fragment>`
+    * - :ref:`Changelog Fragment <gv-developer-checks-changelog-fragment>`
       - the ``skip-changelog`` label
-    * - :ref:`Specification statuses <gv-developer-checks-spec-statuses>`
+    * - :ref:`Specification Statuses <gv-developer-checks-spec-statuses>`
       - none
 
 
 .. _gv-developer-checks-image-marker:
 .. _tippy-gv-developer-checks-image-marker:
 
-Image marker
+Image Marker
 ------------
 
 **The rule.** Every test that renders, by showing, plotting, screenshotting or
@@ -98,7 +98,7 @@ will ask about it.
 .. _gv-developer-checks-reading-time-banner:
 .. _tippy-gv-developer-checks-reading-time-banner:
 
-Reading-time banner
+Reading-Time Banner
 -------------------
 
 **The rule.** Every page a reader reads from start to finish opens with one
@@ -127,7 +127,7 @@ trees that ``sphinx`` does not publish as written.
 .. _gv-developer-checks-strict-typing:
 .. _tippy-gv-developer-checks-strict-typing:
 
-Strict typing
+Strict Typing
 -------------
 
 **The rule.** ``mypy`` checks the whole package in strict mode. No override may
@@ -156,7 +156,7 @@ type coverage specification gives. There is no exception to the other rules.
 .. _gv-developer-checks-python-support:
 .. _tippy-gv-developer-checks-python-support:
 
-Python support
+Python Support
 --------------
 
 **The rule.** Every place that states which versions of Python ``geovista``
@@ -182,7 +182,7 @@ line with the classifiers, then run ``pixi lock``.
 .. _gv-developer-checks-parallel-safe-extensions:
 .. _tippy-gv-developer-checks-parallel-safe-extensions:
 
-Parallel-safe extensions
+Parallel-Safe Extensions
 ------------------------
 
 **The rule.** Every local ``sphinx`` extension, under :bash:`docs/src/_ext`,
@@ -209,7 +209,7 @@ the extension's ``setup``.
 .. _gv-developer-checks-spec-conventions:
 .. _tippy-gv-developer-checks-spec-conventions:
 
-Specification conventions
+Specification Conventions
 -------------------------
 
 **The rule.** The design specifications keep their conventions: every numbered
@@ -237,7 +237,7 @@ change to that specification.
 .. _gv-developer-checks-repository-checks:
 .. _tippy-gv-developer-checks-repository-checks:
 
-Repository checks
+Repository Checks
 -----------------
 
 **The rule.** Every check that declares ``CHECK`` has a row and a section on
@@ -267,7 +267,7 @@ the same name, since one module enforces one check.
 .. _gv-developer-checks-changelog-fragment:
 .. _tippy-gv-developer-checks-changelog-fragment:
 
-Changelog fragment
+Changelog Fragment
 ------------------
 
 **The rule.** Every pull request adds a ``towncrier`` news fragment, named
@@ -293,7 +293,7 @@ automatically.
 .. _gv-developer-checks-spec-statuses:
 .. _tippy-gv-developer-checks-spec-statuses:
 
-Specification statuses
+Specification Statuses
 ----------------------
 
 **The rule.** Every status in a specification that cites work cites work that

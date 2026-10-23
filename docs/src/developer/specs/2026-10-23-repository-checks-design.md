@@ -57,7 +57,7 @@ failure point at its section.
 ## 2. Decisions
 
 - **One page, for a reader who has just failed a check.** The page is
-  `docs/src/developer/checks.rst`, titled "Repository checks". A reader arrives from a
+  `docs/src/developer/checks.rst`, titled "Repository Checks". A reader arrives from a
   failure and reads one section, so the page is built to be dipped into rather than read
   through. Chosen by {user}`bjlittle` on 2026-10-23, over a page per kind of failure,
   because separate pages make it harder to find a similar check in another group.
