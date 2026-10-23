@@ -62,6 +62,9 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from types import ModuleType
 
+#: The section of the repository checks page that documents this check.
+CHECK = "spec-statuses"
+
 #: The repository root.
 ROOT = Path(__file__).parents[2]
 
@@ -84,9 +87,9 @@ LINK = re.compile(
 )
 
 
-def _load(path: Path) -> ModuleType:
+def _load(path: Path, name: str = "spec_conventions") -> ModuleType:
     """Load the module at `path`, registered so that its dataclasses resolve."""
-    spec = importlib.util.spec_from_file_location("spec_conventions", path)
+    spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
@@ -94,6 +97,9 @@ def _load(path: Path) -> ModuleType:
 
 
 conventions = _load(CONVENTIONS)
+
+#: The link a finding ends with, to this check's section (checks spec §3.3).
+breadcrumb = _load(Path(__file__).parent / "breadcrumb.py", "breadcrumb")
 
 
 @dataclass(frozen=True)
@@ -399,6 +405,9 @@ def main(argv: list[str] | None = None, resolve: Resolver | None = None) -> int:
 
     for problem in problems:
         print(problem)
+
+    if problems:
+        print(breadcrumb.breadcrumb(CHECK))
 
     count = sum(len(cited(path.read_text(encoding="utf-8"))) for path in specifications)
     verdict = f"{len(problems)} fault(s)" if problems else "all hold"
