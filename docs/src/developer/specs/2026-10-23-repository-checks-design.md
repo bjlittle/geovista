@@ -180,7 +180,7 @@ that drives a failure covers them.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The page, the nine `CHECK` names, the breadcrumb hook and script output, and the gate | not started |
+| 1 | The page, the nine `CHECK` names, the breadcrumb hook and script output, and the gate | ✅ landed (2026-10-23, {pull}`2707`) |
 | 2 | Third-party tools: `ruff`, `mypy` type-ignore comments, `filterwarnings`, `nitpick_ignore_regex`, `zizmor`, `codespell`, `numpydoc` and `repo-review` | candidate |
 
 Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`.
