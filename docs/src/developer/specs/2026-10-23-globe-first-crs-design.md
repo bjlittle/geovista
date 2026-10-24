@@ -32,7 +32,7 @@ that the central meridian sits at zero, cuts a seam along the antimeridian, and 
 the vertices. That assumes a projection takes the whole globe in one piece, with a single
 seam on a meridian. Measured on 2026-10-23 against a global 5° mesh
 ({ref}`§3.1 <crs-spec-3-1>`), the assumption holds for 17 of `cartopy`'s 38 projection
-classes and 91 of the 161 projection methods of PROJ 9.9. The rest raise, run off to
+classes and 91 of the 162 projection methods of PROJ 9.9. The rest raise, run off to
 infinity, or tear, in six distinct ways ({ref}`§3.2 <crs-spec-3-2>`).
 
 The design keeps data on the globe for as long as possible and projects it last. Every
@@ -112,7 +112,7 @@ These were decided with {user}`bjlittle` while the design was written.
 (crs-spec-3-1)=
 ### 3.1 How It Was Measured
 
-Each of the 161 PROJ projection methods that `proj -lP` lists with a classification, and
+Each of the 162 PROJ projection methods that `proj -lP` lists with a classification, and
 each of `cartopy` 0.26's 38 projection classes through its PROJ definition, took a global
 5° mesh through `transform_mesh`, using PROJ 9.9.0 and `pyproj` 3.8.0 at
 `6c27439f`. Methods that PROJ will only build with parameters were given typical ones
@@ -124,6 +124,11 @@ the median of the edges between the same two latitudes. The second test catches 
 across an interruption, and the comparison within a latitude band spares the expected
 stretching of a cylindrical projection near a pole.
 
+The coverage test of {ref}`§6 <crs-spec-6>` repeats this measurement in every run of the
+unit tests. The first measurement counted 161 methods and found `rouss` failing. The
+test's first run, on 2026-10-24 at `7ca628c1`, counted 162 and found `rouss` working, and
+§3.2 reports its outcomes.
+
 On a sample of twelve working methods the whole plotter worked as well: mesh, coastlines,
 graticule and textured base layer. The one exception was `vandg`, whose coastlines raise
 `ProjError`.
@@ -131,17 +136,17 @@ graticule and textured base layer. The one exception was `vandg`, whose coastlin
 (crs-spec-3-2)=
 ### 3.2 The Six Classes of Failure
 
-The 70 failing PROJ methods and 21 failing `cartopy` classes fall into six classes, each
-needing something different on the globe before it can be projected. One method,
-`bacon`, is unconfirmed.
+The 71 failing PROJ methods and 21 failing `cartopy` classes fall into six classes, each
+needing something different on the globe before it can be projected. Two methods,
+`august` and `bacon`, fail without a class yet: each tears its cells at the south pole.
 
 | # | Class | What goes wrong | PROJ | `cartopy` | Issue |
 |---|---|---|---|---|---|
 | 1 | Latitude limits | a pole goes to infinity | 9 | 3 | {issue}`140` |
-| 2 | A cap around a centre | only a cap is valid, and the far side raises or runs away | 19 | 9 | {issue}`1402` |
+| 2 | A cap around a centre | only a cap is valid, and the far side raises or runs away | 18 | 9 | {issue}`1402` |
 | 3 | A band around a central line | singular 90° from the line | 21 | 6 | {issue}`2674` |
 | 4 | Oblique aspect, one seam | the seam is not a meridian | 4 | 1 | {issue}`2519` |
-| 5 | Interrupted | several partial seams | 8 | 1 | none |
+| 5 | Interrupted | several partial seams | 9 | 1 | none |
 | 6 | Polyhedral | seams along the edges of faces | 8 | 1 | none |
 
 The members of each class, by PROJ method and `cartopy` class:
@@ -149,7 +154,7 @@ The members of each class, by PROJ method and `cartopy` class:
 1. `merc`, `webmerc`, `tobmerc`, `cc`, `calcofi`, `lcc`, `ccon`, `pconic`, `murd2`;
    `Mercator`, `LambertConformal`, `LambertZoneII`.
 2. `ortho`, `gnom`, `nsper`, `tpers`, `geos`, `stere`, `ups`, `sterea`, `laea`, `aeqd`,
-   `airy`, `rouss`, `nicol`, `adams_hemi`, `alsk`, `gs48`, `gs50`, `lee_os`, `mil_os`;
+   `airy`, `nicol`, `adams_hemi`, `alsk`, `gs48`, `gs50`, `lee_os`, `mil_os`;
    `Orthographic`, `Gnomonic`, `NearsidePerspective`, `Geostationary`, `Stereographic`,
    `NorthPolarStereo`, `SouthPolarStereo`, `LambertAzimuthalEqualArea`,
    `AzimuthalEquidistant`.
@@ -157,20 +162,22 @@ The members of each class, by PROJ method and `cartopy` class:
    `ocea`, `oea`, `krovak`, `mod_krovak`, `nzmg`, `bipc`, `imw_p`, `sch`, `som`, `lsat`,
    `misrsom`; `TransverseMercator`, `UTM`, `OSGB`, `OSNI`, `EuroPP`, `ObliqueMercator`.
 4. `ob_tran`, `bertin1953`, `tpeqd`, `chamb`; `RotatedPole`.
-5. `igh`, `igh_o`, `imoll`, `imoll_o`, `peirce_q`, `guyou`, `healpix`, `rhealpix`;
-   `InterruptedGoodeHomolosine`.
+5. `igh`, `igh_o`, `imoll`, `imoll_o`, `peirce_q`, `guyou`, `healpix`, `rhealpix`,
+   `interrupted`; `InterruptedGoodeHomolosine`.
 6. `isea`, `ivea`, `dsea`, `tsea`, `airocean`, `spilhaus`, `s2`, `qsc`; `Spilhaus`.
 
 The 91 methods that work today are every whole-world method with a single seam on the
-antimeridian of its central meridian: 50 pseudocylindrical (`robin`, `moll`, `eqearth`,
+antimeridian of its central meridian: 51 pseudocylindrical (`robin`, `moll`, `eqearth`,
 `natearth`, `wag1` to `wag6`, `eck1` to `eck6`, and more), 10 cylindrical without a
 singular pole (`eqc`, `cea`, `mill`, `gall`, `patterson`, and more), 12 conic (`aea`,
-`eqdc`, `poly`, `bonne`, and more) and 17 others (`wintri`, `aitoff`, `hammer`, `vandg`,
-`lagrng`, and more). Several have no `cartopy` class, such as Winkel Tripel, Natural Earth
-and Van der Grinten, which is one place `geovista` is already ahead.
+`eqdc`, `poly`, `bonne`, and more), 17 others (`wintri`, `aitoff`, `hammer`, `vandg`,
+`lagrng`, and more), and one azimuthal, `rouss`. Several have no `cartopy` class, such as
+Winkel Tripel, Natural Earth and Van der Grinten, which is one place `geovista` is
+already ahead.
 
 Projecting leniently, by turning PROJ's error checks off and dropping every cell that is
-non-finite, folded or runaway, made 28 of the 70 render cleanly but with jagged edges.
+non-finite, folded or runaway, made 28 of the 70 methods of the first measurement render
+cleanly but with jagged edges.
 That fallback is rejected as a default ({ref}`§7 <crs-spec-7>`).
 
 (crs-spec-3-3)=
@@ -583,8 +590,8 @@ quietly wrong.
   coincidences that globe first avoids.
 - **A lenient fallback by default**, projecting with PROJ's checks off and dropping what
   fails. Rejected, because it drops data silently and leaves jagged edges. It made 28 of
-  70 failing methods render ({ref}`§3.2 <crs-spec-3-2>`), and might return later as an
-  explicit, loud opt-in.
+  the 70 methods failing in the first measurement render ({ref}`§3.2 <crs-spec-3-2>`), and
+  might return later as an explicit, loud opt-in.
 - **PROJ strings only.** Rejected, because `cartopy`'s classes are scientists' muscle
   memory, and forcing PROJ strings on them would be alien.
 - **Commit to every PROJ method.** Rejected, because verification is the real cost, and
