@@ -445,8 +445,10 @@ PROJ is never left to choose an operation point by point. Measured on 2026-10-23
 the British National Grid, EPSG:27700, at 52°N moves a point 129 m east of where the
 projection alone would put it up to 2.0°E, and not at all from 2.125°E. There the best
 operation's area of use ends and PROJ falls back to a ballpark operation with no shift.
-That is a quiet 129 m step inside the domain of a UK model, and it is in today's
-`geovista` too ({issue}`2714`). A point the chosen operation cannot take is counted and
+That is a quiet 129 m step inside the domain of a UK model. `geovista` had it too
+({issue}`2714`), until {pull}`2718` applied items 2 and 3 of the policy below to each call
+of `transform_points`, over the points of that call, as there is no scene or domain to
+take an extent from yet. A point the chosen operation cannot take is counted and
 reported, never given a different operation.
 
 The operation is chosen by one policy:
@@ -479,7 +481,7 @@ accurate, at 1 m, is grid-based, and its area of use is exactly the area of use 
 EPSG:27700, from 9.01°W to 2.01°E and from 49.75°N to 61.01°N. It raises beyond its grid,
 at 2.125°E for instance. Seven parametric operations, accurate to between 2 m and 35 m,
 transform any point, though each one's area of use lies within the UK. The ninth is the
-ballpark operation, which today's choice point by point falls back to east of 2°E. Under
+ballpark operation, which PROJ's choice point by point falls back to east of 2°E. Under
 the policy, a scene on the British National Grid is clipped to the area of use, and every
 point that remains takes the 1 m operation. Where its grid is not installed, as with
 `pyproj`'s wheels, the most accurate available operation is accurate to 2 m. Its area of
