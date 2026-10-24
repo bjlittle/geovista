@@ -70,6 +70,7 @@ from .pantry.meshes import (
 from .raster import wrap_texture
 from .themes import resolve_theme_name
 from .transform import (
+    _apply_datum,
     _carry_levels,
     _point_levels,
     _slice_seam,
@@ -789,7 +790,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             if transform_required and not cloud and not src_planar:
                 # the seam is cut here, before any texture coordinates are added,
                 # and a per-point zlevel is carried through the cut to the points
-                # it adds, which is what transform_mesh is then given
+                # it adds, which is what transform_mesh is then given. The datum
+                # operation is taken where each point is, before the cut, see
+                # issue #2714
+                mesh = _apply_datum(mesh, tgt_crs)
                 level = _point_levels(mesh, zlevel)
                 mesh, tgt_crs, zlevel = _slice_seam(
                     mesh, tgt_crs, level=level, rtol=rtol, atol=atol

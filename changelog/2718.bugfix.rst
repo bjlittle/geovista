@@ -1,0 +1,9 @@
+Fixed a mesh projected to a CRS on another datum, such as the British National
+Grid, taking a different datum operation at different points, which left a
+quiet step of 129 m where a datum grid ended, and taking each datum shift 2°
+from where it belonged, which left the rest about 15 m out.
+:func:`geovista.transform.transform_points` now takes one operation for every
+point, the most accurate that covers them, and warns when none does, and
+:func:`geovista.transform.transform_mesh` and
+:meth:`geovista.geoplotter.GeoPlotterBase.add_mesh` take each shift where its
+point is. Closes :issue:`2714`. (:user:`claude`)

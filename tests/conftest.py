@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
+import pyproj
 import pytest
 import pyvista as pv
 
@@ -242,6 +243,48 @@ def lfric_sst_eqc():
     mesh = transform_mesh(mesh, tgt_crs="+proj=eqc")
     mesh.set_active_scalars(name)
     return mesh
+
+
+@pytest.fixture
+def in_radians():
+    """Fixture to declare the geographic axes of a CRS in radians.
+
+    ``pyproj`` gives and takes the coordinates of a geographic CRS declared in
+    radians in degrees, as it does those declared in degrees, whereas it gives and
+    takes those of a CRS in any other angular unit, such as grads, in that unit.
+
+    """
+
+    def declare(crs: str) -> pyproj.CRS:
+        spec = pyproj.CRS.from_user_input(crs).to_json_dict()
+        spec.pop("id", None)
+        # a projected CRS declares its geographic axes in its base CRS
+        geographic = spec.get("base_crs", spec)
+        geographic.pop("id", None)
+        for axis in geographic["coordinate_system"]["axis"]:
+            axis["unit"] = {
+                "type": "AngularUnit",
+                "name": "radian",
+                "conversion_factor": 1.0,
+            }
+        return pyproj.CRS.from_json_dict(spec)
+
+    return declare
+
+
+@pytest.fixture
+def no_network():
+    """Fixture to turn off PROJ's network access, as pyproj's wheels ship it.
+
+    A conda environment turns it on, and PROJ then fetches any grid it lacks. A
+    wheel leaves it off, and an operation whose grid is not installed is then
+    unavailable.
+
+    """
+    enabled = pyproj.network.is_network_enabled()
+    pyproj.network.set_network_enabled(False)
+    yield
+    pyproj.network.set_network_enabled(enabled)
 
 
 @pytest.fixture

@@ -580,7 +580,7 @@ def test_transform_mesh__zlevel_orders_layers_across_extents():
 
 def test_transform_mesh__zlevel_in_degrees_survives_a_small_extent():
     """A small mesh in a CRS measured in degrees is lifted, not left at zero."""
-    result = transform_mesh(_quad(0, 3, 40, 42), "EPSG:4269", zlevel=5)
+    result = transform_mesh(_quad(-75, -72, 40, 42), "EPSG:4269", zlevel=5)
 
     expected = 5 * ZLEVEL_SCALE * np.degrees(1.0)
     np.testing.assert_allclose(result.points[:, 2], expected, rtol=1e-12)
@@ -711,9 +711,114 @@ def test_transform_mesh__cloud_between_units(lifted_cloud):
 
 @pytest.mark.parametrize("tgt_crs", ["EPSG:3857", "EPSG:27700", "EPSG:32630"])
 def test_transform_mesh__non_ascii_wkt(regional_mesh, tgt_crs):
-    """A target CRS whose OGC WKT holds non-ASCII text. See :issue:`2595`."""
-    result = transform_mesh(regional_mesh, tgt_crs)
+    """A target CRS whose OGC WKT holds non-ASCII text. See :issue:`2595`.
+
+    The regional mesh lies far outside Great Britain, so no datum operation to the
+    British National Grid covers it, which is warned about. See :issue:`2714`.
+
+    """
+    if tgt_crs == "EPSG:27700":
+        with pytest.warns(UserWarning, match="area of use"):
+            result = transform_mesh(regional_mesh, tgt_crs)
+    else:
+        result = transform_mesh(regional_mesh, tgt_crs)
     assert from_wkt(result) == CRS.from_user_input(tgt_crs)
+
+
+#: Longitudes along 52°N across Great Britain, all within the area of use of the 1 m
+#: datum operation from WGS84 to the British National Grid, which ends at 2.01°E.
+GB_LONS = np.array([-3.0, -1.0, -0.25, 0.0, 0.25, 1.0, 1.9])
+
+
+def _gb_line() -> pv.PolyData:
+    """Return a line along 52°N across Great Britain, on WGS84."""
+    lats = np.full(GB_LONS.shape, 52.0)
+    line = pv.PolyData(
+        to_cartesian(GB_LONS, lats), lines=[len(GB_LONS), *range(len(GB_LONS))]
+    )
+    to_wkt(line, WGS84)
+    return line
+
+
+@pytest.mark.parametrize("network", [True, False], ids=["network", "no_network"])
+def test_transform_mesh__datum_at_true_positions(request, network):
+    """A datum shift is taken where each point is, not where its rotation puts it.
+
+    The British National Grid's central meridian is 2°W, and rotating to it before the
+    datum operation moved every shift 2° east, about 15 m out, and let points east of
+    0° fall back to no shift at all. See :issue:`2714`. Without the network, as
+    pyproj's wheels are, the 1 m operation's grid is missing, and the 2 m one is
+    taken.
+
+    """
+    if not network:
+        request.getfixturevalue("no_network")
+
+    result = transform_mesh(_gb_line(), "EPSG:27700")
+
+    lats = np.full(GB_LONS.shape, 52.0)
+    x, y = Transformer.from_crs(WGS84, "EPSG:27700", always_xy=True).transform(
+        GB_LONS, lats
+    )
+    np.testing.assert_allclose(result.points[:, 0], x, atol=1e-3)
+    np.testing.assert_allclose(result.points[:, 1], y, atol=1e-3)
+
+
+def test_transform_mesh__datum_in_another_angular_unit():
+    """A target on a datum measured in grads, from Paris, is projected where it is.
+
+    NTF (Paris) measures its longitudes in grads east of the Paris meridian, which
+    were put on the sphere as degrees east of Greenwich, and projected from there,
+    17.8 km out.
+
+    """
+    mesh = gv.Transform.from_1d([0.0, 2.0], [47.0, 49.0])
+    lonlat = from_cartesian(mesh)
+
+    result = transform_mesh(mesh, "EPSG:27572")
+
+    x, y = Transformer.from_crs(WGS84, "EPSG:27572", always_xy=True).transform(
+        lonlat[:, 0], lonlat[:, 1]
+    )
+    np.testing.assert_allclose(result.points[:, 0], x, atol=1e-3)
+    np.testing.assert_allclose(result.points[:, 1], y, atol=1e-3)
+
+
+@pytest.mark.parametrize("slice_connectivity", [True, False], ids=["cut", "uncut"])
+def test_transform_mesh__datum_to_a_crs_declared_in_radians(
+    in_radians, slice_connectivity
+):
+    """A target on a geographic CRS declared in radians is projected where it is.
+
+    ``pyproj`` gives the coordinates of such a CRS in degrees, which were scaled as
+    if they were radians, putting the mesh 5,840 km out, or past a pole, where the
+    cut found no cells to combine.
+
+    """
+    tgt_crs = in_radians("EPSG:27700")
+
+    result = transform_mesh(_gb_line(), tgt_crs, slice_connectivity=slice_connectivity)
+
+    lats = np.full(GB_LONS.shape, 52.0)
+    x, y = Transformer.from_crs(WGS84, tgt_crs, always_xy=True).transform(GB_LONS, lats)
+    np.testing.assert_allclose(result.points[:, 0], x, atol=1e-3)
+    np.testing.assert_allclose(result.points[:, 1], y, atol=1e-3)
+
+
+def test_transform_mesh__datum_inplace():
+    """A mesh moved onto another datum in place is the mesh transformed."""
+    mesh = _gb_line()
+
+    result = transform_mesh(mesh, "EPSG:27700", slice_connectivity=False, inplace=True)
+
+    assert result is mesh
+    assert from_wkt(mesh) == CRS.from_user_input("EPSG:27700")
+    lats = np.full(GB_LONS.shape, 52.0)
+    x, y = Transformer.from_crs(WGS84, "EPSG:27700", always_xy=True).transform(
+        GB_LONS, lats
+    )
+    np.testing.assert_allclose(mesh.points[:, 0], x, atol=1e-3)
+    np.testing.assert_allclose(mesh.points[:, 1], y, atol=1e-3)
 
 
 def test_transform_mesh__zlevel_per_point_to_wgs84_reads_back():
