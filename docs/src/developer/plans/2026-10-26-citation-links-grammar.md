@@ -153,3 +153,12 @@ Expected: no failures.
 - [ ] **Step 3: Commit, push, and request review.**
 
 - [ ] **Step 4: The landed row, last.** After review, set row 1 of `citation spec §9` to `✅ landed (<date>, {pull}`<PR>`)`, run `check-spec-status <PR>`, commit and push, so that approving and merging are one step. Correct the date if the merge slips a day.
+
+## After the Final Review
+
+The whole-branch review, on Opus, found the move verbatim (by an AST comparison of all 27 names), nothing left unbound, and the suite, the ceiling (69 of 70) and the status check passing. One Important finding and four Minor ones.
+
+- **Fixed:** `ci-spec-status.yml`'s paths filter did not name the grammar, so a pull request changing only the grammar would not run the status check that reads with it. `test_the_workflow_runs_when_anything_the_script_reads_changes` now holds the filter to every file the script loads (RED, then GREEN), and the script's docstring and its test's name the grammar.
+- **Deferred to #2736:** Review Focus 4 above was wrong. One name does not make one module: each load by path is a new copy, and its dataclasses never compare equal to the other's. Nothing compares across copies yet, so it is settled before row 2 relies on it. The fixture's docstring and the `demo()` annotation, two nits in the same fixture, go with it.
+- **Ruled out of scope:** naming `tests/docs` and `tests` paths interleaved in one pytest call makes `test_ext_parallel.py` error on its `require` fixture. That predates this change, which touches none of the files involved.
+- **Ruled:** this pull request adds one citation outside the specifications, not the two Global Constraints allowed, so the globe work keeps one of headroom.
