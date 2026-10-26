@@ -74,56 +74,118 @@ ADVICE = {
 SHOWN = 4
 
 
+#: Elements that sit inside a run of text rather than end it, so a citation split
+#: by one, as ``§<strong>1</strong>``, is still read whole.
+INLINE = frozenset(
+    {"a", "abbr", "b", "bdi", "bdo", "cite", "code", "data", "del", "dfn", "em", "i"}
+    | {"ins", "kbd", "mark", "q", "s", "samp", "small", "span", "strong", "sub"}
+    | {"sup", "time", "u", "var"}
+)
+
+
+@dataclass(frozen=True)
+class Context:
+    """Where a run of text sits: in code or not, in which links, and placed where."""
+
+    exempt: bool
+    links: tuple[str | None, ...]
+    placement: str
+
+
 class Scan(HTMLParser):
-    """Collect every citation in one page, by where it sits, and every ``id``."""
+    """Collect every citation in one page, by where it sits, and every ``id``.
+
+    Text is buffered across inline elements and read at the end of each block, so
+    a citation whose section sign and number markup sets apart is read whole. A
+    citation counts as linked only when the whole of it sits in the same one link,
+    and that link has somewhere to go.
+    """
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.stack: list[tuple[str, str | None]] = []
+        self.buffer: list[tuple[str, Context]] = []
         self.linked: list[tuple[str, str]] = []
         self.bare: list[tuple[str, str]] = []
         self.nested: list[str] = []
         self.exempt = 0
         self.ids: set[str] = set()
 
+    def context(self) -> Context:
+        """Describe where text arriving now sits."""
+        tags = [name for name, _ in self.stack]
+        return Context(
+            exempt=any(name in EXEMPT for name in tags),
+            links=tuple(href for name, href in self.stack if name == "a"),
+            placement=next((name for name in PLACEMENT if name in tags), ""),
+        )
+
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         """Push ``tag``, with its ``href`` if it is a link, unless it is void."""
         values = dict(attrs)
         if values.get("id"):
             self.ids.add(values["id"])
+        if tag not in INLINE:
+            self.flush()
         if tag not in VOID:
             self.stack.append((tag, values.get("href") if tag == "a" else None))
 
-    def handle_startendtag(
-        self, _tag: str, attrs: list[tuple[str, str | None]]
-    ) -> None:
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         """Record a self-closing tag's ``id``; it encloses nothing."""
         values = dict(attrs)
         if values.get("id"):
             self.ids.add(values["id"])
+        if tag not in INLINE:
+            self.flush()
 
     def handle_endtag(self, tag: str) -> None:
         """Pop back to ``tag``, tolerating elements left unclosed."""
+        if tag not in INLINE:
+            self.flush()
         if any(name == tag for name, _ in self.stack):
             while self.stack and self.stack.pop()[0] != tag:
                 pass
 
     def handle_data(self, data: str) -> None:
-        """Classify each citation in a run of text."""
-        hits = CITATION.findall(data)
-        if not hits:
+        """Buffer a run of text with where it sits, until its block ends."""
+        self.buffer.append((data, self.context()))
+
+    def close(self) -> None:
+        """Read whatever text the page ended on."""
+        super().close()
+        self.flush()
+
+    def flush(self) -> None:
+        """Classify each citation in the text buffered since the last block."""
+        if not self.buffer:
             return
-        tags = [name for name, _ in self.stack]
-        links = [href for name, href in self.stack if name == "a"]
-        if any(name in EXEMPT for name in tags):
-            self.exempt += len(hits)
-        elif len(links) > 1:
-            self.nested.extend(hits)
-        elif links:
-            self.linked.extend((hit, links[0] or "") for hit in hits)
+        text = "".join(data for data, _ in self.buffer)
+        spans, start = [], 0
+        for data, context in self.buffer:
+            spans.append((start, start + len(data), context))
+            start += len(data)
+        self.buffer.clear()
+        for match in CITATION.finditer(text):
+            covering = [
+                context
+                for begin, end, context in spans
+                if begin < match.end() and end > match.start()
+            ]
+            self.classify(match[0], covering)
+
+    def classify(self, hit: str, covering: list[Context]) -> None:
+        """File one citation by the contexts of the text it was read from."""
+        first = covering[0]
+        if any(context.exempt for context in covering):
+            self.exempt += 1
+        elif len({context.links for context in covering}) > 1:
+            self.bare.append((hit, first.placement))
+        elif len(first.links) > 1:
+            self.nested.append(hit)
+        elif first.links and first.links[0]:
+            self.linked.append((hit, first.links[0]))
         else:
-            where = next((name for name in PLACEMENT if name in tags), "")
-            self.bare.extend((hit, where) for hit in hits)
+            self.bare.append((hit, first.placement))
 
 
 @cache
@@ -131,6 +193,7 @@ def scanned(page: Path) -> Scan:
     """Scan a page once, however many links land on it."""
     scan = Scan()
     scan.feed(page.read_text(encoding="utf-8"))
+    scan.close()
     return scan
 
 
@@ -154,7 +217,9 @@ def landing(root: Path, page: Path, href: str) -> str | None:
     target = (page.parent / unquote(parts.path)).resolve() if parts.path else page
     if not target.is_file():
         return f"{href} names no page"
-    if parts.fragment and unquote(parts.fragment) not in scanned(target).ids:
+    if not parts.fragment:
+        return f"{href} names no section"
+    if unquote(parts.fragment) not in scanned(target).ids:
         return f"{href} names no anchor on {target.relative_to(root).as_posix()}"
     return None
 
@@ -217,6 +282,7 @@ def scan(html: str) -> Scan:
     """Scan one string of HTML."""
     found = Scan()
     found.feed(html)
+    found.close()
     return found
 
 
@@ -283,6 +349,43 @@ def test_a_void_element_is_never_pushed_and_its_id_is_kept():
 
     assert "here" in found.ids
     assert [where for _, where in found.bare] == [""]
+
+
+def test_an_anchor_without_a_destination_is_no_link():
+    """A named anchor, or an empty one, reads as text a reader cannot follow."""
+    found = scan(f'<p><a id="here">{CITED}</a> <a href="">{CITED}</a></p>')
+
+    assert found.linked == []
+    assert [hit for hit, _ in found.bare] == [f"{SECTION}3.2"] * 2
+
+
+def test_a_citation_split_by_inline_markup_is_still_read():
+    """A section sign and its number set apart by markup are one citation."""
+    found = scan(
+        f"<p>typing spec {SECTION}<strong>3</strong>.2, and "
+        f'<a href="x.html#typing-spec-4"><em>typing spec {SECTION}</em>4</a></p>'
+    )
+
+    assert found.bare == [(f"{SECTION}3.2", "")]
+    assert found.linked == [(f"{SECTION}4", "x.html#typing-spec-4")]
+
+
+def test_a_citation_is_never_joined_across_a_block():
+    """A section sign ending one paragraph and a number opening the next are two."""
+    found = scan(f"<p>see {SECTION}</p><p>2 more</p><li>{SECTION}</li><li>3</li>")
+
+    assert found.bare == found.linked == []
+
+
+def test_a_local_link_naming_no_section_is_broken(tmp_path):
+    """A citation links to the section it names, not to the top of its page."""
+    page(tmp_path, "specs/typing.html", '<h2 id="typing-spec-3-2">3.2</h2>')
+    page(tmp_path, "guide.html", f'<a href="specs/typing.html">{CITED}</a>')
+
+    report = check(tmp_path)
+
+    assert list(report.broken) == ["guide.html"]
+    assert "names no section" in report.broken["guide.html"][0]
 
 
 def test_a_tree_whose_citations_link_and_land_passes(tmp_path):
