@@ -21,7 +21,7 @@ repos:
         # Check that every "exclude" directive matches at least one file.
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "0.26"
+    rev: "v0.27"
     hooks:
       - id: validate-pyproject
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
@@ -39,7 +39,7 @@ repos:
         additional_dependencies: [black==26.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.17.1"
+    rev: "v0.17.2"
     hooks:
       # Both hooks default to "types_or: [python, pyi, jupyter]", which keeps
       # the committed tutorial notebook covered.
