@@ -108,3 +108,13 @@
 - [ ] **Step 1:** Write `changelog/<PR>.feature.rst`, crediting `:user:`claude``, and check it with `.github/scripts/changelog.py`.
 - [ ] **Step 2:** Final review on Opus; fix Critical and Important findings RED first; record the review at the end of this plan; raise an `agentic` issue for anything deferred.
 - [ ] **Step 3: The landed rows, last.** Row 2 of `citation spec §9`, and rows 2 and 4 of `docs spec §4`, become `✅ landed (<date>, {pull}`<PR>`)`. Run `check-spec-status <PR>`, commit, push, and mark the pull request ready.
+
+## After the Final Review
+
+The whole-branch review, on Opus, found the transform a faithful port of tephpy's, and confirmed with its own builds, serial and parallel, that a steady rebuild re-reads nothing, a renumbered anchor re-reads every page, and a missing anchor or a heading citation warns. On the built site it found 163 pages, 269 citations linked, 34 left as code, and none bare, nested or broken. Three Important findings and eight Minor ones.
+
+- **Fixed:** the transform recorded no dependency on its own code or the grammar's, which `docs/AGENTS.md` asks of an extension writing doctree content, so an edit to the grammar would have left every cached page stale. `test_every_document_depends_on_the_transform_and_its_grammar` failed, then passed.
+- **Fixed:** the build test that `citation spec §6` asks for, of a citation naming no anchor, was missing, and the plan had dropped it without a ruling. `test_a_build_warns_of_a_citation_naming_no_anchor` passes, and fails with `refwarn` switched off.
+- **Fixed:** the repository checks design still named `CEILING` as the trigger of rows 2 to 4. It names `NUMBERED_CEILING` now.
+- **Corrected:** row 5's count is 8, not the 7 Task 5 recorded. The new `OUTPUT_GATE` comment cites a row too.
+- **Deferred to #2739:** the eight Minor findings, on the output check's handling of symlinks and href-less links and its failure report, the transform's heading warning, `doctest_block` and skip-set coverage, `numbered()`'s documented limits, and one overstated sentence. It also raises, for a decision, whether citation links should carry tooltips.
