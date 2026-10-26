@@ -1,0 +1,4 @@
+The repository checks specification no longer keeps its own list of the checks.
+Its table is now the eight the design started from, and the repository checks
+page, which the gate keeps complete, is the inventory, so a new check needs no
+change to the specification. (:user:`claude`)
