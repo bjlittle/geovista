@@ -22,10 +22,8 @@ docs/
 
 ## Build Commands
 
-Run from the `docs/` directory:
-
 ```bash
-make html        # full; also html-noplot (fastest), html-gallery/-docstring/-tutorial
+make html        # in docs/; full; also html-noplot (fastest), html-gallery/-docstring/-tutorial
 make doctest     # run doctests
 make clean       # build + generated sources; also clean-cache (myst-nb), clean-all
 make serve-html  # local HTTP server at http://localhost:11000
@@ -128,6 +126,8 @@ fails on `toc.not_included` unless a toctree holds it, a page includes it, or it
 ⚠️ **A spec status must cite real work** (#2609): run `pixi run -e test check-spec-status <PR>`
 after editing one. A `Resolved` item may cite an open issue; the PR closing a cited issue marks
 it `Resolved` (in specs; plans are frozen). One row per PR, none *partly landed* (6a–6c, #2659).
+⚠️ **Ask whether a roadmap row is bounded before planning it.** One its spec leaves to the builder gets
+a child spec first, as `bjlittle/tephpy` does (own prefix, `Parent spec:` banner, "Extended by" note in the parent), and is planned once the rows it depends on merge.
 
 ### RST Style
 
@@ -196,4 +196,4 @@ in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
 
 ---
 
-**Last Updated**: 21 October 2026
+**Last Updated**: 24 October 2026

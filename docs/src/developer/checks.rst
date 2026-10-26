@@ -46,6 +46,8 @@ Where It Failed
       - none
     * - :ref:`Specification Conventions <gv-developer-checks-spec-conventions>`
       - none
+    * - :ref:`Projection Coverage <gv-developer-checks-projection-coverage>`
+      - none
     * - :ref:`Repository Checks <gv-developer-checks-repository-checks>`
       - none
 
@@ -232,6 +234,39 @@ trigger of rows 2 to 4 of :ref:`docs spec §4 <docs-spec-4>`, and raising it is 
 change to that specification.
 
 **More:** :ref:`docs spec §3.5 <docs-spec-3-5>`.
+
+
+.. _gv-developer-checks-projection-coverage:
+.. _tippy-gv-developer-checks-projection-coverage:
+
+Projection Coverage
+-------------------
+
+**The rule:** Every projection method PROJ offers, and every projection class of
+``cartopy``, is recorded as working or failing on a global mesh, and its outcome
+changes only when that record does.
+
+**Why:** No release may break a projection that works today, by decision 12 of
+the CRS specification. The record shows which projections ``geovista`` handles,
+and stops that set shrinking by accident while the seam and transform code is
+rebuilt.
+
+**What enforces it:** :bash:`tests/transform/test_projection_coverage.py`, in
+every run of the unit tests. Each projection takes a global 5° mesh through
+``transform_mesh``, and is measured for an exception, coordinates that are not
+finite or run away, folded cells and torn cells.
+
+**When it fails:** Move a projection that now works from ``FAILS`` to ``WORKS``,
+or from ``CARTOPY_FAILS`` to ``CARTOPY_WORKS``. One that no longer works is a
+regression to fix. Measure a projection that a new release of PROJ or
+``cartopy`` adds into the record, and put an operation that is not a projection
+in ``NOT_PROJECTIONS``. A method newer than the PROJ that ``pyproj``'s wheels
+bundle also goes in ``SINCE``, with the version of PROJ it arrived in.
+
+**Declaring an exception:** None. ``PARAMETERS`` gives a method the parameters
+PROJ needs to build it, which is no exception to the rule.
+
+**More:** :ref:`crs spec §6 <crs-spec-6>`.
 
 
 .. _gv-developer-checks-repository-checks:

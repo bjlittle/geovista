@@ -1,0 +1,5 @@
+Added the ``projection-coverage`` repository check, row 1 of the roadmap of the
+globe-first CRS specification. It projects a global mesh through
+:func:`geovista.transform.transform_mesh` to each of PROJ's 162 projection
+methods and ``cartopy``'s 38 projection classes, records which take it cleanly,
+and fails when an outcome changes without that record. (:user:`claude`)
