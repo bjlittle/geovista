@@ -1,0 +1,5 @@
+The pixi ceilings of ``sphinx-gallery`` and ``trame-pyvista`` now match the pip
+ones, which ``dependabot`` had raised, so the lock moves to ``sphinx-gallery``
+0.22.1 and ``trame-pyvista`` 0.2.3. ``sphinx-gallery`` 0.22 ignores
+``reference_url``, which ``conf.py`` drops, and is the new floor on both sides.
+(:user:`claude`)

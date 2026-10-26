@@ -59,6 +59,8 @@ satisfies a widened max-pin — so bumping a ceiling and running `pixi lock`
 leaves the old version in place, and the suite then silently tests nothing new.
 Use `pixi update <pkg>`, confirm with `pixi list -e <env> <pkg>`, and apply the
 same bump to `requirements/pypi-*.txt`, which `pixi` neither reads nor updates.
+The reverse is gated: `tests/test_dependency_ceilings.py` fails a dependabot PR
+whose pip ceiling outruns the pixi one, so mirror the bump on that same PR.
 
 ⚠️ **A max-pin cannot see a renamed distribution.** `vtk-xref` became
 `sphinx-vtk-xref` (#2541): the old name stopped at 0.1.2, so `pixi update` and

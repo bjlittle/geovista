@@ -120,8 +120,9 @@ marker, so the sphinx configuration tests share that CI job and guard. ⚠️ Bu
 whatever was last built — rebuild before believing a `tests/docs` result.
 
 ⚠️ **A source-tree policy gate has nothing to skip on, and must not acquire
-one.** `test_readingtime_coverage.py`, `test_python_support.py` and
-`test_spec_conventions.py` read the tree as *text*, needing no sphinx, build nor
+one.** `test_readingtime_coverage.py`, `test_python_support.py`,
+`test_dependency_ceilings.py` and `test_spec_conventions.py` read the tree as
+*text*, needing no sphinx, build nor
 browser, and *derive* what they govern rather than list it, so a new page, `pyXYZ`
 feature or spec is covered the day it lands and an exemption carries its reason.
 Guard such a gate on nothing: a skip retires the rule in silence. A gate reading

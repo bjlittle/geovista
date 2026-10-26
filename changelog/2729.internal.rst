@@ -1,0 +1,7 @@
+``tests/test_dependency_ceilings.py`` checks that every pixi ceiling in
+``pyproject.toml`` admits at least what its counterpart in
+``requirements/pypi-*.txt`` admits. ``dependabot`` raises only the pip
+ceilings, so a pixi ceiling left behind kept the lock on the old release, and
+CI never tested what a ``pip`` user could install. The check fails on the
+``dependabot`` pull request itself, which is where the pixi bump now goes.
+(:user:`claude`)
