@@ -39,6 +39,7 @@ from pathlib import Path
 import re
 import sys
 import tokenize
+import tomllib
 from typing import TYPE_CHECKING
 
 import pytest
@@ -1201,32 +1202,13 @@ def test_the_index_names_every_prefix(names):
     assert namespace_table(index) == declared
 
 
-#: Citations outside the specifications past which rows 2 to 4 of the roadmap
-#: activate: ten times the seven there were when the threshold was set, doubled
-#: from thirty-five when the type coverage roadmap passed it.
-CEILING = 70
+#: The check of the rendered output that row 4 of docs spec §4 pairs with the
+#: transform, and the task that runs it in CI.
+OUTPUT_GATE = REPO / "tests" / "docs" / "test_rendered_citations.py"
+OUTPUT_TASK = "tests-docs-browser"
 
-#: The entry point by which the rendered-output gate of row 4 is wired in.
-OUTPUT_GATE = "check_rendered_citations"
-
-
-def outside(texts: dict[Path, str], names: Namespace) -> int:
-    """Count the citations in every governed file that is not a specification.
-
-    A section role counts as one. It is a citation written by hand, and retiring
-    those is half of what row 2 buys.
-    """
-    count = 0
-    for path, text in texts.items():
-        if path in names.owners:
-            continue
-        for _, line in source_lines(path, text):
-            plain, roles = prose(line)
-            count += sum(1 for _ in scan(plain, names.signed, None))
-            count += sum(
-                section_role(kind, body, names) is not None for kind, body in roles
-            )
-    return count
+#: The transform that links citations at build time.
+TRANSFORM = "geovista_citation_xrefs"
 
 
 def registered(conf: str) -> set[str]:
@@ -1255,19 +1237,6 @@ def registered(conf: str) -> set[str]:
     return found
 
 
-def test_outside_counts_a_section_role_as_a_citation(tmp_path):
-    """Row 2 retires the hand-written roles, so they count toward its trigger."""
-    _, names = demo(tmp_path, DEMO)
-    texts = {
-        tmp_path / "guide.md": f"See {{ref}}`demo spec {SECTION}2 <demo-spec-2>`.\n"
-        * CEILING,
-        tmp_path / "guide.rst": f"See :ref:`demo spec {SECTION}1 <demo-spec-1>`.\n",
-        tmp_path / "other.md": "See {ref}`the gallery <gallery>`.\n",
-    }
-
-    assert outside(texts, names) == CEILING + 1
-
-
 def test_registered_reads_every_way_an_extension_is_added():
     """A list, an append and a setup call all register an extension."""
     conf = (
@@ -1290,29 +1259,96 @@ def test_registered_reads_an_annotated_list_and_an_insert():
     assert registered(conf) == {"a", "b"}
 
 
-def test_rows_2_to_4_wait_until_the_corpus_outgrows_review(texts, names):
-    """Triggers (item 6): the scale at which the citation machinery is wanted."""
-    count = outside(texts, names)
+def test_row_4_pairs_the_transform_with_its_output_gate():
+    """Triggers (item 6): a transform the output gate does not check.
 
-    assert count > 0, "no citation outside the specifications: the count is vacuous"
-    assert count <= CEILING, (
-        f"{count} citations outside the specifications, past {CEILING}: rows 2 "
-        "to 4 of docs spec §4 have activated. Build them, or raise the ceiling "
-        "there with the reason."
+    Until the hand-written roles collapse, they render as links whether or not the
+    transform runs, so this is also what holds the transform in place.
+    """
+    conf = (REPO / "docs" / "src" / "conf.py").read_text(encoding="utf-8")
+    extensions = registered(conf)
+    manifest = tomllib.loads((REPO / "pyproject.toml").read_text(encoding="utf-8"))
+    task = manifest["tool"]["pixi"]["feature"]["geovista"]["tasks"][OUTPUT_TASK]
+    workflow = REPO / ".github" / "workflows" / "ci-tests-docs.yml"
+
+    assert "myst_nb" in extensions, "the watch reads none of conf.py's extensions"
+    assert TRANSFORM in extensions, f"{TRANSFORM} is not registered in conf.py"
+    assert OUTPUT_GATE.is_file(), f"{OUTPUT_GATE.name} is missing"
+    assert "tests/docs" in task["cmd"], f"{OUTPUT_TASK} no longer runs tests/docs"
+    assert OUTPUT_TASK in workflow.read_text(encoding="utf-8"), (
+        f"{workflow.name} no longer runs {OUTPUT_TASK}"
     )
 
 
-def test_row_4_pairs_the_transform_with_its_output_gate():
-    """Triggers (item 6): a transform the output gate does not check."""
-    conf = (REPO / "docs" / "src" / "conf.py").read_text(encoding="utf-8")
-    extensions = registered(conf)
-    transforms = {name for name in extensions if "citation" in name}
+#: The words naming an item after a citation, as in ``§8 item 9``.
+AFTER = re.compile(r"`?,?[^\S\n]*\bitems?[^\S\n]+\d+")
 
-    assert "myst_nb" in extensions, "the watch reads none of conf.py's extensions"
-    wiring = [REPO / "pyproject.toml", *(REPO / ".github" / "workflows").glob("*.yml")]
-    wired = any(OUTPUT_GATE in path.read_text(encoding="utf-8") for path in wiring)
+#: The words naming a roadmap row before a citation, as in "rows 2 to 4 of".
+BEFORE = re.compile(r"\brows?\s+\d+[a-c]?(?:\s+(?:to|and)\s+\d+[a-c]?)?\s+of\s+$")
 
-    assert wired or not transforms, (
-        f"{sorted(transforms)} registered without {OUTPUT_GATE}: row 4 of "
-        "docs spec §4 is due."
+#: A comment marker opening a line, stripped so a wrapped comment reads as one.
+LEADER = re.compile(r"^\s*(?:#+:?|//)?\s*")
+
+
+def legible(line: str) -> str:
+    """Blank a line's inline code, but keep the text a role displays."""
+
+    def shown(match: re.Match[str]) -> str:
+        if match["role"] is not None and len(match["ticks"]) == 1:
+            targeted = TARGETED.match(match["body"])
+            return targeted["text"] if targeted else match["body"]
+        return " "
+
+    return citations.SPAN.sub(shown, line)
+
+
+def numbered(texts: dict[Path, str], names: Namespace) -> int:
+    """Count the citations of an item or a roadmap row outside the specifications.
+
+    An item follows its citation, as in ``typing spec §8 item 9``, and a row
+    precedes it, as in ``rows 2 to 4 of docs spec §4``. Lines are joined, so a
+    reference wrapped across two reads as one.
+    """
+    count = 0
+    for path, text in texts.items():
+        if path in names.owners:
+            continue
+        joined = " ".join(
+            LEADER.sub("", legible(line)) for _, line in source_lines(path, text)
+        )
+        for match in names.signed.finditer(joined):
+            if match["prefix"] is None:
+                continue
+            item = AFTER.match(joined, match.end())
+            row = BEFORE.search(joined[max(0, match.start() - 40) : match.start()])
+            count += bool(item or row)
+    return count
+
+
+#: Citations of items and roadmap rows outside the specifications past which row 5
+#: of citation spec §9 activates: a little over three times the six there were.
+NUMBERED_CEILING = 20
+
+
+def test_numbered_counts_items_and_rows_and_nothing_else(tmp_path):
+    """Two items, a row and a run of rows are four; a section alone is none."""
+    _, names = demo(tmp_path, DEMO)
+    spec = f"demo spec {SECTION}"
+    texts = {
+        tmp_path / "a.py": f"# {spec}1 item 3, and {spec}2 items 4\n",
+        tmp_path / "b.md": f"See row 2 of {spec}1, and rows 3\nto 4 of {spec}2.\n",
+        tmp_path / "c.md": f"See {spec}1 and item 5 of the list.\n",
+    }
+
+    assert numbered(texts, names) == 4
+
+
+def test_row_5_waits_until_items_and_rows_are_cited_often(texts, names):
+    """Triggers (item 6): the scale at which items and rows want links of their own."""
+    count = numbered(texts, names)
+
+    assert count > 0, "no item or row is cited: the count is vacuous"
+    assert count <= NUMBERED_CEILING, (
+        f"{count} citations of items and rows outside the specifications, past "
+        f"{NUMBERED_CEILING}: row 5 of the citation links roadmap has activated."
     )
