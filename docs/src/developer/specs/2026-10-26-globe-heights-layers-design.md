@@ -287,7 +287,9 @@ Heights are given where a mesh is built and where it is added to a scene: to the
 `Transform` constructors and to `GeoPlotter.add_mesh` and `add_points`, as an array, a
 scalar, or a length quantity, in any of the forms of {ref}`§4.2 <globe-spec-4-2>`.
 A height belongs to a point. A height given for each cell is refused, rather than averaged
-onto the points, since the average is not a value the data holds.
+onto the points, since the average is not a value the data holds. {issue}`2728` records the
+options, among them drawing each cell flat at its own height, and why refusing is the
+default for now.
 
 Mean sea level is the one reference. On `geovista`'s sphere it is the surface of the
 sphere, which is how the models whose output it shows treat it too
@@ -400,6 +402,9 @@ retired, with a note at its head that this specification replaced it, and why.
 - **Heights in the geometry, with the globe recorded beside them.** Rejected. Changing the
   exaggeration would mean recovering heights from positions, which is the reconstruction
   that Raikoke's picking has to do today ({ref}`§3.3 <globe-spec-3-3>`).
+- **Averaging a height given for each cell onto the vertices**, as `pyvista`'s usual
+  workaround does. Rejected as a default, because a corner then holds a height no cell has:
+  a cell at 4,000 m among cells at 500 m is drawn about 2.6 km too low ({issue}`2728`).
 - **Converting model levels to heights in `geovista` now.** Deferred, by decision 3.
 - **Converting ellipsoidal heights to mean sea level now.** Deferred. It needs a geoid grid,
   and without one PROJ falls back silently ({ref}`§3.4 <globe-spec-3-4>`), so refusing is the
@@ -463,6 +468,11 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    not yet measured, before the default could change.
 5. **Open** — **The ideal of the coastline measure.** It over-counts at the limb, so the
    limb's visibility is understated. A tighter ideal would let the limb be tested too.
+6. **Deferred** (until users ask for it, {issue}`2728`) — **Heights given for each cell.**
+   They are refused ({ref}`§4.3 <globe-spec-4-3>`). Averaging them onto the vertices lowers
+   every peak and raises every valley without a word. Drawing each cell flat at its own
+   height is honest but stepped. Users will want cell-centred heights to work as they are,
+   and the issue holds the options for that conversation.
 
 (globe-spec-9)=
 ## 9. Roadmap
