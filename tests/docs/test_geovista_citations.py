@@ -91,7 +91,7 @@ def test_the_grammar_is_one_module_however_it_is_loaded(citations, monkeypatch):
 
     assert conventions.citations is citations
     assert imported is citations
-    assert conventions.Citation("x", None) == citations.Citation("x", None)
+    assert conventions.Citation("x", None, 0, 1) == citations.Citation("x", None, 0, 1)
 
 
 def test_the_default_roots_are_this_repository(citations):
@@ -165,6 +165,18 @@ def test_a_prefix_carries_across_a_run_and_no_further(tmp_path, citations):
     assert [c.slug for c in citations.scan(text, names.signed, "other-spec")][-1] == (
         "other-spec-1"
     )
+
+
+def test_a_citation_knows_where_it_is_written(tmp_path, citations):
+    """Each citation's place slices its text back out, which the transform splits on."""
+    _, names = demo(tmp_path, DEMO, citations)
+    text = f"See demo spec {SECTION}1, {SECTION}2 and {SECTION}1."
+
+    found = list(citations.scan(text, names.signed, "other-spec"))
+
+    assert [text[c.start : c.end] for c in found] == [c.text for c in found]
+    assert [c.start for c in found] == sorted({c.start for c in found})
+    assert len(found) == 3
 
 
 def test_a_section_sign_without_a_number_is_no_citation(tmp_path, citations):

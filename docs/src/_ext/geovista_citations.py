@@ -102,11 +102,16 @@ class Citation:
     slug : str or None
         The anchor it names, or ``None`` for a bare section number written in a
         file that owns no sections.
+    start, end : int
+        Where it is written in the text scanned, so that ``text`` is
+        ``source[start:end]``, and a reader replacing it knows what to split.
 
     """
 
     text: str
     slug: str | None
+    start: int
+    end: int
 
 
 @dataclass(frozen=True)
@@ -375,9 +380,10 @@ def scan(
             carried, number = owner, match["bare"]
         else:
             carried = None
-            yield Citation(match[0], None)
+            yield Citation(match[0], None, match.start(), match.end())
             continue
-        yield Citation(match[0], f"{carried}-{number.replace('.', '-')}")
+        slug = f"{carried}-{number.replace('.', '-')}"
+        yield Citation(match[0], slug, match.start(), match.end())
 
 
 def section_role(kind: str, body: str, names: Namespace) -> tuple[str, str] | None:
