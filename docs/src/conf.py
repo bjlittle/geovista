@@ -800,9 +800,6 @@ sphinx_gallery_conf = {
     # scene, alongside the default reset of the plotting modules
     "reset_modules": ("matplotlib", "seaborn", "gallery_scenes.reset"),
     "reset_modules_order": "both",
-    "reference_url": {
-        "geovista": None,
-    },
 }
 
 # sphinx-gallery only executes the examples of one sub-gallery at a time, and
