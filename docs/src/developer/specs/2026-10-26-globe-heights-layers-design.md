@@ -334,9 +334,15 @@ display reduces it, and stays an explicit opt-in
 ### 4.5 Layers
 
 Each layer of a scene has a place in an order: the base layer at the bottom, then data
-surfaces in the order they are added unless given an order of their own, then lines such as
+surfaces in the order they are added unless given a place of their own, then lines such as
 coastlines and the graticule, then labels. The order says which layer shows where two
 coincide. It never changes a height.
+
+Layers may share a place. Surfaces that do not overlap, such as regional meshes side by
+side, have nothing to settle between them, so a user can give them one place and no bias
+separates them. A surface added without a place still takes the next one, because the scene
+does not check whether two surfaces overlap, and a surface that overlaps another needs a
+place of its own.
 
 **On the globe**, the hybrid of {ref}`§3.5 <globe-spec-3-5>`:
 
@@ -348,13 +354,15 @@ coincide. It never changes a height.
   which covers their own sag of 9.3 × 10⁻⁶ without pulling the far side over the horizon.
 
 Data surfaces are never moved. Two data surfaces at the same height on different meshes
-fall back on their order and a depth bias, each 256 units nearer the viewer than the one
-below it, which can leave the sliver at the limb that {ref}`§3.5 <globe-spec-3-5>` measured
-for depth bias alone.
+fall back on their places and a depth bias, each place 256 units nearer the viewer than the
+one below it, and surfaces that share a place share its bias. That can leave the sliver at
+the limb that {ref}`§3.5 <globe-spec-3-5>` measured for depth bias alone. Whether a
+surface's bias also pulls its far side over the horizon, as a bias of 256 did for lines, is
+not yet measured ({ref}`§8 <globe-spec-8>`, item 7).
 
 **On a projected map**, where every layer at one height lies in one plane, layers are kept
-apart by depth bias alone, each 256 units nearer the viewer than the one below it, well
-above the 64 that cleared every view measured. Nothing is offset in `z`.
+apart by depth bias alone, each place 256 units nearer the viewer than the one below it,
+well above the 64 that cleared every view measured. Nothing is offset in `z`.
 
 VTK switches its polygon offset on for the whole process, and keeps the offsets themselves
 on each mapper. `geovista` switches it on, so a plain `pyvista` plot in the same process
@@ -426,6 +434,8 @@ Every result is checked against a reference independent of `geovista`, as
 - **layering**: the measures of {ref}`§3.5 <globe-spec-3-5>` become tests, on whichever
   renderer CI provides: no bleed, and every coastline of the close and orbiting views
   visible, for C48 and a 5° grid on the globe, and for C48 on Robinson;
+- **places**: surfaces that share a place are drawn with one bias, and where two surfaces
+  coincide, the one a place higher shows, on the globe and on a map;
 - **the radius**: each of the above holds at radius 1 and at the Earth's radius.
 
 The layering tests render, so they carry the `image` marker, though they compare pixel
@@ -473,6 +483,12 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    every peak and raises every valley without a word. Drawing each cell flat at its own
    height is honest but stepped. Users will want cell-centred heights to work as they are,
    and the issue holds the options for that conversation.
+7. **Open** — **A biased surface at the limb.** A surface a place above another is drawn
+   256 units nearer the viewer. A bias of 256 on lines pulled the far side's coastlines
+   over the horizon ({ref}`§3.5 <globe-spec-3-5>`), and no surface was measured with one.
+   Whether a surface's far side shows past the horizon, and if it does, whether to shrink
+   the bias or apply it only where surfaces overlap, needs measuring before row 4 is
+   planned.
 
 (globe-spec-9)=
 ## 9. Roadmap
