@@ -28,6 +28,7 @@ import pyvista as pv
 
 import geovista as gv
 from geovista.common import from_cartesian
+from geovista.crs import from_wkt
 from geovista.transform import transform_mesh
 
 if TYPE_CHECKING:
@@ -339,6 +340,31 @@ def _cells(mesh: pv.PolyData) -> tuple[NDArray[Any], NDArray[Any], NDArray[Any]]
     return ids, starts, following
 
 
+def _metres(crs: pyproj.CRS) -> float:
+    """Find the metres in one unit of a CRS's horizontal axes.
+
+    Parameters
+    ----------
+    crs : CRS
+        The CRS of a projected mesh.
+
+    Returns
+    -------
+    float
+        The metres in one unit of its first axis. A unit of a geographic CRS is an
+        angle, measured along the equator.
+
+    """
+    factor = crs.axis_info[0].unit_conversion_factor
+
+    if not crs.is_geographic:
+        return float(factor)
+
+    # pyproj gives the coordinates of an axis declared in radians in degrees
+    radians = np.radians(1.0) if factor == 1.0 else factor
+    return float(radians * crs.ellipsoid.semi_major_metre)
+
+
 def outcome(crs: pyproj.CRS | ccrs.Projection) -> tuple[str, str]:
     """Measure how a CRS takes the global 5° mesh, as crs spec §3.1 does.
 
@@ -380,12 +406,17 @@ def _measure(result: pv.PolyData) -> tuple[str, str]:
         The first failure found, as its kind and a detail, or ``("works", "")``.
 
     """
-    xy: NDArray[Any] = np.asarray(result.points)[:, :2]
+    points: NDArray[Any] = np.asarray(result.points)
 
-    if not np.all(np.isfinite(xy)):
+    # every coordinate of every point, its height included
+    if not np.all(np.isfinite(points)):
         return "non-finite", ""
 
-    if np.abs(xy).max() > RUNAWAY:
+    xy = points[:, :2]
+    crs = from_wkt(result)
+    assert crs is not None
+
+    if np.abs(xy).max() * _metres(crs) > RUNAWAY:
         return "runaway", ""
 
     ids, starts, following = _cells(result)
@@ -495,3 +526,24 @@ def test_cartopy_outcome(name):
 def test_every_failure_kind_is_detected(method, kind):
     """Each measure of a failure still fires, on a method that fails by it."""
     assert outcome(_crs(method))[0] == kind
+
+
+def test_a_non_finite_height_is_measured():
+    """A point whose z is not finite fails, as crs spec §3.1 requires of every point."""
+    result = transform_mesh(_mesh(), _crs("eqc"))
+    result.points[0, 2] = np.nan
+
+    assert _measure(result)[0] == "non-finite"
+
+
+def test_runaway_is_measured_in_metres():
+    """The runaway limit is in metres, whatever unit the projection's axes are in.
+
+    The axes of cartopy's LambertCylindrical are in units of 111,319.49 m, so its
+    coordinates scaled by a thousand run 2 x 10¹⁰ m out, beyond the limit.
+
+    """
+    result = transform_mesh(_mesh(), _cartopy("LambertCylindrical"))
+    result.points[:, :2] *= 1000
+
+    assert _measure(result)[0] == "runaway"
