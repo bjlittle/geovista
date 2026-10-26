@@ -657,9 +657,11 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 10. **Open** — **The fate of `geodesic.BBox` and `GeoPlotter(manifold=...)`.** The regions
     design of project 3 replaces them. Until it lands, they keep working on top of the
     engine.
-11. **Open** — **`pint-cf`'s maturity.** It is at 0.2.1. Whether `geovista` depends on it
-    as it stands, contributes to it, or keeps the CF strings it needs behind a small
-    adapter of its own until it matures.
+11. **Resolved** (2026-10-26, {pull}`2732`) — **`pint-cf`'s maturity.** It is at 0.2.1.
+    Whether `geovista` depends on it as it stands, contributes to it, or keeps the CF
+    strings it needs behind a small adapter of its own until it matures. It depends on
+    `pint-cf` as it stands, on PyPI and conda-forge, behind `geovista.units`, so replacing
+    it would touch one module ({ref}`globe spec §4.2 <globe-spec-4-2>`).
 
 (crs-spec-9)=
 ## 9. Scope
