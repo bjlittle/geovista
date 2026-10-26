@@ -42,6 +42,8 @@ Where It Failed
       - ``RELAXED`` in :bash:`tests/test_ci_typing.py`
     * - :ref:`Python Support <gv-developer-checks-python-support>`
       - none
+    * - :ref:`Dependency Ceilings <gv-developer-checks-dependency-ceilings>`
+      - none
     * - :ref:`Parallel-Safe Extensions <gv-developer-checks-parallel-safe-extensions>`
       - none
     * - :ref:`Specification Conventions <gv-developer-checks-spec-conventions>`
@@ -179,6 +181,37 @@ line with the classifiers, then run ``pixi lock``.
 **Declaring an exception:** None.
 
 **More:** `SPEC 0`_, the support policy ``geovista`` follows.
+
+
+.. _gv-developer-checks-dependency-ceilings:
+.. _tippy-gv-developer-checks-dependency-ceilings:
+
+Dependency Ceilings
+-------------------
+
+**The rule:** Every package in :bash:`requirements/pypi-*.txt` is also a ``pixi``
+dependency in ``pyproject.toml``, and its ``pixi`` ceiling admits every version
+its ``pip`` ceiling does.
+
+**Why:** ``dependabot`` raises the ``pip`` ceilings and never touches the ``pixi``
+ones, which have to follow by hand. A ``pixi`` ceiling left behind keeps the lock
+on the old release, so CI never tests the version a ``pip`` user may install.
+The ``pixi`` ceilings may be looser, since they pin the major version rather than
+the minor, so a ``dependabot`` bump beneath one needs nothing more.
+
+**What enforces it:** :bash:`tests/test_dependency_ceilings.py`, in every run of
+the unit tests, including those on a ``dependabot`` pull request.
+
+**When it fails:** The message names the package and both ceilings. Raise the
+``pixi`` ceiling to match, on the same pull request, then run ``pixi update
+<package>`` and confirm the new version with ``pixi list``. ``pixi lock`` alone
+keeps the version already locked. A package conda-forge distributes under
+another name, such as ``h3-py`` for ``h3``, goes in ``RENAMED``. That is a
+mapping, not an exception.
+
+**Declaring an exception:** None.
+
+**More:** :ref:`Dependabot <gv-developer-codecraft-dependabot>`.
 
 
 .. _gv-developer-checks-parallel-safe-extensions:

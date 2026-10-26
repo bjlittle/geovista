@@ -40,6 +40,9 @@ However, trusted collaborators have sufficient privileges to request
 ``pull-requests``.
 
 
+.. _gv-developer-codecraft-dependabot:
+.. _tippy-gv-developer-codecraft-dependabot:
+
 :fa:`code-pull-request` Dependabot
 ----------------------------------
 
@@ -65,11 +68,14 @@ and ``semver`` (default) for our ``pixi`` package dependencies.
     We heavily rely on ``dependabot`` to inform us of the constant version
     updates to our package dependencies available in the ``pip`` ecosystem.
 
-    When merging an automated ``chore`` :fa:`code-pull-request` ``pull-request``
-    from ``dependabot`` ensure to confirm whether any associated ``pixi``
-    package version pins also require to be updated.
+    ``dependabot`` never updates the ``pixi`` package version pins, so when it
+    raises a ``pip`` ceiling above the matching ``pixi`` one, the
+    :ref:`Dependency Ceilings <gv-developer-checks-dependency-ceilings>` check
+    fails on its automated ``chore`` :fa:`code-pull-request` ``pull-request``.
 
-    If so, then raise a separate follow-on :fa:`code-pull-request` ``pull-request``.
+    Raise the ``pixi`` ceiling on that same :fa:`code-pull-request`
+    ``pull-request``, then run ``pixi update <package>`` so that the lock
+    reaches the new release.
 
 
 .. _gv-developer-codecraft-generative-ai:
