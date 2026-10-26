@@ -691,7 +691,7 @@ The CRS work of this design closes {issue}`140`, {issue}`1402`, {issue}`2674` an
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The coverage test of {ref}`§6 <crs-spec-6>`, recording today's outcomes | ✅ landed (2026-10-24, {pull}`2721`) |
+| 1 | The coverage test of {ref}`§6 <crs-spec-6>`, recording today's outcomes | ✅ landed (2026-10-26, {pull}`2721`) |
 | 2 | The globe model, and units through `pint` and `pint-cf` | not started |
 | 3 | The cutting engine: rotate, clip, cut a seam, densify, with the account of each | not started |
 | 4 | The domain registry, and class 0 on the engine, replacing today's seam and transform path with no change to the 91 methods that work | not started |
