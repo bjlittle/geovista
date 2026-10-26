@@ -32,8 +32,10 @@ With "--pull" a status may cite that pull request while it is still open, as a
 pull request can record what it resolves, and the date of a "✅ landed" row
 citing it is not checked.
 
-The statuses are read with the grammar of "tests/test_spec_conventions.py",
-so that a status has one definition rather than two that disagree. A token in
+The statuses are read with the parser of "tests/test_spec_conventions.py",
+which reads specifications with the citation grammar of
+"docs/src/_ext/geovista_citations.py", so that a status has one definition
+rather than two that disagree. A token in
 the "GITHUB_TOKEN" or "GH_TOKEN" environment variable is used when set.
 
 Notes

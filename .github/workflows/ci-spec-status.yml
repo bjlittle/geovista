@@ -11,6 +11,7 @@ on:
       - ".github/scripts/breadcrumb.py"
       - ".github/scripts/check_status_references.py"
       - ".github/workflows/ci-spec-status.yml"
+      - "docs/src/_ext/geovista_citations.py"
       - "docs/src/developer/specs/**"
       - "tests/test_spec_conventions.py"
 

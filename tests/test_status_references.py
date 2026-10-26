@@ -20,6 +20,7 @@ import sys
 from typing import TYPE_CHECKING
 
 import pytest
+import yaml
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -311,8 +312,9 @@ def test_main_unexpected(script, capsys):
 def test_specifications(script):
     """Test the borrowed parser finds the references of the real specifications.
 
-    The script reads statuses with the grammar of ``test_spec_conventions.py``,
-    so a change there that it no longer follows fails here, without a network.
+    The script reads statuses with the parser of ``test_spec_conventions.py``,
+    and the grammar it shares, ``geovista_citations.py``, so a change to either
+    that it no longer follows fails here, without a network.
 
     """
     found = [
@@ -324,3 +326,36 @@ def test_specifications(script):
     assert (REPOSITORY, 2565, "pull") in {
         (reference.repository, reference.number, reference.role) for reference in found
     }
+
+
+def test_the_workflow_runs_when_anything_the_script_reads_changes(script):
+    """Test the workflow's paths filter names every file the script loads.
+
+    The script reads statuses through the conventions test, which reads them
+    through the citation grammar, so a pull request changing only the grammar
+    changes the check, and must run it.
+
+    """
+    root = SCRIPT.parents[2]
+    workflow = yaml.safe_load(
+        (root / ".github" / "workflows" / "ci-spec-status.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    # YAML 1.1 reads the bare key "on" as the boolean True
+    triggers = workflow.get("on", workflow.get(True))
+    filtered = set(triggers["pull_request"]["paths"])
+    loaded = {
+        SCRIPT,
+        SCRIPT.parent / "breadcrumb.py",
+        script.CONVENTIONS,
+        script.conventions.GRAMMAR,
+    }
+
+    missing = sorted(
+        path.relative_to(root).as_posix()
+        for path in loaded
+        if path.relative_to(root).as_posix() not in filtered
+    )
+
+    assert not missing, f"ci-spec-status.yml does not run when these change: {missing}"
