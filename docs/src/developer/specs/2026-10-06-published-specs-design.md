@@ -369,9 +369,9 @@ carry the evidence.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Publication, the `§` form, and `tests/test_spec_conventions.py` | ✅ landed (2026-10-07, {pull}`2573`) |
-| 2 | Citation cross-reference transform | not started ({issue}`2566`) |
+| 2 | Citation cross-reference transform | ✅ landed (2026-10-26, {pull}`2738`) |
 | 3 | Citation integrity hook | ✅ landed (2026-10-07, {pull}`2573`) |
-| 4 | Rendered-output gate | not started ({issue}`2566`) |
+| 4 | Rendered-output gate | ✅ landed (2026-10-26, {pull}`2738`) |
 | 5 | GitHub reference roles and hardcoded-link detection | candidate |
 
 `candidate` and `not started` are different states, which is why
