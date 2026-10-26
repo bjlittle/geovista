@@ -23,8 +23,9 @@
 `geovista` holds its repository to a number of rules that no third-party tool knows about.
 A test that renders must carry the `image` marker. A page a reader reads start to finish
 must open with a reading-time banner. No `mypy` override may relax strict mode beyond the
-three the type coverage specification gives reasons for. Each rule is enforced by a test or
-a script, and several allow an exception, declared in a list beside the check:
+three the type coverage specification gives reasons for. When this specification was
+written there were eight such rules, each enforced by a test or a script, and several
+allowed an exception, declared in a list beside the check:
 
 | check | enforced by | where an exception goes |
 |---|---|---|
@@ -53,6 +54,12 @@ in their own docstrings, in `AGENTS.md`, or nowhere a contributor would look.
 This specification gives every one of them a section on a single page, and makes every
 failure point at its section.
 
+The table above is where the design started, and is not kept current. The
+{ref}`repository checks page <gv-developer-checks>` is the inventory, and the gate of
+{ref}`§3.4 <checks-spec-3-4>` fails whenever a check has no section there, so a new check
+needs no change here. The first added since is dependency ceilings, in
+`tests/test_dependency_ceilings.py` ({pull}`2729`).
+
 (checks-spec-2)=
 ## 2. Decisions
 
@@ -71,9 +78,10 @@ failure point at its section.
   a contributor's branch is compared against.
 - **The page is written by hand, and a gate keeps it honest.** Generating the table from
   the checks would need a Sphinx extension reading test modules, which is more machinery
-  than nine rows justify. See {ref}`§5 <checks-spec-5>`.
+  than the nine rows it began with justify. See {ref}`§5 <checks-spec-5>`.
 - **The gate is a check too.** A contributor who adds or removes a check and fails the gate
-  has just failed a check, so the gate has a name and a section of its own, making nine.
+  has just failed a check, so the gate has a name and a section of its own, which made
+  nine when it landed.
 - **Existing write-ups stay where they are.** The image marker, reading-time and changelog
   quality assurance sections of the developer guide are linked from the new page, not
   moved, so links to them keep working.
@@ -120,10 +128,10 @@ CHECK = "image-marker"
 
 The name is lower case words joined by hyphens, and is the stem of the section's labels,
 `gv-developer-checks-<name>` and `tippy-gv-developer-checks-<name>`, following the labels
-of the rest of the developer guide. One module enforces one check, which is how all eight
-are written today, and only the module that enforces a check declares its name. A module
-that tests a check's script, such as `tests/test_status_references.py`, declares none. The
-gate of {ref}`§3.4 <checks-spec-3-4>` is named `repository-checks`.
+of the rest of the developer guide. One module enforces one check, as each of the eight
+of {ref}`§1 <checks-spec-1>` does, and only the module that enforces a check declares its
+name. A module that tests a check's script, such as `tests/test_status_references.py`,
+declares none. The gate of {ref}`§3.4 <checks-spec-3-4>` is named `repository-checks`.
 
 (checks-spec-3-3)=
 ### 3.3 The Breadcrumb
@@ -201,8 +209,8 @@ a breadcrumb reaches a failure the tool reports itself.
   {user}`bjlittle` chose one page, with the groups inside it.
 - **A generated table.** A Sphinx extension could read every `CHECK` and build the table,
   so it could not go stale. It would need to import or parse test modules during the
-  build, and it would only save the work of nine rows. The gate gives the same guarantee
-  for less.
+  build, and it would only save the work of the nine rows it began with. The gate gives
+  the same guarantee for less.
 - **A breadcrumb in every assertion message.** It works without a hook, but the checks
   hold 192 assertions between them, every new one would need it, and nothing would
   notice one without it.
