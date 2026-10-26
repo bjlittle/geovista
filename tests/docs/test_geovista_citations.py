@@ -17,7 +17,7 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -25,7 +25,9 @@ if TYPE_CHECKING:
     from types import ModuleType
 
 #: The grammar, beside the extensions that will import it.
-GRAMMAR = Path(__file__).parents[2] / "docs" / "src" / "_ext" / "geovista_citations.py"
+GRAMMAR = (
+    Path(__file__).parents[2] / "docs" / "src" / "_ext" / "geovista_citations.py"
+).resolve()
 
 #: The section sign, built rather than written: see the module docstring.
 SECTION = "\N{SECTION SIGN}"
@@ -39,7 +41,11 @@ DEMO = "(demo-spec-1)=\n## 1. Purpose\n\n(demo-spec-2)=\n## 2. Design\n"
 
 @pytest.fixture(scope="module")
 def citations() -> ModuleType:
-    """Load the grammar by path, registered first, as a build would import it.
+    """Load the grammar by path, or reuse the copy already registered from it.
+
+    A build imports the grammar by name, and so finds whichever copy is
+    registered. Loading it again would make a second, whose dataclasses never
+    equal the first's, so a copy registered from the same file is reused.
 
     Returns
     -------
@@ -47,6 +53,9 @@ def citations() -> ModuleType:
         The loaded module.
 
     """
+    registered = sys.modules.get("geovista_citations")
+    if registered is not None and Path(registered.__file__).resolve() == GRAMMAR:
+        return registered
     spec = importlib.util.spec_from_file_location("geovista_citations", GRAMMAR)
     module = importlib.util.module_from_spec(spec)
     # registered before it is executed, as "dataclass" resolves the annotations
@@ -58,12 +67,31 @@ def citations() -> ModuleType:
     return module
 
 
-def demo(tmp_path: Path, body: str, citations: ModuleType) -> tuple[Path, object]:
+def demo(tmp_path: Path, body: str, citations: ModuleType) -> tuple[Path, Any]:
     """Write a specification declaring the ``demo spec`` prefix, and read it."""
     path = tmp_path / "2026-01-01-demo-design.md"
     banner = f"- **Citation prefix:** `demo spec {SECTION}{ELLIPSIS}`\n\n"
     path.write_text(banner + body, encoding="utf-8")
     return path, citations.namespace([path])
+
+
+def test_the_grammar_is_one_module_however_it_is_loaded(citations, monkeypatch):
+    """The conventions test, this fixture and a build's import share one module.
+
+    A second load by path would be a second copy, whose dataclasses never equal
+    the first's, and a plain import would return whichever registered last.
+    """
+    path = Path(__file__).parents[1] / "test_spec_conventions.py"
+    spec = importlib.util.spec_from_file_location("conventions_under_test", path)
+    conventions = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = conventions
+    spec.loader.exec_module(conventions)
+    monkeypatch.syspath_prepend(str(GRAMMAR.parent))
+    imported = importlib.import_module("geovista_citations")
+
+    assert conventions.citations is citations
+    assert imported is citations
+    assert conventions.Citation("x", None) == citations.Citation("x", None)
 
 
 def test_the_default_roots_are_this_repository(citations):

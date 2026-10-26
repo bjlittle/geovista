@@ -62,7 +62,14 @@ GRAMMAR = REPO / "docs" / "src" / "_ext" / "geovista_citations.py"
 
 
 def _load(path: Path) -> ModuleType:
-    """Load the grammar, registered first, as its dataclasses look it up by name."""
+    """Load the grammar, registered first, as its dataclasses look it up by name.
+
+    A copy already registered from the same file is reused, since a second load
+    would be a second module, whose dataclasses never equal the first's.
+    """
+    registered = sys.modules.get("geovista_citations")
+    if registered is not None and Path(registered.__file__).resolve() == path.resolve():
+        return registered
     spec = importlib.util.spec_from_file_location("geovista_citations", path)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module

@@ -146,12 +146,12 @@ that fail any `warningiserror=True` build for reasons of the harness alone.
 They are typed, so a generated `conf.py` can carry `suppress_warnings = ["app"]`
 to be rid of them; the intersphinx inventory failure has no type and so cannot.
 
-⚠️ **Register a path-loaded module in `sys.modules` before `exec_module`.**
-`spec_from_file_location` does not, and a `@dataclass` under `from __future__
-import annotations` resolves annotations through `sys.modules[cls.__module__]` —
-so it raises `AttributeError: 'NoneType' object has no attribute '__dict__'` at
-class creation. `docs/src/_ext` is not an importable package, so this is the only
-way its modules reach a test.
+⚠️ **Register a path-loaded module in `sys.modules` before `exec_module`**, as a
+`@dataclass` under `from __future__ import annotations` resolves through it, else
+`AttributeError: 'NoneType' object has no attribute '__dict__'`. `docs/src/_ext` is no
+package, so this is how its modules reach a test. ⚠️ **But reuse a copy already
+registered from the same file**: each load is a new module, whose dataclasses never
+equal the last's, and an import by name gets whichever registered last (#2736).
 
 ⚠️ **The default `html-noplot` build has no carousel.** `plot_gallery=False`
 leaves `geovista_carousel` nothing to render, so its tests skip. Only
