@@ -409,7 +409,7 @@ today.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | One grammar: `docs/src/_ext/geovista_citations.py`, imported by the conventions test | not started ({issue}`2566`) |
+| 1 | One grammar: `docs/src/_ext/geovista_citations.py`, imported by the conventions test | ✅ landed (2026-10-26, {pull}`2735`) |
 | 2 | The transform and the output check, which land together; the ceiling test retires | not started ({issue}`2566`) |
 | 3 | The renumber guard, its fix, its nightly audit, and the rules for items and rows | not started ({issue}`2566`) |
 | 4 | Collapsing the roles; the agreement assertion retires; the changelog guidelines | not started ({issue}`2566`) |
