@@ -1,0 +1,6 @@
+The citation grammar that ``tests/test_spec_conventions.py`` reads the
+repository with now lives in ``docs/src/_ext/geovista_citations.py``, so the
+documentation build and the renumber guard of the citation links design can
+share the one definition. Its own tests moved with it, to
+``tests/docs/test_geovista_citations.py``. Nothing it checks has changed.
+(:user:`claude`)

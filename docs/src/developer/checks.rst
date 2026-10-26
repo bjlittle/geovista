@@ -257,7 +257,9 @@ tests and documentation, so a reader following a citation has to land on the
 section it means.
 
 **What enforces it:** :bash:`tests/test_spec_conventions.py`, which reads every
-file in the repository as text, in every run of the unit tests.
+file in the repository as text, in every run of the unit tests. It reads them with
+the citation grammar of :bash:`docs/src/_ext/geovista_citations.py`, which the
+documentation build is to share.
 
 **When it fails:** The message names the file, line and citation or heading at
 fault.
