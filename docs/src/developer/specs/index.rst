@@ -26,6 +26,8 @@ of different documents.
       - Document
     * - ``checks spec §…``
       - :doc:`2026-10-23-repository-checks-design`
+    * - ``citation spec §…``
+      - :doc:`2026-10-26-citation-links-design`
     * - ``crs spec §…``
       - :doc:`2026-10-23-globe-first-crs-design`
     * - ``docs spec §…``
@@ -89,4 +91,5 @@ work has moved past, such as an **Open** item whose issue has closed.
     2026-10-08-planar-zlevel-design
     2026-10-23-globe-first-crs-design
     2026-10-23-repository-checks-design
+    2026-10-26-citation-links-design
     2026-10-26-globe-heights-layers-design

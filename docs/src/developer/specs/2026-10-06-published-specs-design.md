@@ -360,12 +360,18 @@ carry the evidence.
 (docs-spec-4)=
 ## 4. Roadmap
 
+> **Extended by a child specification.** Rows 2 to 4 are designed and built by
+> [`2026-10-26-citation-links-design.md`](2026-10-26-citation-links-design.md),
+> `citation spec §…`, which also adds a guard against renumbering a section without
+> updating its citations. Row 3 is the conventions test of row 1, already in place, so
+> it is marked landed with it.
+
 | # | Scope | Status |
 |---|---|---|
 | 1 | Publication, the `§` form, and `tests/test_spec_conventions.py` | ✅ landed (2026-10-07, {pull}`2573`) |
-| 2 | Citation cross-reference transform | candidate |
-| 3 | Citation integrity hook | candidate |
-| 4 | Rendered-output gate | candidate |
+| 2 | Citation cross-reference transform | not started ({issue}`2566`) |
+| 3 | Citation integrity hook | ✅ landed (2026-10-07, {pull}`2573`) |
+| 4 | Rendered-output gate | not started ({issue}`2566`) |
 | 5 | GitHub reference roles and hardcoded-link detection | candidate |
 
 `candidate` and `not started` are different states, which is why
