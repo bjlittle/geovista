@@ -131,15 +131,18 @@ tidy a marker that has stopped mattering.
 states two things a reader cannot infer from any single document. First, that **these are
 living documents**, so what they read is current and a divergence from the code is a
 specification defect worth reporting. Second, that **the citation namespace has members**,
-with the prefix naming which:
+with the prefix naming which. The index's table lists every prefix in use, and
+{ref}`§3.5 <docs-spec-3-5>` holds it complete. When this specification was written there
+were two:
 
 | citation | document |
 |---|---|
 | `docs spec §…` | this document |
 | `typing spec §…` | `2026-10-06-type-coverage-design.md` |
 
-Each specification declares its own prefix in its header banner, as both of these do. A new
-specification chooses one unique across the collection and states it there.
+Each specification declares its own prefix in its header banner. A new specification
+chooses one unique across the collection, states it there, and adds it to the index's
+table.
 
 The prefix is load-bearing rather than decorative. `sphinx` labels are global, so
 `docs-spec-3-2` and `typing-spec-3-2` are distinct anchors naming unrelated sections, and a
@@ -190,8 +193,9 @@ slug, `docutils` disambiguates the second to `id1`, and that silently becomes `i
 moment a heading is inserted above it. Anchors derived from prose are unstable under
 exactly the edits a living document invites.
 
-Both specifications satisfy it, and change 1 of {ref}`§4 <docs-spec-4>` added the
-assertion, so the next document is governed rather than merely well written.
+Both specifications of the time satisfied it, and change 1 of {ref}`§4 <docs-spec-4>`
+added the assertion, so every document since has been governed rather than merely well
+written.
 
 (docs-spec-3-4)=
 ### 3.4 Cross-References Inside a Specification
@@ -471,8 +475,8 @@ that was taken from one that was dropped.
 1. **Open** (owned by row 2 of {ref}`§4 <docs-spec-4>`) — **The `{ref}` agreement
    assertion assumes the display text is the section number.**
    `` {ref}`§3.1 <typing-spec-3-1>` `` is the only form in use, and a role displaying a
-   section's title instead would fail the check while being correct. Both specifications
-   write it the one way today. If a second form becomes wanted, the assertion widens; it is
+   section's title instead would fail the check while being correct. Every specification
+   writes it the one way today, as the assertion itself requires. If a second form becomes wanted, the assertion widens; it is
    not widened in advance for a form nobody has asked for. Row 2 owns it because the
    transform retires the roles, and this assertion with them.
 2. **Open** (owned by rows 2 to 4 of {ref}`§4 <docs-spec-4>`) — **The threshold of
