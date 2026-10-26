@@ -9,6 +9,12 @@
 > specification that gets corrected. Read it as current; the roadmap states what has
 > actually landed.
 
+> **To be retired.** The globe, heights and layers design
+> ([`2026-10-26-globe-heights-layers-design.md`](2026-10-26-globe-heights-layers-design.md))
+> replaces `zlevel` and `zscale` with heights in metres and layers in an order. This
+> specification stays current until row 5 of {ref}`globe spec §9 <globe-spec-9>` lands, and
+> is then retired.
+
 - **Date:** 2026-10-08 (originated; maintained since)
 - **Status:** living design specification
 - **Citation prefix:** `zlevel spec §…`

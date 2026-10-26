@@ -1,0 +1,496 @@
+# geovista Globe, Heights and Layers — Design Specification
+
+```{readingtime}
+```
+
+> **Living document.** This specification is maintained alongside the code, not archived
+> behind it. It states how `geovista` places data at a height, and how it keeps one layer
+> of a scene from hiding another, and where the two ever diverge it is the specification
+> that gets corrected. Read it as current; the roadmap states what has actually landed.
+
+- **Date:** 2026-10-26 (originated; maintained since)
+- **Status:** living design specification
+- **Citation prefix:** `globe spec §…`
+- **Scope:** the globe model of a scene, units, heights and depths in physical units, the
+  vertical exaggeration, and the layering of surfaces and lines, which together replace
+  `zlevel` and `zscale`
+- **Parent spec:** the globe-first CRS design
+  ([`2026-10-23-globe-first-crs-design.md`](2026-10-23-globe-first-crs-design.md)). This
+  extends {ref}`crs spec §4.1 <crs-spec-4-1>` and {ref}`crs spec §4.9 <crs-spec-4-9>`,
+  and brings forward from {ref}`crs spec §9 <crs-spec-9>` the heights in physical units
+  and the replacement of `zlevel` that it gave to the design of region solids and the
+  vertical. It inherits that specification's decisions ({ref}`crs spec §2 <crs-spec-2>`)
+  and testing ({ref}`crs spec §6 <crs-spec-6>`) unchanged
+- **Sibling spec:** the planar z-levels design
+  ([`2026-10-08-planar-zlevel-design.md`](2026-10-08-planar-zlevel-design.md)), whose rule
+  this specification replaces when row 5 of {ref}`§9 <globe-spec-9>` lands
+- **Prior art:** the vertical coordinates of the CF conventions, and the vertical CRSs of
+  EPSG and PROJ; VTK's resolution of coincident topology, which is OpenGL's polygon offset
+- **Published:** in the specifications index
+
+(globe-spec-1)=
+## 1. Purpose
+
+A `zlevel` does two jobs that pull against each other. It lifts a surface off the textured
+base layer so the two do not fight on screen, and it lifts coastlines so they are not buried
+in the surface. It is also the only way to give anything a height, so a plume, a cloud
+layer or an ocean depth goes through the same number, scaled by a `zscale` that has no unit.
+{user}`bjlittle` introduced both to get layered surfaces to render, and calls the result a
+hack at best.
+
+That was a fair first step, and this is the time to replace it. Scientists using
+`geovista` now look at volumes with real vertical extent, such as the volcanic ash and
+sulphur dioxide plumes of `bjlittle/geovista-jav-2026`. They need to warp a surface by its
+terrain, place a cloud or a plume at its true height above that terrain, exaggerate the
+vertical so the structure can be seen, and show the viewer a vertical scale that tells the
+truth about that exaggeration. None of that can be done rigorously while a height is a
+fraction of whatever radius a mesh happens to have.
+
+This specification separates the two jobs. A height becomes data in metres. Layering
+becomes a matter of display, owned by the scene, and never moves data.
+
+(globe-spec-2)=
+## 2. Decisions
+
+These were decided with {user}`bjlittle` while the design was written.
+
+1. **Height and layering are separate concerns, and never mixed.** A height is physics. A
+   layer's order is display. Nothing done to stop two layers fighting may move data, or
+   reach a projected coordinate.
+2. **This work comes forward.** The parent specification gave heights in physical units,
+   and what replaces `zlevel`, to the later design of region solids and the vertical. They
+   are core, and are designed here, as row 2 of the parent's roadmap. Volumes, plumes as
+   solids, and a floor and ceiling stay with that later design.
+3. **Heights and depths arrive computed.** Turning model levels into heights, as from the
+   hybrid height of the Unified Model and LFRic and the orography beneath it, is done
+   upstream, by Iris or `xarray`. `geovista` owns the reference, the units and the
+   rendering. It may offer the conversion later, once this design has matured.
+4. **One globe per scene.** A scene has one Earth radius, one render scale and one vertical
+   exaggeration, and every layer takes its geometry from them, as
+   {ref}`crs spec §4.1 <crs-spec-4-1>` requires.
+5. **`zlevel` and `zscale` are removed.** It is a breaking change, which
+   {ref}`crs spec §2 <crs-spec-2>` decision 4 allows. Physical stacking becomes heights, and
+   display stacking becomes the order of layers.
+6. **The evidence travels with the design.** The measurements that shaped it, the layering
+   spike above all, are recorded here with their method, environment and date, so that a
+   later reader can see why the design took the form it did, and repeat the measurement.
+
+(globe-spec-3)=
+## 3. What Exists Today
+
+(globe-spec-3-1)=
+### 3.1 Three Jobs in One Number
+
+Across the package, `zlevel` and `zscale` and the constants behind them appear in some 500
+lines, and in 11 of the gallery's examples, which use them in three different ways:
+
+- **Stacking order.** The cloud examples place layer `i` at `(i + 1) * ZLEVEL_FACTOR`, and
+  the H3 example stacks its layers at levels 60, 10, 5 and 1. These are not heights.
+- **Keeping layers apart.** On the globe the base layer sits at `zlevel=-1` with
+  `BASE_ZLEVEL_SCALE` of 10⁻³, a data surface at 0, and coastlines at 1 with `ZLEVEL_SCALE`
+  of 10⁻⁴. Several examples say so, as "force zlevel alignment of coastlines and base
+  layer".
+- **A real depth squeezed in.** The ORCA2 point cloud example passes its depths in metres
+  as a negative `zlevel`, with a `zscale` of its own.
+
+(globe-spec-3-2)=
+### 3.2 One Level, Two Heights
+
+Measured on 2026-10-26 at `7ca628c1`, a mesh of radius 6,371,000 with `zlevel=10`, on the
+globe and in Robinson:
+
+| | data mesh | coastlines | the same mesh at `zlevel=10` |
+|---|---|---|---|
+| globe | radius 6,371,000 | radius 1.0001, inside the mesh | 6,371 m above it |
+| Robinson | z = 0 | z = 1,913 m | z = 6,378 m |
+
+On the globe a level is a fraction of the mesh's own radius; in a projection it is a
+fraction of the WGS84 semi-major axis ({ref}`zlevel spec §3.1 <zlevel-spec-3-1>`). So the
+same level is two different heights, and the coastlines' display offset becomes a rise of
+1.9 km on the map, while on the globe they stay at radius 1, hidden inside an Earth-sized
+mesh.
+
+(globe-spec-3-3)=
+### 3.3 Physics Rebuilt by Hand
+
+The two applications of `bjlittle/geovista-jav-2026` each rebuild the vertical for
+themselves:
+
+- **Reykjanes** divides each altitude by its own Earth radius of 6,371,000 m, where
+  `geovista` projects with 6,378,137 m, and derives a `zscale` from the ratio of its
+  horizontal and vertical cell sizes. It then prints "Vertical Scale Factor: x…" on the
+  screen as text.
+- **Raikoke** does the same in feet, with an Earth radius in feet and its own unit
+  conversions. Its flight levels are pressure altitudes in hundreds of feet, which it treats
+  as geometric heights. To report the height of a picked cell it counts the cell's index in
+  the grid, because the geometry no longer carries the height.
+
+(globe-spec-3-4)=
+### 3.4 Vertical Coordinates in the Wild
+
+The samples that `geovista.pantry` serves, and those of `bjlittle/geovista-jav-2026`:
+
+| source | vertical coordinate | what it is |
+|---|---|---|
+| NAME, Reykjanes | `altitude`, m, `positive: up` | above mean sea level |
+| NEMO, ORCA2 | `deptht`, m, `positive: down`, labelled `model_level_number` | model levels at known depths below the sea surface |
+| LFRic orography | `surface_altitude`, m | the terrain itself |
+| LFRic winds | `full_levels` and `half_levels`, bare | model levels, with no heights in the file |
+| QVA, Raikoke | `flight_level` | pressure altitude in hundreds of feet |
+
+Earth science measures height from several zeros. The usual one for model output is mean
+sea level, which is strictly the geoid: CF's `altitude`, and EPSG's gravity-related
+heights such as EGM96 height (EPSG:5773) and Ordnance Datum Newlyn (EPSG:5701). Satellite
+and GNSS data measure from the ellipsoid instead, as EPSG:4979 does, and the two differ by
+the geoid's undulation, from about −106 m to +85 m. Height above the ground, depth below
+the surface, and pressure are zeros of their own. A CRS can carry its vertical datum,
+through a vertical, compound or 3D geographic CRS, and CF names it through standard names.
+
+PROJ converts an ellipsoidal height to an EGM96 height with the grid
+`us_nga_egm96_15.tif`, to 1 m. Without the grid it falls back to a ballpark operation that
+applies no correction, the same quiet trap that {issue}`2714` found for horizontal datums.
+
+The Unified Model and LFRic, whose output `geovista` mostly shows, take sea level as the
+surface of their own spherical Earth, of radius 6,371,229 m, as `geovista` takes the surface
+of its sphere.
+
+(globe-spec-3-5)=
+### 3.5 Measured: Layers on the Globe and on the Map
+
+A throwaway spike measured, pixel by pixel, how each way of layering keeps a data surface
+above the base layer, and coastlines above both.
+
+**Method.** Measured on 2026-10-26 at `92142211`, with VTK 9.7.0, `pyvista` 0.49.1 and
+Mesa 26.2.5, on two renderers: an NVIDIA GeForce RTX 4060 Laptop GPU through D3D12 in WSLg,
+and llvmpipe (LLVM 23.1.3). The base layer was the C96 cubed sphere that `add_base_layer`
+builds, in flat red; the data surface flat blue, as the C48 LFRic sample, a 1° grid and a
+5° grid; the 10m coastlines flat green, two pixels wide. Lighting was off, at 800 × 800.
+Bleed is the share of the surface's pixels where red shows. Coastline visibility counts
+the green pixels within two of an ideal, where the lines are hidden only by a sphere 0.1%
+smaller, and leak counts green outside it. The globe was seen whole, from 20 radii, close
+over the United Kingdom, at a grazing angle to the limb, and from twelve points of an
+orbit; the Robinson map flat, zoomed and tilted. Every case ran at radius 1 and at
+6,378,137.
+
+**Why the globe differs from the map.** On the map every layer lies in one plane, so the
+layers truly coincide. On the globe they do not: each mesh is flat between its vertices,
+so the middle of each cell sits below the sphere its vertices lie on. That sag grows with
+the square of a cell's size:
+
+| mesh | sag of a cell's centre, as a fraction of the radius | at 6,378,137 m |
+|---|---|---|
+| C96 | 6.7 × 10⁻⁵ | 427 m |
+| 1° grid | 7.6 × 10⁻⁵ | 486 m |
+| C48 | 2.7 × 10⁻⁴ | 1,707 m |
+| 5° grid | 1.9 × 10⁻³ | 12,124 m |
+| 10m coastlines, per segment | 9.3 × 10⁻⁶ | 60 m |
+
+A finer base layer is closer to the sphere, so it pokes up through the middle of each cell
+of a coarser surface laid over it, as {user}`bjlittle` had seen in practice. Today's offset
+of 10⁻³ covers C48, and fails for anything coarser. C48 is about the coarsest LFRic mesh
+seen in practice, but rectilinear grids and meshes users build can be coarser still.
+
+**Results**, as the worst case over every view, bleed and coastline visibility, on the GPU,
+with llvmpipe within a few points throughout:
+
+| layering | C48 | 1° grid | 5° grid | Robinson, all three |
+|---|---|---|---|---|
+| today's offsets | 0% / 76% | 0% / 63% | 65% / 75% | ≤ 0.3% / 88% |
+| none, every layer at one radius | 100% / 45% | 80% / 44% | 100% / 36% | ≤ 52% / 82% |
+| depth bias, 1024 units | 0.08% / 82% | 0% / 83% | 0.77% / 69% | ≤ 0.3% / 100% |
+| the hybrid | 0.003% / 84% | not run | 0% / 74% | not run |
+
+- **Today's offsets** fail the 5° grid in every view, with the base layer showing through 29
+  to 65% of it.
+- **Depth bias**, VTK's polygon offset in its constant form, clears every close and orbiting
+  view. On the map, at 64 units or more, it shows every coastline, and its bleed of 0.3% for
+  C48 is that of every layering, today's included, so is not the layers fighting. On the
+  globe it leaves a sliver at the grazing limb for a coarse mesh, which a stronger bias does
+  not remove.
+- **Its slope-scaled form** does not move that sliver, and buries the coastlines, which fall
+  to between 5% and 40% visible.
+- **VTK's z-buffer shift** is no better than no layering at all.
+- **The hybrid** lowers the base layer by 1.1 times the measured sag of the coarsest
+  surface above it, in render units, and gives the lines a depth bias of 4 units. It shows
+  no bleed in any view, the limb included, on both renderers. A bias of 256 on the lines
+  alone, with the surface no longer pulled forward too, leaked up to 11,000 pixels of the
+  far side's coastlines over the horizon; 0 to 4 units leaked at most 2.
+- **The radius makes no difference.** Every case measured the same at radius 1 and at
+  6,378,137, which is evidence for {ref}`crs spec §8 <crs-spec-8>` item 3.
+
+Coastline visibility reached 100% in the close and orbiting views for both depth bias and
+the hybrid. The shortfall in the table is at the limb, where the ideal over-counts: its
+smaller occluding sphere uncovers lines just beyond the true horizon.
+
+**Two things to know about the measurement.** Its first run modelled today's base layer
+at 10⁻⁴ below the data rather than 10⁻³, and so showed today failing C48 as well. The
+error was caught against `GeoPlotter` itself before any conclusion was drawn, and every
+figure above is from the corrected run. And WSL's D3D12 driver aborts after some 300
+plotters in one process, so each block of the measurement ran in a process of its own.
+
+(globe-spec-4)=
+## 4. Design
+
+(globe-spec-4-1)=
+### 4.1 The Globe
+
+A scene's globe holds three quantities, and nothing else in the scene holds them:
+
+- **the radius**, the physical radius of the Earth, a length, by default the WGS84
+  semi-major axis of 6,378,137 m, as {ref}`crs spec §4.1 <crs-spec-4-1>` sets;
+- **the render radius**, the radius the globe is drawn at, by default 1, so that a scene
+  renders as it does today. The scale between the two is the render radius over the
+  radius;
+- **the exaggeration**, one factor for the vertical of the whole scene, by default 1, the
+  true scale.
+
+`GeoPlotter` takes a globe, and every layer it adds takes its radius from it, the base
+layer, coastlines and graticule included. A globe is immutable. Changing the exaggeration
+of a scene replaces its globe, and the scene rebuilds every position from the heights its
+layers carry ({ref}`§4.4 <globe-spec-4-4>`).
+
+The render radius stays 1 by default. {ref}`§3.5 <globe-spec-3-5>` found layering to behave
+the same at the Earth's radius, which bears on {ref}`crs spec §8 <crs-spec-8>` item 3, but
+picking, the camera's clipping planes and interaction at that scale are not yet measured.
+
+(globe-spec-4-2)=
+### 4.2 Units
+
+A length or an angle crosses the API boundary in one of three forms, as
+{ref}`crs spec §4.9 <crs-spec-4-9>` sets, and `geovista.units` converts each, once, to
+metres or to degrees:
+
+1. a plain number, in metres for a length and degrees for an angle;
+2. a `pint` quantity, from any registry, read by its magnitude and the long form of its
+   units, `str(quantity.units)`. Measured with `pint-cf` 0.2.1, the short form of a nautical
+   mile, `nmi`, reads as a nano international mile, so the short form is never used;
+3. a magnitude with a CF unit string, such as `"km"` or `"degrees_north"`, parsed by the
+   registry of `pint-cf`.
+
+An angle must have angular units. `pint` counts an angle as dimensionless, so a
+dimensionless quantity is refused as an angle rather than read as radians. Anything that is
+not the dimension asked for, such as a pressure given as a height, is refused with its unit
+named.
+
+`geovista` depends on `pint` and on `pint-cf` as it stands, both on PyPI and conda-forge,
+behind `geovista.units`, so that replacing `pint-cf` would touch one module. That answers
+{ref}`crs spec §8 <crs-spec-8>` item 11.
+
+(globe-spec-4-3)=
+### 4.3 Heights Are Data
+
+A mesh carries the height of each point, in metres above mean sea level, as a point array.
+A depth is a negative height, and may be given as a depth, positive downward, which is
+negated once at the boundary. A mesh given no height is at sea level.
+
+Heights are given where a mesh is built and where it is added to a scene: to the bridge's
+`Transform` constructors and to `GeoPlotter.add_mesh` and `add_points`, as an array, a
+scalar, or a length quantity, in any of the forms of {ref}`§4.2 <globe-spec-4-2>`.
+A height belongs to a point. A height given for each cell is refused, rather than averaged
+onto the points, since the average is not a value the data holds.
+
+Mean sea level is the one reference. On `geovista`'s sphere it is the surface of the
+sphere, which is how the models whose output it shows treat it too
+({ref}`§3.4 <globe-spec-3-4>`). A height declared against another zero is refused, never
+mixed: a CRS whose vertical axis is an ellipsoidal height, as a 3D geographic CRS has, or a
+compound CRS whose vertical datum is not gravity-related. PROJ names the vertical axis of
+the one "Ellipsoidal height" and of the other "Gravity-related height". Converting such
+heights through PROJ, with the geoid grid it needs, is a later step
+({ref}`§7 <globe-spec-7>`).
+
+Heights that are not finite are refused.
+
+(globe-spec-4-4)=
+### 4.4 Positions Come From Heights
+
+The scene turns heights into positions, with its globe's radius `R`, scale `s` and
+exaggeration `E`:
+
+- on the globe, a point at height `h` is drawn at radius `s (R + E h)`;
+- in a projection, at `z = E h`, converted to the length unit of the CRS's horizontal axes.
+  Where those axes are angular, as in a geographic CRS drawn flat, a height becomes the
+  angle it subtends at the radius `R`, in the CRS's angular unit, as
+  {ref}`zlevel spec §3.1 <zlevel-spec-3-1>` already does for a level.
+
+A mesh is always positioned for some globe. The bridge's constructors and `transform_mesh`
+take a globe, `Globe()` by default, in place of today's `radius`, and the mesh records the
+globe it was positioned for. A scene whose globe differs repositions the mesh from its
+heights when it is added.
+
+Because the heights stay as data, a point's height is read back from the data, not from
+its position: a picked point reports the height it was given, and changing `E` rebuilds the
+positions from the same heights. The scene can report `R`, `s` and `E`, so a vertical scale
+shown to the viewer can be exact ({ref}`§9 <globe-spec-9>`, row 6).
+
+A coarse cell is still flat between its vertices, so its middle is drawn below the height
+its vertices carry, by its sag ({ref}`§3.5 <globe-spec-3-5>`): 1.7 km at the centre of a C48
+cell at true scale. That is a property of the mesh, not of its heights. Refining a mesh for
+display reduces it, and stays an explicit opt-in
+({ref}`crs spec §2 <crs-spec-2>`, decision 8).
+
+(globe-spec-4-5)=
+### 4.5 Layers
+
+Each layer of a scene has a place in an order: the base layer at the bottom, then data
+surfaces in the order they are added unless given an order of their own, then lines such as
+coastlines and the graticule, then labels. The order says which layer shows where two
+coincide. It never changes a height.
+
+**On the globe**, the hybrid of {ref}`§3.5 <globe-spec-3-5>`:
+
+- the base layer is drawn lowered, in render units only, by 1.1 times the largest sag of
+  the surfaces above it, so their cells' middles stay above it. A cell's sag is how far the
+  mean of its vertices falls short of their mean radius, as a fraction of that radius, as
+  {ref}`§3.5 <globe-spec-3-5>` measured it;
+- lines are drawn at their true heights, with a depth bias of 4 units towards the viewer,
+  which covers their own sag of 9.3 × 10⁻⁶ without pulling the far side over the horizon.
+
+Data surfaces are never moved. Two data surfaces at the same height on different meshes
+fall back on their order and a depth bias, each 256 units nearer the viewer than the one
+below it, which can leave the sliver at the limb that {ref}`§3.5 <globe-spec-3-5>` measured
+for depth bias alone.
+
+**On a projected map**, where every layer at one height lies in one plane, layers are kept
+apart by depth bias alone, each 256 units nearer the viewer than the one below it, well
+above the 64 that cleared every view measured. Nothing is offset in `z`.
+
+VTK switches its polygon offset on for the whole process, and keeps the offsets themselves
+on each mapper. `geovista` switches it on, so a plain `pyvista` plot in the same process
+renders with VTK's default offsets, which pull its lines 4 units towards the viewer, and its
+surfaces none.
+
+The base layer's lowering is a display offset, so it is recorded with the scene, and never
+reaches a coordinate a user reads back.
+
+(globe-spec-4-6)=
+### 4.6 What Goes
+
+When row 5 of {ref}`§9 <globe-spec-9>` lands:
+
+| today | becomes |
+|---|---|
+| `zlevel` on `add_mesh`, `add_points`, the bridge and the built-in layers | `height` or `depth` for a physical height, or a layer's order for display |
+| `zscale` | the globe's exaggeration |
+| `ZLEVEL_SCALE`, `BASE_ZLEVEL_SCALE`, `ZTRANSFORM_FACTOR` | removed |
+| `GV_POINT_ZLEVEL`, `GV_FIELD_ZSCALE` | a point array of heights in metres |
+| `resize(..., zlevel=..., zscale=...)` | a height, or a globe's render radius |
+
+The gallery's 11 examples that use a level move to heights or to an order, each as its
+purpose in {ref}`§3.1 <globe-spec-3-1>` says. The planar z-levels specification is then
+retired, with a note at its head that this specification replaced it, and why.
+
+(globe-spec-5)=
+## 5. Alternatives Considered
+
+- **Keep `zlevel`, scaled consistently.** Rejected. It mends the inconsistency of
+  {ref}`§3.2 <globe-spec-3-2>`, but leaves height and display in one number, and leaves a
+  plume's height a fraction of a radius.
+- **A fixed geometric offset, as today.** Rejected. No fixed offset clears every resolution,
+  and today's fails a 5° grid ({ref}`§3.5 <globe-spec-3-5>`).
+- **Depth bias alone, on the globe.** Rejected. It leaves a sliver at the limb for a coarse
+  mesh, and a stronger bias does not remove it.
+- **Depth bias scaled by slope.** Rejected. It does not remove the sliver, and buries the
+  coastlines.
+- **VTK's z-buffer shift.** Rejected, as no better than no layering at all.
+- **A renderer of its own for each layer, with depth buffers apart.** Not measured, and
+  rejected: it orders whole layers, so a volume such as a plume could not pass behind the
+  globe's far side, nor in front of part of a surface and behind the rest.
+- **Lowering every surface, data included, by the sag above it.** Rejected, because it moves
+  data that may be visible, and a data surface's height is physics.
+- **Heights in the geometry, with the globe recorded beside them.** Rejected. Changing the
+  exaggeration would mean recovering heights from positions, which is the reconstruction
+  that Raikoke's picking has to do today ({ref}`§3.3 <globe-spec-3-3>`).
+- **Converting model levels to heights in `geovista` now.** Deferred, by decision 3.
+- **Converting ellipsoidal heights to mean sea level now.** Deferred. It needs a geoid grid,
+  and without one PROJ falls back silently ({ref}`§3.4 <globe-spec-3-4>`), so refusing is the
+  rigorous step until the conversion is designed.
+
+(globe-spec-6)=
+## 6. Testing
+
+Every result is checked against a reference independent of `geovista`, as
+{ref}`crs spec §6 <crs-spec-6>` requires:
+
+- **heights**: a point given a height in feet, kilometres or metres, through any registry
+  or a CF unit string, reads back the same height in metres, exactly; and is drawn at
+  `s (R + E h)` on the globe and `E h` in the CRS's unit on a map, by the formula;
+- **exaggeration**: changing it moves every point by the formula and leaves every height
+  read back unchanged;
+- **refusal**: an ellipsoidal height, a pressure given as a height, a height for each cell,
+  a dimensionless angle and a height that is not finite each raise, naming the problem;
+- **layering**: the measures of {ref}`§3.5 <globe-spec-3-5>` become tests, on whichever
+  renderer CI provides: no bleed, and every coastline of the close and orbiting views
+  visible, for C48 and a 5° grid on the globe, and for C48 on Robinson;
+- **the radius**: each of the above holds at radius 1 and at the Earth's radius.
+
+The layering tests render, so they carry the `image` marker, though they compare pixel
+classes rather than a baseline image.
+
+(globe-spec-7)=
+## 7. Scope
+
+In scope: the globe model on the scene, units, heights and depths above or below mean sea
+level, the exaggeration, layering on the globe and on a map, and the removal of `zlevel` and
+`zscale`.
+
+Out of scope, recorded so they are not forgotten:
+
+- turning model levels into heights, by decision 3;
+- pressure, flight levels and other vertical coordinates that are not lengths;
+- ellipsoidal heights and other vertical datums, converted through PROJ with a geoid grid;
+- height above the ground as a reference, which upstream turns into height above sea level;
+- volumes, plumes as solids, and a floor and a ceiling, which stay with the design of region
+  solids and the vertical ({ref}`crs spec §9 <crs-spec-9>`), along with {issue}`15`;
+- the true shape of the ellipsoid ({ref}`crs spec §9 <crs-spec-9>`).
+
+(globe-spec-8)=
+## 8. Open Items
+
+Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
+
+1. **Open** — **The vertical scale shown to the viewer.** Its form, a ruler beside the globe
+   or a scale bar on the map, and how it marks the exaggeration. Row 6 of
+   {ref}`§9 <globe-spec-9>` owns it.
+2. **Open** — **A warped base layer.** The base layer is lowered by the sag of the surfaces
+   above it. When it is terrain, warped by its own heights, that lowering moves terrain
+   that may be visible where no surface covers it. Whether to lower it only beneath the
+   surfaces, or accept the offset and record it, needs measuring with the LFRic orography.
+3. **Open** — **Data surfaces at one height on different meshes.** They fall back on order
+   and depth bias, which leaves a sliver at the limb for a coarse mesh. Whether that is ever
+   seen in practice, and what to do if it is.
+4. **Open** — **The physical render radius.** {ref}`§3.5 <globe-spec-3-5>` found layering the
+   same at the Earth's radius. Picking, clipping planes and interaction at that scale are
+   not yet measured, before the default could change.
+5. **Open** — **The ideal of the coastline measure.** It over-counts at the limb, so the
+   limb's visibility is understated. A tighter ideal would let the limb be tested too.
+
+(globe-spec-9)=
+## 9. Roadmap
+
+| # | Scope | Status |
+|---|---|---|
+| 1 | Units: `geovista.units`, with `pint` and `pint-cf` | not started |
+| 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, and every built-in layer at its radius | not started |
+| 3 | Heights as data: `height` and `depth`, the exaggeration, positions on the globe and on a map, refusals | not started |
+| 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, and the measures of §3.5 as tests | not started |
+| 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | not started |
+| 6 | A vertical scale for the viewer | candidate: a scene with heights that a scientist shows |
+
+Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`. Rows 1 to 5 come in order, and each
+is planned once the rows before it have landed. Row 4 needs a renderer in CI, which the
+image tests already have. Row 5 is breaking, and carries a `breaking` fragment beside its
+own. Row 2 of the parent's roadmap lands with row 5 here.
+
+(globe-spec-10)=
+## 10. References
+
+- {issue}`15`, {pull}`2294` and {issue}`1029`, earlier work on a vertical dimension
+- {issue}`2588`, the planar z-level inconsistency, and {pull}`2591`, which fixed it
+- `bjlittle/geovista-jav-2026`, the Reykjanes and Raikoke applications
+- the CF standard names for vertical coordinates, `altitude`, `height`, `depth`,
+  `height_above_mean_sea_level` and `height_above_reference_ellipsoid`:
+  <https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html>
+- VTK's coincident topology, `vtkMapper.SetResolveCoincidentTopologyToPolygonOffset` and the
+  relative offset parameters of each mapper:
+  <https://vtk.org/doc/nightly/html/classvtkMapper.html>
+- `pint`: <https://github.com/hgrecco/pint>, and `pint-cf`: <https://github.com/pgamez/pint-cf>

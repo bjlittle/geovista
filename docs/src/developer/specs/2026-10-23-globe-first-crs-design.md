@@ -201,6 +201,11 @@ body, such as Mars, fails because PROJ will not transform between bodies.
 (crs-spec-4-1)=
 ### 4.1 The Globe Model
 
+> **Extended by a child specification.** The globe of a scene, heights and depths in
+> physical units, the vertical exaggeration, and the layering that replaces `zlevel` and
+> `zscale` are specified in [`2026-10-26-globe-heights-layers-design.md`](2026-10-26-globe-heights-layers-design.md), `globe spec §…`, which inherits this document's
+> decisions (§2) and testing (§6) unchanged.
+
 Each scene has one globe model, and every layer takes its geometry from it: data meshes,
 coastlines, graticule, base layer, and later regions and region solids. Nothing assumes a
 radius of 1.
@@ -212,13 +217,14 @@ The model carries:
 - the scale between physical units and the units the scene is rendered in, so a scene can
   be rendered at a normalised radius of 1 while every height and tolerance stays physical
   ({ref}`§8 <crs-spec-8>`, item 3);
-- an explicit vertical exaggeration, applied once by the scene, for project 4
-  ({ref}`§9 <crs-spec-9>`) to build on.
+- an explicit vertical exaggeration, applied once by the scene
+  ({ref}`globe spec §4.4 <globe-spec-4-4>`).
 
 Every tolerance in the engine is relative to the radius or expressed as an angle, so a
-result is the same at radius 1 and at the Earth's radius. The `zlevel` and `zscale` of
-{ref}`zlevel spec §3.1 <zlevel-spec-3-1>` stay as they are in this design. Heights in
-physical units, and what replaces `zlevel`, belong to project 4.
+result is the same at radius 1 and at the Earth's radius. Heights in physical units, and
+what replaces the `zlevel` and `zscale` of {ref}`zlevel spec §3.1 <zlevel-spec-3-1>`, were
+first given to the design of region solids and the vertical, and came forward into
+{ref}`globe spec §4 <globe-spec-4>`.
 
 (crs-spec-4-2)=
 ### 4.2 The Cutting Engine
@@ -498,6 +504,10 @@ it takes the 2 m operation with the warning of item 3.
 (crs-spec-4-9)=
 ### 4.9 Units
 
+> **Extended by a child specification.** [`2026-10-26-globe-heights-layers-design.md`](2026-10-26-globe-heights-layers-design.md) settles how `geovista.units` reads each
+> form ({ref}`globe spec §4.2 <globe-spec-4-2>`), and adds heights and depths to the
+> quantities with a unit.
+
 Every physical quantity that crosses the API boundary has a unit. In the foundation these
 are the globe's radius ({ref}`§4.1 <crs-spec-4-1>`), the densification tolerance, a
 length or an angle ({ref}`§4.2 <crs-spec-4-2>`), and the angles of domain options, such
@@ -670,9 +680,10 @@ Out of scope, each as a design of its own, in this order:
 2. **Region solids and the vertical.** A floor and a ceiling, volume meshes, and plumes,
    with Manifold through `pyvista-manifold`, and with gmsh through `scikit-gmsh` for
    tessellation and layered volumes as an optional extra, since both are GPLv3 where
-   `geovista` is BSD-3. Heights in physical units with a vertical CRS, replacing
-   `zlevel`, and the work of {issue}`15`, {pull}`2294`, {issue}`1029` and
-   `bjlittle/geovista-jav-2026`. It builds on the globe model.
+   `geovista` is BSD-3. Vertical datums other than mean sea level, and the work of
+   {issue}`15`, {pull}`2294`, {issue}`1029` and `bjlittle/geovista-jav-2026`. Heights in
+   physical units, and the replacement of `zlevel`, came forward into
+   {ref}`globe spec §4 <globe-spec-4>`. It builds on the globe model.
 3. **Features without `cartopy`.** A Natural Earth reader for coastlines, borders, rivers,
    land and ocean, after which `cartopy` is dropped. It builds on densification.
 4. **The rest of `cartopy` parity**: gridline labels along a domain's edge, web map tiles,
@@ -692,7 +703,7 @@ The CRS work of this design closes {issue}`140`, {issue}`1402`, {issue}`2674` an
 | # | Scope | Status |
 |---|---|---|
 | 1 | The coverage test of {ref}`§6 <crs-spec-6>`, recording today's outcomes | ✅ landed (2026-10-26, {pull}`2721`) |
-| 2 | The globe model, and units through `pint` and `pint-cf` | not started |
+| 2 | The globe model, units, heights and layers, by rows 1 to 5 of {ref}`globe spec §9 <globe-spec-9>` | not started |
 | 3 | The cutting engine: rotate, clip, cut a seam, densify, with the account of each | not started |
 | 4 | The domain registry, and class 0 on the engine, replacing today's seam and transform path with no change to the 91 methods that work | not started |
 | 5 | The CRS interface: `geovista` classes, domain options, and `cartopy` objects read without importing it | not started |
