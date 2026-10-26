@@ -111,7 +111,9 @@ def outdated(docs, environment, added=frozenset(), changed=frozenset()) -> set[s
 def document(docs, *children: object, docname: str = "probe") -> object:
     """Return as much of a parsed document as the transform reads."""
     doc = docs.new_document(f"{docname}.md")
-    doc.settings.env = types.SimpleNamespace(docname=docname)
+    doc.settings.env = types.SimpleNamespace(
+        docname=docname, note_dependency=lambda _path: None
+    )
     doc.extend(children)
     return doc
 
@@ -300,6 +302,29 @@ def test_a_citation_in_a_table_caption_is_not_reported(docs, warned):
 
 
 @pytest.mark.usefixtures("registry")
+@pytest.mark.parametrize("anchored", [True, False])
+def test_every_document_depends_on_the_transform_and_its_grammar(
+    docs, tmp_path, anchored
+):
+    """A change to either's code must re-read every page, as the registry's does.
+
+    The fingerprint covers the anchors, not the code that reads with them, so a
+    change to the grammar would otherwise leave every cached doctree stale.
+    """
+    docs.cx._build_registry(app(SRC if anchored else tmp_path))
+    noted: list[str] = []
+    doc = document(docs, docs.nodes.paragraph("", "", docs.nodes.Text(TITLED)))
+    doc.settings.env.note_dependency = noted.append
+
+    rewrite(docs, doc)
+
+    assert {Path(path).name for path in noted} == {
+        "geovista_citation_xrefs.py",
+        "geovista_citations.py",
+    }
+
+
+@pytest.mark.usefixtures("registry")
 def test_the_registry_is_built_from_the_specifications_on_disk(docs):
     """Nothing declares the prefixes: the anchors in the tree are the registry."""
     docs.cx._build_registry(app(SRC))
@@ -411,12 +436,33 @@ SPECS = {
 MODULE = '"""A module citing alpha spec {s}1."""\n'
 
 
-@pytest.mark.usefixtures("docs")
-def test_a_build_links_citations_in_a_page_and_a_docstring(tmp_path):
-    """End to end, in parallel: the registry survives the fork, and every link lands."""
+def build(src: Path, out: Path) -> tuple[Path, str]:
+    """Build ``src`` in parallel, as Read the Docs does, returning HTML and warnings."""
     from sphinx.application import Sphinx  # noqa: PLC0415
     from sphinx.util.docutils import docutils_namespace  # noqa: PLC0415
 
+    warning = io.StringIO()
+    with pytest.MonkeyPatch.context() as patch, docutils_namespace():
+        patch.syspath_prepend(str(src))
+        patch.syspath_prepend(str(EXT))
+        app_ = Sphinx(
+            str(src),
+            str(src),
+            str(out / "html"),
+            str(out / "doctrees"),
+            "html",
+            status=None,
+            warning=warning,
+            parallel=2,
+        )
+        app_.build()
+
+    return out / "html", warning.getvalue()
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_links_citations_in_a_page_and_a_docstring(tmp_path):
+    """End to end, in parallel: the registry survives the fork, and every link lands."""
     src = tmp_path / "src"
     (src / "developer" / "specs").mkdir(parents=True)
     (src / "conf.py").write_text(CONF, encoding="utf-8")
@@ -434,30 +480,15 @@ def test_a_build_links_citations_in_a_page_and_a_docstring(tmp_path):
     )
     (src / "api.rst").write_text("API\n===\n\n.. automodule:: cited\n")
 
-    warning = io.StringIO()
-    with pytest.MonkeyPatch.context() as patch, docutils_namespace():
-        patch.syspath_prepend(str(src))
-        patch.syspath_prepend(str(EXT))
-        app_ = Sphinx(
-            str(src),
-            str(src),
-            str(tmp_path / "html"),
-            str(tmp_path / "doctrees"),
-            "html",
-            status=None,
-            warning=warning,
-            parallel=2,
-        )
-        app_.build()
+    html, warning = build(src, tmp_path)
 
-    html = tmp_path / "html"
     page = (html / "page.html").read_text(encoding="utf-8")
     api = (html / "api.html").read_text(encoding="utf-8")
     beta = (html / "developer/specs/2026-01-02-beta-design.html").read_text(
         encoding="utf-8"
     )
 
-    assert warning.getvalue() == ""
+    assert warning == ""
     assert 'beta-design.html#beta-spec-1"' in page
     words = ("alpha", "spec", f"{SECTION}1")
     literal = " ".join(f'<span class="pre">{word}</span>' for word in words)
@@ -465,3 +496,23 @@ def test_a_build_links_citations_in_a_page_and_a_docstring(tmp_path):
     assert 'alpha-design.html#alpha-spec-1"' in api
     assert '#beta-spec-1"' in beta
     assert 'alpha-design.html#alpha-spec-1"' in beta
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_warns_of_a_citation_naming_no_anchor(tmp_path):
+    """A citation of a section that does not exist fails a build run as CI runs it."""
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    name = "2026-01-01-alpha-design.md"
+    (src / "developer" / "specs" / name).write_text(
+        SPECS[name].format(s=SECTION), encoding="utf-8"
+    )
+    toctree = "   page\n   developer/specs/2026-01-01-alpha-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(f"Page\n====\n\nSee alpha spec {SECTION}9.\n")
+
+    _, warning = build(src, tmp_path)
+
+    assert "undefined label" in warning
+    assert "alpha-spec-9" in warning

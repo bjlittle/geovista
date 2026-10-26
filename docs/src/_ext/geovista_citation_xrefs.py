@@ -84,6 +84,10 @@ class CitationTransform(SphinxTransform):
 
     def apply(self, **kwargs: object) -> None:  # noqa: ARG002
         """Rewrite every eligible text node in the document."""
+        # what a page links depends on this code and the grammar's, neither a
+        # source sphinx watches, so an edit to either must re-read every page
+        self.env.note_dependency(__file__)
+        self.env.note_dependency(geovista_citations.__file__)
         if PATTERN is None:
             return
         owner = OWNERS.get(self.env.docname)
