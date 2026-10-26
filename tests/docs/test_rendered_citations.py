@@ -32,6 +32,8 @@ import re
 from typing import TYPE_CHECKING
 from urllib.parse import unquote, urlsplit
 
+import pytest
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -75,11 +77,13 @@ SHOWN = 4
 
 
 #: Elements that sit inside a run of text rather than end it, so a citation split
-#: by one, as ``§<strong>1</strong>``, is still read whole.
+#: by one, as ``§<strong>1</strong>``, is still read whole. ``wbr`` is an invisible
+#: break point, so it is one too; ``br`` is a visible line break, and a citation
+#: never wraps, so it ends the run like a block.
 INLINE = frozenset(
     {"a", "abbr", "b", "bdi", "bdo", "cite", "code", "data", "del", "dfn", "em", "i"}
     | {"ins", "kbd", "mark", "q", "s", "samp", "small", "span", "strong", "sub"}
-    | {"sup", "time", "u", "var"}
+    | {"sup", "time", "u", "var", "wbr"}
 )
 
 
@@ -368,6 +372,14 @@ def test_a_citation_split_by_inline_markup_is_still_read():
 
     assert found.bare == [(f"{SECTION}3.2", "")]
     assert found.linked == [(f"{SECTION}4", "x.html#typing-spec-4")]
+
+
+@pytest.mark.parametrize("wbr", ["<wbr>", "<wbr/>"])
+def test_a_word_break_opportunity_does_not_split_a_citation(wbr):
+    """An invisible break point, in either spelling, sits inside the run of text."""
+    found = scan(f"<p>typing spec {SECTION}{wbr}3.2</p><p>{SECTION}{wbr}</p><p>4</p>")
+
+    assert found.bare == [(f"{SECTION}3.2", "")]
 
 
 def test_a_citation_is_never_joined_across_a_block():
