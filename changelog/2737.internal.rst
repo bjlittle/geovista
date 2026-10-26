@@ -1,0 +1,4 @@
+The citation grammar in ``docs/src/_ext/geovista_citations.py`` is now loaded
+once however it is reached, by the conventions test, its own tests or an import
+by name, instead of as a separate copy each time, whose objects never compared
+equal to the others'. (:user:`claude`)
