@@ -12,10 +12,9 @@ One directory per `geovista` module — `bridge/`, `cache/`, `cli/`, `common/`,
 and the root `conftest.py` of shared fixtures. Two directories are not modules: `docs/`
 tests the built documentation, and `plotting/` holds the image comparisons — gallery
 examples in `test_examples.py`, per-module plots under `geodesic/`, `geoplotter/` and
-`transform/`, baselines fetched into `unit_image_cache/` (git-ignored). Most other
-root `test_*.py` are repository checks (`docs/src/developer/checks.rst`); one,
-`test_readme_examples.py`, runs every `python` block of `README.md` as an `image`
-test, so a PR that changes the public API updates the README in the same PR.
+`transform/`, baselines fetched into `unit_image_cache/` (git-ignored). Most root
+`test_*.py` are repository checks; `test_readme_examples.py` runs `README.md`'s
+`python` blocks, so a PR changing the public API updates the README too.
 
 ## Running Tests
 
@@ -28,11 +27,11 @@ pytest tests/core/             # direct; also -m "not image", -k "test_slice_cel
 
 The pixi tasks run from the repo root; pytest reads `pyproject.toml` either way.
 
-⚠️ **`tests-unit`, `tests-docs-browser` and `ci-tests*.yml` use `pytest-xdist`**;
-plain `pytest` stays serial.
-An *empty* cache is the hazard, so use `geovista.cache.Decompress`, never pooch's.
-Import-time setup (`tests/plotting/__init__.py`) runs in every worker at once, so make
-its side effects atomic. Probe with an empty `GEOVISTA_CACHEDIR`; race behind a barrier.
+⚠️ **`tests-unit`, `tests-docs-browser` and `ci-tests*.yml` use `pytest-xdist`**; plain
+`pytest` stays serial. An *empty* cache is the hazard, so use
+`geovista.cache.Decompress`, never pooch's. Import-time setup
+(`tests/plotting/__init__.py`) runs in every worker at once, so make its side effects
+atomic. Probe with an empty `GEOVISTA_CACHEDIR`; race behind a barrier.
 
 ## Configuration
 
@@ -96,11 +95,10 @@ tag that does not exist yet fails the whole suite at collection, not just the im
 tests. `registry.txt` is **hand-maintained**: grouped by blank lines and only
 roughly sorted, so edit the affected lines in place. Never rewrite or re-sort it.
 
-⚠️ **Never hand-edit `version.txt` in `geovista-data`, nor tag it.** On merge to
-`main` its `ci-release.yml` sets `YYYY.MM` from the date with serial `0`, or bumps
-the serial if `version.txt` already has this month, so a manual bump lands one
-serial past the one you wanted. Predict the tag from the date and `main`, then
-bake that into `DATA_VERSION`.
+⚠️ **Never hand-edit `version.txt` in `geovista-data`, nor tag it.** On merge to `main`
+its `ci-release.yml` sets `YYYY.MM` from the date with serial `0`, or bumps the serial
+if `version.txt` already has this month, so a manual bump lands one serial past the one
+you wanted. Predict the tag from the date and `main`, then bake it into `DATA_VERSION`.
 
 ### Documentation Tests
 
@@ -122,25 +120,24 @@ marker, so the sphinx configuration tests share that CI job and guard. ⚠️ Bu
 *existing* build satisfies the guard however stale, so a plain `pytest` audits
 whatever was last built — rebuild before believing a `tests/docs` result.
 
-⚠️ **A source-tree policy gate has nothing to skip on, and must not acquire
-one.** `test_readingtime_coverage.py`, `test_python_support.py`,
-`test_dependency_ceilings.py` and `test_spec_conventions.py` read the tree as
-*text*, needing no sphinx, build nor
+⚠️ **A source-tree policy gate has nothing to skip on, and must not acquire one.**
+`test_readingtime_coverage.py`, `test_python_support.py`, `test_dependency_ceilings.py`
+and `test_spec_conventions.py` read the tree as *text*, needing no sphinx, build nor
 browser, and *derive* what they govern rather than list it, so a new page, `pyXYZ`
-feature or spec is covered the day it lands and an exemption carries its reason.
-Guard such a gate on nothing: a skip retires the rule in silence. A gate reading
-its own source builds its counterexamples, as `SECTION = "\N{SECTION SIGN}"` does.
-The `reading` fixture comes from `tests/docs/conftest.py`. ⚠️ A new gate declares
-`CHECK = "<name>"` and gets a row and section in `docs/src/developer/checks.rst`.
+feature or spec is covered the day it lands and an exemption carries its reason. Guard
+such a gate on nothing: a skip retires the rule in silence. A gate reading its own
+source builds its counterexamples, as `SECTION = "\N{SECTION SIGN}"` does. The `reading`
+fixture comes from `tests/docs/conftest.py`. ⚠️ A new gate declares `CHECK = "<name>"`
+and gets a row and section in `docs/src/developer/checks.rst`.
 
-⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** CI installs
-every prerequisite and builds the gallery deliberately; without the option, a
-regression that stops the carousel being generated skips its three tests and the
-job still passes, having silently lost the coverage it exists to provide. The
-option turns each unmet prerequisite into a failure, and the second `strict`
-argument of the pixi task passes it. Note that pytest honours `pytest_addoption`
-only in the test-root `tests/conftest.py`, so that is where it is registered —
-not in `tests/docs/`, which consumes it.
+⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** CI installs every
+prerequisite and builds the gallery deliberately; without the option, a regression that
+stops the carousel being generated skips its three tests and the job still passes,
+having silently lost the coverage it exists to provide. The option turns each unmet
+prerequisite into a failure, and the second `strict` argument of the pixi task passes
+it. Note that pytest honours `pytest_addoption` only in the test-root
+`tests/conftest.py`, so that is where it is registered — not in `tests/docs/`, which
+consumes it.
 
 ⚠️ **Only the first `Sphinx` application in a process builds cleanly.** docutils
 registers nodes, directives and roles in a *global* registry, so every later
@@ -186,9 +183,9 @@ anchor's own bounding rect is just its text: hit-test with `elementFromPoint`,
 never compare rectangles. A carousel hangs cards past its own edge, so assert
 that some card lies wholly inside the clipping rect, or the test is vacuous.
 
-⚠️ **Parse built HTML, never pattern-match it.** Quoting, attribute order and
-`rel` arity are the author's choice and invisible in the page, so a regex gate
-is one an extension walks past unseen (#2559). Use `html.parser.HTMLParser`.
+⚠️ **Parse HTML and Markdown, never pattern-match them.** Quoting, attribute order and
+containers vanish once rendered, so a regex gate is walked past unseen (#2559, #2759):
+use `html.parser.HTMLParser`, and `markdown_it.MarkdownIt("commonmark")` for Markdown.
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
@@ -199,4 +196,4 @@ is one an extension walks past unseen (#2559). Use `html.parser.HTMLParser`.
 
 ---
 
-**Last Updated**: 24 October 2026
+**Last Updated**: 27 October 2026

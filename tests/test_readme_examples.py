@@ -10,11 +10,13 @@ PyPI, so its examples are the first ``geovista`` code most users copy, and
 nothing else runs them. One imported a sample that did not exist until #782
 reported it.
 
-Every fenced ``python`` or ``py`` block of ``README.md`` is an example. Each runs
-as a script of its own, in a fresh namespace, off screen, with the pantry's data
-from the cache, and fails its test if it raises or warns. A test's id is the
-example's number and the heading above it, and a traceback names the line of
-``README.md`` that raised. Each renders, so each is marked ``image``.
+Every fenced ``python`` or ``py`` block of ``README.md`` is an example, read as
+CommonMark with ``markdown-it-py``, so a block in a quote or a list counts too,
+with the code a reader sees. Each runs as a script of its own, in a fresh
+namespace, off screen, with the pantry's data from the cache, and fails its test
+if it raises or warns. A test's id is the example's number and the heading above
+it, and a traceback names the line of ``README.md`` that raised. Each renders, so
+each is marked ``image``.
 
 """
 
@@ -23,8 +25,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import re
-import textwrap
 
+from markdown_it import MarkdownIt
 import pytest
 import pyvista as pv
 
@@ -35,13 +37,7 @@ README = Path(__file__).parents[1] / "README.md"
 """The README whose examples are run."""
 
 LANGUAGES: frozenset[str] = frozenset({"py", "python"})
-"""The info strings of a fenced block that make it an example."""
-
-FENCE = re.compile(r"^(?P<indent> {0,3})(?P<fence>`{3,}|~{3,})\s*(?P<info>\S*)")
-"""The opening of a fenced block, as CommonMark has it."""
-
-HEADING = re.compile(r"^ {0,3}#{1,6}\s+(?P<text>.+?)(?:\s+#+)?\s*$")
-"""An ATX heading, outside a fenced block."""
+"""The languages of a fenced block that make it an example."""
 
 
 @dataclass(frozen=True)
@@ -58,7 +54,7 @@ class Example:
     """The heading above the block."""
 
     source: str
-    """The block's code."""
+    """The block's code, as a reader of the rendered README sees it."""
 
     @property
     def id(self) -> str:
@@ -73,44 +69,38 @@ def examples(text: str) -> list[Example]:
     Parameters
     ----------
     text : str
-        The README, as Markdown.
+        The README, as CommonMark.
 
     Returns
     -------
     list of Example
-        Each fenced ``python`` or ``py`` block, in order. A heading is read only
-        outside a fenced block, so a comment in code is never taken for one, and
-        a block never closed runs to the end of the README, as CommonMark has it.
+        Each fenced ``python`` or ``py`` block, in order, wherever it sits. A
+        comment in code is never taken for a heading, and a block never closed
+        runs to the end of the README, as CommonMark has it.
 
     """
-    # each block as its info string, first line of code, heading and lines.
-    blocks: list[tuple[str, int, str, list[str]]] = []
-    heading = fence = ""
-    for number, line in enumerate(text.splitlines(), start=1):
-        if not fence:
-            if match := FENCE.match(line):
-                fence = match["fence"]
-                blocks.append((match["info"].lower(), number + 1, heading, []))
-            elif match := HEADING.match(line):
-                heading = match["text"]
-            continue
-        closing = line.strip()
-        if closing.startswith(fence) and set(closing) == {fence[0]}:
-            fence = ""
-        else:
-            blocks[-1][3].append(line)
-    python = [block for block in blocks if block[0] in LANGUAGES]
-    return [
-        Example(number, start, above, textwrap.dedent("\n".join(lines)))
-        for number, (_, start, above, lines) in enumerate(python, start=1)
-    ]
+    result: list[Example] = []
+    heading = ""
+    tokens = MarkdownIt("commonmark").parse(text)
+    for index, token in enumerate(tokens):
+        if token.type == "heading_open":
+            # a heading's text is the inline token that follows it.
+            heading = tokens[index + 1].content
+        elif token.type == "fence" and token.map:
+            words = token.info.split()
+            if words and words[0].lower() in LANGUAGES:
+                # the map holds the line of the opening fence, from 0.
+                line = token.map[0] + 2
+                result.append(Example(len(result) + 1, line, heading, token.content))
+    return result
 
 
 def run(example: Example, path: Path = README) -> None:
     """Run an example as a script of its own.
 
     The code is compiled as the lines of `path` it was read from, so a traceback
-    names the line of the README that raised.
+    names the line of the README that raised, and inherits none of this module's
+    ``__future__`` imports.
 
     Parameters
     ----------
@@ -120,7 +110,8 @@ def run(example: Example, path: Path = README) -> None:
         The file the example was read from.
 
     """
-    code = compile("\n" * (example.line - 1) + example.source, str(path), "exec")
+    source = "\n" * (example.line - 1) + example.source
+    code = compile(source, str(path), "exec", dont_inherit=True)
     # running the README's own code is the point of the check.
     exec(code, {"__name__": "__main__"})  # noqa: S102
 
@@ -154,19 +145,19 @@ def test_a_comment_in_code_is_no_heading():
 def test_only_python_blocks_are_examples():
     """A ``shell`` block is no example, while a ``py`` block is one."""
     text = "```shell\nls\n```\n\n```py\nx = 1\n```\n\n~~~python\ny = 2\n~~~\n"
-    assert [e.source for e in examples(text)] == ["x = 1", "y = 2"]
+    assert [e.source for e in examples(text)] == ["x = 1\n", "y = 2\n"]
 
 
 def test_a_longer_fence_holds_a_shorter_one():
     """A block opened by four backticks runs on past a line of three."""
     text = "````python\nx = '''\n```\n'''\n````\n"
-    assert [e.source for e in examples(text)] == ["x = '''\n```\n'''"]
+    assert [e.source for e in examples(text)] == ["x = '''\n```\n'''\n"]
 
 
 def test_an_unclosed_block_runs_to_the_end():
     """A block never closed is an example to the end, as CommonMark has it."""
     text = "```python\nx = 1\n```\n\n```python\ny = 2\n"
-    assert [e.source for e in examples(text)] == ["x = 1", "y = 2"]
+    assert [e.source for e in examples(text)] == ["x = 1\n", "y = 2\n"]
 
 
 def test_an_example_records_its_line_and_id():
@@ -175,6 +166,32 @@ def test_an_example_records_its_line_and_id():
     (example,) = examples(text)
     assert example.line == 6
     assert example.id == "1-lfric-cube-sphere"
+
+
+def test_an_example_inherits_no_future_import():
+    """An example compiles as its own script, without this module's imports.
+
+    This module imports ``annotations`` from ``__future__``, which would turn the
+    example's annotation into a string.
+    """
+    source = 'def f(x: int):\n    pass\n\nassert f.__annotations__["x"] is int\n'
+    run(Example(1, 1, "", source))
+
+
+def test_code_keeps_the_indentation_markdown_shows():
+    """Only the indentation of the opening fence is removed from the code."""
+    text = "```python\n    x = 1\n```\n"
+    assert [e.source for e in examples(text)] == ["    x = 1\n"]
+    text = "   ```python\nx = 1\n   y = 2\n   ```\n"
+    assert [e.source for e in examples(text)] == ["x = 1\ny = 2\n"]
+
+
+def test_a_block_in_a_quote_or_a_list_is_an_example():
+    """A block inside a quote or a list item is an example, at its own line."""
+    text = "> ```python\n> x = 1\n> ```\n\n- item\n\n  ```python\n  y = 2\n  ```\n"
+    found = examples(text)
+    assert [e.source for e in found] == ["x = 1\n", "y = 2\n"]
+    assert [e.line for e in found] == [2, 8]
 
 
 def test_a_traceback_names_the_readme_line(tmp_path):

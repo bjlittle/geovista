@@ -1,4 +1,5 @@
 codecov <2.2
+markdown-it-py <4.3
 playwright <1.65
 pytest <9.2
 pytest-cov <7.2

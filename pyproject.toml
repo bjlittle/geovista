@@ -691,6 +691,8 @@ python = "3.14.*"
 
 [tool.pixi.feature.test.dependencies]
 codecov = ">=2.1.13,<3"
+# required by "tests/test_readme_examples.py", which reads the readme as commonmark
+markdown-it-py = ">=3.0.0,<5"
 pytest = ">=8.4.0,<10"
 pytest-cov = ">=6.1.1,<8"
 pytest-mock = ">=3.14.1,<4"
