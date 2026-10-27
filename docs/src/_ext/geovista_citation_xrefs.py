@@ -47,6 +47,8 @@ logger = logging.getLogger(__name__)
 SKIP = (
     nodes.literal,
     nodes.literal_block,
+    # a ">>>" example, which subclasses neither of the above
+    nodes.doctest_block,
     nodes.comment,
     nodes.raw,
     nodes.reference,
@@ -105,7 +107,7 @@ class CitationTransform(SphinxTransform):
                     "as a link to the section it names: the theme rebuilds the "
                     "page navigation from the headings, keeping the citation's "
                     "text and dropping its anchor. Cite the specification in the "
-                    "prose below the heading instead",
+                    "prose below the heading instead (citation spec §4.2)",
                     heading.astext(),
                     location=text,
                     type="geovista",
