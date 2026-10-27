@@ -104,7 +104,8 @@ of a sphere, by default `common.RADIUS`, which is 1:
 | `transform` | `transform_mesh`, and the private `_record_zlevels` |
 
 One gallery example passes `radius=`, as do 13 calls in 8 test modules, and 3 pages of the
-documentation.
+documentation. The example, `vector_data/wind_arrows_uvw`, passes `radius=1.1` to float its
+arrows above the surface, which is a lift, not a globe (globe spec §3.6).
 
 (scene-spec-3-2)=
 ### 3.2 The Radius on a Mesh
@@ -215,7 +216,8 @@ A mesh added to a scene whose globe differs from the one it records is drawn at 
 scene's globe, and the mesh drawn records the scene's globe. Every height is 0 until row 3
 of globe spec §9, so on the globe this is a scale by the ratio of the two render radii,
 and on a projected map it changes nothing. Row 3 makes it a rebuild from heights
-(globe spec §4.4).
+(globe spec §4.4). A mesh built at another render radius on purpose, to float above the
+surface, is repositioned too, so floating it is a lift (globe spec §4.5).
 
 `zlevel` and `zscale` stay until row 5 of globe spec §9, and offset a point from the render
 radius as they offset it from the radius today.
@@ -316,7 +318,9 @@ first mesh's field data (§3.3), and is outside `geovista`'s control. The docume
 | `gvRadius`, written | `gvGlobeRadius`, `gvGlobeRenderRadius`, `gvGlobeExaggerationAbove` and `gvGlobeExaggerationBelow`; `gvRadius` is read, and cleaned (§4.5) |
 | a radius given to each layer of a scene | `GeoPlotter(globe=...)` |
 
-The gallery example, the tests and the pages of §3.1 move to `globe=`.
+The tests and the pages of §3.1 move to `globe=`. The gallery example moves to a `zlevel`
+of 1,000, which floats its arrows the same 10% of the radius until row 5 of
+globe spec §9 replaces `zlevel` with the lift.
 
 (scene-spec-5)=
 ## 5. Alternatives Considered
