@@ -1,0 +1,4 @@
+Added ``geovista.units``, which reads a length or an angle given as a plain
+number, as a ``pint`` quantity from any registry, or with a CF unit string, and
+converts it to metres or degrees. ``pint`` and ``pint-cf`` are new
+dependencies. (:user:`claude`)

@@ -496,7 +496,7 @@ Each carries the status grammar of docs spec §3.6.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | Units: `geovista.units`, with `pint` and `pint-cf` | not started |
+| 1 | Units: `geovista.units`, with `pint` and `pint-cf` | ✅ landed (2026-10-27, {pull}`2754`) |
 | 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6 | not started |
 | 3 | Heights as data: `height` and `depth`, the exaggeration, positions on the globe and on a map, refusals | not started |
 | 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, and the measures of §3.5 as tests | not started |
