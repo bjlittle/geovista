@@ -170,6 +170,7 @@ logger = logging.getLogger("sphinx-geovista")
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "geovista_citation_xrefs",
     "intersphinx_resilience",
     "gallery_scenes",
     "numpydoc",

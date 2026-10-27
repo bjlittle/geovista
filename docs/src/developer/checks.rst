@@ -259,14 +259,15 @@ section it means.
 **What enforces it:** :bash:`tests/test_spec_conventions.py`, which reads every
 file in the repository as text, in every run of the unit tests. It reads them with
 the citation grammar of :bash:`docs/src/_ext/geovista_citations.py`, which the
-documentation build is to share.
+documentation build shares to link every citation it renders. The build's own
+output is checked by :bash:`tests/docs/test_rendered_citations.py`.
 
 **When it fails:** The message names the file, line and citation or heading at
 fault.
 
-**Declaring an exception:** None. Its ``CEILING`` is not an exception: it is the
-trigger of rows 2 to 4 of :ref:`docs spec §4 <docs-spec-4>`, and raising it is a
-change to that specification.
+**Declaring an exception:** None. Its ``NUMBERED_CEILING`` is not an exception:
+it is the trigger of row 5 of :ref:`citation spec §9 <citation-spec-9>`, and
+raising it is a change to that specification.
 
 **More:** :ref:`docs spec §3.5 <docs-spec-3-5>`.
 

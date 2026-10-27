@@ -1,0 +1,7 @@
+Citations of a design specification section are now links wherever the
+documentation renders them, in a page, a specification or the API reference.
+A build-time transform, ported from ``tephpy``, links each one from the plain
+text it is written as, and ``tests/docs/test_rendered_citations.py`` checks the
+built site for any citation left unlinked, or linked to an anchor that is not
+there. The ceiling on citations outside the specifications, which held this
+work back, retires. (:user:`claude`)
