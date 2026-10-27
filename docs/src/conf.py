@@ -445,6 +445,8 @@ nitpick_ignore_regex = [
     (r"py:.*", r"pv"),  # TBD: geovista.geoplotter, geovista.gridlines (lazy import)
     (r"py:class", r"numpy.typing.ArrayLike"),  # TBD: geovista.pantry.data (lazy import)
     (r"py:class", r"ArrayLike"),  # TBD: geovista.search (use of type)
+    (r"py:class", r"numpy.typing.NDArray"),  # TBD: geovista.units (use of type)
+    (r"py:class", r"np$"),  # TBD: geovista.units (lazy import)
     (r"py:mod", r"pyvistaqt"),  # no :mod:`pyvistaqt` inventory entry available
 ]
 
@@ -688,6 +690,7 @@ INTERSPHINX_URLS = {
     "geopy": "https://geopy.readthedocs.io/en/stable/",
     "matplotlib": "https://matplotlib.org/stable/",
     "numpy": "https://numpy.org/doc/stable/",
+    "pint": "https://pint.readthedocs.io/en/stable/",
     "platformdirs": "https://platformdirs.readthedocs.io/en/stable/",
     "pooch": "https://www.fatiando.org/pooch/latest/",
     "pyproj": "https://pyproj4.github.io/pyproj/stable/",

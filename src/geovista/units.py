@@ -6,11 +6,11 @@
 """Read lengths and angles, and convert them to metres and degrees.
 
 A length or an angle crosses the API boundary in one of three forms: a plain
-number, in metres or degrees; a :mod:`pint` quantity, from any registry; or a
+number, in metres or degrees; a ``pint`` quantity, from any registry; or a
 magnitude with a CF unit string, which ``pint-cf`` reads. Each is converted
 once, here, so everything else works on plain floats and NumPy arrays.
 
-Only this module imports :mod:`pint`, and only when a quantity or a unit string
+Only this module imports ``pint``, and only when a quantity or a unit string
 arrives, so a plain number never pays for it.
 
 Notes
@@ -40,7 +40,7 @@ __all__ = ["to_degrees", "to_metres"]
 
 @runtime_checkable
 class _Quantity(Protocol):
-    """A quantity from any :mod:`pint` registry, read by its attributes alone."""
+    """A quantity from any ``pint`` registry, read by its attributes alone."""
 
     magnitude: Any
     units: Any
@@ -87,7 +87,7 @@ def _quantity(value: object, units: str | None) -> tuple[pint.Quantity, str] | N
     Parameters
     ----------
     value : object
-        A number, an array or a :mod:`pint` quantity from any registry.
+        A number, an array or a ``pint`` quantity from any registry.
     units : str, optional
         A CF unit string, for a value that is not a quantity.
 
@@ -95,7 +95,7 @@ def _quantity(value: object, units: str | None) -> tuple[pint.Quantity, str] | N
     -------
     tuple of (pint.Quantity, str) or None
         The quantity, and its unit as it was given, to name it in a message.
-        ``None`` for a value with no units, without importing :mod:`pint`.
+        ``None`` for a value with no units, without importing ``pint``.
 
     Raises
     ------
@@ -178,7 +178,7 @@ def to_degrees(
     ----------
     value : float, ArrayLike or pint.Quantity
         The angle. A plain number or array is in degrees, unless `units` names
-        another unit. A :mod:`pint` quantity, from any registry, carries its
+        another unit. A ``pint`` quantity, from any registry, carries its
         own units. A masked element becomes NaN.
     units : str, optional
         A CF unit string for a plain `value`, such as ``"degrees_north"`` or
@@ -193,7 +193,7 @@ def to_degrees(
     ------
     ValueError
         If the units are not angular, cannot be read, or are given both on a
-        quantity and as `units`. :mod:`pint` counts an angle as dimensionless,
+        quantity and as `units`. ``pint`` counts an angle as dimensionless,
         so a dimensionless unit is refused, rather than read as radians.
 
     Notes
@@ -248,7 +248,7 @@ def to_metres(
     ----------
     value : float, ArrayLike or pint.Quantity
         The length. A plain number or array is in metres, unless `units` names
-        another unit. A :mod:`pint` quantity, from any registry, carries its
+        another unit. A ``pint`` quantity, from any registry, carries its
         own units. A masked element becomes NaN.
     units : str, optional
         A CF unit string for a plain `value`, such as ``"km"`` or ``"ft"``,
