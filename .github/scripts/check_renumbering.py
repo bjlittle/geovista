@@ -616,24 +616,72 @@ def _chain(root: Path, spec: Path, start: str, line: str) -> dict[str, Fate]:
 
     """
     relative = spec.relative_to(root).as_posix()
-    on_line = _ancestor(root, start, line)
-    fork = start if on_line else git(root, "merge-base", start, line).strip()
-    first = at(root, fork, spec)
-    if first is None:
+
+    def revisions(since: str, until: str) -> list[str | None]:
+        listed = git(
+            root,
+            "rev-list",
+            "--reverse",
+            "--first-parent",
+            f"{since}..{until}",
+            "--",
+            relative,
+        )
+        return [at(root, revision, spec) for revision in listed.split()]
+
+    if _ancestor(root, start, line):
+        first = at(root, start, spec)
+        if first is None:
+            return {}
+        return _follow(
+            first, [*revisions(start, line), spec.read_text(encoding="utf-8")]
+        )
+    # written on a branch off the line: translate its numbering back to where the
+    # branch forked, along the branch's own changes, then forward along the line's
+    fork = git(root, "merge-base", start, line).strip()
+    origin = at(root, fork, spec)
+    if origin is None:
         return {}
-    listed = git(
-        root,
-        "rev-list",
-        "--reverse",
-        "--first-parent",
-        f"{fork}..{line}",
-        "--",
-        relative,
-    )
-    texts = [at(root, revision, spec) for revision in listed.split()]
-    if on_line:
-        texts.append(spec.read_text(encoding="utf-8"))
-    origin = sections(first)
+    branch = _follow(origin, revisions(fork, start))
+    based = _follow(origin, revisions(fork, line))
+    fates: dict[str, Fate] = {}
+    for anchor, own in branch.items():
+        if own.anchor is None:
+            # the branch removed or rewrote it itself, which is the author's own
+            continue
+        later = based[anchor]
+        if later.anchor is None:
+            kind = "removed"
+        elif later.anchor in {anchor, own.anchor}:
+            # the line left it where it was, so the branch's own numbering
+            # stands, or moved it and the branch already numbers it so
+            kind = "kept"
+        else:
+            kind = "moved"
+        fates[own.anchor] = Fate(
+            kind, own.anchor if kind == "kept" else later.anchor, later.title
+        )
+    return fates
+
+
+def _follow(origin_text: str, texts: list[str | None]) -> dict[str, Fate]:
+    """Compose the pairings of a specification's successive versions.
+
+    Parameters
+    ----------
+    origin_text : str
+        The specification to follow from.
+    texts : list of str or None
+        Its later versions, in order; ``None`` for a version it did not exist in.
+
+    Returns
+    -------
+    dict
+        The fate of each section of ``origin_text`` in the last version, keyed by
+        its anchor in ``origin_text``.
+
+    """
+    origin = sections(origin_text)
     where = {anchor: anchor for anchor in origin}
     gone: set[str] = set()
     previous = origin

@@ -858,3 +858,32 @@ def test_a_line_citing_a_section_its_own_pull_request_rewrote_passes(
     code, out = run(guard, repo, capsys=capsys)
 
     assert code == 0, out
+
+
+def test_a_branch_that_took_a_renumber_by_cherry_pick_cites_by_it(guard, repo, capsys):
+    """The branch already uses main's numbering, so its citation is correct."""
+    git(repo, "switch", "--quiet", "main")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "renumber, citations updated",
+    )
+    renumber = git(repo, "rev-parse", "HEAD").strip()
+    git(repo, "switch", "--quiet", "work")
+    commit(repo, {"src/other.py": "# unrelated\n"}, "unrelated")
+    git(repo, "cherry-pick", renumber)
+    commit(repo, {"src/new.py": f"# see demo spec {SECTION}3, the design\n"}, "cite")
+    git(repo, "switch", "--quiet", "--detach", "main")
+    git(repo, "merge", "--quiet", "--no-ff", "--no-edit", "work")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+    assert run(guard, repo, "--fix", capsys=capsys)[0] == 0
+    assert (repo / "src" / "new.py").read_text() == (
+        f"# see demo spec {SECTION}3, the design\n"
+    )

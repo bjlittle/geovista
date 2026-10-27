@@ -282,9 +282,10 @@ the fix leaves it for the author, who points it elsewhere or deletes it.
 One case escapes that comparison. A pull request branched before a renumber merged can
 add a citation meaning the old number. It changes no specification, and its own diff
 shows nothing moving. So the guard also judges every line the pull request changed by
-what the base changed since the branch forked: it follows the cited specification from the
-fork along the base's own history, change by change, as above, and reports a citation whose
-section has since moved or been removed there. The pull request's own changes to a
+what the base changed since the branch forked: it translates the citation back to the
+fork along the branch's own changes, so a branch that already took a renumber is read by it,
+follows the specification from the fork along the base's own history, change by change, as
+above, and reports a citation whose section the base has since moved or removed. The pull request's own changes to a
 specification are judged as above, so they are never counted twice. That is the audit of
 {ref}`§3.2 <citation-spec-3-2>`, run on the lines a pull request adds. It follows the
 specification one change at a time because comparing the two ends loses a section renamed
