@@ -12,7 +12,7 @@
 - **Status:** living design specification
 - **Citation prefix:** `globe spec §…`
 - **Scope:** the globe model of a scene, units, heights and depths in physical units, the
-  vertical exaggeration, and the layering of surfaces and lines, which together replace
+  vertical mapping, and the layering of surfaces and lines, which together replace
   `zlevel` and `zscale`
 - **Parent spec:** the globe-first CRS design
   ([`2026-10-23-globe-first-crs-design.md`](2026-10-23-globe-first-crs-design.md)). This
@@ -66,11 +66,13 @@ These were decided with {user}`bjlittle` while the design was written.
    upstream, by Iris or `xarray`. `geovista` owns the reference, the units and the
    rendering. It may offer the conversion later, once this design has matured.
 4. **One globe per scene.** A scene has one Earth radius, one render scale and one vertical
-   exaggeration, and every layer takes its geometry from them, as
+   mapping, at first an exaggeration above sea level and another below it (§4.1), and every
+   layer takes its geometry from them, as
    crs spec §4.1 requires.
 5. **`zlevel` and `zscale` are removed.** It is a breaking change, which
-   crs spec §2 decision 4 allows. Physical stacking becomes heights, and
-   display stacking becomes the order of layers.
+   crs spec §2 decision 4 allows. Physical stacking becomes heights, display
+   stacking becomes the order of layers, and a layer that must be seen apart is lifted
+   (§4.5).
 6. **The evidence travels with the design.** The measurements that shaped it, the layering
    spike above all, are recorded here with their method, environment and date, so that a
    later reader can see why the design took the form it did, and repeat the measurement.
@@ -228,11 +230,43 @@ error was caught against `GeoPlotter` itself before any conclusion was drawn, an
 figure above is from the corrected run. And WSL's D3D12 driver aborts after some 300
 plotters in one process, so each block of the measurement ran in a process of its own.
 
+(globe-spec-3-6)=
+### 3.6 The Gallery's Vertical
+
+Measured on 2026-10-27 at `a0f95dbe`. Of the gallery's 48 examples, 30 have no vertical at
+all. Each of the rest meets it in a way of its own, at the Earth's radius of 6,378,137 m:
+
+| example | today | in this design |
+|---|---|---|
+| `warp/from_unstructured__lfric_orog` | warps along point normals by 2 × 10⁻⁵ per metre, an exaggeration of 127.6, chosen by hand | heights, with an exaggeration it states |
+| `warp/from_unstructured__lfric_orog_eqc` | warps a Plate Carrée map by 200 per metre, an exaggeration of 200 | the same heights and exaggeration as on the globe |
+| `warp/from_unstructured__fvcom` | warps by "Sea Floor Depth Below Geoid", positive downward, from −6.6 to 80.3 m, and is right only because its cells are wound so that its normals point inward | `depth=` and the factor below sea level, whatever the winding |
+| `scalar_data/from_tiff__dem` | warps Mount Fuji by 2 × 10⁻⁷ per metre, an exaggeration of 1.28 | heights |
+| `point_cloud/from_points__orca_cloud`, and its `_eqc` | places ocean depths of 0.5 to 5,275 m at negative levels scaled by 10⁻⁵, an exaggeration of 63.8 | `depth=` and the factor below sea level |
+| `grid/reykjanes`, and its `_contour` | `to_structured_grid` keeps only the number of its 41 levels, which run from 0 to 10,000 m, and spaces them half a grid cell apart, an unstated exaggeration of 22.3; uneven levels would be drawn evenly | heights, honoured as given |
+| `clouds_stratify` | stacks low, medium, high and very high cloud evenly, 47.8 km apart | a height for each band, or a lift |
+| `domain/clouds`, and its `_robin` | floats one cloud layer 47.8 km up | a height, or a lift |
+| `spatial_index/uber_h3` | floats H3 resolutions 0 to 3 at levels 60, 10, 5 and 1, from 38.3 km down to 0.6 km, an exploded view of a hierarchy with no altitude | a lift for each layer |
+| `vector_data/wind_arrows_uvw` | lifts its arrows with `radius=1.1`, 638 km, and stretches their vertical component by 1,500 by hand | a lift, and the slope of the vertical mapping (§8 item 9) |
+| `contour/banded_contour`, and the base layers set to a level of 0 | lifts lines over a surface by one level | the order, and the line bias of §4.5 |
+| `curvilinear/from_2d__orca_moll` | extrudes a slab 1,000 km deep on a Mollweide map | a solid, left to the design of region solids (crs spec §9) |
+| `README.md`, its seventh example | the same FVCOM warp, where a user looks first; nothing runs the README's 8 examples, and {issue}`782` found one broken in 2024 | `depth=`, run by the test of {issue}`2756` |
+
+`to_structured_grid` carries {user}`bjlittle`'s TODO to "add richer vertical support", and
+{user}`bjlittle` calls it a very poor proof of concept, and an example of why this design
+work is being done. Every exaggeration in the gallery was chosen by hand, or by the code,
+and none is recorded where a reader could find it.
+
 (globe-spec-4)=
 ## 4. Design
 
 (globe-spec-4-1)=
 ### 4.1 The Globe
+
+> **Extended by a child specification.** [`2026-10-27-globe-scene-design.md`](2026-10-27-globe-scene-design.md), `scene spec §…`,
+> specifies the `Globe` in place of every `radius`, the globe a mesh records, meshes that
+> record none, and the retirement of fields `geovista` no longer writes. It inherits this
+> document's decisions (§2) and testing (§6) unchanged.
 
 A scene's globe holds three quantities, and nothing else in the scene holds them:
 
@@ -241,12 +275,21 @@ A scene's globe holds three quantities, and nothing else in the scene holds them
 - **the render radius**, the radius the globe is drawn at, by default 1, so that a scene
   renders as it does today. The scale between the two is the render radius over the
   radius;
-- **the exaggeration**, one factor for the vertical of the whole scene, by default 1, the
-  true scale.
+- **the vertical mapping**, which turns a height into how far above or below the surface
+  it is drawn. In its first form it is two exaggerations, one for heights above sea level
+  and one for depths below it, each by default 1, the true scale, since the vertical
+  structure of an ocean and of an atmosphere above it differ by an order of magnitude. Any
+  form of it always increases, so that anything higher is drawn higher, whatever its
+  layer; is zero at sea level, so that the surface, the coastlines and the base layer never
+  move; and is finite. Bands, and functions of height, are later forms (§8 item 8). The
+  split is by height, not by what lies there: land below sea level, such as the Dead Sea
+  at −430 m, takes the factor below, so with the two factors apart it is stretched as the
+  ocean is. Order still holds, the two scales of §8 item 1 show it, and the
+  documentation of the globe says so.
 
 `GeoPlotter` takes a globe, and every layer it adds takes its radius from it, the base
-layer, coastlines and graticule included. A globe is immutable. Changing the exaggeration
-of a scene replaces its globe, and the scene rebuilds every position from the heights its
+layer, coastlines and graticule included. A globe is immutable. Changing the vertical
+mapping of a scene replaces its globe, and the scene rebuilds every position from the heights its
 layers carry (§4.4).
 
 The render radius stays 1 by default. §3.5 found layering to behave
@@ -305,14 +348,22 @@ heights through PROJ, with the geoid grid it needs, is a later step
 
 Heights that are not finite are refused.
 
+`to_structured_grid` reads its `zs` as heights, in any form of §4.2, and honours them as
+given, uneven levels included. Today it keeps only their number (§3.6).
+
 (globe-spec-4-4)=
 ### 4.4 Positions Come From Heights
 
-The scene turns heights into positions, with its globe's radius `R`, scale `s` and
-exaggeration `E`:
+> **Extended by a child specification.** [`2026-10-27-globe-scene-design.md`](2026-10-27-globe-scene-design.md) settles which functions take a
+> globe (scene spec §4.2), how a mesh stores the globe it records (scene spec §4.3), and the
+> globe of a mesh that records none (scene spec §4.4).
 
-- on the globe, a point at height `h` is drawn at radius `s (R + E h)`;
-- in a projection, at `z = E h`, converted to the length unit of the CRS's horizontal axes.
+The scene turns heights into positions, with its globe's radius `R`, scale `s` and
+vertical mapping `V`. In its first form, `V(h)` is `E_above h` for a height at or above sea
+level, and `E_below h` for one below:
+
+- on the globe, a point at height `h` is drawn at radius `s (R + V(h))`;
+- in a projection, at `z = V(h)`, converted to the length unit of the CRS's horizontal axes.
   Where those axes are angular, as in a geographic CRS drawn flat, a height becomes the
   angle it subtends at the radius `R`, in the CRS's angular unit, as
   zlevel spec §3.1 already does for a level.
@@ -324,9 +375,11 @@ survive a file (crs spec §2 decision 14). A scene whose globe differs repositio
 from its heights when it is added.
 
 Because the heights stay as data, a point's height is read back from the data, not from
-its position: a picked point reports the height it was given, and changing `E` rebuilds the
-positions from the same heights. The scene can report `R`, `s` and `E`, so a vertical scale
-shown to the viewer can be exact (§9, row 6).
+its position: a picked point reports the height it was given, and changing `V` rebuilds the
+positions from the same heights. The scene can report `R`, `s` and `V`, so a vertical scale
+shown to the viewer can be exact (§9, row 6). Everything that turns a height into a
+position goes through `V`, and nothing assumes it is a straight line, so a later form of
+it changes nothing else.
 
 A coarse cell is still flat between its vertices, so its middle is drawn below the height
 its vertices carry, by its sag (§3.5): 1.7 km at the centre of a C48
@@ -376,6 +429,26 @@ surfaces none.
 The base layer's lowering is a display offset, so it is recorded with the scene, and never
 reaches a coordinate a user reads back.
 
+**A lift, for an exploded view.** A layer that has no altitude, or whose heights would
+leave it hidden, may need drawing apart from the others, as the resolutions of an H3
+hierarchy are, each floated above the next (§3.6). Neither a height, which is physics, nor
+the order, which settles only which layer shows where two coincide, can do that. A lift
+can. It is a display offset for one layer, given when the layer is added, as a fraction
+`ℓ` of the radius: on the globe the layer is drawn at `s (R (1 + ℓ) + V(h))`, `ℓ` times the
+render radius further out, and on a map at `z = V(h) + ℓ R`, in the CRS's length unit. A
+lift is not a height:
+
+- it is never exaggerated, and never written to a mesh, but recorded with the scene, as
+  the base layer's lowering is;
+- a picked point reports the height its data holds, not where its lift put it;
+- the vertical scale marks a lifted layer as lifted, and reads no height from its
+  position (§8 item 1);
+- it is finite, may be negative to draw a layer beneath the surface, and is 0 by default.
+
+Every method of `GeoPlotter` that adds a layer takes `lift`, except the base layer's.
+Heights, the order and the lift keep apart the jobs that `zlevel` did in one number
+(§3.1): where a thing is, which layer shows, and what is drawn apart for the eye.
+
 (globe-spec-4-6)=
 ### 4.6 What Goes
 
@@ -383,14 +456,15 @@ When row 5 of §9 lands:
 
 | today | becomes |
 |---|---|
-| `zlevel` on `add_mesh`, `add_points`, the bridge and the built-in layers | `height` or `depth` for a physical height, or a layer's order for display |
-| `zscale` | the globe's exaggeration |
+| `zlevel` on `add_mesh`, `add_points`, the bridge and the built-in layers | `height` or `depth` for a physical height, a layer's order for which layer shows, or a lift to draw it apart (§4.5) |
+| `zscale` | the globe's vertical mapping |
 | `ZLEVEL_SCALE`, `BASE_ZLEVEL_SCALE`, `ZTRANSFORM_FACTOR` | removed |
 | `GV_POINT_ZLEVEL`, `GV_FIELD_ZSCALE` | a point array of heights in metres |
 | `resize(..., zlevel=..., zscale=...)` | a height, or a globe's render radius |
 
-The gallery's 11 examples that use a level move to heights or to an order, each as its
-purpose in §3.1 says. The planar z-levels specification is then
+The gallery's examples that use a level, or warp by hand, move to heights, an order or a
+lift, each as its purpose in §3.1 and §3.6 says. The README's examples move with them, in
+the pull request that changes what they use, and the test of {issue}`2756` runs them. The planar z-levels specification is then
 retired, with a note at its head that this specification replaced it, and why.
 
 (globe-spec-5)=
@@ -430,9 +504,10 @@ crs spec §6 requires:
 
 - **heights**: a point given a height in feet, kilometres or metres, through any registry
   or a CF unit string, reads back the same height in metres, exactly; and is drawn at
-  `s (R + E h)` on the globe and `E h` in the CRS's unit on a map, by the formula;
-- **exaggeration**: changing it moves every point by the formula and leaves every height
-  read back unchanged;
+  `s (R + V(h))` on the globe and `V(h)` in the CRS's unit on a map, by the formula;
+- **the vertical mapping**: a height above sea level moves by the factor above, and a
+  depth by the factor below; changing either moves every point by the formula, and leaves
+  every height read back unchanged;
 - **refusal**: an ellipsoidal height, a pressure given as a height, a height for each cell,
   a dimensionless angle and a height that is not finite each raise, naming the problem;
 - **layering**: the measures of §3.5 become tests, on whichever
@@ -440,6 +515,9 @@ crs spec §6 requires:
   visible, for C48 and a 5° grid on the globe, and for C48 on Robinson;
 - **places**: surfaces that share a place are drawn with one bias, and where two surfaces
   coincide, the one a place higher shows, on the globe and on a map;
+- **the lift**: a layer lifted by `ℓ` is drawn `ℓ` times the render radius further out on the
+  globe and `ℓ R` higher on a map, a picked point on it reports its data's height, and
+  nothing is written to its mesh;
 - **the radius**: each of the above holds at radius 1 and at the Earth's radius.
 
 The layering tests render, so they carry the `image` marker, though they compare pixel
@@ -449,8 +527,8 @@ classes rather than a baseline image.
 ## 7. Scope
 
 In scope: the globe model on the scene, units, heights and depths above or below mean sea
-level, the exaggeration, layering on the globe and on a map, and the removal of `zlevel` and
-`zscale`.
+level, the vertical mapping, layering on the globe and on a map, and the removal of
+`zlevel` and `zscale`.
 
 Out of scope, recorded so they are not forgotten:
 
@@ -468,7 +546,8 @@ Out of scope, recorded so they are not forgotten:
 Each carries the status grammar of docs spec §3.6.
 
 1. **Open** — **The vertical scale shown to the viewer.** Its form, a ruler beside the globe
-   or a scale bar on the map, and how it marks the exaggeration. Row 6 of
+   or a scale bar on the map, and how it marks the vertical mapping: two scales for two
+   factors, and ticks that follow the mapping where it is not a straight line. Row 6 of
    §9 owns it.
 2. **Open** — **A warped base layer.** The base layer is lowered by the sag of the surfaces
    above it. When it is terrain, warped by its own heights, that lowering moves terrain
@@ -493,6 +572,21 @@ Each carries the status grammar of docs spec §3.6.
    Whether a surface's far side shows past the horizon, and if it does, whether to shrink
    the bias or apply it only where surfaces overlap, needs measuring before row 4 is
    planned.
+8. **Open** — **Bands, and functions of height.** A vertical mapping in bands, such as a
+   stratosphere compressed further than the troposphere beneath it, or one that follows a
+   function of height. Either is recorded as a table of heights and the offsets they are
+   drawn at, since a mesh records its globe losslessly (crs spec §2 decision 14) and a
+   Python function cannot be saved in a file: a function is sampled into the table when
+   the globe is made. A mesh records the table as a second form, beside the two factors,
+   which are not retired. Any form keeps the three rules of §4.1. A mapping that is not a
+   straight line distorts how thick a layer and how steep a slope look, so the vertical
+   scale's ticks must follow it (item 1).
+9. **Open** — **Vectors under the vertical mapping.** An arrow is drawn against a
+   stretched vertical, so to stay tangent to an exaggerated surface its vertical component
+   scales by the slope of the mapping at its height: in the first form, the factor above or
+   below sea level. The 3-D winds of §3.6 stretch theirs by 1,500 by hand. Whether
+   `geovista` applies the slope, and how a user asks for more to make a weak vertical wind
+   legible, belongs with the vector work of crs spec §4.5.
 
 (globe-spec-9)=
 ## 9. Roadmap
@@ -500,13 +594,14 @@ Each carries the status grammar of docs spec §3.6.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Units: `geovista.units`, with `pint` and `pint-cf` | ✅ landed (2026-10-27, {pull}`2754`) |
-| 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6 | not started |
-| 3 | Heights as data: `height` and `depth`, the exaggeration, positions on the globe and on a map, refusals | not started |
-| 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, and the measures of §3.5 as tests | not started |
+| 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6, by rows 1 and 2 of scene spec §9 | not started |
+| 3 | Heights as data: `height` and `depth`, the vertical mapping, positions on the globe and on a map, refusals, and `to_structured_grid` reading its levels as heights | not started |
+| 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, the lift, and the measures of §3.5 as tests | not started |
 | 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | not started |
 | 6 | A vertical scale for the viewer | candidate: a scene with heights that a scientist shows |
 
-Statuses follow docs spec §3.6. Rows 1 to 5 come in order, and each
+Statuses follow docs spec §3.6. Each row that changes the public API updates the README's
+examples in the same pull request ({issue}`2756`). Rows 1 to 5 come in order, and each
 is planned once the rows before it have landed. Row 4 needs a renderer in CI, which the
 image tests already have. Row 5 is breaking, and carries a `breaking` fragment beside its
 own. Row 2 of the parent's roadmap lands with row 5 here.

@@ -254,8 +254,8 @@ The model carries:
 - the scale between physical units and the units the scene is rendered in, so a scene can
   be rendered at a normalised radius of 1 while every height and tolerance stays physical
   (§8, item 3);
-- an explicit vertical exaggeration, applied once by the scene
-  (globe spec §4.4).
+- an explicit vertical mapping, at first an exaggeration above sea level and another
+  below it, applied once by the scene (globe spec §4.1 and globe spec §4.4).
 
 Every tolerance in the engine is relative to the radius or expressed as an angle, so a
 result is the same at radius 1 and at the Earth's radius. Heights in physical units, and
@@ -566,7 +566,10 @@ A function takes each such quantity in one of three forms:
 Each is converted once, at the boundary, to SI for lengths and to one canonical unit for
 angles. Inside, the engine works on plain floats and NumPy arrays, so units add nothing
 to the per-frame cost of §4.5. A physical length that a result or
-record reports, such as the radius it was projected at, carries its unit.
+record reports, such as the radius it was projected at, carries its unit. The public API
+returns it as a `pint` quantity, in `pint`'s application registry so that a user can
+combine it with quantities of their own, while functions inside `geovista` pass plain
+floats (scene spec §2 decision 8).
 
 Units for data values, such as a temperature or a concentration, stay with the data.
 `geovista` reads them only to label a scalar bar.
@@ -708,12 +711,15 @@ Each carries the status grammar of docs spec §3.6.
     strings it needs behind a small adapter of its own until it matures. It depends on
     `pint-cf` as it stands, on PyPI and conda-forge, behind `geovista.units`, so replacing
     it would touch one module (globe spec §4.2).
-12. **Open** — **Files written before the globe.** Today's files carry `gvCRS`, which
-    reads as it is, and may carry `gvRadius`, `gvZScale` or `gvZLevel` (§3.4), the
-    pantry's coastlines among them. Whether `geovista` reads those, taking `gvRadius` as a
-    render radius on the default globe, or refuses them, is to be settled before row 2 of
-    globe spec §9 lands. Either way, `bjlittle/geovista-data` reissues the pantry's assets
-    in the new form alongside that row ({issue}`2753`).
+12. **Resolved** (2026-10-27, {pull}`2757`) — **Files written before the globe.** Today's
+    files carry `gvCRS`, which reads as it is, and may carry `gvRadius`, `gvZScale` or
+    `gvZLevel` (§3.4), the pantry's coastlines among them. Whether `geovista` reads those,
+    taking `gvRadius` as a render radius on the default globe, or refuses them. They are
+    read, never refused: `gvRadius` is the render radius on the default globe, a mesh
+    without one is measured only when its points lie at one radius, and every mesh
+    `geovista` returns or draws carries only current fields (scene spec §4.4 and
+    scene spec §4.5). `bjlittle/geovista-data` reissues the pantry's assets in the new form
+    ({issue}`2753`), which no longer has to land with row 2 of globe spec §9.
 
 (crs-spec-9)=
 ## 9. Scope
