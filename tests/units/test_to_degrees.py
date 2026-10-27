@@ -72,6 +72,22 @@ def test_refuses_a_dimensionless_quantity_as_an_angle():
         to_degrees(pint.UnitRegistry().Quantity(1.0, "dimensionless"))
 
 
+class CarriesUnits:
+    """Stands in for an xarray DataArray, whose units are an attribute."""
+
+    units = "degrees_north"
+
+    def __array__(self, dtype=None, copy=None) -> np.ndarray:
+        """Return the values, without their units."""
+        return np.array([1.0, 2.0], dtype=dtype)
+
+
+def test_refuses_a_value_that_carries_its_own_units():
+    """Test that a value with a units attribute is refused, not read as degrees."""
+    with pytest.raises(ValueError, match="carries its own units, 'degrees_north'"):
+        to_degrees(CarriesUnits())
+
+
 @pytest.mark.parametrize("units", ["m", "hPa"])
 def test_refuses_another_dimension(units):
     """Test that a unit of another dimension is refused, and named."""

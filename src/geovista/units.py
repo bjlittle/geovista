@@ -100,10 +100,23 @@ def _quantity(value: object, units: str | None) -> tuple[pint.Quantity, str] | N
     Raises
     ------
     ValueError
-        If a quantity is given units as well, or a unit cannot be read.
+        If a quantity is given units as well, a value carries units of its
+        own as an attribute, or a unit cannot be read.
 
     """
     is_quantity = isinstance(value, _Quantity)
+
+    # a value that carries its units as an attribute, as an xarray DataArray
+    # or a netCDF4 variable does, would otherwise be read as metres or degrees
+    own = None if is_quantity else getattr(value, "units", None)
+
+    if own is not None:
+        emsg = (
+            f"{type(value).__name__} carries its own units, '{own}', which "
+            "geovista does not read from it. Pass its values, with their "
+            "units as 'units'."
+        )
+        raise ValueError(emsg)
 
     if not is_quantity and units is None:
         return None
@@ -193,8 +206,10 @@ def to_degrees(
     ------
     ValueError
         If the units are not angular, cannot be read, or are given both on a
-        quantity and as `units`. ``pint`` counts an angle as dimensionless,
-        so a dimensionless unit is refused, rather than read as radians.
+        quantity and as `units`, or if `value` carries units of its own as an
+        attribute, as an xarray DataArray does. ``pint`` counts an angle as
+        dimensionless, so a dimensionless unit is refused, rather than read as
+        radians.
 
     Notes
     -----
@@ -263,7 +278,8 @@ def to_metres(
     ------
     ValueError
         If the units are not a length, cannot be read, or are given both on a
-        quantity and as `units`.
+        quantity and as `units`, or if `value` carries units of its own as an
+        attribute, as an xarray DataArray does.
 
     Notes
     -----

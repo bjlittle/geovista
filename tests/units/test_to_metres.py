@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 
+import netCDF4
 import numpy as np
 import pint
 import pint_cf
@@ -138,3 +139,38 @@ def test_refuses_units_given_twice():
     """Test that a quantity given units as well is refused."""
     with pytest.raises(ValueError, match="not both"):
         to_metres(pint.UnitRegistry().Quantity(1.0, "m"), "km")
+
+
+class CarriesUnits:
+    """Stands in for an xarray DataArray, whose units are an attribute."""
+
+    units = "km"
+
+    def __array__(self, dtype=None, copy=None) -> np.ndarray:
+        """Return the values, without their units."""
+        return np.array([1.0, 2.0], dtype=dtype)
+
+
+@pytest.fixture
+def variable():
+    """Return a netCDF4 variable in kilometres, whose units are an attribute."""
+    dataset = netCDF4.Dataset("heights.nc", "w", diskless=True)
+    dataset.createDimension("n", 2)
+    result = dataset.createVariable("height", "f8", ("n",))
+    result.units = "km"
+    result[:] = [1.0, 2.0]
+    yield result
+    dataset.close()
+
+
+@pytest.mark.parametrize("units", [None, "km"])
+def test_refuses_a_value_that_carries_its_own_units(units):
+    """Test that a value with a units attribute is refused, not read as metres."""
+    with pytest.raises(ValueError, match="carries its own units, 'km'"):
+        to_metres(CarriesUnits(), units)
+
+
+def test_refuses_a_netcdf_variable(variable):
+    """Test that a netCDF4 variable, which carries its units, is refused."""
+    with pytest.raises(ValueError, match="carries its own units, 'km'"):
+        to_metres(variable)
