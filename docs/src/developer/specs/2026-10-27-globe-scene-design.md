@@ -168,17 +168,20 @@ normals, then calls `warp_by_scalar` with a factor of 2 × 10⁻⁵ on the altit
   any form `geovista.units.to_metres` reads (globe spec §4.2);
 - `render_radius`, the radius the globe is drawn at, by default `common.RADIUS`, a plain
   number in the units of the scene;
-- `exaggeration`, by default 1, a plain number, the factor for heights above sea level, and
-  for depths below it too unless `exaggeration_below` is given;
-- `exaggeration_below`, by default the `exaggeration`, a plain number, the factor for
-  depths below sea level.
+- `exaggeration`, by default 1, a plain number, an int or a float, kept as a float, the
+  factor for heights above sea level, and for depths below it too unless
+  `exaggeration_below` is given;
+- `exaggeration_below`, by default the `exaggeration`, a plain number, an int or a float,
+  kept as a float, the factor for depths below sea level.
 
-Each must be finite and positive. A factor of 0 would draw a range of heights at one
-radius, and break the rule of globe spec §4.1 that the vertical mapping always increases.
-Anything else raises a `ValueError` naming the value. `Globe(exaggeration=20)` stretches
-the atmosphere and the ocean alike, and `Globe(exaggeration=20, exaggeration_below=100)`
-stretches the ocean five times more. Land below sea level takes the factor below too
-(globe spec §4.1), and the documentation of `Globe` says so.
+Each must be finite and positive, or a `ValueError` names the value. A factor need not be
+whole: the gallery's run from 1.28 to 200 (globe spec §3.6), and one below 1 flattens. A
+factor of 0 would draw a range of heights at one radius, and a negative one would turn
+them upside down. Either breaks the rule of globe spec §4.1 that the vertical mapping
+always increases. `Globe(exaggeration=20)` stretches the atmosphere and the ocean alike,
+and `Globe(exaggeration=20, exaggeration_below=100)` stretches the ocean five times more.
+Land below sea level takes the factor below too (globe spec §4.1), and the documentation
+of `Globe` says so.
 
 A globe's `radius` returns a `pint` quantity in metres, in `pint`'s application registry,
 the one `pint` provides for sharing quantities between packages, so that a user can add
@@ -375,8 +378,8 @@ globe spec §6 and crs spec §6 require:
 - **the globe**: a radius in each form of globe spec §4.2 reads as metres; a value that is
   not finite, a radius that is not positive and an exaggeration that is not positive are
   each refused; `exaggeration` alone sets both factors, and `exaggeration_below` sets the
-  factor below sea level alone;
-  equal values make equal globes;
+  factor below sea level alone; an int factor reads back as a float, and a factor below 1
+  is accepted; equal values make equal globes;
 - **the record**: every function of §3.1 that builds or positions a mesh writes the four
   fields, the globe it was given or its default, and no `gvRadius`;
 - **the round trip** of §4.3;
