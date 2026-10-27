@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 # lazy import third-party dependencies
 np = lazy.load("numpy")
 
-__all__ = ["to_metres"]
+__all__ = ["to_degrees", "to_metres"]
 
 
 @runtime_checkable
@@ -154,6 +154,77 @@ def _result(values: NDArray[np.float64]) -> float | NDArray[np.float64]:
 
     """
     return float(values) if values.ndim == 0 else values
+
+
+@overload
+def to_degrees(
+    value: float,
+    units: str | None = None,
+) -> float: ...  # numpydoc ignore=GL08
+
+
+@overload
+def to_degrees(
+    value: ArrayLike | pint.Quantity, units: str | None = None
+) -> float | NDArray[np.float64]: ...  # numpydoc ignore=GL08
+
+
+def to_degrees(
+    value: ArrayLike | pint.Quantity, units: str | None = None
+) -> float | NDArray[np.float64]:
+    """Read an angle, and convert it to degrees.
+
+    Parameters
+    ----------
+    value : float, ArrayLike or pint.Quantity
+        The angle. A plain number or array is in degrees, unless `units` names
+        another unit. A :mod:`pint` quantity, from any registry, carries its
+        own units. A masked element becomes NaN.
+    units : str, optional
+        A CF unit string for a plain `value`, such as ``"degrees_north"`` or
+        ``"radian"``, read by ``pint-cf``.
+
+    Returns
+    -------
+    float or ndarray
+        The angle in degrees, a float for a scalar, else a float64 array.
+
+    Raises
+    ------
+    ValueError
+        If the units are not angular, cannot be read, or are given both on a
+        quantity and as `units`. :mod:`pint` counts an angle as dimensionless,
+        so a dimensionless unit is refused, rather than read as radians.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    parsed = _quantity(value, units)
+
+    if parsed is None:
+        return _result(_magnitude(value))
+
+    quantity, label = parsed
+    registry = _registry()
+    _, base = registry.get_base_units(quantity.units)
+
+    # an angle is a unit whose base is the radian, since pint would otherwise
+    # read a dimensionless "1", "percent" or "m/m" as radians without a word
+    if base == registry.Unit("radian"):
+        degrees: NDArray[np.float64] = quantity.to("degree").magnitude
+        return _result(degrees)
+
+    if quantity.dimensionless:
+        emsg = (
+            f"{label!r} is dimensionless, and an angle needs an angular unit, "
+            "such as 'degree' or 'radian'."
+        )
+        raise ValueError(emsg)
+
+    emsg = f"{label!r} is not an angle, so cannot be read in degrees."
+    raise ValueError(emsg)
 
 
 @overload

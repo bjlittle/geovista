@@ -29,6 +29,7 @@ import geovista.units as units
 
 units.to_metres(1.0)
 units.to_metres(np.ones(3))
+units.to_degrees(1.0)
 loaded = sorted(
     name for name in sys.modules if name == "pint" or name.startswith("pint.")
 )
