@@ -1,0 +1,6 @@
+Published the globe on the scene design specification, which puts a ``Globe`` in
+place of every ``radius``, records it on each mesh, reads meshes saved before it
+existed, and retires the fields ``geovista`` no longer writes, and extended the
+globe, heights and layers design with a vertical mapping split at sea level, a
+display lift for exploded views, and a record of the gallery's use of the
+vertical. (:user:`claude`)

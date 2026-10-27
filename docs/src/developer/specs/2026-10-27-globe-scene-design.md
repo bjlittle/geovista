@@ -427,7 +427,7 @@ Each carries the status grammar of docs spec §3.6.
 1. **Open** — **When retired fields stop being read.** The release after which
    `geovista` refuses a retired field rather than translating it, and what refusing it
    looks like, to settle once row 5 of globe spec §9 has added `gvZScale` and `gvZLevel` to
-   the table of §4.5.
+   the table of §4.5 ({issue}`2758`).
 
 (scene-spec-9)=
 ## 9. Roadmap

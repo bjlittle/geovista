@@ -711,12 +711,15 @@ Each carries the status grammar of docs spec §3.6.
     strings it needs behind a small adapter of its own until it matures. It depends on
     `pint-cf` as it stands, on PyPI and conda-forge, behind `geovista.units`, so replacing
     it would touch one module (globe spec §4.2).
-12. **Open** — **Files written before the globe.** Today's files carry `gvCRS`, which
-    reads as it is, and may carry `gvRadius`, `gvZScale` or `gvZLevel` (§3.4), the
-    pantry's coastlines among them. Whether `geovista` reads those, taking `gvRadius` as a
-    render radius on the default globe, or refuses them, is to be settled before row 2 of
-    globe spec §9 lands. Either way, `bjlittle/geovista-data` reissues the pantry's assets
-    in the new form alongside that row ({issue}`2753`).
+12. **Resolved** (2026-10-27, {pull}`2757`) — **Files written before the globe.** Today's
+    files carry `gvCRS`, which reads as it is, and may carry `gvRadius`, `gvZScale` or
+    `gvZLevel` (§3.4), the pantry's coastlines among them. Whether `geovista` reads those,
+    taking `gvRadius` as a render radius on the default globe, or refuses them. They are
+    read, never refused: `gvRadius` is the render radius on the default globe, a mesh
+    without one is measured only when its points lie at one radius, and every mesh
+    `geovista` returns or draws carries only current fields (scene spec §4.4 and
+    scene spec §4.5). `bjlittle/geovista-data` reissues the pantry's assets in the new form
+    ({issue}`2753`), which no longer has to land with row 2 of globe spec §9.
 
 (crs-spec-9)=
 ## 9. Scope
