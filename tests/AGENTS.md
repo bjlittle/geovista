@@ -8,11 +8,14 @@ pytest-based test suite for GeoVista. Tests cover the core library modules, CLI,
 
 One directory per `geovista` module — `bridge/`, `cache/`, `cli/`, `common/`,
 `core/`, `crs/`, `geodesic/`, `geometry/`, `geoplotter/`, `gridlines/`, `pantry/`,
-`raster/`, `report/`, `search/`, `themes/`, `transform/` — plus `test_qt.py` and the root `conftest.py` of
-shared fixtures. Two directories are not modules: `docs/` tests the built
-documentation, and `plotting/` holds the image comparisons — gallery examples in
-`test_examples.py`, per-module plots under `geodesic/`, `geoplotter/` and
-`transform/`, baselines fetched into `unit_image_cache/` (git-ignored).
+`raster/`, `report/`, `search/`, `themes/`, `transform/`, `units/` — plus `test_qt.py`
+and the root `conftest.py` of shared fixtures. Two directories are not modules: `docs/`
+tests the built documentation, and `plotting/` holds the image comparisons — gallery
+examples in `test_examples.py`, per-module plots under `geodesic/`, `geoplotter/` and
+`transform/`, baselines fetched into `unit_image_cache/` (git-ignored). Most other
+root `test_*.py` are repository checks (`docs/src/developer/checks.rst`); one,
+`test_readme_examples.py`, runs every `python` block of `README.md` as an `image`
+test, so a PR that changes the public API updates the README in the same PR.
 
 ## Running Tests
 

@@ -50,6 +50,8 @@ Where It Failed
       - none
     * - :ref:`Projection Coverage <gv-developer-checks-projection-coverage>`
       - none
+    * - :ref:`README Examples <gv-developer-checks-readme-examples>`
+      - none
     * - :ref:`Repository Checks <gv-developer-checks-repository-checks>`
       - none
 
@@ -305,6 +307,38 @@ bundle also goes in ``SINCE``, with the version of PROJ it arrived in.
 PROJ needs to build it, which is no exception to the rule.
 
 **More:** crs spec §6.
+
+
+.. _gv-developer-checks-readme-examples:
+.. _tippy-gv-developer-checks-readme-examples:
+
+README Examples
+---------------
+
+**The rule:** Every ``python`` block in :bash:`README.md` runs as a script of
+its own, without raising or warning.
+
+**Why:** The README is the project's front page on GitHub and its long
+description on PyPI, so its examples are the first ``geovista`` code most users
+copy. Nothing else runs them, and one imported a sample that did not exist
+until :issue:`782` reported it. The globe roadmap changes the public API over
+several rows, and each row updates the README in the same pull request.
+
+**What enforces it:** :bash:`tests/test_readme_examples.py`, in every run of the
+unit tests. Each block is a test of its own, run off screen in a fresh
+namespace, with the pantry's data from the cache. Every block renders, so each
+test is marked ``image`` and runs with the image tests.
+
+**When it fails:** The test's id names the block by its number and the heading
+above it, and the traceback names the line of :bash:`README.md` that failed.
+Bring the example up to date with the API in the same pull request. A warning
+fails the test too, since the unit tests treat warnings as errors.
+
+**Declaring an exception:** None. A block that is not a complete example, such
+as a command for a shell, is fenced with its own language, as the README's
+``shell`` blocks are.
+
+**More:** globe spec §9.
 
 
 .. _gv-developer-checks-repository-checks:
