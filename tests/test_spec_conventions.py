@@ -8,8 +8,8 @@
 Each assertion is one item of the list in docs spec §3.5, and the triggers are
 the roadmap's, in docs spec §4. A specification keys an anchor to every numbered
 heading, a citation carries its section sign and names an anchor that exists, a
-``{ref}`` role displays the section it opens, and a status names the work that
-produced it.
+section is cited in plain text rather than by a role, and a status names the work
+that produced it.
 
 The corpus is derived from the repository rather than declared, so a file is
 governed from the day it lands rather than from the day somebody remembers to
@@ -815,9 +815,14 @@ def test_every_citation_carries_its_sign(texts, names):
 OPENED = re.compile(r"(?:\{ref\}|:ref:)`")
 
 
-def agreement(path: Path, text: str, names: Namespace) -> list[str]:
-    """Find each section role whose display text names another section."""
-    owner = names.owners.get(path)
+def section_roles(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each role naming a section, which a plain citation replaces.
+
+    A role is two strings, its display text and its target, which can disagree
+    while each reads well. A plain citation is one string, which the build links
+    to the section it names, so a section is cited in plain text. A role naming a
+    label that is no section, such as a page's, is not a citation, and stays.
+    """
     problems = []
     for number, line in source_lines(path, text):
         plain, roles = prose(line)
@@ -825,17 +830,11 @@ def agreement(path: Path, text: str, names: Namespace) -> list[str]:
             problems.append(f"{where(path, number)}: a role broken across lines")
         for kind, body in roles:
             role = section_role(kind, body, names)
-            if role is None:
-                continue
-            display, target = role
-            cited = list(scan(display, names.signed, owner))
-            if [c.slug for c in cited] != [target] or cited[0].text != display:
+            if role is not None:
+                display = role[0] or role[1]
                 problems.append(
-                    f"{where(path, number)}: {display!r} displayed, {target} opened"
-                )
-            elif target not in names.anchors:
-                problems.append(
-                    f"{where(path, number)}: {target} is no specification's anchor"
+                    f"{where(path, number)}: write {display!r} as plain text, "
+                    "which the build links"
                 )
     return problems
 
@@ -845,8 +844,8 @@ def crossed(path: Path, text: str) -> list[str]:
 
     Code is blanked a line at a time, so a span wrapped across a line break leaves
     a stray backtick on either side, and on the second line that backtick pairs
-    with the next one, hiding whatever role follows it from the agreement rule. A
-    span therefore opens and closes on one line, which this makes loud.
+    with the next one, hiding whatever citation or role follows it from the
+    grammar. A span therefore opens and closes on one line, which this makes loud.
     """
     return [
         f"{where(path, number)}: a code span crosses a line break"
@@ -855,27 +854,33 @@ def crossed(path: Path, text: str) -> list[str]:
     ]
 
 
-def test_agreement_finds_a_role_opening_another_section(tmp_path):
-    """Both strings of a role can be well formed and still disagree."""
-    roles = (
-        f"\nSee {{ref}}`{SECTION}1 <demo-spec-1>` and "
-        f"{{ref}}`{SECTION}1 <demo-spec-2>` and {{ref}}`demo-spec-2`, and\n"
-        f"{{ref}}`{SECTION}2\n<demo-spec-2>` broken.\n"
+def test_section_roles_finds_each_role_naming_a_section(tmp_path):
+    """A role is two strings that can disagree; a plain citation is one."""
+    roles = "".join(
+        [
+            f"\nSee {{ref}}`{SECTION}1 <demo-spec-1>` and ",
+            f":ref:`demo spec {SECTION}2 <demo-spec-2>`, ",
+            "not {ref}`the gallery <gallery>` ",
+            f"nor demo spec {SECTION}1, and\n",
+            f"{{ref}}`{SECTION}2\n<demo-spec-2>` broken.\n",
+        ]
     )
     path, names = demo(tmp_path, DEMO + roles)
 
-    problems = agreement(path, path.read_text(encoding="utf-8"), names)
+    problems = section_roles(path, path.read_text(encoding="utf-8"), names)
 
     assert [p.split(": ", 1)[1] for p in problems] == [
-        f"'{SECTION}1' displayed, demo-spec-2 opened",
-        "'' displayed, demo-spec-2 opened",
+        f"write '{SECTION}1' as plain text, which the build links",
+        f"write 'demo spec {SECTION}2' as plain text, which the build links",
         "a role broken across lines",
     ]
 
 
-def test_every_section_role_displays_its_target(texts, names):
-    """Agreement (item 5)."""
-    problems = [p for path, text in texts.items() for p in agreement(path, text, names)]
+def test_no_role_names_a_section(texts, names):
+    """Plain text (item 5): a section is cited as one string, which the build links."""
+    problems = [
+        p for path, text in texts.items() for p in section_roles(path, text, names)
+    ]
 
     assert not problems, "\n".join(problems)
 
@@ -895,7 +900,7 @@ def test_crossed_finds_a_code_span_wrapped_across_lines(tmp_path):
 
 @pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
 def test_no_code_span_in_a_specification_crosses_a_line(spec):
-    """Agreement reads a line at a time, so a span must close where it opens."""
+    """The grammar reads a line at a time, so a span must close where it opens."""
     problems = crossed(spec, spec.read_text(encoding="utf-8"))
 
     assert not problems, "\n".join(problems)
