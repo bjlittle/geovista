@@ -79,31 +79,31 @@ def examples(text: str) -> list[Example]:
     -------
     list of Example
         Each fenced ``python`` or ``py`` block, in order. A heading is read only
-        outside a fenced block, so a comment in code is never taken for one.
+        outside a fenced block, so a comment in code is never taken for one, and
+        a block never closed runs to the end of the README, as CommonMark has it.
 
     """
-    result: list[Example] = []
-    heading = ""
-    fence = info = ""
-    start = 0
-    body: list[str] = []
+    # each block as its info string, first line of code, heading and lines.
+    blocks: list[tuple[str, int, str, list[str]]] = []
+    heading = fence = ""
     for number, line in enumerate(text.splitlines(), start=1):
         if not fence:
             if match := FENCE.match(line):
-                fence, info = match["fence"], match["info"].lower()
-                start, body = number + 1, []
+                fence = match["fence"]
+                blocks.append((match["info"].lower(), number + 1, heading, []))
             elif match := HEADING.match(line):
                 heading = match["text"]
             continue
         closing = line.strip()
         if closing.startswith(fence) and set(closing) == {fence[0]}:
-            if info in LANGUAGES:
-                source = textwrap.dedent("\n".join(body))
-                result.append(Example(len(result) + 1, start, heading, source))
             fence = ""
         else:
-            body.append(line)
-    return result
+            blocks[-1][3].append(line)
+    python = [block for block in blocks if block[0] in LANGUAGES]
+    return [
+        Example(number, start, above, textwrap.dedent("\n".join(lines)))
+        for number, (_, start, above, lines) in enumerate(python, start=1)
+    ]
 
 
 def run(example: Example, path: Path = README) -> None:
@@ -161,6 +161,12 @@ def test_a_longer_fence_holds_a_shorter_one():
     """A block opened by four backticks runs on past a line of three."""
     text = "````python\nx = '''\n```\n'''\n````\n"
     assert [e.source for e in examples(text)] == ["x = '''\n```\n'''"]
+
+
+def test_an_unclosed_block_runs_to_the_end():
+    """A block never closed is an example to the end, as CommonMark has it."""
+    text = "```python\nx = 1\n```\n\n```python\ny = 2\n"
+    assert [e.source for e in examples(text)] == ["x = 1", "y = 2"]
 
 
 def test_an_example_records_its_line_and_id():
