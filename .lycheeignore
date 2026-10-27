@@ -17,3 +17,6 @@ https://www.sitemaps.org/protocol.html
 
 # Intermittent timeouts
 https://www.fvcom.org
+
+# Intermittent 403's
+https://www.google.com/maps/place/Plymouth+Sound/.*
