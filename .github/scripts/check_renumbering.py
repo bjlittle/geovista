@@ -614,25 +614,56 @@ def _prefix(text: str) -> str | None:
     return None if first is None else grammar.LABEL.match(first)["prefix"]
 
 
+#: The specifications each commit held, listed once per run.
+LISTED: dict[tuple[Path, str], list[Path]] = {}
+
+
+def _listed(root: Path, ref: str) -> list[Path]:
+    """List the specifications at ``ref``."""
+    if (root, ref) in LISTED:
+        return LISTED[root, ref]
+    listed = git(root, "ls-tree", "-z", "--name-only", ref, f"{SPECS}/")
+    names = [root / name for name in listed.split("\0") if name.endswith(".md")]
+    if COMMIT.fullmatch(ref):
+        LISTED[root, ref] = names
+    return names
+
+
+def _held(root: Path, ref: str, spec: Path, prefix: str | None) -> str | None:
+    """Return the specification owning ``prefix`` at ``ref``, under whatever name.
+
+    A specification is the prefix it owns, so one renamed with ``git mv`` is
+    found at a revision from before the rename by that, and ``None`` is returned
+    only when no specification owned it there.
+    """
+    text = at(root, ref, spec)
+    if prefix is None or (text is not None and _prefix(text) == prefix):
+        return text
+    for other in _listed(root, ref):
+        held = at(root, ref, other) if other != spec else None
+        if held is not None and _prefix(held) == prefix:
+            return held
+    return None
+
+
 def _counterparts(root: Path, ref: str, specs: list[Path]) -> dict[Path, Path | None]:
     """Map each specification at ``ref`` to the one that holds it now, or ``None``.
 
     A specification is the prefix it owns, so one renamed with ``git mv`` is
-    found by that, rather than read as one removed and another added.
+    found by that, rather than read as one removed and another added. One that
+    owns no prefix now, its every section removed, is still the file it was.
     """
     owners = {
-        _prefix(spec.read_text(encoding="utf-8")): spec
+        prefix: spec
         for spec in specs
         if spec.is_file()
+        and (prefix := _prefix(spec.read_text(encoding="utf-8"))) is not None
     }
-    listed = git(root, "ls-tree", "-z", "--name-only", ref, f"{SPECS}/")
     counterparts: dict[Path, Path | None] = {}
-    for name in listed.split("\0"):
-        if not name.endswith(".md"):
-            continue
-        base = root / name
+    for base in _listed(root, ref):
         before = at(root, ref, base)
-        counterparts[base] = owners.get(_prefix(before)) if before is not None else None
+        owner = owners.get(_prefix(before)) if before is not None else None
+        counterparts[base] = owner or (base if base.is_file() else None)
     return counterparts
 
 
@@ -693,7 +724,8 @@ def _chain(root: Path, spec: Path, start: str, line: str) -> dict[str, Fate]:
         The fate of each section at the commit followed from, keyed by anchor.
 
     """
-    relative = spec.relative_to(root).as_posix()
+    # followed by the prefix it owns, under every name it has had
+    prefix = _prefix(spec.read_text(encoding="utf-8"))
 
     def revisions(since: str, until: str) -> list[str | None]:
         listed = git(
@@ -703,12 +735,12 @@ def _chain(root: Path, spec: Path, start: str, line: str) -> dict[str, Fate]:
             "--first-parent",
             f"{since}..{until}",
             "--",
-            relative,
+            f"{SPECS}/",
         )
-        return [at(root, revision, spec) for revision in listed.split()]
+        return [_held(root, revision, spec, prefix) for revision in listed.split()]
 
     if _ancestor(root, start, line):
-        first = at(root, start, spec)
+        first = _held(root, start, spec, prefix)
         if first is None:
             return {}
         return _follow(
@@ -717,7 +749,7 @@ def _chain(root: Path, spec: Path, start: str, line: str) -> dict[str, Fate]:
     # written on a branch off the line: translate its numbering back to where the
     # branch forked, along the branch's own changes, then forward along the line's
     fork = git(root, "merge-base", start, line).strip()
-    origin = at(root, fork, spec)
+    origin = _held(root, fork, spec, prefix)
     if origin is None:
         return {}
     branch = _follow(origin, revisions(fork, start))

@@ -1047,3 +1047,47 @@ def test_a_removed_section_is_reported_through_the_command_line(guard, repo, cap
     assert (
         f'src/code.py:1: demo spec {SECTION}2 was "Design", which was removed; ' in out
     )
+
+
+def test_the_last_section_removed_still_reports_its_items(guard, repo, capsys):
+    """A specification left with no anchor is still the file it was."""
+    git(repo, "switch", "--quiet", "main")
+    commit(repo, {str(SPECS / NAME): spec(("8", "Open Items", items(ONE, TWO)))}, "x")
+    git(repo, "switch", "--quiet", "--force-create", "work")
+    retired = spec() + "\nThis specification no longer applies.\n"
+    commit(repo, {str(SPECS / NAME): retired}, "remove the last section")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1
+    assert 'item 1 "The first question." was removed with its section' in out
+
+
+@pytest.mark.parametrize("audit", [False, True], ids=["pull-request", "audit"])
+def test_a_citation_older_than_a_specification_renamed_and_renumbered_fails(
+    guard, repo, capsys, audit
+):
+    """The specification is found by the prefix it owns at each revision."""
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "switch", "--quiet", "--create", "late")
+    commit(repo, {"src/late.py": f"# see demo spec {SECTION}2\n"}, "late citation")
+    git(repo, "switch", "--quiet", "main")
+    renamed = SPECS / "2026-01-01-renamed-design.md"
+    git(repo, "mv", str(SPECS / NAME), str(renamed))
+    git(repo, "commit", "--quiet", "--message", "rename")
+    commit(
+        repo,
+        {
+            str(renamed): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "renumber, citations updated",
+    )
+    git(repo, "switch", "--quiet", "late")
+    git(repo, "merge", "--quiet", "--no-edit", "main")
+
+    code, out = run(guard, repo, *(["--audit"] if audit else []), capsys=capsys)
+
+    assert code == 1
+    assert f'src/late.py:1: demo spec {SECTION}2 was "Design", which is now' in out
