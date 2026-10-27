@@ -84,3 +84,11 @@
 - [ ] **Step 2:** Final review on Opus; fix Critical and Important findings red first; record the review here; raise an `agentic` issue for anything deferred.
 - [ ] **Step 3:** Comment on #2566 that rows 2 to 4 of `docs spec §4` have landed, leaving it open for the candidate rows.
 - [ ] **Step 4: The landed row, last.** Row 4 of `citation spec §9` becomes `✅ landed (<date>, {pull}`<PR>`)`. Run `check-spec-status <PR>`, commit, push, confirm the remote head, and mark the pull request ready.
+
+## After the Final Review
+
+The whole-branch review, on Opus, proved the collapse exact twice over, independently of Task 2's proof: by source, every file's citations named the same anchors in the same order before and after (336 each, 267 roles to none), and at the head every page's citations matched its built links. It re-added a role of each kind and all were reported, and a role to a label that is no section was left alone. One Important finding and six Minor ones.
+
+- **Fixed (Important):** the rule's message suggested a role's display text, so a role citing another specification's section by a bare number, followed literally, would have become a citation of the containing specification's section of that number, the silent wrong link the design removes. The suggestion is now built from the target, and is the display text only where that names the target where it is written (`test_section_roles_suggests_the_citation_its_target_needs`, red first).
+- **Fixed (re-graded, inaccurate text this pull request left):** the citation links design's counts and tense in its section on the collapse, the pairing test's docstring, and "`{ref}` or `:ref:`" in the rule's statements.
+- **Deferred to #2746:** the rule's gaps for `:std:ref:` and MyST anchor links and a role quoted in a reStructuredText code block, none of which exists today, and two cosmetic points.
