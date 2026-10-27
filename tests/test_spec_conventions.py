@@ -826,18 +826,24 @@ def section_roles(path: Path, text: str, names: Namespace) -> list[str]:
     owner = names.owners.get(path)
     problems = []
     for number, line in source_lines(path, text):
-        plain, roles = prose(line)
+        plain, _ = prose(line)
         if OPENED.search(plain):
             problems.append(f"{where(path, number)}: a role broken across lines")
-        for kind, body in roles:
-            role = section_role(kind, body, names)
+        for match in citations.SPAN.finditer(line):
+            if match["role"] is None or len(match["ticks"]) != 1:
+                continue
+            role = section_role(match["role"].strip("{}:"), match["body"], names)
             if role is None:
                 continue
             display, target = role
-            # the display text, where it names the target here, as a bare
-            # section of another specification would not; else the full form
-            cited = list(scan(display, names.signed, owner)) if display else []
-            if [(c.text, c.slug) for c in cited] != [(display, target)]:
+            # the display text, where it names the target as the line would read
+            # with it in the role's place, a prefix carried into it included; else
+            # the full form, which nothing carried can change
+            start = match.start()
+            written = line[:start] + display + line[match.end() :]
+            cited = scan(prose(written)[0], names.signed, owner)
+            spans = {(c.start, c.end, c.slug) for c in cited}
+            if not display or (start, start + len(display), target) not in spans:
                 label = LABEL.match(target)
                 prefix = label["prefix"].replace("-", " ")
                 display = f"{prefix} {SECTION}{label['num'].replace('-', '.')}"
@@ -904,6 +910,26 @@ def test_section_roles_suggests_the_citation_its_target_needs(tmp_path):
     assert [p.split(": ", 1)[1] for p in problems] == [
         f"write 'other spec {SECTION}1' as plain text, which the build links",
         f"write 'demo spec {SECTION}2' as plain text, which the build links",
+    ]
+
+
+@pytest.mark.parametrize("joined", [", ", "/"])
+def test_section_roles_suggests_in_the_context_of_its_run(tmp_path, joined):
+    """A bare number after another specification's citation inherits its prefix."""
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
+        "(other-spec-1)=\n## 1. Other\n",
+        encoding="utf-8",
+    )
+    line = f"\nSee other spec {SECTION}1{joined}{{ref}}`{SECTION}1 <demo-spec-1>`.\n"
+    path, _ = demo(tmp_path, DEMO + line)
+    names = namespace([path, other])
+
+    problems = section_roles(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"write 'demo spec {SECTION}1' as plain text, which the build links",
     ]
 
 
