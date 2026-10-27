@@ -316,8 +316,9 @@ exaggeration `E`:
 
 A mesh is always positioned for some globe. The bridge's constructors and `transform_mesh`
 take a globe, `Globe()` by default, in place of today's `radius`, and the mesh records the
-globe it was positioned for. A scene whose globe differs repositions the mesh from its
-heights when it is added.
+globe it was positioned for. The globe and the heights are data on the mesh, so both
+survive a file (crs spec §2 decision 14). A scene whose globe differs repositions the mesh
+from its heights when it is added.
 
 Because the heights stay as data, a point's height is read back from the data, not from
 its position: a picked point reports the height it was given, and changing `E` rebuilds the
@@ -496,7 +497,7 @@ Each carries the status grammar of docs spec §3.6.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Units: `geovista.units`, with `pint` and `pint-cf` | not started |
-| 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, and every built-in layer at its radius | not started |
+| 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6 | not started |
 | 3 | Heights as data: `height` and `depth`, the exaggeration, positions on the globe and on a map, refusals | not started |
 | 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, and the measures of §3.5 as tests | not started |
 | 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | not started |

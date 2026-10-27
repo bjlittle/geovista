@@ -105,6 +105,13 @@ These were decided with {user}`bjlittle` while the design was written.
     hot paths stay plain NumPy (§4.9). `cf-units` is not used,
     because it builds on the UDUNITS-2 C library, which pip cannot install; that is the
     view of {user}`bjlittle`, a core developer of `cf-units`.
+14. **A mesh describes itself, in any file VTK writes.** Its CRS, the globe it was
+    positioned for, its heights and the record of §4.6 are data on the mesh. A mesh saved
+    to legacy `.vtk`, to an XML format such as `.vtp` or `.vtu`, or to `.vtkhdf`, and read
+    back, equals the mesh that was saved. Only what can be recomputed, such as the mapping
+    of §4.5, may live outside it, and no display offset is ever written to it
+    (globe spec §4.5). The one loss is VTK's own: legacy `.vtk` written as ASCII rounds
+    every double to 11 significant figures (§3.4), which is documented, not prevented.
 
 (crs-spec-3)=
 ## 3. What Exists Today
@@ -194,6 +201,36 @@ Only EPSG:4326 renders as a globe. By design of `crs.planar`, every other geogra
 renders flat, including `OGC:CRS84`, `+proj=longlat +datum=WGS84` and the WGS84 3D CRS
 EPSG:4979. A geocentric CRS such as EPSG:4978 collapses to a plane, and a CRS of another
 body, such as Mars, fails because PROJ will not transform between bodies.
+
+(crs-spec-3-4)=
+### 3.4 What a Saved Mesh Keeps
+
+A mesh carries its CRS as WKT, in the `gvCRS` field data that `crs.to_wkt` writes. The WKT
+is escaped to ASCII where it must be, since `pyvista` takes only ASCII in a string array.
+So a mesh saved to a file and read back keeps its CRS, though the tests check that through
+`.vtp` alone.
+
+Measured on 2026-10-27 at `62b45e53`, with VTK 9.7.1 and `pyvista` 0.49.1. The C48 LFRic
+sample was given EPSG:3857, whose WKT holds a degree sign, a radius of
+6,378,137.123456789 m as float64 field data, and a float64 height for each point. It was
+saved with `pyvista` and read back:
+
+| format | size | CRS, radius, heights and points |
+|---|---|---|
+| legacy `.vtk`, binary, the default | 1.00 MB | exact |
+| legacy `.vtk`, ASCII | 1.16 MB | the CRS exact; every double rounded to 11 significant figures, so the radius reads 6,378,137.1235 m and heights are off by up to 5 × 10⁻⁸ m |
+| `.vtp`, binary, the default | 0.46 MB | exact |
+| `.vtp`, ASCII | 1.65 MB | exact |
+| `.vtu`, binary | 0.46 MB | exact |
+| `.vtkhdf` | 2.85 MB | exact |
+
+Every format read a boolean field back as `uint8`. VTK 9.7 writes legacy `.vtk` as file
+version 5.1.
+
+Files written by today's `geovista` are already in use. The pantry's 10m coastlines carry
+`gvCRS`, a `gvRadius` of 1.0 and `gvResolution`, and its C48 LFRic mesh carries `gvCRS`.
+Meshes from the bridge also carry `gvRadius` and `gvZScale`, and a projected point cloud
+carries `gvZLevel`.
 
 (crs-spec-4)=
 ## 4. Design
@@ -411,8 +448,11 @@ Every operation reports what it did, and nothing is removed in silence:
   take (§4.8), or a result that is not finite;
 - a caller may turn a warning into an error, or acknowledge it, but only explicitly.
 
-The form of the record, as field data on the mesh, a Python object beside it, or both, is
-left to the builder.
+The record is data on the mesh, as field data and arrays on its cells and points, so that
+it survives a file (§2 decision 14). A Python object may present it, but holds nothing the
+mesh does not. Text is stored as `to_wkt` stores WKT, escaped to ASCII where it must be,
+and a flag as an integer, since every format reads a boolean back as `uint8` (§3.4). The
+names and layout of the record are left to the builder (§8 item 4).
 
 A data mesh is never refined by default, so every vertex of a projected mesh is a source
 vertex, apart from the points an exact cut adds on its cut edges. Display refinement is
@@ -572,7 +612,13 @@ Every geometric result is checked against a reference that is independent of
 - **the datum**, by checking that a mesh crossing the edge of an operation's area of use,
   such as a UK model across 2°E on the British National Grid, has no step: either one
   operation takes every point it keeps, or the domain removes, and records, what that
-  operation cannot take.
+  operation cannot take;
+- **the round trip**, by saving a mesh that carries everything this design puts on one to
+  binary legacy `.vtk`, `.vtp`, `.vtu` and `.vtkhdf`, and reading it back. Its CRS, globe,
+  heights, record, points and cells must be equal, bit for bit, and no display offset may
+  be present. The test starts from the CRS, which a mesh already carries, and lands with
+  row 2 of globe spec §9, the first row to put something new on a mesh. Each later row that
+  adds to a mesh, here or in the globe spec, adds to the test.
 
 A **coverage test** records the outcome of every PROJ method and every `cartopy` class on
 a global mesh, measured as §3.1 describes, and only lets the set
@@ -662,6 +708,12 @@ Each carries the status grammar of docs spec §3.6.
     strings it needs behind a small adapter of its own until it matures. It depends on
     `pint-cf` as it stands, on PyPI and conda-forge, behind `geovista.units`, so replacing
     it would touch one module (globe spec §4.2).
+12. **Open** — **Files written before the globe.** Today's files carry `gvCRS`, which
+    reads as it is, and may carry `gvRadius`, `gvZScale` or `gvZLevel` (§3.4), the
+    pantry's coastlines among them. Whether `geovista` reads those, taking `gvRadius` as a
+    render radius on the default globe, or refuses them, is to be settled before row 2 of
+    globe spec §9 lands. Either way, `bjlittle/geovista-data` reissues the pantry's assets
+    in the new form alongside that row ({issue}`2753`).
 
 (crs-spec-9)=
 ## 9. Scope
