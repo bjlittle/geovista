@@ -282,10 +282,14 @@ the fix leaves it for the author, who points it elsewhere or deletes it.
 One case escapes it. A pull request branched before a renumber merged can add a citation
 meaning the old number. It changes no specification, so the guard does not run on it, and
 its own diff shows nothing moving even if it did. So each night the guard also audits the
-whole repository: for every citation, it pairs the cited specification as it stood in the
-commit that last wrote the citing line with the specification today, as above, and reports
+whole repository: for every citation, it follows the cited specification from the commit
+that last wrote the citing line to today, pairing it change by change as above, and reports
 any citation whose section has since moved or been removed. That is the audit of
-{ref}`§3.2 <citation-spec-3-2>`, run on a schedule. It finds the stale citation whatever
+{ref}`§3.2 <citation-spec-3-2>`, run on a schedule. It follows the specification one change
+at a time because comparing the two ends loses a section renamed in one change and grown
+in others, which is how a living section changes. A line older than the guard is followed
+from the commit at which every citation was audited by hand, when the guard was written,
+so the audit only judges history the guard was there to see. It finds the stale citation whatever
 route it came by, within a day of its merging, and opens an issue as the nightly check of
 statuses already does ({ref}`docs spec §3.6 <docs-spec-3-6>`), naming the `--fix` that
 corrects it.

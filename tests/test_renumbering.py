@@ -621,3 +621,46 @@ def test_the_workflow_runs_the_guard_when_anything_it_reads_changes(guard):
     assert not missing, f"ci-spec-status.yml does not run when these change: {missing}"
     assert "renumbering" in workflow["jobs"], "no job runs the guard on a pull request"
     assert "audit" in workflow["jobs"], "no job audits the citations each night"
+
+
+#: Design's text, grown fourfold, as a living section grows over several changes.
+GROWN = " ".join(
+    [DESIGN, *(f"Further measured detail, number {n}." for n in range(12))]
+)
+
+
+def test_the_audit_follows_a_section_renamed_then_grown(guard, repo, capsys):
+    """Each change is one the pairing reads; the two together are not."""
+    git(repo, "switch", "--quiet", "main")
+    renamed = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Pairing", DESIGN), ("3", "Testing", TESTING)
+    )
+    commit(repo, {str(SPECS / NAME): renamed}, "rename")
+    grown = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Pairing", GROWN), ("3", "Testing", TESTING)
+    )
+    commit(repo, {str(SPECS / NAME): grown}, "grow")
+
+    code, out = run(guard, repo, "--audit", capsys=capsys)
+
+    assert code == 0, out
+
+
+def test_the_audit_judges_an_older_line_from_its_baseline(
+    guard, repo, capsys, monkeypatch
+):
+    """History before the hand audit was checked by hand, and is not judged again."""
+    git(repo, "switch", "--quiet", "main")
+    rewritten = spec(
+        ("1", "Purpose", PURPOSE),
+        ("2", "Mechanism", "Nothing of the earlier wording survives this rewrite."),
+        ("3", "Testing", TESTING),
+    )
+    commit(repo, {str(SPECS / NAME): rewritten}, "rename and rewrite at once")
+    baseline = git(repo, "rev-parse", "HEAD").strip()
+
+    assert run(guard, repo, "--audit", capsys=capsys)[0] == 1
+
+    monkeypatch.setattr(guard, "AUDITED", baseline)
+
+    assert run(guard, repo, "--audit", capsys=capsys)[0] == 0

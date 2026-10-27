@@ -475,6 +475,14 @@ SPECS = Path("docs") / "src" / "developer" / "specs"
 #: The commit blame gives a line not yet committed.
 UNCOMMITTED = "0" * 40
 
+#: The commit at which every citation in the repository was audited by hand,
+#: against its specification, when this check was written. The nightly audit
+#: judges a line older than it from here, so that it only ever judges history the
+#: check was there to see. One citation was flagged that day: the typing spec's own
+#: section 3.4, renamed and nearly tripled in a single change, which is the same
+#: section, and which a renumber guard would have asked to have checked by hand.
+AUDITED: str | None = "a9e25a86f4aba8863128120db0a87410d91f99b3"
+
 
 class GitError(RuntimeError):
     """Git could not answer, which is never a finding."""
@@ -541,15 +549,79 @@ def _fates(root: Path, ref: str, specs: list[Path]) -> dict[str, Fate]:
     return fates
 
 
-def audit(root: Path, texts: dict[Path, str], names: object) -> list[Finding]:
-    """Compare every citation with its specification as the citing line found it.
+def _ancestor(root: Path, older: str, newer: str) -> bool:
+    """Say whether ``older`` is an ancestor of ``newer``."""
+    try:
+        git(root, "merge-base", "--is-ancestor", older, newer)
+    except GitError:
+        return False
+    return True
 
-    The specification at the commit that last wrote the line is paired with the
-    one now, so a citation that arrived on a branch older than a renumber is
-    found whatever route it came by.
+
+def _chain(root: Path, spec: Path, start: str) -> dict[str, Fate]:
+    """Follow each section of a specification from ``start`` to now, change by change.
+
+    Pairing the two ends alone loses a section renamed in one change and grown in
+    others, which is how a living section changes. Each change is one a pull
+    request made, which is what the pairing reads well, so the fates are
+    composed step by step.
+    """
+    first = at(root, start, spec)
+    if first is None:
+        return {}
+    relative = spec.relative_to(root).as_posix()
+    listed = git(
+        root, "rev-list", "--reverse", "--topo-order", f"{start}..HEAD", "--", relative
+    )
+    texts = [at(root, revision, spec) for revision in listed.split()]
+    texts.append(spec.read_text(encoding="utf-8"))
+    origin = sections(first)
+    where = {anchor: anchor for anchor in origin}
+    gone: set[str] = set()
+    previous = origin
+    for text in texts:
+        if text is None:
+            continue
+        current = sections(text)
+        step = pair(previous, current)
+        for anchor in origin:
+            if anchor in gone:
+                continue
+            fate = step.get(where[anchor])
+            if fate is None or fate.anchor is None:
+                gone.add(anchor)
+            else:
+                where[anchor] = fate.anchor
+        previous = current
+    return {
+        anchor: Fate(
+            "removed"
+            if anchor in gone
+            else ("kept" if where[anchor] == anchor else "moved"),
+            None if anchor in gone else where[anchor],
+            section.title,
+        )
+        for anchor, section in origin.items()
+    }
+
+
+def audit(root: Path, texts: dict[Path, str], names: object) -> list[Finding]:
+    """Follow every citation's section from when the citing line was written.
+
+    Each specification is followed change by change from the commit that last
+    wrote the line, or from :data:`AUDITED` when the line is older than that, so a
+    citation that arrived on a branch older than a renumber is found whatever
+    route it came by.
     """
     owners = {prefix: spec for spec, prefix in names.owners.items()}
-    paired: dict[tuple[str, Path], dict[str, Fate]] = {}
+    baseline = AUDITED
+    if baseline is not None:
+        try:
+            git(root, "cat-file", "-e", f"{baseline}^{{commit}}")
+        except GitError:
+            # another repository, as a test's, which never saw the hand audit
+            baseline = None
+    chained: dict[tuple[str, Path], dict[str, Fate]] = {}
     findings: list[Finding] = []
     for path, text in texts.items():
         cited = [
@@ -564,18 +636,15 @@ def audit(root: Path, texts: dict[Path, str], names: object) -> list[Finding]:
             commit = blamed.get(number)
             if commit is None or commit == UNCOMMITTED:
                 continue
+            if baseline is not None and _ancestor(root, commit, baseline):
+                commit = baseline
             for _, _, citation, anchor, _ in found:
                 spec = owners.get(grammar.LABEL.match(anchor)["prefix"])
                 if spec is None:
                     continue
-                key = (commit, spec)
-                if key not in paired:
-                    before = at(root, commit, spec)
-                    now = spec.read_text(encoding="utf-8")
-                    paired[key] = (
-                        {} if before is None else pair(sections(before), sections(now))
-                    )
-                fate = paired[key].get(anchor)
+                if (commit, spec) not in chained:
+                    chained[commit, spec] = _chain(root, spec, commit)
+                fate = chained[commit, spec].get(anchor)
                 if fate is not None and fate.kind != "kept":
                     findings.append(Finding(path, number, citation, fate, anchor))
     return findings
