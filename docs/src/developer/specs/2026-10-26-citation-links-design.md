@@ -233,9 +233,10 @@ The rewrite is proven by the build: the set of citation links on every page, as 
 target, is the same before and after.
 
 Then the assertion that held a role's two halves together retires, with the form it
-policed. docs spec §3.4 is rewritten to describe the transform, and
-the fifth assertion of docs spec §3.5 is marked retired in place,
-not deleted, so the assertions after it keep their numbers.
+policed. docs spec §3.4 is rewritten to describe the transform, and the fifth assertion of
+docs spec §3.5 is retired in place, not deleted, so the assertions after it keep their
+numbers. Its place is taken by the rule that no role names a section, so that a role
+cannot creep back and bring a second string with it.
 
 (citation-spec-4-5)=
 ### 4.5 The Renumber Guard

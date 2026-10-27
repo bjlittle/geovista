@@ -200,7 +200,8 @@ written.
 (docs-spec-3-4)=
 ### 3.4 Cross-References Inside a Specification
 
-A specification names its own sections constantly, and does it with a hand-written role:
+A specification names its own sections constantly. It used to do so with a hand-written
+role:
 
 ```markdown
 See {ref}`§3.1 <typing-spec-3-1>`.
@@ -215,16 +216,10 @@ nothing is broken from where they are standing.
 
 `tephpy` removes the class outright by writing citations as plain text and deriving the
 target from them at build time, so there is only one string and the two cannot disagree.
-That is row 2 of §4 and it is not built here.
-
-So the roles stay for now, and the hazard is closed by assertion instead of by
-construction: **a `{ref}` role naming a section must have a display text that agrees with
-its target.** `` {ref}`§3.1 <typing-spec-3-1>` `` passes; the example above fails.
-
-Converting them all to plain text now was the alternative, and it is rejected
-because it would take working links away from readers today in exchange for a convention
-whose machinery does not exist yet. When the transform lands it makes those citations links
-again, the roles collapse to plain text, and this assertion retires with them.
+That was row 2 of §4, built by the citation links design, and every section is now cited
+in plain text: `See §3.1.` is linked to its section when the page is built. While the roles
+remained, an assertion held each role's display text to its target; with the roles gone,
+the rule is that **no role names a section**, so that the one-string form is the only one.
 
 (docs-spec-3-5)=
 ### 3.5 What Holds the Conventions
@@ -258,8 +253,8 @@ The suite asserts:
 3. **Resolution.** Every citation in the corpus names an anchor that exists.
 4. **Form.** Every citation carries its section sign, no run wraps across a line, and each
    end of a range is a citation of its own, per §3.2.
-5. **Agreement.** Every `{ref}` role naming a section displays the section it targets, per
-   §3.4.
+5. **Plain text.** No `{ref}` role names a section, per §3.4, which retires the agreement
+   between a role's display text and its target that this item held while roles remained.
 6. **Triggers.** Each observable roadmap condition of §4.
 7. **Status.** Every roadmap Status cell and every open item opens with a word from the
    vocabulary of §3.6, and every terminal status carries an ISO date
@@ -481,13 +476,11 @@ and building the documentation rather than this one collection inside it.
 Each carries the grammar of §3.6, so a reader can tell a decision
 that was taken from one that was dropped.
 
-1. **Open** (owned by row 2 of §4) — **The `{ref}` agreement
-   assertion assumes the display text is the section number.**
-   `` {ref}`§3.1 <typing-spec-3-1>` `` is the only form in use, and a role displaying a
-   section's title instead would fail the check while being correct. Every specification
-   writes it the one way today, as the assertion itself requires. If a second form becomes wanted, the assertion widens; it is
-   not widened in advance for a form nobody has asked for. Row 2 owns it because the
-   transform retires the roles, and this assertion with them.
+1. **Resolved** (2026-10-27, {pull}`2745`) — **The `{ref}` agreement assertion assumed
+   the display text is the section number.** A role displaying a section's title instead
+   would have failed the check while being correct. The question went with the roles: row 4
+   of the citation links design wrote every citation of a section in plain text, and the
+   assertion retired, replaced by the rule that no role names a section.
 2. **Resolved** (2026-10-26, {pull}`2738`) — **The threshold of
    seventy citations is a judgement, not a measurement.** It was first thirty-five, five
    times the seven citations there were when it was set, chosen to fire before review

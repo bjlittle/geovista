@@ -250,9 +250,9 @@ Specification Conventions
 -------------------------
 
 **The rule:** The design specifications keep their conventions: every numbered
-heading carries an anchor, a citation such as ``typing spec §3.2`` carries its
-section sign and names an anchor that exists, and a status names the work that
-produced it.
+heading carries an anchor, a citation such as ``typing spec §3.2`` is written in
+plain text, carries its section sign and names an anchor that exists, and a status
+names the work that produced it.
 
 **Why:** The repository cites the specifications by section, in code comments,
 tests and documentation, so a reader following a citation has to land on the

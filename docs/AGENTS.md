@@ -122,10 +122,10 @@ tutorial whose reader runs every snippet.
 
 ⚠️ **A `.md` page builds the day it lands**: `myst_parser` registers `.md` itself, so it
 fails on `toc.not_included` unless a toctree holds it, a page includes it, or it is
-`orphan: true` (#2564), which no spec may be. `developer/plans/` is never built.
-⚠️ **A spec status must cite real work** (#2609): run `pixi run -e test check-spec-status <PR>`
-after editing one. A `Resolved` item may cite an open issue; the PR closing a cited issue marks
-it `Resolved` (in specs; plans are frozen). One row per PR, none *partly landed* (6a–6c, #2659).
+`orphan: true` (#2564), which no spec may be. `developer/plans/` is never built. Cite a section
+in plain text (`docs spec §3.2`), never a `{ref}` role: the build links it, and the renumber guard follows it.
+⚠️ **A spec status must cite real work** (#2609): run `pixi run -e test check-spec-status <PR>` after editing one.
+A `Resolved` item may cite an open issue; the PR closing a cited issue marks it `Resolved` (in specs; plans are frozen). One row per PR, none *partly landed* (6a–6c, #2659).
 ⚠️ **Ask whether a roadmap row is bounded before planning it.** One its spec leaves to the builder gets
 a child spec first, as `bjlittle/tephpy` does (own prefix, `Parent spec:` banner, "Extended by" note in the parent), and is planned once the rows it depends on merge.
 
