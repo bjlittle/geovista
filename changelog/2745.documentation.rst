@@ -1,0 +1,5 @@
+Every citation of a design specification section is now written in plain text,
+which the documentation build links, rather than as a hand-written role whose
+display text and target could disagree. The 267 roles became the citations they
+displayed, the built links unchanged, and the conventions test now refuses a
+role that names a section. (:user:`claude`)

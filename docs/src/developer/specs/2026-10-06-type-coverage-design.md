@@ -4,7 +4,7 @@
 ```
 
 > **Living document.** This specification is maintained alongside the code, not archived
-> behind it. From change 1 of {ref}`§4 <typing-spec-4>` onward, `.pre-commit-config.yaml`,
+> behind it. From change 1 of §4 onward, `.pre-commit-config.yaml`,
 > `.github/workflows/ci-typing.yml` and the `[tool.mypy]` block of `pyproject.toml` cite it
 > by section — `typing spec §3.2` and the like — so these sections carry the reasoning
 > behind what those files do, and where the two ever diverge it is the specification that
@@ -19,9 +19,9 @@
   they are
 - **Parent spec:** none, but not unconventioned. It was the first specification in this
   repository and so inherited nothing; the conventions it arrived at are now written down,
-  and governed, by {ref}`docs spec §1 <docs-spec-1>`
+  and governed, by docs spec §1
 - **Published:** in the specifications index, since change 1 of
-  {ref}`docs spec §4 <docs-spec-4>` took off the `orphan: true` it carried while nothing
+  docs spec §4 took off the `orphan: true` it carried while nothing
   listed it
 
 (typing-spec-1)=
@@ -45,7 +45,7 @@ inside the `geovista` pixi environment where the real types are present:
 The error count overstates the defect count. `mypy` reports an attribute access on a union
 once per member, and `numpy.typing.ArrayLike` is a seven-member union, so one line can
 raise seven errors. Counting distinct source lines instead, and setting aside the errors
-suppressed by {ref}`§3.4 <typing-spec-3-4>`, the work is **206 lines**.
+suppressed by §3.4, the work is **206 lines**.
 
 Three of the twenty-five library modules report nothing, and none of the three is much of
 a check: `mypy` reads `__init__.pyi` in place of `__init__.py`, `_version.py` is generated
@@ -61,21 +61,21 @@ guarding the other twenty-two has been reporting success throughout.
   diverges: a probe carrying the eight typed core distributions saw 602 errors where the
   pixi environment saw 642, because the hook's virtual environment has none of the optional
   dependencies that `rasterio`, `h3`, `pandas` and `pyvistaqt` are imported from. The
-  divergence is silent and no test can detect it. See {ref}`§3.1 <typing-spec-3-1>`.
+  divergence is silent and no test can detect it. See §3.1.
 - **The hook goes live before the errors are fixed, not after.** Twenty-two modules cannot
   be corrected in one reviewable change, and a check that stays blind until the last of
   them lands guards nothing in the meantime. A per-module ratchet makes the debt explicit
-  and lets each module be retired on its own. See {ref}`§3.2 <typing-spec-3-2>`.
+  and lets each module be retired on its own. See §3.2.
 - **An annotation that over-promises is corrected by honouring it, not by narrowing it.**
   `to_cartesian(lons: ArrayLike, ...)` reaches straight for `lons.shape`, so a caller who
   reads the signature and the docstring and passes a list gets `AttributeError`. Converting
   at the boundary makes the published contract true and cannot break an existing caller.
-  See {ref}`§3.3 <typing-spec-3-3>`.
+  See §3.3.
 - **A defect a gallery script cannot fix is suppressed in the configuration, never worked
   around in the script.** The gallery is rendered into the documentation and readers are
   invited to copy it, so a `type: ignore` comment in one is a directive published as
   example code. The suppression then has to name its real cause, or nobody will know when
-  it can go. See {ref}`§3.4 <typing-spec-3-4>`.
+  it can go. See §3.4.
 
 (typing-spec-3)=
 ## 3. Architecture
@@ -125,7 +125,7 @@ identical 36 and 5 errors either way, so those two names come off its `module` l
 ### 3.2 The Ratchet
 
 The twenty-two modules carrying errors are listed once with `ignore_errors`, alongside the
-gallery. With the library ignored and the {ref}`§3.4 <typing-spec-3-4>` suppression
+gallery. With the library ignored and the §3.4 suppression
 applied, `examples/` still reports 28 errors — 8 `import-untyped` and the 20 lines change 7
 corrects — so `geovista.examples.*` joins the ratchet as a twenty-third entry and leaves
 with change 7.
@@ -225,7 +225,7 @@ Those 61 lines sit in eight modules, and two of them hold most of it — `transf
 20 and `bridge.py` 19, which is roughly two-thirds of each module's errors. `geodesic.py`
 has 7, `common.py` 6, `geoplotter.py` 4, and `pantry/meshes.py`, `search.py` and
 `pantry/data.py` the remaining 5 between them. The roadmap of
-{ref}`§4 <typing-spec-4>` is ordered to follow that concentration, so the idiom is
+§4 is ordered to follow that concentration, so the idiom is
 established in the first two changes and applied by rote afterwards. Change 2 found,
 though, that only one of `transform.py`'s 20 lines needed the conversion.
 
@@ -266,7 +266,7 @@ The review of change 4 also found an annotation narrower than its docstring. `wr
 documents any NumPy data-type for `dtype` but was annotated `np.dtype | None`, so `mypy`
 refused `np.float32` and `"f4"`, and change 4 had altered the function's default to fit that
 annotation. {pull}`2616` widened the annotation to `DTypeLike` instead, for the reason
-{ref}`§5 <typing-spec-5>` gives against tightening a published contract to match an
+§5 gives against tightening a published contract to match an
 implementation. {issue}`2614` tracked it.
 
 Change 5 found the idiom where `mypy` could not see it. `geoplotter.py` loaded `numpy` and
@@ -298,7 +298,7 @@ wraps it itself.
 
 122 of the 150 errors in `examples/` are two defects, measured on 2026-10-06 against
 `pyvista` 0.49.0 with the override below lifted. Their causes differ, and this section got
-the second one wrong twice before it was measured; {ref}`§8 <typing-spec-8>` records both
+the second one wrong twice before it was measured; §8 records both
 corrections:
 
 - 77 × `call-arg`, *Missing positional argument "self" in call to "__call__" of
@@ -315,7 +315,7 @@ corrections:
   `GeoPlotter`'s bases, that declaration shadows `pyvista`'s own `camera` and every access
   through it fails. `geoplotter.py` is in the ratchet, so the annotation is never reported
   where it is written, only where it does damage. Change 5 removed the declaration
-  ({ref}`§3.5 <typing-spec-3-5>`). All 45 cleared, and 44 `no-untyped-call` took their
+  (§3.5). All 45 cleared, and 44 `no-untyped-call` took their
   place, because `Camera.zoom` has no annotations in 0.49.0. That residue is upstream, and
   `pyvista` `main` already annotates it. Tracked by {issue}`2569`.
 
@@ -349,7 +349,7 @@ In the library, measured on 2026-10-11 with the whole ratchet lifted, `attr-defi
 zero, `call-arg` is one, in `cli.py`, and `no-untyped-call` is four, in `raster.py` and
 `themes.py`, all in modules change 6 retires, so the suppression stays confined to where
 the plotting calls are. Change 6c met those four, and two more that `report.py`'s `pyvista`
-import revealed, with typed locals ({ref}`§8 <typing-spec-8>` item 8).
+import revealed, with typed locals (§8 item 8).
 
 (typing-spec-3-5)=
 ### 3.5 Where geovista Departs From pyvista
@@ -360,7 +360,7 @@ too. It was also combined with `pyvistaqt`'s `MultiPlotter`, which is not, until
 `GeoMultiPlotter` was removed ({issue}`2622`). `mypy` had no way to know any of that. So the
 mixin declared what it borrowed: `Callable[..., None]` for `add_text`, `add_point_labels`
 and `reset_camera`, `Theme` for `theme`, and for `camera` an annotation that isn't a type
-({ref}`§3.4 <typing-spec-3-4>`). Each one clashed with `pyvista`'s own definition. Change 5
+(§3.4). Each one clashed with `pyvista`'s own definition. Change 5
 gives the mixin `pv.BasePlotter` as its base under `TYPE_CHECKING`, and `object` at
 runtime. The declarations go, and so do the three `type: ignore` comments they needed.
 
@@ -404,15 +404,15 @@ Row 6, the seventeen library modules left in the ratchet, was split into three p
 requests ({user}`bjlittle`, 2026-10-11). Its count of 51 does not reproduce. Lifted at the
 census commit, the seventeen report 71 lines, and on `main` before 6a, 53. Ten of them load
 `numpy` or `pyvista` lazily without importing it under `TYPE_CHECKING`
-({ref}`§3.3 <typing-spec-3-3>`), and with those imports the 53 becomes 68. Each row counts
+(§3.3), and with those imports the 53 becomes 68. Each row counts
 the lines its change clears from that 68, so 6a's 11 includes three untyped imports in
 `pantry/data.py`.
 
-Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`: a landed row names the date and the
+Statuses follow docs spec §3.6: a landed row names the date and the
 pull request that landed it. This is a living document, so a change that measures something
 the design assumed edits the design in place, and the sentence that was there before
-survives nowhere else. Change 1 rewrote the entry count of {ref}`§3.2 <typing-spec-3-2>`
-and the override claim of {ref}`§3.1 <typing-spec-3-1>`; the row is what makes {pull}`2565`
+survives nowhere else. Change 1 rewrote the entry count of §3.2
+and the override claim of §3.1; the row is what makes {pull}`2565`
 reachable from the sections it corrected, so a reader who wants the measurement rather than
 the conclusion has somewhere to go.
 
@@ -424,7 +424,7 @@ published signatures and each adds tests exercising the widened input.
 
 - **`additional_dependencies` on the `mirrors-mypy` hook.** The route `tephpy` takes, and
   the one this work began with. Self-contained and runs unchanged on `pre-commit.ci`. It is
-  rejected on the measurement in {ref}`§2 <typing-spec-2>`: the second dependency list is
+  rejected on the measurement in §2: the second dependency list is
   unlocked, hand-maintained, and already 40 errors adrift.
 - **A CI job alone, with no hook.** `pyvista`'s arrangement exactly. Rejected because this
   repository's practice is that hooks gate commits, and a type error found only after
@@ -440,18 +440,18 @@ published signatures and each adds tests exercising the widened input.
 (typing-spec-6)=
 ## 6. Testing
 
-`tests/test_typing_ratchet.py` held the ratchet to {ref}`§3.2 <typing-spec-3-2>`, failing
+`tests/test_typing_ratchet.py` held the ratchet to §3.2, failing
 when a module was added to the ignore list and passing when one was removed. Change 7
 deleted it with the last entry, and `tests/test_ci_typing.py` now fails if any override
 ignores a module's errors, and keeps that test's guards on `ci-typing.yml` and the `mypy`
 hook. It also fails on a `# mypy:` comment anywhere in the package, and on any per-module
 relaxation of strict mode beyond the three this specification gives reasons for:
-`geovista.cli`'s and `geovista.qt`'s in {ref}`§3.1 <typing-spec-3-1>`, and the gallery's
-in {ref}`§3.4 <typing-spec-3-4>`. Adding, changing or withdrawing one is then a change to
+`geovista.cli`'s and `geovista.qt`'s in §3.1, and the gallery's
+in §3.4. Adding, changing or withdrawing one is then a change to
 the test ({issue}`2687`).
 
 Changes 2 to 4 of the roadmap each add tests passing lists where arrays were passed before,
-so that the widened contract of {ref}`§3.3 <typing-spec-3-3>` is exercised rather than
+so that the widened contract of §3.3 is exercised rather than
 merely annotated.
 
 The check itself is verified by `ci-typing.yml`, which fails the pull request on any
@@ -480,7 +480,7 @@ Out of scope:
   `geovista.siteconfig`, are the optional site configuration and are *meant* to be absent,
   so they want a targeted `ignore_missing_imports` rather than a fix. The configuration
   carries none for them yet. Change 2 cleared `lazy_loader`'s 19 early, with the override
-  of {ref}`§8 <typing-spec-8>` item 5, because the first module to leave the ratchet
+  of §8 item 5, because the first module to leave the ratchet
   imports it. Change 3 cleared `rasterio`'s 2 with typeshed's `types-rasterio`, not an
   override: `rasterio` ships no `py.typed`, but typeshed has carried stubs for it since
   June 2026, and against them `from_tiff` reported eleven lines of its own. conda-forge
@@ -488,16 +488,16 @@ Out of scope:
   for `geopy` or `pooch`. Change 6a took the three stub packages into the `devs` feature,
   and they revealed two errors in `geometry.py`. `pooch`, `geopy` and `fastparquet` ship no
   annotations and have no stubs, so one override covers them until they do
-  ({ref}`§8 <typing-spec-8>` item 9). The two site configurations share a second with
+  (§8 item 9). The two site configurations share a second with
   `pyvistaqt`, which ships `py.typed` but is in no locked environment ({issue}`2630`).
 
 (typing-spec-8)=
 ## 8. Open Items
 
-Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
+Each carries the status grammar of docs spec §3.6.
 
 1. **Resolved** (2026-10-06, {issue}`2568` and {issue}`2569`) — **Are the
-   {ref}`§3.4 <typing-spec-3-4>` defects reported upstream?** This item asserted that
+   §3.4 defects reported upstream?** This item asserted that
    neither was, and raising the issues to track them showed both halves of that wrong.
    One defect was reported in 2024 and has been fixed on `pyvista` `main` since September
    2026. The other is not upstream at all. Each now has its own trigger and its own
@@ -509,16 +509,16 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 3. **Resolved** (2026-10-11, {pull}`2619`) — **The
    `attr-defined` suppression hid a bug of ours.** It is labelled upstream in
    `pyproject.toml`, and the cause is one annotation in `geoplotter.py`, described in
-   {ref}`§3.4 <typing-spec-3-4>`. Until it is corrected, 45 errors in the gallery sit
+   §3.4. Until it is corrected, 45 errors in the gallery sit
    under a comment that sends the next reader to the wrong repository. This item and
-   {ref}`§3.4 <typing-spec-3-4>` first blamed `lazy.load`, on the theory that `mypy`
+   §3.4 first blamed `lazy.load`, on the theory that `mypy`
    could not see a base class loaded at runtime, and so did {issue}`2569` as first
    written. Checking that premise on 2026-10-07, before taking item 4 upstream,
    disproved it. `geoplotter.py` imports `pyvista` under `TYPE_CHECKING` as well, which
    is what `mypy` reads, and the 77 `call-arg` errors of item 2 are raised on methods
    `GeoPlotter` inherits, which could not happen if its base were unresolved. The
    unbound type in the message, `pv.Plotter.camera?`, is the annotation's own text. The
-   same check found that {ref}`§3.4 <typing-spec-3-4>` had been showing a one-line
+   same check found that §3.4 had been showing a one-line
    paraphrase of the override's comment while saying it quoted it; it now quotes
    `pyproject.toml` verbatim. Change 5 removed the annotation and swapped `attr-defined`
    for `no-untyped-call` in the override, whose comment now names its real causes.
@@ -529,7 +529,7 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    `__init__.py`, which `mypy` reads through `__init__.pyi` instead. With a typed copy on
    `mypy_path` and the library checked under `--strict`, a bare `py.typed` marker turns
    those 19 into 42 `no-untyped-call`, one at every `lazy.load`, the way `Camera.zoom`
-   behaves in {ref}`§3.4 <typing-spec-3-4>`. The marker together with annotations on
+   behaves in §3.4. The marker together with annotations on
    `load` and `attach` and a return type on `attach_stub` clears all 19 and leaves every
    other error unchanged, line for line, so the request asks for both and offers a
    follow-up pull request. A maintainer's advice there, in its issue 165, is to keep
@@ -595,28 +595,28 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 (typing-spec-9)=
 ## 9. References
 
-- `pyvista`'s `type-checking.yml` workflow, the precedent for {ref}`§3.1 <typing-spec-3-1>`:
+- `pyvista`'s `type-checking.yml` workflow, the precedent for §3.1:
   <https://github.com/pyvista/pyvista/blob/main/.github/workflows/type-checking.yml>
 - `mypy`'s `python_version`, pinned to the support floor by {pull}`2563`, and the
   `tests/test_python_support.py` convention this specification's ratchet test follows
 - `mypy` issue 13916, the reason the hook passes no filenames:
   <https://github.com/python/mypy/issues/13916>
 - `pyvista` issue 6589 and pull request 9162, the report and the fix for the `call-arg`
-  half of {ref}`§3.4 <typing-spec-3-4>`:
+  half of §3.4:
   <https://github.com/pyvista/pyvista/issues/6589> and
   <https://github.com/pyvista/pyvista/pull/9162>
 - `pyvista` pull request 9262, which widens the index `pyvista_ndarray.__setitem__`
-  accepts, cited by item 6 of {ref}`§8 <typing-spec-8>`:
+  accepts, cited by item 6 of §8:
   <https://github.com/pyvista/pyvista/pull/9262>
 - `pyvista` pull requests 9344 and 9351, which replace the array aliases that item 10 of
-  {ref}`§8 <typing-spec-8>` waits on:
+  §8 waits on:
   <https://github.com/pyvista/pyvista/pull/9344> and
   <https://github.com/pyvista/pyvista/pull/9351>
 - `lazy_loader` issue 165, on its relation to PEP 810, cited by item 4 of
-  {ref}`§8 <typing-spec-8>`: <https://github.com/scientific-python/lazy-loader/issues/165>
+  §8: <https://github.com/scientific-python/lazy-loader/issues/165>
 - `lazy_loader` issue 181, the request for a marker and annotations that resolves item 4
-  of {ref}`§8 <typing-spec-8>`: <https://github.com/scientific-python/lazy-loader/issues/181>
+  of §8: <https://github.com/scientific-python/lazy-loader/issues/181>
 - `typeshed` pull request 15884, which added the `rasterio` stubs that change 3 checks
   `bridge.py` against: <https://github.com/python/typeshed/pull/15884>
 - `typeshed` issue 16504, reporting three gaps in those stubs, cited by item 7 of
-  {ref}`§8 <typing-spec-8>`: <https://github.com/python/typeshed/issues/16504>
+  §8: <https://github.com/python/typeshed/issues/16504>

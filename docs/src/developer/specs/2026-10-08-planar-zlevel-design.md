@@ -12,7 +12,7 @@
 > **To be retired.** The globe, heights and layers design
 > ([`2026-10-26-globe-heights-layers-design.md`](2026-10-26-globe-heights-layers-design.md))
 > replaces `zlevel` and `zscale` with heights in metres and layers in an order. This
-> specification stays current until row 5 of {ref}`globe spec §9 <globe-spec-9>` lands, and
+> specification stays current until row 5 of globe spec §9 lands, and
 > is then retired.
 
 - **Date:** 2026-10-08 (originated; maintained since)
@@ -20,7 +20,7 @@
 - **Citation prefix:** `zlevel spec §…`
 - **Scope:** the height a z-level gives a mesh or point cloud in a planar CRS. The globe,
   where a level lives in the radius, is unchanged
-- **Parent spec:** none; its conventions are those of {ref}`docs spec §1 <docs-spec-1>`
+- **Parent spec:** none; its conventions are those of docs spec §1
 - **Published:** in the specifications index
 
 (zlevel-spec-1)=
@@ -74,7 +74,7 @@ below them has depended on its extent.
 - **The length is the Earth's radius, measured in the CRS's own units.** It belongs to the
   CRS, so every mesh and cloud transformed into that CRS shares it, and a level is the same
   proportion of the Earth's radius as it is on the globe. Chosen on 2026-10-08 over the
-  alternatives of {ref}`§5 <zlevel-spec-5>`.
+  alternatives of §5.
 - **`zscale` stays the only control.** It already scales every level, on the globe and in
   the plane, so the length needs no setting of its own.
 - **`GeoPlotter` does not change.** Its layers all pass through `transform_mesh`, and they
@@ -152,7 +152,7 @@ plotter's own layers all span the globe and shrink by the same factor, so they k
 order: base layer, then data, then coastlines and graticule. Beside a map 40,075 km across
 these offsets are small,
 so the image tests should change only where offsets are large, and item 2 of
-{ref}`§8 <zlevel-spec-8>` records what they actually show.
+§8 records what they actually show.
 
 The ORCA2 cloud of the gallery's `eqc` example covers only the North Atlantic, so its own
 length was 4,007,091 rather than a global mesh's. Under the rule its depths are 1.59 times
@@ -164,7 +164,7 @@ what they were, and its deepest point, at 5,275 m, moves from z = −211,365 to 
 A CRS that offers no ellipsoid, or no unit on its first axis, has no `R` to compute, and
 `transform_mesh` then raises a `ValueError` naming the CRS rather than guessing a scale.
 No CRS that `transform_mesh` can reach is affected, by item 1 of
-{ref}`§8 <zlevel-spec-8>`, so the guard is tested on the helper directly.
+§8, so the guard is tested on the helper directly.
 
 Units come from the first horizontal axis. A projected CRS uses one unit on both axes, a
 latitude-first geographic CRS such as EPSG:4269 uses degrees on both, and an unusual angular
@@ -178,7 +178,7 @@ the exception: `pyproj` returns its coordinates in degrees, so its `R` is 57.295
 |---|---|---|
 | 1 | The rule in `transform_mesh`, its tests and docstring, and the image baselines it moves | ✅ landed (2026-10-09, {pull}`2591`) |
 
-Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`. The image baselines live in
+Statuses follow docs spec §3.6. The image baselines live in
 `bjlittle/geovista-data`, so row 1 lands there first: the new images are released there,
 and the pull request here raises `DATA_VERSION` and `registry.txt` together, as
 `tests/AGENTS.md` describes. The change carries two towncrier fragments, `bugfix` for the
@@ -231,7 +231,7 @@ which nothing outside `transform_mesh` needs yet.
 (zlevel-spec-8)=
 ## 8. Open Items
 
-Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
+Each carries the status grammar of docs spec §3.6.
 
 1. **Resolved** (2026-10-08, {pull}`2591`) — **Can a CRS that `transform_mesh` reaches
    lack an ellipsoid or an axis unit?** No. A compound CRS and a bound one report the
@@ -239,10 +239,10 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    derived geographic one in degrees, and a geocentric one is in metres. An engineering
    CRS and a vertical one, such as EPSG:5703, have no ellipsoid, and `pyproj` refuses to
    build a transformer to either, so `transform_mesh` fails before it needs `R`. The
-   `ValueError` of {ref}`§3.4 <zlevel-spec-3-4>` is tested on the helper directly.
+   `ValueError` of §3.4 is tested on the helper directly.
 2. **Resolved** (2026-10-09, {pull}`2591`) — **Which image baselines move?** Two, each by
    a fraction of a pixel, as the camera frames the new scene bounds. One is the ORCA2 `eqc`
-   gallery image, whose cloud is 1.59 times deeper by {ref}`§3.3 <zlevel-spec-3-3>`. The
+   gallery image, whose cloud is 1.59 times deeper by §3.3. The
    other is the UK LAM scene of `test_view_poi` in `eqc`, whose mesh at `zlevel=10` rises
    to about 6.4 km. {user}`bjlittle` approved both, and `bjlittle/geovista-data` released
    them as 2026.10.2.
@@ -251,7 +251,7 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 ## 9. References
 
 - {issue}`2588`, which reported the bug and holds the extent measurements of
-  {ref}`§1 <zlevel-spec-1>`
+  §1
 - {pull}`2587`, which carries a point cloud's levels as `GV_POINT_ZLEVEL` and confined the
   planar offset to planar targets
 - {pull}`1977`, which added the WGS84 branch to `transform_mesh`

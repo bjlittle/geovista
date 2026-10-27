@@ -16,14 +16,14 @@
   `zlevel` and `zscale`
 - **Parent spec:** the globe-first CRS design
   ([`2026-10-23-globe-first-crs-design.md`](2026-10-23-globe-first-crs-design.md)). This
-  extends {ref}`crs spec §4.1 <crs-spec-4-1>` and {ref}`crs spec §4.9 <crs-spec-4-9>`,
-  and brings forward from {ref}`crs spec §9 <crs-spec-9>` the heights in physical units
+  extends crs spec §4.1 and crs spec §4.9,
+  and brings forward from crs spec §9 the heights in physical units
   and the replacement of `zlevel` that it gave to the design of region solids and the
-  vertical. It inherits that specification's decisions ({ref}`crs spec §2 <crs-spec-2>`)
-  and testing ({ref}`crs spec §6 <crs-spec-6>`) unchanged
+  vertical. It inherits that specification's decisions (crs spec §2)
+  and testing (crs spec §6) unchanged
 - **Sibling spec:** the planar z-levels design
   ([`2026-10-08-planar-zlevel-design.md`](2026-10-08-planar-zlevel-design.md)), whose rule
-  this specification replaces when row 5 of {ref}`§9 <globe-spec-9>` lands
+  this specification replaces when row 5 of §9 lands
 - **Prior art:** the vertical coordinates of the CF conventions, and the vertical CRSs of
   EPSG and PROJ; VTK's resolution of coincident topology, which is OpenGL's polygon offset
 - **Published:** in the specifications index
@@ -67,9 +67,9 @@ These were decided with {user}`bjlittle` while the design was written.
    rendering. It may offer the conversion later, once this design has matured.
 4. **One globe per scene.** A scene has one Earth radius, one render scale and one vertical
    exaggeration, and every layer takes its geometry from them, as
-   {ref}`crs spec §4.1 <crs-spec-4-1>` requires.
+   crs spec §4.1 requires.
 5. **`zlevel` and `zscale` are removed.** It is a breaking change, which
-   {ref}`crs spec §2 <crs-spec-2>` decision 4 allows. Physical stacking becomes heights, and
+   crs spec §2 decision 4 allows. Physical stacking becomes heights, and
    display stacking becomes the order of layers.
 6. **The evidence travels with the design.** The measurements that shaped it, the layering
    spike above all, are recorded here with their method, environment and date, so that a
@@ -105,7 +105,7 @@ globe and in Robinson:
 | Robinson | z = 0 | z = 1,913 m | z = 6,378 m |
 
 On the globe a level is a fraction of the mesh's own radius; in a projection it is a
-fraction of the WGS84 semi-major axis ({ref}`zlevel spec §3.1 <zlevel-spec-3-1>`). So the
+fraction of the WGS84 semi-major axis (zlevel spec §3.1). So the
 same level is two different heights, and the coastlines' display offset becomes a rise of
 1.9 km on the map, while on the globe they stay at radius 1, hidden inside an Earth-sized
 mesh.
@@ -216,7 +216,7 @@ with llvmpipe within a few points throughout:
   alone, with the surface no longer pulled forward too, leaked up to 11,000 pixels of the
   far side's coastlines over the horizon; 0 to 4 units leaked at most 2.
 - **The radius makes no difference.** Every case measured the same at radius 1 and at
-  6,378,137, which is evidence for {ref}`crs spec §8 <crs-spec-8>` item 3.
+  6,378,137, which is evidence for crs spec §8 item 3.
 
 Coastline visibility reached 100% in the close and orbiting views for both depth bias and
 the hybrid. The shortfall in the table is at the limb, where the ideal over-counts: its
@@ -237,7 +237,7 @@ plotters in one process, so each block of the measurement ran in a process of it
 A scene's globe holds three quantities, and nothing else in the scene holds them:
 
 - **the radius**, the physical radius of the Earth, a length, by default the WGS84
-  semi-major axis of 6,378,137 m, as {ref}`crs spec §4.1 <crs-spec-4-1>` sets;
+  semi-major axis of 6,378,137 m, as crs spec §4.1 sets;
 - **the render radius**, the radius the globe is drawn at, by default 1, so that a scene
   renders as it does today. The scale between the two is the render radius over the
   radius;
@@ -247,17 +247,17 @@ A scene's globe holds three quantities, and nothing else in the scene holds them
 `GeoPlotter` takes a globe, and every layer it adds takes its radius from it, the base
 layer, coastlines and graticule included. A globe is immutable. Changing the exaggeration
 of a scene replaces its globe, and the scene rebuilds every position from the heights its
-layers carry ({ref}`§4.4 <globe-spec-4-4>`).
+layers carry (§4.4).
 
-The render radius stays 1 by default. {ref}`§3.5 <globe-spec-3-5>` found layering to behave
-the same at the Earth's radius, which bears on {ref}`crs spec §8 <crs-spec-8>` item 3, but
+The render radius stays 1 by default. §3.5 found layering to behave
+the same at the Earth's radius, which bears on crs spec §8 item 3, but
 picking, the camera's clipping planes and interaction at that scale are not yet measured.
 
 (globe-spec-4-2)=
 ### 4.2 Units
 
 A length or an angle crosses the API boundary in one of three forms, as
-{ref}`crs spec §4.9 <crs-spec-4-9>` sets, and `geovista.units` converts each, once, to
+crs spec §4.9 sets, and `geovista.units` converts each, once, to
 metres or to degrees:
 
 1. a plain number, in metres for a length and degrees for an angle;
@@ -274,7 +274,7 @@ named.
 
 `geovista` depends on `pint` and on `pint-cf` as it stands, both on PyPI and conda-forge,
 behind `geovista.units`, so that replacing `pint-cf` would touch one module. That answers
-{ref}`crs spec §8 <crs-spec-8>` item 11.
+crs spec §8 item 11.
 
 (globe-spec-4-3)=
 ### 4.3 Heights Are Data
@@ -285,7 +285,7 @@ negated once at the boundary. A mesh given no height is at sea level.
 
 Heights are given where a mesh is built and where it is added to a scene: to the bridge's
 `Transform` constructors and to `GeoPlotter.add_mesh` and `add_points`, as an array, a
-scalar, or a length quantity, in any of the forms of {ref}`§4.2 <globe-spec-4-2>`.
+scalar, or a length quantity, in any of the forms of §4.2.
 A height belongs to a point. A height given for each cell is refused, rather than averaged
 onto the points, since the average is not a value the data holds. {issue}`2728` records the
 options, among them drawing each cell flat at its own height, and why refusing is the
@@ -293,12 +293,12 @@ default for now.
 
 Mean sea level is the one reference. On `geovista`'s sphere it is the surface of the
 sphere, which is how the models whose output it shows treat it too
-({ref}`§3.4 <globe-spec-3-4>`). A height declared against another zero is refused, never
+(§3.4). A height declared against another zero is refused, never
 mixed: a CRS whose vertical axis is an ellipsoidal height, as a 3D geographic CRS has, or a
 compound CRS whose vertical datum is not gravity-related. PROJ names the vertical axis of
 the one "Ellipsoidal height" and of the other "Gravity-related height". Converting such
 heights through PROJ, with the geoid grid it needs, is a later step
-({ref}`§7 <globe-spec-7>`).
+(§7).
 
 Heights that are not finite are refused.
 
@@ -312,7 +312,7 @@ exaggeration `E`:
 - in a projection, at `z = E h`, converted to the length unit of the CRS's horizontal axes.
   Where those axes are angular, as in a geographic CRS drawn flat, a height becomes the
   angle it subtends at the radius `R`, in the CRS's angular unit, as
-  {ref}`zlevel spec §3.1 <zlevel-spec-3-1>` already does for a level.
+  zlevel spec §3.1 already does for a level.
 
 A mesh is always positioned for some globe. The bridge's constructors and `transform_mesh`
 take a globe, `Globe()` by default, in place of today's `radius`, and the mesh records the
@@ -322,13 +322,13 @@ heights when it is added.
 Because the heights stay as data, a point's height is read back from the data, not from
 its position: a picked point reports the height it was given, and changing `E` rebuilds the
 positions from the same heights. The scene can report `R`, `s` and `E`, so a vertical scale
-shown to the viewer can be exact ({ref}`§9 <globe-spec-9>`, row 6).
+shown to the viewer can be exact (§9, row 6).
 
 A coarse cell is still flat between its vertices, so its middle is drawn below the height
-its vertices carry, by its sag ({ref}`§3.5 <globe-spec-3-5>`): 1.7 km at the centre of a C48
+its vertices carry, by its sag (§3.5): 1.7 km at the centre of a C48
 cell at true scale. That is a property of the mesh, not of its heights. Refining a mesh for
 display reduces it, and stays an explicit opt-in
-({ref}`crs spec §2 <crs-spec-2>`, decision 8).
+(crs spec §2, decision 8).
 
 (globe-spec-4-5)=
 ### 4.5 Layers
@@ -344,21 +344,21 @@ separates them. A surface added without a place still takes the next one, becaus
 does not check whether two surfaces overlap, and a surface that overlaps another needs a
 place of its own.
 
-**On the globe**, the hybrid of {ref}`§3.5 <globe-spec-3-5>`:
+**On the globe**, the hybrid of §3.5:
 
 - the base layer is drawn lowered, in render units only, by 1.1 times the largest sag of
   the surfaces above it, so their cells' middles stay above it. A cell's sag is how far the
   mean of its vertices falls short of their mean radius, as a fraction of that radius, as
-  {ref}`§3.5 <globe-spec-3-5>` measured it;
+  §3.5 measured it;
 - lines are drawn at their true heights, with a depth bias of 4 units towards the viewer,
   which covers their own sag of 9.3 × 10⁻⁶ without pulling the far side over the horizon.
 
 Data surfaces are never moved. Two data surfaces at the same height on different meshes
 fall back on their places and a depth bias, each place 256 units nearer the viewer than the
 one below it, and surfaces that share a place share its bias. That can leave the sliver at
-the limb that {ref}`§3.5 <globe-spec-3-5>` measured for depth bias alone. Whether a
+the limb that §3.5 measured for depth bias alone. Whether a
 surface's bias also pulls its far side over the horizon, as a bias of 256 did for lines, is
-not yet measured ({ref}`§8 <globe-spec-8>`, item 7).
+not yet measured (§8, item 7).
 
 **On a projected map**, where every layer at one height lies in one plane, layers are kept
 apart by depth bias alone, each place 256 units nearer the viewer than the one below it,
@@ -375,7 +375,7 @@ reaches a coordinate a user reads back.
 (globe-spec-4-6)=
 ### 4.6 What Goes
 
-When row 5 of {ref}`§9 <globe-spec-9>` lands:
+When row 5 of §9 lands:
 
 | today | becomes |
 |---|---|
@@ -386,17 +386,17 @@ When row 5 of {ref}`§9 <globe-spec-9>` lands:
 | `resize(..., zlevel=..., zscale=...)` | a height, or a globe's render radius |
 
 The gallery's 11 examples that use a level move to heights or to an order, each as its
-purpose in {ref}`§3.1 <globe-spec-3-1>` says. The planar z-levels specification is then
+purpose in §3.1 says. The planar z-levels specification is then
 retired, with a note at its head that this specification replaced it, and why.
 
 (globe-spec-5)=
 ## 5. Alternatives Considered
 
 - **Keep `zlevel`, scaled consistently.** Rejected. It mends the inconsistency of
-  {ref}`§3.2 <globe-spec-3-2>`, but leaves height and display in one number, and leaves a
+  §3.2, but leaves height and display in one number, and leaves a
   plume's height a fraction of a radius.
 - **A fixed geometric offset, as today.** Rejected. No fixed offset clears every resolution,
-  and today's fails a 5° grid ({ref}`§3.5 <globe-spec-3-5>`).
+  and today's fails a 5° grid (§3.5).
 - **Depth bias alone, on the globe.** Rejected. It leaves a sliver at the limb for a coarse
   mesh, and a stronger bias does not remove it.
 - **Depth bias scaled by slope.** Rejected. It does not remove the sliver, and buries the
@@ -409,20 +409,20 @@ retired, with a note at its head that this specification replaced it, and why.
   data that may be visible, and a data surface's height is physics.
 - **Heights in the geometry, with the globe recorded beside them.** Rejected. Changing the
   exaggeration would mean recovering heights from positions, which is the reconstruction
-  that Raikoke's picking has to do today ({ref}`§3.3 <globe-spec-3-3>`).
+  that Raikoke's picking has to do today (§3.3).
 - **Averaging a height given for each cell onto the vertices**, as `pyvista`'s usual
   workaround does. Rejected as a default, because a corner then holds a height no cell has:
   a cell at 4,000 m among cells at 500 m is drawn about 2.6 km too low ({issue}`2728`).
 - **Converting model levels to heights in `geovista` now.** Deferred, by decision 3.
 - **Converting ellipsoidal heights to mean sea level now.** Deferred. It needs a geoid grid,
-  and without one PROJ falls back silently ({ref}`§3.4 <globe-spec-3-4>`), so refusing is the
+  and without one PROJ falls back silently (§3.4), so refusing is the
   rigorous step until the conversion is designed.
 
 (globe-spec-6)=
 ## 6. Testing
 
 Every result is checked against a reference independent of `geovista`, as
-{ref}`crs spec §6 <crs-spec-6>` requires:
+crs spec §6 requires:
 
 - **heights**: a point given a height in feet, kilometres or metres, through any registry
   or a CF unit string, reads back the same height in metres, exactly; and is drawn at
@@ -431,7 +431,7 @@ Every result is checked against a reference independent of `geovista`, as
   read back unchanged;
 - **refusal**: an ellipsoidal height, a pressure given as a height, a height for each cell,
   a dimensionless angle and a height that is not finite each raise, naming the problem;
-- **layering**: the measures of {ref}`§3.5 <globe-spec-3-5>` become tests, on whichever
+- **layering**: the measures of §3.5 become tests, on whichever
   renderer CI provides: no bleed, and every coastline of the close and orbiting views
   visible, for C48 and a 5° grid on the globe, and for C48 on Robinson;
 - **places**: surfaces that share a place are drawn with one bias, and where two surfaces
@@ -455,17 +455,17 @@ Out of scope, recorded so they are not forgotten:
 - ellipsoidal heights and other vertical datums, converted through PROJ with a geoid grid;
 - height above the ground as a reference, which upstream turns into height above sea level;
 - volumes, plumes as solids, and a floor and a ceiling, which stay with the design of region
-  solids and the vertical ({ref}`crs spec §9 <crs-spec-9>`), along with {issue}`15`;
-- the true shape of the ellipsoid ({ref}`crs spec §9 <crs-spec-9>`).
+  solids and the vertical (crs spec §9), along with {issue}`15`;
+- the true shape of the ellipsoid (crs spec §9).
 
 (globe-spec-8)=
 ## 8. Open Items
 
-Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
+Each carries the status grammar of docs spec §3.6.
 
 1. **Open** — **The vertical scale shown to the viewer.** Its form, a ruler beside the globe
    or a scale bar on the map, and how it marks the exaggeration. Row 6 of
-   {ref}`§9 <globe-spec-9>` owns it.
+   §9 owns it.
 2. **Open** — **A warped base layer.** The base layer is lowered by the sag of the surfaces
    above it. When it is terrain, warped by its own heights, that lowering moves terrain
    that may be visible where no surface covers it. Whether to lower it only beneath the
@@ -473,19 +473,19 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 3. **Open** — **Data surfaces at one height on different meshes.** They fall back on order
    and depth bias, which leaves a sliver at the limb for a coarse mesh. Whether that is ever
    seen in practice, and what to do if it is.
-4. **Open** — **The physical render radius.** {ref}`§3.5 <globe-spec-3-5>` found layering the
+4. **Open** — **The physical render radius.** §3.5 found layering the
    same at the Earth's radius. Picking, clipping planes and interaction at that scale are
    not yet measured, before the default could change.
 5. **Open** — **The ideal of the coastline measure.** It over-counts at the limb, so the
    limb's visibility is understated. A tighter ideal would let the limb be tested too.
 6. **Deferred** (until users ask for it, {issue}`2728`) — **Heights given for each cell.**
-   They are refused ({ref}`§4.3 <globe-spec-4-3>`). Averaging them onto the vertices lowers
+   They are refused (§4.3). Averaging them onto the vertices lowers
    every peak and raises every valley without a word. Drawing each cell flat at its own
    height is honest but stepped. Users will want cell-centred heights to work as they are,
    and the issue holds the options for that conversation.
 7. **Open** — **A biased surface at the limb.** A surface a place above another is drawn
    256 units nearer the viewer. A bias of 256 on lines pulled the far side's coastlines
-   over the horizon ({ref}`§3.5 <globe-spec-3-5>`), and no surface was measured with one.
+   over the horizon (§3.5), and no surface was measured with one.
    Whether a surface's far side shows past the horizon, and if it does, whether to shrink
    the bias or apply it only where surfaces overlap, needs measuring before row 4 is
    planned.
@@ -502,7 +502,7 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 | 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | not started |
 | 6 | A vertical scale for the viewer | candidate: a scene with heights that a scientist shows |
 
-Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`. Rows 1 to 5 come in order, and each
+Statuses follow docs spec §3.6. Rows 1 to 5 come in order, and each
 is planned once the rows before it have landed. Row 4 needs a renderer in CI, which the
 image tests already have. Row 5 is breaking, and carries a `breaking` fragment beside its
 own. Row 2 of the parent's roadmap lands with row 5 here.

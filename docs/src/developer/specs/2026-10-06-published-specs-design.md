@@ -17,9 +17,9 @@
   `docs/src/developer/plans/`
 - **Scope:** how specifications are published and cited. What any individual specification
   says is its own business
-- **Parent spec:** none. {ref}`typing spec §1 <typing-spec-1>` records that it inherited
+- **Parent spec:** none. typing spec §1 records that it inherited
   nothing because the conventions were not written down anywhere. This is that document
-- **Published:** in the specifications index, since change 1 of {ref}`§4 <docs-spec-4>`
+- **Published:** in the specifications index, since change 1 of §4
   took `orphan: true` off this document and the type coverage specification together
 
 (docs-spec-1)=
@@ -59,25 +59,25 @@ than a plan.
 - **Specifications are published; plans are not.** A specification is maintained alongside
   the code it describes and is read as current. A plan records what was intended before
   implementation and is not updated afterwards, so publishing one would put a document on
-  Read the Docs that is wrong by design. See {ref}`§3.1 <docs-spec-3-1>`.
+  Read the Docs that is wrong by design. See §3.1.
 - **A plan is withheld by `exclude_patterns`, not by `orphan: true`.** An orphan is a
   published page that nothing links to, which is a weaker claim than the one being made.
-  See {ref}`§3.1 <docs-spec-3-1>`.
+  See §3.1.
 - **Sections are addressed by explicit anchors keyed to the section number**, never by the
-  slug `docutils` derives from the heading text. See {ref}`§3.3 <docs-spec-3-3>`.
+  slug `docutils` derives from the heading text. See §3.3.
 - **A citation carries the section sign.** `typing spec §3.1`, never `typing spec 3.1`. The
   sign is what makes the token unmistakable in running prose, and a form that a future
   transform cannot recognise is a citation written today that goes dead later. See
-  {ref}`§3.2 <docs-spec-3-2>`.
+  §3.2.
 - **A bare `§N` means the containing document's §N.** Inside a specification that is the
   ordinary way to name a neighbouring section. Outside the collection it is always an
-  error, because `src/` and `tests/` own no sections. See {ref}`§3.2 <docs-spec-3-2>`.
+  error, because `src/` and `tests/` own no sections. See §3.2.
 - **A roadmap row either carries an assertion or carries an admission.** A row may state a
   trigger only if something fails when that trigger fires. A row whose trigger cannot be
-  observed mechanically says so, in those words. See {ref}`§4 <docs-spec-4>`.
+  observed mechanically says so, in those words. See §4.
 - **A status names the work that produced it.** A roadmap row that has landed, and an open
   item that has been settled, each carry the date and the pull request or issue that did
-  it, from a closed vocabulary. See {ref}`§3.6 <docs-spec-3-6>`.
+  it, from a closed vocabulary. See §3.6.
 
 (docs-spec-3)=
 ## 3. Architecture
@@ -132,7 +132,7 @@ states two things a reader cannot infer from any single document. First, that **
 living documents**, so what they read is current and a divergence from the code is a
 specification defect worth reporting. Second, that **the citation namespace has members**,
 with the prefix naming which. The index's table lists every prefix in use, and
-{ref}`§3.5 <docs-spec-3-5>` holds it complete. When this specification was written there
+§3.5 holds it complete. When this specification was written there
 were two:
 
 | citation | document |
@@ -164,7 +164,7 @@ it is written rather than by what the reader assumes, and the one thing it canno
 silent reference to somewhere else.
 
 The section sign is required. All seven of `geovista`'s first citations were written
-without it, as `typing spec 3.1`, until change 1 of {ref}`§4 <docs-spec-4>` added it to
+without it, as `typing spec 3.1`, until change 1 of §4 added it to
 each. The sign is what separates a citation from an ordinary sentence containing a version
 number, and a citation a transform cannot recognise renders as dead text rather than as a
 link. Writing the seven correctly cost seven edits; leaving them would have cost a silent
@@ -193,14 +193,15 @@ slug, `docutils` disambiguates the second to `id1`, and that silently becomes `i
 moment a heading is inserted above it. Anchors derived from prose are unstable under
 exactly the edits a living document invites.
 
-Both specifications of the time satisfied it, and change 1 of {ref}`§4 <docs-spec-4>`
+Both specifications of the time satisfied it, and change 1 of §4
 added the assertion, so every document since has been governed rather than merely well
 written.
 
 (docs-spec-3-4)=
 ### 3.4 Cross-References Inside a Specification
 
-A specification names its own sections constantly, and does it with a hand-written role:
+A specification names its own sections constantly. It used to do so with a hand-written
+role:
 
 ```markdown
 See {ref}`§3.1 <typing-spec-3-1>`.
@@ -215,16 +216,10 @@ nothing is broken from where they are standing.
 
 `tephpy` removes the class outright by writing citations as plain text and deriving the
 target from them at build time, so there is only one string and the two cannot disagree.
-That is row 2 of {ref}`§4 <docs-spec-4>` and it is not built here.
-
-So the roles stay for now, and the hazard is closed by assertion instead of by
-construction: **a `{ref}` role naming a section must have a display text that agrees with
-its target.** `` {ref}`§3.1 <typing-spec-3-1>` `` passes; the example above fails.
-
-Converting them all to plain text now was the alternative, and it is rejected
-because it would take working links away from readers today in exchange for a convention
-whose machinery does not exist yet. When the transform lands it makes those citations links
-again, the roles collapse to plain text, and this assertion retires with them.
+That was row 2 of §4, built by the citation links design, and every section is now cited
+in plain text: `See §3.1.` is linked to its section when the page is built. While the roles
+remained, an assertion held each role's display text to its target; with the roles gone,
+the rule is that **no role names a section**, so that the one-string form is the only one.
 
 (docs-spec-3-5)=
 ### 3.5 What Holds the Conventions
@@ -257,26 +252,27 @@ The suite asserts:
    has drifted onto the wrong heading still resolves, so resolution alone does not see it.
 3. **Resolution.** Every citation in the corpus names an anchor that exists.
 4. **Form.** Every citation carries its section sign, no run wraps across a line, and each
-   end of a range is a citation of its own, per {ref}`§3.2 <docs-spec-3-2>`.
-5. **Agreement.** Every `{ref}` role naming a section displays the section it targets, per
-   {ref}`§3.4 <docs-spec-3-4>`.
-6. **Triggers.** Each observable roadmap condition of {ref}`§4 <docs-spec-4>`.
+   end of a range is a citation of its own, per §3.2.
+5. **Plain text.** No `{ref}` or `:ref:` role names a section, per §3.4, which retires the
+   agreement between a role's display text and its target that this item held while roles
+   remained.
+6. **Triggers.** Each observable roadmap condition of §4.
 7. **Status.** Every roadmap Status cell and every open item opens with a word from the
-   vocabulary of {ref}`§3.6 <docs-spec-3-6>`, and every terminal status carries an ISO date
+   vocabulary of §3.6, and every terminal status carries an ISO date
    and at least one reference: an `{issue}` or `{pull}` role, or a link to an issue or pull
    request in another repository. This is the one rule a specification breaks by *not*
    editing it: a row goes stale by the work landing elsewhere, so the check has to read the
    column rather than the diff. Whether the reference is real is not this suite's question,
-   since answering it means asking GitHub; {ref}`§3.6 <docs-spec-3-6>` says what answers it.
+   since answering it means asking GitHub; §3.6 says what answers it.
 
-It also holds the publication of {ref}`§3.1 <docs-spec-3-1>` in place: no specification
+It also holds the publication of §3.1 in place: no specification
 carries `orphan: true`, the index's toctree lists every specification, and its namespace
 table names every declared prefix.
 
 Code is skipped, both fenced and inline. That is not a refinement, it is what lets a
-specification quote its own rules: {ref}`§3.3 <docs-spec-3-3>` above illustrates the anchor
+specification quote its own rules: §3.3 above illustrates the anchor
 rule with a literal `(docs-spec-3-2)=` and its heading *inside* a fence, and
-{ref}`§3.4 <docs-spec-3-4>` shows a deliberately mismatched `{ref}` role inline. A checker
+§3.4 shows a deliberately mismatched `{ref}` role inline. A checker
 reading either finds a duplicate anchor, a heading in the wrong place and a disagreeing
 role, and fails on the passages documenting the rules it enforces. Skipping a fence means
 matching the opening rail rather than counting delimiters, since a block opened with four
@@ -288,7 +284,7 @@ derived from a glob fails by.
 
 **What this cannot catch.** A citation that is well formed and resolves, and names the
 wrong section, is indistinguishable from a correct one. These checks are syntactic. What
-narrows that class is the rule in {ref}`§3.2 <docs-spec-3-2>` giving the unqualified form a
+narrows that class is the rule in §3.2 giving the unqualified form a
 local meaning, together with review, and nothing here should be read as claiming otherwise.
 
 (docs-spec-3-6)=
@@ -351,7 +347,7 @@ Several references are listed in the order the work happened, so a row whose fir
 needed a follow-up says so instead of naming only the one that finished.
 
 What this buys is not bookkeeping. A reader who asks why the ratchet has twenty-three
-entries and not the twenty-two {ref}`typing spec §3.2 <typing-spec-3-2>` predicted gets
+entries and not the twenty-two typing spec §3.2 predicted gets
 from the row to
 {pull}`2565` to the measurement that corrected it, without anybody having transcribed the
 measurement into the specification. The specification stays the design; the references
@@ -375,7 +371,7 @@ carry the evidence.
 | 5 | GitHub reference roles and hardcoded-link detection | candidate |
 
 `candidate` and `not started` are different states, which is why
-{ref}`§3.6 <docs-spec-3-6>` separates them. A `not started` row is wanted and unscheduled.
+§3.6 separates them. A `not started` row is wanted and unscheduled.
 A `candidate` row is described, and whether it is wanted is the question the triggers below
 answer.
 
@@ -383,12 +379,12 @@ Change 1 created `docs/src/developer/specs/index.rst`, added `developer/plans/**
 `exclude_patterns` and to the reading-time gate's `EXCLUDED_DIRS`, gave
 `docs/src/developer/index.rst` a card and a toctree entry, removed `orphan: true` from both
 specifications, added the section sign to the seven existing citations, and landed the
-test of {ref}`§3.5 <docs-spec-3-5>`. Two of this document's rules changed on the way, and
-{ref}`§8 <docs-spec-8>` records both.
+test of §3.5. Two of this document's rules changed on the way, and
+§8 records both.
 
 Rows 2 to 5 are candidates rather than scheduled work. When this specification was written
 `geovista` had seven citations in one namespace, against `tephpy`'s 1,096 across nineteen,
-and the machinery those rows describe is roughly 2,075 lines ({ref}`§9 <docs-spec-9>`).
+and the machinery those rows describe is roughly 2,075 lines (§9).
 Building it now would be engineering ahead of the need. Each row therefore names the
 condition that ends that objection, and change 1 asserts every condition that can be
 observed:
@@ -402,7 +398,7 @@ observed:
   times the seven there were when this was written. The first ceiling was thirty-five,
   meant as the point at which reading them all stops being something anyone does. Change
   5 of the type coverage roadmap passed it, and the ceiling was doubled rather than the
-  rows built (item 2 of {ref}`§8 <docs-spec-8>`). The globe-first CRS work brought the
+  rows built (item 2 of §8). The globe-first CRS work brought the
   count to 68 on 2026-10-26, and {user}`bjlittle` chose to build the rows instead of
   raising it again. The citation links design built them, and the ceiling retired with
   row 2 there.
@@ -420,7 +416,7 @@ observed:
 ## 5. Alternatives Considered
 
 - **Hand-writing a cross-reference role for every citation**, rather than deriving the
-  target at build time. Rejected for {ref}`§3.4 <docs-spec-3-4>`'s reason: it manufactures
+  target at build time. Rejected for §3.4's reason: it manufactures
   one fresh opportunity per citation for a reference that displays correctly and opens the
   wrong section, which no gate can see. It is tolerated for the existing roles only because
   an assertion closes it and the transform retires it.
@@ -445,8 +441,8 @@ observed:
 (docs-spec-6)=
 ## 6. Testing
 
-`tests/test_spec_conventions.py` holds {ref}`§3.1 <docs-spec-3-1>` to
-{ref}`§3.6 <docs-spec-3-6>`, and the roadmap triggers of {ref}`§4 <docs-spec-4>`.
+`tests/test_spec_conventions.py` holds §3.1 to
+§3.6, and the roadmap triggers of §4.
 
 It sits in `tests/` rather than `tests/docs/` because it reads source files and needs no
 built artefact, which puts it beside `tests/test_ci_typing.py`. That is the right
@@ -459,7 +455,7 @@ the person whose change carries the count past the ceiling is told which decisio
 just made rather than which number no longer matches.
 
 `.github/scripts/check_status_references.py` does the one check this suite cannot, resolving
-each status reference against GitHub as {ref}`§3.6 <docs-spec-3-6>` describes. It is a
+each status reference against GitHub as §3.6 describes. It is a
 script rather than a test, so a network outage fails a workflow and not the suite.
 `tests/test_status_references.py` runs its rules against a fixed record of the work, and
 asserts that the parser it borrows still finds the references in the real specifications.
@@ -478,16 +474,14 @@ and building the documentation rather than this one collection inside it.
 (docs-spec-8)=
 ## 8. Open Items
 
-Each carries the grammar of {ref}`§3.6 <docs-spec-3-6>`, so a reader can tell a decision
+Each carries the grammar of §3.6, so a reader can tell a decision
 that was taken from one that was dropped.
 
-1. **Open** (owned by row 2 of {ref}`§4 <docs-spec-4>`) — **The `{ref}` agreement
-   assertion assumes the display text is the section number.**
-   `` {ref}`§3.1 <typing-spec-3-1>` `` is the only form in use, and a role displaying a
-   section's title instead would fail the check while being correct. Every specification
-   writes it the one way today, as the assertion itself requires. If a second form becomes wanted, the assertion widens; it is
-   not widened in advance for a form nobody has asked for. Row 2 owns it because the
-   transform retires the roles, and this assertion with them.
+1. **Resolved** (2026-10-27, {pull}`2745`) — **The `{ref}` agreement assertion assumed
+   the display text is the section number.** A role displaying a section's title instead
+   would have failed the check while being correct. The question went with the roles: row 4
+   of the citation links design wrote every citation of a section in plain text, and the
+   assertion retired, replaced by the rule that no role names a section.
 2. **Resolved** (2026-10-26, {pull}`2738`) — **The threshold of
    seventy citations is a judgement, not a measurement.** It was first thirty-five, five
    times the seven citations there were when it was set, chosen to fire before review
@@ -501,15 +495,15 @@ that was taken from one that was dropped.
    2026-10-26, at 68, {user}`bjlittle` chose to build the rows instead, and the threshold
    retired with them, so no better number is wanted.
 3. **Resolved** (2026-10-09, {pull}`2609`) — **Nothing proved the references in a status
-   line point at real work.** {ref}`§3.5 <docs-spec-3-5>`'s seventh assertion checks that a
+   line point at real work.** §3.5's seventh assertion checks that a
    terminal status carries a date and a reference, not that the work it names exists or did
    what the status says. Raised as {issue}`2575`, this is now checked against GitHub on each
    pull request that touches a specification, and nightly for drift, as
-   {ref}`§3.6 <docs-spec-3-6>` describes, which keeps the network out of the unit suite. Row
-   5 of {ref}`§4 <docs-spec-4>` no longer owns reference checking. It keeps the form of a
+   §3.6 describes, which keeps the network out of the unit suite. Row
+   5 of §4 no longer owns reference checking. It keeps the form of a
    reference, which is all that `tephpy`'s `check_github_references.py` checks.
 4. **Resolved** (2026-10-07, {pull}`2573`) — **The status rule accepted only this
-   repository's roles.** The seventh assertion of {ref}`§3.5 <docs-spec-3-5>` asked a
+   repository's roles.** The seventh assertion of §3.5 asked a
    terminal status for an `{issue}` or `{pull}` role, and the type coverage specification
    resolves one of its open items against an issue in `lazy-loader`, which neither role
    can name. A link to an issue or pull request in another repository now counts as the
@@ -520,7 +514,7 @@ that was taken from one that was dropped.
    the files change 1 touches. The count also measured the wrong thing. A wrong prefix is
    the one mistake the transform cannot catch, since both anchors exist and either
    resolves, while what row 2 buys grows with the number of citations. Rows 2 to 4 now
-   share the scale trigger of {ref}`§4 <docs-spec-4>`, decided while planning change 1.
+   share the scale trigger of §4, decided while planning change 1.
 
 (docs-spec-9)=
 ## 9. References
@@ -544,9 +538,9 @@ that was taken from one that was dropped.
   documentation itself, across twenty specifications), with four test suites
   (`test_citation_grammar.py`, `test_citations.py`, `test_citation_xrefs.py`,
   `test_rendered_citations.py`). It arrived over four plans rather than one change.
-- {ref}`typing spec §1 <typing-spec-1>` — the document whose citations this governs, and
-  whose unwatched `orphan: true` note is the argument for {ref}`§4 <docs-spec-4>`'s
+- typing spec §1 — the document whose citations this governs, and
+  whose unwatched `orphan: true` note is the argument for §4's
   assertion rule.
 - `tests/docs/test_readingtime_coverage.py` — the derived-corpus pattern
-  {ref}`§3.5 <docs-spec-3-5>` follows, including an exemption tuple whose entries each carry
+  §3.5 follows, including an exemption tuple whose entries each carry
   the reason beside them.

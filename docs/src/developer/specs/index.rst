@@ -53,7 +53,7 @@ Statuses
 Every roadmap row and open item in a specification carries a status, and a
 finished one names the work that finished it, as in
 ``✅ landed (2026-10-06, {pull}`2565`)``.
-:ref:`docs spec §3.6 <docs-spec-3-6>` sets out the vocabulary, and what each
+docs spec §3.6 sets out the vocabulary, and what each
 status must cite.
 
 When you change a status, check it against GitHub before you push, giving the

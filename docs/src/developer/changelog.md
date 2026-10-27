@@ -54,6 +54,10 @@ conveniences may be used within a news fragment file:
 * `:pull:` - Link to a `geovista` {fab}`github` pull-request e.g., **:pull:\`456\`**
 * `:user:` - Link to a {fab}`github` user e.g., **:user:\`bjlittle\`**
 
+A fragment naming a row of a design specification's roadmap, such as a change
+of the type coverage roadmap, cites the pull request that landed the row with
+`:pull:`, which the row itself cites, rather than naming the row in words alone.
+
 ````{note}
 Remember to acknowledge the author/s of a pull-request with the `:user:` extlink.
 Some examples:

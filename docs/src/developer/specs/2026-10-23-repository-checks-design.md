@@ -13,8 +13,8 @@
 - **Citation prefix:** `checks spec §…`
 - **Scope:** the checks `geovista` wrote to hold its own repository to a rule, the page that
   documents them, and the gate that keeps the two in step. Third-party tools are out of
-  scope for now, and {ref}`§4 <checks-spec-4>` keeps a row for them
-- **Parent spec:** none; its conventions are those of {ref}`docs spec §1 <docs-spec-1>`
+  scope for now, and §4 keeps a row for them
+- **Parent spec:** none; its conventions are those of docs spec §1
 - **Published:** in the specifications index
 
 (checks-spec-1)=
@@ -40,9 +40,9 @@ allowed an exception, declared in a list beside the check:
 
 `EXCLUDED_DIRS`, beside `EXEMPT`, is not an exception: it names trees that Sphinx does not
 publish as written. `NUMBERED_CEILING`, in the specification conventions, is not one
-either. It is the trigger of row 5 of {ref}`citation spec §9 <citation-spec-9>`, and raising
+either. It is the trigger of row 5 of citation spec §9, and raising
 it is a change to that specification. It replaced `CEILING`, the trigger of rows 2 to 4 of
-{ref}`docs spec §4 <docs-spec-4>`, which retired when those rows were built.
+docs spec §4, which retired when those rows were built.
 
 A contributor usually meets one of these checks by failing it. The failure says what is
 wrong but not why the rule exists, or whether an exception is allowed and where it goes.
@@ -57,7 +57,7 @@ failure point at its section.
 
 The table above is where the design started, and is not kept current. The
 {ref}`repository checks page <gv-developer-checks>` is the inventory, and the gate of
-{ref}`§3.4 <checks-spec-3-4>` fails whenever a check has no section there, so a new check
+§3.4 fails whenever a check has no section there, so a new check
 needs no change here. The first added since is dependency ceilings, in
 `tests/test_dependency_ceilings.py` ({pull}`2729`).
 
@@ -71,7 +71,7 @@ needs no change here. The first added since is dependency ceilings, in
   because separate pages make it harder to find a similar check in another group.
 - **Only `geovista`'s own checks, for now.** Exceptions to third-party tools, such as a
   `# noqa`, a `filterwarnings` entry or a `nitpick_ignore_regex` pattern, are documented by
-  those tools. They may join later, and {ref}`§4 <checks-spec-4>` keeps a row for them, so
+  those tools. They may join later, and §4 keeps a row for them, so
   nothing in the first version may assume they never will.
 - **A check with no exception still gets a section.** Knowing there is no way round a rule
   saves a contributor looking for one.
@@ -79,7 +79,7 @@ needs no change here. The first added since is dependency ceilings, in
   a contributor's branch is compared against.
 - **The page is written by hand, and a gate keeps it honest.** Generating the table from
   the checks would need a Sphinx extension reading test modules, which is more machinery
-  than the nine rows it began with justify. See {ref}`§5 <checks-spec-5>`.
+  than the nine rows it began with justify. See §5.
 - **The gate is a check too.** A contributor who adds or removes a check and fails the gate
   has just failed a check, so the gate has a name and a section of its own, which made
   nine when it landed.
@@ -130,9 +130,9 @@ CHECK = "image-marker"
 The name is lower case words joined by hyphens, and is the stem of the section's labels,
 `gv-developer-checks-<name>` and `tippy-gv-developer-checks-<name>`, following the labels
 of the rest of the developer guide. One module enforces one check, as each of the eight
-of {ref}`§1 <checks-spec-1>` does, and only the module that enforces a check declares its
+of §1 does, and only the module that enforces a check declares its
 name. A module that tests a check's script, such as `tests/test_status_references.py`,
-declares none. The gate of {ref}`§3.4 <checks-spec-3-4>` is named `repository-checks`.
+declares none. The gate of §3.4 is named `repository-checks`.
 
 (checks-spec-3-3)=
 ### 3.3 The Breadcrumb
@@ -192,13 +192,13 @@ that drives a failure covers them.
 | 1 | The page, the nine `CHECK` names, the breadcrumb hook and script output, and the gate | ✅ landed (2026-10-23, {pull}`2707`) |
 | 2 | Third-party tools: `ruff`, `mypy` type-ignore comments, `filterwarnings`, `nitpick_ignore_regex`, `zizmor`, `codespell`, `numpydoc` and `repo-review` | candidate |
 
-Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`.
+Statuses follow docs spec §3.6.
 
 Row 2 is wanted when contributors are blocked by third-party exceptions often enough that
 the tools' own documentation is not enough. That cannot be observed mechanically, so the
 row is **revisited by hand**, when an issue or review asks how to declare such an
 exception. Adding it fills the hook and documentation build groups of
-{ref}`§3.1 <checks-spec-3-1>`. A third-party tool has no module of `geovista`'s to declare a
+§3.1. A third-party tool has no module of `geovista`'s to declare a
 `CHECK` in, so row 2 also decides where its name is declared for the gate to find, and how
 a breadcrumb reaches a failure the tool reports itself.
 
@@ -222,7 +222,7 @@ a breadcrumb reaches a failure the tool reports itself.
 (checks-spec-6)=
 ## 6. Testing
 
-- The gate of {ref}`§3.4 <checks-spec-3-4>` runs against the repository, and against a
+- The gate of §3.4 runs against the repository, and against a
   small tree of its own showing that it fails for an undeclared section, a section whose
   check is gone, and a name declared twice.
 - The hook is tested with `pytester`: a failing test in a module declaring `CHECK` reports
@@ -238,16 +238,16 @@ a breadcrumb reaches a failure the tool reports itself.
 ## 7. Scope
 
 In scope are the page, its card, toctree entry and `EXEMPT` entry, the `CHECK` constants
-of the eight checks of {ref}`§1 <checks-spec-1>` and of the gate, the hook, the scripts'
+of the eight checks of §1 and of the gate, the hook, the scripts'
 output, the gate and its tests. Out of scope are third-party tools, which row 2 of
-{ref}`§4 <checks-spec-4>` holds, and moving the existing write-ups of the image marker, the
+§4 holds, and moving the existing write-ups of the image marker, the
 reading-time banner and the changelog fragment. So is changing what any check enforces:
 this specification documents the rules as they stand.
 
 (checks-spec-8)=
 ## 8. Open Items
 
-Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
+Each carries the status grammar of docs spec §3.6.
 
 1. **Resolved** (2026-10-23, {pull}`2716`) — **`changelog.py` is tested only for its
    breadcrumb.** A stub let a test drive a finding without `towncrier`, but left the
@@ -261,7 +261,7 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
 
 - {pull}`2703`, whose `RELAXED` table prompted this specification
 - `tests/test_spec_conventions.py`, whose test of the specifications index against the
-  specifications is the model for the gate of {ref}`§3.4 <checks-spec-3-4>`
+  specifications is the model for the gate of §3.4
 - `tests/docs/test_readingtime_coverage.py`, which derives the pages it governs rather
   than listing them, the model for finding every `CHECK`
 - `pytest`'s `pytest_runtest_makereport` hook:

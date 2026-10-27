@@ -15,7 +15,7 @@
 - **Scope:** the foundation every projected scene stands on: the globe model, units, the
   cutting engine on the sphere, the domain of each class of projection, datums, the CRS
   interface, and the reuse of all of it across a time series
-- **Parent spec:** none; its conventions are those of {ref}`docs spec §1 <docs-spec-1>`
+- **Parent spec:** none; its conventions are those of docs spec §1
 - **Published:** in the specifications index
 
 (crs-spec-1)=
@@ -25,15 +25,15 @@
 offers, which is the de facto standard, and do better. The first step, and the one the
 rest stand on, is solid support for coordinate reference systems. Regions for users, 3D
 region solids, a rigorous vertical dimension and features without `cartopy` all follow,
-each as a design of its own ({ref}`§9 <crs-spec-9>`).
+each as a design of its own (§9).
 
 Today `geovista` projects a mesh in one way. It rotates the mesh about the polar axis so
 that the central meridian sits at zero, cuts a seam along the antimeridian, and projects
 the vertices. That assumes a projection takes the whole globe in one piece, with a single
 seam on a meridian. Measured on 2026-10-23 against a global 5° mesh
-({ref}`§3.1 <crs-spec-3-1>`), the assumption holds for 17 of `cartopy`'s 38 projection
+(§3.1), the assumption holds for 17 of `cartopy`'s 38 projection
 classes and 91 of the 162 projection methods of PROJ 9.9. The rest raise, run off to
-infinity, or tear, in six distinct ways ({ref}`§3.2 <crs-spec-3-2>`).
+infinity, or tear, in six distinct ways (§3.2).
 
 The design keeps data on the globe for as long as possible and projects it last. Every
 cut, clip, seam and test of a domain happens on the sphere, where there are no
@@ -43,7 +43,7 @@ generalises it.
 
 The bar is scientific confidence. A scientist must be able to trust and check every cut,
 every boundary and every height, so the design is built around two rules it may never
-break ({ref}`§2 <crs-spec-2>`, decision 1).
+break (§2, decision 1).
 
 (crs-spec-2)=
 ## 2. Decisions
@@ -57,7 +57,7 @@ These were decided with {user}`bjlittle` while the design was written.
    once, at the end.
 3. **Rebuild from the ground up.** The seam and transform code (`MeridianSlice`, `remesh`,
    the central meridian rotation in `transform_mesh` and `GeoPlotterBase.add_mesh`) is
-   redesigned around the engine of {ref}`§4.2 <crs-spec-4-2>`, not extended.
+   redesigned around the engine of §4.2, not extended.
 4. **Breaking changes are allowed.** `geovista` is 0.x with a small community, so this is
    the time to make them.
 5. **cartopy is not a foundation.** Its approach clips in projected space with planar
@@ -67,19 +67,19 @@ These were decided with {user}`bjlittle` while the design was written.
 6. **Learn from cartopy, without repeating its journey.** Its lasting idea is that a
    projection carries knowledge of its own valid domain, and that idea is kept, applied on
    the globe. Its defaults are inherited where they are sound, and challenged where they
-   smell ({ref}`§5 <crs-spec-5>`).
+   smell (§5).
 7. **Three ways in.** Scientists may name a projection with a `geovista` class that mirrors
    `cartopy`'s name and keywords, with a PROJ string or `pyproj.CRS`, or with a `cartopy`
    CRS object. Writing PROJ strings is for power users, and nobody is forced to.
 8. **A safe default for data meshes.** A data mesh's cells are never refined by default.
    Refinement for display is an explicit opt-in, every sub-cell carries the id of its
    source cell, and the result records that it was refined
-   ({ref}`§4.6 <crs-spec-4-6>`). Built-in lines and boundaries, such as coastlines, the
+   (§4.6). Built-in lines and boundaries, such as coastlines, the
    graticule and a domain's edge, are always densified. A user's line mesh is data, and
    follows the rule for data meshes.
 9. **Cut once, map many.** Most time series keep a fixed mesh and change only its values,
    so the geometry is worked once and every frame carries its values through a stored
-   mapping ({ref}`§4.5 <crs-spec-4-5>`).
+   mapping (§4.5).
 10. **Coverage commitment.** The architecture covers every class of projection. Delivery
     commits to `cartopy` parity (all 38 classes, interrupted Goode Homolosine and
     Spilhaus included), to every PROJ method in classes 1 to 4 except four, and to keeping
@@ -87,7 +87,7 @@ These were decided with {user}`bjlittle` while the design was written.
     (`som`, `lsat`, `misrsom`), which follows a satellite's ground track rather than a
     great circle, and `bipc`, which joins two oblique cones. They, and the other
     interrupted and polyhedral methods, come when a scientist asks. Anything not yet
-    supported fails loudly ({ref}`§4.3 <crs-spec-4-3>`).
+    supported fails loudly (§4.3).
 11. **Build on specialised packages.** `geovista` is the glue in its cartographic domain.
     PROJ does projection mathematics, VTK and `pyvista` do mesh processing, and
     `geovista` contributes upstream where a package needs shaping for its use, rather
@@ -97,12 +97,12 @@ These were decided with {user}`bjlittle` while the design was written.
 12. **No release regresses a working use.** Until a class lands, the PROJ methods it holds
     keep today's path unchanged, so a regional mesh in Web Mercator, UTM, the British
     National Grid or a rotated pole keeps working. That path is deleted when the last
-    class lands ({ref}`§10 <crs-spec-10>`).
+    class lands (§10).
 13. **Units are first class, through `pint`.** Every physical quantity at the API boundary
     is either a plain number in its documented unit, or a `pint` quantity. A CF unit
     string, as an Iris cube or an xarray `units` attribute carries, is read with
     `pint-cf`'s CF-compliant registry. Inside, quantities are converted once to SI and the
-    hot paths stay plain NumPy ({ref}`§4.9 <crs-spec-4-9>`). `cf-units` is not used,
+    hot paths stay plain NumPy (§4.9). `cf-units` is not used,
     because it builds on the UDUNITS-2 C library, which pip cannot install; that is the
     view of {user}`bjlittle`, a core developer of `cf-units`.
 
@@ -124,7 +124,7 @@ the median of the edges between the same two latitudes. The second test catches 
 across an interruption, and the comparison within a latitude band spares the expected
 stretching of a cylindrical projection near a pole.
 
-The coverage test of {ref}`§6 <crs-spec-6>` repeats this measurement in every run of the
+The coverage test of §6 repeats this measurement in every run of the
 unit tests. The first measurement counted 161 methods and found `rouss` failing. The
 test's first run, on 2026-10-24 at `7ca628c1`, counted 162 and found `rouss` working, and
 §3.2 reports its outcomes.
@@ -178,7 +178,7 @@ already ahead.
 Projecting leniently, by turning PROJ's error checks off and dropping every cell that is
 non-finite, folded or runaway, made 28 of the 70 methods of the first measurement render
 cleanly but with jagged edges.
-That fallback is rejected as a default ({ref}`§7 <crs-spec-7>`).
+That fallback is rejected as a default (§7).
 
 (crs-spec-3-3)=
 ### 3.3 The Globe and the Vertical
@@ -216,15 +216,15 @@ The model carries:
   6,378,137 m, which is the sphere `cartopy` uses for its spherical classes;
 - the scale between physical units and the units the scene is rendered in, so a scene can
   be rendered at a normalised radius of 1 while every height and tolerance stays physical
-  ({ref}`§8 <crs-spec-8>`, item 3);
+  (§8, item 3);
 - an explicit vertical exaggeration, applied once by the scene
-  ({ref}`globe spec §4.4 <globe-spec-4-4>`).
+  (globe spec §4.4).
 
 Every tolerance in the engine is relative to the radius or expressed as an angle, so a
 result is the same at radius 1 and at the Earth's radius. Heights in physical units, and
-what replaces the `zlevel` and `zscale` of {ref}`zlevel spec §3.1 <zlevel-spec-3-1>`, were
+what replaces the `zlevel` and `zscale` of zlevel spec §3.1, were
 first given to the design of region solids and the vertical, and came forward into
-{ref}`globe spec §4 <globe-spec-4>`.
+globe spec §4.
 
 (crs-spec-4-2)=
 ### 4.2 The Cutting Engine
@@ -234,7 +234,7 @@ the centre meets the sphere in a great circle, and a plane off the centre meets 
 small circle, such as a parallel or the rim of a cap. The engine offers four primitives:
 
 1. **Rotate.** Turn a mesh with a 3D rotation, between the geographic frame and a
-   projection's natural frame ({ref}`§4.3 <crs-spec-4-3>`). Today's rotation about the
+   projection's natural frame (§4.3). Today's rotation about the
    polar axis by the central meridian is the special case.
 2. **Clip.** Keep the part of a mesh where a signed function is not negative, and cut
    every crossing cell exactly where the function crosses zero, interpolating the values
@@ -260,7 +260,7 @@ small circle, such as a parallel or the rim of a cap. The engine offers four pri
 
 Each primitive works on surfaces, lines and points. A point is kept or removed whole, and
 a line is clipped or cut at its exact crossing. Each primitive also returns an account of
-its work ({ref}`§4.6 <crs-spec-4-6>`).
+its work (§4.6).
 
 The seam must land exactly where PROJ puts its discontinuity, to the last digit. The
 review of {pull}`2689` found that a difference of 3.3×10⁻⁹° put both copies of a seam
@@ -269,7 +269,7 @@ rebasing the target CRS to a central meridian of zero, so that seam points sit e
 ±180°. A general rotation cannot always rebase the CRS, so each copy of a seam point is
 moved a small angle into its own side before projection. The angle must exceed PROJ's
 tolerance for wrapping a longitude and stay far below any distance a scientist would
-notice. It is verified per class ({ref}`§6 <crs-spec-6>`, and {ref}`§8 <crs-spec-8>`
+notice. It is verified per class (§6, and §8
 item 6).
 
 The exact cut of a crossing cell puts new points on the cell's straight edges, which are
@@ -281,7 +281,7 @@ on the circle it was cut on, at the radius interpolated for it.
 
 VTK, through `pyvista`, does the clipping and cutting. `pyvista` 0.49 made clipping by a
 plane, clipping by a surface, transforms and extraction faster, and `pyvista` 0.49 is the
-floor ({ref}`§8 <crs-spec-8>`, item 9). Manifold, through `pyvista-manifold`, is not part
+floor (§8, item 9). Manifold, through `pyvista-manifold`, is not part
 of the foundation: its booleans need closed solids, so it cannot cut an open data mesh.
 It belongs to the region solids of project 4.
 
@@ -321,7 +321,7 @@ box is still four planes: two parallels and two meridian half-planes.
 
 A national grid, such as the British National Grid, is a transverse Mercator or a conic
 with a published area of use, and its domain is that area of use, as a lat/lon box
-({ref}`§4.8 <crs-spec-4-8>`).
+(§4.8).
 
 Each PROJ method maps to one class and to the parameters that set its domain, read from
 the CRS: `lat_0` and `lon_0` for a cap, `lon_0`, `lat_0` and `alpha` or `lonc` for a band,
@@ -333,11 +333,11 @@ taken from PROJ's implementation of each.
 A method that the registry does not hold raises an error that names the method and says
 its domain is not yet supported, rather than rendering something torn. Until its class
 lands, though, a method of classes 1 to 6 keeps today's path, as decision 12 of
-{ref}`§2 <crs-spec-2>` requires. The 91 methods of
-{ref}`§3.2 <crs-spec-3-2>` enter the registry as class 0, each verified by the coverage
-test of {ref}`§6 <crs-spec-6>`.
+§2 requires. The 91 methods of
+§3.2 enter the registry as class 0, each verified by the coverage
+test of §6.
 
-Each domain has defaults and overrides ({ref}`§5 <crs-spec-5>`). A domain's limits are
+Each domain has defaults and overrides (§5). A domain's limits are
 angles on the globe, never distances in projected units.
 
 (crs-spec-4-4)=
@@ -382,7 +382,7 @@ done once and recorded as a mapping:
   projection, that takes a vector from the geographic frame to the projected one. A
   rotation would be right only for a conformal projection, and would quietly misdirect
   the vectors of Robinson or Mollweide. Projecting vector fields is parity work
-  ({ref}`§9 <crs-spec-9>`); the mapping has room for it.
+  (§9); the mapping has room for it.
 
 The mapping is cached against a key made of everything the geometry depends on, so a
 change to any of them recomputes it and nothing goes stale. Each frame of a time series
@@ -392,7 +392,7 @@ renders, in place. When a mesh's geometry does change between frames, the cache 
 and the full path runs, which is correct but slower.
 
 The mapping is also the record of what was kept, cut and removed, which
-{ref}`§4.6 <crs-spec-4-6>` relies on.
+§4.6 relies on.
 
 (crs-spec-4-6)=
 ### 4.6 Accounting for Every Cell
@@ -401,14 +401,14 @@ Every operation reports what it did, and nothing is removed in silence:
 
 - a result records the CRS, datum operation and domain it was projected with, and whether
   it was refined for display. A domain always cuts exactly. The edge modes of the regions
-  design ({ref}`§9 <crs-spec-9>`) join the record, and the key of
-  {ref}`§4.5 <crs-spec-4-5>`, when it lands;
+  design (§9) join the record, and the key of
+  §4.5, when it lands;
 - anything removed is counted, and the removed part can be recovered from the mapping;
 - a removal that the chosen CRS implies, such as the far hemisphere of an orthographic
   view or the poles of a Mercator one, is recorded but not warned about, since a warning
   on every such plot would be noise;
 - every other removal is warned about, such as a point that the datum operation cannot
-  take ({ref}`§4.8 <crs-spec-4-8>`), or a result that is not finite;
+  take (§4.8), or a result that is not finite;
 - a caller may turn a warning into an error, or acknowledge it, but only explicitly.
 
 The form of the record, as field data on the mesh, a Python object beside it, or both, is
@@ -427,13 +427,13 @@ exactly from each cell's spherical polygon.
 
 Coastlines, the graticule, the base layer and every other built-in layer go through the
 same engine and take the scene's globe model. Lines are clipped to the domain and cut at
-its seams at their exact crossings, and densified as {ref}`§4.2 <crs-spec-4-2>`
+its seams at their exact crossings, and densified as §4.2
 describes. Points are kept or removed, with the same account as cells. The base layer's
 texture coordinates come from each vertex's longitude and latitude in the natural frame,
 so that `raster.wrap_texture` no longer depends on a scalar central meridian. The
 graticule is generated on the sphere and clipped to the domain, and its labels sit inside
 it. Placing labels along a domain's edge, as `cartopy` can, is part of the parity work of
-{ref}`§9 <crs-spec-9>`.
+§9.
 
 (crs-spec-4-8)=
 ### 4.8 Datums
@@ -443,11 +443,11 @@ mesh's vertices go from their source CRS to the target's base geographic CRS by 
 datum operation for the whole scene, chosen by the policy below. The domain and its seams
 are then cut in that frame, and the map projection alone is applied last, so a seam lands
 where the projection puts its discontinuity, to the last digit. The operation is recorded
-with the result ({ref}`§4.6 <crs-spec-4-6>`) and is part of the cache key
-({ref}`§4.5 <crs-spec-4-5>`).
+with the result (§4.6) and is part of the cache key
+(§4.5).
 
 On the sphere a longitude is always east of Greenwich, and every angle is in the engine's
-canonical angular unit ({ref}`§4.9 <crs-spec-4-9>`), whatever the base geographic CRS
+canonical angular unit (§4.9), whatever the base geographic CRS
 measures in. Not every one measures in degrees from Greenwich. NTF (Paris), the base of
 Lambert zone II, EPSG:27572, measures in grads east of Paris, so its coordinates are
 converted as they reach the sphere, and converted back for the projection. Measured on
@@ -479,8 +479,8 @@ The operation is chosen by one policy:
    ballpark operation, which applies no datum shift, is chosen only when no other
    operation exists.
 4. **A national grid's domain is its area of use.** The domain of a national grid is the
-   area of use of its EPSG definition ({ref}`§4.3 <crs-spec-4-3>`). Anything outside it is
-   a removal the CRS implies ({ref}`§4.6 <crs-spec-4-6>`), and what remains is covered by
+   area of use of its EPSG definition (§4.3). Anything outside it is
+   a removal the CRS implies (§4.6), and what remains is covered by
    the grid's own operations.
 5. **The record explains the choice.** It names the operation, its accuracy and any grid
    it used, and any more accurate operation it passed over for a missing grid. PROJ may
@@ -505,14 +505,14 @@ it takes the 2 m operation with the warning of item 3.
 ### 4.9 Units
 
 > **Extended by a child specification.** [`2026-10-26-globe-heights-layers-design.md`](2026-10-26-globe-heights-layers-design.md) settles how `geovista.units` reads each
-> form ({ref}`globe spec §4.2 <globe-spec-4-2>`), and adds heights and depths to the
+> form (globe spec §4.2), and adds heights and depths to the
 > quantities with a unit.
 
 Every physical quantity that crosses the API boundary has a unit. In the foundation these
-are the globe's radius ({ref}`§4.1 <crs-spec-4-1>`), the densification tolerance, a
-length or an angle ({ref}`§4.2 <crs-spec-4-2>`), and the angles of domain options, such
-as a cap's radius or a band's half-width ({ref}`§4.3 <crs-spec-4-3>`). Heights and
-depths join them in project 4 ({ref}`§9 <crs-spec-9>`).
+are the globe's radius (§4.1), the densification tolerance, a
+length or an angle (§4.2), and the angles of domain options, such
+as a cap's radius or a band's half-width (§4.3). Heights and
+depths join them in project 4 (§9).
 
 A function takes each such quantity in one of three forms:
 
@@ -525,7 +525,7 @@ A function takes each such quantity in one of three forms:
 
 Each is converted once, at the boundary, to SI for lengths and to one canonical unit for
 angles. Inside, the engine works on plain floats and NumPy arrays, so units add nothing
-to the per-frame cost of {ref}`§4.5 <crs-spec-4-5>`. A physical length that a result or
+to the per-frame cost of §4.5. A physical length that a result or
 record reports, such as the radius it was projected at, carries its unit.
 
 Units for data values, such as a temperature or a concentration, stay with the data.
@@ -540,12 +540,12 @@ carries a verdict.
 
 | Departure | Measured | Verdict |
 |---|---|---|
-| A forced sphere of radius 6,378,137 m for 14 classes, including `Orthographic`, `Miller`, `Gnomonic` and `NearsidePerspective` | no difference for sphere-only methods such as `robin`; `Orthographic` moves 7.6 km east and 22.7 km north at 90°E 45°N against PROJ's ellipsoidal `ortho`, and `Miller` 11.2 km and 6.0 km | **Open** ({ref}`§8 <crs-spec-8>`, item 1): it dates from PROJ's spherical-only `ortho` before 7.2 |
-| Domains as rectangles or ellipses in projected metres | `NorthPolarStereo`'s ±5×10⁷ m reaches 61.4°S; `Gnomonic`'s reaches 82.7° from its centre; `TransverseMercator`'s ±2×10⁷ m by ±1×10⁷ m includes the near-singular regions; `ObliqueMercator` reuses `Mercator`'s latitude-limit extents | **Challenged**: limits are angles on the globe, with defaults per class ({ref}`§8 <crs-spec-8>`, item 2) |
+| A forced sphere of radius 6,378,137 m for 14 classes, including `Orthographic`, `Miller`, `Gnomonic` and `NearsidePerspective` | no difference for sphere-only methods such as `robin`; `Orthographic` moves 7.6 km east and 22.7 km north at 90°E 45°N against PROJ's ellipsoidal `ortho`, and `Miller` 11.2 km and 6.0 km | **Open** (§8, item 1): it dates from PROJ's spherical-only `ortho` before 7.2 |
+| Domains as rectangles or ellipses in projected metres | `NorthPolarStereo`'s ±5×10⁷ m reaches 61.4°S; `Gnomonic`'s reaches 82.7° from its centre; `TransverseMercator`'s ±2×10⁷ m by ±1×10⁷ m includes the near-singular regions; `ObliqueMercator` reuses `Mercator`'s latitude-limit extents | **Challenged**: limits are angles on the globe, with defaults per class (§8, item 2) |
 | Regional defaults: `Mercator` from −80° to 84°, and `LambertConformal` centred on the contiguous United States (−96°, 39°, parallels 33° and 45°) with a cutoff at −30° | as stated | **Inherited**, for familiarity, with the reason for each documented on its class |
 | Degree-like units, `to_meter=111319.49`, for `LambertCylindrical` and `RotatedPole` | as stated | **Inherited** for `RotatedPole`, whose users think in rotated degrees; **challenged** for `LambertCylindrical`, which takes PROJ's metres |
 | Hand-written national grids: `OSNI` mixes the WGS84 ellipsoid with modified Airy axes and carries no datum, where `OSGB` carries its datum | as stated | **Challenged**: national grids are built from their EPSG definitions |
-| A densification threshold in each projection's own units, from 0.5° for `PlateCarree` to 100 km for the polar stereographics | as stated | **Replaced** by densification on the sphere ({ref}`§4.2 <crs-spec-4-2>`) |
+| A densification threshold in each projection's own units, from 0.5° for `PlateCarree` to 100 km for the polar stereographics | as stated | **Replaced** by densification on the sphere (§4.2) |
 
 `cartopy`'s globe default is the WGS84 ellipsoid, where PROJ's is GRS80. The two differ by
 a fraction of a millimetre in the semi-minor axis, and the verdict is to inherit WGS84.
@@ -561,7 +561,7 @@ Every geometric result is checked against a reference that is independent of
   latitude of a clipped boundary, and the angular radius of a perspective horizon;
 - **the seam**, tested per class: no cell spans more than half the projection, and no edge
   is more than ten times the median of the edges between the same two latitudes, which
-  are the metrics of {ref}`§3.1 <crs-spec-3-1>`. A seam that bisects cells leaves polar
+  are the metrics of §3.1. A seam that bisects cells leaves polar
   triangles up to 0.31 of the projection wide, for a Greenwich CRS too, so half is the
   threshold;
 - **the radius**, by running each class at a radius of 1 and at the Earth's radius, and
@@ -575,10 +575,10 @@ Every geometric result is checked against a reference that is independent of
   operation cannot take.
 
 A **coverage test** records the outcome of every PROJ method and every `cartopy` class on
-a global mesh, measured as {ref}`§3.1 <crs-spec-3-1>` describes, and only lets the set
+a global mesh, measured as §3.1 describes, and only lets the set
 that works grow. A method claimed as supported must work, and one that is not supported
-must raise the error of {ref}`§4.3 <crs-spec-4-3>`. Like the typing ratchet of
-{ref}`typing spec §4 <typing-spec-4>`, it makes coverage visible and stops it shrinking
+must raise the error of §4.3. Like the typing ratchet of
+typing spec §4, it makes coverage visible and stops it shrinking
 by accident.
 
 **Image tests**, one or more per class, cover the scenes scientists asked for: Arctic sea
@@ -600,7 +600,7 @@ quietly wrong.
   coincidences that globe first avoids.
 - **A lenient fallback by default**, projecting with PROJ's checks off and dropping what
   fails. Rejected, because it drops data silently and leaves jagged edges. It made 28 of
-  the 70 methods failing in the first measurement render ({ref}`§3.2 <crs-spec-3-2>`), and
+  the 70 methods failing in the first measurement render (§3.2), and
   might return later as an explicit, loud opt-in.
 - **PROJ strings only.** Rejected, because `cartopy`'s classes are scientists' muscle
   memory, and forcing PROJ strings on them would be alien.
@@ -624,7 +624,7 @@ quietly wrong.
 (crs-spec-8)=
 ## 8. Open Items
 
-Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
+Each carries the status grammar of docs spec §3.6.
 
 1. **Open** — **Inherit or challenge `cartopy`'s forced sphere?** Following PROJ's
    ellipsoidal `ortho` is more faithful, but moves an orthographic view by up to tens of
@@ -636,12 +636,12 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
    Mercator. A transverse Mercator band is a full ring around the globe, so its default
    presumably takes only the half of the ring on the central meridian's side, from pole to
    pole, and its half-width is open. A national grid takes the area of use of its EPSG
-   definition ({ref}`§4.8 <crs-spec-4-8>`).
+   definition (§4.8).
 3. **Open** — **Physical or normalised render units.** Rendering at the Earth's radius in
    metres makes every coordinate physical, but VTK's precision and cameras at that scale
    need checking against rendering at a normalised radius of 1.
 4. **Open** — **The form and names of the domain options and of the record**
-   ({ref}`§4.4 <crs-spec-4-4>` and {ref}`§4.6 <crs-spec-4-6>`), to be settled with an
+   (§4.4 and §4.6), to be settled with an
    early adopter's code in hand.
 5. **Open** — **An escape hatch for unsupported methods, once today's path is gone.**
    Whether a power user may then project to a method the registry does not hold, at their
@@ -661,13 +661,13 @@ Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`.
     Whether `geovista` depends on it as it stands, contributes to it, or keeps the CF
     strings it needs behind a small adapter of its own until it matures. It depends on
     `pint-cf` as it stands, on PyPI and conda-forge, behind `geovista.units`, so replacing
-    it would touch one module ({ref}`globe spec §4.2 <globe-spec-4-2>`).
+    it would touch one module (globe spec §4.2).
 
 (crs-spec-9)=
 ## 9. Scope
 
 In scope is the foundation: the globe model and units, the cutting engine, the domains of
-all six classes with the coverage of {ref}`§2 <crs-spec-2>` decision 10, datums, the CRS
+all six classes with the coverage of §2 decision 10, datums, the CRS
 interface, cut once map many, the accounting of every cell, and the built-in layers on
 top of them.
 
@@ -685,7 +685,7 @@ Out of scope, each as a design of its own, in this order:
    `geovista` is BSD-3. Vertical datums other than mean sea level, and the work of
    {issue}`15`, {pull}`2294`, {issue}`1029` and `bjlittle/geovista-jav-2026`. Heights in
    physical units, and the replacement of `zlevel`, came forward into
-   {ref}`globe spec §4 <globe-spec-4>`. It builds on the globe model.
+   globe spec §4. It builds on the globe model.
 3. **Features without `cartopy`.** A Natural Earth reader for coastlines, borders, rivers,
    land and ocean, after which `cartopy` is dropped. It builds on densification.
 4. **The rest of `cartopy` parity**: gridline labels along a domain's edge, web map tiles,
@@ -704,8 +704,8 @@ The CRS work of this design closes {issue}`140`, {issue}`1402`, {issue}`2674` an
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The coverage test of {ref}`§6 <crs-spec-6>`, recording today's outcomes | ✅ landed (2026-10-26, {pull}`2721`) |
-| 2 | The globe model, units, heights and layers, by rows 1 to 5 of {ref}`globe spec §9 <globe-spec-9>` | not started |
+| 1 | The coverage test of §6, recording today's outcomes | ✅ landed (2026-10-26, {pull}`2721`) |
+| 2 | The globe model, units, heights and layers, by rows 1 to 5 of globe spec §9 | not started |
 | 3 | The cutting engine: rotate, clip, cut a seam, densify, with the account of each | not started |
 | 4 | The domain registry, and class 0 on the engine, replacing today's seam and transform path with no change to the 91 methods that work | not started |
 | 5 | The CRS interface: `geovista` classes, domain options, and `cartopy` objects read without importing it | not started |
@@ -718,7 +718,7 @@ The CRS work of this design closes {issue}`140`, {issue}`1402`, {issue}`2674` an
 | 12 | Cut once, map many | not started |
 | 13 | Display refinement, as an explicit opt-in | not started |
 
-Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`. Rows 1 to 4 come first and in
+Statuses follow docs spec §3.6. Rows 1 to 4 come first and in
 order, since everything else stands on them. From row 4, a method whose class has not
 landed keeps today's path, and the last class row deletes that path. Rows 5 to 13 may
 then proceed in any order that suits the early adopters, and each lands with its tests,
