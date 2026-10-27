@@ -65,8 +65,8 @@ specifications design on that date.
   sections are only ever added at the end or subdivided, would protect the citations at the
   cost of the documents. Instead, a renumber must update every citation of the sections it
   moves, in the same pull request, and the guard of {ref}`§4.5 <citation-spec-4-5>` says
-  which. A citation that reaches `main` stale by another route is caught by the guard's
-  nightly audit.
+  which. A citation added on a branch older than a renumber is caught on its own pull
+  request, before it merges.
 - **Released changelog entries are corrected like everything else.** A link to the wrong
   section has no value, released or not, so the guard reads `CHANGELOG.rst` and changelog
   fragments, and its fix rewrites them.
@@ -279,19 +279,32 @@ section to its new number, and the author reviews the diff. This is what correct
 released changelog entry. A citation of a removed section has no new number to take, so
 the fix leaves it for the author, who points it elsewhere or deletes it.
 
-One case escapes it. A pull request branched before a renumber merged can add a citation
-meaning the old number. It changes no specification, so the guard does not run on it, and
-its own diff shows nothing moving even if it did. So each night the guard also audits the
-whole repository: for every citation, it pairs the cited specification as it stood in the
-commit that last wrote the citing line with the specification today, as above, and reports
-any citation whose section has since moved or been removed. That is the audit of
-{ref}`§3.2 <citation-spec-3-2>`, run on a schedule. It finds the stale citation whatever
-route it came by, within a day of its merging, and opens an issue as the nightly check of
-statuses already does ({ref}`docs spec §3.6 <docs-spec-3-6>`), naming the `--fix` that
-corrects it.
+One case escapes that comparison. A pull request branched before a renumber merged can
+add a citation meaning the old number. It changes no specification, and its own diff
+shows nothing moving. So the guard also judges every line the pull request changed by
+what the base changed since the branch forked: it translates the citation back to the
+fork along the branch's own changes, so a branch that already took a renumber is read by it,
+follows the specification from the fork along the base's own history, change by change, as
+above, and reports a citation whose section the base has since moved or removed. The pull request's own changes to a
+specification are judged as above, so they are never counted twice. That is the audit of
+{ref}`§3.2 <citation-spec-3-2>`, run on the lines a pull request adds. It follows the
+specification one change at a time because comparing the two ends loses a section renamed
+in one change and grown in others, which is how a living section changes. A protected
+branch that must be up to date before merging re-runs the guard whenever the base moves,
+so such a citation cannot merge stale.
 
-The guard runs in `ci-spec-status.yml`, which already runs on every pull request that
-changes a specification and each night, and locally with a pixi task against `origin/main`.
+It has to happen on the pull request. The repository squash-merges, so once merged, a
+line's commit on the base branch is the squash, whose tree already holds every renumber
+that preceded it, and the history that would show the citation stale is gone. The same
+audit still runs over the whole repository each night, as a backstop for a commit that
+reached the base branch by another route, and opens an issue as the nightly check of
+statuses does ({ref}`docs spec §3.6 <docs-spec-3-6>`), naming the `--fix` that corrects
+it. A line older than the guard is followed from the commit at which every citation was
+audited by hand, when the guard was written, so the audit only judges history the guard
+was there to see.
+
+The guard runs in `ci-citations.yml` on every pull request, since any can add a
+citation, and each night, and locally with a pixi task against `origin/main`.
 It cannot be a unit test, since it needs history. It is a repository check of its own,
 declaring `CHECK`, with a row and a section on the repository checks page
 ({ref}`checks spec §3.2 <checks-spec-3-2>`).
@@ -314,8 +327,9 @@ refusing to renumber them. Two kinds are frozen:
 They are only ever appended. An item that stops applying is marked so in place, as
 {ref}`§4.4 <citation-spec-4-4>` retires an assertion, and a row that splits takes letter
 suffixes in place, as row 6 of the type coverage roadmap became 6a to 6c. The guard pairs
-items and rows the way it pairs sections, and fails on any that has moved or been removed.
-An item whose title is edited pairs with itself by its text, and passes.
+items and rows the way it pairs sections, and then pairs any left over by number, since an
+item resolved or a row rescoped is rewritten in place, under its number. It fails on any
+that has moved, or whose number is gone or now names another.
 
 A changelog fragment that names a roadmap row cites the row's pull request with a `:pull:`
 role, which is already the evidence the row carries ({ref}`docs spec §3.6 <docs-spec-3-6>`).
@@ -357,12 +371,10 @@ The changelog guidelines say so.
   Six citations today. Deferred to row 5 of {ref}`§9 <citation-spec-9>`.
 - **A unit test for the guard instead of a CI job.** A test reads one tree, and a renumber
   is only visible between two.
-- **A check on every pull request for citations written against an outdated base.** It
-  would compare the citations a pull request adds with the renumbers merged since it
-  branched, and warn earlier than the nightly audit. But it has to run on every pull
-  request, and a pull request that passed before the renumber merged can still merge
-  without running again, so the audit is needed anyway. Not chosen, by {user}`bjlittle`,
-  in favour of the audit alone.
+- **A nightly audit alone, instead of a check on every pull request.** It needs no job on
+  every pull request, and {user}`bjlittle` first chose it. The final review of the guard
+  found it blind under squash merging, as above, and on 2026-10-27 {user}`bjlittle` chose
+  the check on every pull request, with the nightly audit kept as a backstop.
 
 (citation-spec-6)=
 ## 6. Testing
@@ -383,8 +395,9 @@ The changelog guidelines say so.
   section inserted while another is renamed pairs each correctly; a section rewritten past
   recognition reads as removed; a moved item or row fails and a split row passes; and
   `--fix` rewrites the untouched citations of moved sections, `CHANGELOG.rst` among them,
-  and nothing else. The nightly audit is tested on a repository where a citation is added
-  on a branch that predates a renumber, and is merged after it.
+  and nothing else. A citation added on a branch that predates a renumber is tested as CI
+  sees it, on the merge of the branch into a base renumbered since, and `--fix` gives it
+  its section's new number. The nightly audit is tested on the same history merged.
 - The collapse is tested by the before and after comparison of
   {ref}`§4.4 <citation-spec-4-4>`, run once, and recorded in its pull request.
 
@@ -411,7 +424,7 @@ today.
 |---|---|---|
 | 1 | One grammar: `docs/src/_ext/geovista_citations.py`, imported by the conventions test | ✅ landed (2026-10-26, {pull}`2735`) |
 | 2 | The transform and the output check, which land together; the ceiling test retires | ✅ landed (2026-10-27, {pull}`2738`) |
-| 3 | The renumber guard, its fix, its nightly audit, and the rules for items and rows | not started ({issue}`2566`) |
+| 3 | The renumber guard, its fix, its nightly audit, and the rules for items and rows | ✅ landed (2026-10-27, {pull}`2740`) |
 | 4 | Collapsing the roles; the agreement assertion retires; the changelog guidelines | not started ({issue}`2566`) |
 | 5 | Items and rows as citations in their own right | candidate: more than twenty citations of items and rows outside the specifications |
 

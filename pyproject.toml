@@ -705,6 +705,11 @@ towncrier = ">=24.8.0,<27"
 # no python bindings, so this must come from pypi
 playwright = ">=1.63.0,<2"
 
+[tool.pixi.feature.test.tasks.check-spec-renumbering]
+args = [{ "arg" = "option", "default" = "" }]
+cmd = "python .github/scripts/check_renumbering.py{% if option == 'fix' %} --fix{% elif option == 'audit' %} --audit{% endif %}"
+description = "Check the specification citations against a renumbered section"
+
 [tool.pixi.feature.test.tasks.check-spec-status]
 args = [{ "arg" = "option", "default" = "" }]
 cmd = "python .github/scripts/check_status_references.py{% if option == 'drift' %} --drift{% elif option | length %} --pull {{ option }}{% endif %}"

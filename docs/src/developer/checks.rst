@@ -65,6 +65,8 @@ Where It Failed
       - the ``skip-changelog`` label
     * - :ref:`Specification Statuses <gv-developer-checks-spec-statuses>`
       - none
+    * - :ref:`Specification Renumbering <gv-developer-checks-spec-renumbering>`
+      - none
 
 
 .. _gv-developer-checks-image-marker:
@@ -388,3 +390,49 @@ pushing, with the number of your pull request:
 **Declaring an exception:** None.
 
 **More:** :ref:`Statuses <gv-developer-specs-statuses>`.
+
+
+.. _gv-developer-checks-spec-renumbering:
+.. _tippy-gv-developer-checks-spec-renumbering:
+
+Specification Renumbering
+-------------------------
+
+**The rule:** A pull request that moves or removes a section of a specification
+also updates every citation of it, and never renumbers a numbered item or a
+roadmap row.
+
+**Why:** A citation is a section number. Insert a section, and every section
+after it takes a new number, so a citation written against the old one still
+resolves, to whatever that number names now, and every other check passes. Items
+and rows are cited by number too, in forms nothing reads, so they are only ever
+appended.
+
+**What enforces it:** :bash:`.github/scripts/check_renumbering.py`, which
+``ci-citations.yml`` runs on every pull request. It pairs each section of a
+changed specification with its counterpart on the base branch, by title, then by
+its text, so a renamed section is still found, and reports each line the pull
+request did not touch that cites a section which moved or went. It also follows
+each line the pull request changed from where it was written on the branch, which
+finds a citation older than a renumber merged since. Each night it audits every
+citation in the repository the same way, as a backstop, and opens an issue.
+
+**When it fails:** Each line names a citation, what it was written against, and
+what became of that section. Rewrite the citations of moved sections in place,
+then review the diff:
+
+.. code:: console
+
+   $ pixi run -e test check-spec-renumbering fix
+
+A citation of a removed section is left for you to point elsewhere or delete. A
+section renamed and rewritten in the same pull request cannot be recognised, and
+reads as removed: if it is the same section, check each citation of it, and the
+line you touch passes. An
+item or row that moved goes back to its number, and the new one is appended; one
+that stopped applying is marked so in place, and a row that splits takes letter
+suffixes, as ``6a`` and ``6b``.
+
+**Declaring an exception:** None.
+
+**More:** :ref:`citation spec §4.5 <citation-spec-4-5>`.
