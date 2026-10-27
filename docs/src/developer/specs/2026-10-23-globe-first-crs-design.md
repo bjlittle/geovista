@@ -711,8 +711,9 @@ Each carries the status grammar of docs spec §3.6.
 12. **Open** — **Files written before the globe.** Today's files carry `gvCRS`, which
     reads as it is, and may carry `gvRadius`, `gvZScale` or `gvZLevel` (§3.4), the
     pantry's coastlines among them. Whether `geovista` reads those, taking `gvRadius` as a
-    render radius on the default globe, or refuses them and `bjlittle/geovista-data`
-    reissues its assets, is to be settled before row 2 of globe spec §9 lands.
+    render radius on the default globe, or refuses them, is to be settled before row 2 of
+    globe spec §9 lands. Either way, `bjlittle/geovista-data` reissues the pantry's assets
+    in the new form alongside that row ({issue}`2753`).
 
 (crs-spec-9)=
 ## 9. Scope
