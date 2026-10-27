@@ -224,10 +224,10 @@ docs spec §4), changes to name this module.
 
 Once the transform links plain text, a script rewrites every section role as the plain
 citation it displays: `` {ref}`§4 <docs-spec-4>` `` becomes `§4` in the docs spec, and
-`` {ref}`typing spec §3.2 <typing-spec-3-2>` `` becomes `typing spec §3.2` anywhere. The 215
-roles in the specifications and the 7 on the developer pages all go. A role whose display
-text and target disagree cannot be rewritten without choosing between them, and there are
-none today, since the assertion forbids it.
+`` {ref}`typing spec §3.2 <typing-spec-3-2>` `` becomes `typing spec §3.2` anywhere. All
+of them went: 259 in the specifications and 8 on the developer pages, by the time it was
+done. A role whose display text and target disagreed could not have been rewritten without
+choosing between them, and there were none, as the assertion then forbade it.
 
 The rewrite is proven by the build: the set of citation links on every page, as page and
 target, is the same before and after.

@@ -823,6 +823,7 @@ def section_roles(path: Path, text: str, names: Namespace) -> list[str]:
     to the section it names, so a section is cited in plain text. A role naming a
     label that is no section, such as a page's, is not a citation, and stays.
     """
+    owner = names.owners.get(path)
     problems = []
     for number, line in source_lines(path, text):
         plain, roles = prose(line)
@@ -830,12 +831,20 @@ def section_roles(path: Path, text: str, names: Namespace) -> list[str]:
             problems.append(f"{where(path, number)}: a role broken across lines")
         for kind, body in roles:
             role = section_role(kind, body, names)
-            if role is not None:
-                display = role[0] or role[1]
-                problems.append(
-                    f"{where(path, number)}: write {display!r} as plain text, "
-                    "which the build links"
-                )
+            if role is None:
+                continue
+            display, target = role
+            # the display text, where it names the target here, as a bare
+            # section of another specification would not; else the full form
+            cited = list(scan(display, names.signed, owner)) if display else []
+            if [(c.text, c.slug) for c in cited] != [(display, target)]:
+                label = LABEL.match(target)
+                prefix = label["prefix"].replace("-", " ")
+                display = f"{prefix} {SECTION}{label['num'].replace('-', '.')}"
+            problems.append(
+                f"{where(path, number)}: write {display!r} as plain text, "
+                "which the build links"
+            )
     return problems
 
 
@@ -873,6 +882,28 @@ def test_section_roles_finds_each_role_naming_a_section(tmp_path):
         f"write '{SECTION}1' as plain text, which the build links",
         f"write 'demo spec {SECTION}2' as plain text, which the build links",
         "a role broken across lines",
+    ]
+
+
+def test_section_roles_suggests_the_citation_its_target_needs(tmp_path):
+    """Followed literally, the suggestion must link the role's own section."""
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
+        "(other-spec-1)=\n## 1. Other\n",
+        encoding="utf-8",
+    )
+    path, _ = demo(
+        tmp_path,
+        DEMO + f"\nSee {{ref}}`{SECTION}1 <other-spec-1>` and :ref:`demo-spec-2`.\n",
+    )
+    names = namespace([path, other])
+
+    problems = section_roles(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"write 'other spec {SECTION}1' as plain text, which the build links",
+        f"write 'demo spec {SECTION}2' as plain text, which the build links",
     ]
 
 
@@ -1267,8 +1298,8 @@ def test_registered_reads_an_annotated_list_and_an_insert():
 def test_row_4_pairs_the_transform_with_its_output_gate():
     """Triggers (item 6): a transform the output gate does not check.
 
-    Until the hand-written roles collapse, they render as links whether or not the
-    transform runs, so this is also what holds the transform in place.
+    Every citation is plain text since the hand-written roles collapsed, so every
+    citation link on the site is the transform's, and this holds it in place.
     """
     conf = (REPO / "docs" / "src" / "conf.py").read_text(encoding="utf-8")
     extensions = registered(conf)

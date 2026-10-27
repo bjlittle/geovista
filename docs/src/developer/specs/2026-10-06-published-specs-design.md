@@ -253,8 +253,9 @@ The suite asserts:
 3. **Resolution.** Every citation in the corpus names an anchor that exists.
 4. **Form.** Every citation carries its section sign, no run wraps across a line, and each
    end of a range is a citation of its own, per §3.2.
-5. **Plain text.** No `{ref}` role names a section, per §3.4, which retires the agreement
-   between a role's display text and its target that this item held while roles remained.
+5. **Plain text.** No `{ref}` or `:ref:` role names a section, per §3.4, which retires the
+   agreement between a role's display text and its target that this item held while roles
+   remained.
 6. **Triggers.** Each observable roadmap condition of §4.
 7. **Status.** Every roadmap Status cell and every open item opens with a word from the
    vocabulary of §3.6, and every terminal status carries an ISO date
