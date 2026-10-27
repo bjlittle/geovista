@@ -234,6 +234,11 @@ plotters in one process, so each block of the measurement ran in a process of it
 (globe-spec-4-1)=
 ### 4.1 The Globe
 
+> **Extended by a child specification.** [`2026-10-27-globe-scene-design.md`](2026-10-27-globe-scene-design.md), `scene spec §…`,
+> specifies the `Globe` in place of every `radius`, the globe a mesh records, meshes that
+> record none, and the retirement of fields `geovista` no longer writes. It inherits this
+> document's decisions (§2) and testing (§6) unchanged.
+
 A scene's globe holds three quantities, and nothing else in the scene holds them:
 
 - **the radius**, the physical radius of the Earth, a length, by default the WGS84
@@ -307,6 +312,10 @@ Heights that are not finite are refused.
 
 (globe-spec-4-4)=
 ### 4.4 Positions Come From Heights
+
+> **Extended by a child specification.** [`2026-10-27-globe-scene-design.md`](2026-10-27-globe-scene-design.md) settles which functions take a
+> globe (scene spec §4.2), how a mesh stores the globe it records (scene spec §4.3), and the
+> globe of a mesh that records none (scene spec §4.4).
 
 The scene turns heights into positions, with its globe's radius `R`, scale `s` and
 exaggeration `E`:
@@ -500,7 +509,7 @@ Each carries the status grammar of docs spec §3.6.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Units: `geovista.units`, with `pint` and `pint-cf` | ✅ landed (2026-10-27, {pull}`2754`) |
-| 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6 | not started |
+| 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6, by rows 1 and 2 of scene spec §9 | not started |
 | 3 | Heights as data: `height` and `depth`, the exaggeration, positions on the globe and on a map, refusals | not started |
 | 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, and the measures of §3.5 as tests | not started |
 | 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | not started |
