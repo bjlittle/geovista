@@ -197,3 +197,116 @@ def pair(base: dict[str, Section], head: dict[str, Section]) -> dict[str, Fate]:
                 "kept" if new == anchor else "moved", new, section.title
             )
     return fates
+
+
+#: An item of a numbered list, opening at the left margin.
+ITEM = re.compile(r"^(?P<number>\d+)\.\s+(?P<rest>\S.*)$")
+
+#: A run of bold text, which may wrap.
+BOLD = re.compile(r"\*\*(?P<text>.+?)\*\*", flags=re.DOTALL)
+
+#: The statuses an open item opens with, before its title.
+STATES = frozenset({"Open", "Resolved", "Deferred", "Abandoned"})
+
+#: The header of a roadmap table: its number, its scope, and somewhere a status.
+ROADMAP = re.compile(r"^\|\s*#\s*\|\s*Scope\s*\|.*\bStatus\s*\|")
+
+
+def numbered_items(text: str) -> dict[str, dict[str, Section]]:
+    """Read every numbered item opening with a bold title, by section and number.
+
+    Each is read as a :class:`Section` keyed by its number, titled by its bold
+    title, the one after its status if it opens with one, with its text as the
+    body, so that items pair as sections do.
+    """
+    found: dict[str, dict[str, Section]] = {}
+    lines = [line for _, line in grammar.read_lines(text)]
+    current = None
+    for index, line in enumerate(lines):
+        anchor = grammar.ANCHOR.match(line)
+        if anchor is not None:
+            current = f"{anchor['slug']}-{anchor['num']}"
+            continue
+        item = ITEM.match(line)
+        if current is None or item is None or not item["rest"].startswith("**"):
+            continue
+        body = [item["rest"]]
+        for following in lines[index + 1 :]:
+            if not following[:1].isspace() or not following.strip():
+                break
+            body.append(following.strip())
+        joined = " ".join(body)
+        bolds = [match["text"].replace("\n", " ") for match in BOLD.finditer(joined)]
+        title = bolds[1] if bolds[0] in STATES and len(bolds) > 1 else bolds[0]
+        number = item["number"]
+        found.setdefault(current, {})[number] = Section(number, title, joined)
+    return found
+
+
+def roadmap_rows(text: str) -> dict[str, Section]:
+    """Read every row of a roadmap table, keyed by its number and titled by scope."""
+    found: dict[str, Section] = {}
+    inside = False
+    for _, line in grammar.read_lines(text):
+        if ROADMAP.match(line):
+            inside = True
+            continue
+        if not line.startswith("|"):
+            inside = False
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if inside and cells and not set(cells[0]) <= set("-: "):
+            found[cells[0]] = Section(cells[0], cells[1], cells[1])
+    return found
+
+
+def _split(old: str, new: str | None) -> bool:
+    """Say whether row ``old`` became ``new`` by splitting, as 6 into 6a."""
+    return new is not None and re.fullmatch(rf"{re.escape(old)}[a-z]", new) is not None
+
+
+def frozen(base_text: str, head_text: str) -> list[str]:
+    """Report each numbered item and roadmap row that moved or went.
+
+    Parameters
+    ----------
+    base_text, head_text : str
+        The specification on the base branch and now.
+
+    Returns
+    -------
+    list of str
+        One message per item or row whose number now names another, or nothing.
+
+    """
+    problems: list[str] = []
+    fates = pair(sections(base_text), sections(head_text))
+    base_items, head_items = numbered_items(base_text), numbered_items(head_text)
+    for anchor, listed in base_items.items():
+        fate = fates.get(anchor)
+        if fate is None or fate.anchor is None:
+            continue
+        for number, item in pair(listed, head_items.get(fate.anchor, {})).items():
+            if item.kind == "moved":
+                problems.append(
+                    f'{fate.title}, item {number} "{listed[number].title}" is now '
+                    f"item {item.anchor}: append an item rather than insert it"
+                )
+            elif item.kind == "removed":
+                problems.append(
+                    f'{fate.title}, item {number} "{listed[number].title}" was '
+                    "removed: mark it as no longer applying, in place"
+                )
+    base_rows, head_rows = roadmap_rows(base_text), roadmap_rows(head_text)
+    for number, row in pair(base_rows, head_rows).items():
+        split = any(_split(number, other) for other in head_rows)
+        if row.kind == "moved" and not _split(number, row.anchor):
+            problems.append(
+                f'roadmap row {number} "{base_rows[number].title}" is now row '
+                f"{row.anchor}: append a row rather than insert it"
+            )
+        elif row.kind == "removed" and not split:
+            problems.append(
+                f'roadmap row {number} "{base_rows[number].title}" was removed'
+            )
+    return problems
