@@ -18,7 +18,8 @@
   ([`2026-10-26-globe-heights-layers-design.md`](2026-10-26-globe-heights-layers-design.md)).
   This extends globe spec §4.1 and globe spec §4.4, and is row 2 of globe spec §9. It
   inherits that specification's decisions (globe spec §2) and testing (globe spec §6)
-  unchanged, and settles crs spec §8 item 12 of the globe-first CRS design
+  unchanged. It settles crs spec §8 item 12 of the globe-first CRS design, and adds to
+  crs spec §4.9 how the public API reports a value with a unit
 - **Published:** in the specifications index
 
 (scene-spec-1)=
@@ -69,6 +70,14 @@ These were decided with {user}`bjlittle` while the design was written.
 7. **One table holds every retired field.** `gvRadius` is the first. `gvZScale` and
    `gvZLevel` join it when row 5 of globe spec §9 removes `zlevel`. When `geovista` stops
    reading them is decided once they are all in it (§8 item 1).
+8. **A public value with a unit is a quantity.** Inside, `geovista` passes plain floats in
+   SI, as crs spec §4.9 says. A public attribute or result that reports a physical value,
+   such as a globe's radius, returns a `pint` quantity, so that the public API describes
+   itself.
+9. **geovista's view of a mesh lives in one namespace, `mesh.gv`.** It holds the mesh's
+   `globe` and `crs`, both read-only, and is open to more. `mesh1.gv == mesh2.gv` when
+   `geovista` describes the two meshes the same way, and
+   `mesh1.gv.globe == mesh2.gv.globe` when their globes are equal.
 
 (scene-spec-3)=
 ## 3. What Exists Today
@@ -104,6 +113,26 @@ snaps the result to `gvRadius` where the two agree. A mesh with no `gvRadius` th
 works today, as the pantry's LFRic meshes do, which carry only `gvCRS`. The pantry's
 coastlines carry a `gvRadius` of 1 (crs spec §3.4).
 
+(scene-spec-3-3)=
+### 3.3 Field Data Through pyvista
+
+Measured on 2026-10-27 at `a0f95dbe`, with `pyvista` 0.49.1 and VTK 9.7.1:
+
+- `import geovista` already imports `pyvista` and VTK, in 1.17 s, so registering an accessor
+  with `pyvista` when `geovista` is imported costs nothing more.
+  `pyvista.register_dataset_accessor` arrived in `pyvista` 0.48.0, which is `geovista`'s
+  floor.
+- A field array survives `copy`, `clip`, `clip_box`, `threshold`, `extract_cells`, `slice`,
+  `triangulate`, `decimate`, `extract_surface`, `cast_to_unstructured_grid`, `merge`,
+  `connectivity`, `smooth`, `subdivide`, `cell_data_to_point_data` and `warp_by_scalar`, so
+  a globe recorded on a mesh survives them too.
+- `merge` keeps the field data of the first mesh alone, and so does `core.combine`, which
+  compares neither the CRSs nor the radii of the meshes it combines. Combining meshes in
+  different CRSs, or at different radii, records the first one's for all of them.
+- Quantities from two `pint` registries cannot be added: `pint` raises "Cannot operate with
+  Quantity and Quantity of different registries". Two from `pint`'s application registry
+  can.
+
 (scene-spec-4)=
 ## 4. Design
 
@@ -120,9 +149,18 @@ coastlines carry a `gvRadius` of 1 (crs spec §3.4).
 
 Each must be finite. Both radii must be positive, and the exaggeration must not be
 negative: an exaggeration of 0 draws every height at the surface. Anything else raises a
-`ValueError` naming the value. A globe holds each as a plain float, the radius in metres,
-and reports its scale, the render radius over the radius. Two globes are equal when their
-three values are.
+`ValueError` naming the value.
+
+A globe's `radius` returns a `pint` quantity in metres, in `pint`'s application registry,
+the one `pint` provides for sharing quantities between packages, so that a user can add
+it to quantities of their own (§2 decision 8). Its `render_radius` and `exaggeration`
+return plain floats, since one is in the units of the scene and the other is a ratio.
+Inside, `geovista` reads the radius as a float in metres, so drawing a scene never imports
+`pint`; the first read of `radius` does. A globe also reports its scale, the render radius
+over the radius.
+
+Two globes are equal when their three values are, exactly, and a globe is hashable, so it
+can key a cache such as the mapping of crs spec §4.5.
 
 The class lives in `geovista.globe`, and is exported at the top level of `geovista`.
 
@@ -135,7 +173,8 @@ methods of `GeoPlotter`:
 - `GeoPlotter` takes `globe=` when it is made, `Globe()` by default, and every layer it
   adds takes its geometry from that globe, the base layer, coastlines and graticule
   included. Its methods take no globe of their own, since a scene has one
-  (globe spec §2 decision 4).
+  (globe spec §2 decision 4). `GeoPlotter.globe` reports it, read-only, so a vertical
+  scale can be exact (globe spec §4.4).
 - A function that builds a mesh, such as a `Transform` constructor or `geodesic.line`,
   uses `Globe()` when given none, and records the globe it used on the mesh.
 - A function given a mesh to work on, such as `transform_mesh`, uses the globe that mesh
@@ -198,7 +237,37 @@ that mesh. Reading a retired field raises no warning, since every pantry asset w
 until {issue}`2753` refreshes them, and a warning is an error under the test suite.
 
 (scene-spec-4-6)=
-### 4.6 What Goes
+### 4.6 The `gv` Namespace
+
+`geovista` registers an accessor named `gv` on `pyvista.DataSet` when it is imported, with
+`pyvista.register_dataset_accessor`, so every `pyvista` mesh has `mesh.gv`:
+
+- `mesh.gv.globe` returns the `Globe` the mesh records, read by `Globe.from_mesh` (§4.4);
+- `mesh.gv.crs` returns the mesh's CRS, read from its WKT as `crs.from_wkt` reads it, or
+  `None`.
+
+Each is read from the mesh's field data at every access, so it never goes stale, and
+reading never changes the mesh. Neither can be set. A globe describes where a mesh's points
+are, so setting one without moving them would make the two disagree. Assigning to
+`mesh.gv.globe` raises an `AttributeError` that names `resize(mesh, globe=...)`, which moves
+the points and records the globe together.
+
+`mesh1.gv == mesh2.gv` when `geovista` describes the two meshes the same way: equal CRSs
+and equal globes. It compares no geometry, which is what `pyvista`'s own comparison of
+meshes is for. A member added to the namespace later says whether it joins this
+comparison, and the specification that adds it records the choice.
+
+(scene-spec-4-7)=
+### 4.7 Combining Meshes
+
+`core.combine` refuses meshes that `geovista` describes differently, by
+`mesh1.gv == mesh2.gv`, and names what differs, the CRS or the globe. A caller resizes or
+transforms the meshes to one globe and one CRS first. `pyvista`'s own `merge` keeps the
+first mesh's field data (§3.3), and is outside `geovista`'s control. The documentation of
+`combine` says so.
+
+(scene-spec-4-8)=
+### 4.8 What Goes
 
 | today | becomes |
 |---|---|
@@ -227,6 +296,18 @@ The gallery example, the tests and the pages of §3.1 move to `globe=`.
   decision 5: `geovista` would change a caller's mesh it was only asked to read.
 - **A warning whenever a retired field is read.** Not now (§4.5). The cut-off of §8 item 1
   may add one.
+- **A globe's radius as a float in metres.** Rejected, by §2 decision 8. A public value
+  with a unit describes itself.
+- **Quantities in `geovista`'s own `pint-cf` registry.** Rejected. A user could not add them
+  to quantities of their own (§3.3).
+- **A top-level accessor, `mesh.globe`.** Rejected. An accessor is an object `pyvista`
+  builds around the mesh, so `mesh.globe` could only imitate a `Globe`, where
+  `mesh.gv.globe` returns one. One namespace also claims one name on every `pyvista` mesh,
+  however much `geovista` puts in it.
+- **A settable `mesh.gv.globe`.** Rejected (§4.6). It would change the record without the
+  points.
+- **`combine` keeping the first mesh's record, as it does today.** Rejected, as quietly
+  wrong when the meshes differ.
 
 (scene-spec-6)=
 ## 6. Testing
@@ -247,7 +328,16 @@ globe spec §6 and crs spec §6 require:
   `GeoPlotter` returns or draws carries a retired field; the table lists every field
   that `geovista` reads but does not write;
 - **the scene**: a mesh built at a render radius of 1, added to a scene at 2, is drawn at
-  2, and so are the pantry's coastlines;
+  2, and so are the pantry's coastlines; `GeoPlotter.globe` reports the scene's globe and
+  cannot be set;
+- **the quantity**: a globe's `radius` is a quantity in metres in `pint`'s application
+  registry, which adds to another from it, and drawing a scene imports no `pint`;
+- **the namespace**: `mesh.gv.globe` and `mesh.gv.crs` read what the mesh records, follow
+  a change to its field data, and cannot be set; `mesh.gv` is equal for meshes with equal
+  CRSs and globes, whatever their points, and unequal when either differs; equal globes
+  hash equally;
+- **combining**: `combine` refuses meshes with different CRSs, or different globes, and
+  names which;
 - **the radius**: each of the above holds at a render radius of 1 and at the Earth's
   radius.
 
@@ -255,8 +345,9 @@ globe spec §6 and crs spec §6 require:
 ## 7. Scope
 
 In scope: the `Globe`, the globe in place of every radius, the globe a mesh records, meshes
-that record none, the table of retired fields and the cleaning of them, and the round trip
-of crs spec §6.
+that record none, the table of retired fields and the cleaning of them, the `mesh.gv`
+namespace, `combine` refusing meshes described differently, and the round trip of
+crs spec §6.
 
 Out of scope:
 
@@ -281,8 +372,8 @@ Each carries the status grammar of docs spec §3.6.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The globe and its record: `geovista.Globe`, the three fields, `Globe.from_mesh` and `Globe.to_mesh`, meshes that record no globe, the table of retired fields, `sanitize_legacy` and `sanitize(legacy=...)`, and the round trip of crs spec §6 | not started |
-| 2 | Every radius becomes a globe: `globe=` in place of `radius=` on the 33 functions, `GeoPlotter(globe=...)`, only current fields in every mesh returned or drawn, and the gallery, tests and documentation moved to `globe=` | not started |
+| 1 | The globe and its record: `geovista.Globe` with its radius as a quantity, the three fields, `Globe.from_mesh` and `Globe.to_mesh`, meshes that record no globe, the `mesh.gv` namespace with `globe`, `crs` and its equality, the table of retired fields, `sanitize_legacy` and `sanitize(legacy=...)`, and the round trip of crs spec §6 | not started |
+| 2 | Every radius becomes a globe: `globe=` in place of `radius=` on the 33 functions, `GeoPlotter(globe=...)` and `GeoPlotter.globe`, `combine` refusing meshes described differently, only current fields in every mesh returned or drawn, and the gallery, tests and documentation moved to `globe=` | not started |
 
 Statuses follow docs spec §3.6. Row 1 adds to the API and breaks nothing. Row 2 is
 breaking, and carries a `breaking` fragment beside its own. Row 2 is planned once row 1

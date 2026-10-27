@@ -566,7 +566,10 @@ A function takes each such quantity in one of three forms:
 Each is converted once, at the boundary, to SI for lengths and to one canonical unit for
 angles. Inside, the engine works on plain floats and NumPy arrays, so units add nothing
 to the per-frame cost of §4.5. A physical length that a result or
-record reports, such as the radius it was projected at, carries its unit.
+record reports, such as the radius it was projected at, carries its unit. The public API
+returns it as a `pint` quantity, in `pint`'s application registry so that a user can
+combine it with quantities of their own, while functions inside `geovista` pass plain
+floats (scene spec §2 decision 8).
 
 Units for data values, such as a temperature or a concentration, stay with the data.
 `geovista` reads them only to label a scalar bar.
