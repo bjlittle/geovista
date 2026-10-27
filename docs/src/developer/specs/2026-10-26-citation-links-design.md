@@ -281,10 +281,11 @@ the fix leaves it for the author, who points it elsewhere or deletes it.
 
 One case escapes that comparison. A pull request branched before a renumber merged can
 add a citation meaning the old number. It changes no specification, and its own diff
-shows nothing moving. So the guard also follows every line the pull request changed from
-the commit on its branch that wrote the line to the merge of the branch into the base:
-it pairs the cited specification change by change, as above, and reports a citation whose
-section has since moved or been removed. That is the audit of
+shows nothing moving. So the guard also judges every line the pull request changed by
+what the base changed since the branch forked: it follows the cited specification from the
+fork along the base's own history, change by change, as above, and reports a citation whose
+section has since moved or been removed there. The pull request's own changes to a
+specification are judged as above, so they are never counted twice. That is the audit of
 {ref}`§3.2 <citation-spec-3-2>`, run on the lines a pull request adds. It follows the
 specification one change at a time because comparing the two ends loses a section renamed
 in one change and grown in others, which is how a living section changes. A protected

@@ -759,3 +759,102 @@ def test_fix_rewrites_a_citation_older_than_a_renumber(guard, repo, capsys):
 
     assert code == 0
     assert (repo / "src" / "late.py").read_text() == f"# see demo spec {SECTION}4\n"
+
+
+def test_fix_rewrites_a_lines_citations_from_its_original_text(guard, repo, capsys):
+    """Two moved sections on one line: a number just written is not read again."""
+    git(repo, "switch", "--quiet", "main")
+    commit(repo, {"src/code.py": f"# see demo spec {SECTION}2/{SECTION}3\n"}, "both")
+    git(repo, "switch", "--quiet", "--create", "insert")
+    commit(repo, {str(SPECS / NAME): INSERTED}, "insert")
+
+    code, _ = run(guard, repo, "--fix", capsys=capsys)
+
+    assert code == 0
+    assert (repo / "src" / "code.py").read_text() == (
+        f"# see demo spec {SECTION}3/{SECTION}4\n"
+    )
+
+
+def test_a_sibling_branchs_edits_do_not_rewind_a_section(guard, repo, capsys):
+    """Main renames and grows Design while the branch cites it and edits Purpose."""
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "switch", "--quiet", "--create", "late")
+    commit(repo, {"src/late.py": f"# see demo spec {SECTION}2\n"}, "cite design")
+    edited = spec(
+        ("1", "Purpose", PURPOSE + " Edited."),
+        ("2", "Design", DESIGN),
+        ("3", "Testing", TESTING),
+    )
+    commit(repo, {str(SPECS / NAME): edited}, "edit purpose")
+    git(repo, "switch", "--quiet", "main")
+    renamed = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Pairing", DESIGN), ("3", "Testing", TESTING)
+    )
+    commit(repo, {str(SPECS / NAME): renamed}, "rename")
+    grown = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Pairing", GROWN), ("3", "Testing", TESTING)
+    )
+    commit(repo, {str(SPECS / NAME): grown}, "grow")
+    git(repo, "switch", "--quiet", "--detach", "main")
+    git(repo, "merge", "--quiet", "--no-ff", "--no-edit", "late")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+
+
+def test_items_removed_with_their_section_are_reported(guard):
+    """Deleting the section that holds them removes every item in it."""
+    base = spec(("1", "Purpose", PURPOSE), ("2", "Items", items(ONE, TWO)))
+    head = spec(("1", "Purpose", PURPOSE))
+
+    problems = guard.frozen(base, head)
+
+    assert len(problems) == 2
+    assert all("removed" in problem for problem in problems)
+
+
+def test_a_baseline_the_branch_has_not_reached_is_not_used(
+    guard, repo, capsys, monkeypatch
+):
+    """A baseline ahead of the commit being judged would follow it backwards."""
+    git(repo, "switch", "--quiet", "main")
+    commit(repo, {"src/cite.py": f"# demo spec {SECTION}2\n"}, "cite design")
+    cited = git(repo, "rev-parse", "HEAD").strip()
+    rewritten = spec(
+        ("1", "Purpose", PURPOSE),
+        ("2", "Mechanism", "Nothing of the earlier wording survives this rewrite."),
+        ("3", "Testing", TESTING),
+    )
+    commit(repo, {str(SPECS / NAME): rewritten}, "rename and rewrite at once")
+    monkeypatch.setattr(guard, "AUDITED", git(repo, "rev-parse", "HEAD").strip())
+    git(repo, "switch", "--quiet", "--detach", cited)
+
+    code = guard.main(["--base", f"{cited}~1"], root=repo)
+    out = capsys.readouterr().out
+
+    assert code == 0, out
+
+
+def test_a_line_citing_a_section_its_own_pull_request_rewrote_passes(
+    guard, repo, capsys
+):
+    """The pull request renames and rewrites Design, and cites it as it now stands."""
+    rewritten = spec(
+        ("1", "Purpose", PURPOSE),
+        ("2", "Mechanism", "Nothing of the earlier wording survives this rewrite."),
+        ("3", "Testing", TESTING),
+    )
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): rewritten,
+            "src/code.py": f"# see demo spec {SECTION}2, the mechanism\n",
+        },
+        "rewrite design, and cite it",
+    )
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out

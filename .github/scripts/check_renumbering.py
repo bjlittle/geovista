@@ -303,7 +303,14 @@ def frozen(base_text: str, head_text: str) -> list[str]:
     base_items, head_items = numbered_items(base_text), numbered_items(head_text)
     for anchor, listed in base_items.items():
         fate = fates.get(anchor)
-        if fate is None or fate.anchor is None:
+        if fate is None:
+            continue
+        if fate.anchor is None:
+            problems += [
+                f'{fate.title}, item {number} "{item.title}" was removed with its '
+                "section: keep the section, and mark it as no longer applying"
+                for number, item in listed.items()
+            ]
             continue
         paired = pair(listed, head_items.get(fate.anchor, {}), in_place=True)
         for number, item in paired.items():
@@ -575,23 +582,57 @@ def _ancestor(root: Path, older: str, newer: str) -> bool:
     return True
 
 
-def _chain(root: Path, spec: Path, start: str) -> dict[str, Fate]:
+def _chain(root: Path, spec: Path, start: str, line: str) -> dict[str, Fate]:
     """Follow each section of a specification from ``start`` to now, change by change.
 
     Pairing the two ends alone loses a section renamed in one change and grown in
-    others, which is how a living section changes. Each change is one a pull
-    request made, which is what the pairing reads well, so the fates are
-    composed step by step.
+    others, which is how a living section changes. So the specification is
+    followed along ``line``'s own first parents, each a change one pull request
+    made on a squash-merged branch, and two branches' snapshots are never
+    compared as though one followed the other.
+
+    A line written on ``line``'s own history is followed from its commit to the
+    working tree. One written on a branch off it, as a pull request's, is judged
+    by what ``line`` changed since the branch forked, read against the
+    specification at the fork: the pull request's own changes to a
+    specification are its author's, and are judged by :func:`stale`.
+
+    Parameters
+    ----------
+    root : Path
+        The repository.
+    spec : Path
+        The specification.
+    start : str
+        The commit the citing line was written in.
+    line : str
+        The branch whose history to follow: the base of a pull request, or
+        ``HEAD`` for the audit.
+
+    Returns
+    -------
+    dict
+        The fate of each section at the commit followed from, keyed by anchor.
+
     """
-    first = at(root, start, spec)
+    relative = spec.relative_to(root).as_posix()
+    on_line = _ancestor(root, start, line)
+    fork = start if on_line else git(root, "merge-base", start, line).strip()
+    first = at(root, fork, spec)
     if first is None:
         return {}
-    relative = spec.relative_to(root).as_posix()
     listed = git(
-        root, "rev-list", "--reverse", "--topo-order", f"{start}..HEAD", "--", relative
+        root,
+        "rev-list",
+        "--reverse",
+        "--first-parent",
+        f"{fork}..{line}",
+        "--",
+        relative,
     )
     texts = [at(root, revision, spec) for revision in listed.split()]
-    texts.append(spec.read_text(encoding="utf-8"))
+    if on_line:
+        texts.append(spec.read_text(encoding="utf-8"))
     origin = sections(first)
     where = {anchor: anchor for anchor in origin}
     gone: set[str] = set()
@@ -627,6 +668,7 @@ def since_written(
     texts: dict[Path, str],
     names: object,
     lines: dict[Path, set[int]] | None = None,
+    line: str = "HEAD",
 ) -> list[Finding]:
     """Follow each citation's section from when the citing line was written.
 
@@ -644,6 +686,9 @@ def since_written(
     lines : dict, optional
         The lines to judge, keyed by path: those a pull request changed. Every
         line of the corpus when omitted, as the nightly audit judges.
+    line : str, optional
+        The branch whose history the specifications are followed along: the base
+        of a pull request, or ``HEAD``, as the nightly audit follows main.
 
     Returns
     -------
@@ -653,12 +698,10 @@ def since_written(
     """
     owners = {prefix: spec for spec, prefix in names.owners.items()}
     baseline = AUDITED
-    if baseline is not None:
-        try:
-            git(root, "cat-file", "-e", f"{baseline}^{{commit}}")
-        except GitError:
-            # another repository, as a test's, which never saw the hand audit
-            baseline = None
+    if baseline is not None and not _ancestor(root, baseline, "HEAD"):
+        # another repository, as a test's, which never saw the hand audit, or
+        # history from before it, which the baseline would follow backwards
+        baseline = None
     chained: dict[tuple[str, Path], dict[str, Fate]] = {}
     findings: list[Finding] = []
     for path, text in texts.items():
@@ -685,7 +728,7 @@ def since_written(
                 if spec is None:
                     continue
                 if (commit, spec) not in chained:
-                    chained[commit, spec] = _chain(root, spec, commit)
+                    chained[commit, spec] = _chain(root, spec, commit, line)
                 fate = chained[commit, spec].get(anchor)
                 if fate is not None and fate.kind != "kept":
                     findings.append(Finding(path, number, citation, fate, anchor))
@@ -769,7 +812,7 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
             findings = stale(texts, fates, names, changed)
             # each line the pull request changed, followed from where it was
             # written on its branch, which a renumber merged since may have moved
-            findings += since_written(root, texts, names, changed)
+            findings += since_written(root, texts, names, changed, args.base)
             for spec in specs:
                 before = at(root, branched, spec)
                 if before is not None:
@@ -807,23 +850,23 @@ def _fix(
     """Rewrite the citations of moved sections, and return what is left.
 
     Each citation takes its own section's new number, as the audit and a pull
-    request's changed lines each follow a section from where it was written.
+    request's changed lines each follow a section from where it was written. A
+    line is rewritten once, from its original text, with every citation on it, so
+    that a number just written is never read again as one to move.
     """
-    fixed: dict[Path, list[int]] = {}
+    moved: dict[Path, dict[int, dict[str, Fate]]] = {}
     for finding in findings:
-        if finding.fate.kind != "moved":
-            continue
-        texts[finding.path] = rewrite(
-            texts[finding.path],
-            finding.path,
-            {finding.old: finding.fate},
-            names,
-            {finding.line},
-        )
-        fixed.setdefault(finding.path, []).append(finding.line)
-    for path, numbers in fixed.items():
-        path.write_text(texts[path], encoding="utf-8")
-        print(f"fixed {path.name}, lines {', '.join(map(str, sorted(set(numbers))))}")
+        if finding.fate.kind == "moved":
+            lines = moved.setdefault(finding.path, {})
+            lines.setdefault(finding.line, {})[finding.old] = finding.fate
+    for path, lines in moved.items():
+        original = texts[path]
+        out = original.splitlines(keepends=True)
+        for number, fates in lines.items():
+            rewritten = rewrite(original, path, fates, names, {number})
+            out[number - 1] = rewritten.splitlines(keepends=True)[number - 1]
+        path.write_text("".join(out), encoding="utf-8")
+        print(f"fixed {path.name}, lines {', '.join(map(str, sorted(lines)))}")
     return [finding for finding in findings if finding.fate.kind != "moved"]
 
 
