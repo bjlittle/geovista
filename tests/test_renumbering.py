@@ -444,3 +444,154 @@ def test_rewrite_leaves_a_removed_sections_citation_for_the_author(guard, tmp_pa
     fixed = guard.rewrite(text, tmp_path / "code.py", fates, names, {1})
 
     assert fixed == f"# demo spec {SECTION}2 and demo spec {SECTION}2\n"
+
+
+#: Where a repository keeps its specifications.
+SPECS = Path("docs") / "src" / "developer" / "specs"
+
+#: The specification the repositories below hold, by name.
+NAME = "2026-01-01-demo-design.md"
+
+
+def git(root: Path, *args: str) -> str:
+    """Run git in ``root`` as nobody in particular, signing nothing."""
+    import subprocess  # noqa: PLC0415
+
+    identity = ["-c", "user.name=test", "-c", "user.email=test@example.com"]
+    command = ["git", *identity, "-c", "commit.gpgsign=false", *args]
+    done = subprocess.run(  # noqa: S603
+        command, cwd=root, capture_output=True, text=True, check=True
+    )
+    return done.stdout
+
+
+def commit(root: Path, files: dict[str, str], message: str) -> None:
+    """Write the files given, relative to ``root``, and commit them."""
+    for name, text in files.items():
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    git(root, "add", "--all")
+    git(root, "commit", "--quiet", "--message", message)
+
+
+@pytest.fixture
+def repo(tmp_path) -> Path:
+    """Provide a repository whose main branch holds a specification and a citation."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    git(root, "init", "--quiet", "--initial-branch", "main")
+    commit(
+        root,
+        {
+            str(SPECS / NAME): BASE,
+            "src/code.py": f"# see demo spec {SECTION}2\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}3.\n",
+            "src/other.py": "# nothing cited\n",
+        },
+        "start",
+    )
+    git(root, "switch", "--quiet", "--create", "work")
+    return root
+
+
+def run(guard, root: Path, *args: str, capsys) -> tuple[int, str]:
+    """Run the guard against ``main``, returning its exit code and its output."""
+    code = guard.main(["--base", "main", *args], root=root)
+    return code, capsys.readouterr().out
+
+
+def test_a_renumber_leaving_a_citation_behind_fails(guard, repo, capsys):
+    """The pull request moves Design, and code.py still cites its old number."""
+    commit(repo, {str(SPECS / NAME): INSERTED}, "insert")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1
+    assert f'src/code.py:1: demo spec {SECTION}2 was "Design", which is now' in out
+    assert f'CHANGELOG.rst:1: demo spec {SECTION}3 was "Testing"' in out
+    assert "gv-developer-checks-spec-renumbering" in out
+
+
+def test_a_renumber_that_updates_its_citations_passes(guard, repo, capsys):
+    """Every citation of what moved is on a line the pull request changed."""
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "insert",
+    )
+
+    assert run(guard, repo, capsys=capsys)[0] == 0
+
+
+def test_fix_rewrites_the_stale_citations_and_nothing_else(guard, repo, capsys):
+    """Released entries included: a stale link is worth nothing."""
+    commit(repo, {str(SPECS / NAME): INSERTED}, "insert")
+    other = (repo / "src" / "other.py").read_text(encoding="utf-8")
+
+    code, _ = run(guard, repo, "--fix", capsys=capsys)
+
+    assert code == 0
+    assert (repo / "src/code.py").read_text() == f"# see demo spec {SECTION}3\n"
+    assert (repo / "CHANGELOG.rst").read_text() == (
+        f"Released: see demo spec {SECTION}4.\n"
+    )
+    assert (repo / "src" / "other.py").read_text(encoding="utf-8") == other
+    assert run(guard, repo, capsys=capsys)[0] == 0
+
+
+def test_a_renumbered_item_fails(guard, repo, capsys):
+    """Items are appended, never inserted."""
+    commit(
+        repo,
+        {str(SPECS / NAME): spec(("1", "Items", items(ONE, TWO)))},
+        "items",
+    )
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    commit(repo, {str(SPECS / NAME): spec(("1", "Items", items(ONE, THREE, TWO)))}, "x")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1
+    assert "item 2" in out
+    assert "is now item 3" in out
+
+
+def test_the_audit_finds_a_citation_older_than_the_renumber(guard, repo, capsys):
+    """Written on a branch made before the renumber, and merged after it."""
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "switch", "--quiet", "--create", "late")
+    commit(repo, {"src/late.py": f"# see demo spec {SECTION}3\n"}, "late citation")
+    git(repo, "switch", "--quiet", "main")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "renumber, citations updated",
+    )
+    git(repo, "merge", "--quiet", "--no-edit", "late")
+
+    code, out = run(guard, repo, "--audit", capsys=capsys)
+
+    assert code == 1
+    assert f'src/late.py:1: demo spec {SECTION}3 was "Testing", which is now' in out
+    assert "src/code.py" not in out
+
+    commit(repo, {"src/late.py": f"# see demo spec {SECTION}4\n"}, "fixed")
+
+    assert run(guard, repo, "--audit", capsys=capsys)[0] == 0
+
+
+def test_a_base_that_does_not_exist_cannot_be_checked(guard, repo, capsys):
+    """A failure to compare is never taken for a finding."""
+    assert guard.main(["--base", "nowhere"], root=repo) == 2
+    capsys.readouterr()

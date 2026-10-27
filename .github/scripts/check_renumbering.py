@@ -26,12 +26,15 @@ which the conventions test and the documentation build share.
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 import difflib
 import importlib.util
 from pathlib import Path
 import re
+import subprocess
 import sys
+import traceback
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
@@ -464,3 +467,233 @@ def rewrite(
         ending = out[number - 1][len(out[number - 1].rstrip("\r\n")) :]
         out[number - 1] = edited + ending
     return "".join(out)
+
+
+#: Where a repository keeps its specifications.
+SPECS = Path("docs") / "src" / "developer" / "specs"
+
+#: The commit blame gives a line not yet committed.
+UNCOMMITTED = "0" * 40
+
+
+class GitError(RuntimeError):
+    """Git could not answer, which is never a finding."""
+
+
+def git(root: Path, *args: str) -> str:
+    """Run git in ``root``, returning its output."""
+    try:
+        # git by name, with arguments this script builds, never a shell
+        done = subprocess.run(  # noqa: S603
+            ["git", "--no-pager", *args],  # noqa: S607
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as error:
+        emsg = f"git {' '.join(args)}: {error.stderr.strip()}"
+        raise GitError(emsg) from error
+    return done.stdout
+
+
+def at(root: Path, ref: str, path: Path) -> str | None:
+    """Return a file's text at ``ref``, or ``None`` if it did not exist there."""
+    relative = path.relative_to(root).as_posix() if path.is_absolute() else path
+    try:
+        return git(root, "show", f"{ref}:{relative}")
+    except GitError:
+        return None
+
+
+#: A file a unified diff names, as changed.
+DIFFED = re.compile(r"^\+\+\+ b/(?P<path>.+)$")
+
+#: The lines of a hunk, as they are now.
+HUNK = re.compile(r"^@@ -\S+ \+(?P<start>\d+)(?:,(?P<count>\d+))? @@")
+
+
+def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
+    """Read the lines changed since ``base`` branched, as they are numbered now."""
+    changed: dict[Path, set[int]] = {}
+    current: Path | None = None
+    for line in git(root, "diff", "--unified=0", "--no-color", base, "--").splitlines():
+        if diffed := DIFFED.match(line):
+            current = root / diffed["path"]
+            continue
+        if (hunk := HUNK.match(line)) and current is not None:
+            start, count = int(hunk["start"]), int(hunk["count"] or 1)
+            changed.setdefault(current, set()).update(range(start, start + count))
+    return changed
+
+
+def _fates(root: Path, ref: str, specs: list[Path]) -> dict[str, Fate]:
+    """Pair the sections of each specification at ``ref`` with those now."""
+    fates: dict[str, Fate] = {}
+    for spec in specs:
+        before = at(root, ref, spec)
+        if before is not None and spec.is_file():
+            now = spec.read_text(encoding="utf-8")
+            if before != now:
+                fates.update(pair(sections(before), sections(now)))
+        elif before is not None:
+            fates.update(pair(sections(before), {}))
+    return fates
+
+
+def audit(root: Path, texts: dict[Path, str], names: object) -> list[Finding]:
+    """Compare every citation with its specification as the citing line found it.
+
+    The specification at the commit that last wrote the line is paired with the
+    one now, so a citation that arrived on a branch older than a renumber is
+    found whatever route it came by.
+    """
+    owners = {prefix: spec for spec, prefix in names.owners.items()}
+    paired: dict[tuple[str, Path], dict[str, Fate]] = {}
+    findings: list[Finding] = []
+    for path, text in texts.items():
+        cited = [
+            (number, found)
+            for number, line in grammar.source_lines(path, text)
+            if (found := _citations(path, line, names))
+        ]
+        if not cited:
+            continue
+        blamed = _blame(root, path)
+        for number, found in cited:
+            commit = blamed.get(number)
+            if commit is None or commit == UNCOMMITTED:
+                continue
+            for _, _, citation, anchor, _ in found:
+                spec = owners.get(grammar.LABEL.match(anchor)["prefix"])
+                if spec is None:
+                    continue
+                key = (commit, spec)
+                if key not in paired:
+                    before = at(root, commit, spec)
+                    now = spec.read_text(encoding="utf-8")
+                    paired[key] = (
+                        {} if before is None else pair(sections(before), sections(now))
+                    )
+                fate = paired[key].get(anchor)
+                if fate is not None and fate.kind != "kept":
+                    findings.append(Finding(path, number, citation, fate, anchor))
+    return findings
+
+
+def _blame(root: Path, path: Path) -> dict[int, str]:
+    """Map each line of a file to the commit that last wrote it."""
+    blamed: dict[int, str] = {}
+    relative = path.relative_to(root).as_posix()
+    for line in git(root, "blame", "--porcelain", "--", relative).splitlines():
+        fields = line.split()
+        if len(fields) >= 3 and re.fullmatch(r"[0-9a-f]{40}", fields[0]):
+            blamed[int(fields[2])] = fields[0]
+    return blamed
+
+
+def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
+    """Check the specifications changed since a base, or audit every citation.
+
+    Parameters
+    ----------
+    argv : list of str, optional
+        The command line arguments. Defaults to those of the process.
+    root : Path, optional
+        The repository. Defaults to this one; a test passes one of its own.
+
+    Returns
+    -------
+    int
+        Zero when no citation went stale, one when any did, and two when the
+        check could not be finished, as when git cannot find the base.
+
+    """
+    parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
+    parser.add_argument(
+        "--base", default="origin/main", help="the branch a pull request targets"
+    )
+    parser.add_argument(
+        "--fix", action="store_true", help="rewrite the citations of moved sections"
+    )
+    parser.add_argument(
+        "--audit",
+        action="store_true",
+        help="compare every citation with its specification when it was written",
+    )
+    args = parser.parse_args(argv)
+
+    try:
+        texts = grammar.corpus(root)
+        specs = grammar.specifications(root / SPECS)
+        names = grammar.namespace(specs)
+        now = {
+            anchor: section
+            for spec in specs
+            for anchor, section in sections(spec.read_text(encoding="utf-8")).items()
+        }
+        problems: list[str] = []
+        if args.audit:
+            findings = audit(root, texts, names)
+            scope = "every citation in the repository"
+        else:
+            branched = git(root, "merge-base", args.base, "HEAD").strip()
+            listed = git(root, "ls-tree", "--name-only", branched, f"{SPECS}/")
+            specs_then = {
+                root / name for name in listed.split() if name.endswith(".md")
+            }
+            fates = _fates(root, branched, sorted(specs_then | set(specs)))
+            changed = changed_lines(root, branched)
+            findings = stale(texts, fates, names, changed)
+            for spec in specs:
+                before = at(root, branched, spec)
+                if before is not None:
+                    problems += [
+                        f"{spec.relative_to(root).as_posix()}: {problem}"
+                        for problem in frozen(before, spec.read_text(encoding="utf-8"))
+                    ]
+            scope = f"the specifications changed since {args.base}"
+            if args.fix:
+                findings = _fix(texts, fates, names, findings)
+    except GitError as error:
+        print(f"could not compare with git: {error}", file=sys.stderr)
+        return 2
+    except Exception:  # noqa: BLE001
+        # the nightly workflow opens an issue on one, so anything unexpected must
+        # leave by another door
+        traceback.print_exc()
+        print("could not finish checking", file=sys.stderr)
+        return 2
+
+    for finding in findings:
+        print(describe(finding, root, now))
+    for problem in problems:
+        print(problem)
+    if findings or problems:
+        print(breadcrumb.breadcrumb(CHECK))
+        return 1
+    print(f"checked {scope}: no citation went stale")
+    return 0
+
+
+def _fix(
+    texts: dict[Path, str],
+    fates: dict[str, Fate],
+    names: object,
+    findings: list[Finding],
+) -> list[Finding]:
+    """Rewrite the citations of moved sections, and return what is left."""
+    lines: dict[Path, set[int]] = {}
+    for finding in findings:
+        if finding.fate.kind == "moved":
+            lines.setdefault(finding.path, set()).add(finding.line)
+    for path, numbers in lines.items():
+        path.write_text(
+            rewrite(texts[path], path, fates, names, numbers), encoding="utf-8"
+        )
+        print(f"fixed {path.name}, lines {', '.join(map(str, sorted(numbers)))}")
+    return [finding for finding in findings if finding.fate.kind != "moved"]
+
+
+if __name__ == "__main__":
+    sys.exit(main())
