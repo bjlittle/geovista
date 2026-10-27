@@ -318,8 +318,9 @@ refusing to renumber them. Two kinds are frozen:
 They are only ever appended. An item that stops applying is marked so in place, as
 {ref}`§4.4 <citation-spec-4-4>` retires an assertion, and a row that splits takes letter
 suffixes in place, as row 6 of the type coverage roadmap became 6a to 6c. The guard pairs
-items and rows the way it pairs sections, and fails on any that has moved or been removed.
-An item whose title is edited pairs with itself by its text, and passes.
+items and rows the way it pairs sections, and then pairs any left over by number, since an
+item resolved or a row rescoped is rewritten in place, under its number. It fails on any
+that has moved, or whose number is gone or now names another.
 
 A changelog fragment that names a roadmap row cites the row's pull request with a `:pull:`
 role, which is already the evidence the row carries ({ref}`docs spec §3.6 <docs-spec-3-6>`).

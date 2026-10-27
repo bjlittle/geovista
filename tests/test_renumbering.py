@@ -664,3 +664,45 @@ def test_the_audit_judges_an_older_line_from_its_baseline(
     monkeypatch.setattr(guard, "AUDITED", baseline)
 
     assert run(guard, repo, "--audit", capsys=capsys)[0] == 0
+
+
+def test_an_item_resolved_and_reworded_in_place_passes(guard):
+    """Resolving an item rewrites its status, its title's tense and its text."""
+    before = "**Open** — **Nothing proves the references point at real work.**"
+    after = (
+        "**Resolved** (2026-10-09, {pull}`9`) — **Nothing proved the references "
+        "pointed at real work.**\n   A script now asks GitHub about each one, and "
+        "the nightly job reports what has moved on, which closes the question."
+    )
+
+    assert frozen(guard, items(ONE, before, THREE), items(ONE, after, THREE)) == []
+
+
+def test_a_row_rescoped_in_place_passes(guard):
+    """A row's scope is rewritten as its work is planned, under the same number."""
+    base = roadmap(("1", "The grammar"), ("2", "The globe model"), ("3", "Heights"))
+    head = roadmap(
+        ("1", "The grammar"),
+        ("2", "The globe model, and units through pint and pint-cf"),
+        ("3", "Heights"),
+    )
+
+    assert frozen(guard, base, head) == []
+
+
+def test_a_section_sharing_its_title_pairs_with_the_one_whose_text_it_has(guard):
+    """Two subsections titled alike: delete the first, and the second moves up."""
+    first = "Covers the first design and nothing of the second."
+    second = "Covers the testing of the second, a different matter."
+    base = spec(
+        ("3", "Design", DESIGN),
+        ("3.1", "Scope", first),
+        ("4", "Testing", TESTING),
+        ("4.1", "Scope", second),
+    )
+    head = spec(("3", "Testing", TESTING), ("3.1", "Scope", second))
+
+    found = fates(guard, base, head)
+
+    assert found["demo-spec-3-1"] == ("removed", None)
+    assert found["demo-spec-4-1"] == ("moved", "demo-spec-3-1")

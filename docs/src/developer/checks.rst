@@ -425,7 +425,10 @@ then review the diff:
 
    $ pixi run -e test check-spec-renumbering fix
 
-A citation of a removed section is left for you to point elsewhere or delete. An
+A citation of a removed section is left for you to point elsewhere or delete. A
+section renamed and rewritten in the same pull request cannot be recognised, and
+reads as removed: if it is the same section, check each citation of it, and the
+line you touch passes. An
 item or row that moved goes back to its number, and the new one is appended; one
 that stopped applying is marked so in place, and a row that splits takes letter
 suffixes, as ``6a`` and ``6b``.

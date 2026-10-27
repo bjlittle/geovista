@@ -141,16 +141,28 @@ def _plain(title: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", title.lower()).strip()
 
 
-def pair(base: dict[str, Section], head: dict[str, Section]) -> dict[str, Fate]:
+def _likeness(old: str, new: str) -> float:
+    """Rate how alike two texts are, from 0 to 1."""
+    return difflib.SequenceMatcher(None, old, new).ratio()
+
+
+def pair(
+    base: dict[str, Section], head: dict[str, Section], *, in_place: bool = False
+) -> dict[str, Fate]:
     """Pair each section on the base branch with its counterpart, if it has one.
 
-    Sections pair by title first, then those left over by the likeness of their
-    text, best pair first, which is what finds a section renamed as it moved.
+    Sections pair by title first, those sharing a title with the counterpart whose
+    text is likest, then those left over by the likeness of their text, best pair
+    first, which is what finds a section renamed as it moved. With ``in_place``, a
+    section still unpaired whose number is free in ``head`` was edited in place,
+    as an item is when it is resolved and reworded.
 
     Parameters
     ----------
     base, head : dict
         The sections of the specification on the base branch and now.
+    in_place : bool, optional
+        Pair what is left over by number, as items and rows are.
 
     Returns
     -------
@@ -160,23 +172,22 @@ def pair(base: dict[str, Section], head: dict[str, Section]) -> dict[str, Fate]:
     """
     paired: dict[str, str] = {}
     free = list(head)
-    for anchor, section in base.items():
-        titled = [
-            other
-            for other in free
+    titled = sorted(
+        (
+            (_likeness(section.body, head[other].body), anchor == other, anchor, other)
+            for anchor, section in base.items()
+            for other in head
             if _plain(head[other].title) == _plain(section.title)
-        ]
-        if titled:
-            chosen = anchor if anchor in titled else titled[0]
-            paired[anchor] = chosen
-            free.remove(chosen)
+        ),
+        reverse=True,
+    )
+    for _, _, old, new in titled:
+        if old not in paired and new in free:
+            paired[old] = new
+            free.remove(new)
     likely = sorted(
         (
-            (
-                difflib.SequenceMatcher(None, base[old].body, head[new].body).ratio(),
-                old,
-                new,
-            )
+            (_likeness(base[old].body, head[new].body), old, new)
             for old in base
             if old not in paired and base[old].body
             for new in free
@@ -190,6 +201,11 @@ def pair(base: dict[str, Section], head: dict[str, Section]) -> dict[str, Fate]:
         if old not in paired and new in free:
             paired[old] = new
             free.remove(new)
+    if in_place:
+        for old in base:
+            if old not in paired and old in free:
+                paired[old] = old
+                free.remove(old)
     fates: dict[str, Fate] = {}
     for anchor, section in base.items():
         new = paired.get(anchor)
@@ -289,7 +305,8 @@ def frozen(base_text: str, head_text: str) -> list[str]:
         fate = fates.get(anchor)
         if fate is None or fate.anchor is None:
             continue
-        for number, item in pair(listed, head_items.get(fate.anchor, {})).items():
+        paired = pair(listed, head_items.get(fate.anchor, {}), in_place=True)
+        for number, item in paired.items():
             if item.kind == "moved":
                 problems.append(
                     f'{fate.title}, item {number} "{listed[number].title}" is now '
@@ -301,7 +318,7 @@ def frozen(base_text: str, head_text: str) -> list[str]:
                     "removed: mark it as no longer applying, in place"
                 )
     base_rows, head_rows = roadmap_rows(base_text), roadmap_rows(head_text)
-    for number, row in pair(base_rows, head_rows).items():
+    for number, row in pair(base_rows, head_rows, in_place=True).items():
         split = any(_split(number, other) for other in head_rows)
         if row.kind == "moved" and not _split(number, row.anchor):
             problems.append(
