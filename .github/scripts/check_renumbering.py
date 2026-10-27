@@ -310,3 +310,157 @@ def frozen(base_text: str, head_text: str) -> list[str]:
                 f'roadmap row {number} "{base_rows[number].title}" was removed'
             )
     return problems
+
+
+@dataclass(frozen=True)
+class Finding:
+    """A citation, on a line the pull request did not touch, of a section that left.
+
+    Attributes
+    ----------
+    path : Path
+        The citing file.
+    line : int
+        The citing line, 1-indexed.
+    cited : str
+        The citation as written.
+    fate : Fate
+        What became of the section it was written against.
+    old : str
+        The anchor it names, which no longer holds that section.
+
+    """
+
+    path: Path
+    line: int
+    cited: str
+    fate: Fate
+    old: str
+
+
+def _number(anchor: str) -> str:
+    """Spell an anchor's section number, as ``typing-spec-3-2`` is ``3.2``."""
+    return grammar.LABEL.match(anchor)["num"].replace("-", ".")
+
+
+def _citations(
+    path: Path, line: str, names: object
+) -> list[tuple[int, int, str, str, str]]:
+    """Find a line's citations, as their span, text, anchor and kind of writing.
+
+    A plain citation spans its text; a role spans its body, between the
+    backticks, so that a rewrite can turn its display and its target together.
+    """
+    found: list[tuple[int, int, str, str, str]] = []
+    plain, _ = grammar.prose(line)
+    owner = names.owners.get(path)
+    found.extend(
+        (citation.start, citation.end, citation.text, citation.slug, "plain")
+        for citation in grammar.scan(plain, names.signed, owner)
+        if citation.slug is not None
+    )
+    for match in grammar.SPAN.finditer(line):
+        if match["role"] is None or len(match["ticks"]) != 1:
+            continue
+        role = grammar.section_role(match["role"].strip("{}:"), match["body"], names)
+        if role is not None:
+            shown, target = role
+            found.append(
+                (
+                    match.start("body"),
+                    match.end("body"),
+                    shown or target,
+                    target,
+                    "role",
+                )
+            )
+    return found
+
+
+def stale(
+    texts: dict[Path, str],
+    fates: dict[str, Fate],
+    names: object,
+    changed: dict[Path, set[int]],
+) -> list[Finding]:
+    """Find each untouched citation of a section that moved or went.
+
+    Parameters
+    ----------
+    texts : dict
+        The corpus, each file's text keyed by its path.
+    fates : dict
+        What became of each section of the specifications that changed.
+    names : Namespace
+        The citation grammar of the specifications as they are now.
+    changed : dict
+        The lines the pull request changed, keyed by path.
+
+    Returns
+    -------
+    list of Finding
+        In the order of the corpus and of each file's lines.
+
+    """
+    findings: list[Finding] = []
+    for path, text in texts.items():
+        touched = changed.get(path, set())
+        for number, line in grammar.source_lines(path, text):
+            if number in touched:
+                continue
+            for _, _, cited, anchor, _ in _citations(path, line, names):
+                fate = fates.get(anchor)
+                if fate is not None and fate.kind != "kept":
+                    findings.append(Finding(path, number, cited, fate, anchor))
+    return findings
+
+
+def describe(finding: Finding, root: Path, now: dict[str, Section]) -> str:
+    """Say what a stale citation was written against, and what became of it."""
+    where = (
+        finding.path.relative_to(root)
+        if finding.path.is_relative_to(root)
+        else (finding.path)
+    )
+    head = (
+        f'{where.as_posix()}:{finding.line}: {finding.cited} was "{finding.fate.title}"'
+    )
+    if finding.fate.kind == "moved":
+        return f"{head}, which is now {grammar.SECTION}{_number(finding.fate.anchor)}"
+    sign = f"{grammar.SECTION}{_number(finding.old)}"
+    later = now.get(finding.old)
+    return f"{head}, which was removed; {sign} is " + (
+        f'now "{later.title}"' if later is not None else "no longer a section"
+    )
+
+
+def rewrite(
+    text: str, path: Path, fates: dict[str, Fate], names: object, lines: set[int]
+) -> str:
+    """Move each citation of a moved section, on the lines given, to its new number.
+
+    A citation of a removed section has no new number, and is left as written.
+    """
+    out = text.splitlines(keepends=True)
+    for number, line in grammar.source_lines(path, text):
+        if number not in lines:
+            continue
+        edits = []
+        for start, end, _, anchor, kind in _citations(path, line, names):
+            fate = fates.get(anchor)
+            if fate is None or fate.kind != "moved":
+                continue
+            new = _number(fate.anchor)
+            if kind == "plain":
+                replaced = re.sub(r"\d+(?:\.\d+)*$", new, line[start:end])
+            else:
+                targeted = grammar.TARGETED.match(line[start:end])
+                shown = re.sub(r"\d+(?:\.\d+)*$", new, targeted["text"])
+                replaced = f"{shown} <{fate.anchor}>"
+            edits.append((start, end, replaced))
+        edited = line
+        for start, end, replaced in sorted(edits, reverse=True):
+            edited = edited[:start] + replaced + edited[end:]
+        ending = out[number - 1][len(out[number - 1].rstrip("\r\n")) :]
+        out[number - 1] = edited + ending
+    return "".join(out)

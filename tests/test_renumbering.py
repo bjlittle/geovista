@@ -307,3 +307,140 @@ def test_a_roadmap_with_more_columns_is_read(guard):
 
     assert list(guard.roadmap_rows(table)) == ["6a"]
     assert guard.roadmap_rows(table)["6a"].title == "The library"
+
+
+#: A section inserted at 2, moving Design to 3 and Testing to 4.
+INSERTED = spec(
+    ("1", "Purpose", PURPOSE),
+    ("2", "Scope", "What the design covers, and what it leaves to others to settle."),
+    ("3", "Design", DESIGN),
+    ("4", "Testing", TESTING),
+)
+
+
+@pytest.fixture
+def renumbered(guard, tmp_path):
+    """Provide the specification after a section is inserted, and its namespace."""
+    path = tmp_path / "2026-01-01-demo-design.md"
+    path.write_text(INSERTED, encoding="utf-8")
+    names = guard.grammar.namespace([path])
+    fates = guard.pair(guard.sections(BASE), guard.sections(INSERTED))
+    return path, names, fates
+
+
+def test_an_untouched_citation_of_a_moved_section_is_stale(guard, tmp_path, renumbered):
+    """Written against the old layout, it now names the newcomer."""
+    spec_path, names, fates = renumbered
+    code = tmp_path / "code.py"
+    texts = {spec_path: INSERTED, code: f"# see demo spec {SECTION}2\n"}
+
+    (finding,) = guard.stale(texts, fates, names, {})
+
+    assert (finding.path, finding.line, finding.cited) == (
+        code,
+        1,
+        f"demo spec {SECTION}2",
+    )
+    assert finding.fate.anchor == "demo-spec-3"
+
+
+def test_a_citation_on_a_changed_line_is_the_authors_to_have_checked(
+    guard, tmp_path, renumbered
+):
+    """A line the pull request changed passes."""
+    spec_path, names, fates = renumbered
+    code = tmp_path / "code.py"
+    texts = {spec_path: INSERTED, code: f"# see demo spec {SECTION}2\n"}
+
+    assert guard.stale(texts, fates, names, {code: {1}}) == []
+
+
+def test_a_bare_citation_inside_the_specification_and_a_role_are_read(
+    guard, tmp_path, renumbered
+):
+    """Inside its own document a citation needs no prefix, and a role is a citation."""
+    spec_path, names, fates = renumbered
+    text = INSERTED + f"\nSee {SECTION}3 and {{ref}}`{SECTION}2 <demo-spec-2>`.\n"
+    page = tmp_path / "page.rst"
+    texts = {
+        spec_path: text,
+        page: f"See :ref:`demo spec {SECTION}2 <demo-spec-2>`.\n",
+    }
+
+    found = {(f.path.name, f.cited) for f in guard.stale(texts, fates, names, {})}
+
+    assert found == {
+        (spec_path.name, f"{SECTION}3"),
+        (spec_path.name, f"{SECTION}2"),
+        ("page.rst", f"demo spec {SECTION}2"),
+    }
+
+
+def test_a_citation_of_a_kept_section_is_not_stale(guard, tmp_path, renumbered):
+    """Section 1 kept its number."""
+    spec_path, names, fates = renumbered
+    texts = {spec_path: INSERTED, tmp_path / "code.py": f"# demo spec {SECTION}1\n"}
+
+    assert guard.stale(texts, fates, names, {}) == []
+
+
+def test_a_removed_section_is_described_by_what_its_number_names_now(guard, tmp_path):
+    """The reader is told what the stale citation now opens."""
+    head = spec(("1", "Purpose", PURPOSE), ("2", "Testing", TESTING))
+    path = tmp_path / "2026-01-01-demo-design.md"
+    path.write_text(head, encoding="utf-8")
+    names = guard.grammar.namespace([path])
+    fates = guard.pair(guard.sections(BASE), guard.sections(head))
+    code = tmp_path / "code.py"
+    texts = {path: head, code: f"# demo spec {SECTION}2, {SECTION}3\n"}
+
+    found = guard.stale(texts, fates, names, {})
+    described = [guard.describe(f, tmp_path, guard.sections(head)) for f in found]
+
+    removed = (
+        f'code.py:1: demo spec {SECTION}2 was "Design", which was removed; '
+        f'{SECTION}2 is now "Testing"'
+    )
+    moved = f'code.py:1: {SECTION}3 was "Testing", which is now {SECTION}2'
+    assert described == [removed, moved]
+
+
+def test_rewrite_moves_a_citation_on_the_lines_named_and_no_others(
+    guard, tmp_path, renumbered
+):
+    """The fix touches only the untouched lines it was asked to, and a run's rest."""
+    _, names, fates = renumbered
+    text = f"# demo spec {SECTION}2, {SECTION}1/{SECTION}3\n# demo spec {SECTION}2\n"
+
+    fixed = guard.rewrite(text, tmp_path / "code.py", fates, names, {1})
+
+    assert (
+        fixed
+        == f"# demo spec {SECTION}3, {SECTION}1/{SECTION}4\n# demo spec {SECTION}2\n"
+    )
+
+
+def test_rewrite_turns_a_roles_display_and_target_together(guard, renumbered):
+    """A role carries the number twice, and both must move."""
+    spec_path, names, fates = renumbered
+    text = f"See {{ref}}`{SECTION}2 <demo-spec-2>` and :ref:`x <demo-spec-3>`.\n"
+
+    fixed = guard.rewrite(text, spec_path, fates, names, {1})
+
+    assert (
+        fixed == f"See {{ref}}`{SECTION}3 <demo-spec-3>` and :ref:`x <demo-spec-4>`.\n"
+    )
+
+
+def test_rewrite_leaves_a_removed_sections_citation_for_the_author(guard, tmp_path):
+    """A removed section has no new number to take."""
+    head = spec(("1", "Purpose", PURPOSE), ("2", "Testing", TESTING))
+    path = tmp_path / "2026-01-01-demo-design.md"
+    path.write_text(head, encoding="utf-8")
+    names = guard.grammar.namespace([path])
+    fates = guard.pair(guard.sections(BASE), guard.sections(head))
+    text = f"# demo spec {SECTION}2 and demo spec {SECTION}3\n"
+
+    fixed = guard.rewrite(text, tmp_path / "code.py", fates, names, {1})
+
+    assert fixed == f"# demo spec {SECTION}2 and demo spec {SECTION}2\n"
