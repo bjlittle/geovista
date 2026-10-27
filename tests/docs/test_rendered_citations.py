@@ -16,6 +16,14 @@ number, and shares no code with it. A check that asked the grammar what to look
 for would go blind in the same moment the grammar did. It also resolves each
 link, so a citation that links to an anchor no page holds fails here.
 
+Two limitations follow from that independence, and are accepted. A citation inside
+an unrelated link counts as linked, since the check cannot tell one anchor from
+another without the transform's own markup, and the transform leaves such a
+citation plain on purpose, so as never to nest one link inside another. And an
+``<a>`` a theme leaves unclosed is popped only when an ancestor closes, so a bare
+citation in that window counts as linked. Sphinx's output is well formed, so the
+second is theoretical until a theme changes.
+
 The checks of a tree run on small pages written here, and on the real build
 through ``html_root``, which skips without one, and fails under
 ``--browser-strict``. This module sits inside the corpus the citation grammar
@@ -71,6 +79,22 @@ ADVICE = {
     "that 'geovista_citation_xrefs' is in conf.py's extensions, that the grammar "
     "reads the citation, and that it is not in a raw block or a toctree caption",
 }
+
+#: How each placement is named in a report.
+WHERE = {
+    "title": "a page title",
+    "nav": "navigation",
+    "dt": "an API signature",
+    "": "body text",
+}
+
+#: Why a citation sits inside two links, which nothing in its source shows.
+NESTED = (
+    "Two links around one citation is invalid HTML, which a browser restructures "
+    "silently. It happens when something wraps a heading after the citation in it "
+    "became a link: a contents directive does just that, to the heading and to its "
+    "own entry for it. Cite the section in the prose under the heading instead."
+)
 
 #: How many citations of one placement on one page to name before counting them.
 SHOWN = 4
@@ -230,6 +254,9 @@ def landing(root: Path, page: Path, href: str) -> str | None:
 
 def check(root: Path) -> Report:
     """Read every page under ``root``, less the ``viewcode`` listings."""
+    # resolved once, as every link is, so that a root reached by a symlink holds
+    # the pages its links resolve to
+    root = root.resolve()
     report = Report()
     for page in sorted(root.rglob("*.html")):
         relative = page.relative_to(root).as_posix()
@@ -268,10 +295,19 @@ def unlinked(report: Report) -> str:
         for hit, where in hits:
             grouped.setdefault(where, []).append(hit)
         for where, found in grouped.items():
-            lines.append(f"  {relative}: {listed(found)}")
+            lines.append(f"  {relative}: {listed(found)} in {WHERE[where]}")
             seen.append(where)
     advice = [f"In {ADVICE[where]}." for where in dict.fromkeys(seen)]
     return "\n".join(["Unlinked citations:", *lines, *advice])
+
+
+def nested(report: Report) -> str:
+    """Describe each page's citations nested in two links, and why that happens."""
+    lines = [
+        f"  {relative}: {listed(hits)}"
+        for relative, hits in sorted(report.nested.items())
+    ]
+    return "\n".join(["Citations nested in two links:", *lines, NESTED])
 
 
 def page(tmp_path: Path, name: str, body: str) -> Path:
@@ -467,7 +503,7 @@ def test_every_rendered_citation_is_a_link(html_root):
     report = check(html_root)
 
     assert not report.bare, unlinked(report)
-    assert not report.nested, f"Citations nested in two links: {report.nested}"
+    assert not report.nested, nested(report)
 
 
 def test_every_citation_link_lands_on_an_anchor_that_exists(html_root):
@@ -484,3 +520,53 @@ def test_the_build_links_some_citation(html_root):
         f"no citation became a link across {report.pages} pages: is "
         "'geovista_citation_xrefs' in conf.py's extensions?"
     )
+
+
+def test_a_broken_link_under_a_symlinked_root_is_reported(tmp_path):
+    """A checkout reached through a symlink names the page, rather than raising."""
+    real = tmp_path / "real"
+    page(real, "specs/typing.html", '<h2 id="typing-spec-3-1">3.1</h2>')
+    page(real, "guide.html", f'<a href="specs/typing.html#typing-spec-3-2">{CITED}</a>')
+    (tmp_path / "link").symlink_to(real)
+
+    report = check(tmp_path / "link")
+
+    expected = (
+        f"{SECTION}3.2 -> specs/typing.html#typing-spec-3-2 names no anchor on "
+        "specs/typing.html"
+    )
+    assert report.broken == {"guide.html": [expected]}
+
+
+def test_a_link_up_the_tree_lands_or_is_reported(tmp_path):
+    """A page two levels down reaches the specifications through ``../``."""
+    page(tmp_path, "specs/typing.html", '<h2 id="typing-spec-3-2">3.2</h2>')
+    good = '<a href="../../specs/typing.html#typing-spec-3-2">' + CITED + "</a>"
+    bad = '<a href="../../specs/typing.html#typing-spec-9">' + CITED + "</a>"
+    page(tmp_path, "a/b/good.html", good)
+    page(tmp_path, "a/b/bad.html", bad)
+
+    report = check(tmp_path)
+
+    assert list(report.broken) == ["a/b/bad.html"]
+    assert "names no anchor on specs/typing.html" in report.broken["a/b/bad.html"][0]
+
+
+def test_the_report_says_where_each_line_of_citations_sat(tmp_path):
+    """With placements mixed, each line names its own, beside the advice for it."""
+    page(tmp_path, "b.html", f"<p>{CITED}</p><title>{CITED}</title>")
+
+    text = unlinked(check(tmp_path))
+
+    assert f"b.html: {SECTION}3.2 in body text" in text
+    assert f"b.html: {SECTION}3.2 in a page title" in text
+
+
+def test_a_nested_citation_is_explained_and_not_merely_counted(tmp_path):
+    """Nothing in the source looks wrong, so the report says what usually does it."""
+    page(tmp_path, "a.html", f'<a href="#x"><a href="#y">{CITED}</a></a>')
+
+    text = nested(check(tmp_path))
+
+    assert f"a.html: {SECTION}3.2" in text
+    assert "contents" in text
