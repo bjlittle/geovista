@@ -815,6 +815,50 @@ def test_every_citation_carries_its_sign(texts, names):
 OPENED = re.compile(r"(?:\{ref\}|:ref:)`")
 
 
+def full_citation(target: str) -> str:
+    """Spell an anchor as a citation carrying its prefix, as ``docs spec §3.2``."""
+    label = LABEL.match(target)
+    return (
+        f"{label['prefix'].replace('-', ' ')} {SECTION}{label['num'].replace('-', '.')}"
+    )
+
+
+def suggestions(
+    line: str, roles: list[tuple[re.Match[str], str, str]], names: Namespace, owner
+) -> list[str]:
+    """Choose the plain citation each section role on a line should become.
+
+    The roles are followed together, as an author following the advice would
+    write them, since one becoming a citation can carry its prefix into the
+    next. Each is its display text where, the line written so, that names its
+    own target, and otherwise its full form, which nothing carried can change;
+    so the choice settles once the full forms stop growing.
+    """
+    chosen = [display or full_citation(target) for _, display, target in roles]
+    while True:
+        out, spans, cursor = [], [], 0
+        for (match, _, target), text in zip(roles, chosen, strict=True):
+            out.append(line[cursor : match.start()])
+            begin = sum(map(len, out))
+            out.append(text)
+            spans.append((begin, begin + len(text), target))
+            cursor = match.end()
+        out.append(line[cursor:])
+        found = {
+            (c.start, c.end, c.slug)
+            for c in scan(prose("".join(out))[0], names.signed, owner)
+        }
+        wrong = [
+            index
+            for index, span in enumerate(spans)
+            if span not in found and chosen[index] != full_citation(span[2])
+        ]
+        if not wrong:
+            return chosen
+        for index in wrong:
+            chosen[index] = full_citation(spans[index][2])
+
+
 def section_roles(path: Path, text: str, names: Namespace) -> list[str]:
     """Find each role naming a section, which a plain citation replaces.
 
@@ -822,6 +866,8 @@ def section_roles(path: Path, text: str, names: Namespace) -> list[str]:
     while each reads well. A plain citation is one string, which the build links
     to the section it names, so a section is cited in plain text. A role naming a
     label that is no section, such as a page's, is not a citation, and stays.
+    Each is reported with the plain citation it should become, chosen with the
+    line's other roles so that following every suggestion links each section.
     """
     owner = names.owners.get(path)
     problems = []
@@ -829,28 +875,18 @@ def section_roles(path: Path, text: str, names: Namespace) -> list[str]:
         plain, _ = prose(line)
         if OPENED.search(plain):
             problems.append(f"{where(path, number)}: a role broken across lines")
+        roles = []
         for match in citations.SPAN.finditer(line):
             if match["role"] is None or len(match["ticks"]) != 1:
                 continue
             role = section_role(match["role"].strip("{}:"), match["body"], names)
-            if role is None:
-                continue
-            display, target = role
-            # the display text, where it names the target as the line would read
-            # with it in the role's place, a prefix carried into it included; else
-            # the full form, which nothing carried can change
-            start = match.start()
-            written = line[:start] + display + line[match.end() :]
-            cited = scan(prose(written)[0], names.signed, owner)
-            spans = {(c.start, c.end, c.slug) for c in cited}
-            if not display or (start, start + len(display), target) not in spans:
-                label = LABEL.match(target)
-                prefix = label["prefix"].replace("-", " ")
-                display = f"{prefix} {SECTION}{label['num'].replace('-', '.')}"
-            problems.append(
-                f"{where(path, number)}: write {display!r} as plain text, "
-                "which the build links"
-            )
+            if role is not None:
+                roles.append((match, *role))
+        problems += [
+            f"{where(path, number)}: write {cited!r} as plain text, "
+            "which the build links"
+            for cited in (suggestions(line, roles, names, owner) if roles else [])
+        ]
     return problems
 
 
@@ -929,6 +965,28 @@ def test_section_roles_suggests_in_the_context_of_its_run(tmp_path, joined):
     problems = section_roles(path, path.read_text(encoding="utf-8"), names)
 
     assert [p.split(": ", 1)[1] for p in problems] == [
+        f"write 'demo spec {SECTION}1' as plain text, which the build links",
+    ]
+
+
+@pytest.mark.parametrize("joined", [", ", "/"])
+def test_section_roles_suggests_a_lines_citations_together(tmp_path, joined):
+    """Followed together, the suggestions must each still link their own section."""
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
+        "(other-spec-1)=\n## 1. Other\n",
+        encoding="utf-8",
+    )
+    first = f"{{ref}}`other spec {SECTION}1 <other-spec-1>`"
+    line = f"\nSee {first}{joined}{{ref}}`{SECTION}1 <demo-spec-1>`.\n"
+    path, _ = demo(tmp_path, DEMO + line)
+    names = namespace([path, other])
+
+    problems = section_roles(path, path.read_text(encoding="utf-8"), names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"write 'other spec {SECTION}1' as plain text, which the build links",
         f"write 'demo spec {SECTION}1' as plain text, which the build links",
     ]
 
