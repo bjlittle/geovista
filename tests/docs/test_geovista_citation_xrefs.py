@@ -222,15 +222,30 @@ def test_a_bare_section_resolves_only_inside_a_specification(docs):
 
 @pytest.mark.usefixtures("registry")
 @pytest.mark.parametrize(
-    "kind", ["literal", "literal_block", "comment", "raw", "reference"]
+    "kind",
+    [
+        "literal",
+        "literal_block",
+        "doctest_block",
+        "comment",
+        "raw",
+        "reference",
+        "desc_signature",
+        "pending_xref",
+    ],
 )
 def test_a_citation_the_skip_set_holds_stays_plain(docs, warned, kind):
     """Literals stay examples, and a link is never nested inside a link."""
     docs.cx._build_registry(app(SRC))
     nodes = docs.nodes
-    doc = document(docs, nodes.paragraph("", "", getattr(nodes, kind)("", CITED)))
+    if hasattr(docs.addnodes, kind):
+        holder = getattr(docs.addnodes, kind)("", nodes.Text(CITED), reftarget="x")
+    else:
+        holder = getattr(nodes, kind)("", CITED)
+    doc = document(docs, nodes.paragraph("", "", holder))
 
-    assert rewrite(docs, doc) == []
+    # a pending_xref holding the citation is the one link it already had
+    assert rewrite(docs, doc) == (["x"] if kind == "pending_xref" else [])
     assert warned == []
 
 
@@ -258,6 +273,7 @@ def test_a_citation_in_a_section_heading_is_reported(docs, warned):
     assert rewrite(docs, doc) == ["docs-spec-3-5"]
     (message,) = warned
     assert TITLED in message, "the warning does not say which heading it is about"
+    assert f"citation spec {SECTION}4.2" in message, "it names no rule to read"
 
 
 @pytest.mark.usefixtures("registry")

@@ -1,0 +1,6 @@
+The check of the rendered citations reports a broken link under a root reached
+by a symlink rather than failing on it, names where each unlinked citation sat,
+and explains a citation nested in two links. The citation transform leaves a
+``>>>`` example alone, and its warning of a citation in a heading names the rule
+behind it. Citation links keep their tooltips, which show the section cited.
+(:user:`claude`)
