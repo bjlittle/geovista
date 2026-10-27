@@ -74,6 +74,16 @@ def test_short_form_is_never_read():
     assert to_metres(pint.UnitRegistry().Quantity(1.0, "nmi")) == 1852.0
 
 
+@pytest.mark.parametrize(
+    "fmt", ["", "~", "P", "~P", "L", "~L", "H", "~H", "C", "~C", "D", "~D"]
+)
+def test_long_form_whatever_the_display_format(fmt):
+    """Test that a registry's display format never changes what is read."""
+    registry = pint.UnitRegistry()
+    registry.formatter.default_format = fmt
+    assert to_metres(registry.Quantity(1.0, "nautical_mile")) == 1852.0
+
+
 def test_float32_magnitude_becomes_float64():
     """Test that a float32 magnitude is converted as float64."""
     assert to_metres(H.astype(np.float32), "km").dtype == np.float64
@@ -113,7 +123,7 @@ def test_refuses_a_quantity_of_another_dimension():
         to_metres(pint.UnitRegistry().Quantity(1000.0, "hPa"))
 
 
-@pytest.mark.parametrize("units", ["not_a_unit", "m!!", "3 km"])
+@pytest.mark.parametrize("units", ["not_a_unit", "m!!", "3 km", "m/0", "1/0 m"])
 def test_refuses_an_unreadable_unit(units):
     """Test that a unit pint-cf cannot read is refused, and named."""
     emsg = re.escape(f"{units!r} is not a unit geovista can read")

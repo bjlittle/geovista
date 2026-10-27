@@ -129,9 +129,10 @@ def _quantity(value: object, units: str | None) -> tuple[pint.Quantity, str] | N
     from pint.errors import PintError  # noqa: PLC0415
 
     if isinstance(value, _Quantity):
-        # the long form of the units, since a short form can read differently
-        # in another registry, as "nmi", a nautical mile, reads as a nano mile
-        label = str(value.units)
+        # pint's plain long form, "D", since a short form can read differently
+        # in another registry, as "nmi", a nautical mile, reads as a nano mile.
+        # str() follows the registry's display format, which may be short
+        label = format(value.units, "D")
         magnitude = _magnitude(value.magnitude)
     else:
         label = str(units)
@@ -145,7 +146,8 @@ def _quantity(value: object, units: str | None) -> tuple[pint.Quantity, str] | N
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
             unit = registry.Unit(label)
-    except (LarkError, PintError, ValueError) as err:
+    except (ArithmeticError, LarkError, PintError, ValueError) as err:
+        # pint-cf raises ZeroDivisionError for a unit such as "m/0"
         emsg = f"{label!r} is not a unit geovista can read."
         raise ValueError(emsg) from err
 

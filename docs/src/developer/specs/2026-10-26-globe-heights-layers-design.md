@@ -261,9 +261,12 @@ crs spec §4.9 sets, and `geovista.units` converts each, once, to
 metres or to degrees:
 
 1. a plain number, in metres for a length and degrees for an angle;
-2. a `pint` quantity, from any registry, read by its magnitude and the long form of its
-   units, `str(quantity.units)`. Measured with `pint-cf` 0.2.1, the short form of a nautical
-   mile, `nmi`, reads as a nano international mile, so the short form is never used;
+2. a `pint` quantity, from any registry, read by its magnitude and the plain long form of
+   its units, `format(quantity.units, "D")`. Measured with `pint-cf` 0.2.1, the short form
+   of a nautical mile, `nmi`, reads as a nano international mile, so the short form is
+   never used. Nor is `str(quantity.units)`, which follows the display format of the
+   quantity's registry: a short format such as `"~"` gives `nmi`, and LaTeX gives markup
+   that no registry reads ({pull}`2754`);
 3. a magnitude with a CF unit string, such as `"km"` or `"degrees_north"`, parsed by the
    registry of `pint-cf`.
 
