@@ -241,10 +241,11 @@ def numbered_items(text: str) -> dict[str, dict[str, Section]]:
     found: dict[str, dict[str, Section]] = {}
     lines = [line for _, line in grammar.read_lines(text)]
     current = None
+    lists = 0
     for index, line in enumerate(lines):
         anchor = grammar.ANCHOR.match(line)
         if anchor is not None:
-            current = f"{anchor['slug']}-{anchor['num']}"
+            current, lists = f"{anchor['slug']}-{anchor['num']}", 0
             continue
         item = ITEM.match(line)
         if current is None or item is None or not item["rest"].startswith("**"):
@@ -256,9 +257,17 @@ def numbered_items(text: str) -> dict[str, dict[str, Section]]:
             body.append(following.strip())
         joined = " ".join(body)
         bolds = [match["text"].replace("\n", " ") for match in BOLD.finditer(joined)]
+        if not bolds:
+            # a bold title not yet closed, as an item mid-edit has
+            continue
         title = bolds[1] if bolds[0] in STATES and len(bolds) > 1 else bolds[0]
         number = item["number"]
-        found.setdefault(current, {})[number] = Section(number, title, joined)
+        listed = found.setdefault(current, {})
+        if number == "1" and listed:
+            lists += 1
+        # a second list in the section numbers from 1 again, so it is kept apart
+        key = number if not lists else f"{number} of list {lists + 1}"
+        listed[key] = Section(key, title, joined)
     return found
 
 
@@ -275,7 +284,9 @@ def roadmap_rows(text: str) -> dict[str, Section]:
             continue
         cells = [cell.strip() for cell in line.strip("|").split("|")]
         if inside and cells and not set(cells[0]) <= set("-: "):
-            found[cells[0]] = Section(cells[0], cells[1], cells[1])
+            # a row mid-edit may have its number and nothing else yet
+            scope = cells[1] if len(cells) > 1 else ""
+            found[cells[0]] = Section(cells[0], scope, scope)
     return found
 
 
@@ -482,8 +493,12 @@ def rewrite(
                 replaced = re.sub(r"\d+(?:\.\d+)*$", new, line[start:end])
             else:
                 targeted = grammar.TARGETED.match(line[start:end])
-                shown = re.sub(r"\d+(?:\.\d+)*$", new, targeted["text"])
-                replaced = f"{shown} <{fate.anchor}>"
+                if targeted is None:
+                    # a role naming only its target
+                    replaced = fate.anchor
+                else:
+                    shown = re.sub(r"\d+(?:\.\d+)*$", new, targeted["text"])
+                    replaced = f"{shown} <{fate.anchor}>"
             edits.append((start, end, replaced))
         edited = line
         for start, end, replaced in sorted(edits, reverse=True):
@@ -529,13 +544,26 @@ def git(root: Path, *args: str) -> str:
     return done.stdout
 
 
+#: A commit's full name, whose contents never change.
+COMMIT = re.compile(r"[0-9a-f]{40}")
+
+#: What each commit held, read once per run; a branch or ``HEAD`` is never kept.
+SHOWN: dict[tuple[Path, str, str], str | None] = {}
+
+
 def at(root: Path, ref: str, path: Path) -> str | None:
     """Return a file's text at ``ref``, or ``None`` if it did not exist there."""
-    relative = path.relative_to(root).as_posix() if path.is_absolute() else path
+    relative = path.relative_to(root).as_posix() if path.is_absolute() else str(path)
+    key = (root, ref, relative)
+    if key in SHOWN:
+        return SHOWN[key]
     try:
-        return git(root, "show", f"{ref}:{relative}")
+        text: str | None = git(root, "show", f"{ref}:{relative}")
     except GitError:
-        return None
+        text = None
+    if COMMIT.fullmatch(ref):
+        SHOWN[key] = text
+    return text
 
 
 #: A file a unified diff names, as changed.
@@ -549,27 +577,77 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
     """Read the lines changed since ``base`` branched, as they are numbered now."""
     changed: dict[Path, set[int]] = {}
     current: Path | None = None
-    for line in git(root, "diff", "--unified=0", "--no-color", base, "--").splitlines():
+    # the format is pinned, so that no local diff setting changes what is read
+    diff = git(
+        root,
+        "diff",
+        "--unified=0",
+        "--no-color",
+        "--no-ext-diff",
+        "--src-prefix=a/",
+        "--dst-prefix=b/",
+        base,
+        "--",
+    )
+    for line in diff.splitlines():
         if diffed := DIFFED.match(line):
-            current = root / diffed["path"]
+            # git ends the header with a tab when the path holds a space
+            current = root / diffed["path"].rstrip("\t")
             continue
         if (hunk := HUNK.match(line)) and current is not None:
             start, count = int(hunk["start"]), int(hunk["count"] or 1)
             changed.setdefault(current, set()).update(range(start, start + count))
+    # a file not yet added is the author's own, every line of it
+    for name in git(root, "ls-files", "--others", "--exclude-standard", "-z").split(
+        "\0"
+    ):
+        path = root / name
+        if name and path.is_file():
+            count = len(path.read_text(encoding="utf-8", errors="replace").splitlines())
+            changed[path] = set(range(1, count + 1))
     return changed
 
 
-def _fates(root: Path, ref: str, specs: list[Path]) -> dict[str, Fate]:
+def _prefix(text: str) -> str | None:
+    """Return the citation prefix a specification owns, from its first anchor."""
+    first = next(iter(sections(text)), None)
+    return None if first is None else grammar.LABEL.match(first)["prefix"]
+
+
+def _counterparts(root: Path, ref: str, specs: list[Path]) -> dict[Path, Path | None]:
+    """Map each specification at ``ref`` to the one that holds it now, or ``None``.
+
+    A specification is the prefix it owns, so one renamed with ``git mv`` is
+    found by that, rather than read as one removed and another added.
+    """
+    owners = {
+        _prefix(spec.read_text(encoding="utf-8")): spec
+        for spec in specs
+        if spec.is_file()
+    }
+    listed = git(root, "ls-tree", "-z", "--name-only", ref, f"{SPECS}/")
+    counterparts: dict[Path, Path | None] = {}
+    for name in listed.split("\0"):
+        if not name.endswith(".md"):
+            continue
+        base = root / name
+        before = at(root, ref, base)
+        counterparts[base] = owners.get(_prefix(before)) if before is not None else None
+    return counterparts
+
+
+def _fates(
+    root: Path, ref: str, counterparts: dict[Path, Path | None]
+) -> dict[str, Fate]:
     """Pair the sections of each specification at ``ref`` with those now."""
     fates: dict[str, Fate] = {}
-    for spec in specs:
-        before = at(root, ref, spec)
-        if before is not None and spec.is_file():
-            now = spec.read_text(encoding="utf-8")
-            if before != now:
-                fates.update(pair(sections(before), sections(now)))
-        elif before is not None:
-            fates.update(pair(sections(before), {}))
+    for base, now in counterparts.items():
+        before = at(root, ref, base)
+        if before is None:
+            continue
+        after = now.read_text(encoding="utf-8") if now is not None else None
+        if after != before:
+            fates.update(pair(sections(before), sections(after) if after else {}))
     return fates
 
 
@@ -798,6 +876,9 @@ def _blame(root: Path, path: Path) -> dict[int, str]:
     """Map each line of a file to the commit that last wrote it."""
     blamed: dict[int, str] = {}
     relative = path.relative_to(root).as_posix()
+    if not git(root, "ls-files", "--", relative).strip():
+        # not yet added, so every line of it is uncommitted
+        return blamed
     for line in git(root, "blame", "--porcelain", "--", relative).splitlines():
         fields = line.split()
         if len(fields) >= 3 and re.fullmatch(r"[0-9a-f]{40}", fields[0]):
@@ -851,22 +932,21 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
             scope = "every citation in the repository"
         else:
             branched = git(root, "merge-base", args.base, "HEAD").strip()
-            listed = git(root, "ls-tree", "--name-only", branched, f"{SPECS}/")
-            specs_then = {
-                root / name for name in listed.split() if name.endswith(".md")
-            }
-            fates = _fates(root, branched, sorted(specs_then | set(specs)))
+            counterparts = _counterparts(root, branched, specs)
+            fates = _fates(root, branched, counterparts)
             changed = changed_lines(root, branched)
             findings = stale(texts, fates, names, changed)
             # each line the pull request changed, followed from where it was
             # written on its branch, which a renumber merged since may have moved
             findings += since_written(root, texts, names, changed, args.base)
-            for spec in specs:
-                before = at(root, branched, spec)
-                if before is not None:
+            for base, current in counterparts.items():
+                before = at(root, branched, base)
+                if before is not None and current is not None:
                     problems += [
-                        f"{spec.relative_to(root).as_posix()}: {problem}"
-                        for problem in frozen(before, spec.read_text(encoding="utf-8"))
+                        f"{current.relative_to(root).as_posix()}: {problem}"
+                        for problem in frozen(
+                            before, current.read_text(encoding="utf-8")
+                        )
                     ]
             scope = f"the specifications changed since {args.base}"
         if args.fix:
