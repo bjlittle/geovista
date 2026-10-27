@@ -278,7 +278,7 @@ This final example showcases how `PyVista`_ can take visualization of Earth
 Science data to the next dimension, quite literally.
 
 We use `Finite Volume Community Ocean Model`_ (FVCOM) data to create an
-extruded :term:`mesh <Mesh>` of the `Plymouth Sound and Tamar River`_
+extruded :term:`mesh <Mesh>` of the Plymouth Sound and Tamar River
 bathymetry in Cornwall, England.
 
 First the :meth:`~geovista.bridge.Transform.from_unstructured` method is used
@@ -355,7 +355,6 @@ If so, then let's explore the :ref:`next steps <tippy-gv-next-steps>` on your
 .. _NOAA/NCEI Optimum Interpolation SST: https://www.ncei.noaa.gov/products/optimum-interpolation-sst
 .. _Nucleus for European Modelling of the Ocean: https://forge.nemo-ocean.eu/nemo/nemo/-/wikis/home
 .. _Plate Carrée: https://cartopy.readthedocs.io/stable/reference/projections.html#cartopy.crs.PlateCarree
-.. _Plymouth Sound and Tamar River: https://www.google.com/maps/place/Plymouth+Sound/@50.3337382,-4.2215988,12z/data=!4m5!3m4!1s0x486c93516bbce307:0xded7654eaf4f8f83!8m2!3d50.3638359!4d-4.1441365
 .. _Robinson: https://proj4.org/en/stable/operations/projections/robin.html
 .. _WAVEWATCH III: https://github.com/NOAA-EMC/WW3
 .. _threshold: https://docs.pyvista.org/api/core/_autosummary/pyvista.datasetfilters.threshold
