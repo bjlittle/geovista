@@ -1,0 +1,4 @@
+The renumber guard reads a specification mid-edit without failing, ignores
+local diff settings, counts files not yet added as changed, follows a
+specification renamed with ``git mv``, and reads what each commit held once.
+(:user:`claude`)
