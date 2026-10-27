@@ -1,0 +1,9 @@
+A pull request that renumbers a specification's sections now has to update
+every citation of the sections it moves or removes. A new check,
+``.github/scripts/check_renumbering.py``, pairs each section with its
+counterpart on the base branch, even when it was renamed, and fails on each
+untouched line still citing an old number, released changelog entries
+included. ``pixi run -e test check-spec-renumbering fix`` rewrites the
+citations of moved sections. Each night it also audits every citation against
+how its specification has changed since the line was written, and numbered
+items and roadmap rows are held to being appended. (:user:`claude`)
