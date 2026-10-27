@@ -253,7 +253,11 @@ A scene's globe holds three quantities, and nothing else in the scene holds them
   structure of an ocean and of an atmosphere above it differ by an order of magnitude. Any
   form of it always increases, so that anything higher is drawn higher, whatever its
   layer; is zero at sea level, so that the surface, the coastlines and the base layer never
-  move; and is finite. Bands, and functions of height, are later forms (§8 item 8).
+  move; and is finite. Bands, and functions of height, are later forms (§8 item 8). The
+  split is by height, not by what lies there: land below sea level, such as the Dead Sea
+  at −430 m, takes the factor below, so with the two factors apart it is stretched as the
+  ocean is. Order still holds, the two scales of §8 item 1 show it, and the
+  documentation of the globe says so.
 
 `GeoPlotter` takes a globe, and every layer it adds takes its radius from it, the base
 layer, coastlines and graticule included. A globe is immutable. Changing the vertical

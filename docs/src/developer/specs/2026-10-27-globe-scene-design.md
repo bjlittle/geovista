@@ -56,9 +56,11 @@ These were decided with {user}`bjlittle` while the design was written.
    vertical mapping of globe spec §4.1, above and below sea level. Each is named for a reader who opens the file in ParaView, and none depends on
    its place in an array.
 4. **A mesh that records no globe is read, never refused.** It is placed on the default
-   globe, at its `gvRadius` where it has one, and otherwise at the radius its points lie
-   at. No position changes: today's `gvRadius` is exactly the render radius, and the
-   Earth's radius was never recorded. This settles crs spec §8 item 12.
+   globe, at its `gvRadius` where it has one, and otherwise at the one radius its points
+   lie at, if they lie at one. No position changes: today's `gvRadius` is exactly the render
+   radius, and the Earth's radius was never recorded. A mesh whose globe cannot be read
+   this way, such as one warped by its heights outside `geovista`, has no globe, and is
+   drawn where its points are. This settles crs spec §8 item 12.
 5. **Every mesh `geovista` produces carries only current fields.** A retired field found
    on a mesh is translated into what replaced it, and removed, in the mesh `geovista`
    returns or draws, so that saving that mesh does not carry the field forward. A mesh
@@ -134,6 +136,25 @@ Measured on 2026-10-27 at `a0f95dbe`, with `pyvista` 0.49.1 and VTK 9.7.1:
   Quantity and Quantity of different registries". Two from `pint`'s application registry
   can.
 
+(scene-spec-3-4)=
+### 3.4 A Mesh Warped Outside geovista
+
+The gallery's LFRic orography example warps its mesh with `pyvista`: it computes point
+normals, then calls `warp_by_scalar` with a factor of 2 × 10⁻⁵ on the altitudes. Measured on
+2026-10-27 at `a0f95dbe`:
+
+- `lfric_orog()` carries `gvCRS`, `gvRadius` of 1 and `gvName`, and its points lie at a
+  radius of 1 exactly. The warp keeps the field data (§3.3), so the warped mesh still says
+  it was drawn at a render radius of 1, which is true of its sea level.
+- The altitudes run from −114.9 m to 5,176.4 m, with a mean of 224.4 m. A factor of
+  2 × 10⁻⁵ at a render radius of 1 is an exaggeration of 127.6 at the Earth's radius,
+  chosen by hand and recorded nowhere.
+- The point normals depart from the radial direction by a median of 0.01° and at most
+  0.43°, so the warp moves a point sideways by at most 1.6 km at the Earth's radius.
+- The warped mesh's mean radius is 1.00449. Read as its render radius and drawn at 1, the
+  mesh would shrink by 0.45%, and its sea level would sink about 28 km beneath the
+  surface, below the base layer.
+
 (scene-spec-4)=
 ## 4. Design
 
@@ -155,7 +176,8 @@ Each must be finite and positive. A factor of 0 would draw a range of heights at
 radius, and break the rule of globe spec §4.1 that the vertical mapping always increases.
 Anything else raises a `ValueError` naming the value. `Globe(exaggeration=20)` stretches
 the atmosphere and the ocean alike, and `Globe(exaggeration=20, exaggeration_below=100)`
-stretches the ocean five times more.
+stretches the ocean five times more. Land below sea level takes the factor below too
+(globe spec §4.1), and the documentation of `Globe` says so.
 
 A globe's `radius` returns a `pint` quantity in metres, in `pint`'s application registry,
 the one `pint` provides for sharing quantities between packages, so that a user can add
@@ -216,10 +238,21 @@ the same globe, and the same points, bit for bit.
 `Globe.from_mesh`, given a mesh without the four fields, returns:
 
 1. `Globe(render_radius=r)` for a mesh with a `gvRadius` of `r`;
-2. otherwise, for a mesh that `crs.projected` does not call projected,
-   `Globe(render_radius=r)`, where `r` is the mean distance of its points from the origin,
-   as `common.distance` measures it today;
-3. otherwise, for a projected mesh, `Globe()`.
+2. otherwise, for a mesh that `crs.projected` does not call projected, and whose points
+   all lie at one radius `r`, to within a relative spread of 10⁻⁶, `Globe(render_radius=r)`;
+3. otherwise `None`: the mesh's globe cannot be read.
+
+The spread of item 2 tells a mesh on a sphere from one whose heights were baked into its
+positions. A warped mesh's mean radius is its sea level raised by its heights, and taking
+it for the render radius would sink that sea level (§3.4). 10⁻⁶ admits a sphere stored in
+float32, whose radius varies by some 6 × 10⁻⁸, and refuses heights of more than about 6 m
+at the Earth's radius.
+
+A mesh with no globe is drawn where its points are, never repositioned, and records no
+globe on the mesh drawn. A function given such a mesh uses `Globe()` wherever it needs a
+globe. Its heights, if it has any, are baked into its positions, so `geovista` cannot
+report them, exaggerate them with the scene, or include them in a vertical scale. The
+remedy is to pass the mesh unwarped, with its heights as data (globe spec §4.3).
 
 A mesh with some of the four fields but not all is refused, naming what is missing,
 since `geovista` never writes part of a globe.
@@ -249,7 +282,8 @@ until {issue}`2753` refreshes them, and a warning is an error under the test sui
 `geovista` registers an accessor named `gv` on `pyvista.DataSet` when it is imported, with
 `pyvista.register_dataset_accessor`, so every `pyvista` mesh has `mesh.gv`:
 
-- `mesh.gv.globe` returns the `Globe` the mesh records, read by `Globe.from_mesh` (§4.4);
+- `mesh.gv.globe` returns the `Globe` the mesh records, read by `Globe.from_mesh` (§4.4),
+  or `None` when its globe cannot be read;
 - `mesh.gv.crs` returns the mesh's CRS, read from its WKT as `crs.from_wkt` reads it, or
   `None`.
 
@@ -296,6 +330,8 @@ The gallery example, the tests and the pages of §3.1 move to `globe=`.
 - **Writing `gvRadius` beside the new fields, for older releases.** Rejected. A release
   before a breaking change is not supported across it, and in the new vocabulary a
   radius is the Earth's.
+- **Measuring every mesh that records no globe,** as first designed. Rejected. A warped
+  mesh would be read at its mean radius, and drawn 0.45% too small (§3.4).
 - **Refusing a mesh with `gvRadius` and no globe.** Rejected, by §2 decision 4. A plain
   mesh with no record at all must be read anyway, so a mesh with more information can be
   read too.
@@ -340,7 +376,9 @@ globe spec §6 and crs spec §6 require:
   fields, the globe it was given or its default, and no `gvRadius`;
 - **the round trip** of §4.3;
 - **reading**: each case of §4.4 gives the globe it names, a partial record is refused, and
-  the mesh read is unchanged;
+  the mesh read is unchanged; a sphere in float32 reads at its radius, and the example's
+  mesh warped as it is today, with its `gvRadius` removed, has no globe and is drawn
+  unscaled;
 - **cleaning**: `sanitize_legacy` translates and removes `gvRadius`; `sanitize` does so
   unless given `legacy=False`; no mesh that the bridge, `transform_mesh`, `resize` or
   `GeoPlotter` returns or draws carries a retired field; the table lists every field
