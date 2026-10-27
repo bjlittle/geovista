@@ -254,8 +254,8 @@ The model carries:
 - the scale between physical units and the units the scene is rendered in, so a scene can
   be rendered at a normalised radius of 1 while every height and tolerance stays physical
   (§8, item 3);
-- an explicit vertical exaggeration, applied once by the scene
-  (globe spec §4.4).
+- an explicit vertical mapping, at first an exaggeration above sea level and another
+  below it, applied once by the scene (globe spec §4.1 and globe spec §4.4).
 
 Every tolerance in the engine is relative to the radius or expressed as an angle, so a
 result is the same at radius 1 and at the Earth's radius. Heights in physical units, and

@@ -26,7 +26,7 @@
 ## 1. Purpose
 
 Row 2 of globe spec §9 puts the globe on the scene. A scene's globe holds the Earth's
-radius, the radius the scene is drawn at, and one vertical exaggeration, and every layer
+radius, the radius the scene is drawn at, and one vertical mapping, and every layer
 takes its geometry from it (globe spec §4.1). The bridge and `transform_mesh` take a globe
 in place of today's `radius`, and a mesh records the globe it was positioned for
 (globe spec §4.4).
@@ -50,9 +50,10 @@ These were decided with {user}`bjlittle` while the design was written.
    Earth's radius, which the globe calls its radius. An alias would keep that ambiguity.
    crs spec §2 decision 4 allows the break, and a caller still passing `radius=` gets
    Python's error for an unexpected keyword.
-3. **A mesh records its globe in three fields:** `gvGlobeRadius`, in metres,
-   `gvGlobeRenderRadius` and `gvGlobeExaggeration`, each a float64 field array of one
-   value. Each is named for a reader who opens the file in ParaView, and none depends on
+3. **A mesh records its globe in four fields:** `gvGlobeRadius`, in metres,
+   `gvGlobeRenderRadius`, `gvGlobeExaggerationAbove` and `gvGlobeExaggerationBelow`, each a
+   float64 field array of one value. The two exaggerations are the first form of the
+   vertical mapping of globe spec §4.1, above and below sea level. Each is named for a reader who opens the file in ParaView, and none depends on
    its place in an array.
 4. **A mesh that records no globe is read, never refused.** It is placed on the default
    globe, at its `gvRadius` where it has one, and otherwise at the radius its points lie
@@ -139,27 +140,33 @@ Measured on 2026-10-27 at `a0f95dbe`, with `pyvista` 0.49.1 and VTK 9.7.1:
 (scene-spec-4-1)=
 ### 4.1 The Globe
 
-`geovista.Globe` is immutable, and takes three keyword arguments:
+`geovista.Globe` is immutable, and takes four keyword arguments:
 
 - `radius`, the Earth's radius, by default the WGS84 semi-major axis of 6,378,137 m, in
   any form `geovista.units.to_metres` reads (globe spec §4.2);
 - `render_radius`, the radius the globe is drawn at, by default `common.RADIUS`, a plain
   number in the units of the scene;
-- `exaggeration`, by default 1, a plain number.
+- `exaggeration`, by default 1, a plain number, the factor for heights above sea level, and
+  for depths below it too unless `exaggeration_below` is given;
+- `exaggeration_below`, by default the `exaggeration`, a plain number, the factor for
+  depths below sea level.
 
-Each must be finite. Both radii must be positive, and the exaggeration must not be
-negative: an exaggeration of 0 draws every height at the surface. Anything else raises a
-`ValueError` naming the value.
+Each must be finite and positive. A factor of 0 would draw a range of heights at one
+radius, and break the rule of globe spec §4.1 that the vertical mapping always increases.
+Anything else raises a `ValueError` naming the value. `Globe(exaggeration=20)` stretches
+the atmosphere and the ocean alike, and `Globe(exaggeration=20, exaggeration_below=100)`
+stretches the ocean five times more.
 
 A globe's `radius` returns a `pint` quantity in metres, in `pint`'s application registry,
 the one `pint` provides for sharing quantities between packages, so that a user can add
-it to quantities of their own (§2 decision 8). Its `render_radius` and `exaggeration`
-return plain floats, since one is in the units of the scene and the other is a ratio.
+it to quantities of their own (§2 decision 8). Its `render_radius`, `exaggeration` and
+`exaggeration_below` return plain floats, since one is in the units of the scene and the
+others are ratios.
 Inside, `geovista` reads the radius as a float in metres, so drawing a scene never imports
 `pint`; the first read of `radius` does. A globe also reports its scale, the render radius
 over the radius.
 
-Two globes are equal when their three values are, exactly, and a globe is hashable, so it
+Two globes are equal when their four values are, exactly, and a globe is hashable, so it
 can key a cache such as the mapping of crs spec §4.5.
 
 The class lives in `geovista.globe`, and is exported at the top level of `geovista`.
@@ -194,9 +201,9 @@ radius as they offset it from the radius today.
 (scene-spec-4-3)=
 ### 4.3 The Globe on a Mesh
 
-Every function that builds or positions a mesh writes the three fields of §2 decision 3,
-named by three constants in `geovista.common`, and writes no `gvRadius`. `Globe.from_mesh`
-reads a mesh's globe without changing the mesh, and `Globe.to_mesh` writes the three
+Every function that builds or positions a mesh writes the four fields of §2 decision 3,
+named by four constants in `geovista.common`, and writes no `gvRadius`. `Globe.from_mesh`
+reads a mesh's globe without changing the mesh, and `Globe.to_mesh` writes the four
 fields to a mesh in place and removes `gvRadius` from it.
 
 The round trip of crs spec §6 lands with row 1 of §9: a mesh carrying a CRS and a globe,
@@ -206,7 +213,7 @@ the same globe, and the same points, bit for bit.
 (scene-spec-4-4)=
 ### 4.4 A Mesh That Records No Globe
 
-`Globe.from_mesh`, given a mesh without the three fields, returns:
+`Globe.from_mesh`, given a mesh without the four fields, returns:
 
 1. `Globe(render_radius=r)` for a mesh with a `gvRadius` of `r`;
 2. otherwise, for a mesh that `crs.projected` does not call projected,
@@ -214,7 +221,7 @@ the same globe, and the same points, bit for bit.
    as `common.distance` measures it today;
 3. otherwise, for a projected mesh, `Globe()`.
 
-A mesh with some of the three fields but not all is refused, naming what is missing,
+A mesh with some of the four fields but not all is refused, naming what is missing,
 since `geovista` never writes part of a globe.
 
 (scene-spec-4-5)=
@@ -272,7 +279,7 @@ first mesh's field data (§3.3), and is outside `geovista`'s control. The docume
 | today | becomes |
 |---|---|
 | `radius=` on the 33 functions of §3.1 | `globe=`, or the scene's globe for a `GeoPlotter` method |
-| `gvRadius`, written | `gvGlobeRadius`, `gvGlobeRenderRadius` and `gvGlobeExaggeration`; `gvRadius` is read, and cleaned (§4.5) |
+| `gvRadius`, written | `gvGlobeRadius`, `gvGlobeRenderRadius`, `gvGlobeExaggerationAbove` and `gvGlobeExaggerationBelow`; `gvRadius` is read, and cleaned (§4.5) |
 | a radius given to each layer of a scene | `GeoPlotter(globe=...)` |
 
 The gallery example, the tests and the pages of §3.1 move to `globe=`.
@@ -282,8 +289,8 @@ The gallery example, the tests and the pages of §3.1 move to `globe=`.
 
 - **Change only `GeoPlotter` and its built-in layers.** Rejected, by §2 decision 1.
 - **Keep `radius=` as an alias of the render radius.** Rejected, by §2 decision 2.
-- **One field array of three values, `gvGlobe`.** Rejected. A reader in ParaView would see
-  three numbers with no names, and every reader would depend on their order.
+- **One field array of four values, `gvGlobe`.** Rejected. A reader in ParaView would see
+  four numbers with no names, and every reader would depend on their order.
 - **The globe as text, such as JSON, in one string field.** Rejected. ParaView would show
   it as a string, and the numbers would go through text formatting.
 - **Writing `gvRadius` beside the new fields, for older releases.** Rejected. A release
@@ -306,6 +313,15 @@ The gallery example, the tests and the pages of §3.1 move to `globe=`.
   however much `geovista` puts in it.
 - **A settable `mesh.gv.globe`.** Rejected (§4.6). It would change the record without the
   points.
+- **One exaggeration for the whole scene,** as globe spec §2 decision 4 first had it.
+  Rejected. The ocean beneath a scene and the atmosphere above it need factors an order of
+  magnitude apart.
+- **An exaggeration for each layer.** Rejected. A cloud stretched more than the mountain
+  beneath it could be drawn below the mountain, and the scene would have no one vertical
+  scale.
+- **The vertical mapping as a table from the start.** Not now. Two named factors read
+  plainly in ParaView, and a table joins them later as a second form
+  (globe spec §8 item 8), so neither is ever retired.
 - **`combine` keeping the first mesh's record, as it does today.** Rejected, as quietly
   wrong when the meshes differ.
 
@@ -316,9 +332,11 @@ Every result is checked against a reference independent of `geovista`, as
 globe spec §6 and crs spec §6 require:
 
 - **the globe**: a radius in each form of globe spec §4.2 reads as metres; a value that is
-  not finite, a radius that is not positive and a negative exaggeration are each refused;
+  not finite, a radius that is not positive and an exaggeration that is not positive are
+  each refused; `exaggeration` alone sets both factors, and `exaggeration_below` sets the
+  factor below sea level alone;
   equal values make equal globes;
-- **the record**: every function of §3.1 that builds or positions a mesh writes the three
+- **the record**: every function of §3.1 that builds or positions a mesh writes the four
   fields, the globe it was given or its default, and no `gvRadius`;
 - **the round trip** of §4.3;
 - **reading**: each case of §4.4 gives the globe it names, a partial record is refused, and
@@ -351,7 +369,8 @@ crs spec §6.
 
 Out of scope:
 
-- heights, and the effect of the exaggeration, which are row 3 of globe spec §9;
+- heights, and the effect of the vertical mapping, which are row 3 of globe spec §9;
+- a vertical mapping in bands, or as a function of height (globe spec §8 item 8);
 - layering, row 4, and the removal of `zlevel` and `zscale`, row 5;
 - when `geovista` stops reading retired fields (§8 item 1);
 - the refresh of the pantry's assets ({issue}`2753`), which `sanitize_legacy` serves;
@@ -372,7 +391,7 @@ Each carries the status grammar of docs spec §3.6.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The globe and its record: `geovista.Globe` with its radius as a quantity, the three fields, `Globe.from_mesh` and `Globe.to_mesh`, meshes that record no globe, the `mesh.gv` namespace with `globe`, `crs` and its equality, the table of retired fields, `sanitize_legacy` and `sanitize(legacy=...)`, and the round trip of crs spec §6 | not started |
+| 1 | The globe and its record: `geovista.Globe` with its radius as a quantity, the four fields, `Globe.from_mesh` and `Globe.to_mesh`, meshes that record no globe, the `mesh.gv` namespace with `globe`, `crs` and its equality, the table of retired fields, `sanitize_legacy` and `sanitize(legacy=...)`, and the round trip of crs spec §6 | not started |
 | 2 | Every radius becomes a globe: `globe=` in place of `radius=` on the 33 functions, `GeoPlotter(globe=...)` and `GeoPlotter.globe`, `combine` refusing meshes described differently, only current fields in every mesh returned or drawn, and the gallery, tests and documentation moved to `globe=` | not started |
 
 Statuses follow docs spec §3.6. Row 1 adds to the API and breaks nothing. Row 2 is
