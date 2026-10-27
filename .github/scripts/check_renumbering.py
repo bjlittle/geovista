@@ -622,13 +622,34 @@ def _chain(root: Path, spec: Path, start: str) -> dict[str, Fate]:
     }
 
 
-def audit(root: Path, texts: dict[Path, str], names: object) -> list[Finding]:
-    """Follow every citation's section from when the citing line was written.
+def since_written(
+    root: Path,
+    texts: dict[Path, str],
+    names: object,
+    lines: dict[Path, set[int]] | None = None,
+) -> list[Finding]:
+    """Follow each citation's section from when the citing line was written.
 
     Each specification is followed change by change from the commit that last
-    wrote the line, or from :data:`AUDITED` when the line is older than that, so a
-    citation that arrived on a branch older than a renumber is found whatever
-    route it came by.
+    wrote the line, or from :data:`AUDITED` when the line is older than that.
+
+    Parameters
+    ----------
+    root : Path
+        The repository.
+    texts : dict
+        The corpus, each file's text keyed by its path.
+    names : Namespace
+        The citation grammar of the specifications as they are now.
+    lines : dict, optional
+        The lines to judge, keyed by path: those a pull request changed. Every
+        line of the corpus when omitted, as the nightly audit judges.
+
+    Returns
+    -------
+    list of Finding
+        Each citation whose section has moved or gone since it was written.
+
     """
     owners = {prefix: spec for spec, prefix in names.owners.items()}
     baseline = AUDITED
@@ -641,10 +662,14 @@ def audit(root: Path, texts: dict[Path, str], names: object) -> list[Finding]:
     chained: dict[tuple[str, Path], dict[str, Fate]] = {}
     findings: list[Finding] = []
     for path, text in texts.items():
+        if lines is not None and not lines.get(path):
+            continue
+        wanted = None if lines is None else lines[path]
         cited = [
             (number, found)
             for number, line in grammar.source_lines(path, text)
-            if (found := _citations(path, line, names))
+            if (wanted is None or number in wanted)
+            and (found := _citations(path, line, names))
         ]
         if not cited:
             continue
@@ -665,6 +690,17 @@ def audit(root: Path, texts: dict[Path, str], names: object) -> list[Finding]:
                 if fate is not None and fate.kind != "kept":
                     findings.append(Finding(path, number, citation, fate, anchor))
     return findings
+
+
+def audit(root: Path, texts: dict[Path, str], names: object) -> list[Finding]:
+    """Follow every citation in the repository from when its line was written.
+
+    Under squash merging, a line's commit on the main branch is the squash of
+    the pull request that wrote it, whose tree already holds every renumber that
+    preceded it, so this cannot see a citation that arrived stale on an old
+    branch. The pull request's own check does, before it merges.
+    """
+    return since_written(root, texts, names)
 
 
 def _blame(root: Path, path: Path) -> dict[int, str]:
@@ -731,6 +767,9 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
             fates = _fates(root, branched, sorted(specs_then | set(specs)))
             changed = changed_lines(root, branched)
             findings = stale(texts, fates, names, changed)
+            # each line the pull request changed, followed from where it was
+            # written on its branch, which a renumber merged since may have moved
+            findings += since_written(root, texts, names, changed)
             for spec in specs:
                 before = at(root, branched, spec)
                 if before is not None:
@@ -739,8 +778,8 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
                         for problem in frozen(before, spec.read_text(encoding="utf-8"))
                     ]
             scope = f"the specifications changed since {args.base}"
-            if args.fix:
-                findings = _fix(texts, fates, names, findings)
+        if args.fix:
+            findings = _fix(texts, names, findings)
     except GitError as error:
         print(f"could not compare with git: {error}", file=sys.stderr)
         return 2
@@ -763,21 +802,28 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
 
 
 def _fix(
-    texts: dict[Path, str],
-    fates: dict[str, Fate],
-    names: object,
-    findings: list[Finding],
+    texts: dict[Path, str], names: object, findings: list[Finding]
 ) -> list[Finding]:
-    """Rewrite the citations of moved sections, and return what is left."""
-    lines: dict[Path, set[int]] = {}
+    """Rewrite the citations of moved sections, and return what is left.
+
+    Each citation takes its own section's new number, as the audit and a pull
+    request's changed lines each follow a section from where it was written.
+    """
+    fixed: dict[Path, list[int]] = {}
     for finding in findings:
-        if finding.fate.kind == "moved":
-            lines.setdefault(finding.path, set()).add(finding.line)
-    for path, numbers in lines.items():
-        path.write_text(
-            rewrite(texts[path], path, fates, names, numbers), encoding="utf-8"
+        if finding.fate.kind != "moved":
+            continue
+        texts[finding.path] = rewrite(
+            texts[finding.path],
+            finding.path,
+            {finding.old: finding.fate},
+            names,
+            {finding.line},
         )
-        print(f"fixed {path.name}, lines {', '.join(map(str, sorted(numbers)))}")
+        fixed.setdefault(finding.path, []).append(finding.line)
+    for path, numbers in fixed.items():
+        path.write_text(texts[path], encoding="utf-8")
+        print(f"fixed {path.name}, lines {', '.join(map(str, sorted(set(numbers))))}")
     return [finding for finding in findings if finding.fate.kind != "moved"]
 
 

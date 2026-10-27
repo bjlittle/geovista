@@ -1,0 +1,120 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/peter-evans/create-issue-from-file
+#   - https://github.com/prefix-dev/setup-pixi
+
+name: ci-citations
+
+# a pull request can add a citation without touching a specification, so the
+# guard runs on every one
+on:
+  pull_request:
+
+  schedule:
+    # every day @ 00h40
+    - cron: "40 0 * * *"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+permissions: {}
+
+jobs:
+  renumbering:
+    # a section moved or removed takes its citations with it, and a citation
+    # added on a branch is judged against the renumbers merged since
+    if: ${{ github.event_name == 'pull_request' }}
+    name: "renumbering"
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          # the base branch, to compare each specification with
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94
+        with:
+          environments: "test"
+          frozen: true
+
+      - name: "check renumbering"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          pixi run --frozen --environment test python .github/scripts/check_renumbering.py --base "origin/${BASE_REF}"
+
+  audit:
+    # a citation can arrive stale by a branch older than a renumber, so look
+    # for one on main each night
+    if: ${{ github.event_name != 'pull_request' }}
+    name: "citation audit"
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: read
+      issues: write  # required for peter-evans/create-issue-from-file
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          # the history, to blame each citing line
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94
+        with:
+          environments: "test"
+          frozen: true
+
+      - name: "audit citations"
+        id: check
+        run: |
+          status=0
+          pixi run --frozen --environment test check-spec-renumbering audit > audit.txt 2>&1 || status=$?
+          cat audit.txt
+          {
+            echo "The nightly audit of the specification citations found one written"
+            echo "against a section that has since moved or gone. Run"
+            echo "\`pixi run -e test check-spec-renumbering audit\` to reproduce it."
+            echo
+            echo '```'
+            grep -v -e "^Why this check exists" -e "#gv-developer-checks-" audit.txt || true
+            echo '```'
+            echo
+            # the breadcrumb is left out of the fence, so its link can be followed
+            grep -A1 "^Why this check exists" audit.txt || true
+          } > audit.md
+          echo "exit_code=${status}" >> "${GITHUB_OUTPUT}"
+
+      # exit code 2 is git failing to answer, which is not worth an issue
+      - name: "report failure"
+        if: ${{ steps.check.outputs.exit_code == '1' }}
+        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710
+        with:
+          title: "chore: specification citation drift"
+          content-filepath: ./audit.md
+          labels: |
+            bot
+            new: issue
+            type: documentation
+
+      - name: "exit action"
+        if: ${{ steps.check.outputs.exit_code != '0' }}
+        env:
+          EXIT_CODE: ${{ steps.check.outputs.exit_code }}
+        run: |
+          exit "${EXIT_CODE}"

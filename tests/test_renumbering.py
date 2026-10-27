@@ -597,30 +597,29 @@ def test_a_base_that_does_not_exist_cannot_be_checked(guard, repo, capsys):
     capsys.readouterr()
 
 
-def test_the_workflow_runs_the_guard_when_anything_it_reads_changes(guard):
-    """A pull request changing only the guard, or the grammar, must run it."""
+def test_the_guard_runs_on_every_pull_request_and_audits_each_night():
+    """Any pull request can add a citation, so the guard cannot wait for a spec."""
     import yaml  # noqa: PLC0415
 
     root = SCRIPT.parents[2]
     workflow = yaml.safe_load(
-        (root / ".github" / "workflows" / "ci-spec-status.yml").read_text(
+        (root / ".github" / "workflows" / "ci-citations.yml").read_text(
             encoding="utf-8"
         )
     )
     # YAML 1.1 reads the bare key "on" as the boolean True
     triggers = workflow.get("on", workflow.get(True))
-    filtered = set(triggers["pull_request"]["paths"])
-    loaded = {SCRIPT, Path(guard.grammar.__file__), Path(guard.breadcrumb.__file__)}
+    jobs = workflow["jobs"]
 
-    missing = sorted(
-        path.resolve().relative_to(root).as_posix()
-        for path in loaded
-        if path.resolve().relative_to(root).as_posix() not in filtered
-    )
+    def steps(job: str) -> str:
+        return yaml.safe_dump(jobs[job]["steps"], width=10_000)
 
-    assert not missing, f"ci-spec-status.yml does not run when these change: {missing}"
-    assert "renumbering" in workflow["jobs"], "no job runs the guard on a pull request"
-    assert "audit" in workflow["jobs"], "no job audits the citations each night"
+    assert triggers["pull_request"] is None or "paths" not in triggers["pull_request"]
+    assert "schedule" in triggers
+    assert "fetch-depth: 0" in steps("renumbering")
+    assert "check_renumbering.py --base" in steps("renumbering")
+    assert "fetch-depth: 0" in steps("audit")
+    assert "check-spec-renumbering audit" in steps("audit")
 
 
 #: Design's text, grown fourfold, as a living section grows over several changes.
@@ -706,3 +705,57 @@ def test_a_section_sharing_its_title_pairs_with_the_one_whose_text_it_has(guard)
 
     assert found["demo-spec-3-1"] == ("removed", None)
     assert found["demo-spec-4-1"] == ("moved", "demo-spec-3-1")
+
+
+def test_a_pull_request_adding_a_citation_older_than_a_renumber_fails(
+    guard, repo, capsys
+):
+    """As CI checks it: GitHub's merge of the branch into a main renumbered since.
+
+    The repository squash-merges, so once merged the citation's history is gone,
+    and only the pull request can be checked against when it was written.
+    """
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "switch", "--quiet", "--create", "late")
+    commit(repo, {"src/late.py": f"# see demo spec {SECTION}3\n"}, "late citation")
+    git(repo, "switch", "--quiet", "main")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "renumber, citations updated",
+    )
+    git(repo, "switch", "--quiet", "--detach", "main")
+    git(repo, "merge", "--quiet", "--no-ff", "--no-edit", "late")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1
+    assert f'src/late.py:1: demo spec {SECTION}3 was "Testing", which is now' in out
+
+
+def test_fix_rewrites_a_citation_older_than_a_renumber(guard, repo, capsys):
+    """Its section's new number comes from where the citation was written."""
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "switch", "--quiet", "--create", "late")
+    commit(repo, {"src/late.py": f"# see demo spec {SECTION}3\n"}, "late citation")
+    git(repo, "switch", "--quiet", "main")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "renumber, citations updated",
+    )
+    git(repo, "switch", "--quiet", "late")
+    git(repo, "merge", "--quiet", "--no-edit", "main")
+
+    code, _ = run(guard, repo, "--fix", capsys=capsys)
+
+    assert code == 0
+    assert (repo / "src" / "late.py").read_text() == f"# see demo spec {SECTION}4\n"

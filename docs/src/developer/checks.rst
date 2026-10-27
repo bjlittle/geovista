@@ -409,13 +409,13 @@ and rows are cited by number too, in forms nothing reads, so they are only ever
 appended.
 
 **What enforces it:** :bash:`.github/scripts/check_renumbering.py`, which
-``ci-spec-status.yml`` runs on every pull request that changes a specification.
-It pairs each section with its counterpart on the base branch, by title, then by
+``ci-citations.yml`` runs on every pull request. It pairs each section of a
+changed specification with its counterpart on the base branch, by title, then by
 its text, so a renamed section is still found, and reports each line the pull
-request did not touch that cites a section which moved or went. Each night it
-also audits every citation against its specification as it stood when the line
-was written, which finds one that arrived on a branch older than the renumber,
-and opens an issue.
+request did not touch that cites a section which moved or went. It also follows
+each line the pull request changed from where it was written on the branch, which
+finds a citation older than a renumber merged since. Each night it audits every
+citation in the repository the same way, as a backstop, and opens an issue.
 
 **When it fails:** Each line names a citation, what it was written against, and
 what became of that section. Rewrite the citations of moved sections in place,
