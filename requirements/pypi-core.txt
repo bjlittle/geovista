@@ -7,6 +7,8 @@ geopy <2.6
 lazy-loader <0.7
 netCDF4 <1.8
 numpy >=2.2.6,<2.6
+pint >=0.25.2,<0.27
+pint-cf >=0.2.1,<0.3
 platformdirs <4.14
 pooch <1.10
 pykdtree <1.5
