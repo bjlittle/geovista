@@ -318,7 +318,8 @@ first mesh's field data (§3.3), and is outside `geovista`'s control. The docume
 | `gvRadius`, written | `gvGlobeRadius`, `gvGlobeRenderRadius`, `gvGlobeExaggerationAbove` and `gvGlobeExaggerationBelow`; `gvRadius` is read, and cleaned (§4.5) |
 | a radius given to each layer of a scene | `GeoPlotter(globe=...)` |
 
-The tests and the pages of §3.1 move to `globe=`. The gallery example moves to a `zlevel`
+The tests and the pages of §3.1 move to `globe=`. No example in the README passes
+`radius=`, and the test of {issue}`2756` runs them all against the change. The gallery example moves to a `zlevel`
 of 1,000, which floats its arrows the same 10% of the radius until row 5 of
 globe spec §9 replaces `zlevel` with the lift.
 
@@ -438,7 +439,8 @@ Each carries the status grammar of docs spec §3.6.
 
 Statuses follow docs spec §3.6. Row 1 adds to the API and breaks nothing. Row 2 is
 breaking, and carries a `breaking` fragment beside its own. Row 2 is planned once row 1
-has landed, and row 2 of globe spec §9 lands with it. Both rows land before 0.6 is
+has landed, and after {issue}`2756`, so that the README's examples are run against it.
+Row 2 of globe spec §9 lands with it. Both rows land before 0.6 is
 released, since 0.6 is the first release that writes the globe and no retired field.
 
 (scene-spec-10)=

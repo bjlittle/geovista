@@ -250,6 +250,7 @@ all. Each of the rest meets it in a way of its own, at the Earth's radius of 6,3
 | `vector_data/wind_arrows_uvw` | lifts its arrows with `radius=1.1`, 638 km, and stretches their vertical component by 1,500 by hand | a lift, and the slope of the vertical mapping (§8 item 9) |
 | `contour/banded_contour`, and the base layers set to a level of 0 | lifts lines over a surface by one level | the order, and the line bias of §4.5 |
 | `curvilinear/from_2d__orca_moll` | extrudes a slab 1,000 km deep on a Mollweide map | a solid, left to the design of region solids (crs spec §9) |
+| `README.md`, its seventh example | the same FVCOM warp, where a user looks first; nothing runs the README's 8 examples, and {issue}`782` found one broken in 2024 | `depth=`, run by the test of {issue}`2756` |
 
 `to_structured_grid` carries {user}`bjlittle`'s TODO to "add richer vertical support", and
 {user}`bjlittle` calls it a very poor proof of concept, and an example of why this design
@@ -462,7 +463,8 @@ When row 5 of §9 lands:
 | `resize(..., zlevel=..., zscale=...)` | a height, or a globe's render radius |
 
 The gallery's examples that use a level, or warp by hand, move to heights, an order or a
-lift, each as its purpose in §3.1 and §3.6 says. The planar z-levels specification is then
+lift, each as its purpose in §3.1 and §3.6 says. The README's examples move with them, in
+the pull request that changes what they use, and the test of {issue}`2756` runs them. The planar z-levels specification is then
 retired, with a note at its head that this specification replaced it, and why.
 
 (globe-spec-5)=
@@ -598,7 +600,8 @@ Each carries the status grammar of docs spec §3.6.
 | 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | not started |
 | 6 | A vertical scale for the viewer | candidate: a scene with heights that a scientist shows |
 
-Statuses follow docs spec §3.6. Rows 1 to 5 come in order, and each
+Statuses follow docs spec §3.6. Each row that changes the public API updates the README's
+examples in the same pull request ({issue}`2756`). Rows 1 to 5 come in order, and each
 is planned once the rows before it have landed. Row 4 needs a renderer in CI, which the
 image tests already have. Row 5 is breaking, and carries a `breaking` fragment beside its
 own. Row 2 of the parent's roadmap lands with row 5 here.
