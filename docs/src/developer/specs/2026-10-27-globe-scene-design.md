@@ -292,6 +292,9 @@ until {issue}`2753` refreshes them, and a warning is an error under the test sui
 - `mesh.gv.crs` returns the mesh's CRS, read from its WKT as `crs.from_wkt` reads it, or
   `None`.
 
+The namespace's docstring and repr name `geovista`, since `gv` alone means nothing to a
+reader new to `geovista` (§5).
+
 Each is read from the mesh's field data at every access, so it never goes stale, and
 reading never changes the mesh. Neither can be set. A globe describes where a mesh's points
 are, so setting one without moving them would make the two disagree. Assigning to
@@ -355,6 +358,18 @@ globe spec §9 replaces `zlevel` with the lift.
   builds around the mesh, so `mesh.globe` could only imitate a `Globe`, where
   `mesh.gv.globe` returns one. One namespace also claims one name on every `pyvista` mesh,
   however much `geovista` puts in it.
+- **A namespace named `geo`.** Rejected. Every package that extends `pyvista` registers its
+  accessors in one shared set of names, and when a second package registers a name already
+  taken, `pyvista` warns and the second replaces the first (read in the source of
+  `pyvista` 0.49.1, 2026-10-27). A suite that treats warnings as errors then fails, and
+  the package imported last owns the name. A generic word is the likeliest to be claimed
+  twice. Accessors elsewhere take their package's name, as `rioxarray`'s `.rio` and
+  `odc-geo`'s `.odc` do, and `geoxarray` already reads a CRS as `da.geo.crs` on the
+  `xarray` objects many users load their data from. `gv` is already `geovista`'s short
+  name, in `import geovista as gv` and in every field it writes, such as `gvCRS`. Its
+  cost is that it means nothing to a reader new to `geovista`, so the namespace's
+  docstring and repr name `geovista` (§4.6). Were a name that explains itself wanted,
+  `mesh.geovista` could not be mistaken for another package's.
 - **A settable `mesh.gv.globe`.** Rejected (§4.6). It would change the record without the
   points.
 - **One exaggeration for the whole scene,** as globe spec §2 decision 4 first had it.
@@ -399,7 +414,7 @@ globe spec §6 and crs spec §6 require:
 - **the namespace**: `mesh.gv.globe` and `mesh.gv.crs` read what the mesh records, follow
   a change to its field data, and cannot be set; `mesh.gv` is equal for meshes with equal
   CRSs and globes, whatever their points, and unequal when either differs; equal globes
-  hash equally;
+  hash equally; its repr names `geovista`;
 - **combining**: `combine` refuses meshes with different CRSs, or different globes, and
   names which;
 - **the radius**: each of the above holds at a render radius of 1 and at the Earth's
