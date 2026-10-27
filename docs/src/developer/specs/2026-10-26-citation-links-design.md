@@ -16,11 +16,11 @@
   the guard that catches a renumbered section
 - **Parent spec:** the published specifications design
   ([`2026-10-06-published-specs-design.md`](2026-10-06-published-specs-design.md)). This
-  builds rows 2 and 4 of {ref}`docs spec §4 <docs-spec-4>`, closes row 3 as already
-  covered, and retires the assertion of {ref}`docs spec §3.4 <docs-spec-3-4>`. It inherits
-  that specification's citation form ({ref}`docs spec §3.2 <docs-spec-3-2>`), anchors
-  ({ref}`docs spec §3.3 <docs-spec-3-3>`) and statuses
-  ({ref}`docs spec §3.6 <docs-spec-3-6>`) unchanged
+  builds rows 2 and 4 of docs spec §4, closes row 3 as already
+  covered, and retires the assertion of docs spec §3.4. It inherits
+  that specification's citation form (docs spec §3.2), anchors
+  (docs spec §3.3) and statuses
+  (docs spec §3.6) unchanged
 
 (citation-spec-1)=
 ## 1. Purpose
@@ -29,7 +29,7 @@ The specifications are living documents, and they are growing. Six are published
 globe-first CRS work has two of them and more to come. Each is cited by section: 215 times
 from inside the specifications, with hand-written `{ref}` roles, and 68 times from
 everywhere else. That second count is the trigger of rows 2 to 4 of
-{ref}`docs spec §4 <docs-spec-4>`, which activate past seventy, and the next change to cite
+docs spec §4, which activate past seventy, and the next change to cite
 a specification from code will pass it.
 
 The links that matter are the ones a reader follows on the documentation site. Today those
@@ -38,7 +38,7 @@ and `tests/test_spec_conventions.py` checks that each one resolves and displays 
 it targets. Nothing checks that it still names the section its author meant. Insert a new
 section 3.3 into a specification and its old 3.3 becomes 3.4, and every citation of 3.4
 written before the insertion now opens a different section, and resolves, and passes.
-{ref}`docs spec §3.5 <docs-spec-3-5>` says as much: its checks are syntactic, and a
+docs spec §3.5 says as much: its checks are syntactic, and a
 well-formed citation of the wrong section is indistinguishable from a right one.
 
 The rest are plain text, and render as plain text. None is in an API docstring yet, but the
@@ -55,7 +55,7 @@ All taken by {user}`bjlittle` on 2026-10-26, after the sweep of the published
 specifications design on that date.
 
 - **Build the machinery instead of raising the ceiling again.** The ceiling was doubled
-  once, from thirty-five to seventy ({ref}`docs spec §8 <docs-spec-8>`). It is not raised a
+  once, from thirty-five to seventy (docs spec §8). It is not raised a
   second time.
 - **A reader following a link is the case that matters.** A link on a rendered page that
   opens the wrong section is the visible failure. A citation in a code comment is rarely
@@ -64,7 +64,7 @@ specifications design on that date.
   between two others, and the sections after it take new numbers. Forbidding that, so that
   sections are only ever added at the end or subdivided, would protect the citations at the
   cost of the documents. Instead, a renumber must update every citation of the sections it
-  moves, in the same pull request, and the guard of {ref}`§4.5 <citation-spec-4-5>` says
+  moves, in the same pull request, and the guard of §4.5 says
   which. A citation added on a branch older than a renumber is caught on its own pull
   request, before it merges.
 - **Released changelog entries are corrected like everything else.** A link to the wrong
@@ -72,13 +72,13 @@ specifications design on that date.
   fragments, and its fix rewrites them.
 - **The roles collapse into plain text as part of this work.** Keeping two forms of
   citation, and the assertion that holds the two halves of a role together, was the
-  stop-gap {ref}`docs spec §3.4 <docs-spec-3-4>` described until the transform existed.
+  stop-gap docs spec §3.4 described until the transform existed.
 - **Sections only.** An item within a section, such as `typing spec §8 item 9`, and a row
   of a roadmap, such as "rows 2 to 4" of the docs spec's, are not given anchors or links of
   their own. Six references are written in a form a grammar could read, the link to the
   containing section lands within a screen of them, and a grammar for them would cost more
-  to keep than it saves. {ref}`§4.6 <citation-spec-4-6>` protects them another way, and
-  row 5 of {ref}`§9 <citation-spec-9>` is where the question comes back.
+  to keep than it saves. §4.6 protects them another way, and
+  row 5 of §9 is where the question comes back.
 
 (citation-spec-3)=
 ## 3. What Exists Today
@@ -100,11 +100,11 @@ Measured on `main` at `7f11f403`, with the parser of `tests/test_spec_convention
 | changelog fragments and `CHANGELOG.rst` | 0 | 0 | yes |
 
 About twenty-five references name an item or a roadmap row by its number, which
-{ref}`§2 <citation-spec-2>` leaves without links of their own. Six are written as a
+§2 leaves without links of their own. Six are written as a
 citation: four comments cite an item of `typing spec §8`, and `checks.rst` cites rows of the
 roadmaps of two specifications. The rest name the number alone and leave the section to the
 sentence around them: ten test docstrings name the assertions of
-{ref}`docs spec §3.5 <docs-spec-3-5>` as "(item 1)" to "(item 7)", tests and changelog
+docs spec §3.5 as "(item 1)" to "(item 7)", tests and changelog
 fragments speak of "row 4" or "typing change 3", and a changelog fragment of "row 1 of the
 roadmap". No grammar could read those, so only a number that never changes keeps them
 true.
@@ -113,7 +113,7 @@ true.
 ### 3.2 What the Checks Catch
 
 `tests/test_spec_conventions.py` holds the conventions of
-{ref}`docs spec §3.5 <docs-spec-3-5>`. Every heading pairs with an anchor keyed to its
+docs spec §3.5. Every heading pairs with an anchor keyed to its
 number, every citation resolves, carries its section sign and does not wrap, and every
 role displays the section it targets. It reads the whole repository less the frozen plans,
 and it never skips.
@@ -151,7 +151,7 @@ tephpy has no answer to renumbering either. Its integrity hook (tephpy#86) asser
 geovista's test already asserts, that each citation resolves and each anchor is keyed. Its
 practice is to subdivide a section instead of renumbering it (tephpy#295), and the question
 of what a released changelog entry should do when its section changes is still open
-(tephpy#324). The guard of {ref}`§4.5 <citation-spec-4-5>` is new.
+(tephpy#324). The guard of §4.5 is new.
 
 (citation-spec-4)=
 ## 4. Design
@@ -180,7 +180,7 @@ top-level name, since the directory sits on `sys.path` for the whole build.
 A Sphinx transform, `docs/src/_ext/geovista_citation_xrefs.py`, finds every citation in the
 doctree's text and replaces it with a cross-reference to its anchor, displaying the
 citation exactly as written. A bare `§N` inside a specification resolves to that
-specification, as {ref}`docs spec §3.2 <docs-spec-3-2>` rules, and a run such as
+specification, as docs spec §3.2 rules, and a run such as
 `typing spec §3.2, §4` becomes two links.
 
 It runs on everything the build renders: the specifications, the developer pages, the
@@ -217,7 +217,7 @@ It joins `tests/docs`, so it runs in the job that builds the full gallery and ru
 suite under `--browser-strict`, where a missing build fails instead of skipping. Locally,
 `pixi run -e geovista tests-docs-browser` builds and runs it. `OUTPUT_GATE` in the
 conventions test, which pairs the transform with its output check (row 4 of
-{ref}`docs spec §4 <docs-spec-4>`), changes to name this module.
+docs spec §4), changes to name this module.
 
 (citation-spec-4-4)=
 ### 4.4 Collapsing the Roles
@@ -233,8 +233,8 @@ The rewrite is proven by the build: the set of citation links on every page, as 
 target, is the same before and after.
 
 Then the assertion that held a role's two halves together retires, with the form it
-policed. {ref}`docs spec §3.4 <docs-spec-3-4>` is rewritten to describe the transform, and
-the fifth assertion of {ref}`docs spec §3.5 <docs-spec-3-5>` is marked retired in place,
+policed. docs spec §3.4 is rewritten to describe the transform, and
+the fifth assertion of docs spec §3.5 is marked retired in place,
 not deleted, so the assertions after it keep their numbers.
 
 (citation-spec-4-5)=
@@ -261,7 +261,7 @@ too, reads as removed, so the guard errs towards asking for its citations to be 
 hand.
 
 For each section moved or removed, the guard reads every citation of its old anchor in the
-repository, using the grammar of {ref}`§4.1 <citation-spec-4-1>`, across the same corpus
+repository, using the grammar of §4.1, across the same corpus
 as the conventions test: code, tests, configuration, documentation, changelog fragments,
 `CHANGELOG.rst` and the specifications themselves, less the frozen plans. A citing line that
 the pull request did not change was written against the old layout, and the guard fails on
@@ -287,7 +287,7 @@ fork along the branch's own changes, so a branch that already took a renumber is
 follows the specification from the fork along the base's own history, change by change, as
 above, and reports a citation whose section the base has since moved or removed. The pull request's own changes to a
 specification are judged as above, so they are never counted twice. That is the audit of
-{ref}`§3.2 <citation-spec-3-2>`, run on the lines a pull request adds. It follows the
+§3.2, run on the lines a pull request adds. It follows the
 specification one change at a time because comparing the two ends loses a section renamed
 in one change and grown in others, which is how a living section changes. A protected
 branch that must be up to date before merging re-runs the guard whenever the base moves,
@@ -298,7 +298,7 @@ line's commit on the base branch is the squash, whose tree already holds every r
 that preceded it, and the history that would show the citation stale is gone. The same
 audit still runs over the whole repository each night, as a backstop for a commit that
 reached the base branch by another route, and opens an issue as the nightly check of
-statuses does ({ref}`docs spec §3.6 <docs-spec-3-6>`), naming the `--fix` that corrects
+statuses does (docs spec §3.6), naming the `--fix` that corrects
 it. A line older than the guard is followed from the commit at which every citation was
 audited by hand, when the guard was written, so the audit only judges history the guard
 was there to see.
@@ -307,46 +307,46 @@ The guard runs in `ci-citations.yml` on every pull request, since any can add a
 citation, and each night, and locally with a pixi task against `origin/main`.
 It cannot be a unit test, since it needs history. It is a repository check of its own,
 declaring `CHECK`, with a row and a section on the repository checks page
-({ref}`checks spec §3.2 <checks-spec-3-2>`).
+(checks spec §3.2).
 
 (citation-spec-4-6)=
 ### 4.6 Items and Rows
 
 Items and rows are referred to by number, and only six of the references are in a form the
-grammar could read ({ref}`§3.1 <citation-spec-3-1>`), so the guard protects them by
+grammar could read (§3.1), so the guard protects them by
 refusing to renumber them. Two kinds are frozen:
 
 - **Every numbered item that opens with a bold title**, in any specification. That takes in
   the open items of each specification, whose title is the bold run after the status, and
-  lists such as the assertions of {ref}`docs spec §3.5 <docs-spec-3-5>`, which the tests
+  lists such as the assertions of docs spec §3.5, which the tests
   name by number. A title that wraps is read whole. A numbered list without bold titles,
   such as the steps of a procedure, is not frozen.
 - **Every row of a roadmap table**, the table whose header is `#`, `Scope` and `Status`,
   matched by its scope.
 
 They are only ever appended. An item that stops applying is marked so in place, as
-{ref}`§4.4 <citation-spec-4-4>` retires an assertion, and a row that splits takes letter
+§4.4 retires an assertion, and a row that splits takes letter
 suffixes in place, as row 6 of the type coverage roadmap became 6a to 6c. The guard pairs
 items and rows the way it pairs sections, and then pairs any left over by number, since an
 item resolved or a row rescoped is rewritten in place, under its number. It fails on any
 that has moved, or whose number is gone or now names another.
 
 A changelog fragment that names a roadmap row cites the row's pull request with a `:pull:`
-role, which is already the evidence the row carries ({ref}`docs spec §3.6 <docs-spec-3-6>`).
+role, which is already the evidence the row carries (docs spec §3.6).
 The changelog guidelines say so.
 
 (citation-spec-4-7)=
 ### 4.7 What Changes in the Parent
 
-- Rows 2 and 4 of {ref}`docs spec §4 <docs-spec-4>` land with the rows of
-  {ref}`§9 <citation-spec-9>` that build them.
+- Rows 2 and 4 of docs spec §4 land with the rows of
+  §9 that build them.
 - Row 3, the integrity hook, is marked landed with row 1 there:
   `tests/test_spec_conventions.py` has asserted what tephpy's hook asserts since
-  {pull}`2573`, and a second copy would be the drift {ref}`§4.1 <citation-spec-4-1>` exists
+  {pull}`2573`, and a second copy would be the drift §4.1 exists
   to prevent.
-- The ceiling test of rows 2 to 4 retires with row 2 of {ref}`§9 <citation-spec-9>`, and
-  item 2 of {ref}`docs spec §8 <docs-spec-8>`, on the ceiling's value, is resolved by it.
-- Item 1 of {ref}`docs spec §8 <docs-spec-8>`, on the display form the assertion assumes,
+- The ceiling test of rows 2 to 4 retires with row 2 of §9, and
+  item 2 of docs spec §8, on the ceiling's value, is resolved by it.
+- Item 1 of docs spec §8, on the display form the assertion assumes,
   is resolved by the collapse.
 - `specs/index.rst` tells a reader that citations are links.
 
@@ -368,7 +368,7 @@ The changelog guidelines say so.
 - **Anchors and links for items and rows.** About 600 to 700 more lines than sections
   alone, and a grammar for row names, which are written as "change 3", "row 2", "6a" and
   "rows 2 to 4", that every new phrasing would either fail silently or need a change to.
-  Six citations today. Deferred to row 5 of {ref}`§9 <citation-spec-9>`.
+  Six citations today. Deferred to row 5 of §9.
 - **A unit test for the guard instead of a CI job.** A test reads one tree, and a renumber
   is only visible between two.
 - **A nightly audit alone, instead of a check on every pull request.** It needs no job on
@@ -399,22 +399,22 @@ The changelog guidelines say so.
   sees it, on the merge of the branch into a base renumbered since, and `--fix` gives it
   its section's new number. The nightly audit is tested on the same history merged.
 - The collapse is tested by the before and after comparison of
-  {ref}`§4.4 <citation-spec-4-4>`, run once, and recorded in its pull request.
+  §4.4, run once, and recorded in its pull request.
 
 (citation-spec-7)=
 ## 7. Scope
 
 In scope are the shared grammar, the transform, the output check, the collapse of the
 section roles, the renumber guard and its fix, the rules for items and rows, the edits to
-the parent of {ref}`§4.7 <citation-spec-4-7>`, and the changelog guidelines. Out of scope
+the parent of §4.7, and the changelog guidelines. Out of scope
 are citations of items and rows as links in their own right (row 5 of
-{ref}`§9 <citation-spec-9>`), and row 5 of {ref}`docs spec §4 <docs-spec-4>`, GitHub
+§9), and row 5 of docs spec §4, GitHub
 reference roles, which is unchanged.
 
 (citation-spec-8)=
 ## 8. Open Items
 
-Each carries the status grammar of {ref}`docs spec §3.6 <docs-spec-3-6>`. None is open
+Each carries the status grammar of docs spec §3.6. None is open
 today.
 
 (citation-spec-9)=
@@ -428,7 +428,7 @@ today.
 | 4 | Collapsing the roles; the agreement assertion retires; the changelog guidelines | not started ({issue}`2566`) |
 | 5 | Items and rows as citations in their own right | candidate: more than twenty citations of items and rows outside the specifications |
 
-Statuses follow {ref}`docs spec §3.6 <docs-spec-3-6>`, and {issue}`2566` tracks rows 1 to
+Statuses follow docs spec §3.6, and {issue}`2566` tracks rows 1 to
 4. Rows 2 to 4 each build on row 1. Row 2 follows it, because the next change to cite a
 specification from code fails the ceiling test until row 2 lands. Row 3 needs only row 1, so
 it can come before or after row 2. Row 4 needs row 2.
@@ -436,14 +436,14 @@ it can come before or after row 2. Row 4 needs row 2.
 Row 5's trigger is asserted by the conventions test from row 1 on. It counts, outside the
 specifications, the citations followed by `item N` or `items N`, and those preceded by
 `row N of` or `rows N to M of`, reading across line breaks. It fails past twenty, a little
-over three times the six of {ref}`§3.1 <citation-spec-3-1>`.
+over three times the six of §3.1.
 
 (citation-spec-10)=
 ## 10. References
 
-- {issue}`2566`, the tracking issue of rows 2 to 5 of {ref}`docs spec §4 <docs-spec-4>`.
+- {issue}`2566`, the tracking issue of rows 2 to 5 of docs spec §4.
 - [`bjlittle/tephpy`](https://github.com/bjlittle/tephpy), the prior art of
-  {ref}`§3.3 <citation-spec-3-3>`, and its issues
+  §3.3, and its issues
   [#86](https://github.com/bjlittle/tephpy/issues/86) (the integrity hook),
   [#96](https://github.com/bjlittle/tephpy/issues/96) (a citation in a heading),
   [#295](https://github.com/bjlittle/tephpy/issues/295) (subdividing instead of

@@ -20,7 +20,7 @@ this page.
    third-party tools, such as a ``# noqa`` comment, a type-ignore comment, a
    ``filterwarnings`` entry or a ``nitpick_ignore_regex`` pattern, are
    documented by those tools, and may join this page later, as row 2 of
-   :ref:`checks spec §4 <checks-spec-4>` describes.
+   checks spec §4 describes.
 
 
 Where It Failed
@@ -156,7 +156,7 @@ upstream, bind an annotated local, as the type coverage specification describes.
 :bash:`tests/test_ci_typing.py` and in ``pyproject.toml``, only with a reason the
 type coverage specification gives. There is no exception to the other rules.
 
-**More:** :ref:`typing spec §6 <typing-spec-6>`.
+**More:** typing spec §6.
 
 
 .. _gv-developer-checks-python-support:
@@ -268,10 +268,10 @@ output is checked by :bash:`tests/docs/test_rendered_citations.py`.
 fault.
 
 **Declaring an exception:** None. Its ``NUMBERED_CEILING`` is not an exception:
-it is the trigger of row 5 of :ref:`citation spec §9 <citation-spec-9>`, and
+it is the trigger of row 5 of citation spec §9, and
 raising it is a change to that specification.
 
-**More:** :ref:`docs spec §3.5 <docs-spec-3-5>`.
+**More:** docs spec §3.5.
 
 
 .. _gv-developer-checks-projection-coverage:
@@ -304,7 +304,7 @@ bundle also goes in ``SINCE``, with the version of PROJ it arrived in.
 **Declaring an exception:** None. ``PARAMETERS`` gives a method the parameters
 PROJ needs to build it, which is no exception to the rule.
 
-**More:** :ref:`crs spec §6 <crs-spec-6>`.
+**More:** crs spec §6.
 
 
 .. _gv-developer-checks-repository-checks:
@@ -334,7 +334,7 @@ the same name, since one module enforces one check.
 
 **Declaring an exception:** None.
 
-**More:** :ref:`checks spec §3.4 <checks-spec-3-4>`.
+**More:** checks spec §3.4.
 
 
 .. _gv-developer-checks-changelog-fragment:
@@ -435,4 +435,4 @@ suffixes, as ``6a`` and ``6b``.
 
 **Declaring an exception:** None.
 
-**More:** :ref:`citation spec §4.5 <citation-spec-4-5>`.
+**More:** citation spec §4.5.
