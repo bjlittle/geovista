@@ -1,0 +1,4 @@
+Added the ``readme-examples`` repository check. It runs every Python example in
+``README.md`` as a test of its own, off screen, and fails when one raises or
+warns, so the README, which is also the project's description on PyPI, keeps
+working as the public API changes. (:user:`claude`)
