@@ -887,3 +887,207 @@ def test_a_branch_that_took_a_renumber_by_cherry_pick_cites_by_it(guard, repo, c
     assert (repo / "src" / "new.py").read_text() == (
         f"# see demo spec {SECTION}3, the design\n"
     )
+
+
+def test_an_unclosed_bold_title_is_read_without_failing(guard):
+    """An item mid-edit, its bold not yet closed, is no item to freeze."""
+    text = spec(("8", "Open Items", "1. **An unclosed title.\n2. **Fine.**"))
+
+    assert list(guard.numbered_items(text)["demo-spec-8"]) == ["2"]
+
+
+def test_a_table_row_of_one_cell_is_read_without_failing(guard):
+    """A roadmap row mid-edit has its number and nothing else yet."""
+    table = "| # | Scope | Status |\n|---|---|---|\n| 1 | The grammar | done |\n| 2 |"
+
+    assert list(guard.roadmap_rows(table)) == ["1", "2"]
+
+
+def test_two_numbered_lists_in_a_section_are_kept_apart(guard):
+    """The second list numbers from 1 again, and must not overwrite the first."""
+    lists = items(ONE, TWO) + "\n\nThen another list.\n\n" + items(THREE)
+    found = guard.numbered_items(spec(("8", "Open Items", lists)))["demo-spec-8"]
+
+    assert [section.title for section in found.values()] == [
+        "The first question.",
+        "The second question, wrapped.",
+        "The third question.",
+    ]
+
+
+@pytest.mark.parametrize(
+    "setting",
+    [
+        ["diff.mnemonicPrefix", "true"],
+        ["diff.noprefix", "true"],
+        ["diff.external", "false"],
+    ],
+)
+def test_local_diff_settings_do_not_change_what_reads_as_changed(
+    guard, repo, capsys, setting
+):
+    """A user's own diff configuration must not make a changed line look untouched."""
+    git(repo, "config", *setting)
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "insert, citations updated",
+    )
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+
+
+def test_a_changed_line_in_a_path_with_a_space_is_read(guard, repo, capsys):
+    """Git marks such a path with a tab on its diff header."""
+    commit(repo, {"src/my code.py": f"# see demo spec {SECTION}2\n"}, "cite")
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "again")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "src/my code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "insert, citations updated",
+    )
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+
+
+def test_an_untracked_file_counts_as_changed(guard, repo, capsys):
+    """A file not yet added is the author's own, written against the new layout."""
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "insert, citations updated",
+    )
+    (repo / "src" / "new.py").write_text(f"# see demo spec {SECTION}3\n")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+
+
+def test_rewrite_turns_a_role_with_a_bare_target_and_one_not_numbered(
+    guard, renumbered
+):
+    """A role naming only its target, or showing words, still has a target to move."""
+    spec_path, names, fates = renumbered
+    text = "See {ref}`demo-spec-2` and {ref}`the design <demo-spec-2>`.\n"
+
+    fixed = guard.rewrite(text, spec_path, fates, names, {1})
+
+    assert fixed == "See {ref}`demo-spec-3` and {ref}`the design <demo-spec-3>`.\n"
+
+
+def test_a_specification_renamed_keeps_its_sections(guard, repo, capsys):
+    """Renaming its file moves no section, so no citation goes stale."""
+    git(repo, "mv", str(SPECS / NAME), str(SPECS / "2026-01-01-renamed-design.md"))
+    git(repo, "commit", "--quiet", "--message", "rename")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+
+
+def test_the_audit_shows_each_revision_once(guard, repo, capsys, monkeypatch):
+    """Chains from different commits share their later revisions."""
+    git(repo, "switch", "--quiet", "main")
+    commit(repo, {"src/one.py": f"# demo spec {SECTION}1\n"}, "one")
+    commit(repo, {"src/two.py": f"# demo spec {SECTION}1\n"}, "two")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "insert",
+    )
+    shown: list[str] = []
+    real = guard.git
+
+    def counting(root: Path, *args: str) -> str:
+        if args[0] == "show":
+            shown.append(args[1])
+        return real(root, *args)
+
+    monkeypatch.setattr(guard, "git", counting)
+
+    assert run(guard, repo, "--audit", capsys=capsys)[0] == 0
+    assert len(shown) == len(set(shown)), "a revision was shown more than once"
+
+
+def test_a_removed_section_is_reported_through_the_command_line(guard, repo, capsys):
+    """The report names what a removed section's number holds now."""
+    commit(
+        repo,
+        {str(SPECS / NAME): spec(("1", "Purpose", PURPOSE), ("2", "Testing", TESTING))},
+        "remove design",
+    )
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1
+    assert (
+        f'src/code.py:1: demo spec {SECTION}2 was "Design", which was removed; ' in out
+    )
+
+
+def test_the_last_section_removed_still_reports_its_items(guard, repo, capsys):
+    """A specification left with no anchor is still the file it was."""
+    git(repo, "switch", "--quiet", "main")
+    commit(repo, {str(SPECS / NAME): spec(("8", "Open Items", items(ONE, TWO)))}, "x")
+    git(repo, "switch", "--quiet", "--force-create", "work")
+    retired = spec() + "\nThis specification no longer applies.\n"
+    commit(repo, {str(SPECS / NAME): retired}, "remove the last section")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1
+    assert 'item 1 "The first question." was removed with its section' in out
+
+
+@pytest.mark.parametrize("audit", [False, True], ids=["pull-request", "audit"])
+def test_a_citation_older_than_a_specification_renamed_and_renumbered_fails(
+    guard, repo, capsys, audit
+):
+    """The specification is found by the prefix it owns at each revision."""
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "switch", "--quiet", "--create", "late")
+    commit(repo, {"src/late.py": f"# see demo spec {SECTION}2\n"}, "late citation")
+    git(repo, "switch", "--quiet", "main")
+    renamed = SPECS / "2026-01-01-renamed-design.md"
+    git(repo, "mv", str(SPECS / NAME), str(renamed))
+    git(repo, "commit", "--quiet", "--message", "rename")
+    commit(
+        repo,
+        {
+            str(renamed): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "renumber, citations updated",
+    )
+    git(repo, "switch", "--quiet", "late")
+    git(repo, "merge", "--quiet", "--no-edit", "main")
+
+    code, out = run(guard, repo, *(["--audit"] if audit else []), capsys=capsys)
+
+    assert code == 1
+    assert f'src/late.py:1: demo spec {SECTION}2 was "Design", which is now' in out
