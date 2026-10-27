@@ -16,8 +16,8 @@ The repository cites them by section. You will meet ``typing spec §3.2`` in
 ``pyproject.toml`` and ``docs spec §3.1`` in ``conf.py``, and each names a
 section on one of the pages below. The prefix names the document, and it is
 load-bearing: ``typing spec §3.2`` and ``docs spec §3.2`` are unrelated sections
-of different documents. Wherever the documentation renders a citation, in a page,
-a specification or the API reference, it is a link to the section it names.
+of different documents. Wherever the documentation renders a citation in prose, in
+a page, a specification or the API reference, it is a link to the section it names.
 
 .. list-table::
     :header-rows: 1

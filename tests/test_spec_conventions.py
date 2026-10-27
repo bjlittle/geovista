@@ -1308,6 +1308,13 @@ def numbered(texts: dict[Path, str], names: Namespace) -> int:
     An item follows its citation, as in ``typing spec §8 item 9``, and a row
     precedes it, as in ``rows 2 to 4 of docs spec §4``. Lines are joined, so a
     reference wrapped across two reads as one.
+
+    It is a trigger, not a census, and errs low. It misses a citation whose
+    prefix carries from earlier in a run, as the second item cited in
+    ``typing spec §8 items 5, §8 item 9``, and the form written as
+    ``item 9 of typing spec §8``, which nothing outside the specifications uses.
+    It also counts the comments of this module that cite rows, two of today's
+    eight.
     """
     count = 0
     for path, text in texts.items():
