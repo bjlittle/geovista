@@ -243,6 +243,8 @@ def landing(root: Path, page: Path, href: str) -> str | None:
     if parts.scheme or parts.netloc:
         return None
     target = (page.parent / unquote(parts.path)).resolve() if parts.path else page
+    if not target.is_relative_to(root):
+        return f"{href} leaves the built site"
     if not target.is_file():
         return f"{href} names no page"
     if not parts.fragment:
@@ -570,3 +572,15 @@ def test_a_nested_citation_is_explained_and_not_merely_counted(tmp_path):
 
     assert f"a.html: {SECTION}3.2" in text
     assert "contents" in text
+
+
+def test_a_link_leaving_the_built_site_is_reported(tmp_path):
+    """A citation links to a section of this site, never to a page beside it."""
+    page(tmp_path, "typing.html", '<h2 id="typing-spec-3-1">3.1</h2>')
+    site = tmp_path / "site"
+    page(site, "guide.html", f'<a href="../typing.html#typing-spec-3-2">{CITED}</a>')
+
+    report = check(site)
+
+    assert list(report.broken) == ["guide.html"]
+    assert "leaves the built site" in report.broken["guide.html"][0]
