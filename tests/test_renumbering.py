@@ -595,3 +595,29 @@ def test_a_base_that_does_not_exist_cannot_be_checked(guard, repo, capsys):
     """A failure to compare is never taken for a finding."""
     assert guard.main(["--base", "nowhere"], root=repo) == 2
     capsys.readouterr()
+
+
+def test_the_workflow_runs_the_guard_when_anything_it_reads_changes(guard):
+    """A pull request changing only the guard, or the grammar, must run it."""
+    import yaml  # noqa: PLC0415
+
+    root = SCRIPT.parents[2]
+    workflow = yaml.safe_load(
+        (root / ".github" / "workflows" / "ci-spec-status.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    # YAML 1.1 reads the bare key "on" as the boolean True
+    triggers = workflow.get("on", workflow.get(True))
+    filtered = set(triggers["pull_request"]["paths"])
+    loaded = {SCRIPT, Path(guard.grammar.__file__), Path(guard.breadcrumb.__file__)}
+
+    missing = sorted(
+        path.resolve().relative_to(root).as_posix()
+        for path in loaded
+        if path.resolve().relative_to(root).as_posix() not in filtered
+    )
+
+    assert not missing, f"ci-spec-status.yml does not run when these change: {missing}"
+    assert "renumbering" in workflow["jobs"], "no job runs the guard on a pull request"
+    assert "audit" in workflow["jobs"], "no job audits the citations each night"
