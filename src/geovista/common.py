@@ -38,6 +38,10 @@ __all__ = [
     "COASTLINES_RESOLUTION",
     "GV_CELL_IDS",
     "GV_FIELD_CRS",
+    "GV_FIELD_GLOBE_EXAGGERATION_ABOVE",
+    "GV_FIELD_GLOBE_EXAGGERATION_BELOW",
+    "GV_FIELD_GLOBE_RADIUS",
+    "GV_FIELD_GLOBE_RENDER_RADIUS",
     "GV_FIELD_NAME",
     "GV_FIELD_RADIUS",
     "GV_FIELD_RESOLUTION",
@@ -111,6 +115,30 @@ GV_FIELD_CRS: str = "gvCRS"
 
 A WKT holding a non-ASCII character or a backslash is escaped, and the array then
 has a second element naming the codec, see :func:`geovista.crs.to_wkt`.
+"""
+
+GV_FIELD_GLOBE_EXAGGERATION_ABOVE: str = "gvGlobeExaggerationAbove"
+"""The field array name of the factor for heights above sea level of the mesh globe.
+
+See :class:`geovista.globe.Globe`.
+"""
+
+GV_FIELD_GLOBE_EXAGGERATION_BELOW: str = "gvGlobeExaggerationBelow"
+"""The field array name of the factor for depths below sea level of the mesh globe.
+
+See :class:`geovista.globe.Globe`.
+"""
+
+GV_FIELD_GLOBE_RADIUS: str = "gvGlobeRadius"
+"""The field array name of the radius of the mesh globe, in metres.
+
+See :class:`geovista.globe.Globe`.
+"""
+
+GV_FIELD_GLOBE_RENDER_RADIUS: str = "gvGlobeRenderRadius"
+"""The field array name of the radius the mesh globe is drawn at.
+
+See :class:`geovista.globe.Globe`.
 """
 
 GV_FIELD_NAME: str = "gvName"

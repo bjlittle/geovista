@@ -14,16 +14,22 @@ import sys
 PLAIN = """
 import sys
 
+import pyvista as pv
+
 from geovista.globe import Globe
 
 globe = Globe(radius=6371000, exaggeration=20)
 globe.render_radius, globe.exaggeration, globe.exaggeration_below, globe.scale
 globe == Globe(), hash(globe), repr(globe)
+mesh = pv.Sphere()
+globe.to_mesh(mesh)
+Globe.from_mesh(mesh)
+Globe.from_mesh(pv.Sphere())
 loaded = [name for name in sys.modules if name == "pint" or name.startswith("pint.")]
 assert not loaded, loaded
 """
 
 
 def test_a_globe_imports_no_pint():
-    """Test that a globe imports no pint until its radius is read."""
+    """Test that a globe imports no pint until its radius is read, even on a mesh."""
     subprocess.run([sys.executable, "-c", PLAIN], check=True)  # noqa: S603

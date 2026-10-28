@@ -466,7 +466,7 @@ def planar(crs: CRS) -> bool:
     return result
 
 
-def projected(mesh: pv.PolyData) -> bool:
+def projected(mesh: pv.DataSet) -> bool:
     """Determine if the mesh is a planar projection.
 
     Simple heuristic approach achieved by attempting to inspect the associated
@@ -476,7 +476,7 @@ def projected(mesh: pv.PolyData) -> bool:
 
     Parameters
     ----------
-    mesh : :class:`~pyvista.PolyData`
+    mesh : :class:`~pyvista.DataSet`
         The mesh to be inspected.
 
     Returns

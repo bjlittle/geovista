@@ -20,13 +20,42 @@ import math
 from numbers import Real
 from typing import TYPE_CHECKING, Any, NoReturn, cast
 
-from .common import RADIUS
+import lazy_loader as lazy
+
+from .common import (
+    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
+    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
+    GV_FIELD_GLOBE_RADIUS,
+    GV_FIELD_GLOBE_RENDER_RADIUS,
+    GV_FIELD_RADIUS,
+    RADIUS,
+)
+from .crs import projected
 from .units import as_quantity, to_metres
 
 if TYPE_CHECKING:
+    import numpy as np
+    import pyvista as pv
+
     from .units import Quantity
 
+# lazy import third-party dependencies
+np = lazy.load("numpy")
+
 __all__ = ["Globe"]
+
+# the four fields a mesh records its globe in, in the order of Globe._values
+_FIELDS: tuple[str, str, str, str] = (
+    GV_FIELD_GLOBE_RADIUS,
+    GV_FIELD_GLOBE_RENDER_RADIUS,
+    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
+    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
+)
+
+# the relative spread of radii within which a mesh's points lie on a sphere
+# (scene spec §4.4). It admits a sphere of float32 points, whose radii vary by
+# some 6e-8, and refuses heights of more than about 6 m at the Earth's radius
+_SPREAD: float = 1e-6
 
 
 def _finite_and_positive(keyword: str, value: float, given: object) -> float:
@@ -122,6 +151,38 @@ def _length(value: object) -> float:
     else:
         raise TypeError(emsg)
     return _finite_and_positive("radius", metres, value)
+
+
+def _recorded(mesh: pv.DataSet, name: str) -> float:
+    """Read a field that records one finite number.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+    name : str
+        The name of the field.
+
+    Returns
+    -------
+    float
+        The number.
+
+    Raises
+    ------
+    ValueError
+        If the field is not one finite number.
+
+    """
+    values = np.asarray(mesh.field_data[name])
+    if (
+        values.shape != (1,)
+        or values.dtype.kind not in "fiu"
+        or not np.isfinite(values[0])
+    ):
+        emsg = f"The mesh's {name!r} must record one finite number, got {values!r}."
+        raise ValueError(emsg)
+    return float(values[0])
 
 
 class Globe:  # numpydoc ignore=PR01
@@ -310,6 +371,99 @@ class Globe:  # numpydoc ignore=PR01
             f"exaggeration={self._exaggeration!r}, "
             f"exaggeration_below={self._exaggeration_below!r})"
         )
+
+    @classmethod
+    def from_mesh(cls, mesh: pv.DataSet) -> Globe | None:
+        """Read the globe a mesh records, without changing the mesh.
+
+        A mesh that records no globe is read at its ``gvRadius``, as written
+        before the globe, and otherwise at the one radius its points lie at,
+        if they lie at one and the mesh is not projected.
+
+        Parameters
+        ----------
+        mesh : pyvista.DataSet
+            The mesh.
+
+        Returns
+        -------
+        Globe or None
+            The globe, or ``None`` when it cannot be read, as for a mesh warped
+            by its heights.
+
+        Raises
+        ------
+        ValueError
+            If the mesh records part of a globe, or a value that is not one
+            finite and positive number.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        field_data = mesh.field_data
+        missing = [name for name in _FIELDS if name not in field_data]
+
+        if len(missing) < len(_FIELDS):
+            if missing:
+                emsg = (
+                    "The mesh records part of a globe, without "
+                    f"{', '.join(repr(name) for name in missing)}."
+                )
+                raise ValueError(emsg)
+            radius, render_radius, above, below = (
+                _recorded(mesh, name) for name in _FIELDS
+            )
+            return cls(
+                radius=radius,
+                render_radius=render_radius,
+                exaggeration=above,
+                exaggeration_below=below,
+            )
+
+        if GV_FIELD_RADIUS in field_data:
+            return cls(render_radius=_recorded(mesh, GV_FIELD_RADIUS))
+
+        if mesh.n_points == 0 or projected(mesh):
+            return None
+
+        radii = np.linalg.norm(np.asarray(mesh.points, dtype=np.float64), axis=1)
+        if not np.all(np.isfinite(radii)):
+            return None
+
+        low, high = float(radii.min()), float(radii.max())
+        if high <= 0 or high - low > _SPREAD * high:
+            return None
+
+        radius = float(radii.mean())
+        if mesh.points.dtype == np.float32:
+            # a mean of float32 points is not exactly their radius, as
+            # pv.Sphere() averages 1 +/- 6e-10, so round it as they were
+            radius = float(np.float32(radius))
+
+        return cls(render_radius=radius)
+
+    def to_mesh(self, mesh: pv.DataSet) -> None:
+        """Record the globe on a mesh, in place.
+
+        The globe is written as four float64 fields of one value each, and
+        replaces any ``gvRadius``.
+
+        Parameters
+        ----------
+        mesh : pyvista.DataSet
+            The mesh.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        for name, value in zip(_FIELDS, self._values(), strict=True):
+            mesh.field_data[name] = np.array([value], dtype=np.float64)
+        if GV_FIELD_RADIUS in mesh.field_data:
+            del mesh.field_data[GV_FIELD_RADIUS]
 
     @property
     def radius(self) -> Quantity:
