@@ -1,0 +1,5 @@
+The browser tests of ``ci-tests-docs`` keep the output of ``Xvfb``, which
+``xvfb-run`` discards by default, and run it with ``-audit 2`` so that it logs
+each client that connects or disconnects. When the job fails, it uploads the log
+as a workflow artifact, to show why VTK sometimes cannot open the display
+(:issue:`2764`). (:user:`claude`)

@@ -95,6 +95,10 @@ The following testing workflows are available:
    |           |    the only one carrying the carousel that the browser tests cover. It is run with the ``--browser-strict``   |
    |           |    option, so that a prerequisite which this job deliberately provides, but which quietly goes missing,       |
    |           |    fails rather than skips, which would leave the job green over lost coverage.                               |
+   |           |                                                                                                               |
+   |           |    When this job fails, it uploads the output of ``Xvfb`` as a :fab:`github` `Workflow Artifact`_.            |
+   |           |    :bash:`xvfb-run` discards that output unless given ``-e``, so the job keeps it, and runs ``Xvfb`` with     |
+   |           |    ``-audit 2`` to log each client that connects to or disconnects from the display.                          |
    +-----------+---------------------------------------------------------------------------------------------------------------+
    | |ci-lock| | The `ci-tests-lock.yml`_ ``cron`` based :fab:`github` Action regularly schedules the execution of both the    |
    |           | :ref:`tippy-gv-developer-testing-image-tests` and :ref:`tippy-gv-developer-testing-unit-tests` for the        |
