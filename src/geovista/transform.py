@@ -21,11 +21,12 @@ import warnings
 import lazy_loader as lazy
 
 from .common import (
-    GV_FIELD_RADIUS,
     GV_FIELD_ZSCALE,
     GV_POINT_ZLEVEL,
     RADIUS,
     ZLEVEL_SCALE,
+    _read_radius,
+    _write_radius,
     distance,
     from_cartesian,
     point_cloud,
@@ -167,8 +168,8 @@ def transform_mesh(
         else:
             zscale = ZLEVEL_SCALE
 
-    if radius is None and cloud and GV_FIELD_RADIUS in mesh.field_data:
-        radius = float(mesh[GV_FIELD_RADIUS][0])
+    if radius is None and cloud:
+        radius = _read_radius(mesh)
 
     if transform_required:
         level = _point_levels(mesh, zlevel)
@@ -1203,7 +1204,7 @@ def _record_zlevels(
 
     if tgt_crs == WGS84:
         base = RADIUS if radius is None else abs(float(radius))
-        mesh.field_data[GV_FIELD_RADIUS] = np.array([base])
+        _write_radius(mesh, base)
         mesh.point_data.pop(GV_POINT_ZLEVEL, None)
     else:
         # set as an array rather than by item, which would make the levels the

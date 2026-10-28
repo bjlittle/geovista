@@ -6,15 +6,15 @@ pytest-based test suite for GeoVista. Tests cover the core library modules, CLI,
 
 ## Directory Structure
 
-One directory per `geovista` module — `bridge/`, `cache/`, `cli/`, `common/`,
-`core/`, `crs/`, `geodesic/`, `geometry/`, `geoplotter/`, `gridlines/`, `pantry/`,
-`raster/`, `report/`, `search/`, `themes/`, `transform/`, `units/` — plus `test_qt.py`
-and the root `conftest.py` of shared fixtures. Two directories are not modules: `docs/`
-tests the built documentation, and `plotting/` holds the image comparisons — gallery
-examples in `test_examples.py`, per-module plots under `geodesic/`, `geoplotter/` and
-`transform/`, baselines fetched into `unit_image_cache/` (git-ignored). Most root
-`test_*.py` are repository checks; `test_readme_examples.py` runs `README.md`'s
-`python` blocks, so a PR changing the public API updates the README too.
+One directory per `geovista` module — `accessor/`, `bridge/`, `cache/`, `cli/`, `common/`,
+`core/`, `crs/`, `geodesic/`, `geometry/`, `geoplotter/`, `globe/`, `gridlines/`, `pantry/`,
+`raster/`, `report/`, `search/`, `themes/`, `transform/`, `units/` — plus `test_qt.py` and
+the root `conftest.py` of shared fixtures. Two directories are not modules: `docs/` tests
+the built documentation, and `plotting/` holds the image comparisons — gallery examples in
+`test_examples.py`, per-module plots under `geodesic/`, `geoplotter/` and `transform/`,
+baselines fetched into `unit_image_cache/` (git-ignored). Most root `test_*.py` are
+repository checks; `test_readme_examples.py` runs `README.md`'s `python` blocks, so a PR
+changing the public API updates the README too.
 
 ## Running Tests
 
@@ -196,4 +196,4 @@ use `html.parser.HTMLParser`, and `markdown_it.MarkdownIt("commonmark")` for Mar
 
 ---
 
-**Last Updated**: 27 October 2026
+**Last Updated**: 28 October 2026

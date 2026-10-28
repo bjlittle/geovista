@@ -14,15 +14,18 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 from enum import StrEnum
 import importlib
 import pkgutil
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import lazy_loader as lazy
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import numpy as np
     from numpy.typing import ArrayLike, DTypeLike
     import pyvista as pv
@@ -38,6 +41,10 @@ __all__ = [
     "COASTLINES_RESOLUTION",
     "GV_CELL_IDS",
     "GV_FIELD_CRS",
+    "GV_FIELD_GLOBE_EXAGGERATION_ABOVE",
+    "GV_FIELD_GLOBE_EXAGGERATION_BELOW",
+    "GV_FIELD_GLOBE_RADIUS",
+    "GV_FIELD_GLOBE_RENDER_RADIUS",
     "GV_FIELD_NAME",
     "GV_FIELD_RADIUS",
     "GV_FIELD_RESOLUTION",
@@ -52,6 +59,7 @@ __all__ = [
     "RADIUS",
     "REMESH_JOIN",
     "REMESH_SEAM",
+    "RETIRED_FIELDS",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
     "WRAP_ATOL",
@@ -59,6 +67,7 @@ __all__ = [
     "ZLEVEL_SCALE",
     "ZTRANSFORM_FACTOR",
     "Preference",
+    "RetiredField",
     "StrEnumPlus",
     "Vector2DLike",
     "Vector3DLike",
@@ -71,6 +80,7 @@ __all__ = [
     "nan_mask",
     "point_cloud",
     "sanitize",
+    "sanitize_legacy",
     "sanitize_vtk",
     "set_jupyter_backend",
     "to_cartesian",
@@ -113,11 +123,39 @@ A WKT holding a non-ASCII character or a backslash is escaped, and the array the
 has a second element naming the codec, see :func:`geovista.crs.to_wkt`.
 """
 
+GV_FIELD_GLOBE_EXAGGERATION_ABOVE: str = "gvGlobeExaggerationAbove"
+"""The field array name of the factor for heights above sea level of the mesh globe.
+
+See :class:`geovista.globe.Globe`.
+"""
+
+GV_FIELD_GLOBE_EXAGGERATION_BELOW: str = "gvGlobeExaggerationBelow"
+"""The field array name of the factor for depths below sea level of the mesh globe.
+
+See :class:`geovista.globe.Globe`.
+"""
+
+GV_FIELD_GLOBE_RADIUS: str = "gvGlobeRadius"
+"""The field array name of the radius of the mesh globe, in metres.
+
+See :class:`geovista.globe.Globe`.
+"""
+
+GV_FIELD_GLOBE_RENDER_RADIUS: str = "gvGlobeRenderRadius"
+"""The field array name of the radius the mesh globe is drawn at.
+
+See :class:`geovista.globe.Globe`.
+"""
+
 GV_FIELD_NAME: str = "gvName"
 """The field array name of the mesh containing field, point and/or cell data."""
 
 GV_FIELD_RADIUS: str = "gvRadius"
-"""The field array name of the mesh radius."""
+"""The field array name of the mesh radius.
+
+Retired, and last written by release 0.5.3, since 0.6 records the globe of a
+mesh in its place. See :data:`RETIRED_FIELDS`.
+"""
 
 GV_FIELD_RESOLUTION: str = "gvResolution"
 """The field array name of the mesh resolution e.g., coastlines."""
@@ -277,6 +315,161 @@ class Preference(StrEnumPlus):
     """Preference for point geometry."""
 
 
+@dataclass(frozen=True)
+class RetiredField:
+    """A field that geovista reads, but no longer writes.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+
+    name: str
+    """The name of the field."""
+
+    association: Literal["field", "point", "cell"]
+    """Whether the field is field, point or cell data."""
+
+    replacement: str
+    """What replaced the field."""
+
+    last_written: str
+    """The last release of geovista that wrote the field."""
+
+    translate: Callable[[pv.DataSet], None]
+    """Write what replaced the field onto a mesh that has it, in place."""
+
+
+def _translate_radius(mesh: pv.DataSet) -> None:
+    """Record the globe a mesh's ``gvRadius`` gives, in place.
+
+    A globe the mesh already records wins over its ``gvRadius``.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh, with a ``gvRadius``.
+
+    """
+    # geovista.globe imports this module
+    from .globe import Globe  # noqa: PLC0415
+
+    globe = Globe.from_mesh(mesh)
+    if globe is not None:
+        globe.to_mesh(mesh)
+
+
+RETIRED_FIELDS: tuple[RetiredField, ...] = (
+    RetiredField(
+        name=GV_FIELD_RADIUS,
+        association="field",
+        replacement=(
+            "the globe, in gvGlobeRadius, gvGlobeRenderRadius, "
+            "gvGlobeExaggerationAbove and gvGlobeExaggerationBelow"
+        ),
+        last_written="0.5.3",
+        translate=_translate_radius,
+    ),
+)
+"""Every field that geovista reads, but no longer writes.
+
+See :func:`sanitize_legacy`, which translates and removes them.
+"""
+
+#: The four fields a mesh records its globe in, which a globe reads and writes by name.
+_GV_GLOBE_FIELDS: tuple[str, str, str, str] = (
+    GV_FIELD_GLOBE_RADIUS,
+    GV_FIELD_GLOBE_RENDER_RADIUS,
+    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
+    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
+)
+
+
+def _read_radius(mesh: pv.DataSet) -> float | None:
+    """Read the radius that the ``gvRadius`` of a mesh holds.
+
+    The functions that still write ``gvRadius`` read it back, and
+    :func:`sanitize_legacy` moves it into the render radius of the mesh's globe,
+    so a globe the mesh records is read first, as
+    :meth:`geovista.globe.Globe.from_mesh` reads it.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+
+    Returns
+    -------
+    float or None
+        The render radius of the globe the mesh records, else its
+        ``gvRadius``, else ``None``.
+
+    """
+    field_data = mesh.field_data
+
+    if any(name in field_data for name in _GV_GLOBE_FIELDS):
+        # geovista.globe imports this module
+        from .globe import Globe  # noqa: PLC0415
+
+        # a partial record is refused, and a whole one is never measured
+        globe = Globe.from_mesh(mesh)
+        return None if globe is None else globe.render_radius
+
+    if GV_FIELD_RADIUS in field_data:
+        return float(field_data[GV_FIELD_RADIUS][0])
+
+    return None
+
+
+def _write_radius(mesh: pv.DataSet, radius: float | None) -> None:
+    """Record the radius of a mesh where :func:`_read_radius` reads it, in place.
+
+    A mesh that records a globe has its render radius set, or its globe removed
+    when no one radius describes it, so that its globe never goes stale. Either
+    way any ``gvRadius`` beside the globe goes too, or it would be read in the
+    globe's place. Any other mesh has its ``gvRadius`` set or removed.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+    radius : float or None
+        The radius of the mesh, or ``None`` when no one radius describes it.
+
+    """
+    field_data = mesh.field_data
+
+    if any(name in field_data for name in _GV_GLOBE_FIELDS):
+        # geovista.globe imports this module
+        from .globe import Globe  # noqa: PLC0415
+
+        # refuse a partial or malformed record before changing it
+        Globe.from_mesh(mesh)
+
+        if radius is None:
+            for name in (*_GV_GLOBE_FIELDS, GV_FIELD_RADIUS):
+                field_data.pop(name, None)
+        else:
+            above, below = (
+                float(field_data[name][0])
+                for name in (
+                    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
+                    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
+                )
+            )
+            Globe(
+                radius=float(field_data[GV_FIELD_GLOBE_RADIUS][0]),
+                render_radius=radius,
+                exaggeration=above,
+                exaggeration_below=below,
+            ).to_mesh(mesh)
+    elif radius is None:
+        field_data.pop(GV_FIELD_RADIUS, None)
+    else:
+        field_data[GV_FIELD_RADIUS] = np.array([radius])
+
+
 def active_kernel() -> bool:
     """Determine whether we are executing within an ``IPython`` kernel.
 
@@ -396,11 +589,10 @@ def distance(
     if mean:
         result = np.mean(result)
 
-        given_radius = (
-            mesh.field_data[GV_FIELD_RADIUS][0]
-            if GV_FIELD_RADIUS in mesh.field_data
-            else RADIUS
-        )
+        given_radius = _read_radius(mesh)
+
+        if given_radius is None:
+            given_radius = RADIUS
 
         if np.isclose(result, given_radius):
             result = given_radius
@@ -471,13 +663,10 @@ def from_cartesian(
 
     zlevel = np.zeros_like(lons)
 
-    if (
-        cloud
-        and GV_FIELD_RADIUS in mesh.field_data
-        and GV_FIELD_ZSCALE in mesh.field_data
-    ):
+    base = _read_radius(mesh) if cloud else None
+
+    if base is not None and GV_FIELD_ZSCALE in mesh.field_data:
         # field data injected by geovista.bridge.Transform.from_points
-        base = mesh[GV_FIELD_RADIUS][0]
         zscale = mesh[GV_FIELD_ZSCALE][0]
         zlevel = (radius - base) / (base * zscale)
 
@@ -682,6 +871,7 @@ def sanitize(
     *meshes: pv.PolyData,
     extra: str | list[str] | None = None,
     vtk: bool = True,
+    legacy: bool = True,
 ) -> None:
     """Purge standard helper cell and point data index arrays.
 
@@ -693,6 +883,9 @@ def sanitize(
         The name of additional data arrays to purge.
     vtk : bool | None, optional
         Whether to sanitize VTK data arrays. Defaults to ``True``.
+    legacy : bool, default=True
+        Whether to translate and remove retired fields, as
+        :func:`sanitize_legacy` does.
 
     Notes
     -----
@@ -721,6 +914,41 @@ def sanitize(
 
     if vtk:
         sanitize_vtk(*meshes)
+
+    if legacy:
+        sanitize_legacy(*meshes)
+
+
+def sanitize_legacy(
+    *meshes: pv.DataSet,
+) -> None:
+    """Translate and remove the retired fields of each mesh, in place.
+
+    Each field of :data:`RETIRED_FIELDS` that a mesh has is translated into
+    what replaced it, then removed, so that saving the mesh does not carry the
+    field forward. A mesh with none is unchanged, and nothing warns.
+
+    Parameters
+    ----------
+    *meshes : iterable of :class:`~pyvista.DataSet`
+        One or more meshes to sanitize.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if not meshes:
+        emsg = "Expected one or more meshes to sanitize."
+        raise ValueError(emsg)
+
+    for mesh in meshes:
+        for entry in RETIRED_FIELDS:
+            if entry.name in getattr(mesh, f"{entry.association}_data"):
+                entry.translate(mesh)
+                data = getattr(mesh, f"{entry.association}_data")
+                if entry.name in data:
+                    del data[entry.name]
 
 
 def sanitize_vtk(

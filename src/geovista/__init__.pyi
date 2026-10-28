@@ -6,6 +6,7 @@
 # see https://scientific-python.org/specs/spec-0001/#type-checkers
 from .bridge import Transform
 from .geoplotter import GeoPlotter
+from .globe import Globe
 from .pantry.textures import (
     black_marble,
     blue_marble,
@@ -20,6 +21,7 @@ __version__: str
 
 __all__ = [
     "GeoPlotter",
+    "Globe",
     "Report",
     "Transform",
     "__version__",
