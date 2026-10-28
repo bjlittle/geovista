@@ -23,7 +23,6 @@ import lazy_loader as lazy
 from .common import (
     CENTRAL_MERIDIAN,
     GV_CELL_IDS,
-    GV_FIELD_RADIUS,
     GV_FIELD_ZSCALE,
     GV_POINT_IDS,
     GV_REMESH_POINT_IDS,
@@ -32,6 +31,8 @@ from .common import (
     REMESH_SEAM,
     ZLEVEL_SCALE,
     _face_offsets,
+    _read_radius,
+    _write_radius,
     distance,
     from_cartesian,
     point_cloud,
@@ -585,10 +586,8 @@ def resize(
     cloud = point_cloud(mesh)
 
     if radius is None:
-        if cloud and GV_FIELD_RADIUS in mesh.field_data:
-            radius = mesh[GV_FIELD_RADIUS][0]
-        else:
-            radius = RADIUS
+        recorded = _read_radius(mesh) if cloud else None
+        radius = RADIUS if recorded is None else recorded
     else:
         radius = abs(float(radius))
 
@@ -623,9 +622,8 @@ def resize(
                 mesh[GV_FIELD_ZSCALE], zscale
             )
         if not update:
-            update = GV_FIELD_RADIUS not in mesh.field_data or not np.isclose(
-                mesh[GV_FIELD_RADIUS], radius
-            )
+            recorded = _read_radius(mesh)
+            update = recorded is None or not np.isclose(recorded, radius)
     elif level.ndim:
         # a surface at a radius for each point, which from_cartesian reads back
         # at the radius of each point, so its positions survive the next resize
@@ -652,12 +650,12 @@ def resize(
         mesh.points = xyz
         if cloud:
             mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
-            mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+            _write_radius(mesh, radius)
         elif level.ndim:
             # no single radius describes the surface any more
-            mesh.field_data.pop(GV_FIELD_RADIUS, None)
+            _write_radius(mesh, None)
         else:
-            mesh.field_data[GV_FIELD_RADIUS] = np.array([new_radius])
+            _write_radius(mesh, new_radius)
 
     return mesh
 

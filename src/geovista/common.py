@@ -377,6 +377,97 @@ RETIRED_FIELDS: tuple[RetiredField, ...] = (
 See :func:`sanitize_legacy`, which translates and removes them.
 """
 
+#: The four fields a mesh records its globe in, in the order a globe takes them.
+_GV_GLOBE_FIELDS: tuple[str, str, str, str] = (
+    GV_FIELD_GLOBE_RADIUS,
+    GV_FIELD_GLOBE_RENDER_RADIUS,
+    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
+    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
+)
+
+
+def _read_radius(mesh: pv.DataSet) -> float | None:
+    """Read the radius that the ``gvRadius`` of a mesh holds.
+
+    The functions that still write ``gvRadius`` read it back, and
+    :func:`sanitize_legacy` moves it into the render radius of the mesh's globe,
+    so a globe the mesh records is read first, as
+    :meth:`geovista.globe.Globe.from_mesh` reads it.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+
+    Returns
+    -------
+    float or None
+        The render radius of the globe the mesh records, else its
+        ``gvRadius``, else ``None``.
+
+    """
+    field_data = mesh.field_data
+
+    if any(name in field_data for name in _GV_GLOBE_FIELDS):
+        # geovista.globe imports this module
+        from .globe import Globe  # noqa: PLC0415
+
+        # a partial record is refused, and a whole one is never measured
+        globe = Globe.from_mesh(mesh)
+        return None if globe is None else globe.render_radius
+
+    if GV_FIELD_RADIUS in field_data:
+        return float(field_data[GV_FIELD_RADIUS][0])
+
+    return None
+
+
+def _write_radius(mesh: pv.DataSet, radius: float | None) -> None:
+    """Record the radius of a mesh where :func:`_read_radius` reads it, in place.
+
+    A mesh that records a globe has its render radius set, or its globe removed
+    when no one radius describes it, so that its globe never goes stale. Any
+    other mesh has its ``gvRadius`` set or removed.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+    radius : float or None
+        The radius of the mesh, or ``None`` when no one radius describes it.
+
+    """
+    field_data = mesh.field_data
+
+    if any(name in field_data for name in _GV_GLOBE_FIELDS):
+        # geovista.globe imports this module
+        from .globe import Globe  # noqa: PLC0415
+
+        # refuse a partial or malformed record before changing it
+        Globe.from_mesh(mesh)
+
+        if radius is None:
+            for name in _GV_GLOBE_FIELDS:
+                del field_data[name]
+        else:
+            above, below = (
+                float(field_data[name][0])
+                for name in (
+                    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
+                    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
+                )
+            )
+            Globe(
+                radius=float(field_data[GV_FIELD_GLOBE_RADIUS][0]),
+                render_radius=radius,
+                exaggeration=above,
+                exaggeration_below=below,
+            ).to_mesh(mesh)
+    elif radius is None:
+        field_data.pop(GV_FIELD_RADIUS, None)
+    else:
+        field_data[GV_FIELD_RADIUS] = np.array([radius])
+
 
 def active_kernel() -> bool:
     """Determine whether we are executing within an ``IPython`` kernel.
@@ -497,11 +588,10 @@ def distance(
     if mean:
         result = np.mean(result)
 
-        given_radius = (
-            mesh.field_data[GV_FIELD_RADIUS][0]
-            if GV_FIELD_RADIUS in mesh.field_data
-            else RADIUS
-        )
+        given_radius = _read_radius(mesh)
+
+        if given_radius is None:
+            given_radius = RADIUS
 
         if np.isclose(result, given_radius):
             result = given_radius
@@ -572,13 +662,10 @@ def from_cartesian(
 
     zlevel = np.zeros_like(lons)
 
-    if (
-        cloud
-        and GV_FIELD_RADIUS in mesh.field_data
-        and GV_FIELD_ZSCALE in mesh.field_data
-    ):
+    base = _read_radius(mesh) if cloud else None
+
+    if base is not None and GV_FIELD_ZSCALE in mesh.field_data:
         # field data injected by geovista.bridge.Transform.from_points
-        base = mesh[GV_FIELD_RADIUS][0]
         zscale = mesh[GV_FIELD_ZSCALE][0]
         zlevel = (radius - base) / (base * zscale)
 

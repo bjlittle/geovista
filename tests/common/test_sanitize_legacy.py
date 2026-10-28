@@ -16,11 +16,18 @@ import pyvista as pv
 from geovista.bridge import Transform
 from geovista.common import (
     GV_FIELD_RADIUS,
+    GV_POINT_ZLEVEL,
     RETIRED_FIELDS,
     RetiredField,
+    distance,
+    from_cartesian,
+    sanitize,
     sanitize_legacy,
 )
+from geovista.core import resize
+from geovista.crs import WGS84
 from geovista.globe import Globe
+from geovista.transform import transform_mesh
 
 LONS = np.linspace(-180, 180, 9)
 LATS = np.linspace(-90, 90, 5)
@@ -85,3 +92,72 @@ def test_needs_a_mesh():
     """Test trap of no meshes."""
     with pytest.raises(ValueError, match="Expected one or more meshes to sanitize"):
         sanitize_legacy()
+
+
+def _cloud() -> pv.PolyData:
+    """Build a cloud with heights, on a render radius of 2."""
+    return Transform.from_points(
+        [0, 10, 20], [0, 10, 20], radius=2, zlevel=[1, 2, 3], zscale=0.1
+    )
+
+
+def _cleaned(mesh: pv.PolyData) -> pv.PolyData:
+    """Return a copy of the mesh, cleaned of its retired fields."""
+    mesh = mesh.copy()
+    sanitize_legacy(mesh)
+    return mesh
+
+
+def test_a_cleaned_cloud_keeps_its_heights():
+    """Test that a cloud cleaned by sanitize reads back at the same heights."""
+    cloud = _cloud()
+    sanitize(cloud)
+    assert GV_FIELD_RADIUS not in cloud.field_data
+    np.testing.assert_allclose(from_cartesian(cloud)[:, 2], [1, 2, 3])
+
+
+def test_distance_snaps_to_a_cleaned_radius():
+    """Test that the mean distance snaps to a radius held by the globe."""
+    mesh = Transform.from_1d(LONS, LATS, radius=2)
+    mesh.points = mesh.points * (1 + 1e-7)
+    expected = distance(mesh)
+    sanitize_legacy(mesh)
+    assert distance(mesh) == expected == 2
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{}, {"radius": 3}, {"zscale": 0.2}, {"zlevel": 1}], ids=str
+)
+def test_resizing_a_cleaned_cloud(kwargs):
+    """Test that a cloud cleaned then resized is one resized then cleaned."""
+    expected = _cleaned(resize(_cloud(), **kwargs))
+    result = resize(_cleaned(_cloud()), **kwargs)
+    np.testing.assert_allclose(result.points, expected.points)
+    np.testing.assert_allclose(from_cartesian(result), from_cartesian(expected))
+    assert result.gv.globe == expected.gv.globe
+    assert GV_FIELD_RADIUS not in result.field_data
+
+
+@pytest.mark.parametrize("zlevel", [None, 1, "each"])
+def test_resizing_a_cleaned_surface(zlevel):
+    """Test that a surface cleaned then resized is one resized then cleaned."""
+    mesh = Transform.from_1d(LONS, LATS, radius=2)
+    if zlevel == "each":
+        zlevel = np.arange(mesh.n_points) % 3
+    expected = _cleaned(resize(mesh, radius=3, zlevel=zlevel))
+    result = resize(_cleaned(mesh), radius=3, zlevel=zlevel)
+    np.testing.assert_allclose(result.points, expected.points)
+    assert result.gv.globe == expected.gv.globe
+    assert GV_FIELD_RADIUS not in result.field_data
+
+
+def test_projecting_a_cleaned_cloud():
+    """Test that a cleaned cloud projects, and comes back, at its heights."""
+    expected = transform_mesh(_cloud(), "+proj=eqc")
+    result = transform_mesh(_cleaned(_cloud()), "+proj=eqc")
+    np.testing.assert_allclose(result[GV_POINT_ZLEVEL], [1, 2, 3])
+    np.testing.assert_allclose(result.points, expected.points)
+    back = transform_mesh(result, WGS84)
+    np.testing.assert_allclose(back.points, transform_mesh(expected, WGS84).points)
+    assert back.gv.globe == Globe(render_radius=2)
+    assert GV_FIELD_RADIUS not in back.field_data

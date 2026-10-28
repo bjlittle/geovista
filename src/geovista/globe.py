@@ -23,10 +23,7 @@ from typing import TYPE_CHECKING, Any, NoReturn, cast
 import lazy_loader as lazy
 
 from .common import (
-    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
-    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
-    GV_FIELD_GLOBE_RADIUS,
-    GV_FIELD_GLOBE_RENDER_RADIUS,
+    _GV_GLOBE_FIELDS,
     GV_FIELD_RADIUS,
     RADIUS,
 )
@@ -45,12 +42,7 @@ np = lazy.load("numpy")
 __all__ = ["Globe"]
 
 # the four fields a mesh records its globe in, in the order of Globe._values
-_FIELDS: tuple[str, str, str, str] = (
-    GV_FIELD_GLOBE_RADIUS,
-    GV_FIELD_GLOBE_RENDER_RADIUS,
-    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
-    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
-)
+_FIELDS = _GV_GLOBE_FIELDS
 
 # the relative spread of radii within which a mesh's points lie on a sphere
 # (scene spec §4.4). It admits a sphere of float32 points, whose radii vary by

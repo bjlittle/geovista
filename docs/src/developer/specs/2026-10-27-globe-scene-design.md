@@ -291,6 +291,11 @@ globe instead.
 place, with the same signature as `sanitize_vtk`. `sanitize` gains `legacy: bool = True`,
 as it has `vtk`, so a call of it cleans retired fields too.
 
+Until row 2 of §9 lands, the functions that still read and write `gvRadius` use the
+render radius of a globe the mesh records in its place. Cleaning a mesh then never changes
+what they do with it: a point cloud keeps its heights through `from_cartesian`, `resize`
+and `transform_mesh`, and a globe stays current when they move the points.
+
 A function that returns or draws a mesh it made from one it was given applies the same
 translation to the mesh it returns or draws. With `inplace=True`, the caller's mesh is
 that mesh. Reading a retired field raises no warning, since every pantry asset would warn
