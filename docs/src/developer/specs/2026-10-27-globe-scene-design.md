@@ -165,8 +165,8 @@ normals, then calls `warp_by_scalar` with a factor of 2 × 10⁻⁵ on the altit
 `geovista.Globe` is immutable, and takes four keyword arguments:
 
 - `radius`, the Earth's radius, by default the WGS84 semi-major axis of 6,378,137 m, as a
-  plain number in metres or a `pint` quantity from any registry, forms 1 and 2 of globe
-  spec §4.2. A magnitude with a CF unit string, form 3, reaches a globe through
+  plain number in metres or a `pint` quantity from any registry, forms 1 and 2 of
+  globe spec §4.2. A magnitude with a CF unit string, form 3, reaches a globe through
   `geovista.units.to_metres`, as `Globe(radius=to_metres(6371, "km"))`, since its unit
   would need a fifth keyword;
 - `render_radius`, the radius the globe is drawn at, by default `common.RADIUS`, a plain
