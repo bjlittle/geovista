@@ -424,7 +424,8 @@ def find_nearest_cell(
     """
     crs = from_wkt(mesh)
     poi = (
-        to_cartesian(x, y)[0]
+        # on the globe of the mesh, whose points it is compared with
+        to_cartesian(x, y, globe=Globe.from_mesh(mesh) or Globe())[0]
         if crs in [WGS84, None]
         else np.array([x, y, 0 if z is None else z], dtype=float)
     )

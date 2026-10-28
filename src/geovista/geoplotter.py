@@ -1636,8 +1636,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 return
 
             if not planar(self.crs):
-                # convert cartesian xyz to lon/lat
-                x, y = to_lonlat(self._poi)
+                # convert cartesian xyz to lon/lat, on the scene's globe
+                x, y = to_lonlat(self._poi, globe=self.globe)
                 crs = WGS84
             else:
                 x, y, _ = self._poi

@@ -11,6 +11,7 @@ import pytest
 
 from geovista.bridge import Transform
 from geovista.common import from_cartesian, to_lonlat
+from geovista.globe import Globe
 from geovista.search import find_nearest_cell
 from geovista.transform import transform_mesh
 
@@ -74,3 +75,13 @@ def test_planar_z(z):
     mesh = transform_mesh(Transform.from_1d([0, 10, 20], [0, 10, 20]), "+proj=eqc")
     x, y, _ = mesh.cell_centers().points[3]
     assert find_nearest_cell(mesh, x, y, z=z) == [3]
+
+
+@pytest.mark.parametrize("radius", [2.0, 6378137.0])
+def test_a_mesh_on_another_globe(radius):
+    """Test the cells found are those of the same mesh at a render radius of 1."""
+    lons, lats = [0.0, 10.0, 20.0, 30.0], [0.0, 10.0, 20.0]
+    expected = find_nearest_cell(Transform.from_1d(lons, lats), 10.0, 10.0)
+    mesh = Transform.from_1d(lons, lats, globe=Globe(render_radius=radius))
+    assert find_nearest_cell(mesh, 10.0, 10.0) == expected
+    assert len(expected) == 4
