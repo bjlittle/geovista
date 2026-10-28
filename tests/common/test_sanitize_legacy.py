@@ -19,7 +19,6 @@ from geovista.common import (
     GV_POINT_ZLEVEL,
     RETIRED_FIELDS,
     RetiredField,
-    distance,
     from_cartesian,
     sanitize,
     sanitize_legacy,
@@ -126,15 +125,10 @@ def test_a_legacy_cloud_keeps_its_heights(legacy):
     np.testing.assert_allclose(from_cartesian(cloud)[:, 2], [1, 2, 3])
 
 
-def test_distance_snaps_to_the_recorded_radius(legacy):
-    """Test that the mean distance snaps to the radius a globe or gvRadius holds."""
-    mesh = _built(2)
-    mesh.points = mesh.points * (1 + 1e-7)
-    assert distance(mesh) == distance(legacy(mesh)) == 2
-
-
 @pytest.mark.parametrize(
-    "kwargs", [{}, {"radius": 3}, {"zscale": 0.2}, {"zlevel": 1}], ids=str
+    "kwargs",
+    [{}, {"globe": Globe(render_radius=3)}, {"zscale": 0.2}, {"zlevel": 1}],
+    ids=["none", "globe", "zscale", "zlevel"],
 )
 def test_resizing_a_legacy_cloud(legacy, kwargs):
     """Test that a cloud saved by 0.5 resizes as its current form does."""
@@ -143,6 +137,7 @@ def test_resizing_a_legacy_cloud(legacy, kwargs):
     np.testing.assert_allclose(result.points, expected.points)
     np.testing.assert_allclose(from_cartesian(result), from_cartesian(expected))
     assert result.gv.globe == expected.gv.globe
+    assert GV_FIELD_RADIUS not in result.field_data
 
 
 @pytest.mark.parametrize("zlevel", [None, 1, "each"])
@@ -151,10 +146,11 @@ def test_resizing_a_legacy_surface(legacy, zlevel):
     mesh = _built(2)
     if zlevel == "each":
         zlevel = np.arange(mesh.n_points) % 3
-    expected = resize(mesh, radius=3, zlevel=zlevel)
-    result = resize(legacy(mesh), radius=3, zlevel=zlevel)
+    expected = resize(mesh, globe=Globe(render_radius=3), zlevel=zlevel)
+    result = resize(legacy(mesh), globe=Globe(render_radius=3), zlevel=zlevel)
     np.testing.assert_allclose(result.points, expected.points)
     assert result.gv.globe == expected.gv.globe
+    assert GV_FIELD_RADIUS not in result.field_data
 
 
 def test_projecting_a_legacy_cloud(legacy):
@@ -166,6 +162,7 @@ def test_projecting_a_legacy_cloud(legacy):
     back = transform_mesh(result, WGS84)
     np.testing.assert_allclose(back.points, transform_mesh(expected, WGS84).points)
     assert back.gv.globe == Globe(render_radius=2)
+    assert GV_FIELD_RADIUS not in back.field_data
 
 
 @pytest.mark.parametrize("zlevel", [None, 1, "each"])
@@ -175,8 +172,16 @@ def test_resizing_a_surface_with_both_records(zlevel):
     mesh.field_data[GV_FIELD_RADIUS] = np.array([3.0])
     if zlevel == "each":
         zlevel = np.arange(mesh.n_points) % 3
-    expected = resize(_cleaned(mesh), radius=4, zlevel=zlevel)
-    result = resize(mesh, radius=4, zlevel=zlevel)
+    expected = resize(_cleaned(mesh), globe=Globe(render_radius=4), zlevel=zlevel)
+    result = resize(mesh, globe=Globe(render_radius=4), zlevel=zlevel)
     np.testing.assert_allclose(result.points, expected.points)
     assert result.gv.globe == expected.gv.globe
     assert GV_FIELD_RADIUS not in result.field_data
+
+
+def test_the_stopgap_is_gone():
+    """Test the stopgap helpers that read and wrote gvRadius are gone (row 2)."""
+    from geovista import common  # noqa: PLC0415
+
+    assert not hasattr(common, "_read_radius")
+    assert not hasattr(common, "_write_radius")

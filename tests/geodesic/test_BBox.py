@@ -10,12 +10,14 @@ from __future__ import annotations
 import cartopy.crs as ccrs
 import numpy as np
 import pytest
+import pyvista as pv
 
 import geovista as gv
+from geovista.bridge import Transform
 from geovista.common import (
+    _GV_GLOBE_FIELDS,
     GV_FIELD_CRS,
     GV_FIELD_RADIUS,
-    RADIUS,
     ZLEVEL_SCALE,
     distance,
 )
@@ -29,6 +31,7 @@ from geovista.geodesic import (
     EnclosedPreference,
     panel,
 )
+from geovista.globe import Globe
 from geovista.transform import transform_mesh, transform_points
 
 from .conftest import ANTARCTIC_CORNER_CIDS as CIDS
@@ -141,10 +144,9 @@ def test_mesh_field_data(name):
     bbox = panel(name)
     result = bbox.mesh
     assert GV_FIELD_CRS in result.field_data
-    assert GV_FIELD_RADIUS in result.field_data
+    assert GV_FIELD_RADIUS not in result.field_data
     assert from_wkt(result) == WGS84
-    expected = distance(result)
-    assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
+    assert Globe.from_mesh(result) == Globe()
 
 
 @pytest.mark.parametrize("name", PANEL_IDX_BY_NAME)
@@ -153,10 +155,9 @@ def test_boundary_field_data(name):
     bbox = panel(name)
     result = bbox.boundary()
     assert GV_FIELD_CRS in result.field_data
-    assert GV_FIELD_RADIUS in result.field_data
+    assert GV_FIELD_RADIUS not in result.field_data
     assert from_wkt(result) == WGS84
-    expected = RADIUS + RADIUS * ZLEVEL_SCALE
-    assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
+    assert Globe.from_mesh(result) == Globe()
 
 
 def test_closed_geometry():
@@ -351,3 +352,44 @@ def test_crs_none_is_wgs84():
     xs, ys = [-10, 10, 10, -10], [-10, -10, 10, 10]
 
     assert BBox(xs, ys, crs=None) == BBox(xs, ys)
+
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_a_lifted_mesh_records_its_globe(radius):
+    """Test a boundary, lifted one z-level, records its globe."""
+    globe = Globe(render_radius=radius)
+    result = panel("africa").boundary(globe=globe)
+    assert Globe.from_mesh(result) == globe
+    np.testing.assert_allclose(
+        distance(result, mean=False), radius * (1 + ZLEVEL_SCALE), rtol=1e-12
+    )
+
+
+def test_on_a_surface_records_its_globe():
+    """Test a boundary on a surface records its globe, or none when it has none."""
+    globe = Globe(render_radius=2)
+    surface = Transform.from_1d(
+        np.linspace(-180, 180, 9), np.linspace(-90, 90, 5), globe=globe
+    )
+    assert Globe.from_mesh(panel("africa").boundary(surface)) == globe
+    surface = pv.Sphere(radius=1.0)
+    surface.points[0] *= 1.5
+    assert Globe.from_mesh(surface) is None
+    result = panel("africa").boundary(surface)
+    assert not set(_GV_GLOBE_FIELDS) & set(result.field_data)
+
+
+def test_the_manifold_records_its_globe():
+    """Test the manifold records the globe it is built on."""
+    bbox = panel("africa")
+    assert Globe.from_mesh(bbox.mesh) == Globe()
+
+
+def test_radius_is_gone():
+    """Test the radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        panel("africa").boundary(radius=2.0)

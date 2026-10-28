@@ -19,9 +19,8 @@ import warnings
 import lazy_loader as lazy
 
 from .common import (
-    GV_FIELD_RADIUS,
+    _GV_GLOBE_FIELDS,
     GV_MANIFOLD_CELL_IDS,
-    RADIUS,
     ZLEVEL_SCALE,
     StrEnumPlus,
     _to_cartesian,
@@ -30,6 +29,7 @@ from .common import (
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import WGS84, CRSLike, from_wkt, to_wkt
+from .globe import Globe, _resolve
 from .transform import transform_mesh, transform_points
 
 if TYPE_CHECKING:
@@ -259,6 +259,8 @@ class BBox:  # numpydoc ignore=PR01
         self._preference = EnclosedPreference(PREFERENCE)
         # cache prior surface radius, as an optimisation
         self._surface_radius: float | None = None
+        # the globe of the surface the bounding-box was last generated for
+        self._surface_globe: Globe | None = None
         # enclosed tolerance of intersection operation
         self._tolerance = BBOX_TOLERANCE
 
@@ -720,7 +722,7 @@ class BBox:  # numpydoc ignore=PR01
             bbox_update(row_idx_map[0], row_idx_map[-1], row=row_idx)
 
     def _generate_bbox_mesh(
-        self, surface: pv.PolyData | None = None, *, radius: float | None = None
+        self, surface: pv.PolyData | None = None, *, globe: Globe | None = None
     ) -> None:
         """Construct 3D geodetic bounding-box extruded surface defined by corners.
 
@@ -739,20 +741,25 @@ class BBox:  # numpydoc ignore=PR01
         ----------
         surface : PolyData, optional
             The surface that the bounding-box will be enclosing.
-        radius : float, optional
-            The radius of the surface that the bounding-box will be enclosing.
-            Note that the `radius` is only used when the `surface` is not
-            provided. Defaults to :data:`geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe of the surface that the bounding-box will be enclosing,
+            which the bounding-box records. Note that the `globe` is only used
+            when the `surface` is not provided, as the bounding-box then takes
+            the globe of the `surface`, or none. Defaults to ``Globe()``.
 
         Notes
         -----
         .. versionadded:: 0.1.0
 
         """
+        record: Globe | None
         if surface is not None:
+            # where the surface's points are, which its globe may not say
             radius = float(distance(surface))
-
-        radius = RADIUS if radius is None else abs(float(radius))
+            record = Globe.from_mesh(surface)
+        else:
+            record = _resolve(globe)
+            radius = record.render_radius
 
         if radius != self._surface_radius:
             self._init()
@@ -792,12 +799,18 @@ class BBox:  # numpydoc ignore=PR01
 
             # create the bbox mesh
             self._mesh = pv.PolyData(bbox_xyz, faces=bbox_faces)
-
-            self._mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
             to_wkt(self._mesh, WGS84)
 
             if self.triangulate:
                 self._mesh = self._mesh.triangulate()
+
+        # the globe is recorded after the cache, which keys on the radius alone
+        assert self._mesh is not None
+        for name in _GV_GLOBE_FIELDS:
+            self._mesh.field_data.pop(name, None)
+        if record is not None:
+            record.to_mesh(self._mesh)
+        self._surface_globe = record
 
     def _generate_bbox_skirt(self) -> np.ndarray:
         """Calculate indices of faces for boundary-box skirt.
@@ -826,7 +839,7 @@ class BBox:  # numpydoc ignore=PR01
         return np.hstack([faces_n, faces_c1, faces_c2, faces_c3, faces_c4])
 
     def boundary(
-        self, surface: pv.PolyData | None = None, *, radius: float | None = None
+        self, surface: pv.PolyData | None = None, *, globe: Globe | None = None
     ) -> pv.PolyData:
         """Footprint of bounding-box intersecting on the provided mesh surface.
 
@@ -838,11 +851,12 @@ class BBox:  # numpydoc ignore=PR01
         surface : PolyData, optional
             The :class:`~pyvista.PolyData` mesh that will be enclosed by the
             bounding-box boundary.
-        radius : float, optional
-            The radius of the spherical mesh that will be enclosed by the
-            bounding-box
-            boundary. Note that the `radius` is only used when the `surface`
-            is not provided. Defaults to :data:`geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe of the spherical mesh that will be enclosed by the
+            bounding-box boundary, which the boundary records. Note that the
+            `globe` is only used when the `surface` is not provided, as the
+            boundary then takes the globe of the `surface`, or none. Defaults to
+            ``Globe()``.
 
         Returns
         -------
@@ -874,19 +888,22 @@ class BBox:  # numpydoc ignore=PR01
         >>> p.show()
 
         """
-        self._generate_bbox_mesh(surface=surface, radius=radius)
+        self._generate_bbox_mesh(surface=surface, globe=globe)
 
         assert isinstance(self._surface_radius, float)
-        radius = self._surface_radius + self._surface_radius * ZLEVEL_SCALE
 
         edge_idxs = self._bbox_face_edge_idxs()
         edge_lons = np.asanyarray(self._bbox_lons)[edge_idxs]
         edge_lats = np.asanyarray(self._bbox_lats)[edge_idxs]
-        edge_xyz = _to_cartesian(edge_lons, edge_lats, radius=radius)
+        # lifted one z-level from the surface, which the globe never includes
+        edge_xyz = _to_cartesian(
+            edge_lons, edge_lats, radius=self._surface_radius, zlevel=1
+        )
         edge = pv.lines_from_points(edge_xyz, close=True)
 
-        edge.field_data[GV_FIELD_RADIUS] = np.array([radius])
         to_wkt(edge, WGS84)
+        if self._surface_globe is not None:
+            self._surface_globe.to_mesh(edge)
 
         return edge
 
@@ -1034,7 +1051,7 @@ def line(
     lats: ArrayLike,
     *,
     surface: pv.PolyData | None = None,
-    radius: float | None = None,
+    globe: Globe | None = None,
     npts: int | None = None,
     ellps: str | None = None,
     close: bool | None = False,
@@ -1058,11 +1075,11 @@ def line(
         interval ``[-90, 90]``.
     surface : PolyData, optional
         The surface that the geodesic line will be rendered over.
-    radius : float, optional
-        The radius of the spherical surface that the geodesic line will be
-        rendered over.
-        Note that the `radius` is only used when the `surface` is not
-        provided. Defaults to :data:`geovista.common.RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe of the spherical surface that the geodesic line will be
+        rendered over, which the line records. Note that the `globe` is only
+        used when the `surface` is not provided, as the line then takes the
+        globe of the `surface`, or none. Defaults to ``Globe()``.
     npts : float, optional
         The number of equally spaced geodesic points in a line segment, excluding
         the segment end-point, but including the segment start-point i.e., `npts`
@@ -1105,14 +1122,17 @@ def line(
     >>> p.show()
 
     """
+    record: Globe | None
     if surface is not None:
+        # where the surface's points are, which its globe may not say
         radius = float(distance(surface))
+        record = Globe.from_mesh(surface)
     else:
-        radius = RADIUS if radius is None else abs(float(radius))
+        record = _resolve(globe)
+        radius = record.render_radius
 
     zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
     zlevel = 1 if zlevel is None else int(zlevel)
-    radius += radius * zlevel * zscale
 
     if npts is None:
         npts = GEODESIC_NPTS
@@ -1177,11 +1197,15 @@ def line(
     line_lons.append(lons[-1])
     line_lats.append(lats[-1])
 
-    xyz = _to_cartesian(line_lons, line_lats, radius=radius)
+    # lifted from the radius by the z-level, which the globe never includes
+    xyz = _to_cartesian(
+        line_lons, line_lats, radius=radius, zlevel=zlevel, zscale=zscale
+    )
     lines = pv.lines_from_points(xyz, close=bool(close))
 
-    lines.field_data[GV_FIELD_RADIUS] = np.array([radius])
     to_wkt(lines, WGS84)
+    if record is not None:
+        record.to_mesh(lines)
 
     return lines
 

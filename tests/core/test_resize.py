@@ -16,6 +16,8 @@ import pyvista as pv
 
 from geovista.bridge import Transform
 from geovista.common import (
+    _GV_GLOBE_FIELDS,
+    GV_FIELD_GLOBE_RENDER_RADIUS,
     GV_FIELD_RADIUS,
     GV_FIELD_ZSCALE,
     RADIUS,
@@ -25,6 +27,10 @@ from geovista.common import (
 )
 from geovista.core import resize
 from geovista.globe import Globe
+from geovista.pantry.meshes import lfric_orog
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
 
 
 def test_projection_fail():
@@ -37,10 +43,20 @@ def test_projection_fail():
 
 @pytest.mark.parametrize("lfric", ["c48", "c96", "c192"], indirect=True)
 def test_no_resize(lfric):
-    """Test resize not performed due to no radius difference."""
+    """Test resize not performed for a mesh at, and recording, its globe."""
+    Globe().to_mesh(lfric)
     result = resize(lfric)
     assert id(result) == id(lfric)
     assert_array_equal(result.points, lfric.points)
+
+
+def test_records_a_globe_on_a_mesh_with_none(lfric):
+    """Test a mesh that records no globe is given one, on a copy."""
+    result = resize(lfric)
+    assert id(result) != id(lfric)
+    assert_array_equal(result.points, lfric.points)
+    assert Globe.from_mesh(result) == Globe()
+    assert GV_FIELD_GLOBE_RENDER_RADIUS not in lfric.field_data
 
 
 @pytest.mark.parametrize("inplace", [False, True])
@@ -53,8 +69,8 @@ def test_no_resize(lfric):
 )
 def test_resize(lfric, radius, inplace):
     """Test resize mesh by new radius."""
-    result = resize(lfric, radius=radius, inplace=inplace)
-    compare = operator.eq if inplace or np.isclose(radius, RADIUS) else operator.ne
+    result = resize(lfric, globe=Globe(render_radius=radius), inplace=inplace)
+    compare = operator.eq if inplace else operator.ne
     assert compare(id(result), id(lfric))
     assert np.isclose(distance(result), radius)
 
@@ -64,8 +80,7 @@ def test_resize__zlevel(lfric, zlevel):
     """Test resize mesh by new zlevel."""
     result = resize(lfric, zlevel=zlevel)
     expected = RADIUS + RADIUS * zlevel * ZLEVEL_SCALE
-    compare = operator.eq if np.isclose(expected, RADIUS) else operator.ne
-    assert compare(id(result), id(lfric))
+    assert id(result) != id(lfric)
     actual = distance(result)
     assert np.isclose(actual, expected)
 
@@ -75,8 +90,7 @@ def test_resize__zscale(lfric, zscale):
     """Test resize mesh by new zscale."""
     result = resize(lfric, zlevel=1, zscale=zscale)
     expected = RADIUS + RADIUS * zscale or RADIUS
-    compare = operator.eq if np.isclose(expected, RADIUS) else operator.ne
-    assert compare(id(result), id(lfric))
+    assert id(result) != id(lfric)
     actual = distance(result)
     assert np.isclose(actual, expected)
 
@@ -84,13 +98,13 @@ def test_resize__zscale(lfric, zscale):
 def test_resize_cloud__inject_metadata(lam_uk):
     """Test inclusion of field data metadata."""
     cloud = pv.PolyData(lam_uk.points)
-    assert GV_FIELD_RADIUS not in cloud.field_data
+    assert GV_FIELD_GLOBE_RENDER_RADIUS not in cloud.field_data
     assert GV_FIELD_ZSCALE not in cloud.field_data
     result = resize(cloud)
-    assert GV_FIELD_RADIUS in result.field_data
+    assert GV_FIELD_RADIUS not in result.field_data
     assert GV_FIELD_ZSCALE in result.field_data
     assert id(cloud) != id(result)
-    assert np.isclose(result[GV_FIELD_RADIUS], RADIUS)
+    assert Globe.from_mesh(result) == Globe()
     assert np.isclose(result[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
 
 
@@ -125,7 +139,7 @@ def test_resize_cloud__radius(lam_uk_cloud, radius):
     """Test resize cloud points by new radius."""
     assert Globe.from_mesh(lam_uk_cloud) == Globe()
     assert np.isclose(lam_uk_cloud[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
-    result = resize(lam_uk_cloud, radius=radius)
+    result = resize(lam_uk_cloud, globe=Globe(render_radius=radius))
     assert np.isclose(distance(result), radius)
     assert Globe.from_mesh(result) == Globe(render_radius=radius)
     assert np.isclose(result[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
@@ -213,20 +227,26 @@ def test_resize__zlevel_one_element(lfric, zlevel):
     result = resize(lfric, zlevel=zlevel)
     scalar = resize(lfric, zlevel=1)
     assert np.allclose(result.points, scalar.points)
-    assert_array_equal(result[GV_FIELD_RADIUS], scalar[GV_FIELD_RADIUS])
+    assert Globe.from_mesh(result) == Globe.from_mesh(scalar)
 
 
 def test_resize__zlevel_per_point_zeros(lfric):
     """Test no resize of a surface already at the levels it is given."""
+    Globe().to_mesh(lfric)
     result = resize(lfric, zlevel=np.zeros(lfric.n_points))
     assert id(result) == id(lfric)
 
 
-def test_resize__zlevel_per_point_records_no_radius(lfric):
-    """Test a surface at a radius for each point records no single radius."""
-    level = np.linspace(-10, 10, lfric.n_points)
-    result = resize(resize(lfric, zlevel=1), zlevel=level)
+def test_levels_at_each_point_keep_the_globe(lfric):
+    """Test a surface at a z-level for each point records the globe they offset."""
+    globe = Globe(render_radius=2, exaggeration=20)
+    level = np.arange(lfric.n_points) % 3
+    result = resize(lfric, globe=globe, zlevel=level)
+    assert Globe.from_mesh(result) == globe
     assert GV_FIELD_RADIUS not in result.field_data
+    np.testing.assert_allclose(
+        distance(result, mean=False), 2 * (1 + level * ZLEVEL_SCALE), rtol=1e-6
+    )
 
 
 @pytest.mark.parametrize("zlevel", [0, [0]])
@@ -272,3 +292,62 @@ def test_resize__zlevel_0d(lfric):
     result = resize(lfric, zlevel=np.array(2))
     expected = RADIUS + RADIUS * 2 * ZLEVEL_SCALE
     assert np.isclose(distance(result), expected)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_records_the_globe(lfric, radius):
+    """Test a mesh resized to a globe lies at, and records, it."""
+    globe = Globe(render_radius=radius)
+    result = resize(lfric, globe=globe)
+    np.testing.assert_allclose(distance(result, mean=False), radius, rtol=1e-6)
+    assert Globe.from_mesh(result) == globe
+    assert GV_FIELD_RADIUS not in result.field_data
+
+
+def test_records_on_a_copy():
+    """Test a globe is recorded on a copy, unless in place, even if no point moves."""
+    mesh = Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0])
+    globe = Globe(exaggeration=20)
+    result = resize(mesh, globe=globe)
+    assert result is not mesh
+    assert_array_equal(result.points, mesh.points)
+    assert Globe.from_mesh(result) == globe
+    assert Globe.from_mesh(mesh) == Globe()
+    assert resize(mesh, globe=globe, inplace=True) is mesh
+    assert Globe.from_mesh(mesh) == globe
+
+
+def test_defaults_to_the_globe_the_mesh_records():
+    """Test a mesh is resized on the globe it records when given none."""
+    globe = Globe(render_radius=2)
+    mesh = Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0], globe=globe)
+    result = resize(mesh, zlevel=1)
+    np.testing.assert_allclose(
+        distance(result, mean=False), 2 * (1 + ZLEVEL_SCALE), rtol=1e-12
+    )
+    assert Globe.from_mesh(result) == globe
+
+
+def test_a_mesh_with_no_globe_is_resized_to_the_default():
+    """Test a mesh with no globe, as one warped by its heights, takes the default."""
+    mesh = lfric_orog()
+    for name in _GV_GLOBE_FIELDS:
+        del mesh.field_data[name]
+    mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
+    mesh.warp_by_scalar(inplace=True, factor=2e-5)
+    assert Globe.from_mesh(mesh) is None
+    result = resize(mesh)
+    np.testing.assert_allclose(distance(result, mean=False), RADIUS, rtol=1e-6)
+    assert Globe.from_mesh(result) == Globe()
+
+
+def test_a_number_is_not_a_globe(lfric):
+    """Test a number given as the globe is refused."""
+    with pytest.raises(TypeError, match=r"geovista\.Globe"):
+        resize(lfric, globe=2.0)
+
+
+def test_radius_is_gone(lfric):
+    """Test the radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        resize(lfric, radius=2.0)

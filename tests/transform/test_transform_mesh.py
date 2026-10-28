@@ -15,6 +15,7 @@ import pyvista as pv
 
 import geovista as gv
 from geovista.common import (
+    GV_FIELD_RADIUS,
     GV_POINT_ZLEVEL,
     ZLEVEL_SCALE,
     from_cartesian,
@@ -512,7 +513,8 @@ def test_transform_mesh__cloud_returns_to_its_radius(radius, expected):
     )
     planar = transform_mesh(cloud, PLANAR)
 
-    result = transform_mesh(planar, WGS84, radius=radius)
+    globe = None if radius is None else gv.Globe(render_radius=radius)
+    result = transform_mesh(planar, WGS84, globe=globe)
 
     radii = np.linalg.norm(result.points, axis=1)
     np.testing.assert_allclose(radii, expected, rtol=1e-12)
@@ -521,8 +523,8 @@ def test_transform_mesh__cloud_returns_to_its_radius(radius, expected):
 
 @pytest.mark.parametrize(
     ("override", "radius", "zscale"),
-    [({"radius": 3.0}, 3.0, 0.5), ({"zscale": 0.25}, 1.0, 0.25)],
-    ids=["radius", "zscale"],
+    [({"globe": gv.Globe(render_radius=3.0)}, 3.0, 0.5), ({"zscale": 0.25}, 1.0, 0.25)],
+    ids=["globe", "zscale"],
 )
 def test_transform_mesh__cloud_carries_the_radius_and_zscale_given(
     lifted_cloud, override, radius, zscale
@@ -841,3 +843,59 @@ def test_transform_mesh__zlevel_per_point_to_wgs84_reads_back():
     inverse = Transformer.from_crs(PLANAR, "EPSG:4326", always_xy=True)
     _, expected = inverse.transform(surface.points[:, 0], surface.points[:, 1])
     np.testing.assert_allclose(from_cartesian(result)[:, 1], expected, atol=1e-9)
+
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
+
+
+def _surface(globe: gv.Globe | None = None) -> pv.PolyData:
+    """Build a small surface on the sphere, at the globe given."""
+    return gv.Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0], globe=globe)
+
+
+def test_records_the_globe_on_a_map():
+    """A mesh projected records its globe, and comes back to its render radius."""
+    globe = gv.Globe(render_radius=2)
+    planar = transform_mesh(_surface(globe), PLANAR)
+    assert gv.Globe.from_mesh(planar) == globe
+    result = transform_mesh(planar, WGS84)
+    np.testing.assert_allclose(np.linalg.norm(result.points, axis=1), 2, rtol=1e-12)
+    assert gv.Globe.from_mesh(result) == globe
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_a_given_globe_places_the_points(radius):
+    """A mesh transformed to the sphere lies at, and records, the globe given."""
+    globe = gv.Globe(render_radius=radius)
+    planar = transform_mesh(_surface(), PLANAR)
+    result = transform_mesh(planar, WGS84, globe=globe)
+    np.testing.assert_allclose(
+        np.linalg.norm(result.points, axis=1), radius, rtol=1e-12
+    )
+    assert gv.Globe.from_mesh(result) == globe
+
+
+def test_no_transform_moves_no_point(legacy):
+    """A mesh in the target CRS keeps its points and globe, cleaned on a copy."""
+    mesh = _surface(gv.Globe(render_radius=2))
+    result = transform_mesh(mesh, WGS84, globe=gv.Globe(render_radius=3))
+    np.testing.assert_array_equal(result.points, mesh.points)
+    assert gv.Globe.from_mesh(result) == gv.Globe(render_radius=2)
+    old = legacy(mesh)
+    result = transform_mesh(old, WGS84)
+    assert GV_FIELD_RADIUS not in result.field_data
+    assert gv.Globe.from_mesh(result) == gv.Globe(render_radius=2)
+    assert GV_FIELD_RADIUS in old.field_data
+
+
+def test_a_number_is_not_a_globe():
+    """A number given as the globe is refused."""
+    with pytest.raises(TypeError, match=r"geovista\.Globe"):
+        transform_mesh(_surface(), PLANAR, globe=2.0)
+
+
+def test_radius_is_gone():
+    """The radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        transform_mesh(_surface(), PLANAR, radius=2.0)

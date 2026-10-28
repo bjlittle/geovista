@@ -31,6 +31,7 @@ from .common import (
     GV_FIELD_GLOBE_RENDER_RADIUS,
     GV_FIELD_RADIUS,
     RADIUS,
+    _retired,
 )
 from .crs import projected
 from .units import as_quantity, to_metres
@@ -588,3 +589,35 @@ def _resolve(globe: object, /) -> Globe:
         raise TypeError(emsg)
 
     return globe
+
+
+def _records(mesh: pv.DataSet, globe: Globe, /) -> bool:
+    """Determine whether a mesh records exactly a globe, and no retired field.
+
+    A mesh read at a globe it does not record, by its ``gvRadius`` or by
+    measuring its points, does not record it.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+    globe : Globe
+        The globe.
+
+    Returns
+    -------
+    bool
+        Whether the mesh records the globe in its four fields, and nothing a
+        cleaning would change.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    field_data = mesh.field_data
+
+    if _retired(mesh) or not all(name in field_data for name in _GV_GLOBE_FIELDS):
+        return False
+
+    return Globe.from_mesh(mesh) == globe

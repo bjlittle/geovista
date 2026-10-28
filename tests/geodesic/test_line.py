@@ -10,7 +10,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from geovista.bridge import Transform
 from geovista.common import (
+    _GV_GLOBE_FIELDS,
     GV_FIELD_CRS,
     GV_FIELD_RADIUS,
     RADIUS,
@@ -20,6 +22,11 @@ from geovista.common import (
 )
 from geovista.crs import WGS84, from_wkt
 from geovista.geodesic import GEODESIC_NPTS, line
+from geovista.globe import Globe
+from geovista.pantry.meshes import lfric_orog
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
 
 
 @pytest.mark.parametrize(
@@ -123,10 +130,9 @@ def test_field_data():
     """Test expected metadata populated within field-data."""
     result = line(0, [90, 0, -90])
     assert GV_FIELD_CRS in result.field_data
-    assert GV_FIELD_RADIUS in result.field_data
+    assert GV_FIELD_RADIUS not in result.field_data
     assert from_wkt(result) == WGS84
-    expected = RADIUS + RADIUS * ZLEVEL_SCALE
-    assert np.isclose(result.field_data[GV_FIELD_RADIUS], expected)
+    assert Globe.from_mesh(result) == Globe()
 
 
 def test_close_none_is_open():
@@ -136,3 +142,34 @@ def test_close_none_is_open():
     result = line([0, 10, 20], [0, 10, 0], close=None)
 
     np.testing.assert_array_equal(result.lines, expected.lines)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_a_lifted_mesh_records_its_globe(radius):
+    """Test a line, lifted by default, records its globe, not its lifted radius."""
+    globe = Globe(render_radius=radius)
+    result = line([0, 10], [0, 10], globe=globe)
+    assert Globe.from_mesh(result) == globe
+    np.testing.assert_allclose(
+        distance(result, mean=False), radius * (1 + ZLEVEL_SCALE), rtol=1e-12
+    )
+
+
+def test_on_a_surface_records_its_globe():
+    """Test a line on a surface records its globe, or none when it has none."""
+    globe = Globe(render_radius=2)
+    surface = Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0], globe=globe)
+    assert Globe.from_mesh(line([0, 10], [0, 10], surface=surface)) == globe
+    warped = lfric_orog()
+    for name in _GV_GLOBE_FIELDS:
+        del warped.field_data[name]
+    warped.compute_normals(cell_normals=False, point_normals=True, inplace=True)
+    warped.warp_by_scalar(inplace=True, factor=2e-5)
+    result = line([0, 10], [0, 10], surface=warped)
+    assert not set(_GV_GLOBE_FIELDS) & set(result.field_data)
+
+
+def test_radius_is_gone():
+    """Test the radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        line([0, 10], [0, 10], radius=2.0)

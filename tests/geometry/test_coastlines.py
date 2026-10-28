@@ -7,8 +7,17 @@
 
 from __future__ import annotations
 
-from geovista.common import COASTLINES_RESOLUTION
+import numpy as np
+import pytest
+
+from geovista.common import (
+    COASTLINES_RESOLUTION,
+    GV_FIELD_RADIUS,
+    ZLEVEL_SCALE,
+    distance,
+)
 from geovista.geometry import coastlines
+from geovista.globe import Globe
 
 
 def test_defaults(mocker):
@@ -26,7 +35,7 @@ def test_defaults(mocker):
     from geovista.geometry import resize  # noqa: PLC0415
 
     resize.assert_called_once_with(
-        mesh, radius=None, zlevel=1, zscale=None, inplace=True
+        mesh, globe=Globe(), zlevel=1, zscale=None, inplace=True
     )
 
 
@@ -34,12 +43,12 @@ def test_resize_kwarg_pass_thru(mocker):
     """Test kwargs are passed thru to :func:`geovista.core.resize`."""
     mesh = mocker.sentinel.mesh
     resolution = mocker.sentinel.resolution
-    radius = mocker.sentinel.radius
+    globe = Globe(render_radius=2)
     zscale = mocker.sentinel.zscale
     zlevel = mocker.sentinel.zlevel
     _ = mocker.patch("geovista.geometry.fetch_coastlines", return_value=mesh)
     _ = mocker.patch("geovista.geometry.resize")
-    kwargs = {"radius": radius, "zscale": zscale, "zlevel": zlevel}
+    kwargs = {"globe": globe, "zscale": zscale, "zlevel": zlevel}
     result = coastlines(resolution=resolution, **kwargs)
     assert result == mesh
 
@@ -72,3 +81,15 @@ def test_fetch_exception(mocker):
     from geovista.geometry import resize  # noqa: PLC0415
 
     assert resize.call_count == 1
+
+
+@pytest.mark.parametrize("radius", [1.0, 6378137.0])
+def test_a_lifted_mesh_records_its_globe(radius):
+    """Test the coastlines, lifted by default, record their globe."""
+    globe = Globe(render_radius=radius)
+    result = coastlines(globe=globe)
+    assert Globe.from_mesh(result) == globe
+    assert GV_FIELD_RADIUS not in result.field_data
+    np.testing.assert_allclose(
+        distance(result, mean=False), radius * (1 + ZLEVEL_SCALE), rtol=1e-6
+    )

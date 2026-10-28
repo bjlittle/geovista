@@ -22,6 +22,7 @@ from geovista.common import (
     to_cartesian,
     wrap,
 )
+from geovista.globe import Globe
 from geovista.pantry.meshes import lfric_orog
 
 
@@ -164,3 +165,16 @@ def test_convert_edges_pole_cell_unfold():
     _, edges = mesh.contour_banded(3)
     result = from_cartesian(edges)
     assert result.shape == (edges.n_points, 3)
+
+
+def test_a_cloud_decodes_from_its_globe(legacy):
+    """Test a cloud's z-levels decode from the render radius it records."""
+    cloud = Transform.from_points(
+        [0.0, 10.0, 20.0],
+        [0.0, 10.0, 20.0],
+        globe=Globe(render_radius=2),
+        zlevel=[1, 2, 3],
+        zscale=0.1,
+    )
+    np.testing.assert_allclose(from_cartesian(cloud)[:, 2], [1, 2, 3])
+    np.testing.assert_allclose(from_cartesian(legacy(cloud))[:, 2], [1, 2, 3])

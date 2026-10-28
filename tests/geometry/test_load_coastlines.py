@@ -20,12 +20,17 @@ from geovista.common import (
     distance,
 )
 from geovista.geometry import load_coastlines as load
+from geovista.globe import Globe
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
 
 
 def test_defaults(wgs84_wkt):
     """Test expected defaults are honoured."""
     result = load()
-    assert result[GV_FIELD_RADIUS] == RADIUS
+    assert Globe.from_mesh(result) == Globe()
+    assert GV_FIELD_RADIUS not in result.field_data
     assert result[GV_FIELD_RESOLUTION] == COASTLINES_RESOLUTION
     assert result[GV_FIELD_CRS] == wgs84_wkt
 
@@ -51,7 +56,7 @@ def test_lines(resolution):
 @pytest.mark.parametrize("radius", np.linspace(0.5, 1.5, num=5))
 def test_radius(resolution, radius):
     """Test coastline z-control with radius."""
-    result = load(resolution=resolution, radius=radius)
+    result = load(resolution=resolution, globe=Globe(render_radius=radius))
     actual = distance(result)
     assert np.isclose(actual, radius)
 
@@ -73,3 +78,15 @@ def test_zscale(resolution, zlevel, zscale):
     actual = distance(result)
     expected = RADIUS + RADIUS * zlevel * zscale
     assert np.isclose(actual, expected)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_a_lifted_mesh_records_its_globe(radius):
+    """Test lifted coastlines record their globe, not their lifted radius."""
+    globe = Globe(render_radius=radius)
+    result = load(globe=globe, zlevel=1)
+    assert Globe.from_mesh(result) == globe
+    assert GV_FIELD_RADIUS not in result.field_data
+    np.testing.assert_allclose(
+        distance(result, mean=False), radius * (1 + ZLEVEL_SCALE), rtol=1e-6
+    )

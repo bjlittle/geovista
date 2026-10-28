@@ -23,14 +23,13 @@ import lazy_loader as lazy
 from .common import (
     GV_FIELD_ZSCALE,
     GV_POINT_ZLEVEL,
-    RADIUS,
     ZLEVEL_SCALE,
-    _read_radius,
+    _retired,
     _to_cartesian,
-    _write_radius,
     distance,
     from_cartesian,
     point_cloud,
+    sanitize_legacy,
     wrap,
 )
 from .crs import (
@@ -43,6 +42,7 @@ from .crs import (
     set_central_meridian,
     to_wkt,
 )
+from .globe import Globe, _resolve
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -84,7 +84,7 @@ def transform_mesh(
     tgt_crs: CRSLike,
     *,
     slice_connectivity: bool | None = True,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
     rtol: float | None = None,
@@ -104,14 +104,16 @@ def transform_mesh(
     slice_connectivity : bool, default=True
         Slice the mesh prior to transformation in order to break mesh connectivity and
         create a seam in the mesh. Also see :func:`geovista.core.slice_mesh`.
-    radius : float, optional
-        The radius of the sphere. Defaults to the radius a point cloud carries,
-        otherwise :data:`geovista.common.RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe to place the mesh on, at its render radius, which the mesh
+        transformed records. Defaults to the globe the `mesh` records, else
+        ``Globe()``.
     zlevel : int or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
-        `radius`/vertical by a proportional amount e.g., ``radius * zlevel * zscale``.
-        In a planar CRS the offset is ``zlevel * zscale`` times the radius of the
-        Earth in the units of that CRS, the same proportion as on the sphere.
+        render radius/vertical by a proportional amount e.g.,
+        ``render_radius * zlevel * zscale``. In a planar CRS the offset is
+        ``zlevel * zscale`` times the radius of the Earth in the units of that CRS,
+        the same proportion as on the sphere.
         If `zlevel` is not a scalar, then it must broadcast to the shape
         ``(mesh.n_points,)``. For a point cloud, `zlevel` adds to
         the z-level each of its points already carries.
@@ -138,8 +140,11 @@ def transform_mesh(
     A point cloud keeps its z-levels from one transform to the next. On the sphere
     they are encoded in the radius of each point, and in a planar CRS they are
     carried in the :data:`geovista.common.GV_POINT_ZLEVEL` point array. The cloud
-    also carries the `radius` and `zscale` that encode them, so a value given here
+    also carries the `globe` and `zscale` that encode them, so a value given here
     becomes its own.
+
+    A mesh already in the target CRS is not transformed, so no point moves and
+    its globe is unchanged. Use :func:`geovista.core.resize` to change its globe.
 
     .. versionadded:: 0.3.0
 
@@ -168,8 +173,18 @@ def transform_mesh(
         else:
             zscale = ZLEVEL_SCALE
 
-    if radius is None and cloud:
-        radius = _read_radius(mesh)
+    # the globe given, else the one the mesh records, else the default
+    globe = (Globe.from_mesh(mesh) or Globe()) if globe is None else _resolve(globe)
+    radius = globe.render_radius
+
+    if not transform_required:
+        # a mesh returned carries only current fields, so a retired one is
+        # cleaned from a copy, unless asked in place
+        if _retired(mesh):
+            if not inplace:
+                mesh = mesh.copy()
+            sanitize_legacy(mesh)
+        return mesh
 
     if transform_required:
         level = _point_levels(mesh, zlevel)
@@ -238,11 +253,14 @@ def transform_mesh(
         points[:, 2] = zs
 
         if cloud:
-            _record_zlevels(mesh, level, tgt_crs, radius=radius, zscale=zscale)
+            _record_zlevels(mesh, level, tgt_crs, zscale=zscale)
 
         # TODO @bjlittle: Check whether to clean other field_data metadata.
         mesh.field_data.pop(_DATUM, None)
         to_wkt(mesh, original_tgt_crs)
+        # the globe the mesh is placed on, on a map too, so that it returns to it
+        globe.to_mesh(mesh)
+        sanitize_legacy(mesh)
 
     return mesh
 
@@ -1168,7 +1186,6 @@ def _record_zlevels(
     levels: NDArray[Any],
     tgt_crs: pyproj.CRS,
     *,
-    radius: float | None,
     zscale: float,
 ) -> None:
     """Record the z-levels of a point cloud, and how they are encoded, for its CRS.
@@ -1176,9 +1193,9 @@ def _record_zlevels(
     In a planar CRS the z-levels are recorded in the
     :data:`geovista.common.GV_POINT_ZLEVEL` point array, for the next transform
     to read. On the sphere the radius of each point holds its z-level, so the
-    array is dropped. The cloud carries the `zscale` that encoded its levels, and
-    on the sphere the `radius` too, since later transforms decode the levels with
-    them and default to them.
+    array is dropped. The cloud carries the `zscale` that encoded its levels, since
+    later transforms decode the levels with it and default to it, as they do to the
+    globe that :func:`transform_mesh` records.
 
     Parameters
     ----------
@@ -1188,10 +1205,6 @@ def _record_zlevels(
         The z-level of each point, or one z-level for them all.
     tgt_crs : :class:`~pyproj.crs.CRS`
         The target CRS of the point cloud.
-    radius : float, optional
-        The radius the transform placed the cloud on, where the target is the
-        sphere. Defaults to :data:`geovista.common.RADIUS`, as for
-        :func:`geovista.common.to_cartesian`.
     zscale : float
         The proportional multiplier the transform encoded the levels with.
 
@@ -1203,8 +1216,6 @@ def _record_zlevels(
     mesh.field_data[GV_FIELD_ZSCALE] = np.array([float(zscale)])
 
     if tgt_crs == WGS84:
-        base = RADIUS if radius is None else abs(float(radius))
-        _write_radius(mesh, base)
         mesh.point_data.pop(GV_POINT_ZLEVEL, None)
     else:
         # set as an array rather than by item, which would make the levels the

@@ -157,7 +157,7 @@ def _lfric_mesh(
     mesh = lfric(resolution=resolution)
 
     if radius:
-        mesh = resize(mesh, radius=radius)
+        mesh = resize(mesh, globe=Globe(render_radius=radius))
 
     mesh.set_active_scalars(name=None)
 
@@ -485,7 +485,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         if mesh is not None:
             if radius is not None:
-                mesh = resize(mesh, radius=radius)
+                mesh = resize(mesh, globe=Globe(render_radius=radius))
         elif resolution.startswith("r"):
             # until the scene holds a globe, its radius is carried in one
             globe = None if radius is None else Globe(render_radius=radius)
@@ -557,8 +557,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             # pass through kwargs to "add_mesh" method
             kwargs.update({"zlevel": zlevel, "zscale": zscale})
 
+        # until the scene holds a globe, its radius is carried in one
+        globe = None if radius is None else Globe(render_radius=radius)
         mesh = coastlines(
-            resolution=resolution, radius=radius, zlevel=zlevel, zscale=zscale
+            resolution=resolution, globe=globe, zlevel=zlevel, zscale=zscale
         )
 
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
@@ -841,7 +843,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 )
                 to_wkt(mesh, self.crs)
             elif resize_required:
-                mesh = resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale)
+                # until the scene holds a globe, its radius is carried in one
+                globe = None if radius is None else Globe(render_radius=radius)
+                mesh = resize(mesh, globe=globe, zlevel=zlevel, zscale=zscale)
 
         def _check(option: str) -> bool:
             """Determine whether the keyword argument is present and not ``None``.

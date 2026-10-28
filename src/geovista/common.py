@@ -388,13 +388,8 @@ _GV_GLOBE_FIELDS: tuple[str, str, str, str] = (
 )
 
 
-def _read_radius(mesh: pv.DataSet) -> float | None:
-    """Read the radius that the ``gvRadius`` of a mesh holds.
-
-    The functions that still write ``gvRadius`` read it back, and
-    :func:`sanitize_legacy` moves it into the render radius of the mesh's globe,
-    so a globe the mesh records is read first, as
-    :meth:`geovista.globe.Globe.from_mesh` reads it.
+def _retired(mesh: pv.DataSet) -> bool:
+    """Determine whether a mesh has any field of :data:`RETIRED_FIELDS`.
 
     Parameters
     ----------
@@ -403,73 +398,14 @@ def _read_radius(mesh: pv.DataSet) -> float | None:
 
     Returns
     -------
-    float or None
-        The render radius of the globe the mesh records, else its
-        ``gvRadius``, else ``None``.
+    bool
+        Whether the mesh has a retired field.
 
     """
-    field_data = mesh.field_data
-
-    if any(name in field_data for name in _GV_GLOBE_FIELDS):
-        # geovista.globe imports this module
-        from .globe import Globe  # noqa: PLC0415
-
-        # a partial record is refused, and a whole one is never measured
-        globe = Globe.from_mesh(mesh)
-        return None if globe is None else globe.render_radius
-
-    if GV_FIELD_RADIUS in field_data:
-        return float(field_data[GV_FIELD_RADIUS][0])
-
-    return None
-
-
-def _write_radius(mesh: pv.DataSet, radius: float | None) -> None:
-    """Record the radius of a mesh where :func:`_read_radius` reads it, in place.
-
-    A mesh that records a globe has its render radius set, or its globe removed
-    when no one radius describes it, so that its globe never goes stale. Either
-    way any ``gvRadius`` beside the globe goes too, or it would be read in the
-    globe's place. Any other mesh has its ``gvRadius`` set or removed.
-
-    Parameters
-    ----------
-    mesh : pyvista.DataSet
-        The mesh.
-    radius : float or None
-        The radius of the mesh, or ``None`` when no one radius describes it.
-
-    """
-    field_data = mesh.field_data
-
-    if any(name in field_data for name in _GV_GLOBE_FIELDS):
-        # geovista.globe imports this module
-        from .globe import Globe  # noqa: PLC0415
-
-        # refuse a partial or malformed record before changing it
-        Globe.from_mesh(mesh)
-
-        if radius is None:
-            for name in (*_GV_GLOBE_FIELDS, GV_FIELD_RADIUS):
-                field_data.pop(name, None)
-        else:
-            above, below = (
-                float(field_data[name][0])
-                for name in (
-                    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
-                    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
-                )
-            )
-            Globe(
-                radius=float(field_data[GV_FIELD_GLOBE_RADIUS][0]),
-                render_radius=radius,
-                exaggeration=above,
-                exaggeration_below=below,
-            ).to_mesh(mesh)
-    elif radius is None:
-        field_data.pop(GV_FIELD_RADIUS, None)
-    else:
-        field_data[GV_FIELD_RADIUS] = np.array([radius])
+    return any(
+        entry.name in getattr(mesh, f"{entry.association}_data")
+        for entry in RETIRED_FIELDS
+    )
 
 
 def active_kernel() -> bool:
@@ -591,10 +527,11 @@ def distance(
     if mean:
         result = np.mean(result)
 
-        given_radius = _read_radius(mesh)
+        # geovista.globe imports this module
+        from .globe import Globe  # noqa: PLC0415
 
-        if given_radius is None:
-            given_radius = RADIUS
+        globe = Globe.from_mesh(mesh)
+        given_radius = RADIUS if globe is None else globe.render_radius
 
         if np.isclose(result, given_radius):
             result = given_radius
@@ -665,7 +602,14 @@ def from_cartesian(
 
     zlevel = np.zeros_like(lons)
 
-    base = _read_radius(mesh) if cloud else None
+    base = None
+
+    if cloud:
+        # geovista.globe imports this module
+        from .globe import Globe  # noqa: PLC0415
+
+        globe = Globe.from_mesh(mesh)
+        base = None if globe is None else globe.render_radius
 
     if base is not None and GV_FIELD_ZSCALE in mesh.field_data:
         # field data injected by geovista.bridge.Transform.from_points

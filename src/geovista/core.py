@@ -26,23 +26,22 @@ from .common import (
     GV_FIELD_ZSCALE,
     GV_POINT_IDS,
     GV_REMESH_POINT_IDS,
-    RADIUS,
     REMESH_JOIN,
     REMESH_SEAM,
     ZLEVEL_SCALE,
     _face_offsets,
-    _read_radius,
     _to_cartesian,
-    _write_radius,
     distance,
     from_cartesian,
     point_cloud,
+    sanitize_legacy,
     sanitize_vtk,
     wrap,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import projected
 from .filters import remesh
+from .globe import Globe, _records, _resolve
 from .search import find_cell_neighbours
 
 if TYPE_CHECKING:
@@ -543,22 +542,27 @@ def resize(
     mesh: pv.PolyData,
     /,
     *,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
     inplace: bool | None = False,
 ) -> pv.PolyData:
-    """Change the radius of the spherical mesh.
+    """Change the globe of the spherical mesh, moving its points to it.
+
+    The mesh returned records the globe, and carries no retired field, even when
+    no point moves.
 
     Parameters
     ----------
     mesh : :class:`~pyvista.PolyData`
-        The mesh to be resized to the provided ``radius``.
-    radius : float, optional
-        The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
+        The mesh to be resized to the provided ``globe``.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe to resize the ``mesh`` to, at its render radius. Defaults to the
+        globe the ``mesh`` records, else ``Globe()``.
     zlevel : float or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``.
         If `zlevel` is not a scalar, then it must broadcast to the shape
         ``(mesh.n_points,)``. For a point cloud, `zlevel` adds to the z-level
         each of its points already carries. Any other mesh is resized to
@@ -585,11 +589,9 @@ def resize(
 
     cloud = point_cloud(mesh)
 
-    if radius is None:
-        recorded = _read_radius(mesh) if cloud else None
-        radius = RADIUS if recorded is None else recorded
-    else:
-        radius = abs(float(radius))
+    # the globe given, else the one the mesh records, else the default
+    globe = (Globe.from_mesh(mesh) or Globe()) if globe is None else _resolve(globe)
+    radius = globe.render_radius
 
     if zscale is None:
         if cloud and GV_FIELD_ZSCALE in mesh.field_data:
@@ -622,8 +624,9 @@ def resize(
                 mesh[GV_FIELD_ZSCALE], zscale
             )
         if not update:
-            recorded = _read_radius(mesh)
-            update = recorded is None or not np.isclose(recorded, radius)
+            # the base its points' levels are read from moves
+            recorded = Globe.from_mesh(mesh)
+            update = recorded is None or not np.isclose(recorded.render_radius, radius)
     elif level.ndim:
         # a surface at a radius for each point, which from_cartesian reads back
         # at the radius of each point, so its positions survive the next resize
@@ -650,12 +653,16 @@ def resize(
         mesh.points = xyz
         if cloud:
             mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
-            _write_radius(mesh, radius)
-        elif level.ndim:
-            # no single radius describes the surface any more
-            _write_radius(mesh, None)
-        else:
-            _write_radius(mesh, new_radius)
+    elif not _records(mesh, globe):
+        # no point moves, but the record does
+        if not inplace:
+            mesh = mesh.copy()
+    else:
+        return mesh
+
+    # the globe the points are positioned for, which no z-level enters
+    globe.to_mesh(mesh)
+    sanitize_legacy(mesh)
 
     return mesh
 
