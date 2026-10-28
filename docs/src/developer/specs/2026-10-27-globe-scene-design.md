@@ -239,7 +239,10 @@ scene's globe, and the mesh drawn records the scene's globe. Every height is 0 u
 of globe spec §9, so on the globe this is a scale by the ratio of the two render radii,
 and on a projected map it changes nothing. Row 3 makes it a rebuild from heights
 (globe spec §4.4). A mesh built at another render radius on purpose, to float above the
-surface, is repositioned too, so floating it is a lift (globe spec §4.5).
+surface, is repositioned too, so floating it is a lift (globe spec §4.5). A mesh that
+records no globe is drawn where it lies, even when §4.4 reads a globe from its points.
+A mesh from outside `geovista` follows a scene at another render radius once it is
+resized to it, with `resize(mesh, globe=plotter.globe)`.
 
 `zlevel` and `zscale` stay until row 5 of globe spec §9, and offset a point from the render
 radius as they offset it from the radius today. A z-level given to `GeoPlotter.add_mesh`
@@ -293,6 +296,14 @@ of the points of `pv.Sphere(radius=1.0)` was 1.0000000003660252 at a resolution 
 0.9999999994261561 at 100. Rounded to float32, the mean was the sphere's radius exactly, at
 radii of 0.5, 1, 2 and 6,378,137 and at both resolutions, so `pv.Sphere(radius=1.0)` reads
 as `Globe()`. `pv.Sphere()` has a radius of 0.5, and reads as `Globe(render_radius=0.5)`.
+
+A globe read under item 2 tells the functions that read or resize a mesh where it lies,
+and a scene never repositions a mesh by it. A sphere drawn above or below the globe on
+purpose, such as an atmosphere, lies at one radius just as a globe does, and only a
+record tells the two apart. A scene therefore draws such a mesh where its points are,
+and records no globe on the mesh drawn (§4.2), so `pv.Sphere()` is drawn at a radius of
+0.5 in any scene. A `gvRadius` is a record, and a mesh read under item 1 is drawn at the
+scene's globe.
 
 A mesh with no globe is drawn where its points are, never repositioned, and records no
 globe on the mesh drawn. A function given such a mesh uses `Globe()` wherever it needs a
@@ -453,8 +464,8 @@ globe spec §6 and crs spec §6 require:
   `GeoPlotter` returns or draws carries a retired field; the table lists every field
   that `geovista` reads but does not write;
 - **the scene**: a mesh built at a render radius of 1, added to a scene at 2, is drawn at
-  2, and so are the pantry's coastlines; `GeoPlotter.globe` reports the scene's globe and
-  cannot be set;
+  2, and so are the pantry's coastlines; a sphere that records no globe is drawn where it
+  lies, at any radius; `GeoPlotter.globe` reports the scene's globe and cannot be set;
 - **the quantity**: a globe's `radius` is a quantity in metres in `pint`'s application
   registry, which adds to another from it, and drawing a scene imports no `pint`;
 - **the namespace**: `mesh.gv.globe` and `mesh.gv.crs` read what the mesh records, follow
