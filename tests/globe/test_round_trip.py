@@ -29,7 +29,7 @@ RADII = [1.0, 6378137.0]
 @pytest.mark.parametrize("render_radius", RADII)
 def test_the_crs_and_globe_survive_a_file(tmp_path, suffix, render_radius):
     """Test that a saved mesh reads back with its CRS, globe and points."""
-    mesh = Transform.from_1d(LONS, LATS, radius=render_radius)
+    mesh = Transform.from_1d(LONS, LATS, globe=Globe(render_radius=render_radius))
     globe = Globe(
         radius=6371000,
         render_radius=render_radius,

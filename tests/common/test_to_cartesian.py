@@ -12,6 +12,10 @@ import numpy.typing as npt
 import pytest
 
 from geovista.common import RADIUS, ZLEVEL_SCALE, to_cartesian
+from geovista.globe import Globe
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
 
 
 def _distance(pts: npt.ArrayLike, stacked: bool = True) -> float:  # noqa: FBT001
@@ -108,3 +112,22 @@ def test_zscale(lam_uk_sample, zlevel, zscale):
     actual = _distance(result)
     expected = RADIUS + RADIUS * zlevel * zscale
     assert np.isclose(actual, expected)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_the_globe_sets_the_radius(lam_uk_sample, radius):
+    """Test the points lie at the render radius of the globe given."""
+    result = to_cartesian(*lam_uk_sample, globe=Globe(render_radius=radius))
+    np.testing.assert_allclose(np.linalg.norm(result, axis=1), radius, rtol=1e-12)
+
+
+def test_a_number_is_not_a_globe():
+    """Test a number given as the globe is refused."""
+    with pytest.raises(TypeError, match=r"globe must be a geovista\.Globe"):
+        _ = to_cartesian([0], [0], globe=2.0)
+
+
+def test_radius_is_gone():
+    """Test the radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        _ = to_cartesian([0], [0], radius=2.0)

@@ -11,6 +11,8 @@ import numpy as np
 import pytest
 
 from geovista.bridge import Transform
+from geovista.common import GV_FIELD_RADIUS
+from geovista.globe import Globe
 from geovista.pantry import fetch_raster
 
 # skip tests if rasterio package unavailable
@@ -120,7 +122,7 @@ def test_rgb_band(mocker, rgb, band, unit):
         "name": name.format(units=str(unit)),
         "crs": mocker.sentinel.wkt,
         "rgb": rgb,
-        "radius": None,
+        "globe": None,
         "zlevel": None,
         "zscale": None,
         "clean": None,
@@ -219,7 +221,7 @@ def test_extract(mocker, masked, rgb, sieve):
         "name": None,
         "crs": mocker.sentinel.wkt,
         "rgb": rgb,
-        "radius": None,
+        "globe": None,
         "zlevel": None,
         "zscale": None,
         "clean": None,
@@ -288,3 +290,13 @@ def test_crs(tmp_path, crs, expected_crs):
     )
     np.testing.assert_array_equal(mesh.points, expected.points)
     np.testing.assert_array_equal(mesh.faces, expected.faces)
+
+
+@pytest.mark.parametrize(
+    "globe", [None, Globe(render_radius=2)], ids=["default", "given"]
+)
+def test_records_the_globe(globe):
+    """A GeoTIFF's mesh records the globe it was built on, and no gvRadius."""
+    mesh = Transform.from_tiff(fname, globe=globe)
+    assert Globe.from_mesh(mesh) == (Globe() if globe is None else globe)
+    assert GV_FIELD_RADIUS not in mesh.field_data

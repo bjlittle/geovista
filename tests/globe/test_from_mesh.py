@@ -13,6 +13,7 @@ import pyvista as pv
 
 from geovista.bridge import Transform
 from geovista.common import (
+    _GV_GLOBE_FIELDS,
     GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
     GV_FIELD_GLOBE_EXAGGERATION_BELOW,
     GV_FIELD_GLOBE_RADIUS,
@@ -30,10 +31,11 @@ RADII = [1.0, 6378137.0]
 
 
 def sphere(radius: float = 1.0, *, record: bool = True) -> pv.PolyData:
-    """Build a mesh on a sphere, with a gvRadius unless asked for none."""
-    mesh = Transform.from_1d(LONS, LATS, radius=radius)
+    """Build a mesh on a sphere, recording its globe unless asked for no record."""
+    mesh = Transform.from_1d(LONS, LATS, globe=Globe(render_radius=radius))
     if not record:
-        del mesh.field_data[GV_FIELD_RADIUS]
+        for name in _GV_GLOBE_FIELDS:
+            del mesh.field_data[name]
     return mesh
 
 
@@ -110,9 +112,9 @@ def test_a_recorded_value_is_checked():
 
 
 @pytest.mark.parametrize("render_radius", RADII)
-def test_gvradius_gives_the_render_radius(render_radius):
+def test_gvradius_gives_the_render_radius(legacy, render_radius):
     """Test that a gvRadius is read as the render radius (scene spec §4.4 item 1)."""
-    mesh = sphere(render_radius)
+    mesh = legacy(sphere(render_radius))
     assert Globe.from_mesh(mesh) == Globe(render_radius=render_radius)
 
 
@@ -146,7 +148,8 @@ def test_a_flat_mesh_has_no_globe():
 def test_a_warped_mesh_has_no_globe():
     """Test that a mesh warped by its heights has no globe (scene spec §3.4)."""
     mesh = lfric_orog()
-    del mesh.field_data[GV_FIELD_RADIUS]
+    for name in _GV_GLOBE_FIELDS:
+        del mesh.field_data[name]
     assert Globe.from_mesh(mesh) == Globe()
     mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
     mesh.warp_by_scalar(inplace=True, factor=2e-5)
@@ -162,10 +165,12 @@ def test_a_degenerate_mesh_has_no_globe():
     assert Globe.from_mesh(mesh) is None
 
 
-@pytest.mark.parametrize("record", [True, False])
-def test_reading_leaves_the_mesh_unchanged(record):
+@pytest.mark.parametrize("record", ["globe", "gvRadius", "none"])
+def test_reading_leaves_the_mesh_unchanged(legacy, record):
     """Test that reading a globe never changes the mesh."""
-    mesh = sphere(record=record)
+    mesh = sphere(record=record == "globe")
+    if record == "gvRadius":
+        mesh = legacy(sphere())
     before = mesh.copy()
     names = list(mesh.field_data)
     Globe.from_mesh(mesh)

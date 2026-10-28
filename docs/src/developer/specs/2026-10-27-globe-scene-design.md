@@ -58,7 +58,8 @@ These were decided with {user}`bjlittle` while the design was written.
 4. **A mesh that records no globe is read, never refused.** It is placed on the default
    globe, at its `gvRadius` where it has one, and otherwise at the one radius its points
    lie at, if they lie at one. No position changes: today's `gvRadius` is exactly the render
-   radius, and the Earth's radius was never recorded. A mesh whose globe cannot be read
+   radius, and the Earth's radius was never recorded. A mesh saved with a z-level is the
+   exception (§4.4). A mesh whose globe cannot be read
    this way, such as one warped by its heights outside `geovista`, has no globe, and is
    drawn where its points are. This settles crs spec §8 item 12.
 5. **Every mesh `geovista` produces carries only current fields.** A retired field found
@@ -86,10 +87,11 @@ These were decided with {user}`bjlittle` while the design was written.
 ## 3. What Exists Today
 
 (scene-spec-3-1)=
-### 3.1 Thirty-Three Radii
+### 3.1 Thirty-Four Radii
 
-Measured at `a0f95dbe`, 33 functions in 9 modules take a `radius`, and each is the radius
-of a sphere, by default `common.RADIUS`, which is 1:
+Measured at `a0f95dbe`, 34 functions in 10 modules take a `radius`, and each is the radius
+of a sphere, by default `common.RADIUS`, which is 1. The first count found 33, and missed
+`pantry.meshes.regular_grid`, which was found when row 2 of §9 was planned:
 
 | module | functions |
 |---|---|
@@ -100,11 +102,12 @@ of a sphere, by default `common.RADIUS`, which is 1:
 | `geometry` | `coastlines` and `load_coastlines` |
 | `geoplotter` | `add_base_layer`, `add_coastlines`, `add_graticule`, `add_mesh`, `add_meridian`, `add_meridians`, `add_parallel`, `add_parallels` and `add_points`, and the private `_lfric_mesh` and `_add_graticule_labels` |
 | `gridlines` | `create_meridians` and `create_parallels` |
+| `pantry.meshes` | `regular_grid` |
 | `search` | `KDTree.query` |
 | `transform` | `transform_mesh`, and the private `_record_zlevels` |
 
-One gallery example passes `radius=`, as do 13 calls in 8 test modules, and 3 pages of the
-documentation. The example, `vector_data/wind_arrows_uvw`, passes `radius=1.1` to float its
+One gallery example passes `radius=`, as do 13 calls in 8 test modules, and the 3 pages of
+the documentation that the gallery generates from that example. The example, `vector_data/wind_arrows_uvw`, passes `radius=1.1` to float its
 arrows above the surface, which is a lift, not a globe (globe spec §3.6).
 
 (scene-spec-3-2)=
@@ -221,23 +224,42 @@ methods of `GeoPlotter`:
 - A function given a mesh to work on, such as `transform_mesh`, uses the globe that mesh
   records (§4.4) when given none. `KDTree.query` uses the globe of the mesh its tree was
   built from.
-- `resize` takes the globe to resize a mesh to, and records it.
+- `resize` takes the globe to resize a mesh to, and records it. Given none, it uses the
+  globe the mesh records, for a surface as for a point cloud. It records the globe on the
+  mesh it returns even when no point moves, working on a copy unless asked in place.
+- `transform_mesh` records the globe it used on every mesh it transforms, a projected one
+  included, so a mesh projected and brought back returns to its render radius. A mesh
+  already in the target CRS is not transformed: no point moves, and its globe stays.
+  `resize` changes a mesh's globe without changing its CRS.
+- A geodesic line or bounding-box boundary placed on a surface lies where the surface's
+  points are, and records the surface's globe, or no globe when the surface has none.
 
 A mesh added to a scene whose globe differs from the one it records is drawn at the
 scene's globe, and the mesh drawn records the scene's globe. Every height is 0 until row 3
 of globe spec §9, so on the globe this is a scale by the ratio of the two render radii,
 and on a projected map it changes nothing. Row 3 makes it a rebuild from heights
 (globe spec §4.4). A mesh built at another render radius on purpose, to float above the
-surface, is repositioned too, so floating it is a lift (globe spec §4.5).
+surface, is repositioned too, so floating it is a lift (globe spec §4.5). A mesh that
+records no globe is drawn where it lies, even when §4.4 reads a globe from its points.
+A mesh from outside `geovista` follows a scene at another render radius once it is
+resized to it, with `resize(mesh, globe=plotter.globe)`.
 
 `zlevel` and `zscale` stay until row 5 of globe spec §9, and offset a point from the render
-radius as they offset it from the radius today.
+radius as they offset it from the radius today. A z-level given to `GeoPlotter.add_mesh`
+lifts the mesh from the scene's render radius. Before row 2 it lifted a mesh from its own
+mean radius, so a line already lifted, as the graticule's lines are, was lifted twice,
+and its labels once.
 
 (scene-spec-4-3)=
 ### 4.3 The Globe on a Mesh
 
 Every function that builds or positions a mesh writes the four fields of §2 decision 3,
-named by four constants in `geovista.common`, and writes no `gvRadius`. `Globe.from_mesh`
+named by four constants in `geovista.common`, and writes no `gvRadius`. A mesh records the
+globe it was positioned for. A z-level offsets its points from the render radius and never
+enters the record, as a point cloud already recorded its base radius. A surface or a line
+recorded the radius its points lay at, lift included, and were a scene to read that as a
+render radius, it would scale every lifted layer, the coastlines among them, back onto
+the surface. `Globe.from_mesh`
 reads a mesh's globe without changing the mesh, and `Globe.to_mesh` writes the four
 fields to a mesh in place and removes `gvRadius` from it.
 
@@ -255,6 +277,13 @@ the same globe, and the same points, bit for bit.
    all lie at one radius `r`, to within a relative spread of 10⁻⁶, `Globe(render_radius=r)`;
 3. otherwise `None`: the mesh's globe cannot be read.
 
+A `gvRadius` was the radius a surface or a line lay at, its z-level included, so a mesh
+saved by 0.5 after a z-level lifted it reads at its lifted radius under item 1. Drawn in a
+scene, it is scaled onto the scene's render radius and loses its lift. Adding it with its
+z-level restores the lift, and so does resizing it once with
+`resize(mesh, globe=Globe(), zlevel=...)` before saving it again. A mesh saved without a
+z-level, the pantry's assets among them, is drawn where it was.
+
 The spread of item 2 tells a mesh on a sphere from one whose heights were baked into its
 positions. A warped mesh's mean radius is its sea level raised by its heights, and taking
 it for the render radius would sink that sea level (§3.4). 10⁻⁶ admits a sphere stored in
@@ -267,6 +296,14 @@ of the points of `pv.Sphere(radius=1.0)` was 1.0000000003660252 at a resolution 
 0.9999999994261561 at 100. Rounded to float32, the mean was the sphere's radius exactly, at
 radii of 0.5, 1, 2 and 6,378,137 and at both resolutions, so `pv.Sphere(radius=1.0)` reads
 as `Globe()`. `pv.Sphere()` has a radius of 0.5, and reads as `Globe(render_radius=0.5)`.
+
+A globe read under item 2 tells the functions that read or resize a mesh where it lies,
+and a scene never repositions a mesh by it. A sphere drawn above or below the globe on
+purpose, such as an atmosphere, lies at one radius just as a globe does, and only a
+record tells the two apart. A scene therefore draws such a mesh where its points are,
+and records no globe on the mesh drawn (§4.2), so `pv.Sphere()` is drawn at a radius of
+0.5 in any scene. A `gvRadius` is a record, and a mesh read under item 1 is drawn at the
+scene's globe.
 
 A mesh with no globe is drawn where its points are, never repositioned, and records no
 globe on the mesh drawn. A function given such a mesh uses `Globe()` wherever it needs a
@@ -290,11 +327,6 @@ globe instead.
 `sanitize_legacy(*meshes)` translates and removes every retired field of each mesh, in
 place, with the same signature as `sanitize_vtk`. `sanitize` gains `legacy: bool = True`,
 as it has `vtk`, so a call of it cleans retired fields too.
-
-Until row 2 of §9 lands, the functions that still read and write `gvRadius` use the
-render radius of a globe the mesh records in its place. Cleaning a mesh then never changes
-what they do with it: a point cloud keeps its heights through `from_cartesian`, `resize`
-and `transform_mesh`, and a globe stays current when they move the points.
 
 A function that returns or draws a mesh it made from one it was given applies the same
 translation to the mesh it returns or draws. With `inplace=True`, the caller's mesh is
@@ -349,7 +381,9 @@ first mesh's field data (§3.3), and is outside `geovista`'s control. The docume
 The tests and the pages of §3.1 move to `globe=`. No example in the README passes
 `radius=`, and the test of {issue}`2756` runs them all against the change. The gallery example moves to a `zlevel`
 of 1,000, which floats its arrows the same 10% of the radius until row 5 of
-globe spec §9 replaces `zlevel` with the lift.
+globe spec §9 replaces `zlevel` with the lift. The H3 example draws its icosahedron's
+edges at a z-level of 61 rather than 60, one level above its coarsest cells as before,
+since a z-level now lifts its lines from the render radius (§4.2).
 
 (scene-spec-5)=
 ## 5. Alternatives Considered
@@ -430,8 +464,8 @@ globe spec §6 and crs spec §6 require:
   `GeoPlotter` returns or draws carries a retired field; the table lists every field
   that `geovista` reads but does not write;
 - **the scene**: a mesh built at a render radius of 1, added to a scene at 2, is drawn at
-  2, and so are the pantry's coastlines; `GeoPlotter.globe` reports the scene's globe and
-  cannot be set;
+  2, and so are the pantry's coastlines; a sphere that records no globe is drawn where it
+  lies, at any radius; `GeoPlotter.globe` reports the scene's globe and cannot be set;
 - **the quantity**: a globe's `radius` is a quantity in metres in `pint`'s application
   registry, which adds to another from it, and drawing a scene imports no `pint`;
 - **the namespace**: `mesh.gv.globe` and `mesh.gv.crs` read what the mesh records, follow
@@ -476,7 +510,7 @@ Each carries the status grammar of docs spec §3.6.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The globe and its record: `geovista.Globe` with its radius as a quantity, the four fields, `Globe.from_mesh` and `Globe.to_mesh`, meshes that record no globe, the `mesh.gv` namespace with `globe`, `crs` and its equality, the table of retired fields, `sanitize_legacy` and `sanitize(legacy=...)`, and the round trip of crs spec §6 | ✅ landed (2026-10-28, {pull}`2761`) |
-| 2 | Every radius becomes a globe: `globe=` in place of `radius=` on the 33 functions, `GeoPlotter(globe=...)` and `GeoPlotter.globe`, `combine` refusing meshes described differently, only current fields in every mesh returned or drawn, and the gallery, tests and documentation moved to `globe=` | not started |
+| 2 | Every radius becomes a globe: `globe=` in place of `radius=` on the 34 functions, `GeoPlotter(globe=...)` and `GeoPlotter.globe`, `combine` refusing meshes described differently, only current fields in every mesh returned or drawn, and the gallery, tests and documentation moved to `globe=` | ✅ landed (2026-10-28, {pull}`2766`) |
 
 Statuses follow docs spec §3.6. Row 1 adds to the API and breaks nothing. Row 2 is
 breaking, and carries a `breaking` fragment beside its own. Row 2 is planned once row 1

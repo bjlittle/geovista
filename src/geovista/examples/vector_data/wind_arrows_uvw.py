@@ -72,12 +72,13 @@ def main() -> None:
     vectors = (sample.u, sample.v, np.asanyarray(sample.w) * 1500.0)
 
     # Create the point cloud mesh with attached wind vectors from the
-    # sample eastward (u), northward (v), and upward (w) components.
+    # sample eastward (u), northward (v), and upward (w) components. The
+    # z-level floats the arrows a tenth of the radius above the surface.
     mesh = gv.Transform.from_points(
         sample.lons,
         sample.lats,
         vectors=vectors,
-        radius=1.1,
+        zlevel=1000,
     )
 
     # Create a new mesh containing arrow glyphs, from the mesh vectors.

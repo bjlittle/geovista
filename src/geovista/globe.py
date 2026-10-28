@@ -31,6 +31,7 @@ from .common import (
     GV_FIELD_GLOBE_RENDER_RADIUS,
     GV_FIELD_RADIUS,
     RADIUS,
+    _retired,
 )
 from .crs import projected
 from .units import as_quantity, to_metres
@@ -551,3 +552,101 @@ class Globe:  # numpydoc ignore=PR01
 
         """
         return self._render_radius / self._radius
+
+
+def _resolve(globe: object, /) -> Globe:
+    """Resolve the globe a function is given.
+
+    Parameters
+    ----------
+    globe : object
+        The globe given, or ``None``.
+
+    Returns
+    -------
+    Globe
+        The globe given, or the default globe when given ``None``.
+
+    Raises
+    ------
+    TypeError
+        When given anything but a globe or ``None``, such as a number a caller
+        would once have given as a ``radius``.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if globe is None:
+        return Globe()
+
+    if not isinstance(globe, Globe):
+        emsg = (
+            f"globe must be a geovista.Globe, got {globe!r}. Draw a sphere of "
+            "radius r with Globe(render_radius=r)."
+        )
+        raise TypeError(emsg)
+
+    return globe
+
+
+def _records(mesh: pv.DataSet, globe: Globe, /) -> bool:
+    """Determine whether a mesh records exactly a globe, and no retired field.
+
+    A mesh read at a globe it does not record, by its ``gvRadius`` or by
+    measuring its points, does not record it.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+    globe : Globe
+        The globe.
+
+    Returns
+    -------
+    bool
+        Whether the mesh records the globe in its four fields, and nothing a
+        cleaning would change.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    field_data = mesh.field_data
+
+    if _retired(mesh) or not all(name in field_data for name in _GV_GLOBE_FIELDS):
+        return False
+
+    return Globe.from_mesh(mesh) == globe
+
+
+def _written(mesh: pv.DataSet, /) -> bool:
+    """Determine whether a mesh records a globe, rather than lying at one.
+
+    A mesh records its globe in its four fields, or in the ``gvRadius`` written
+    before the globe. Any other mesh is read at the one radius its points lie
+    at, which a sphere drawn above or below a globe shares with that globe.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+
+    Returns
+    -------
+    bool
+        Whether the mesh has any of the four fields, or a ``gvRadius``.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    field_data = mesh.field_data
+
+    return GV_FIELD_RADIUS in field_data or any(
+        name in field_data for name in _GV_GLOBE_FIELDS
+    )

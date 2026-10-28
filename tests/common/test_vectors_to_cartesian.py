@@ -11,9 +11,13 @@ import numpy as np
 import pytest
 
 from geovista.common import vectors_to_cartesian
+from geovista.globe import Globe
 
 #: Two points, as longitudes and latitudes.
 LONS, LATS = [0.0, 90.0], [0.0, 45.0]
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
 
 #: The eastward, northward and upward components of a vector at each point.
 VECTORS = ([1.0, 2.0], [3.0, 4.0], [5.0, 6.0])
@@ -34,7 +38,9 @@ def test_unit_vectors_at_the_origin(component, expected):
     vectors = [np.zeros(1), np.zeros(1), np.zeros(1)]
     vectors[component] = np.ones(1)
 
-    result = vectors_to_cartesian(np.zeros(1), np.zeros(1), tuple(vectors), radius=1.0)
+    result = vectors_to_cartesian(
+        np.zeros(1), np.zeros(1), tuple(vectors), globe=Globe()
+    )
 
     np.testing.assert_allclose(np.ravel(result), expected, atol=1e-15)
 
@@ -55,3 +61,25 @@ def test_vectors_must_match_the_points():
     """A component of another shape than the points is refused."""
     with pytest.raises(ValueError, match="some 'vectors' do not have same shape"):
         _ = vectors_to_cartesian(LONS, LATS, ([1.0], [3.0, 4.0], [5.0, 6.0]))
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_the_globe_scales_the_vectors(radius):
+    """Test the vectors are scaled by the render radius of the globe given."""
+    expected = np.array(vectors_to_cartesian(LONS, LATS, VECTORS)) * radius
+    result = vectors_to_cartesian(
+        LONS, LATS, VECTORS, globe=Globe(render_radius=radius)
+    )
+    np.testing.assert_allclose(result, expected, rtol=1e-12)
+
+
+def test_a_number_is_not_a_globe():
+    """Test a number given as the globe is refused."""
+    with pytest.raises(TypeError, match=r"globe must be a geovista\.Globe"):
+        _ = vectors_to_cartesian(LONS, LATS, VECTORS, globe=2.0)
+
+
+def test_radius_is_gone():
+    """Test the radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        _ = vectors_to_cartesian(LONS, LATS, VECTORS, radius=2.0)

@@ -10,7 +10,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from geovista.bridge import Transform
 from geovista.common import RADIUS, distance
+from geovista.globe import Globe
 
 
 @pytest.mark.parametrize("origin", [np.empty((2, 2)), range(4)])
@@ -77,3 +79,13 @@ def test_origin_list(lfric):
 
     assert result.shape == (lfric.n_points,)
     np.testing.assert_array_equal(result, expected)
+
+
+def test_snaps_to_the_render_radius(legacy):
+    """Test the mean distance snaps to the render radius a mesh records."""
+    mesh = Transform.from_1d(
+        [0.0, 10.0, 20.0], [0.0, 10.0], globe=Globe(render_radius=2)
+    )
+    mesh.points = mesh.points * (1 + 1e-7)
+    assert distance(mesh) == 2
+    assert distance(legacy(mesh)) == 2

@@ -10,7 +10,9 @@ from __future__ import annotations
 import pytest
 from pyvista import PolyData
 
-from geovista.pantry.meshes import LFRIC_RESOLUTION, lfric
+from geovista.common import _GV_GLOBE_FIELDS
+from geovista.globe import Globe
+from geovista.pantry.meshes import LFRIC_RESOLUTION, LFRIC_RESOLUTIONS, lfric
 
 
 def test_resolution_warning(mocker):
@@ -39,3 +41,11 @@ def test_resolution_warning(mocker):
     )
     pv.read.assert_called_once_with(resource)
     assert result == mesh
+
+
+@pytest.mark.parametrize("resolution", LFRIC_RESOLUTIONS)
+def test_records_the_default_globe(resolution):
+    """Test the mesh records the globe its points lie at, as the pantry's others do."""
+    mesh = lfric(resolution=resolution)
+    assert set(_GV_GLOBE_FIELDS) <= set(mesh.field_data)
+    assert Globe.from_mesh(mesh) == Globe()

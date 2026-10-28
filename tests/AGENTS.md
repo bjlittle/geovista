@@ -72,7 +72,7 @@ fails in a full run. Restore it in a fixture: `copy.deepcopy` round-trips.
 
 ### Fixtures
 
-- Shared fixtures live in the `conftest.py` of the directory that needs them; the root one provides `lam_uk`, `lam_polar`, `lfric`, `lfric_sst`, `lfric_sst_eqc`, `coastlines`, `sphere`, `wgs84_wkt`, `plot_nodeid`, `lam_uk_cloud`, `lam_uk_sample`, `in_radians`, `no_network`
+- Shared fixtures live in the `conftest.py` of the directory that needs them; the root one provides `lam_uk`, `lam_polar`, `lfric`, `lfric_sst`, `lfric_sst_eqc`, `coastlines`, `sphere`, `wgs84_wkt`, `plot_nodeid`, `lam_uk_cloud`, `lam_uk_sample`, `in_radians`, `no_network`, and `legacy`, which builds a mesh as geovista 0.5 wrote it (a `gvRadius`, no globe) for tests of retired fields
 - ⚠️ **pyproj's wheels have no PROJ grids, and conda-forge's PROJ fetches them**, as
   activation sets `PROJ_NETWORK=ON`, so a datum test can pass here and fail `ci-tests-pypi`
   (#2718). Request `no_network`, or run `pixi run -e geovista env PROJ_NETWORK=OFF pytest`.

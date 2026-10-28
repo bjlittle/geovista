@@ -21,6 +21,7 @@ import lazy_loader as lazy
 from geovista.bridge import Transform
 from geovista.cache import CACHE, Decompress
 from geovista.common import Preference
+from geovista.globe import Globe
 import geovista.pantry.data
 
 if TYPE_CHECKING:
@@ -462,7 +463,7 @@ def lfric(*, resolution: str | None = None) -> pv.PolyData:
     Returns
     -------
     PolyData
-        The LFRic cubed-sphere mesh.
+        The LFRic cubed-sphere mesh, which records the default globe.
 
     Notes
     -----
@@ -489,6 +490,9 @@ def lfric(*, resolution: str | None = None) -> pv.PolyData:
     mesh = pv.read(resource)
     # the resource is a single mesh of cells
     assert isinstance(mesh, pv.PolyData)
+    # the resource records only its CRS, and lies at the default render radius,
+    # so it is drawn at the scene's globe as the pantry's other meshes are
+    Globe().to_mesh(mesh)
 
     return mesh
 
@@ -652,7 +656,7 @@ def oisst_avhrr_sst() -> pv.PolyData:
 def regular_grid(
     *,
     resolution: str | None = None,
-    radius: float | None = None,
+    globe: Globe | None = None,
 ) -> pv.PolyData:
     """Generate a regular grid given the `resolution`.
 
@@ -661,8 +665,9 @@ def regular_grid(
     resolution : str, optional
         In the format of ``rN``, where ``N`` is the number of cells in latitude,
         and ``N * 1.5`` cells in longitude. Defaults to :data:`REGULAR_RESOLUTION`.
-    radius : float, optional
-        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe the grid is built on, which it records. Defaults to
+        ``Globe()``.
 
     Returns
     -------
@@ -701,7 +706,7 @@ def regular_grid(
     lats = np.linspace(-90.0, 90.0, n_cells + 1)
     lons = np.linspace(-180.0, 180.0, int(n_cells * 1.5) + 1)
 
-    return Transform.from_1d(lons, lats, radius=radius)
+    return Transform.from_1d(lons, lats, globe=globe)
 
 
 def ww3_global_smc(*, step: int | None = None) -> pv.PolyData:

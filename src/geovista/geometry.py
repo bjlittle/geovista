@@ -20,15 +20,14 @@ import lazy_loader as lazy
 
 from .common import (
     COASTLINES_RESOLUTION,
-    GV_FIELD_RADIUS,
     GV_FIELD_RESOLUTION,
     LRU_CACHE_SIZE,
-    RADIUS,
     ZLEVEL_SCALE,
-    to_cartesian,
+    _to_cartesian,
 )
 from .core import resize
 from .crs import WGS84, to_wkt
+from .globe import _resolve
 from .pantry import fetch_coastlines
 
 if TYPE_CHECKING:
@@ -37,6 +36,8 @@ if TYPE_CHECKING:
     import numpy as np
     import pyvista as pv
     from shapely import LineString, MultiLineString
+
+    from .globe import Globe
 
 # lazy import third-party dependencies
 cartopy = lazy.load("cartopy")
@@ -55,7 +56,7 @@ __all__ = [
 def coastlines(
     *,
     resolution: str | None = None,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: int | None = None,
     zscale: float | None = None,
 ) -> pv.PolyData:
@@ -67,11 +68,13 @@ def coastlines(
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m``, or ``10m``. Defaults to
         :data:`geovista.common.COASTLINES_RESOLUTION`.
-    radius : float, optional
-        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe the coastlines are drawn on, which they record. Defaults
+        to ``Globe()``.
     zlevel : int, default=1
         The z-axis level. Used in combination with the `zscale` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
@@ -97,7 +100,7 @@ def coastlines(
     except ValueError:
         mesh = load_coastlines(resolution=resolution)
 
-    resize(mesh, radius=radius, zlevel=zlevel, zscale=zscale, inplace=True)
+    resize(mesh, globe=_resolve(globe), zlevel=zlevel, zscale=zscale, inplace=True)
 
     return mesh
 
@@ -174,7 +177,7 @@ def load_coastline_geometries(*, resolution: str | None = None) -> list[np.ndarr
 def load_coastlines(
     *,
     resolution: str | None = None,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: int | None = None,
     zscale: float | None = None,
 ) -> pv.PolyData:
@@ -186,11 +189,13 @@ def load_coastlines(
         The resolution of the Natural Earth coastlines, which may be either
         ``110m``, ``50m``, or ``10m``. Default to
         :data:`geovista.common.COASTLINES_RESOLUTION`.
-    radius : float, optional
-        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe the coastlines are drawn on, which they record. Defaults
+        to ``Globe()``.
     zlevel : int, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
         :data:`geovista.common.ZLEVEL_SCALE`.
@@ -211,10 +216,9 @@ def load_coastlines(
     if resolution is None:
         resolution = COASTLINES_RESOLUTION
 
-    radius = RADIUS if radius is None else abs(float(radius))
+    globe = _resolve(globe)
     zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
     zlevel = 0 if zlevel is None else int(zlevel)
-    radius += radius * zlevel * zscale
 
     geoms_list = load_coastline_geometries(resolution=resolution)
     npoints_per_geom = [geom.shape[0] for geom in geoms_list]
@@ -222,7 +226,14 @@ def load_coastlines(
     geoms = np.concatenate(geoms_list)
     nlines = geoms.shape[0] - ngeoms
 
-    geoms = to_cartesian(geoms[:, 0], geoms[:, 1], radius=radius)
+    # lifted from the render radius by the z-level, which the globe never includes
+    geoms = _to_cartesian(
+        geoms[:, 0],
+        geoms[:, 1],
+        radius=globe.render_radius,
+        zlevel=zlevel,
+        zscale=zscale,
+    )
 
     # convert geometries to a vtk line mesh
     mesh = pv.PolyData()
@@ -238,7 +249,7 @@ def load_coastlines(
         pstart, lstart = pend, lend
 
     mesh.lines = lines
-    mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+    globe.to_mesh(mesh)
     mesh.field_data[GV_FIELD_RESOLUTION] = np.array([resolution])
     to_wkt(mesh, WGS84)
 

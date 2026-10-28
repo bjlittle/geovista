@@ -26,23 +26,23 @@ from .common import (
     GV_FIELD_ZSCALE,
     GV_POINT_IDS,
     GV_REMESH_POINT_IDS,
-    RADIUS,
     REMESH_JOIN,
     REMESH_SEAM,
     ZLEVEL_SCALE,
+    _current,
     _face_offsets,
-    _read_radius,
-    _write_radius,
+    _to_cartesian,
     distance,
     from_cartesian,
     point_cloud,
+    sanitize_legacy,
     sanitize_vtk,
-    to_cartesian,
     wrap,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
-from .crs import projected
+from .crs import from_wkt, projected
 from .filters import remesh
+from .globe import Globe, _records, _resolve
 from .search import find_cell_neighbours
 
 if TYPE_CHECKING:
@@ -325,9 +325,12 @@ def add_texture_coords(
     .. versionadded:: 0.1.0
 
     """
+    # the mesh given, which is never changed unless asked in place
+    given = mesh
+
     if point_cloud(mesh):
         # don't attach texture coordinates to a point-cloud
-        return mesh
+        return _current(mesh, given)
 
     if meridian is None:
         meridian = CENTRAL_MERIDIAN
@@ -351,7 +354,7 @@ def add_texture_coords(
     t_coord = np.vstack([u_coord, v_coord]).T
     mesh.active_texture_coordinates = t_coord
 
-    return mesh
+    return _current(mesh, given)
 
 
 def combine(
@@ -369,6 +372,11 @@ def combine(
     However, meshes may share coincident points. Coincident point data from the
     first input mesh will overwrite all other mesh data sharing the same
     coincident point in the resultant mesh.
+
+    Meshes that geovista describes differently, by their CRS or their globe, are
+    refused, since they cannot share points. Resize or transform them to one
+    globe and one CRS first. :meth:`pyvista.DataSetFilters.merge` refuses none,
+    and keeps the field data of the first mesh alone.
 
     Parameters
     ----------
@@ -408,6 +416,8 @@ def combine(
         polys.append(dataset)
 
     first = polys[0]
+    crs, globe = from_wkt(first), Globe.from_mesh(first)
+
     combined_points, combined_faces = [], []
     n_points = 0
 
@@ -449,6 +459,25 @@ def combine(
                 f"Can only combine meshes with cells, input mesh #{i + 1} has no cells."
             )
             raise TypeError(emsg)
+
+        # meshes described differently cannot share points, whether or not their
+        # data is combined (scene spec §4.7)
+        differs = [
+            name
+            for name, same in (
+                ("CRS", from_wkt(mesh) == crs),
+                ("globe", Globe.from_mesh(mesh) == globe),
+            )
+            if not same
+        ]
+        if differs:
+            emsg = (
+                "Can only combine meshes that geovista describes the same way, "
+                f"input mesh #{i + 1} has another {' and '.join(differs)} than "
+                "input mesh #1. Resize or transform the meshes to one globe and one "
+                "CRS first."
+            )
+            raise ValueError(emsg)
 
         combined_points.append(mesh.points.copy())
         # pyvista 0.49 annotates the faces with a Python int dtype, which refuses
@@ -512,6 +541,10 @@ def combine(
         combine_data(common_cell_data, lambda mesh: mesh.cell_data)
         for name in common_field_data:
             combined.field_data[name] = first.field_data[name]
+        # the globe the meshes share, however each recorded it
+        if globe is not None:
+            globe.to_mesh(combined)
+        sanitize_legacy(combined)
 
     # remove degenerate points and faces
     if clean:
@@ -543,22 +576,27 @@ def resize(
     mesh: pv.PolyData,
     /,
     *,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
     inplace: bool | None = False,
 ) -> pv.PolyData:
-    """Change the radius of the spherical mesh.
+    """Change the globe of the spherical mesh, moving its points to it.
+
+    The mesh returned records the globe, and carries no retired field, even when
+    no point moves.
 
     Parameters
     ----------
     mesh : :class:`~pyvista.PolyData`
-        The mesh to be resized to the provided ``radius``.
-    radius : float, optional
-        The target radius of the ``mesh``. Defaults to :data:`geovista.common.RADIUS`.
+        The mesh to be resized to the provided ``globe``.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe to resize the ``mesh`` to, at its render radius. Defaults to the
+        globe the ``mesh`` records, else ``Globe()``.
     zlevel : float or ArrayLike, default=0
         The z-axis level. Used in combination with the `zscale` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``.
         If `zlevel` is not a scalar, then it must broadcast to the shape
         ``(mesh.n_points,)``. For a point cloud, `zlevel` adds to the z-level
         each of its points already carries. Any other mesh is resized to
@@ -585,11 +623,9 @@ def resize(
 
     cloud = point_cloud(mesh)
 
-    if radius is None:
-        recorded = _read_radius(mesh) if cloud else None
-        radius = RADIUS if recorded is None else recorded
-    else:
-        radius = abs(float(radius))
+    # the globe given, else the one the mesh records, else the default
+    globe = (Globe.from_mesh(mesh) or Globe()) if globe is None else _resolve(globe)
+    radius = globe.render_radius
 
     if zscale is None:
         if cloud and GV_FIELD_ZSCALE in mesh.field_data:
@@ -622,8 +658,10 @@ def resize(
                 mesh[GV_FIELD_ZSCALE], zscale
             )
         if not update:
-            recorded = _read_radius(mesh)
-            update = recorded is None or not np.isclose(recorded, radius)
+            # the base its points' levels are read from moves, however little, as
+            # a level is the offset from it over zscale
+            recorded = Globe.from_mesh(mesh)
+            update = recorded is None or recorded.render_radius != radius
     elif level.ndim:
         # a surface at a radius for each point, which from_cartesian reads back
         # at the radius of each point, so its positions survive the next resize
@@ -642,7 +680,7 @@ def resize(
         lonlat = from_cartesian(mesh)
         if cloud:
             level = level + lonlat[:, 2]
-        xyz = to_cartesian(
+        xyz = _to_cartesian(
             lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=level, zscale=zscale
         )
         if not inplace:
@@ -650,12 +688,16 @@ def resize(
         mesh.points = xyz
         if cloud:
             mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
-            _write_radius(mesh, radius)
-        elif level.ndim:
-            # no single radius describes the surface any more
-            _write_radius(mesh, None)
-        else:
-            _write_radius(mesh, new_radius)
+    elif not _records(mesh, globe):
+        # no point moves, but the record does
+        if not inplace:
+            mesh = mesh.copy()
+    else:
+        return mesh
+
+    # the globe the points are positioned for, which no z-level enters
+    globe.to_mesh(mesh)
+    sanitize_legacy(mesh)
 
     return mesh
 
@@ -705,13 +747,16 @@ def slice_cells(
     .. versionadded:: 0.1.0
 
     """
+    # the mesh given, which is never changed unless asked in place
+    given = mesh
+
     if not isinstance(mesh, pv.PolyData):
         emsg = f"Require a {str(pv.PolyData)!r} mesh, got {str(type(mesh))!r}."
         raise TypeError(emsg)
 
     if point_cloud(mesh) or mesh.n_lines:
         # no cell remeshing required for a point-cloud or line mesh
-        return mesh
+        return _current(mesh, given)
 
     if meridian is None:
         meridian = CENTRAL_MERIDIAN
@@ -816,7 +861,7 @@ def slice_cells(
     if info.name is not None and info.name in survivors:
         result.set_active_scalars(info.name, preference=association)
 
-    return result
+    return _current(result, given)
 
 
 def slice_lines(
@@ -864,13 +909,16 @@ def slice_lines(
     .. versionadded:: 0.3.0
 
     """
+    # the mesh given, which is never changed unless asked in place
+    given = mesh
+
     if projected(mesh):
         emsg = "Cannot slice a mesh that has been projected."
         raise ValueError(emsg)
 
     if mesh.n_lines == 0:
         # there are no lines to slice
-        return mesh
+        return _current(mesh, given)
 
     if n_points is None:
         n_points = SPLINE_N_POINTS
@@ -888,7 +936,7 @@ def slice_lines(
     if np.all(antimeridian):
         if copy:
             mesh = mesh.copy(deep=True)
-        return mesh
+        return _current(mesh, given)
 
     radius = float(distance(mesh))
     line = pv.Line(pointa=(radius, 0, 0), pointb=(-radius, 0, 0))
@@ -901,7 +949,7 @@ def slice_lines(
     if antimeridian.sum() == 0:
         if copy:
             mesh = mesh.copy(deep=True)
-        return mesh
+        return _current(mesh, given)
 
     # antimeridian points-of-interest (N, 3)
     poi_xyz = intersection.points[antimeridian]
@@ -1010,7 +1058,7 @@ def slice_lines(
         detach_pids=detach_pids,
     )
 
-    return result
+    return _current(result, given)
 
 
 def slice_mesh(
@@ -1050,6 +1098,9 @@ def slice_mesh(
     .. versionadded:: 0.3.0
 
     """
+    # the mesh given, which is never changed unless asked in place
+    given = mesh
+
     if projected(mesh):
         emsg = "Cannot slice a mesh that has been projected."
         raise ValueError(emsg)
@@ -1059,7 +1110,7 @@ def slice_mesh(
     else:
         result = slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
 
-    return result
+    return _current(result, given)
 
 
 def _carry_line_data(

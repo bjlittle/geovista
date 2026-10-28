@@ -13,6 +13,7 @@ import pytest
 
 import geovista as gv
 from geovista.geoplotter import GeoPlotter
+from geovista.globe import Globe
 
 
 def test_no_poi_warning():
@@ -61,3 +62,17 @@ def test_spherical_camera(lfric):
     expected = gv.common.to_cartesian(30, 10)[0]
     np.testing.assert_allclose(position / np.linalg.norm(position), expected, atol=1e-6)
     np.testing.assert_allclose(p.camera.focal_point, (0, 0, 0))
+
+
+@pytest.mark.parametrize("radius", [2.0, 6378137.0])
+def test_the_poi_on_another_globe(radius):
+    """Test the camera looks at the point-of-interest whatever the scene's globe."""
+    mesh = gv.Transform.from_1d([0.0, 10.0, 20.0], [40.0, 50.0, 60.0])
+    directions = []
+    for globe in (Globe(), Globe(render_radius=radius)):
+        p = GeoPlotter(globe=globe)
+        p.add_mesh(mesh)
+        p.view_poi()
+        position = np.asarray(p.camera.position)
+        directions.append(position / np.linalg.norm(position))
+    np.testing.assert_allclose(directions[1], directions[0], atol=1e-6)

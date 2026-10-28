@@ -13,7 +13,7 @@ import pyvista as pv
 
 from geovista.bridge import Transform
 from geovista.common import (
-    GV_FIELD_RADIUS,
+    GV_FIELD_GLOBE_RENDER_RADIUS,
     GV_FIELD_ZSCALE,
     GV_REMESH_POINT_IDS,
     REMESH_SEAM,
@@ -22,6 +22,7 @@ from geovista.common import (
     to_cartesian,
     wrap,
 )
+from geovista.globe import Globe
 from geovista.pantry.meshes import lfric_orog
 
 
@@ -80,7 +81,7 @@ def test_cloud_defaults__with_field_data(lam_uk_sample, lam_uk):
     cloud = pv.PolyData(lam_uk.points)
     cloud.copy_attributes(lam_uk)
     cloud.field_data[GV_FIELD_ZSCALE] = np.array([ZLEVEL_SCALE])
-    assert GV_FIELD_RADIUS in cloud.field_data
+    assert GV_FIELD_GLOBE_RENDER_RADIUS in cloud.field_data
     assert GV_FIELD_ZSCALE in cloud.field_data
     lonlats = from_cartesian(cloud)
     np.testing.assert_allclose(lonlats[:, 0], sample_lons)
@@ -164,3 +165,37 @@ def test_convert_edges_pole_cell_unfold():
     _, edges = mesh.contour_banded(3)
     result = from_cartesian(edges)
     assert result.shape == (edges.n_points, 3)
+
+
+def test_a_cloud_decodes_from_its_globe(legacy):
+    """Test a cloud's z-levels decode from the render radius it records."""
+    cloud = Transform.from_points(
+        [0.0, 10.0, 20.0],
+        [0.0, 10.0, 20.0],
+        globe=Globe(render_radius=2),
+        zlevel=[1, 2, 3],
+        zscale=0.1,
+    )
+    np.testing.assert_allclose(from_cartesian(cloud)[:, 2], [1, 2, 3])
+    np.testing.assert_allclose(from_cartesian(legacy(cloud))[:, 2], [1, 2, 3])
+
+
+@pytest.mark.parametrize("radius", [1.0, 6378137.0])
+def test_a_small_lift_of_float32_points(radius):
+    """Test a surface lifted less than the globe tolerance is read where it lies.
+
+    A float32 surface lifted by a fraction of a z-level lies close enough to the
+    globe it records for that render radius to pass for its own, which near a pole
+    moves each point by hundredths of a degree. Float32 points there carry an
+    error of a few thousandths of a degree of their own.
+
+    """
+    lats = [89.94, 89.95]
+    mesh = Transform.from_1d(
+        [0, 10, 20], lats, globe=Globe(render_radius=radius), zlevel=1, zscale=5e-7
+    )
+    mesh.points = mesh.points.astype(np.float32)
+
+    lonlats = from_cartesian(mesh)
+
+    np.testing.assert_allclose(lonlats[:, 1], np.repeat(lats, 3), atol=1e-2)

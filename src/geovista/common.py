@@ -30,6 +30,8 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
     import pyvista as pv
 
+    from .globe import Globe
+
 # lazy import third-party dependencies
 np = lazy.load("numpy")
 pv = lazy.load("pyvista")
@@ -386,13 +388,8 @@ _GV_GLOBE_FIELDS: tuple[str, str, str, str] = (
 )
 
 
-def _read_radius(mesh: pv.DataSet) -> float | None:
-    """Read the radius that the ``gvRadius`` of a mesh holds.
-
-    The functions that still write ``gvRadius`` read it back, and
-    :func:`sanitize_legacy` moves it into the render radius of the mesh's globe,
-    so a globe the mesh records is read first, as
-    :meth:`geovista.globe.Globe.from_mesh` reads it.
+def _retired(mesh: pv.DataSet) -> bool:
+    """Determine whether a mesh has any field of :data:`RETIRED_FIELDS`.
 
     Parameters
     ----------
@@ -401,73 +398,41 @@ def _read_radius(mesh: pv.DataSet) -> float | None:
 
     Returns
     -------
-    float or None
-        The render radius of the globe the mesh records, else its
-        ``gvRadius``, else ``None``.
+    bool
+        Whether the mesh has a retired field.
 
     """
-    field_data = mesh.field_data
-
-    if any(name in field_data for name in _GV_GLOBE_FIELDS):
-        # geovista.globe imports this module
-        from .globe import Globe  # noqa: PLC0415
-
-        # a partial record is refused, and a whole one is never measured
-        globe = Globe.from_mesh(mesh)
-        return None if globe is None else globe.render_radius
-
-    if GV_FIELD_RADIUS in field_data:
-        return float(field_data[GV_FIELD_RADIUS][0])
-
-    return None
+    return any(
+        entry.name in getattr(mesh, f"{entry.association}_data")
+        for entry in RETIRED_FIELDS
+    )
 
 
-def _write_radius(mesh: pv.DataSet, radius: float | None) -> None:
-    """Record the radius of a mesh where :func:`_read_radius` reads it, in place.
+def _current[MeshT: pv.DataSet](result: MeshT, given: pv.DataSet, /) -> MeshT:
+    """Return a mesh made from another, carrying only current fields.
 
-    A mesh that records a globe has its render radius set, or its globe removed
-    when no one radius describes it, so that its globe never goes stale. Either
-    way any ``gvRadius`` beside the globe goes too, or it would be read in the
-    globe's place. Any other mesh has its ``gvRadius`` set or removed.
+    A retired field is translated and removed, on a copy when the mesh is the
+    one given, so that a mesh given only to read is never changed.
 
     Parameters
     ----------
-    mesh : pyvista.DataSet
-        The mesh.
-    radius : float or None
-        The radius of the mesh, or ``None`` when no one radius describes it.
+    result : pyvista.DataSet
+        The mesh a function returns.
+    given : pyvista.DataSet
+        The mesh the function was given.
+
+    Returns
+    -------
+    pyvista.DataSet
+        The mesh to return, of the type of `result`.
 
     """
-    field_data = mesh.field_data
+    if _retired(result):
+        if result is given:
+            result = result.copy()
+        sanitize_legacy(result)
 
-    if any(name in field_data for name in _GV_GLOBE_FIELDS):
-        # geovista.globe imports this module
-        from .globe import Globe  # noqa: PLC0415
-
-        # refuse a partial or malformed record before changing it
-        Globe.from_mesh(mesh)
-
-        if radius is None:
-            for name in (*_GV_GLOBE_FIELDS, GV_FIELD_RADIUS):
-                field_data.pop(name, None)
-        else:
-            above, below = (
-                float(field_data[name][0])
-                for name in (
-                    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
-                    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
-                )
-            )
-            Globe(
-                radius=float(field_data[GV_FIELD_GLOBE_RADIUS][0]),
-                render_radius=radius,
-                exaggeration=above,
-                exaggeration_below=below,
-            ).to_mesh(mesh)
-    elif radius is None:
-        field_data.pop(GV_FIELD_RADIUS, None)
-    else:
-        field_data[GV_FIELD_RADIUS] = np.array([radius])
+    return result
 
 
 def active_kernel() -> bool:
@@ -536,7 +501,7 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
     if clean:
         result = result.clean()
 
-    return result
+    return _current(result, mesh)
 
 
 def distance(
@@ -589,10 +554,11 @@ def distance(
     if mean:
         result = np.mean(result)
 
-        given_radius = _read_radius(mesh)
+        # geovista.globe imports this module
+        from .globe import Globe  # noqa: PLC0415
 
-        if given_radius is None:
-            given_radius = RADIUS
+        globe = Globe.from_mesh(mesh)
+        given_radius = RADIUS if globe is None else globe.render_radius
 
         if np.isclose(result, given_radius):
             result = given_radius
@@ -644,7 +610,9 @@ def from_cartesian(
     radius = distance(mesh, mean=False)
 
     if not cloud:
-        mean = distance(mesh)
+        # the mean the points measure, as distance snaps it to the globe the mesh
+        # records, which a lift smaller than that snap leaves the points off
+        mean = np.mean(radius)
         # a surface at one radius, to the precision of its points, is read at
         # that radius, which gives the points of a parallel one latitude. One
         # at uneven radii is read at the radius of each point, or a point off
@@ -657,13 +625,20 @@ def from_cartesian(
         if np.allclose(radius, mean, rtol=resolution, atol=0):
             radius = mean
 
-    lons, lats = to_lonlats(
+    lons, lats = _to_lonlats(
         mesh.points, radius=radius, stacked=False, rtol=rtol, atol=atol
     )
 
     zlevel = np.zeros_like(lons)
 
-    base = _read_radius(mesh) if cloud else None
+    base = None
+
+    if cloud:
+        # geovista.globe imports this module
+        from .globe import Globe  # noqa: PLC0415
+
+        globe = Globe.from_mesh(mesh)
+        base = None if globe is None else globe.render_radius
 
     if base is not None and GV_FIELD_ZSCALE in mesh.field_data:
         # field data injected by geovista.bridge.Transform.from_points
@@ -1016,12 +991,70 @@ def to_cartesian(
     lons: ArrayLike,
     lats: ArrayLike,
     *,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
     stacked: bool | None = True,
 ) -> np.ndarray:
     """Convert geographic longitudes and latitudes to cartesian ``xyz`` points.
+
+    Parameters
+    ----------
+    lons : :data:`~numpy.typing.ArrayLike`
+        The longitude values (degrees) to be converted.
+    lats : :data:`~numpy.typing.ArrayLike`
+        The latitude values (degrees) to be converted.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe whose render radius the points lie at. Defaults to
+        ``Globe()``, whose render radius is :data:`RADIUS`.
+    zlevel : float or :data:`~numpy.typing.ArrayLike`, default=0.0
+        The z-axis level. Used in combination with the `zscale` to offset the
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``. If `zlevel` is not a scalar, then its
+        shape must match or broadcast with the shape of `lons` and `lats`.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`ZLEVEL_SCALE`.
+    stacked : bool, default=True
+        Specify whether the resultant xyz points have shape (N, 3).
+        Otherwise, they will have shape (3, N).
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The ``xyz`` spherical cartesian points.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    # geovista.globe imports this module
+    from .globe import _resolve  # noqa: PLC0415
+
+    return _to_cartesian(
+        lons,
+        lats,
+        radius=_resolve(globe).render_radius,
+        zlevel=zlevel,
+        zscale=zscale,
+        stacked=stacked,
+    )
+
+
+def _to_cartesian(
+    lons: ArrayLike,
+    lats: ArrayLike,
+    *,
+    radius: float | None = None,
+    zlevel: float | ArrayLike | None = None,
+    zscale: float | None = None,
+    stacked: bool | None = True,
+) -> np.ndarray:
+    """Convert geographic longitudes and latitudes to points at a radius.
+
+    The float form of :func:`to_cartesian`, which geovista calls inside with a
+    render radius, or a radius a z-level has already lifted.
 
     Parameters
     ----------
@@ -1101,11 +1134,73 @@ def vectors_to_cartesian(
     lats: ArrayLike,
     vectors: Vector3DLike,
     *,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
 ) -> Vector3DLike:
     """Transform geographic-oriented vector components ``uvw`` to cartesian ``xyz``.
+
+    Parameters
+    ----------
+    lons : ArrayLike
+        The longitude points of the `vectors` (in degrees). Must be the same
+        shape as `lats`.
+    lats : ArrayLike
+        The latitude points of the `vectors` (in degrees). Must be the same
+        shape as `lons`.
+    vectors : Vector3DLike
+        The eastward (``U``), northward (``V``) and upward (``W``) vector components.
+        All shapes must be the same as `lons` and `lats`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe whose render radius scales the vectors. Defaults to
+        ``Globe()``, whose render radius is :data:`RADIUS`.
+    zlevel : int  or :data:`~numpy.typing.ArrayLike`, default=0.0
+        The z-axis level. Used in combination with the `zscale` to offset the
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``.
+        NOTE : non-scalar `zlevel` is not actually supported, since it is planned to
+        drop support for this from :meth:`~geovista.bridge.Transform.from_points`.
+        It will raise an error.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`ZLEVEL_SCALE`.
+
+    Returns
+    -------
+    Vector3DLike
+        The corresponding ``xyz`` cartesian vector components.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # geovista.globe imports this module
+    from .globe import _resolve  # noqa: PLC0415
+
+    return _vectors_to_cartesian(
+        lons,
+        lats,
+        vectors,
+        radius=_resolve(globe).render_radius,
+        zlevel=zlevel,
+        zscale=zscale,
+    )
+
+
+def _vectors_to_cartesian(
+    lons: ArrayLike,
+    lats: ArrayLike,
+    vectors: Vector3DLike,
+    *,
+    radius: float | None = None,
+    zlevel: float | ArrayLike | None = None,
+    zscale: float | None = None,
+) -> Vector3DLike:
+    """Transform geographic-oriented vector components to cartesian at a radius.
+
+    The float form of :func:`vectors_to_cartesian`, which geovista calls inside
+    with a render radius.
 
     Parameters
     ----------
@@ -1192,7 +1287,7 @@ def to_lonlat(
     /,
     *,
     radians: bool | None = False,
-    radius: float | None = None,
+    globe: Globe | None = None,
     rtol: float | None = None,
     atol: float | None = None,
 ) -> np.ndarray:
@@ -1205,8 +1300,9 @@ def to_lonlat(
     radians : bool, default=False
         Convert resultant longitude and latitude values to radians.
         Default units are degrees.
-    radius : float, optional
-        The `radius` of the sphere. Defaults to :data:`RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe whose render radius the point lies at. Defaults to
+        ``Globe()``, whose render radius is :data:`RADIUS`.
     rtol : float, optional
         The relative tolerance for longitudes close to the 'wrap meridian' -
         see :func:`geovista.common.wrap` for more.
@@ -1234,7 +1330,7 @@ def to_lonlat(
         raise ValueError(emsg)
 
     result: np.ndarray
-    (result,) = to_lonlats(point, radians=radians, radius=radius, rtol=rtol, atol=atol)
+    (result,) = to_lonlats(point, radians=radians, globe=globe, rtol=rtol, atol=atol)
 
     return result
 
@@ -1244,12 +1340,69 @@ def to_lonlats(
     /,
     *,
     radians: bool | None = False,
-    radius: float | ArrayLike | None = None,
+    globe: Globe | None = None,
     stacked: bool | None = True,
     rtol: float | None = None,
     atol: float | None = None,
 ) -> np.ndarray:
     """Convert cartesian `xyz` points on sphere to geographic longitudes and latitudes.
+
+    Parameters
+    ----------
+    xyz : :data:`~numpy.typing.ArrayLike`
+        The cartesian (x, y, z) points to be converted.
+    radians : bool, default=False
+        Convert resultant longitude and latitude values to radians.
+        Default units are degrees.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe whose render radius the points lie at. Defaults to
+        ``Globe()``, whose render radius is :data:`RADIUS`.
+    stacked : bool, default=True
+        Default the resultant shape to be ``(N, 2)``, otherwise ``(2, N)``.
+    rtol : float, optional
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
+    atol : float, optional
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The longitude and latitude values.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    # geovista.globe imports this module
+    from .globe import _resolve  # noqa: PLC0415
+
+    return _to_lonlats(
+        xyz,
+        radians=radians,
+        radius=_resolve(globe).render_radius,
+        stacked=stacked,
+        rtol=rtol,
+        atol=atol,
+    )
+
+
+def _to_lonlats(
+    xyz: ArrayLike,
+    /,
+    *,
+    radians: bool | None = False,
+    radius: float | ArrayLike | None = None,
+    stacked: bool | None = True,
+    rtol: float | None = None,
+    atol: float | None = None,
+) -> np.ndarray:
+    """Convert cartesian `xyz` points at a radius to longitudes and latitudes.
+
+    The float form of :func:`to_lonlats`, which geovista calls inside with a
+    render radius, or with the radius of each point.
 
     Parameters
     ----------

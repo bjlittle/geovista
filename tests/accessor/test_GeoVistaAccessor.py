@@ -41,7 +41,7 @@ def test_every_mesh_has_the_namespace(mesh):
 @pytest.mark.parametrize("render_radius", RADII)
 def test_reads_what_the_mesh_records(render_radius):
     """Test that the namespace reads the mesh's CRS and globe."""
-    mesh = Transform.from_1d(LONS, LATS, radius=render_radius)
+    mesh = Transform.from_1d(LONS, LATS, globe=Globe(render_radius=render_radius))
     assert mesh.gv.crs == from_wkt(mesh)
     assert mesh.gv.crs is not None
     assert mesh.gv.globe == Globe(render_radius=render_radius)
