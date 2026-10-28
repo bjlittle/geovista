@@ -1,0 +1,7 @@
+``radius=`` is removed from every function that took it, with no alias. Each
+takes ``globe=``, a :class:`geovista.globe.Globe`, in its place, and the methods
+of :class:`geovista.geoplotter.GeoPlotter` take the globe of their scene. A mesh
+records its globe, and no longer writes ``gvRadius``. A mesh saved by 0.5 after a
+z-level lifted it is drawn at the scene's radius without its lift: add it with
+its z-level, or fix the file once with
+``resize(mesh, globe=Globe(), zlevel=...)``. (:user:`claude`)

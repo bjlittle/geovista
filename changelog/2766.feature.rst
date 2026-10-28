@@ -1,0 +1,5 @@
+:class:`geovista.geoplotter.GeoPlotter` takes the globe of its scene, and draws
+every layer at it, the base layer, coastlines and graticule included, along with
+any mesh recorded on another globe. :func:`geovista.core.combine` refuses meshes
+in different CRSs or on different globes, and no mesh that geovista returns or
+draws carries a retired field. (:user:`claude`)
