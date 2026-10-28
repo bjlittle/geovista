@@ -13,6 +13,7 @@ import pytest
 
 from geovista.crs import WGS84, from_wkt, has_wkt, to_wkt
 from geovista.geoplotter import GeoPlotter
+from geovista.globe import Globe
 
 
 def test_style_fail():
@@ -117,11 +118,8 @@ def test_xs_ys(mocker):
     _ = mocker.patch("geovista.geoplotter.GeoPlotterBase.add_mesh", return_value=actor)
     xs, ys = mocker.sentinel.xs, mocker.sentinel.ys
     crs, scalars = WGS84, mocker.sentinel.scalars
-    radius, zlevel, zscale = (
-        mocker.sentinel.radius,
-        mocker.sentinel.zlevel,
-        mocker.sentinel.zscale,
-    )
+    radius = 2.0
+    zlevel, zscale = mocker.sentinel.zlevel, mocker.sentinel.zscale
     result = p.add_points(
         xs=xs,
         ys=ys,
@@ -135,7 +133,7 @@ def test_xs_ys(mocker):
     from geovista.bridge import Transform  # noqa: PLC0415
 
     Transform.from_points.assert_called_once_with(
-        xs, ys, crs=crs, radius=radius, zlevel=zlevel, zscale=zscale
+        xs, ys, crs=crs, globe=Globe(render_radius=radius), zlevel=zlevel, zscale=zscale
     )
     p.add_mesh.assert_called_once_with(mesh, style="points", scalars=scalars)
 

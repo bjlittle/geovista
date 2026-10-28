@@ -13,8 +13,9 @@ from pyproj import CRS, Transformer
 import pytest
 
 from geovista.bridge import NAME_POINTS, NAME_VECTORS, Transform
-from geovista.common import GV_FIELD_CRS, GV_FIELD_RADIUS, RADIUS, to_cartesian, wrap
+from geovista.common import GV_FIELD_CRS, GV_FIELD_RADIUS, to_cartesian, wrap
 from geovista.crs import WGS84
+from geovista.globe import Globe
 
 #: The vectors of :class:`TestVectors` given ``(u, v, w)`` in true lat-lon.
 EXPECTED_UVW = np.array(
@@ -50,7 +51,8 @@ def test_defaults(lam_uk_sample, wgs84_wkt):
     lons, lats = lam_uk_sample
     result = Transform.from_points(lons, lats)
     assert result[GV_FIELD_CRS] == wgs84_wkt
-    assert np.isclose(result[GV_FIELD_RADIUS], RADIUS)
+    assert Globe.from_mesh(result) == Globe()
+    assert GV_FIELD_RADIUS not in result.field_data
     assert result.n_points == lons.size
     assert result.n_points == result.n_cells
 
@@ -62,15 +64,17 @@ def test_to_cartesian_kwarg_pass_thru(mocker, lam_uk_sample):
     zlevel = mocker.sentinel.zlevel
     zscale = 4.56
     to_cartesian = mocker.patch("geovista.bridge._to_cartesian", return_value=xyz)
-    kwargs = {"radius": radius, "zlevel": zlevel, "zscale": zscale}
+    kwargs = {"zlevel": zlevel, "zscale": zscale}
     lons, lats = lam_uk_sample
-    result = Transform.from_points(lons, lats, **kwargs)
+    result = Transform.from_points(
+        lons, lats, globe=Globe(render_radius=radius), **kwargs
+    )
     to_cartesian.assert_called_once()
     args = to_cartesian.call_args.args
     assert len(args) == 2
     np.testing.assert_array_equal(args[0], wrap(lons))
     np.testing.assert_array_equal(args[1], lats)
-    assert to_cartesian.call_args.kwargs == kwargs
+    assert to_cartesian.call_args.kwargs == {"radius": radius, **kwargs}
     np.testing.assert_array_equal(result.points, xyz)
 
 

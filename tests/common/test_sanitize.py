@@ -82,18 +82,18 @@ def test(lam_uk, extra):
         assert len(mesh.point_data.keys()) == npoint
 
 
-def test_legacy_by_default():
+def test_legacy_by_default(legacy):
     """Test that retired fields are cleaned by default."""
-    mesh = Transform.from_1d(LONS, LATS)
+    mesh = legacy(Transform.from_1d(LONS, LATS))
     sanitize(mesh)
     assert GV_FIELD_RADIUS not in mesh.field_data
     assert Globe.from_mesh(mesh) == Globe()
     assert set(mesh.field_data) >= GLOBE_FIELDS
 
 
-def test_legacy_off():
+def test_legacy_off(legacy):
     """Test that legacy=False leaves retired fields alone."""
-    mesh = Transform.from_1d(LONS, LATS)
+    mesh = legacy(Transform.from_1d(LONS, LATS))
     sanitize(mesh, legacy=False)
     assert GV_FIELD_RADIUS in mesh.field_data
     assert not GLOBE_FIELDS & set(mesh.field_data)

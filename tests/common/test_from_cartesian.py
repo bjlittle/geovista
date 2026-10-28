@@ -13,7 +13,7 @@ import pyvista as pv
 
 from geovista.bridge import Transform
 from geovista.common import (
-    GV_FIELD_RADIUS,
+    GV_FIELD_GLOBE_RENDER_RADIUS,
     GV_FIELD_ZSCALE,
     GV_REMESH_POINT_IDS,
     REMESH_SEAM,
@@ -80,7 +80,7 @@ def test_cloud_defaults__with_field_data(lam_uk_sample, lam_uk):
     cloud = pv.PolyData(lam_uk.points)
     cloud.copy_attributes(lam_uk)
     cloud.field_data[GV_FIELD_ZSCALE] = np.array([ZLEVEL_SCALE])
-    assert GV_FIELD_RADIUS in cloud.field_data
+    assert GV_FIELD_GLOBE_RENDER_RADIUS in cloud.field_data
     assert GV_FIELD_ZSCALE in cloud.field_data
     lonlats = from_cartesian(cloud)
     np.testing.assert_allclose(lonlats[:, 0], sample_lons)

@@ -56,6 +56,7 @@ from .crs import (
 )
 from .geodesic import BBox
 from .geometry import coastlines
+from .globe import Globe
 from .gridlines import (
     GRATICULE_ZLEVEL,
     GraticuleGrid,
@@ -486,7 +487,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             if radius is not None:
                 mesh = resize(mesh, radius=radius)
         elif resolution.startswith("r"):
-            mesh = regular_grid(resolution=resolution, radius=radius)
+            # until the scene holds a globe, its radius is carried in one
+            globe = None if radius is None else Globe(render_radius=radius)
+            mesh = regular_grid(resolution=resolution, globe=globe)
         else:
             mesh = _lfric_mesh(resolution=resolution, radius=radius)
 
@@ -1490,7 +1493,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 xs,
                 ys,
                 crs=crs,
-                radius=radius,
+                # until the scene holds a globe, its radius is carried in one
+                globe=None if radius is None else Globe(render_radius=radius),
                 zlevel=zlevel,
                 zscale=zscale,
             )

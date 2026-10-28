@@ -26,10 +26,9 @@ import warnings
 import lazy_loader as lazy
 
 from .common import (
+    GV_FIELD_CRS,
     GV_FIELD_NAME,
-    GV_FIELD_RADIUS,
     GV_FIELD_ZSCALE,
-    RADIUS,
     ZLEVEL_SCALE,
     VectorLike,
     _to_cartesian,
@@ -39,6 +38,7 @@ from .common import (
     to_cartesian,
 )
 from .crs import WGS84, CRSLike, to_wkt
+from .globe import _resolve
 from .transform import transform_points
 
 if TYPE_CHECKING:
@@ -48,6 +48,8 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     import pyproj
     import pyvista as pv
+
+    from .globe import Globe
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -542,7 +544,7 @@ class Transform:  # numpydoc ignore=PR01
         name: str | None = None,
         crs: CRSLike | None = None,
         rgb: bool | None = False,
-        radius: float | None = None,
+        globe: Globe | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
@@ -588,11 +590,13 @@ class Transform:  # numpydoc ignore=PR01
             Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
             `data` is expected to have an extra dimension for the colour
             channels (length ``3`` or ``4``).
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe the mesh is built on, which it records. Defaults to
+            ``Globe()``.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the `globe` by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
@@ -620,7 +624,7 @@ class Transform:  # numpydoc ignore=PR01
             data=data,
             name=name,
             crs=crs,
-            radius=radius,
+            globe=globe,
             zlevel=zlevel,
             zscale=zscale,
             clean=clean,
@@ -638,7 +642,7 @@ class Transform:  # numpydoc ignore=PR01
         name: str | None = None,
         crs: CRSLike | None = None,
         rgb: bool | None = False,
-        radius: float | None = None,
+        globe: Globe | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
@@ -686,11 +690,13 @@ class Transform:  # numpydoc ignore=PR01
             Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
             `data` is expected to have an extra dimension for the colour
             channels (length ``3`` or ``4``).
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`~geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe the mesh is built on, which it records. Defaults to
+            ``Globe()``.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the `globe` by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
@@ -738,7 +744,7 @@ class Transform:  # numpydoc ignore=PR01
             data=data,
             name=name,
             crs=crs,
-            radius=radius,
+            globe=globe,
             zlevel=zlevel,
             zscale=zscale,
             clean=clean,
@@ -755,7 +761,7 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        radius: float | None = None,
+        globe: Globe | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
@@ -786,12 +792,13 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        radius : float, optional
-            The radius of the mesh point-cloud. Defaults to
-            :data:`~geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe the mesh is built on, which it records. Defaults to
+            ``Globe()``.
         zlevel : int or ArrayLike, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the `globe` by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             If `zlevel` is not a scalar, then its shape must match or broadcast
             with the shape of the `xs` and `ys`.
         zscale : float, optional
@@ -834,7 +841,8 @@ class Transform:  # numpydoc ignore=PR01
         if clean is None:
             clean = BRIDGE_CLEAN
 
-        radius = RADIUS if radius is None else abs(float(radius))
+        globe = _resolve(globe)
+        radius = globe.render_radius
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
 
         if crs is None:
@@ -858,8 +866,8 @@ class Transform:  # numpydoc ignore=PR01
         # attach the pyproj crs serialized as ogc wkt
         to_wkt(mesh, WGS84)
 
-        # attach the original base radius and zscale
-        mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+        # record the globe the cloud is built on, and the zscale of its levels
+        globe.to_mesh(mesh)
         mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
 
         # attach any optional data to the mesh
@@ -1009,7 +1017,7 @@ class Transform:  # numpydoc ignore=PR01
         sieve: bool | None = False,
         size: int | None = None,
         extract: bool | None = False,
-        radius: float | None = None,
+        globe: Globe | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
@@ -1041,11 +1049,13 @@ class Transform:  # numpydoc ignore=PR01
             The size of the `sieve` filter. Defaults to :data:`RIO_SIEVE_SIZE`.
         extract : bool, default=False
             Specify whether to extract cells from the mesh with no masked points.
-        radius : float, optional
-            The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe the mesh is built on, which it records. Defaults to
+            ``Globe()``.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the `globe` by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
@@ -1187,7 +1197,7 @@ class Transform:  # numpydoc ignore=PR01
                 name=name,
                 crs=crs,
                 rgb=rgb,
-                radius=radius,
+                globe=globe,
                 zlevel=zlevel,
                 zscale=zscale,
                 clean=clean,
@@ -1225,7 +1235,7 @@ class Transform:  # numpydoc ignore=PR01
         name: str | None = None,
         crs: CRSLike | None = None,
         rgb: bool | None = False,
-        radius: float | None = None,
+        globe: Globe | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
@@ -1285,11 +1295,13 @@ class Transform:  # numpydoc ignore=PR01
             Whether `data` is an ``RGB`` or ``RGBA`` image. When ``rgb=True``,
             `data` is expected to have an extra dimension for the colour
             channels (length ``3`` or ``4``).
-        radius : float, optional
-            The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe the mesh is built on, which it records. Defaults to
+            ``Globe()``.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the `globe` by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
@@ -1447,13 +1459,15 @@ class Transform:  # numpydoc ignore=PR01
         # transform spatial points to WGS84, apart from the masked ones
         xs, ys = cls._transform_unmasked(xs, ys, crs, mask)
 
-        radius = RADIUS if radius is None else abs(float(radius))
+        globe = _resolve(globe)
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
         zlevel = 0 if zlevel is None else int(zlevel)
-        radius += radius * zlevel * zscale
 
-        # convert lat/lon to cartesian xyz
-        geometry = _to_cartesian(xs, ys, radius=radius)
+        # convert lat/lon to cartesian xyz, lifted from the render radius by the
+        # z-level, which the globe the mesh records never includes
+        geometry = _to_cartesian(
+            xs, ys, radius=globe.render_radius, zlevel=zlevel, zscale=zscale
+        )
 
         # create the mesh
         mesh = pv.PolyData(geometry, faces=faces)
@@ -1461,8 +1475,8 @@ class Transform:  # numpydoc ignore=PR01
         # attach the pyproj crs serialized as ogc wkt
         to_wkt(mesh, WGS84)
 
-        # attach the radius
-        mesh.field_data[GV_FIELD_RADIUS] = np.array([radius])
+        # record the globe the mesh is built on
+        globe.to_mesh(mesh)
 
         # attach any optional data to the mesh
         if data is not None:
@@ -1496,7 +1510,7 @@ class Transform:  # numpydoc ignore=PR01
         data: ArrayLike | None = None,
         name: str | None = None,
         crs: CRSLike | None = None,
-        radius: float | None = None,
+        globe: Globe | None = None,
         zlevel: float | None = None,
         zscale: float | None = None,
     ) -> pv.StructuredGrid:
@@ -1528,11 +1542,13 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided spatial coordinates.
             May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`.
             Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
-        radius : float | None, optional
-            The radius of the grid sphere. Defaults to :data:`~geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe the mesh is built on, which it records. Defaults to
+            ``Globe()``.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the `globe` by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
@@ -1577,7 +1593,8 @@ class Transform:  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
-        radius = RADIUS if radius is None else abs(float(radius))
+        globe = _resolve(globe)
+        radius = globe.render_radius
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
         zlevel = 0 if zlevel is None else int(zlevel)
 
@@ -1597,8 +1614,9 @@ class Transform:  # numpydoc ignore=PR01
             xyz[:, 0].reshape(shape), xyz[:, 1].reshape(shape), xyz[:, 2].reshape(shape)
         )
 
-        # attach the pyproj crs serialized as ogc wkt
+        # attach the pyproj crs serialized as ogc wkt, and the globe
         to_wkt(grid, WGS84)
+        globe.to_mesh(grid)
 
         if data is not None:
             data = cls._as_compatible_data(data, grid.n_points, grid.n_cells)
@@ -1620,7 +1638,7 @@ class Transform:  # numpydoc ignore=PR01
         connectivity: ArrayLike | Shape | None = None,
         start_index: int | None = None,
         crs: CRSLike | None = None,
-        radius: float | None = None,
+        globe: Globe | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         clean: bool | None = None,
@@ -1660,11 +1678,13 @@ class Transform:  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `xs` and `ys`. May
             be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        radius : float, optional
-            The radius of the mesh sphere. Defaults to :data:`~geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe the mesh is built on, which it records. Defaults to
+            ``Globe()``.
         zlevel : int, default=0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the `globe` by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
@@ -1680,6 +1700,7 @@ class Transform:  # numpydoc ignore=PR01
 
         """
         xs, ys = np.asanyarray(xs), np.asanyarray(ys)
+        globe = _resolve(globe)
 
         if connectivity is None:
             if xs.ndim <= 1 or ys.ndim <= 1:
@@ -1687,7 +1708,7 @@ class Transform:  # numpydoc ignore=PR01
                     xs,
                     ys,
                     crs=crs,
-                    radius=radius,
+                    globe=globe,
                     zlevel=zlevel,
                     zscale=zscale,
                     clean=clean,
@@ -1697,7 +1718,7 @@ class Transform:  # numpydoc ignore=PR01
                     xs,
                     ys,
                     crs=crs,
-                    radius=radius,
+                    globe=globe,
                     zlevel=zlevel,
                     zscale=zscale,
                     clean=clean,
@@ -1709,13 +1730,14 @@ class Transform:  # numpydoc ignore=PR01
                 connectivity=connectivity,
                 start_index=start_index,
                 crs=crs,
-                radius=radius,
+                globe=globe,
                 clean=clean,
                 zlevel=zlevel,
                 zscale=zscale,
             )
 
         self._mesh = mesh
+        self._globe = globe
         self._n_points = mesh.n_points
         self._n_cells = mesh.n_cells
 
@@ -1748,6 +1770,9 @@ class Transform:  # numpydoc ignore=PR01
 
         mesh = pv.PolyData()
         mesh.copy_structure(self._mesh)
+        # the structure keeps no field data, so the mesh is given its CRS and globe
+        mesh.field_data[GV_FIELD_CRS] = self._mesh.field_data[GV_FIELD_CRS]
+        self._globe.to_mesh(mesh)
 
         if data is not None:
             if not name:

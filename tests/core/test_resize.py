@@ -24,6 +24,7 @@ from geovista.common import (
     from_cartesian,
 )
 from geovista.core import resize
+from geovista.globe import Globe
 
 
 def test_projection_fail():
@@ -99,7 +100,7 @@ def test_resize_cloud__zlevel(lam_uk_sample, zlevel):
     lons, lats = lam_uk_sample
     zscale = 1
     cloud = Transform.from_points(lons, lats, zscale=zscale)
-    assert np.isclose(cloud[GV_FIELD_RADIUS], RADIUS)
+    assert Globe.from_mesh(cloud) == Globe()
     assert np.isclose(cloud[GV_FIELD_ZSCALE], zscale)
     result = resize(cloud, zlevel=zlevel)
     assert np.isclose(distance(result), RADIUS + zlevel * zscale)
@@ -110,11 +111,11 @@ def test_resize_cloud__zlevel(lam_uk_sample, zlevel):
 def test_resize_cloud__zscale(lam_uk_cloud, zscale):
     """Test resize cloud points by new zscale."""
     zlevel = 1
-    assert np.isclose(lam_uk_cloud[GV_FIELD_RADIUS], RADIUS)
+    assert Globe.from_mesh(lam_uk_cloud) == Globe()
     assert np.isclose(lam_uk_cloud[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
     result = resize(lam_uk_cloud, zlevel=zlevel, zscale=zscale)
     assert np.isclose(distance(result), RADIUS + zlevel * zscale)
-    assert np.isclose(result[GV_FIELD_RADIUS], RADIUS)
+    assert Globe.from_mesh(result) == Globe()
     assert np.isclose(result[GV_FIELD_ZSCALE], zscale)
     assert id(lam_uk_cloud) != id(result)
 
@@ -122,11 +123,11 @@ def test_resize_cloud__zscale(lam_uk_cloud, zscale):
 @pytest.mark.parametrize("radius", np.linspace(0.5, 1.5))
 def test_resize_cloud__radius(lam_uk_cloud, radius):
     """Test resize cloud points by new radius."""
-    assert np.isclose(lam_uk_cloud[GV_FIELD_RADIUS], RADIUS)
+    assert Globe.from_mesh(lam_uk_cloud) == Globe()
     assert np.isclose(lam_uk_cloud[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
     result = resize(lam_uk_cloud, radius=radius)
     assert np.isclose(distance(result), radius)
-    assert np.isclose(result[GV_FIELD_RADIUS], radius)
+    assert Globe.from_mesh(result) == Globe(render_radius=radius)
     assert np.isclose(result[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
 
 
@@ -138,7 +139,7 @@ def test_resize_cloud__zlevel_per_point(zlevel):
     result = resize(cloud, zlevel=zlevel)
     expected = RADIUS + RADIUS * np.asarray(zlevel) * zscale
     assert np.allclose(distance(result, mean=False), expected)
-    assert np.isclose(result[GV_FIELD_RADIUS], RADIUS)
+    assert Globe.from_mesh(result) == Globe()
     assert np.isclose(result[GV_FIELD_ZSCALE], zscale)
     assert id(cloud) != id(result)
 

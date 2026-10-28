@@ -43,9 +43,9 @@ def test_the_field_names():
     ]
 
 
-def test_writes_four_float64_fields_and_no_gvradius():
+def test_writes_four_float64_fields_and_no_gvradius(legacy):
     """Test that a globe is written as four float64 values, replacing gvRadius."""
-    mesh = Transform.from_1d(LONS, LATS)
+    mesh = legacy(Transform.from_1d(LONS, LATS))
     assert GV_FIELD_RADIUS in mesh.field_data
     Globe(exaggeration=20, exaggeration_below=100).to_mesh(mesh)
     for name, value in zip(FIELDS, [6378137.0, 1.0, 20.0, 100.0], strict=True):

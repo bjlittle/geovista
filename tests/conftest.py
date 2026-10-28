@@ -19,8 +19,10 @@ import pyvista as pv
 
 from geovista.bridge import Transform
 from geovista.cache import CACHE
+from geovista.common import _GV_GLOBE_FIELDS, GV_FIELD_RADIUS
 from geovista.crs import WGS84
 from geovista.geometry import coastlines as geometry_coastlines
+from geovista.globe import Globe
 from geovista.pantry.data import lam_uk as pantry_lam_uk
 from geovista.pantry.meshes import lam_polar as sample_lam_polar
 from geovista.pantry.meshes import lam_uk as sample_lam_uk
@@ -29,6 +31,7 @@ from geovista.pantry.meshes import lfric_sst as sample_lfric_sst
 from geovista.transform import transform_mesh
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from types import ModuleType
 
 #: Fixtures this suite takes from pytest's own plugins.
@@ -297,3 +300,27 @@ def sphere():
 def wgs84_wkt():
     """Fixture for generating WG284 CRS WKT as a string."""
     return WGS84.to_wkt()
+
+
+def _legacy(mesh: pv.DataSet, /, *, radius: float | None = None) -> pv.DataSet:
+    """Return a copy of the mesh as geovista 0.5 wrote it.
+
+    The copy has no globe, and a ``gvRadius`` of `radius`, else of the render
+    radius the mesh records.
+
+    """
+    if radius is None:
+        globe = Globe.from_mesh(mesh)
+        assert globe is not None, "the mesh records no globe to write as gvRadius"
+        radius = globe.render_radius
+    result = mesh.copy()
+    for name in _GV_GLOBE_FIELDS:
+        result.field_data.pop(name, None)
+    result.field_data[GV_FIELD_RADIUS] = np.array([float(radius)])
+    return result
+
+
+@pytest.fixture
+def legacy() -> Callable[..., pv.DataSet]:
+    """Fixture to build a mesh as geovista 0.5 wrote it, for tests of retired fields."""
+    return _legacy

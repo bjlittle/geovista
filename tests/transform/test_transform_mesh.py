@@ -507,7 +507,9 @@ def test_transform_mesh__cloud_returns_to_its_radius(radius, expected):
     a cloud of radius 2 came back on the unit sphere.
 
     """
-    cloud = gv.Transform.from_points([10.0, 20.0, 30.0], [30.0, 40.0, 50.0], radius=2.0)
+    cloud = gv.Transform.from_points(
+        [10.0, 20.0, 30.0], [30.0, 40.0, 50.0], globe=gv.Globe(render_radius=2.0)
+    )
     planar = transform_mesh(cloud, PLANAR)
 
     result = transform_mesh(planar, WGS84, radius=radius)
