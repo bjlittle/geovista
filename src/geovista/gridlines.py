@@ -29,11 +29,14 @@ from .common import (
     wrap,
 )
 from .crs import WGS84, to_wkt
+from .globe import _resolve
 
 if TYPE_CHECKING:
     import numpy as np
     from numpy.typing import ArrayLike
     import pyvista as pv
+
+    from .globe import Globe
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -225,7 +228,7 @@ def create_meridians(
     factor: float | None = None,
     closed_interval: bool | None = None,
     central_meridian: float | None = None,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: int | None = None,
     zscale: float | None = None,
 ) -> GraticuleGrid:
@@ -260,11 +263,13 @@ def create_meridians(
     central_meridian : float, optional
         The central meridian of the longitude range. Defaults to
         :data:`geovista.common.CENTRAL_MERIDIAN`.
-    radius : float, optional
-        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe the lines are drawn on, which each records. Defaults to
+        ``Globe()``.
     zlevel : int, optional
         The z-axis level. Used in combination with the `zscale` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``. Defaults
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``. Defaults
         to :data:`GRATICULE_ZLEVEL`.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -313,6 +318,8 @@ def create_meridians(
     if central_meridian is None:
         central_meridian = CENTRAL_MERIDIAN
 
+    globe = _resolve(globe)
+
     if zlevel is None:
         zlevel = GRATICULE_ZLEVEL
 
@@ -339,7 +346,7 @@ def create_meridians(
         xyz = _to_cartesian(
             np.ones_like(lats) * lon,
             lats,
-            radius=radius,
+            radius=globe.render_radius,
             zlevel=zlevel,
             zscale=zscale,
         )
@@ -351,6 +358,7 @@ def create_meridians(
 
         mesh = pv.PolyData(xyz, lines=lines)
         to_wkt(mesh, WGS84)
+        globe.to_mesh(mesh)
 
         if closed_interval and mask[index]:
             # mark this meridian as the closed interval wrap
@@ -440,7 +448,7 @@ def create_parallels(
     factor: float | None = None,
     poles_parallel: bool | None = None,
     poles_label: bool | None = None,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: int | None = None,
     zscale: float | None = None,
 ) -> GraticuleGrid:
@@ -475,11 +483,13 @@ def create_parallels(
     poles_label : bool, optional
         Whether to create a single north/south pole label. Only applies when
         ``poles_parallel=False``. Defaults to :data:`LATITUDE_POLES_LABEL`.
-    radius : float, optional
-        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe the lines are drawn on, which each records. Defaults to
+        ``Globe()``.
     zlevel : int, optional
         The z-axis level. Used in combination with the `zscale` to offset the
-        `radius` by a proportional amount i.e., ``radius * zlevel * zscale``. Defaults
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``. Defaults
         to :data:`GRATICULE_ZLEVEL`.
     zscale : float, optional
         The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -528,6 +538,8 @@ def create_parallels(
     if poles_label is None:
         poles_label = LATITUDE_POLES_LABEL
 
+    globe = _resolve(globe)
+
     if zlevel is None:
         zlevel = GRATICULE_ZLEVEL
 
@@ -547,7 +559,7 @@ def create_parallels(
         xyz = _to_cartesian(
             lons,
             np.ones_like(lons) * lat,
-            radius=radius,
+            radius=globe.render_radius,
             zlevel=zlevel,
             zscale=zscale,
         )
@@ -560,6 +572,7 @@ def create_parallels(
 
         mesh = pv.PolyData(xyz, lines=lines)
         to_wkt(mesh, WGS84)
+        globe.to_mesh(mesh)
         blocks[f"{index},{lat}"] = mesh
         grid_lats.append(lat)
 

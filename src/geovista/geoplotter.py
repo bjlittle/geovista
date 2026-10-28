@@ -1081,7 +1081,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             factor=factor,
             closed_interval=closed_interval,
             central_meridian=central_meridian,
-            radius=radius,
+            # until the scene holds a globe, its radius is carried in one
+            globe=None if radius is None else Globe(render_radius=radius),
             zlevel=zlevel,
             zscale=zscale,
         )
@@ -1309,7 +1310,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             factor=factor,
             poles_parallel=poles_parallel,
             poles_label=poles_label,
-            radius=radius,
+            # until the scene holds a globe, its radius is carried in one
+            globe=None if radius is None else Globe(render_radius=radius),
             zlevel=zlevel,
             zscale=zscale,
         )

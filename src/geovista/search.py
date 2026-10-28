@@ -21,6 +21,7 @@ from pykdtree.kdtree import KDTree as pyKDTree
 
 from .common import VTK_CELL_IDS, StrEnumPlus, _to_cartesian, to_cartesian
 from .crs import WGS84, from_wkt
+from .globe import Globe, _resolve
 from .transform import transform_points
 
 if TYPE_CHECKING:
@@ -152,12 +153,19 @@ class KDTree:  # numpydoc ignore=PR01
         if crs is None:
             crs = WGS84
 
+        # the globe of the mesh, which a query defaults to
+        self._globe: Globe = Globe.from_mesh(mesh) or Globe()
+
         if crs != WGS84:
             transformed = transform_points(
                 src_crs=crs, tgt_crs=WGS84, xs=xyz[:, 0], ys=xyz[:, 1]
             )
             # TODO @bjlittle: Clarify zlevel preservation for non-WGS84 point-clouds.
-            xyz = to_cartesian(transformed[:, 0], transformed[:, 1])
+            xyz = _to_cartesian(
+                transformed[:, 0],
+                transformed[:, 1],
+                radius=self._globe.render_radius,
+            )
 
         self._n_points: int = xyz.shape[0]
         self._mesh_type = mesh.__class__.__name__
@@ -264,7 +272,7 @@ class KDTree:  # numpydoc ignore=PR01
         k: int | None = None,
         epsilon: float | None = None,
         distance_upper_bound: float | None = None,
-        radius: float | None = None,
+        globe: Globe | None = None,
         zlevel: float | ArrayLike | None = None,
         zscale: float | None = None,
     ) -> NearestNeighbours:
@@ -286,11 +294,13 @@ class KDTree:  # numpydoc ignore=PR01
         distance_upper_bound : non-negative float, optional
             Return only neighbors within this distance. This is used to prune tree
             searches.
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe the points-of-interest lie on, at its render radius. Defaults
+            to the globe of the mesh the kd-tree was built from.
         zlevel : float or ArrayLike, default=0.0
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             If `zlevel` is not a scalar, then its shape must match or broadcast
             with the shape of `lons` and `lats`.
         zscale : float, optional
@@ -314,7 +324,10 @@ class KDTree:  # numpydoc ignore=PR01
         if epsilon is None:
             epsilon = KDTREE_EPSILON
 
-        xyz = _to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
+        globe = self._globe if globe is None else _resolve(globe)
+        xyz = _to_cartesian(
+            lons, lats, radius=globe.render_radius, zlevel=zlevel, zscale=zscale
+        )
 
         result = self._kdtree.query(
             xyz, k=k, eps=epsilon, distance_upper_bound=distance_upper_bound

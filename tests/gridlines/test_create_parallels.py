@@ -18,6 +18,7 @@ from geovista.common import (
     from_cartesian,
 )
 from geovista.crs import WGS84, from_wkt
+from geovista.globe import Globe
 from geovista.gridlines import (
     GRATICULE_ZLEVEL,
     LATITUDE_N_SAMPLES,
@@ -165,3 +166,19 @@ def test_poles_parallel():
     actual_labels = np.unique(result.labels)
     expected_labels = create_parallel_labels(list(parallel_lats), poles_parallel=True)
     np.testing.assert_array_equal(actual_labels, np.sort(expected_labels))
+
+
+@pytest.mark.parametrize("radius", [1.0, 6378137.0])
+def test_each_line_records_the_globe(radius):
+    """Test every line records the globe it is drawn on, and no gvRadius."""
+    globe = Globe(render_radius=radius, exaggeration=20)
+    result = create_parallels(globe=globe)
+    for mesh in result.blocks:
+        assert Globe.from_mesh(mesh) == globe
+        assert "gvRadius" not in mesh.field_data
+
+
+def test_radius_is_gone():
+    """Test the radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        create_parallels(radius=2.0)

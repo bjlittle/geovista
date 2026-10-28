@@ -12,14 +12,17 @@ from pyproj import CRS, Transformer
 import pytest
 import pyvista as pv
 
+from geovista.bridge import Transform
 from geovista.common import GV_FIELD_CRS, from_cartesian
 from geovista.crs import WGS84, to_wkt
+from geovista.globe import Globe
 from geovista.search import (
     KDTREE_LEAF_SIZE,
     KDTREE_PREFERENCE,
     KDTree,
     SearchPreference,
 )
+from geovista.transform import transform_mesh
 
 PREFERENCES = SearchPreference.values()
 
@@ -135,3 +138,34 @@ def test_cell_quad_points(lam_uk, center):
     lon, lat = lonlat[cid][0], lonlat[cid][1]
     _, idx = kdtree.query(lon, lat, k=4)
     np.testing.assert_array_equal(np.unique(idx), np.sort(center.pids))
+
+
+@pytest.mark.parametrize("radius", [1.0, 6378137.0])
+def test_query_uses_the_globe_of_the_tree(radius):
+    """Test a query lies on the globe of the mesh the tree was built from."""
+    lons, lats = [0.0, 10.0, 20.0], [0.0, 10.0]
+    mesh = Transform.from_1d(lons, lats, globe=Globe(render_radius=radius))
+    kdtree = KDTree(mesh)
+    distances, indices = kdtree.query(10.0, 10.0)
+    lonlats = from_cartesian(mesh)
+    (expected,) = np.flatnonzero(
+        np.isclose(lonlats[:, 0], 10.0) & np.isclose(lonlats[:, 1], 10.0)
+    )
+    assert int(np.ravel(indices)[0]) == expected
+    np.testing.assert_allclose(np.ravel(distances)[0], 0, atol=1e-9 * radius)
+
+
+def test_a_tree_of_a_projected_mesh():
+    """Test a projected mesh is placed at the render radius it records."""
+    mesh = Transform.from_1d(
+        [0.0, 10.0, 20.0], [0.0, 10.0], globe=Globe(render_radius=2)
+    )
+    planar = transform_mesh(mesh, "+proj=eqc")
+    kdtree = KDTree(planar)
+    np.testing.assert_allclose(np.linalg.norm(kdtree.points, axis=1), 2, rtol=1e-12)
+
+
+def test_radius_is_gone(lam_uk):
+    """Test the radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        KDTree(lam_uk).query(0.0, 0.0, radius=2.0)
