@@ -268,7 +268,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         Returns
         -------
-        Globe
+        :class:`~geovista.globe.Globe`
             The globe of the scene.
 
         Notes
