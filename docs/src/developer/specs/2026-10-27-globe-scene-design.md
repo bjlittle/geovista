@@ -124,8 +124,10 @@ Measured on 2026-10-27 at `a0f95dbe`, with `pyvista` 0.49.1 and VTK 9.7.1:
 
 - `import geovista` already imports `pyvista` and VTK, in 1.17 s, so registering an accessor
   with `pyvista` when `geovista` is imported costs nothing more.
-  `pyvista.register_dataset_accessor` arrived in `pyvista` 0.48.0, which is `geovista`'s
-  floor.
+  `pyvista.register_dataset_accessor` arrived in `pyvista` 0.48.0. That release cached an
+  accessor in the mesh's instance dict, which `copy.copy` shares, so a copy read the
+  original's globe: measured on 2026-10-28 with `pyvista` 0.48.4 and VTK 9.7.1. 0.49.0 keys
+  the cache to the mesh, and row 1 of §9 raised `geovista`'s floor to it.
 - A field array survives `copy`, `clip`, `clip_box`, `threshold`, `extract_cells`, `slice`,
   `triangulate`, `decimate`, `extract_surface`, `cast_to_unstructured_grid`, `merge`,
   `connectivity`, `smooth`, `subdivide`, `cell_data_to_point_data` and `warp_by_scalar`, so

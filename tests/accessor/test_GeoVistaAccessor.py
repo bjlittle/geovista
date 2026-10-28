@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+import copy
+import pickle
 import re
 
 import numpy as np
@@ -56,11 +58,22 @@ def test_follows_a_change_to_its_field_data():
     assert mesh.gv.crs is None
 
 
-def test_a_copy_reads_its_own_record():
+@pytest.mark.parametrize(
+    "duplicate",
+    [
+        lambda mesh: mesh.copy(),
+        lambda mesh: mesh.copy(deep=False),
+        copy.copy,
+        copy.deepcopy,
+        lambda mesh: pickle.loads(pickle.dumps(mesh)),  # noqa: S301
+    ],
+    ids=["copy", "shallow-copy", "copy.copy", "copy.deepcopy", "pickle"],
+)
+def test_a_copy_reads_its_own_record(duplicate):
     """Test that a copy's namespace reads the copy, never the original."""
     mesh = Transform.from_1d(LONS, LATS)
     assert mesh.gv.globe == Globe()
-    other = mesh.copy()
+    other = duplicate(mesh)
     Globe(render_radius=2).to_mesh(other)
     assert other.gv.globe == Globe(render_radius=2)
     assert mesh.gv.globe == Globe()
