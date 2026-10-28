@@ -146,8 +146,21 @@ jobs:
       # the only one carrying the carousel the tests cover. "strict" requires
       # every prerequisite that this job has deliberately provided, otherwise
       # losing one would skip its tests and leave the job green regardless.
-      # "logical" gives one xdist worker per cpu of the runner, as in ci-tests
+      # "logical" gives one xdist worker per cpu of the runner, as in ci-tests.
+      # xvfb-run discards the output of xvfb unless given "-e", so keep it, with
+      # "-audit 2" logging each client that connects or disconnects, to find why
+      # a worker's first render sometimes cannot open the display (#2764). "-s"
+      # replaces the default server arguments, so it restates the default screen
       - name: "test docs chrome (${{ matrix.version }})"
         run: |
           xvfb-run -a geovista --report
-          xvfb-run -a pixi run --frozen tests-docs-browser html-gallery strict logical
+          xvfb-run -a -e "${RUNNER_TEMP}/xvfb.log" \
+            -s "-screen 0 1280x1024x24 -audit 2" \
+            pixi run --frozen tests-docs-browser html-gallery strict logical
+
+      - name: "upload xvfb log"
+        if: ${{ failure() && !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: ci-tests-docs-xvfb-log-${{ github.job }}-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/xvfb.log
