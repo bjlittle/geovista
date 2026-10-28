@@ -10,9 +10,10 @@ from __future__ import annotations
 import subprocess
 import sys
 
-#: Builds and reads a globe's plain values, then fails if ``pint`` was imported.
+#: Builds and reads a globe's plain values, then fails if ``pint`` was loaded.
 PLAIN = """
 import sys
+import types
 
 import pyvista as pv
 
@@ -26,7 +27,11 @@ globe.to_mesh(mesh)
 Globe.from_mesh(mesh)
 Globe.from_mesh(pv.Sphere())
 mesh.gv.globe
-loaded = [name for name in sys.modules if name == "pint" or name.startswith("pint.")]
+# geovista.units binds pint lazily, so only a pint that has run counts
+pint = sys.modules.get("pint")
+loaded = sorted(name for name in sys.modules if name.startswith("pint."))
+if type(pint) is types.ModuleType:
+    loaded.append("pint")
 assert not loaded, loaded
 """
 

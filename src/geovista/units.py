@@ -36,8 +36,10 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, NDArray
     import pint
 
-# lazy import third-party dependencies
+# lazy import third-party dependencies. pint is bound here, unloaded, so that
+# the Quantity alias resolves at runtime
 np = lazy.load("numpy")
+pint = lazy.load("pint")
 
 __all__ = ["Quantity", "as_quantity", "to_degrees", "to_metres"]
 

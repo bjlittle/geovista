@@ -12,6 +12,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pint
+
 import geovista
 from geovista import units
 
@@ -19,9 +21,10 @@ from geovista import units
 #: replacing ``pint-cf`` touches one module (globe spec §4.2).
 UNITS_ONLY = {"lark", "pint", "pint_cf"}
 
-#: Converts plain numbers, then fails if any ``pint`` module was imported.
+#: Converts plain numbers, then fails if any ``pint`` module was loaded.
 PLAIN = """
 import sys
+import types
 
 import numpy as np
 
@@ -30,9 +33,11 @@ import geovista.units as units
 units.to_metres(1.0)
 units.to_metres(np.ones(3))
 units.to_degrees(1.0)
-loaded = sorted(
-    name for name in sys.modules if name == "pint" or name.startswith("pint.")
-)
+# geovista.units binds pint lazily, so only a pint that has run counts
+pint = sys.modules.get("pint")
+loaded = sorted(name for name in sys.modules if name.startswith("pint."))
+if type(pint) is types.ModuleType:
+    loaded.append("pint")
 assert not loaded, loaded
 """
 
@@ -62,3 +67,8 @@ def test_only_units_imports_pint():
             if any(name.split(".")[0] in UNITS_ONLY for name in names):
                 importers.add(path.relative_to(package).as_posix())
     assert importers == {"units.py"}
+
+
+def test_the_quantity_alias_resolves():
+    """Test that the Quantity alias resolves to pint's quantity at runtime."""
+    assert units.Quantity.__value__ is pint.Quantity
