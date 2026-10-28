@@ -189,12 +189,12 @@ def to_degrees(
 
 @overload
 def to_degrees(
-    value: ArrayLike | pint.Quantity, units: str | None = None
+    value: ArrayLike | Quantity, units: str | None = None
 ) -> float | NDArray[np.float64]: ...  # numpydoc ignore=GL08
 
 
 def to_degrees(
-    value: ArrayLike | pint.Quantity, units: str | None = None
+    value: ArrayLike | Quantity, units: str | None = None
 ) -> float | NDArray[np.float64]:
     """Read an angle, and convert it to degrees.
 
@@ -261,12 +261,12 @@ def to_metres(
 
 @overload
 def to_metres(
-    value: ArrayLike | pint.Quantity, units: str | None = None
+    value: ArrayLike | Quantity, units: str | None = None
 ) -> float | NDArray[np.float64]: ...  # numpydoc ignore=GL08
 
 
 def to_metres(
-    value: ArrayLike | pint.Quantity, units: str | None = None
+    value: ArrayLike | Quantity, units: str | None = None
 ) -> float | NDArray[np.float64]:
     """Read a length, and convert it to metres.
 
