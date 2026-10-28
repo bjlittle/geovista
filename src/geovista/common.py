@@ -610,7 +610,9 @@ def from_cartesian(
     radius = distance(mesh, mean=False)
 
     if not cloud:
-        mean = distance(mesh)
+        # the mean the points measure, as distance snaps it to the globe the mesh
+        # records, which a lift smaller than that snap leaves the points off
+        mean = np.mean(radius)
         # a surface at one radius, to the precision of its points, is read at
         # that radius, which gives the points of a parallel one latitude. One
         # at uneven radii is read at the radius of each point, or a point off
