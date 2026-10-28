@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, NoReturn
 import pyvista as pv
 
 if TYPE_CHECKING:
-    from pyproj import CRS
+    from pyproj.crs import CRS
 
     from .globe import Globe
 
@@ -105,7 +105,7 @@ class GeoVistaAccessor:
 
         Returns
         -------
-        Globe or None
+        geovista.globe.Globe or None
             The globe, read as :meth:`geovista.globe.Globe.from_mesh` reads
             it, or ``None`` when it cannot be read.
 
@@ -146,7 +146,7 @@ class GeoVistaAccessor:
 
         Returns
         -------
-        pyproj.CRS or None
+        :class:`~pyproj.crs.CRS` or None
             The CRS, read from the mesh's WKT as
             :func:`geovista.crs.from_wkt` reads it, or ``None``.
 
