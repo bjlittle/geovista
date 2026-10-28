@@ -290,7 +290,8 @@ A scene's globe holds three quantities, and nothing else in the scene holds them
 `GeoPlotter` takes a globe, and every layer it adds takes its radius from it, the base
 layer, coastlines and graticule included. A globe is immutable. Changing the vertical
 mapping of a scene replaces its globe, and the scene rebuilds every position from the heights its
-layers carry (§4.4).
+layers carry (§4.4). Row 3 of §9 fixes a scene's globe when the scene is made, and leaves
+replacing it to heights spec §8 item 1.
 
 The render radius stays 1 by default. §3.5 found layering to behave
 the same at the Earth's radius, which bears on crs spec §8 item 3, but
@@ -325,6 +326,11 @@ crs spec §8 item 11.
 (globe-spec-4-3)=
 ### 4.3 Heights Are Data
 
+> **Extended by a child specification.** [`2026-10-28-heights-as-data-design.md`](2026-10-28-heights-as-data-design.md), `heights spec §…`,
+> specifies how a mesh stores its heights, the keywords that take them, missing heights,
+> and what is refused. It inherits this document's decisions (§2) and testing (§6), and
+> amends this section for a height that is missing.
+
 A mesh carries the height of each point, in metres above mean sea level, as a point array.
 A depth is a negative height, and may be given as a depth, positive downward, which is
 negated once at the boundary. A mesh given no height is at sea level.
@@ -346,7 +352,8 @@ the one "Ellipsoidal height" and of the other "Gravity-related height". Converti
 heights through PROJ, with the geoid grid it needs, is a later step
 (§7).
 
-Heights that are not finite are refused.
+An infinite height is refused. A masked or NaN height is missing: it is kept as NaN, and
+its point is drawn at sea level (heights spec §2 decision 3).
 
 `to_structured_grid` reads its `zs` as heights, in any form of §4.2, and honours them as
 given, uneven levels included. Today it keeps only their number (§3.6).
@@ -357,6 +364,8 @@ given, uneven levels included. Today it keeps only their number (§3.6).
 > **Extended by a child specification.** [`2026-10-27-globe-scene-design.md`](2026-10-27-globe-scene-design.md) settles which functions take a
 > globe (scene spec §4.2), how a mesh stores the globe it records (scene spec §4.3), and the
 > globe of a mesh that records none (scene spec §4.4).
+> [`2026-10-28-heights-as-data-design.md`](2026-10-28-heights-as-data-design.md) settles which
+> functions build positions from heights, and how (heights spec §4.3).
 
 The scene turns heights into positions, with its globe's radius `R`, scale `s` and
 vertical mapping `V`. In its first form, `V(h)` is `E_above h` for a height at or above sea
@@ -509,7 +518,7 @@ crs spec §6 requires:
   depth by the factor below; changing either moves every point by the formula, and leaves
   every height read back unchanged;
 - **refusal**: an ellipsoidal height, a pressure given as a height, a height for each cell,
-  a dimensionless angle and a height that is not finite each raise, naming the problem;
+  a dimensionless angle and an infinite height each raise, naming the problem;
 - **layering**: the measures of §3.5 become tests, on whichever
   renderer CI provides: no bleed, and every coastline of the close and orbiting views
   visible, for C48 and a 5° grid on the globe, and for C48 on Robinson;
@@ -595,7 +604,7 @@ Each carries the status grammar of docs spec §3.6.
 |---|---|---|
 | 1 | Units: `geovista.units`, with `pint` and `pint-cf` | ✅ landed (2026-10-27, {pull}`2754`) |
 | 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6, by rows 1 and 2 of scene spec §9 | ✅ landed (2026-10-28, {pull}`2766`) |
-| 3 | Heights as data: `height` and `depth`, the vertical mapping, positions on the globe and on a map, refusals, and `to_structured_grid` reading its levels as heights | not started |
+| 3 | Heights as data: `height` and `depth`, the vertical mapping, positions on the globe and on a map, refusals, and `to_structured_grid` reading its levels as heights, by rows 1 and 2 of heights spec §9 | not started |
 | 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, the lift, and the measures of §3.5 as tests | not started |
 | 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | not started |
 | 6 | A vertical scale for the viewer | candidate: a scene with heights that a scientist shows |
