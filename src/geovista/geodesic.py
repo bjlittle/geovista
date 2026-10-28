@@ -24,8 +24,8 @@ from .common import (
     RADIUS,
     ZLEVEL_SCALE,
     StrEnumPlus,
+    _to_cartesian,
     distance,
-    to_cartesian,
     wrap,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
@@ -779,10 +779,10 @@ class BBox:  # numpydoc ignore=PR01
             outer_radius = self._surface_radius + offset
 
             # generate the face points
-            inner_xyz = to_cartesian(
+            inner_xyz = _to_cartesian(
                 self._bbox_lons, self._bbox_lats, radius=inner_radius
             )
-            outer_xyz = to_cartesian(
+            outer_xyz = _to_cartesian(
                 self._bbox_lons, self._bbox_lats, radius=outer_radius
             )
             bbox_xyz = np.vstack([inner_xyz, outer_xyz])
@@ -882,7 +882,7 @@ class BBox:  # numpydoc ignore=PR01
         edge_idxs = self._bbox_face_edge_idxs()
         edge_lons = np.asanyarray(self._bbox_lons)[edge_idxs]
         edge_lats = np.asanyarray(self._bbox_lats)[edge_idxs]
-        edge_xyz = to_cartesian(edge_lons, edge_lats, radius=radius)
+        edge_xyz = _to_cartesian(edge_lons, edge_lats, radius=radius)
         edge = pv.lines_from_points(edge_xyz, close=True)
 
         edge.field_data[GV_FIELD_RADIUS] = np.array([radius])
@@ -1177,7 +1177,7 @@ def line(
     line_lons.append(lons[-1])
     line_lats.append(lats[-1])
 
-    xyz = to_cartesian(line_lons, line_lats, radius=radius)
+    xyz = _to_cartesian(line_lons, line_lats, radius=radius)
     lines = pv.lines_from_points(xyz, close=bool(close))
 
     lines.field_data[GV_FIELD_RADIUS] = np.array([radius])

@@ -56,12 +56,12 @@ def test_defaults(lam_uk_sample, wgs84_wkt):
 
 
 def test_to_cartesian_kwarg_pass_thru(mocker, lam_uk_sample):
-    """Test kwargs are passed thru to :func:`geovista.common.to_cartesian`."""
+    """Test kwargs are passed thru to the private float form of ``to_cartesian``."""
     xyz = np.array([[1.0, 2.0, 3.0]])
     radius = 1.23
     zlevel = mocker.sentinel.zlevel
     zscale = 4.56
-    to_cartesian = mocker.patch("geovista.bridge.to_cartesian", return_value=xyz)
+    to_cartesian = mocker.patch("geovista.bridge._to_cartesian", return_value=xyz)
     kwargs = {"radius": radius, "zlevel": zlevel, "zscale": zscale}
     lons, lats = lam_uk_sample
     result = Transform.from_points(lons, lats, **kwargs)

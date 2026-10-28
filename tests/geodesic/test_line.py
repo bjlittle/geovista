@@ -74,8 +74,8 @@ def test_contains_sample_points(lfric_sst, nsamples):
     """Test resulting line must contain the original sample points."""
     lons = lats = range(nsamples)
     result = line(lons, lats)
-    radius = RADIUS + RADIUS * ZLEVEL_SCALE
-    xyz = to_cartesian(lons, lats, radius=radius)
+    # a line is lifted one z-level by default
+    xyz = to_cartesian(lons, lats, zlevel=1)
     np.testing.assert_array_equal(xyz, result.points[::GEODESIC_NPTS])
     result = line(lons, lats, surface=lfric_sst)
     np.testing.assert_array_equal(xyz, result.points[::GEODESIC_NPTS])

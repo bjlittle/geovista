@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 import lazy_loader as lazy
 from pykdtree.kdtree import KDTree as pyKDTree
 
-from .common import VTK_CELL_IDS, StrEnumPlus, to_cartesian
+from .common import VTK_CELL_IDS, StrEnumPlus, _to_cartesian, to_cartesian
 from .crs import WGS84, from_wkt
 from .transform import transform_points
 
@@ -314,7 +314,7 @@ class KDTree:  # numpydoc ignore=PR01
         if epsilon is None:
             epsilon = KDTREE_EPSILON
 
-        xyz = to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
+        xyz = _to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
 
         result = self._kdtree.query(
             xyz, k=k, eps=epsilon, distance_upper_bound=distance_upper_bound

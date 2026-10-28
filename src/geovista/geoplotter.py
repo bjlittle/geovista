@@ -35,6 +35,7 @@ from .common import (
     REMESH_SEAM,
     ZLEVEL_SCALE,
     ZTRANSFORM_FACTOR,
+    _to_cartesian,
     distance,
     point_cloud,
     to_cartesian,
@@ -334,7 +335,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         labels = graticule.labels
         lonlat = np.asanyarray(graticule.lonlat)
 
-        xyz = to_cartesian(
+        xyz = _to_cartesian(
             lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
         )
         mesh = pv.PolyData(xyz)

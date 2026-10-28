@@ -25,7 +25,7 @@ from .common import (
     GV_REMESH_POINT_IDS,
     PERIOD,
     REMESH_SEAM,
-    to_cartesian,
+    _to_cartesian,
     wrap,
 )
 from .crs import WGS84, to_wkt
@@ -336,7 +336,7 @@ def create_meridians(
     blocks = pv.MultiBlock()
 
     for index, lon in enumerate(lons):
-        xyz = to_cartesian(
+        xyz = _to_cartesian(
             np.ones_like(lats) * lon,
             lats,
             radius=radius,
@@ -544,7 +544,7 @@ def create_parallels(
         if not poles_parallel and np.isclose(np.abs(lat), 90.0):
             continue
 
-        xyz = to_cartesian(
+        xyz = _to_cartesian(
             lons,
             np.ones_like(lons) * lat,
             radius=radius,

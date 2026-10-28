@@ -32,12 +32,12 @@ from .common import (
     ZLEVEL_SCALE,
     _face_offsets,
     _read_radius,
+    _to_cartesian,
     _write_radius,
     distance,
     from_cartesian,
     point_cloud,
     sanitize_vtk,
-    to_cartesian,
     wrap,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
@@ -642,7 +642,7 @@ def resize(
         lonlat = from_cartesian(mesh)
         if cloud:
             level = level + lonlat[:, 2]
-        xyz = to_cartesian(
+        xyz = _to_cartesian(
             lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=level, zscale=zscale
         )
         if not inplace:

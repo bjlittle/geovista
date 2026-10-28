@@ -32,10 +32,11 @@ from .common import (
     RADIUS,
     ZLEVEL_SCALE,
     VectorLike,
+    _to_cartesian,
+    _vectors_to_cartesian,
     cast_UnstructuredGrid_to_PolyData,
     nan_mask,
     to_cartesian,
-    vectors_to_cartesian,
 )
 from .crs import WGS84, CRSLike, to_wkt
 from .transform import transform_points
@@ -849,7 +850,7 @@ class Transform:  # numpydoc ignore=PR01
         lats = transformed[:, 1].reshape(shape)
 
         # convert lat/lon to cartesian xyz
-        xyz = to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
+        xyz = _to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
 
         # create the point-cloud mesh
         mesh = pv.PolyData(xyz)
@@ -969,7 +970,7 @@ class Transform:  # numpydoc ignore=PR01
                     )
                     vector_xs, vector_ys = transformed[:, 0], transformed[:, 1]
 
-            xx, yy, zz = vectors_to_cartesian(
+            xx, yy, zz = _vectors_to_cartesian(
                 lons=vector_xs,
                 lats=vector_ys,
                 vectors=(us, vs, ws),
@@ -1452,7 +1453,7 @@ class Transform:  # numpydoc ignore=PR01
         radius += radius * zlevel * zscale
 
         # convert lat/lon to cartesian xyz
-        geometry = to_cartesian(xs, ys, radius=radius)
+        geometry = _to_cartesian(xs, ys, radius=radius)
 
         # create the mesh
         mesh = pv.PolyData(geometry, faces=faces)
@@ -1589,7 +1590,7 @@ class Transform:  # numpydoc ignore=PR01
         shape = xv.shape
 
         # convert lat/lon to cartesian xyz
-        xyz = to_cartesian(xv, yv, radius=radius, zlevel=zv, zscale=1)
+        xyz = _to_cartesian(xv, yv, radius=radius, zlevel=zv, zscale=1)
 
         # create the grid
         grid = pv.StructuredGrid(

@@ -551,3 +551,40 @@ class Globe:  # numpydoc ignore=PR01
 
         """
         return self._render_radius / self._radius
+
+
+def _resolve(globe: object, /) -> Globe:
+    """Resolve the globe a function is given.
+
+    Parameters
+    ----------
+    globe : object
+        The globe given, or ``None``.
+
+    Returns
+    -------
+    Globe
+        The globe given, or the default globe when given ``None``.
+
+    Raises
+    ------
+    TypeError
+        When given anything but a globe or ``None``, such as a number a caller
+        would once have given as a ``radius``.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if globe is None:
+        return Globe()
+
+    if not isinstance(globe, Globe):
+        emsg = (
+            f"globe must be a geovista.Globe, got {globe!r}. Draw a sphere of "
+            "radius r with Globe(render_radius=r)."
+        )
+        raise TypeError(emsg)
+
+    return globe

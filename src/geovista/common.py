@@ -30,6 +30,8 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
     import pyvista as pv
 
+    from .globe import Globe
+
 # lazy import third-party dependencies
 np = lazy.load("numpy")
 pv = lazy.load("pyvista")
@@ -657,7 +659,7 @@ def from_cartesian(
         if np.allclose(radius, mean, rtol=resolution, atol=0):
             radius = mean
 
-    lons, lats = to_lonlats(
+    lons, lats = _to_lonlats(
         mesh.points, radius=radius, stacked=False, rtol=rtol, atol=atol
     )
 
@@ -1016,12 +1018,70 @@ def to_cartesian(
     lons: ArrayLike,
     lats: ArrayLike,
     *,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
     stacked: bool | None = True,
 ) -> np.ndarray:
     """Convert geographic longitudes and latitudes to cartesian ``xyz`` points.
+
+    Parameters
+    ----------
+    lons : :data:`~numpy.typing.ArrayLike`
+        The longitude values (degrees) to be converted.
+    lats : :data:`~numpy.typing.ArrayLike`
+        The latitude values (degrees) to be converted.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe whose render radius the points lie at. Defaults to
+        ``Globe()``, whose render radius is :data:`RADIUS`.
+    zlevel : float or :data:`~numpy.typing.ArrayLike`, default=0.0
+        The z-axis level. Used in combination with the `zscale` to offset the
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``. If `zlevel` is not a scalar, then its
+        shape must match or broadcast with the shape of `lons` and `lats`.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`ZLEVEL_SCALE`.
+    stacked : bool, default=True
+        Specify whether the resultant xyz points have shape (N, 3).
+        Otherwise, they will have shape (3, N).
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The ``xyz`` spherical cartesian points.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    # geovista.globe imports this module
+    from .globe import _resolve  # noqa: PLC0415
+
+    return _to_cartesian(
+        lons,
+        lats,
+        radius=_resolve(globe).render_radius,
+        zlevel=zlevel,
+        zscale=zscale,
+        stacked=stacked,
+    )
+
+
+def _to_cartesian(
+    lons: ArrayLike,
+    lats: ArrayLike,
+    *,
+    radius: float | None = None,
+    zlevel: float | ArrayLike | None = None,
+    zscale: float | None = None,
+    stacked: bool | None = True,
+) -> np.ndarray:
+    """Convert geographic longitudes and latitudes to points at a radius.
+
+    The float form of :func:`to_cartesian`, which geovista calls inside with a
+    render radius, or a radius a z-level has already lifted.
 
     Parameters
     ----------
@@ -1101,11 +1161,73 @@ def vectors_to_cartesian(
     lats: ArrayLike,
     vectors: Vector3DLike,
     *,
-    radius: float | None = None,
+    globe: Globe | None = None,
     zlevel: float | ArrayLike | None = None,
     zscale: float | None = None,
 ) -> Vector3DLike:
     """Transform geographic-oriented vector components ``uvw`` to cartesian ``xyz``.
+
+    Parameters
+    ----------
+    lons : ArrayLike
+        The longitude points of the `vectors` (in degrees). Must be the same
+        shape as `lats`.
+    lats : ArrayLike
+        The latitude points of the `vectors` (in degrees). Must be the same
+        shape as `lons`.
+    vectors : Vector3DLike
+        The eastward (``U``), northward (``V``) and upward (``W``) vector components.
+        All shapes must be the same as `lons` and `lats`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe whose render radius scales the vectors. Defaults to
+        ``Globe()``, whose render radius is :data:`RADIUS`.
+    zlevel : int  or :data:`~numpy.typing.ArrayLike`, default=0.0
+        The z-axis level. Used in combination with the `zscale` to offset the
+        render radius by a proportional amount i.e.,
+        ``render_radius * zlevel * zscale``.
+        NOTE : non-scalar `zlevel` is not actually supported, since it is planned to
+        drop support for this from :meth:`~geovista.bridge.Transform.from_points`.
+        It will raise an error.
+    zscale : float, optional
+        The proportional multiplier for z-axis `zlevel`. Defaults to
+        :data:`ZLEVEL_SCALE`.
+
+    Returns
+    -------
+    Vector3DLike
+        The corresponding ``xyz`` cartesian vector components.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # geovista.globe imports this module
+    from .globe import _resolve  # noqa: PLC0415
+
+    return _vectors_to_cartesian(
+        lons,
+        lats,
+        vectors,
+        radius=_resolve(globe).render_radius,
+        zlevel=zlevel,
+        zscale=zscale,
+    )
+
+
+def _vectors_to_cartesian(
+    lons: ArrayLike,
+    lats: ArrayLike,
+    vectors: Vector3DLike,
+    *,
+    radius: float | None = None,
+    zlevel: float | ArrayLike | None = None,
+    zscale: float | None = None,
+) -> Vector3DLike:
+    """Transform geographic-oriented vector components to cartesian at a radius.
+
+    The float form of :func:`vectors_to_cartesian`, which geovista calls inside
+    with a render radius.
 
     Parameters
     ----------
@@ -1192,7 +1314,7 @@ def to_lonlat(
     /,
     *,
     radians: bool | None = False,
-    radius: float | None = None,
+    globe: Globe | None = None,
     rtol: float | None = None,
     atol: float | None = None,
 ) -> np.ndarray:
@@ -1205,8 +1327,9 @@ def to_lonlat(
     radians : bool, default=False
         Convert resultant longitude and latitude values to radians.
         Default units are degrees.
-    radius : float, optional
-        The `radius` of the sphere. Defaults to :data:`RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe whose render radius the point lies at. Defaults to
+        ``Globe()``, whose render radius is :data:`RADIUS`.
     rtol : float, optional
         The relative tolerance for longitudes close to the 'wrap meridian' -
         see :func:`geovista.common.wrap` for more.
@@ -1234,7 +1357,7 @@ def to_lonlat(
         raise ValueError(emsg)
 
     result: np.ndarray
-    (result,) = to_lonlats(point, radians=radians, radius=radius, rtol=rtol, atol=atol)
+    (result,) = to_lonlats(point, radians=radians, globe=globe, rtol=rtol, atol=atol)
 
     return result
 
@@ -1244,12 +1367,69 @@ def to_lonlats(
     /,
     *,
     radians: bool | None = False,
-    radius: float | ArrayLike | None = None,
+    globe: Globe | None = None,
     stacked: bool | None = True,
     rtol: float | None = None,
     atol: float | None = None,
 ) -> np.ndarray:
     """Convert cartesian `xyz` points on sphere to geographic longitudes and latitudes.
+
+    Parameters
+    ----------
+    xyz : :data:`~numpy.typing.ArrayLike`
+        The cartesian (x, y, z) points to be converted.
+    radians : bool, default=False
+        Convert resultant longitude and latitude values to radians.
+        Default units are degrees.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe whose render radius the points lie at. Defaults to
+        ``Globe()``, whose render radius is :data:`RADIUS`.
+    stacked : bool, default=True
+        Default the resultant shape to be ``(N, 2)``, otherwise ``(2, N)``.
+    rtol : float, optional
+        The relative tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
+    atol : float, optional
+        The absolute tolerance for longitudes close to the 'wrap meridian' -
+        see :func:`geovista.common.wrap` for more.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The longitude and latitude values.
+
+    Notes
+    -----
+    .. versionadded:: 0.1.0
+
+    """
+    # geovista.globe imports this module
+    from .globe import _resolve  # noqa: PLC0415
+
+    return _to_lonlats(
+        xyz,
+        radians=radians,
+        radius=_resolve(globe).render_radius,
+        stacked=stacked,
+        rtol=rtol,
+        atol=atol,
+    )
+
+
+def _to_lonlats(
+    xyz: ArrayLike,
+    /,
+    *,
+    radians: bool | None = False,
+    radius: float | ArrayLike | None = None,
+    stacked: bool | None = True,
+    rtol: float | None = None,
+    atol: float | None = None,
+) -> np.ndarray:
+    """Convert cartesian `xyz` points at a radius to longitudes and latitudes.
+
+    The float form of :func:`to_lonlats`, which geovista calls inside with a
+    render radius, or with the radius of each point.
 
     Parameters
     ----------

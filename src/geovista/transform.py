@@ -26,11 +26,11 @@ from .common import (
     RADIUS,
     ZLEVEL_SCALE,
     _read_radius,
+    _to_cartesian,
     _write_radius,
     distance,
     from_cartesian,
     point_cloud,
-    to_cartesian,
     wrap,
 )
 from .crs import (
@@ -219,7 +219,7 @@ def transform_mesh(
             mesh = mesh.copy(deep=True)
 
         if tgt_crs == WGS84:
-            xs, ys, zs = to_cartesian(
+            xs, ys, zs = _to_cartesian(
                 xs, ys, radius=radius, zlevel=level, zscale=zscale, stacked=False
             )
 
@@ -605,7 +605,7 @@ def _apply_datum(
     # index it accepts at runtime, so the points are set through a cast
     points = cast("NDArray[Any]", result.points)
     # each point keeps its own radius, which carries any z-level it was lifted by
-    points[:] = to_cartesian(lons, lats, radius=1.0) * radius[:, np.newaxis]
+    points[:] = _to_cartesian(lons, lats, radius=1.0) * radius[:, np.newaxis]
     result.field_data[_DATUM] = np.array([1])
 
     return result

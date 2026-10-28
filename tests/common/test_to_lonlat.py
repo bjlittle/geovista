@@ -11,6 +11,10 @@ import numpy as np
 import pytest
 
 from geovista.common import to_lonlat
+from geovista.globe import Globe
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
 
 
 @pytest.mark.parametrize(
@@ -44,3 +48,23 @@ def test_list(degrees):
     point = np.asarray(degrees.xyz, dtype=float)
 
     np.testing.assert_array_equal(to_lonlat(point.tolist()), to_lonlat(point))
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_the_globe_sets_the_radius(degrees, radius):
+    """Test a point at the render radius of the globe given reads back."""
+    point = np.asarray(degrees.xyz, dtype=float) * radius
+    lonlat = to_lonlat(point, globe=Globe(render_radius=radius))
+    np.testing.assert_array_almost_equal(lonlat, degrees.expected)
+
+
+def test_a_number_is_not_a_globe(degrees):
+    """Test a number given as the globe is refused."""
+    with pytest.raises(TypeError, match=r"globe must be a geovista\.Globe"):
+        _ = to_lonlat(degrees.xyz, globe=2.0)
+
+
+def test_radius_is_gone(degrees):
+    """Test the radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        _ = to_lonlat(degrees.xyz, radius=2.0)
