@@ -164,8 +164,11 @@ normals, then calls `warp_by_scalar` with a factor of 2 × 10⁻⁵ on the altit
 
 `geovista.Globe` is immutable, and takes four keyword arguments:
 
-- `radius`, the Earth's radius, by default the WGS84 semi-major axis of 6,378,137 m, in
-  any form `geovista.units.to_metres` reads (globe spec §4.2);
+- `radius`, the Earth's radius, by default the WGS84 semi-major axis of 6,378,137 m, as a
+  plain number in metres or a `pint` quantity from any registry, forms 1 and 2 of globe
+  spec §4.2. A magnitude with a CF unit string, form 3, reaches a globe through
+  `geovista.units.to_metres`, as `Globe(radius=to_metres(6371, "km"))`, since its unit
+  would need a fifth keyword;
 - `render_radius`, the radius the globe is drawn at, by default `common.RADIUS`, a plain
   number in the units of the scene;
 - `exaggeration`, by default 1, a plain number, an int or a float, kept as a float, the
@@ -174,8 +177,10 @@ normals, then calls `warp_by_scalar` with a factor of 2 × 10⁻⁵ on the altit
 - `exaggeration_below`, by default the `exaggeration`, a plain number, an int or a float,
   kept as a float, the factor for depths below sea level.
 
-Each must be finite and positive, or a `ValueError` names the value. A factor need not be
-whole: the gallery's run from 1.28 to 200 (globe spec §3.6), and one below 1 flattens. A
+Each must be finite and positive, or a `ValueError` names the value. A value of the wrong
+type raises a `TypeError` naming its keyword: `True`, a string, a quantity given as a render
+radius or a factor, or an array given as a radius. A string would otherwise be read as the
+number it spells. A factor need not be whole: the gallery's run from 1.28 to 200 (globe spec §3.6), and one below 1 flattens. A
 factor of 0 would draw a range of heights at one radius, and a negative one would turn
 them upside down. Either breaks the rule of globe spec §4.1 that the vertical mapping
 always increases. `Globe(exaggeration=20)` stretches the atmosphere and the ocean alike,
@@ -193,7 +198,8 @@ Inside, `geovista` reads the radius as a float in metres, so drawing a scene nev
 over the radius.
 
 Two globes are equal when their four values are, exactly, and a globe is hashable, so it
-can key a cache such as the mapping of crs spec §4.5.
+can key a cache such as the mapping of crs spec §4.5. Its repr is the call that builds it,
+with the radius in metres.
 
 The class lives in `geovista.globe`, and is exported at the top level of `geovista`.
 
@@ -250,8 +256,15 @@ the same globe, and the same points, bit for bit.
 The spread of item 2 tells a mesh on a sphere from one whose heights were baked into its
 positions. A warped mesh's mean radius is its sea level raised by its heights, and taking
 it for the render radius would sink that sea level (§3.4). 10⁻⁶ admits a sphere stored in
-float32, whose radius varies by some 6 × 10⁻⁸, and refuses heights of more than about 6 m
-at the Earth's radius.
+float32, whose radius varies by 6 × 10⁻⁸ to 9 × 10⁻⁸, and refuses heights of more than
+about 6 m at the Earth's radius.
+
+The mean of float32 points is not exactly their radius, so a radius read from them is
+rounded to float32. On 2026-10-28, with `pyvista` 0.49.1 and NumPy 2.5.4, the float64 mean
+of the points of `pv.Sphere(radius=1.0)` was 1.0000000003660252 at a resolution of 30, and
+0.9999999994261561 at 100. Rounded to float32, the mean was the sphere's radius exactly, at
+radii of 0.5, 1, 2 and 6,378,137 and at both resolutions, so `pv.Sphere(radius=1.0)` reads
+as `Globe()`. `pv.Sphere()` has a radius of 0.5, and reads as `Globe(render_radius=0.5)`.
 
 A mesh with no globe is drawn where its points are, never repositioned, and records no
 globe on the mesh drawn. A function given such a mesh uses `Globe()` wherever it needs a
@@ -292,8 +305,10 @@ until {issue}`2753` refreshes them, and a warning is an error under the test sui
 - `mesh.gv.crs` returns the mesh's CRS, read from its WKT as `crs.from_wkt` reads it, or
   `None`.
 
-The namespace's docstring and repr name `geovista`, since `gv` alone means nothing to a
-reader new to `geovista` (§5).
+The namespace is the class `geovista.accessor.GeoVistaAccessor`. Its docstring and repr
+name `geovista`, since `gv` alone means nothing to a reader new to `geovista` (§5). Its
+module imports only `pyvista`, and imports the rest of `geovista` as each member is read,
+so importing `geovista` loads neither `pyproj` nor `pint`.
 
 Each is read from the mesh's field data at every access, so it never goes stale, and
 reading never changes the mesh. Neither can be set. A globe describes where a mesh's points
@@ -390,8 +405,9 @@ globe spec §9 replaces `zlevel` with the lift.
 Every result is checked against a reference independent of `geovista`, as
 globe spec §6 and crs spec §6 require:
 
-- **the globe**: a radius in each form of globe spec §4.2 reads as metres; a value that is
-  not finite, a radius that is not positive and an exaggeration that is not positive are
+- **the globe**: a radius as a plain number or a `pint` quantity reads as metres, and so
+  does one read through `to_metres` from a CF unit string; a value of the wrong type is
+  refused; a value that is not finite, a radius that is not positive and an exaggeration that is not positive are
   each refused; `exaggeration` alone sets both factors, and `exaggeration_below` sets the
   factor below sea level alone; an int factor reads back as a float, and a factor below 1
   is accepted; equal values make equal globes;

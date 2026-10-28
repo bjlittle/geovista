@@ -11,6 +11,9 @@ src/geovista/          # Library source (lazy-loaded modules)
 ├── bridge.py          # Transform data to PyVista meshes
 ├── core.py            # Mesh slicing, resizing, remeshing
 ├── crs.py             # Coordinate Reference System utilities
+├── units.py           # Lengths and angles to metres and degrees (only pint user)
+├── globe.py           # The Globe, and how a mesh records it
+├── accessor.py        # The mesh.gv namespace, registered on import
 ├── geodesic.py        # Geodesic BBox and line operations
 ├── geometry.py        # Coastline features
 ├── geoplotter.py      # Cartographic PyVista plotter
@@ -62,16 +65,14 @@ same bump to `requirements/pypi-*.txt`, which `pixi` neither reads nor updates.
 The reverse is gated: `tests/test_dependency_ceilings.py` fails a dependabot PR
 whose pip ceiling outruns the pixi one, so mirror the bump on that same PR.
 
-⚠️ **A max-pin cannot see a renamed distribution.** `vtk-xref` became
-`sphinx-vtk-xref` (#2541): the old name stopped at 0.1.2, so `pixi update` and
-dependabot had nothing to offer while five months of fixes landed under the new
-name. A long-still pin is a smell — check PyPI.
+⚠️ **A max-pin cannot see a renamed distribution.** `vtk-xref` became `sphinx-vtk-xref`
+(#2541), so `pixi update` and dependabot offered nothing for five months of fixes
+under the new name. A long-still pin is a smell — check PyPI.
 
-⚠️ **A conda-forge package of the same name is not always the Python one.**
-Tools shipping both a Node and a Python distribution (`playwright`) are packaged
-there as the *Node* CLI, with no bindings at all: it installs cleanly and
-`import <pkg>` then raises `ModuleNotFoundError`. Check with a real import; such
-packages belong in `pypi-dependencies`.
+⚠️ **A conda-forge package of the same name is not always the Python one.** Tools
+shipping both a Node and a Python distribution (`playwright`) are packaged there as
+the *Node* CLI, without bindings, so `import <pkg>` raises `ModuleNotFoundError`.
+Check with a real import; such packages belong in `pypi-dependencies`.
 
 **Install the hooks and let them gate commits, not CI:** `pixi run -e devs
 pre-commit install`, then `pre-commit run --files <paths>` before pushing.
@@ -122,12 +123,10 @@ cd docs && pixi run -e docs sphinx-build -b html \
   -d _build/doctrees src _build/html
 ```
 
-⚠️ **`intersphinx` is no longer allowed to fail the build (#2517).** Each mapping in
-`conf.py` is `(url, (None, "_inventory/<name>.inv"))`, so an unreachable remote
-falls back on the vendored copy. Add a mapping and you **must** add its inventory:
-`pixi run -e docs fetch-inventories` (monthly in `ci-inventories.yml`). Should every
-location fail, `intersphinx_resilience` disables `nitpicky` for the rest of the
-build, so check the job summary before trusting a green docs run.
+⚠️ **`intersphinx` may not fail the build (#2517).** Each mapping in `conf.py` is
+`(url, (None, "_inventory/<name>.inv"))`, falling back on the vendored copy, so a new
+mapping **must** run `pixi run -e docs fetch-inventories`. If every location fails,
+`intersphinx_resilience` disables `nitpicky`: check the job summary of a green docs run.
 
 ⚠️ **`nitpick_ignore_regex` entries are prefix matches.** Sphinx applies them
 with `re.match`, anchored at the start only, so `(r"py:mod", r"pyvista")` also
@@ -197,4 +196,4 @@ Every Python file must begin with this header, and include `from __future__ impo
 
 ---
 
-**Last Updated**: 19 October 2026
+**Last Updated**: 28 October 2026
