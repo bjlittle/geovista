@@ -13,6 +13,8 @@ import pyvista as pv
 
 from geovista.bridge import Transform
 from geovista.common import (
+    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
+    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
     GV_FIELD_GLOBE_RADIUS,
     GV_FIELD_GLOBE_RENDER_RADIUS,
     GV_FIELD_RADIUS,
@@ -55,6 +57,19 @@ def test_the_four_fields_win_over_gvradius():
     Globe(render_radius=2).to_mesh(mesh)
     mesh.field_data[GV_FIELD_RADIUS] = np.array([3.0])
     assert Globe.from_mesh(mesh) == Globe(render_radius=2)
+
+
+@pytest.mark.usefixtures("reordered_fields")
+def test_each_field_is_read_by_name():
+    """Test that the order of the field names does not decide what a field gives."""
+    mesh = pv.PolyData()
+    mesh.field_data[GV_FIELD_GLOBE_RADIUS] = np.array([6371000.0])
+    mesh.field_data[GV_FIELD_GLOBE_RENDER_RADIUS] = np.array([2.0])
+    mesh.field_data[GV_FIELD_GLOBE_EXAGGERATION_ABOVE] = np.array([20.0])
+    mesh.field_data[GV_FIELD_GLOBE_EXAGGERATION_BELOW] = np.array([100.0])
+    assert Globe.from_mesh(mesh) == Globe(
+        radius=6371000, render_radius=2, exaggeration=20, exaggeration_below=100
+    )
 
 
 def test_a_partial_record_is_refused():

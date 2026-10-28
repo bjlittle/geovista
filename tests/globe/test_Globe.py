@@ -147,10 +147,24 @@ def test_a_globe_cannot_be_changed():
 
 def test_a_globe_copies_and_pickles():
     """Test that a copy or an unpickled globe equals the original."""
-    globe = Globe(radius=6371000, render_radius=2, exaggeration=20)
+    globe = Globe(
+        radius=6371000, render_radius=2, exaggeration=20, exaggeration_below=100
+    )
     assert copy.copy(globe) == globe
     assert copy.deepcopy(globe) == globe
     assert pickle.loads(pickle.dumps(globe)) == globe  # noqa: S301
+
+
+def test_a_copy_names_each_value(monkeypatch):
+    """Test that the order of a globe's values does not decide what a copy gets."""
+    values = Globe._values
+    monkeypatch.setattr(Globe, "_values", lambda self: tuple(reversed(values(self))))
+    globe = Globe(
+        radius=6371000, render_radius=2, exaggeration=20, exaggeration_below=100
+    )
+    assert repr(copy.copy(globe)) == repr(globe)
+    assert repr(copy.deepcopy(globe)) == repr(globe)
+    assert repr(pickle.loads(pickle.dumps(globe))) == repr(globe)  # noqa: S301
 
 
 def test_the_repr_rebuilds_the_globe():

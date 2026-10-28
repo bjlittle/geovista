@@ -377,7 +377,7 @@ RETIRED_FIELDS: tuple[RetiredField, ...] = (
 See :func:`sanitize_legacy`, which translates and removes them.
 """
 
-#: The four fields a mesh records its globe in, in the order a globe takes them.
+#: The four fields a mesh records its globe in, which a globe reads and writes by name.
 _GV_GLOBE_FIELDS: tuple[str, str, str, str] = (
     GV_FIELD_GLOBE_RADIUS,
     GV_FIELD_GLOBE_RENDER_RADIUS,

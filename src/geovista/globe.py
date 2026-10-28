@@ -16,6 +16,7 @@ Notes
 
 from __future__ import annotations
 
+import functools
 import math
 from numbers import Real
 from typing import TYPE_CHECKING, Any, NoReturn, cast
@@ -24,6 +25,10 @@ import lazy_loader as lazy
 
 from .common import (
     _GV_GLOBE_FIELDS,
+    GV_FIELD_GLOBE_EXAGGERATION_ABOVE,
+    GV_FIELD_GLOBE_EXAGGERATION_BELOW,
+    GV_FIELD_GLOBE_RADIUS,
+    GV_FIELD_GLOBE_RENDER_RADIUS,
     GV_FIELD_RADIUS,
     RADIUS,
 )
@@ -40,9 +45,6 @@ if TYPE_CHECKING:
 np = lazy.load("numpy")
 
 __all__ = ["Globe"]
-
-# the four fields a mesh records its globe in, in the order of Globe._values
-_FIELDS = _GV_GLOBE_FIELDS
 
 # the relative spread of radii within which a mesh's points lie on a sphere
 # (scene spec §4.4). It admits a sphere of float32 points, whose radii vary by
@@ -344,10 +346,18 @@ class Globe:  # numpydoc ignore=PR01
         Returns
         -------
         tuple
-            The function that rebuilds the globe, and its arguments.
+            The call that rebuilds the globe, which names each of its values,
+            and an empty tuple of arguments.
 
         """
-        return (_rebuild, self._values())
+        rebuild = functools.partial(
+            Globe,
+            radius=self._radius,
+            render_radius=self._render_radius,
+            exaggeration=self._exaggeration,
+            exaggeration_below=self._exaggeration_below,
+        )
+        return (rebuild, ())
 
     def __repr__(self) -> str:
         """Return the call that builds the globe.
@@ -395,23 +405,20 @@ class Globe:  # numpydoc ignore=PR01
 
         """
         field_data = mesh.field_data
-        missing = [name for name in _FIELDS if name not in field_data]
+        missing = [name for name in _GV_GLOBE_FIELDS if name not in field_data]
 
-        if len(missing) < len(_FIELDS):
+        if len(missing) < len(_GV_GLOBE_FIELDS):
             if missing:
                 emsg = (
                     "The mesh records part of a globe, without "
                     f"{', '.join(repr(name) for name in missing)}."
                 )
                 raise ValueError(emsg)
-            radius, render_radius, above, below = (
-                _recorded(mesh, name) for name in _FIELDS
-            )
             return cls(
-                radius=radius,
-                render_radius=render_radius,
-                exaggeration=above,
-                exaggeration_below=below,
+                radius=_recorded(mesh, GV_FIELD_GLOBE_RADIUS),
+                render_radius=_recorded(mesh, GV_FIELD_GLOBE_RENDER_RADIUS),
+                exaggeration=_recorded(mesh, GV_FIELD_GLOBE_EXAGGERATION_ABOVE),
+                exaggeration_below=_recorded(mesh, GV_FIELD_GLOBE_EXAGGERATION_BELOW),
             )
 
         if GV_FIELD_RADIUS in field_data:
@@ -452,7 +459,13 @@ class Globe:  # numpydoc ignore=PR01
         .. versionadded:: 0.6.0
 
         """
-        for name, value in zip(_FIELDS, self._values(), strict=True):
+        record = {
+            GV_FIELD_GLOBE_RADIUS: self._radius,
+            GV_FIELD_GLOBE_RENDER_RADIUS: self._render_radius,
+            GV_FIELD_GLOBE_EXAGGERATION_ABOVE: self._exaggeration,
+            GV_FIELD_GLOBE_EXAGGERATION_BELOW: self._exaggeration_below,
+        }
+        for name, value in record.items():
             mesh.field_data[name] = np.array([value], dtype=np.float64)
         if GV_FIELD_RADIUS in mesh.field_data:
             del mesh.field_data[GV_FIELD_RADIUS]
@@ -538,33 +551,3 @@ class Globe:  # numpydoc ignore=PR01
 
         """
         return self._render_radius / self._radius
-
-
-def _rebuild(
-    radius: float, render_radius: float, exaggeration: float, exaggeration_below: float
-) -> Globe:
-    """Rebuild a globe from its four values, for ``copy`` and ``pickle``.
-
-    Parameters
-    ----------
-    radius : float
-        The radius, in metres.
-    render_radius : float
-        The render radius.
-    exaggeration : float
-        The factor above sea level.
-    exaggeration_below : float
-        The factor below sea level.
-
-    Returns
-    -------
-    Globe
-        The globe.
-
-    """
-    return Globe(
-        radius=radius,
-        render_radius=render_radius,
-        exaggeration=exaggeration,
-        exaggeration_below=exaggeration_below,
-    )

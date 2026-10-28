@@ -8,6 +8,8 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
+import pyvista as pv
 
 from geovista.bridge import Transform
 from geovista.common import (
@@ -62,4 +64,19 @@ def test_writes_over_a_recorded_globe():
         [2.0],
         [1.0],
         [1.0],
+    ]
+
+
+@pytest.mark.usefixtures("reordered_fields")
+def test_each_value_is_written_to_its_field_by_name():
+    """Test that the order of the field names does not decide where a value goes."""
+    mesh = pv.PolyData()
+    Globe(
+        radius=6371000, render_radius=2, exaggeration=20, exaggeration_below=100
+    ).to_mesh(mesh)
+    assert [mesh.field_data[name].tolist() for name in FIELDS] == [
+        [6371000.0],
+        [2.0],
+        [20.0],
+        [100.0],
     ]
