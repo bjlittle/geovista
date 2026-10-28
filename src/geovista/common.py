@@ -426,8 +426,9 @@ def _write_radius(mesh: pv.DataSet, radius: float | None) -> None:
     """Record the radius of a mesh where :func:`_read_radius` reads it, in place.
 
     A mesh that records a globe has its render radius set, or its globe removed
-    when no one radius describes it, so that its globe never goes stale. Any
-    other mesh has its ``gvRadius`` set or removed.
+    when no one radius describes it, so that its globe never goes stale. Either
+    way any ``gvRadius`` beside the globe goes too, or it would be read in the
+    globe's place. Any other mesh has its ``gvRadius`` set or removed.
 
     Parameters
     ----------
@@ -447,8 +448,8 @@ def _write_radius(mesh: pv.DataSet, radius: float | None) -> None:
         Globe.from_mesh(mesh)
 
         if radius is None:
-            for name in _GV_GLOBE_FIELDS:
-                del field_data[name]
+            for name in (*_GV_GLOBE_FIELDS, GV_FIELD_RADIUS):
+                field_data.pop(name, None)
         else:
             above, below = (
                 float(field_data[name][0])

@@ -161,3 +161,18 @@ def test_projecting_a_cleaned_cloud():
     np.testing.assert_allclose(back.points, transform_mesh(expected, WGS84).points)
     assert back.gv.globe == Globe(render_radius=2)
     assert GV_FIELD_RADIUS not in back.field_data
+
+
+@pytest.mark.parametrize("zlevel", [None, 1, "each"])
+def test_resizing_a_surface_with_both_records(zlevel):
+    """Test that a surface with a globe and a gvRadius resizes as one cleaned first."""
+    mesh = Transform.from_1d(LONS, LATS, radius=2)
+    Globe(render_radius=2).to_mesh(mesh)
+    mesh.field_data[GV_FIELD_RADIUS] = np.array([3.0])
+    if zlevel == "each":
+        zlevel = np.arange(mesh.n_points) % 3
+    expected = resize(_cleaned(mesh), radius=4, zlevel=zlevel)
+    result = resize(mesh, radius=4, zlevel=zlevel)
+    np.testing.assert_allclose(result.points, expected.points)
+    assert result.gv.globe == expected.gv.globe
+    assert GV_FIELD_RADIUS not in result.field_data
