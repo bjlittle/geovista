@@ -5,7 +5,7 @@
 
 """Unit-tests that a mesh geovista makes from another carries only current fields.
 
-See scene spec §2 decision 5 and §4.5.
+See scene spec §2 decision 5 and scene spec §4.5.
 """
 
 from __future__ import annotations
