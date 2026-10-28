@@ -55,7 +55,7 @@ from .crs import (
 )
 from .geodesic import BBox
 from .geometry import coastlines
-from .globe import Globe, _resolve
+from .globe import Globe, _resolve, _written
 from .gridlines import (
     GRATICULE_ZLEVEL,
     GraticuleGrid,
@@ -931,10 +931,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
     def _at_scene_globe(self, mesh: pv.DataSet) -> pv.DataSet:
         """Return the mesh as drawn at the globe of the scene.
 
-        A mesh that records another globe is drawn as a copy that records the
-        scene's, with its points scaled by the ratio of the two render radii on
-        the globe, and unmoved on a map. A mesh that records the scene's globe,
-        or has none, is drawn where its points are.
+        A mesh that records another globe, in its four fields or a ``gvRadius``,
+        is drawn as a copy that records the scene's, with its points scaled by
+        the ratio of the two render radii on the globe, and unmoved on a map. A
+        mesh that records the scene's globe, or records none, is drawn where its
+        points are, even when they lie at one radius.
 
         Parameters
         ----------
@@ -951,6 +952,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         .. versionadded:: 0.6.0
 
         """
+        if not _written(mesh):
+            # a globe read from points at one radius may be a shell above or
+            # below the globe, so the mesh is drawn where it is
+            return mesh
+
         recorded = Globe.from_mesh(mesh)
 
         if recorded is None or recorded == self.globe:

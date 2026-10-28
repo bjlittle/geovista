@@ -22,7 +22,7 @@ from geovista.common import (
     distance,
     from_cartesian,
 )
-from geovista.crs import from_wkt
+from geovista.crs import WGS84, from_wkt, to_wkt
 from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
 from geovista.globe import Globe
 from geovista.pantry.meshes import lfric_orog
@@ -370,6 +370,32 @@ def test_a_mesh_with_no_globe_is_drawn_where_it_is():
     drawn = GeoPlotter(globe=Globe(render_radius=2)).add_mesh(mesh).mapper.dataset
     np.testing.assert_array_equal(drawn.points, mesh.points)
     assert Globe.from_mesh(drawn) is None
+
+
+@pytest.mark.parametrize("factor", [0.5, 1.05])
+@pytest.mark.parametrize("radius", RADII)
+def test_a_shell_is_drawn_where_it_is(radius, factor):
+    """A sphere that records no globe is drawn where it is, at any radius.
+
+    Its points lie at one radius, which reads as a globe, but a shell above or
+    below the scene's globe reads the same, so only a recorded globe is scaled.
+
+    """
+    shell = pv.Sphere(radius=radius * factor)
+    to_wkt(shell, WGS84)
+    drawn = GeoPlotter(globe=Globe(render_radius=radius)).add_mesh(shell)
+    drawn = drawn.mapper.dataset
+    np.testing.assert_array_equal(drawn.points, shell.points)
+    assert not set(_GV_GLOBE_FIELDS) & set(drawn.field_data)
+
+
+def test_a_legacy_mesh_at_another_radius_is_scaled(legacy):
+    """A mesh with a gvRadius records its globe, so is drawn at the scene's."""
+    old = legacy(_surface(), radius=0.5)
+    old.points = old.points * 0.5
+    drawn = GeoPlotter().add_mesh(old).mapper.dataset
+    np.testing.assert_allclose(distance(drawn, mean=False), 1.0, rtol=1e-12)
+    assert Globe.from_mesh(drawn) == Globe()
 
 
 def test_on_a_map_only_the_record_changes():

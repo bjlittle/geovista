@@ -52,6 +52,8 @@ def test_no_resize(lfric):
 
 def test_records_a_globe_on_a_mesh_with_none(lfric):
     """Test a mesh that records no globe is given one, on a copy."""
+    for name in _GV_GLOBE_FIELDS:
+        lfric.field_data.pop(name, None)
     result = resize(lfric)
     assert id(result) != id(lfric)
     assert_array_equal(result.points, lfric.points)
@@ -70,7 +72,8 @@ def test_records_a_globe_on_a_mesh_with_none(lfric):
 def test_resize(lfric, radius, inplace):
     """Test resize mesh by new radius."""
     result = resize(lfric, globe=Globe(render_radius=radius), inplace=inplace)
-    compare = operator.eq if inplace else operator.ne
+    # a mesh at, and recording, the globe is returned as it is
+    compare = operator.eq if inplace or radius == RADIUS else operator.ne
     assert compare(id(result), id(lfric))
     assert np.isclose(distance(result), radius)
 
@@ -80,7 +83,8 @@ def test_resize__zlevel(lfric, zlevel):
     """Test resize mesh by new zlevel."""
     result = resize(lfric, zlevel=zlevel)
     expected = RADIUS + RADIUS * zlevel * ZLEVEL_SCALE
-    assert id(result) != id(lfric)
+    # a z-level of 0 leaves the mesh at, and recording, its globe
+    assert (id(result) == id(lfric)) == (zlevel == 0)
     actual = distance(result)
     assert np.isclose(actual, expected)
 
@@ -90,7 +94,8 @@ def test_resize__zscale(lfric, zscale):
     """Test resize mesh by new zscale."""
     result = resize(lfric, zlevel=1, zscale=zscale)
     expected = RADIUS + RADIUS * zscale or RADIUS
-    assert id(result) != id(lfric)
+    # a radius of 0 is refused, which leaves the mesh at, and recording, its globe
+    assert (id(result) == id(lfric)) == (RADIUS + RADIUS * zscale == 0)
     actual = distance(result)
     assert np.isclose(actual, expected)
 

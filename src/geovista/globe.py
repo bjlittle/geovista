@@ -621,3 +621,32 @@ def _records(mesh: pv.DataSet, globe: Globe, /) -> bool:
         return False
 
     return Globe.from_mesh(mesh) == globe
+
+
+def _written(mesh: pv.DataSet, /) -> bool:
+    """Determine whether a mesh records a globe, rather than lying at one.
+
+    A mesh records its globe in its four fields, or in the ``gvRadius`` written
+    before the globe. Any other mesh is read at the one radius its points lie
+    at, which a sphere drawn above or below a globe shares with that globe.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+
+    Returns
+    -------
+    bool
+        Whether the mesh has any of the four fields, or a ``gvRadius``.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    field_data = mesh.field_data
+
+    return GV_FIELD_RADIUS in field_data or any(
+        name in field_data for name in _GV_GLOBE_FIELDS
+    )

@@ -21,13 +21,12 @@ import lazy_loader as lazy
 from geovista.bridge import Transform
 from geovista.cache import CACHE, Decompress
 from geovista.common import Preference
+from geovista.globe import Globe
 import geovista.pantry.data
 
 if TYPE_CHECKING:
     import numpy as np
     import pyvista as pv
-
-    from geovista.globe import Globe
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -464,7 +463,7 @@ def lfric(*, resolution: str | None = None) -> pv.PolyData:
     Returns
     -------
     PolyData
-        The LFRic cubed-sphere mesh.
+        The LFRic cubed-sphere mesh, which records the default globe.
 
     Notes
     -----
@@ -491,6 +490,9 @@ def lfric(*, resolution: str | None = None) -> pv.PolyData:
     mesh = pv.read(resource)
     # the resource is a single mesh of cells
     assert isinstance(mesh, pv.PolyData)
+    # the resource records only its CRS, and lies at the default render radius,
+    # so it is drawn at the scene's globe as the pantry's other meshes are
+    Globe().to_mesh(mesh)
 
     return mesh
 
