@@ -67,7 +67,7 @@ def test_a_zlevel_lifts_the_lines_once(mocker, radius):
     """A z-level lifts the lines once, to their labels (call 9 of the plan)."""
     p = GeoPlotter(globe=Globe(render_radius=radius))
     labels = mocker.spy(p, "add_point_labels")
-    p.add_meridians(zlevel=5)
+    p.add_meridians(zlevel=5, show_labels=True)
     expected = radius * (1 + 5 * ZLEVEL_SCALE)
     for mesh in _lines(p):
         np.testing.assert_allclose(distance(mesh, mean=False), expected, rtol=1e-12)
