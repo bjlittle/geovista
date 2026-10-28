@@ -145,6 +145,28 @@ def test_resize_cloud__radius(lam_uk_cloud, radius):
     assert np.isclose(result[GV_FIELD_ZSCALE], ZLEVEL_SCALE)
 
 
+@pytest.mark.parametrize("radius", RADII)
+def test_resize_cloud__a_nearby_globe(radius):
+    """Test a cloud resized to a globe close to its own keeps its z-levels.
+
+    Its z-levels are read from the render radius it records, so a globe within the
+    tolerance of that radius still moves its points.
+
+    """
+    zlevel = [1, 2, 3]
+    cloud = Transform.from_points(
+        [0, 10, 20], [0, 10, 20], globe=Globe(render_radius=radius), zlevel=zlevel
+    )
+    globe = Globe(render_radius=radius * 1.000009)
+
+    result = resize(cloud, globe=globe)
+
+    np.testing.assert_allclose(from_cartesian(result)[:, 2], zlevel)
+    expected = globe.render_radius * (1 + np.asarray(zlevel) * ZLEVEL_SCALE)
+    np.testing.assert_allclose(distance(result, mean=False), expected, rtol=1e-12)
+    assert Globe.from_mesh(result) == globe
+
+
 @pytest.mark.parametrize("zlevel", [[1, 2, 3], (1, 2, 3), np.array([1, 2, 3])])
 def test_resize_cloud__zlevel_per_point(zlevel):
     """Test resize cloud points by a z-level at each point."""

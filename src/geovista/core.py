@@ -658,9 +658,10 @@ def resize(
                 mesh[GV_FIELD_ZSCALE], zscale
             )
         if not update:
-            # the base its points' levels are read from moves
+            # the base its points' levels are read from moves, however little, as
+            # a level is the offset from it over zscale
             recorded = Globe.from_mesh(mesh)
-            update = recorded is None or not np.isclose(recorded.render_radius, radius)
+            update = recorded is None or recorded.render_radius != radius
     elif level.ndim:
         # a surface at a radius for each point, which from_cartesian reads back
         # at the radius of each point, so its positions survive the next resize
