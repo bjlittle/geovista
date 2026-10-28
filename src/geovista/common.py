@@ -14,15 +14,18 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 from enum import StrEnum
 import importlib
 import pkgutil
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import lazy_loader as lazy
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import numpy as np
     from numpy.typing import ArrayLike, DTypeLike
     import pyvista as pv
@@ -56,6 +59,7 @@ __all__ = [
     "RADIUS",
     "REMESH_JOIN",
     "REMESH_SEAM",
+    "RETIRED_FIELDS",
     "VTK_CELL_IDS",
     "VTK_POINT_IDS",
     "WRAP_ATOL",
@@ -63,6 +67,7 @@ __all__ = [
     "ZLEVEL_SCALE",
     "ZTRANSFORM_FACTOR",
     "Preference",
+    "RetiredField",
     "StrEnumPlus",
     "Vector2DLike",
     "Vector3DLike",
@@ -75,6 +80,7 @@ __all__ = [
     "nan_mask",
     "point_cloud",
     "sanitize",
+    "sanitize_legacy",
     "sanitize_vtk",
     "set_jupyter_backend",
     "to_cartesian",
@@ -145,7 +151,11 @@ GV_FIELD_NAME: str = "gvName"
 """The field array name of the mesh containing field, point and/or cell data."""
 
 GV_FIELD_RADIUS: str = "gvRadius"
-"""The field array name of the mesh radius."""
+"""The field array name of the mesh radius.
+
+Retired, and last written by release 0.5.3, since 0.6 records the globe of a
+mesh in its place. See :data:`RETIRED_FIELDS`.
+"""
 
 GV_FIELD_RESOLUTION: str = "gvResolution"
 """The field array name of the mesh resolution e.g., coastlines."""
@@ -303,6 +313,69 @@ class Preference(StrEnumPlus):
     """Preference for cell geometry."""
     POINT = "point"
     """Preference for point geometry."""
+
+
+@dataclass(frozen=True)
+class RetiredField:
+    """A field that geovista reads, but no longer writes.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+
+    name: str
+    """The name of the field."""
+
+    association: Literal["field", "point", "cell"]
+    """Whether the field is field, point or cell data."""
+
+    replacement: str
+    """What replaced the field."""
+
+    last_written: str
+    """The last release of geovista that wrote the field."""
+
+    translate: Callable[[pv.DataSet], None]
+    """Write what replaced the field onto a mesh that has it, in place."""
+
+
+def _translate_radius(mesh: pv.DataSet) -> None:
+    """Record the globe a mesh's ``gvRadius`` gives, in place.
+
+    A globe the mesh already records wins over its ``gvRadius``.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh, with a ``gvRadius``.
+
+    """
+    # geovista.globe imports this module
+    from .globe import Globe  # noqa: PLC0415
+
+    globe = Globe.from_mesh(mesh)
+    if globe is not None:
+        globe.to_mesh(mesh)
+
+
+RETIRED_FIELDS: tuple[RetiredField, ...] = (
+    RetiredField(
+        name=GV_FIELD_RADIUS,
+        association="field",
+        replacement=(
+            "the globe, in gvGlobeRadius, gvGlobeRenderRadius, "
+            "gvGlobeExaggerationAbove and gvGlobeExaggerationBelow"
+        ),
+        last_written="0.5.3",
+        translate=_translate_radius,
+    ),
+)
+"""Every field that geovista reads, but no longer writes.
+
+See :func:`sanitize_legacy`, which translates and removes them.
+"""
 
 
 def active_kernel() -> bool:
@@ -710,6 +783,7 @@ def sanitize(
     *meshes: pv.PolyData,
     extra: str | list[str] | None = None,
     vtk: bool = True,
+    legacy: bool = True,
 ) -> None:
     """Purge standard helper cell and point data index arrays.
 
@@ -721,6 +795,9 @@ def sanitize(
         The name of additional data arrays to purge.
     vtk : bool | None, optional
         Whether to sanitize VTK data arrays. Defaults to ``True``.
+    legacy : bool, default=True
+        Whether to translate and remove retired fields, as
+        :func:`sanitize_legacy` does.
 
     Notes
     -----
@@ -749,6 +826,41 @@ def sanitize(
 
     if vtk:
         sanitize_vtk(*meshes)
+
+    if legacy:
+        sanitize_legacy(*meshes)
+
+
+def sanitize_legacy(
+    *meshes: pv.DataSet,
+) -> None:
+    """Translate and remove the retired fields of each mesh, in place.
+
+    Each field of :data:`RETIRED_FIELDS` that a mesh has is translated into
+    what replaced it, then removed, so that saving the mesh does not carry the
+    field forward. A mesh with none is unchanged, and nothing warns.
+
+    Parameters
+    ----------
+    *meshes : iterable of :class:`~pyvista.DataSet`
+        One or more meshes to sanitize.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if not meshes:
+        emsg = "Expected one or more meshes to sanitize."
+        raise ValueError(emsg)
+
+    for mesh in meshes:
+        for entry in RETIRED_FIELDS:
+            if entry.name in getattr(mesh, f"{entry.association}_data"):
+                entry.translate(mesh)
+                data = getattr(mesh, f"{entry.association}_data")
+                if entry.name in data:
+                    del data[entry.name]
 
 
 def sanitize_vtk(

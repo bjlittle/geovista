@@ -15,7 +15,20 @@ import pytest
 if TYPE_CHECKING:
     import pyvista as pv
 
-from geovista.common import _GV_SANITIZE, sanitize
+from geovista.bridge import Transform
+from geovista.common import _GV_SANITIZE, GV_FIELD_RADIUS, sanitize
+from geovista.globe import Globe
+
+LONS = np.linspace(-180, 180, 9)
+LATS = np.linspace(-90, 90, 5)
+
+#: The four fields a mesh records its globe in.
+GLOBE_FIELDS = {
+    "gvGlobeRadius",
+    "gvGlobeRenderRadius",
+    "gvGlobeExaggerationAbove",
+    "gvGlobeExaggerationBelow",
+}
 
 
 def test_meshes_fail():
@@ -67,3 +80,20 @@ def test(lam_uk, extra):
         assert not available(mesh)
         assert len(mesh.cell_data.keys()) == ncell
         assert len(mesh.point_data.keys()) == npoint
+
+
+def test_legacy_by_default():
+    """Test that retired fields are cleaned by default."""
+    mesh = Transform.from_1d(LONS, LATS)
+    sanitize(mesh)
+    assert GV_FIELD_RADIUS not in mesh.field_data
+    assert Globe.from_mesh(mesh) == Globe()
+    assert set(mesh.field_data) >= GLOBE_FIELDS
+
+
+def test_legacy_off():
+    """Test that legacy=False leaves retired fields alone."""
+    mesh = Transform.from_1d(LONS, LATS)
+    sanitize(mesh, legacy=False)
+    assert GV_FIELD_RADIUS in mesh.field_data
+    assert not GLOBE_FIELDS & set(mesh.field_data)
