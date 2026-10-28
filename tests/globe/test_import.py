@@ -25,6 +25,7 @@ mesh = pv.Sphere()
 globe.to_mesh(mesh)
 Globe.from_mesh(mesh)
 Globe.from_mesh(pv.Sphere())
+mesh.gv.globe
 loaded = [name for name in sys.modules if name == "pint" or name.startswith("pint.")]
 assert not loaded, loaded
 """

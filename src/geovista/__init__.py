@@ -25,6 +25,8 @@ from __future__ import annotations
 
 import lazy_loader as lazy
 
+# registers the gv namespace on every pyvista mesh
+from . import accessor  # noqa: F401
 from .themes import set_plot_theme
 
 # submodules are lazily imported
