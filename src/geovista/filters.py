@@ -26,6 +26,7 @@ from .common import (
     GV_REMESH_POINT_IDS,
     REMESH_JOIN,
     REMESH_SEAM,
+    _current,
     distance,
     from_cartesian,
     sanitize_vtk,
@@ -196,4 +197,9 @@ def remesh(
         del remeshed.point_data[GV_REMESH_POINT_IDS]
         sanitize_vtk(remeshed, remeshed_west, remeshed_east)
 
-    return remeshed, remeshed_west, remeshed_east
+    # each mesh returned carries only current fields
+    return (
+        _current(remeshed, mesh),
+        _current(remeshed_west, mesh),
+        _current(remeshed_east, mesh),
+    )

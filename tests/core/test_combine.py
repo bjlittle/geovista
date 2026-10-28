@@ -11,7 +11,14 @@ import numpy as np
 import pytest
 import pyvista as pv
 
+from geovista.bridge import Transform
+from geovista.common import (
+    GV_FIELD_CRS,
+    GV_FIELD_GLOBE_RENDER_RADIUS,
+    GV_FIELD_RADIUS,
+)
 from geovista.core import combine
+from geovista.globe import Globe
 
 
 def test_single_mesh_fail():
@@ -236,3 +243,42 @@ def test_global_ids_kept(starts, point_ids, cell_ids, clean):
     np.testing.assert_array_equal(result.cell_data["cell_ids"], cell_ids)
     assert result.point_data.GetGlobalIds().GetName() == "point_ids"
     assert result.cell_data.GetGlobalIds().GetName() == "cell_ids"
+
+
+def _pair(
+    second: Globe | None = None, *, crs: bool = True
+) -> tuple[pv.PolyData, pv.PolyData]:
+    """Return two surfaces over neighbouring longitudes, the second as asked."""
+    first = Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0])
+    other = Transform.from_1d([20.0, 30.0, 40.0], [0.0, 10.0], globe=second)
+    if not crs:
+        del other.field_data[GV_FIELD_CRS]
+    return first, other
+
+
+@pytest.mark.parametrize("data", [True, False])
+def test_refuses_a_different_globe(data):
+    """Test meshes on different globes are refused, naming the input and why."""
+    with pytest.raises(ValueError, match=r"input mesh #2.*globe"):
+        _ = combine(*_pair(Globe(render_radius=2)), data=data)
+
+
+def test_refuses_a_different_crs():
+    """Test meshes in different CRSs are refused, naming the CRS."""
+    with pytest.raises(ValueError, match=r"input mesh #2.*CRS"):
+        _ = combine(*_pair(crs=False))
+
+
+def test_names_the_crs_and_globe():
+    """Test meshes differing in both are refused, naming both."""
+    with pytest.raises(ValueError, match="CRS and globe"):
+        _ = combine(*_pair(Globe(render_radius=2), crs=False))
+
+
+def test_records_the_shared_globe(legacy):
+    """Test the combined mesh records the shared globe, and no retired field."""
+    first, second = _pair()
+    result = combine(legacy(first), second)
+    assert GV_FIELD_GLOBE_RENDER_RADIUS in result.field_data
+    assert Globe.from_mesh(result) == Globe()
+    assert GV_FIELD_RADIUS not in result.field_data

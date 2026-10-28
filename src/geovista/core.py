@@ -29,6 +29,7 @@ from .common import (
     REMESH_JOIN,
     REMESH_SEAM,
     ZLEVEL_SCALE,
+    _current,
     _face_offsets,
     _to_cartesian,
     distance,
@@ -39,7 +40,7 @@ from .common import (
     wrap,
 )
 from .common import cast_UnstructuredGrid_to_PolyData as cast
-from .crs import projected
+from .crs import from_wkt, projected
 from .filters import remesh
 from .globe import Globe, _records, _resolve
 from .search import find_cell_neighbours
@@ -324,9 +325,12 @@ def add_texture_coords(
     .. versionadded:: 0.1.0
 
     """
+    # the mesh given, which is never changed unless asked in place
+    given = mesh
+
     if point_cloud(mesh):
         # don't attach texture coordinates to a point-cloud
-        return mesh
+        return _current(mesh, given)
 
     if meridian is None:
         meridian = CENTRAL_MERIDIAN
@@ -350,7 +354,7 @@ def add_texture_coords(
     t_coord = np.vstack([u_coord, v_coord]).T
     mesh.active_texture_coordinates = t_coord
 
-    return mesh
+    return _current(mesh, given)
 
 
 def combine(
@@ -368,6 +372,11 @@ def combine(
     However, meshes may share coincident points. Coincident point data from the
     first input mesh will overwrite all other mesh data sharing the same
     coincident point in the resultant mesh.
+
+    Meshes that geovista describes differently, by their CRS or their globe, are
+    refused, since they cannot share points. Resize or transform them to one
+    globe and one CRS first. :meth:`pyvista.DataSetFilters.merge` refuses none,
+    and keeps the field data of the first mesh alone.
 
     Parameters
     ----------
@@ -407,6 +416,8 @@ def combine(
         polys.append(dataset)
 
     first = polys[0]
+    crs, globe = from_wkt(first), Globe.from_mesh(first)
+
     combined_points, combined_faces = [], []
     n_points = 0
 
@@ -448,6 +459,25 @@ def combine(
                 f"Can only combine meshes with cells, input mesh #{i + 1} has no cells."
             )
             raise TypeError(emsg)
+
+        # meshes described differently cannot share points, whether or not their
+        # data is combined (scene spec §4.7)
+        differs = [
+            name
+            for name, same in (
+                ("CRS", from_wkt(mesh) == crs),
+                ("globe", Globe.from_mesh(mesh) == globe),
+            )
+            if not same
+        ]
+        if differs:
+            emsg = (
+                "Can only combine meshes that geovista describes the same way, "
+                f"input mesh #{i + 1} has another {' and '.join(differs)} than "
+                "input mesh #1. Resize or transform the meshes to one globe and one "
+                "CRS first."
+            )
+            raise ValueError(emsg)
 
         combined_points.append(mesh.points.copy())
         # pyvista 0.49 annotates the faces with a Python int dtype, which refuses
@@ -511,6 +541,10 @@ def combine(
         combine_data(common_cell_data, lambda mesh: mesh.cell_data)
         for name in common_field_data:
             combined.field_data[name] = first.field_data[name]
+        # the globe the meshes share, however each recorded it
+        if globe is not None:
+            globe.to_mesh(combined)
+        sanitize_legacy(combined)
 
     # remove degenerate points and faces
     if clean:
@@ -712,13 +746,16 @@ def slice_cells(
     .. versionadded:: 0.1.0
 
     """
+    # the mesh given, which is never changed unless asked in place
+    given = mesh
+
     if not isinstance(mesh, pv.PolyData):
         emsg = f"Require a {str(pv.PolyData)!r} mesh, got {str(type(mesh))!r}."
         raise TypeError(emsg)
 
     if point_cloud(mesh) or mesh.n_lines:
         # no cell remeshing required for a point-cloud or line mesh
-        return mesh
+        return _current(mesh, given)
 
     if meridian is None:
         meridian = CENTRAL_MERIDIAN
@@ -823,7 +860,7 @@ def slice_cells(
     if info.name is not None and info.name in survivors:
         result.set_active_scalars(info.name, preference=association)
 
-    return result
+    return _current(result, given)
 
 
 def slice_lines(
@@ -871,13 +908,16 @@ def slice_lines(
     .. versionadded:: 0.3.0
 
     """
+    # the mesh given, which is never changed unless asked in place
+    given = mesh
+
     if projected(mesh):
         emsg = "Cannot slice a mesh that has been projected."
         raise ValueError(emsg)
 
     if mesh.n_lines == 0:
         # there are no lines to slice
-        return mesh
+        return _current(mesh, given)
 
     if n_points is None:
         n_points = SPLINE_N_POINTS
@@ -895,7 +935,7 @@ def slice_lines(
     if np.all(antimeridian):
         if copy:
             mesh = mesh.copy(deep=True)
-        return mesh
+        return _current(mesh, given)
 
     radius = float(distance(mesh))
     line = pv.Line(pointa=(radius, 0, 0), pointb=(-radius, 0, 0))
@@ -908,7 +948,7 @@ def slice_lines(
     if antimeridian.sum() == 0:
         if copy:
             mesh = mesh.copy(deep=True)
-        return mesh
+        return _current(mesh, given)
 
     # antimeridian points-of-interest (N, 3)
     poi_xyz = intersection.points[antimeridian]
@@ -1017,7 +1057,7 @@ def slice_lines(
         detach_pids=detach_pids,
     )
 
-    return result
+    return _current(result, given)
 
 
 def slice_mesh(
@@ -1057,6 +1097,9 @@ def slice_mesh(
     .. versionadded:: 0.3.0
 
     """
+    # the mesh given, which is never changed unless asked in place
+    given = mesh
+
     if projected(mesh):
         emsg = "Cannot slice a mesh that has been projected."
         raise ValueError(emsg)
@@ -1066,7 +1109,7 @@ def slice_mesh(
     else:
         result = slice_cells(mesh, antimeridian=True, rtol=rtol, atol=atol)
 
-    return result
+    return _current(result, given)
 
 
 def _carry_line_data(

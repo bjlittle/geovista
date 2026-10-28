@@ -408,6 +408,33 @@ def _retired(mesh: pv.DataSet) -> bool:
     )
 
 
+def _current[MeshT: pv.DataSet](result: MeshT, given: pv.DataSet, /) -> MeshT:
+    """Return a mesh made from another, carrying only current fields.
+
+    A retired field is translated and removed, on a copy when the mesh is the
+    one given, so that a mesh given only to read is never changed.
+
+    Parameters
+    ----------
+    result : pyvista.DataSet
+        The mesh a function returns.
+    given : pyvista.DataSet
+        The mesh the function was given.
+
+    Returns
+    -------
+    pyvista.DataSet
+        The mesh to return, of the type of `result`.
+
+    """
+    if _retired(result):
+        if result is given:
+            result = result.copy()
+        sanitize_legacy(result)
+
+    return result
+
+
 def active_kernel() -> bool:
     """Determine whether we are executing within an ``IPython`` kernel.
 
@@ -474,7 +501,7 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
     if clean:
         result = result.clean()
 
-    return result
+    return _current(result, mesh)
 
 
 def distance(
