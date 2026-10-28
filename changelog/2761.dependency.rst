@@ -1,0 +1,3 @@
+Bumped the minimum pin ``pyvista >=0.49.0``, the first release that keeps the
+``gv`` namespace of a mesh copied with ``copy.copy`` apart from the original's.
+(:user:`claude`)

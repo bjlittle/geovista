@@ -1,0 +1,7 @@
+Added :class:`geovista.Globe`, the globe a scene is drawn on: the Earth's
+radius, the radius it is drawn at, and the exaggeration of heights above and
+below sea level. A mesh records its globe in four fields, and one saved before
+the globe is read from its ``gvRadius``. Every ``pyvista`` mesh gains a
+read-only ``gv`` namespace, holding its globe and CRS, and
+:func:`geovista.common.sanitize_legacy` cleans retired fields from a mesh.
+(:user:`claude`)
