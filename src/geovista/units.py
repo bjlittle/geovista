@@ -10,8 +10,12 @@ number, in metres or degrees; a ``pint`` quantity, from any registry; or a
 magnitude with a CF unit string, which ``pint-cf`` reads. Each is converted
 once, here, so everything else works on plain floats and NumPy arrays.
 
+A length goes back out through the API as a ``pint`` quantity in ``pint``'s
+application registry, from :func:`as_quantity`, so that a user can add it to
+quantities of their own.
+
 Only this module imports ``pint``, and only when a quantity or a unit string
-arrives, so a plain number never pays for it.
+arrives or leaves, so a plain number never pays for it.
 
 Notes
 -----
@@ -35,7 +39,10 @@ if TYPE_CHECKING:
 # lazy import third-party dependencies
 np = lazy.load("numpy")
 
-__all__ = ["to_degrees", "to_metres"]
+__all__ = ["Quantity", "as_quantity", "to_degrees", "to_metres"]
+
+type Quantity = pint.Quantity
+"""Type alias for a ``pint`` quantity, which only this module may import."""
 
 
 @runtime_checkable
@@ -302,3 +309,32 @@ def to_metres(
     metres: NDArray[np.float64] = quantity.to("meter").magnitude
 
     return _result(metres)
+
+
+def as_quantity(metres: float) -> Quantity:
+    """Return a length in metres as a quantity in ``pint``'s application registry.
+
+    The application registry is the one ``pint`` provides for sharing
+    quantities between packages. It is read at each call, so a registry set
+    with ``pint.set_application_registry`` is honoured.
+
+    Parameters
+    ----------
+    metres : float
+        The length, in metres.
+
+    Returns
+    -------
+    pint.Quantity
+        The length in metres, with a float magnitude.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    import pint  # noqa: PLC0415
+
+    # the object pint.set_application_registry swaps the registry inside
+    quantity: pint.Quantity = pint.application_registry.Quantity(float(metres), "m")
+    return quantity
