@@ -14,9 +14,18 @@ import pytest
 import pyvista as pv
 
 import geovista as gv
-from geovista.common import RADIUS, ZLEVEL_SCALE, distance, from_cartesian
+from geovista.common import (
+    _GV_GLOBE_FIELDS,
+    GV_FIELD_RADIUS,
+    RADIUS,
+    ZLEVEL_SCALE,
+    distance,
+    from_cartesian,
+)
 from geovista.crs import from_wkt
 from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
+from geovista.globe import Globe
+from geovista.pantry.meshes import lfric_orog
 from geovista.transform import transform_mesh
 
 
@@ -310,3 +319,97 @@ def test_datum_at_true_positions(crs, lons, lats):
     )
     np.testing.assert_allclose(actor.mapper.dataset.points[:, 0], x, atol=1e-3)
     np.testing.assert_allclose(actor.mapper.dataset.points[:, 1], y, atol=1e-3)
+
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
+
+
+def _surface(globe: Globe | None = None) -> pv.PolyData:
+    """Build a small surface on the sphere, at the globe given."""
+    return gv.Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0], globe=globe)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_drawn_at_the_scenes_globe(radius):
+    """A mesh on another globe is drawn at the scene's, and records it."""
+    p = GeoPlotter(globe=Globe(render_radius=radius))
+    drawn = p.add_mesh(_surface()).mapper.dataset
+    np.testing.assert_allclose(distance(drawn, mean=False), radius, rtol=1e-12)
+    assert Globe.from_mesh(drawn) == p.globe
+
+
+def test_drawing_leaves_the_mesh_unchanged():
+    """The mesh given keeps its points and globe when drawn at another globe."""
+    mesh = _surface()
+    points = mesh.points.copy()
+    GeoPlotter(globe=Globe(render_radius=2)).add_mesh(mesh)
+    np.testing.assert_array_equal(mesh.points, points)
+    assert Globe.from_mesh(mesh) == Globe()
+
+
+def test_a_cloud_keeps_its_heights_in_proportion():
+    """A cloud drawn at another globe keeps its heights, in proportion."""
+    levels = np.array([1, 2, 3])
+    cloud = gv.Transform.from_points(
+        [0.0, 10.0, 20.0], [0.0, 10.0, 20.0], zlevel=levels, zscale=0.1
+    )
+    drawn = GeoPlotter(globe=Globe(render_radius=2)).add_mesh(cloud).mapper.dataset
+    np.testing.assert_allclose(
+        distance(drawn, mean=False), 2 * (1 + 0.1 * levels), rtol=1e-12
+    )
+
+
+def test_a_mesh_with_no_globe_is_drawn_where_it_is():
+    """A mesh warped outside geovista is drawn at its own points, with no globe."""
+    mesh = lfric_orog()
+    for name in _GV_GLOBE_FIELDS:
+        del mesh.field_data[name]
+    mesh.compute_normals(cell_normals=False, point_normals=True, inplace=True)
+    mesh.warp_by_scalar(inplace=True, factor=2e-5)
+    drawn = GeoPlotter(globe=Globe(render_radius=2)).add_mesh(mesh).mapper.dataset
+    np.testing.assert_array_equal(drawn.points, mesh.points)
+    assert Globe.from_mesh(drawn) is None
+
+
+def test_on_a_map_only_the_record_changes():
+    """A projected mesh on another globe keeps its points, and records the scene's."""
+    planar = transform_mesh(_surface(), "+proj=eqc")
+    p = GeoPlotter(crs="+proj=eqc", globe=Globe(render_radius=2))
+    drawn = p.add_mesh(planar).mapper.dataset
+    np.testing.assert_allclose(drawn.points, planar.points)
+    assert Globe.from_mesh(drawn) == p.globe
+    assert Globe.from_mesh(planar) == Globe()
+
+
+def test_a_legacy_mesh_is_drawn_cleaned(legacy):
+    """A mesh saved by 0.5 is drawn with only current fields, and keeps its own."""
+    old = legacy(_surface())
+    drawn = GeoPlotter().add_mesh(old).mapper.dataset
+    assert GV_FIELD_RADIUS not in drawn.field_data
+    assert Globe.from_mesh(drawn) == Globe()
+    assert GV_FIELD_RADIUS in old.field_data
+
+
+def test_a_zlevel_lifts_from_the_scenes_globe():
+    """A z-level lifts a mesh from the scene's render radius (call 9 of the plan)."""
+    drawn = GeoPlotter().add_mesh(_surface(Globe(render_radius=2)), zlevel=1)
+    np.testing.assert_allclose(
+        distance(drawn.mapper.dataset, mean=False), 1 + ZLEVEL_SCALE, rtol=1e-12
+    )
+
+
+def test_radius_is_gone():
+    """The radius keyword is refused."""
+    with pytest.raises(TypeError, match="radius"):
+        GeoPlotter().add_mesh(_surface(), radius=1.0)
+
+
+def test_drawing_a_projected_mesh_leaves_it_unchanged():
+    """A projected mesh drawn in another CRS keeps its points, CRS and globe."""
+    planar = transform_mesh(_surface(Globe(render_radius=2)), "+proj=eqc")
+    points, crs = planar.points.copy(), from_wkt(planar)
+    GeoPlotter().add_mesh(planar)
+    np.testing.assert_array_equal(planar.points, points)
+    assert from_wkt(planar) == crs
+    assert Globe.from_mesh(planar) == Globe(render_radius=2)

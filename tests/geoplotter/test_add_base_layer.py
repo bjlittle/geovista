@@ -7,9 +7,12 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pytest
 
-from geovista.geoplotter import OPACITY_BLACKLIST, GeoPlotter
+from geovista.common import distance
+from geovista.geoplotter import BASE_ZLEVEL_SCALE, OPACITY_BLACKLIST, GeoPlotter
+from geovista.globe import Globe
 
 
 def test_no_opacity_kwarg(mocker):
@@ -62,3 +65,16 @@ def test_gpu_opacity_unavailable(mocker, key, value):
         }
         spy.assert_called_once_with(*args, **kwargs)
         assert p._missing_opacity is True
+
+
+@pytest.mark.parametrize("radius", [1.0, 6378137.0])
+def test_at_the_scenes_globe(radius):
+    """The base layer is lowered beneath the scene's globe, and records it."""
+    p = GeoPlotter(globe=Globe(render_radius=radius))
+    drawn = p.add_base_layer().mapper.dataset
+    np.testing.assert_allclose(
+        distance(drawn, mean=False), radius * (1 - BASE_ZLEVEL_SCALE), rtol=1e-6
+    )
+    assert Globe.from_mesh(drawn) == p.globe
+    drawn = p.add_base_layer(zlevel=0).mapper.dataset
+    np.testing.assert_allclose(distance(drawn, mean=False), radius, rtol=1e-6)

@@ -31,12 +31,11 @@ from .common import (
     GV_POINT_IDS,
     GV_REMESH_POINT_IDS,
     LRU_CACHE_SIZE,
-    RADIUS,
     REMESH_SEAM,
     ZLEVEL_SCALE,
     ZTRANSFORM_FACTOR,
+    _current,
     _to_cartesian,
-    distance,
     point_cloud,
     to_cartesian,
     to_lonlat,
@@ -56,7 +55,7 @@ from .crs import (
 )
 from .geodesic import BBox
 from .geometry import coastlines
-from .globe import Globe
+from .globe import Globe, _resolve
 from .gridlines import (
     GRATICULE_ZLEVEL,
     GraticuleGrid,
@@ -132,7 +131,7 @@ OPACITY_BLACKLIST = [
 def _lfric_mesh(
     *,
     resolution: str | None = None,
-    radius: float | None = None,
+    globe: Globe | None = None,
 ) -> pv.PolyData:
     """Retrieve the LFRic unstructured cubed-sphere from the geovista cache.
 
@@ -141,8 +140,9 @@ def _lfric_mesh(
     resolution : str, optional
         The resolution of the LFRic unstructured cubed-sphere. Defaults to
         :data:`geovista.pantry.meshes.LFRIC_RESOLUTION`.
-    radius : float, optional
-        The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
+    globe : :class:`~geovista.globe.Globe`, optional
+        The globe the mesh is drawn on, which it records. Defaults to
+        ``Globe()``.
 
     Returns
     -------
@@ -156,8 +156,8 @@ def _lfric_mesh(
     """
     mesh = lfric(resolution=resolution)
 
-    if radius:
-        mesh = resize(mesh, globe=Globe(render_radius=radius))
+    # a fresh mesh, so it is resized in place
+    mesh = resize(mesh, globe=_resolve(globe), inplace=True)
 
     mesh.set_active_scalars(name=None)
 
@@ -187,6 +187,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         self,
         *args: Any,
         crs: CRSLike | None = None,
+        globe: Globe | None = None,
         manifold: BBox | None = None,
         theme: Theme | str | None = None,
         **kwargs: Any,
@@ -201,6 +202,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             The target CRS to render geolocated meshes added to the plotter.
             May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`.
             Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
+        globe : :class:`~geovista.globe.Globe`, optional
+            The globe of the scene, which every layer added takes its geometry
+            from. Defaults to ``Globe()``.
         manifold : BBox, optional
             Apply the `manifold` to each mesh added to the plotter so that only
             the region enclosed by the `manifold` is rendered.
@@ -252,6 +256,28 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         self._poi: list[float] | None = None
         super().__init__(*args, **kwargs)
 
+        # the globe of the scene, read through the "globe" property. It is resolved
+        # once the plotter is whole, as pyvista cannot delete one only partly made
+        self._globe = _resolve(globe)
+
+    @property
+    def globe(self) -> Globe:
+        """The globe of the scene, which every layer added takes its geometry from.
+
+        It cannot be set, since the layers already added are drawn at it.
+
+        Returns
+        -------
+        Globe
+            The globe of the scene.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        return self._globe
+
     @property
     def manifold(self) -> BBox | None:
         """The manifold boundary applied to meshes added to the plotter.
@@ -292,7 +318,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         graticule: GraticuleGrid,
         /,
         *,
-        radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         point_labels_args: dict[Any, Any] | None = None,
@@ -305,11 +330,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         graticule : GraticuleGrid
             The labels and associated lon/lat points for the graticule
             parallels/meridians.
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the scene's globe by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -337,7 +361,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         lonlat = np.asanyarray(graticule.lonlat)
 
         xyz = _to_cartesian(
-            lonlat[:, 0], lonlat[:, 1], radius=radius, zlevel=zlevel, zscale=zscale
+            lonlat[:, 0],
+            lonlat[:, 1],
+            radius=self.globe.render_radius,
+            zlevel=zlevel,
+            zscale=zscale,
         )
         mesh = pv.PolyData(xyz)
         to_wkt(mesh, WGS84)
@@ -358,7 +386,12 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             # the point-cloud won't be sliced, however it's important that the
             # central-meridian rotation is performed here
             mesh = transform_mesh(
-                mesh, tgt_crs=self.crs, zlevel=zlevel, zscale=zscale, inplace=True
+                mesh,
+                tgt_crs=self.crs,
+                globe=self.globe,
+                zlevel=zlevel,
+                zscale=zscale,
+                inplace=True,
             )
 
             xyz = mesh.points
@@ -409,7 +442,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         *,
         mesh: pv.PolyData | None = None,
         resolution: str | None = None,
-        radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         rtol: float | None = None,
@@ -433,12 +465,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             in latitude, and ``N * 1.5`` cells in longitude. When adding a base layer
             to a projection, the default is to use a regular grid with resolution
             :data:`geovista.pantry.meshes.REGULAR_RESOLUTION`.
-        radius : float, optional
-            The radius of the spherical mesh to generate as the base layer. Defaults
-            to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the scene's globe by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             Defaults to ``-1``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -468,30 +498,23 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         else:
             resolution = str(resolution)
 
-        if planar(self.crs):
-            # pass through "zlevel" and "zscale" to the "add_mesh" method,
-            # but ignore "radius", as it's not applicable to planar projections
-            radius = None
-            kwargs["zlevel"] = -1 if zlevel is None else zlevel
-            kwargs["zscale"] = BASE_ZLEVEL_SCALE if zscale is None else zscale
-        else:
-            if radius is None:
-                radius = RADIUS
-            if zlevel is None:
-                zlevel = -1
-            if zscale is None:
-                zscale = BASE_ZLEVEL_SCALE
-            radius += radius * zlevel * zscale
+        zlevel = -1 if zlevel is None else zlevel
+        zscale = BASE_ZLEVEL_SCALE if zscale is None else zscale
 
-        if mesh is not None:
-            if radius is not None:
-                mesh = resize(mesh, globe=Globe(render_radius=radius))
-        elif resolution.startswith("r"):
-            # until the scene holds a globe, its radius is carried in one
-            globe = None if radius is None else Globe(render_radius=radius)
-            mesh = regular_grid(resolution=resolution, globe=globe)
+        if mesh is None:
+            mesh = (
+                regular_grid(resolution=resolution, globe=self.globe)
+                if resolution.startswith("r")
+                else _lfric_mesh(resolution=resolution, globe=self.globe)
+            )
+
+        if planar(self.crs):
+            # pass through "zlevel" and "zscale" to the "add_mesh" method
+            kwargs["zlevel"] = zlevel
+            kwargs["zscale"] = zscale
         else:
-            mesh = _lfric_mesh(resolution=resolution, radius=radius)
+            # lowered beneath the scene's globe, which it records
+            mesh = resize(mesh, globe=self.globe, zlevel=zlevel, zscale=zscale)
 
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
 
@@ -499,7 +522,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         self,
         *,
         resolution: str | None = None,
-        radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         rtol: float | None = None,
@@ -514,11 +536,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             The resolution of the Natural Earth coastlines, which may be either
             ``110m``, ``50m``, or ``10m``. Defaults to
             :data:`geovista.common.COASTLINES_RESOLUTION`.
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the scene's globe by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             Defaults to :data:`geovista.common.ZTRANSFORM_FACTOR`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -544,9 +565,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         """
         if planar(self.crs):
-            # ignore "radius", as it's not applicable to planar projections
-            radius = None
-
             if rtol is None:
                 rtol = COASTLINES_RTOL
             if zscale is None:
@@ -557,10 +575,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             # pass through kwargs to "add_mesh" method
             kwargs.update({"zlevel": zlevel, "zscale": zscale})
 
-        # until the scene holds a globe, its radius is carried in one
-        globe = None if radius is None else Globe(render_radius=radius)
         mesh = coastlines(
-            resolution=resolution, globe=globe, zlevel=zlevel, zscale=zscale
+            resolution=resolution, globe=self.globe, zlevel=zlevel, zscale=zscale
         )
 
         return self.add_mesh(mesh, rtol=rtol, atol=atol, **kwargs)
@@ -579,7 +595,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         poles_parallel: bool | None = None,
         poles_label: bool | None = None,
         show_labels: bool | None = None,
-        radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
@@ -637,11 +652,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         show_labels : bool, optional
             Whether to render the labels of the parallels and meridians. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the scene's globe by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -675,7 +689,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             n_samples=num_samples[0],
             factor=factor,
             show_labels=show_labels,
-            radius=radius,
             zlevel=zlevel,
             zscale=zscale,
             mesh_args=mesh_args,
@@ -692,7 +705,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             poles_parallel=poles_parallel,
             poles_label=poles_label,
             show_labels=show_labels,
-            radius=radius,
             zlevel=zlevel,
             zscale=zscale,
             mesh_args=mesh_args,
@@ -705,7 +717,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         mesh: Any,
         /,
         *,
-        radius: float | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         rtol: float | None = None,
@@ -720,13 +731,12 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         ----------
         mesh : PolyData
             The mesh to add to the plotter.
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int or ArrayLike, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius`/vertical by a proportional amount e.g.,
-            ``radius * zlevel * zscale``. If `zlevel` is not a scalar, then it must
-            broadcast to the shape ``(mesh.n_points,)``. Defaults to ``0``.
+            render radius of the scene's globe/vertical by a proportional amount
+            e.g., ``render_radius * zlevel * zscale``. If `zlevel` is not a scalar,
+            then it must broadcast to the shape ``(mesh.n_points,)``. Defaults to
+            ``0``.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`geovista.common.ZLEVEL_SCALE`.
@@ -753,6 +763,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         info = (
             mesh.active_scalars_info if hasattr(mesh, "active_scalars_info") else None
         )
+        # the mesh given, which drawing never changes
+        given = mesh
 
         # assume this is a sane default
         if os.environ.get("GEOVISTA_VTK_WARNINGS", "false").lower() == "false":
@@ -804,9 +816,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 mesh, tgt_crs, zlevel = _slice_seam(
                     mesh, tgt_crs, level=level, rtol=rtol, atol=atol
                 )
-            elif resize_required and not cloud:
-                # the radius of the surface, taken before any texture seam is cut
-                radius = float(distance(mesh))
 
             if "texture" in kwargs and kwargs["texture"] is not None:
                 if resize_required and not cloud:
@@ -839,13 +848,22 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                     atol=atol,
                     zlevel=zlevel,
                     zscale=zscale,
-                    inplace=not cloud,
+                    globe=self.globe,
+                    # in place only on a mesh made here, never on the one given
+                    inplace=not cloud and mesh is not given,
                 )
                 to_wkt(mesh, self.crs)
             elif resize_required:
-                # until the scene holds a globe, its radius is carried in one
-                globe = None if radius is None else Globe(render_radius=radius)
-                mesh = resize(mesh, globe=globe, zlevel=zlevel, zscale=zscale)
+                # a z-level lifts the mesh from the scene's globe
+                mesh = resize(mesh, globe=self.globe, zlevel=zlevel, zscale=zscale)
+            else:
+                mesh = self._at_scene_globe(mesh)
+        elif isinstance(mesh, pv.DataSet):
+            mesh = self._at_scene_globe(mesh)
+
+        if isinstance(mesh, pv.DataSet):
+            # the mesh drawn carries only current fields
+            mesh = _current(mesh, given)
 
         def _check(option: str) -> bool:
             """Determine whether the keyword argument is present and not ``None``.
@@ -910,6 +928,45 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         return result
 
+    def _at_scene_globe(self, mesh: pv.DataSet) -> pv.DataSet:
+        """Return the mesh as drawn at the globe of the scene.
+
+        A mesh that records another globe is drawn as a copy that records the
+        scene's, with its points scaled by the ratio of the two render radii on
+        the globe, and unmoved on a map. A mesh that records the scene's globe,
+        or has none, is drawn where its points are.
+
+        Parameters
+        ----------
+        mesh : pyvista.DataSet
+            The mesh to draw.
+
+        Returns
+        -------
+        pyvista.DataSet
+            The mesh to draw.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        recorded = Globe.from_mesh(mesh)
+
+        if recorded is None or recorded == self.globe:
+            return mesh
+
+        mesh = mesh.copy()
+
+        if not projected(mesh):
+            mesh.points = mesh.points * (
+                self.globe.render_radius / recorded.render_radius
+            )
+
+        self.globe.to_mesh(mesh)
+
+        return mesh
+
     def add_meridian(
         self,
         lon: float,
@@ -919,7 +976,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         n_samples: int | None = None,
         factor: float | None = None,
         show_labels: bool | None = None,
-        radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
@@ -946,11 +1002,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         show_labels : bool, optional
             Whether to render the meridian label. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the scene's globe by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -978,7 +1033,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             n_samples=n_samples,
             factor=factor,
             show_labels=show_labels,
-            radius=radius,
             zlevel=zlevel,
             zscale=zscale,
             mesh_args=mesh_args,
@@ -996,7 +1050,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         n_samples: int | None = None,
         factor: float | None = None,
         show_labels: bool | None = None,
-        radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
@@ -1032,11 +1085,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         show_labels : bool, optional
             Whether to render the labels of the meridians. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the scene's globe by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -1081,14 +1133,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             factor=factor,
             closed_interval=closed_interval,
             central_meridian=central_meridian,
-            # until the scene holds a globe, its radius is carried in one
-            globe=None if radius is None else Globe(render_radius=radius),
+            globe=self.globe,
             zlevel=zlevel,
             zscale=zscale,
         )
-
-        if radius is not None:
-            mesh_args["radius"] = radius
 
         if zlevel is not None:
             mesh_args["zlevel"] = zlevel
@@ -1118,7 +1166,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             # note that pyvista will automatically append "-labels" to the actor name
             self._add_graticule_labels(
                 meridians,
-                radius=radius,
                 zlevel=zlevel,
                 zscale=zscale,
                 point_labels_args=point_labels_args,
@@ -1135,7 +1182,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         factor: float | None = None,
         poles_parallel: bool | None = None,
         show_labels: bool | None = None,
-        radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
@@ -1165,11 +1211,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         show_labels : bool, optional
             Whether to render the parallel label. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the scene's globe by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -1198,7 +1243,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             factor=factor,
             poles_parallel=poles_parallel,
             show_labels=show_labels,
-            radius=radius,
             zlevel=zlevel,
             zscale=zscale,
             mesh_args=mesh_args,
@@ -1218,7 +1262,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         poles_parallel: bool | None = None,
         poles_label: bool | None = None,
         show_labels: bool | None = None,
-        radius: float | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
         mesh_args: dict[Any, Any] | None = None,
@@ -1261,11 +1304,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         show_labels : bool, optional
             Whether to render the labels of the parallels. Defaults to
             :data:`GRATICULE_SHOW_LABELS`.
-        radius : float, optional
-            The radius of the sphere. Defaults to :data:`geovista.common.RADIUS`.
         zlevel : int, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the scene's globe by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             Defaults to :data:`geovista.gridlines.GRATICULE_ZLEVEL`.
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
@@ -1310,14 +1352,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             factor=factor,
             poles_parallel=poles_parallel,
             poles_label=poles_label,
-            # until the scene holds a globe, its radius is carried in one
-            globe=None if radius is None else Globe(render_radius=radius),
+            globe=self.globe,
             zlevel=zlevel,
             zscale=zscale,
         )
-
-        if radius is not None:
-            mesh_args["radius"] = radius
 
         if zlevel is not None:
             mesh_args["zlevel"] = zlevel
@@ -1347,7 +1385,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             # note that pyvista will automatically append "-labels" to the actor name
             self._add_graticule_labels(
                 parallels,
-                radius=radius,
                 zlevel=zlevel,
                 zscale=zscale,
                 point_labels_args=point_labels_args,
@@ -1362,7 +1399,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         ys: ArrayLike | None = None,
         scalars: str | ArrayLike | None = None,
         crs: CRSLike | None = None,
-        radius: float | None = None,
         style: str | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
@@ -1394,9 +1430,6 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             The Coordinate Reference System of the provided `points`, or `xs` and `ys`.
             May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
             to ``EPSG:4326`` i.e., ``WGS 84``.
-        radius : float, optional
-            The radius of the mesh point-cloud. Defaults to
-            :data:`geovista.common.RADIUS`.
         style : str, optional
             Visualization style of the points to be rendered. May be either ``points``
             or ``points_gaussian``. The ``points_gaussian`` option may be controlled
@@ -1404,7 +1437,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             `kwargs`.
         zlevel : int or ArrayLike, optional
             The z-axis level. Used in combination with the `zscale` to offset the
-            `radius` by a proportional amount i.e., ``radius * zlevel * zscale``.
+            render radius of the scene's globe by a proportional amount i.e.,
+            ``render_radius * zlevel * zscale``.
             If `zlevel` is not a scalar, then its shape must match or broadcast
             with the shape of the `xs` and `ys`. Defaults to ``0``.
         zscale : float, optional
@@ -1499,8 +1533,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 xs,
                 ys,
                 crs=crs,
-                # until the scene holds a globe, its radius is carried in one
-                globe=None if radius is None else Globe(render_radius=radius),
+                globe=self.globe,
                 zlevel=zlevel,
                 zscale=zscale,
             )

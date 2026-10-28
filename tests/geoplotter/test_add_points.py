@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 from pyproj import CRS
 from pyproj.exceptions import CRSError
 import pytest
@@ -118,14 +119,12 @@ def test_xs_ys(mocker):
     _ = mocker.patch("geovista.geoplotter.GeoPlotterBase.add_mesh", return_value=actor)
     xs, ys = mocker.sentinel.xs, mocker.sentinel.ys
     crs, scalars = WGS84, mocker.sentinel.scalars
-    radius = 2.0
     zlevel, zscale = mocker.sentinel.zlevel, mocker.sentinel.zscale
     result = p.add_points(
         xs=xs,
         ys=ys,
         scalars=scalars,
         crs=crs,
-        radius=radius,
         zlevel=zlevel,
         zscale=zscale,
     )
@@ -133,7 +132,7 @@ def test_xs_ys(mocker):
     from geovista.bridge import Transform  # noqa: PLC0415
 
     Transform.from_points.assert_called_once_with(
-        xs, ys, crs=crs, globe=Globe(render_radius=radius), zlevel=zlevel, zscale=zscale
+        xs, ys, crs=crs, globe=p.globe, zlevel=zlevel, zscale=zscale
     )
     p.add_mesh.assert_called_once_with(mesh, style="points", scalars=scalars)
 
@@ -152,3 +151,12 @@ def test_xy_ys_scalars_name_warnings(mocker):
     )
     with pytest.warns(UserWarning, match=wmsg):
         _ = p.add_points(xs=xs, ys=ys, scalars=scalars)
+
+
+@pytest.mark.parametrize("radius", [1.0, 6378137.0])
+def test_at_the_scenes_globe(radius):
+    """Points are placed on the scene's globe, and record it."""
+    p = GeoPlotter(globe=Globe(render_radius=radius))
+    drawn = p.add_points(xs=[0.0, 10.0], ys=[0.0, 10.0]).mapper.dataset
+    np.testing.assert_allclose(np.linalg.norm(drawn.points, axis=1), radius, rtol=1e-6)
+    assert Globe.from_mesh(drawn) == p.globe

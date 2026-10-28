@@ -470,11 +470,13 @@ def main() -> None:
         zlevel=60,
         lighting=False,
     )
+    # The edges sit one z-level above the resolution 0 cells, so that they are
+    # drawn over them.
     actor_icosahedron_edges = p.add_mesh(
         generate_geodesic_edges(surface),
         line_width=4,
         color=color.icosahedron_edges,
-        zlevel=60,
+        zlevel=61,
         lighting=False,
     )
     actor_resolution_1 = p.add_mesh(
