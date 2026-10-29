@@ -1401,18 +1401,20 @@ def banner_lines(text: str) -> list[tuple[int, str, list[Part]]]:
         inner: list[str] | None = None
         target = ""
         for child in children[3:]:
+            # A line break carries no content, but renders as the space it stands for.
+            words = " " if child.type in {"softbreak", "hardbreak"} else child.content
             if child.type in {"link_open", "strong_open"}:
                 inner, target = [], str(child.attrs.get("href", ""))
             elif child.type in {"link_close", "strong_close"} and inner is not None:
                 kind = "link" if child.type == "link_close" else "self"
-                parts.append((kind, "".join(inner).strip(), target))
+                parts.append((kind, " ".join("".join(inner).split()), target))
                 inner = None
             elif inner is not None:
-                inner.append(child.content)
+                inner.append(words)
             elif parts and parts[-1][0] == "text":
-                parts[-1] = ("text", parts[-1][1] + (child.content or " "), "")
+                parts[-1] = ("text", parts[-1][1] + words, "")
             else:
-                parts.append(("text", child.content or " ", ""))
+                parts.append(("text", words, ""))
         found.append((token.map[0] + 1, label, parts))
     return found
 
@@ -1420,7 +1422,8 @@ def banner_lines(text: str) -> list[tuple[int, str, list[Part]]]:
 def members(parts: list[Part], separator: str) -> list[Part] | None:
     """Read the links and bold of a family line, or None if text sits out of place.
 
-    Text may only separate two members, and only as the separator given.
+    Text may only separate two members, and only as the separator given, so the line
+    opens and closes with a member.
     """
     parts = list(parts)
     for end in (0, -1):
@@ -1428,7 +1431,7 @@ def members(parts: list[Part], separator: str) -> list[Part] | None:
             parts.pop(end)
     named, between = parts[0::2], parts[1::2]
     if (
-        not named
+        len(named) != len(between) + 1
         or any(part[0] == "text" for part in named)
         or any(part[0] != "text" or part[1].strip() != separator for part in between)
     ):
@@ -1660,6 +1663,16 @@ def test_families_read_a_family_that_agrees():
             ),
             "Parent spec is now Lineage",
         ),
+        (
+            3,
+            member("lone spec", f"**lone spec** {ARROW}", "none"),
+            "ends with **lone spec**",
+        ),
+        (
+            0,
+            member("demo spec", chain("demo spec"), "[kin spec](kin-spec.md),"),
+            "separated by commas",
+        ),
     ],
     ids=[
         "skipped-generation",
@@ -1669,6 +1682,8 @@ def test_families_read_a_family_that_agrees():
         "separator",
         "not-itself",
         "retired",
+        "trailing-arrow",
+        "trailing-comma",
     ],
 )
 def test_families_find_each_line_that_disagrees(index, replacement, fault):
@@ -1678,6 +1693,40 @@ def test_families_find_each_line_that_disagrees(index, replacement, fault):
     _, problems = families(collection(*banners))
 
     assert any(fault in problem for problem in problems), problems
+
+
+@pytest.mark.parametrize("wrap", ["\n  ", "  \n  "], ids=["softbreak", "hardbreak"])
+@pytest.mark.parametrize(
+    ("index", "replacement"),
+    [
+        (
+            2,
+            member(
+                "tot spec",
+                f"[demo{{wrap}}spec](demo-spec.md) {ARROW} [kin spec](kin-spec.md) "
+                f"{ARROW} **tot spec**",
+                "none",
+            ),
+        ),
+        (3, member("lone spec", "**lone{wrap}spec**", "none")),
+        (
+            1,
+            member(
+                "kin spec",
+                chain("demo spec", "kin spec"),
+                "[tot{wrap}spec](tot-spec.md)",
+            ),
+        ),
+    ],
+    ids=["wrapped-ancestor", "wrapped-self", "wrapped-child"],
+)
+def test_families_read_a_prefix_wrapped_across_lines(index, replacement, wrap):
+    """A line break inside a prefix reads as the space CommonMark renders."""
+    banners = list(DEMO_FAMILY)
+    banners[index] = replacement.replace("{wrap}", wrap)
+    _, problems = families(collection(*banners))
+
+    assert not problems, problems
 
 
 def test_families_read_siblings_in_order_of_prefix():
