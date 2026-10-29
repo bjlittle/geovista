@@ -411,6 +411,7 @@ other, so a family drawn wrongly in any one of them fails the suite.
 | 3 | Citation integrity hook | ✅ landed (2026-10-07, {pull}`2573`) |
 | 4 | Rendered-output gate | ✅ landed (2026-10-27, {pull}`2738`) |
 | 5 | GitHub reference roles and hardcoded-link detection | candidate |
+| 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-29, {pull}`2778`) |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
@@ -423,6 +424,11 @@ Change 1 created `docs/src/developer/specs/index.rst`, added `developer/plans/**
 specifications, added the section sign to the seven existing citations, and landed the
 test of §3.5. Two of this document's rules changed on the way, and
 §8 records both.
+
+Change 6 replaced the **Parent spec** line of every banner with the family lines of
+§3.7, grouped the index's table by family, retitled every
+specification for its topic, and added item 8 of §3.5 to hold the
+families together.
 
 Rows 2 to 5 are candidates rather than scheduled work. When this specification was written
 `geovista` had seven citations in one namespace, against `tephpy`'s 1,096 across nineteen,
