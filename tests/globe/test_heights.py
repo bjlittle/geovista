@@ -162,3 +162,24 @@ def test_a_zlevel_is_refused(zlevel):
     """A z-level other than 0 is refused with heights, naming it."""
     with pytest.raises(ValueError, match=rf"z-level.*{zlevel}".replace("[", r"\[")):
         _refuse_zlevel(zlevel)
+
+
+class _Variable:
+    """A variable that carries its units as an attribute, as xarray and netCDF4 do."""
+
+    units = "m"
+
+    def __init__(self, values: list[float]) -> None:
+        self.values = np.asarray(values)
+
+    def __array__(self, dtype=None, copy=None) -> np.ndarray:
+        return self.values if dtype is None else self.values.astype(dtype)
+
+
+@pytest.mark.parametrize(
+    ("height", "depth"), [(_Variable([1.0]), None), (None, _Variable([1.0]))]
+)
+def test_a_value_with_units_names_vertical_units(height, depth):
+    """A value that carries its own units is refused, naming vertical_units."""
+    with pytest.raises(ValueError, match=r"carries its own units.*vertical_units='m'"):
+        _heights(height, depth, None)

@@ -722,6 +722,17 @@ def _heights(
         )
         raise ValueError(emsg)
 
+    # a value that carries its units as an attribute, as an xarray DataArray or
+    # a netCDF4 variable does, is refused here, naming the keyword these take
+    own = None if isinstance(value, _Quantity) else getattr(value, "units", None)
+    if own is not None:
+        emsg = (
+            f"The {keyword} given carries its own units, {own!r}, which geovista "
+            "does not read from it. Pass its values, with their units as "
+            f"vertical_units={own!r}."
+        )
+        raise ValueError(emsg)
+
     if crs is not None and _ellipsoidal_height(crs):
         emsg = (
             "Heights are above mean sea level, but the CRS "
