@@ -1,4 +1,4 @@
-# geovista Repository Checks — Design Specification
+# Repository Checks Specification
 
 ```{readingtime}
 ```
@@ -14,7 +14,8 @@
 - **Scope:** the checks `geovista` wrote to hold its own repository to a rule, the page that
   documents them, and the gate that keeps the two in step. Third-party tools are out of
   scope for now, and §4 keeps a row for them
-- **Parent spec:** none; its conventions are those of docs spec §1
+- **Lineage:** **checks spec**
+- **Children:** none
 - **Published:** in the specifications index
 
 (checks-spec-1)=

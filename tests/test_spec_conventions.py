@@ -42,6 +42,7 @@ import tokenize
 import tomllib
 from typing import TYPE_CHECKING
 
+from markdown_it import MarkdownIt
 import pytest
 
 if TYPE_CHECKING:
@@ -1332,13 +1333,410 @@ def toctree(index: str) -> list[str]:
     return entries
 
 
+#: What a row of the namespace table opens with for each generation below its root,
+#: and the branch it ends with (docs spec §3.7).
+INDENT = "|indent|"
+BRANCH = "└─"
+
+#: A row of the namespace table: its marker, its prefix and its document.
+ROW = re.compile(
+    rf"\*\s+-\s+(?P<marker>(?:{re.escape(INDENT)}\s+)*(?:{BRANCH}\s+)?)"
+    rf"``(?P<prefix>[^`]+?)\s*{SECTION}{ELLIPSIS}``\s*\n"
+    r"\s+-\s+:doc:`(?P<doc>[^`]+)`"
+)
+
+
 def namespace_table(index: str) -> dict[str, str]:
     """Read the document each prefix names in the index's namespace table."""
-    pattern = re.compile(
-        rf"\*\s+-\s+``(?P<prefix>[^`]+?)\s*{SECTION}{ELLIPSIS}``\s*\n"
-        r"\s+-\s+:doc:`(?P<doc>[^`]+)`"
+    return {match["prefix"]: match["doc"] for match in ROW.finditer(index)}
+
+
+def table_rows(index: str) -> list[tuple[str, str]]:
+    """Read, in order, the marker and the prefix of each row of the namespace table."""
+    return [
+        (" ".join(match["marker"].split()), match["prefix"])
+        for match in ROW.finditer(index)
+    ]
+
+
+def marker(depth: int) -> str:
+    """Write the marker of a row at a depth below its root, which has none."""
+    return " ".join([*[INDENT] * (depth - 1), BRANCH]) if depth else ""
+
+
+#: The banner lines a specification records its family on, and the line they retired.
+LINEAGE = "Lineage"
+CHILDREN = "Children"
+RETIRED = "Parent spec"
+
+#: What separates the generations of a lineage, built rather than written, since
+#: ruff reads the character as a mistyped angle bracket.
+ARROW = "\N{SINGLE RIGHT-POINTING ANGLE QUOTATION MARK}"
+
+#: A part of a family line: a link to a specification, this specification in bold,
+#: or the text between them, as ``(kind, words, target)``.
+Part = tuple[str, str, str]
+
+
+def banner_lines(text: str) -> list[tuple[int, str, list[Part]]]:
+    """Read each family line of a banner, with its line number, label and parts.
+
+    The banner is parsed as CommonMark, so a line that wraps or a link written with
+    a title reads the same as one that does not.
+    """
+    found = []
+    for token in MarkdownIt("commonmark").parse(text):
+        children = [
+            child
+            for child in token.children or []
+            if child.type != "text" or child.content
+        ]
+        opening = [child.type for child in children[:3]]
+        if token.type != "inline" or opening != ["strong_open", "text", "strong_close"]:
+            continue
+        label = children[1].content.removesuffix(":")
+        if label not in {LINEAGE, CHILDREN, RETIRED}:
+            continue
+        parts: list[Part] = []
+        inner: list[str] | None = None
+        target = ""
+        for child in children[3:]:
+            if child.type in {"link_open", "strong_open"}:
+                inner, target = [], str(child.attrs.get("href", ""))
+            elif child.type in {"link_close", "strong_close"} and inner is not None:
+                kind = "link" if child.type == "link_close" else "self"
+                parts.append((kind, "".join(inner).strip(), target))
+                inner = None
+            elif inner is not None:
+                inner.append(child.content)
+            elif parts and parts[-1][0] == "text":
+                parts[-1] = ("text", parts[-1][1] + (child.content or " "), "")
+            else:
+                parts.append(("text", child.content or " ", ""))
+        found.append((token.map[0] + 1, label, parts))
+    return found
+
+
+def members(parts: list[Part], separator: str) -> list[Part] | None:
+    """Read the links and bold of a family line, or None if text sits out of place.
+
+    Text may only separate two members, and only as the separator given.
+    """
+    parts = list(parts)
+    for end in (0, -1):
+        while parts and parts[end][0] == "text" and not parts[end][1].strip():
+            parts.pop(end)
+    named, between = parts[0::2], parts[1::2]
+    if (
+        not named
+        or any(part[0] == "text" for part in named)
+        or any(part[0] != "text" or part[1].strip() != separator for part in between)
+    ):
+        return None
+    return named
+
+
+def families(texts: Mapping[Path, str]) -> tuple[dict[str, list[str]], list[str]]:
+    """Read the lineage of each specification, and find where its family lines disagree.
+
+    Each specification carries one Lineage line, its ancestors linked from the root
+    down and itself last in bold, and one Children line, its direct children linked
+    in order of prefix, or the word none. Its lineage extends its parent's by itself,
+    and its children are exactly the specifications whose lineage names it as parent.
+
+    Parameters
+    ----------
+    texts : mapping of Path to str
+        The specifications, each with its text.
+
+    Returns
+    -------
+    tuple
+        The lineage of each prefix, root first, and one message per fault.
+
+    """
+    prefixes = {
+        path: match["prefix"]
+        for path, text in texts.items()
+        if (match := DECLARED.search(text)) is not None
+    }
+    owners = {prefix: path.name for path, prefix in prefixes.items()}
+    lineages: dict[str, list[str]] = {}
+    stated: dict[str, tuple[Path, int, list[str]]] = {}
+    problems = []
+
+    def linked(path: Path, number: int, part: Part) -> str:
+        if owners.get(part[1]) != part[2]:
+            problems.append(
+                f"{where(path, number)}: links {part[1]!r} to {part[2]!r}, "
+                f"which is {owners.get(part[1])!r}"
+            )
+        return part[1]
+
+    for path, prefix in prefixes.items():
+        lines = banner_lines(texts[path])
+        labels = [label for _, label, _ in lines]
+        for number, label, _ in lines:
+            if label == RETIRED:
+                problems.append(f"{where(path, number)}: {RETIRED} is now {LINEAGE}")
+        problems.extend(
+            f"{where(path, 1)}: carries {labels.count(label)} {label} lines, not 1"
+            for label in (LINEAGE, CHILDREN)
+            if labels.count(label) != 1
+        )
+        for number, label, parts in lines:
+            if label == LINEAGE and labels.count(LINEAGE) == 1:
+                chain = members(parts, ARROW)
+                if chain is None or chain[-1] != ("self", prefix, ""):
+                    problems.append(
+                        f"{where(path, number)}: a lineage links its ancestors, "
+                        f"root first, separated by {ARROW}, and ends with **{prefix}**"
+                    )
+                    continue
+                ancestors = [linked(path, number, part) for part in chain[:-1]]
+                if any(part[0] != "link" for part in chain[:-1]):
+                    problems.append(f"{where(path, number)}: an ancestor is not linked")
+                lineages[prefix] = [*ancestors, prefix]
+            elif label == CHILDREN and labels.count(CHILDREN) == 1:
+                words = "".join(part[1] for part in parts).strip()
+                if words == "none":
+                    stated[prefix] = (path, number, [])
+                    continue
+                listed = members(parts, ",")
+                if listed is None or any(part[0] != "link" for part in listed):
+                    problems.append(
+                        f"{where(path, number)}: children are links separated by "
+                        "commas, or the word none"
+                    )
+                    continue
+                stated[prefix] = (
+                    path,
+                    number,
+                    [linked(path, number, p) for p in listed],
+                )
+
+    step = f" {ARROW} "
+    for prefix, lineage in lineages.items():
+        if len(lineage) > 1 and lineages.get(lineage[-2]) != lineage[:-1]:
+            parent = lineages.get(lineage[-2], ["(none)"])
+            problems.append(
+                f"{owners[prefix]}: its lineage {step.join(lineage)} does not extend "
+                f"its parent's, {step.join(parent)}"
+            )
+    for prefix, (path, number, children) in stated.items():
+        expected = sorted(
+            child
+            for child, lineage in lineages.items()
+            if len(lineage) > 1 and lineage[-2] == prefix
+        )
+        if children != expected:
+            problems.append(
+                f"{where(path, number)}: lists children {children}, "
+                f"where the lineages make them {expected}"
+            )
+    return lineages, problems
+
+
+def family_rows(lineages: Mapping[str, list[str]]) -> list[tuple[str, str]]:
+    """Order the rows of the namespace table, each child under its parent.
+
+    Roots run in order of prefix, and so does each family's set of siblings.
+    """
+    rows = []
+
+    def descend(prefix: str, depth: int) -> None:
+        rows.append((marker(depth), prefix))
+        for child in sorted(
+            child
+            for child, lineage in lineages.items()
+            if len(lineage) > 1 and lineage[-2] == prefix
+        ):
+            descend(child, depth + 1)
+
+    for root in sorted(
+        prefix for prefix, lineage in lineages.items() if len(lineage) == 1
+    ):
+        descend(root, 0)
+    return rows
+
+
+def member(prefix: str, lineage: str, children: str) -> str:
+    """Write the banner of a specification with the family lines given."""
+    return (
+        f"- **Citation prefix:** `{prefix} {SECTION}{ELLIPSIS}`\n"
+        f"- **{LINEAGE}:** {lineage}\n"
+        f"- **{CHILDREN}:** {children}\n"
     )
-    return {match["prefix"]: match["doc"] for match in pattern.finditer(index)}
+
+
+def chain(*prefixes: str) -> str:
+    """Write a lineage: each ancestor linked, root first, and the last in bold."""
+    *ancestors, last = prefixes
+    links = [f"[{prefix}]({prefix.replace(' ', '-')}.md)" for prefix in ancestors]
+    return f" {ARROW} ".join([*links, f"**{last}**"])
+
+
+def collection(*banners: str) -> dict[Path, str]:
+    """Name each banner after its prefix, as a specification of a collection."""
+    return {
+        Path(f"{DECLARED.search(text)['prefix'].replace(' ', '-')}.md"): text
+        for text in banners
+    }
+
+
+#: A family of three generations, and a specification of its own.
+DEMO_FAMILY = (
+    member("demo spec", chain("demo spec"), "[kin spec](kin-spec.md)"),
+    member("kin spec", chain("demo spec", "kin spec"), "[tot spec](tot-spec.md)"),
+    member("tot spec", chain("demo spec", "kin spec", "tot spec"), "none"),
+    member("lone spec", chain("lone spec"), "none"),
+)
+
+
+def test_families_read_a_family_that_agrees():
+    """A lineage per generation, and children that name exactly those below."""
+    lineages, problems = families(collection(*DEMO_FAMILY))
+
+    assert not problems
+    assert lineages["tot spec"] == ["demo spec", "kin spec", "tot spec"]
+    assert family_rows(lineages) == [
+        ("", "demo spec"),
+        (BRANCH, "kin spec"),
+        (f"{INDENT} {BRANCH}", "tot spec"),
+        ("", "lone spec"),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("index", "replacement", "fault"),
+    [
+        (
+            2,
+            member("tot spec", chain("kin spec", "tot spec"), "none"),
+            "does not extend its parent's",
+        ),
+        (
+            0,
+            member("demo spec", "**demo spec**", "none"),
+            "where the lineages make them",
+        ),
+        (
+            3,
+            member("lone spec", "**lone spec**", "[kin spec](kin-spec.md)"),
+            "where the lineages make them",
+        ),
+        (
+            1,
+            member(
+                "kin spec",
+                f"[demo spec](lone-spec.md) {ARROW} **kin spec**",
+                "[tot spec](tot-spec.md)",
+            ),
+            "which is 'demo-spec.md'",
+        ),
+        (
+            1,
+            member(
+                "kin spec",
+                "[demo spec](demo-spec.md) / **kin spec**",
+                "[tot spec](tot-spec.md)",
+            ),
+            f"separated by {ARROW}",
+        ),
+        (
+            1,
+            member(
+                "kin spec",
+                f"[demo spec](demo-spec.md) {ARROW} **demo spec**",
+                "[tot spec](tot-spec.md)",
+            ),
+            "ends with **kin spec**",
+        ),
+        (
+            3,
+            (
+                f"- **Citation prefix:** `lone spec {SECTION}{ELLIPSIS}`\n"
+                "- **Parent spec:** none\n"
+            ),
+            "Parent spec is now Lineage",
+        ),
+    ],
+    ids=[
+        "skipped-generation",
+        "missing-child",
+        "stranger",
+        "wrong-link",
+        "separator",
+        "not-itself",
+        "retired",
+    ],
+)
+def test_families_find_each_line_that_disagrees(index, replacement, fault):
+    """Each family line is checked against the lineages, in both directions."""
+    banners = list(DEMO_FAMILY)
+    banners[index] = replacement
+    _, problems = families(collection(*banners))
+
+    assert any(fault in problem for problem in problems), problems
+
+
+def test_families_read_siblings_in_order_of_prefix():
+    """A Children line out of order is a fault, as the table rows would be."""
+    banners = (
+        member(
+            "demo spec",
+            "**demo spec**",
+            "[kin spec](kin-spec.md), [ark spec](ark-spec.md)",
+        ),
+        member("kin spec", chain("demo spec", "kin spec"), "none"),
+        member("ark spec", chain("demo spec", "ark spec"), "none"),
+    )
+    lineages, problems = families(collection(*banners))
+
+    assert problems == [
+        (
+            "demo-spec.md:3: lists children ['kin spec', 'ark spec'], "
+            "where the lineages make them ['ark spec', 'kin spec']"
+        )
+    ]
+    assert [prefix for _, prefix in family_rows(lineages)] == [
+        "demo spec",
+        "ark spec",
+        "kin spec",
+    ]
+
+
+def test_table_rows_read_the_marker_of_each_generation():
+    """The marker is read as written, so a row at the wrong depth is seen."""
+    index = "\n".join(
+        f"    * - {mark}``{prefix} {SECTION}{ELLIPSIS}``\n      - :doc:`{prefix}`"
+        for mark, prefix in [
+            ("", "demo spec"),
+            (f"{BRANCH} ", "kin spec"),
+            (f"{INDENT} {BRANCH} ", "tot spec"),
+        ]
+    )
+
+    assert table_rows(index) == [
+        ("", "demo spec"),
+        (BRANCH, "kin spec"),
+        (f"{INDENT} {BRANCH}", "tot spec"),
+    ]
+
+
+def test_every_family_line_agrees(specs):
+    """Family (item 8): the Lineage and Children lines agree across the collection."""
+    _, problems = families({spec: spec.read_text(encoding="utf-8") for spec in specs})
+
+    assert not problems, "\n".join(problems)
+
+
+def test_the_index_groups_each_family_under_its_root(specs):
+    """Family (item 8): the namespace table puts each child under its parent."""
+    index = (SPECS / "index.rst").read_text(encoding="utf-8")
+    lineages, _ = families({spec: spec.read_text(encoding="utf-8") for spec in specs})
+
+    assert table_rows(index) == family_rows(lineages)
 
 
 def test_front_matter_is_read_only_where_a_document_opens():

@@ -1,4 +1,4 @@
-# geovista Heights as Data — Design Specification
+# Heights as Data Specification
 
 ```{readingtime}
 ```
@@ -14,13 +14,13 @@
 - **Citation prefix:** `heights spec §…`
 - **Scope:** heights and depths as data on a mesh, the keywords that take them, positions
   built from them on the globe and on a map, heights that are missing, and what is refused
-- **Parent spec:** the globe, heights and layers design
-  ([`2026-10-26-globe-heights-layers-design.md`](2026-10-26-globe-heights-layers-design.md)).
-  This extends globe spec §4.3 and globe spec §4.4, and is row 3 of globe spec §9. It
-  inherits that specification's decisions (globe spec §2) and testing (globe spec §6),
-  except that a missing height is no longer refused (§2 decision 3). It builds on the
-  globe that a mesh records, of the globe on the scene design (scene spec §4.3), and
-  amends scene spec §4.4 for a mesh with heights (§4.3)
+- **Lineage:** [crs spec](2026-10-23-globe-first-crs-design.md) › [globe spec](2026-10-26-globe-heights-layers-design.md) › **heights spec**
+- **Children:** none
+- **Extends:** globe spec §4.3 and globe spec §4.4, as row 3 of globe spec §9. It inherits
+  that specification's decisions (globe spec §2) and testing (globe spec §6),
+  except that a missing height is no longer refused (§2 decision 3). It builds
+  on the globe that a mesh records, of the globe on the scene design
+  (scene spec §4.3), and amends scene spec §4.4 for a mesh with heights (§4.3)
 - **Published:** in the specifications index
 
 (heights-spec-1)=

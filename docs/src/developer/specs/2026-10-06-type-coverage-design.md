@@ -1,4 +1,4 @@
-# geovista Type Coverage — Design Specification
+# Type Coverage Specification
 
 ```{readingtime}
 ```
@@ -17,9 +17,8 @@
 - **Scope:** where `geovista` runs `mypy`, what it is allowed not to check yet, and the
   order in which that allowance is withdrawn; the strictness settings themselves stay as
   they are
-- **Parent spec:** none, but not unconventioned. It was the first specification in this
-  repository and so inherited nothing; the conventions it arrived at are now written down,
-  and governed, by docs spec §1
+- **Lineage:** **typing spec**
+- **Children:** none
 - **Published:** in the specifications index, since change 1 of
   docs spec §4 took off the `orphan: true` it carried while nothing
   listed it

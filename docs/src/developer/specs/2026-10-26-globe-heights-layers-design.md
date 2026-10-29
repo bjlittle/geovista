@@ -1,4 +1,4 @@
-# geovista Globe, Heights and Layers — Design Specification
+# Globe, Heights and Layers Specification
 
 ```{readingtime}
 ```
@@ -14,13 +14,13 @@
 - **Scope:** the globe model of a scene, units, heights and depths in physical units, the
   vertical mapping, and the layering of surfaces and lines, which together replace
   `zlevel` and `zscale`
-- **Parent spec:** the globe-first CRS design
-  ([`2026-10-23-globe-first-crs-design.md`](2026-10-23-globe-first-crs-design.md)). This
-  extends crs spec §4.1 and crs spec §4.9,
-  and brings forward from crs spec §9 the heights in physical units
-  and the replacement of `zlevel` that it gave to the design of region solids and the
-  vertical. It inherits that specification's decisions (crs spec §2)
-  and testing (crs spec §6) unchanged
+- **Lineage:** [crs spec](2026-10-23-globe-first-crs-design.md) › **globe spec**
+- **Children:** [heights spec](2026-10-28-heights-as-data-design.md),
+  [scene spec](2026-10-27-globe-scene-design.md)
+- **Extends:** crs spec §4.1 and crs spec §4.9, and brings forward from crs spec §9 the
+  heights in physical units and the replacement of `zlevel` that it gave to the
+  design of region solids and the vertical. It inherits that specification's
+  decisions (crs spec §2) and testing (crs spec §6) unchanged
 - **Sibling spec:** the planar z-levels design
   ([`2026-10-08-planar-zlevel-design.md`](2026-10-08-planar-zlevel-design.md)), whose rule
   this specification replaces when row 5 of §9 lands

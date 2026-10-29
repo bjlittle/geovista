@@ -1,4 +1,4 @@
-# geovista Planar z-Levels — Design Specification
+# Planar z-Levels Specification
 
 ```{readingtime}
 ```
@@ -20,7 +20,8 @@
 - **Citation prefix:** `zlevel spec §…`
 - **Scope:** the height a z-level gives a mesh or point cloud in a planar CRS. The globe,
   where a level lives in the radius, is unchanged
-- **Parent spec:** none; its conventions are those of docs spec §1
+- **Lineage:** **zlevel spec**
+- **Children:** none
 - **Published:** in the specifications index
 
 (zlevel-spec-1)=
