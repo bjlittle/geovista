@@ -52,6 +52,7 @@ __all__ = [
     "GV_FIELD_RESOLUTION",
     "GV_FIELD_ZSCALE",
     "GV_MANIFOLD_CELL_IDS",
+    "GV_POINT_HEIGHT",
     "GV_POINT_IDS",
     "GV_POINT_ZLEVEL",
     "GV_REMESH_POINT_IDS",
@@ -167,6 +168,13 @@ GV_FIELD_ZSCALE: str = "gvZScale"
 
 GV_MANIFOLD_CELL_IDS: str = "gvManifoldCellIds"
 """Name of the geovista manifold cell indices/marker array."""
+
+GV_POINT_HEIGHT: str = "gvHeight"
+"""Name of the point array of heights, in metres above mean sea level.
+
+A float64 array of one height for each point, NaN where a height is missing. See
+:attr:`geovista.accessor.GeoVistaAccessor.height`, which reads it.
+"""
 
 GV_POINT_IDS: str = "gvOriginalPointIds"
 """Name of the geovista point indices array."""

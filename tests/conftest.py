@@ -34,6 +34,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from types import ModuleType
 
+    from numpy.typing import ArrayLike
+
 #: Fixtures this suite takes from pytest's own plugins.
 pytest_plugins = ("pytester",)
 
@@ -324,3 +326,39 @@ def _legacy(mesh: pv.DataSet, /, *, radius: float | None = None) -> pv.DataSet:
 def legacy() -> Callable[..., pv.DataSet]:
     """Fixture to build a mesh as geovista 0.5 wrote it, for tests of retired fields."""
     return _legacy
+
+
+def _at_heights(
+    lons: ArrayLike, lats: ArrayLike, heights: ArrayLike, globe: Globe
+) -> np.ndarray:
+    """Return the points at their heights on a globe, worked out with numpy alone.
+
+    The reference of heights spec §4.3, from the globe's public values: a point
+    lies at a radius of ``s (R + V(h))``, where ``V`` exaggerates a height above
+    sea level and one below it by their own factors, and a missing height is 0.
+
+    """
+    lons = np.radians(np.ravel(np.asarray(lons, dtype=np.float64)))
+    lats = np.radians(np.ravel(np.asarray(lats, dtype=np.float64)))
+    heights = np.ravel(np.asarray(heights, dtype=np.float64))
+    mapped = np.where(
+        heights >= 0,
+        globe.exaggeration * heights,
+        globe.exaggeration_below * heights,
+    )
+    mapped = np.where(np.isnan(heights), 0.0, mapped)
+    radius = globe.radius.m_as("m")
+    radii = globe.render_radius * (1.0 + mapped / radius)
+    return np.column_stack(
+        [
+            radii * np.cos(lats) * np.cos(lons),
+            radii * np.cos(lats) * np.sin(lons),
+            radii * np.sin(lats),
+        ]
+    )
+
+
+@pytest.fixture
+def at_heights() -> Callable[..., np.ndarray]:
+    """Fixture to place points at their heights on a globe, for reference."""
+    return _at_heights

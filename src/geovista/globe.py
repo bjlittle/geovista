@@ -30,16 +30,20 @@ from .common import (
     GV_FIELD_GLOBE_RADIUS,
     GV_FIELD_GLOBE_RENDER_RADIUS,
     GV_FIELD_RADIUS,
+    GV_POINT_HEIGHT,
     RADIUS,
     _retired,
+    _to_cartesian,
 )
-from .crs import projected
-from .units import as_quantity, to_metres
+from .crs import _ellipsoidal_height, projected
+from .units import _Quantity, as_quantity, to_metres
 
 if TYPE_CHECKING:
     import numpy as np
+    from numpy.typing import ArrayLike, NDArray
     import pyvista as pv
 
+    from .crs import CRSLike
     from .units import Quantity
 
 # lazy import third-party dependencies
@@ -650,3 +654,316 @@ def _written(mesh: pv.DataSet, /) -> bool:
     return GV_FIELD_RADIUS in field_data or any(
         name in field_data for name in _GV_GLOBE_FIELDS
     )
+
+
+def _heights(
+    height: object,
+    depth: object,
+    vertical_units: str | None,
+    /,
+    *,
+    crs: CRSLike | None = None,
+) -> float | NDArray[np.float64] | None:
+    """Read the heights a function is given, in metres above mean sea level.
+
+    Parameters
+    ----------
+    height : object
+        The heights given, or ``None``: a number or an array in metres, or in
+        the unit `vertical_units` names, or a ``pint`` quantity of length.
+    depth : object
+        The depths given, or ``None``, positive downward, in the same forms.
+    vertical_units : str, optional
+        A CF unit string for a `height` or `depth` given as plain numbers.
+    crs : CRSLike, optional
+        The CRS of the points the heights are given for.
+
+    Returns
+    -------
+    float or ndarray or None
+        The heights in metres, NaN where one is masked or missing, or ``None``
+        when neither a height nor a depth is given.
+
+    Raises
+    ------
+    ValueError
+        If both a height and a depth are given, `vertical_units` is given with
+        neither or with a quantity, a height is infinite or not a length, or
+        heights are given with a CRS whose height is above the ellipsoid.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if height is not None and depth is not None:
+        emsg = "Give a height or a depth, not both, got both 'height' and 'depth'."
+        raise ValueError(emsg)
+
+    keyword, value = ("height", height) if depth is None else ("depth", depth)
+
+    if value is None:
+        if vertical_units is not None:
+            emsg = (
+                f"vertical_units={vertical_units!r} names the unit of a height or "
+                "a depth, but neither was given."
+            )
+            raise ValueError(emsg)
+        return None
+
+    if vertical_units is not None and isinstance(value, _Quantity):
+        emsg = (
+            f"The {keyword} given is a quantity, with a unit of its own, so "
+            f"takes no vertical_units, got vertical_units={vertical_units!r}."
+        )
+        raise ValueError(emsg)
+
+    if crs is not None and _ellipsoidal_height(crs):
+        emsg = (
+            "Heights are above mean sea level, but the CRS "
+            f"{getattr(crs, 'name', crs)!r} has an 'Ellipsoidal height' axis. "
+            "Give a CRS whose height is gravity-related, such as 'EPSG:9705', or "
+            "a horizontal one, such as 'EPSG:4326'."
+        )
+        raise ValueError(emsg)
+
+    # a value that is not a length, or not numbers, is refused by to_metres
+    metres = to_metres(cast("ArrayLike | Quantity", value), vertical_units)
+    values = np.asarray(metres)
+    infinite = np.isinf(values)
+
+    if np.any(infinite):
+        if values.ndim:
+            index = int(np.flatnonzero(infinite)[0])
+            emsg = (
+                f"A {keyword} cannot be infinite, got {values.flat[index]} at "
+                f"index {index}."
+            )
+        else:
+            emsg = f"A {keyword} cannot be infinite, got {float(values)}."
+        raise ValueError(emsg)
+
+    return -metres if depth is not None else metres
+
+
+def _for_points(
+    heights: float | NDArray[np.float64], n_points: int, n_cells: int, /
+) -> NDArray[np.float64]:
+    """Return one height for each point of a mesh.
+
+    Parameters
+    ----------
+    heights : float or ndarray
+        The heights, in metres: one for the whole mesh, or one for each point.
+    n_points : int
+        The number of points of the mesh.
+    n_cells : int
+        The number of cells of the mesh, or of faces given to build it.
+
+    Returns
+    -------
+    ndarray
+        A new float64 array of one height for each point, in C order.
+
+    Raises
+    ------
+    ValueError
+        If the heights are one for each cell, or fit neither the points nor
+        the whole mesh.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    values: NDArray[np.float64] = np.array(heights, dtype=np.float64).ravel()
+
+    if values.size == 1:
+        return np.full(n_points, values[0], dtype=np.float64)
+
+    if values.size == n_points:
+        return values
+
+    if values.size == n_cells:
+        emsg = (
+            "Heights are given one for each point, got one for each of the "
+            f"{n_cells:,} cells, which geovista does not draw yet (issue #2728)."
+        )
+        raise ValueError(emsg)
+
+    emsg = (
+        f"Require one height for each of the {n_points:,} points, or one for the "
+        f"whole mesh, got {values.size:,}."
+    )
+    raise ValueError(emsg)
+
+
+def _refuse_zlevel(zlevel: object, /) -> None:
+    """Refuse a z-level other than 0, given with heights.
+
+    Parameters
+    ----------
+    zlevel : object
+        The z-level given, which is none when it is ``None``, 0 or all zeros.
+
+    Raises
+    ------
+    ValueError
+        If the z-level is other than 0.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if zlevel is not None and np.any(np.asarray(zlevel) != 0):
+        emsg = (
+            "A height and a z-level are never given together, since heights "
+            f"place each point, got zlevel={zlevel!r}."
+        )
+        raise ValueError(emsg)
+
+
+def _record_heights(mesh: pv.DataSet, heights: ArrayLike, /) -> None:
+    """Record the heights of a mesh's points, in place.
+
+    The heights are set apart from the active scalars, which they never
+    become, so that ``threshold`` and ``add_mesh`` go on reading the data.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+    heights : ArrayLike
+        One height for each point, in metres, NaN where one is missing.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    mesh.point_data.set_array(np.asarray(heights, dtype=np.float64), GV_POINT_HEIGHT)
+
+
+def _carried_heights(mesh: pv.DataSet, /) -> NDArray[np.float64] | None:
+    """Return the heights a mesh carries.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+
+    Returns
+    -------
+    ndarray or None
+        The heights of its points, as float64, or ``None`` for a mesh without
+        them.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if GV_POINT_HEIGHT not in mesh.point_data:
+        return None
+
+    heights: NDArray[np.float64] = np.asarray(
+        mesh.point_data[GV_POINT_HEIGHT], dtype=np.float64
+    )
+    return heights
+
+
+def _mapped(globe: Globe, heights: ArrayLike, /) -> NDArray[np.float64]:
+    """Map heights through the vertical mapping of a globe.
+
+    Parameters
+    ----------
+    globe : Globe
+        The globe.
+    heights : ArrayLike
+        The heights, in metres.
+
+    Returns
+    -------
+    ndarray
+        The exaggerated heights, in metres: each above sea level by the
+        `exaggeration`, each below it by the `exaggeration_below`, and each
+        missing one as 0.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    values = np.asarray(heights, dtype=np.float64)
+    mapped = np.where(
+        values >= 0,
+        globe.exaggeration * values,
+        globe.exaggeration_below * values,
+    )
+    result: NDArray[np.float64] = np.where(np.isnan(values), 0.0, mapped)
+    return result
+
+
+def _subtended(globe: Globe, heights: ArrayLike, /) -> NDArray[np.float64]:
+    """Return the angle each mapped height subtends at the globe's radius.
+
+    Parameters
+    ----------
+    globe : Globe
+        The globe.
+    heights : ArrayLike
+        The heights, in metres.
+
+    Returns
+    -------
+    ndarray
+        The angles, in radians, of each height mapped by :func:`_mapped`.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # the radius in metres, read without the quantity, which would import pint
+    radius = globe.render_radius / globe.scale
+    result: NDArray[np.float64] = _mapped(globe, heights) / radius
+    return result
+
+
+def _on_globe(
+    globe: Globe, lons: ArrayLike, lats: ArrayLike, heights: ArrayLike, /
+) -> NDArray[np.float64]:
+    """Place points at their heights on a globe.
+
+    Each point lies at a radius of ``s (R + V(h))``, heights spec §4.3.
+
+    Parameters
+    ----------
+    globe : Globe
+        The globe.
+    lons : ArrayLike
+        The longitudes, in degrees, read flattened.
+    lats : ArrayLike
+        The latitudes, in degrees, read flattened.
+    heights : ArrayLike
+        One height for each point, in metres, read flattened.
+
+    Returns
+    -------
+    ndarray
+        The ``(N, 3)`` cartesian points.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    points: NDArray[np.float64] = _to_cartesian(
+        np.ravel(lons),
+        np.ravel(lats),
+        radius=globe.render_radius,
+        zlevel=_subtended(globe, np.ravel(heights)),
+        zscale=1.0,
+    )
+    return points

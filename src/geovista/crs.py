@@ -160,6 +160,31 @@ def _rotated_pole(crs_json: dict[str, Any]) -> bool:
     return any(param.get("name") in PROJ_ROTATED_POLE for param in parameters)
 
 
+def _ellipsoidal_height(crs: CRSLike, /) -> bool:
+    """Determine whether a CRS has a height above its ellipsoid.
+
+    Heights in geovista are above mean sea level, so a CRS whose vertical axis
+    is an ellipsoidal height, such as ``EPSG:4979``, describes other heights.
+
+    Parameters
+    ----------
+    crs : CRSLike
+        The CRS, anything :meth:`pyproj.crs.CRS.from_user_input` accepts.
+
+    Returns
+    -------
+    bool
+        Whether an axis of the CRS is named "Ellipsoidal height".
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    axes = pyproj.CRS.from_user_input(crs).axis_info
+    return any(axis.name == "Ellipsoidal height" for axis in axes)
+
+
 def _degrees_per_unit(unit: Any) -> float | None:  # noqa: ANN401
     """Calculate the number of degrees in the angular `unit`.
 
