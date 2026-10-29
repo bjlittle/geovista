@@ -157,7 +157,8 @@ def remesh(
     alg.SetSplitSecondOutput(False)  # noqa: FBT003
     alg.Update()
 
-    remeshed: pv.PolyData = pv.core.filters._get_output(alg, oport=1)  # noqa: SLF001
+    remeshed = pv.PolyData(alg.GetOutput(1))
+    remeshed.copy_meta_from(poly0, deep=True)
 
     if remeshed.n_cells == 0:
         # no remeshing has been performed as the meridian does not intersect the mesh

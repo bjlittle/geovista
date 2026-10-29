@@ -1,0 +1,4 @@
+Replaced the private ``pyvista.core.filters._get_output`` with public API in
+:func:`~geovista.common.cast_UnstructuredGrid_to_PolyData` and
+:func:`~geovista.filters.remesh`, as PyVista ``main`` now requires its
+``output_type`` argument. (:user:`claude`)

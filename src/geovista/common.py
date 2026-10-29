@@ -496,7 +496,8 @@ def cast_UnstructuredGrid_to_PolyData(  # noqa: N802
     alg = pv._vtk.vtkGeometryFilter()  # noqa: SLF001
     alg.AddInputData(mesh)
     alg.Update()
-    result: pv.PolyData = pv.core.filters._get_output(alg)  # noqa: SLF001
+    result = pv.PolyData(alg.GetOutput())
+    result.copy_meta_from(mesh, deep=True)
 
     if clean:
         result = result.clean()
