@@ -1622,8 +1622,7 @@ class Transform:  # numpydoc ignore=PR01
         name: str | None = None,
         crs: CRSLike | None = None,
         globe: Globe | None = None,
-        zlevel: float | None = None,
-        zscale: float | None = None,
+        vertical_units: str | None = None,
     ) -> pv.StructuredGrid:
         """Build a structured grid from contiguous 1D spatial coordinates.
 
@@ -1639,9 +1638,12 @@ class Transform:  # numpydoc ignore=PR01
         ys : ArrayLike
             The 1D array of y-values, in canonical `crs` units, defining the
             y-axis cell bounds of the grid.
-        zs : ArrayLike
-            The 1D array of z-values, in canonical `crs` units, defining the
-            z-axis cell bounds of the grid.
+        zs : ArrayLike or pint.Quantity
+            The 1D array of heights above mean sea level defining the bounds of
+            the layers of the grid, each finite, spaced as given. A plain number
+            is in metres, unless `vertical_units` names another unit, and a
+            ``pint`` quantity carries its own. A grid of depths gives their
+            negation.
         data : ArrayLike | None, optional
             Data to be optionally attached to the structured grid cells or points.
             Note that the expected data dimensionality is ``(Z, Y, X)`` order.
@@ -1656,13 +1658,9 @@ class Transform:  # numpydoc ignore=PR01
         globe : :class:`~geovista.globe.Globe`, optional
             The globe the mesh is built on, which it records. Defaults to
             ``Globe()``.
-        zlevel : int, default=0
-            The z-axis level. Used in combination with the `zscale` to offset the
-            render radius of the `globe` by a proportional amount i.e.,
-            ``render_radius * zlevel * zscale``.
-        zscale : float, optional
-            The proportional multiplier for z-axis `zlevel`. Defaults to
-            :data:`~geovista.common.ZLEVEL_SCALE`.
+        vertical_units : str, optional
+            The CF unit string of `zs` given as plain numbers, read by
+            :func:`geovista.units.to_metres`.
 
         Returns
         -------
@@ -1674,7 +1672,17 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.6.0
 
         """
-        xs, ys, zs = np.atleast_1d(xs), np.atleast_1d(ys), np.atleast_1d(zs)
+        # the levels are heights, each a coordinate, so none may be missing
+        heights = _heights(zs, None, vertical_units, crs=crs)
+        xs, ys, zs = np.atleast_1d(xs), np.atleast_1d(ys), np.atleast_1d(heights)
+
+        if np.any(missing := np.isnan(zs)):
+            index = int(np.flatnonzero(missing)[0])
+            emsg = (
+                "Require finite heights in 'zs', as each level is a coordinate, "
+                f"got {zs.flat[index]} at index {index}."
+            )
+            raise ValueError(emsg)
 
         if xs.size < 2 or ys.size < 2 or zs.size < 2:
             emsg = (
@@ -1705,29 +1713,24 @@ class Transform:  # numpydoc ignore=PR01
             raise ValueError(emsg)
 
         globe = _resolve(globe)
-        radius = globe.render_radius
-        zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
-        zlevel = 0 if zlevel is None else int(zlevel)
-
-        # TODO @bjlittle: add richer vertical support
-        arc_length = np.radians(np.mean(np.diff(ys)))
-        zs = np.arange(*zs.shape) * arc_length * 0.5 + zlevel * zscale
 
         # (M,), (N,), (P,) -> gives shapes (M, N, P)
         xv, yv, zv = np.meshgrid(xs, ys, zs, indexing="ij")
         shape = xv.shape
 
-        # convert lat/lon to cartesian xyz
-        xyz = _to_cartesian(xv, yv, radius=radius, zlevel=zv, zscale=1)
+        # convert lat/lon to cartesian xyz, at the height of each level
+        xyz = _on_globe(globe, xv, yv, zv)
 
         # create the grid
         grid = pv.StructuredGrid(
             xyz[:, 0].reshape(shape), xyz[:, 1].reshape(shape), xyz[:, 2].reshape(shape)
         )
 
-        # attach the pyproj crs serialized as ogc wkt, and the globe
+        # attach the pyproj crs serialized as ogc wkt, the globe, and the heights,
+        # in the order of the grid's points, which is fortran order
         to_wkt(grid, WGS84)
         globe.to_mesh(grid)
+        _record_heights(grid, zv.ravel(order="F"))
 
         if data is not None:
             data = cls._as_compatible_data(data, grid.n_points, grid.n_cells)
