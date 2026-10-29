@@ -12,7 +12,7 @@ src/geovista/          # Library source (lazy-loaded modules)
 ├── core.py            # Mesh slicing, resizing, remeshing
 ├── crs.py             # Coordinate Reference System utilities
 ├── units.py           # Lengths and angles to metres and degrees (only pint user)
-├── globe.py           # The Globe, and how a mesh records it
+├── globe.py           # The Globe, how a mesh records it, and its heights
 ├── accessor.py        # The mesh.gv namespace, registered on import
 ├── geodesic.py        # Geodesic BBox and line operations
 ├── geometry.py        # Coastline features

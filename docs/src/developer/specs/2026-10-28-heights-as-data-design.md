@@ -167,6 +167,13 @@ Every function that returns a mesh made from one it was given keeps its heights,
 interpolated at any point a cut adds. `combine` keeps them whatever its `data`, and gives a
 height of 0 to the points of a mesh that has none, since such a mesh is at sea level.
 
+A cut through cells interpolates every floating point array at the points it adds, over the
+triangle each one lies in. `vtkIntersectionPolyDataFilter` interpolates some of those points
+from the wrong points, 3 of the 12 that a cut at 15° E adds to a 30° grid, and it adds points
+inside a triangle wherever the cutting plane's own diagonal crosses one. A point on an edge
+takes the heights at the two ends of that edge, so a missing height elsewhere on its
+triangle never reaches it.
+
 (heights-spec-4-2)=
 ### 4.2 Where Heights Enter
 
@@ -181,8 +188,11 @@ A height is given in any form of globe spec §4.2: a plain number or array in me
 the unit `vertical_units` names, or a `pint` quantity of length from any registry. A scalar
 gives every point that height. An array gives one height for each point, in the order of
 the points the function builds, as point data given to it is ordered. An array the size of
-the cells is refused, naming {issue}`2728`. An array whose size matches both the points and
-the cells is read as heights of the points.
+the cells is refused, naming {issue}`2728`. For the bridge, the cells are the faces given,
+before any masked face is dropped. An array whose size matches both the points and the
+cells is read as heights of the points, and an array of one value gives one height to the
+whole mesh, as a scalar does. A `zscale` given with heights is ignored, since there is no
+z-level for it to scale.
 
 `depth=` takes the same forms, positive downward, and is negated once, on the way in. A
 negative depth is a height above sea level.
@@ -228,7 +238,8 @@ as a globe at the lifted radius, and the mesh would be lifted twice. `Globe.from
 reads such a mesh at its `gvRadius`, if it has one, and otherwise returns `None`.
 
 A point cloud with heights carries no z-level, so its radius encodes no level, and the third
-column `from_cartesian` reports for it is 0, as it is for a surface.
+column `from_cartesian` reports for it is 0, as it is for a surface. It records no
+`gvZScale`, and on a map it carries no `gvZLevel`.
 
 At the default globe a depth of 4,000 m is drawn 6.3 × 10⁻⁴ of the render radius below the
 surface, which is too small to see. A user draws depths apart by giving the scene a globe
@@ -267,7 +278,12 @@ Each of these raises a `ValueError` that names what was given:
 - **Vectors** keep their components. How the vertical mapping bends an arrow is
   globe spec §8 item 9.
 - **The gallery and the README** keep their z-levels and their hand-warped orography until
-  row 5 of globe spec §9 migrates them. Row 3 changes no example.
+  row 5 of globe spec §9 migrates them. Row 3 changes two examples, `grid/reykjanes` and
+  `grid/reykjanes_contour`, whose `zs` it reads as heights. Their levels are 250 m apart,
+  and were drawn half a cell of latitude apart before they were heights. Each example gives
+  its grid and its scene `Globe(exaggeration=22.34)`, which draws them that far apart, so
+  their images stand. {user}`bjlittle` plans to redesign `to_structured_grid` once row 1
+  lands ({issue}`2774`).
 
 (heights-spec-5)=
 ## 5. Alternatives Considered

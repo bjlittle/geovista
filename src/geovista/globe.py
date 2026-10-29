@@ -431,8 +431,8 @@ class Globe:  # numpydoc ignore=PR01
             return cls(render_radius=_recorded(mesh, GV_FIELD_RADIUS))
 
         # a mesh with heights lies at them, so heights all equal would read as a
-        # globe at the lifted radius, and the mesh be lifted twice (scene spec
-        # §4.4 item 2, heights spec §4.3)
+        # globe at the lifted radius, and the mesh be lifted twice
+        # (scene spec §4.4 item 2, heights spec §4.3)
         if GV_POINT_HEIGHT in mesh.point_data or mesh.n_points == 0 or projected(mesh):
             return None
 
