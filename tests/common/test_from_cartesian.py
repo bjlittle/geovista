@@ -22,7 +22,7 @@ from geovista.common import (
     to_cartesian,
     wrap,
 )
-from geovista.globe import Globe
+from geovista.globe import Globe, _record_heights
 from geovista.pantry.meshes import lfric_orog
 
 
@@ -199,3 +199,12 @@ def test_a_small_lift_of_float32_points(radius):
     lonlats = from_cartesian(mesh)
 
     np.testing.assert_allclose(lonlats[:, 1], np.repeat(lats, 3), atol=1e-2)
+
+
+def test_a_mesh_with_heights_reports_no_level():
+    """A cloud with heights carries no z-level, whatever its radii encode."""
+    cloud = Transform.from_points(
+        [0.0, 10.0, 20.0], [0.0, 10.0, 20.0], zlevel=[1, 2, 3]
+    )
+    _record_heights(cloud, [100.0, 200.0, 300.0])
+    np.testing.assert_array_equal(from_cartesian(cloud)[:, 2], 0.0)

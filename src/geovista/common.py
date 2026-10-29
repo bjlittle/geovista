@@ -649,7 +649,13 @@ def from_cartesian(
         globe = Globe.from_mesh(mesh)
         base = None if globe is None else globe.render_radius
 
-    if base is not None and GV_FIELD_ZSCALE in mesh.field_data:
+    # a mesh with heights carries no z-level, so its radii encode none
+    # (heights spec §2 decision 8)
+    if (
+        base is not None
+        and GV_FIELD_ZSCALE in mesh.field_data
+        and GV_POINT_HEIGHT not in mesh.point_data
+    ):
         # field data injected by geovista.bridge.Transform.from_points
         zscale = mesh[GV_FIELD_ZSCALE][0]
         zlevel = (radius - base) / (base * zscale)
