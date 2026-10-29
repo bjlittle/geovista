@@ -277,6 +277,9 @@ the same globe, and the same points, bit for bit.
    all lie at one radius `r`, to within a relative spread of 10⁻⁶, `Globe(render_radius=r)`;
 3. otherwise `None`: the mesh's globe cannot be read.
 
+A mesh with heights is never read under item 2, since its points lie at their heights
+rather than at one render radius (heights spec §4.3).
+
 A `gvRadius` was the radius a surface or a line lay at, its z-level included, so a mesh
 saved by 0.5 after a z-level lifted it reads at its lifted radius under item 1. Drawn in a
 scene, it is scaled onto the scene's render radius and loses its lift. Adding it with its
