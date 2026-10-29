@@ -1,0 +1,4 @@
+:func:`geovista.filters.remesh`, and so every cut along a meridian through the
+cells of a mesh, now interpolates the point data of each point it adds over the
+triangle that point lies in. ``vtkIntersectionPolyDataFilter`` interpolated some
+of them from the wrong points. (:user:`claude`)
