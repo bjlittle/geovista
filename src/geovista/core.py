@@ -24,6 +24,7 @@ from .common import (
     CENTRAL_MERIDIAN,
     GV_CELL_IDS,
     GV_FIELD_ZSCALE,
+    GV_POINT_HEIGHT,
     GV_POINT_IDS,
     GV_REMESH_POINT_IDS,
     REMESH_JOIN,
@@ -46,6 +47,7 @@ from .globe import (
     Globe,
     _carried_heights,
     _on_globe,
+    _record_heights,
     _records,
     _refuse_zlevel,
     _resolve,
@@ -385,6 +387,9 @@ def combine(
     globe and one CRS first. :meth:`pyvista.DataSetFilters.merge` refuses none,
     and keeps the field data of the first mesh alone.
 
+    The heights of the meshes are combined whatever `data` is, with a height of 0
+    at each point of a mesh without them, as such a mesh is at sea level.
+
     Parameters
     ----------
     *meshes : iterable of :class:`~pyvista.PolyData`
@@ -521,6 +526,20 @@ def combine(
     faces = np.hstack(combined_faces)
     combined = pv.PolyData(points, faces=faces)
 
+    # the heights of every point, whatever the data asked for, and 0 for a mesh
+    # without them, which is at sea level (heights spec §4.1)
+    carried = [_carried_heights(mesh) for mesh in polys]
+    if any(heights is not None for heights in carried):
+        _record_heights(
+            combined,
+            np.hstack(
+                [
+                    np.zeros(mesh.n_points) if heights is None else heights
+                    for mesh, heights in zip(polys, carried, strict=True)
+                ]
+            ),
+        )
+
     def combine_data(
         names: set[str], attributes: Callable[[pv.PolyData], pv.DataSetAttributes]
     ) -> None:
@@ -544,6 +563,8 @@ def combine(
     if data:
         # attach any common combined data, by association, as a point, cell and
         # field array may share a name
+        # the heights are combined above, from every mesh
+        common_point_data.discard(GV_POINT_HEIGHT)
         combine_data(common_point_data, lambda mesh: mesh.point_data)
         combine_data(common_cell_data, lambda mesh: mesh.cell_data)
         for name in common_field_data:
