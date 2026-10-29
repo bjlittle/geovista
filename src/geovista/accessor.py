@@ -23,7 +23,6 @@ import pyvista as pv
 
 if TYPE_CHECKING:
     import numpy as np
-    from numpy.typing import NDArray
     from pyproj.crs import CRS
 
     from .globe import Globe
@@ -184,7 +183,7 @@ class GeoVistaAccessor:
         raise AttributeError(emsg)
 
     @property
-    def height(self) -> NDArray[np.float64] | None:
+    def height(self) -> np.ndarray | None:
         """The height of each point of the mesh.
 
         Returns
@@ -231,7 +230,7 @@ class GeoVistaAccessor:
         raise AttributeError(emsg)
 
     @property
-    def depth(self) -> NDArray[np.float64] | None:
+    def depth(self) -> np.ndarray | None:
         """The depth of each point of the mesh, the negation of its height.
 
         Returns
