@@ -38,7 +38,15 @@ from .common import (
     to_cartesian,
 )
 from .crs import WGS84, CRSLike, to_wkt
-from .globe import _resolve
+from .globe import (
+    _carried_heights,
+    _for_points,
+    _heights,
+    _on_globe,
+    _record_heights,
+    _refuse_zlevel,
+    _resolve,
+)
 from .transform import transform_points
 
 if TYPE_CHECKING:
@@ -50,6 +58,7 @@ if TYPE_CHECKING:
     import pyvista as pv
 
     from .globe import Globe
+    from .units import Quantity
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -547,6 +556,9 @@ class Transform:  # numpydoc ignore=PR01
         globe: Globe | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
         clean: bool | None = None,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from contiguous 1D x-values and y-values.
@@ -600,6 +612,20 @@ class Transform:  # numpydoc ignore=PR01
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
+        height : ArrayLike or pint.Quantity, optional
+            The height of each point above mean sea level, in the order of the
+            points as point `data` is, or one height for the whole mesh. A plain
+            number is in metres, unless `vertical_units` names another unit,
+            and a ``pint`` quantity carries its own. A masked or NaN height is
+            missing, and drawn at sea level. It is never given with a `zlevel`
+            other than 0, and is stored as :data:`~geovista.common.GV_POINT_HEIGHT`.
+        depth : ArrayLike or pint.Quantity, optional
+            The depth of each point below mean sea level, positive downward, in
+            the forms of `height`, which it negates. It is never given with
+            `height`.
+        vertical_units : str, optional
+            The CF unit string of a `height` or `depth` given as plain numbers,
+            read by :func:`geovista.units.to_metres`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. See
@@ -627,6 +653,9 @@ class Transform:  # numpydoc ignore=PR01
             globe=globe,
             zlevel=zlevel,
             zscale=zscale,
+            height=height,
+            depth=depth,
+            vertical_units=vertical_units,
             clean=clean,
             rgb=rgb,
         )
@@ -645,6 +674,9 @@ class Transform:  # numpydoc ignore=PR01
         globe: Globe | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
         clean: bool | None = None,
     ) -> pv.PolyData:
         """Build a quad-faced mesh from 2D x-values and y-values.
@@ -700,6 +732,20 @@ class Transform:  # numpydoc ignore=PR01
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
+        height : ArrayLike or pint.Quantity, optional
+            The height of each point above mean sea level, in the order of the
+            points as point `data` is, or one height for the whole mesh. A plain
+            number is in metres, unless `vertical_units` names another unit,
+            and a ``pint`` quantity carries its own. A masked or NaN height is
+            missing, and drawn at sea level. It is never given with a `zlevel`
+            other than 0, and is stored as :data:`~geovista.common.GV_POINT_HEIGHT`.
+        depth : ArrayLike or pint.Quantity, optional
+            The depth of each point below mean sea level, positive downward, in
+            the forms of `height`, which it negates. It is never given with
+            `height`.
+        vertical_units : str, optional
+            The CF unit string of a `height` or `depth` given as plain numbers,
+            read by :func:`geovista.units.to_metres`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. See
@@ -747,6 +793,9 @@ class Transform:  # numpydoc ignore=PR01
             globe=globe,
             zlevel=zlevel,
             zscale=zscale,
+            height=height,
+            depth=depth,
+            vertical_units=vertical_units,
             clean=clean,
             rgb=rgb,
         )
@@ -764,6 +813,9 @@ class Transform:  # numpydoc ignore=PR01
         globe: Globe | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
         clean: bool | None = None,
         vectors: VectorLike | None = None,
         vectors_crs: CRSLike | None = None,
@@ -804,6 +856,20 @@ class Transform:  # numpydoc ignore=PR01
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
+        height : ArrayLike or pint.Quantity, optional
+            The height of each point above mean sea level, in the order of the
+            points as point `data` is, or one height for the whole mesh. A plain
+            number is in metres, unless `vertical_units` names another unit,
+            and a ``pint`` quantity carries its own. A masked or NaN height is
+            missing, and drawn at sea level. It is never given with a `zlevel`
+            other than 0, and is stored as :data:`~geovista.common.GV_POINT_HEIGHT`.
+        depth : ArrayLike or pint.Quantity, optional
+            The depth of each point below mean sea level, positive downward, in
+            the forms of `height`, which it negates. It is never given with
+            `height`.
+        vertical_units : str, optional
+            The CF unit string of a `height` or `depth` given as plain numbers,
+            read by :func:`geovista.units.to_metres`.
         clean : bool, optional
             Specify whether to merge duplicate points. See
             :meth:`pyvista.PolyDataFilters.clean`. Defaults to
@@ -845,6 +911,14 @@ class Transform:  # numpydoc ignore=PR01
         radius = globe.render_radius
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
 
+        # the heights of the points, refused before any point is transformed
+        heights = _heights(height, depth, vertical_units, crs=crs)
+        if heights is not None:
+            _refuse_zlevel(zlevel)
+            heights = _for_points(heights, xs.size, 0)
+            # a cloud with heights carries no z-level (heights spec §4.3)
+            zlevel = None
+
         if crs is None:
             crs = WGS84
 
@@ -857,8 +931,11 @@ class Transform:  # numpydoc ignore=PR01
         lons = transformed[:, 0].reshape(shape)
         lats = transformed[:, 1].reshape(shape)
 
-        # convert lat/lon to cartesian xyz
-        xyz = _to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
+        # convert lat/lon to cartesian xyz, at the heights of the points if given
+        if heights is None:
+            xyz = _to_cartesian(lons, lats, radius=radius, zlevel=zlevel, zscale=zscale)
+        else:
+            xyz = _on_globe(globe, lons, lats, heights)
 
         # create the point-cloud mesh
         mesh = pv.PolyData(xyz)
@@ -866,9 +943,13 @@ class Transform:  # numpydoc ignore=PR01
         # attach the pyproj crs serialized as ogc wkt
         to_wkt(mesh, WGS84)
 
-        # record the globe the cloud is built on, and the zscale of its levels
+        # record the globe the cloud is built on, and the zscale of its levels,
+        # or the heights of its points, which encode no level
         globe.to_mesh(mesh)
-        mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
+        if heights is None:
+            mesh.field_data[GV_FIELD_ZSCALE] = np.array([zscale])
+        else:
+            _record_heights(mesh, heights)
 
         # attach any optional data to the mesh
         if data is not None:
@@ -1238,6 +1319,9 @@ class Transform:  # numpydoc ignore=PR01
         globe: Globe | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
         clean: bool | None = None,
     ) -> pv.PolyData:
         """Build a mesh from unstructured 1D x-values and y-values.
@@ -1305,6 +1389,20 @@ class Transform:  # numpydoc ignore=PR01
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
+        height : ArrayLike or pint.Quantity, optional
+            The height of each point above mean sea level, in the order of the
+            points as point `data` is, or one height for the whole mesh. A plain
+            number is in metres, unless `vertical_units` names another unit,
+            and a ``pint`` quantity carries its own. A masked or NaN height is
+            missing, and drawn at sea level. It is never given with a `zlevel`
+            other than 0, and is stored as :data:`~geovista.common.GV_POINT_HEIGHT`.
+        depth : ArrayLike or pint.Quantity, optional
+            The depth of each point below mean sea level, positive downward, in
+            the forms of `height`, which it negates. It is never given with
+            `height`.
+        vertical_units : str, optional
+            The CF unit string of a `height` or `depth` given as plain numbers,
+            read by :func:`geovista.units.to_metres`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. See
@@ -1405,7 +1503,8 @@ class Transform:  # numpydoc ignore=PR01
                 connectivity_array -= base
 
         # the faces given that are still in the mesh
-        kept = np.ones(connectivity_array.shape[0], dtype=bool)
+        n_given = connectivity_array.shape[0]
+        kept = np.ones(n_given, dtype=bool)
 
         if mask is not None:
             # a face that uses a masked point is dropped, which leaves the faces of
@@ -1453,6 +1552,12 @@ class Transform:  # numpydoc ignore=PR01
                 ]
             )
 
+        # the heights of the points, for the faces given before any is dropped
+        heights = _heights(height, depth, vertical_units, crs=crs)
+        if heights is not None:
+            _refuse_zlevel(zlevel)
+            heights = _for_points(heights, xs.size, n_given)
+
         if crs is None:
             crs = WGS84
 
@@ -1463,11 +1568,15 @@ class Transform:  # numpydoc ignore=PR01
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
         zlevel = 0 if zlevel is None else int(zlevel)
 
-        # convert lat/lon to cartesian xyz, lifted from the render radius by the
-        # z-level, which the globe the mesh records never includes
-        geometry = _to_cartesian(
-            xs, ys, radius=globe.render_radius, zlevel=zlevel, zscale=zscale
-        )
+        # convert lat/lon to cartesian xyz, at the heights of the points if given,
+        # else lifted from the render radius by the z-level, which the globe the
+        # mesh records never includes
+        if heights is None:
+            geometry = _to_cartesian(
+                xs, ys, radius=globe.render_radius, zlevel=zlevel, zscale=zscale
+            )
+        else:
+            geometry = _on_globe(globe, xs, ys, heights)
 
         # create the mesh
         mesh = pv.PolyData(geometry, faces=faces)
@@ -1475,8 +1584,10 @@ class Transform:  # numpydoc ignore=PR01
         # attach the pyproj crs serialized as ogc wkt
         to_wkt(mesh, WGS84)
 
-        # record the globe the mesh is built on
+        # record the globe the mesh is built on, and the heights of its points
         globe.to_mesh(mesh)
+        if heights is not None:
+            _record_heights(mesh, heights)
 
         # attach any optional data to the mesh
         if data is not None:
@@ -1641,6 +1752,9 @@ class Transform:  # numpydoc ignore=PR01
         globe: Globe | None = None,
         zlevel: int | None = None,
         zscale: float | None = None,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
         clean: bool | None = None,
     ) -> None:
         """Build a mesh from spatial points, connectivity, data and CRS metadata.
@@ -1688,6 +1802,20 @@ class Transform:  # numpydoc ignore=PR01
         zscale : float, optional
             The proportional multiplier for z-axis `zlevel`. Defaults to
             :data:`~geovista.common.ZLEVEL_SCALE`.
+        height : ArrayLike or pint.Quantity, optional
+            The height of each point above mean sea level, in the order of the
+            points as point `data` is, or one height for the whole mesh. A plain
+            number is in metres, unless `vertical_units` names another unit,
+            and a ``pint`` quantity carries its own. A masked or NaN height is
+            missing, and drawn at sea level. It is never given with a `zlevel`
+            other than 0, and is stored as :data:`~geovista.common.GV_POINT_HEIGHT`.
+        depth : ArrayLike or pint.Quantity, optional
+            The depth of each point below mean sea level, positive downward, in
+            the forms of `height`, which it negates. It is never given with
+            `height`.
+        vertical_units : str, optional
+            The CF unit string of a `height` or `depth` given as plain numbers,
+            read by :func:`geovista.units.to_metres`.
         clean : bool, optional
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. See
@@ -1711,6 +1839,9 @@ class Transform:  # numpydoc ignore=PR01
                     globe=globe,
                     zlevel=zlevel,
                     zscale=zscale,
+                    height=height,
+                    depth=depth,
+                    vertical_units=vertical_units,
                     clean=clean,
                 )
             else:
@@ -1721,6 +1852,9 @@ class Transform:  # numpydoc ignore=PR01
                     globe=globe,
                     zlevel=zlevel,
                     zscale=zscale,
+                    height=height,
+                    depth=depth,
+                    vertical_units=vertical_units,
                     clean=clean,
                 )
         else:
@@ -1734,6 +1868,9 @@ class Transform:  # numpydoc ignore=PR01
                 clean=clean,
                 zlevel=zlevel,
                 zscale=zscale,
+                height=height,
+                depth=depth,
+                vertical_units=vertical_units,
             )
 
         self._mesh = mesh
@@ -1773,6 +1910,11 @@ class Transform:  # numpydoc ignore=PR01
         # the structure keeps no field data, so the mesh is given its CRS and globe
         mesh.field_data[GV_FIELD_CRS] = self._mesh.field_data[GV_FIELD_CRS]
         self._globe.to_mesh(mesh)
+
+        # nor any point data, so the mesh is given its heights too
+        heights = _carried_heights(self._mesh)
+        if heights is not None:
+            _record_heights(mesh, heights)
 
         if data is not None:
             if not name:
