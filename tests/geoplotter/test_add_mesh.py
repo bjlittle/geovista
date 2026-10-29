@@ -14,9 +14,11 @@ import pytest
 import pyvista as pv
 
 import geovista as gv
+from geovista.bridge import Transform
 from geovista.common import (
     _GV_GLOBE_FIELDS,
     GV_FIELD_RADIUS,
+    GV_POINT_HEIGHT,
     RADIUS,
     ZLEVEL_SCALE,
     distance,
@@ -439,3 +441,17 @@ def test_drawing_a_projected_mesh_leaves_it_unchanged():
     np.testing.assert_array_equal(planar.points, points)
     assert from_wkt(planar) == crs
     assert Globe.from_mesh(planar) == Globe(render_radius=2)
+
+
+def test_heights_on_a_map_scene():
+    """A mesh with heights is drawn on a map at its heights, given no z-level."""
+    mesh = Transform.from_1d(
+        [0.0, 10.0, 20.0], [0.0, 10.0], height=[1000.0, -4000.0, np.nan, 250, 0, -10]
+    )
+    p = GeoPlotter(crs="+proj=eqc", off_screen=True)
+    actor = p.add_mesh(mesh)
+    drawn = actor.mapper.dataset
+    np.testing.assert_allclose(
+        drawn.points[:, 2], np.nan_to_num(drawn[GV_POINT_HEIGHT]), rtol=1e-12
+    )
+    assert np.any(drawn.points[:, 2])
