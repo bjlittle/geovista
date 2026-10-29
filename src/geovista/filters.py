@@ -120,10 +120,27 @@ def _cut_point_data(remeshed: pv.PolyData, original: pv.PolyData, /) -> None:
     second = (d11 * d20 - d01 * d21) / safe
     third = (d00 * d21 - d01 * d20) / safe
     weights = np.clip(np.column_stack([1.0 - second - third, second, third]), 0, None)
-    # a vertex the point does not reach, to rounding, takes no part, so that a
-    # missing value there never reaches it
-    weights[weights < 1e-9] = 0.0
-    weights /= weights.sum(axis=1, keepdims=True)
+    # a vertex takes no part where the point lies on the edge opposite it, to
+    # the precision the cut stores its points in, so that a missing value there
+    # never reaches it. VTK rounds them to float32, which alone moves a point on
+    # an edge off it, by a weight that grows as the triangle shrinks, so the
+    # point's distance from each edge is measured rather than its weight
+    opposite = np.column_stack(
+        [
+            np.linalg.norm(sides[1] - sides[0], axis=1),
+            np.linalg.norm(sides[1], axis=1),
+            np.linalg.norm(sides[0], axis=1),
+        ]
+    )
+    # the distance of each vertex from the edge opposite it
+    spans = np.sqrt(np.abs(safe))[:, np.newaxis] / np.where(opposite > 0, opposite, 1)
+    precision = np.finfo(remeshed.points.dtype).eps
+    tolerance = 4 * precision * np.linalg.norm(added, axis=1)
+    weights[weights * spans <= tolerance[:, np.newaxis]] = 0.0
+    # a triangle too small to tell its edges apart keeps the values given
+    total = weights.sum(axis=1, keepdims=True)
+    valid &= total[:, 0] > 0
+    weights /= np.where(total > 0, total, 1.0)
 
     for name in original.point_data:
         values = np.asarray(original.point_data[name])

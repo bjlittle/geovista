@@ -13,7 +13,11 @@ import numpy as np
 import pytest
 
 from geovista.bridge import Transform
-from geovista.common import GV_POINT_HEIGHT, cast_UnstructuredGrid_to_PolyData
+from geovista.common import (
+    GV_POINT_HEIGHT,
+    cast_UnstructuredGrid_to_PolyData,
+    from_cartesian,
+)
 from geovista.core import (
     MeridianSlice,
     add_texture_coords,
@@ -24,7 +28,7 @@ from geovista.core import (
 )
 from geovista.filters import remesh
 from geovista.geodesic import BBox, line
-from geovista.globe import _record_heights
+from geovista.globe import Globe, _record_heights
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -106,6 +110,36 @@ def test_carried_by_slice_cells():
     )
 
 
+#: Heights that change sign across 15 degrees east, and heights missing west of it.
+CROSSING = {
+    "mixed": [-1000.0, -1000.0, 1000.0, 1000.0] * 2,
+    "missing": [np.nan, np.nan, 1000.0, 1000.0] * 2,
+}
+
+
+@pytest.mark.parametrize("heights", CROSSING.values(), ids=CROSSING.keys())
+def test_slice_cells_places_cuts_at_their_heights(heights, at_heights):
+    """Each point a cut adds lies at its own height, on the globe the mesh records.
+
+    The globe exaggerates heights above and below sea level by different factors,
+    so the radius between two points is not the radius of the height between them.
+
+    """
+    globe = Globe(exaggeration=20, exaggeration_below=100)
+    mesh = Transform.from_1d(
+        [-30.0, 0.0, 30.0, 60.0], [0.0, 30.0], height=heights, globe=globe
+    )
+    result = slice_cells(mesh, meridian=15)
+    assert result.n_points > mesh.n_points
+    lonlat = from_cartesian(result)
+    expected = at_heights(lonlat[:, 0], lonlat[:, 1], result.gv.height, globe)
+    np.testing.assert_allclose(
+        np.linalg.norm(result.points, axis=1),
+        np.linalg.norm(expected, axis=1),
+        rtol=1e-12,
+    )
+
+
 #: The cell bounds of two meshes over neighbouring longitudes.
 WEST, EAST, LATS = [0.0, 10.0, 20.0], [20.0, 30.0], [0.0, 10.0]
 
@@ -159,3 +193,39 @@ def test_a_cut_reads_heights_from_where_it_lies():
     finite = np.isfinite(added)
     np.testing.assert_allclose(added[finite], expected[finite], atol=1e-9)
     assert np.sum(finite) >= np.sum(on_meridian[:, 2] <= 0)
+
+
+@pytest.mark.parametrize(
+    ("span", "lat"),
+    [(30.0, 10.0), (10.0, -40.0), (3.0, 10.0), (1.0, -40.0), (0.1, 10.0)],
+)
+def test_an_edge_between_heights_keeps_them(span, lat):
+    """A point a cut adds on an edge between two heights takes them, and no other.
+
+    VTK stores the points it adds as float32, whose rounding moves a point on an
+    edge off it, toward the third vertex of its triangle, by a weight that grows
+    as the triangle shrinks. A missing height there must not reach it.
+
+    """
+    mesh = Transform.from_unstructured(
+        [0.0, span, span],
+        [lat, lat, lat + span],
+        connectivity=[[0, 1, 2]],
+        height=[100.0, 200.0, np.nan],
+    )
+    result, *_ = remesh(mesh, span / 2)
+    added = np.asarray(result.points[mesh.n_points :], dtype=np.float64)
+    heights = result.point_data[GV_POINT_HEIGHT][mesh.n_points :]
+    first, second = np.asarray(mesh.points[:2], dtype=np.float64)
+    # how far along the edge between the two heights each point lies, and how far
+    # off it
+    edge = second - first
+    along = (added - first) @ edge / (edge @ edge)
+    off = np.linalg.norm(added - first - along[:, np.newaxis] * edge, axis=1)
+    on_edge = off < 1e-6 * np.linalg.norm(first)
+    assert np.sum(on_edge) == 1
+    np.testing.assert_allclose(
+        heights[on_edge], 100.0 + 100.0 * along[on_edge], rtol=1e-6
+    )
+    # the point on the edge to the missing height has none
+    assert np.all(np.isnan(heights[~on_edge]))

@@ -172,7 +172,9 @@ triangle each one lies in. `vtkIntersectionPolyDataFilter` interpolates some of 
 from the wrong points, 3 of the 12 that a cut at 15° E adds to a 30° grid, and it adds points
 inside a triangle wherever the cutting plane's own diagonal crosses one. A point on an edge
 takes the heights at the two ends of that edge, so a missing height elsewhere on its
-triangle never reaches it.
+triangle never reaches it. VTK stores the points it adds as float32, so a point is on an
+edge when it lies within that precision of it. The test is a distance from the edge, since
+the weight that rounding gives the third vertex grows as the triangle shrinks.
 
 (heights-spec-4-2)=
 ### 4.2 Where Heights Enter
@@ -225,7 +227,11 @@ A missing height is drawn as a height of 0.
 
 Every function that positions a mesh with heights builds its points this way, from their
 longitudes, latitudes and heights: the bridge at the globe it is given, `resize` at the
-globe it is given, and `transform_mesh` at its globe, on the sphere or on a map. A scene
+globe it is given, `transform_mesh` at its globe, on the sphere or on a map, and
+`slice_cells` at the globe the mesh records, for each point its cut adds. Where heights
+change sign or one is missing, the radius between two points is not the radius of the
+height between them, so a cut places its points from their heights. `resize` returns a mesh
+as given only when it records the globe and each of its points lies at its height. A scene
 adding a mesh that records another globe builds it at the scene's, in place of the scale by
 the ratio of render radii (scene spec §4.2). A mesh without heights is built at a height of
 0, so it is drawn as it was before. A mesh with heights that records no globe is drawn where
@@ -262,8 +268,9 @@ Each of these raises a `ValueError` that names what was given:
 - a height that is not a length, such as a pressure, which `to_metres` refuses, naming its
   unit;
 - `vertical_units` with a quantity, which carries its own unit, or with no height;
-- heights with a CRS that has an axis named "Ellipsoidal height" (§3.4), which asks for a
-  CRS whose vertical axis is gravity-related, or for none.
+- heights with a CRS that has an axis named "Ellipsoidal height" (§3.4), given with them or
+  as the target of `transform_mesh` for a mesh that carries them, which asks for a CRS whose
+  vertical axis is gravity-related, or for none.
 
 (heights-spec-4-5)=
 ### 4.5 What Row 3 Leaves Alone

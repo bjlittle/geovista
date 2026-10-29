@@ -47,6 +47,8 @@ from .globe import (
     Globe,
     _carried_heights,
     _on_globe,
+    _placed,
+    _radii,
     _record_heights,
     _records,
     _refuse_zlevel,
@@ -662,8 +664,9 @@ def resize(
     if (heights := _carried_heights(mesh)) is not None:
         _refuse_zlevel(zlevel)
         # positions follow from the globe a mesh records exactly, so a new
-        # exaggeration moves the points however little it moves them
-        if _records(mesh, globe):
+        # exaggeration moves the points however little it moves them, and from
+        # the heights, so points that disagree with them are rebuilt
+        if _records(mesh, globe) and _placed(mesh, globe, heights):
             return mesh
         lonlat = from_cartesian(mesh)
         xyz = _on_globe(globe, lonlat[:, 0], lonlat[:, 1], heights)
@@ -847,14 +850,27 @@ def slice_cells(
             mesh_split, meridian=meridian, rtol=rtol, atol=atol
         )
         remeshed.point_data.pop(carry, None)
+        # a mesh with heights lies at them, on the globe it records, and the
+        # radius between two points is not the radius of the height between
+        # them where the globe exaggerates heights above and below sea level by
+        # different factors, or a height is missing (heights spec §4.3)
+        globe = Globe.from_mesh(mesh) if _carried_heights(mesh) is not None else None
         for part in (remeshed_west, remeshed_east):
             if carry in part.point_data:
                 radii = np.asarray(part.point_data.pop(carry))
-                norms = np.linalg.norm(part.points, axis=1)
+                if (
+                    globe is not None
+                    and (heights := _carried_heights(part)) is not None
+                ):
+                    radii = _radii(globe, heights)
+                # VTK gives the points as float32, which are measured as float64,
+                # so each lies at its radius to the precision it is given in
+                points = np.asarray(part.points, dtype=np.float64)
+                norms = np.linalg.norm(points, axis=1)
                 scale = np.divide(
                     radii, norms, out=np.ones_like(norms), where=norms > 0
                 )
-                part.points = part.points * scale[:, np.newaxis]
+                part.points = points * scale[:, np.newaxis]
         meshes.extend([remeshed_west, remeshed_east])
         remeshed_ids = np.hstack([remeshed_ids, remeshed[GV_CELL_IDS]])
         if GV_REMESH_POINT_IDS not in result.point_data:

@@ -47,6 +47,7 @@ from .globe import (
     _carried_heights,
     _mapped,
     _on_globe,
+    _refuse_ellipsoidal,
     _refuse_zlevel,
     _resolve,
     _subtended,
@@ -151,11 +152,13 @@ def transform_mesh(
     also carries the `globe` and `zscale` that encode them, so a value given here
     becomes its own.
 
-    A mesh with heights is placed by them, and takes no `zlevel` other than 0.
-    On the sphere a point lies at a radius of ``s (R + V(h))``, for the vertical
-    mapping ``V`` of the `globe`. In any other CRS it lies at ``z = V(h)``, in
-    the length unit of its axes, or where those are angular, at the angle
-    ``V(h)`` subtends at ``R``, in their angular unit.
+    A mesh with heights is placed by them, and takes no `zlevel` other than 0,
+    nor a `tgt_crs` with an axis named "Ellipsoidal height", as its heights are
+    above mean sea level. On the sphere a point lies at a radius of
+    ``s (R + V(h))``, for the vertical mapping ``V`` of the `globe`. In any
+    other CRS it lies at ``z = V(h)``, in the length unit of its axes, or where
+    those are angular, at the angle ``V(h)`` subtends at ``R``, in their angular
+    unit.
 
     A mesh already in the target CRS is not transformed, so no point moves and
     its globe is unchanged. Use :func:`geovista.core.resize` to change its globe.
@@ -191,9 +194,11 @@ def transform_mesh(
     globe = (Globe.from_mesh(mesh) or Globe()) if globe is None else _resolve(globe)
     radius = globe.render_radius
 
-    # a mesh with heights is placed by them, and takes no z-level other than 0
+    # a mesh with heights is placed by them, and takes no z-level other than 0,
+    # nor a target whose height is above the ellipsoid (heights spec §4.4)
     if _carried_heights(mesh) is not None:
         _refuse_zlevel(zlevel)
+        _refuse_ellipsoidal(tgt_crs)
 
     if not transform_required:
         # a mesh returned carries only current fields, so a retired one is

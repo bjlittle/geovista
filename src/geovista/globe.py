@@ -733,14 +733,7 @@ def _heights(
         )
         raise ValueError(emsg)
 
-    if crs is not None and _ellipsoidal_height(crs):
-        emsg = (
-            "Heights are above mean sea level, but the CRS "
-            f"{getattr(crs, 'name', crs)!r} has an 'Ellipsoidal height' axis. "
-            "Give a CRS whose height is gravity-related, such as 'EPSG:9705', or "
-            "a horizontal one, such as 'EPSG:4326'."
-        )
-        raise ValueError(emsg)
+    _refuse_ellipsoidal(crs)
 
     # a value that is not a length, or not numbers, is refused by to_metres
     metres = to_metres(cast("ArrayLike | Quantity", value), vertical_units)
@@ -811,6 +804,34 @@ def _for_points(
         f"whole mesh, got {values.size:,}."
     )
     raise ValueError(emsg)
+
+
+def _refuse_ellipsoidal(crs: CRSLike | None, /) -> None:
+    """Refuse a CRS whose height is above the ellipsoid, given with heights.
+
+    Parameters
+    ----------
+    crs : CRSLike, optional
+        The CRS given with heights, which is none when it is ``None``.
+
+    Raises
+    ------
+    ValueError
+        If an axis of the CRS is named "Ellipsoidal height", heights spec §4.4.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if crs is not None and _ellipsoidal_height(crs):
+        emsg = (
+            "Heights are above mean sea level, but the CRS "
+            f"{getattr(crs, 'name', crs)!r} has an 'Ellipsoidal height' axis. "
+            "Give a CRS whose height is gravity-related, such as 'EPSG:9705', or "
+            "a horizontal one, such as 'EPSG:4326'."
+        )
+        raise ValueError(emsg)
 
 
 def _refuse_zlevel(zlevel: object, /) -> None:
@@ -944,6 +965,69 @@ def _subtended(globe: Globe, heights: ArrayLike, /) -> NDArray[np.float64]:
     radius = globe.render_radius / globe.scale
     result: NDArray[np.float64] = _mapped(globe, heights) / radius
     return result
+
+
+def _radii(globe: Globe, heights: ArrayLike, /) -> NDArray[np.float64]:
+    """Return the radius of each point at its height on a globe.
+
+    Each is ``s (R + V(h))``, heights spec §4.3, as :func:`_on_globe` places it.
+
+    Parameters
+    ----------
+    globe : Globe
+        The globe.
+    heights : ArrayLike
+        The heights, in metres.
+
+    Returns
+    -------
+    ndarray
+        The radii, at the render radius.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    result: NDArray[np.float64] = globe.render_radius * (
+        1.0 + _subtended(globe, heights)
+    )
+    return result
+
+
+def _placed(mesh: pv.DataSet, globe: Globe, heights: ArrayLike, /) -> bool:
+    """Determine whether each point of a mesh lies at its height on a globe.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+    globe : Globe
+        The globe.
+    heights : ArrayLike
+        One height for each point of the mesh, in metres.
+
+    Returns
+    -------
+    bool
+        Whether the radius of each point is ``s (R + V(h))``, to the precision
+        its points are stored in.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    points = np.asarray(mesh.points)
+    rtol = 16 * np.finfo(points.dtype).eps
+    return bool(
+        np.allclose(
+            np.linalg.norm(points.astype(np.float64), axis=1),
+            _radii(globe, heights),
+            rtol=rtol,
+            atol=0,
+        )
+    )
 
 
 def _on_globe(

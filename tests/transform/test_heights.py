@@ -174,3 +174,19 @@ def test_no_globe_is_the_default():
         result.points[:, 2], np.nan_to_num(result[GV_POINT_HEIGHT]), rtol=1e-12
     )
     assert Globe.from_mesh(result) == Globe()
+
+
+@pytest.mark.parametrize("kind", ["surface", "cloud"])
+def test_an_ellipsoidal_target_is_refused(kind):
+    """A mesh with heights is never transformed to a height above the ellipsoid."""
+    if kind == "surface":
+        mesh = Transform.from_1d(XS, YS, height=HEIGHTS)
+        bare = Transform.from_1d(XS, YS)
+    else:
+        mesh = Transform.from_points(LONS, LATS, height=HEIGHTS)
+        bare = Transform.from_points(LONS, LATS)
+    with pytest.raises(ValueError, match="Ellipsoidal height"):
+        transform_mesh(mesh, "EPSG:4979")
+    # without heights, its horizontal axes are read, as they always were
+    result = transform_mesh(bare, "EPSG:4979")
+    assert result.n_points == bare.n_points

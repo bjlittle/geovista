@@ -437,6 +437,17 @@ def test_the_same_globe_returns_the_mesh():
     assert resize(mesh, globe=Globe()) is mesh
 
 
+def test_the_same_globe_rebuilds_misplaced_points():
+    """A mesh whose points disagree with its heights is rebuilt from them."""
+    globe = Globe(exaggeration=20, exaggeration_below=100)
+    mesh = Transform.from_1d(HEIGHT_XS, HEIGHT_YS, height=HEIGHTS, globe=globe)
+    expected = mesh.points.copy()
+    mesh.points = mesh.points * 1.001
+    result = resize(mesh, globe=globe)
+    assert result is not mesh
+    np.testing.assert_allclose(result.points, expected, rtol=1e-12)
+
+
 def test_a_zlevel_is_refused_with_heights():
     """A mesh with heights takes no z-level other than 0."""
     mesh = Transform.from_1d(HEIGHT_XS, HEIGHT_YS, height=HEIGHTS)
