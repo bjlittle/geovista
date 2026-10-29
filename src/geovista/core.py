@@ -42,7 +42,14 @@ from .common import (
 from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import from_wkt, projected
 from .filters import remesh
-from .globe import Globe, _records, _resolve
+from .globe import (
+    Globe,
+    _carried_heights,
+    _on_globe,
+    _records,
+    _refuse_zlevel,
+    _resolve,
+)
 from .search import find_cell_neighbours
 
 if TYPE_CHECKING:
@@ -584,7 +591,9 @@ def resize(
     """Change the globe of the spherical mesh, moving its points to it.
 
     The mesh returned records the globe, and carries no retired field, even when
-    no point moves.
+    no point moves. A mesh with heights is placed by them, at a radius of
+    ``s (R + V(h))`` for the vertical mapping ``V`` of the globe, and takes no
+    `zlevel` other than 0.
 
     Parameters
     ----------
@@ -626,6 +635,23 @@ def resize(
     # the globe given, else the one the mesh records, else the default
     globe = (Globe.from_mesh(mesh) or Globe()) if globe is None else _resolve(globe)
     radius = globe.render_radius
+
+    # a mesh with heights is placed by them, at the globe, and takes no z-level
+    # (heights spec §4.3)
+    if (heights := _carried_heights(mesh)) is not None:
+        _refuse_zlevel(zlevel)
+        # positions follow from the globe a mesh records exactly, so a new
+        # exaggeration moves the points however little it moves them
+        if _records(mesh, globe):
+            return mesh
+        lonlat = from_cartesian(mesh)
+        xyz = _on_globe(globe, lonlat[:, 0], lonlat[:, 1], heights)
+        if not inplace:
+            mesh = mesh.copy()
+        mesh.points = xyz
+        globe.to_mesh(mesh)
+        sanitize_legacy(mesh)
+        return mesh
 
     if zscale is None:
         if cloud and GV_FIELD_ZSCALE in mesh.field_data:

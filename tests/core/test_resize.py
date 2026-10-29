@@ -378,3 +378,92 @@ def test_radius_is_gone(lfric):
     """Test the radius keyword is refused."""
     with pytest.raises(TypeError, match="radius"):
         resize(lfric, radius=2.0)
+
+
+#: The cell bounds of a small grid, and its points in the order the bridge builds.
+HEIGHT_XS, HEIGHT_YS = [0.0, 10.0, 20.0], [0.0, 10.0]
+HEIGHT_LONS, HEIGHT_LATS = (
+    np.ravel(axis) for axis in np.meshgrid(HEIGHT_XS, HEIGHT_YS, indexing="xy")
+)
+
+#: A height for each point, above and below sea level, at it, and one missing.
+HEIGHTS = np.array([1000.0, -4000.0, np.nan, 250.0, 0.0, -10.0])
+
+#: A globe that exaggerates heights above and below sea level by their own factors.
+EXAGGERATED = {"exaggeration": 20, "exaggeration_below": 100}
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_heights_placed_by_the_formula(radius, at_heights):
+    """A mesh with heights is resized to s (R + V(h)) at the new globe."""
+    mesh = Transform.from_1d(HEIGHT_XS, HEIGHT_YS, height=HEIGHTS)
+    globe = Globe(render_radius=radius, **EXAGGERATED)
+    result = resize(mesh, globe=globe)
+    np.testing.assert_allclose(
+        result.points,
+        at_heights(HEIGHT_LONS, HEIGHT_LATS, HEIGHTS, globe),
+        rtol=1e-9,
+        atol=1e-9 * radius,
+    )
+    assert Globe.from_mesh(result) == globe
+    assert_array_equal(result.gv.height, HEIGHTS)
+
+
+def test_a_new_mapping_moves_by_the_formula():
+    """A new exaggeration moves points by the formula, however little."""
+    earth = Globe(render_radius=6378137.0)
+    mesh = Transform.from_1d(HEIGHT_XS, HEIGHT_YS, height=1.0, globe=earth)
+    result = resize(mesh, globe=Globe(render_radius=6378137.0, exaggeration=2))
+    moved = np.linalg.norm(result.points, axis=1) - np.linalg.norm(mesh.points, axis=1)
+    np.testing.assert_allclose(moved, 1.0, atol=1e-6)
+
+
+def test_heights_lift_once():
+    """A mesh with heights all equal, and no globe, is lifted once."""
+    mesh = Transform.from_1d(HEIGHT_XS, HEIGHT_YS, height=1000.0)
+    for name in _GV_GLOBE_FIELDS:
+        del mesh.field_data[name]
+    assert Globe.from_mesh(mesh) is None
+    result = resize(mesh)
+    np.testing.assert_allclose(
+        np.linalg.norm(result.points, axis=1), 1.0 + 1000.0 / 6378137.0, rtol=1e-12
+    )
+
+
+def test_the_same_globe_returns_the_mesh():
+    """A mesh with heights that records the globe asked for is returned as given."""
+    mesh = Transform.from_1d(HEIGHT_XS, HEIGHT_YS, height=HEIGHTS)
+    assert resize(mesh) is mesh
+    assert resize(mesh, globe=Globe()) is mesh
+
+
+def test_a_zlevel_is_refused_with_heights():
+    """A mesh with heights takes no z-level other than 0."""
+    mesh = Transform.from_1d(HEIGHT_XS, HEIGHT_YS, height=HEIGHTS)
+    with pytest.raises(ValueError, match="z-level"):
+        resize(mesh, zlevel=1)
+    assert resize(mesh, zlevel=0) is mesh
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_a_cloud_with_heights(radius, at_heights):
+    """A cloud with heights is resized by the formula, and carries no z-level."""
+    lons, lats = [0.0, 10.0, 20.0, 30.0], [0.0, 5.0, 10.0, 15.0]
+    heights = HEIGHTS[:4]
+    cloud = Transform.from_points(lons, lats, height=heights)
+    globe = Globe(render_radius=radius, **EXAGGERATED)
+    result = resize(cloud, globe=globe)
+    np.testing.assert_allclose(
+        result.points,
+        at_heights(lons, lats, heights, globe),
+        rtol=1e-9,
+        atol=1e-9 * radius,
+    )
+    assert GV_FIELD_ZSCALE not in result.field_data
+
+
+def test_missing_heights_at_sea_level():
+    """A missing height is resized to the render radius."""
+    mesh = Transform.from_1d(HEIGHT_XS, HEIGHT_YS, height=HEIGHTS)
+    result = resize(mesh, globe=Globe(render_radius=2))
+    np.testing.assert_allclose(np.linalg.norm(result.points[2]), 2.0, rtol=1e-12)
