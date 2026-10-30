@@ -1,0 +1,3 @@
+The ``earthquakes`` sample reads its parquet with ``pyarrow`` in place of
+``fastparquet``, whose ``pandas`` engine ``pandas`` 3.1 deprecates. The ``exam``
+extra installs ``pyarrow >=13.0.0`` instead of ``fastparquet``. (:user:`claude`)
