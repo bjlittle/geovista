@@ -18,7 +18,8 @@
 - **Scope:** how specifications are published and cited. What any individual specification
   says is its own business
 - **Lineage:** **docs spec**
-- **Children:** [citation spec](2026-10-26-citation-links-design.md)
+- **Children:** [citation spec](2026-10-26-citation-links-design.md),
+  [ledger spec](2026-10-30-decision-ledger-design.md)
 - **Published:** in the specifications index, since change 1 of §4
   took `orphan: true` off this document and the type coverage specification together
 
