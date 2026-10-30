@@ -424,7 +424,7 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/pint-cf-0.2.1-pyhc364b38_0.conda#4e32e524623c884281354199a1e0d759
   - https://conda.anaconda.org/conda-forge/noarch/types-pytz-2026.5.0.20261006-pyh5ded981_0.conda#e2c2b7e527f0932efc8dfa1d1fb3e960
   - https://conda.anaconda.org/conda-forge/noarch/pandas-stubs-3.0.5.260914-pyhd8ed1ab_1.conda#db4b37d06af8c57b004328c61efc5a3d
-  - https://conda.anaconda.org/conda-forge/linux-64/pandas-3.0.6-np2py314h9e1d7c2_0.conda#e0f55ab2a87a7f0483a633ac39557098
+  - https://conda.anaconda.org/conda-forge/linux-64/pandas-3.1.0-np2py314h9e1d7c2_0.conda#6b79c5806770fb4320b34c32279b0353
   - https://conda.anaconda.org/conda-forge/noarch/numpydoc-1.11.0-pyh5ded981_1.conda#7749306664bf40b80ffc297ff6d4af29
   - https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py314h12ceea2_2.conda#6b75e66981d66ebc1709356e7c8fd6a7
   - https://conda.anaconda.org/conda-forge/linux-64/netcdf4-1.7.4-nompi_py311hd34d2e2_111.conda#d697ebf773f33945402fe3e1fda13635

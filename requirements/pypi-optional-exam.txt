@@ -1,4 +1,4 @@
 h3 <4.6
-pandas <3.1
+pandas <3.2
 pyarrow <26.1
 rasterio <1.6
