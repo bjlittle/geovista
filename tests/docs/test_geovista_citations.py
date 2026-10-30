@@ -153,7 +153,10 @@ def test_inline_code_is_blanked_and_roles_are_collected(citations):
 
 
 def test_a_prefix_carries_across_a_run_and_no_further(tmp_path, citations):
-    """A comma or solidus joins a run; a full stop ends it."""
+    """A comma or solidus joins a run; a full stop ends it.
+
+    Holds docs spec §2 decision 5.
+    """
     _, names = demo(tmp_path, DEMO, citations)
     text = f"demo spec {SECTION}1, {SECTION}2. Then {SECTION}1."
 

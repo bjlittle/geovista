@@ -470,7 +470,22 @@ because each extends the one before, and their decisions cite one another.
 (ledger-spec-10)=
 ## 10. Verification
 
-This section takes the form of §3.4 when row 1 of §8 lands. Until then the suite has no
-vocabulary for a pending decision, and would read a table of them as a roadmap whose states
-it does not know, so the ledger of this specification's fifteen decisions is written by
-row 1 itself, each pending until the row that delivers it lands.
+Each row follows §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
+| 2 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_renumbering.py` |
+| 3 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 4 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 5 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 6 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 7 | ⏳ pending |  |
+| 8 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 9 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 10 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 11 | ⏳ pending |  |
+| 12 | ⏳ pending |  |
+| 13 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 14 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
+| 15 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |

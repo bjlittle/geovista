@@ -14,7 +14,8 @@
 - **Citation prefix:** `scene spec §…`
 - **Scope:** the `Globe` in place of every `radius`, the globe a mesh records, meshes that
   record no globe, and the retirement of fields that `geovista` no longer writes
-- **Lineage:** [crs spec](2026-10-23-globe-first-crs-design.md) › [globe spec](2026-10-26-globe-heights-layers-design.md) › **scene spec**
+- **Lineage:** [crs spec](2026-10-23-globe-first-crs-design.md) ›
+  [globe spec](2026-10-26-globe-heights-layers-design.md) › **scene spec**
 - **Children:** none
 - **Extends:** globe spec §4.1 and globe spec §4.4, as row 2 of globe spec §9. It inherits
   that specification's decisions (globe spec §2) and testing (globe spec §6)
@@ -53,8 +54,8 @@ These were decided with {user}`bjlittle` while the design was written.
 3. **A mesh records its globe in four fields:** `gvGlobeRadius`, in metres,
    `gvGlobeRenderRadius`, `gvGlobeExaggerationAbove` and `gvGlobeExaggerationBelow`, each a
    float64 field array of one value. The two exaggerations are the first form of the
-   vertical mapping of globe spec §4.1, above and below sea level. Each is named for a reader who opens the file in ParaView, and none depends on
-   its place in an array.
+   vertical mapping of globe spec §4.1, above and below sea level. Each is named for a
+   reader who opens the file in ParaView, and none depends on its place in an array.
 4. **A mesh that records no globe is read, never refused.** It is placed on the default
    globe, at its `gvRadius` where it has one, and otherwise at the one radius its points
    lie at, if they lie at one. No position changes: today's `gvRadius` is exactly the render
@@ -107,8 +108,9 @@ of a sphere, by default `common.RADIUS`, which is 1. The first count found 33, a
 | `transform` | `transform_mesh`, and the private `_record_zlevels` |
 
 One gallery example passes `radius=`, as do 13 calls in 8 test modules, and the 3 pages of
-the documentation that the gallery generates from that example. The example, `vector_data/wind_arrows_uvw`, passes `radius=1.1` to float its
-arrows above the surface, which is a lift, not a globe (globe spec §3.6).
+the documentation that the gallery generates from that example. The example,
+`vector_data/wind_arrows_uvw`, passes `radius=1.1` to float its arrows above the surface,
+which is a lift, not a globe (globe spec §3.6).
 
 (scene-spec-3-2)=
 ### 3.2 The Radius on a Mesh
@@ -185,13 +187,14 @@ normals, then calls `warp_by_scalar` with a factor of 2 × 10⁻⁵ on the altit
 Each must be finite and positive, or a `ValueError` names the value. A value of the wrong
 type raises a `TypeError` naming its keyword: `True`, a string, a quantity given as a render
 radius or a factor, or an array given as a radius. A string would otherwise be read as the
-number it spells. A factor need not be whole: the gallery's run from 1.28 to 200 (globe spec §3.6), and one below 1 flattens. A
-factor of 0 would draw a range of heights at one radius, and a negative one would turn
-them upside down. Either breaks the rule of globe spec §4.1 that the vertical mapping
-always increases. `Globe(exaggeration=20)` stretches the atmosphere and the ocean alike,
-and `Globe(exaggeration=20, exaggeration_below=100)` stretches the ocean five times more.
-Land below sea level takes the factor below too (globe spec §4.1), and the documentation
-of `Globe` says so.
+number it spells. A factor need not be whole: the gallery's run from 1.28 to 200
+(globe spec §3.6), and one below 1 flattens. A factor of 0 would draw a range of heights at
+one radius, and a negative one would turn them upside down. Either breaks the rule of
+globe spec §4.1 that the vertical mapping always increases. `Globe(exaggeration=20)`
+stretches the atmosphere and the ocean alike, and
+`Globe(exaggeration=20, exaggeration_below=100)` stretches the ocean five times more. Land
+below sea level takes the factor below too (globe spec §4.1), and the documentation of
+`Globe` says so.
 
 A globe's `radius` returns a `pint` quantity in metres, in `pint`'s application registry,
 the one `pint` provides for sharing quantities between packages, so that a user can add
@@ -320,12 +323,12 @@ since `geovista` never writes part of a globe.
 (scene-spec-4-5)=
 ### 4.5 Retiring a Field
 
-One table in `geovista.common` lists every field that `geovista` reads but no longer
-writes. Each entry names the field, whether it is field, point or cell data, what replaced
-it, the last release that wrote it, and how to translate it. Its name and form are left to the builder. `gvRadius` is the first
-entry: field data, replaced by the globe of §4.3, last written by 0.5.3, or by any later
-0.5 release, and translated as §4.4 item 1 says. 0.6 is the first release to write the
-globe instead.
+One table in `geovista.common` lists every field that `geovista` reads but no longer writes.
+Each entry names the field, whether it is field, point or cell data, what replaced it, the
+last release that wrote it, and how to translate it. Its name and form are left to the
+builder. `gvRadius` is the first entry: field data, replaced by the globe of §4.3, last
+written by 0.5.3, or by any later 0.5 release, and translated as §4.4 item 1 says. 0.6 is
+the first release to write the globe instead.
 
 `sanitize_legacy(*meshes)` translates and removes every retired field of each mesh, in
 place, with the same signature as `sanitize_vtk`. `sanitize` gains `legacy: bool = True`,
@@ -381,12 +384,12 @@ first mesh's field data (§3.3), and is outside `geovista`'s control. The docume
 | `gvRadius`, written | `gvGlobeRadius`, `gvGlobeRenderRadius`, `gvGlobeExaggerationAbove` and `gvGlobeExaggerationBelow`; `gvRadius` is read, and cleaned (§4.5) |
 | a radius given to each layer of a scene | `GeoPlotter(globe=...)` |
 
-The tests and the pages of §3.1 move to `globe=`. No example in the README passes
-`radius=`, and the test of {issue}`2756` runs them all against the change. The gallery example moves to a `zlevel`
-of 1,000, which floats its arrows the same 10% of the radius until row 5 of
-globe spec §9 replaces `zlevel` with the lift. The H3 example draws its icosahedron's
-edges at a z-level of 61 rather than 60, one level above its coarsest cells as before,
-since a z-level now lifts its lines from the render radius (§4.2).
+The tests and the pages of §3.1 move to `globe=`. No example in the README passes `radius=`,
+and the test of {issue}`2756` runs them all against the change. The gallery example moves to
+a `zlevel` of 1,000, which floats its arrows the same 10% of the radius until row 5 of
+globe spec §9 replaces `zlevel` with the lift. The H3 example draws its icosahedron's edges
+at a z-level of 61 rather than 60, one level above its coarsest cells as before, since a
+z-level now lifts its lines from the render radius (§4.2).
 
 (scene-spec-5)=
 ## 5. Alternatives Considered
@@ -451,10 +454,10 @@ globe spec §6 and crs spec §6 require:
 
 - **the globe**: a radius as a plain number or a `pint` quantity reads as metres, and so
   does one read through `to_metres` from a CF unit string; a value of the wrong type is
-  refused; a value that is not finite, a radius that is not positive and an exaggeration that is not positive are
-  each refused; `exaggeration` alone sets both factors, and `exaggeration_below` sets the
-  factor below sea level alone; an int factor reads back as a float, and a factor below 1
-  is accepted; equal values make equal globes;
+  refused; a value that is not finite, a radius that is not positive and an exaggeration
+  that is not positive are each refused; `exaggeration` alone sets both factors, and
+  `exaggeration_below` sets the factor below sea level alone; an int factor reads back as a
+  float, and a factor below 1 is accepted; equal values make equal globes;
 - **the record**: every function of §3.1 that builds or positions a mesh writes the four
   fields, the globe it was given or its default, and no `gvRadius`;
 - **the round trip** of §4.3;
@@ -526,6 +529,6 @@ released, since 0.6 is the first release that writes the globe and no retired fi
 
 - The globe, heights and layers design: globe spec §2, globe spec §4.1, globe spec §4.2,
   globe spec §4.4 and globe spec §9.
-- The globe-first CRS design: crs spec §2 decisions 4 and 14, crs spec §3.4,
-  crs spec §6 and crs spec §8 item 12.
+- The globe-first CRS design: crs spec §2 decision 4, crs spec §2 decision 14,
+  crs spec §3.4, crs spec §6 and crs spec §8 item 12.
 - {issue}`2753`, the refresh of the pantry's assets.

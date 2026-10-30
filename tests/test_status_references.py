@@ -9,6 +9,8 @@ The script asks GitHub about the work each specification status cites. These
 tests stand a fixed record of that work in for GitHub, so they need no network,
 which is why the resolution lives in a script rather than the unit suite.
 
+Holds docs spec §2 decision 7.
+
 """
 
 from __future__ import annotations

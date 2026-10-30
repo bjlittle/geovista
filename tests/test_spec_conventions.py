@@ -285,7 +285,10 @@ def test_every_specification_declares_a_prefix_of_its_own(names):
 
 @pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
 def test_every_numbered_heading_pairs_with_an_anchor(spec):
-    """Pairing (item 1)."""
+    """Pairing (item 1).
+
+    Holds docs spec §2 decision 3.
+    """
     problems = pairing(spec, spec.read_text(encoding="utf-8"))
 
     assert not problems, "\n".join(problems)
@@ -806,7 +809,10 @@ def test_every_range_carries_its_prefix_on_both_ends(texts, names):
 
 
 def test_every_citation_carries_its_sign(texts, names):
-    """Form (item 4)."""
+    """Form (item 4).
+
+    Holds docs spec §2 decision 4.
+    """
     problems = [p for path, text in texts.items() for p in form(path, text, names)]
 
     assert not problems, "\n".join(problems)
@@ -1046,7 +1052,10 @@ def test_section_roles_keeps_a_plain_citation_after_a_role_naming_its_section(
 
 
 def test_no_role_names_a_section(texts, names):
-    """Plain text (item 5): a section is cited as one string, which the build links."""
+    """Plain text (item 5): a section is cited as one string, which the build links.
+
+    Holds citation spec §2 decision 5.
+    """
     problems = [
         p for path, text in texts.items() for p in section_roles(path, text, names)
     ]
@@ -1319,7 +1328,10 @@ def test_both_kinds_of_status_are_read(specs):
 
 @pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
 def test_every_status_is_in_the_vocabulary_and_evidenced(spec):
-    """Status (item 7)."""
+    """Status (item 7).
+
+    Holds docs spec §2 decision 7.
+    """
     text = spec.read_text(encoding="utf-8")
     problems = status(spec, text)
 
@@ -1810,7 +1822,10 @@ def test_front_matter_is_read_only_where_a_document_opens():
 
 
 def test_no_specification_is_an_orphan(specs):
-    """A specification is reached through the index, never left unlisted."""
+    """A specification is reached through the index, never left unlisted.
+
+    Holds docs spec §2 decision 1.
+    """
     orphans = [
         spec.name
         for spec in specs

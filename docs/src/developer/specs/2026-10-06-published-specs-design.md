@@ -57,28 +57,33 @@ than a plan.
 (docs-spec-2)=
 ## 2. Decisions
 
-- **Specifications are published; plans are not.** A specification is maintained alongside
-  the code it describes and is read as current. A plan records what was intended before
-  implementation and is not updated afterwards, so publishing one would put a document on
-  Read the Docs that is wrong by design. See §3.1.
-- **A plan is withheld by `exclude_patterns`, not by `orphan: true`.** An orphan is a
-  published page that nothing links to, which is a weaker claim than the one being made.
-  See §3.1.
-- **Sections are addressed by explicit anchors keyed to the section number**, never by the
-  slug `docutils` derives from the heading text. See §3.3.
-- **A citation carries the section sign.** `typing spec §3.1`, never `typing spec 3.1`. The
-  sign is what makes the token unmistakable in running prose, and a form that a future
-  transform cannot recognise is a citation written today that goes dead later. See
-  §3.2.
-- **A bare `§N` means the containing document's §N.** Inside a specification that is the
-  ordinary way to name a neighbouring section. Outside the collection it is always an
-  error, because `src/` and `tests/` own no sections. See §3.2.
-- **A roadmap row either carries an assertion or carries an admission.** A row may state a
-  trigger only if something fails when that trigger fires. A row whose trigger cannot be
-  observed mechanically says so, in those words. See §4.
-- **A status names the work that produced it.** A roadmap row that has landed, and an open
-  item that has been settled, each carry the date and the pull request or issue that did
-  it, from a closed vocabulary. See §3.6.
+1. **🤝 Agreed** (2026-10-07, {user}`bjlittle`, {pull}`2567`) — **Specifications are
+   published; plans are not.** A specification is maintained alongside the code it describes
+   and is read as current. A plan records what was intended before implementation and is not
+   updated afterwards, so publishing one would put a document on Read the Docs that is wrong
+   by design. See §3.1.
+2. **🤝 Agreed** (2026-10-07, {user}`bjlittle`, {pull}`2567`) — **A plan is withheld by
+   `exclude_patterns`, not by `orphan: true`.** An orphan is a published page that nothing
+   links to, which is a weaker claim than the one being made. See §3.1.
+3. **🤝 Agreed** (2026-10-07, {user}`bjlittle`, {pull}`2567`) — **Sections are addressed by
+   explicit anchors keyed to the section number**, never by the slug `docutils` derives from
+   the heading text. See §3.3.
+4. **🤝 Agreed** (2026-10-07, {user}`bjlittle`, {pull}`2567`) — **A citation carries the
+   section sign.** `typing spec §3.1`, never `typing spec 3.1`. The sign is what makes the
+   token unmistakable in running prose, and a form that a future transform cannot recognise
+   is a citation written today that goes dead later. See §3.2.
+5. **🤝 Agreed** (2026-10-07, {user}`bjlittle`, {pull}`2567`) — **A bare `§N` means the
+   containing document's §N.** Inside a specification that is the ordinary way to name a
+   neighbouring section. Outside the collection it is always an error, because `src/` and
+   `tests/` own no sections. See §3.2.
+6. **🤝 Agreed** (2026-10-07, {user}`bjlittle`, {pull}`2567`) — **A roadmap row either
+   carries an assertion or carries an admission.** A row may state a trigger only if
+   something fails when that trigger fires. A row whose trigger cannot be observed
+   mechanically says so, in those words. See §4.
+7. **🤝 Agreed** (2026-10-07, {user}`bjlittle`, {pull}`2567`) — **A status names the work
+   that produced it.** A roadmap row that has landed, and an open item that has been
+   settled, each carry the date and the pull request or issue that did it, from a closed
+   vocabulary. See §3.6.
 
 (docs-spec-3)=
 ## 3. Architecture
@@ -532,18 +537,18 @@ that was taken from one that was dropped.
    would have failed the check while being correct. The question went with the roles: row 4
    of the citation links design wrote every citation of a section in plain text, and the
    assertion retired, replaced by the rule that no role names a section.
-2. **Resolved** (2026-10-26, {pull}`2738`) — **The threshold of
-   seventy citations is a judgement, not a measurement.** It was first thirty-five, five
-   times the seven citations there were when it was set, chosen to fire before review
-   stops being credible rather than at the point it does. This item once waited on a second
-   namespace to measure against; `docs spec` became that namespace with change 1, which
-   brought the count to fifteen, still too few to measure a better number from. Change 5 of
-   the type coverage roadmap ({pull}`2619`) took the count from 29 to 37 on 2026-10-11, eight
-   citations in code comments and test docstrings that point a reader at the rule behind a
-   line. {user}`bjlittle` chose to double the threshold rather than build rows 2 to 4,
-   leaving room for the roadmap's last two changes, which cite the same way. On
-   2026-10-26, at 68, {user}`bjlittle` chose to build the rows instead, and the threshold
-   retired with them, so no better number is wanted.
+2. **Resolved** (2026-10-26, {pull}`2738`) — **The threshold of seventy citations is a
+   judgement, not a measurement.** It was first thirty-five, five times the seven citations
+   there were when it was set, chosen to fire before review stops being credible rather than
+   at the point it does. This item once waited on a second namespace to measure against;
+   `docs spec` became that namespace with change 1, which brought the count to fifteen,
+   still too few to measure a better number from. Change 5 of the type coverage roadmap
+   ({pull}`2619`) took the count from 29 to 37 on 2026-10-11, eight citations in code
+   comments and test docstrings that point a reader at the rule behind a line.
+   {user}`bjlittle` chose to double the threshold rather than build rows 2 to 4, leaving
+   room for the roadmap's last two changes, which cite the same way. On 2026-10-26, at 68,
+   {user}`bjlittle` chose to build the rows instead, and the threshold retired with them, so
+   no better number is wanted.
 3. **Resolved** (2026-10-09, {pull}`2609`) — **Nothing proved the references in a status
    line point at real work.** §3.5's seventh assertion checks that a
    terminal status carries a date and a reference, not that the work it names exists or did
@@ -594,3 +599,18 @@ that was taken from one that was dropped.
 - `tests/docs/test_readingtime_coverage.py` — the derived-corpus pattern
   §3.5 follows, including an exemption tuple whose entries each carry
   the reason beside them.
+
+(docs-spec-10)=
+## 10. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/docs/test_readingtime_coverage.py` |
+| 2 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/docs/test_readingtime_coverage.py` |
+| 3 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 4 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 5 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/docs/test_geovista_citations.py` |
+| 6 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2786`) | Checked in review that each `candidate` row of §4 names a trigger the conventions test asserts, or says that it is revisited by hand. |
+| 7 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |

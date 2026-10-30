@@ -445,7 +445,10 @@ def test_the_autoapi_templates_are_excluded_by_the_build_too():
 
 
 def test_the_plans_are_excluded_by_the_build_too():
-    """A plan the gate skips and sphinx still builds would publish unbannered."""
+    """A plan the gate skips and sphinx still builds would publish unbannered.
+
+    Holds docs spec §2 decision 1, docs spec §2 decision 2.
+    """
     conf = (DOCS / "conf.py").read_text(encoding="utf-8")
 
     assert '"developer/plans/**"' in conf

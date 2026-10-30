@@ -514,7 +514,10 @@ def test_a_renumber_leaving_a_citation_behind_fails(guard, repo, capsys):
 
 
 def test_a_renumber_that_updates_its_citations_passes(guard, repo, capsys):
-    """Every citation of what moved is on a line the pull request changed."""
+    """Every citation of what moved is on a line the pull request changed.
+
+    Holds citation spec §2 decision 3.
+    """
     commit(
         repo,
         {
@@ -529,7 +532,10 @@ def test_a_renumber_that_updates_its_citations_passes(guard, repo, capsys):
 
 
 def test_fix_rewrites_the_stale_citations_and_nothing_else(guard, repo, capsys):
-    """Released entries included: a stale link is worth nothing."""
+    """Released entries included: a stale link is worth nothing.
+
+    Holds citation spec §2 decision 4.
+    """
     commit(repo, {str(SPECS / NAME): INSERTED}, "insert")
     other = (repo / "src" / "other.py").read_text(encoding="utf-8")
 

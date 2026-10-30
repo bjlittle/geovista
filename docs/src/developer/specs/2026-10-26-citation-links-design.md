@@ -53,31 +53,37 @@ the links still mean what they meant.
 All taken by {user}`bjlittle` on 2026-10-26, after the sweep of the published
 specifications design on that date.
 
-- **Build the machinery instead of raising the ceiling again.** The ceiling was doubled
-  once, from thirty-five to seventy (docs spec §8). It is not raised a
-  second time.
-- **A reader following a link is the case that matters.** A link on a rendered page that
-  opens the wrong section is the visible failure. A citation in a code comment is rarely
-  followed; one in a docstring is, through the API documentation.
-- **Renumbering stays allowed.** A new section can go where it belongs in the argument,
-  between two others, and the sections after it take new numbers. Forbidding that, so that
-  sections are only ever added at the end or subdivided, would protect the citations at the
-  cost of the documents. Instead, a renumber must update every citation of the sections it
-  moves, in the same pull request, and the guard of §4.5 says
-  which. A citation added on a branch older than a renumber is caught on its own pull
-  request, before it merges.
-- **Released changelog entries are corrected like everything else.** A link to the wrong
-  section has no value, released or not, so the guard reads `CHANGELOG.rst` and changelog
-  fragments, and its fix rewrites them.
-- **The roles collapse into plain text as part of this work.** Keeping two forms of
-  citation, and the assertion that holds the two halves of a role together, was the
-  stop-gap docs spec §3.4 described until the transform existed.
-- **Sections only.** An item within a section, such as `typing spec §8 item 9`, and a row
-  of a roadmap, such as "rows 2 to 4" of the docs spec's, are not given anchors or links of
-  their own. Six references are written in a form a grammar could read, the link to the
-  containing section lands within a screen of them, and a grammar for them would cost more
-  to keep than it saves. §4.6 protects them another way, and
-  row 5 of §9 is where the question comes back.
+1. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2734`) — **Build the machinery instead
+   of raising the ceiling again.** The ceiling was doubled once, from thirty-five to seventy
+   (docs spec §8). It is not raised a second time.
+2. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2734`) — **A reader following a link
+   is the case that matters.** A link on a rendered page that opens the wrong section is the
+   visible failure. A citation in a code comment is rarely followed; one in a docstring is,
+   through the API documentation.
+3. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2734`) — **Renumbering stays
+   allowed.** A new section can go where it belongs in the argument, between two others, and
+   the sections after it take new numbers. Forbidding that, so that sections are only ever
+   added at the end or subdivided, would protect the citations at the cost of the documents.
+   Instead, a renumber must update every citation of the sections it moves, in the same pull
+   request, and the guard of §4.5 says which. A citation added on a branch older than a
+   renumber is caught on its own pull request, before it merges.
+4. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2734`) — **Released changelog entries
+   are corrected like everything else.** A link to the wrong section has no value, released
+   or not, so the guard reads `CHANGELOG.rst` and changelog fragments, and its fix rewrites
+   them.
+5. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2734`) — **The roles collapse into
+   plain text as part of this work.** Keeping two forms of citation, and the assertion that
+   holds the two halves of a role together, was the stop-gap docs spec §3.4 described until
+   the transform existed.
+6. **🗄️ Retired** (2026-10-30, {user}`bjlittle`, {pull}`2786`; agreed 2026-10-26,
+   {pull}`2734`) — **Sections only.** An item within a section, such as
+   `typing spec §8 item 9`, and a row of a roadmap, such as "rows 2 to 4" of the docs
+   spec's, are not given anchors or links of their own. Six references are written in a form
+   a grammar could read, the link to the containing section lands within a screen of them,
+   and a grammar for them would cost more to keep than it saves. §4.6 protects them another
+   way, and row 5 of §9 is where the question comes back. Retired because
+   ledger spec §2 decision 1 gives each decision an anchor and a link of its own; replaced
+   by ledger spec §2 decision 1.
 
 (citation-spec-3)=
 ## 3. What Exists Today
@@ -279,19 +285,19 @@ section to its new number, and the author reviews the diff. This is what correct
 released changelog entry. A citation of a removed section has no new number to take, so
 the fix leaves it for the author, who points it elsewhere or deletes it.
 
-One case escapes that comparison. A pull request branched before a renumber merged can
-add a citation meaning the old number. It changes no specification, and its own diff
-shows nothing moving. So the guard also judges every line the pull request changed by
-what the base changed since the branch forked: it translates the citation back to the
-fork along the branch's own changes, so a branch that already took a renumber is read by it,
-follows the specification from the fork along the base's own history, change by change, as
-above, and reports a citation whose section the base has since moved or removed. The pull request's own changes to a
-specification are judged as above, so they are never counted twice. That is the audit of
-§3.2, run on the lines a pull request adds. It follows the
-specification one change at a time because comparing the two ends loses a section renamed
-in one change and grown in others, which is how a living section changes. A protected
-branch that must be up to date before merging re-runs the guard whenever the base moves,
-so such a citation cannot merge stale.
+One case escapes that comparison. A pull request branched before a renumber merged can add a
+citation meaning the old number. It changes no specification, and its own diff shows nothing
+moving. So the guard also judges every line the pull request changed by what the base
+changed since the branch forked: it translates the citation back to the fork along the
+branch's own changes, so a branch that already took a renumber is read by it, follows the
+specification from the fork along the base's own history, change by change, as above, and
+reports a citation whose section the base has since moved or removed. The pull request's own
+changes to a specification are judged as above, so they are never counted twice. That is the
+audit of §3.2, run on the lines a pull request adds. It follows the specification one change
+at a time because comparing the two ends loses a section renamed in one change and grown in
+others, which is how a living section changes. A protected branch that must be up to date
+before merging re-runs the guard whenever the base moves, so such a citation cannot merge
+stale.
 
 It has to happen on the pull request. The repository squash-merges, so once merged, a
 line's commit on the base branch is the squash, whose tree already holds every renumber
@@ -452,3 +458,17 @@ over three times the six of §3.1.
 - {pull}`2573`, which landed the conventions test, and {pull}`2730` and {pull}`2731`, which
   made the checks page and the specifications index the inventories their specifications
   had been keeping by hand.
+
+(citation-spec-11)=
+## 11. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2786`) | Checked in review that rows 2 to 4 of §9 built the transform, the output check and the guard, and that the ceiling test retired with row 2. |
+| 2 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/docs/test_rendered_citations.py` |
+| 3 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_renumbering.py` |
+| 4 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_renumbering.py` |
+| 5 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 6 | 🗄️ retired (2026-10-30, {pull}`2786`) | replaced by ledger spec §2 decision 1 |
