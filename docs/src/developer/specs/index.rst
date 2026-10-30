@@ -39,6 +39,8 @@ a page, a specification or the API reference, it is a link to the section it nam
       - :doc:`2026-10-06-published-specs-design`
     * - └─ ``citation spec §…``
       - :doc:`2026-10-26-citation-links-design`
+    * - └─ ``ledger spec §…``
+      - :doc:`2026-10-30-decision-ledger-design`
     * - ``typing spec §…``
       - :doc:`2026-10-06-type-coverage-design`
     * - ``zlevel spec §…``
@@ -108,3 +110,4 @@ work has moved past, such as an **Open** item whose issue has closed.
     2026-10-26-globe-heights-layers-design
     2026-10-27-globe-scene-design
     2026-10-28-heights-as-data-design
+    2026-10-30-decision-ledger-design
