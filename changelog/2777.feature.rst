@@ -1,0 +1,9 @@
+A mesh can carry the height of each of its points, in metres above mean sea
+level. The builders of :class:`geovista.bridge.Transform` take ``height=``,
+``depth=`` and ``vertical_units=``, and
+:meth:`geovista.bridge.Transform.to_structured_grid` reads its ``zs`` as heights.
+:func:`geovista.core.resize` and :func:`geovista.transform.transform_mesh` place
+a mesh from its heights, on the globe and on a map, and
+:attr:`geovista.accessor.GeoVistaAccessor.height` and
+:attr:`geovista.accessor.GeoVistaAccessor.depth` read them back. A masked or
+missing height is drawn at sea level. (:user:`claude`)

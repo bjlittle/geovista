@@ -350,7 +350,7 @@ mixed: a CRS whose vertical axis is an ellipsoidal height, as a 3D geographic CR
 compound CRS whose vertical datum is not gravity-related. PROJ names the vertical axis of
 the one "Ellipsoidal height" and of the other "Gravity-related height". Converting such
 heights through PROJ, with the geoid grid it needs, is a later step
-(§7).
+(§7), and {issue}`2782` records the options.
 
 An infinite height is refused. A masked or NaN height is missing: it is kept as NaN, and
 its point is drawn at sea level (heights spec §2 decision 3).
@@ -501,9 +501,9 @@ retired, with a note at its head that this specification replaced it, and why.
   workaround does. Rejected as a default, because a corner then holds a height no cell has:
   a cell at 4,000 m among cells at 500 m is drawn about 2.6 km too low ({issue}`2728`).
 - **Converting model levels to heights in `geovista` now.** Deferred, by decision 3.
-- **Converting ellipsoidal heights to mean sea level now.** Deferred. It needs a geoid grid,
-  and without one PROJ falls back silently (§3.4), so refusing is the
-  rigorous step until the conversion is designed.
+- **Converting ellipsoidal heights to mean sea level now.** Deferred ({issue}`2782`). It
+  needs a geoid grid, and without one PROJ falls back silently (§3.4), so refusing is
+  the rigorous step until the conversion is designed.
 
 (globe-spec-6)=
 ## 6. Testing
@@ -543,7 +543,8 @@ Out of scope, recorded so they are not forgotten:
 
 - turning model levels into heights, by decision 3;
 - pressure, flight levels and other vertical coordinates that are not lengths;
-- ellipsoidal heights and other vertical datums, converted through PROJ with a geoid grid;
+- ellipsoidal heights and other vertical datums, converted through PROJ with a geoid grid
+  ({issue}`2782`);
 - height above the ground as a reference, which upstream turns into height above sea level;
 - volumes, plumes as solids, and a floor and a ceiling, which stay with the design of region
   solids and the vertical (crs spec §9), along with {issue}`15`;
@@ -596,6 +597,12 @@ Each carries the status grammar of docs spec §3.6.
    below sea level. The 3-D winds of §3.6 stretch theirs by 1,500 by hand. Whether
    `geovista` applies the slope, and how a user asks for more to make a weak vertical wind
    legible, belongs with the vector work of crs spec §4.5.
+10. **Deferred** (until users ask for it, {issue}`2782`) — **Heights against another
+    vertical datum.** A height above the ellipsoid is refused (§4.3). Read as a height
+    above mean sea level, it would be off by the geoid's undulation, up to 106 m. PROJ
+    converts it with a geoid grid, but without the grid it quietly applies no
+    correction. The issue holds the measurements and the options, among them refusing
+    when the grid is missing and fetching the grid through `geovista`'s cache.
 
 (globe-spec-9)=
 ## 9. Roadmap

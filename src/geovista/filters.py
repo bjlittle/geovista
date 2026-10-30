@@ -68,6 +68,96 @@ VTK_FREE_EDGE_MASK: str = "FreeEdge"
 """``vtkIntersectionPolyDataFilter`` free edge cell array name."""
 
 
+def _cut_point_data(remeshed: pv.PolyData, original: pv.PolyData, /) -> None:
+    """Interpolate the point data of the points a cut adds, in place.
+
+    ``vtkIntersectionPolyDataFilter`` interpolates the point data of some of the
+    points it adds from the wrong points, so each floating point array is given,
+    at each added point, the value interpolated over the triangle of the
+    `original` it lies in. A point on an edge takes the values of that edge's
+    ends alone, so a height missing elsewhere on its triangle stays missing
+    there (heights spec §4.1).
+
+    Parameters
+    ----------
+    remeshed : pyvista.PolyData
+        The mesh the cut made, whose points begin with those of `original`, and
+        whose point data is rewritten in place at the points after them.
+    original : pyvista.PolyData
+        The triangulated mesh that was cut.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    start = original.n_points
+    if remeshed.n_points == start:
+        return
+
+    added = np.asarray(remeshed.points[start:], dtype=np.float64)
+    points = np.asarray(original.points, dtype=np.float64)
+
+    # the barycentric weights of each added point, in the triangle it lies in
+    cells = np.asarray(original.find_closest_cell(added), dtype=int).reshape(-1)
+    triangles = original.regular_faces[cells]
+    first = points[triangles[:, 0]]
+    sides = (points[triangles[:, 1]] - first, points[triangles[:, 2]] - first)
+    offset = added - first
+    d00, d01, d11 = (
+        np.einsum("ij,ij->i", one, two)
+        for one, two in (
+            (sides[0], sides[0]),
+            (sides[0], sides[1]),
+            (sides[1], sides[1]),
+        )
+    )
+    d20, d21 = (np.einsum("ij,ij->i", offset, side) for side in sides)
+    denominator = d00 * d11 - d01 * d01
+    # a degenerate triangle, such as one at a pole, keeps the values given
+    valid = np.abs(denominator) > np.finfo(np.float64).eps * (d00 * d11)
+    safe = np.where(valid, denominator, 1.0)
+    second = (d11 * d20 - d01 * d21) / safe
+    third = (d00 * d21 - d01 * d20) / safe
+    weights = np.clip(np.column_stack([1.0 - second - third, second, third]), 0, None)
+    # a vertex takes no part where the point lies on the edge opposite it, to
+    # the precision the cut stores its points in, so that a missing value there
+    # never reaches it. VTK rounds them to float32, which alone moves a point on
+    # an edge off it, by a weight that grows as the triangle shrinks, so the
+    # point's distance from each edge is measured rather than its weight
+    opposite = np.column_stack(
+        [
+            np.linalg.norm(sides[1] - sides[0], axis=1),
+            np.linalg.norm(sides[1], axis=1),
+            np.linalg.norm(sides[0], axis=1),
+        ]
+    )
+    # the distance of each vertex from the edge opposite it
+    spans = np.sqrt(np.abs(safe))[:, np.newaxis] / np.where(opposite > 0, opposite, 1)
+    precision = np.finfo(remeshed.points.dtype).eps
+    tolerance = 4 * precision * np.linalg.norm(added, axis=1)
+    weights[weights * spans <= tolerance[:, np.newaxis]] = 0.0
+    # a triangle too small to tell its edges apart keeps the values given
+    total = weights.sum(axis=1, keepdims=True)
+    valid &= total[:, 0] > 0
+    weights /= np.where(total > 0, total, 1.0)
+
+    for name in original.point_data:
+        values = np.asarray(original.point_data[name])
+        if name not in remeshed.point_data or not np.issubdtype(
+            values.dtype, np.floating
+        ):
+            continue
+        corners = values[triangles].astype(np.float64)
+        shape = weights.shape + (1,) * (corners.ndim - 2)
+        weighted = np.where(
+            weights.reshape(shape) > 0, weights.reshape(shape) * corners, 0.0
+        ).sum(axis=1)
+        # written into the array itself, which leaves the active scalars alone
+        target = remeshed.point_data[name]
+        target[start:][valid] = weighted[valid]
+
+
 def remesh(
     mesh: pv.PolyData,
     /,
@@ -159,6 +249,9 @@ def remesh(
 
     remeshed = pv.PolyData(alg.GetOutput(1))
     remeshed.copy_meta_from(poly0, deep=True)
+
+    # the point data of the points the cut adds, such as their heights
+    _cut_point_data(remeshed, poly0)
 
     if remeshed.n_cells == 0:
         # no remeshing has been performed as the meridian does not intersect the mesh

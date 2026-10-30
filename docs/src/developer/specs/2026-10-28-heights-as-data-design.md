@@ -167,6 +167,15 @@ Every function that returns a mesh made from one it was given keeps its heights,
 interpolated at any point a cut adds. `combine` keeps them whatever its `data`, and gives a
 height of 0 to the points of a mesh that has none, since such a mesh is at sea level.
 
+A cut through cells interpolates every floating point array at the points it adds, over the
+triangle each one lies in. `vtkIntersectionPolyDataFilter` interpolates some of those points
+from the wrong points, 3 of the 12 that a cut at 15° E adds to a 30° grid, and it adds points
+inside a triangle wherever the cutting plane's own diagonal crosses one. A point on an edge
+takes the heights at the two ends of that edge, so a missing height elsewhere on its
+triangle never reaches it. VTK stores the points it adds as float32, so a point is on an
+edge when it lies within that precision of it. The test is a distance from the edge, since
+the weight that rounding gives the third vertex grows as the triangle shrinks.
+
 (heights-spec-4-2)=
 ### 4.2 Where Heights Enter
 
@@ -181,8 +190,11 @@ A height is given in any form of globe spec §4.2: a plain number or array in me
 the unit `vertical_units` names, or a `pint` quantity of length from any registry. A scalar
 gives every point that height. An array gives one height for each point, in the order of
 the points the function builds, as point data given to it is ordered. An array the size of
-the cells is refused, naming {issue}`2728`. An array whose size matches both the points and
-the cells is read as heights of the points.
+the cells is refused, naming {issue}`2728`. For the bridge, the cells are the faces given,
+before any masked face is dropped. An array whose size matches both the points and the
+cells is read as heights of the points, and an array of one value gives one height to the
+whole mesh, as a scalar does. A `zscale` given with heights is ignored, since there is no
+z-level for it to scale.
 
 `depth=` takes the same forms, positive downward, and is negated once, on the way in. A
 negative depth is a height above sea level.
@@ -215,7 +227,11 @@ A missing height is drawn as a height of 0.
 
 Every function that positions a mesh with heights builds its points this way, from their
 longitudes, latitudes and heights: the bridge at the globe it is given, `resize` at the
-globe it is given, and `transform_mesh` at its globe, on the sphere or on a map. A scene
+globe it is given, `transform_mesh` at its globe, on the sphere or on a map, and
+`slice_cells` at the globe the mesh records, for each point its cut adds. Where heights
+change sign or one is missing, the radius between two points is not the radius of the
+height between them, so a cut places its points from their heights. `resize` returns a mesh
+as given only when it records the globe and each of its points lies at its height. A scene
 adding a mesh that records another globe builds it at the scene's, in place of the scale by
 the ratio of render radii (scene spec §4.2). A mesh without heights is built at a height of
 0, so it is drawn as it was before. A mesh with heights that records no globe is drawn where
@@ -228,7 +244,8 @@ as a globe at the lifted radius, and the mesh would be lifted twice. `Globe.from
 reads such a mesh at its `gvRadius`, if it has one, and otherwise returns `None`.
 
 A point cloud with heights carries no z-level, so its radius encodes no level, and the third
-column `from_cartesian` reports for it is 0, as it is for a surface.
+column `from_cartesian` reports for it is 0, as it is for a surface. It records no
+`gvZScale`, and on a map it carries no `gvZLevel`.
 
 At the default globe a depth of 4,000 m is drawn 6.3 × 10⁻⁴ of the render radius below the
 surface, which is too small to see. A user draws depths apart by giving the scene a globe
@@ -251,8 +268,9 @@ Each of these raises a `ValueError` that names what was given:
 - a height that is not a length, such as a pressure, which `to_metres` refuses, naming its
   unit;
 - `vertical_units` with a quantity, which carries its own unit, or with no height;
-- heights with a CRS that has an axis named "Ellipsoidal height" (§3.4), which asks for a
-  CRS whose vertical axis is gravity-related, or for none.
+- heights with a CRS that has an axis named "Ellipsoidal height" (§3.4), given with them or
+  as the target of `transform_mesh` for a mesh that carries them, which asks for a CRS whose
+  vertical axis is gravity-related, or for none ({issue}`2782`).
 
 (heights-spec-4-5)=
 ### 4.5 What Row 3 Leaves Alone
@@ -267,7 +285,12 @@ Each of these raises a `ValueError` that names what was given:
 - **Vectors** keep their components. How the vertical mapping bends an arrow is
   globe spec §8 item 9.
 - **The gallery and the README** keep their z-levels and their hand-warped orography until
-  row 5 of globe spec §9 migrates them. Row 3 changes no example.
+  row 5 of globe spec §9 migrates them. Row 3 changes two examples, `grid/reykjanes` and
+  `grid/reykjanes_contour`, whose `zs` it reads as heights. Their levels are 250 m apart,
+  and were drawn half a cell of latitude apart before they were heights. Each example gives
+  its grid and its scene `Globe(exaggeration=22.34)`, which draws them that far apart, so
+  their images stand. {user}`bjlittle` plans to redesign `to_structured_grid` once row 1
+  lands ({issue}`2774`).
 
 (heights-spec-5)=
 ## 5. Alternatives Considered
@@ -357,7 +380,7 @@ Out of scope:
 - layering, the base layer's lowering and the lift, which are row 4 of globe spec §9;
 - removing `zlevel` and `zscale`, and migrating the gallery and the README, which are row 5;
 - a vertical mapping in bands, or as a function of height (globe spec §8 item 8);
-- converting heights between vertical datums (globe spec §7).
+- converting heights between vertical datums (globe spec §7, {issue}`2782`).
 
 (heights-spec-8)=
 ## 8. Open Items
@@ -382,7 +405,7 @@ Each carries the status grammar of docs spec §3.6.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | Heights on a mesh: `gvHeight`, `height=`, `depth=` and `vertical_units=` on the bridge, `to_structured_grid` reading its `zs` as heights, positions from heights on the globe and on a map through the bridge, `resize` and `transform_mesh`, `mesh.gv.height` and `mesh.gv.depth`, missing heights, heights through the filters and `combine`, and the refusals of §4.4 | not started |
+| 1 | Heights on a mesh: `gvHeight`, `height=`, `depth=` and `vertical_units=` on the bridge, `to_structured_grid` reading its `zs` as heights, positions from heights on the globe and on a map through the bridge, `resize` and `transform_mesh`, `mesh.gv.height` and `mesh.gv.depth`, missing heights, heights through the filters and `combine`, and the refusals of §4.4 | ✅ landed (2026-10-30, {pull}`2777`) |
 | 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | not started |
 
 Statuses follow docs spec §3.6. Row 2 is planned once row 1 has landed. Until it lands, a
@@ -399,3 +422,4 @@ example in the README. Row 3 of globe spec §9 lands with row 2, before 0.6 is r
 - The globe on the scene design: scene spec §2 decision 3, scene spec §4.2,
   scene spec §4.3, scene spec §4.4 and scene spec §4.6.
 - {issue}`2728`, heights given for each cell.
+- {issue}`2782`, heights above the ellipsoid and other vertical datums.
