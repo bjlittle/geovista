@@ -411,7 +411,7 @@ other, so a family drawn wrongly in any one of them fails the suite.
 | 3 | Citation integrity hook | ✅ landed (2026-10-07, {pull}`2573`) |
 | 4 | Rendered-output gate | ✅ landed (2026-10-27, {pull}`2738`) |
 | 5 | GitHub reference roles and hardcoded-link detection | candidate |
-| 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-29, {pull}`2778`) |
+| 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
