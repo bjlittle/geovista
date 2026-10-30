@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import lru_cache
+from importlib.util import find_spec
 from typing import TYPE_CHECKING
 
 from geopy.point import Point
@@ -940,15 +941,15 @@ def usgs_earthquakes() -> SamplePointsXYZ:
     .. versionadded:: 0.4.0
 
     """
-    try:
-        import fastparquet  # noqa: F401, PLC0415
-        import pandas as pd  # noqa: PLC0415
-    except ImportError:
+    # pandas reads the parquet with pyarrow, which is found rather than imported
+    if find_spec("pandas") is None or find_spec("pyarrow") is None:
         emsg = (
-            "Optional dependencies 'fastparquet' and 'pandas' are required "
+            "Optional dependencies 'pandas' and 'pyarrow' are required "
             "for the 'earthquakes' sample. Use pip or conda to install."
         )
-        raise ImportError(emsg) from None
+        raise ImportError(emsg)
+
+    import pandas as pd  # noqa: PLC0415
 
     fname = "earthquakes.parq"
     processor = Decompress(method="auto", name=fname)
@@ -958,7 +959,7 @@ def usgs_earthquakes() -> SamplePointsXYZ:
     # see https://github.com/holoviz/holoviz/blob/main/examples/data/preprocessing/earthquake_data.py
     # and https://earthquake.usgs.gov/data/comcat/data-eventterms.php
     columns = ["depth", "id", "latitude", "longitude", "mag", "place", "time", "type"]
-    dataset = pd.read_parquet(resource, columns=columns, engine="fastparquet")
+    dataset = pd.read_parquet(resource, columns=columns, engine="pyarrow")
     dataset = dataset[dataset.mag >= 2.5]
 
     # load the lon/lat/zlevel points

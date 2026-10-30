@@ -1,4 +1,4 @@
-# geovista Globe on the Scene — Design Specification
+# Globe on the Scene Specification
 
 ```{readingtime}
 ```
@@ -14,12 +14,12 @@
 - **Citation prefix:** `scene spec §…`
 - **Scope:** the `Globe` in place of every `radius`, the globe a mesh records, meshes that
   record no globe, and the retirement of fields that `geovista` no longer writes
-- **Parent spec:** the globe, heights and layers design
-  ([`2026-10-26-globe-heights-layers-design.md`](2026-10-26-globe-heights-layers-design.md)).
-  This extends globe spec §4.1 and globe spec §4.4, and is row 2 of globe spec §9. It
-  inherits that specification's decisions (globe spec §2) and testing (globe spec §6)
-  unchanged. It settles crs spec §8 item 12 of the globe-first CRS design, and adds to
-  crs spec §4.9 how the public API reports a value with a unit
+- **Lineage:** [crs spec](2026-10-23-globe-first-crs-design.md) › [globe spec](2026-10-26-globe-heights-layers-design.md) › **scene spec**
+- **Children:** none
+- **Extends:** globe spec §4.1 and globe spec §4.4, as row 2 of globe spec §9. It inherits
+  that specification's decisions (globe spec §2) and testing (globe spec §6)
+  unchanged. It settles crs spec §8 item 12 of the globe-first CRS design, and
+  adds to crs spec §4.9 how the public API reports a value with a unit
 - **Published:** in the specifications index
 
 (scene-spec-1)=

@@ -127,7 +127,7 @@ in plain text (`docs spec §3.2`), never a `{ref}` or `:ref:` role: the build li
 ⚠️ **A spec status must cite real work** (#2609): run `pixi run -e test check-spec-status <PR>` after editing one.
 A `Resolved` item may cite an open issue; the PR closing a cited issue marks it `Resolved` (in specs; plans are frozen). One row per PR, none *partly landed* (6a–6c, #2659).
 ⚠️ **Ask whether a roadmap row is bounded before planning it.** One its spec leaves to the builder gets
-a child spec first, as `bjlittle/tephpy` does (own prefix, `Parent spec:` banner, "Extended by" note in the parent), and is planned once the rows it depends on merge.
+a child spec first, as `bjlittle/tephpy` does (own prefix, "Extended by" note in the parent; its family lines and index row follow docs spec §3.7), and is planned once the rows it depends on merge.
 
 ### RST Style
 

@@ -1,4 +1,4 @@
-# geovista Globe-First CRS Foundation — Design Specification
+# Globe-First CRS Foundation Specification
 
 ```{readingtime}
 ```
@@ -15,7 +15,8 @@
 - **Scope:** the foundation every projected scene stands on: the globe model, units, the
   cutting engine on the sphere, the domain of each class of projection, datums, the CRS
   interface, and the reuse of all of it across a time series
-- **Parent spec:** none; its conventions are those of docs spec §1
+- **Lineage:** **crs spec**
+- **Children:** [globe spec](2026-10-26-globe-heights-layers-design.md)
 - **Published:** in the specifications index
 
 (crs-spec-1)=

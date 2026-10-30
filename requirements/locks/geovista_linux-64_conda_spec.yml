@@ -417,8 +417,14 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/cfgv-3.5.0-pyhd8ed1ab_0.conda#381bd45fb7aa032691f3063aff47e3a1
   - https://conda.anaconda.org/conda-forge/noarch/pre-commit-4.7.0-pyha770c72_0.conda#167169a52ede77767f9fa66b52983a20
   - https://conda.anaconda.org/conda-forge/noarch/pip-25.3-pyh145f28c_0.conda#bf47878473e5ab9fdb4115735230e191
+  - https://conda.anaconda.org/conda-forge/noarch/flexparser-0.4-pyh5ded981_2.conda#5960ecf63e2d46f99dbfafa851c2206b
+  - https://conda.anaconda.org/conda-forge/noarch/flexcache-0.3-pyh5ded981_2.conda#9ed9902b7f19311ba0836f9dd0b4d7e0
+  - https://conda.anaconda.org/conda-forge/noarch/pint-0.26.2-pyhc364b38_0.conda#a09d2d8684160fe39b730c115328220c
+  - https://conda.anaconda.org/conda-forge/noarch/lark-1.3.1-pyhd8ed1ab_0.conda#9b965c999135d43a3d0f7bd7d024e26a
+  - https://conda.anaconda.org/conda-forge/noarch/pint-cf-0.2.1-pyhc364b38_0.conda#4e32e524623c884281354199a1e0d759
   - https://conda.anaconda.org/conda-forge/noarch/types-pytz-2026.5.0.20261006-pyh5ded981_0.conda#e2c2b7e527f0932efc8dfa1d1fb3e960
   - https://conda.anaconda.org/conda-forge/noarch/pandas-stubs-3.0.5.260914-pyhd8ed1ab_1.conda#db4b37d06af8c57b004328c61efc5a3d
+  - https://conda.anaconda.org/conda-forge/linux-64/pandas-3.0.6-np2py314h9e1d7c2_0.conda#e0f55ab2a87a7f0483a633ac39557098
   - https://conda.anaconda.org/conda-forge/noarch/numpydoc-1.11.0-pyh5ded981_1.conda#7749306664bf40b80ffc297ff6d4af29
   - https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py314h12ceea2_2.conda#6b75e66981d66ebc1709356e7c8fd6a7
   - https://conda.anaconda.org/conda-forge/linux-64/netcdf4-1.7.4-nompi_py311hd34d2e2_111.conda#d697ebf773f33945402fe3e1fda13635
@@ -489,7 +495,6 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/noarch/python-json-logger-4.2.0-pyhd8ed1ab_0.conda#e5407c82510aab6a4baa31fcd4249655
   - https://conda.anaconda.org/conda-forge/noarch/webcolors-25.10.0-pyhd8ed1ab_0.conda#6639b6b0d8b5a284f027a2003669aa65
   - https://conda.anaconda.org/conda-forge/noarch/uri-template-1.3.0-pyhd8ed1ab_1.conda#e7cb0f5745e4c5035a460248334af7eb
-  - https://conda.anaconda.org/conda-forge/noarch/lark-1.3.1-pyhd8ed1ab_0.conda#9b965c999135d43a3d0f7bd7d024e26a
   - https://conda.anaconda.org/conda-forge/noarch/rfc3987-syntax-1.1.0-pyhe01879c_1.conda#7234f99325263a5af6d4cd195035e8f2
   - https://conda.anaconda.org/conda-forge/noarch/jsonpointer-3.5-pyh5ded981_0.conda#3b1bad8e4bd82e10ab0671b6623cc570
   - https://conda.anaconda.org/conda-forge/noarch/arrow-1.4.0-pyhcf101f3_0.conda#85c4f19f377424eafc4ed7911b291642
@@ -523,10 +528,6 @@ dependencies:
   - https://conda.anaconda.org/conda-forge/linux-64/h3-py-4.5.0-py314hf3b331d_0.conda#ab8f25ae0333ac08018cff4a8fff74f2
   - https://conda.anaconda.org/conda-forge/noarch/geographiclib-2.1-pyhd8ed1ab_0.conda#43dd16b113cc7b244d923b630026ff4f
   - https://conda.anaconda.org/conda-forge/noarch/geopy-2.5.0-pyhd8ed1ab_0.conda#43372c0cbf9e460f218de5ed1543a011
-  - https://conda.anaconda.org/conda-forge/linux-64/pandas-3.0.6-np2py314h9e1d7c2_0.conda#e0f55ab2a87a7f0483a633ac39557098
-  - https://conda.anaconda.org/conda-forge/noarch/fsspec-2026.9.0-pyhd8ed1ab_0.conda#42de5cd170647599a84f468a42fabb89
-  - https://conda.anaconda.org/conda-forge/linux-64/cramjam-2.14.0-py314hbaacaaa_0.conda#479f58dd19c2222a7357288434de9d39
-  - https://conda.anaconda.org/conda-forge/linux-64/fastparquet-2026.5.0-py314hc02f841_0.conda#7eacd1ab0881bd50ebf2824ae227098d
   - https://conda.anaconda.org/conda-forge/noarch/colorcet-3.2.1-pyhd8ed1ab_0.conda#0b6419b9a27c540bd96e66e12a44c379
   - https://conda.anaconda.org/conda-forge/noarch/codecov-2.1.13-pyhd8ed1ab_1.conda#d924fe46139596ebc3d4d424ec39ed51
   - https://conda.anaconda.org/conda-forge/noarch/colorspacious-1.1.2-pyhecae5ae_1.conda#04151bb8e351c6209caad045e4b1f4bd

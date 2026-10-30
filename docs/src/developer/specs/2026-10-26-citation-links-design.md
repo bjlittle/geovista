@@ -1,4 +1,4 @@
-# geovista Citation Links — Design Specification
+# Citation Links Specification
 
 ```{readingtime}
 ```
@@ -14,13 +14,12 @@
 - **Scope:** the shared citation grammar, the build-time transform that links citations,
   the check of the rendered output, the retirement of the hand-written section roles, and
   the guard that catches a renumbered section
-- **Parent spec:** the published specifications design
-  ([`2026-10-06-published-specs-design.md`](2026-10-06-published-specs-design.md)). This
-  builds rows 2 and 4 of docs spec §4, closes row 3 as already
-  covered, and retires the assertion of docs spec §3.4. It inherits
+- **Lineage:** [docs spec](2026-10-06-published-specs-design.md) › **citation spec**
+- **Children:** none
+- **Extends:** rows 2 and 4 of docs spec §4, which it builds, and closes row 3 as
+  already covered. It retires the assertion of docs spec §3.4, and inherits
   that specification's citation form (docs spec §3.2), anchors
-  (docs spec §3.3) and statuses
-  (docs spec §3.6) unchanged
+  (docs spec §3.3) and statuses (docs spec §3.6) unchanged
 
 (citation-spec-1)=
 ## 1. Purpose

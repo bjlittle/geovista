@@ -1,4 +1,4 @@
-# geovista Type Coverage — Design Specification
+# Type Coverage Specification
 
 ```{readingtime}
 ```
@@ -17,9 +17,8 @@
 - **Scope:** where `geovista` runs `mypy`, what it is allowed not to check yet, and the
   order in which that allowance is withdrawn; the strictness settings themselves stay as
   they are
-- **Parent spec:** none, but not unconventioned. It was the first specification in this
-  repository and so inherited nothing; the conventions it arrived at are now written down,
-  and governed, by docs spec §1
+- **Lineage:** **typing spec**
+- **Children:** none
 - **Published:** in the specifications index, since change 1 of
   docs spec §4 took off the `orphan: true` it carried while nothing
   listed it
@@ -570,13 +569,15 @@ Each carries the status grammar of docs spec §3.6.
    `main` fixes every defect, and the locals come out with the floor that carries them,
    the trigger items 2 and 6 already wait on. `main` types `to_image` as returning
    `ImageData | None`, so the local in `wrap_texture` already allows `None`.
-9. **Open** ({issue}`2629`) — **Six dependencies ship no annotations.** The latest
-   releases of `pooch` (1.9.0), `geopy` (2.5.0), `fastparquet` (2026.9.0; the lock has
-   2026.5.0), `cartopy` (0.26.0), `cmocean` (4.0.3) and `h3` (4.5.0) carry no `py.typed`
-   and have no stubs on conda-forge or in typeshed, so one `ignore_missing_imports`
-   override makes each import `Any`. Change 6c brought the entries for `geopy` and
-   `fastparquet` to life by taking `pantry/data.py` out of the ratchet, and change 7 added
-   the last three, which only the gallery imports. Each name comes out when its
+9. **Open** ({issue}`2629`) — **Five dependencies ship no annotations.** The latest
+   releases of `pooch` (1.9.0), `geopy` (2.5.0), `cartopy` (0.26.0), `cmocean` (4.0.3)
+   and `h3` (4.5.0) carry no `py.typed` and have no stubs on conda-forge or in typeshed,
+   so one `ignore_missing_imports` override makes each import `Any`. Change 6c brought
+   the entries for `geopy` and `fastparquet` to life by taking `pantry/data.py` out of the
+   ratchet, and change 7 added the last three, which only the gallery imports.
+   `fastparquet` came out when the earthquakes sample moved to `pyarrow`
+   ({pull}`2783`), which `pantry/data.py` finds with `find_spec` and never imports, as
+   `pyarrow` ships no annotations either. Each name comes out when its
    distribution or a stub package types it. `pooch`, `cartopy`, `cmocean` and `h3` have
    open upstream issues asking for annotations; `cmocean`'s offers a stub file for its
    colormaps, which would not lift the override without a `py.typed` marker.
