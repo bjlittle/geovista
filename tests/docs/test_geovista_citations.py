@@ -347,3 +347,10 @@ def test_ledger_reads_the_verification_table(citations):
     assert found[0].status == citations.PENDING
     assert found[1].evidence == "`x.py`"
     assert citations.ledger(other) is None
+
+
+def test_a_row_naming_a_superscript_names_no_decision(citations):
+    """Review Focus 5 of its plan: a cell no int() reads is reported, never a crash."""
+    row = citations.LedgerRow("\N{SUPERSCRIPT TWO}", 1, "", "")
+
+    assert row.decision is None

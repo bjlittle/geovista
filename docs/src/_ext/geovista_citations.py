@@ -224,7 +224,8 @@ class LedgerRow:
     @property
     def decision(self) -> int | None:
         """The decision the row is for, or ``None`` when its first cell is no number."""
-        return int(self.cell) if self.cell.isdigit() else None
+        # ASCII digits only: "²" is a digit to str.isdigit, and no int() reads it
+        return int(self.cell) if re.fullmatch(r"[0-9]+", self.cell) else None
 
 
 def state_of(written: str, states: Iterable[str]) -> str | None:

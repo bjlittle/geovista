@@ -2082,6 +2082,15 @@ def ledger_entries(path: Path, text: str) -> list[str]:
         return [f"{where(path, 1)}: its second section is not titled Decisions"]
     found = decisions(text)
     problems = []
+    lines = citations._section(text, "2", citations.DECISIONS)
+    if any(re.match(r"^[-*]\s", line) for _, line in lines):
+        problems.append(
+            f"{where(path, 1)}: a decision is a bullet, not a numbered entry"
+        )
+    if not found:
+        problems.append(
+            f"{where(path, 1)}: its Decisions section holds no numbered decision"
+        )
     numbers = [d.number for d in found]
     if numbers != list(range(1, len(found) + 1)):
         problems.append(f"{where(path, 1)}: decisions are numbered {numbers}")
@@ -2118,11 +2127,22 @@ def ledger_table(path: Path, text: str) -> list[str]:
     if rows is None:
         return [f"{where(path, 1)}: its Verification section holds no ledger"]
     problems = []
+    expected = len(decisions(text))
+    seen: set[int] = set()
     for row in rows:
         at = where(path, row.line)
         if row.decision is None:
             problems.append(f"{at}: a row names {row.cell!r}, not a decision")
             continue
+        if row.decision in seen:
+            problems.append(f"{at}: decision {row.decision} has a second row")
+        elif not 1 <= row.decision <= expected:
+            problems.append(
+                f"{at}: a row names decision {row.decision}, which no entry holds"
+            )
+        elif seen and row.decision < max(seen):
+            problems.append(f"{at}: decision {row.decision} is out of order")
+        seen.add(row.decision)
         state, rest = opened(row.status)
         evidence = carried(rest)
         if state is None:
@@ -2141,10 +2161,11 @@ def ledger_table(path: Path, text: str) -> list[str]:
             problems.append(
                 f"{at}: decision {row.decision} carries no date, user and pull"
             )
-    listed = [row.decision for row in rows]
-    expected = list(range(1, len(decisions(text)) + 1))
-    if listed != expected:
-        problems.append(f"{where(path, 1)}: the ledger lists {listed}, not {expected}")
+    problems += [
+        f"{where(path, 1)}: decision {number} has no row"
+        for number in range(1, expected + 1)
+        if number not in seen
+    ]
     return problems
 
 
@@ -2241,22 +2262,28 @@ def ledger_replacements(
     found += [(r.line, r.evidence) for r in ledger(text) or [] if r.status]
     problems = []
     for line, written in found:
-        _, said, after = written.partition("replaced by ")
-        if not said:
-            continue
-        cited = next(scan(prose(after)[0], names.signed, owner), None)
-        if cited is None or cited.slug is None:
-            continue
-        replacement = decided.get(cited.slug)
-        if replacement is None:
-            problems.append(
-                f"{where(path, line)}: replaced by {cited.text}, no decision"
-            )
-        elif replacement.state != AGREED:
-            problems.append(
-                f"{where(path, line)}: replaced by {cited.text}, which is not in force"
-            )
+        for said in re.finditer(r"\breplaced by\b", written, flags=re.IGNORECASE):
+            after = written[said.end() :]
+            cited = next(scan(prose(after)[0], names.signed, owner), None)
+            label = LABEL.match(cited.slug) if cited and cited.slug else None
+            # only a decision can replace a decision; a section is prose
+            if label is None or label["decision"] is None:
+                continue
+            problems += replaced(path, line, cited, decided)
     return problems
+
+
+def replaced(
+    path: Path, line: int, cited: Citation, decided: Mapping[str, object]
+) -> list[str]:
+    """Report a replacement that is no decision, or not one in force."""
+    at = where(path, line)
+    replacement = decided.get(cited.slug)
+    if replacement is None:
+        return [f"{at}: replaced by {cited.text}, no decision"]
+    if replacement.state != AGREED:
+        return [f"{at}: replaced by {cited.text}, which is not in force"]
+    return []
 
 
 def test_ledger_entries_finds_a_gap_a_missing_state_and_missing_provenance(tmp_path):
@@ -2296,10 +2323,37 @@ def test_ledger_table_wants_the_last_section_and_a_row_per_decision(tmp_path):
 
     assert faults(ledger_table(path, text)) == [
         "a row names 'two', not a decision",
-        "the ledger lists [1, None], not [1, 2, 3]",
+        "decision 2 has no row",
+        "decision 3 has no row",
     ]
     assert faults(ledger_table(path, text + "\n(demo-spec-5)=\n## 5. After\n")) == [
         "its last section is not titled Verification"
+    ]
+
+
+def test_ledger_entries_wants_numbered_decisions(tmp_path):
+    """Ledger spec §2 decision 2: a bullet has no number, so it cannot be cited."""
+    bulleted = f"- **{AGREED}** ({AGREEMENT}) — **A.** Its reasoning.\n"
+    path, _ = ledgered(tmp_path, bulleted, "")
+
+    assert faults(ledger_entries(path, path.read_text(encoding="utf-8"))) == [
+        "a decision is a bullet, not a numbered entry",
+        "its Decisions section holds no numbered decision",
+    ]
+
+
+def test_ledger_table_reports_an_extra_or_repeated_row_at_its_line(tmp_path):
+    """Review Focus 5 of its plan: each stray row is reported where it is written."""
+    entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
+    rows = f"| 1 | {PENDING} | |\n| 1 | {PENDING} | |\n| 2 | {PENDING} | |\n"
+    rows += f"| 3 | {PENDING} | |\n"
+    path, _ = ledgered(tmp_path, entries, rows)
+    text = path.read_text(encoding="utf-8")
+    second, third = ledger(text)[1].line, ledger(text)[3].line
+
+    assert ledger_table(path, text) == [
+        f"{where(path, second)}: decision 1 has a second row",
+        f"{where(path, third)}: a row names decision 3, which no entry holds",
     ]
 
 
@@ -2393,6 +2447,27 @@ def test_ledger_replacement_must_be_in_force(tmp_path):
     assert faults(ledger_replacements(path, text, names, decided)) == [
         f"replaced by {SECTION}2 decision 2, which is not in force",
         f"replaced by {SECTION}2 decision 9, no decision",
+    ]
+
+
+def test_ledger_replacement_reads_any_case_and_only_decisions(tmp_path):
+    """Ledger spec §2 decision 3: any case names a replacement; a section never does."""
+    retired = f"{AGREEMENT}; agreed 2026-01-01, {{pull}}`1`"
+    entries = (
+        f"1. **{RETIRED_STATE}** ({retired}) — **One.** It was replaced by "
+        f"{SECTION}3's rule; replaced by {SECTION}2 decision 2.\n"
+        + entry(2, AGREED, AGREEMENT)
+    )
+    rows = (
+        f"| 1 | {LEDGER_RETIRED} (2026-01-01, {{pull}}`1`) | "
+        f"Replaced by {SECTION}2 decision 9 |\n| 2 | {PENDING} | |\n"
+    )
+    path, names = ledgered(tmp_path, entries, rows)
+    text = path.read_text(encoding="utf-8")
+    decided = {decision_anchor("demo-spec", d.number): d for d in decisions(text)}
+
+    assert faults(ledger_replacements(path, text, names, decided)) == [
+        f"replaced by {SECTION}2 decision 9, no decision"
     ]
 
 

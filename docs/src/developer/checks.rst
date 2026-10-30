@@ -269,22 +269,37 @@ documentation build shares to link every citation it renders. The build's own
 output is checked by :bash:`tests/docs/test_rendered_citations.py`.
 
 **When it fails:** The message names the file, line and citation or heading at
-fault. For the ledger, it names the decision or row:
+fault. For the ledger, it names the decision or row, and says one of these:
 
-- *decisions are numbered …*: number them 1 to N, appending a new one at the end.
-- *opens with no state*, *carries no date, user and pull*: open the entry with
-  ``🤝 Agreed`` and its date, ``{user}`` and ``{pull}``, as in the specifications
-  index's :ref:`gv-developer-specs-decisions`.
-- *the ledger lists …*: give the Verification table one row per decision, in order.
+- *its second section is not titled Decisions*: keep the decisions in a second
+  section titled Decisions, which their citation names.
+- *a decision is a bullet, not a numbered entry*, *holds no numbered decision* or
+  *decisions are numbered …*: number them 1 to N, and add a new one at the end.
+- *opens with no state*, *carries no date, user and pull* or *is retired with no
+  agreement*: open the entry with ``🤝 Agreed`` and its date, ``{user}`` and
+  ``{pull}``, as in the specifications index's :ref:`gv-developer-specs-decisions`.
+  A retired one adds ``; agreed`` and its original date and ``{pull}``.
+- *its last section is not titled Verification* or *holds no ledger*: end the
+  specification with a Verification section whose table is headed ``Decision``,
+  ``Status`` and ``Evidence``.
+- *a row names …*, *has a second row*, *is out of order* or *has no row*: give the
+  table one row per decision, in order.
+- *is not a ledger state*, *is pending, and carries more* or *carries no date …*:
+  open the Status cell with a state of ledger spec §3.4, carrying what it asks.
 - *is retired in one section and not the other*: retire it in both.
-- *does not cite decision N*: cite the decision in the test the row names, or name
-  the test that exercises it.
+- *does not exist*, *is verified by nothing* or *does not cite decision N*: name
+  the test that exercises the decision, and cite the decision in it.
+- *replaced by …, no decision* or *…, which is not in force*: cite the decision in
+  force that replaced it.
 - *is pending, and no row of the roadmap is left to deliver it*: verify it, sign
   it off, or name the ``candidate`` row that will deliver it.
 
-**Declaring an exception:** None. Its ``NUMBERED_CEILING`` is not an exception:
-it is the trigger of row 5 of citation spec §9, and
-raising it is a change to that specification.
+**Declaring an exception:** None for the conventions. A specification not yet
+brought into the ledger is named in ``UNLEDGERED``, beside the row of
+ledger spec §8 that brings it in. That list is not an exception either: the test
+fails if the row lands while the specification is still named, so the list cannot
+outlive its work. Its ``NUMBERED_CEILING`` is the trigger of row 5 of
+citation spec §9, and raising it is a change to that specification.
 
 **More:** docs spec §3.5.
 
