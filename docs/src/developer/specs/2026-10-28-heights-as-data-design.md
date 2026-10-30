@@ -405,7 +405,7 @@ Each carries the status grammar of docs spec §3.6.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | Heights on a mesh: `gvHeight`, `height=`, `depth=` and `vertical_units=` on the bridge, `to_structured_grid` reading its `zs` as heights, positions from heights on the globe and on a map through the bridge, `resize` and `transform_mesh`, `mesh.gv.height` and `mesh.gv.depth`, missing heights, heights through the filters and `combine`, and the refusals of §4.4 | ✅ landed (2026-10-29, {pull}`2777`) |
+| 1 | Heights on a mesh: `gvHeight`, `height=`, `depth=` and `vertical_units=` on the bridge, `to_structured_grid` reading its `zs` as heights, positions from heights on the globe and on a map through the bridge, `resize` and `transform_mesh`, `mesh.gv.height` and `mesh.gv.depth`, missing heights, heights through the filters and `combine`, and the refusals of §4.4 | ✅ landed (2026-10-30, {pull}`2777`) |
 | 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | not started |
 
 Statuses follow docs spec §3.6. Row 2 is planned once row 1 has landed. Until it lands, a
