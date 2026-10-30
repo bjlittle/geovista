@@ -69,9 +69,9 @@ PACKAGES_CORE: list[str] = [
 
 PACKAGES_OPTIONAL: list[str] = [
     # optional
-    "fastparquet",
     "h3",
     "pandas",
+    "pyarrow",
     "pyqt",
     "pyvistaqt",
     "rasterio",

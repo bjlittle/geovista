@@ -90,11 +90,11 @@ module = ["lazy_loader"]
 
 
 [[tool.mypy.overrides]]
-# typing spec §8 item 9 -- six distributions ship no annotations and have
+# typing spec §8 item 9 -- five distributions ship no annotations and have
 # no stubs (#2629). Withdraw each name when its distribution, typeshed or
 # conda-forge provides them.
 ignore_missing_imports = true
-module = ["cartopy.*", "cmocean.*", "fastparquet", "geopy.*", "h3", "pooch"]
+module = ["cartopy.*", "cmocean.*", "geopy.*", "h3", "pooch"]
 
 
 [[tool.mypy.overrides]]
@@ -187,7 +187,6 @@ filterwarnings = [
   "ignore:pyvista test generated image dir:UserWarning",
   "ignore:Passing 'N' to ListedColormap is deprecated since 3.11 and will be removed in 3.13. Please ensure the list of passed colors is the required length instead.",
   "ignore:Setting the shape on a NumPy array has been deprecated in NumPy 2.5:DeprecationWarning",
-  "ignore:The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future:DeprecationWarning",
 ]
 log_cli = true
 log_cli_level = "INFO"
@@ -556,7 +555,6 @@ setuptools-scm = ">=8.3.1,<9"
 
 [tool.pixi.feature.devs.dependencies]
 check-manifest = ">=0.51.0,<0.52"
-fastparquet = ">=2024.11.0,<2027"
 h3-py = ">=4.2.2,<5"
 jupyterlab = ">=4.5.7,<5"
 mypy = ">=2.3.1,<3"
@@ -572,6 +570,10 @@ zizmor = ">=1.9.0,<2"
 
 [tool.pixi.feature.devs.pypi-dependencies]
 geovista = { path = ".", editable = true }
+# conda-forge builds "pyarrow" against older aws-c libraries than vtk and hdf5
+# use, so solving it there downgrades both and drops mesa; the wheel bundles its
+# own arrow libraries
+pyarrow = ">=13.0.0,<27"
 
 [tool.pixi.feature.docs.dependencies]
 ipykernel = ">=6.29.5,<8"

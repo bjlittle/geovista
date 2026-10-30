@@ -49,7 +49,7 @@ for further details.
 .. attention::
 
     Optional package dependencies `pandas <https://pandas.pydata.org/docs/>`_ and
-    `fastparquet <https://fastparquet.readthedocs.io/en/stable/>`_ are required.
+    `pyarrow <https://arrow.apache.org/docs/python/>`_ are required.
 
 ----
 
@@ -70,7 +70,7 @@ def main() -> None:
 
     """
     # Load sample data, which requires the optional package
-    # dependencies 'fastparquet' and 'pandas'.
+    # dependencies 'pandas' and 'pyarrow'.
     sample = usgs_earthquakes()
 
     # Plot the points.
