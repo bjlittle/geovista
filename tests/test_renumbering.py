@@ -1091,3 +1091,30 @@ def test_a_citation_older_than_a_specification_renamed_and_renumbered_fails(
 
     assert code == 1
     assert f'src/late.py:1: demo spec {SECTION}2 was "Design", which is now' in out
+
+
+#: Decisions in the form of ledger spec §3.2, their states built by name.
+AGREED = "\N{HANDSHAKE} Agreed"
+FIRST = (
+    f"**{AGREED}** (2026-10-30, {{user}}`bjlittle`, {{pull}}`1`) — **The first.** A."
+)
+SECOND = (
+    f"**{AGREED}** (2026-10-30, {{user}}`bjlittle`, {{pull}}`1`) — **The second.** B."
+)
+THIRD = (
+    f"**{AGREED}** (2026-10-30, {{user}}`bjlittle`, {{pull}}`1`) — **The third.** C."
+)
+
+
+def test_a_decision_inserted_mid_list_fails_naming_it(guard):
+    """Ledger spec §2 decision 2: a decision keeps its number, read by its title."""
+    base = spec(("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, SECOND)))
+    head = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, THIRD, SECOND))
+    )
+
+    problems = guard.frozen(base, head)
+
+    assert len(problems) == 1
+    assert "The second." in problems[0]
+    assert AGREED not in problems[0]
