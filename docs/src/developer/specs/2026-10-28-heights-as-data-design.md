@@ -270,7 +270,7 @@ Each of these raises a `ValueError` that names what was given:
 - `vertical_units` with a quantity, which carries its own unit, or with no height;
 - heights with a CRS that has an axis named "Ellipsoidal height" (§3.4), given with them or
   as the target of `transform_mesh` for a mesh that carries them, which asks for a CRS whose
-  vertical axis is gravity-related, or for none.
+  vertical axis is gravity-related, or for none ({issue}`2782`).
 
 (heights-spec-4-5)=
 ### 4.5 What Row 3 Leaves Alone
@@ -380,7 +380,7 @@ Out of scope:
 - layering, the base layer's lowering and the lift, which are row 4 of globe spec §9;
 - removing `zlevel` and `zscale`, and migrating the gallery and the README, which are row 5;
 - a vertical mapping in bands, or as a function of height (globe spec §8 item 8);
-- converting heights between vertical datums (globe spec §7).
+- converting heights between vertical datums (globe spec §7, {issue}`2782`).
 
 (heights-spec-8)=
 ## 8. Open Items
@@ -422,3 +422,4 @@ example in the README. Row 3 of globe spec §9 lands with row 2, before 0.6 is r
 - The globe on the scene design: scene spec §2 decision 3, scene spec §4.2,
   scene spec §4.3, scene spec §4.4 and scene spec §4.6.
 - {issue}`2728`, heights given for each cell.
+- {issue}`2782`, heights above the ellipsoid and other vertical datums.
