@@ -124,7 +124,7 @@ tutorial whose reader runs every snippet.
 fails on `toc.not_included` unless a toctree holds it, a page includes it, or it is
 `orphan: true` (#2564), which no spec may be. `developer/plans/` is never built. Cite a section
 in plain text (`docs spec §3.2`), never a `{ref}` or `:ref:` role: the build links it, and the renumber guard follows it.
-⚠️ **A spec status must cite real work** (#2609): run `pixi run -e test check-spec-status <PR>` after editing one.
+⚠️ **A spec status must cite real work** (#2609): run `pixi run -e test check-spec-status <PR>` after editing one. Cite a decision as `heights spec §2 decision 3`; an agent never adds the `signed-off` label (ledger spec §2 decision 7).
 A `Resolved` item may cite an open issue; the PR closing a cited issue marks it `Resolved` (in specs; plans are frozen). One row per PR, none *partly landed* (6a–6c, #2659).
 ⚠️ **Ask whether a roadmap row is bounded before planning it.** One its spec leaves to the builder gets
 a child spec first, as `bjlittle/tephpy` does (own prefix, "Extended by" note in the parent; its family lines and index row follow docs spec §3.7), and is planned once the rows it depends on merge.

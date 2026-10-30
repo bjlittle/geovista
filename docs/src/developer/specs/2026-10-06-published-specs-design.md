@@ -133,6 +133,11 @@ tidy a marker that has stopped mattering.
 (docs-spec-3-2)=
 ### 3.2 The Citation Namespace
 
+> **Extended by a child specification.**
+> [`2026-10-30-decision-ledger-design.md`](2026-10-30-decision-ledger-design.md),
+> `ledger spec §…`, cites a decision as `<prefix> spec §2 decision N`, each decision taking
+> an anchor the build generates (ledger spec §3.1).
+
 `docs/src/developer/specs/index.rst` carries the toctree and introduces the collection. It
 states two things a reader cannot infer from any single document. First, that **these are
 living documents**, so what they read is current and a divergence from the code is a
@@ -230,6 +235,10 @@ the rule is that **no role names a section**, so that the one-string form is the
 (docs-spec-3-5)=
 ### 3.5 What Holds the Conventions
 
+> **Extended by a child specification.**
+> [`2026-10-30-decision-ledger-design.md`](2026-10-30-decision-ledger-design.md),
+> `ledger spec §…`, adds item 9, Ledger, to the list below (ledger spec §3.6).
+
 A convention that nothing checks decays. Renumbering a section strands every citation that
 named the old number, and the failure is invisible, because a stale citation is still a
 well-formed comment that still renders.
@@ -275,6 +284,12 @@ The suite asserts:
    specification's children are exactly those whose lineage names it as parent, in order
    of prefix. The index's namespace table lists the families in that order, each row at
    the depth its lineage gives it.
+9. **Ledger.** A specification in the ledger numbers its decisions state first, each with
+   its provenance, and ends with a Verification table of one row per decision
+   (ledger spec §3.6). A verified row's test exists and cites its decision, a retirement
+   agrees in both sections and names a replacement in force, and a roadmap with no row left
+   to deliver leaves no decision pending. A specification not yet in the ledger is listed,
+   with the row that brings it in, until that row lands.
 
 It also holds the publication of §3.1 in place: no specification
 carries `orphan: true`, the index's toctree lists every specification, and its namespace
@@ -300,6 +315,12 @@ local meaning, together with review, and nothing here should be read as claiming
 
 (docs-spec-3-6)=
 ### 3.6 Status, Dates and the Work That Closed It
+
+> **Extended by a child specification.**
+> [`2026-10-30-decision-ledger-design.md`](2026-10-30-decision-ledger-design.md),
+> `ledger spec §…`, gives a decision the states 🤝 Agreed and 🗄️ Retired, and its
+> verification ⏳ pending, ✅ verified, ✍️ signed off and 🗄️ retired, stated in
+> ledger spec §3.2, §3.3, §3.4 and not repeated here.
 
 A roadmap row that says `landed` records that something happened and throws away which
 thing. The change is in the history somewhere, with a number, a date, an argument in its

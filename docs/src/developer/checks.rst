@@ -254,7 +254,9 @@ Specification Conventions
 **The rule:** The design specifications keep their conventions: every numbered
 heading carries an anchor, a citation such as ``typing spec §3.2`` is written in
 plain text, carries its section sign and names an anchor that exists, and a status
-names the work that produced it.
+names the work that produced it. A specification in the ledger numbers its
+decisions state first, with their provenance, and ends with a Verification table
+of one row per decision.
 
 **Why:** The repository cites the specifications by section, in code comments,
 tests and documentation, so a reader following a citation has to land on the
@@ -267,7 +269,18 @@ documentation build shares to link every citation it renders. The build's own
 output is checked by :bash:`tests/docs/test_rendered_citations.py`.
 
 **When it fails:** The message names the file, line and citation or heading at
-fault.
+fault. For the ledger, it names the decision or row:
+
+- *decisions are numbered …*: number them 1 to N, appending a new one at the end.
+- *opens with no state*, *carries no date, user and pull*: open the entry with
+  ``🤝 Agreed`` and its date, ``{user}`` and ``{pull}``, as in the specifications
+  index's :ref:`gv-developer-specs-decisions`.
+- *the ledger lists …*: give the Verification table one row per decision, in order.
+- *is retired in one section and not the other*: retire it in both.
+- *does not cite decision N*: cite the decision in the test the row names, or name
+  the test that exercises it.
+- *is pending, and no row of the roadmap is left to deliver it*: verify it, sign
+  it off, or name the ``candidate`` row that will deliver it.
 
 **Declaring an exception:** None. Its ``NUMBERED_CEILING`` is not an exception:
 it is the trigger of row 5 of citation spec §9, and
