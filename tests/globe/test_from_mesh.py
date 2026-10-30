@@ -20,7 +20,7 @@ from geovista.common import (
     GV_FIELD_GLOBE_RENDER_RADIUS,
     GV_FIELD_RADIUS,
 )
-from geovista.globe import Globe
+from geovista.globe import Globe, _record_heights
 from geovista.pantry.meshes import lfric_orog
 
 LONS = np.linspace(-180, 180, 9)
@@ -176,3 +176,17 @@ def test_reading_leaves_the_mesh_unchanged(legacy, record):
     Globe.from_mesh(mesh)
     assert mesh == before
     assert list(mesh.field_data) == names
+
+
+def test_heights_are_never_read_as_a_globe():
+    """A mesh with heights lies at them, so its globe is read only as recorded."""
+    mesh = pv.Sphere(radius=1.0)
+    _record_heights(mesh, np.full(mesh.n_points, 1000.0))
+    assert Globe.from_mesh(mesh) is None
+
+    legacy = mesh.copy()
+    legacy.field_data[GV_FIELD_RADIUS] = np.array([2.0])
+    assert Globe.from_mesh(legacy) == Globe(render_radius=2)
+
+    Globe(render_radius=3).to_mesh(mesh)
+    assert Globe.from_mesh(mesh) == Globe(render_radius=3)

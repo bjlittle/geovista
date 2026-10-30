@@ -40,6 +40,11 @@ CASES = {
         ([0.0, 10.0], [0.0, 10.0]),
         {"data": [1.0, 2.0], "zlevel": [1, 2]},
     ),
+    "from_points_heights": (
+        Transform.from_points,
+        ([0.0, 10.0], [0.0, 10.0]),
+        {"data": [1.0, 2.0], "height": [10.0, -20.0]},
+    ),
     "from_unstructured": (
         Transform.from_unstructured,
         ([0.0, 10.0, 10.0, 0.0], [0.0, 0.0, 10.0, 10.0]),

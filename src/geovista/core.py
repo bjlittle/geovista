@@ -24,6 +24,7 @@ from .common import (
     CENTRAL_MERIDIAN,
     GV_CELL_IDS,
     GV_FIELD_ZSCALE,
+    GV_POINT_HEIGHT,
     GV_POINT_IDS,
     GV_REMESH_POINT_IDS,
     REMESH_JOIN,
@@ -42,7 +43,17 @@ from .common import (
 from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import from_wkt, projected
 from .filters import remesh
-from .globe import Globe, _records, _resolve
+from .globe import (
+    Globe,
+    _carried_heights,
+    _on_globe,
+    _placed,
+    _radii,
+    _record_heights,
+    _records,
+    _refuse_zlevel,
+    _resolve,
+)
 from .search import find_cell_neighbours
 
 if TYPE_CHECKING:
@@ -378,6 +389,9 @@ def combine(
     globe and one CRS first. :meth:`pyvista.DataSetFilters.merge` refuses none,
     and keeps the field data of the first mesh alone.
 
+    The heights of the meshes are combined whatever `data` is, with a height of 0
+    at each point of a mesh without them, as such a mesh is at sea level.
+
     Parameters
     ----------
     *meshes : iterable of :class:`~pyvista.PolyData`
@@ -514,6 +528,20 @@ def combine(
     faces = np.hstack(combined_faces)
     combined = pv.PolyData(points, faces=faces)
 
+    # the heights of every point, whatever the data asked for, and 0 for a mesh
+    # without them, which is at sea level (heights spec §4.1)
+    carried = [_carried_heights(mesh) for mesh in polys]
+    if any(heights is not None for heights in carried):
+        _record_heights(
+            combined,
+            np.hstack(
+                [
+                    np.zeros(mesh.n_points) if heights is None else heights
+                    for mesh, heights in zip(polys, carried, strict=True)
+                ]
+            ),
+        )
+
     def combine_data(
         names: set[str], attributes: Callable[[pv.PolyData], pv.DataSetAttributes]
     ) -> None:
@@ -537,6 +565,8 @@ def combine(
     if data:
         # attach any common combined data, by association, as a point, cell and
         # field array may share a name
+        # the heights are combined above, from every mesh
+        common_point_data.discard(GV_POINT_HEIGHT)
         combine_data(common_point_data, lambda mesh: mesh.point_data)
         combine_data(common_cell_data, lambda mesh: mesh.cell_data)
         for name in common_field_data:
@@ -584,7 +614,9 @@ def resize(
     """Change the globe of the spherical mesh, moving its points to it.
 
     The mesh returned records the globe, and carries no retired field, even when
-    no point moves.
+    no point moves. A mesh with heights is placed by them, at a radius of
+    ``s (R + V(h))`` for the vertical mapping ``V`` of the globe, and takes no
+    `zlevel` other than 0.
 
     Parameters
     ----------
@@ -626,6 +658,24 @@ def resize(
     # the globe given, else the one the mesh records, else the default
     globe = (Globe.from_mesh(mesh) or Globe()) if globe is None else _resolve(globe)
     radius = globe.render_radius
+
+    # a mesh with heights is placed by them, at the globe, and takes no z-level
+    # (heights spec §4.3)
+    if (heights := _carried_heights(mesh)) is not None:
+        _refuse_zlevel(zlevel)
+        # positions follow from the globe a mesh records exactly, so a new
+        # exaggeration moves the points however little it moves them, and from
+        # the heights, so points that disagree with them are rebuilt
+        if _records(mesh, globe) and _placed(mesh, globe, heights):
+            return mesh
+        lonlat = from_cartesian(mesh)
+        xyz = _on_globe(globe, lonlat[:, 0], lonlat[:, 1], heights)
+        if not inplace:
+            mesh = mesh.copy()
+        mesh.points = xyz
+        globe.to_mesh(mesh)
+        sanitize_legacy(mesh)
+        return mesh
 
     if zscale is None:
         if cloud and GV_FIELD_ZSCALE in mesh.field_data:
@@ -800,14 +850,27 @@ def slice_cells(
             mesh_split, meridian=meridian, rtol=rtol, atol=atol
         )
         remeshed.point_data.pop(carry, None)
+        # a mesh with heights lies at them, on the globe it records, and the
+        # radius between two points is not the radius of the height between
+        # them where the globe exaggerates heights above and below sea level by
+        # different factors, or a height is missing (heights spec §4.3)
+        globe = Globe.from_mesh(mesh) if _carried_heights(mesh) is not None else None
         for part in (remeshed_west, remeshed_east):
             if carry in part.point_data:
                 radii = np.asarray(part.point_data.pop(carry))
-                norms = np.linalg.norm(part.points, axis=1)
+                if (
+                    globe is not None
+                    and (heights := _carried_heights(part)) is not None
+                ):
+                    radii = _radii(globe, heights)
+                # VTK gives the points as float32, which are measured as float64,
+                # so each lies at its radius to the precision it is given in
+                points = np.asarray(part.points, dtype=np.float64)
+                norms = np.linalg.norm(points, axis=1)
                 scale = np.divide(
                     radii, norms, out=np.ones_like(norms), where=norms > 0
                 )
-                part.points = part.points * scale[:, np.newaxis]
+                part.points = points * scale[:, np.newaxis]
         meshes.extend([remeshed_west, remeshed_east])
         remeshed_ids = np.hstack([remeshed_ids, remeshed[GV_CELL_IDS]])
         if GV_REMESH_POINT_IDS not in result.point_data:

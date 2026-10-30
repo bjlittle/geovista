@@ -65,20 +65,25 @@ def main() -> None:
     # Load the sample data.
     sample = name_reykjanes()
 
+    # Exaggerate heights on the globe, so that the plume's levels, which are
+    # 250 m apart, are drawn far enough apart to see.
+    globe = gv.Globe(exaggeration=22.34)
+
     # Create the structured grid.
     grid = gv.Transform.to_structured_grid(
         sample.xs,
         sample.ys,
         sample.zs,
         data=sample.data,
+        globe=globe,
     )
 
     # Remove cells from the grid with NaN values then calculate the data range.
     grid = grid.threshold()
     clim = grid.get_data_range()
 
-    # Now render the plotter scene.
-    p = gv.GeoPlotter()
+    # Now render the plotter scene, on the same globe.
+    p = gv.GeoPlotter(globe=globe)
     p.add_base_layer(texture=gv.blue_marble(), zlevel=0)
     p.add_coastlines()
     p.add_graticule()

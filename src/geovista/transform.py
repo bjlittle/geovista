@@ -42,7 +42,16 @@ from .crs import (
     set_central_meridian,
     to_wkt,
 )
-from .globe import Globe, _resolve
+from .globe import (
+    Globe,
+    _carried_heights,
+    _mapped,
+    _on_globe,
+    _refuse_ellipsoidal,
+    _refuse_zlevel,
+    _resolve,
+    _subtended,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -143,6 +152,14 @@ def transform_mesh(
     also carries the `globe` and `zscale` that encode them, so a value given here
     becomes its own.
 
+    A mesh with heights is placed by them, and takes no `zlevel` other than 0,
+    nor a `tgt_crs` with an axis named "Ellipsoidal height", as its heights are
+    above mean sea level. On the sphere a point lies at a radius of
+    ``s (R + V(h))``, for the vertical mapping ``V`` of the `globe`. In any
+    other CRS it lies at ``z = V(h)``, in the length unit of its axes, or where
+    those are angular, at the angle ``V(h)`` subtends at ``R``, in their angular
+    unit.
+
     A mesh already in the target CRS is not transformed, so no point moves and
     its globe is unchanged. Use :func:`geovista.core.resize` to change its globe.
 
@@ -176,6 +193,12 @@ def transform_mesh(
     # the globe given, else the one the mesh records, else the default
     globe = (Globe.from_mesh(mesh) or Globe()) if globe is None else _resolve(globe)
     radius = globe.render_radius
+
+    # a mesh with heights is placed by them, and takes no z-level other than 0,
+    # nor a target whose height is above the ellipsoid (heights spec §4.4)
+    if _carried_heights(mesh) is not None:
+        _refuse_zlevel(zlevel)
+        _refuse_ellipsoidal(tgt_crs)
 
     if not transform_required:
         # a mesh returned carries only current fields, so a retired one is
@@ -216,6 +239,10 @@ def transform_mesh(
             # a cloud carries a z-level at each point, which zlevel adds to
             level = level + _carried_zlevels(mesh, xyz, src_crs)
 
+        # the heights of the points, which the seam cut interpolated at any
+        # point it added
+        heights = _carried_heights(mesh)
+
         src_xs, src_ys = xyz[:, 0], xyz[:, 1]
 
         if projection_crs is not None:
@@ -234,9 +261,12 @@ def transform_mesh(
             mesh = mesh.copy(deep=True)
 
         if tgt_crs == WGS84:
-            xs, ys, zs = _to_cartesian(
-                xs, ys, radius=radius, zlevel=level, zscale=zscale, stacked=False
-            )
+            if heights is None:
+                xs, ys, zs = _to_cartesian(
+                    xs, ys, radius=radius, zlevel=level, zscale=zscale, stacked=False
+                )
+            else:
+                xs, ys, zs = _on_globe(globe, xs, ys, heights).T
 
         # pyvista 0.49 annotates "pyvista_ndarray.__setitem__" to refuse the tuple
         # index it accepts at runtime, so the points are set through a cast
@@ -247,12 +277,16 @@ def transform_mesh(
         # zlevel spec §3.1 -- a planar target offsets z by the level times the
         # radius of the Earth in its own units, whereas on the sphere the level
         # is already in the radius that to_cartesian applied
-        if tgt_crs != WGS84 and (np.any(level) or cloud):
-            zs = level * zscale * _earth_radius(tgt_crs)
+        if tgt_crs != WGS84:
+            if heights is not None:
+                # heights spec §4.3 -- a height is placed at its own length
+                zs = _heights_z(globe, heights, tgt_crs)
+            elif np.any(level) or cloud:
+                zs = level * zscale * _earth_radius(tgt_crs)
 
         points[:, 2] = zs
 
-        if cloud:
+        if cloud and heights is None:
             _record_zlevels(mesh, level, tgt_crs, zscale=zscale)
 
         # TODO @bjlittle: Check whether to clean other field_data metadata.
@@ -1271,3 +1305,54 @@ def _earth_radius(crs: pyproj.CRS) -> float:
     else:
         radius = ellipsoid.semi_major_metre / factor
     return radius
+
+
+def _heights_z(
+    globe: Globe, heights: ArrayLike, crs: pyproj.CRS, /
+) -> NDArray[np.float64]:
+    """Determine where heights lie above a map, in the units of its CRS.
+
+    A height lies at its own length mapped by the globe, in the length unit of
+    the axes of the CRS, or where they are angular, at the angle it subtends at
+    the globe's radius, in their angular unit (heights spec §4.3).
+
+    Parameters
+    ----------
+    globe : Globe
+        The globe, whose vertical mapping exaggerates the heights.
+    heights : ArrayLike
+        The heights, in metres, NaN where one is missing.
+    crs : :class:`~pyproj.crs.CRS`
+        The CRS of the map.
+
+    Returns
+    -------
+    ndarray
+        The z-value of each point, with a missing height at 0.
+
+    Raises
+    ------
+    ValueError
+        If the CRS has no axis unit.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    result: NDArray[np.float64]
+
+    if crs.is_geographic:
+        # the angle in radians, in the angular unit the coordinates come back in
+        result = _subtended(globe, heights) * _earth_radius(crs)
+    else:
+        factor = crs.axis_info[0].unit_conversion_factor if crs.axis_info else None
+        if not factor:
+            emsg = (
+                f"Cannot place heights in the units of {crs.name!r}, which has no "
+                "axis unit."
+            )
+            raise ValueError(emsg)
+        result = _mapped(globe, heights) / factor
+
+    return result

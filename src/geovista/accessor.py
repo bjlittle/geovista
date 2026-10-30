@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING, NoReturn
 import pyvista as pv
 
 if TYPE_CHECKING:
+    import numpy as np
     from pyproj.crs import CRS
 
     from .globe import Globe
@@ -178,6 +179,98 @@ class GeoVistaAccessor:
             "mesh.gv.crs cannot be set, since a CRS describes where a mesh's "
             "points are. Use geovista.transform.transform_mesh to move them "
             "and record it."
+        )
+        raise AttributeError(emsg)
+
+    @property
+    def height(self) -> np.ndarray | None:
+        """The height of each point of the mesh.
+
+        Returns
+        -------
+        ndarray or None
+            The heights, in metres above mean sea level, NaN where one is
+            missing, as a float64 array that cannot be written. ``None`` for a
+            mesh without heights, which is at sea level.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        from .globe import _carried_heights  # noqa: PLC0415
+
+        heights = _carried_heights(self._mesh)
+        if heights is None:
+            return None
+        result = heights.copy()
+        result.setflags(write=False)
+        return result
+
+    @height.setter
+    def height(self, _value: object) -> NoReturn:
+        """Refuse to set the heights, which say where the points are drawn.
+
+        Parameters
+        ----------
+        _value : object
+            The heights, which are refused.
+
+        Raises
+        ------
+        AttributeError
+            Always.
+
+        """
+        emsg = (
+            "mesh.gv.height cannot be set, since heights say where a mesh's "
+            "points are drawn. Give them where the mesh is built, as "
+            "geovista.bridge.Transform.from_1d(..., height=...)."
+        )
+        raise AttributeError(emsg)
+
+    @property
+    def depth(self) -> np.ndarray | None:
+        """The depth of each point of the mesh, the negation of its height.
+
+        Returns
+        -------
+        ndarray or None
+            The depths, in metres below mean sea level, so that a point on land
+            has a negative depth, NaN where one is missing, as a float64 array
+            that cannot be written. ``None`` for a mesh without heights.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        heights = self.height
+        if heights is None:
+            return None
+        result = -heights
+        result.setflags(write=False)
+        return result
+
+    @depth.setter
+    def depth(self, _value: object) -> NoReturn:
+        """Refuse to set the depths, which say where the points are drawn.
+
+        Parameters
+        ----------
+        _value : object
+            The depths, which are refused.
+
+        Raises
+        ------
+        AttributeError
+            Always.
+
+        """
+        emsg = (
+            "mesh.gv.depth cannot be set, since depths say where a mesh's "
+            "points are drawn. Give them where the mesh is built, as "
+            "geovista.bridge.Transform.from_1d(..., depth=...)."
         )
         raise AttributeError(emsg)
 
