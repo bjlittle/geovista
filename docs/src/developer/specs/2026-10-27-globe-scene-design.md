@@ -405,8 +405,8 @@ since a z-level now lifts its lines from the render radius (§4.2).
 - **Refusing a mesh with `gvRadius` and no globe.** Rejected, by §2 decision 4. A plain
   mesh with no record at all must be read anyway, so a mesh with more information can be
   read too.
-- **Translating retired fields in place whenever a mesh is read.** Rejected, by §2
-  decision 5: `geovista` would change a caller's mesh it was only asked to read.
+- **Translating retired fields in place whenever a mesh is read.** Rejected, by
+  §2 decision 5: `geovista` would change a caller's mesh it was only asked to read.
 - **A warning whenever a retired field is read.** Not now (§4.5). The cut-off of §8 item 1
   may add one.
 - **A globe's radius as a float in metres.** Rejected, by §2 decision 8. A public value
