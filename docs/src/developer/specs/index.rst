@@ -21,31 +21,39 @@ a page, a specification or the API reference, it is a link to the section it nam
 
 .. list-table::
     :header-rows: 1
-    :widths: 25 75
+    :widths: 35 65
 
     * - Citation
       - Document
     * - ``checks spec §…``
       - :doc:`2026-10-23-repository-checks-design`
-    * - ``citation spec §…``
-      - :doc:`2026-10-26-citation-links-design`
     * - ``crs spec §…``
       - :doc:`2026-10-23-globe-first-crs-design`
+    * - └─ ``globe spec §…``
+      - :doc:`2026-10-26-globe-heights-layers-design`
+    * - |indent| └─ ``heights spec §…``
+      - :doc:`2026-10-28-heights-as-data-design`
+    * - |indent| └─ ``scene spec §…``
+      - :doc:`2026-10-27-globe-scene-design`
     * - ``docs spec §…``
       - :doc:`2026-10-06-published-specs-design`
-    * - ``globe spec §…``
-      - :doc:`2026-10-26-globe-heights-layers-design`
-    * - ``heights spec §…``
-      - :doc:`2026-10-28-heights-as-data-design`
-    * - ``scene spec §…``
-      - :doc:`2026-10-27-globe-scene-design`
+    * - └─ ``citation spec §…``
+      - :doc:`2026-10-26-citation-links-design`
     * - ``typing spec §…``
       - :doc:`2026-10-06-type-coverage-design`
     * - ``zlevel spec §…``
       - :doc:`2026-10-08-planar-zlevel-design`
 
-A new specification chooses a prefix unique across this collection, declares it
-in its own header banner, and joins the table above and the toctree.
+A specification that extends another sits beneath it, and the specifications
+of a family are listed root first, each child under its parent and siblings in
+the order of their prefixes. Every specification names its family in its own
+header banner: its **Lineage**, from the root of its family down to itself, and
+its **Children**, the specifications that directly extend it. docs spec §3.7
+sets out how a new specification takes its place in the table, and in the
+banners of its family.
+
+.. |indent| unicode:: 0xA0 0xA0 0xA0
+   :trim:
 
 
 .. _gv-developer-specs-statuses:

@@ -1,4 +1,4 @@
-# geovista Design Specifications — Publication and Conventions
+# Publication and Conventions for Specifications
 
 ```{readingtime}
 ```
@@ -17,8 +17,8 @@
   `docs/src/developer/plans/`
 - **Scope:** how specifications are published and cited. What any individual specification
   says is its own business
-- **Parent spec:** none. typing spec §1 records that it inherited
-  nothing because the conventions were not written down anywhere. This is that document
+- **Lineage:** **docs spec**
+- **Children:** [citation spec](2026-10-26-citation-links-design.md)
 - **Published:** in the specifications index, since change 1 of §4
   took `orphan: true` off this document and the type coverage specification together
 
@@ -142,7 +142,7 @@ were two:
 
 Each specification declares its own prefix in its header banner. A new specification
 chooses one unique across the collection, states it there, and adds it to the index's
-table.
+table, in the place §3.7 gives it.
 
 The prefix is load-bearing rather than decorative. `sphinx` labels are global, so
 `docs-spec-3-2` and `typing-spec-3-2` are distinct anchors naming unrelated sections, and a
@@ -264,6 +264,11 @@ The suite asserts:
    editing it: a row goes stale by the work landing elsewhere, so the check has to read the
    column rather than the diff. Whether the reference is real is not this suite's question,
    since answering it means asking GitHub; §3.6 says what answers it.
+8. **Family.** The **Lineage** and **Children** lines of §3.7 agree
+   across the collection: a lineage extends its parent's by one step, and a
+   specification's children are exactly those whose lineage names it as parent, in order
+   of prefix. The index's namespace table lists the families in that order, each row at
+   the depth its lineage gives it.
 
 It also holds the publication of §3.1 in place: no specification
 carries `orphan: true`, the index's toctree lists every specification, and its namespace
@@ -353,6 +358,43 @@ from the row to
 measurement into the specification. The specification stays the design; the references
 carry the evidence.
 
+(docs-spec-3-7)=
+### 3.7 Families and Lineage
+
+A specification that extends another is its child, and the two belong to one family. The
+globe-first CRS design is extended by the globe, heights and layers design, which two more
+extend in turn, so a reader working in any one of them moves between four documents. In
+an alphabetical index the root sat apart from the other three, and nothing in the table
+said that the four were related.
+The family is recorded in each banner and in the index, and both are written by hand.
+
+Every banner carries two lines for it. The **Lineage** line links each ancestor, root
+first, separated by `›`, and ends with the specification's own prefix in bold. A root's
+lineage is itself alone, as in `**crs spec**`, and a child's extends its parent's by one
+step, as in `[crs spec](…) › [globe spec](…) › **scene spec**`. The **Children** line
+links each specification that directly extends this one, separated by commas and in the
+order of their prefixes, or reads `none`. A grandchild is reached through its parent and
+is not listed. A child adds an **Extends** line beneath the two, naming the sections of its
+parent that it extends and what it inherits unchanged. These three lines replaced the
+single **Parent spec** line, which named the parent but none of the generations around
+it.
+
+The namespace table of §3.2 lists the roots in order of prefix, each child directly under
+its parent, and siblings in order of prefix. A child's citation opens with `└─`, and each
+generation below the first puts an `|indent|` in front of that. The index defines
+`|indent|` as three non-breaking spaces, since a table cell drops leading spaces, and that
+width sets each branch under the prefix of the row above. The toctree, and the sidebar
+built from it, stays in date order.
+
+A specification is titled for its topic, as in `Globe on the Scene Specification`,
+without the project's name or the word design. This document is the exception, as
+`Publication and Conventions for Specifications`, because its topic is the collection.
+
+So a new specification makes four edits besides its own text: its **Lineage**,
+**Children** and, as a child, **Extends** lines; its parent's **Children** line; its row
+in the table; and its toctree entry. Item 8 of §3.5 checks the first three against each
+other, so a family drawn wrongly in any one of them fails the suite.
+
 (docs-spec-4)=
 ## 4. Roadmap
 
@@ -369,6 +411,7 @@ carry the evidence.
 | 3 | Citation integrity hook | ✅ landed (2026-10-07, {pull}`2573`) |
 | 4 | Rendered-output gate | ✅ landed (2026-10-27, {pull}`2738`) |
 | 5 | GitHub reference roles and hardcoded-link detection | candidate |
+| 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
@@ -381,6 +424,11 @@ Change 1 created `docs/src/developer/specs/index.rst`, added `developer/plans/**
 specifications, added the section sign to the seven existing citations, and landed the
 test of §3.5. Two of this document's rules changed on the way, and
 §8 records both.
+
+Change 6 replaced the **Parent spec** line of every banner with the family lines of
+§3.7, grouped the index's table by family, retitled every
+specification for its topic, and added item 8 of §3.5 to hold the
+families together.
 
 Rows 2 to 5 are candidates rather than scheduled work. When this specification was written
 `geovista` had seven citations in one namespace, against `tephpy`'s 1,096 across nineteen,
@@ -442,7 +490,7 @@ observed:
 ## 6. Testing
 
 `tests/test_spec_conventions.py` holds §3.1 to
-§3.6, and the roadmap triggers of §4.
+§3.7, and the roadmap triggers of §4.
 
 It sits in `tests/` rather than `tests/docs/` because it reads source files and needs no
 built artefact, which puts it beside `tests/test_ci_typing.py`. That is the right
@@ -464,7 +512,8 @@ asserts that the parser it borrows still finds the references in the real specif
 ## 7. Scope
 
 In scope: where specifications and plans live, how a reader reaches them, how a section is
-addressed, how a citation is written, and what a roadmap row commits to.
+addressed, how a citation is written, what a roadmap row commits to, and how a
+specification records its family and is titled.
 
 Out of scope: what any individual specification says; the structure of the developer guide
 beyond one card and one toctree entry; the Diátaxis quadrants, which are for users where
