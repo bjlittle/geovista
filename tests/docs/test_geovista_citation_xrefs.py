@@ -427,7 +427,7 @@ def test_setup_registers_every_handler_the_transform_relies_on(docs):
 
     assert registrar.connected["builder-inited"] is docs.cx._build_registry
     assert registrar.connected["env-get-outdated"] is docs.cx._outdated
-    assert registrar.transforms == [docs.cx.CitationTransform]
+    assert registrar.transforms == [docs.cx.DecisionTargets, docs.cx.CitationTransform]
     assert metadata["env_version"]
     assert metadata["parallel_read_safe"] is True
     assert metadata["parallel_write_safe"] is True
@@ -532,3 +532,52 @@ def test_a_build_warns_of_a_citation_naming_no_anchor(tmp_path):
 
     assert "undefined label" in warning
     assert "alpha-spec-9" in warning
+
+
+#: A specification whose decisions are numbered, for its anchors to be generated.
+DECIDED = (
+    "# Alpha\n\n(alpha-spec-1)=\n## 1. One\n\nText.\n\n"
+    "(alpha-spec-2)=\n## 2. Decisions\n\n1. **One.** First.\n2. **Two.** Second.\n"
+)
+
+
+def decided_site(tmp_path: Path, cited: str) -> Path:
+    """Write a site of one specification with decisions, and a page citing ``cited``."""
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    (src / "developer" / "specs" / "2026-01-01-alpha-design.md").write_text(
+        DECIDED, encoding="utf-8"
+    )
+    toctree = "   page\n   developer/specs/2026-01-01-alpha-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(f"Page\n====\n\nSee {cited}.\n", encoding="utf-8")
+    return src
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_links_a_decision_citation_to_its_decision(tmp_path):
+    """A decision's anchor is generated (ledger spec §2 decision 1), so a link lands."""
+    src = decided_site(tmp_path, f"alpha spec {SECTION}2 decision 2")
+
+    html, warning = build(src, tmp_path)
+
+    page = (html / "page.html").read_text(encoding="utf-8")
+    alpha = (html / "developer/specs/2026-01-01-alpha-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'alpha-design.html#alpha-spec-2-decision-2"' in page
+    assert '<li id="alpha-spec-2-decision-2"' in alpha
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_warns_of_a_citation_naming_no_decision(tmp_path):
+    """A citation of a decision that does not exist fails a build run as CI runs it."""
+    src = decided_site(tmp_path, f"alpha spec {SECTION}2 decision 9")
+
+    _, warning = build(src, tmp_path)
+
+    assert "undefined label" in warning
+    assert "alpha-spec-2-decision-9" in warning
