@@ -332,12 +332,14 @@ def test_specifications(script):
     }
 
 
-def test_the_workflow_runs_when_anything_the_script_reads_changes(script):
-    """Test the workflow's paths filter names every file the script loads.
+def test_the_workflow_watches_everything_the_script_reads(script):
+    """Test the workflow re-runs on a label, and its job watches what the script reads.
 
-    The script reads statuses through the conventions test, which reads them
-    through the citation grammar, so a pull request changing only the grammar
-    changes the check, and must run it.
+    A required check that never reports holds a pull request for ever, so the
+    workflow runs on every pull request and its job decides, from what changed,
+    whether to check (ledger spec §3.7). It watches every file the script loads:
+    the script reads statuses through the conventions test, which reads them
+    through the citation grammar, so a change to either changes the check.
 
     """
     root = SCRIPT.parents[2]
@@ -347,8 +349,8 @@ def test_the_workflow_runs_when_anything_the_script_reads_changes(script):
         )
     )
     # YAML 1.1 reads the bare key "on" as the boolean True
-    triggers = workflow.get("on", workflow.get(True))
-    filtered = set(triggers["pull_request"]["paths"])
+    trigger = workflow.get("on", workflow.get(True))["pull_request"]
+    watched = set(workflow["jobs"]["references"]["env"]["WATCHED"].split())
     loaded = {
         SCRIPT,
         SCRIPT.parent / "breadcrumb.py",
@@ -356,13 +358,21 @@ def test_the_workflow_runs_when_anything_the_script_reads_changes(script):
         script.conventions.GRAMMAR,
     }
 
+    assert "paths" not in trigger
+    assert set(trigger["types"]) == {
+        "opened",
+        "synchronize",
+        "reopened",
+        "labeled",
+        "unlabeled",
+    }
     missing = sorted(
         path.relative_to(root).as_posix()
         for path in loaded
-        if path.relative_to(root).as_posix() not in filtered
+        if path.relative_to(root).as_posix() not in watched
     )
-
-    assert not missing, f"ci-spec-status.yml does not run when these change: {missing}"
+    assert not missing, f"ci-spec-status.yml does not watch: {missing}"
+    assert "docs/src/developer/specs/**" in watched
 
 
 @pytest.fixture

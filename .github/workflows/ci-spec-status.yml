@@ -6,14 +6,12 @@
 name: ci-spec-status
 
 on:
+  # no paths filter: the references job is a required check, and a required
+  # check that never reports holds a pull request for ever, so the job decides
+  # from what changed instead (ledger spec §3.7). A label re-runs it, as adding
+  # "signed-off" is what a sign-off waits on.
   pull_request:
-    paths:
-      - ".github/scripts/breadcrumb.py"
-      - ".github/scripts/check_status_references.py"
-      - ".github/workflows/ci-spec-status.yml"
-      - "docs/src/_ext/geovista_citations.py"
-      - "docs/src/developer/specs/**"
-      - "tests/test_spec_conventions.py"
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
   schedule:
     # every day @ 00h20
@@ -38,6 +36,16 @@ jobs:
     name: "status references"
     runs-on: "ubuntu-latest"
 
+    env:
+      # the files whose change changes this check, as globs
+      WATCHED: |
+        .github/scripts/breadcrumb.py
+        .github/scripts/check_status_references.py
+        .github/workflows/ci-spec-status.yml
+        docs/src/_ext/geovista_citations.py
+        docs/src/developer/specs/**
+        tests/test_spec_conventions.py
+
     permissions:
       contents: read
       issues: read
@@ -46,15 +54,37 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
+      - name: "changed"
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -o errexit
+          git diff --name-only "${BASE_SHA}...${HEAD_SHA}" > changed.txt
+          python3 - >> "${GITHUB_OUTPUT}" <<'PY'
+          import fnmatch
+          import os
+          from pathlib import Path
+
+          watched = os.environ["WATCHED"].split()
+          changed = Path("changed.txt").read_text().split()
+          hit = any(fnmatch.fnmatch(path, glob) for path in changed for glob in watched)
+          print(f"watched={'true' if hit else 'false'}")
+          PY
+
       - name: "setup pixi"
+        if: ${{ steps.changed.outputs.watched == 'true' }}
         uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94
         with:
           environments: "test"
           frozen: true
 
       - name: "check status references"
+        if: ${{ steps.changed.outputs.watched == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
