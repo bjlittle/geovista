@@ -142,9 +142,6 @@ type Resolver = Callable[[str, int], Work | None]
 #: The label a reviewer adds to sign off the decisions a pull request records.
 SIGN_OFF = "signed-off"
 
-#: A reviewer, as a sign-off names them.
-REVIEWER = re.compile(r"\{user\}`(?P<login>[^`]+)`")
-
 #: The next page of a paginated answer, from its Link header.
 NEXT = re.compile(r'<(?P<url>[^>]+)>;\s*rel="next"')
 
@@ -432,7 +429,7 @@ def _signed(
     Its date is checked even against the pull request being checked: the label's
     date is known before the merge, and the run the label sets off can catch it.
     """
-    named = REVIEWER.search(evidence)
+    named = conventions.USER.search(evidence)
     reviewer = named["login"] if named else "no reviewer"
     events = [
         event

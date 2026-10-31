@@ -2038,7 +2038,7 @@ UNLEDGERED = {
 }
 
 #: The roles a provenance carries.
-USER = re.compile(r"\{user\}`[^`]+`")
+USER = re.compile(r"\{user\}`(?P<login>[^`]+)`")
 PULL = re.compile(r"\{pull\}`\d+`")
 
 

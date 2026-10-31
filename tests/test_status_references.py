@@ -685,3 +685,98 @@ def test_the_changed_step_reads_every_filename(tmp_path, name, expected):
     subprocess.run(["bash", "-c", run], cwd=tmp_path, env=env, check=True)  # noqa: S603, S607
 
     assert output.read_text(encoding="utf-8").strip() == f"watched={expected}"
+
+
+RETIRED_ROW = "\N{FILE CABINET}\N{VARIATION SELECTOR-16} retired"
+
+
+def test_a_retired_row_merged_on_its_date(script, record, labels):
+    """A retired row is dated by its pull request's merge, as a verified row is."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(f"{RETIRED_ROW} (2026-10-01, {{pull}}`10`) | replaced by nothing",),
+    )
+
+    assert ledger_faults(script, record, labels, text) == [
+        "retired on 2026-10-01, but {pull}`10` merged on 2026-10-07"
+    ]
+
+
+def test_a_retired_decision_cites_both_its_pulls(script, record, labels):
+    """A retirement's pull request and its original agreement's are both checked."""
+    retired = "**\N{FILE CABINET}\N{VARIATION SELECTOR-16} Retired**"
+    carried = "2026-10-09, {user}`bjlittle`, {pull}`11`; agreed 2026-10-07, {pull}`12`"
+    text = ledger_spec().replace(
+        "## 2. Decisions\n\n",
+        f"## 2. Decisions\n\n1. {retired} ({carried}) — **A decision.** Reasoning.\n",
+    )
+
+    assert ledger_faults(script, record, labels, text) == ["{pull}`12` has not merged"]
+
+
+def test_the_labeller_asks_once_per_pull(script, monkeypatch):
+    """Each pull request's events are asked for once, however often it is cited."""
+    import io  # noqa: PLC0415
+    import json  # noqa: PLC0415
+
+    asked = []
+
+    class Response(io.BytesIO):
+        headers: dict[str, str] = {}  # noqa: RUF012
+
+        def __enter__(self) -> Self:
+            return self
+
+        def __exit__(self, *_: object) -> None:
+            return None
+
+    def urlopen(request: object, timeout: float) -> Response:  # noqa: ARG001
+        asked.append(request.full_url)
+        return Response(json.dumps([]).encode())
+
+    monkeypatch.setattr(script.urllib.request, "urlopen", urlopen)
+    labelled = script.labeller()
+    labelled("bjlittle/geovista", 1)
+    labelled("bjlittle/geovista", 1)
+    labelled("bjlittle/geovista", 2)
+
+    assert len(asked) == 2
+
+
+def test_the_changed_step_sees_a_specification_moved_away(tmp_path):
+    """A specification moved out of the collection still changes the check."""
+    import os  # noqa: PLC0415
+    import subprocess  # noqa: PLC0415
+
+    def git(*args: str) -> str:
+        done = subprocess.run(  # noqa: S603
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],  # noqa: S607
+            cwd=tmp_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return done.stdout.strip()
+
+    git("init", "-q")
+    spec = tmp_path / "docs" / "src" / "developer" / "specs" / "a-design.md"
+    spec.parent.mkdir(parents=True)
+    spec.write_text("A specification.\n" * 20, encoding="utf-8")
+    git("add", "--all")
+    git("commit", "-q", "-m", "base")
+    base = git("rev-parse", "HEAD")
+    git("mv", "docs/src/developer/specs/a-design.md", "a-design.md")
+    git("commit", "-q", "-m", "head")
+    watched, run = changed_step()
+    output = tmp_path / "output.txt"
+    env = {
+        **os.environ,
+        "BASE_SHA": base,
+        "HEAD_SHA": git("rev-parse", "HEAD"),
+        "WATCHED": watched,
+        "GITHUB_OUTPUT": str(output),
+    }
+
+    subprocess.run(["bash", "-c", run], cwd=tmp_path, env=env, check=True)  # noqa: S603, S607
+
+    assert output.read_text(encoding="utf-8").strip() == "watched=true"
