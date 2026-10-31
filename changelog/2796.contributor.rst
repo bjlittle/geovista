@@ -1,0 +1,5 @@
+Brought the type coverage, planar z-level and repository checks specifications
+into the decision ledger. Each of their decisions is now numbered, with who
+agreed it and when, and each specification ends with a Verification table. Twelve
+of the sixteen decisions are verified by tests that now cite them, and the other
+four are signed off. (:user:`claude`)
