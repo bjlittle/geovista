@@ -19,7 +19,7 @@ from datetime import date
 import importlib.util
 from pathlib import Path
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
 import pytest
 import yaml
@@ -57,6 +57,8 @@ def record(script):
         (REPOSITORY, 11): work("pull", "merged", "2026-10-09"),
         (REPOSITORY, 12): work("pull", "open"),
         (REPOSITORY, 13): work("pull", "closed", "2026-10-05"),
+        (REPOSITORY, 14): work("pull", "merged", "2026-10-06"),
+        (REPOSITORY, 15): work("pull", "merged", "2026-10-07"),
         (REPOSITORY, 20): work("issue", "open"),
         (REPOSITORY, 21): work("issue", "closed", "2026-10-08"),
         ("scientific-python/lazy-loader", 181): work("issue", "open"),
@@ -287,7 +289,7 @@ def test_impossible_date(script, record, status):
 
 def test_main_findings(script, capsys):
     """Test the script exits with one when a status does not hold."""
-    assert script.main([], resolve=lambda _repository, _number: None) == 1
+    assert script.main([], resolve=lambda _r, _n: None, labelled=lambda _r, _n: []) == 1
     out = capsys.readouterr().out
     assert "does not exist" in out
     assert "checks.html#gv-developer-checks-spec-statuses" in out
@@ -305,7 +307,7 @@ def test_main_unexpected(script, capsys):
         message = "unexpected"
         raise RuntimeError(message)
 
-    assert script.main([], resolve=broken) == 2
+    assert script.main([], resolve=broken, labelled=lambda _r, _n: []) == 2
     captured = capsys.readouterr()
     assert "could not finish checking" in captured.err
     assert "gv-developer-checks-" not in captured.out + captured.err
@@ -361,3 +363,195 @@ def test_the_workflow_runs_when_anything_the_script_reads_changes(script):
     )
 
     assert not missing, f"ci-spec-status.yml does not run when these change: {missing}"
+
+
+@pytest.fixture
+def labels(script):
+    """Provide the label events GitHub would report, keyed by pull request number."""
+
+    def event(action: str, login: str | None, when: str) -> object:
+        return script.Labelling(action, "signed-off", login, date.fromisoformat(when))
+
+    known = {
+        10: [event("labeled", "bjlittle", "2026-10-07")],
+        11: [event("labeled", "someone", "2026-10-09")],
+        13: [
+            event("labeled", "bjlittle", "2026-10-05"),
+            event("unlabeled", "bjlittle", "2026-10-06"),
+        ],
+        14: [
+            event("labeled", "bjlittle", "2026-10-05"),
+            event("unlabeled", "someone", "2026-10-06"),
+            event("labeled", "someone", "2026-10-06"),
+        ],
+        15: [event("labeled", None, "2026-10-07")],
+    }
+    return lambda _repository, number: known.get(number, [])
+
+
+def ledger_spec(entries: tuple[str, ...] = (), rows: tuple[str, ...] = ()) -> str:
+    """Write a specification holding the decisions and Verification rows given."""
+    agreed = "**\N{HANDSHAKE} Agreed**"
+    lines = ["# A specification", "", "## 2. Decisions", ""]
+    lines += [
+        f"{n}. {agreed} ({carried}) — **A decision.** Its reasoning."
+        for n, carried in enumerate(entries, 1)
+    ]
+    lines += ["", "## 10. Verification", "", "| Decision | Status | Evidence |"]
+    lines += ["|---|---|---|", *(f"| {n} | {row} |" for n, row in enumerate(rows, 1))]
+    return "\n".join(lines) + "\n"
+
+
+def ledger_faults(script, record, labels, text, **kwargs: object) -> list[str]:
+    """Check a specification's ledger, reporting each fault without its location."""
+    found = script.check_ledger(Path("x.md"), text, record, labels, **kwargs)
+    return [problem.split(": ", maxsplit=1)[1] for problem in found]
+
+
+VERIFIED = "\N{WHITE HEAVY CHECK MARK} verified"
+SIGNED_OFF = "\N{WRITING HAND}\N{VARIATION SELECTOR-16} signed off"
+
+
+def test_a_decision_cites_a_merged_pull(script, record, labels):
+    """A decision's pull request has merged, or is the one being checked."""
+    text = ledger_spec(
+        entries=(
+            "2026-10-07, {user}`bjlittle`, {pull}`10`",
+            "2026-10-07, {user}`bjlittle`, {pull}`12`",
+            "2026-10-07, {user}`bjlittle`, {pull}`99`",
+        )
+    )
+
+    assert ledger_faults(script, record, labels, text) == [
+        "{pull}`12` has not merged",
+        "{pull}`99` does not exist",
+    ]
+    assert ledger_faults(script, record, labels, text, pull=12) == [
+        "{pull}`99` does not exist"
+    ]
+
+
+def test_a_verified_row_merged_on_its_date(script, record, labels):
+    """A verified row is dated by its pull request's merge, as a landed row is."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",) * 2,
+        rows=(
+            f"{VERIFIED} (2026-10-07, {{pull}}`10`) | `tests/test_x.py`",
+            f"{VERIFIED} (2026-10-01, {{pull}}`10`) | `tests/test_x.py`",
+        ),
+    )
+
+    assert ledger_faults(script, record, labels, text) == [
+        "verified on 2026-10-01, but {pull}`10` merged on 2026-10-07"
+    ]
+
+
+def test_a_sign_off_is_the_reviewers_label(script, record, labels):
+    """Ledger spec §2 decision 7: the reviewer named added the label, still there."""
+    rows = [
+        f"{SIGNED_OFF} (2026-10-07, {{user}}`bjlittle`, {{pull}}`{n}`) | Checked."
+        for n in (10, 11, 12, 13, 14)
+    ]
+    entries = ("2026-10-07, {user}`bjlittle`, {pull}`10`",) * len(rows)
+    text = ledger_spec(entries=entries, rows=tuple(rows))
+
+    assert ledger_faults(script, record, labels, text, pull=12) == [
+        "the signed-off label on {pull}`11` was added by someone, not bjlittle",
+        "{pull}`12` carries no signed-off label",
+        "{pull}`13` carries no signed-off label",
+        "the signed-off label on {pull}`14` was added by someone, not bjlittle",
+    ]
+
+
+def test_a_sign_off_dated_by_its_label(script, record, labels):
+    """A sign-off's date is within a day of the reviewer's adding of the label."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(
+            f"{SIGNED_OFF} (2026-10-01, {{user}}`bjlittle`, {{pull}}`10`) | Checked.",
+        ),
+    )
+
+    assert ledger_faults(script, record, labels, text) == [
+        "signed off on 2026-10-01, but the label was added on 2026-10-07"
+    ]
+
+
+def test_a_label_event_with_no_actor_is_no_one(script, record, labels):
+    """A deleted account's label is no one's sign-off, and never a crash."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(
+            f"{SIGNED_OFF} (2026-10-07, {{user}}`bjlittle`, {{pull}}`15`) | Checked.",
+        ),
+    )
+
+    assert ledger_faults(script, record, labels, text) == [
+        "the signed-off label on {pull}`15` was added by no one, not bjlittle"
+    ]
+
+
+def test_the_labeller_reads_every_page(script, monkeypatch):
+    """A pull request with more events than a page holds is read to its end."""
+    import io  # noqa: PLC0415
+    import json  # noqa: PLC0415
+
+    pages = {
+        "1": (
+            [
+                {
+                    "event": "labeled",
+                    "label": {"name": "signed-off"},
+                    "actor": {"login": "bjlittle"},
+                    "created_at": "2026-10-05T10:00:00Z",
+                }
+            ],
+            '<https://api.github.com/x?page=2>; rel="next"',
+        ),
+        "2": (
+            [
+                {
+                    "event": "unlabeled",
+                    "label": {"name": "signed-off"},
+                    "actor": {"login": "bjlittle"},
+                    "created_at": "2026-10-06T10:00:00Z",
+                },
+                {"event": "commented"},
+            ],
+            None,
+        ),
+    }
+
+    class Response(io.BytesIO):
+        def __init__(self, body: object, link: str | None) -> None:
+            super().__init__(json.dumps(body).encode())
+            self.headers = {"Link": link} if link else {}
+
+        def __enter__(self) -> Self:
+            return self
+
+        def __exit__(self, *_: object) -> None:
+            return None
+
+    def urlopen(request: object, timeout: float) -> Response:  # noqa: ARG001
+        page = "2" if "page=2" in request.full_url else "1"
+        return Response(*pages[page])
+
+    monkeypatch.setattr(script.urllib.request, "urlopen", urlopen)
+    events = script.labeller()("bjlittle/geovista", 1)
+
+    assert [(e.action, e.login, str(e.when)) for e in events] == [
+        ("labeled", "bjlittle", "2026-10-05"),
+        ("unlabeled", "bjlittle", "2026-10-06"),
+    ]
+
+
+def test_main_checks_the_ledger(script, labels, capsys):
+    """The script checks every ledger as it checks every status."""
+    merged = script.Work("pull", "merged", date(2026, 10, 31))
+
+    def resolve(_repository: str, _number: int) -> object:
+        return merged
+
+    assert script.main(["--pull", "12"], resolve=resolve, labelled=labels) == 1
+    assert "signed-off label" in capsys.readouterr().out
