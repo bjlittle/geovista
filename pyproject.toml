@@ -721,6 +721,11 @@ args = [{ "arg" = "option", "default" = "" }]
 cmd = "python .github/scripts/check_status_references.py{% if option == 'drift' %} --drift{% elif option | length %} --pull {{ option }}{% endif %}"
 description = "Check the work each specification status cites against GitHub"
 
+[tool.pixi.feature.test.tasks.verification-report]
+args = [{ "arg" = "prefix", "default" = "" }]
+cmd = "python .github/scripts/verification_report.py{% if prefix | length %} {{ prefix }}{% endif %}"
+description = "Report how each specification decision is verified, and where it is cited"
+
 [tool.pixi.feature.test.tasks.tests-clean]
 cmd = "rm -rf docs/image_cache tests/plotting/unit_image_cache test_images test_images_failed"
 description = "Purge all documentation and image unit test caches"

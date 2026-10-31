@@ -390,3 +390,22 @@ def test_cells_keep_an_escaped_pipe_ending_the_row(citations, row):
 def test_cells_keep_an_empty_last_cell(citations):
     """An empty cell is a cell, and only the separators beyond it are dropped."""
     assert citations.cells("| 1 | |") == ["1", ""]
+
+
+def test_summary_counts_each_state(citations):
+    """The summary line under a Verification table is the grammar's, for every reader.
+
+    The build writes it, and so does the verification report, which runs without
+    Sphinx (ledger spec §3.8).
+    """
+    statuses = [
+        citations.VERIFIED,
+        citations.VERIFIED,
+        citations.VERIFIED,
+        citations.PENDING,
+        citations.LEDGER_RETIRED,
+        citations.SIGNED_OFF,
+    ]
+
+    assert citations.summary(statuses).endswith(": 4 of 5 decisions in force verified")
+    assert citations.summary(statuses).startswith(f"{citations.VERIFIED.split()[0]} 3")
