@@ -149,6 +149,38 @@ def _title(text: str) -> str:
     )
 
 
+def _evidence(
+    name: str, anchor: str, row: object, names: object, root: Path
+) -> list[str]:
+    """Find what does not hold in the evidence of a verified or signed-off row.
+
+    A test that cannot be read is a finding, never an abort, so the report still
+    prints whatever else it finds.
+    """
+    state = conventions.opened(row.status)[0]
+    if state == grammar.SIGNED_OFF and not row.evidence.strip():
+        return [f"{name} is signed off with nothing said of what was checked."]
+    if state != grammar.VERIFIED:
+        return []
+    files = re.findall(r"`([^`]+)`", row.evidence)
+    if not files:
+        return [f"{name} is verified by nothing."]
+    found = []
+    for file in files:
+        test = root / file
+        if not test.is_file():
+            found.append(f"{name}: `{file}` is missing.")
+            continue
+        try:
+            silent = not conventions.cites(test, anchor, names)
+        except (OSError, UnicodeDecodeError):
+            found.append(f"{name}: `{file}` cannot be read.")
+            continue
+        if silent:
+            found.append(f"{name}: `{file}` no longer cites it.")
+    return found
+
+
 def report(
     specs: list[Path], texts: Mapping[Path, str], names: object, root: Path
 ) -> str:
@@ -204,13 +236,8 @@ def report(
                 out.append("")
             if decision.state == grammar.AGREED and not places:
                 findings.append(f"{name} is in force and cited nowhere.")
-            if row and conventions.opened(row.status)[0] == grammar.VERIFIED:
-                for file in re.findall(r"`([^`]+)`", row.evidence):
-                    test = root / file
-                    if not test.is_file():
-                        findings.append(f"{name}: `{file}` is missing.")
-                    elif not conventions.cites(test, anchor, names):
-                        findings.append(f"{name}: `{file}` no longer cites it.")
+            if row is not None:
+                findings += _evidence(name, anchor, row, names, root)
     out += ["## Findings", ""]
     out += [f"- {finding}" for finding in findings] or ["No findings."]
     return "\n".join(out) + "\n"

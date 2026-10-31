@@ -231,3 +231,36 @@ def test_code_is_source_wherever_it_sits(script, tmp_path):
     assert script.group(spec, root, {spec}) == "specifications"
     assert script.group(index, root, {spec}) == "documentation"
     assert script.group(root / "tests/docs/test_page.py", root) == "tests"
+
+
+def test_a_verified_or_signed_off_row_with_no_evidence_is_flagged(script, repo, capsys):
+    """A row that shows a decision delivered, with nothing to show it by, is flagged."""
+    spec = repo / "docs/src/developer/specs/2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    signed = "\N{WRITING HAND}\N{VARIATION SELECTOR-16} signed off"
+    text = text.replace("`tests/test_demo.py` |", " |").replace(
+        f"| 2 | {PENDING} | |",
+        f"| 2 | {signed} (2026-01-01, {{user}}`bjlittle`, {{pull}}`1`) | |",
+    )
+    spec.write_text(text, encoding="utf-8")
+
+    _, out = run(script, repo, capsys)
+    findings = out[out.index("## Findings") :]
+
+    assert f"demo spec {SECTION}2 decision 1 is verified by nothing" in findings
+    assert (
+        f"demo spec {SECTION}2 decision 2 is signed off with nothing said" in findings
+    )
+
+
+def test_unreadable_evidence_is_a_finding_not_an_abort(script, repo, capsys):
+    """A test file that cannot be read is reported, and the report still prints."""
+    (repo / "tests/test_demo.py").write_bytes(b'"""\xff not UTF-8."""\n')
+
+    code, out = run(script, repo, capsys)
+
+    assert code == 0
+    assert "## Findings" in out
+    assert (
+        f"demo spec {SECTION}2 decision 1: `tests/test_demo.py` cannot be read" in out
+    )
