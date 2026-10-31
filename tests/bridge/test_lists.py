@@ -9,6 +9,8 @@ The cases test one contract across every factory, that a list builds the mesh an
 array does (typing spec §3.3), so they sit together rather than in the file of
 each factory.
 
+Holds typing spec §2 decision 3.
+
 """
 
 from __future__ import annotations

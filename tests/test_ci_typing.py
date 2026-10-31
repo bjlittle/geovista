@@ -309,6 +309,7 @@ def test_only_the_known_overrides_relax_strict():
     Settings such as ``disallow_untyped_defs = false`` relax a module in the
     same way. Pinning them all means a new one cannot arrive unnoticed.
 
+    Holds typing spec §2 decision 4.
     """
     manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
     relaxed = _relaxed(manifest["tool"]["mypy"].get("overrides", []))
@@ -378,6 +379,7 @@ def test_ci_typing_runs_the_hook_command():
     resolves from "pixi.lock" rather than re-solving the manifest, which is
     what makes the two environments the same one.
 
+    Holds typing spec §2 decision 1.
     """
     entry = _hook()["entry"]
     endings = [script[-1] for step in _steps() if (script := _commands(step))]

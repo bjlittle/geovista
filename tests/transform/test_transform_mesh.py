@@ -547,7 +547,10 @@ def test_transform_mesh__cloud_carries_the_radius_and_zscale_given(
 
 
 def test_transform_mesh__cloud_carries_the_zscale_given_in_a_planar_crs(lifted_cloud):
-    """A cloud carries the zscale that a transform to a planar CRS was given."""
+    """A cloud carries the zscale that a transform to a planar CRS was given.
+
+    Holds zlevel spec §2 decision 2.
+    """
     planar = transform_mesh(lifted_cloud, PLANAR, zscale=0.25)
 
     result = transform_mesh(planar, WGS84)
@@ -631,7 +634,10 @@ def test_transform_mesh__zlevel_is_the_proportion_the_globe_gives(lifted_cloud):
     ids=["kilometre", "us-survey-foot", "degree", "compound"],
 )
 def test_transform_mesh__zlevel_in_the_units_of_the_crs(crs, extent, radius):
-    """The offset is the radius of the Earth, measured in the units of the CRS."""
+    """The offset is the radius of the Earth, measured in the units of the CRS.
+
+    Holds zlevel spec §2 decision 1.
+    """
     result = transform_mesh(_quad(*extent), crs, zlevel=1)
 
     np.testing.assert_allclose(result.points[:, 2], ZLEVEL_SCALE * radius, rtol=1e-9)
@@ -692,6 +698,7 @@ def test_transform_mesh__data_above_the_coastlines_whatever_its_extent():
     1e-3, and its coastlines at zlevel 3, both over the whole globe. Issue 2588: a
     small dataset at zlevel 4 still drew beneath them.
 
+    Holds zlevel spec §2 decision 3.
     """
     world = _quad(-180, 180, -90, 90)
     base = transform_mesh(world.copy(), PLANAR, zlevel=-1, zscale=1e-3)
