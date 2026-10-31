@@ -480,7 +480,7 @@ Each row follows §3.4.
 | 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 6 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 7 | ⏳ pending |  |
+| 7 | ✅ verified (2026-10-31, {pull}`2789`) | `tests/test_status_references.py` |
 | 8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 10 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
