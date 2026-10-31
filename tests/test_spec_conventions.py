@@ -2028,9 +2028,6 @@ Decision = citations.Decision
 #: The specifications not yet in the ledger, each with the row of ledger spec §8
 #: that brings it in. Each of those rows shortens this, and the last empties it.
 UNLEDGERED = {
-    "2026-10-06-type-coverage-design.md": 4,
-    "2026-10-08-planar-zlevel-design.md": 4,
-    "2026-10-23-repository-checks-design.md": 4,
     "2026-10-23-globe-first-crs-design.md": 5,
     "2026-10-26-globe-heights-layers-design.md": 6,
     "2026-10-27-globe-scene-design.md": 6,

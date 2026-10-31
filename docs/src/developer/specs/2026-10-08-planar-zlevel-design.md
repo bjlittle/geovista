@@ -262,3 +262,15 @@ Each carries the status grammar of docs spec §3.6.
 - `pyproj`'s `CRS.ellipsoid` and `CRS.axis_info`:
   <https://pyproj4.github.io/pyproj/stable/api/crs/crs.html>
 - `tests/AGENTS.md`, on landing image baselines in `bjlittle/geovista-data`
+
+(zlevel-spec-10)=
+## 10. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
+| 2 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
+| 3 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
+| 4 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that no planar z is stored: every transform computes it afresh, from the levels a cloud carries or the `zlevel` given. |

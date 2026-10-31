@@ -624,3 +624,15 @@ Each carries the status grammar of docs spec §3.6.
   `bridge.py` against: <https://github.com/python/typeshed/pull/15884>
 - `typeshed` issue 16504, reporting three gaps in those stubs, cited by item 7 of
   §8: <https://github.com/python/typeshed/issues/16504>
+
+(typing-spec-10)=
+## 10. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |
+| 2 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the hook and its ratchet went live in row 1 of §4 ({pull}`2565`), before any module was corrected, and that row 7 retired the ratchet ({pull}`2681`). |
+| 3 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/bridge/test_lists.py` |
+| 4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |

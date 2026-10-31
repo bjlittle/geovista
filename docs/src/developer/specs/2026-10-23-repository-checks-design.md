@@ -274,3 +274,19 @@ Each carries the status grammar of docs spec §3.6.
   than listing them, the model for finding every `CHECK`
 - `pytest`'s `pytest_runtest_makereport` hook:
   <https://docs.pytest.org/en/stable/reference/reference.html#pytest.hookspec.pytest_runtest_makereport>
+
+(checks-spec-10)=
+## 10. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 2 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the page documents only `geovista`'s own checks, and that row 2 of §4 keeps the third-party tools as a candidate. |
+| 3 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 5 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 6 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 7 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the page links to the image marker, reading-time and changelog sections of the developer guide, which stay where they were. |
+| 8 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/docs/test_readingtime_coverage.py` |
