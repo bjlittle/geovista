@@ -383,6 +383,44 @@ def ledger(text: str) -> list[LedgerRow] | None:
     return None
 
 
+#: The states of a Verification row, in the order the summary counts them.
+SUMMARISED = (
+    VERIFIED,
+    SIGNED_OFF,
+    PENDING,
+    LEDGER_RETIRED,
+)
+
+
+def summary(statuses: Iterable[str]) -> str:
+    """Count each state of a ledger, as the line under its table reads.
+
+    Parameters
+    ----------
+    statuses : iterable of str
+        The Status cells, each opening with its state.
+
+    Returns
+    -------
+    str
+        Each state's emoji and count, then how many decisions in force are
+        verified, as ledger spec §3.4 spells it.
+
+    """
+    counts = dict.fromkeys(SUMMARISED, 0)
+    total = 0
+    for status in statuses:
+        total += 1
+        state = state_of(status.strip(), SUMMARISED)
+        if state is not None:
+            counts[state] += 1
+    verified, signed, _, retired = counts.values()
+    tally = " · ".join(f"{state.split()[0]} {count}" for state, count in counts.items())
+    return (
+        f"{tally}: {verified + signed} of {total - retired} decisions in force verified"
+    )
+
+
 def specifications(specs: Path = SPECS) -> list[Path]:
     """Gather every markdown document in the collection, sorted."""
     return sorted(specs.glob("*.md"))
