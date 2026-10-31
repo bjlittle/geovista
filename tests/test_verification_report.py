@@ -264,3 +264,46 @@ def test_unreadable_evidence_is_a_finding_not_an_abort(script, repo, capsys):
     assert (
         f"demo spec {SECTION}2 decision 1: `tests/test_demo.py` cannot be read" in out
     )
+
+
+def test_a_plan_that_is_not_utf8_is_skipped(script, repo, capsys):
+    """A plan the report cannot decode is passed over, as the corpus passes one over."""
+    (repo / "docs/src/developer/plans/binary.md").write_bytes(b"\xff\xfe not UTF-8\n")
+
+    code, out = run(script, repo, capsys)
+
+    assert code == 0
+    assert "## demo spec" in out
+
+
+def test_state_lines_read_as_github_markdown(script, repo, capsys):
+    """A job summary renders no MyST role, so a status reads as GitHub Markdown."""
+    _, out = run(script, repo, capsys)
+    one = out[out.index("### Decision 1: One.") : out.index("### Decision 2: Two.")]
+
+    assert f"{VERIFIED} (2026-01-01, #1)" in one
+    assert "{pull}" not in out
+
+
+def test_a_page_is_listed_as_documentation(script, repo, capsys):
+    """A citation from a documentation page is listed in its own group."""
+    write(repo, "docs/src/page.rst", f"See demo spec {SECTION}2 decision 1.\n")
+
+    _, out = run(script, repo, capsys)
+    one = out[out.index("### Decision 1: One.") : out.index("### Decision 2: Two.")]
+
+    assert "- **documentation:** `docs/src/page.rst:1`" in one
+
+
+def test_a_line_citing_a_decision_twice_is_listed_once(script, repo, capsys):
+    """One line is one place, however often it names the decision."""
+    s = SECTION
+    write(
+        repo,
+        "src/twice.py",
+        f"# demo spec {s}2 decision 1, demo spec {s}2 decision 1\n",
+    )
+
+    _, out = run(script, repo, capsys)
+
+    assert out.count("`src/twice.py:1`") == 1
