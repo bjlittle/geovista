@@ -75,7 +75,7 @@ specifications design on that date.
    plain text as part of this work.** Keeping two forms of citation, and the assertion that
    holds the two halves of a role together, was the stop-gap docs spec §3.4 described until
    the transform existed.
-6. **🗄️ Retired** (2026-10-30, {user}`bjlittle`, {pull}`2786`; agreed 2026-10-26,
+6. **🗄️ Retired** (2026-10-31, {user}`bjlittle`, {pull}`2786`; agreed 2026-10-26,
    {pull}`2734`) — **Sections only.** An item within a section, such as
    `typing spec §8 item 9`, and a row of a roadmap, such as "rows 2 to 4" of the docs
    spec's, are not given anchors or links of their own. Six references are written in a form
@@ -466,9 +466,9 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2786`) | Checked in review that rows 2 to 4 of §9 built the transform, the output check and the guard, and that the ceiling test retired with row 2. |
-| 2 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/docs/test_rendered_citations.py` |
-| 3 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_renumbering.py` |
-| 4 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_renumbering.py` |
-| 5 | ✅ verified (2026-10-30, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 6 | 🗄️ retired (2026-10-30, {pull}`2786`) | replaced by ledger spec §2 decision 1 |
+| 1 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that rows 2 to 4 of §9 built the transform, the output check and the guard, and that the ceiling test retired with row 2. |
+| 2 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_rendered_citations.py` |
+| 3 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
+| 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
+| 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| 6 | 🗄️ retired (2026-10-31, {pull}`2786`) | replaced by ledger spec §2 decision 1 |
