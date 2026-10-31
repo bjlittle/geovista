@@ -64,6 +64,24 @@ def _load(path: Path, name: str) -> ModuleType:
 conventions = _load(REPO / "tests" / "test_spec_conventions.py", "spec_conventions")
 grammar = conventions.citations
 
+#: The grammar's types, which the annotations below name.
+Namespace = grammar.Namespace
+LedgerRow = grammar.LedgerRow
+
+#: The MyST roles a status carries, and the GitHub Markdown each reads as.
+ROLES = (
+    (re.compile(r"\{pull\}`(?P<number>\d+)`"), r"#\g<number>"),
+    (re.compile(r"\{issue\}`(?P<number>\d+)`"), r"#\g<number>"),
+    (re.compile(r"\{user\}`(?P<login>[^`]+)`"), r"@\g<login>"),
+)
+
+
+def markdown(status: str) -> str:
+    """Spell a status's roles as GitHub Markdown, as a job summary renders no MyST."""
+    for role, written in ROLES:
+        status = role.sub(written, status)
+    return status
+
 
 @dataclass(frozen=True)
 class Cited:
@@ -110,7 +128,7 @@ def _entries(text: str, slug: str) -> dict[int, str]:
     return owned
 
 
-def citations_of(texts: Mapping[Path, str], names: object) -> dict[str, list[Cited]]:
+def citations_of(texts: Mapping[Path, str], names: Namespace) -> dict[str, list[Cited]]:
     """Find every citation of a decision, a decision's own entry aside.
 
     Parameters
@@ -138,7 +156,10 @@ def citations_of(texts: Mapping[Path, str], names: object) -> dict[str, list[Cit
                     continue
                 if own.get(number) == citation.slug:
                     continue
-                found.setdefault(citation.slug, []).append(Cited(path, number))
+                places = found.setdefault(citation.slug, [])
+                # one line is one place, however often it names the decision
+                if Cited(path, number) not in places:
+                    places.append(Cited(path, number))
     return found
 
 
@@ -150,7 +171,7 @@ def _title(text: str) -> str:
 
 
 def _evidence(
-    name: str, anchor: str, row: object, names: object, root: Path
+    name: str, anchor: str, row: LedgerRow, names: Namespace, root: Path
 ) -> list[str]:
     """Find what does not hold in the evidence of a verified or signed-off row.
 
@@ -182,7 +203,7 @@ def _evidence(
 
 
 def report(
-    specs: list[Path], texts: Mapping[Path, str], names: object, root: Path
+    specs: list[Path], texts: Mapping[Path, str], names: Namespace, root: Path
 ) -> str:
     """Write the report of the specifications given, in Markdown.
 
@@ -221,7 +242,7 @@ def report(
             anchor = grammar.decision_anchor(slug, decision.number)
             name = f"{prefix} {grammar.SECTION}2 decision {decision.number}"
             row = rows.get(decision.number)
-            state = row.status if row else (decision.state or "no state")
+            state = markdown(row.status) if row else (decision.state or "no state")
             out += [f"### Decision {decision.number}: {decision.title}", "", state, ""]
             places = cited.get(anchor, [])
             for kind in GROUPS:
@@ -266,8 +287,13 @@ def main(argv: list[str] | None = None, root: Path = REPO) -> int:
         names = grammar.namespace(specs)
         texts = dict(grammar.corpus(root))
         for path in sorted((root / PLANS).rglob("*")):
-            if path.is_file():
+            if not path.is_file():
+                continue
+            try:
                 texts[path] = path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                # a file that is not UTF-8 is not text, as the corpus has it
+                continue
     except (OSError, UnicodeDecodeError) as error:
         print(f"could not read the specifications: {error}", file=sys.stderr)
         return 2
