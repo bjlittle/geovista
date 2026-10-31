@@ -33,6 +33,7 @@ from __future__ import annotations
 import ast
 import contextlib
 from datetime import date
+from fnmatch import fnmatch
 import importlib.util
 import io
 from pathlib import Path
@@ -285,7 +286,10 @@ def test_every_specification_declares_a_prefix_of_its_own(names):
 
 @pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
 def test_every_numbered_heading_pairs_with_an_anchor(spec):
-    """Pairing (item 1)."""
+    """Pairing (item 1).
+
+    Holds docs spec §2 decision 3.
+    """
     problems = pairing(spec, spec.read_text(encoding="utf-8"))
 
     assert not problems, "\n".join(problems)
@@ -806,7 +810,10 @@ def test_every_range_carries_its_prefix_on_both_ends(texts, names):
 
 
 def test_every_citation_carries_its_sign(texts, names):
-    """Form (item 4)."""
+    """Form (item 4).
+
+    Holds docs spec §2 decision 4.
+    """
     problems = [p for path, text in texts.items() for p in form(path, text, names)]
 
     assert not problems, "\n".join(problems)
@@ -1046,7 +1053,10 @@ def test_section_roles_keeps_a_plain_citation_after_a_role_naming_its_section(
 
 
 def test_no_role_names_a_section(texts, names):
-    """Plain text (item 5): a section is cited as one string, which the build links."""
+    """Plain text (item 5): a section is cited as one string, which the build links.
+
+    Holds citation spec §2 decision 5.
+    """
     problems = [
         p for path, text in texts.items() for p in section_roles(path, text, names)
     ]
@@ -1128,6 +1138,15 @@ def carried(rest: str) -> str:
     return text[1:]
 
 
+def roadmap_header(cells: list[str]) -> bool:
+    """Decide whether a table's header is a roadmap's: ``#``, ``Scope`` and ``Status``.
+
+    A Verification table has a Status column too, so a roadmap is read by its whole
+    header (ledger spec §3.6), which a type coverage roadmap extends with ``Lines``.
+    """
+    return bool(cells) and cells[0] == "#" and {"Scope", "Status"} <= set(cells)
+
+
 def statuses(text: str) -> Iterator[tuple[int, str, str]]:
     """Yield every roadmap Status cell, and every open item with its lines joined.
 
@@ -1155,7 +1174,7 @@ def statuses(text: str) -> Iterator[tuple[int, str, str]]:
             continue
         if table:
             cells = [cell.strip() for cell in table[0][1].strip().strip("|").split("|")]
-            if "Status" in cells:
+            if roadmap_header(cells):
                 column = cells.index("Status")
                 for row, written in table[2:]:
                     found = [
@@ -1216,9 +1235,10 @@ def status(path: Path, text: str) -> list[str]:
 def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
     """A terminal status needs its date and its reference, and nothing else does."""
     roadmap = (
-        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Status |\n|---|---|\n"
-        f"| 1 | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
-        f"| 2 | {LANDED} (2026-01-01) |\n| 3 | shipped |\n| 4 | candidate |\n\n"
+        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
+        f"| 2 | b | {LANDED} (2026-01-01) |\n| 3 | c | shipped |\n"
+        "| 4 | d | candidate |\n\n"
         "(demo-spec-2)=\n## 2. Open Items\n\n"
         "1. **Resolved** (2026-01-01, [x](https://github.com/o/r/issues/1)) - **A.**\n"
         "2. **Resolved** (no date,\n   {issue}`2`) - **B.**\n"
@@ -1253,9 +1273,9 @@ def test_statuses_reads_open_items_whatever_their_case(title):
 def test_status_finds_a_date_no_calendar_holds(tmp_path):
     """A date of the right shape is still no date if no calendar holds it."""
     roadmap = (
-        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Status |\n|---|---|\n"
-        f"| 1 | {LANDED} (2026-02-30, {{pull}}`1`) |\n"
-        f"| 2 | {LANDED} (2026-02-28, {{pull}}`1`) |\n\n"
+        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        f"| 1 | a | {LANDED} (2026-02-30, {{pull}}`1`) |\n"
+        f"| 2 | b | {LANDED} (2026-02-28, {{pull}}`1`) |\n\n"
         "(demo-spec-2)=\n## 2. Open Items\n\n"
         "1. **Resolved** (2026-13-01, {issue}`2`) - **A.**\n"
     )
@@ -1269,11 +1289,16 @@ def test_status_finds_a_date_no_calendar_holds(tmp_path):
     ]
 
 
-def test_status_reads_bullets_and_any_status_table(tmp_path):
-    """A bullet is an item, an item with no state is reported, any table is read."""
+def test_status_reads_bullets_and_a_roadmap_wherever_it_sits(tmp_path):
+    """A bullet is an item, an item with no state is reported, a roadmap is read.
+
+    A roadmap is read by its header wherever it sits, and only by its header, so
+    a Verification table is never mistaken for one.
+    """
     body = (
-        "(demo-spec-1)=\n## 1. Plan and status\n\n| # | Status |\n|---|---|\n"
-        "| 1 | shipped |\n\n"
+        "(demo-spec-1)=\n## 1. Plan and status\n\n"
+        "| # | Scope | Status |\n|---|---|---|\n| 1 | a | shipped |\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n| 1 | shipped | |\n\n"
         "(demo-spec-2)=\n## 2. Open Items\n\n"
         "- **shipped** - **A.**\n"
         "- **Resolved** (no date) - **B.**\n"
@@ -1304,7 +1329,10 @@ def test_both_kinds_of_status_are_read(specs):
 
 @pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
 def test_every_status_is_in_the_vocabulary_and_evidenced(spec):
-    """Status (item 7)."""
+    """Status (item 7).
+
+    Holds docs spec §2 decision 7.
+    """
     text = spec.read_text(encoding="utf-8")
     problems = status(spec, text)
 
@@ -1795,7 +1823,10 @@ def test_front_matter_is_read_only_where_a_document_opens():
 
 
 def test_no_specification_is_an_orphan(specs):
-    """A specification is reached through the index, never left unlisted."""
+    """A specification is reached through the index, never left unlisted.
+
+    Holds docs spec §2 decision 1.
+    """
     orphans = [
         spec.name
         for spec in specs
@@ -1979,3 +2010,587 @@ def test_row_5_waits_until_items_and_rows_are_cited_often(texts, names):
         f"{count} citations of items and rows outside the specifications, past "
         f"{NUMBERED_CEILING}: row 5 of the citation links roadmap has activated."
     )
+
+
+#: Ledger (item 9 of docs spec §3.5): the states of ledger spec §3.2, §3.3, §3.4, from
+#: the grammar, which builds them by name.
+AGREED = citations.AGREED
+RETIRED_STATE = citations.RETIRED
+PENDING = citations.PENDING
+VERIFIED = citations.VERIFIED
+SIGNED_OFF = citations.SIGNED_OFF
+LEDGER_RETIRED = citations.LEDGER_RETIRED
+LEDGER_STATES = (PENDING, VERIFIED, SIGNED_OFF, LEDGER_RETIRED)
+decisions = citations.decisions
+ledger = citations.ledger
+state_of = citations.state_of
+decision_anchor = citations.decision_anchor
+
+#: The specifications not yet in the ledger, each with the row of ledger spec §8
+#: that brings it in. Each of those rows shortens this, and the last empties it.
+UNLEDGERED = {
+    "2026-10-06-type-coverage-design.md": 4,
+    "2026-10-08-planar-zlevel-design.md": 4,
+    "2026-10-23-repository-checks-design.md": 4,
+    "2026-10-23-globe-first-crs-design.md": 5,
+    "2026-10-26-globe-heights-layers-design.md": 6,
+    "2026-10-27-globe-scene-design.md": 6,
+    "2026-10-28-heights-as-data-design.md": 6,
+}
+
+#: The roles a provenance carries.
+USER = re.compile(r"\{user\}`[^`]+`")
+PULL = re.compile(r"\{pull\}`\d+`")
+
+
+def entry(number: int, state: str, carried: str, title: str = "A decision.") -> str:
+    """Write a decision's entry, state first."""
+    return f"{number}. **{state}** ({carried}) — **{title}** Its reasoning.\n"
+
+
+#: Provenance that a decision in force carries.
+AGREEMENT = "2026-01-01, {user}`bjlittle`, {pull}`1`"
+
+
+def ledgered(
+    tmp_path: Path, entries: str, rows: str, roadmap: str = "| 1 | a | not started |\n"
+) -> tuple[Path, Namespace]:
+    """Write a ``demo spec`` with decisions, a roadmap and a Verification table."""
+    return demo(
+        tmp_path,
+        "(demo-spec-1)=\n## 1. Purpose\n\n"
+        f"(demo-spec-2)=\n## 2. Decisions\n\n{entries}\n"
+        "(demo-spec-3)=\n## 3. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        f"{roadmap}\n"
+        "(demo-spec-4)=\n## 4. Verification\n\n"
+        f"| Decision | Status | Evidence |\n|---|---|---|\n{rows}",
+    )
+
+
+def faults(problems: list[str]) -> list[str]:
+    """Drop the place each problem names, keeping what it says."""
+    return [problem.split(": ", 1)[1] for problem in problems]
+
+
+def ledger_entries(path: Path, text: str) -> list[str]:
+    """Find each fault in a specification's decisions (ledger spec §3.6)."""
+    titles = {
+        heading["num"]: heading["title"]
+        for _, line in read_lines(text)
+        if (heading := HEADING.match(line))
+    }
+    if titles.get("2") != citations.DECISIONS:
+        return [f"{where(path, 1)}: its second section is not titled Decisions"]
+    found = decisions(text)
+    problems = []
+    lines = citations._section(text, "2", citations.DECISIONS)
+    if any(re.match(r"^[-*]\s", line) for _, line in lines):
+        problems.append(
+            f"{where(path, 1)}: a decision is a bullet, not a numbered entry"
+        )
+    if not found:
+        problems.append(
+            f"{where(path, 1)}: its Decisions section holds no numbered decision"
+        )
+    numbers = [d.number for d in found]
+    if numbers != list(range(1, len(found) + 1)):
+        problems.append(f"{where(path, 1)}: decisions are numbered {numbers}")
+    for d in found:
+        at = where(path, d.line)
+        agreed, _, history = d.carried.partition("; agreed ")
+        if d.state is None:
+            problems.append(f"{at}: decision {d.number} opens with no state")
+        elif not (DATE.search(agreed) and USER.search(agreed) and PULL.search(agreed)):
+            problems.append(f"{at}: decision {d.number} carries no date, user and pull")
+        elif d.state == RETIRED_STATE and not (
+            DATE.search(history) and PULL.search(history)
+        ):
+            problems.append(f"{at}: decision {d.number} is retired with no agreement")
+        problems += [
+            f"{at}: decision {d.number} carries {bad}, which is not a date"
+            for bad in undated(d.carried)
+        ]
+    return problems
+
+
+def undated(evidence: str) -> list[str]:
+    """Find each date of the right shape that no calendar holds."""
+    return [match[0] for match in DATE.finditer(evidence) if dated(match[0]) is None]
+
+
+def opened(status: str) -> tuple[str | None, str]:
+    """Read a ledger state and the parenthetical it carries."""
+    state = state_of(status, LEDGER_STATES)
+    if state is None:
+        return None, ""
+    plain = status.replace(citations.VS16, "")
+    rest = plain[len(state.replace(citations.VS16, "")) :]
+    return state, rest
+
+
+def ledger_table(path: Path, text: str) -> list[str]:
+    """Find each fault in a Verification table, item 3 of ledger spec §3.6."""
+    titles = [h["title"] for _, line in read_lines(text) if (h := HEADING.match(line))]
+    if not titles or titles[-1] != citations.VERIFICATION:
+        return [f"{where(path, 1)}: its last section is not titled Verification"]
+    rows = ledger(text)
+    if rows is None:
+        return [f"{where(path, 1)}: its Verification section holds no ledger"]
+    problems = []
+    expected = len(decisions(text))
+    seen: set[int] = set()
+    for row in rows:
+        at = where(path, row.line)
+        if row.decision is None:
+            problems.append(f"{at}: a row names {row.cell!r}, not a decision")
+            continue
+        if row.decision in seen:
+            problems.append(f"{at}: decision {row.decision} has a second row")
+        elif not 1 <= row.decision <= expected:
+            problems.append(
+                f"{at}: a row names decision {row.decision}, which no entry holds"
+            )
+        elif seen and row.decision < max(seen):
+            problems.append(f"{at}: decision {row.decision} is out of order")
+        seen.add(row.decision)
+        state, rest = opened(row.status)
+        evidence = carried(rest)
+        if state is None:
+            problems.append(f"{at}: {row.status!r} is not a ledger state")
+        elif state == PENDING and rest.strip():
+            problems.append(
+                f"{at}: decision {row.decision} is pending, and carries more"
+            )
+        elif state in (VERIFIED, LEDGER_RETIRED) and not (
+            DATE.search(evidence) and PULL.search(evidence)
+        ):
+            problems.append(f"{at}: decision {row.decision} carries no date and pull")
+        elif state == SIGNED_OFF and not (
+            DATE.search(evidence) and USER.search(evidence) and PULL.search(evidence)
+        ):
+            problems.append(
+                f"{at}: decision {row.decision} carries no date, user and pull"
+            )
+        elif state == SIGNED_OFF and not row.evidence.strip():
+            problems.append(
+                f"{at}: decision {row.decision} is signed off, and says nothing of "
+                "what was checked"
+            )
+        problems += [
+            f"{at}: decision {row.decision} carries {bad}, which is not a date"
+            for bad in undated(evidence)
+        ]
+    problems += [
+        f"{where(path, 1)}: decision {number} has no row"
+        for number in range(1, expected + 1)
+        if number not in seen
+    ]
+    return problems
+
+
+def ledger_retirements(path: Path, text: str) -> list[str]:
+    """Find each decision retired in one section only, item 4 of ledger spec §3.6."""
+    rows = {row.decision: row for row in ledger(text) or []}
+    problems = []
+    for d in decisions(text):
+        row = rows.get(d.number)
+        if row is None:
+            continue
+        if (d.state == RETIRED_STATE) != (opened(row.status)[0] == LEDGER_RETIRED):
+            problems.append(
+                f"{where(path, row.line)}: decision {d.number} is retired in one "
+                "section and not the other"
+            )
+    return problems
+
+
+def cites(path: Path, anchor: str, names: Namespace) -> bool:
+    """Decide whether a file cites the anchor, in its prose or its comments."""
+    owner = names.owners.get(path)
+    for _, line in source_lines(path, path.read_text(encoding="utf-8")):
+        if any(c.slug == anchor for c in scan(prose(line)[0], names.signed, owner)):
+            return True
+    return False
+
+
+def is_test(name: str) -> bool:
+    """Decide whether a path names a test file: ``tests/``, and ``test_*.py``.
+
+    A specification cites its own decisions, so a file that merely cites one is
+    no evidence it was delivered (ledger spec §2 decision 6).
+    """
+    path = Path(name)
+    return path.parts[:1] == ("tests",) and fnmatch(path.name, "test_*.py")
+
+
+def ledger_evidence(
+    path: Path, text: str, names: Namespace, root: Path = REPO
+) -> list[str]:
+    """Find each verified row whose test is missing or silent (ledger spec §3.6)."""
+    owner = names.owners.get(path)
+    problems = []
+    for row in ledger(text) or []:
+        if opened(row.status)[0] != VERIFIED or row.decision is None:
+            continue
+        at = where(path, row.line)
+        files = re.findall(r"`([^`]+)`", row.evidence)
+        if not files:
+            problems.append(f"{at}: decision {row.decision} is verified by nothing")
+        anchor = decision_anchor(owner, row.decision)
+        for name in files:
+            test = root / name
+            if not is_test(name):
+                problems.append(f"{at}: {name} is not a test file")
+            elif not test.is_file():
+                problems.append(f"{at}: {name} does not exist")
+            elif not cites(test, anchor, names):
+                problems.append(f"{at}: {name} does not cite decision {row.decision}")
+    return problems
+
+
+def roadmap_rows(text: str) -> dict[str, str]:
+    """Read each roadmap row's Status, keyed by its number."""
+    found: dict[str, str] = {}
+    table: list[list[str]] = []
+    for _, line in [*read_lines(text), (0, "")]:
+        if line.startswith("|"):
+            table.append([c.strip() for c in line.strip().strip("|").split("|")])
+            continue
+        if table and roadmap_header(table[0]):
+            column = table[0].index("Status")
+            found.update(
+                {row[0]: row[column] for row in table[2:] if column < len(row)}
+            )
+        table = []
+    return found
+
+
+def ledger_complete(path: Path, text: str) -> list[str]:
+    """Find a pending decision once the roadmap is done, item 7 of ledger spec §3.6."""
+    rows = roadmap_rows(text)
+    if any(s.startswith(("in progress", "not started")) for s in rows.values()):
+        return []
+    problems = []
+    for row in ledger(text) or []:
+        if opened(row.status)[0] != PENDING:
+            continue
+        named = re.search(r"\brow (\d+) of\b", row.evidence)
+        if named and rows.get(named[1], "").startswith("candidate"):
+            continue
+        problems.append(
+            f"{where(path, row.line)}: decision {row.decision} is pending, and no "
+            "row of the roadmap is left to deliver it"
+        )
+    return problems
+
+
+def ledger_replacements(
+    path: Path, text: str, names: Namespace, decided: Mapping[str, object]
+) -> list[str]:
+    """Find a retirement replaced by one not in force, item 8 of ledger spec §3.6."""
+    owner = names.owners.get(path)
+    found = [(d.line, d.body) for d in decisions(text) if d.state == RETIRED_STATE]
+    found += [(r.line, r.evidence) for r in ledger(text) or [] if r.status]
+    problems = []
+    for line, written in found:
+        for said in re.finditer(r"\breplaced by\b", written, flags=re.IGNORECASE):
+            after = written[said.end() :]
+            cited = next(scan(prose(after)[0], names.signed, owner), None)
+            label = LABEL.match(cited.slug) if cited and cited.slug else None
+            # only a decision can replace a decision; a section is prose
+            if label is None or label["decision"] is None:
+                continue
+            problems += replaced(path, line, cited, decided)
+    return problems
+
+
+def replaced(
+    path: Path, line: int, cited: Citation, decided: Mapping[str, object]
+) -> list[str]:
+    """Report a replacement that is no decision, or not one in force."""
+    at = where(path, line)
+    replacement = decided.get(cited.slug)
+    if replacement is None:
+        return [f"{at}: replaced by {cited.text}, no decision"]
+    if replacement.state != AGREED:
+        return [f"{at}: replaced by {cited.text}, which is not in force"]
+    return []
+
+
+def test_ledger_entries_finds_a_gap_a_missing_state_and_missing_provenance(tmp_path):
+    """Ledger spec §2 decision 2, ledger spec §2 decision 4: numbered, state first."""
+    entries = (
+        entry(1, AGREED, "2026-01-01, {pull}`1`")
+        + "3. **No state.** Its reasoning.\n"
+        + entry(4, RETIRED_STATE, AGREEMENT)
+        + entry(5, AGREED, AGREEMENT)
+    )
+    path, _ = ledgered(tmp_path, entries, "")
+
+    assert faults(ledger_entries(path, path.read_text(encoding="utf-8"))) == [
+        "decisions are numbered [1, 3, 4, 5]",
+        "decision 1 carries no date, user and pull",
+        "decision 3 opens with no state",
+        "decision 4 is retired with no agreement",
+    ]
+
+
+def test_ledger_entries_wants_a_second_section_titled_decisions(tmp_path):
+    """Ledger spec §2 decision 1: the citation names the second section, its home."""
+    path, _ = demo(tmp_path, "(demo-spec-2)=\n## 2. Design\n\n1. **One.** First.\n")
+
+    assert faults(ledger_entries(path, path.read_text(encoding="utf-8"))) == [
+        "its second section is not titled Decisions"
+    ]
+
+
+def test_ledger_table_wants_the_last_section_and_a_row_per_decision(tmp_path):
+    """Ledger spec §2 decision 5, ledger spec §2 decision 10: one row each, last."""
+    entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
+    entries += entry(3, AGREED, AGREEMENT)
+    rows = f"| 1 | {PENDING} | |\n| two | {PENDING} | |\n"
+    path, _ = ledgered(tmp_path, entries, rows)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(ledger_table(path, text)) == [
+        "a row names 'two', not a decision",
+        "decision 2 has no row",
+        "decision 3 has no row",
+    ]
+    assert faults(ledger_table(path, text + "\n(demo-spec-5)=\n## 5. After\n")) == [
+        "its last section is not titled Verification"
+    ]
+
+
+def test_ledger_entries_wants_numbered_decisions(tmp_path):
+    """Ledger spec §2 decision 2: a bullet has no number, so it cannot be cited."""
+    bulleted = f"- **{AGREED}** ({AGREEMENT}) — **A.** Its reasoning.\n"
+    path, _ = ledgered(tmp_path, bulleted, "")
+
+    assert faults(ledger_entries(path, path.read_text(encoding="utf-8"))) == [
+        "a decision is a bullet, not a numbered entry",
+        "its Decisions section holds no numbered decision",
+    ]
+
+
+def test_ledger_table_reports_an_extra_or_repeated_row_at_its_line(tmp_path):
+    """Review Focus 5 of its plan: each stray row is reported where it is written."""
+    entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
+    rows = f"| 1 | {PENDING} | |\n| 1 | {PENDING} | |\n| 2 | {PENDING} | |\n"
+    rows += f"| 3 | {PENDING} | |\n"
+    path, _ = ledgered(tmp_path, entries, rows)
+    text = path.read_text(encoding="utf-8")
+    second, third = ledger(text)[1].line, ledger(text)[3].line
+
+    assert ledger_table(path, text) == [
+        f"{where(path, second)}: decision 1 has a second row",
+        f"{where(path, third)}: a row names decision 3, which no entry holds",
+    ]
+
+
+def test_ledger_states_carry_what_they_must(tmp_path):
+    """Ledger spec §2 decision 9: each state, and what its parenthetical holds."""
+    entries = "".join(entry(n, AGREED, AGREEMENT) for n in range(1, 5))
+    rows = (
+        f"| 1 | {VERIFIED} ({{pull}}`1`) | `x.py` |\n"
+        f"| 2 | {SIGNED_OFF} (2026-01-01, {{pull}}`1`) | Checked. |\n"
+        f"| 3 | {PENDING} (2026-01-01) | |\n"
+        "| 4 | shipped | |\n"
+    )
+    path, _ = ledgered(tmp_path, entries, rows)
+
+    assert faults(ledger_table(path, path.read_text(encoding="utf-8"))) == [
+        "decision 1 carries no date and pull",
+        "decision 2 carries no date, user and pull",
+        "decision 3 is pending, and carries more",
+        "'shipped' is not a ledger state",
+    ]
+
+
+def test_ledger_retirements_agree_in_both_sections(tmp_path):
+    """Ledger spec §2 decision 3: a retired decision stays, retired in both places."""
+    retired = f"{AGREEMENT}; agreed 2026-01-01, {{pull}}`1`"
+    entries = entry(1, RETIRED_STATE, retired) + entry(2, AGREED, AGREEMENT)
+    rows = (
+        f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `x.py` |\n"
+        f"| 2 | {LEDGER_RETIRED} (2026-01-01, {{pull}}`1`) | |\n"
+    )
+    path, _ = ledgered(tmp_path, entries, rows)
+
+    assert faults(ledger_retirements(path, path.read_text(encoding="utf-8"))) == [
+        "decision 1 is retired in one section and not the other",
+        "decision 2 is retired in one section and not the other",
+    ]
+
+
+def test_ledger_evidence_must_exist_and_cite_its_decision(tmp_path):
+    """Ledger spec §2 decision 6: a test is evidence only if it cites the decision."""
+    entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
+    entries += entry(3, AGREED, AGREEMENT)
+    rows = (
+        f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_cites.py` |\n"
+        f"| 2 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_gone.py` |\n"
+        f"| 3 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_cites.py` |\n"
+    )
+    path, names = ledgered(tmp_path, entries, rows)
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_cites.py").write_text(
+        f'"""Holds demo spec {SECTION}2 decision 1."""\n', encoding="utf-8"
+    )
+
+    problems = ledger_evidence(
+        path, path.read_text(encoding="utf-8"), names, root=tmp_path
+    )
+
+    assert faults(problems) == [
+        "tests/test_gone.py does not exist",
+        "tests/test_cites.py does not cite decision 3",
+    ]
+
+
+def test_ledger_complete_once_the_roadmap_is(tmp_path):
+    """Ledger spec §2 decision 8: a done roadmap leaves no decision pending."""
+    entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
+    rows = f"| 1 | {PENDING} | |\n| 2 | {PENDING} | row 2 of {SECTION}3 |\n"
+    roadmap = f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n| 2 | b | candidate |\n"
+    path, _ = ledgered(tmp_path, entries, rows, roadmap)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(ledger_complete(path, text)) == [
+        "decision 1 is pending, and no row of the roadmap is left to deliver it"
+    ]
+    open_roadmap = text.replace("| 2 | b | candidate |", "| 2 | b | not started |")
+    assert ledger_complete(path, open_roadmap) == []
+
+
+def test_ledger_replacement_must_be_in_force(tmp_path):
+    """Ledger spec §2 decision 3: what replaces a retired decision is in force."""
+    retired = f"{AGREEMENT}; agreed 2026-01-01, {{pull}}`1`"
+    entries = (
+        f"1. **{RETIRED_STATE}** ({retired}) — **One.** "
+        f"replaced by {SECTION}2 decision 2.\n"
+        f"2. **{RETIRED_STATE}** ({retired}) — **Two.** "
+        f"replaced by {SECTION}2 decision 9.\n"
+    )
+    path, names = ledgered(tmp_path, entries, "")
+    text = path.read_text(encoding="utf-8")
+    decided = {decision_anchor("demo-spec", d.number): d for d in decisions(text)}
+
+    assert faults(ledger_replacements(path, text, names, decided)) == [
+        f"replaced by {SECTION}2 decision 2, which is not in force",
+        f"replaced by {SECTION}2 decision 9, no decision",
+    ]
+
+
+def test_ledger_replacement_reads_any_case_and_only_decisions(tmp_path):
+    """Ledger spec §2 decision 3: any case names a replacement; a section never does."""
+    retired = f"{AGREEMENT}; agreed 2026-01-01, {{pull}}`1`"
+    entries = (
+        f"1. **{RETIRED_STATE}** ({retired}) — **One.** It was replaced by "
+        f"{SECTION}3's rule; replaced by {SECTION}2 decision 2.\n"
+        + entry(2, AGREED, AGREEMENT)
+    )
+    rows = (
+        f"| 1 | {LEDGER_RETIRED} (2026-01-01, {{pull}}`1`) | "
+        f"Replaced by {SECTION}2 decision 9 |\n| 2 | {PENDING} | |\n"
+    )
+    path, names = ledgered(tmp_path, entries, rows)
+    text = path.read_text(encoding="utf-8")
+    decided = {decision_anchor("demo-spec", d.number): d for d in decisions(text)}
+
+    assert faults(ledger_replacements(path, text, names, decided)) == [
+        f"replaced by {SECTION}2 decision 9, no decision"
+    ]
+
+
+@pytest.fixture(scope="module")
+def decided(specs, names) -> dict[str, object]:
+    """Map each decision's anchor in the collection to its entry."""
+    return {
+        decision_anchor(names.owners[spec], d.number): d
+        for spec in specs
+        if spec in names.owners
+        for d in decisions(spec.read_text(encoding="utf-8"))
+    }
+
+
+@pytest.mark.parametrize(
+    "spec",
+    [s for s in specifications() if s.name not in UNLEDGERED],
+    ids=lambda path: path.name,
+)
+def test_every_ledgered_specification_holds_its_ledger(spec, names, decided):
+    """Ledger (item 9): ledger spec §2 decision 13, every rule on every ledger."""
+    text = spec.read_text(encoding="utf-8")
+    problems = (
+        ledger_entries(spec, text)
+        + ledger_table(spec, text)
+        + ledger_retirements(spec, text)
+        + ledger_evidence(spec, text, names)
+        + ledger_complete(spec, text)
+        + ledger_replacements(spec, text, names, decided)
+    )
+
+    assert not problems, "\n".join(problems)
+
+
+def test_unledgered_names_specifications_still_waiting(specs):
+    """An exemption cannot outlive the row of ledger spec §8 that ends it."""
+    names = {spec.name for spec in specs}
+    rows = roadmap_rows((SPECS / "2026-10-30-decision-ledger-design.md").read_text())
+
+    assert set(UNLEDGERED) <= names
+    assert not [
+        name for name, row in UNLEDGERED.items() if rows[str(row)].startswith(LANDED)
+    ]
+
+
+def test_ledger_evidence_must_be_a_test_file(tmp_path):
+    """Ledger spec §2 decision 6: evidence is a test, not any file that cites one."""
+    entries = entry(1, AGREED, AGREEMENT)
+    rows = f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `docs/cites.md` |\n"
+    path, names = ledgered(tmp_path, entries, rows)
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "cites.md").write_text(
+        f"Holds demo spec {SECTION}2 decision 1.\n", encoding="utf-8"
+    )
+
+    problems = ledger_evidence(
+        path, path.read_text(encoding="utf-8"), names, root=tmp_path
+    )
+
+    assert faults(problems) == ["docs/cites.md is not a test file"]
+
+
+def test_ledger_dates_are_calendar_dates(tmp_path):
+    """Ledger spec §2 decision 4: a date of the right shape that no calendar holds."""
+    retired = "2026-02-30, {user}`bjlittle`, {pull}`1`; agreed 2026-13-01, {pull}`1`"
+    entries = entry(1, AGREED, "2026-02-30, {user}`bjlittle`, {pull}`1`")
+    entries += entry(2, RETIRED_STATE, retired)
+    rows = (
+        f"| 1 | {VERIFIED} (2026-02-30, {{pull}}`1`) | `x.py` |\n"
+        f"| 2 | {LEDGER_RETIRED} (2026-02-30, {{pull}}`1`) | |\n"
+    )
+    path, _ = ledgered(tmp_path, entries, rows)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(ledger_entries(path, text)) == [
+        "decision 1 carries 2026-02-30, which is not a date",
+        "decision 2 carries 2026-02-30, which is not a date",
+        "decision 2 carries 2026-13-01, which is not a date",
+    ]
+    assert faults(ledger_table(path, text)) == [
+        "decision 1 carries 2026-02-30, which is not a date",
+        "decision 2 carries 2026-02-30, which is not a date",
+    ]
+
+
+def test_ledger_sign_off_says_what_was_checked(tmp_path):
+    """Ledger spec §2 decision 6: a sign-off says what the reviewer checked."""
+    entries = entry(1, AGREED, AGREEMENT)
+    rows = f"| 1 | {SIGNED_OFF} (2026-01-01, {{user}}`bjlittle`, {{pull}}`1`) | |\n"
+    path, _ = ledgered(tmp_path, entries, rows)
+
+    assert faults(ledger_table(path, path.read_text(encoding="utf-8"))) == [
+        "decision 1 is signed off, and says nothing of what was checked"
+    ]

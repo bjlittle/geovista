@@ -153,7 +153,10 @@ def test_inline_code_is_blanked_and_roles_are_collected(citations):
 
 
 def test_a_prefix_carries_across_a_run_and_no_further(tmp_path, citations):
-    """A comma or solidus joins a run; a full stop ends it."""
+    """A comma or solidus joins a run; a full stop ends it.
+
+    Holds docs spec §2 decision 5.
+    """
     _, names = demo(tmp_path, DEMO, citations)
     text = f"demo spec {SECTION}1, {SECTION}2. Then {SECTION}1."
 
@@ -213,3 +216,141 @@ def test_corpus_reads_the_tree_it_is_given(tmp_path, citations):
     }
 
     assert found == {".github/file.txt", "src/file.txt"}
+
+
+#: The states of ledger spec §3.2, §3.3, §3.4, built by name: see the module docstring.
+HANDSHAKE = "\N{HANDSHAKE}"
+CABINET = "\N{FILE CABINET}\N{VARIATION SELECTOR-16}"
+
+#: A specification whose decisions are numbered, as ledger spec §3.1 asks.
+DECIDED = (
+    "(demo-spec-1)=\n## 1. Purpose\n\n(demo-spec-2)=\n## 2. Decisions\n\n"
+    "1. **One.** First.\n2. **Two.** Second.\n3. **Three.** Third.\n\n"
+    "(demo-spec-3)=\n## 3. Design\n"
+)
+
+
+def test_a_decision_citation_names_its_decision(tmp_path, citations):
+    """The citation of ledger spec §2 decision 1 names the decision, not its section."""
+    _, names = demo(tmp_path, DECIDED, citations)
+    text = f"see demo spec {SECTION}2 decision 3."
+
+    found = list(citations.scan(text, names.signed, None))
+
+    assert [(c.text, c.slug) for c in found] == [
+        (f"demo spec {SECTION}2 decision 3", "demo-spec-2-decision-3")
+    ]
+
+
+def test_a_bare_decision_citation_means_its_own_document(tmp_path, citations):
+    """Within a specification, a bare decision is its own, as a bare section is."""
+    _, names = demo(tmp_path, DECIDED, citations)
+
+    found = list(citations.scan(f"{SECTION}2 decision 3", names.signed, "demo-spec"))
+
+    assert [c.slug for c in found] == ["demo-spec-2-decision-3"]
+
+
+def test_a_prefix_carries_to_a_decision_in_a_run(tmp_path, citations):
+    """A comma carries the prefix to a decision as it does to a section."""
+    _, names = demo(tmp_path, DECIDED, citations)
+    text = f"demo spec {SECTION}3, {SECTION}2 decision 1"
+
+    assert [c.slug for c in citations.scan(text, names.signed, None)] == [
+        "demo-spec-3",
+        "demo-spec-2-decision-1",
+    ]
+
+
+def test_decisions_plural_is_a_citation_of_the_section(tmp_path, citations):
+    """A plural names no one decision, so it stays a citation of the section."""
+    _, names = demo(tmp_path, DECIDED, citations)
+    text = f"demo spec {SECTION}2 decisions 1 and 3"
+
+    found = list(citations.scan(text, names.signed, None))
+
+    assert [(c.text, c.slug) for c in found] == [
+        (f"demo spec {SECTION}2", "demo-spec-2")
+    ]
+
+
+def test_decisions_reads_state_provenance_title_and_body(citations):
+    """An entry is read state first, its title whole although it wraps."""
+    text = (
+        "(demo-spec-2)=\n## 2. Decisions\n\n"
+        "1. **One.** First.\n"
+        f"2. **{HANDSHAKE} Agreed** (2026-10-28, {{user}}`bjlittle`, {{pull}}`2771`) — "
+        "**A missing height\n   is no height.** A masked height\n   is NaN.\n"
+    )
+
+    first, second = citations.decisions(text)
+
+    assert (first.number, first.state, first.title, first.body) == (
+        1,
+        None,
+        "One.",
+        "First.",
+    )
+    assert second.number == 2
+    assert second.line == 5
+    assert second.state == citations.AGREED
+    assert second.carried == "2026-10-28, {user}`bjlittle`, {pull}`2771`"
+    assert second.title == "A missing height is no height."
+    assert second.body == "A masked height is NaN."
+
+
+def test_a_state_is_read_without_its_variation_selector(citations):
+    """A state typed without U+FE0F is the same state, spelled as the spec spells it."""
+    states = (citations.AGREED, citations.RETIRED)
+
+    assert citations.state_of("\N{FILE CABINET} Retired (2026-10-30)", states) == (
+        citations.RETIRED
+    )
+    assert citations.state_of(f"{CABINET} Retired", states) == citations.RETIRED
+    assert citations.state_of("Open", states) is None
+
+
+def test_decisions_ignores_bullets_and_other_sections(citations):
+    """Only the numbered items of a second section titled Decisions are decisions."""
+    bulleted = "(demo-spec-2)=\n## 2. Decisions\n\n- **One.** First.\n"
+    elsewhere = "(demo-spec-3)=\n## 3. Decisions\n\n1. **One.** First.\n"
+
+    assert citations.decisions(bulleted) == []
+    assert citations.decisions(elsewhere) == []
+
+
+def test_namespace_declares_an_anchor_per_decision(tmp_path, citations):
+    """Each decision has an anchor, though no line of the source declares one."""
+    _, names = demo(tmp_path, DECIDED, citations)
+
+    assert {f"demo-spec-2-decision-{n}" for n in (1, 2, 3)} <= names.anchors
+    assert "demo-spec-2-decision-4" not in names.anchors
+    assert citations.decision_anchor("demo-spec", 2) == "demo-spec-2-decision-2"
+
+
+def test_ledger_reads_the_verification_table(citations):
+    """The ledger is the table headed Decision, Status and Evidence, and no other."""
+    rows = (
+        "| Decision | Status | Evidence |\n|---|---|---|\n"
+        "| 1 | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"
+        "| 2 | \N{WHITE HEAVY CHECK MARK} verified (2026-10-30, {pull}`1`) | `x.py` |\n"
+    )
+    text = f"(demo-spec-10)=\n## 10. Verification\n\n{rows}"
+    other = (
+        "(demo-spec-10)=\n## 10. Verification\n\n"
+        "| # | Scope | Status |\n|---|---|---|\n"
+    )
+
+    found = citations.ledger(text)
+
+    assert [(row.decision, row.line) for row in found] == [(1, 6), (2, 7)]
+    assert found[0].status == citations.PENDING
+    assert found[1].evidence == "`x.py`"
+    assert citations.ledger(other) is None
+
+
+def test_a_row_naming_a_superscript_names_no_decision(citations):
+    """Review Focus 5 of its plan: a cell no int() reads is reported, never a crash."""
+    row = citations.LedgerRow("\N{SUPERSCRIPT TWO}", 1, "", "")
+
+    assert row.decision is None

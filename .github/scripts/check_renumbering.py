@@ -227,6 +227,10 @@ BOLD = re.compile(r"\*\*(?P<text>.+?)\*\*", flags=re.DOTALL)
 #: The statuses an open item opens with, before its title.
 STATES = frozenset({"Open", "Resolved", "Deferred", "Abandoned"})
 
+#: The states a decision opens with (ledger spec §3.2, §3.3), read with or without
+#: their variation selectors.
+DECIDED = (grammar.AGREED, grammar.RETIRED)
+
 #: The header of a roadmap table: its number, its scope, and somewhere a status.
 ROADMAP = re.compile(r"^\|\s*#\s*\|\s*Scope\s*\|.*\bStatus\s*\|")
 
@@ -260,7 +264,8 @@ def numbered_items(text: str) -> dict[str, dict[str, Section]]:
         if not bolds:
             # a bold title not yet closed, as an item mid-edit has
             continue
-        title = bolds[1] if bolds[0] in STATES and len(bolds) > 1 else bolds[0]
+        stated = bolds[0] in STATES or grammar.state_of(bolds[0], DECIDED) is not None
+        title = bolds[1] if stated and len(bolds) > 1 else bolds[0]
         number = item["number"]
         listed = found.setdefault(current, {})
         if number == "1" and listed:

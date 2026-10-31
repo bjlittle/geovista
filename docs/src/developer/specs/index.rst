@@ -90,6 +90,54 @@ work has moved past, such as an **Open** item whose issue has closed.
    Without a token, GitHub allows 60 requests an hour. Set ``GH_TOKEN`` to
    raise the limit, e.g., ``GH_TOKEN="$(gh auth token)"``.
 
+
+.. _gv-developer-specs-decisions:
+.. _tippy-gv-developer-specs-decisions:
+
+Decisions and Verification
+--------------------------
+
+Each specification records what was agreed in its Decisions section, and shows
+in its Verification section whether each decision was delivered. Together they
+are its ledger, which ledger spec §3.2, §3.3, §3.4 set out.
+
+**Adding a decision.** Append it to the end of the list, never between two
+others: a decision keeps its number for as long as the specification exists.
+Open it with its state and its provenance, then its title:
+
+.. code:: markdown
+
+   7. **🤝 Agreed** (2026-11-02, {user}`bjlittle`, {pull}`1234`) — **The title.**
+      Its reasoning.
+
+In the same pull request, add its row to the Verification table as
+``⏳ pending``.
+
+**Citing a decision.** Write ``heights spec §2 decision 3``, or
+``§2 decision 3`` inside the specification itself. One citation names one
+decision, so two decisions take two citations. The build links each to the
+decision.
+
+**Retiring a decision.** A decision that no longer holds is retired, never
+deleted. Change its state to ``🗄️ Retired``, with the retirement's date, who
+retired it and its pull request, then ``; agreed`` and the original date and pull
+request. Keep its text, and add a sentence saying why it was retired and what
+replaced it, citing the replacement. Its row becomes ``🗄️ retired``. A correction
+or a clarification that keeps a decision's meaning is an edit, not a retirement.
+
+**Verifying a decision.** When a test exercises the decision, cite the decision
+in the test's docstring or a comment, and make its row
+``✅ verified (date, {pull}`1234`)``, naming the test file in the Evidence column.
+The conventions test checks that the file exists and cites the decision.
+
+**Signing off a decision.** Where no test can honestly show a decision, a
+reviewer signs it off. The row becomes
+``✍️ signed off (date, {user}`reviewer`, {pull}`1234`)``, and its Evidence says
+what the reviewer checked. The reviewer named then adds the ``signed-off`` label
+to the pull request. An agent never adds that label, since GitHub records the
+account and not the person (ledger spec §2 decision 7). Once row 2 of
+ledger spec §8 lands, a missing label fails the pull request's checks.
+
 .. note::
 
     The implementation plans derived from these specifications are tracked in

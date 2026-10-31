@@ -29,6 +29,8 @@ through ``html_root``, which skips without one, and fails under
 ``--browser-strict``. This module sits inside the corpus the citation grammar
 governs, so it builds the section sign rather than write it.
 
+Holds citation spec §2 decision 2.
+
 """
 
 from __future__ import annotations

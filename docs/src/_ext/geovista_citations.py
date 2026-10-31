@@ -3,10 +3,11 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""The grammar of a citation of a design specification section.
+"""The grammar of a citation of a design specification section, or decision.
 
 What a citation is, and which anchor it names, is defined here once, and
-nowhere else (citation spec §4.1). The conventions test,
+nowhere else (citation spec §4.1). So is what a decision is, how one is cited,
+and how a specification's ledger of them reads (ledger spec §3.1). The conventions test,
 ``tests/test_spec_conventions.py``, reads the repository with it, and the
 build-time transform and the renumber guard of the citation links design will
 import it too, so that no two readers can disagree about what a citation is.
@@ -87,8 +88,35 @@ SPAN = re.compile(
     r"(?<!`)(?P<ticks>`+)(?!`)(?P<body>.+?)(?<!`)(?P=ticks)(?!`)"
 )
 TARGETED = re.compile(r"^(?P<text>.*?)\s*<(?P<target>[^<>]+)>$")
-LABEL = re.compile(r"^(?P<prefix>[a-z][a-z-]*?)-(?P<num>\d+(?:-\d+)*)$")
+LABEL = re.compile(
+    r"^(?P<prefix>[a-z][a-z-]*?)-(?P<num>\d+(?:-\d+)*)(?:-decision-(?P<decision>\d+))?$"
+)
 SEPARATOR = re.compile(r"[^\S\n]*[,/][^\S\n]*")
+
+#: The variation selector an emoji may carry, and may be typed without.
+VS16 = "\N{VARIATION SELECTOR-16}"
+
+#: The states of a decision (ledger spec §3.2, §3.3), as the specification spells
+#: them, built by name: see the module docstring.
+AGREED = "\N{HANDSHAKE} Agreed"
+RETIRED = f"\N{FILE CABINET}{VS16} Retired"
+
+#: The states of a decision's verification (ledger spec §3.4).
+PENDING = "\N{HOURGLASS WITH FLOWING SAND} pending"
+VERIFIED = "\N{WHITE HEAVY CHECK MARK} verified"
+SIGNED_OFF = f"\N{WRITING HAND}{VS16} signed off"
+LEDGER_RETIRED = f"\N{FILE CABINET}{VS16} retired"
+
+#: The titles of the sections holding the decisions and their ledger.
+DECISIONS = "Decisions"
+VERIFICATION = "Verification"
+
+#: The header of the ledger, cell by cell.
+LEDGER_HEADER = ("Decision", "Status", "Evidence")
+
+#: A top-level numbered item, and the bold runs an entry opens with.
+NUMBERED = re.compile(r"^(?P<number>\d+)\.\s+(?P<body>.*)$")
+BOLD = re.compile(r"\*\*(?P<text>[^*]+)\*\*")
 
 
 @dataclass(frozen=True)
@@ -140,6 +168,203 @@ class Namespace:
     def prefixes(self) -> set[str]:
         """The prefixes the anchors carry, e.g. ``typing-spec``."""
         return {match["prefix"] for a in self.anchors if (match := LABEL.match(a))}
+
+
+@dataclass(frozen=True)
+class Decision:
+    """One decision of a specification, as its entry is written.
+
+    Attributes
+    ----------
+    number : int
+        Its number in the list, which it keeps (ledger spec §2 decision 2).
+    line : int
+        The line its entry opens on.
+    state : str or None
+        :data:`AGREED` or :data:`RETIRED`, or ``None`` for an entry with no state.
+    carried : str
+        The parenthetical after the state, without its parentheses.
+    title : str
+        The bold title, read whole although it wraps.
+    body : str
+        The text after the title, its lines joined by single spaces.
+
+    """
+
+    number: int
+    line: int
+    state: str | None
+    carried: str
+    title: str
+    body: str
+
+
+@dataclass(frozen=True)
+class LedgerRow:
+    """One row of a specification's Verification table.
+
+    Attributes
+    ----------
+    cell : str
+        The first cell as written, which names the decision.
+    line : int
+        The line the row is written on.
+    status : str
+        The Status cell.
+    evidence : str
+        The Evidence cell.
+
+    """
+
+    cell: str
+    line: int
+    status: str
+    evidence: str
+
+    @property
+    def decision(self) -> int | None:
+        """The decision the row is for, or ``None`` when its first cell is no number."""
+        # ASCII digits only: "²" is a digit to str.isdigit, and no int() reads it
+        return int(self.cell) if re.fullmatch(r"[0-9]+", self.cell) else None
+
+
+def state_of(written: str, states: Iterable[str]) -> str | None:
+    """Read the state ``written`` opens with, with or without its variation selector.
+
+    Parameters
+    ----------
+    written : str
+        The text, e.g. a Status cell or the bold run an entry opens with.
+    states : iterable of str
+        The states it may open with, spelled as the specification spells them.
+
+    Returns
+    -------
+    str or None
+        The state in its canonical spelling, or ``None`` if it opens with none.
+
+    """
+    plain = written.replace(VS16, "")
+    return next((s for s in states if plain.startswith(s.replace(VS16, ""))), None)
+
+
+def decision_anchor(slug: str, number: int) -> str:
+    """Spell the anchor of a decision, e.g. ``heights-spec-2-decision-3``."""
+    return f"{slug}-2-decision-{number}"
+
+
+def balanced(text: str) -> str:
+    """Read the parenthetical ``text`` opens with, balanced so a link survives."""
+    text = text.lstrip()
+    if not text.startswith("("):
+        return ""
+    depth = 0
+    for index, char in enumerate(text):
+        depth += {"(": 1, ")": -1}.get(char, 0)
+        if depth == 0:
+            return text[1:index]
+    return text[1:]
+
+
+def _section(text: str, number: str, title: str) -> list[tuple[int, str]]:
+    """Read the lines of the section numbered ``number`` and titled ``title``."""
+    found: list[tuple[int, str]] = []
+    inside = False
+    for line_number, line in read_lines(text):
+        heading = HEADING.match(line)
+        if heading is not None:
+            inside = heading["num"] == number and heading["title"] == title
+            if not inside and found:
+                break
+            continue
+        if inside:
+            found.append((line_number, line))
+    return found
+
+
+def decisions(text: str) -> list[Decision]:
+    """Read the decisions of a specification: the numbered items of its Decisions.
+
+    An entry runs from its number to the next top-level line, so a title or a
+    parenthetical that wraps is read whole. A bulleted item is not a decision,
+    since it has no number to be cited by.
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+
+    Returns
+    -------
+    list of Decision
+        In the order written, or empty when its second section is not Decisions.
+
+    """
+    entries: list[tuple[int, int, list[str]]] = []
+    for number, line in _section(text, "2", DECISIONS):
+        item = NUMBERED.match(line)
+        if item is not None:
+            entries.append((int(item["number"]), number, [item["body"]]))
+        elif entries and line[:1].isspace() and line.strip():
+            entries[-1][2].append(line.strip())
+        elif line.strip() and entries:
+            # the list has ended, at the first line written flush after it
+            break
+    found = []
+    for number, line, parts in entries:
+        joined = " ".join(parts)
+        runs = list(BOLD.finditer(joined))
+        state = state_of(runs[0]["text"], (AGREED, RETIRED)) if runs else None
+        carried = ""
+        if state is not None:
+            carried = balanced(joined[runs[0].end() :])
+            runs = runs[1:]
+        title = runs[0]["text"].strip() if runs else ""
+        body = joined[runs[0].end() :].strip() if runs else joined.strip()
+        found.append(Decision(number, line, state, carried, title, body))
+    return found
+
+
+def ledger(text: str) -> list[LedgerRow] | None:
+    """Read a specification's Verification table, or ``None`` if it has none.
+
+    The table is the first under the section titled Verification whose header is
+    :data:`LEDGER_HEADER`, so a table of any other kind is never read as one.
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+
+    Returns
+    -------
+    list of LedgerRow or None
+        Its rows in order, the header and the divider skipped.
+
+    """
+    lines: list[tuple[int, str]] = []
+    title = None
+    for number, line in read_lines(text):
+        heading = HEADING.match(line)
+        if heading is not None:
+            title = heading["title"]
+        elif title == VERIFICATION:
+            lines.append((number, line))
+    table: list[tuple[int, list[str]]] = []
+    for number, line in [*lines, (0, "")]:
+        if line.startswith("|"):
+            table.append(
+                (number, [c.strip() for c in line.strip().strip("|").split("|")])
+            )
+            continue
+        if table:
+            if tuple(table[0][1]) == LEDGER_HEADER:
+                return [
+                    LedgerRow(cells[0], number, *[*cells, "", ""][1:3])
+                    for number, cells in table[2:]
+                ]
+            table = []
+    return None
 
 
 def specifications(specs: Path = SPECS) -> list[Path]:
@@ -317,19 +542,30 @@ def namespace(specs: Iterable[Path]) -> Namespace:
     anchors: set[str] = set()
     owners: dict[Path, str] = {}
     for spec in specs:
-        for _, line in read_lines(spec.read_text(encoding="utf-8")):
+        text = spec.read_text(encoding="utf-8")
+        for _, line in read_lines(text):
             match = ANCHOR.match(line)
             if match is not None:
                 anchors.add(f"{match['slug']}-{match['num']}")
                 owners.setdefault(spec, match["slug"])
+        # a decision's anchor is generated by the build, not written, so it is
+        # derived here from the entries themselves (ledger spec §3.1)
+        if spec in owners:
+            anchors.update(
+                decision_anchor(owners[spec], entry.number) for entry in decisions(text)
+            )
     known = alternation({LABEL.match(a)["prefix"] for a in anchors})
     number = r"\d+(?:\.\d+)*"
+    # "decision" and then whitespace, so "decisions" never matches
+    decided = r"(?:[^\S\n]+decision[^\S\n]+(?P<{}>\d+)(?!\d))?"
     return Namespace(
         anchors=frozenset(anchors),
         owners=owners,
         signed=re.compile(
             rf"(?<![\w-])(?P<prefix>{known})[^\S\n]*{SECTION}(?P<num>{number})"
-            rf"|{SECTION}(?P<bare>{number})",
+            + decided.format("decision")
+            + rf"|{SECTION}(?P<bare>{number})"
+            + decided.format("bare_decision"),
             flags=re.IGNORECASE,
         ),
         unsigned=re.compile(
@@ -373,16 +609,19 @@ def scan(
         end = match.end()
         if match["prefix"] is not None:
             carried = re.sub(r"\s+", "-", match["prefix"].lower())
-            number = match["num"]
+            number, decided = match["num"], match["decision"]
         elif joined:
-            number = match["bare"]
+            number, decided = match["bare"], match["bare_decision"]
         elif owner is not None:
             carried, number = owner, match["bare"]
+            decided = match["bare_decision"]
         else:
             carried = None
             yield Citation(match[0], None, match.start(), match.end())
             continue
         slug = f"{carried}-{number.replace('.', '-')}"
+        if decided is not None:
+            slug = f"{slug}-decision-{decided}"
         yield Citation(match[0], slug, match.start(), match.end())
 
 

@@ -319,8 +319,8 @@ Each of these raises a `ValueError` that names what was given:
   expects it.
 - **Settling {issue}`2728` here.** Deferred, by §2 decision 9. Drawing each cell flat at its
   own height, or averaging heights onto the points, each needs its own argument.
-- **Refusing a CRS with an ellipsoidal height whenever it is given.** Rejected, by §2
-  decision 10. Callers who pass `EPSG:4979` for longitudes and latitudes would break.
+- **Refusing a CRS with an ellipsoidal height whenever it is given.** Rejected, by
+  §2 decision 10. Callers who pass `EPSG:4979` for longitudes and latitudes would break.
 - **Lowering the base layer below the deepest height in row 3.** Deferred to row 4, which
   owns the base layer's lowering (globe spec §4.5).
 - **A gallery example of heights in row 3.** Deferred to row 5, which migrates the

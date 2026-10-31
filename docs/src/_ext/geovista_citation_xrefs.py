@@ -117,6 +117,43 @@ class CitationTransform(SphinxTransform):
                 text.parent.replace(text, replacement)
 
 
+class DecisionTargets(SphinxTransform):
+    """Give each decision of a specification its anchor (ledger spec §3.1).
+
+    No source declares a decision's anchor; the build names each numbered item of
+    a specification's Decisions after its number. It runs after docutils moves
+    the ``(…-2)=`` target onto its section, at priority 260, so the section can be
+    found by its id, and before :class:`CitationTransform` links to the anchors.
+    The standard domain records each as an anonymous label, which the explicit
+    title of a citation's reference resolves.
+    """
+
+    default_priority = 300
+
+    def apply(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Name the items of the document's Decisions, if it is a specification."""
+        self.env.note_dependency(__file__)
+        self.env.note_dependency(geovista_citations.__file__)
+        owner = OWNERS.get(self.env.docname)
+        if owner is None:
+            return
+        for section in self.document.findall(nodes.section):
+            if f"{owner}-2" not in section["ids"]:
+                continue
+            listing = next(
+                (c for c in section.children if isinstance(c, nodes.enumerated_list)),
+                None,
+            )
+            if listing is None:
+                return
+            start = listing.get("start", 1)
+            for offset, item in enumerate(listing.children):
+                name = geovista_citations.decision_anchor(owner, start + offset)
+                item["names"].append(name)
+                self.document.note_explicit_target(item, item)
+            return
+
+
 def _heading(node: nodes.Node) -> nodes.title | None:
     """Return the section heading ``node`` sits in, or ``None``.
 
@@ -348,10 +385,11 @@ def setup(app: Sphinx) -> dict[str, object]:
     """
     app.connect("builder-inited", _build_registry)
     app.connect("env-get-outdated", _outdated)
+    app.add_transform(DecisionTargets)
     app.add_transform(CitationTransform)
     return {
         "version": "0.1.0",
-        "env_version": 1,
+        "env_version": 2,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }

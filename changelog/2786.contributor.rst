@@ -1,0 +1,7 @@
+Made each decision of a specification citeable, as ``heights spec §2 decision 3``,
+with an anchor the build gives it. The docs, citation and decision ledger
+specifications now record each decision with who agreed it and when, and end with
+a Verification table naming the test or the sign-off behind each one. The
+conventions test holds every specification in the ledger to it, and the
+specifications index explains how to add, retire, verify and sign off a decision.
+(:user:`claude`)
