@@ -1124,3 +1124,27 @@ def test_a_decision_inserted_mid_list_fails_naming_it(guard):
     assert len(problems) == 1
     assert "The second." in problems[0]
     assert AGREED not in problems[0]
+
+
+def test_a_decision_with_a_wrapped_title_is_named_whole(guard):
+    """A decision's title that wraps is read whole, past its state (#2787)."""
+    wrapped = (
+        f"**{AGREED}** (2026-10-30, {{user}}`bjlittle`, {{pull}}`1`) — **The second,\n"
+        "   wrapped.** B."
+    )
+    base = spec(("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, wrapped)))
+    head = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, THIRD, wrapped))
+    )
+
+    problems = guard.frozen(base, head)
+
+    assert len(problems) == 1
+    assert "The second, wrapped." in problems[0]
+
+
+def test_a_roadmap_scope_keeps_an_escaped_pipe(guard):
+    """A row is titled by its whole scope, escaped pipe and all (#2787)."""
+    text = spec(("4", "Roadmap", roadmap(("1", "a \\| b"))))
+
+    assert guard.roadmap_rows(text)["1"].title == "a \\| b"

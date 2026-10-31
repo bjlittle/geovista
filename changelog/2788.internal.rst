@@ -1,0 +1,3 @@
+The decision ledger's checks read a table cell holding an escaped pipe whole,
+read a decision's title the same way in the conventions test and the renumber
+guard, and report a decision with no title. (:user:`claude`)

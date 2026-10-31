@@ -354,3 +354,39 @@ def test_a_row_naming_a_superscript_names_no_decision(citations):
     row = citations.LedgerRow("\N{SUPERSCRIPT TWO}", 1, "", "")
 
     assert row.decision is None
+
+
+def test_cells_keep_an_escaped_pipe(citations):
+    """A table cell may hold a pipe, escaped, and is not cut short at it (#2787)."""
+    assert citations.cells("| 1 | a \\| b | c |") == ["1", "a \\| b", "c"]
+
+
+def test_ledger_keeps_an_escaped_pipe_in_its_evidence(citations):
+    """The Evidence cell is read whole, pipe and all (#2787)."""
+    text = (
+        "(demo-spec-10)=\n## 10. Verification\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n"
+        "| 1 | \N{HOURGLASS WITH FLOWING SAND} pending | a \\| b |\n"
+    )
+
+    assert citations.ledger(text)[0].evidence == "a \\| b"
+
+
+def test_decisions_reads_a_title_with_emphasis_inside(citations):
+    """A title holding an emphasised word is read whole, as the guard reads it."""
+    text = "(demo-spec-2)=\n## 2. Decisions\n\n1. **A *very* big title.** Reasoning.\n"
+
+    assert citations.decisions(text)[0].title == "A *very* big title."
+
+
+@pytest.mark.parametrize(
+    "row", ["| 1 | x | a \\||", "| 1 | x | a \\|"], ids=["closed", "unclosed"]
+)
+def test_cells_keep_an_escaped_pipe_ending_the_row(citations, row):
+    """Only the outer pipes are separators, so a last cell's escaped pipe stays."""
+    assert citations.cells(row) == ["1", "x", "a \\|"]
+
+
+def test_cells_keep_an_empty_last_cell(citations):
+    """An empty cell is a cell, and only the separators beyond it are dropped."""
+    assert citations.cells("| 1 | |") == ["1", ""]

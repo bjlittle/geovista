@@ -141,3 +141,10 @@ def test_a_build_writes_the_summary_under_the_table(tmp_path):
     summary = page.index("1 of 2 decisions in force verified")
     assert table_end < summary < page.index("After the table.")
     assert 'class="ledger-summary"' in page
+
+
+def test_the_extension_builds_its_emoji_by_name():
+    """The module sits in the corpus it serves, so writes no emoji literally (#2787)."""
+    source = (EXT / "geovista_ledger.py").read_text(encoding="utf-8")
+
+    assert not [char for char in source if ord(char) > 0x2000 and char != "·"]

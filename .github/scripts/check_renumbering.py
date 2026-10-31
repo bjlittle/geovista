@@ -222,7 +222,7 @@ def pair(
 ITEM = re.compile(r"^(?P<number>\d+)\.\s+(?P<rest>\S.*)$")
 
 #: A run of bold text, which may wrap.
-BOLD = re.compile(r"\*\*(?P<text>.+?)\*\*", flags=re.DOTALL)
+BOLD = grammar.BOLD
 
 #: The statuses an open item opens with, before its title.
 STATES = frozenset({"Open", "Resolved", "Deferred", "Abandoned"})
@@ -287,7 +287,7 @@ def roadmap_rows(text: str) -> dict[str, Section]:
         if not line.startswith("|"):
             inside = False
             continue
-        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        cells = grammar.cells(line)
         if inside and cells and not set(cells[0]) <= set("-: "):
             # a row mid-edit may have its number and nothing else yet
             scope = cells[1] if len(cells) > 1 else ""

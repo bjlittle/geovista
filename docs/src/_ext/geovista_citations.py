@@ -116,7 +116,11 @@ LEDGER_HEADER = ("Decision", "Status", "Evidence")
 
 #: A top-level numbered item, and the bold runs an entry opens with.
 NUMBERED = re.compile(r"^(?P<number>\d+)\.\s+(?P<body>.*)$")
-BOLD = re.compile(r"\*\*(?P<text>[^*]+)\*\*")
+#: A bold run, which may hold an emphasised word, as ``**A *very* big title.**``.
+BOLD = re.compile(r"\*\*(?P<text>.+?)\*\*", flags=re.DOTALL)
+
+#: A table cell boundary: a pipe, unless escaped.
+PIPE = re.compile(r"(?<!\\)\|")
 
 
 @dataclass(frozen=True)
@@ -226,6 +230,20 @@ class LedgerRow:
         """The decision the row is for, or ``None`` when its first cell is no number."""
         # ASCII digits only: "²" is a digit to str.isdigit, and no int() reads it
         return int(self.cell) if re.fullmatch(r"[0-9]+", self.cell) else None
+
+
+def cells(line: str) -> list[str]:
+    """Split a table row into its cells, keeping an escaped pipe within its cell.
+
+    The row is split first, and only then are its outer separators dropped, so an
+    escaped pipe ending the last cell is never mistaken for one.
+    """
+    parts = PIPE.split(line.strip())
+    if parts and not parts[0].strip():
+        parts = parts[1:]
+    if len(parts) > 1 and not parts[-1].strip():
+        parts = parts[:-1]
+    return [cell.strip() for cell in parts]
 
 
 def state_of(written: str, states: Iterable[str]) -> str | None:
@@ -353,15 +371,13 @@ def ledger(text: str) -> list[LedgerRow] | None:
     table: list[tuple[int, list[str]]] = []
     for number, line in [*lines, (0, "")]:
         if line.startswith("|"):
-            table.append(
-                (number, [c.strip() for c in line.strip().strip("|").split("|")])
-            )
+            table.append((number, cells(line)))
             continue
         if table:
             if tuple(table[0][1]) == LEDGER_HEADER:
                 return [
-                    LedgerRow(cells[0], number, *[*cells, "", ""][1:3])
-                    for number, cells in table[2:]
+                    LedgerRow(row[0], number, *[*row, "", ""][1:3])
+                    for number, row in table[2:]
                 ]
             table = []
     return None
