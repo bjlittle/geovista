@@ -945,6 +945,19 @@ e.g.,
    |                                        | This is a one-off, as ``playwright`` manages the                 |
    |                                        | browser separately from its ``python`` bindings.                 |
    +----------------------------------------+------------------------------------------------------------------+
+   | :guilabel:`verification-report`        | Report how each design specification decision is verified,       |
+   |                                        | and where it is cited. See                                       |
+   |                                        | :ref:`tippy-gv-developer-specs-decisions` e.g.,                  |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run verification-report                                |
+   |                                        |                                                                  |
+   |                                        | Provide a specification's prefix, such as ``heights``, to        |
+   |                                        | report that specification alone. It is never a check: it         |
+   |                                        | exits 0 whatever it finds.                                       |
+   |                                        |                                                                  |
+   +----------------------------------------+------------------------------------------------------------------+
 
 .. tip::
    :class: dropdown, toggle-shown

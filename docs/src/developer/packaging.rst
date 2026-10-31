@@ -526,6 +526,18 @@ The following tasks are defined for each of our features:
    |                |                                |    ``pytest-pyvista`` plugin option ``--failed_image_dir`` (see                       |
    |                |                                |    :ref:`Image Tests Generation <tippy-gv-developer-testing-image-tests-generation>`) |
    |                |                                |    within the :bash:`test_images_failed` directory for analysis and investigation.    |
+   |                +--------------------------------+---------------------------------------------------------------------------------------+
+   |                | ``verification-report``        | Report how each design specification decision is verified, and where it is            |
+   |                |                                | cited e.g.,                                                                           |
+   |                |                                |                                                                                       |
+   |                |                                | .. code:: console                                                                     |
+   |                |                                |                                                                                       |
+   |                |                                |    $ pixi run verification-report                                                     |
+   |                |                                |                                                                                       |
+   |                |                                | Provide a specification's prefix, such as ``heights``, to report that                 |
+   |                |                                | specification alone. The report is a view of the ledger, never a check: it            |
+   |                |                                | exits 0 whatever it finds. See :ref:`tippy-gv-developer-specs-decisions`.             |
+   |                |                                |                                                                                       |
    +----------------+--------------------------------+---------------------------------------------------------------------------------------+
 
 .. seealso::
