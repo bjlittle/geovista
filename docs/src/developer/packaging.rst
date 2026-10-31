@@ -487,6 +487,17 @@ The following tasks are defined for each of our features:
    |                |                                | may cite while it is still open, or ``drift`` to also report a status the work has    |
    |                |                                | moved past. See :ref:`tippy-gv-developer-specs`.                                      |
    |                +--------------------------------+---------------------------------------------------------------------------------------+
+   |                | ``check-spec-renumbering``     | Check the specification citations against a renumbered section e.g.,                  |
+   |                |                                |                                                                                       |
+   |                |                                | .. code:: console                                                                     |
+   |                |                                |                                                                                       |
+   |                |                                |    $ pixi run check-spec-renumbering                                                  |
+   |                |                                |                                                                                       |
+   |                |                                | Provide ``fix`` to rewrite the citations of moved sections in place, or ``audit`` to  |
+   |                |                                | compare every citation with its specification when it was written. See                |
+   |                |                                | :ref:`tippy-gv-developer-checks-spec-renumbering`.                                    |
+   |                |                                |                                                                                       |
+   |                +--------------------------------+---------------------------------------------------------------------------------------+
    |                | ``tests-clean``                | Purge both the documentation and unit test image caches, along with any images        |
    |                |                                | generated from previous test sessions e.g.,                                           |
    |                |                                |                                                                                       |
