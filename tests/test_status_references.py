@@ -607,3 +607,81 @@ def test_main_checks_the_ledger(script, labels, capsys):
 
     assert script.main(["--pull", "12"], resolve=resolve, labelled=labels) == 1
     assert "signed-off label" in capsys.readouterr().out
+
+
+def test_a_reviewer_is_read_whatever_their_case(script, record, labels):
+    """GitHub logins ignore case, so BJLITTLE signs off as bjlittle does."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(
+            f"{SIGNED_OFF} (2026-10-07, {{user}}`BJLITTLE`, {{pull}}`10`) | Checked.",
+        ),
+    )
+
+    assert ledger_faults(script, record, labels, text) == []
+
+
+#: An accented letter, which git quotes in a name unless asked not to.
+ACUTE = "\N{LATIN SMALL LETTER E WITH ACUTE}"
+
+
+def changed_step() -> tuple[str, str]:
+    """Read the workflow's watched globs, and the script its changed step runs."""
+    workflow = yaml.safe_load(
+        (SCRIPT.parents[2] / ".github" / "workflows" / "ci-spec-status.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    job = workflow["jobs"]["references"]
+    (step,) = [step for step in job["steps"] if step.get("id") == "changed"]
+    return job["env"]["WATCHED"], step["run"]
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        (
+            f"docs/src/developer/specs/{ACUTE}t{ACUTE}-design.md",
+            "true",
+        ),
+        ("docs/src/developer/specs/a spec-design.md", "true"),
+        ("src/geovista/core.py", "false"),
+    ],
+    ids=["non-ascii", "space", "unwatched"],
+)
+def test_the_changed_step_reads_every_filename(tmp_path, name, expected):
+    """A path Git would quote or split is still matched against the watched globs."""
+    import os  # noqa: PLC0415
+    import subprocess  # noqa: PLC0415
+
+    def git(*args: str) -> str:
+        done = subprocess.run(  # noqa: S603
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],  # noqa: S607
+            cwd=tmp_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return done.stdout.strip()
+
+    git("init", "-q")
+    git("commit", "-q", "--allow-empty", "-m", "base")
+    base = git("rev-parse", "HEAD")
+    path = tmp_path / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("x\n", encoding="utf-8")
+    git("add", "--all")
+    git("commit", "-q", "-m", "head")
+    watched, run = changed_step()
+    output = tmp_path / "output.txt"
+    env = {
+        **os.environ,
+        "BASE_SHA": base,
+        "HEAD_SHA": git("rev-parse", "HEAD"),
+        "WATCHED": watched,
+        "GITHUB_OUTPUT": str(output),
+    }
+
+    subprocess.run(["bash", "-c", run], cwd=tmp_path, env=env, check=True)  # noqa: S603, S607
+
+    assert output.read_text(encoding="utf-8").strip() == f"watched={expected}"

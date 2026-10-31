@@ -64,14 +64,15 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -o errexit
-          git diff --name-only "${BASE_SHA}...${HEAD_SHA}" > changed.txt
+          # NUL-delimited, as git quotes a non-ASCII name otherwise
+          git diff --name-only -z "${BASE_SHA}...${HEAD_SHA}" > changed.txt
           python3 - >> "${GITHUB_OUTPUT}" <<'PY'
           import fnmatch
           import os
           from pathlib import Path
 
           watched = os.environ["WATCHED"].split()
-          changed = Path("changed.txt").read_text().split()
+          changed = [p for p in Path("changed.txt").read_text().split("\0") if p]
           hit = any(fnmatch.fnmatch(path, glob) for path in changed for glob in watched)
           print(f"watched={'true' if hit else 'false'}")
           PY

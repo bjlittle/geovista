@@ -442,7 +442,8 @@ def _signed(
     if not events or events[-1].action != "labeled":
         return [f"{reference.text} carries no {SIGN_OFF} label"]
     last = events[-1]
-    if last.login != reviewer:
+    # GitHub logins ignore case, and a deleted account's event names no one
+    if last.login is None or last.login.casefold() != reviewer.casefold():
         added = last.login or "no one"
         said = f"the {SIGN_OFF} label on {reference.text} was added by {added}"
         return [f"{said}, not {reviewer}"]
