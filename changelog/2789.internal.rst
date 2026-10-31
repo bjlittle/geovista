@@ -1,0 +1,6 @@
+The specification status check now asks GitHub about each decision ledger. A
+decision's pull request must have merged, a verified or retired row is dated by
+its pull request's merge, and a sign-off holds only when the reviewer it names
+added the ``signed-off`` label to the pull request it cites. ``ci-spec-status.yml``
+re-runs when a label is added or removed, and reports on every pull request.
+(:user:`claude`)

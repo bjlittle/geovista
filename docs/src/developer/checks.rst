@@ -437,17 +437,36 @@ Specification Statuses
 
 **The rule:** Every status in a specification that cites work cites work that
 exists and did what the status says: a ``landed`` row cites merged pull
-requests on its date, and a **Resolved** item cites real work.
+requests on its date, and a **Resolved** item cites real work. In a ledger, every
+pull request a decision cites has merged, a verified or retired row is dated by
+its pull request's merge, and a signed-off row's reviewer added the
+``signed-off`` label to the pull request it cites, which still carries it.
 
 **Why:** A status is how a reader learns what has happened, and one citing the
 wrong pull request, or one that never merged, misleads them.
 
 **What enforces it:** :bash:`.github/scripts/check_status_references.py`, which
 ``ci-spec-status.yml`` runs on every pull request that changes a specification,
-and each night, when it also reports a status the work has moved past.
+again when a label is added or removed, and each night, when it also reports a
+status the work has moved past. Its ``status references`` job reports on every
+pull request, so that it can be a required check.
 
-**When it fails:** Correct the status, or the work it cites. Run the check before
-pushing, with the number of your pull request:
+**When it fails:** Correct the status, or the work it cites. For a ledger:
+
+- *has not merged*, on a decision or a row: cite the pull request that merged the
+  decision or its evidence.
+- *verified on …, but … merged on …* or *retired on …, but … merged on …*: date the
+  row by the day its pull request merged.
+- *carries no signed-off label*: the reviewer the row names adds ``signed-off`` to
+  the pull request the row cites. An agent never does. Adding the label to a pull
+  request that has already merged re-runs that pull request's check, not the
+  current one's, so re-run ``status references`` on the current pull request.
+- *the signed-off label on … was added by …, not …*: the reviewer the row names
+  adds it themselves, or the row names whoever did sign it off.
+- *signed off on …, but the label was added on …*: date the row by the day the
+  label was added.
+
+Run the check before pushing, with the number of your pull request:
 
 .. code:: console
 

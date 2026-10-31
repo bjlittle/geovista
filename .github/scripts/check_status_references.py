@@ -32,6 +32,14 @@ With "--pull" a status may cite that pull request while it is still open, as a
 pull request can record what it resolves, and the date of a "✅ landed" row
 citing it is not checked.
 
+It asks GitHub about each ledger too (ledger spec §3.7):
+
+- Every pull request a decision cites has merged, or is the one being checked.
+- A verified or retired row is dated within a day of its pull request's merge.
+- A signed-off row holds when the reviewer it names added the "signed-off"
+  label to the pull request it cites, and the label is on it still, read from
+  that pull request's events. Its date is within a day of the label's.
+
 The statuses are read with the parser of "tests/test_spec_conventions.py",
 which reads specifications with the citation grammar of
 "docs/src/_ext/geovista_citations.py", so that a status has one definition
@@ -61,7 +69,7 @@ import urllib.error
 import urllib.request
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterator
     from types import ModuleType
 
 #: The section of the repository checks page that documents this check.
@@ -131,6 +139,29 @@ class Work:
 #: Look up the work at a repository and number, or None when there is none.
 type Resolver = Callable[[str, int], Work | None]
 
+#: The label a reviewer adds to sign off the decisions a pull request records.
+SIGN_OFF = "signed-off"
+
+#: A reviewer, as a sign-off names them.
+REVIEWER = re.compile(r"\{user\}`(?P<login>[^`]+)`")
+
+#: The next page of a paginated answer, from its Link header.
+NEXT = re.compile(r'<(?P<url>[^>]+)>;\s*rel="next"')
+
+
+@dataclass(frozen=True)
+class Labelling:
+    """A label added to or removed from a pull request, as GitHub reports it."""
+
+    action: str
+    label: str
+    login: str | None
+    when: date
+
+
+#: Read the label events of the pull request at a repository and number.
+type Labeller = Callable[[str, int], list[Labelling]]
+
 
 def references(evidence: str) -> list[Reference]:
     """Return the references in the text a status carries, in written order."""
@@ -171,6 +202,16 @@ def cited(text: str) -> list[Reference]:
     for _, kind, written in conventions.statuses(text):
         if (parsed := _parse(kind, written)) is not None:
             found += references(conventions.carried(parsed[1]))
+    return found
+
+
+def ledger_cited(text: str) -> list[Reference]:
+    """Return every reference a ledger carries, its decisions' and its rows'."""
+    found = []
+    for decision in conventions.decisions(text):
+        found += references(decision.carried)
+    for row in conventions.ledger(text) or []:
+        found += references(conventions.carried(conventions.opened(row.status)[1]))
     return found
 
 
@@ -296,6 +337,185 @@ def check(
     return problems
 
 
+def check_ledger(
+    path: Path,
+    text: str,
+    resolve: Resolver,
+    labelled: Labeller,
+    *,
+    pull: int | None = None,
+) -> list[str]:
+    """Check the work each decision and each Verification row of a ledger cites.
+
+    Parameters
+    ----------
+    path : Path
+        The specification, to locate each fault.
+    text : str
+        The specification.
+    resolve : Resolver
+        Look up the work at a repository and number.
+    labelled : Labeller
+        Read the label events of a pull request.
+    pull : int, optional
+        The number of the pull request being checked, which may not have merged.
+
+    Returns
+    -------
+    list of str
+        One message per fault, as ``path:line: message``.
+
+    """
+    problems = []
+
+    def current(reference: Reference) -> bool:
+        return reference.repository == REPOSITORY and reference.number == pull
+
+    def pulled(evidence: str) -> Iterator[tuple[Reference, Work | None]]:
+        for reference in references(evidence):
+            yield reference, resolve(reference.repository, reference.number)
+
+    def found(reference: Reference, work: Work | None) -> str | None:
+        if work is None:
+            return f"{reference.text} does not exist"
+        if work.kind != "pull":
+            return f"{reference.text} is an issue"
+        return None
+
+    for decision in conventions.decisions(text):
+        faults = []
+        for reference, work in pulled(decision.carried):
+            if (fault := found(reference, work)) is not None:
+                faults.append(fault)
+            elif work.state != "merged" and not current(reference):
+                faults.append(f"{reference.text} has not merged")
+        at = conventions.where(path, decision.line)
+        problems += [f"{at}: {fault}" for fault in faults]
+
+    for row in conventions.ledger(text) or []:
+        state, rest = conventions.opened(row.status)
+        evidence = conventions.carried(rest)
+        written = conventions.DATE.search(evidence)
+        when = None if written is None else conventions.dated(written[0])
+        faults = []
+        for reference, work in pulled(evidence):
+            if (fault := found(reference, work)) is not None:
+                faults.append(fault)
+            elif state == conventions.SIGNED_OFF:
+                if work.state != "merged" and not current(reference):
+                    faults.append(f"{reference.text} has not merged")
+                else:
+                    faults += _signed(evidence, reference, labelled, when)
+            elif state in (conventions.VERIFIED, conventions.LEDGER_RETIRED):
+                if current(reference):
+                    continue
+                said = "verified" if state == conventions.VERIFIED else "retired"
+                if work.state != "merged":
+                    faults.append(f"{reference.text} has not merged")
+                elif when and work.when and abs((when - work.when).days) > 1:
+                    faults.append(
+                        f"{said} on {when}, but {reference.text} merged on {work.when}"
+                    )
+        at = conventions.where(path, row.line)
+        problems += [f"{at}: {fault}" for fault in faults]
+    return problems
+
+
+def _signed(
+    evidence: str,
+    reference: Reference,
+    labelled: Labeller,
+    when: date | None,
+) -> list[str]:
+    """Check that the reviewer a sign-off names put the label on its pull request.
+
+    Its date is checked even against the pull request being checked: the label's
+    date is known before the merge, and the run the label sets off can catch it.
+    """
+    named = REVIEWER.search(evidence)
+    reviewer = named["login"] if named else "no reviewer"
+    events = [
+        event
+        for event in labelled(reference.repository, reference.number)
+        if event.label == SIGN_OFF
+    ]
+    if not events or events[-1].action != "labeled":
+        return [f"{reference.text} carries no {SIGN_OFF} label"]
+    last = events[-1]
+    # GitHub logins ignore case, and a deleted account's event names no one
+    if last.login is None or last.login.casefold() != reviewer.casefold():
+        added = last.login or "no one"
+        said = f"the {SIGN_OFF} label on {reference.text} was added by {added}"
+        return [f"{said}, not {reviewer}"]
+    if when is not None and abs((when - last.when).days) > 1:
+        return [f"signed off on {when}, but the label was added on {last.when}"]
+    return []
+
+
+def _headers(token: str | None) -> dict[str, str]:
+    """Return the headers of a GitHub REST API request."""
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "geovista-check-status-references",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
+
+
+def labeller(token: str | None = None) -> Labeller:
+    """Return a labeller that reads a pull request's events, every page, cached.
+
+    Parameters
+    ----------
+    token : str, optional
+        A GitHub token, which raises the rate limit.
+
+    Returns
+    -------
+    Labeller
+        The labeller.
+
+    """
+    headers = _headers(token)
+    cache: dict[tuple[str, int], list[Labelling]] = {}
+
+    def labelled(repository: str, number: int) -> list[Labelling]:
+        key = (repository, number)
+        if key not in cache:
+            stamped: list[tuple[datetime, Labelling]] = []
+            url: str | None = (
+                f"{API}/repos/{repository}/issues/{number}/events?per_page=100"
+            )
+            while url:
+                request = urllib.request.Request(url, headers=headers)  # noqa: S310
+                with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
+                    page = json.load(response)
+                    following = NEXT.search(response.headers.get("Link") or "")
+                for event in page:
+                    if event.get("event") not in ("labeled", "unlabeled"):
+                        continue
+                    # a deleted account leaves its events behind, with no actor
+                    actor = event.get("actor") or {}
+                    at = datetime.fromisoformat(event["created_at"])
+                    labelling = Labelling(
+                        event["event"],
+                        event["label"]["name"],
+                        actor.get("login"),
+                        at.date(),
+                    )
+                    stamped.append((at, labelling))
+                url = following["url"] if following else None
+            # the last event decides whether the label is on, so hold them in
+            # time order, whatever order the pages served them in
+            stamped.sort(key=lambda pair: pair[0])
+            cache[key] = [labelling for _, labelling in stamped]
+        return cache[key]
+
+    return labelled
+
+
 def github(token: str | None = None) -> Resolver:
     """Return a resolver that asks the GitHub REST API, caching each answer.
 
@@ -310,13 +530,7 @@ def github(token: str | None = None) -> Resolver:
         The resolver.
 
     """
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "User-Agent": "geovista-check-status-references",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
+    headers = _headers(token)
     cache: dict[tuple[str, int], Work | None] = {}
 
     def when(stamp: str | None) -> date | None:
@@ -347,7 +561,11 @@ def github(token: str | None = None) -> Resolver:
     return resolve
 
 
-def main(argv: list[str] | None = None, resolve: Resolver | None = None) -> int:
+def main(
+    argv: list[str] | None = None,
+    resolve: Resolver | None = None,
+    labelled: Labeller | None = None,
+) -> int:
     """Check every specification, printing each fault.
 
     Parameters
@@ -356,6 +574,8 @@ def main(argv: list[str] | None = None, resolve: Resolver | None = None) -> int:
         The command line arguments. Defaults to those of the process.
     resolve : Resolver, optional
         Look up the work at a repository and number. Defaults to asking GitHub.
+    labelled : Labeller, optional
+        Read the label events of a pull request. Defaults to asking GitHub.
 
     Returns
     -------
@@ -378,22 +598,19 @@ def main(argv: list[str] | None = None, resolve: Resolver | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     if resolve is None:
-        resolve = github(os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"))
+        resolve = github(token)
+    if labelled is None:
+        labelled = labeller(token)
     specifications = conventions.specifications()
 
     try:
-        problems = [
-            problem
-            for path in specifications
-            for problem in check(
-                path,
-                path.read_text(encoding="utf-8"),
-                resolve,
-                pull=args.pull,
-                drift=args.drift,
-            )
-        ]
+        problems = []
+        for path in specifications:
+            text = path.read_text(encoding="utf-8")
+            problems += check(path, text, resolve, pull=args.pull, drift=args.drift)
+            problems += check_ledger(path, text, resolve, labelled, pull=args.pull)
     except (urllib.error.URLError, TimeoutError) as error:
         print(f"could not ask GitHub: {error}", file=sys.stderr)
         if isinstance(error, urllib.error.HTTPError) and error.code in (403, 429):
@@ -416,7 +633,8 @@ def main(argv: list[str] | None = None, resolve: Resolver | None = None) -> int:
     if problems:
         print(breadcrumb.breadcrumb(CHECK))
 
-    count = sum(len(cited(path.read_text(encoding="utf-8"))) for path in specifications)
+    texts = [path.read_text(encoding="utf-8") for path in specifications]
+    count = sum(len(cited(text)) + len(ledger_cited(text)) for text in texts)
     verdict = f"{len(problems)} fault(s)" if problems else "all hold"
     print(
         f"checked {count} reference(s) across {len(specifications)} "
