@@ -1173,13 +1173,11 @@ def statuses(text: str) -> Iterator[tuple[int, str, str]]:
             table.append((number, line))
             continue
         if table:
-            cells = [cell.strip() for cell in table[0][1].strip().strip("|").split("|")]
+            cells = citations.cells(table[0][1])
             if roadmap_header(cells):
                 column = cells.index("Status")
                 for row, written in table[2:]:
-                    found = [
-                        cell.strip() for cell in written.strip().strip("|").split("|")
-                    ]
+                    found = citations.cells(written)
                     yield row, "row", found[column] if column < len(found) else ""
             table = []
     item: list[str] = []
@@ -2025,6 +2023,7 @@ decisions = citations.decisions
 ledger = citations.ledger
 state_of = citations.state_of
 decision_anchor = citations.decision_anchor
+Decision = citations.Decision
 
 #: The specifications not yet in the ledger, each with the row of ledger spec §8
 #: that brings it in. Each of those rows shortens this, and the last empties it.
@@ -2102,6 +2101,8 @@ def ledger_entries(path: Path, text: str) -> list[str]:
             problems.append(f"{at}: decision {d.number} opens with no state")
         elif not (DATE.search(agreed) and USER.search(agreed) and PULL.search(agreed)):
             problems.append(f"{at}: decision {d.number} carries no date, user and pull")
+        elif not d.title:
+            problems.append(f"{at}: decision {d.number} has no title")
         elif d.state == RETIRED_STATE and not (
             DATE.search(history) and PULL.search(history)
         ):
@@ -2254,7 +2255,7 @@ def roadmap_rows(text: str) -> dict[str, str]:
     table: list[list[str]] = []
     for _, line in [*read_lines(text), (0, "")]:
         if line.startswith("|"):
-            table.append([c.strip() for c in line.strip().strip("|").split("|")])
+            table.append(citations.cells(line))
             continue
         if table and roadmap_header(table[0]):
             column = table[0].index("Status")
@@ -2285,7 +2286,7 @@ def ledger_complete(path: Path, text: str) -> list[str]:
 
 
 def ledger_replacements(
-    path: Path, text: str, names: Namespace, decided: Mapping[str, object]
+    path: Path, text: str, names: Namespace, decided: Mapping[str, Decision]
 ) -> list[str]:
     """Find a retirement replaced by one not in force, item 8 of ledger spec §3.6."""
     owner = names.owners.get(path)
@@ -2305,7 +2306,7 @@ def ledger_replacements(
 
 
 def replaced(
-    path: Path, line: int, cited: Citation, decided: Mapping[str, object]
+    path: Path, line: int, cited: Citation, decided: Mapping[str, Decision]
 ) -> list[str]:
     """Report a replacement that is no decision, or not one in force."""
     at = where(path, line)
@@ -2504,7 +2505,7 @@ def test_ledger_replacement_reads_any_case_and_only_decisions(tmp_path):
 
 
 @pytest.fixture(scope="module")
-def decided(specs, names) -> dict[str, object]:
+def decided(specs, names) -> dict[str, Decision]:
     """Map each decision's anchor in the collection to its entry."""
     return {
         decision_anchor(names.owners[spec], d.number): d
@@ -2537,7 +2538,9 @@ def test_every_ledgered_specification_holds_its_ledger(spec, names, decided):
 def test_unledgered_names_specifications_still_waiting(specs):
     """An exemption cannot outlive the row of ledger spec §8 that ends it."""
     names = {spec.name for spec in specs}
-    rows = roadmap_rows((SPECS / "2026-10-30-decision-ledger-design.md").read_text())
+    rows = roadmap_rows(
+        (SPECS / "2026-10-30-decision-ledger-design.md").read_text(encoding="utf-8")
+    )
 
     assert set(UNLEDGERED) <= names
     assert not [
@@ -2594,3 +2597,43 @@ def test_ledger_sign_off_says_what_was_checked(tmp_path):
     assert faults(ledger_table(path, path.read_text(encoding="utf-8"))) == [
         "decision 1 is signed off, and says nothing of what was checked"
     ]
+
+
+def test_statuses_reads_past_an_escaped_pipe():
+    """A scope may hold an escaped pipe, which does not move the Status column."""
+    text = (
+        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        "| 1 | a \\| b | not started |\n"
+    )
+
+    assert [status for _, _, status in statuses(text)] == ["not started"]
+    assert roadmap_rows(text) == {"1": "not started"}
+
+
+def test_ledger_entries_wants_a_title(tmp_path):
+    """Ledger spec §2 decision 2: an untitled decision has nothing to be paired by."""
+    entries = f"1. **{AGREED}** ({AGREEMENT}) — Its reasoning, untitled.\n"
+    path, _ = ledgered(tmp_path, entries, "")
+
+    assert faults(ledger_entries(path, path.read_text(encoding="utf-8"))) == [
+        "decision 1 has no title"
+    ]
+
+
+def test_ledger_rules_read_states_without_their_variation_selector(tmp_path):
+    """Ledger spec §2 decision 9: a state typed without U+FE0F is the same state."""
+    plain = citations.VS16
+    retired = f"{AGREEMENT}; agreed 2026-01-01, {{pull}}`1`"
+    entries = entry(1, RETIRED_STATE.replace(plain, ""), retired)
+    entries += entry(2, AGREED, AGREEMENT)
+    rows = (
+        f"| 1 | {LEDGER_RETIRED.replace(plain, '')} (2026-01-01, {{pull}}`1`) | |\n"
+        f"| 2 | {SIGNED_OFF.replace(plain, '')} (2026-01-01, {{user}}`bjlittle`, "
+        "{pull}`1`) | Checked. |\n"
+    )
+    path, _ = ledgered(tmp_path, entries, rows)
+    text = path.read_text(encoding="utf-8")
+
+    assert ledger_entries(path, text) == []
+    assert ledger_table(path, text) == []
+    assert ledger_retirements(path, text) == []

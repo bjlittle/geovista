@@ -53,7 +53,8 @@ def summary(statuses: Iterable[str]) -> str:
     Returns
     -------
     str
-        e.g. ``"✅ 3 · ✍️ 1 · ⏳ 1 · 🗄️ 1: 4 of 5 decisions in force verified"``.
+        Each state's emoji and count, then how many decisions in force are
+        verified, as ledger spec §3.4 spells it.
 
     """
     counts = dict.fromkeys(STATES, 0)

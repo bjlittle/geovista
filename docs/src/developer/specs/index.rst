@@ -58,6 +58,14 @@ banners of its family.
    :trim:
 
 
+.. note::
+
+    The implementation plans derived from these specifications are tracked in
+    the repository under `docs/src/developer/plans
+    <https://github.com/bjlittle/geovista/tree/main/docs/src/developer/plans>`__,
+    but deliberately not published here. A plan records what was intended
+    before implementation and is not updated afterwards.
+
 .. _gv-developer-specs-statuses:
 .. _tippy-gv-developer-specs-statuses:
 
@@ -137,14 +145,6 @@ what the reviewer checked. The reviewer named then adds the ``signed-off`` label
 to the pull request. An agent never adds that label, since GitHub records the
 account and not the person (ledger spec §2 decision 7). Once row 2 of
 ledger spec §8 lands, a missing label fails the pull request's checks.
-
-.. note::
-
-    The implementation plans derived from these specifications are tracked in
-    the repository under `docs/src/developer/plans
-    <https://github.com/bjlittle/geovista/tree/main/docs/src/developer/plans>`__,
-    but deliberately not published here. A plan records what was intended
-    before implementation and is not updated afterwards.
 
 .. toctree::
     :hidden:
