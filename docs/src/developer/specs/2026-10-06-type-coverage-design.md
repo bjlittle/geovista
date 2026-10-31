@@ -73,7 +73,7 @@ guarding the other twenty-two has been reporting success throughout.
    reads the signature and the docstring and passes a list gets `AttributeError`. Converting
    at the boundary makes the published contract true and cannot break an existing caller.
    See §3.3.
-4. **🤝 Agreed** (2026-10-06, {user}`bjlittle`, {pull}`2564`) — **A defect a gallery script
+4. **🤝 Agreed** (2026-10-07, {user}`bjlittle`, {pull}`2567`) — **A defect a gallery script
    cannot fix is suppressed in the configuration, never worked around in the script.** The
    gallery is rendered into the documentation and readers are invited to copy it, so a
    `type: ignore` comment in one is a directive published as example code. The suppression

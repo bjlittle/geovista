@@ -547,10 +547,7 @@ def test_transform_mesh__cloud_carries_the_radius_and_zscale_given(
 
 
 def test_transform_mesh__cloud_carries_the_zscale_given_in_a_planar_crs(lifted_cloud):
-    """A cloud carries the zscale that a transform to a planar CRS was given.
-
-    Holds zlevel spec §2 decision 2.
-    """
+    """A cloud carries the zscale that a transform to a planar CRS was given."""
     planar = transform_mesh(lifted_cloud, PLANAR, zscale=0.25)
 
     result = transform_mesh(planar, WGS84)
@@ -615,7 +612,13 @@ def test_transform_mesh__cloud_feature_keeps_the_depths_of_the_whole():
 
 
 def test_transform_mesh__zlevel_is_the_proportion_the_globe_gives(lifted_cloud):
-    """A planar z is the proportion of the Earth's radius the sphere lifts it by."""
+    """A planar z is the proportion of the Earth's radius the sphere lifts it by.
+
+    The cloud is lifted with a zscale of 0.5, so the planar z is scaled by it too:
+    ``zscale`` scales every level, on the globe and in the plane.
+
+    Holds zlevel spec §2 decision 2.
+    """
     lifts = np.linalg.norm(lifted_cloud.points, axis=1) - 1
 
     result = transform_mesh(lifted_cloud, PLANAR)
@@ -697,8 +700,6 @@ def test_transform_mesh__data_above_the_coastlines_whatever_its_extent():
     On a planar CRS the plotter adds its base layer at zlevel -1 with a zscale of
     1e-3, and its coastlines at zlevel 3, both over the whole globe. Issue 2588: a
     small dataset at zlevel 4 still drew beneath them.
-
-    Holds zlevel spec §2 decision 3.
     """
     world = _quad(-180, 180, -90, 90)
     base = transform_mesh(world.copy(), PLANAR, zlevel=-1, zscale=1e-3)

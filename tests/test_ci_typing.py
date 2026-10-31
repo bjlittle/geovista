@@ -41,6 +41,8 @@ PRE_COMMIT = ROOT / ".pre-commit-config.yaml"
 WORKFLOW = ROOT / ".github" / "workflows" / "ci-typing.yml"
 #: The package "mypy" checks, as "[tool.mypy]" names it in "files".
 PACKAGE = ROOT / "src" / "geovista"
+#: The gallery, whose scripts are published as example code.
+GALLERY = PACKAGE / "examples"
 
 #: Every per-module setting that relaxes strict mode, by the module it is set
 #: for. "pyproject.toml" gives the reason for each, citing typing spec §3.1 for
@@ -56,6 +58,9 @@ RELAXED = {
 #: the start of a line and spelled exactly ``# mypy:``, but an indented or
 #: respaced one is as likely a mistake, so this matches more than "mypy" does.
 INLINE = re.compile(r"^\s*#\s*mypy\s*:", flags=re.IGNORECASE)
+
+#: A comment silencing "mypy" on its line, with or without an error code.
+IGNORE = re.compile(r"#\s*type\s*:\s*ignore\b", flags=re.IGNORECASE)
 
 #: Lines that do and do not configure "mypy", for holding :data:`INLINE` to
 #: the parser "mypy" itself uses.
@@ -178,6 +183,31 @@ def _matches(text: str) -> list[tuple[int, str]]:
     ]
 
 
+def _ignores(root: Path) -> dict[str, str]:
+    """Return each type-ignore comment in the scripts under a directory.
+
+    Parameters
+    ----------
+    root : Path
+        The directory to search.
+
+    Returns
+    -------
+    dict of str to str
+        The text of each line carrying one, by its path relative to ``root``
+        and its line number, counted from one.
+
+    """
+    return {
+        f"{script.relative_to(root).as_posix()}:{number}": line.strip()
+        for script in sorted(root.rglob("*.py"))
+        for number, line in enumerate(
+            script.read_text(encoding="utf-8").splitlines(), start=1
+        )
+        if IGNORE.search(line)
+    }
+
+
 def _commands(step: dict[str, Any]) -> tuple[str, ...]:
     """Return the commands a step really runs.
 
@@ -276,6 +306,40 @@ def test_no_module_configures_mypy_inline():
         for line, text in _inline(module)
     }
     assert not found, f"configure mypy in pyproject.toml, not inline: {found}"
+
+
+def test_no_gallery_script_ignores_a_type_error():
+    """No gallery script may carry a type-ignore comment.
+
+    The gallery is rendered into the documentation and readers are invited to
+    copy it, so a comment silencing "mypy" in one is a directive published as
+    example code. A defect a script cannot fix is suppressed in "[tool.mypy]"
+    instead, where ``RELAXED`` pins it (typing spec §3.4). The hook refusing a
+    bare type-ignore comment passes one that names its error code, and strict
+    mode refuses only one that has become unused.
+
+    Holds typing spec §2 decision 4.
+
+    """
+    assert any(GALLERY.rglob("*.py")), f"no gallery scripts found under {GALLERY}"
+    ignored = _ignores(GALLERY)
+    assert not ignored, f"suppress in pyproject.toml, not the script: {ignored}"
+
+
+def test_a_type_ignore_in_a_gallery_script_is_found(tmp_path):
+    """A type-ignore comment is found however it is spelled or placed.
+
+    The comments are built, since the hook refusing a bare one reads this module.
+
+    """
+    ignore = "type" + ":" + "ignore"
+    (tmp_path / "plain.py").write_text('"""Doc."""\n\nx = 1\n', encoding="utf-8")
+    (tmp_path / "scene").mkdir()
+    (tmp_path / "scene" / "camera.py").write_text(
+        f"x: int = 'a'  # {ignore.replace(':', ': ')}[assignment]\ny = 1  #{ignore}\n",
+        encoding="utf-8",
+    )
+    assert set(_ignores(tmp_path)) == {"scene/camera.py:1", "scene/camera.py:2"}
 
 
 def test_inline_configuration_is_found(tmp_path):
