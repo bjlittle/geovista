@@ -1,0 +1,3 @@
+The specification status check now sees a specification moved out of the
+collection, and reads a sign-off's reviewer with the conventions test's own
+pattern. (:user:`claude`)
