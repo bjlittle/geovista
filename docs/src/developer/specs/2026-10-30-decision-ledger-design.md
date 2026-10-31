@@ -443,7 +443,7 @@ Each carries the status grammar of docs spec §3.6.
 |---|---|---|
 | 1 | The ledger: decision anchors and citations, the grammar of §3.2 and §3.3, the Verification section and its summary, the suite of §3.6, the parent's notes, the documentation of §3.11, this specification's own Verification table, and the docs and citation specifications brought in, retiring "Sections only" | ✅ landed (2026-10-31, {pull}`2786`) |
 | 2 | What GitHub answers (§3.7): the pull request each entry cites, each sign-off's label, the trigger on labels, and a job that always reports, after which `status references` becomes a required check | ✅ landed (2026-10-31, {pull}`2789`) |
-| 3 | The verification report (§3.8) | not started |
+| 3 | The verification report (§3.8) | ✅ landed (2026-10-31, {pull}`2792`) |
 | 4 | The typing, zlevel and checks specifications brought into the ledger | not started |
 | 5 | The crs specification brought into the ledger | not started |
 | 6 | The globe, scene and heights specifications brought into the ledger | not started |
