@@ -37,7 +37,7 @@ import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Collection, Mapping
     from types import ModuleType
 
 #: The repository root.
@@ -73,12 +73,15 @@ class Cited:
     line: int
 
 
-def group(path: Path, root: Path) -> str:
-    """Name the group a file's citations are listed under."""
+def group(path: Path, root: Path, specs: Collection[Path] = ()) -> str:
+    """Name the group a file's citations are listed under.
+
+    Only a specification is grouped as one: the index beside them is a page.
+    """
     name = path.relative_to(root).as_posix()
     if name.startswith("tests/"):
         return "tests"
-    if name.startswith(f"{SPECS.as_posix()}/"):
+    if path in specs:
         return "specifications"
     if name.startswith(f"{PLANS.as_posix()}/"):
         return "plans"
@@ -89,14 +92,19 @@ def group(path: Path, root: Path) -> str:
 
 
 def _entries(text: str, slug: str) -> dict[int, str]:
-    """Map each line of a decision's own entry to that decision's anchor."""
+    """Map each line of a decision's own entry to that decision's anchor.
+
+    An entry runs as the grammar reads it: to the next decision, or to the first
+    line written flush after it, its indented paragraphs and blank lines between.
+    """
     lines = text.splitlines()
     found = grammar.decisions(text)
     owned: dict[int, str] = {}
     for index, decision in enumerate(found):
         last = found[index + 1].line - 1 if index + 1 < len(found) else len(lines)
         for number in range(decision.line, last + 1):
-            if number > decision.line and not lines[number - 1].strip():
+            line = lines[number - 1]
+            if number > decision.line and line.strip() and not line[:1].isspace():
                 break
             owned[number] = grammar.decision_anchor(slug, decision.number)
     return owned
@@ -188,7 +196,7 @@ def report(
                 listed = [
                     f"`{place.path.relative_to(root).as_posix()}:{place.line}`"
                     for place in places
-                    if group(place.path, root) == kind
+                    if group(place.path, root, names.owners) == kind
                 ]
                 if listed:
                     out.append(f"- **{kind}:** {', '.join(listed)}")
@@ -199,7 +207,9 @@ def report(
             if row and conventions.opened(row.status)[0] == grammar.VERIFIED:
                 for file in re.findall(r"`([^`]+)`", row.evidence):
                     test = root / file
-                    if test.is_file() and not conventions.cites(test, anchor, names):
+                    if not test.is_file():
+                        findings.append(f"{name}: `{file}` is missing.")
+                    elif not conventions.cites(test, anchor, names):
                         findings.append(f"{name}: `{file}` no longer cites it.")
     out += ["## Findings", ""]
     out += [f"- {finding}" for finding in findings] or ["No findings."]

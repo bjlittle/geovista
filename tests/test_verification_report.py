@@ -82,6 +82,7 @@ def repo(tmp_path: Path) -> Path:
         "(demo-spec-2)=\n## 2. Decisions\n\n"
         + entry(1, "One.")
         + entry(2, "Two.")
+        + f"\n   Its second paragraph keeps {s}2 decision 2, which is no citation.\n"
         + entry(3, "Three.")
         + entry(4, "Four.")
         + f"\n(demo-spec-3)=\n## 3. Design\n\nThe design keeps {s}2 decision 2.\n\n"
@@ -90,7 +91,8 @@ def repo(tmp_path: Path) -> Path:
         f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_demo.py` |\n"
         f"| 2 | {PENDING} | |\n"
         f"| 3 | {PENDING} | |\n"
-        f"| 4 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_silent.py` |\n",
+        f"| 4 | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
+        "`tests/test_silent.py`, `tests/test_gone.py` |\n",
     )
     write(
         tmp_path,
@@ -144,6 +146,9 @@ def test_report_flags_a_silent_test_and_an_uncited_decision(script, repo, capsys
         f"demo spec {SECTION}2 decision 4: `tests/test_silent.py` no longer" in findings
     )
     assert f"demo spec {SECTION}2 decision 3 is in force and cited nowhere" in findings
+    assert (
+        f"demo spec {SECTION}2 decision 4: `tests/test_gone.py` is missing" in findings
+    )
     assert f"demo spec {SECTION}2 decision 1 " not in findings
 
 
@@ -163,8 +168,8 @@ def test_a_specification_citing_its_own_decision_counts(script, repo, capsys):
     two = out[out.index("### Decision 2: Two.") : out.index("### Decision 3: Three.")]
     spec = "docs/src/developer/specs/2026-01-01-demo-design.md"
 
-    assert f"**specifications:** `{spec}:16`" in two
-    assert f"`{spec}:9`" not in two
+    assert f"**specifications:** `{spec}:18`" in two
+    assert f"`{spec}:11`" not in two
 
 
 def test_an_unknown_prefix_exits_two(script, repo, capsys):
@@ -221,4 +226,8 @@ def test_code_is_source_wherever_it_sits(script, tmp_path):
     assert script.group(root / "docs/src/_ext/ext.py", root) == "source"
     assert script.group(root / ".github/workflows/ci.yml", root) == "source"
     assert script.group(root / "docs/src/page.rst", root) == "documentation"
+    spec = root / "docs/src/developer/specs/2026-01-01-demo-design.md"
+    index = root / "docs/src/developer/specs/index.rst"
+    assert script.group(spec, root, {spec}) == "specifications"
+    assert script.group(index, root, {spec}) == "documentation"
     assert script.group(root / "tests/docs/test_page.py", root) == "tests"
