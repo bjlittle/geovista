@@ -1,0 +1,3 @@
+The verification report passes over a plan that is not UTF-8, writes a status as
+GitHub Markdown, with ``#N`` and ``@login``, and lists a line once however often it
+names a decision. (:user:`claude`)
