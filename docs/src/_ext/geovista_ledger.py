@@ -26,49 +26,13 @@ import geovista_citations
 from sphinx.transforms import SphinxTransform
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from sphinx.application import Sphinx
 
 #: The title of the section holding the ledger, as MyST renders it, numbered.
 TITLE = re.compile(rf"^(?:\d+(?:\.\d+)*\.?\s+)?{geovista_citations.VERIFICATION}$")
 
-#: The states in the order the summary counts them.
-STATES = (
-    geovista_citations.VERIFIED,
-    geovista_citations.SIGNED_OFF,
-    geovista_citations.PENDING,
-    geovista_citations.LEDGER_RETIRED,
-)
-
-
-def summary(statuses: Iterable[str]) -> str:
-    """Count each state of a ledger, as the line under its table reads.
-
-    Parameters
-    ----------
-    statuses : iterable of str
-        The Status cells, each opening with its state.
-
-    Returns
-    -------
-    str
-        Each state's emoji and count, then how many decisions in force are
-        verified, as ledger spec §3.4 spells it.
-
-    """
-    counts = dict.fromkeys(STATES, 0)
-    total = 0
-    for status in statuses:
-        total += 1
-        state = geovista_citations.state_of(status.strip(), STATES)
-        if state is not None:
-            counts[state] += 1
-    verified, signed, _, retired = counts.values()
-    tally = " · ".join(f"{state.split()[0]} {count}" for state, count in counts.items())
-    return (
-        f"{tally}: {verified + signed} of {total - retired} decisions in force verified"
-    )
+#: The summary line, which the citation grammar writes for every reader of a ledger.
+summary = geovista_citations.summary
 
 
 def _cells(row: nodes.row) -> list[str]:

@@ -487,6 +487,17 @@ The following tasks are defined for each of our features:
    |                |                                | may cite while it is still open, or ``drift`` to also report a status the work has    |
    |                |                                | moved past. See :ref:`tippy-gv-developer-specs`.                                      |
    |                +--------------------------------+---------------------------------------------------------------------------------------+
+   |                | ``check-spec-renumbering``     | Check the specification citations against a renumbered section e.g.,                  |
+   |                |                                |                                                                                       |
+   |                |                                | .. code:: console                                                                     |
+   |                |                                |                                                                                       |
+   |                |                                |    $ pixi run check-spec-renumbering                                                  |
+   |                |                                |                                                                                       |
+   |                |                                | Provide ``fix`` to rewrite the citations of moved sections in place, or ``audit`` to  |
+   |                |                                | compare every citation with its specification when it was written. See                |
+   |                |                                | :ref:`tippy-gv-developer-checks-spec-renumbering`.                                    |
+   |                |                                |                                                                                       |
+   |                +--------------------------------+---------------------------------------------------------------------------------------+
    |                | ``tests-clean``                | Purge both the documentation and unit test image caches, along with any images        |
    |                |                                | generated from previous test sessions e.g.,                                           |
    |                |                                |                                                                                       |
@@ -526,6 +537,18 @@ The following tasks are defined for each of our features:
    |                |                                |    ``pytest-pyvista`` plugin option ``--failed_image_dir`` (see                       |
    |                |                                |    :ref:`Image Tests Generation <tippy-gv-developer-testing-image-tests-generation>`) |
    |                |                                |    within the :bash:`test_images_failed` directory for analysis and investigation.    |
+   |                +--------------------------------+---------------------------------------------------------------------------------------+
+   |                | ``verification-report``        | Report how each design specification decision is verified, and where it is            |
+   |                |                                | cited e.g.,                                                                           |
+   |                |                                |                                                                                       |
+   |                |                                | .. code:: console                                                                     |
+   |                |                                |                                                                                       |
+   |                |                                |    $ pixi run verification-report                                                     |
+   |                |                                |                                                                                       |
+   |                |                                | Provide a specification's prefix, such as ``heights``, to report that                 |
+   |                |                                | specification alone. The report is a view of the ledger, never a check: it            |
+   |                |                                | exits 0 whatever it finds. See :ref:`tippy-gv-developer-specs-decisions`.             |
+   |                |                                |                                                                                       |
    +----------------+--------------------------------+---------------------------------------------------------------------------------------+
 
 .. seealso::

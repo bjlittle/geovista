@@ -148,6 +148,20 @@ checks fail until the reviewer named adds it, and pass once they do. A pull
 request merged without it is reported each night, and the reviewer can still
 add the label to the merged pull request.
 
+**The verification report.** To see the whole ledger at once, run:
+
+.. code:: console
+
+   $ pixi run -e test verification-report
+   $ pixi run -e test verification-report heights
+
+It lists, for every specification or the one a prefix names, each decision with
+its state and every place in the repository that cites it, grouped as source,
+tests, documentation, specifications and plans. It also flags a verified row
+whose test no longer cites its decision, and a decision in force that nothing
+cites. It is a view of the ledger, never a check: it exits 0 whatever it finds
+(ledger spec §3.8).
+
 .. toctree::
     :hidden:
 

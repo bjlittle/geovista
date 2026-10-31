@@ -46,8 +46,8 @@ pixi run -e geovista tests-docs-browser  # Browser tests of the docs chrome
 pixi run download                        # Fetch offline assets
 ```
 
-**`geovista` is the superset environment** — development, testing, docs and all.
-Prefer `pixi run -e geovista ...` over hunting across `test`/`devs`/`docs`.
+**`geovista` is the superset environment** — development, testing, docs and all; prefer `pixi run -e geovista ...`.
+⚠️ **A new pixi task gets a row in the task tables of its pages**: `docs/src/developer/packaging.rst` always, and `testing.rst` or `documentation.rst` for the workflow it serves.
 
 **Use `--frozen` to reproduce CI.** Every CI job runs `pixi run --frozen`,
 which resolves strictly from `pixi.lock` — so `pixi run --frozen -e <env>`
@@ -102,9 +102,9 @@ prerequisite rather than inherit the local skip, or a regression that removes it
 silently drops the coverage and the job still exits 0. `tests/docs` does this
 with `--browser-strict`; follow the pattern for any new guarded suite.
 
-⚠️ **`bash -l {0}` drops the `-e` GitHub's default shell carries**, and 14 of
-the 19 workflows set it, so in a multi-command `run:` only the last command's
-status reaches the job — keep the real check last, or `set -o errexit` first.
+⚠️ **`bash -l {0}` drops errexit.** Enable it, or keep the real check last.
+**Git path gates need `-z`, NUL splitting and `--no-renames`**: otherwise quoting
+hides non-ASCII paths, and a move hides the old watched path (#2789, #2791).
 
 ⚠️ **On `issues`, `issue_comment` and `pull_request_target`, `github.ref` is the
 default or base branch**, so key `concurrency` on the issue or PR number. Suppress
@@ -196,4 +196,4 @@ Every Python file must begin with this header, and include `from __future__ impo
 
 ---
 
-**Last Updated**: 28 October 2026
+**Last Updated**: 31 October 2026
