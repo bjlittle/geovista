@@ -377,3 +377,16 @@ def test_decisions_reads_a_title_with_emphasis_inside(citations):
     text = "(demo-spec-2)=\n## 2. Decisions\n\n1. **A *very* big title.** Reasoning.\n"
 
     assert citations.decisions(text)[0].title == "A *very* big title."
+
+
+@pytest.mark.parametrize(
+    "row", ["| 1 | x | a \\||", "| 1 | x | a \\|"], ids=["closed", "unclosed"]
+)
+def test_cells_keep_an_escaped_pipe_ending_the_row(citations, row):
+    """Only the outer pipes are separators, so a last cell's escaped pipe stays."""
+    assert citations.cells(row) == ["1", "x", "a \\|"]
+
+
+def test_cells_keep_an_empty_last_cell(citations):
+    """An empty cell is a cell, and only the separators beyond it are dropped."""
+    assert citations.cells("| 1 | |") == ["1", ""]

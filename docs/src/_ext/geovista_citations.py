@@ -233,8 +233,17 @@ class LedgerRow:
 
 
 def cells(line: str) -> list[str]:
-    """Split a table row into its cells, keeping an escaped pipe within its cell."""
-    return [cell.strip() for cell in PIPE.split(line.strip().strip("|"))]
+    """Split a table row into its cells, keeping an escaped pipe within its cell.
+
+    The row is split first, and only then are its outer separators dropped, so an
+    escaped pipe ending the last cell is never mistaken for one.
+    """
+    parts = PIPE.split(line.strip())
+    if parts and not parts[0].strip():
+        parts = parts[1:]
+    if len(parts) > 1 and not parts[-1].strip():
+        parts = parts[:-1]
+    return [cell.strip() for cell in parts]
 
 
 def state_of(written: str, states: Iterable[str]) -> str | None:
