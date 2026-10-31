@@ -143,8 +143,10 @@ reviewer signs it off. The row becomes
 ``✍️ signed off (date, {user}`reviewer`, {pull}`1234`)``, and its Evidence says
 what the reviewer checked. The reviewer named then adds the ``signed-off`` label
 to the pull request. An agent never adds that label, since GitHub records the
-account and not the person (ledger spec §2 decision 7). Once row 2 of
-ledger spec §8 lands, a missing label fails the pull request's checks.
+account and not the person (ledger spec §2 decision 7). The pull request's
+checks fail until the reviewer named adds it, and pass once they do. A pull
+request merged without it is reported each night, and the reviewer can still
+add the label to the merged pull request.
 
 .. toctree::
     :hidden:
