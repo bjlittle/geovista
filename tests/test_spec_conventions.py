@@ -33,6 +33,7 @@ from __future__ import annotations
 import ast
 import contextlib
 from datetime import date
+from fnmatch import fnmatch
 import importlib.util
 import io
 from pathlib import Path
@@ -2105,7 +2106,16 @@ def ledger_entries(path: Path, text: str) -> list[str]:
             DATE.search(history) and PULL.search(history)
         ):
             problems.append(f"{at}: decision {d.number} is retired with no agreement")
+        problems += [
+            f"{at}: decision {d.number} carries {bad}, which is not a date"
+            for bad in undated(d.carried)
+        ]
     return problems
+
+
+def undated(evidence: str) -> list[str]:
+    """Find each date of the right shape that no calendar holds."""
+    return [match[0] for match in DATE.finditer(evidence) if dated(match[0]) is None]
 
 
 def opened(status: str) -> tuple[str | None, str]:
@@ -2161,6 +2171,15 @@ def ledger_table(path: Path, text: str) -> list[str]:
             problems.append(
                 f"{at}: decision {row.decision} carries no date, user and pull"
             )
+        elif state == SIGNED_OFF and not row.evidence.strip():
+            problems.append(
+                f"{at}: decision {row.decision} is signed off, and says nothing of "
+                "what was checked"
+            )
+        problems += [
+            f"{at}: decision {row.decision} carries {bad}, which is not a date"
+            for bad in undated(evidence)
+        ]
     problems += [
         f"{where(path, 1)}: decision {number} has no row"
         for number in range(1, expected + 1)
@@ -2194,6 +2213,16 @@ def cites(path: Path, anchor: str, names: Namespace) -> bool:
     return False
 
 
+def is_test(name: str) -> bool:
+    """Decide whether a path names a test file: ``tests/``, and ``test_*.py``.
+
+    A specification cites its own decisions, so a file that merely cites one is
+    no evidence it was delivered (ledger spec §2 decision 6).
+    """
+    path = Path(name)
+    return path.parts[:1] == ("tests",) and fnmatch(path.name, "test_*.py")
+
+
 def ledger_evidence(
     path: Path, text: str, names: Namespace, root: Path = REPO
 ) -> list[str]:
@@ -2210,7 +2239,9 @@ def ledger_evidence(
         anchor = decision_anchor(owner, row.decision)
         for name in files:
             test = root / name
-            if not test.is_file():
+            if not is_test(name):
+                problems.append(f"{at}: {name} is not a test file")
+            elif not test.is_file():
                 problems.append(f"{at}: {name} does not exist")
             elif not cites(test, anchor, names):
                 problems.append(f"{at}: {name} does not cite decision {row.decision}")
@@ -2397,12 +2428,13 @@ def test_ledger_evidence_must_exist_and_cite_its_decision(tmp_path):
     entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
     entries += entry(3, AGREED, AGREEMENT)
     rows = (
-        f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `cites.py` |\n"
-        f"| 2 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `gone.py` |\n"
-        f"| 3 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `cites.py` |\n"
+        f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_cites.py` |\n"
+        f"| 2 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_gone.py` |\n"
+        f"| 3 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_cites.py` |\n"
     )
     path, names = ledgered(tmp_path, entries, rows)
-    (tmp_path / "cites.py").write_text(
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_cites.py").write_text(
         f'"""Holds demo spec {SECTION}2 decision 1."""\n', encoding="utf-8"
     )
 
@@ -2411,8 +2443,8 @@ def test_ledger_evidence_must_exist_and_cite_its_decision(tmp_path):
     )
 
     assert faults(problems) == [
-        "gone.py does not exist",
-        "cites.py does not cite decision 3",
+        "tests/test_gone.py does not exist",
+        "tests/test_cites.py does not cite decision 3",
     ]
 
 
@@ -2510,4 +2542,55 @@ def test_unledgered_names_specifications_still_waiting(specs):
     assert set(UNLEDGERED) <= names
     assert not [
         name for name, row in UNLEDGERED.items() if rows[str(row)].startswith(LANDED)
+    ]
+
+
+def test_ledger_evidence_must_be_a_test_file(tmp_path):
+    """Ledger spec §2 decision 6: evidence is a test, not any file that cites one."""
+    entries = entry(1, AGREED, AGREEMENT)
+    rows = f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `docs/cites.md` |\n"
+    path, names = ledgered(tmp_path, entries, rows)
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "cites.md").write_text(
+        f"Holds demo spec {SECTION}2 decision 1.\n", encoding="utf-8"
+    )
+
+    problems = ledger_evidence(
+        path, path.read_text(encoding="utf-8"), names, root=tmp_path
+    )
+
+    assert faults(problems) == ["docs/cites.md is not a test file"]
+
+
+def test_ledger_dates_are_calendar_dates(tmp_path):
+    """Ledger spec §2 decision 4: a date of the right shape that no calendar holds."""
+    retired = "2026-02-30, {user}`bjlittle`, {pull}`1`; agreed 2026-13-01, {pull}`1`"
+    entries = entry(1, AGREED, "2026-02-30, {user}`bjlittle`, {pull}`1`")
+    entries += entry(2, RETIRED_STATE, retired)
+    rows = (
+        f"| 1 | {VERIFIED} (2026-02-30, {{pull}}`1`) | `x.py` |\n"
+        f"| 2 | {LEDGER_RETIRED} (2026-02-30, {{pull}}`1`) | |\n"
+    )
+    path, _ = ledgered(tmp_path, entries, rows)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(ledger_entries(path, text)) == [
+        "decision 1 carries 2026-02-30, which is not a date",
+        "decision 2 carries 2026-02-30, which is not a date",
+        "decision 2 carries 2026-13-01, which is not a date",
+    ]
+    assert faults(ledger_table(path, text)) == [
+        "decision 1 carries 2026-02-30, which is not a date",
+        "decision 2 carries 2026-02-30, which is not a date",
+    ]
+
+
+def test_ledger_sign_off_says_what_was_checked(tmp_path):
+    """Ledger spec §2 decision 6: a sign-off says what the reviewer checked."""
+    entries = entry(1, AGREED, AGREEMENT)
+    rows = f"| 1 | {SIGNED_OFF} (2026-01-01, {{user}}`bjlittle`, {{pull}}`1`) | |\n"
+    path, _ = ledgered(tmp_path, entries, rows)
+
+    assert faults(ledger_table(path, path.read_text(encoding="utf-8"))) == [
+        "decision 1 is signed off, and says nothing of what was checked"
     ]

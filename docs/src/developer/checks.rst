@@ -284,11 +284,15 @@ fault. For the ledger, it names the decision or row, and says one of these:
   ``Status`` and ``Evidence``.
 - *a row names …*, *has a second row*, *is out of order* or *has no row*: give the
   table one row per decision, in order.
-- *is not a ledger state*, *is pending, and carries more* or *carries no date …*:
-  open the Status cell with a state of ledger spec §3.4, carrying what it asks.
+- *is not a ledger state*, *is pending, and carries more*, *carries no date …* or
+  *… which is not a date*: open the Status cell with a state of ledger spec §3.4,
+  carrying what it asks, with dates a calendar holds.
+- *is signed off, and says nothing of what was checked*: say in the Evidence cell
+  what the reviewer checked.
 - *is retired in one section and not the other*: retire it in both.
-- *does not exist*, *is verified by nothing* or *does not cite decision N*: name
-  the test that exercises the decision, and cite the decision in it.
+- *is not a test file*, *does not exist*, *is verified by nothing* or *does not
+  cite decision N*: name the test file under ``tests/`` that exercises the
+  decision, and cite the decision in it.
 - *replaced by …, no decision* or *…, which is not in force*: cite the decision in
   force that replaced it.
 - *is pending, and no row of the roadmap is left to deliver it*: verify it, sign
