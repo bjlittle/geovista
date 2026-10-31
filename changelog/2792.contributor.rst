@@ -1,0 +1,4 @@
+Added ``pixi run -e test verification-report``, which lists each specification
+decision with its state and every place in the repository that cites it, and
+flags a verified decision whose test no longer cites it and a decision in force
+that nothing cites. (:user:`claude`)

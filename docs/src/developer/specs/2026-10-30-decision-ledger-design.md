@@ -484,7 +484,7 @@ Each row follows §3.4.
 | 8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 10 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 11 | ⏳ pending |  |
+| 11 | ✅ verified (2026-10-31, {pull}`2792`) | `tests/test_verification_report.py` |
 | 12 | ⏳ pending |  |
 | 13 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 14 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
