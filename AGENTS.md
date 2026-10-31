@@ -46,8 +46,8 @@ pixi run -e geovista tests-docs-browser  # Browser tests of the docs chrome
 pixi run download                        # Fetch offline assets
 ```
 
-**`geovista` is the superset environment** — development, testing, docs and all.
-Prefer `pixi run -e geovista ...` over hunting across `test`/`devs`/`docs`.
+**`geovista` is the superset environment** — development, testing, docs and all; prefer `pixi run -e geovista ...`.
+⚠️ **A new pixi task gets a row in the task tables of its pages**: `docs/src/developer/packaging.rst` always, and `testing.rst` or `documentation.rst` for the workflow it serves.
 
 **Use `--frozen` to reproduce CI.** Every CI job runs `pixi run --frozen`,
 which resolves strictly from `pixi.lock` — so `pixi run --frozen -e <env>`
