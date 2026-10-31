@@ -20,8 +20,10 @@ See "docs/src/developer/specs/2026-10-06-type-coverage-design.md", section 3.2.
 from __future__ import annotations
 
 from functools import cache
+import io
 from pathlib import Path
 import re
+import tokenize
 import tomllib
 from typing import Any
 
@@ -194,17 +196,19 @@ def _ignores(root: Path) -> dict[str, str]:
     Returns
     -------
     dict of str to str
-        The text of each line carrying one, by its path relative to ``root``
-        and its line number, counted from one.
+        The text of each comment carrying one, by its path relative to
+        ``root`` and its line number, counted from one. Only a comment token
+        counts, as only a comment silences "mypy": the same text in a string
+        or a docstring suppresses nothing.
 
     """
     return {
-        f"{script.relative_to(root).as_posix()}:{number}": line.strip()
+        f"{script.relative_to(root).as_posix()}:{token.start[0]}": token.string
         for script in sorted(root.rglob("*.py"))
-        for number, line in enumerate(
-            script.read_text(encoding="utf-8").splitlines(), start=1
+        for token in tokenize.generate_tokens(
+            io.StringIO(script.read_text(encoding="utf-8")).readline
         )
-        if IGNORE.search(line)
+        if token.type == tokenize.COMMENT and IGNORE.search(token.string)
     }
 
 
@@ -335,11 +339,30 @@ def test_a_type_ignore_in_a_gallery_script_is_found(tmp_path):
     ignore = "type" + ":" + "ignore"
     (tmp_path / "plain.py").write_text('"""Doc."""\n\nx = 1\n', encoding="utf-8")
     (tmp_path / "scene").mkdir()
+    spaced = ignore.replace(":", ": ")
     (tmp_path / "scene" / "camera.py").write_text(
-        f"x: int = 'a'  # {ignore.replace(':', ': ')}[assignment]\ny = 1  #{ignore}\n",
+        f"x: int = 'a'  # {spaced}[assignment]\ny = 1  #{ignore}\n# {spaced}\n",
         encoding="utf-8",
     )
-    assert set(_ignores(tmp_path)) == {"scene/camera.py:1", "scene/camera.py:2"}
+    expected = {"scene/camera.py:1", "scene/camera.py:2", "scene/camera.py:3"}
+    assert set(_ignores(tmp_path)) == expected
+
+
+def test_a_type_ignore_in_a_string_is_not_a_comment(tmp_path):
+    """Only a comment silences "mypy", so the text in a string or docstring passes.
+
+    A script may print the directive, or a docstring describe it, without
+    suppressing anything.
+
+    """
+    spaced = "type" + ": " + "ignore"
+    (tmp_path / "label.py").write_text(
+        f'"""Say why a script never carries ``# {spaced}``."""\n\n'
+        f'label = "# {spaced}[attr-defined]"\n'
+        f"text = '''\n# {spaced}\n'''\n",
+        encoding="utf-8",
+    )
+    assert _ignores(tmp_path) == {}
 
 
 def test_inline_configuration_is_found(tmp_path):
