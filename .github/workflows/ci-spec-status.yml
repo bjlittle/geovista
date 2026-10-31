@@ -64,8 +64,9 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -o errexit
-          # NUL-delimited, as git quotes a non-ASCII name otherwise
-          git diff --name-only -z "${BASE_SHA}...${HEAD_SHA}" > changed.txt
+          # NUL-delimited, as git quotes a non-ASCII name otherwise, and without
+          # renames, so a specification moved away is seen by the path it left
+          git diff --name-only -z --no-renames "${BASE_SHA}...${HEAD_SHA}" > changed.txt
           python3 - >> "${GITHUB_OUTPUT}" <<'PY'
           import fnmatch
           import os
