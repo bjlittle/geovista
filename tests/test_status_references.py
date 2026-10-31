@@ -59,6 +59,7 @@ def record(script):
         (REPOSITORY, 13): work("pull", "closed", "2026-10-05"),
         (REPOSITORY, 14): work("pull", "merged", "2026-10-06"),
         (REPOSITORY, 15): work("pull", "merged", "2026-10-07"),
+        (REPOSITORY, 16): work("pull", "merged", "2026-10-06"),
         (REPOSITORY, 20): work("issue", "open"),
         (REPOSITORY, 21): work("issue", "closed", "2026-10-08"),
         ("scientific-python/lazy-loader", 181): work("issue", "open"),
@@ -395,6 +396,10 @@ def labels(script):
             event("labeled", "someone", "2026-10-06"),
         ],
         15: [event("labeled", None, "2026-10-07")],
+        16: [
+            event("labeled", "bjlittle", "2026-10-05"),
+            event("unlabeled", "bjlittle", "2026-10-06"),
+        ],
     }
     return lambda _repository, number: known.get(number, [])
 
@@ -460,7 +465,7 @@ def test_a_sign_off_is_the_reviewers_label(script, record, labels):
     """Ledger spec §2 decision 7: the reviewer named added the label, still there."""
     rows = [
         f"{SIGNED_OFF} (2026-10-07, {{user}}`bjlittle`, {{pull}}`{n}`) | Checked."
-        for n in (10, 11, 12, 13, 14)
+        for n in (10, 11, 12, 16, 14)
     ]
     entries = ("2026-10-07, {user}`bjlittle`, {pull}`10`",) * len(rows)
     text = ledger_spec(entries=entries, rows=tuple(rows))
@@ -468,7 +473,7 @@ def test_a_sign_off_is_the_reviewers_label(script, record, labels):
     assert ledger_faults(script, record, labels, text, pull=12) == [
         "the signed-off label on {pull}`11` was added by someone, not bjlittle",
         "{pull}`12` carries no signed-off label",
-        "{pull}`13` carries no signed-off label",
+        "{pull}`16` carries no signed-off label",
         "the signed-off label on {pull}`14` was added by someone, not bjlittle",
     ]
 
@@ -485,6 +490,34 @@ def test_a_sign_off_dated_by_its_label(script, record, labels):
     assert ledger_faults(script, record, labels, text) == [
         "signed off on 2026-10-01, but the label was added on 2026-10-07"
     ]
+
+
+def test_a_sign_off_on_the_pull_being_checked_is_dated_by_its_label(
+    script, record, labels
+):
+    """The label's date is known before the merge, so a pull request catches it."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(
+            f"{SIGNED_OFF} (2026-10-01, {{user}}`bjlittle`, {{pull}}`10`) | Checked.",
+        ),
+    )
+
+    assert ledger_faults(script, record, labels, text, pull=10) == [
+        "signed off on 2026-10-01, but the label was added on 2026-10-07"
+    ]
+
+
+def test_a_sign_off_cites_a_merged_pull(script, record, labels):
+    """A sign-off's pull request has merged, as any other evidence's must."""
+    text = ledger_spec(
+        entries=("2026-10-07, {user}`bjlittle`, {pull}`10`",),
+        rows=(
+            f"{SIGNED_OFF} (2026-10-05, {{user}}`bjlittle`, {{pull}}`13`) | Checked.",
+        ),
+    )
+
+    assert ledger_faults(script, record, labels, text) == ["{pull}`13` has not merged"]
 
 
 def test_a_label_event_with_no_actor_is_no_one(script, record, labels):
@@ -521,6 +554,12 @@ def test_the_labeller_reads_every_page(script, monkeypatch):
         "2": (
             [
                 {
+                    "event": "labeled",
+                    "label": {"name": "signed-off"},
+                    "actor": None,
+                    "created_at": "2026-10-07T10:00:00Z",
+                },
+                {
                     "event": "unlabeled",
                     "label": {"name": "signed-off"},
                     "actor": {"login": "bjlittle"},
@@ -550,9 +589,12 @@ def test_the_labeller_reads_every_page(script, monkeypatch):
     monkeypatch.setattr(script.urllib.request, "urlopen", urlopen)
     events = script.labeller()("bjlittle/geovista", 1)
 
+    # in time order whatever order they were served in, and a deleted account's
+    # event read as no one's
     assert [(e.action, e.login, str(e.when)) for e in events] == [
         ("labeled", "bjlittle", "2026-10-05"),
         ("unlabeled", "bjlittle", "2026-10-06"),
+        ("labeled", None, "2026-10-07"),
     ]
 
 

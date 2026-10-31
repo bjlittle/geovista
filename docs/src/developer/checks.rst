@@ -451,10 +451,16 @@ again when a label is added or removed, and each night, when it also reports a
 status the work has moved past. Its ``status references`` job reports on every
 pull request, so that it can be a required check.
 
-**When it fails:** Correct the status, or the work it cites. For a sign-off:
+**When it fails:** Correct the status, or the work it cites. For a ledger:
 
+- *has not merged*, on a decision or a row: cite the pull request that merged the
+  decision or its evidence.
+- *verified on …, but … merged on …* or *retired on …, but … merged on …*: date the
+  row by the day its pull request merged.
 - *carries no signed-off label*: the reviewer the row names adds ``signed-off`` to
-  the pull request the row cites. An agent never does.
+  the pull request the row cites. An agent never does. Adding the label to a pull
+  request that has already merged re-runs that pull request's check, not the
+  current one's, so re-run ``status references`` on the current pull request.
 - *the signed-off label on … was added by …, not …*: the reviewer the row names
   adds it themselves, or the row names whoever did sign it off.
 - *signed off on …, but the label was added on …*: date the row by the day the

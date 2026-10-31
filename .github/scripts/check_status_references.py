@@ -402,9 +402,10 @@ def check_ledger(
             if (fault := found(reference, work)) is not None:
                 faults.append(fault)
             elif state == conventions.SIGNED_OFF:
-                faults += _signed(
-                    evidence, reference, labelled, when, current(reference)
-                )
+                if work.state != "merged" and not current(reference):
+                    faults.append(f"{reference.text} has not merged")
+                else:
+                    faults += _signed(evidence, reference, labelled, when)
             elif state in (conventions.VERIFIED, conventions.LEDGER_RETIRED):
                 if current(reference):
                     continue
@@ -425,9 +426,12 @@ def _signed(
     reference: Reference,
     labelled: Labeller,
     when: date | None,
-    pending: bool,
 ) -> list[str]:
-    """Check that the reviewer a sign-off names put the label on its pull request."""
+    """Check that the reviewer a sign-off names put the label on its pull request.
+
+    Its date is checked even against the pull request being checked: the label's
+    date is known before the merge, and the run the label sets off can catch it.
+    """
     named = REVIEWER.search(evidence)
     reviewer = named["login"] if named else "no reviewer"
     events = [
@@ -442,7 +446,7 @@ def _signed(
         added = last.login or "no one"
         said = f"the {SIGN_OFF} label on {reference.text} was added by {added}"
         return [f"{said}, not {reviewer}"]
-    if when is not None and not pending and abs((when - last.when).days) > 1:
+    if when is not None and abs((when - last.when).days) > 1:
         return [f"signed off on {when}, but the label was added on {last.when}"]
     return []
 
@@ -479,7 +483,7 @@ def labeller(token: str | None = None) -> Labeller:
     def labelled(repository: str, number: int) -> list[Labelling]:
         key = (repository, number)
         if key not in cache:
-            events: list[Labelling] = []
+            stamped: list[tuple[datetime, Labelling]] = []
             url: str | None = (
                 f"{API}/repos/{repository}/issues/{number}/events?per_page=100"
             )
@@ -493,16 +497,19 @@ def labeller(token: str | None = None) -> Labeller:
                         continue
                     # a deleted account leaves its events behind, with no actor
                     actor = event.get("actor") or {}
-                    events.append(
-                        Labelling(
-                            event["event"],
-                            event["label"]["name"],
-                            actor.get("login"),
-                            datetime.fromisoformat(event["created_at"]).date(),
-                        )
+                    at = datetime.fromisoformat(event["created_at"])
+                    labelling = Labelling(
+                        event["event"],
+                        event["label"]["name"],
+                        actor.get("login"),
+                        at.date(),
                     )
+                    stamped.append((at, labelling))
                 url = following["url"] if following else None
-            cache[key] = events
+            # the last event decides whether the label is on, so hold them in
+            # time order, whatever order the pages served them in
+            stamped.sort(key=lambda pair: pair[0])
+            cache[key] = [labelling for _, labelling in stamped]
         return cache[key]
 
     return labelled
