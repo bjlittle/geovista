@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import cartopy.crs as ccrs
 import numpy as np
 from pyproj import CRS, Transformer
@@ -742,6 +744,13 @@ def test_transform_mesh__non_ascii_wkt(regional_mesh, tgt_crs):
 GB_LONS = np.array([-3.0, -1.0, -0.25, 0.0, 0.25, 1.0, 1.9])
 
 
+#: A rotated pole over the British Isles, as a regional model is run on.
+ROTATED_POLE = (
+    "+proj=ob_tran +o_proj=longlat +o_lon_p=0 +o_lat_p=37.5 +lon_0=357.5 "
+    "+datum=WGS84 +no_defs"
+)
+
+
 def _gb_line() -> pv.PolyData:
     """Return a line along 52°N across Great Britain, on WGS84."""
     lats = np.full(GB_LONS.shape, 52.0)
@@ -774,6 +783,41 @@ def test_transform_mesh__datum_at_true_positions(request, network):
     )
     np.testing.assert_allclose(result.points[:, 0], x, atol=1e-3)
     np.testing.assert_allclose(result.points[:, 1], y, atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    ("crs", "extent"),
+    [
+        ("EPSG:3857", (-10, 2, 49, 59)),
+        ("EPSG:32630", (-6, 0, 50, 56)),
+        ("EPSG:27700", (-6, 1, 50, 58)),
+        (ROTATED_POLE, (-10, 2, 49, 59)),
+    ],
+    ids=["web-mercator", "utm", "british-national-grid", "rotated-pole"],
+)
+def test_transform_mesh__regional_mesh_keeps_its_positions(crs, extent):
+    """A regional mesh lands where PROJ puts each of its points.
+
+    These are the uses that crs spec §2 decision 12 names, and they keep today's
+    path until their class lands. The projection coverage test projects a global
+    mesh, through which all four fail, so it cannot see one of them move.
+
+    Holds crs spec §2 decision 12.
+
+    """
+    mesh = _quad(*extent)
+    lonlat = from_cartesian(mesh)
+
+    with warnings.catch_warnings():
+        # a rotated pole warns that its central meridian is assumed to be 0
+        warnings.simplefilter("ignore", UserWarning)
+        result = transform_mesh(mesh, crs)
+
+    x, y = Transformer.from_crs(WGS84, crs, always_xy=True).transform(
+        lonlat[:, 0], lonlat[:, 1]
+    )
+    np.testing.assert_allclose(result.points[:, 0], x, atol=1e-6, rtol=1e-9)
+    np.testing.assert_allclose(result.points[:, 1], y, atol=1e-6, rtol=1e-9)
 
 
 def test_transform_mesh__datum_in_another_angular_unit():

@@ -394,7 +394,7 @@ A coarse cell is still flat between its vertices, so its middle is drawn below t
 its vertices carry, by its sag (§3.5): 1.7 km at the centre of a C48
 cell at true scale. That is a property of the mesh, not of its heights. Refining a mesh for
 display reduces it, and stays an explicit opt-in
-(crs spec §2, decision 8).
+(crs spec §2 decision 8).
 
 (globe-spec-4-5)=
 ### 4.5 Layers

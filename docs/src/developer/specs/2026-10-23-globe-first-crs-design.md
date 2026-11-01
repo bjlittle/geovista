@@ -44,75 +44,79 @@ generalises it.
 
 The bar is scientific confidence. A scientist must be able to trust and check every cut,
 every boundary and every height, so the design is built around two rules it may never
-break (§2, decision 1).
+break (§2 decision 1).
 
 (crs-spec-2)=
 ## 2. Decisions
 
 These were decided with {user}`bjlittle` while the design was written.
 
-1. **Never quietly wrong, and never silently drop data.** These are the hard rules, in
-   that order. A result that looks plausible but is subtly off is the worst outcome. A
-   cell, point or line removed without a word is the next worst.
-2. **Globe first.** Data stays on the sphere until the last step, and projection happens
-   once, at the end.
-3. **Rebuild from the ground up.** The seam and transform code (`MeridianSlice`, `remesh`,
-   the central meridian rotation in `transform_mesh` and `GeoPlotterBase.add_mesh`) is
-   redesigned around the engine of §4.2, not extended.
-4. **Breaking changes are allowed.** `geovista` is 0.x with a small community, so this is
-   the time to make them.
-5. **cartopy is not a foundation.** Its approach clips in projected space with planar
-   geometry, which this design rejects. `cartopy` becomes an optional dependency, and is
-   dropped once the Natural Earth features no longer need it. `shapely` plays no part in
-   geometry.
-6. **Learn from cartopy, without repeating its journey.** Its lasting idea is that a
-   projection carries knowledge of its own valid domain, and that idea is kept, applied on
-   the globe. Its defaults are inherited where they are sound, and challenged where they
-   smell (§5).
-7. **Three ways in.** Scientists may name a projection with a `geovista` class that mirrors
-   `cartopy`'s name and keywords, with a PROJ string or `pyproj.CRS`, or with a `cartopy`
-   CRS object. Writing PROJ strings is for power users, and nobody is forced to.
-8. **A safe default for data meshes.** A data mesh's cells are never refined by default.
-   Refinement for display is an explicit opt-in, every sub-cell carries the id of its
-   source cell, and the result records that it was refined
-   (§4.6). Built-in lines and boundaries, such as coastlines, the
+1. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Never quietly wrong, and
+   never silently drop data.** These are the hard rules, in that order. A result that looks
+   plausible but is subtly off is the worst outcome. A cell, point or line removed without a
+   word is the next worst.
+2. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Globe first.** Data stays
+   on the sphere until the last step, and projection happens once, at the end.
+3. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Rebuild from the ground
+   up.** The seam and transform code (`MeridianSlice`, `remesh`, the central meridian
+   rotation in `transform_mesh` and `GeoPlotterBase.add_mesh`) is redesigned around the
+   engine of §4.2, not extended.
+4. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Breaking changes are
+   allowed.** `geovista` is 0.x with a small community, so this is the time to make them.
+5. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **cartopy is not a
+   foundation.** Its approach clips in projected space with planar geometry, which this
+   design rejects. `cartopy` becomes an optional dependency, and is dropped once the Natural
+   Earth features no longer need it. `shapely` plays no part in geometry.
+6. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Learn from cartopy, without
+   repeating its journey.** Its lasting idea is that a projection carries knowledge of its
+   own valid domain, and that idea is kept, applied on the globe. Its defaults are inherited
+   where they are sound, and challenged where they smell (§5).
+7. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Three ways in.** Scientists
+   may name a projection with a `geovista` class that mirrors `cartopy`'s name and keywords,
+   with a PROJ string or `pyproj.CRS`, or with a `cartopy` CRS object. Writing PROJ strings
+   is for power users, and nobody is forced to.
+8. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **A safe default for data
+   meshes.** A data mesh's cells are never refined by default. Refinement for display is an
+   explicit opt-in, every sub-cell carries the id of its source cell, and the result records
+   that it was refined (§4.6). Built-in lines and boundaries, such as coastlines, the
    graticule and a domain's edge, are always densified. A user's line mesh is data, and
    follows the rule for data meshes.
-9. **Cut once, map many.** Most time series keep a fixed mesh and change only its values,
-   so the geometry is worked once and every frame carries its values through a stored
-   mapping (§4.5).
-10. **Coverage commitment.** The architecture covers every class of projection. Delivery
-    commits to `cartopy` parity (all 38 classes, interrupted Goode Homolosine and
-    Spilhaus included), to every PROJ method in classes 1 to 4 except four, and to keeping
-    the 91 methods that work today working. The four are the Space Oblique Mercator family
-    (`som`, `lsat`, `misrsom`), which follows a satellite's ground track rather than a
-    great circle, and `bipc`, which joins two oblique cones. They, and the other
-    interrupted and polyhedral methods, come when a scientist asks. Anything not yet
-    supported fails loudly (§4.3).
-11. **Build on specialised packages.** `geovista` is the glue in its cartographic domain.
-    PROJ does projection mathematics, VTK and `pyvista` do mesh processing, and
-    `geovista` contributes upstream where a package needs shaping for its use, rather
-    than reinventing what the package does. `pyvista` exposes the whole of VTK's filter
-    set, so where `pyvista` lacks exactly what is needed and cannot be reshaped upstream,
-    a custom VTK filter is an option.
-12. **No release regresses a working use.** Until a class lands, the PROJ methods it holds
-    keep today's path unchanged, so a regional mesh in Web Mercator, UTM, the British
-    National Grid or a rotated pole keeps working. That path is deleted when the last
-    class lands (§10).
-13. **Units are first class, through `pint`.** Every physical quantity at the API boundary
-    is either a plain number in its documented unit, or a `pint` quantity. A CF unit
-    string, as an Iris cube or an xarray `units` attribute carries, is read with
-    `pint-cf`'s CF-compliant registry. Inside, quantities are converted once to SI and the
-    hot paths stay plain NumPy (§4.9). `cf-units` is not used,
-    because it builds on the UDUNITS-2 C library, which pip cannot install; that is the
-    view of {user}`bjlittle`, a core developer of `cf-units`.
-14. **A mesh describes itself, in any file VTK writes.** Its CRS, the globe it was
-    positioned for, its heights and the record of §4.6 are data on the mesh. A mesh saved
-    to legacy `.vtk`, to an XML format such as `.vtp` or `.vtu`, or to `.vtkhdf`, and read
-    back, equals the mesh that was saved. Only what can be recomputed, such as the mapping
-    of §4.5, may live outside it, and no display offset is ever written to it
-    (globe spec §4.5). The one loss is VTK's own: legacy `.vtk` written as ASCII rounds
-    every double to 11 significant figures (§3.4), which is documented, not prevented.
+9. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Cut once, map many.** Most
+   time series keep a fixed mesh and change only its values, so the geometry is worked once
+   and every frame carries its values through a stored mapping (§4.5).
+10. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Coverage commitment.** The
+    architecture covers every class of projection. Delivery commits to `cartopy` parity (all
+    38 classes, interrupted Goode Homolosine and Spilhaus included), to every PROJ method in
+    classes 1 to 4 except four, and to keeping the 91 methods that work today working. The
+    four are the Space Oblique Mercator family (`som`, `lsat`, `misrsom`), which follows a
+    satellite's ground track rather than a great circle, and `bipc`, which joins two oblique
+    cones. They, and the other interrupted and polyhedral methods, come when a scientist
+    asks. Anything not yet supported fails loudly (§4.3).
+11. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Build on specialised
+    packages.** `geovista` is the glue in its cartographic domain. PROJ does projection
+    mathematics, VTK and `pyvista` do mesh processing, and `geovista` contributes upstream
+    where a package needs shaping for its use, rather than reinventing what the package
+    does. `pyvista` exposes the whole of VTK's filter set, so where `pyvista` lacks exactly
+    what is needed and cannot be reshaped upstream, a custom VTK filter is an option.
+12. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **No release regresses a
+    working use.** Until a class lands, the PROJ methods it holds keep today's path
+    unchanged, so a regional mesh in Web Mercator, UTM, the British National Grid or a
+    rotated pole keeps working. That path is deleted when the last class lands (§10).
+13. **🤝 Agreed** (2026-10-24, {user}`bjlittle`, {pull}`2717`) — **Units are first class,
+    through `pint`.** Every physical quantity at the API boundary is either a plain number
+    in its documented unit, or a `pint` quantity. A CF unit string, as an Iris cube or an
+    xarray `units` attribute carries, is read with `pint-cf`'s CF-compliant registry.
+    Inside, quantities are converted once to SI and the hot paths stay plain NumPy (§4.9).
+    `cf-units` is not used, because it builds on the UDUNITS-2 C library, which pip cannot
+    install; that is the view of {user}`bjlittle`, a core developer of `cf-units`.
+14. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2752`) — **A mesh describes itself,
+    in any file VTK writes.** Its CRS, the globe it was positioned for, its heights and the
+    record of §4.6 are data on the mesh. A mesh saved to legacy `.vtk`, to an XML format
+    such as `.vtp` or `.vtu`, or to `.vtkhdf`, and read back, equals the mesh that was
+    saved. Only what can be recomputed, such as the mapping of §4.5, may live outside it,
+    and no display offset is ever written to it (globe spec §4.5). The one loss is VTK's
+    own: legacy `.vtk` written as ASCII rounds every double to 11 significant figures
+    (§3.4), which is documented, not prevented.
 
 (crs-spec-3)=
 ## 3. What Exists Today
@@ -370,8 +374,8 @@ taken from PROJ's implementation of each.
 
 A method that the registry does not hold raises an error that names the method and says
 its domain is not yet supported, rather than rendering something torn. Until its class
-lands, though, a method of classes 1 to 6 keeps today's path, as decision 12 of
-§2 requires. The 91 methods of
+lands, though, a method of classes 1 to 6 keeps today's path, as §2 decision 12
+requires. The 91 methods of
 §3.2 enter the registry as class 0, each verified by the coverage
 test of §6.
 
@@ -806,3 +810,25 @@ fragment.
 - `scikit-gmsh`, which wraps gmsh, both GPLv3: <https://github.com/pyvista/scikit-gmsh>
 - `pint`: <https://github.com/hgrecco/pint>, and `pint-cf`, its CF-compliant registry:
   <https://github.com/pgamez/pint-cf>
+
+(crs-spec-12)=
+## 12. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ⏳ pending | rows 3 to 13 of §10 |
+| 2 | ⏳ pending | rows 3 to 11 of §10 |
+| 3 | ⏳ pending | rows 3 to 11 of §10 |
+| 4 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2799`) | Checked in review that {pull}`2766` used it, removing `radius=` with no alias as scene spec §2 decision 2 says it may, and recorded the break in a `breaking` fragment. |
+| 5 | ⏳ pending | rows 3 to 5 of §10 |
+| 6 | ⏳ pending | rows 4 to 11 of §10 |
+| 7 | ⏳ pending | row 5 of §10 |
+| 8 | ⏳ pending | rows 3 to 13 of §10 |
+| 9 | ⏳ pending | row 12 of §10 |
+| 10 | ⏳ pending | rows 4 to 11 of §10 |
+| 11 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2799`) | Checked in review that the units are `pint`'s and `pint-cf`'s ({pull}`2754`), projection is PROJ's through `pyproj`, and mesh processing is `pyvista`'s and VTK's. |
+| 12 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/transform/test_projection_coverage.py`, `tests/transform/test_transform_mesh.py` |
+| 13 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/units/test_to_metres.py`, `tests/units/test_to_degrees.py`, `tests/units/test_import.py`, `tests/globe/test_Globe.py` |
+| 14 | ⏳ pending | rows 2 to 13 of §10 |
