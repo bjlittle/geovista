@@ -1,0 +1,5 @@
+Brought the globe-first CRS specification into the decision ledger. Each of its 14
+decisions now records who agreed it and when, and the specification ends with a
+Verification table. Two decisions are verified by tests that now cite them, and
+two are signed off. The other ten wait on roadmap rows that haven't started, and
+each pending row names the rows that will deliver it. (:user:`claude`)
