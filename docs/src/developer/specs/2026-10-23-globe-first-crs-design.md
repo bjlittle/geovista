@@ -44,7 +44,7 @@ generalises it.
 
 The bar is scientific confidence. A scientist must be able to trust and check every cut,
 every boundary and every height, so the design is built around two rules it may never
-break (§2, decision 1).
+break (§2 decision 1).
 
 (crs-spec-2)=
 ## 2. Decisions
@@ -374,8 +374,8 @@ taken from PROJ's implementation of each.
 
 A method that the registry does not hold raises an error that names the method and says
 its domain is not yet supported, rather than rendering something torn. Until its class
-lands, though, a method of classes 1 to 6 keeps today's path, as decision 12 of
-§2 requires. The 91 methods of
+lands, though, a method of classes 1 to 6 keeps today's path, as §2 decision 12
+requires. The 91 methods of
 §3.2 enter the registry as class 0, each verified by the coverage
 test of §6.
 
@@ -819,16 +819,16 @@ Each row follows ledger spec §3.4.
 | Decision | Status | Evidence |
 |---|---|---|
 | 1 | ⏳ pending | rows 3 to 13 of §10 |
-| 2 | ⏳ pending | rows 3 to 4 of §10 |
-| 3 | ⏳ pending | rows 3 to 4 of §10 |
+| 2 | ⏳ pending | rows 3 to 11 of §10 |
+| 3 | ⏳ pending | rows 3 to 11 of §10 |
 | 4 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2799`) | Checked in review that {pull}`2766` used it, removing `radius=` with no alias as scene spec §2 decision 2 says it may, and recorded the break in a `breaking` fragment. |
 | 5 | ⏳ pending | rows 3 to 5 of §10 |
-| 6 | ⏳ pending | row 4 of §10 |
+| 6 | ⏳ pending | rows 4 to 11 of §10 |
 | 7 | ⏳ pending | row 5 of §10 |
 | 8 | ⏳ pending | rows 3 to 13 of §10 |
 | 9 | ⏳ pending | row 12 of §10 |
 | 10 | ⏳ pending | rows 4 to 11 of §10 |
 | 11 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2799`) | Checked in review that the units are `pint`'s and `pint-cf`'s ({pull}`2754`), projection is PROJ's through `pyproj`, and mesh processing is `pyvista`'s and VTK's. |
-| 12 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/transform/test_projection_coverage.py` |
-| 13 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/units/test_to_metres.py`, `tests/units/test_to_degrees.py`, `tests/units/test_import.py` |
-| 14 | ⏳ pending | row 2 of §10, row 13 of §10 |
+| 12 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/transform/test_projection_coverage.py`, `tests/transform/test_transform_mesh.py` |
+| 13 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/units/test_to_metres.py`, `tests/units/test_to_degrees.py`, `tests/units/test_import.py`, `tests/globe/test_Globe.py` |
+| 14 | ⏳ pending | rows 2 to 13 of §10 |

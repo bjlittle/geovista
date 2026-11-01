@@ -490,6 +490,9 @@ def test_ledger_partitions_every_method():
 def test_method_outcome(method):
     """A method works exactly when the ledger says it does.
 
+    The 91 methods that work today keep working, as crs spec §2 decision 10
+    commits.
+
     Holds crs spec §2 decision 12.
     """
     if method in SINCE and Version(SINCE[method]) > PROJ:

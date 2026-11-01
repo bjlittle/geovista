@@ -321,8 +321,8 @@ Projection Coverage
 ``cartopy``, is recorded as working or failing on a global mesh, and its outcome
 changes only when that record does.
 
-**Why:** No release may break a projection that works today, by decision 12 of
-the CRS specification. The record shows which projections ``geovista`` handles,
+**Why:** No release may break a projection that works today, by
+crs spec §2 decision 12. The record shows which projections ``geovista`` handles,
 and stops that set shrinking by accident while the seam and transform code is
 rebuilt.
 

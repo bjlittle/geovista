@@ -51,7 +51,10 @@ def test_the_defaults():
     ],
 )
 def test_a_radius_in_each_form_reads_as_metres(radius):
-    """Test that a radius as a number, a quantity or from a unit string is metres."""
+    """Test that a radius as a number, a quantity or from a unit string is metres.
+
+    Holds crs spec §2 decision 13.
+    """
     assert Globe(radius=radius).radius.to("m").magnitude == 6371000.0
 
 
