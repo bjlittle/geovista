@@ -43,7 +43,10 @@ assert not loaded, loaded
 
 
 def test_plain_numbers_never_import_pint():
-    """Test that converting plain numbers never imports pint, which is slow."""
+    """Test that converting plain numbers never imports pint, which is slow.
+
+    Holds crs spec §2 decision 13.
+    """
     subprocess.run([sys.executable, "-c", PLAIN], check=True)  # noqa: S603
 
 
@@ -53,7 +56,10 @@ def test_one_registry_serves_every_call():
 
 
 def test_only_units_imports_pint():
-    """Test that no module but geovista.units imports pint, pint-cf or lark."""
+    """Test that no module but geovista.units imports pint, pint-cf or lark.
+
+    Holds crs spec §2 decision 13.
+    """
     package = Path(geovista.__file__).parent
     importers = set()
     for path in package.rglob("*.py"):
