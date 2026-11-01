@@ -46,7 +46,10 @@ def test_integers_become_float64():
     [("m", 1.0), ("km", 1000.0), ("ft", 0.3048), ("nautical_mile", 1852.0)],
 )
 def test_cf_string_is_exact(units, factor):
-    """Test that a CF unit string converts to metres exactly."""
+    """Test that a CF unit string converts to metres exactly.
+
+    Holds crs spec §2 decision 13.
+    """
     assert np.array_equal(to_metres(H, units), H * factor)
 
 
