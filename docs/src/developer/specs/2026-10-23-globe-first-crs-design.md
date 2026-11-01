@@ -810,3 +810,25 @@ fragment.
 - `scikit-gmsh`, which wraps gmsh, both GPLv3: <https://github.com/pyvista/scikit-gmsh>
 - `pint`: <https://github.com/hgrecco/pint>, and `pint-cf`, its CF-compliant registry:
   <https://github.com/pgamez/pint-cf>
+
+(crs-spec-12)=
+## 12. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ⏳ pending | rows 3 to 13 of §10 |
+| 2 | ⏳ pending | rows 3 to 4 of §10 |
+| 3 | ⏳ pending | rows 3 to 4 of §10 |
+| 4 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2799`) | Checked in review that {pull}`2766` used it, removing `radius=` with no alias as scene spec §2 decision 2 says it may, and recorded the break in a `breaking` fragment. |
+| 5 | ⏳ pending | rows 3 to 5 of §10 |
+| 6 | ⏳ pending | row 4 of §10 |
+| 7 | ⏳ pending | row 5 of §10 |
+| 8 | ⏳ pending | rows 3 to 13 of §10 |
+| 9 | ⏳ pending | row 12 of §10 |
+| 10 | ⏳ pending | rows 4 to 11 of §10 |
+| 11 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2799`) | Checked in review that the units are `pint`'s and `pint-cf`'s ({pull}`2754`), projection is PROJ's through `pyproj`, and mesh processing is `pyvista`'s and VTK's. |
+| 12 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/transform/test_projection_coverage.py` |
+| 13 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/units/test_to_metres.py`, `tests/units/test_to_degrees.py`, `tests/units/test_import.py` |
+| 14 | ⏳ pending | row 2 of §10, row 13 of §10 |
