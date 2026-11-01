@@ -140,8 +140,9 @@ Strict Typing
 
 **The rule:** ``mypy`` checks the whole package in strict mode. No override may
 ignore a module's errors, nothing at the top of ``[tool.mypy]`` may silence one,
-no module may configure ``mypy`` with a ``# mypy:`` comment, and the only
-per-module relaxations of strict mode are those listed in ``RELAXED``.
+no module may configure ``mypy`` with a ``# mypy:`` comment, no gallery script may
+carry a ``# type: ignore`` comment, and the only per-module relaxations of strict
+mode are those listed in ``RELAXED``.
 
 **Why:** The package became fully type checked one module at a time. A single
 line of configuration could hand that coverage back, and nothing in a passing
@@ -153,6 +154,8 @@ tests. It also holds :bash:`.github/workflows/ci-typing.yml` to running the
 
 **When it fails:** Fix the type error rather than silence it. Where the cause is
 upstream, bind an annotated local, as the type coverage specification describes.
+A gallery script is published as example code, so a defect it cannot fix is
+suppressed in ``pyproject.toml`` and ``RELAXED``, never in the script.
 
 **Declaring an exception:** A per-module relaxation goes in ``RELAXED`` in
 :bash:`tests/test_ci_typing.py` and in ``pyproject.toml``, only with a reason the

@@ -72,16 +72,19 @@ below them has depended on its extent.
 (zlevel-spec-2)=
 ## 2. Decisions
 
-- **The length is the Earth's radius, measured in the CRS's own units.** It belongs to the
-  CRS, so every mesh and cloud transformed into that CRS shares it, and a level is the same
-  proportion of the Earth's radius as it is on the globe. Chosen on 2026-10-08 over the
-  alternatives of §5.
-- **`zscale` stays the only control.** It already scales every level, on the globe and in
-  the plane, so the length needs no setting of its own.
-- **`GeoPlotter` does not change.** Its layers all pass through `transform_mesh`, and they
-  keep their order, since every one of them is scaled by the same length.
-- **Nothing persisted needs migrating.** A planar z is computed afresh by every transform,
-  from the levels a point cloud carries or from the `zlevel` a caller passes.
+1. **🤝 Agreed** (2026-10-08, {user}`bjlittle`, {pull}`2589`) — **The length is the Earth's
+   radius, measured in the CRS's own units.** It belongs to the CRS, so every mesh and cloud
+   transformed into that CRS shares it, and a level is the same proportion of the Earth's
+   radius as it is on the globe. Chosen on 2026-10-08 over the alternatives of §5.
+2. **🤝 Agreed** (2026-10-08, {user}`bjlittle`, {pull}`2589`) — **`zscale` stays the only
+   control.** It already scales every level, on the globe and in the plane, so the length
+   needs no setting of its own.
+3. **🤝 Agreed** (2026-10-08, {user}`bjlittle`, {pull}`2589`) — **`GeoPlotter` does not
+   change.** Its layers all pass through `transform_mesh`, and they keep their order, since
+   every one of them is scaled by the same length.
+4. **🤝 Agreed** (2026-10-08, {user}`bjlittle`, {pull}`2589`) — **Nothing persisted needs
+   migrating.** A planar z is computed afresh by every transform, from the levels a point
+   cloud carries or from the `zlevel` a caller passes.
 
 (zlevel-spec-3)=
 ## 3. Design
@@ -259,3 +262,15 @@ Each carries the status grammar of docs spec §3.6.
 - `pyproj`'s `CRS.ellipsoid` and `CRS.axis_info`:
   <https://pyproj4.github.io/pyproj/stable/api/crs/crs.html>
 - `tests/AGENTS.md`, on landing image baselines in `bjlittle/geovista-data`
+
+(zlevel-spec-10)=
+## 10. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
+| 2 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
+| 3 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that {pull}`2591` changed no line of `geoplotter.py`, and that every layer the plotter adds passes through `transform_mesh`. |
+| 4 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that no planar z is stored: every transform computes it afresh, from the levels a cloud carries or the `zlevel` given. |

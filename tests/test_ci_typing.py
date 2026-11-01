@@ -20,8 +20,10 @@ See "docs/src/developer/specs/2026-10-06-type-coverage-design.md", section 3.2.
 from __future__ import annotations
 
 from functools import cache
+import io
 from pathlib import Path
 import re
+import tokenize
 import tomllib
 from typing import Any
 
@@ -41,6 +43,8 @@ PRE_COMMIT = ROOT / ".pre-commit-config.yaml"
 WORKFLOW = ROOT / ".github" / "workflows" / "ci-typing.yml"
 #: The package "mypy" checks, as "[tool.mypy]" names it in "files".
 PACKAGE = ROOT / "src" / "geovista"
+#: The gallery, whose scripts are published as example code.
+GALLERY = PACKAGE / "examples"
 
 #: Every per-module setting that relaxes strict mode, by the module it is set
 #: for. "pyproject.toml" gives the reason for each, citing typing spec §3.1 for
@@ -56,6 +60,9 @@ RELAXED = {
 #: the start of a line and spelled exactly ``# mypy:``, but an indented or
 #: respaced one is as likely a mistake, so this matches more than "mypy" does.
 INLINE = re.compile(r"^\s*#\s*mypy\s*:", flags=re.IGNORECASE)
+
+#: A comment silencing "mypy" on its line, with or without an error code.
+IGNORE = re.compile(r"#\s*type\s*:\s*ignore\b", flags=re.IGNORECASE)
 
 #: Lines that do and do not configure "mypy", for holding :data:`INLINE` to
 #: the parser "mypy" itself uses.
@@ -178,6 +185,33 @@ def _matches(text: str) -> list[tuple[int, str]]:
     ]
 
 
+def _ignores(root: Path) -> dict[str, str]:
+    """Return each type-ignore comment in the scripts under a directory.
+
+    Parameters
+    ----------
+    root : Path
+        The directory to search.
+
+    Returns
+    -------
+    dict of str to str
+        The text of each comment carrying one, by its path relative to
+        ``root`` and its line number, counted from one. Only a comment token
+        counts, as only a comment silences "mypy": the same text in a string
+        or a docstring suppresses nothing.
+
+    """
+    return {
+        f"{script.relative_to(root).as_posix()}:{token.start[0]}": token.string
+        for script in sorted(root.rglob("*.py"))
+        for token in tokenize.generate_tokens(
+            io.StringIO(script.read_text(encoding="utf-8")).readline
+        )
+        if token.type == tokenize.COMMENT and IGNORE.search(token.string)
+    }
+
+
 def _commands(step: dict[str, Any]) -> tuple[str, ...]:
     """Return the commands a step really runs.
 
@@ -278,6 +312,59 @@ def test_no_module_configures_mypy_inline():
     assert not found, f"configure mypy in pyproject.toml, not inline: {found}"
 
 
+def test_no_gallery_script_ignores_a_type_error():
+    """No gallery script may carry a type-ignore comment.
+
+    The gallery is rendered into the documentation and readers are invited to
+    copy it, so a comment silencing "mypy" in one is a directive published as
+    example code. A defect a script cannot fix is suppressed in "[tool.mypy]"
+    instead, where ``RELAXED`` pins it (typing spec §3.4). The hook refusing a
+    bare type-ignore comment passes one that names its error code, and strict
+    mode refuses only one that has become unused.
+
+    Holds typing spec §2 decision 4.
+
+    """
+    assert any(GALLERY.rglob("*.py")), f"no gallery scripts found under {GALLERY}"
+    ignored = _ignores(GALLERY)
+    assert not ignored, f"suppress in pyproject.toml, not the script: {ignored}"
+
+
+def test_a_type_ignore_in_a_gallery_script_is_found(tmp_path):
+    """A type-ignore comment is found however it is spelled or placed.
+
+    The comments are built, since the hook refusing a bare one reads this module.
+
+    """
+    ignore = "type" + ":" + "ignore"
+    (tmp_path / "plain.py").write_text('"""Doc."""\n\nx = 1\n', encoding="utf-8")
+    (tmp_path / "scene").mkdir()
+    spaced = ignore.replace(":", ": ")
+    (tmp_path / "scene" / "camera.py").write_text(
+        f"x: int = 'a'  # {spaced}[assignment]\ny = 1  #{ignore}\n# {spaced}\n",
+        encoding="utf-8",
+    )
+    expected = {"scene/camera.py:1", "scene/camera.py:2", "scene/camera.py:3"}
+    assert set(_ignores(tmp_path)) == expected
+
+
+def test_a_type_ignore_in_a_string_is_not_a_comment(tmp_path):
+    """Only a comment silences "mypy", so the text in a string or docstring passes.
+
+    A script may print the directive, or a docstring describe it, without
+    suppressing anything.
+
+    """
+    spaced = "type" + ": " + "ignore"
+    (tmp_path / "label.py").write_text(
+        f'"""Say why a script never carries ``# {spaced}``."""\n\n'
+        f'label = "# {spaced}[attr-defined]"\n'
+        f"text = '''\n# {spaced}\n'''\n",
+        encoding="utf-8",
+    )
+    assert _ignores(tmp_path) == {}
+
+
 def test_inline_configuration_is_found(tmp_path):
     """A ``# mypy:`` comment is found wherever "mypy" would honour it."""
     module = tmp_path / "module.py"
@@ -309,6 +396,7 @@ def test_only_the_known_overrides_relax_strict():
     Settings such as ``disallow_untyped_defs = false`` relax a module in the
     same way. Pinning them all means a new one cannot arrive unnoticed.
 
+    Holds typing spec §2 decision 4.
     """
     manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
     relaxed = _relaxed(manifest["tool"]["mypy"].get("overrides", []))
@@ -378,6 +466,7 @@ def test_ci_typing_runs_the_hook_command():
     resolves from "pixi.lock" rather than re-solving the manifest, which is
     what makes the two environments the same one.
 
+    Holds typing spec §2 decision 1.
     """
     entry = _hook()["entry"]
     endings = [script[-1] for step in _steps() if (script := _commands(step))]

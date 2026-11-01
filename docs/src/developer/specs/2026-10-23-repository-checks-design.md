@@ -65,31 +65,38 @@ needs no change here. The first added since is dependency ceilings, in
 (checks-spec-2)=
 ## 2. Decisions
 
-- **One page, for a reader who has just failed a check.** The page is
-  `docs/src/developer/checks.rst`, titled "Repository Checks". A reader arrives from a
-  failure and reads one section, so the page is built to be dipped into rather than read
-  through. Chosen by {user}`bjlittle` on 2026-10-23, over a page per kind of failure,
-  because separate pages make it harder to find a similar check in another group.
-- **Only `geovista`'s own checks, for now.** Exceptions to third-party tools, such as a
-  `# noqa`, a `filterwarnings` entry or a `nitpick_ignore_regex` pattern, are documented by
-  those tools. They may join later, and §4 keeps a row for them, so
-  nothing in the first version may assume they never will.
-- **A check with no exception still gets a section.** Knowing there is no way round a rule
-  saves a contributor looking for one.
-- **The breadcrumb points at `latest`.** That is the documentation of `main`, which is what
-  a contributor's branch is compared against.
-- **The page is written by hand, and a gate keeps it honest.** Generating the table from
-  the checks would need a Sphinx extension reading test modules, which is more machinery
-  than the nine rows it began with justify. See §5.
-- **The gate is a check too.** A contributor who adds or removes a check and fails the gate
-  has just failed a check, so the gate has a name and a section of its own, which made
-  nine when it landed.
-- **Existing write-ups stay where they are.** The image marker, reading-time and changelog
-  quality assurance sections of the developer guide are linked from the new page, not
-  moved, so links to them keep working.
-- **The page carries no reading-time banner.** It is a lookup, consulted for one entry, so
-  it joins `EXEMPT` in `tests/docs/test_readingtime_coverage.py` with that reason, as the
-  rule it documents requires.
+1. **🤝 Agreed** (2026-10-23, {user}`bjlittle`, {pull}`2705`) — **One page, for a reader who
+   has just failed a check.** The page is `docs/src/developer/checks.rst`, titled
+   "Repository Checks". A reader arrives from a failure and reads one section, so the page
+   is built to be dipped into rather than read through. Chosen by {user}`bjlittle` on
+   2026-10-23, over a page per kind of failure, because separate pages make it harder to
+   find a similar check in another group.
+2. **🤝 Agreed** (2026-10-23, {user}`bjlittle`, {pull}`2705`) — **Only `geovista`'s own
+   checks, for now.** Exceptions to third-party tools, such as a `# noqa`, a
+   `filterwarnings` entry or a `nitpick_ignore_regex` pattern, are documented by those
+   tools. They may join later, and §4 keeps a row for them, so nothing in the first version
+   may assume they never will.
+3. **🤝 Agreed** (2026-10-23, {user}`bjlittle`, {pull}`2705`) — **A check with no exception
+   still gets a section.** Knowing there is no way round a rule saves a contributor looking
+   for one.
+4. **🤝 Agreed** (2026-10-23, {user}`bjlittle`, {pull}`2705`) — **The breadcrumb points at
+   `latest`.** That is the documentation of `main`, which is what a contributor's branch is
+   compared against.
+5. **🤝 Agreed** (2026-10-23, {user}`bjlittle`, {pull}`2705`) — **The page is written by
+   hand, and a gate keeps it honest.** Generating the table from the checks would need a
+   Sphinx extension reading test modules, which is more machinery than the nine rows it
+   began with justify. See §5.
+6. **🤝 Agreed** (2026-10-23, {user}`bjlittle`, {pull}`2705`) — **The gate is a check too.**
+   A contributor who adds or removes a check and fails the gate has just failed a check, so
+   the gate has a name and a section of its own, which made nine when it landed.
+7. **🤝 Agreed** (2026-10-23, {user}`bjlittle`, {pull}`2705`) — **Existing write-ups stay
+   where they are.** The image marker, reading-time and changelog quality assurance sections
+   of the developer guide are linked from the new page, not moved, so links to them keep
+   working.
+8. **🤝 Agreed** (2026-10-23, {user}`bjlittle`, {pull}`2705`) — **The page carries no
+   reading-time banner.** It is a lookup, consulted for one entry, so it joins `EXEMPT` in
+   `tests/docs/test_readingtime_coverage.py` with that reason, as the rule it documents
+   requires.
 
 (checks-spec-3)=
 ## 3. Design
@@ -267,3 +274,19 @@ Each carries the status grammar of docs spec §3.6.
   than listing them, the model for finding every `CHECK`
 - `pytest`'s `pytest_runtest_makereport` hook:
   <https://docs.pytest.org/en/stable/reference/reference.html#pytest.hookspec.pytest_runtest_makereport>
+
+(checks-spec-10)=
+## 10. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 2 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the page documents only `geovista`'s own checks, and that row 2 of §4 keeps the third-party tools as a candidate. |
+| 3 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 5 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 6 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_repository_checks.py` |
+| 7 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the page links to the image marker, reading-time and changelog sections of the developer guide, which stay where they were. |
+| 8 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/docs/test_readingtime_coverage.py` |

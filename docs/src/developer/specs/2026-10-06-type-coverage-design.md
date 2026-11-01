@@ -54,27 +54,30 @@ guarding the other twenty-two has been reporting success throughout.
 (typing-spec-2)=
 ## 2. Decisions
 
-- **The authoritative check runs against the locked environment, never a second copy of
-  it.** `additional_dependencies` on a `mirrors-mypy` hook would mean maintaining a list
-  of `geovista`'s dependencies that `pixi` neither reads nor updates. That list demonstrably
-  diverges: a probe carrying the eight typed core distributions saw 602 errors where the
-  pixi environment saw 642, because the hook's virtual environment has none of the optional
-  dependencies that `rasterio`, `h3`, `pandas` and `pyvistaqt` are imported from. The
-  divergence is silent and no test can detect it. See §3.1.
-- **The hook goes live before the errors are fixed, not after.** Twenty-two modules cannot
-  be corrected in one reviewable change, and a check that stays blind until the last of
-  them lands guards nothing in the meantime. A per-module ratchet makes the debt explicit
-  and lets each module be retired on its own. See §3.2.
-- **An annotation that over-promises is corrected by honouring it, not by narrowing it.**
-  `to_cartesian(lons: ArrayLike, ...)` reaches straight for `lons.shape`, so a caller who
-  reads the signature and the docstring and passes a list gets `AttributeError`. Converting
-  at the boundary makes the published contract true and cannot break an existing caller.
-  See §3.3.
-- **A defect a gallery script cannot fix is suppressed in the configuration, never worked
-  around in the script.** The gallery is rendered into the documentation and readers are
-  invited to copy it, so a `type: ignore` comment in one is a directive published as
-  example code. The suppression then has to name its real cause, or nobody will know when
-  it can go. See §3.4.
+1. **🤝 Agreed** (2026-10-06, {user}`bjlittle`, {pull}`2564`) — **The authoritative check
+   runs against the locked environment, never a second copy of it.**
+   `additional_dependencies` on a `mirrors-mypy` hook would mean maintaining a list of
+   `geovista`'s dependencies that `pixi` neither reads nor updates. That list demonstrably
+   diverges: a probe carrying the eight typed core distributions saw 602 errors where the
+   pixi environment saw 642, because the hook's virtual environment has none of the optional
+   dependencies that `rasterio`, `h3`, `pandas` and `pyvistaqt` are imported from. The
+   divergence is silent and no test can detect it. See §3.1.
+2. **🤝 Agreed** (2026-10-06, {user}`bjlittle`, {pull}`2564`) — **The hook goes live before
+   the errors are fixed, not after.** Twenty-two modules cannot be corrected in one
+   reviewable change, and a check that stays blind until the last of them lands guards
+   nothing in the meantime. A per-module ratchet makes the debt explicit and lets each
+   module be retired on its own. See §3.2.
+3. **🤝 Agreed** (2026-10-06, {user}`bjlittle`, {pull}`2564`) — **An annotation that
+   over-promises is corrected by honouring it, not by narrowing it.**
+   `to_cartesian(lons: ArrayLike, ...)` reaches straight for `lons.shape`, so a caller who
+   reads the signature and the docstring and passes a list gets `AttributeError`. Converting
+   at the boundary makes the published contract true and cannot break an existing caller.
+   See §3.3.
+4. **🤝 Agreed** (2026-10-07, {user}`bjlittle`, {pull}`2567`) — **A defect a gallery script
+   cannot fix is suppressed in the configuration, never worked around in the script.** The
+   gallery is rendered into the documentation and readers are invited to copy it, so a
+   `type: ignore` comment in one is a directive published as example code. The suppression
+   then has to name its real cause, or nobody will know when it can go. See §3.4.
 
 (typing-spec-3)=
 ## 3. Architecture
@@ -621,3 +624,15 @@ Each carries the status grammar of docs spec §3.6.
   `bridge.py` against: <https://github.com/python/typeshed/pull/15884>
 - `typeshed` issue 16504, reporting three gaps in those stubs, cited by item 7 of
   §8: <https://github.com/python/typeshed/issues/16504>
+
+(typing-spec-10)=
+## 10. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |
+| 2 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the hook and its ratchet went live in row 1 of §4 ({pull}`2565`), before any module was corrected, and that row 7 retired the ratchet ({pull}`2681`). |
+| 3 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/bridge/test_lists.py` |
+| 4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |

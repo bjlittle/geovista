@@ -23,7 +23,8 @@ import sys
 
 import pytest
 
-#: The section of the repository checks page that documents this check.
+#: The section of the repository checks page that documents this check. The gate is
+#: a check too, so it names its own section (checks spec §2 decision 6).
 CHECK = "repository-checks"
 
 #: The repository root.
@@ -63,7 +64,10 @@ def test_passes():
 
 
 def test_breadcrumb_names_the_section(breadcrumb):
-    """The breadcrumb is the text of checks spec §3.3, naming the section."""
+    """The breadcrumb is the text of checks spec §3.3, naming the section.
+
+    Holds checks spec §2 decision 4.
+    """
     assert breadcrumb.breadcrumb("image-marker") == (
         "Why this check exists, and how to declare an exception:\n"
         "https://geovista.readthedocs.io/en/latest/developer/checks.html"
@@ -372,7 +376,10 @@ def _labels(name: str) -> str:
 
 
 def test_the_page_and_the_checks_agree():
-    """Every check has a row and a section, and every row and section a check."""
+    """Every check has a row and a section, and every row and section a check.
+
+    Holds checks spec §2 decision 1, checks spec §2 decision 5.
+    """
     assert disagreements(REPO, PAGE) == []
     # a gate that read no check would agree with an empty page
     assert declared(REPO), "the gate found no CHECK to hold the page to"
@@ -386,7 +393,10 @@ def test_a_section_without_a_check_fails(tmp_path):
 
 
 def test_a_check_without_a_section_fails(tmp_path):
-    """A new check has a section for its failures to link to."""
+    """A new check has a section for its failures to link to.
+
+    Holds checks spec §2 decision 3.
+    """
     page = _tree(tmp_path, {"tests/test_a.py": '"new"'}, ["new"], [])
     found = disagreements(tmp_path, page)
     assert any("'new'" in message and "no section" in message for message in found)
