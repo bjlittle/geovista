@@ -1,0 +1,3 @@
+Verified zlevel spec §2 decision 4 with a test that fails if a transform reuses a
+point cloud's planar z instead of recomputing it, so the decision is no longer
+signed off. (:user:`claude`)
