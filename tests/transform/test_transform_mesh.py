@@ -712,7 +712,13 @@ def test_transform_mesh__data_above_the_coastlines_whatever_its_extent():
 
 
 def test_transform_mesh__cloud_between_units(lifted_cloud):
-    """A cloud moved from metres to kilometres keeps its depths in proportion."""
+    """A cloud moved from metres to kilometres keeps its depths in proportion.
+
+    Its planar z is computed afresh from the levels it carries, never taken from
+    the source, so a z written by an earlier rule needs no migrating.
+
+    Holds zlevel spec §2 decision 4.
+    """
     metres = transform_mesh(lifted_cloud.copy(), PLANAR)
 
     result = transform_mesh(metres, "+proj=eqc +units=km")
