@@ -210,11 +210,13 @@ TWO = (
 THREE = "**Open** — **The third question.** Still open."
 
 
-def frozen(guard, base_items: str, head_items: str) -> list[str]:
+def frozen(
+    guard, base_items: str, head_items: str, cited: frozenset[str] = frozenset()
+) -> list[str]:
     """Compare two specifications whose eighth section holds the given text."""
     base = spec(("1", "Purpose", PURPOSE), ("8", "Open Items", base_items))
     head = spec(("1", "Purpose", PURPOSE), ("8", "Open Items", head_items))
-    return guard.frozen(base, head)
+    return guard.frozen(base, head, cited)
 
 
 def test_an_item_appended_passes(guard):
@@ -252,11 +254,78 @@ def test_an_item_removed_fails(guard):
 
 
 def test_a_numbered_list_without_bold_titles_is_not_frozen(guard):
-    """The steps of a procedure are not cited by number."""
+    """The steps of a procedure are free to change while nothing cites them."""
     assert (
         frozen(guard, "1. First.\n2. Second.", "1. Zeroth.\n2. First.\n3. Second.")
         == []
     )
+
+
+#: A list of untitled steps, and the same list with a step inserted first.
+STEPS = "1. Fetch the assets.\n2. Build the pages.\n3. Serve them."
+INSERTED_STEP = "1. Clean the tree.\n" + "\n".join(
+    f"{int(line[0]) + 1}{line[1:]}" for line in STEPS.splitlines()
+)
+
+
+def test_a_cited_untitled_item_is_frozen(guard):
+    """Once cited, an untitled item keeps its number (#2806)."""
+    problems = frozen(guard, STEPS, INSERTED_STEP, frozenset({"demo-spec-8-item-2"}))
+
+    assert len(problems) == 1
+    assert "item 2" in problems[0]
+    assert "item 3" in problems[0]
+    assert "Build the pages." in problems[0]
+
+
+def test_an_untitled_item_is_paired_by_its_text(guard):
+    """A cited step reworded in place, or another step appended, still passes."""
+    cited = frozenset({"demo-spec-8-item-2"})
+    reworded = STEPS.replace("Build the pages.", "Build every page.")
+
+    assert frozen(guard, STEPS, reworded, cited) == []
+    assert frozen(guard, STEPS, STEPS + "\n4. Stop.", cited) == []
+
+
+def test_only_the_cited_untitled_items_are_frozen(guard):
+    """The steps around a cited one stay free: the third may go."""
+    head = "1. Fetch the assets.\n2. Build the pages."
+
+    assert frozen(guard, STEPS, head, frozenset({"demo-spec-8-item-2"})) == []
+    assert len(frozen(guard, STEPS, head, frozenset({"demo-spec-8-item-3"}))) == 1
+
+
+def test_an_untitled_item_cited_by_its_sections_new_number_is_frozen(guard):
+    """The pull request moves its section, and updates the citation to match."""
+    base = spec(("1", "Purpose", PURPOSE), ("2", "Design", STEPS))
+    head = spec(
+        ("1", "Purpose", PURPOSE),
+        ("2", "Scope", "What the design covers, and what it leaves to others."),
+        ("3", "Design", INSERTED_STEP),
+    )
+
+    problems = guard.frozen(base, head, frozenset({"demo-spec-3-item-2"}))
+
+    assert len(problems) == 1
+    assert "Build the pages." in problems[0]
+
+
+@pytest.mark.parametrize("vs16", [True, False], ids=["selector", "no-selector"])
+@pytest.mark.parametrize("state", range(5), ids=lambda index: f"state-{index}")
+def test_an_item_title_is_read_after_its_emoji_state(guard, state, vs16):
+    """An entry of items spec §3.2 leads with its state, then its provenance."""
+    grammar = guard.grammar
+    written = grammar.ITEMED_STATES[state]
+    if not vs16:
+        written = written.replace(grammar.VS16, "")
+    entry = (
+        f"**{written}** ({grammar.FOUND} 2026-11-02, {{pull}}`1`{grammar.DOT}"
+        f"{grammar.TICKET} {{issue}}`2`) — **The\n   title.** Its text."
+    )
+
+    found = guard.numbered_items(spec(("8", "Open Items", items(entry))))
+
+    assert found["demo-spec-8"]["1"].title == "The title."
 
 
 def test_a_row_appended_passes(guard):
@@ -384,6 +453,72 @@ def test_a_citation_of_a_kept_section_is_not_stale(guard, tmp_path, renumbered):
     assert guard.stale(texts, fates, names, {}) == []
 
 
+@pytest.mark.parametrize(
+    "cited",
+    [
+        f"demo spec {SECTION}2 item 1",
+        f"item 1 of demo spec {SECTION}2",
+        f"row 1 of demo spec {SECTION}2",
+        f"rows 1 to 2 of demo spec {SECTION}2",
+    ],
+    ids=["item", "item-led", "row", "range"],
+)
+def test_an_untouched_citation_of_a_moved_sections_member_is_stale(
+    guard, tmp_path, renumbered, cited
+):
+    """Naming an item or a row names its section too, which moved."""
+    spec_path, names, fates = renumbered
+    code = tmp_path / "code.py"
+    texts = {spec_path: INSERTED, code: f"# see {cited}\n"}
+
+    (finding,) = guard.stale(texts, fates, names, {})
+
+    assert (finding.path, finding.line, finding.cited) == (code, 1, cited)
+    assert finding.fate.anchor == "demo-spec-3"
+
+
+def test_a_range_is_cited_to_its_far_end(guard, tmp_path, renumbered):
+    """Items spec §3.1: a range names both its ends, and each end is checked."""
+    spec_path, names, _ = renumbered
+    code = tmp_path / "code.py"
+    texts = {spec_path: INSERTED, code: f"# items 2 to 4 of demo spec {SECTION}3\n"}
+
+    assert guard.cited(texts, names) >= {"demo-spec-3-item-2", "demo-spec-3-item-4"}
+
+
+def test_a_cited_far_end_of_a_range_is_frozen(guard, tmp_path):
+    """The step a range ends on is as cited as the step it starts on."""
+    path = tmp_path / "2026-01-01-demo-design.md"
+    path.write_text(spec(("8", "Open Items", STEPS)), encoding="utf-8")
+    names = guard.grammar.namespace([path])
+    code = tmp_path / "code.py"
+    texts = {code: f"# steps: items 1 to 2 of demo spec {SECTION}8\n"}
+
+    cited = guard.cited(texts, names)
+
+    assert len(frozen(guard, STEPS, INSERTED_STEP, cited)) == 2
+
+
+def test_a_removed_sections_member_is_described_by_what_its_number_names_now(
+    guard, tmp_path
+):
+    """An item of a removed section is described by the section it named."""
+    head = spec(("1", "Purpose", PURPOSE), ("2", "Testing", TESTING))
+    path = tmp_path / "2026-01-01-demo-design.md"
+    path.write_text(head, encoding="utf-8")
+    names = guard.grammar.namespace([path])
+    fates = guard.pair(guard.sections(BASE), guard.sections(head))
+    code = tmp_path / "code.py"
+    texts = {path: head, code: f"# demo spec {SECTION}2 item 1\n"}
+
+    (found,) = guard.stale(texts, fates, names, {})
+
+    assert guard.describe(found, tmp_path, guard.sections(head)) == (
+        f'code.py:1: demo spec {SECTION}2 item 1 was "Design", which was removed; '
+        f'{SECTION}2 is now "Testing"'
+    )
+
+
 def test_a_removed_section_is_described_by_what_its_number_names_now(guard, tmp_path):
     """The reader is told what the stale citation now opens."""
     head = spec(("1", "Purpose", PURPOSE), ("2", "Testing", TESTING))
@@ -417,6 +552,26 @@ def test_rewrite_moves_a_citation_on_the_lines_named_and_no_others(
     assert (
         fixed
         == f"# demo spec {SECTION}3, {SECTION}1/{SECTION}4\n# demo spec {SECTION}2\n"
+    )
+
+
+def test_rewrite_moves_only_the_section_number_of_a_member(guard, tmp_path, renumbered):
+    """The item or row named stays as written, as does a decision."""
+    _, names, fates = renumbered
+    text = (
+        f"# demo spec {SECTION}2 item 2, item 2 of demo spec {SECTION}3, "
+        f"rows 1 to 2 of demo spec {SECTION}2, demo spec {SECTION}3 decision 3\n"
+        f"See {{ref}}`{SECTION}2 item 2 <demo-spec-2-item-2>`.\n"
+        "See {ref}`item 2 <demo-spec-2-item-2>` and {ref}`demo-spec-3-row-1`.\n"
+    )
+
+    fixed = guard.rewrite(text, tmp_path / "code.py", fates, names, {1, 2, 3})
+
+    assert fixed == (
+        f"# demo spec {SECTION}3 item 2, item 2 of demo spec {SECTION}4, "
+        f"rows 1 to 2 of demo spec {SECTION}3, demo spec {SECTION}4 decision 3\n"
+        f"See {{ref}}`{SECTION}3 item 2 <demo-spec-3-item-2>`.\n"
+        "See {ref}`item 2 <demo-spec-3-item-2>` and {ref}`demo-spec-4-row-1`.\n"
     )
 
 
@@ -567,6 +722,69 @@ def test_a_renumbered_item_fails(guard, repo, capsys):
     assert code == 1
     assert "item 2" in out
     assert "is now item 3" in out
+
+
+@pytest.mark.parametrize("cite", [True, False], ids=["cited", "uncited"])
+def test_an_untitled_item_is_frozen_once_the_corpus_cites_it(guard, repo, capsys, cite):
+    """Option (b) of #2806: a citation anywhere freezes the step."""
+    cited = f"# see demo spec {SECTION}1 item 2\n" if cite else "# nothing cited\n"
+    commit(
+        repo,
+        {str(SPECS / NAME): spec(("1", "Steps", STEPS)), "src/steps.py": cited},
+        "steps",
+    )
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    commit(repo, {str(SPECS / NAME): spec(("1", "Steps", INSERTED_STEP))}, "insert")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    if cite:
+        assert code == 1
+        assert 'item 2 "Build the pages." is now item 3' in out
+    else:
+        assert code == 0, out
+
+
+def test_the_audit_finds_an_item_citation_older_than_the_renumber(guard, repo, capsys):
+    """Naming an item of a section is citing the section, which moved."""
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "switch", "--quiet", "--create", "late")
+    commit(repo, {"src/late.py": f"# see demo spec {SECTION}3 item 1\n"}, "late")
+    git(repo, "switch", "--quiet", "main")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "renumber, citations updated",
+    )
+    git(repo, "merge", "--quiet", "--no-edit", "late")
+
+    code, out = run(guard, repo, "--audit", capsys=capsys)
+
+    assert code == 1
+    assert f'src/late.py:1: demo spec {SECTION}3 item 1 was "Testing"' in out
+
+
+def test_fix_rewrites_a_member_citation_by_its_section(guard, repo, capsys):
+    """The fix moves the section a row is cited in, and keeps the row."""
+    commit(repo, {"src/rows.py": f"# see row 2 of demo spec {SECTION}2\n"}, "rows")
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    commit(repo, {str(SPECS / NAME): INSERTED}, "insert")
+
+    code, _ = run(guard, repo, "--fix", capsys=capsys)
+
+    assert code == 0
+    assert (repo / "src" / "rows.py").read_text() == (
+        f"# see row 2 of demo spec {SECTION}3\n"
+    )
+    assert run(guard, repo, capsys=capsys)[0] == 0
 
 
 def test_the_audit_finds_a_citation_older_than_the_renumber(guard, repo, capsys):
