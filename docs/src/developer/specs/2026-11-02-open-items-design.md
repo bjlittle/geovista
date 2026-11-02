@@ -457,17 +457,17 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ⏳ pending | row 1 of §8 |
-| 2 | ⏳ pending | row 1 of §8 |
-| 3 | ⏳ pending | row 1 of §8 |
-| 4 | ⏳ pending | row 1 of §8 |
-| 5 | ⏳ pending | row 1 of §8 |
-| 6 | ⏳ pending | row 1 of §8 |
-| 7 | ⏳ pending | row 1 of §8 |
-| 8 | ⏳ pending | rows 1 to 3 of §8 |
-| 9 | ⏳ pending | row 1 of §8 |
-| 10 | ⏳ pending | row 1 of §8 |
-| 11 | ⏳ pending | row 1 of §8 |
+| 1 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| 2 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| 3 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py` |
+| 4 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| 5 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py` |
+| 6 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| 7 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py` |
+| 8 | ⏳ pending | row 3 of §8 |
+| 9 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py` |
+| 10 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_renumbering.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
+| 11 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2807`) | Checked in review that the specifications index says an agent may add the `spec: open item` label. |
 | 12 | ⏳ pending | row 2 of §8 |
 | 13 | ⏳ pending | rows 1 to 5 of §8 |
 | 14 | ⏳ pending | rows 1 to 2 of §8 |

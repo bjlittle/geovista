@@ -615,7 +615,10 @@ def demo_site(tmp_path: Path, cited: str) -> Path:
 
 @pytest.mark.usefixtures("docs")
 def test_a_build_links_an_item_citation_to_its_item(tmp_path):
-    """An item's anchor is derived from its list (items spec §3.1), so a link lands."""
+    """An item's anchor is derived from its list (items spec §3.1), so a link lands.
+
+    Holds items spec §2 decision 10.
+    """
     src = demo_site(tmp_path, f"demo spec {SECTION}3 item 2")
 
     html, warning = build(src, tmp_path)
@@ -632,7 +635,10 @@ def test_a_build_links_an_item_citation_to_its_item(tmp_path):
 
 @pytest.mark.usefixtures("docs")
 def test_a_build_links_a_row_citation_to_its_row(tmp_path):
-    """A roadmap row's anchor is derived from its table (items spec §3.1)."""
+    """A roadmap row's anchor is derived from its table (items spec §3.1).
+
+    Holds items spec §2 decision 10.
+    """
     src = demo_site(tmp_path, f"row 1 of demo spec {SECTION}4")
 
     html, warning = build(src, tmp_path)
@@ -649,7 +655,10 @@ def test_a_build_links_a_row_citation_to_its_row(tmp_path):
 
 @pytest.mark.usefixtures("docs")
 def test_a_build_warns_of_a_citation_naming_no_item(tmp_path):
-    """A citation of an item that does not exist fails a build run as CI runs it."""
+    """A citation of an item that does not exist fails a build run as CI runs it.
+
+    Holds items spec §2 decision 10.
+    """
     src = demo_site(tmp_path, f"demo spec {SECTION}3 item 9")
 
     _, warning = build(src, tmp_path)
@@ -660,7 +669,10 @@ def test_a_build_warns_of_a_citation_naming_no_item(tmp_path):
 
 @pytest.mark.usefixtures("docs")
 def test_a_build_warns_of_a_citation_naming_no_row(tmp_path):
-    """A citation of a row that does not exist fails a build run as CI runs it."""
+    """A citation of a row that does not exist fails a build run as CI runs it.
+
+    Holds items spec §2 decision 10.
+    """
     src = demo_site(tmp_path, f"row 9 of demo spec {SECTION}4")
 
     _, warning = build(src, tmp_path)

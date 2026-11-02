@@ -430,7 +430,10 @@ LISTED = (
 
 
 def test_an_item_is_cited_either_way(tmp_path, citations):
-    """Both orders name one anchor, within a specification and across them."""
+    """Both orders name one anchor, within a specification and across them.
+
+    Holds items spec §2 decision 10.
+    """
     _, names = demo(tmp_path, LISTED, citations)
     text = f"demo spec {SECTION}3 item 2 and item 2 of demo spec {SECTION}3"
     bare = f"{SECTION}3 item 2 and item 2 of {SECTION}3"
@@ -450,7 +453,10 @@ def test_an_item_is_cited_either_way(tmp_path, citations):
 
 
 def test_a_row_range_names_both_ends(tmp_path, citations):
-    """Review Focus 2: a range across a lettered row names, and declares, each end."""
+    """Review Focus 2: a range across a lettered row names, and declares, each end.
+
+    Holds items spec §2 decision 10.
+    """
     _, names = demo(tmp_path, LISTED, citations)
     text = f"rows 6a to 7 of demo spec {SECTION}4, Rows 6A and 6b of {SECTION}4"
 

@@ -835,7 +835,10 @@ def item_faults(script, resolve, text, **kwargs: object) -> list[str]:
 
 
 def test_an_items_issue_carries_the_label(script, itemed):
-    """Items spec §3.3: the issue an item cites carries ``spec: open item``."""
+    """Items spec §3.3: the issue an item cites carries ``spec: open item``.
+
+    Holds items spec §2 decision 2.
+    """
     unlabelled = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`5`"),))
     labelled = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`22`"),))
 
@@ -867,7 +870,10 @@ def test_an_items_issue_is_an_issue_that_exists(script, itemed, ticket, expected
     ],
 )
 def test_a_move_is_dated_by_its_merge(script, itemed, day, expected):
-    """Items spec §3.8: a move is dated within a day of its pull request's merge."""
+    """Items spec §3.8: a move is dated within a day of its pull request's merge.
+
+    Holds items spec §2 decision 6.
+    """
     text = spec(
         items=(
             item(
@@ -893,7 +899,10 @@ def test_a_move_is_dated_by_its_merge(script, itemed, day, expected):
     ids=["found", "moved"],
 )
 def test_an_items_pull_request_has_merged(script, itemed, parts):
-    """Items spec §3.8: the pull requests of found and moved have merged."""
+    """Items spec §3.8: the pull requests of found and moved have merged.
+
+    Holds items spec §2 decision 4.
+    """
     state = "DEFERRED" if len(parts) == 4 else "OPEN"
     text = spec(items=(item(script, state, *parts),))
 
@@ -979,6 +988,8 @@ def test_an_open_labelled_issue_no_item_cites_is_drift(script):
 
     A specification still waiting to be brought in cites its issues in the
     grammar of docs spec §3.6, and those count as cited too.
+
+    Holds items spec §2 decision 1, items spec §2 decision 2.
     """
     itemed = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`22`"),))
     waiting = spec(items=("**Open** ({issue}`2804`)",))

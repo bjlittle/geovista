@@ -537,7 +537,10 @@ def test_resolution_finds_each_dangling_and_ownerless_citation(tmp_path):
 
 
 def test_resolution_checks_both_ends_of_a_range(tmp_path):
-    """A range names its far end too, so a far end past the roadmap is reported."""
+    """A range names its far end too, so a far end past the roadmap is reported.
+
+    Holds items spec §2 decision 10.
+    """
     roadmap = "| # | Scope | Status |\n|---|---|---|\n| 1 | x | candidate |\n"
     _, names = demo(tmp_path, f"{DEMO}\n{roadmap}")
     text = f"# rows 1 to 2 of demo spec {SECTION}2, row 1 of {SECTION}2\n"
@@ -652,7 +655,10 @@ def near_misses(path: Path, text: str, names: Namespace) -> list[str]:
 
 
 def test_near_misses_finds_each_form(tmp_path):
-    """One of each near miss, beside three valid forms already read as citations."""
+    """One of each near miss, beside three valid forms already read as citations.
+
+    Holds items spec §2 decision 10.
+    """
     _, names = demo(tmp_path, DEMO)
     text = (
         f"# demo spec item 9.\n"
@@ -3233,7 +3239,10 @@ def test_items_reads_states_and_parts_without_their_variation_selector():
 
 
 def test_item_entries_finds_an_entry_missing_its_found(tmp_path):
-    """Items spec §3.7 item 1: each state carries the parts it needs, in order."""
+    """Items spec §3.7 item 1: each state carries the parts it needs, in order.
+
+    Holds items spec §2 decision 2, items spec §2 decision 3, items spec §2 decision 4.
+    """
     entries = (
         entry_item(1, OPEN, OWED_BY, TICKETED)
         + entry_item(2, OPEN, FOUND_AT, OWED_BY)
@@ -3263,7 +3272,10 @@ def test_item_entries_finds_an_entry_missing_its_found(tmp_path):
 
 
 def test_item_entries_passes_a_settled_item_without_its_issue(tmp_path):
-    """Items spec §3.2: an item settled before it keeps its history, with no issue."""
+    """Items spec §3.2: an item settled before it keeps its history, with no issue.
+
+    Holds items spec §2 decision 4.
+    """
     entries = (
         entry_item(1, RESOLVED, "2026-01-01, {issue}`3`", FOUND_AT)
         + entry_item(2, ABANDONED, "2026-01-01, [x](https://github.com/o/r/pull/1)")
@@ -3278,7 +3290,10 @@ def test_item_entries_passes_a_settled_item_without_its_issue(tmp_path):
 
 
 def test_item_entries_wants_numbered_titled_items_in_one_list(tmp_path):
-    """Items spec §3.2: a numbered entry, with a title, in the section's list."""
+    """Items spec §3.2: a numbered entry, with a title, in the section's list.
+
+    Holds items spec §2 decision 1.
+    """
     entries = (
         f"1. **{OPEN}** ({FOUND_AT}{DOT}{OWED_BY}{DOT}{TICKETED}) — Untitled.\n"
         + entry_item(3, OPEN, FOUND_AT, OWED_BY, TICKETED)
@@ -3335,7 +3350,10 @@ def test_item_entries_reports_items_no_rule_reads(tmp_path, after):
 
 
 def test_item_owed_names_a_row_that_has_not_landed(tmp_path):
-    """Items spec §3.7 item 2, the landing gate of items spec §3.5."""
+    """Items spec §3.7 item 2, the landing gate of items spec §3.5.
+
+    Holds items spec §2 decision 3, items spec §2 decision 5.
+    """
     entries = (
         entry_item(1, OPEN, FOUND_AT, f"{OWED} row 1 of {SECTION}2", TICKETED)
         + entry_item(2, OPEN, FOUND_AT, f"{OWED} row 9 of {SECTION}2", TICKETED)
@@ -3370,7 +3388,10 @@ def test_item_owed_names_a_row_that_has_not_landed(tmp_path):
 
 
 def test_item_moves_wants_one_or_two_for_a_deferred_item(tmp_path):
-    """Items spec §3.7 item 3: none while open, one or two when deferred, not three."""
+    """Items spec §3.7 item 3: none while open, one or two when deferred, not three.
+
+    Holds items spec §2 decision 6, items spec §2 decision 7.
+    """
     entries = (
         entry_item(1, DEFERRED, FOUND_AT, OWED_BY, TICKETED)
         + entry_item(2, DEFERRED, FOUND_AT, OWED_BY, moved(1), TICKETED)
@@ -3392,7 +3413,10 @@ def test_item_moves_wants_one_or_two_for_a_deferred_item(tmp_path):
 
 
 def test_item_graduated_names_a_row_that_cites_its_issue(tmp_path):
-    """Items spec §3.7 item 4: the row an item became carries its issue."""
+    """Items spec §3.7 item 4: the row an item became carries its issue.
+
+    Holds items spec §2 decision 7.
+    """
     roadmap = ROADMAP + "| 4 | An item, {issue}`5` | not started |\n"
     entries = (
         entry_item(1, GRADUATED, graduation(4), FOUND_AT, TICKETED)
@@ -3411,7 +3435,10 @@ def test_item_graduated_names_a_row_that_cites_its_issue(tmp_path):
 
 
 def test_item_issues_finds_two_items_citing_one_issue(tmp_path):
-    """Items spec §3.7 item 5: one issue per item, across the collection."""
+    """Items spec §3.7 item 5: one issue per item, across the collection.
+
+    Holds items spec §2 decision 2.
+    """
     first = itemed(tmp_path, entry_item(1, OPEN, FOUND_AT, OWED_BY, TICKETED))[0]
     second = tmp_path / "2026-01-02-other-design.md"
     second.write_text(
@@ -3436,6 +3463,8 @@ def test_each_grammar_is_read_where_the_other_is_expected(tmp_path):
     An item in the grammar of docs spec §3.6 has no state to the rules of
     items spec §3.7, and an item in that of items spec §3.2 has no status to the
     rule of docs spec §3.6, which reads the specifications :data:`UNITEMED` names.
+
+    Holds items spec §2 decision 9.
     """
     old = "1. **Open** ({issue}`5`) — **An item.** Its reasoning.\n"
     new = entry_item(1, OPEN, FOUND_AT, OWED_BY, TICKETED)
@@ -3457,7 +3486,10 @@ def test_each_grammar_is_read_where_the_other_is_expected(tmp_path):
     ids=lambda path: path.name,
 )
 def test_every_itemed_specification_holds_its_items(spec, names):
-    """Open Items (item 10): items spec §3.7, every rule on every item."""
+    """Open Items (item 10): items spec §3.7, every rule on every item.
+
+    Holds items spec §2 decision 9.
+    """
     text = spec.read_text(encoding="utf-8")
     problems = (
         item_entries(spec, text)

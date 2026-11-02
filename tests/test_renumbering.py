@@ -269,7 +269,10 @@ INSERTED_STEP = "1. Clean the tree.\n" + "\n".join(
 
 
 def test_a_cited_untitled_item_is_frozen(guard):
-    """Once cited, an untitled item keeps its number (#2806)."""
+    """Once cited, an untitled item keeps its number (#2806).
+
+    Holds items spec §2 decision 10.
+    """
     problems = frozen(guard, STEPS, INSERTED_STEP, frozenset({"demo-spec-8-item-2"}))
 
     assert len(problems) == 1
