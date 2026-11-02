@@ -126,10 +126,12 @@ These were decided with {user}`bjlittle` on 2026-11-02.
 (items-spec-3-1)=
 ### 3.1 Citing an Item and a Row
 
-An item is any top-level numbered item of a section: an open item, or a numbered step of
-a design section, such as the items of scene spec §4.4. It is cited as
-`typing spec §8 item 9`, the citation of its section, then the word `item` and its number,
-or the other way round, as `item 9 of typing spec §8`. Within a specification, `§8 item 9`
+An item is a top-level item of the first numbered list of a section: an open item, or a
+numbered step of a design section, such as the items of scene spec §4.4. A later list in
+the same section, such as the steps of a procedure after its design, has no items a
+citation can reach. An item is cited as `typing spec §8 item 9`, the citation of its
+section, then the word `item` and its number, or the other way round, as
+`item 9 of typing spec §8`. Within a specification, `§8 item 9`
 and `item 9 of §8` mean its own item. The section is always named, because specifications
 number their Open Items section differently, seventh in one and eighth in another. Each item
 carries an anchor, `<prefix>-spec-N-item-M`, and the citation transform links the whole
@@ -410,9 +412,9 @@ Each carries the status grammar of §3.2.
    specification. The grammar row 1 of §8 teaches could flag a prefix followed by `row`,
    `item` or `decision` with no `§`, and a section followed by a comma and one of them.
    Found while writing this specification ({pull}`2803`), and owed by row 1 of §8. Row 1
-   added `near_misses` to `tests/test_spec_conventions.py`, flagging the three forms
-   above, and fixed the six citations it found, all comma near-misses in the crs and
-   heights specifications.
+   added `near_misses` to `tests/test_spec_conventions.py`, flagging the two forms above
+   and a third, `decision N of §M`, and fixed the six citations it found, all comma
+   near-misses in the crs and globe specifications.
 2. **🏁 Resolved** (2026-11-02, {pull}`2807` · 🔎 2026-11-02, {pull}`2807` ·
    🎫 {issue}`2806`) — **Cited untitled items are not frozen.** §3.1 says the
    renumber guard of citation spec §4.6 freezes every item, but it freezes only those

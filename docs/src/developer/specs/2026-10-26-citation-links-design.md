@@ -318,9 +318,10 @@ declaring `CHECK`, with a row and a section on the repository checks page
 (citation-spec-4-6)=
 ### 4.6 Items and Rows
 
-Items and rows are referred to by number, and only six of the references are in a form the
-grammar could read (§3.1), so the guard protects them by
-refusing to renumber them. Two kinds are frozen:
+Items and rows are referred to by number. When this specification was written, only six of
+the references were in a form the grammar could read (§3.1); since row 5 of §9 landed, the
+grammar reads them all. The guard protects them by refusing to renumber them. Two kinds are
+frozen:
 
 - **Every numbered item that opens with a bold title**, in any specification. That takes in
   the open items of each specification, whose title is the bold run after the status, and

@@ -306,6 +306,11 @@ fault. For the ledger, it names the decision or row, and says one of these:
 
 For an open item, it names the item, and says one of these:
 
+- ``'❓ Open' is not a status``, or the same for another state of
+  items spec §3.2: the specification is still named in ``UNITEMED``, waiting for
+  its row of items spec §8 to bring it in, so its items keep the grammar of
+  docs spec §3.6. Write the state as a word, as ``**Open**``, and still give a
+  new item its own issue labelled ``spec: open item``.
 - *it has no Open Items section*, *a heading inside Open Items, under which
   items go unread*, *a second Open Items section, whose items go unread*, *an
   item is a bullet, not a numbered entry*, *an item written after its list has
@@ -334,8 +339,8 @@ For an open item, it names the item, and says one of these:
   not cite …*, *… names no row*, *… is another specification's* or *… does not
   exist*: graduate to a row of the item's own roadmap that cites the item's
   issue.
-- *cites :issue:`N`, as … does*: give the item its own issue; one issue tracks
-  one item.
+- ``item N cites {issue}`M`, as … does``: give the item its own issue; one
+  issue tracks one item.
 - *carries no section sign at all* or *is a near-miss citation*: write the
   citation the message gives, with its section sign where the grammar reads
   it.
@@ -530,11 +535,13 @@ For an open item:
 - *is still open* or *closed without merging*: a settled item's pull request
   must have merged; an issue it cites instead may still be open.
 - *… is not a date*: date it with a date a calendar holds.
-- *carries no* ``spec: open item`` *label*: add the label to the issue the
-  item cites. An agent may.
-- *Open, but :issue:`N` has closed* or *Deferred, but :issue:`N` has closed*
-  (nightly ``drift``): settle or move the item, since its issue has closed.
-- *:issue:`N` carries the* ``spec: open item`` *label, and no item cites it*
+- ``{issue}`N` carries no spec: open item label``: add the label to the issue
+  the item cites. An agent may.
+- ``❓ Open, but {issue}`N` has closed`` or
+  ``⏭️ Deferred, but {issue}`N` has closed`` (nightly ``drift``), or the same
+  with ``Open`` or ``Deferred`` in a specification not yet brought in: settle or
+  move the item, since its issue has closed.
+- ``{issue}`N` carries the spec: open item label, and no item cites it``
   (nightly ``drift``): write the gap into a specification as an open item
   citing the issue, or remove the label if it tracks something else.
 
@@ -563,8 +570,8 @@ roadmap row.
 **Why:** A citation is a section number. Insert a section, and every section
 after it takes a new number, so a citation written against the old one still
 resolves, to whatever that number names now, and every other check passes. Items
-and rows are cited by number too, in forms nothing reads, so they are only ever
-appended.
+and rows are cited by number too, as ``§8 item 9`` and ``row 5 of §10`` are, so
+they are only ever appended.
 
 **What enforces it:** :bash:`.github/scripts/check_renumbering.py`, which
 ``ci-citations.yml`` runs on every pull request. It pairs each section of a
@@ -590,6 +597,13 @@ line you touch passes. An
 item or row that moved goes back to its number, and the new one is appended; one
 that stopped applying is marked so in place, and a row that splits takes letter
 suffixes, as ``6a`` and ``6b``.
+
+An item with no bold title, such as a step of a procedure, is frozen only once
+something cites it, and is paired by its text rather than its title. So a cited
+step that is deleted, or reworded too far to recognise, reads
+``was removed, or reworded past recognition``: restore it under its number,
+keeping enough of its wording to be recognised, or mark it in place as no longer
+applying.
 
 **Declaring an exception:** None.
 

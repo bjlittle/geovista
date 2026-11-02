@@ -173,7 +173,9 @@ Open Items
 A specification's Open Items section tracks a gap found while delivering it:
 an input the design missed, or a decision a test only partly held. Each item
 has a state, where it was found, and an issue that tracks it, set out in
-items spec §3.1, §3.2, §3.3, §3.4.
+items spec §3.1, §3.2, §3.3, §3.4. Until its row of items spec §8 brings a
+specification in, its items keep the grammar of docs spec §3.6, but a new item
+still gets its own issue labelled ``spec: open item``.
 
 **Raising an item.** Append it to the end of the Open Items section, in the
 same pull request that raises its issue, labelled ``spec: open item``:
@@ -187,10 +189,10 @@ An agent may add the ``spec: open item`` label itself: it records what the
 issue is, not anyone's judgement, unlike ``signed-off``
 (items spec §2 decision 11).
 
-**Citing an item or a row.** Write ``typing spec §8 item 9``, or
-``item 9 of typing spec §8`` inside the specification itself. Cite a row the
-same way, as ``row 5 of §10``, or across specifications as
-``row 5 of crs spec §10``. The build links each to the item or row it names.
+**Citing an item or a row.** Write ``typing spec §8 item 9`` or
+``item 9 of typing spec §8``, and ``§8 item 9`` or ``item 9 of §8`` inside the
+specification itself. Cite a row the same way, as ``row 5 of §10``, or across
+specifications as ``row 5 of crs spec §10``. The build links each to the item or row it names.
 
 **Owing it to a row.** 🎯 names a row of the item's own roadmap that has not
 landed, the row whose work the gap belongs to. A row may not land while an
