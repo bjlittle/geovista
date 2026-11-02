@@ -154,6 +154,127 @@ class DecisionTargets(SphinxTransform):
             return
 
 
+class ItemTargets(SphinxTransform):
+    """Give each item and roadmap row of a specification its anchor (items spec §3.1).
+
+    No source declares an item's or a row's anchor; the build names the first
+    numbered list of every section but Decisions after its items, and each body
+    row of a table whose header is a roadmap's after its rows. It runs beside
+    :class:`DecisionTargets`, at the same priority, so a section is found by its
+    id before :class:`CitationTransform` links to the anchors. The standard
+    domain records each as an anonymous label, as a decision's is.
+    """
+
+    default_priority = 300
+
+    def apply(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Name the items and roadmap rows of the document, if it is a specification."""
+        self.env.note_dependency(__file__)
+        self.env.note_dependency(geovista_citations.__file__)
+        owner = OWNERS.get(self.env.docname)
+        if owner is None:
+            return
+        for section in self.document.findall(nodes.section):
+            number = _section_number(section, owner)
+            if number is None or number == "2":
+                continue
+            self._name_items(section, owner, number)
+            self._name_rows(section, owner, number)
+
+    def _name_items(self, section: nodes.section, owner: str, number: str) -> None:
+        """Name the first numbered list's items of ``section``, if it has one."""
+        listing = next(
+            (c for c in section.children if isinstance(c, nodes.enumerated_list)),
+            None,
+        )
+        if listing is None:
+            return
+        start = listing.get("start", 1)
+        for offset, item in enumerate(listing.children):
+            name = geovista_citations.item_anchor(owner, number, start + offset)
+            item["names"].append(name)
+            self.document.note_explicit_target(item, item)
+
+    def _name_rows(self, section: nodes.section, owner: str, number: str) -> None:
+        """Name the body rows of every roadmap table directly under ``section``."""
+        for table in section.children:
+            if not isinstance(table, nodes.table):
+                continue
+            header, body = _table_rows(table)
+            if not geovista_citations.roadmap_header(header):
+                continue
+            for row in body:
+                cells = [entry.astext().strip() for entry in row.children]
+                if not cells or not cells[0]:
+                    continue
+                name = geovista_citations.row_anchor(owner, number, cells[0])
+                row["names"].append(name)
+                self.document.note_explicit_target(row, row)
+
+
+def _section_number(section: nodes.section, owner: str) -> str | None:
+    """Read the section number ``owner``'s anchor gives ``section``, or ``None``.
+
+    Only the anchor matching the grammar's bare section label counts: one left
+    unmatched here names a decision, an item or a row, already anchored to
+    something else.
+
+    Parameters
+    ----------
+    section : docutils.nodes.section
+        The section under consideration.
+    owner : str
+        The citation prefix of the specification.
+
+    Returns
+    -------
+    str or None
+        The section number, e.g. ``"4.4"``, or ``None`` when no id of
+        ``section`` is one of ``owner``'s bare section anchors.
+
+    """
+    for id_ in section["ids"]:
+        match = geovista_citations.LABEL.fullmatch(id_)
+        if (
+            match is not None
+            and match["prefix"] == owner
+            and match["decision"] is None
+            and match["item"] is None
+            and match["row"] is None
+        ):
+            return match["num"].replace("-", ".")
+    return None
+
+
+def _table_rows(table: nodes.table) -> tuple[list[str], list[nodes.row]]:
+    """Read a table's header cells and its body rows.
+
+    Parameters
+    ----------
+    table : docutils.nodes.table
+        The table under consideration.
+
+    Returns
+    -------
+    tuple of (list of str, list of docutils.nodes.row)
+        The header cells, read whole although a cell wraps markup, and the body
+        rows, in order; both empty for a table with no ``tbody``.
+
+    """
+    tgroup = next((c for c in table.children if isinstance(c, nodes.tgroup)), None)
+    if tgroup is None:
+        return [], []
+    thead = next((c for c in tgroup.children if isinstance(c, nodes.thead)), None)
+    tbody = next((c for c in tgroup.children if isinstance(c, nodes.tbody)), None)
+    header = (
+        [entry.astext().strip() for entry in thead.children[0].children]
+        if thead is not None and thead.children
+        else []
+    )
+    body = list(tbody.children) if tbody is not None else []
+    return header, body
+
+
 def _heading(node: nodes.Node) -> nodes.title | None:
     """Return the section heading ``node`` sits in, or ``None``.
 
@@ -386,6 +507,7 @@ def setup(app: Sphinx) -> dict[str, object]:
     app.connect("builder-inited", _build_registry)
     app.connect("env-get-outdated", _outdated)
     app.add_transform(DecisionTargets)
+    app.add_transform(ItemTargets)
     app.add_transform(CitationTransform)
     return {
         "version": "0.1.0",

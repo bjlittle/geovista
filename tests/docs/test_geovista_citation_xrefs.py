@@ -427,7 +427,11 @@ def test_setup_registers_every_handler_the_transform_relies_on(docs):
 
     assert registrar.connected["builder-inited"] is docs.cx._build_registry
     assert registrar.connected["env-get-outdated"] is docs.cx._outdated
-    assert registrar.transforms == [docs.cx.DecisionTargets, docs.cx.CitationTransform]
+    assert registrar.transforms == [
+        docs.cx.DecisionTargets,
+        docs.cx.ItemTargets,
+        docs.cx.CitationTransform,
+    ]
     assert metadata["env_version"]
     assert metadata["parallel_read_safe"] is True
     assert metadata["parallel_write_safe"] is True
@@ -581,3 +585,85 @@ def test_a_build_warns_of_a_citation_naming_no_decision(tmp_path):
 
     assert "undefined label" in warning
     assert "alpha-spec-2-decision-9" in warning
+
+
+#: A specification carrying an item and a roadmap row, for their anchors to be
+#: generated (items spec §3.1).
+DEMO = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "(demo-spec-2)=\n## 2. Decisions\n\n1. **One.** First.\n\n"
+    "(demo-spec-3)=\n## 3. Items\n\n"
+    "1. **Alpha.** First item.\n2. **Beta.** Second item.\n\n"
+    "(demo-spec-4)=\n## 4. Roadmap\n\n"
+    "| # | Scope | Status |\n|---|---|---|\n| 1 | One | landed |\n"
+)
+
+
+def demo_site(tmp_path: Path, cited: str) -> Path:
+    """Write a site of one specification with an item and a row, citing ``cited``."""
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    (src / "developer" / "specs" / "2026-01-01-demo-design.md").write_text(
+        DEMO, encoding="utf-8"
+    )
+    toctree = "   page\n   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(f"Page\n====\n\nSee {cited}.\n", encoding="utf-8")
+    return src
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_links_an_item_citation_to_its_item(tmp_path):
+    """An item's anchor is derived from its list (items spec §3.1), so a link lands."""
+    src = demo_site(tmp_path, f"demo spec {SECTION}3 item 2")
+
+    html, warning = build(src, tmp_path)
+
+    page = (html / "page.html").read_text(encoding="utf-8")
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'demo-design.html#demo-spec-3-item-2"' in page
+    assert '<li id="demo-spec-3-item-2"' in demo
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_links_a_row_citation_to_its_row(tmp_path):
+    """A roadmap row's anchor is derived from its table (items spec §3.1)."""
+    src = demo_site(tmp_path, f"row 1 of demo spec {SECTION}4")
+
+    html, warning = build(src, tmp_path)
+
+    page = (html / "page.html").read_text(encoding="utf-8")
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'demo-design.html#demo-spec-4-row-1"' in page
+    assert 'id="demo-spec-4-row-1"' in demo
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_warns_of_a_citation_naming_no_item(tmp_path):
+    """A citation of an item that does not exist fails a build run as CI runs it."""
+    src = demo_site(tmp_path, f"demo spec {SECTION}3 item 9")
+
+    _, warning = build(src, tmp_path)
+
+    assert "undefined label" in warning
+    assert "demo-spec-3-item-9" in warning
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_warns_of_a_citation_naming_no_row(tmp_path):
+    """A citation of a row that does not exist fails a build run as CI runs it."""
+    src = demo_site(tmp_path, f"row 9 of demo spec {SECTION}4")
+
+    _, warning = build(src, tmp_path)
+
+    assert "undefined label" in warning
+    assert "demo-spec-4-row-9" in warning
