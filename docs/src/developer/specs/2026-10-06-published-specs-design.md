@@ -290,6 +290,13 @@ The suite asserts:
    agrees in both sections and names a replacement in force, and a roadmap with no row left
    to deliver leaves no decision pending. A specification not yet in the ledger is listed,
    with the row that brings it in, until that row lands.
+10. **Open Items.** Each item of an Open Items section opens with a state and carries the
+    parts that state needs, in order (items spec §3.7). An open or deferred item's 🎯 names a
+    row of its own roadmap that has not landed, a deferred item carries one or two ⬅️ and an
+    open one none, and a graduated item names a row that cites its issue. No two items cite
+    the same issue, and every citation of an item or a row names one that exists. A
+    specification not yet brought in is listed, with the row that brings it in, until that
+    row lands.
 
 It also holds the publication of §3.1 in place: no specification
 carries `orphan: true`, the index's toctree lists every specification, and its namespace
@@ -321,6 +328,13 @@ local meaning, together with review, and nothing here should be read as claiming
 > `ledger spec §…`, gives a decision the states 🤝 Agreed and 🗄️ Retired, and its
 > verification ⏳ pending, ✅ verified, ✍️ signed off and 🗄️ retired, stated in
 > ledger spec §3.2, §3.3, §3.4 and not repeated here.
+
+> **Extended by a child specification.**
+> [`2026-11-02-open-items-design.md`](2026-11-02-open-items-design.md),
+> `items spec §…`, gives an open item the states ❓ Open, ⏭️ Deferred, 🏁 Resolved, 🚫
+> Abandoned and 🎓 Graduated, and the parts of its provenance, stated in items spec §3.2
+> and §3.3. It retires this section's allowance for an **Open** item with nothing beside
+> it.
 
 A roadmap row that says `landed` records that something happened and throws away which
 thing. The change is in the history somewhere, with a number, a date, an argument in its

@@ -164,6 +164,72 @@ whose test no longer cites its decision, and a decision in force that nothing
 cites. It is a view of the ledger, never a check: it exits 0 whatever it finds
 (ledger spec §3.8).
 
+.. _gv-developer-specs-items:
+.. _tippy-gv-developer-specs-items:
+
+Open Items
+----------
+
+A specification's Open Items section tracks a gap found while delivering it:
+an input the design missed, or a decision a test only partly held. Each item
+has a state, where it was found, and an issue that tracks it, set out in
+items spec §3.1, §3.2, §3.3, §3.4.
+
+**Raising an item.** Append it to the end of the Open Items section, in the
+same pull request that raises its issue, labelled ``spec: open item``:
+
+.. code:: markdown
+
+   7. **❓ Open** (🔎 2026-11-02, {pull}`1234` · 🎯 row N of §M ·
+      🎫 {issue}`1235`) — **The title.** Its reasoning.
+
+An agent may add the ``spec: open item`` label itself: it records what the
+issue is, not anyone's judgement, unlike ``signed-off``
+(items spec §2 decision 11).
+
+**Citing an item or a row.** Write ``typing spec §8 item 9``, or
+``item 9 of typing spec §8`` inside the specification itself. Cite a row the
+same way, as ``row 5 of §10``, or across specifications as
+``row 5 of crs spec §10``. The build links each to the item or row it names.
+
+**Owing it to a row.** 🎯 names a row of the item's own roadmap that has not
+landed, the row whose work the gap belongs to. A row may not land while an
+open or deferred item still names it: the pull request that lands it settles,
+moves or promotes every item it owes.
+
+**Moving it.** A pull request that lands a row without settling an item it
+owes moves it instead, appending ⬅️ with the row it leaves and its date and
+pull request, and the item becomes ``⏭️ Deferred``:
+
+.. code:: markdown
+
+   7. **⏭️ Deferred** (🔎 2026-11-02, {pull}`1234` · 🎯 row N of §M ·
+      ⬅️ row 5, 2026-12-01, {pull}`1240` · 🎫 {issue}`1235`) —
+      **The title.** Its reasoning.
+
+An item may carry two ⬅️ and no more; at the third landing that owes it, it
+must settle or graduate (items spec §3.6).
+
+**Settling or promoting it at a landing.** The pull request that lands a row
+owing an item resolves it, abandons it, or graduates it to a row of its own,
+at least a ``candidate``:
+
+.. code:: markdown
+
+   7. **🏁 Resolved** (2026-11-02, {pull}`1250` · 🔎 2026-11-02,
+      {pull}`1234` · 🎫 {issue}`1235`) — **The title.** What was settled.
+
+   7. **🚫 Abandoned** (2026-11-02, {pull}`1250` · 🔎 2026-11-02,
+      {pull}`1234` · 🎫 {issue}`1235`) — **The title.** Why it was dropped.
+
+   7. **🎓 Graduated** (2026-11-02, {pull}`1250`, to row N of §M ·
+      🔎 2026-11-02, {pull}`1234` · 🎫 {issue}`1235`) — **The title.**
+
+Resolving or abandoning closes the item's issue, by a closing keyword in the
+pull request or by hand once it merges. Graduating carries the issue to the
+new row instead, which cites it, and the issue keeps its label until that row
+lands.
+
 .. toctree::
     :hidden:
 

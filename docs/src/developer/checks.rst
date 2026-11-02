@@ -259,11 +259,14 @@ heading carries an anchor, a citation such as ``typing spec §3.2`` is written i
 plain text, carries its section sign and names an anchor that exists, and a status
 names the work that produced it. A specification in the ledger numbers its
 decisions state first, with their provenance, and ends with a Verification table
-of one row per decision.
+of one row per decision. An Open Items section numbers its entries the same way,
+each carrying the parts its state needs, in order, and naming a row of its own
+roadmap that owes it.
 
 **Why:** The repository cites the specifications by section, in code comments,
 tests and documentation, so a reader following a citation has to land on the
-section it means.
+section it means. An open item is follow-on work, and a reader needs to trust
+that it still names the row that owes it and the issue that still tracks it.
 
 **What enforces it:** :bash:`tests/test_spec_conventions.py`, which reads every
 file in the repository as text, in every run of the unit tests. It reads them with
@@ -301,14 +304,50 @@ fault. For the ledger, it names the decision or row, and says one of these:
 - *is pending, and no row of the roadmap is left to deliver it*: verify it, sign
   it off, or name the ``candidate`` row that will deliver it.
 
+For an open item, it names the item, and says one of these:
+
+- *it has no Open Items section*, *a heading inside Open Items, under which
+  items go unread*, *a second Open Items section, whose items go unread*, *an
+  item is a bullet, not a numbered entry*, *an item written after its list has
+  ended* or *items are numbered …*: keep every item in one unbroken numbered
+  list, under one Open Items section with no subsection, numbered 1 to N with
+  a new one appended at the end.
+- *opens with no state* or *has no title*: open the entry with its state in
+  bold, a dash, then its title in bold, as the specifications index's
+  :ref:`gv-developer-specs-items` shows.
+- *carries no 🔎*, *was found with no date and pull*, *carries no 🎯* or *carries
+  no 🎫*, *is settled, and still carries 🎯*, *carries 🎫 …, which is no issue*,
+  *carries … twice*, *carries its parts out of order*, *graduates with no date,
+  pull and row*, *is settled with no date and reference*, or *carries …, which
+  is not a date*: carry the parts items spec §3.2 asks of the item's state, in
+  order, each with what it needs.
+- *is owed by …, which names no row*, *… is another specification's*, *… does
+  not exist* or *… has landed*: point 🎯 at a row of the item's own roadmap
+  that has not landed.
+- *carries N ⬅️, and must settle or graduate instead*, *is open, and carries
+  ⬅️: it is deferred*, *is deferred, and carries no ⬅️*, or *carries ⬅️ …,
+  which is not a row, date and pull*: an open item carries no ⬅️, a deferred
+  one carries one or two, each naming a row, a date and a pull request.
+- *graduates with no 🎫 for its row to cite*, or *graduates to …, which does
+  not cite …*, *… names no row*, *… is another specification's* or *… does not
+  exist*: graduate to a row of the item's own roadmap that cites the item's
+  issue.
+- *cites :issue:`N`, as … does*: give the item its own issue; one issue tracks
+  one item.
+- *carries no section sign at all* or *is a near-miss citation*: write the
+  citation the message gives, with its section sign where the grammar reads
+  it.
+
 **Declaring an exception:** None for the conventions. A specification not yet
 brought into the ledger is named in ``UNLEDGERED``, beside the row of
 ledger spec §8 that brings it in. That list is not an exception either: the test
 fails if the row lands while the specification is still named, so the list cannot
 outlive its work. Its ``NUMBERED_CEILING`` is the trigger of
-row 5 of citation spec §9, and raising it is a change to that specification.
+row 5 of citation spec §9, and raising it is a change to that specification. A
+specification whose open items are not yet in the grammar of items spec §3.2 is
+named in ``UNITEMED`` the same way, beside the row that brings it in.
 
-**More:** docs spec §3.5.
+**More:** docs spec §3.5, items spec §3.7.
 
 
 .. _gv-developer-checks-projection-coverage:
@@ -443,10 +482,14 @@ exists and did what the status says: a ``landed`` row cites merged pull
 requests on its date, and a **Resolved** item cites real work. In a ledger, every
 pull request a decision cites has merged, a verified or retired row is dated by
 its pull request's merge, and a signed-off row's reviewer added the
-``signed-off`` label to the pull request it cites, which still carries it.
+``signed-off`` label to the pull request it cites, which still carries it. An
+open item's issue exists, carries the ``spec: open item`` label, and every pull
+request it cites — found, moved or settled — has merged, or is the pull
+request being checked.
 
 **Why:** A status is how a reader learns what has happened, and one citing the
-wrong pull request, or one that never merged, misleads them.
+wrong pull request, or one that never merged, misleads them. An open item left
+to drift after its issue closes is a gap nobody is tracking any more.
 
 **What enforces it:** :bash:`.github/scripts/check_status_references.py`, which
 ``ci-spec-status.yml`` runs on every pull request that changes a specification,
@@ -469,6 +512,26 @@ pull request, so that it can be a required check.
 - *signed off on …, but the label was added on …*: date the row by the day the
   label was added.
 
+For an open item:
+
+- *is not a pull request*, *does not exist*, *is an issue* or *is a pull
+  request*: cite the kind of work each part asks for — 🔎, ⬅️ and a terminal
+  state a pull request, 🎫 an issue.
+- *has not merged*: cite a pull request that has merged, or wait, since the
+  pull request being checked may still be open.
+- *moved on …, but … merged on …*: date the ⬅️ by the day its pull request
+  merged.
+- *is still open* or *closed without merging*: a settled item's pull request
+  must have merged; an issue it cites instead may still be open.
+- *… is not a date*: date it with a date a calendar holds.
+- *carries no* ``spec: open item`` *label*: add the label to the issue the
+  item cites. An agent may.
+- *Open, but :issue:`N` has closed* or *Deferred, but :issue:`N` has closed*
+  (nightly ``drift``): settle or move the item, since its issue has closed.
+- *:issue:`N` carries the* ``spec: open item`` *label, and no item cites it*
+  (nightly ``drift``): write the gap into a specification as an open item
+  citing the issue, or remove the label if it tracks something else.
+
 Run the check before pushing, with the number of your pull request:
 
 .. code:: console
@@ -477,7 +540,8 @@ Run the check before pushing, with the number of your pull request:
 
 **Declaring an exception:** None.
 
-**More:** :ref:`Statuses <gv-developer-specs-statuses>`.
+**More:** :ref:`Statuses <gv-developer-specs-statuses>`,
+:ref:`Open Items <gv-developer-specs-items>`.
 
 
 .. _gv-developer-checks-spec-renumbering:

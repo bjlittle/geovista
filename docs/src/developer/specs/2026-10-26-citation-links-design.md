@@ -324,9 +324,10 @@ refusing to renumber them. Two kinds are frozen:
 
 - **Every numbered item that opens with a bold title**, in any specification. That takes in
   the open items of each specification, whose title is the bold run after the status, and
-  lists such as the assertions of docs spec §3.5, which the tests
-  name by number. A title that wraps is read whole. A numbered list without bold titles,
-  such as the steps of a procedure, is not frozen.
+  lists such as the assertions of docs spec §3.5, which the tests name by number. A title
+  that wraps is read whole. A numbered list without bold titles, such as the steps of a
+  procedure, is not frozen until something cites one of its items, then that item is frozen,
+  as items spec §7 item 2 settled.
 - **Every row of a roadmap table**, the table whose header is `#`, `Scope` and `Status`,
   matched by its scope.
 

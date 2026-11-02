@@ -309,6 +309,11 @@ the row returns to pending, so the ledger never records a sign-off that was not 
 (ledger-spec-3-8)=
 ### 3.8 The Report
 
+> **Extended by a child specification.**
+> [`2026-11-02-open-items-design.md`](2026-11-02-open-items-design.md),
+> `items spec §…`, adds each specification's roadmap and open items to the report, around
+> its ledger, stated in items spec §3.9.
+
 ```console
 $ pixi run -e test verification-report           # every specification
 $ pixi run -e test verification-report heights   # one, by prefix
