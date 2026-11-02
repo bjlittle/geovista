@@ -154,8 +154,11 @@ MYST_LINE = re.compile(r"\(.+\)=\s*$|%|\+(?:[ \t]*\+){2,}|\[\^[^\]\s]+\]:")
 #: A bold run, which may hold an emphasised word, as ``**A *very* big title.**``.
 BOLD = re.compile(r"\*\*(?P<text>.+?)\*\*", flags=re.DOTALL)
 #: The bold run an item opens with when it carries a state, ``**Open**`` in the
-#: grammar of docs spec §3.6, or its emoji first in that of items spec §3.2.
-STATED = re.compile(r"\W*(?:Open|Deferred|Resolved|Abandoned|Graduated)")
+#: grammar of docs spec §3.6, or its emoji first in that of items spec §3.2: the
+#: word of each of :data:`ITEMED_STATES`, after anything that is no word.
+STATED = re.compile(
+    r"\W*(?:{})".format("|".join(re.escape(s.split()[-1]) for s in ITEMED_STATES))
+)
 #: The dashes an item's state and provenance are parted from its title by.
 DASHES = " -\N{EN DASH}\N{EM DASH}"
 #: The issue a ticket names, and the row a graduated item's settlement ends with.

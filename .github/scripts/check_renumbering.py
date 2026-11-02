@@ -364,7 +364,7 @@ def frozen(
     base_text, head_text : str
         The specification on the base branch and now.
     cited : collection of str, optional
-        The anchors the corpus cites, which :func:`cited` reads.
+        The anchors the corpus cites, which :func:`cited_anchors` reads.
     was_cited : collection of str, optional
         The anchors the corpus cited on the base branch, by its numbering.
 
@@ -498,7 +498,9 @@ def _left(
     """Find what a citation names whose section moved or went, with its fate.
 
     A citation names its anchor and, for a range, its far end too, and each is
-    checked by the section it lies in (items spec §3.1).
+    checked by the section it lies in (items spec §3.1). Both ends of a range lie
+    in one section, so the far end can never find what the anchor did not; it is
+    checked all the same, so that a range spanning sections would be held whole.
     """
     for named in (anchor, *ends):
         fate = fates.get(_section(named))
@@ -608,7 +610,7 @@ def stale(
     return findings
 
 
-def cited(texts: dict[Path, str], names: object) -> frozenset[str]:
+def cited_anchors(texts: dict[Path, str], names: object) -> frozenset[str]:
     """Read every anchor the corpus cites, a range's far end included.
 
     An untitled item is frozen once it is among them (#2806).
@@ -915,8 +917,8 @@ def was_cited(
     changed = [name for name in diffed.split("\0") if name]
     untracked = git(root, "ls-files", "--others", "--exclude-standard", "-z")
     touched = {root / name for name in [*changed, *untracked.split("\0")] if name}
-    kept = cited({p: t for p, t in texts.items() if p not in touched}, names)
-    now = cited({p: t for p, t in texts.items() if p in touched}, names)
+    kept = cited_anchors({p: t for p, t in texts.items() if p not in touched}, names)
+    now = cited_anchors({p: t for p, t in texts.items() if p in touched}, names)
     owners = {
         spec: prefix
         for spec in _listed(root, ref)
@@ -935,7 +937,7 @@ def was_cited(
         if text is not None:
             then[root / name] = text
     based = replace(names, owners={**names.owners, **owners})
-    return kept | now, kept | cited(then, based)
+    return kept | now, kept | cited_anchors(then, based)
 
 
 def _ancestor(root: Path, older: str, newer: str) -> bool:

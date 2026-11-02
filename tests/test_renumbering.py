@@ -523,7 +523,10 @@ def test_a_range_is_cited_to_its_far_end(guard, tmp_path, renumbered):
     code = tmp_path / "code.py"
     texts = {spec_path: INSERTED, code: f"# items 2 to 4 of demo spec {SECTION}3\n"}
 
-    assert guard.cited(texts, names) >= {"demo-spec-3-item-2", "demo-spec-3-item-4"}
+    assert guard.cited_anchors(texts, names) >= {
+        "demo-spec-3-item-2",
+        "demo-spec-3-item-4",
+    }
 
 
 def test_a_cited_far_end_of_a_range_is_frozen(guard, tmp_path):
@@ -534,7 +537,7 @@ def test_a_cited_far_end_of_a_range_is_frozen(guard, tmp_path):
     code = tmp_path / "code.py"
     texts = {code: f"# steps: items 1 to 2 of demo spec {SECTION}8\n"}
 
-    cited = guard.cited(texts, names)
+    cited = guard.cited_anchors(texts, names)
 
     assert len(frozen(guard, STEPS, INSERTED_STEP, cited)) == 2
 
