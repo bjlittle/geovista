@@ -3,14 +3,16 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""The grammar of a citation of a design specification section, or decision.
+"""The grammar of a citation of a design specification section, decision, item or row.
 
 What a citation is, and which anchor it names, is defined here once, and
 nowhere else (citation spec §4.1). So is what a decision is, how one is cited,
-and how a specification's ledger of them reads (ledger spec §3.1). The conventions test,
-``tests/test_spec_conventions.py``, reads the repository with it, and the
-build-time transform and the renumber guard of the citation links design will
-import it too, so that no two readers can disagree about what a citation is.
+and how a specification's ledger of them reads (ledger spec §3.1), and what an
+item and a roadmap row are, and how each is cited (items spec §3.1). The
+conventions test, ``tests/test_spec_conventions.py``, reads the repository with
+it, and the build-time transform and the renumber guard of the citation links
+design will import it too, so that no two readers can disagree about what a
+citation is.
 
 It is a plain module rather than a Sphinx extension, so it defines no ``setup``.
 ``docs/src/_ext`` is on ``sys.path`` for the whole build, which is why its name
@@ -89,7 +91,8 @@ SPAN = re.compile(
 )
 TARGETED = re.compile(r"^(?P<text>.*?)\s*<(?P<target>[^<>]+)>$")
 LABEL = re.compile(
-    r"^(?P<prefix>[a-z][a-z-]*?)-(?P<num>\d+(?:-\d+)*)(?:-decision-(?P<decision>\d+))?$"
+    r"^(?P<prefix>[a-z][a-z-]*?)-(?P<num>\d+(?:-\d+)*)"
+    r"(?:-decision-(?P<decision>\d+)|-item-(?P<item>\d+)|-row-(?P<row>\d+[a-z]?))?$"
 )
 SEPARATOR = re.compile(r"[^\S\n]*[,/][^\S\n]*")
 
@@ -118,6 +121,11 @@ LEDGER_HEADER = ("Decision", "Status", "Evidence")
 NUMBERED = re.compile(r"^(?P<number>\d+)\.\s+(?P<body>.*)$")
 #: A bold run, which may hold an emphasised word, as ``**A *very* big title.**``.
 BOLD = re.compile(r"\*\*(?P<text>.+?)\*\*", flags=re.DOTALL)
+#: The bold run an item opens with when it carries a state, ``**Open**`` in the
+#: grammar of docs spec §3.6, or its emoji first in that of items spec §3.2.
+STATED = re.compile(r"\W*(?:Open|Deferred|Resolved|Abandoned|Graduated)")
+#: The dashes an item's state and provenance are parted from its title by.
+DASHES = " -\N{EN DASH}\N{EM DASH}"
 
 #: A table cell boundary: a pipe, unless escaped.
 PIPE = re.compile(r"(?<!\\)\|")
@@ -137,6 +145,9 @@ class Citation:
     start, end : int
         Where it is written in the text scanned, so that ``text`` is
         ``source[start:end]``, and a reader replacing it knows what to split.
+    ends : tuple of str
+        The anchor of a range's far end, as ``rows 3 to 11 of §10`` names row 11,
+        each to be checked as ``slug`` is; empty for a citation of one thing.
 
     """
 
@@ -144,6 +155,7 @@ class Citation:
     slug: str | None
     start: int
     end: int
+    ends: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -157,7 +169,8 @@ class Namespace:
     owners : dict
         The prefix each specification owns, keyed by its path.
     signed : re.Pattern
-        A citation carrying its section sign.
+        A citation carrying its section sign, with any decision, item or row it
+        names.
     unsigned : re.Pattern
         A known prefix and a section number with no sign between them.
 
@@ -232,6 +245,60 @@ class LedgerRow:
         return int(self.cell) if re.fullmatch(r"[0-9]+", self.cell) else None
 
 
+@dataclass(frozen=True)
+class Listed:
+    """One top-level numbered item of a section, which a citation can name.
+
+    Attributes
+    ----------
+    section : str
+        The number of the section holding it, as ``4.4``.
+    number : int
+        Its number in the list, as written.
+    line : int
+        The line its entry opens on.
+    title : str or None
+        The bold title after any state, read whole although it wraps, or ``None``
+        for an item with no title, such as a step of a procedure.
+    body : str
+        The text after the title, or after the state and its parenthetical when
+        it has none, its lines joined by single spaces.
+
+    """
+
+    section: str
+    number: int
+    line: int
+    title: str | None
+    body: str
+
+
+@dataclass(frozen=True)
+class Row:
+    """One row of a roadmap table, which a citation can name.
+
+    Attributes
+    ----------
+    section : str
+        The number of the section holding the table, as ``10``.
+    row : str
+        Its first cell, the row's number, which may carry a letter, as ``6a``.
+    line : int
+        The line the row is written on.
+    scope : str
+        The Scope cell.
+    status : str
+        The Status cell.
+
+    """
+
+    section: str
+    row: str
+    line: int
+    scope: str
+    status: str
+
+
 def cells(line: str) -> list[str]:
     """Split a table row into its cells, keeping an escaped pipe within its cell.
 
@@ -269,6 +336,21 @@ def state_of(written: str, states: Iterable[str]) -> str | None:
 def decision_anchor(slug: str, number: int) -> str:
     """Spell the anchor of a decision, e.g. ``heights-spec-2-decision-3``."""
     return f"{slug}-2-decision-{number}"
+
+
+def _member(slug: str, section: str, kind: str, label: str) -> str:
+    """Spell the anchor of an item or a row of the section numbered ``section``."""
+    return f"{slug}-{section.replace('.', '-')}-{kind}-{label.lower()}"
+
+
+def item_anchor(slug: str, section: str, number: int) -> str:
+    """Spell the anchor of an item, e.g. ``scene-spec-4-4-item-2``."""
+    return _member(slug, section, "item", str(number))
+
+
+def row_anchor(slug: str, section: str, row: str) -> str:
+    """Spell the anchor of a roadmap row, e.g. ``typing-spec-4-row-6a``."""
+    return _member(slug, section, "row", row)
 
 
 def balanced(text: str) -> str:
@@ -340,6 +422,126 @@ def decisions(text: str) -> list[Decision]:
         title = runs[0]["text"].strip() if runs else ""
         body = joined[runs[0].end() :].strip() if runs else joined.strip()
         found.append(Decision(number, line, state, carried, title, body))
+    return found
+
+
+def _entry(section: str, number: int, line: int, joined: str) -> Listed:
+    """Read an item's title and body, past the state and parenthetical it opens with."""
+    rest = joined
+    opening = BOLD.match(rest)
+    if opening is not None and STATED.fullmatch(opening["text"].strip()):
+        rest = rest[opening.end() :].lstrip()
+        if rest.startswith("("):
+            rest = rest[len(balanced(rest)) + 2 :]
+        rest = rest.lstrip(DASHES)
+    title = None
+    titled = BOLD.match(rest)
+    if titled is not None:
+        title = titled["text"].strip()
+        rest = rest[titled.end() :]
+    return Listed(section, number, line, title, rest.strip())
+
+
+def listed(text: str) -> list[Listed]:
+    """Read the items of a specification: the first numbered list of each section.
+
+    Only the top-level items of a section's first numbered list are its items, so a
+    second list, such as the steps of a procedure under its design, names nothing
+    a citation can reach, and a citation of one past the first list's end fails
+    rather than linking the wrong item. A list ends at the first line written flush
+    after it, a fence included, as markdown ends one. The Decisions are no items,
+    since a decision is cited only as one (ledger spec §2 decision 1).
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+
+    Returns
+    -------
+    list of Listed
+        In the order written.
+
+    """
+    raw = text.splitlines()
+    entries: list[tuple[str, int, int, list[str]]] = []
+    section: str | None = None
+    ended = False
+    previous = 0
+    for number, line in read_lines(text):
+        # a flush line read_lines skips, such as a fence's rail, ends a list too
+        skipped = any(
+            s.strip() and not s[:1].isspace() for s in raw[previous : number - 1]
+        )
+        previous = number
+        heading = HEADING.match(line)
+        if heading is not None:
+            decided = heading["num"] == "2" and heading["title"] == DECISIONS
+            section, ended = (None if decided else heading["num"]), False
+            continue
+        if section is None or ended:
+            continue
+        opened = bool(entries) and entries[-1][0] == section
+        if opened and skipped:
+            ended = True
+            continue
+        item = NUMBERED.match(line)
+        if item is not None:
+            entries.append((section, int(item["number"]), number, [item["body"]]))
+        elif opened and line[:1].isspace() and line.strip():
+            entries[-1][3].append(line.strip())
+        elif opened and line.strip():
+            ended = True
+    return [
+        _entry(section, number, line, " ".join(parts))
+        for section, number, line, parts in entries
+    ]
+
+
+def roadmap_header(header: list[str]) -> bool:
+    """Decide whether a table's header is a roadmap's: ``#``, ``Scope`` and ``Status``.
+
+    A Verification table has a Status column too, so a roadmap is read by its whole
+    header (ledger spec §3.6), which a type coverage roadmap extends with ``Lines``.
+    """
+    return bool(header) and header[0] == "#" and {"Scope", "Status"} <= set(header)
+
+
+def rows(text: str) -> list[Row]:
+    """Read the rows of every roadmap table of a specification, wherever it sits.
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+
+    Returns
+    -------
+    list of Row
+        In the order written, each with the number of the section holding it.
+
+    """
+    found: list[Row] = []
+    table: list[tuple[int, str]] = []
+    section: str | None = None
+    for number, line in [*read_lines(text), (0, "")]:
+        if line.startswith("|"):
+            table.append((number, line))
+            continue
+        if table:
+            header = cells(table[0][1])
+            if section is not None and roadmap_header(header):
+                scope, status = header.index("Scope"), header.index("Status")
+                for written, row in table[2:]:
+                    parts = [*cells(row), *[""] * len(header)]
+                    if parts[0]:
+                        found.append(
+                            Row(section, parts[0], written, parts[scope], parts[status])
+                        )
+            table = []
+        heading = HEADING.match(line)
+        if heading is not None:
+            section = heading["num"]
     return found
 
 
@@ -575,12 +777,52 @@ def alternation(prefixes: Iterable[str]) -> str:
     return "|".join(form.replace("-", r"[^\S\n]+") for form in forms) or "(?!)"
 
 
+#: A section number, as ``4.4``.
+NUMBER = r"\d+(?:\.\d+)*"
+
+#: Whitespace within a line, as a citation may not span one.
+GAP = r"[^\S\n]+"
+
+#: The number of an item or a row, which may carry a letter, as ``6a``.
+MEMBER = r"\d+[a-z]?(?![\w-])"
+
+
+def _led(group: str) -> str:
+    """Spell the optional words before a citation naming its item or row.
+
+    ``item 9 of``, ``row 5 of``, and a range of either, ``rows 3 to 11 of`` or
+    ``rows 6a and 6b of``, each group's name opening with ``group``.
+    """
+    return (
+        rf"(?:(?<![\w-])(?P<{group}lead>items?|rows?){GAP}(?P<{group}first>{MEMBER})"
+        rf"(?:{GAP}(?:to|and){GAP}(?P<{group}last>{MEMBER}))?{GAP}of{GAP})?"
+    )
+
+
+def _trailed(group: str) -> str:
+    """Spell the optional words after a citation naming its decision or item.
+
+    ``decision 3`` or ``item 9``, read only when no item or row was named before
+    the citation. A word and then whitespace, so ``decisions`` and ``items`` never
+    match, and a plural names no one of them.
+    """
+    return (
+        rf"(?({group}lead)|(?:{GAP}(?:decision{GAP}(?P<{group}decision>\d+)"
+        rf"|item{GAP}(?P<{group}item>\d+))(?!\d))?)"
+    )
+
+
 def namespace(specs: Iterable[Path]) -> Namespace:
     """Read the anchors the specifications declare, and derive the grammar.
 
     The prefixes are derived rather than declared: a citation form is an anchor's
     prefix with its hyphens read back as whitespace. A prefix must start a word,
     and a citation may not span a line.
+
+    A citation of a section may name a decision, ``§2 decision 3``, or an item,
+    ``§8 item 9``, after it, or an item or a row before it, as ``item 9 of §8`` and
+    ``row 5 of §10``. A range of either names both ends, as ``rows 3 to 11 of §10``
+    and ``rows 6a and 6b of §4`` do (items spec §3.1).
 
     Parameters
     ----------
@@ -602,28 +844,32 @@ def namespace(specs: Iterable[Path]) -> Namespace:
             if match is not None:
                 anchors.add(f"{match['slug']}-{match['num']}")
                 owners.setdefault(spec, match["slug"])
-        # a decision's anchor is generated by the build, not written, so it is
-        # derived here from the entries themselves (ledger spec §3.1)
+        # the anchors of a decision, an item and a row are generated by the build,
+        # not written, so they are derived here from the entries themselves
+        # (ledger spec §3.1, items spec §3.1)
         if spec in owners:
+            owner = owners[spec]
+            anchors.update(decision_anchor(owner, d.number) for d in decisions(text))
             anchors.update(
-                decision_anchor(owners[spec], entry.number) for entry in decisions(text)
+                item_anchor(owner, i.section, i.number) for i in listed(text)
             )
+            anchors.update(row_anchor(owner, r.section, r.row) for r in rows(text))
     known = alternation({LABEL.match(a)["prefix"] for a in anchors})
-    number = r"\d+(?:\.\d+)*"
-    # "decision" and then whitespace, so "decisions" never matches
-    decided = r"(?:[^\S\n]+decision[^\S\n]+(?P<{}>\d+)(?!\d))?"
     return Namespace(
         anchors=frozenset(anchors),
         owners=owners,
         signed=re.compile(
-            rf"(?<![\w-])(?P<prefix>{known})[^\S\n]*{SECTION}(?P<num>{number})"
-            + decided.format("decision")
-            + rf"|{SECTION}(?P<bare>{number})"
-            + decided.format("bare_decision"),
+            _led("")
+            + rf"(?<![\w-])(?P<prefix>{known})[^\S\n]*{SECTION}(?P<num>{NUMBER})"
+            + _trailed("")
+            + "|"
+            + _led("bare_")
+            + rf"{SECTION}(?P<bare>{NUMBER})"
+            + _trailed("bare_"),
             flags=re.IGNORECASE,
         ),
         unsigned=re.compile(
-            rf"(?<![\w-])(?P<prefix>{known})[^\S\n]+(?P<num>{number})",
+            rf"(?<![\w-])(?P<prefix>{known})[^\S\n]+(?P<num>{NUMBER})",
             flags=re.IGNORECASE,
         ),
     )
@@ -661,22 +907,30 @@ def scan(
             source[end : match.start()]
         )
         end = match.end()
+        group = "" if match["prefix"] is not None else "bare_"
         if match["prefix"] is not None:
             carried = re.sub(r"\s+", "-", match["prefix"].lower())
-            number, decided = match["num"], match["decision"]
+            number = match["num"]
         elif joined:
-            number, decided = match["bare"], match["bare_decision"]
+            number = match["bare"]
         elif owner is not None:
             carried, number = owner, match["bare"]
-            decided = match["bare_decision"]
         else:
             carried = None
             yield Citation(match[0], None, match.start(), match.end())
             continue
         slug = f"{carried}-{number.replace('.', '-')}"
-        if decided is not None:
-            slug = f"{slug}-decision-{decided}"
-        yield Citation(match[0], slug, match.start(), match.end())
+        ends: tuple[str, ...] = ()
+        lead, last = match[f"{group}lead"], match[f"{group}last"]
+        if lead is not None:
+            kind = lead.lower().removesuffix("s")
+            ends = () if last is None else (_member(carried, number, kind, last),)
+            slug = _member(carried, number, kind, match[f"{group}first"])
+        elif match[f"{group}decision"] is not None:
+            slug = f"{slug}-decision-{match[f'{group}decision']}"
+        elif match[f"{group}item"] is not None:
+            slug = item_anchor(carried, number, int(match[f"{group}item"]))
+        yield Citation(match[0], slug, match.start(), match.end(), ends)
 
 
 def section_role(kind: str, body: str, names: Namespace) -> tuple[str, str] | None:

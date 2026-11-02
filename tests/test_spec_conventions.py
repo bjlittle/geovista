@@ -314,11 +314,14 @@ def resolution(path: Path, text: str, names: Namespace) -> list[str]:
                     f"{where(path, number)}: {citation.text} names no document, "
                     "and this file owns no sections"
                 )
-            elif citation.slug not in names.anchors:
-                problems.append(
-                    f"{where(path, number)}: {citation.text} names {citation.slug}, "
-                    "which no specification declares"
-                )
+                continue
+            # a range names both its ends, and each is checked (items spec §3.1)
+            problems.extend(
+                f"{where(path, number)}: {citation.text} names {slug}, "
+                "which no specification declares"
+                for slug in (citation.slug, *citation.ends)
+                if slug not in names.anchors
+            )
     return problems
 
 
@@ -527,6 +530,22 @@ def test_resolution_finds_each_dangling_and_ownerless_citation(tmp_path):
     assert len(problems) == 2
     assert "demo-spec-7, which no specification declares" in problems[0]
     assert "this file owns no sections" in problems[1]
+
+
+def test_resolution_checks_both_ends_of_a_range(tmp_path):
+    """A range names its far end too, so a far end past the roadmap is reported."""
+    roadmap = "| # | Scope | Status |\n|---|---|---|\n| 1 | x | candidate |\n"
+    _, names = demo(tmp_path, f"{DEMO}\n{roadmap}")
+    text = f"# rows 1 to 2 of demo spec {SECTION}2, row 1 of {SECTION}2\n"
+
+    problems = resolution(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        (
+            f"rows 1 to 2 of demo spec {SECTION}2 names demo-spec-2-row-2, "
+            "which no specification declares"
+        )
+    ]
 
 
 def test_form_finds_each_citation_without_its_sign(tmp_path):
@@ -1975,14 +1994,17 @@ def numbered(texts: dict[Path, str], names: Namespace) -> int:
         for match in names.signed.finditer(joined):
             if match["prefix"] is None:
                 continue
-            item = AFTER.match(joined, match.end())
-            row = BEFORE.search(joined[max(0, match.start() - 40) : match.start()])
+            # read around the section, as the grammar's match takes in an item or
+            # a row it names
+            start = match.start("prefix")
+            item = AFTER.match(joined, match.end("num"))
+            row = BEFORE.search(joined[max(0, start - 40) : start])
             count += bool(item or row)
     return count
 
 
-#: Citations of items and roadmap rows outside the specifications past which row 5
-#: of citation spec §9 activates: a little over three times the six there were.
+#: Citations of items and roadmap rows outside the specifications past which
+#: row 5 of citation spec §9 activates: a little over three times the six there were.
 NUMBERED_CEILING = 20
 
 

@@ -155,8 +155,8 @@ z = 0 rather than 3.0 km, and the base layer 6.4 km below it rather than 10.0 km
 plotter's own layers all span the globe and shrink by the same factor, so they keep their
 order: base layer, then data, then coastlines and graticule. Beside a map 40,075 km across
 these offsets are small,
-so the image tests should change only where offsets are large, and item 2 of
-§8 records what they actually show.
+so the image tests should change only where offsets are large, and
+item 2 of §8 records what they actually show.
 
 The ORCA2 cloud of the gallery's `eqc` example covers only the North Atlantic, so its own
 length was 4,007,091 rather than a global mesh's. Under the rule its depths are 1.59 times
@@ -167,8 +167,8 @@ what they were, and its deepest point, at 5,275 m, moves from z = −211,365 to 
 
 A CRS that offers no ellipsoid, or no unit on its first axis, has no `R` to compute, and
 `transform_mesh` then raises a `ValueError` naming the CRS rather than guessing a scale.
-No CRS that `transform_mesh` can reach is affected, by item 1 of
-§8, so the guard is tested on the helper directly.
+No CRS that `transform_mesh` can reach is affected, by
+item 1 of §8, so the guard is tested on the helper directly.
 
 Units come from the first horizontal axis. A projected CRS uses one unit on both axes, a
 latitude-first geographic CRS such as EPSG:4269 uses degrees on both, and an unusual angular

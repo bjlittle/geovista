@@ -409,3 +409,148 @@ def test_summary_counts_each_state(citations):
 
     assert citations.summary(statuses).endswith(": 4 of 5 decisions in force verified")
     assert citations.summary(statuses).startswith(f"{citations.VERIFIED.split()[0]} 3")
+
+
+#: A specification whose design section holds two numbered lists, and whose
+#: roadmap numbers a row with a letter, as the typing spec's does.
+LISTED = (
+    "(demo-spec-1)=\n## 1. Purpose\n\n"
+    "(demo-spec-2)=\n## 2. Decisions\n\n"
+    "1. **One.** First.\n2. **Two.** Second.\n3. **Three.** Third.\n\n"
+    "(demo-spec-3)=\n## 3. Design\n\n"
+    "1. **A step.** Taken first.\n2. Then another,\n   wrapped.\n\n"
+    "Between the lists.\n\n"
+    "1. A second list.\n2. Its second item.\n3. Its third item.\n\n"
+    "(demo-spec-4)=\n## 4. Roadmap\n\n"
+    "| # | Scope | Status |\n|---|---|---|\n"
+    "| 6a | The first half | not started |\n"
+    "| 6b | The second half | not started |\n"
+    "| 7 | The rest | candidate |\n"
+)
+
+
+def test_an_item_is_cited_either_way(tmp_path, citations):
+    """Both orders name one anchor, within a specification and across them."""
+    _, names = demo(tmp_path, LISTED, citations)
+    text = f"demo spec {SECTION}3 item 2 and item 2 of demo spec {SECTION}3"
+    bare = f"{SECTION}3 item 2 and item 2 of {SECTION}3"
+
+    found = list(citations.scan(text, names.signed, None))
+    own = list(citations.scan(bare, names.signed, "demo-spec"))
+
+    assert [c.text for c in found] == [
+        f"demo spec {SECTION}3 item 2",
+        f"item 2 of demo spec {SECTION}3",
+    ]
+    assert {c.slug for c in [*found, *own]} == {"demo-spec-3-item-2"}
+    assert [c.text for c in own] == [f"{SECTION}3 item 2", f"item 2 of {SECTION}3"]
+    assert "demo-spec-3-item-2" in names.anchors
+    assert citations.item_anchor("demo-spec", "3", 2) == "demo-spec-3-item-2"
+    assert citations.item_anchor("scene-spec", "4.4", 2) == "scene-spec-4-4-item-2"
+
+
+def test_a_row_range_names_both_ends(tmp_path, citations):
+    """Review Focus 2: a range across a lettered row names, and declares, each end."""
+    _, names = demo(tmp_path, LISTED, citations)
+    text = f"rows 6a to 7 of demo spec {SECTION}4, Rows 6A and 6b of {SECTION}4"
+
+    first, second = citations.scan(text, names.signed, None)
+
+    assert first.text == f"rows 6a to 7 of demo spec {SECTION}4"
+    assert (first.slug, first.ends) == ("demo-spec-4-row-6a", ("demo-spec-4-row-7",))
+    assert (second.slug, second.ends) == ("demo-spec-4-row-6a", ("demo-spec-4-row-6b",))
+    assert {"demo-spec-4-row-6a", "demo-spec-4-row-6b", "demo-spec-4-row-7"} <= (
+        names.anchors
+    )
+    assert citations.row_anchor("typing-spec", "4", "6a") == "typing-spec-4-row-6a"
+
+
+def test_a_single_citation_has_no_far_end(tmp_path, citations):
+    """Only a range has a far end, so a section, an item and a row have none."""
+    _, names = demo(tmp_path, LISTED, citations)
+    text = f"demo spec {SECTION}3, {SECTION}3 item 1, row 7 of {SECTION}4"
+
+    assert [c.ends for c in citations.scan(text, names.signed, None)] == [(), (), ()]
+
+
+def test_a_decision_is_never_cited_as_an_item(tmp_path, citations):
+    """Review Focus 3: an item of the Decisions is cited only as a decision."""
+    _, names = demo(tmp_path, LISTED, citations)
+    text = f"demo spec {SECTION}2 item 3 and item 3 of demo spec {SECTION}2"
+
+    found = list(citations.scan(text, names.signed, None))
+
+    assert [c.slug for c in found] == ["demo-spec-2-item-3", "demo-spec-2-item-3"]
+    assert "demo-spec-2-item-3" not in names.anchors
+    assert "demo-spec-2-decision-3" in names.anchors
+
+
+def test_only_the_first_list_of_a_section_is_anchored(tmp_path, citations):
+    """Review Focus 1: an item past the first list's end names nothing."""
+    _, names = demo(tmp_path, LISTED, citations)
+
+    (cited,) = citations.scan(f"{SECTION}3 item 3", names.signed, "demo-spec")
+
+    assert {"demo-spec-3-item-1", "demo-spec-3-item-2"} <= names.anchors
+    assert cited.slug == "demo-spec-3-item-3"
+    assert cited.slug not in names.anchors
+    assert [(i.section, i.number) for i in citations.listed(LISTED)] == [
+        ("3", 1),
+        ("3", 2),
+    ]
+
+
+def test_listed_reads_titled_and_untitled_items(citations):
+    """A title is the bold run after any state, and an item without one has none."""
+    question = "\N{BLACK QUESTION MARK ORNAMENT}"
+    text = (
+        "(demo-spec-4)=\n## 4. Design\n\n"
+        "(demo-spec-4-1)=\n### 4.1 Steps\n\n"
+        "1. **A titled\n   step.** Its body.\n"
+        "2. An untitled step, with **bold** inside.\n\n"
+        "(demo-spec-7)=\n## 7. Open Items\n\n"
+        "1. **Open** ({issue}`1`) — **An old-grammar item.** Its reasoning.\n"
+        f"2. **{question} Open** (\N{RIGHT-POINTING MAGNIFYING GLASS} 2026-11-02) — "
+        "**A new-grammar item.** Its reasoning.\n"
+        "3. **Resolved** (2026-11-02, {pull}`2`) — settled, untitled.\n"
+        "```text\n4. **Quoted.** In a fence.\n```\n"
+    )
+
+    found = citations.listed(text)
+
+    assert [(i.section, i.number, i.line, i.title) for i in found] == [
+        ("4.1", 1, 7, "A titled step."),
+        ("4.1", 2, 9, None),
+        ("7", 1, 14, "An old-grammar item."),
+        ("7", 2, 15, "A new-grammar item."),
+        ("7", 3, 16, None),
+    ]
+    assert found[0].body == "Its body."
+    assert found[1].body == "An untitled step, with **bold** inside."
+    assert found[2].body == "Its reasoning."
+
+
+def test_rows_reads_every_roadmap_and_no_other_table(citations):
+    """A roadmap is read by its header, wherever it sits; a ledger is no roadmap."""
+    text = LISTED + (
+        "\n(demo-spec-5)=\n## 5. Verification\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n| 1 | pending | |\n"
+    )
+
+    found = citations.rows(text)
+
+    assert [(r.section, r.row, r.scope, r.status) for r in found] == [
+        ("4", "6a", "The first half", "not started"),
+        ("4", "6b", "The second half", "not started"),
+        ("4", "7", "The rest", "candidate"),
+    ]
+    assert [r.line for r in found] == [29, 30, 31]
+
+
+def test_a_label_reads_an_item_and_a_row_anchor(tmp_path, citations):
+    """Every anchor carries a prefix a reader can find, items and rows included."""
+    _, names = demo(tmp_path, LISTED, citations)
+
+    assert names.prefixes == {"demo-spec"}
+    assert citations.LABEL.match("typing-spec-4-row-6a")["row"] == "6a"
+    assert citations.LABEL.match("scene-spec-4-4-item-2")["num"] == "4-4"

@@ -27,8 +27,8 @@
 The specifications are living documents, and they are growing. Six are published, and the
 globe-first CRS work has two of them and more to come. Each is cited by section: 215 times
 from inside the specifications, with hand-written `{ref}` roles, and 68 times from
-everywhere else. That second count is the trigger of rows 2 to 4 of
-docs spec §4, which activate past seventy, and the next change to cite
+everywhere else. That second count is the trigger of
+rows 2 to 4 of docs spec §4, which activate past seventy, and the next change to cite
 a specification from code will pass it.
 
 The links that matter are the ones a reader follows on the documentation site. Today those
@@ -221,8 +221,8 @@ produces from a citation in a heading (tephpy#96).
 It joins `tests/docs`, so it runs in the job that builds the full gallery and runs that
 suite under `--browser-strict`, where a missing build fails instead of skipping. Locally,
 `pixi run -e geovista tests-docs-browser` builds and runs it. `OUTPUT_GATE` in the
-conventions test, which pairs the transform with its output check (row 4 of
-docs spec §4), changes to name this module.
+conventions test, which pairs the transform with its output check
+(row 4 of docs spec §4), changes to name this module.
 
 (citation-spec-4-4)=
 ### 4.4 Collapsing the Roles
@@ -413,8 +413,8 @@ The changelog guidelines say so.
 In scope are the shared grammar, the transform, the output check, the collapse of the
 section roles, the renumber guard and its fix, the rules for items and rows, the edits to
 the parent of §4.7, and the changelog guidelines. Out of scope
-are citations of items and rows as links in their own right (row 5 of
-§9), and row 5 of docs spec §4, GitHub
+are citations of items and rows as links in their own right
+(row 5 of §9), and row 5 of docs spec §4, GitHub
 reference roles, which is unchanged.
 
 (citation-spec-8)=

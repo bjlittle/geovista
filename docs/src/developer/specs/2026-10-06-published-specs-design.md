@@ -575,8 +575,8 @@ that was taken from one that was dropped.
    terminal status carries a date and a reference, not that the work it names exists or did
    what the status says. Raised as {issue}`2575`, this is now checked against GitHub on each
    pull request that touches a specification, and nightly for drift, as
-   §3.6 describes, which keeps the network out of the unit suite. Row
-   5 of §4 no longer owns reference checking. It keeps the form of a
+   §3.6 describes, which keeps the network out of the unit suite.
+   Row 5 of §4 no longer owns reference checking. It keeps the form of a
    reference, which is all that `tephpy`'s `check_github_references.py` checks.
 4. **Resolved** (2026-10-07, {pull}`2573`) — **The status rule accepted only this
    repository's roles.** The seventh assertion of §3.5 asked a

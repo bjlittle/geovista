@@ -557,8 +557,8 @@ Each carries the status grammar of docs spec §3.6.
 
 1. **Open** — **The vertical scale shown to the viewer.** Its form, a ruler beside the globe
    or a scale bar on the map, and how it marks the vertical mapping: two scales for two
-   factors, and ticks that follow the mapping where it is not a straight line. Row 6 of
-   §9 owns it.
+   factors, and ticks that follow the mapping where it is not a straight line.
+   Row 6 of §9 owns it.
 2. **Open** — **A warped base layer.** The base layer is lowered by the sag of the surfaces
    above it. When it is terrain, warped by its own heights, that lowering moves terrain
    that may be visible where no surface covers it. Whether to lower it only beneath the

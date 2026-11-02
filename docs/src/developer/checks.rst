@@ -19,8 +19,8 @@ this page.
    This page covers the checks ``geovista`` wrote itself. Exceptions to
    third-party tools, such as a ``# noqa`` comment, a type-ignore comment, a
    ``filterwarnings`` entry or a ``nitpick_ignore_regex`` pattern, are
-   documented by those tools, and may join this page later, as row 2 of
-   checks spec §4 describes.
+   documented by those tools, and may join this page later, as
+   row 2 of checks spec §4 describes.
 
 
 Where It Failed
@@ -305,8 +305,8 @@ fault. For the ledger, it names the decision or row, and says one of these:
 brought into the ledger is named in ``UNLEDGERED``, beside the row of
 ledger spec §8 that brings it in. That list is not an exception either: the test
 fails if the row lands while the specification is still named, so the list cannot
-outlive its work. Its ``NUMBERED_CEILING`` is the trigger of row 5 of
-citation spec §9, and raising it is a change to that specification.
+outlive its work. Its ``NUMBERED_CEILING`` is the trigger of
+row 5 of citation spec §9, and raising it is a change to that specification.
 
 **More:** docs spec §3.5.
 

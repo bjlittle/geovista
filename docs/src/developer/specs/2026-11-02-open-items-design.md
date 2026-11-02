@@ -147,12 +147,12 @@ end is checked. The forms are those the collection already writes, so no citatio
 changes; what changes is that each now names something that exists.
 
 Items and rows are numbered and keep their numbers, so the renumber guard of
-citation spec §4.6 already freezes them. Together the two forms deliver row 5 of
-citation spec §9 before its trigger. That trigger is more than twenty citations of items
+citation spec §4.6 already freezes them. Together the two forms deliver
+row 5 of citation spec §9 before its trigger. That trigger is more than twenty citations of items
 and rows outside the specifications, and there were 11 when this specification was
 written. The reason to deliver it now is this specification's own: 🎯 is a citation of a
-row, and the landing gate of §3.5 cannot hold an item to a row it cannot read. Row 1 of
-§8 lands that row, and retires the test that held it back.
+row, and the landing gate of §3.5 cannot hold an item to a row it cannot read.
+Row 1 of §8 lands that row, and retires the test that held it back.
 
 (items-spec-3-2)=
 ### 3.2 An Item's Entry

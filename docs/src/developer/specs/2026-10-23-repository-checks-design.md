@@ -42,8 +42,8 @@ allowed an exception, declared in a list beside the check:
 `EXCLUDED_DIRS`, beside `EXEMPT`, is not an exception: it names trees that Sphinx does not
 publish as written. `NUMBERED_CEILING`, in the specification conventions, is not one
 either. It is the trigger of row 5 of citation spec §9, and raising
-it is a change to that specification. It replaced `CEILING`, the trigger of rows 2 to 4 of
-docs spec §4, which retired when those rows were built.
+it is a change to that specification. It replaced `CEILING`, the trigger of
+rows 2 to 4 of docs spec §4, which retired when those rows were built.
 
 A contributor usually meets one of these checks by failing it. The failure says what is
 wrong but not why the rule exists, or whether an exception is allowed and where it goes.
@@ -247,8 +247,8 @@ a breadcrumb reaches a failure the tool reports itself.
 
 In scope are the page, its card, toctree entry and `EXEMPT` entry, the `CHECK` constants
 of the eight checks of §1 and of the gate, the hook, the scripts'
-output, the gate and its tests. Out of scope are third-party tools, which row 2 of
-§4 holds, and moving the existing write-ups of the image marker, the
+output, the gate and its tests. Out of scope are third-party tools, which
+row 2 of §4 holds, and moving the existing write-ups of the image marker, the
 reading-time banner and the changelog fragment. So is changing what any check enforces:
 this specification documents the rules as they stand.
 

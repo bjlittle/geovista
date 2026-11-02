@@ -311,8 +311,8 @@ rebasing the target CRS to a central meridian of zero, so that seam points sit e
 ±180°. A general rotation cannot always rebase the CRS, so each copy of a seam point is
 moved a small angle into its own side before projection. The angle must exceed PROJ's
 tolerance for wrapping a longitude and stay far below any distance a scientist would
-notice. It is verified per class (§6, and §8
-item 6).
+notice. It is verified per class (§6, and
+§8 item 6).
 
 The exact cut of a crossing cell puts new points on the cell's straight edges, which are
 chords inside the sphere. Today's seam cut moves each of them back out to the radius
@@ -728,8 +728,8 @@ Each carries the status grammar of docs spec §3.6.
 13. **Open** ({issue}`2802`) — **Coordinates as quantities.** §4.9 names the globe's
     radius, the densification tolerance and the domain angles, but not the lons and lats a
     `Transform` factory takes, which refuse a `pint` quantity today. Whether they join the
-    quantities of §4.9, read through `geovista.units.to_degrees`, is settled before row 5
-    of §10 lands, which §2 decision 13 also waits on.
+    quantities of §4.9, read through `geovista.units.to_degrees`, is settled before
+    row 5 of §10 lands, which §2 decision 13 also waits on.
 
 (crs-spec-9)=
 ## 9. Scope
