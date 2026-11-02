@@ -20,6 +20,7 @@ import importlib.util
 import io
 import logging
 from pathlib import Path
+import re
 import sys
 import textwrap
 import types
@@ -815,3 +816,113 @@ def test_a_flush_line_after_code_leaves_the_next_item_unanchored(tmp_path):
     assert 'id="demo-spec-3-item-2"' not in demo
     assert [(i.number, i.title) for i in grammar.listed(CODED)] == [(1, "Alpha.")]
     assert "demo-spec-3-item-2" not in grammar.namespace([spec]).anchors
+
+
+#: A specification of two sections, the third holding the body a case gives it.
+LISTED = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n(demo-spec-3)=\n## 3. Items\n\n"
+)
+
+#: Lists the build and the grammar must anchor alike, each with the item anchors
+#: both give it: a list nested in an item, a list in a block quote, a list in a
+#: numbered subsection, and a first list opening at 3 that restarts at 1. Each list
+#: not anchored holds a count of items its anchored one does not, so anchoring the
+#: wrong list changes the anchors.
+ANCHORED = {
+    "nested": (
+        (
+            "1. **Alpha.** First.\n\n"
+            "   1. Nested one.\n   2. Nested two.\n   3. Nested three.\n\n"
+            "2. **Beta.** Second.\n"
+        ),
+        {"demo-spec-3-item-1", "demo-spec-3-item-2"},
+    ),
+    "quoted": (
+        (
+            "> 1. Quoted one.\n> 2. Quoted two.\n> 3. Quoted three.\n\n"
+            "1. **Alpha.** First.\n"
+        ),
+        {"demo-spec-3-item-1"},
+    ),
+    "subsection": (
+        (
+            "Text.\n\n(demo-spec-3-1)=\n### 3.1 Sub\n\n"
+            "1. **Alpha.** First.\n2. **Beta.** Second.\n"
+        ),
+        {"demo-spec-3-1-item-1", "demo-spec-3-1-item-2"},
+    ),
+    "restarted-at-3": (
+        (
+            "3. **Alpha.** First.\n4. **Beta.** Second.\n\n"
+            "1. **Gamma.** Restarted, but the same list.\n"
+        ),
+        {"demo-spec-3-item-3", "demo-spec-3-item-4", "demo-spec-3-item-5"},
+    ),
+}
+
+
+@pytest.mark.usefixtures("docs")
+@pytest.mark.parametrize("case", ANCHORED)
+def test_the_build_and_the_grammar_anchor_the_same_items(tmp_path, case):
+    """Only a section's own first list is anchored, numbered from its start.
+
+    The grammar declares the anchors a citation may name and the build gives
+    them, so each case is read by both, and they must agree item for item.
+    """
+    grammar = _load("geovista_citations")
+    body, expected = ANCHORED[case]
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    spec.write_text(LISTED + body, encoding="utf-8")
+    toctree = "   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+
+    html, warning = build(src, tmp_path)
+
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+    built = set(re.findall(r'id="(demo-spec-[\d-]+-item-\d+)"', demo))
+    declared = {a for a in grammar.namespace([spec]).anchors if "-item-" in a}
+
+    assert warning == ""
+    assert built == declared == expected
+
+
+#: A roadmap whose rows the grammar reads only where the first cell is a number,
+#: as ``1`` or ``5a`` is, and passes over where it is anything else.
+NUMBERED_ROWS = (
+    "| # | Scope | Status |\n|---|---|---|\n"
+    "| 1 | a | not started |\n| **2** | b | not started |\n"
+    "| 3. | c | not started |\n| 5a | d | not started |\n"
+)
+
+
+@pytest.mark.usefixtures("docs")
+def test_the_build_anchors_only_the_rows_the_grammar_reads(tmp_path):
+    """A row the grammar names no anchor for, as ``**2**``, has none built either.
+
+    The rendered cell of ``**2**`` reads ``2``, so the build reads the cell's
+    markup as the grammar does, rather than its text.
+    """
+    grammar = _load("geovista_citations")
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    spec.write_text(LISTED + NUMBERED_ROWS, encoding="utf-8")
+    toctree = "   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+
+    html, warning = build(src, tmp_path)
+
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+    built = set(re.findall(r'id="(demo-spec-[\d-]+-row-[^"]+)"', demo))
+    declared = {a for a in grammar.namespace([spec]).anchors if "-row-" in a}
+
+    assert warning == ""
+    assert built == declared == {"demo-spec-3-row-1", "demo-spec-3-row-5a"}

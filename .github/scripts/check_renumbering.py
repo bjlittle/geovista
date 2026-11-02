@@ -37,6 +37,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import textwrap
 import traceback
 from typing import TYPE_CHECKING, Literal
 
@@ -336,6 +337,10 @@ def roadmap_rows(text: str) -> dict[str, Section]:
     }
 
 
+#: The most characters of its text an untitled item is named by in a message.
+NAMED = 60
+
+
 def _split(old: str, new: str | None) -> bool:
     """Say whether row ``old`` became ``new`` by splitting, as 6 into 6a."""
     return new is not None and re.fullmatch(rf"{re.escape(old)}[a-z]", new) is not None
@@ -359,12 +364,18 @@ def frozen(
     leaves its number free for the cited one to be paired with in place; only the
     items held are reported. A section holding none is read as it always was.
 
+    An item's number is always read by the base branch's numbering, so a citation
+    the pull request writes of an item by its new number, after inserting an item
+    before it, holds whichever item that number named on the base branch. That
+    one has moved, so the insert fails although nothing cited what it moved, and
+    appending the new item instead passes.
+
     Parameters
     ----------
     base_text, head_text : str
         The specification on the base branch and now.
     cited : collection of str, optional
-        The anchors the corpus cites, which :func:`cited` reads.
+        The anchors the corpus cites, which :func:`cited_anchors` reads.
     was_cited : collection of str, optional
         The anchors the corpus cited on the base branch, by its numbering.
 
@@ -398,15 +409,23 @@ def frozen(
     head_items = numbered_items(
         head_text, {a for a in item_anchors(head_text) if _section(a) in now}
     )
+
+    def named(anchor: str, number: str) -> str:
+        # an untitled item is titled by its text, shortened at a word to name it
+        title = base_items[anchor][number].title
+        if number in untitled.get(anchor, ()):
+            return textwrap.shorten(title, NAMED, placeholder=grammar.ELLIPSIS)
+        return title
+
     for anchor, listed in base_items.items():
         fate = fates.get(anchor)
         if fate is None:
             continue
         if fate.anchor is None:
             problems += [
-                f'{fate.title}, item {number} "{item.title}" was removed with its '
-                "section: keep the section, and mark it as no longer applying"
-                for number, item in listed.items()
+                f'{fate.title}, item {number} "{named(anchor, number)}" was removed '
+                "with its section: keep the section, and mark it as no longer applying"
+                for number in listed
             ]
             continue
         paired = pair(
@@ -420,7 +439,7 @@ def frozen(
                 continue
             if item.kind == "moved":
                 problems.append(
-                    f'{fate.title}, item {number} "{listed[number].title}" is now '
+                    f'{fate.title}, item {number} "{named(anchor, number)}" is now '
                     f"item {item.anchor}: append an item rather than insert it"
                 )
             elif item.kind == "removed":
@@ -432,7 +451,7 @@ def frozen(
                     else "removed"
                 )
                 problems.append(
-                    f'{fate.title}, item {number} "{listed[number].title}" was '
+                    f'{fate.title}, item {number} "{named(anchor, number)}" was '
                     f"{lost}: mark it as no longer applying, in place"
                 )
     base_rows, head_rows = roadmap_rows(base_text), roadmap_rows(head_text)
@@ -498,7 +517,9 @@ def _left(
     """Find what a citation names whose section moved or went, with its fate.
 
     A citation names its anchor and, for a range, its far end too, and each is
-    checked by the section it lies in (items spec §3.1).
+    checked by the section it lies in (items spec §3.1). Both ends of a range lie
+    in one section, so the far end can never find what the anchor did not; it is
+    checked all the same, so that a range spanning sections would be held whole.
     """
     for named in (anchor, *ends):
         fate = fates.get(_section(named))
@@ -608,7 +629,7 @@ def stale(
     return findings
 
 
-def cited(texts: dict[Path, str], names: object) -> frozenset[str]:
+def cited_anchors(texts: dict[Path, str], names: object) -> frozenset[str]:
     """Read every anchor the corpus cites, a range's far end included.
 
     An untitled item is frozen once it is among them (#2806).
@@ -715,15 +736,20 @@ class GitError(RuntimeError):
     """Git could not answer, which is never a finding."""
 
 
-def git(root: Path, *args: str) -> str:
-    """Run git in ``root``, returning its output."""
+def git(root: Path, *args: str, errors: str = "strict") -> str:
+    """Run git in ``root``, returning its output.
+
+    The output is decoded as UTF-8, and ``errors`` says what becomes of a byte
+    that does not decode, as :meth:`bytes.decode` does.
+    """
     try:
         # git by name, with arguments this script builds, never a shell
         done = subprocess.run(  # noqa: S603
             ["git", "--no-pager", *args],  # noqa: S607
             cwd=root,
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors=errors,
             check=True,
         )
     except subprocess.CalledProcessError as error:
@@ -765,7 +791,8 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
     """Read the lines changed since ``base`` branched, as they are numbered now."""
     changed: dict[Path, set[int]] = {}
     current: Path | None = None
-    # the format is pinned, so that no local diff setting changes what is read
+    # the format is pinned, so that no local diff setting changes what is read;
+    # a text file that is not UTF-8, which the corpus skips, is passed over too
     diff = git(
         root,
         "diff",
@@ -776,6 +803,7 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
         "--dst-prefix=b/",
         base,
         "--",
+        errors="replace",
     )
     for line in diff.splitlines():
         if diffed := DIFFED.match(line):
@@ -908,8 +936,8 @@ def was_cited(
     changed = [name for name in diffed.split("\0") if name]
     untracked = git(root, "ls-files", "--others", "--exclude-standard", "-z")
     touched = {root / name for name in [*changed, *untracked.split("\0")] if name}
-    kept = cited({p: t for p, t in texts.items() if p not in touched}, names)
-    now = cited({p: t for p, t in texts.items() if p in touched}, names)
+    kept = cited_anchors({p: t for p, t in texts.items() if p not in touched}, names)
+    now = cited_anchors({p: t for p, t in texts.items() if p in touched}, names)
     owners = {
         spec: prefix
         for spec in _listed(root, ref)
@@ -928,7 +956,7 @@ def was_cited(
         if text is not None:
             then[root / name] = text
     based = replace(names, owners={**names.owners, **owners})
-    return kept | now, kept | cited(then, based)
+    return kept | now, kept | cited_anchors(then, based)
 
 
 def _ancestor(root: Path, older: str, newer: str) -> bool:
@@ -1220,19 +1248,23 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
             # each line the pull request changed, followed from where it was
             # written on its branch, which a renumber merged since may have moved
             findings += since_written(root, texts, names, changed, args.base)
-            anchors, based = was_cited(root, branched, texts, names)
-            for base, current in counterparts.items():
-                before = at(root, branched, base)
-                if before is not None and current is not None:
-                    problems += [
-                        f"{current.relative_to(root).as_posix()}: {problem}"
-                        for problem in frozen(
-                            before,
-                            current.read_text(encoding="utf-8"),
-                            anchors,
-                            based,
-                        )
-                    ]
+            # an item or a row moves only with its specification, so what the
+            # corpus cites, which costs a second to read, is read only for one
+            # the pull request changed
+            held = [
+                (current, before, after)
+                for base, current in counterparts.items()
+                if current is not None
+                and (before := at(root, branched, base)) is not None
+                and (after := current.read_text(encoding="utf-8")) != before
+            ]
+            if held:
+                anchors, based = was_cited(root, branched, texts, names)
+            for current, before, after in held:
+                problems += [
+                    f"{current.relative_to(root).as_posix()}: {problem}"
+                    for problem in frozen(before, after, anchors, based)
+                ]
             scope = f"the specifications changed since {args.base}"
         if args.fix:
             findings = _fix(texts, names, findings)

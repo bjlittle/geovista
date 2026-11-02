@@ -218,15 +218,16 @@ def _parse(kind: str, written: str) -> tuple[str, str] | None:
     return None if bold is None else (bold["state"].strip(), bold["rest"])
 
 
-def cited(text: str, *, unitemed: bool = True) -> list[Reference]:
+def cited(text: str, *, unitemed: bool = True, rows: bool = True) -> list[Reference]:
     """Return every reference that a status of the specification carries.
 
     An open item is read in the grammar of docs spec §3.6 only while
-    ``unitemed``, as :func:`item_cited` reads it after that.
+    ``unitemed``, as :func:`item_cited` reads it after that, and a roadmap row
+    only while ``rows``.
     """
     found = []
     for _, kind, written in conventions.statuses(text):
-        if kind == "item" and not unitemed:
+        if (kind == "item" and not unitemed) or (kind == "row" and not rows):
             continue
         if (parsed := _parse(kind, written)) is not None:
             found += references(conventions.carried(parsed[1]))
@@ -272,6 +273,37 @@ def _resolved(
     return found, faults
 
 
+def _current(reference: Reference, pull: int | None) -> bool:
+    """Say whether a reference names the pull request being checked."""
+    return reference.repository == REPOSITORY and reference.number == pull
+
+
+def _apart(when: date | None, merged: date | None) -> bool:
+    """Say whether two dates are both known and more than a day apart."""
+    return when is not None and merged is not None and abs((when - merged).days) > 1
+
+
+def _unmerged(
+    reference: Reference,
+    work: Work,
+    pull: int | None,
+    when: date | None = None,
+    said: str = "",
+) -> str | None:
+    """Check that a cited pull request has merged, within a day of ``when``.
+
+    The pull request being checked merges after the check, so it is never held to
+    either. ``said`` names what ``when`` dates, in the message reporting a gap.
+    """
+    if _current(reference, pull):
+        return None
+    if work.state != "merged":
+        return f"{reference.text} has not merged"
+    if _apart(when, work.when):
+        return f"{said} on {when}, but {reference.text} merged on {work.when}"
+    return None
+
+
 def _terminal(
     state: str,
     evidence: str,
@@ -280,10 +312,6 @@ def _terminal(
 ) -> list[str]:
     """Check what a terminal status cites."""
     problems = []
-
-    def current(reference: Reference) -> bool:
-        return reference.repository == REPOSITORY and reference.number == pull
-
     written = conventions.DATE.search(evidence)
     landed = None if written is None else conventions.dated(written[0])
     if written is not None and landed is None:
@@ -295,22 +323,22 @@ def _terminal(
         for reference, work in works:
             if work.kind != "pull":
                 problems.append(f"{reference.text} is not a pull request")
-            elif current(reference):
+            elif _current(reference, pull):
                 # it lands when it merges, so there is no date to hold it to yet
                 pending = True
-            elif work.state != "merged":
-                problems.append(f"{reference.text} has not merged")
+            elif (fault := _unmerged(reference, work, pull)) is not None:
+                problems.append(fault)
             elif work.when is not None:
                 merged.append(work.when)
-        if merged and landed is not None and not pending:
+        if merged and not pending:
             last = max(merged)
-            if abs((landed - last).days) > 1:
+            if _apart(landed, last):
                 problems.append(
                     f"landed on {landed}, but its last pull request merged on {last}"
                 )
     elif state == "Resolved":
         for reference, work in works:
-            if work.kind != "pull" or current(reference):
+            if work.kind != "pull" or _current(reference, pull):
                 continue
             if work.state == "open":
                 problems.append(f"{reference.text} is still open")
@@ -428,15 +456,8 @@ def check_items(
         for reference, work in works:
             if work.kind != "pull":
                 faults.append(f"{reference.text} is not a pull request")
-            elif reference.repository == REPOSITORY and reference.number == pull:
-                # it merges after the check, so there is no date to hold it to yet
-                continue
-            elif work.state != "merged":
-                faults.append(f"{reference.text} has not merged")
-            elif when and work.when and abs((when - work.when).days) > 1:
-                faults.append(
-                    f"moved on {when}, but {reference.text} merged on {work.when}"
-                )
+            elif (fault := _unmerged(reference, work, pull, when, "moved")) is not None:
+                faults.append(fault)
         return faults
 
     for item in conventions.items(text):
@@ -506,14 +527,10 @@ def uncited(numbers: Iterable[int], texts: Mapping[Path, str]) -> list[str]:
     cites = set()
     for path, text in texts.items():
         cites |= {item.issue for item in conventions.items(text) if item.issue}
-        if path.name not in conventions.UNITEMED:
-            continue
-        for _, kind, written in conventions.statuses(text):
-            if kind != "item" or (parsed := _parse(kind, written)) is None:
-                continue
+        if path.name in conventions.UNITEMED:
             cites |= {
                 reference.number
-                for reference in references(conventions.carried(parsed[1]))
+                for reference in cited(text, rows=False)
                 if reference.role == "issue" and reference.repository == REPOSITORY
             }
     return [
@@ -553,9 +570,6 @@ def check_ledger(
     """
     problems = []
 
-    def current(reference: Reference) -> bool:
-        return reference.repository == REPOSITORY and reference.number == pull
-
     def pulled(evidence: str) -> Iterator[tuple[Reference, Work | None]]:
         for reference in references(evidence):
             yield reference, resolve(reference.repository, reference.number)
@@ -570,10 +584,11 @@ def check_ledger(
     for decision in conventions.decisions(text):
         faults = []
         for reference, work in pulled(decision.carried):
-            if (fault := found(reference, work)) is not None:
+            fault = found(reference, work)
+            if fault is None and work is not None:
+                fault = _unmerged(reference, work, pull)
+            if fault is not None:
                 faults.append(fault)
-            elif work.state != "merged" and not current(reference):
-                faults.append(f"{reference.text} has not merged")
         at = conventions.where(path, decision.line)
         problems += [f"{at}: {fault}" for fault in faults]
 
@@ -587,20 +602,14 @@ def check_ledger(
             if (fault := found(reference, work)) is not None:
                 faults.append(fault)
             elif state == conventions.SIGNED_OFF:
-                if work.state != "merged" and not current(reference):
-                    faults.append(f"{reference.text} has not merged")
+                if (fault := _unmerged(reference, work, pull)) is not None:
+                    faults.append(fault)
                 else:
                     faults += _signed(evidence, reference, labelled, when)
             elif state in (conventions.VERIFIED, conventions.LEDGER_RETIRED):
-                if current(reference):
-                    continue
                 said = "verified" if state == conventions.VERIFIED else "retired"
-                if work.state != "merged":
-                    faults.append(f"{reference.text} has not merged")
-                elif when and work.when and abs((when - work.when).days) > 1:
-                    faults.append(
-                        f"{said} on {when}, but {reference.text} merged on {work.when}"
-                    )
+                if (fault := _unmerged(reference, work, pull, when, said)) is not None:
+                    faults.append(fault)
         at = conventions.where(path, row.line)
         problems += [f"{at}: {fault}" for fault in faults]
     return problems

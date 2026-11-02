@@ -154,8 +154,11 @@ MYST_LINE = re.compile(r"\(.+\)=\s*$|%|\+(?:[ \t]*\+){2,}|\[\^[^\]\s]+\]:")
 #: A bold run, which may hold an emphasised word, as ``**A *very* big title.**``.
 BOLD = re.compile(r"\*\*(?P<text>.+?)\*\*", flags=re.DOTALL)
 #: The bold run an item opens with when it carries a state, ``**Open**`` in the
-#: grammar of docs spec §3.6, or its emoji first in that of items spec §3.2.
-STATED = re.compile(r"\W*(?:Open|Deferred|Resolved|Abandoned|Graduated)")
+#: grammar of docs spec §3.6, or its emoji first in that of items spec §3.2: the
+#: word of each of :data:`ITEMED_STATES`, after anything that is no word.
+STATED = re.compile(
+    r"\W*(?:{})".format("|".join(re.escape(s.split()[-1]) for s in ITEMED_STATES))
+)
 #: The dashes an item's state and provenance are parted from its title by.
 DASHES = " -\N{EN DASH}\N{EM DASH}"
 #: The issue a ticket names, and the row a graduated item's settlement ends with.
@@ -494,20 +497,39 @@ def balanced(text: str) -> str:
     return text[1:]
 
 
-def _section(text: str, number: str, title: str) -> list[tuple[int, str]]:
-    """Read the lines of the section numbered ``number`` and titled ``title``."""
-    found: list[tuple[int, str]] = []
-    inside = False
-    for line_number, line in read_lines(text):
+def headed(text: str) -> list[tuple[re.Match[str], list[tuple[int, str]]]]:
+    """Read each numbered heading of a specification, with the lines beneath it.
+
+    A section runs to the next numbered heading, so a heading with no number is a
+    line of the section it sits in.
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+
+    Returns
+    -------
+    list of tuple
+        Each numbered heading's match of :data:`HEADING`, in the order written,
+        with its section's lines and their numbers, the heading's own excluded.
+
+    """
+    found: list[tuple[re.Match[str], list[tuple[int, str]]]] = []
+    for number, line in read_lines(text):
         heading = HEADING.match(line)
         if heading is not None:
-            inside = heading["num"] == number and heading["title"] == title
-            if not inside and found:
-                break
-            continue
-        if inside:
-            found.append((line_number, line))
+            found.append((heading, []))
+        elif found:
+            found[-1][1].append((number, line))
     return found
+
+
+def section_lines(
+    text: str, wanted: Callable[[re.Match[str]], bool]
+) -> list[tuple[int, str]]:
+    """Read the lines of the first section whose numbered heading is ``wanted``."""
+    return next((lines for heading, lines in headed(text) if wanted(heading)), [])
 
 
 def _myst_line(state: StateBlock, start: int, end: int, silent: bool) -> bool:  # noqa: ARG001, FBT001
@@ -686,25 +708,6 @@ def provenance(carried: str) -> list[tuple[str | None, str]]:
         kind = next((p for p in PARTS if plain.startswith(p.replace(VS16, ""))), None)
         rest = plain[len(kind.replace(VS16, "")) :] if kind else part
         found.append((kind, rest.strip()))
-    return found
-
-
-def _titled(text: str, title: str) -> list[tuple[int, str]]:
-    """Read the lines of the first section titled ``title``, whatever its case.
-
-    A heading in headline style and one in sentence case name the same section.
-    """
-    found: list[tuple[int, str]] = []
-    inside = False
-    for number, line in read_lines(text):
-        heading = HEADING.match(line)
-        if heading is not None:
-            if inside:
-                break
-            inside = heading["title"].casefold() == title.casefold()
-            continue
-        if inside:
-            found.append((number, line))
     return found
 
 

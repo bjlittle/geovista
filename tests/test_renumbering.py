@@ -281,6 +281,26 @@ def test_a_cited_untitled_item_is_frozen(guard):
     assert "Build the pages." in problems[0]
 
 
+def test_a_long_untitled_item_is_named_by_the_start_of_its_text(guard):
+    """Its text is all it has to be named by, so a message shortens it at a word."""
+    long = (
+        "Build the pages, every one of them, with the gallery and the tutorials "
+        "executed, so the reader sees what the code draws."
+    )
+    steps, inserted = (
+        text.replace("Build the pages.", long) for text in (STEPS, INSERTED_STEP)
+    )
+
+    (problem,) = frozen(guard, steps, inserted, frozenset({"demo-spec-8-item-2"}))
+
+    named = problem.split('"')[1]
+    assert named == (
+        "Build the pages, every one of them, with the gallery and"
+        "\N{HORIZONTAL ELLIPSIS}"
+    )
+    assert problem.endswith("is now item 3: append an item rather than insert it")
+
+
 def test_an_untitled_item_is_paired_by_its_text(guard):
     """A cited step reworded in place, or another step appended, still passes.
 
@@ -523,7 +543,10 @@ def test_a_range_is_cited_to_its_far_end(guard, tmp_path, renumbered):
     code = tmp_path / "code.py"
     texts = {spec_path: INSERTED, code: f"# items 2 to 4 of demo spec {SECTION}3\n"}
 
-    assert guard.cited(texts, names) >= {"demo-spec-3-item-2", "demo-spec-3-item-4"}
+    assert guard.cited_anchors(texts, names) >= {
+        "demo-spec-3-item-2",
+        "demo-spec-3-item-4",
+    }
 
 
 def test_a_cited_far_end_of_a_range_is_frozen(guard, tmp_path):
@@ -534,7 +557,7 @@ def test_a_cited_far_end_of_a_range_is_frozen(guard, tmp_path):
     code = tmp_path / "code.py"
     texts = {code: f"# steps: items 1 to 2 of demo spec {SECTION}8\n"}
 
-    cited = guard.cited(texts, names)
+    cited = guard.cited_anchors(texts, names)
 
     assert len(frozen(guard, STEPS, INSERTED_STEP, cited)) == 2
 
@@ -835,6 +858,28 @@ def test_a_changed_file_that_is_not_text_is_not_read_for_citations(guard, repo, 
     git(repo, "switch", "--quiet", "--create", "more")
     (repo / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n\x00\xfe")
     git(repo, "commit", "--quiet", "--all", "--message", "logo again")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+
+
+def test_a_changed_text_file_that_is_not_utf8_is_passed_over(guard, repo, capsys):
+    """A Latin-1 file has no NUL byte, so git diffs it as text (#2817).
+
+    The corpus skips a file that is not UTF-8, so the guard passes over it too,
+    rather than fail to decode its diff.
+    """
+    acute = "\N{LATIN SMALL LETTER E WITH ACUTE}"
+    notes = repo / "notes.txt"
+    notes.write_bytes(f"r{acute}sum{acute}\n".encode("latin-1"))
+    git(repo, "add", "notes.txt")
+    git(repo, "commit", "--quiet", "--message", "notes")
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    notes.write_bytes("na\N{LATIN SMALL LETTER I WITH DIAERESIS}ve\n".encode("latin-1"))
+    git(repo, "commit", "--quiet", "--all", "--message", "notes again")
 
     code, out = run(guard, repo, capsys=capsys)
 
@@ -1395,10 +1440,10 @@ def test_the_audit_shows_each_revision_once(guard, repo, capsys, monkeypatch):
     shown: list[str] = []
     real = guard.git
 
-    def counting(root: Path, *args: str) -> str:
+    def counting(root: Path, *args: str, **kwargs: str) -> str:
         if args[0] == "show":
             shown.append(args[1])
-        return real(root, *args)
+        return real(root, *args, **kwargs)
 
     monkeypatch.setattr(guard, "git", counting)
 
@@ -1515,3 +1560,32 @@ def test_a_roadmap_scope_keeps_an_escaped_pipe(guard):
     text = spec(("4", "Roadmap", roadmap(("1", "a \\| b"))))
 
     assert guard.roadmap_rows(text)["1"].title == "a \\| b"
+
+
+def test_the_corpus_is_read_for_citations_only_once_a_specification_changed(
+    guard, repo, capsys, monkeypatch
+):
+    """Reading what the corpus cites costs a second a run, and holds no item here.
+
+    An item or a row moves only with its specification, so a pull request that
+    changes none has nothing to hold, and never reads what the corpus cites.
+    """
+    reads: list[int] = []
+    cited_anchors = guard.cited_anchors
+
+    def counted(texts: dict[Path, str], names: object) -> frozenset[str]:
+        reads.append(len(texts))
+        return cited_anchors(texts, names)
+
+    monkeypatch.setattr(guard, "cited_anchors", counted)
+    commit(repo, {"src/other.py": "# still nothing cited\n"}, "other")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+    assert reads == []
+
+    commit(repo, {str(SPECS / NAME): INSERTED}, "insert")
+    run(guard, repo, capsys=capsys)
+
+    assert reads

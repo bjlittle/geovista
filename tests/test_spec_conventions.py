@@ -695,6 +695,29 @@ def test_near_misses_rewrites_a_comma_row_before_its_section(tmp_path):
     ]
 
 
+def test_near_misses_keeps_a_comma_decision_naming_its_own_section(tmp_path):
+    """A decision never opens a citation naming its section after ``of``.
+
+    So the comma before one parts no two citations, unlike an item's or a row's,
+    and the comma form stays a near miss, beside the ``of`` form after it.
+    """
+    _, names = demo(tmp_path, DEMO)
+    text = f"# See {SECTION}8, decision 1 of demo spec {SECTION}2.\n"
+
+    problems = near_misses(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        (
+            f"'{SECTION}8, decision 1' is a near-miss citation; "
+            f"write '{SECTION}8 decision 1'"
+        ),
+        (
+            f"'decision 1 of demo spec {SECTION}2' is a near-miss citation; "
+            f"write 'demo spec {SECTION}2 decision 1'"
+        ),
+    ]
+
+
 def test_near_misses_comma_form_reads_any_case(tmp_path):
     """A sentence may open on the word, as the corpus does, so case must not matter."""
     _, names = demo(tmp_path, DEMO)
@@ -1297,20 +1320,6 @@ ITEM = re.compile(r"^(?:\d+\.|[-*])\s+(?P<body>.*)$")
 STATE = re.compile(r"^\*\*(?P<state>[^*]+)\*\*(?P<rest>.*)$")
 
 
-def sections(text: str) -> dict[str, list[tuple[int, str]]]:
-    """Group a specification's lines by the title of the section holding them."""
-    found: dict[str, list[tuple[int, str]]] = {}
-    title = None
-    for number, line in read_lines(text):
-        heading = HEADING.match(line)
-        if heading is not None:
-            title = heading["title"]
-            found.setdefault(title, [])
-        elif title is not None:
-            found[title].append((number, line))
-    return found
-
-
 def dated(written: str) -> date | None:
     """Read an ISO date, or None when it has the shape but no calendar holds it."""
     try:
@@ -1340,15 +1349,18 @@ def row_numbers(path: Path, text: str) -> list[str]:
     """Find each roadmap row whose first cell is no row number, as ``**1**`` is.
 
     A citation names a row by its first cell, so a cell that is no number, with a
-    letter or without, names nothing, and the grammar passes the row over.
+    letter or without, names nothing, and the grammar passes the row over. A table
+    before any numbered heading lies in no section, so names no row whatever its
+    cells, and is passed over as the grammar's rows() passes it over.
     """
     problems = []
     table: list[tuple[int, str]] = []
+    headed = False
     for number, line in [*read_lines(text), (0, "")]:
         if line.startswith("|"):
             table.append((number, line))
             continue
-        if table and roadmap_header(citations.cells(table[0][1])):
+        if headed and table and roadmap_header(citations.cells(table[0][1])):
             for row, written in table[2:]:
                 cell = (citations.cells(written) or [""])[0]
                 if not citations.ROW_NUMBER.fullmatch(cell):
@@ -1357,6 +1369,7 @@ def row_numbers(path: Path, text: str) -> list[str]:
                         "row: number it as `1` or `1a`"
                     )
         table = []
+        headed = headed or HEADING.match(line) is not None
     return problems
 
 
@@ -1399,8 +1412,8 @@ def statuses(text: str) -> Iterator[tuple[int, str, str]]:
     # sentence case name the same section, and missing it would stop its check
     items = [
         line
-        for title, lines in sections(text).items()
-        if title.casefold() == "open items"
+        for heading, lines in citations.headed(text)
+        if heading["title"].casefold() == citations.OPEN_ITEMS.casefold()
         for line in lines
     ]
     for number, line in [*items, (0, "")]:
@@ -1555,6 +1568,22 @@ def test_row_numbers_finds_a_row_not_numbered_as_one(tmp_path):
         for cell in ["**2**", "~~3~~", "4.", ""]
     ]
     assert problems[0].startswith(f"{where(path, 10)}: ")
+
+
+def test_row_numbers_passes_over_a_roadmap_before_any_section(tmp_path):
+    """A table before any numbered heading lies in no section, so names no row.
+
+    The grammar's rows() and the build both pass it over, and so does the rule.
+    """
+    roadmap = "| # | Scope | Status |\n|---|---|---|\n| **1** | a | not started |\n"
+    path, _ = demo(tmp_path, f"{roadmap}\n{DEMO}\n{roadmap}")
+
+    problems = row_numbers(path, path.read_text(encoding="utf-8"))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        "row '**1**' is not numbered as a row: number it as `1` or `1a`"
+    ]
+    assert problems[0].startswith(f"{where(path, 15)}: ")
 
 
 @pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
@@ -2248,7 +2277,11 @@ def ledger_entries(path: Path, text: str) -> list[str]:
         return [f"{where(path, 1)}: its second section is not titled Decisions"]
     found = decisions(text)
     problems = []
-    lines = citations._section(text, "2", citations.DECISIONS)
+
+    def decided(heading: re.Match[str]) -> bool:
+        return (heading["num"], heading["title"]) == ("2", citations.DECISIONS)
+
+    lines = citations.section_lines(text, decided)
     if any(re.match(r"^[-*]\s", line) for _, line in lines):
         problems.append(
             f"{where(path, 1)}: a decision is a bullet, not a numbered entry"
@@ -2980,7 +3013,10 @@ def item_entries(path: Path, text: str) -> list[str]:
     found = items(text)
     opened = {item.line for item in found}
     problems = unreached(path, text)
-    for number, line in citations._titled(text, citations.OPEN_ITEMS):
+    opening = citations.OPEN_ITEMS.casefold()
+    for number, line in citations.section_lines(
+        text, lambda heading: heading["title"].casefold() == opening
+    ):
         if ITEM.match(line) is None or number in opened:
             continue
         if line.startswith(("-", "*")):

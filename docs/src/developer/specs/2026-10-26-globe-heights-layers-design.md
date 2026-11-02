@@ -289,9 +289,9 @@ A scene's globe holds three quantities, and nothing else in the scene holds them
 
 `GeoPlotter` takes a globe, and every layer it adds takes its radius from it, the base
 layer, coastlines and graticule included. A globe is immutable. Changing the vertical
-mapping of a scene replaces its globe, and the scene rebuilds every position from the heights its
-layers carry (§4.4). Row 3 of §9 fixes a scene's globe when the scene is made, and leaves
-replacing it to heights spec §8 item 1.
+mapping of a scene replaces its globe, and the scene rebuilds every position from the
+heights its layers carry (§4.4). Row 3 of §9 fixes a scene's globe when the scene is made,
+and leaves replacing it to heights spec §8 item 1.
 
 The render radius stays 1 by default. §3.5 found layering to behave
 the same at the Earth's radius, which bears on crs spec §8 item 3, but
@@ -364,8 +364,8 @@ given, uneven levels included. Today it keeps only their number (§3.6).
 > **Extended by a child specification.** [`2026-10-27-globe-scene-design.md`](2026-10-27-globe-scene-design.md) settles which functions take a
 > globe (scene spec §4.2), how a mesh stores the globe it records (scene spec §4.3), and the
 > globe of a mesh that records none (scene spec §4.4).
-> [`2026-10-28-heights-as-data-design.md`](2026-10-28-heights-as-data-design.md) settles which
-> functions build positions from heights, and how (heights spec §4.3).
+> [`2026-10-28-heights-as-data-design.md`](2026-10-28-heights-as-data-design.md) settles
+> which functions build positions from heights, and how (heights spec §4.3).
 
 The scene turns heights into positions, with its globe's radius `R`, scale `s` and
 vertical mapping `V`. In its first form, `V(h)` is `E_above h` for a height at or above sea
@@ -473,8 +473,9 @@ When row 5 of §9 lands:
 
 The gallery's examples that use a level, or warp by hand, move to heights, an order or a
 lift, each as its purpose in §3.1 and §3.6 says. The README's examples move with them, in
-the pull request that changes what they use, and the test of {issue}`2756` runs them. The planar z-levels specification is then
-retired, with a note at its head that this specification replaced it, and why.
+the pull request that changes what they use, and the test of {issue}`2756` runs them. The
+planar z-levels specification is then retired, with a note at its head that this
+specification replaced it, and why.
 
 (globe-spec-5)=
 ## 5. Alternatives Considered
@@ -524,8 +525,8 @@ crs spec §6 requires:
   visible, for C48 and a 5° grid on the globe, and for C48 on Robinson;
 - **places**: surfaces that share a place are drawn with one bias, and where two surfaces
   coincide, the one a place higher shows, on the globe and on a map;
-- **the lift**: a layer lifted by `ℓ` is drawn `ℓ` times the render radius further out on the
-  globe and `ℓ R` higher on a map, a picked point on it reports its data's height, and
+- **the lift**: a layer lifted by `ℓ` is drawn `ℓ` times the render radius further out on
+  the globe and `ℓ R` higher on a map, a picked point on it reports its data's height, and
   nothing is written to its mesh;
 - **the radius**: each of the above holds at radius 1 and at the Earth's radius.
 

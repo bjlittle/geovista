@@ -154,7 +154,8 @@ class ItemTargets(SphinxTransform):
 
     No source declares an item's or a row's anchor; the build names the first
     numbered list of every section but Decisions after its items, and each body
-    row of a table whose header is a roadmap's after its rows. It runs beside
+    row of a table whose header is a roadmap's after its rows, where the row's
+    first cell is a number the grammar reads (:func:`_row_number`). It runs beside
     :class:`DecisionTargets`, at the same priority, so a section is found by its
     id before :class:`CitationTransform` links to the anchors. The standard
     domain records each as an anonymous label, as a decision's is.
@@ -191,12 +192,38 @@ class ItemTargets(SphinxTransform):
             if not geovista_citations.roadmap_header(header):
                 continue
             for row in body:
-                cells = [entry.astext().strip() for entry in row.children]
-                if not cells or not cells[0]:
+                cell = _row_number(row.children[0]) if row.children else None
+                if cell is None:
                     continue
-                name = geovista_citations.row_anchor(owner, number, cells[0])
+                name = geovista_citations.row_anchor(owner, number, cell)
                 row["names"].append(name)
                 self.document.note_explicit_target(row, row)
+
+
+def _row_number(entry: nodes.Node) -> str | None:
+    """Read a roadmap row's number from its first cell, as the grammar reads it.
+
+    The grammar reads the cell as written, so one holding markup, as ``**2**``
+    does, names no row, although it renders as ``2``.
+
+    Parameters
+    ----------
+    entry : docutils.nodes.Node
+        The row's first cell.
+
+    Returns
+    -------
+    str or None
+        The row's number, e.g. ``"6a"``, or ``None`` when the cell is no row
+        number written as plain text.
+
+    """
+    plain = all(
+        isinstance(node, (nodes.paragraph, nodes.Text))
+        for node in entry.findall(include_self=False)
+    )
+    text = entry.astext().strip()
+    return text if plain and geovista_citations.ROW_NUMBER.fullmatch(text) else None
 
 
 def _name_enumerated(

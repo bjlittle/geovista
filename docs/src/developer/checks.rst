@@ -526,8 +526,8 @@ pull request, so that it can be a required check.
 For an open item:
 
 - *is not a pull request*, *does not exist*, *is an issue* or *is a pull
-  request*: cite the kind of work each part asks for: 🔎, ⬅️ and a terminal
-  state a pull request, 🎫 an issue.
+  request*: cite the kind of work each part asks for, a pull request for 🔎, ⬅️
+  and a terminal state, and an issue for 🎫.
 - *has not merged*: cite a pull request that has merged, or wait, since the
   pull request being checked may still be open.
 - *moved on …, but … merged on …*: date the ⬅️ by the day its pull request

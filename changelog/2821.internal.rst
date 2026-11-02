@@ -1,0 +1,6 @@
+Settled the follow-ups to the open items work. The renumber guard now passes
+over a changed text file that isn't UTF-8 instead of failing, and reads the
+corpus for citations only once a specification has changed. The status checker
+and the citation grammar share one way to check a merge and read a section, and
+the build and the grammar are held to the same item and row anchors by new
+tests. (:user:`claude`)

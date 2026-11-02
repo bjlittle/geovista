@@ -169,9 +169,9 @@ height of 0 to the points of a mesh that has none, since such a mesh is at sea l
 
 A cut through cells interpolates every floating point array at the points it adds, over the
 triangle each one lies in. `vtkIntersectionPolyDataFilter` interpolates some of those points
-from the wrong points, 3 of the 12 that a cut at 15° E adds to a 30° grid, and it adds points
-inside a triangle wherever the cutting plane's own diagonal crosses one. A point on an edge
-takes the heights at the two ends of that edge, so a missing height elsewhere on its
+from the wrong points, 3 of the 12 that a cut at 15° E adds to a 30° grid, and it adds
+points inside a triangle wherever the cutting plane's own diagonal crosses one. A point on
+an edge takes the heights at the two ends of that edge, so a missing height elsewhere on its
 triangle never reaches it. VTK stores the points it adds as float32, so a point is on an
 edge when it lies within that precision of it. The test is a distance from the edge, since
 the weight that rounding gives the third vertex grows as the triangle shrinks.
@@ -239,9 +239,10 @@ its points lie, as any mesh that records no globe is (scene spec §4.4). Given t
 `transform_mesh`, it is positioned at `Globe()`, as such a mesh is.
 
 A mesh with heights is never read at the one radius its points lie at, under
-item 2 of scene spec §4.4. Its points lie at their heights, so heights that are all equal would read
-as a globe at the lifted radius, and the mesh would be lifted twice. `Globe.from_mesh`
-reads such a mesh at its `gvRadius`, if it has one, and otherwise returns `None`.
+item 2 of scene spec §4.4. Its points lie at their heights, so heights that are all equal
+would read as a globe at the lifted radius, and the mesh would be lifted twice.
+`Globe.from_mesh` reads such a mesh at its `gvRadius`, if it has one, and otherwise
+returns `None`.
 
 A point cloud with heights carries no z-level, so its radius encodes no level, and the third
 column `from_cartesian` reports for it is 0, as it is for a surface. It records no
@@ -308,8 +309,8 @@ Each of these raises a `ValueError` that names what was given:
 - **A plain array named `height`.** Rejected, by §2 decision 1. It would collide with a
   user's own data.
 - **Heights given to `resize` and `transform_mesh`.** Rejected, by §2 decision 4. Two more
-  ways to give heights, each needing the refusal of §2 decision 5, for nothing the bridge and
-  the scene do not already offer.
+  ways to give heights, each needing the refusal of §2 decision 5, for nothing the bridge
+  and the scene do not already offer.
 - **`from_cartesian` reporting heights.** Rejected, by §2 decision 8. One column would carry
   two meanings until row 5.
 - **Refusing a missing height, as the parent did.** Rejected, by §2 decision 3. Data
@@ -392,13 +393,13 @@ Each carries the status grammar of docs spec §3.6.
    scene's globe when the scene is made (§2 decision 7), so a new exaggeration means a new
    plotter ({issue}`2769`).
 2. **Open** — **Heights from a raster band.** `Transform.from_tiff` builds its points from
-   the file, and `extract` may drop some of them, so an array of heights cannot be matched to
-   them. A digital elevation model is a GeoTIFF, and one of its bands could be read as the
-   heights of the points ({issue}`2770`).
-3. **Open** — **A surface below sea level, under the base layer.** The base layer is opaque at
-   sea level, so an ocean floor drawn at its depth cannot be seen from outside the globe.
-   Until row 4, a user drops the base layer or gives it an opacity. Row 4 of globe spec §9
-   owns it, with the base layer's lowering (globe spec §4.5).
+   the file, and `extract` may drop some of them, so an array of heights cannot be matched
+   to them. A digital elevation model is a GeoTIFF, and one of its bands could be read as
+   the heights of the points ({issue}`2770`).
+3. **Open** — **A surface below sea level, under the base layer.** The base layer is opaque
+   at sea level, so an ocean floor drawn at its depth cannot be seen from outside the
+   globe. Until row 4, a user drops the base layer or gives it an opacity.
+   Row 4 of globe spec §9 owns it, with the base layer's lowering (globe spec §4.5).
 
 (heights-spec-9)=
 ## 9. Roadmap
