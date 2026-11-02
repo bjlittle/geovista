@@ -34,11 +34,12 @@ gap is follow-on work, and the specification is only a true picture of what is l
 if the gap is written into it.
 
 Today that depends on someone noticing. Row 5 of ledger spec §8 found that
-`Transform.from_points` refuses a `pint` quantity, a gap in crs spec §2 decision 13. It
-was raised as {issue}`2802`, and was written into the crs specification only because
-{user}`bjlittle` asked whether it had been. Of the 33 items still open or deferred in the collection when this specification
-was written, 23 cite no issue, and none but that one says which roadmap row must settle it.
-A row can land while a question it depended on is still open, and nothing notices.
+`Transform.from_points` refuses a `pint` quantity, a gap in crs spec §2 decision 13. It was
+raised as {issue}`2802`, and was written into the crs specification only because
+{user}`bjlittle` asked whether it had been. Of the 33 items still open or deferred in the
+collection when this specification was written, 23 cite no issue, and none but that one says
+which roadmap row must settle it. A row can land while a question it depended on is still
+open, and nothing notices.
 
 The ledger gave decisions a state, a provenance and evidence, checked by the suite and by
 GitHub. This specification does the same for open items. Each gap is an open item with an
