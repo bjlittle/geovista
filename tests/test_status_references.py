@@ -989,7 +989,7 @@ def test_an_open_labelled_issue_no_item_cites_is_drift(script):
     A specification still waiting to be brought in cites its issues in the
     grammar of docs spec §3.6, and those count as cited too.
 
-    Holds items spec §2 decision 1, items spec §2 decision 2.
+    Holds items spec §2 decision 2.
     """
     itemed = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`22`"),))
     waiting = spec(items=("**Open** ({issue}`2804`)",))

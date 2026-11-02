@@ -3252,10 +3252,7 @@ def test_item_entries_passes_a_settled_item_without_its_issue(tmp_path):
 
 
 def test_item_entries_wants_numbered_titled_items_in_one_list(tmp_path):
-    """Items spec §3.2: a numbered entry, with a title, in the section's list.
-
-    Holds items spec §2 decision 1.
-    """
+    """Items spec §3.2: a numbered entry, with a title, in the section's list."""
     entries = (
         f"1. **{OPEN}** ({FOUND_AT}{DOT}{OWED_BY}{DOT}{TICKETED}) — Untitled.\n"
         + entry_item(3, OPEN, FOUND_AT, OWED_BY, TICKETED)

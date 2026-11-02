@@ -457,7 +457,7 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| 1 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2807`) | Checked in review that the gaps found while delivering row 1 (#2804, #2806) were each captured as an open item with its own labelled issue. |
 | 2 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
 | 3 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py` |
 | 4 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
