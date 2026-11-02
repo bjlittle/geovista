@@ -364,6 +364,12 @@ def frozen(
     leaves its number free for the cited one to be paired with in place; only the
     items held are reported. A section holding none is read as it always was.
 
+    An item's number is always read by the base branch's numbering, so a citation
+    the pull request writes of an item by its new number, after inserting an item
+    before it, holds whichever item that number named on the base branch. That
+    one has moved, so the insert fails although nothing cited what it moved, and
+    appending the new item instead passes.
+
     Parameters
     ----------
     base_text, head_text : str
