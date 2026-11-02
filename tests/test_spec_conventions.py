@@ -578,7 +578,10 @@ def near_misses(path: Path, text: str, names: Namespace) -> list[str]:
     followed by a comma and one of those words carries one the grammar cannot read
     past the comma; and ``decision`` named with its section after ``of`` uses the word
     order the grammar accepts only for an item or a row. Each is reported with the
-    citation it should become.
+    citation it should become, read without regard to case, as a sentence may open on
+    one. An item or a row read after the comma is not reported if it opens a citation
+    of its own, naming its section after ``of``, since the comma there only parts two
+    citations in a list.
 
     Parameters
     ----------
@@ -602,7 +605,14 @@ def near_misses(path: Path, text: str, names: Namespace) -> list[str]:
         flags=re.IGNORECASE,
     )
     comma_form = re.compile(
-        rf"{SECTION}(?P<num>{NUMBER}),[^\S\n]*(?P<kind>{KIND}){GAP}(?P<member>{MEMBER})"
+        rf"{SECTION}(?P<num>{NUMBER}),[^\S\n]*(?P<kind>{KIND}){GAP}(?P<member>{MEMBER})",
+        flags=re.IGNORECASE,
+    )
+    # an item or a row after the comma may open a citation of its own, as
+    # ``row 6 of §9`` does in ``§8, row 6 of §9``: that comma only parts two
+    # citations in a list, so each member is read ahead before it is reported
+    pre_form = re.compile(
+        rf"{GAP}of{GAP}(?:{known}[^\S\n]*)?{SECTION}{NUMBER}", flags=re.IGNORECASE
     )
     decision_of = re.compile(
         rf"\bdecision{GAP}(?P<member>{MEMBER}){GAP}of{GAP}"
@@ -621,6 +631,8 @@ def near_misses(path: Path, text: str, names: Namespace) -> list[str]:
             )
         for match in comma_form.finditer(plain):
             kind = match["kind"].lower()
+            if kind != "decision" and pre_form.match(plain, match.end()):
+                continue
             if kind == "row":
                 fix = f"row {match['member']} of {SECTION}{match['num']}"
             else:
@@ -675,6 +687,37 @@ def test_near_misses_rewrites_a_comma_row_before_its_section(tmp_path):
 
     assert [p.split(": ", 1)[1] for p in problems] == [
         f"'{SECTION}2, row 3' is a near-miss citation; write 'row 3 of {SECTION}2'"
+    ]
+
+
+def test_near_misses_comma_form_reads_any_case(tmp_path):
+    """A sentence may open on the word, as the corpus does, so case must not matter."""
+    _, names = demo(tmp_path, DEMO)
+    text = f"# {SECTION}8, Item 3 opens a sentence, and {SECTION}9, ROW 6 too.\n"
+
+    problems = near_misses(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"'{SECTION}8, Item 3' is a near-miss citation; write '{SECTION}8 item 3'",
+        f"'{SECTION}9, ROW 6' is a near-miss citation; write 'row 6 of {SECTION}9'",
+    ]
+
+
+def test_near_misses_passes_a_list_of_valid_citations(tmp_path):
+    """A row or an item opening its own citation after a comma is no near miss."""
+    _, names = demo(tmp_path, DEMO)
+    text = (
+        f"# item 3 of demo spec {SECTION}8, row 6 of demo spec {SECTION}9, "
+        f"and decision 1 of demo spec {SECTION}2.\n"
+    )
+
+    problems = near_misses(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        (
+            f"'decision 1 of demo spec {SECTION}2' is a near-miss citation; "
+            f"write 'demo spec {SECTION}2 decision 1'"
+        )
     ]
 
 
