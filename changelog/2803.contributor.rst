@@ -1,0 +1,6 @@
+Published the open items design specification. Each gap found while delivering a
+specification becomes one of its open items, with an issue of its own labelled
+``spec: open item``, and names the roadmap row that owes it. A row can't land
+past an item it owes unless its pull request settles, moves or promotes the
+item, and an item that has moved twice graduates to a roadmap row of its own.
+(:user:`claude`)
