@@ -81,7 +81,7 @@ from pathlib import Path
 import re
 import sys
 import traceback
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -649,6 +649,18 @@ def _headers(token: str | None) -> dict[str, str]:
     return headers
 
 
+def _pages(url: str, headers: dict[str, str]) -> Iterator[list[dict[str, Any]]]:
+    """Yield each page of a paginated answer, following its ``Link`` header."""
+    following: str | None = url
+    while following:
+        request = urllib.request.Request(following, headers=headers)  # noqa: S310
+        with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
+            page = json.load(response)
+            after = NEXT.search(response.headers.get("Link") or "")
+        yield page
+        following = after["url"] if after else None
+
+
 def labeller(token: str | None = None) -> Labeller:
     """Return a labeller that reads a pull request's events, every page, cached.
 
@@ -670,14 +682,8 @@ def labeller(token: str | None = None) -> Labeller:
         key = (repository, number)
         if key not in cache:
             stamped: list[tuple[datetime, Labelling]] = []
-            url: str | None = (
-                f"{API}/repos/{repository}/issues/{number}/events?per_page=100"
-            )
-            while url:
-                request = urllib.request.Request(url, headers=headers)  # noqa: S310
-                with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
-                    page = json.load(response)
-                    following = NEXT.search(response.headers.get("Link") or "")
+            url = f"{API}/repos/{repository}/issues/{number}/events?per_page=100"
+            for page in _pages(url, headers):
                 for event in page:
                     if event.get("event") not in ("labeled", "unlabeled"):
                         continue
@@ -691,7 +697,6 @@ def labeller(token: str | None = None) -> Labeller:
                         at.date(),
                     )
                     stamped.append((at, labelling))
-                url = following["url"] if following else None
             # the last event decides whether the label is on, so hold them in
             # time order, whatever order the pages served them in
             stamped.sort(key=lambda pair: pair[0])
@@ -778,20 +783,13 @@ def labelled_issues(token: str | None = None) -> Lister:
     )
 
     def listed() -> list[int]:
-        numbers = []
-        url: str | None = f"{API}/repos/{REPOSITORY}/issues?{query}"
-        while url:
-            request = urllib.request.Request(url, headers=headers)  # noqa: S310
-            with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
-                page = json.load(response)
-                following = NEXT.search(response.headers.get("Link") or "")
-            numbers += [
-                found["number"]
-                for found in page
-                if "pull_request" not in found and found["state"] == "open"
-            ]
-            url = following["url"] if following else None
-        return sorted(numbers)
+        url = f"{API}/repos/{REPOSITORY}/issues?{query}"
+        return sorted(
+            found["number"]
+            for page in _pages(url, headers)
+            for found in page
+            if "pull_request" not in found and found["state"] == "open"
+        )
 
     return listed
 
@@ -844,13 +842,15 @@ def main(
         labelled = labeller(token)
     if listed is None:
         listed = labelled_issues(token)
-    specifications = conventions.specifications()
-    texts = {path: path.read_text(encoding="utf-8") for path in specifications}
 
     def unitemed(path: Path) -> bool:
         return path.name in conventions.UNITEMED
 
     try:
+        # read inside, so that a specification that cannot be read exits two,
+        # never one, which is a finding
+        specifications = conventions.specifications()
+        texts = {path: path.read_text(encoding="utf-8") for path in specifications}
         problems = []
         for path, text in texts.items():
             problems += check(

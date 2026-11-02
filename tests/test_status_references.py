@@ -1094,3 +1094,36 @@ def test_main_lists_the_labelled_only_for_drift(script, itemed, labels, monkeypa
         raise AssertionError(message)
 
     assert script.main([], resolve=itemed, labelled=labels, listed=listed) == 0
+
+
+def test_main_cannot_list_the_labelled(script, itemed, labels, monkeypatch, capsys):
+    """A lister refused by GitHub under drift exits two, with the token hint."""
+    import urllib.error  # noqa: PLC0415
+
+    monkeypatch.setattr(script.conventions, "specifications", list)
+
+    def listed() -> list[int]:
+        url = "https://api.github.com/repos/bjlittle/geovista/issues"
+        raise urllib.error.HTTPError(url, 403, "rate limited", {}, None)
+
+    status = script.main(["--drift"], resolve=itemed, labelled=labels, listed=listed)
+
+    captured = capsys.readouterr()
+    assert status == 2
+    assert "could not ask GitHub" in captured.err
+    assert 'GH_TOKEN="$(gh auth token)"' in captured.err
+    assert captured.out == ""
+
+
+def test_main_cannot_read_a_specification(
+    script, itemed, labels, tmp_path, monkeypatch, capsys
+):
+    """A specification that cannot be read exits two, never one, a finding."""
+    path = tmp_path / "2026-01-01-demo-design.md"
+    path.write_bytes(b"\xff\xfe not utf-8")
+    monkeypatch.setattr(script.conventions, "specifications", lambda: [path])
+
+    status = script.main([], resolve=itemed, labelled=labels, listed=list)
+
+    assert status == 2
+    assert "could not finish checking" in capsys.readouterr().err
