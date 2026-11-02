@@ -484,7 +484,7 @@ def _ticket(issue: int, state: str, resolve: Resolver, *, drift: bool) -> list[s
 
 
 def uncited(numbers: Iterable[int], texts: Mapping[Path, str]) -> list[str]:
-    """Report each open labelled issue that no open item cites.
+    """Report each open labelled issue that no item cites, whatever its state.
 
     An item cites its issue in the grammar of items spec §3.2, or, while
     :data:`UNITEMED` names its specification, in that of docs spec §3.6, so both

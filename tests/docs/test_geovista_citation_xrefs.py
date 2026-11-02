@@ -682,7 +682,7 @@ def test_a_build_warns_of_a_citation_naming_no_row(tmp_path):
 
 
 #: A specification whose Items list restarts at "1." after a blank line, which
-#: MyST merges into the list already open, as CommonMark does (review round 1).
+#: MyST merges into the list already open, as CommonMark does.
 RESTARTED = (
     "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
     "(demo-spec-6)=\n## 6. Items\n\n"
