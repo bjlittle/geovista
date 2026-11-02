@@ -147,7 +147,8 @@ end is checked. The forms are those the collection already writes, so no citatio
 changes; what changes is that each now names something that exists.
 
 Items and rows are numbered and keep their numbers, so the renumber guard of
-citation spec §4.6 already freezes them. Together the two forms deliver
+citation spec §4.6 already freezes a titled item, an untitled one once something cites it,
+and every row. Together the two forms deliver
 row 5 of citation spec §9 before its trigger. That trigger is more than twenty citations of items
 and rows outside the specifications, and there were 11 when this specification was
 written. The reason to deliver it now is this specification's own: 🎯 is a citation of a
@@ -398,25 +399,30 @@ it.
 (items-spec-7)=
 ## 7. Open Items
 
-Each carries the status grammar of docs spec §3.6 until row 1 of §8 brings this
-specification in, and §3.2 after it.
+Each carries the status grammar of §3.2.
 
-1. **Open** ({issue}`2804`) — **A near-miss citation is not flagged.** A citation written in
+1. **🏁 Resolved** (2026-11-02, {pull}`2807` · 🔎 2026-11-02, {pull}`2803` ·
+   🎫 {issue}`2804`) — **A near-miss citation is not flagged.** A citation written in
    a form the grammar does not read is neither linked nor checked, and reads as a citation
    to a person, so review passes it. Four were found in two days: `(§2, decision 1)` and
    `decision 12 of §2` in the crs specification, `decision 12 of the CRS specification` on
    the repository checks page, and a prefix followed by `row` with no `§` in §1 of this
    specification. The grammar row 1 of §8 teaches could flag a prefix followed by `row`,
    `item` or `decision` with no `§`, and a section followed by a comma and one of them.
-   Found while writing this specification ({pull}`2803`), and owed by row 1 of §8.
-2. **Open** ({issue}`2806`) — **Cited untitled items are not frozen.** §3.1 says the
+   Found while writing this specification ({pull}`2803`), and owed by row 1 of §8. Row 1
+   added `near_misses` to `tests/test_spec_conventions.py`, flagging the three forms
+   above, and fixed the six citations it found, all comma near-misses in the crs and
+   heights specifications.
+2. **🏁 Resolved** (2026-11-02, {pull}`2807` · 🔎 2026-11-02, {pull}`2807` ·
+   🎫 {issue}`2806`) — **Cited untitled items are not frozen.** §3.1 says the
    renumber guard of citation spec §4.6 freezes every item, but it freezes only those
    opening with a bold title, and leaves an untitled list, such as the steps of a
-   procedure, free to change. Of the 222 top-level numbered items, 33 are untitled, and
+   procedure, free to change. Of the 222 top-level numbered items, 32 are untitled, and
    two are cited from code already, as `scene spec §4.4 item 2` in `globe.py`. Settled by
    {user}`bjlittle` on 2026-11-02, as option (b): the guard freezes an untitled item once
    something cites it, pairing it by its text, and an uncited one stays free. Found while
-   planning row 1 of §8, which owes it.
+   planning row 1 of §8, which owes it. Row 1 made the renumber guard do exactly that: it
+   now freezes an untitled item once something cites it, pairing the item by its text.
 
 (items-spec-8)=
 ## 8. Roadmap

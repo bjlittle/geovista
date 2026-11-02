@@ -257,12 +257,12 @@ this specification documents the rules as they stand.
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **Resolved** (2026-10-23, {pull}`2716`) — **`changelog.py` is tested only for its
-   breadcrumb.** A stub let a test drive a finding without `towncrier`, but left the
-   script's reading of `[tool.towncrier]`, and the findings themselves, untested.
-   {user}`bjlittle` agreed to add `towncrier` to the `test` feature, so the script is now
-   tested against it for every finding and both failures to run, and the stub is gone.
-   Raised as {issue}`2704`.
+1. **🏁 Resolved** (2026-10-23, {pull}`2716` · 🔎 2026-10-23, {pull}`2705`) — **`changelog.py`
+   is tested only for its breadcrumb.** A stub let a test drive a finding without
+   `towncrier`, but left the script's reading of `[tool.towncrier]`, and the findings
+   themselves, untested. {user}`bjlittle` agreed to add `towncrier` to the `test` feature,
+   so the script is now tested against it for every finding and both failures to run, and
+   the stub is gone. Raised as {issue}`2704`.
 
 (checks-spec-9)=
 ## 9. References

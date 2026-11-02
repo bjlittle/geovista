@@ -237,19 +237,19 @@ which nothing outside `transform_mesh` needs yet.
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **Resolved** (2026-10-08, {pull}`2591`) — **Can a CRS that `transform_mesh` reaches
-   lack an ellipsoid or an axis unit?** No. A compound CRS and a bound one report the
-   ellipsoid and first axis of their horizontal component, a rotated pole CRS is a
-   derived geographic one in degrees, and a geocentric one is in metres. An engineering
-   CRS and a vertical one, such as EPSG:5703, have no ellipsoid, and `pyproj` refuses to
-   build a transformer to either, so `transform_mesh` fails before it needs `R`. The
-   `ValueError` of §3.4 is tested on the helper directly.
-2. **Resolved** (2026-10-09, {pull}`2591`) — **Which image baselines move?** Two, each by
-   a fraction of a pixel, as the camera frames the new scene bounds. One is the ORCA2 `eqc`
-   gallery image, whose cloud is 1.59 times deeper by §3.3. The
-   other is the UK LAM scene of `test_view_poi` in `eqc`, whose mesh at `zlevel=10` rises
-   to about 6.4 km. {user}`bjlittle` approved both, and `bjlittle/geovista-data` released
-   them as 2026.10.2.
+1. **🏁 Resolved** (2026-10-08, {pull}`2591` · 🔎 2026-10-08, {pull}`2589`) — **Can a CRS
+   that `transform_mesh` reaches lack an ellipsoid or an axis unit?** No. A compound CRS
+   and a bound one report the ellipsoid and first axis of their horizontal component, a
+   rotated pole CRS is a derived geographic one in degrees, and a geocentric one is in
+   metres. An engineering CRS and a vertical one, such as EPSG:5703, have no ellipsoid, and
+   `pyproj` refuses to build a transformer to either, so `transform_mesh` fails before it
+   needs `R`. The `ValueError` of §3.4 is tested on the helper directly.
+2. **🏁 Resolved** (2026-10-09, {pull}`2591` · 🔎 2026-10-08, {pull}`2589`) — **Which image
+   baselines move?** Two, each by a fraction of a pixel, as the camera frames the new scene
+   bounds. One is the ORCA2 `eqc` gallery image, whose cloud is 1.59 times deeper by §3.3.
+   The other is the UK LAM scene of `test_view_poi` in `eqc`, whose mesh at `zlevel=10`
+   rises to about 6.4 km. {user}`bjlittle` approved both, and `bjlittle/geovista-data`
+   released them as 2026.10.2.
 
 (zlevel-spec-9)=
 ## 9. References

@@ -2867,12 +2867,6 @@ UNITEMED = {
     "2026-10-27-globe-scene-design.md": 5,
     "2026-10-28-heights-as-data-design.md": 5,
     "2026-10-30-decision-ledger-design.md": 5,
-    # brought in by row 1 itself, and removed by Task 7 of its plan as it converts
-    # each, so that the suite stays green between the tasks that build the row
-    "2026-10-06-published-specs-design.md": 1,
-    "2026-10-08-planar-zlevel-design.md": 1,
-    "2026-10-23-repository-checks-design.md": 1,
-    "2026-11-02-open-items-design.md": 1,
 }
 
 #: Where an item was found, the row that owes it, and the issue that tracks it.

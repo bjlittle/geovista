@@ -553,44 +553,45 @@ and building the documentation rather than this one collection inside it.
 Each carries the grammar of §3.6, so a reader can tell a decision
 that was taken from one that was dropped.
 
-1. **Resolved** (2026-10-27, {pull}`2745`) — **The `{ref}` agreement assertion assumed
-   the display text is the section number.** A role displaying a section's title instead
-   would have failed the check while being correct. The question went with the roles: row 4
-   of the citation links design wrote every citation of a section in plain text, and the
-   assertion retired, replaced by the rule that no role names a section.
-2. **Resolved** (2026-10-26, {pull}`2738`) — **The threshold of seventy citations is a
-   judgement, not a measurement.** It was first thirty-five, five times the seven citations
-   there were when it was set, chosen to fire before review stops being credible rather than
-   at the point it does. This item once waited on a second namespace to measure against;
-   `docs spec` became that namespace with change 1, which brought the count to fifteen,
-   still too few to measure a better number from. Change 5 of the type coverage roadmap
-   ({pull}`2619`) took the count from 29 to 37 on 2026-10-11, eight citations in code
-   comments and test docstrings that point a reader at the rule behind a line.
-   {user}`bjlittle` chose to double the threshold rather than build rows 2 to 4, leaving
-   room for the roadmap's last two changes, which cite the same way. On 2026-10-26, at 68,
-   {user}`bjlittle` chose to build the rows instead, and the threshold retired with them, so
-   no better number is wanted.
-3. **Resolved** (2026-10-09, {pull}`2609`) — **Nothing proved the references in a status
-   line point at real work.** §3.5's seventh assertion checks that a
-   terminal status carries a date and a reference, not that the work it names exists or did
-   what the status says. Raised as {issue}`2575`, this is now checked against GitHub on each
-   pull request that touches a specification, and nightly for drift, as
-   §3.6 describes, which keeps the network out of the unit suite.
-   Row 5 of §4 no longer owns reference checking. It keeps the form of a
-   reference, which is all that `tephpy`'s `check_github_references.py` checks.
-4. **Resolved** (2026-10-07, {pull}`2573`) — **The status rule accepted only this
-   repository's roles.** The seventh assertion of §3.5 asked a
+1. **🏁 Resolved** (2026-10-27, {pull}`2745` · 🔎 2026-10-07, {pull}`2567`) — **The `{ref}`
+   agreement assertion assumed the display text is the section number.** A role displaying
+   a section's title instead would have failed the check while being correct. The question
+   went with the roles: row 4 of the citation links design wrote every citation of a
+   section in plain text, and the assertion retired, replaced by the rule that no role
+   names a section.
+2. **🏁 Resolved** (2026-10-26, {pull}`2738` · 🔎 2026-10-07, {pull}`2567`) — **The threshold
+   of seventy citations is a judgement, not a measurement.** It was first thirty-five, five
+   times the seven citations there were when it was set, chosen to fire before review stops
+   being credible rather than at the point it does. This item once waited on a second
+   namespace to measure against; `docs spec` became that namespace with change 1, which
+   brought the count to fifteen, still too few to measure a better number from. Change 5 of
+   the type coverage roadmap ({pull}`2619`) took the count from 29 to 37 on 2026-10-11,
+   eight citations in code comments and test docstrings that point a reader at the rule
+   behind a line. {user}`bjlittle` chose to double the threshold rather than build rows 2
+   to 4, leaving room for the roadmap's last two changes, which cite the same way. On
+   2026-10-26, at 68, {user}`bjlittle` chose to build the rows instead, and the threshold
+   retired with them, so no better number is wanted.
+3. **🏁 Resolved** (2026-10-09, {pull}`2609` · 🔎 2026-10-07, {pull}`2567`) — **Nothing
+   proved the references in a status line point at real work.** §3.5's seventh assertion
+   checks that a terminal status carries a date and a reference, not that the work it names
+   exists or did what the status says. Raised as {issue}`2575`, this is now checked against
+   GitHub on each pull request that touches a specification, and nightly for drift, as
+   §3.6 describes, which keeps the network out of the unit suite. Row 5 of §4 no longer
+   owns reference checking. It keeps the form of a reference, which is all that `tephpy`'s
+   `check_github_references.py` checks.
+4. **🏁 Resolved** (2026-10-07, {pull}`2573` · 🔎 2026-10-07, {pull}`2573`) — **The status
+   rule accepted only this repository's roles.** The seventh assertion of §3.5 asked a
    terminal status for an `{issue}` or `{pull}` role, and the type coverage specification
-   resolves one of its open items against an issue in `lazy-loader`, which neither role
-   can name. A link to an issue or pull request in another repository now counts as the
+   resolves one of its open items against an issue in `lazy-loader`, which neither role can
+   name. A link to an issue or pull request in another repository now counts as the
    reference, so a decision settled elsewhere is cited where it was settled.
-5. **Resolved** (2026-10-07, {pull}`2573`) — **Row 2's trigger fired on its own
-   document.** It counted citation prefixes and failed past one, and this specification
-   declares the second, `docs spec`, cited from the type coverage specification and from
-   the files change 1 touches. The count also measured the wrong thing. A wrong prefix is
-   the one mistake the transform cannot catch, since both anchors exist and either
-   resolves, while what row 2 buys grows with the number of citations. Rows 2 to 4 now
-   share the scale trigger of §4, decided while planning change 1.
+5. **🏁 Resolved** (2026-10-07, {pull}`2573` · 🔎 2026-10-07, {pull}`2573`) — **Row 2's
+   trigger fired on its own document.** It counted citation prefixes and failed past one,
+   and this specification declares the second, `docs spec`, cited from the type coverage
+   specification and from the files change 1 touches. The count also measured the wrong
+   thing. A wrong prefix is the one mistake the transform cannot catch, since both anchors
+   exist and either resolves, while what row 2 buys grows with the number of citations.
+   Rows 2 to 4 now share the scale trigger of §4, decided while planning change 1.
 
 (docs-spec-9)=
 ## 9. References
