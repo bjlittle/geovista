@@ -830,5 +830,5 @@ Each row follows ledger spec §3.4.
 | 10 | ⏳ pending | rows 4 to 11 of §10 |
 | 11 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2799`) | Checked in review that the units are `pint`'s and `pint-cf`'s ({pull}`2754`), projection is PROJ's through `pyproj`, and mesh processing is `pyvista`'s and VTK's. |
 | 12 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/transform/test_projection_coverage.py`, `tests/transform/test_transform_mesh.py` |
-| 13 | ✅ verified (2026-11-01, {pull}`2799`) | `tests/units/test_to_metres.py`, `tests/units/test_to_degrees.py`, `tests/units/test_import.py`, `tests/globe/test_Globe.py` |
+| 13 | ⏳ pending | rows 2 to 5 of §10 |
 | 14 | ⏳ pending | rows 2 to 13 of §10 |
