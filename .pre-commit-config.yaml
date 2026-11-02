@@ -39,7 +39,7 @@ repos:
         additional_dependencies: [black==26.*]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.17.2"
+    rev: "v0.17.3"
     hooks:
       # Both hooks default to "types_or: [python, pyi, jupyter]", which keeps
       # the committed tutorial notebook covered.
@@ -138,7 +138,7 @@ repos:
         # Forbid files which have a UTF-8 Unicode replacement character.
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.38.2
+    rev: 0.39.0
     hooks:
       - id: check-dependabot
       - id: check-github-workflows
