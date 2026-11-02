@@ -28,7 +28,10 @@ def test_plain_number_is_degrees():
     "units", ["degree", "degrees", "degrees_north", "degrees_east"]
 )
 def test_cf_degrees(units):
-    """Test that each CF spelling of a degree reads as a degree."""
+    """Test that each CF spelling of a degree reads as a degree.
+
+    Holds crs spec §2 decision 13.
+    """
     assert to_degrees(45.0, units) == 45.0
 
 

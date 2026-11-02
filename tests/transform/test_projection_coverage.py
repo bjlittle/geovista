@@ -488,7 +488,13 @@ def test_ledger_partitions_every_method():
 
 @pytest.mark.parametrize("method", sorted(METHODS))
 def test_method_outcome(method):
-    """A method works exactly when the ledger says it does."""
+    """A method works exactly when the ledger says it does.
+
+    The 91 methods that work today keep working, as crs spec §2 decision 10
+    commits.
+
+    Holds crs spec §2 decision 12.
+    """
     if method in SINCE and Version(SINCE[method]) > PROJ:
         pytest.skip(f"{method} arrived in PROJ {SINCE[method]}")
 
@@ -502,7 +508,10 @@ def test_method_outcome(method):
 
 @pytest.mark.parametrize("name", sorted(CARTOPY_CLASSES))
 def test_cartopy_outcome(name):
-    """A projection class of cartopy works exactly when the ledger says it does."""
+    """A projection class of cartopy works exactly when the ledger says it does.
+
+    Holds crs spec §2 decision 12.
+    """
     kind, detail = outcome(_cartopy(name))
 
     if name in CARTOPY_WORKS:
