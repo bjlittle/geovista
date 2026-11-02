@@ -1297,20 +1297,6 @@ ITEM = re.compile(r"^(?:\d+\.|[-*])\s+(?P<body>.*)$")
 STATE = re.compile(r"^\*\*(?P<state>[^*]+)\*\*(?P<rest>.*)$")
 
 
-def sections(text: str) -> dict[str, list[tuple[int, str]]]:
-    """Group a specification's lines by the title of the section holding them."""
-    found: dict[str, list[tuple[int, str]]] = {}
-    title = None
-    for number, line in read_lines(text):
-        heading = HEADING.match(line)
-        if heading is not None:
-            title = heading["title"]
-            found.setdefault(title, [])
-        elif title is not None:
-            found[title].append((number, line))
-    return found
-
-
 def dated(written: str) -> date | None:
     """Read an ISO date, or None when it has the shape but no calendar holds it."""
     try:
@@ -1399,8 +1385,8 @@ def statuses(text: str) -> Iterator[tuple[int, str, str]]:
     # sentence case name the same section, and missing it would stop its check
     items = [
         line
-        for title, lines in sections(text).items()
-        if title.casefold() == "open items"
+        for heading, lines in citations.headed(text)
+        if heading["title"].casefold() == citations.OPEN_ITEMS.casefold()
         for line in lines
     ]
     for number, line in [*items, (0, "")]:
@@ -2248,7 +2234,11 @@ def ledger_entries(path: Path, text: str) -> list[str]:
         return [f"{where(path, 1)}: its second section is not titled Decisions"]
     found = decisions(text)
     problems = []
-    lines = citations._section(text, "2", citations.DECISIONS)
+
+    def decided(heading: re.Match[str]) -> bool:
+        return (heading["num"], heading["title"]) == ("2", citations.DECISIONS)
+
+    lines = citations.section_lines(text, decided)
     if any(re.match(r"^[-*]\s", line) for _, line in lines):
         problems.append(
             f"{where(path, 1)}: a decision is a bullet, not a numbered entry"
@@ -2980,7 +2970,10 @@ def item_entries(path: Path, text: str) -> list[str]:
     found = items(text)
     opened = {item.line for item in found}
     problems = unreached(path, text)
-    for number, line in citations._titled(text, citations.OPEN_ITEMS):
+    opening = citations.OPEN_ITEMS.casefold()
+    for number, line in citations.section_lines(
+        text, lambda heading: heading["title"].casefold() == opening
+    ):
         if ITEM.match(line) is None or number in opened:
             continue
         if line.startswith(("-", "*")):
