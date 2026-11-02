@@ -359,8 +359,10 @@ def frozen(
     An untitled item is held only if it is cited. A citation is read as it stands
     now, so one the pull request did not touch names an item by the base branch's
     numbering, and one it rewrote may name it by its section's new number: both
-    hold the item. Every untitled item now is read, for a cited one to find itself
-    among them by its text.
+    hold the item. In a section holding one, every item of its list is paired,
+    then and now, so that an uncited neighbour takes its own number and never
+    leaves its number free for the cited one to be paired with in place; only the
+    items held are reported. A section holding none is read as it always was.
 
     Parameters
     ----------
@@ -385,7 +387,20 @@ def frozen(
         if old is not None and label["item"] is not None:
             based.add(f"{old}-item-{label['item']}")
     base_items = numbered_items(base_text, based)
-    head_items = numbered_items(head_text, item_anchors(head_text) if based else ())
+    titled = numbered_items(base_text)
+    # the number of each cited untitled item, by the section holding it
+    untitled = {
+        section: added
+        for section, listed in base_items.items()
+        if (added := set(listed) - set(titled.get(section, {})))
+    }
+    neighbours = numbered_items(
+        base_text, {a for a in item_anchors(base_text) if _section(a) in untitled}
+    )
+    now = {fates[s].anchor for s in untitled if s in fates}
+    head_items = numbered_items(
+        head_text, {a for a in item_anchors(head_text) if _section(a) in now}
+    )
     for anchor, listed in base_items.items():
         fate = fates.get(anchor)
         if fate is None:
@@ -397,17 +412,31 @@ def frozen(
                 for number, item in listed.items()
             ]
             continue
-        paired = pair(listed, head_items.get(fate.anchor, {}), in_place=True)
+        paired = pair(
+            neighbours.get(anchor, listed),
+            head_items.get(fate.anchor, {}),
+            in_place=True,
+        )
         for number, item in paired.items():
+            if number not in listed:
+                # an uncited untitled neighbour, free to change
+                continue
             if item.kind == "moved":
                 problems.append(
                     f'{fate.title}, item {number} "{listed[number].title}" is now '
                     f"item {item.anchor}: append an item rather than insert it"
                 )
             elif item.kind == "removed":
+                # an untitled item is paired by its text, so a heavy rewording
+                # loses it as surely as a removal does
+                lost = (
+                    "removed, or reworded past recognition"
+                    if number in untitled.get(anchor, ())
+                    else "removed"
+                )
                 problems.append(
                     f'{fate.title}, item {number} "{listed[number].title}" was '
-                    "removed: mark it as no longer applying, in place"
+                    f"{lost}: mark it as no longer applying, in place"
                 )
     base_rows, head_rows = roadmap_rows(base_text), roadmap_rows(head_text)
     for number, row in pair(base_rows, head_rows, in_place=True).items():

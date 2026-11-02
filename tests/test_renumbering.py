@@ -279,12 +279,39 @@ def test_a_cited_untitled_item_is_frozen(guard):
 
 
 def test_an_untitled_item_is_paired_by_its_text(guard):
-    """A cited step reworded in place, or another step appended, still passes."""
+    """A cited step reworded in place, or another step appended, still passes.
+
+    A step inserted before it while it is reworded past recognition fails: its
+    uncited neighbour now holds its number, and is no step it can pair with.
+    """
     cited = frozenset({"demo-spec-8-item-2"})
     reworded = STEPS.replace("Build the pages.", "Build every page.")
+    rewritten = INSERTED_STEP.replace(
+        "Build the pages.", "Render the HTML documentation."
+    )
 
     assert frozen(guard, STEPS, reworded, cited) == []
     assert frozen(guard, STEPS, STEPS + "\n4. Stop.", cited) == []
+    (problem,) = frozen(guard, STEPS, rewritten, cited)
+    assert 'item 2 "Build the pages." was removed, or reworded past' in problem
+
+
+def test_an_uncited_section_reads_no_untitled_item_now(guard):
+    """A titled item pairs as it did, whatever is cited elsewhere.
+
+    Its title unbolded, an item reads as untitled, and is read only in a section
+    whose cited untitled item needs its neighbours to pair with.
+    """
+    base = items(ONE, TWO)
+    head = items(
+        ONE,
+        "**Open** — **Something else entirely.**\n   Rewritten.",
+        "Open — The second question, wrapped. Answered.",
+    )
+
+    assert frozen(guard, base, head, frozenset({"demo-spec-1-item-1"})) == frozen(
+        guard, base, head
+    )
 
 
 def test_only_the_cited_untitled_items_are_frozen(guard):
