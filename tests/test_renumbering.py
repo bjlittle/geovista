@@ -989,6 +989,24 @@ def test_an_untracked_file_counts_as_changed(guard, repo, capsys):
     assert code == 0, out
 
 
+def test_a_changed_text_file_that_is_not_utf8_is_read_without_failing(
+    guard, repo, capsys
+):
+    """A Latin-1 file holds no citation, and must not stop the guard finishing.
+
+    The byte 0x81 is not UTF-8, and is undefined in cp1252, so it fails to decode
+    under whatever encoding the platform's git output is read with.
+    """
+    (repo / "src" / "latin.txt").write_bytes(b"caf\x81 au lait\n")
+    git(repo, "add", "--all")
+    git(repo, "commit", "--quiet", "--message", "latin")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+    assert "no citation went stale" in out
+
+
 def test_rewrite_turns_a_role_with_a_bare_target_and_one_not_numbered(
     guard, renumbered
 ):

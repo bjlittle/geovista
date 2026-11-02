@@ -540,7 +540,8 @@ def git(root: Path, *args: str) -> str:
             ["git", "--no-pager", *args],  # noqa: S607
             cwd=root,
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
     except subprocess.CalledProcessError as error:
