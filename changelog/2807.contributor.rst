@@ -1,0 +1,10 @@
+Delivered the first row of the open items specification. Each open item now
+starts with its state and records where it was found, the roadmap row that
+owes it and the issue that tracks it. The suite refuses an item owed by a row
+that has landed, or one that has moved more than twice. CI checks that each
+item's issue carries the ``spec: open item`` label, and the nightly run reports
+a labelled issue that no item cites. Items and roadmap rows can be cited like
+sections and decisions, and the docs build links each citation to what it
+names. A citation in a near-miss form is refused, with the form to write
+instead, and the renumber guard now freezes an untitled item once something
+cites it. (:user:`claude`)
