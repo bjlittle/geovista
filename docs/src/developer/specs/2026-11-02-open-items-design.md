@@ -409,6 +409,14 @@ specification in, and §3.2 after it.
    specification. The grammar row 1 of §8 teaches could flag a prefix followed by `row`,
    `item` or `decision` with no `§`, and a section followed by a comma and one of them.
    Found while writing this specification ({pull}`2803`), and owed by row 1 of §8.
+2. **Open** ({issue}`2806`) — **Cited untitled items are not frozen.** §3.1 says the
+   renumber guard of citation spec §4.6 freezes every item, but it freezes only those
+   opening with a bold title, and leaves an untitled list, such as the steps of a
+   procedure, free to change. Of the 222 top-level numbered items, 33 are untitled, and
+   two are cited from code already, as `scene spec §4.4 item 2` in `globe.py`. Settled by
+   {user}`bjlittle` on 2026-11-02, as option (b): the guard freezes an untitled item once
+   something cites it, pairing it by its text, and an uncited one stays free. Found while
+   planning row 1 of §8, which owes it.
 
 (items-spec-8)=
 ## 8. Roadmap
