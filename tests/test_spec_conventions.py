@@ -1389,10 +1389,20 @@ def statuses(text: str) -> Iterator[tuple[int, str, str]]:
             item.append(line.strip())
 
 
-def status(path: Path, text: str) -> list[str]:
-    """Find each status outside the vocabulary, or terminal and unevidenced."""
+def status(path: Path, text: str, *, unitemed: bool | None = None) -> list[str]:
+    """Find each status outside the vocabulary, or terminal and unevidenced.
+
+    An open item is read in the grammar of docs spec §3.6 only while its
+    specification waits to be brought into that of items spec §3.2, as
+    :data:`UNITEMED` says unless ``unitemed`` does; after that, the rules of
+    items spec §3.7 hold it instead.
+    """
+    if unitemed is None:
+        unitemed = path.name in UNITEMED
     problems = []
     for number, kind, written in statuses(text):
+        if kind == "item" and not unitemed:
+            continue
         if kind == "row":
             state = next((s for s in ROW_STATES if written.startswith(s)), written)
             rest, states = written[len(state) :], ROW_STATES
@@ -1433,7 +1443,7 @@ def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
     )
     path, _ = demo(tmp_path, roadmap)
 
-    problems = status(path, path.read_text(encoding="utf-8"))
+    problems = status(path, path.read_text(encoding="utf-8"), unitemed=True)
 
     assert [p.split(": ", 1)[1] for p in problems] == [
         f"{LANDED} carries no date and reference",
@@ -1468,7 +1478,7 @@ def test_status_finds_a_date_no_calendar_holds(tmp_path):
     )
     path, _ = demo(tmp_path, roadmap)
 
-    problems = status(path, path.read_text(encoding="utf-8"))
+    problems = status(path, path.read_text(encoding="utf-8"), unitemed=True)
 
     assert [p.split(": ", 1)[1] for p in problems] == [
         f"{LANDED} carries 2026-02-30, which is not a date",
@@ -1493,7 +1503,7 @@ def test_status_reads_bullets_and_a_roadmap_wherever_it_sits(tmp_path):
     )
     path, _ = demo(tmp_path, body)
 
-    problems = status(path, path.read_text(encoding="utf-8"))
+    problems = status(path, path.read_text(encoding="utf-8"), unitemed=True)
 
     assert [p.split(": ", 1)[1] for p in problems] == [
         "'shipped' is not a status",
@@ -2825,3 +2835,580 @@ def test_ledger_rules_read_states_without_their_variation_selector(tmp_path):
     assert ledger_entries(path, text) == []
     assert ledger_table(path, text) == []
     assert ledger_retirements(path, text) == []
+
+
+#: Open Items (items spec §3.7): the states and parts of items spec §3.2, from the
+#: grammar, which builds them by name.
+OPEN = citations.OPEN
+DEFERRED = citations.DEFERRED
+RESOLVED = citations.RESOLVED
+ABANDONED = citations.ABANDONED
+GRADUATED = citations.GRADUATED
+ITEMED_STATES = citations.ITEMED_STATES
+SETTLED = (RESOLVED, ABANDONED, GRADUATED)
+FOUND = citations.FOUND
+OWED = citations.OWED
+MOVED = citations.MOVED
+TICKET = citations.TICKET
+DOT = citations.DOT
+items = citations.items
+Item = citations.Item
+Row = citations.Row
+
+#: The specifications whose open items are not yet in the grammar of
+#: items spec §3.2, each with the row of items spec §8 that brings it in, and read
+#: until then in that of docs spec §3.6 by :func:`status`. Each of those rows
+#: shortens this, and the last empties it.
+UNITEMED = {
+    "2026-10-06-type-coverage-design.md": 3,
+    "2026-10-23-globe-first-crs-design.md": 4,
+    "2026-10-26-globe-heights-layers-design.md": 5,
+    "2026-10-27-globe-scene-design.md": 5,
+    "2026-10-28-heights-as-data-design.md": 5,
+    "2026-10-30-decision-ledger-design.md": 5,
+    # brought in by row 1 itself, and removed by Task 7 of its plan as it converts
+    # each, so that the suite stays green between the tasks that build the row
+    "2026-10-06-published-specs-design.md": 1,
+    "2026-10-08-planar-zlevel-design.md": 1,
+    "2026-10-23-repository-checks-design.md": 1,
+    "2026-11-02-open-items-design.md": 1,
+}
+
+#: Where an item was found, the row that owes it, and the issue that tracks it.
+FOUND_AT = f"{FOUND} 2026-01-01, {{pull}}`1`"
+OWED_BY = f"{OWED} row 2 of {SECTION}2"
+TICKETED = f"{TICKET} {{issue}}`5`"
+
+
+def entry_item(number: int, state: str, *parts: str, title: str = "An item.") -> str:
+    """Write an open item's entry, state first and its parts separated."""
+    return f"{number}. **{state}** ({DOT.join(parts)}) — **{title}** Its reasoning.\n"
+
+
+def graduation(row: int) -> str:
+    """Write the date and pull request of a graduation to ``row``, and the row."""
+    return f"2026-01-01, {{pull}}`1`, to row {row} of {SECTION}2"
+
+
+def moved(row: int, day: str = "2026-01-02") -> str:
+    """Write the part recording a move from ``row``."""
+    return f"{MOVED} row {row}, {day}, {{pull}}`2`"
+
+
+#: A roadmap whose first row has landed and whose others have not.
+ROADMAP = (
+    f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
+    "| 2 | b | not started |\n| 3 | c | candidate: a trigger |\n"
+)
+
+
+def itemed(
+    tmp_path: Path, entries: str, roadmap: str = ROADMAP
+) -> tuple[Path, Namespace]:
+    """Write a ``demo spec`` with a roadmap in its second section and open items."""
+    return demo(
+        tmp_path,
+        "(demo-spec-1)=\n## 1. Purpose\n\n"
+        "(demo-spec-2)=\n## 2. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        f"{roadmap}\n"
+        f"(demo-spec-3)=\n## 3. Open Items\n\nThe items.\n\n{entries}",
+    )
+
+
+#: A row of a roadmap, as an item's owner and its graduation name it.
+CITED_ROW = re.compile(
+    rf"row{GAP}(?P<row>{MEMBER}){GAP}of{GAP}(?:(?P<prefix>\S.*?){GAP})?"
+    rf"{SECTION}(?P<section>{NUMBER})",
+    flags=re.IGNORECASE,
+)
+#: What a move records: the row it left, then its date and pull request.
+MOVE = re.compile(rf"row{GAP}{MEMBER},")
+
+
+def own_row(text: str, cited: str) -> Row | str:
+    """Find the row of a specification's own roadmap that ``cited`` names.
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+    cited : str
+        The citation, as ``row 5 of §10``, which may carry the specification's own
+        prefix.
+
+    Returns
+    -------
+    Row or str
+        The row, or what is wrong with the citation, completing "which ...".
+
+    """
+    match = CITED_ROW.fullmatch(cited.strip())
+    if match is None:
+        return "names no row"
+    owner = next(
+        (m["slug"] for _, line in read_lines(text) if (m := ANCHOR.match(line))), None
+    )
+    prefix = match["prefix"]
+    if prefix is not None and re.sub(r"\s+", "-", prefix.lower()) != owner:
+        return "is another specification's"
+    named = (match["section"], match["row"].lower())
+    row = next(
+        (r for r in citations.rows(text) if (r.section, r.row.lower()) == named),
+        None,
+    )
+    return "does not exist" if row is None else row
+
+
+def entry_faults(item: Item) -> list[str]:
+    """Say what is wrong with the parts of an item's parenthetical, if anything."""
+    written = citations.provenance(item.carried)
+    settled = item.state in SETTLED
+    faults = []
+    if settled:
+        lead = written[0][1] if written and written[0][0] is None else ""
+        written = written[1:] if lead else written
+        if item.state == GRADUATED:
+            if not (DATE.search(lead) and PULL.search(lead) and item.graduated):
+                faults.append("graduates with no date, pull and row")
+        elif not (DATE.search(lead) and REFERENCE.search(lead)):
+            faults.append("is settled with no date and reference")
+    kinds = [kind for kind, _ in written]
+    faults += [
+        f"carries {said!r}, which is no part" for kind, said in written if not kind
+    ]
+    if FOUND not in kinds:
+        faults.append(f"carries no {FOUND}")
+    elif not (DATE.search(item.found) and PULL.search(item.found)):
+        faults.append("was found with no date and pull")
+    if not settled:
+        faults += [f"carries no {part}" for part in (OWED, TICKET) if part not in kinds]
+    elif OWED in kinds:
+        faults.append(f"is settled, and still carries {OWED}")
+    ticket = next((said for kind, said in written if kind == TICKET), None)
+    if ticket is not None and item.issue is None:
+        faults.append(f"carries {TICKET} {ticket}, which is no issue")
+    faults += [
+        f"carries {part} twice"
+        for part in (FOUND, OWED, TICKET)
+        if kinds.count(part) > 1
+    ]
+    ranks = [citations.PARTS.index(kind) for kind in kinds if kind]
+    if ranks != sorted(ranks):
+        faults.append("carries its parts out of order")
+    return faults
+
+
+def item_entries(path: Path, text: str) -> list[str]:
+    """Find each fault in an item's entry, item 1 of items spec §3.7.
+
+    Each item of the Open Items section is a numbered entry opening with a state,
+    and its parenthetical carries the parts its state needs, in order: every item
+    where it was found, an open or deferred one the row that owes it and its
+    issue, and a settled one its date and reference first. A settled item carries
+    its issue only if it has one, as one settled before items spec §3.2 may lead
+    with the issue or link that settled it instead (docs spec §3.6).
+    """
+    titles = [h["title"] for _, line in read_lines(text) if (h := HEADING.match(line))]
+    if citations.OPEN_ITEMS.casefold() not in {title.casefold() for title in titles}:
+        return [f"{where(path, 1)}: it has no Open Items section"]
+    found = items(text)
+    opened = {item.line for item in found}
+    problems = []
+    for number, line in citations._titled(text, citations.OPEN_ITEMS):
+        if ITEM.match(line) is None or number in opened:
+            continue
+        if line.startswith(("-", "*")):
+            problems.append(
+                f"{where(path, number)}: an item is a bullet, not a numbered entry"
+            )
+        else:
+            problems.append(
+                f"{where(path, number)}: an item written after its list has ended"
+            )
+    numbers = [item.number for item in found]
+    if numbers != list(range(1, len(found) + 1)):
+        problems.append(f"{where(path, 1)}: items are numbered {numbers}")
+    for item in found:
+        at = where(path, item.line)
+        if item.state is None:
+            problems.append(f"{at}: item {item.number} opens with no state")
+        elif not item.title:
+            problems.append(f"{at}: item {item.number} has no title")
+        else:
+            problems += [f"{at}: item {item.number} {f}" for f in entry_faults(item)]
+            problems += [
+                f"{at}: item {item.number} carries {bad}, which is not a date"
+                for bad in undated(item.carried)
+            ]
+    return problems
+
+
+def item_owed(path: Path, text: str) -> list[str]:
+    """Find an item owed by no row, or by one landed, item 2 of items spec §3.7.
+
+    This is the landing gate of items spec §3.5: a row may not land while an open
+    or deferred item still names it.
+    """
+    problems = []
+    for item in items(text):
+        if item.state not in (OPEN, DEFERRED) or item.owed is None:
+            continue
+        row = own_row(text, item.owed)
+        if isinstance(row, str):
+            why = row
+        elif row.status.startswith(LANDED):
+            why = "has landed"
+        else:
+            continue
+        problems.append(
+            f"{where(path, item.line)}: item {item.number} is owed by {item.owed}, "
+            f"which {why}"
+        )
+    return problems
+
+
+def item_moves(path: Path, text: str) -> list[str]:
+    """Find an item moved too often or not at all, item 3 of items spec §3.7."""
+    problems = []
+    for item in items(text):
+        at = where(path, item.line)
+        count = len(item.moves)
+        if count > 2:
+            problems.append(
+                f"{at}: item {item.number} carries {count} {MOVED}, and must settle "
+                "or graduate instead"
+            )
+        elif item.state == OPEN and count:
+            problems.append(
+                f"{at}: item {item.number} is open, and carries {MOVED}: it is deferred"
+            )
+        elif item.state == DEFERRED and not count:
+            problems.append(
+                f"{at}: item {item.number} is deferred, and carries no {MOVED}"
+            )
+        problems += [
+            f"{at}: item {item.number} carries {MOVED} {move}, which is not a row, "
+            "date and pull"
+            for move in item.moves
+            if not (MOVE.match(move) and DATE.search(move) and PULL.search(move))
+        ]
+    return problems
+
+
+def item_graduated(path: Path, text: str) -> list[str]:
+    """Find a graduation to a row not citing its issue, items spec §3.7 item 4.
+
+    The item's issue moves with it to the row it became (items spec §3.6), so
+    that the row cites it.
+    """
+    problems = []
+    for item in items(text):
+        if item.state != GRADUATED or item.graduated is None:
+            continue
+        at = where(path, item.line)
+        if item.issue is None:
+            problems.append(
+                f"{at}: item {item.number} graduates with no {TICKET} for its row "
+                "to cite"
+            )
+            continue
+        row = own_row(text, item.graduated)
+        cited = f"{{issue}}`{item.issue}`"
+        if isinstance(row, str):
+            why = row
+        elif cited not in f"{row.scope} {row.status}":
+            why = f"does not cite {cited}"
+        else:
+            continue
+        problems.append(
+            f"{at}: item {item.number} graduates to {item.graduated}, which {why}"
+        )
+    return problems
+
+
+def item_issues(texts: Mapping[Path, str]) -> list[str]:
+    """Find an issue cited by two items, item 5 of items spec §3.7.
+
+    The rule runs across the collection, since an item of one specification may
+    not share its issue with one of another.
+    """
+    first: dict[int, str] = {}
+    problems = []
+    for path, text in texts.items():
+        for item in items(text):
+            if item.issue is None:
+                continue
+            at = where(path, item.line)
+            if item.issue in first:
+                problems.append(
+                    f"{at}: item {item.number} cites {{issue}}`{item.issue}`, as "
+                    f"{first[item.issue]} does"
+                )
+            else:
+                first[item.issue] = at
+    return problems
+
+
+def test_items_reads_each_part_of_an_entry():
+    """Items spec §3.2: the state, each part, and the title, wrapped or not."""
+    text = (
+        "(demo-spec-7)=\n## 7. Open items\n\n"
+        f"1. **{DEFERRED}** ({FOUND_AT} {DOT.strip()}\n"
+        f"   {OWED_BY} {DOT.strip()} {moved(1)} {DOT.strip()} {TICKETED})\n"
+        "   — **A deferred\n   item.** Its reasoning.\n"
+        f"2. **{GRADUATED}** (2026-02-01, {{pull}}`3`, to row 3 of {SECTION}2"
+        f"{DOT}{FOUND_AT}) — **A graduated item.**\n"
+    )
+
+    deferred, graduated = items(text)
+
+    assert deferred == Item(
+        number=1,
+        line=4,
+        state=DEFERRED,
+        settled="",
+        found="2026-01-01, {pull}`1`",
+        owed=f"row 2 of {SECTION}2",
+        moves=("row 1, 2026-01-02, {pull}`2`",),
+        issue=5,
+        graduated=None,
+        title="A deferred item.",
+        body="Its reasoning.",
+        carried=deferred.carried,
+    )
+    assert graduated.state == GRADUATED
+    assert graduated.settled == f"2026-02-01, {{pull}}`3`, to row 3 of {SECTION}2"
+    assert graduated.graduated == f"row 3 of {SECTION}2"
+    assert (graduated.owed, graduated.issue, graduated.moves) == (None, None, ())
+
+
+def test_items_reads_states_and_parts_without_their_variation_selector():
+    """Items spec §3.2: an emoji typed without U+FE0F is the same state or part."""
+    plain = citations.VS16
+    text = "(demo-spec-7)=\n## 7. Open Items\n\n" + entry_item(
+        1,
+        DEFERRED.replace(plain, ""),
+        FOUND_AT,
+        OWED_BY,
+        moved(1).replace(plain, ""),
+        TICKETED,
+    )
+
+    (deferred,) = items(text)
+
+    assert deferred.state == DEFERRED
+    assert len(deferred.moves) == 1
+
+
+def test_item_entries_finds_an_entry_missing_its_found(tmp_path):
+    """Items spec §3.7 item 1: each state carries the parts it needs, in order."""
+    entries = (
+        entry_item(1, OPEN, OWED_BY, TICKETED)
+        + entry_item(2, OPEN, FOUND_AT, OWED_BY)
+        + entry_item(3, OPEN, FOUND_AT, TICKETED)
+        + entry_item(4, OPEN, FOUND_AT, TICKETED, OWED_BY)
+        + entry_item(5, OPEN, FOUND_AT, OWED_BY, "a note", TICKETED)
+        + entry_item(6, OPEN, f"{FOUND} 2026-01-01", OWED_BY, TICKETED)
+        + entry_item(7, OPEN, FOUND_AT, OWED_BY, f"{TICKET} {{pull}}`5`")
+        + entry_item(8, RESOLVED, FOUND_AT, TICKETED)
+        + entry_item(9, RESOLVED, "2026-01-01, {pull}`1`", FOUND_AT, OWED_BY)
+        + entry_item(10, GRADUATED, "2026-01-01, {pull}`1`", FOUND_AT)
+    )
+    path, _ = itemed(tmp_path, entries)
+
+    assert faults(item_entries(path, path.read_text(encoding="utf-8"))) == [
+        f"item 1 carries no {FOUND}",
+        f"item 2 carries no {TICKET}",
+        f"item 3 carries no {OWED}",
+        "item 4 carries its parts out of order",
+        "item 5 carries 'a note', which is no part",
+        "item 6 was found with no date and pull",
+        f"item 7 carries {TICKET} {{pull}}`5`, which is no issue",
+        "item 8 is settled with no date and reference",
+        f"item 9 is settled, and still carries {OWED}",
+        "item 10 graduates with no date, pull and row",
+    ]
+
+
+def test_item_entries_passes_a_settled_item_without_its_issue(tmp_path):
+    """Items spec §3.2: an item settled before it keeps its history, with no issue."""
+    entries = (
+        entry_item(1, RESOLVED, "2026-01-01, {issue}`3`", FOUND_AT)
+        + entry_item(2, ABANDONED, "2026-01-01, [x](https://github.com/o/r/pull/1)")
+        + entry_item(3, RESOLVED, "2026-01-01, {pull}`1`", FOUND_AT, TICKETED)
+    )
+    path, _ = itemed(tmp_path, entries)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(item_entries(path, text)) == [f"item 2 carries no {FOUND}"]
+    fixed = text.replace("pull/1)", f"pull/1){DOT}{FOUND_AT}")
+    assert item_entries(path, fixed) == []
+
+
+def test_item_entries_wants_numbered_titled_items_in_one_list(tmp_path):
+    """Items spec §3.2: a numbered entry, with a title, in the section's list."""
+    entries = (
+        f"1. **{OPEN}** ({FOUND_AT}{DOT}{OWED_BY}{DOT}{TICKETED}) — Untitled.\n"
+        + entry_item(3, OPEN, FOUND_AT, OWED_BY, TICKETED)
+        + f"\nA paragraph.\n\n- **{OPEN}** ({FOUND_AT}) — **A bullet.**\n"
+        + entry_item(4, OPEN, FOUND_AT, OWED_BY, TICKETED)
+    )
+    path, _ = itemed(tmp_path, entries)
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    first = next(n for n, line in enumerate(lines, 1) if line.startswith("1. "))
+    bullet = lines.index(f"- **{OPEN}** ({FOUND_AT}) — **A bullet.**") + 1
+
+    assert item_entries(path, text) == [
+        f"{where(path, bullet)}: an item is a bullet, not a numbered entry",
+        f"{where(path, bullet + 1)}: an item written after its list has ended",
+        f"{where(path, 1)}: items are numbered [1, 3]",
+        f"{where(path, first)}: item 1 has no title",
+    ]
+    gaps = text.replace("## 3. Open Items", "## 3. Gaps")
+    assert faults(item_entries(path, gaps)) == ["it has no Open Items section"]
+
+
+def test_item_owed_names_a_row_that_has_not_landed(tmp_path):
+    """Items spec §3.7 item 2, the landing gate of items spec §3.5."""
+    entries = (
+        entry_item(1, OPEN, FOUND_AT, f"{OWED} row 1 of {SECTION}2", TICKETED)
+        + entry_item(2, OPEN, FOUND_AT, f"{OWED} row 9 of {SECTION}2", TICKETED)
+        + entry_item(3, OPEN, FOUND_AT, f"{OWED} row 2 of other spec {SECTION}2")
+        + entry_item(4, OPEN, FOUND_AT, f"{OWED} the next release", TICKETED)
+        + entry_item(5, DEFERRED, FOUND_AT, OWED_BY, moved(1), TICKETED)
+        + entry_item(6, OPEN, FOUND_AT, f"{OWED} row 3 of demo spec {SECTION}2")
+    )
+    path, _ = itemed(tmp_path, entries)
+    others = "another specification's"
+
+    assert faults(item_owed(path, path.read_text(encoding="utf-8"))) == [
+        f"item 1 is owed by row 1 of {SECTION}2, which has landed",
+        f"item 2 is owed by row 9 of {SECTION}2, which does not exist",
+        f"item 3 is owed by row 2 of other spec {SECTION}2, which is {others}",
+        "item 4 is owed by the next release, which names no row",
+    ]
+
+
+def test_item_moves_wants_one_or_two_for_a_deferred_item(tmp_path):
+    """Items spec §3.7 item 3: none while open, one or two when deferred, not three."""
+    entries = (
+        entry_item(1, DEFERRED, FOUND_AT, OWED_BY, TICKETED)
+        + entry_item(2, DEFERRED, FOUND_AT, OWED_BY, moved(1), TICKETED)
+        + entry_item(3, DEFERRED, FOUND_AT, OWED_BY, moved(1), moved(1), TICKETED)
+        + entry_item(
+            4, DEFERRED, FOUND_AT, OWED_BY, moved(1), moved(1), moved(1), TICKETED
+        )
+        + entry_item(5, OPEN, FOUND_AT, OWED_BY, moved(1), TICKETED)
+        + entry_item(6, DEFERRED, FOUND_AT, OWED_BY, f"{MOVED} row 1", TICKETED)
+    )
+    path, _ = itemed(tmp_path, entries)
+
+    assert faults(item_moves(path, path.read_text(encoding="utf-8"))) == [
+        f"item 1 is deferred, and carries no {MOVED}",
+        f"item 4 carries 3 {MOVED}, and must settle or graduate instead",
+        f"item 5 is open, and carries {MOVED}: it is deferred",
+        f"item 6 carries {MOVED} row 1, which is not a row, date and pull",
+    ]
+
+
+def test_item_graduated_names_a_row_that_cites_its_issue(tmp_path):
+    """Items spec §3.7 item 4: the row an item became carries its issue."""
+    roadmap = ROADMAP + "| 4 | An item, {issue}`5` | not started |\n"
+    entries = (
+        entry_item(1, GRADUATED, graduation(4), FOUND_AT, TICKETED)
+        + entry_item(2, GRADUATED, graduation(3), FOUND_AT, TICKETED)
+        + entry_item(3, GRADUATED, graduation(8), FOUND_AT, TICKETED)
+        + entry_item(4, GRADUATED, graduation(4), FOUND_AT)
+    )
+    path, _ = itemed(tmp_path, entries, roadmap)
+
+    assert faults(item_graduated(path, path.read_text(encoding="utf-8"))) == [
+        f"item 2 graduates to row 3 of {SECTION}2, which does not cite {{issue}}`5`",
+        f"item 3 graduates to row 8 of {SECTION}2, which does not exist",
+        f"item 4 graduates with no {TICKET} for its row to cite",
+    ]
+
+
+def test_item_issues_finds_two_items_citing_one_issue(tmp_path):
+    """Items spec §3.7 item 5: one issue per item, across the collection."""
+    first = itemed(tmp_path, entry_item(1, OPEN, FOUND_AT, OWED_BY, TICKETED))[0]
+    second = tmp_path / "2026-01-02-other-design.md"
+    second.write_text(
+        "(other-spec-8)=\n## 8. Open Items\n\n"
+        + entry_item(1, OPEN, FOUND_AT, OWED_BY, f"{TICKET} {{issue}}`6`")
+        + entry_item(2, RESOLVED, "2026-01-01, {pull}`1`", FOUND_AT, TICKETED)
+        + entry_item(3, OPEN, FOUND_AT, OWED_BY, f"{TICKET} {{issue}}`7`"),
+        encoding="utf-8",
+    )
+    texts = {path: path.read_text(encoding="utf-8") for path in (first, second)}
+    (cited,) = items(texts[first])
+    repeated = items(texts[second])[1]
+
+    expected = f"item 2 cites {{issue}}`5`, as {where(first, cited.line)} does"
+
+    assert item_issues(texts) == [f"{where(second, repeated.line)}: {expected}"]
+
+
+def test_each_grammar_is_read_where_the_other_is_expected(tmp_path):
+    """Review Focus 4 of its plan: neither grammar passes unread in the other's place.
+
+    An item in the grammar of docs spec §3.6 has no state to the rules of
+    items spec §3.7, and an item in that of items spec §3.2 has no status to the
+    rule of docs spec §3.6, which reads the specifications :data:`UNITEMED` names.
+    """
+    old = "1. **Open** ({issue}`5`) — **An item.** Its reasoning.\n"
+    new = entry_item(1, OPEN, FOUND_AT, OWED_BY, TICKETED)
+    path, _ = itemed(tmp_path, old)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(item_entries(path, text)) == ["item 1 opens with no state"]
+    assert status(path, text, unitemed=True) == []
+    assert faults(status(path, text.replace(old, new), unitemed=True)) == [
+        f"{OPEN!r} is not a status"
+    ]
+    assert item_entries(path, text.replace(old, new)) == []
+    assert status(path, text) == []
+
+
+@pytest.mark.parametrize(
+    "spec",
+    [s for s in specifications() if s.name not in UNITEMED],
+    ids=lambda path: path.name,
+)
+def test_every_itemed_specification_holds_its_items(spec):
+    """Open Items (item 10): items spec §3.7, every rule on every item."""
+    text = spec.read_text(encoding="utf-8")
+    problems = (
+        item_entries(spec, text)
+        + item_owed(spec, text)
+        + item_moves(spec, text)
+        + item_graduated(spec, text)
+    )
+
+    assert not problems, "\n".join(problems)
+
+
+def test_no_two_items_cite_one_issue(specs):
+    """Open Items (item 10): items spec §3.7 item 5, across the collection."""
+    texts = {
+        spec: spec.read_text(encoding="utf-8")
+        for spec in specs
+        if spec.name not in UNITEMED
+    }
+    problems = item_issues(texts)
+
+    assert not problems, "\n".join(problems)
+
+
+def test_unitemed_names_specifications_still_waiting(specs):
+    """An exemption cannot outlive the row of items spec §8 that ends it."""
+    names = {spec.name for spec in specs}
+    rows = roadmap_rows(
+        (SPECS / "2026-11-02-open-items-design.md").read_text(encoding="utf-8")
+    )
+
+    assert set(UNITEMED) <= names
+    assert not [
+        name for name, row in UNITEMED.items() if rows[str(row)].startswith(LANDED)
+    ]

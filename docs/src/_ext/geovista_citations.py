@@ -7,12 +7,12 @@
 
 What a citation is, and which anchor it names, is defined here once, and
 nowhere else (citation spec §4.1). So is what a decision is, how one is cited,
-and how a specification's ledger of them reads (ledger spec §3.1), and what an
-item and a roadmap row are, and how each is cited (items spec §3.1). The
-conventions test, ``tests/test_spec_conventions.py``, reads the repository with
-it, and the build-time transform and the renumber guard of the citation links
-design will import it too, so that no two readers can disagree about what a
-citation is.
+and how a specification's ledger of them reads (ledger spec §3.1), what an
+item and a roadmap row are, and how each is cited (items spec §3.1), and how an
+open item's entry reads (items spec §3.2). The conventions test,
+``tests/test_spec_conventions.py``, reads the repository with it, and the
+build-time transform and the renumber guard of the citation links design will
+import it too, so that no two readers can disagree about what a citation is.
 
 It is a plain module rather than a Sphinx extension, so it defines no ``setup``.
 ``docs/src/_ext`` is on ``sys.path`` for the whole build, which is why its name
@@ -110,9 +110,29 @@ VERIFIED = "\N{WHITE HEAVY CHECK MARK} verified"
 SIGNED_OFF = f"\N{WRITING HAND}{VS16} signed off"
 LEDGER_RETIRED = f"\N{FILE CABINET}{VS16} retired"
 
-#: The titles of the sections holding the decisions and their ledger.
+#: The states of an open item (items spec §3.2), built by name.
+OPEN = "\N{BLACK QUESTION MARK ORNAMENT} Open"
+DEFERRED = f"\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}{VS16} Deferred"
+RESOLVED = "\N{CHEQUERED FLAG} Resolved"
+ABANDONED = "\N{NO ENTRY SIGN} Abandoned"
+GRADUATED = "\N{GRADUATION CAP} Graduated"
+ITEMED_STATES = (OPEN, DEFERRED, RESOLVED, ABANDONED, GRADUATED)
+
+#: The parts of an open item's provenance: where it was found, the row that owes
+#: it, each row it moved from, and the issue that tracks it, in that order.
+FOUND = "\N{RIGHT-POINTING MAGNIFYING GLASS}"
+OWED = "\N{DIRECT HIT}"
+MOVED = f"\N{LEFTWARDS BLACK ARROW}{VS16}"
+TICKET = "\N{TICKET}"
+PARTS = (FOUND, OWED, MOVED, TICKET)
+
+#: What separates the parts of an item's provenance.
+DOT = " \N{MIDDLE DOT} "
+
+#: The titles of the sections holding the decisions, their ledger and the items.
 DECISIONS = "Decisions"
 VERIFICATION = "Verification"
+OPEN_ITEMS = "Open Items"
 
 #: The header of the ledger, cell by cell.
 LEDGER_HEADER = ("Decision", "Status", "Evidence")
@@ -126,6 +146,9 @@ BOLD = re.compile(r"\*\*(?P<text>.+?)\*\*", flags=re.DOTALL)
 STATED = re.compile(r"\W*(?:Open|Deferred|Resolved|Abandoned|Graduated)")
 #: The dashes an item's state and provenance are parted from its title by.
 DASHES = " -\N{EN DASH}\N{EM DASH}"
+#: The issue a ticket names, and the row a graduated item's settlement ends with.
+ISSUE = re.compile(r"\{issue\}`(?P<number>\d+)`")
+GRADUATES = re.compile(r"(?:^|[\s,])to\s+(?P<row>rows?\s.*?)\s*$")
 
 #: A table cell boundary: a pipe, unless escaped.
 PIPE = re.compile(r"(?<!\\)\|")
@@ -214,6 +237,57 @@ class Decision:
     carried: str
     title: str
     body: str
+
+
+@dataclass(frozen=True)
+class Item:
+    """One open item of a specification, as its entry is written (items spec §3.2).
+
+    Attributes
+    ----------
+    number : int
+        Its number in the list, as written.
+    line : int
+        The line its entry opens on.
+    state : str or None
+        One of :data:`ITEMED_STATES`, or ``None`` for an entry with none, such as
+        one still in the grammar of docs spec §3.6.
+    settled : str
+        The date and reference a settled item leads its parenthetical with, or
+        ``""`` when it is open or deferred, or leads with a part.
+    found : str
+        What follows :data:`FOUND`: the date and pull request it surfaced in, or
+        ``""`` when it carries none.
+    owed : str or None
+        What follows :data:`OWED`, the row that owes it, as ``row 5 of §10``.
+    moves : tuple of str
+        What follows each :data:`MOVED`, in the order written.
+    issue : int or None
+        The issue :data:`TICKET` names, or ``None`` when it names none.
+    graduated : str or None
+        The row a graduated item became, as its settlement ends ``to row N of §M``.
+    title : str
+        The bold title, read whole although it wraps.
+    body : str
+        The text after the title, its lines joined by single spaces.
+    carried : str
+        The parenthetical after the state, without its parentheses, which
+        :func:`provenance` splits into its parts.
+
+    """
+
+    number: int
+    line: int
+    state: str | None
+    settled: str
+    found: str
+    owed: str | None
+    moves: tuple[str, ...]
+    issue: int | None
+    graduated: str | None
+    title: str
+    body: str
+    carried: str = ""
 
 
 @dataclass(frozen=True)
@@ -422,6 +496,120 @@ def decisions(text: str) -> list[Decision]:
         title = runs[0]["text"].strip() if runs else ""
         body = joined[runs[0].end() :].strip() if runs else joined.strip()
         found.append(Decision(number, line, state, carried, title, body))
+    return found
+
+
+def provenance(carried: str) -> list[tuple[str | None, str]]:
+    """Split an item's parenthetical into its parts, each read by its emoji.
+
+    Parameters
+    ----------
+    carried : str
+        The parenthetical, without its parentheses, its lines joined.
+
+    Returns
+    -------
+    list of tuple of (str or None, str)
+        Each part in the order written: the emoji of :data:`PARTS` it opens with,
+        with or without its variation selector, or ``None`` for a part opening
+        with none, such as a settled item's date and reference; and what follows.
+
+    """
+    found: list[tuple[str | None, str]] = []
+    if not carried.strip():
+        return found
+    for part in re.split(rf"\s*{DOT.strip()}\s*", carried.strip()):
+        plain = part.replace(VS16, "")
+        kind = next((p for p in PARTS if plain.startswith(p.replace(VS16, ""))), None)
+        rest = plain[len(kind.replace(VS16, "")) :] if kind else part
+        found.append((kind, rest.strip()))
+    return found
+
+
+def _titled(text: str, title: str) -> list[tuple[int, str]]:
+    """Read the lines of the first section titled ``title``, whatever its case.
+
+    A heading in headline style and one in sentence case name the same section.
+    """
+    found: list[tuple[int, str]] = []
+    inside = False
+    for number, line in read_lines(text):
+        heading = HEADING.match(line)
+        if heading is not None:
+            if inside:
+                break
+            inside = heading["title"].casefold() == title.casefold()
+            continue
+        if inside:
+            found.append((number, line))
+    return found
+
+
+def items(text: str) -> list[Item]:
+    """Read the open items of a specification, in the grammar of items spec §3.2.
+
+    The items are the numbered entries of its Open Items section, whatever its
+    number and its case. An entry runs from its number to the next top-level line,
+    so a title or a parenthetical that wraps is read whole, and the list ends at
+    the first line written flush after it. A part is read by its emoji, whatever
+    it holds, so that a rule can say what is wrong with it.
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+
+    Returns
+    -------
+    list of Item
+        In the order written, or empty when it has no Open Items section.
+
+    """
+    entries: list[tuple[int, int, list[str]]] = []
+    for number, line in _titled(text, OPEN_ITEMS):
+        item = NUMBERED.match(line)
+        if item is not None:
+            entries.append((int(item["number"]), number, [item["body"]]))
+        elif entries and line[:1].isspace() and line.strip():
+            entries[-1][2].append(line.strip())
+        elif line.strip() and entries:
+            break
+    found = []
+    for number, line, parts in entries:
+        rest = " ".join(parts)
+        opening = BOLD.match(rest)
+        state = state_of(opening["text"].strip(), ITEMED_STATES) if opening else None
+        carried = ""
+        if opening is not None and state is not None:
+            rest = rest[opening.end() :].lstrip()
+            carried = balanced(rest)
+            if rest.startswith("("):
+                rest = rest[len(carried) + 2 :]
+            rest = rest.lstrip(DASHES)
+        written = provenance(carried)
+        settled = ""
+        if state in (RESOLVED, ABANDONED, GRADUATED) and written and not written[0][0]:
+            settled = written[0][1]
+        graduated = GRADUATES.search(settled) if state == GRADUATED else None
+        ticket = next((said for kind, said in written if kind == TICKET), "")
+        issue = ISSUE.fullmatch(ticket)
+        titled = BOLD.match(rest)
+        found.append(
+            Item(
+                number=number,
+                line=line,
+                state=state,
+                settled=settled,
+                found=next((said for kind, said in written if kind == FOUND), ""),
+                owed=next((said for kind, said in written if kind == OWED), None),
+                moves=tuple(said for kind, said in written if kind == MOVED),
+                issue=int(issue["number"]) if issue else None,
+                graduated=graduated["row"] if graduated else None,
+                title=titled["text"].strip() if titled else "",
+                body=(rest[titled.end() :] if titled else rest).strip(),
+                carried=carried,
+            )
+        )
     return found
 
 
