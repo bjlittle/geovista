@@ -281,6 +281,26 @@ def test_a_cited_untitled_item_is_frozen(guard):
     assert "Build the pages." in problems[0]
 
 
+def test_a_long_untitled_item_is_named_by_the_start_of_its_text(guard):
+    """Its text is all it has to be named by, so a message shortens it at a word."""
+    long = (
+        "Build the pages, every one of them, with the gallery and the tutorials "
+        "executed, so the reader sees what the code draws."
+    )
+    steps, inserted = (
+        text.replace("Build the pages.", long) for text in (STEPS, INSERTED_STEP)
+    )
+
+    (problem,) = frozen(guard, steps, inserted, frozenset({"demo-spec-8-item-2"}))
+
+    named = problem.split('"')[1]
+    assert named == (
+        "Build the pages, every one of them, with the gallery and"
+        "\N{HORIZONTAL ELLIPSIS}"
+    )
+    assert problem.endswith("is now item 3: append an item rather than insert it")
+
+
 def test_an_untitled_item_is_paired_by_its_text(guard):
     """A cited step reworded in place, or another step appended, still passes.
 

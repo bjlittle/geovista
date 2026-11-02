@@ -37,6 +37,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import textwrap
 import traceback
 from typing import TYPE_CHECKING, Literal
 
@@ -336,6 +337,10 @@ def roadmap_rows(text: str) -> dict[str, Section]:
     }
 
 
+#: The most characters of its text an untitled item is named by in a message.
+NAMED = 60
+
+
 def _split(old: str, new: str | None) -> bool:
     """Say whether row ``old`` became ``new`` by splitting, as 6 into 6a."""
     return new is not None and re.fullmatch(rf"{re.escape(old)}[a-z]", new) is not None
@@ -398,15 +403,23 @@ def frozen(
     head_items = numbered_items(
         head_text, {a for a in item_anchors(head_text) if _section(a) in now}
     )
+
+    def named(anchor: str, number: str) -> str:
+        # an untitled item is titled by its text, shortened at a word to name it
+        title = base_items[anchor][number].title
+        if number in untitled.get(anchor, ()):
+            return textwrap.shorten(title, NAMED, placeholder=grammar.ELLIPSIS)
+        return title
+
     for anchor, listed in base_items.items():
         fate = fates.get(anchor)
         if fate is None:
             continue
         if fate.anchor is None:
             problems += [
-                f'{fate.title}, item {number} "{item.title}" was removed with its '
-                "section: keep the section, and mark it as no longer applying"
-                for number, item in listed.items()
+                f'{fate.title}, item {number} "{named(anchor, number)}" was removed '
+                "with its section: keep the section, and mark it as no longer applying"
+                for number in listed
             ]
             continue
         paired = pair(
@@ -420,7 +433,7 @@ def frozen(
                 continue
             if item.kind == "moved":
                 problems.append(
-                    f'{fate.title}, item {number} "{listed[number].title}" is now '
+                    f'{fate.title}, item {number} "{named(anchor, number)}" is now '
                     f"item {item.anchor}: append an item rather than insert it"
                 )
             elif item.kind == "removed":
@@ -432,7 +445,7 @@ def frozen(
                     else "removed"
                 )
                 problems.append(
-                    f'{fate.title}, item {number} "{listed[number].title}" was '
+                    f'{fate.title}, item {number} "{named(anchor, number)}" was '
                     f"{lost}: mark it as no longer applying, in place"
                 )
     base_rows, head_rows = roadmap_rows(base_text), roadmap_rows(head_text)
