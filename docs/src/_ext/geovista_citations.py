@@ -1135,6 +1135,35 @@ def scan(
         yield Citation(match[0], slug, match.start(), match.end(), ends)
 
 
+def cited_row(text: str, owner: str | None, names: Namespace) -> str | None:
+    """Read ``text`` as one row's citation, as an item names its owner or graduation.
+
+    The row may be another specification's, which the caller decides on.
+
+    Parameters
+    ----------
+    text : str
+        What the part holds, as ``row 5 of §10`` or ``row 5 of crs spec §10``.
+    owner : str or None
+        The prefix of the specification the part is written in.
+    names : Namespace
+        The namespace the citation is read in.
+
+    Returns
+    -------
+    str or None
+        The anchor of the row it names, whichever specification owns it, or
+        ``None`` unless the whole of ``text`` is one citation of one row.
+
+    """
+    source = prose(text)[0].strip()
+    found = list(scan(source, names.signed, owner))
+    if len(found) != 1 or found[0].text != source or found[0].ends:
+        return None
+    label = LABEL.match(found[0].slug or "")
+    return found[0].slug if label is not None and label["row"] is not None else None
+
+
 def section_role(kind: str, body: str, names: Namespace) -> tuple[str, str] | None:
     """Read a role as a reference to a section: its display text and its target.
 

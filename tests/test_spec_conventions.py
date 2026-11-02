@@ -2854,6 +2854,7 @@ DOT = citations.DOT
 items = citations.items
 Item = citations.Item
 Row = citations.Row
+row_anchor = citations.row_anchor
 
 #: The specifications whose open items are not yet in the grammar of
 #: items spec §3.2, each with the row of items spec §8 that brings it in, and read
@@ -2915,26 +2916,29 @@ def itemed(
     )
 
 
-#: A row of a roadmap, as an item's owner and its graduation name it.
-CITED_ROW = re.compile(
-    rf"row{GAP}(?P<row>{MEMBER}){GAP}of{GAP}(?:(?P<prefix>\S.*?){GAP})?"
-    rf"{SECTION}(?P<section>{NUMBER})",
-    flags=re.IGNORECASE,
-)
 #: What a move records: the row it left, then its date and pull request.
 MOVE = re.compile(rf"row{GAP}{MEMBER},")
+#: Any markdown heading, numbered or not, and how deep it sits.
+ANY_HEADING = re.compile(r"^(?P<depth>#{1,6})\s+(?P<title>\S.*?)\s*$")
 
 
-def own_row(text: str, cited: str) -> Row | str:
+def own_row(path: Path, text: str, cited: str, names: Namespace) -> Row | str:
     """Find the row of a specification's own roadmap that ``cited`` names.
+
+    The citation is read by the grammar, as every citation is, so that this rule
+    and the build can never disagree about which row it names.
 
     Parameters
     ----------
-    text : str
+    path : Path
         The specification.
+    text : str
+        Its text.
     cited : str
         The citation, as ``row 5 of §10``, which may carry the specification's own
         prefix.
+    names : Namespace
+        The namespace it is read in.
 
     Returns
     -------
@@ -2942,18 +2946,18 @@ def own_row(text: str, cited: str) -> Row | str:
         The row, or what is wrong with the citation, completing "which ...".
 
     """
-    match = CITED_ROW.fullmatch(cited.strip())
-    if match is None:
+    owner = names.owners.get(path)
+    slug = citations.cited_row(cited, owner, names)
+    if slug is None:
         return "names no row"
-    owner = next(
-        (m["slug"] for _, line in read_lines(text) if (m := ANCHOR.match(line))), None
-    )
-    prefix = match["prefix"]
-    if prefix is not None and re.sub(r"\s+", "-", prefix.lower()) != owner:
+    if LABEL.match(slug)["prefix"] != owner:
         return "is another specification's"
-    named = (match["section"], match["row"].lower())
     row = next(
-        (r for r in citations.rows(text) if (r.section, r.row.lower()) == named),
+        (
+            r
+            for r in citations.rows(text)
+            if row_anchor(owner, r.section, r.row) == slug
+        ),
         None,
     )
     return "does not exist" if row is None else row
@@ -3013,7 +3017,7 @@ def item_entries(path: Path, text: str) -> list[str]:
         return [f"{where(path, 1)}: it has no Open Items section"]
     found = items(text)
     opened = {item.line for item in found}
-    problems = []
+    problems = unreached(path, text)
     for number, line in citations._titled(text, citations.OPEN_ITEMS):
         if ITEM.match(line) is None or number in opened:
             continue
@@ -3043,7 +3047,41 @@ def item_entries(path: Path, text: str) -> list[str]:
     return problems
 
 
-def item_owed(path: Path, text: str) -> list[str]:
+def unreached(path: Path, text: str) -> list[str]:
+    """Find a heading that puts items beyond the reach of :func:`items`.
+
+    The items are those of the first section titled Open Items, up to its next
+    heading, so a subsection of it, or a second section of that title, would hold
+    items no rule reads.
+    """
+    problems = []
+    depth: int | None = None
+    seen = False
+    for number, line in read_lines(text):
+        heading = ANY_HEADING.match(line)
+        if heading is None:
+            continue
+        level = len(heading["depth"])
+        numbered = HEADING.match(line)
+        title = numbered["title"] if numbered else heading["title"]
+        if depth is not None and level > depth:
+            problems.append(
+                f"{where(path, number)}: a heading inside Open Items, under which "
+                "items go unread"
+            )
+            continue
+        depth = None
+        if title.casefold() == citations.OPEN_ITEMS.casefold():
+            if seen:
+                problems.append(
+                    f"{where(path, number)}: a second Open Items section, whose items "
+                    "go unread"
+                )
+            seen, depth = True, level
+    return problems
+
+
+def item_owed(path: Path, text: str, names: Namespace) -> list[str]:
     """Find an item owed by no row, or by one landed, item 2 of items spec §3.7.
 
     This is the landing gate of items spec §3.5: a row may not land while an open
@@ -3053,7 +3091,7 @@ def item_owed(path: Path, text: str) -> list[str]:
     for item in items(text):
         if item.state not in (OPEN, DEFERRED) or item.owed is None:
             continue
-        row = own_row(text, item.owed)
+        row = own_row(path, text, item.owed, names)
         if isinstance(row, str):
             why = row
         elif row.status.startswith(LANDED):
@@ -3095,7 +3133,7 @@ def item_moves(path: Path, text: str) -> list[str]:
     return problems
 
 
-def item_graduated(path: Path, text: str) -> list[str]:
+def item_graduated(path: Path, text: str, names: Namespace) -> list[str]:
     """Find a graduation to a row not citing its issue, items spec §3.7 item 4.
 
     The item's issue moves with it to the row it became (items spec §3.6), so
@@ -3112,7 +3150,7 @@ def item_graduated(path: Path, text: str) -> list[str]:
                 "to cite"
             )
             continue
-        row = own_row(text, item.graduated)
+        row = own_row(path, text, item.graduated, names)
         cited = f"{{issue}}`{item.issue}`"
         if isinstance(row, str):
             why = row
@@ -3269,6 +3307,39 @@ def test_item_entries_wants_numbered_titled_items_in_one_list(tmp_path):
     assert faults(item_entries(path, gaps)) == ["it has no Open Items section"]
 
 
+@pytest.mark.parametrize(
+    "after",
+    [
+        "(demo-spec-3-1)=\n### 3.1 More\n\n",
+        "(demo-spec-4)=\n## 4. Open items\n\n",
+    ],
+    ids=["subsection", "second-section"],
+)
+def test_item_entries_reports_items_no_rule_reads(tmp_path, after):
+    """Review Focus 4 of its plan: no item sits where :func:`items` cannot read it.
+
+    An item under a subsection of Open Items, or under a second section of that
+    title, would pass every rule unread, as :func:`status` reads only the items
+    of a specification that :data:`UNITEMED` names.
+    """
+    entries = entry_item(1, OPEN, FOUND_AT, OWED_BY, TICKETED)
+    hidden = "1. **Open** - **Unread.**\n"
+    path, _ = itemed(tmp_path, f"{entries}\n{after}{hidden}")
+    text = path.read_text(encoding="utf-8")
+    heading = next(
+        n
+        for n, line in enumerate(text.splitlines(), 1)
+        if line.startswith("#") and n > items(text)[0].line
+    )
+    expected = (
+        "a heading inside Open Items, under which items go unread"
+        if after.count("#") == 3
+        else "a second Open Items section, whose items go unread"
+    )
+
+    assert item_entries(path, text) == [f"{where(path, heading)}: {expected}"]
+
+
 def test_item_owed_names_a_row_that_has_not_landed(tmp_path):
     """Items spec §3.7 item 2, the landing gate of items spec §3.5."""
     entries = (
@@ -3278,15 +3349,29 @@ def test_item_owed_names_a_row_that_has_not_landed(tmp_path):
         + entry_item(4, OPEN, FOUND_AT, f"{OWED} the next release", TICKETED)
         + entry_item(5, DEFERRED, FOUND_AT, OWED_BY, moved(1), TICKETED)
         + entry_item(6, OPEN, FOUND_AT, f"{OWED} row 3 of demo spec {SECTION}2")
+        + entry_item(7, OPEN, FOUND_AT, f"{OWED} row 6a of {SECTION}2", TICKETED)
+        + entry_item(8, OPEN, FOUND_AT, f"{OWED} row 1 of Demo Spec {SECTION}2")
+        + entry_item(9, OPEN, FOUND_AT, f"{OWED} rows 2 to 3 of {SECTION}2")
     )
-    path, _ = itemed(tmp_path, entries)
+    lettered = f"| 6a | d | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
+    path, _ = itemed(tmp_path, entries, ROADMAP + lettered)
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        "(other-spec-2)=\n## 2. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        "| 2 | b | not started |\n",
+        encoding="utf-8",
+    )
+    names = namespace([path, other])
     others = "another specification's"
 
-    assert faults(item_owed(path, path.read_text(encoding="utf-8"))) == [
+    assert faults(item_owed(path, path.read_text(encoding="utf-8"), names)) == [
         f"item 1 is owed by row 1 of {SECTION}2, which has landed",
         f"item 2 is owed by row 9 of {SECTION}2, which does not exist",
         f"item 3 is owed by row 2 of other spec {SECTION}2, which is {others}",
         "item 4 is owed by the next release, which names no row",
+        f"item 7 is owed by row 6a of {SECTION}2, which has landed",
+        f"item 8 is owed by row 1 of Demo Spec {SECTION}2, which has landed",
+        f"item 9 is owed by rows 2 to 3 of {SECTION}2, which names no row",
     ]
 
 
@@ -3321,9 +3406,10 @@ def test_item_graduated_names_a_row_that_cites_its_issue(tmp_path):
         + entry_item(3, GRADUATED, graduation(8), FOUND_AT, TICKETED)
         + entry_item(4, GRADUATED, graduation(4), FOUND_AT)
     )
-    path, _ = itemed(tmp_path, entries, roadmap)
+    path, names = itemed(tmp_path, entries, roadmap)
+    text = path.read_text(encoding="utf-8")
 
-    assert faults(item_graduated(path, path.read_text(encoding="utf-8"))) == [
+    assert faults(item_graduated(path, text, names)) == [
         f"item 2 graduates to row 3 of {SECTION}2, which does not cite {{issue}}`5`",
         f"item 3 graduates to row 8 of {SECTION}2, which does not exist",
         f"item 4 graduates with no {TICKET} for its row to cite",
@@ -3376,14 +3462,14 @@ def test_each_grammar_is_read_where_the_other_is_expected(tmp_path):
     [s for s in specifications() if s.name not in UNITEMED],
     ids=lambda path: path.name,
 )
-def test_every_itemed_specification_holds_its_items(spec):
+def test_every_itemed_specification_holds_its_items(spec, names):
     """Open Items (item 10): items spec §3.7, every rule on every item."""
     text = spec.read_text(encoding="utf-8")
     problems = (
         item_entries(spec, text)
-        + item_owed(spec, text)
+        + item_owed(spec, text, names)
         + item_moves(spec, text)
-        + item_graduated(spec, text)
+        + item_graduated(spec, text, names)
     )
 
     assert not problems, "\n".join(problems)
