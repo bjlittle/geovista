@@ -612,18 +612,18 @@ Each carries the status grammar of docs spec §3.6.
 - `pyvista` pull request 9262, which widens the index `pyvista_ndarray.__setitem__`
   accepts, cited by item 6 of §8:
   <https://github.com/pyvista/pyvista/pull/9262>
-- `pyvista` pull requests 9344 and 9351, which replace the array aliases that item 10 of
-  §8 waits on:
+- `pyvista` pull requests 9344 and 9351, which replace the array aliases that
+  item 10 of §8 waits on:
   <https://github.com/pyvista/pyvista/pull/9344> and
   <https://github.com/pyvista/pyvista/pull/9351>
-- `lazy_loader` issue 165, on its relation to PEP 810, cited by item 4 of
-  §8: <https://github.com/scientific-python/lazy-loader/issues/165>
-- `lazy_loader` issue 181, the request for a marker and annotations that resolves item 4
-  of §8: <https://github.com/scientific-python/lazy-loader/issues/181>
+- `lazy_loader` issue 165, on its relation to PEP 810, cited by
+  item 4 of §8: <https://github.com/scientific-python/lazy-loader/issues/165>
+- `lazy_loader` issue 181, the request for a marker and annotations that resolves
+  item 4 of §8: <https://github.com/scientific-python/lazy-loader/issues/181>
 - `typeshed` pull request 15884, which added the `rasterio` stubs that change 3 checks
   `bridge.py` against: <https://github.com/python/typeshed/pull/15884>
-- `typeshed` issue 16504, reporting three gaps in those stubs, cited by item 7 of
-  §8: <https://github.com/python/typeshed/issues/16504>
+- `typeshed` issue 16504, reporting three gaps in those stubs, cited by
+  item 7 of §8: <https://github.com/python/typeshed/issues/16504>
 
 (typing-spec-10)=
 ## 10. Verification

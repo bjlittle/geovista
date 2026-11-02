@@ -427,7 +427,11 @@ def test_setup_registers_every_handler_the_transform_relies_on(docs):
 
     assert registrar.connected["builder-inited"] is docs.cx._build_registry
     assert registrar.connected["env-get-outdated"] is docs.cx._outdated
-    assert registrar.transforms == [docs.cx.DecisionTargets, docs.cx.CitationTransform]
+    assert registrar.transforms == [
+        docs.cx.DecisionTargets,
+        docs.cx.ItemTargets,
+        docs.cx.CitationTransform,
+    ]
     assert metadata["env_version"]
     assert metadata["parallel_read_safe"] is True
     assert metadata["parallel_write_safe"] is True
@@ -581,3 +585,233 @@ def test_a_build_warns_of_a_citation_naming_no_decision(tmp_path):
 
     assert "undefined label" in warning
     assert "alpha-spec-2-decision-9" in warning
+
+
+#: A specification carrying an item and a roadmap row, for their anchors to be
+#: generated (items spec §3.1).
+DEMO = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "(demo-spec-2)=\n## 2. Decisions\n\n1. **One.** First.\n\n"
+    "(demo-spec-3)=\n## 3. Items\n\n"
+    "1. **Alpha.** First item.\n2. **Beta.** Second item.\n\n"
+    "(demo-spec-4)=\n## 4. Roadmap\n\n"
+    "| # | Scope | Status |\n|---|---|---|\n| 1 | One | landed |\n"
+)
+
+
+def demo_site(tmp_path: Path, cited: str) -> Path:
+    """Write a site of one specification with an item and a row, citing ``cited``."""
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    (src / "developer" / "specs" / "2026-01-01-demo-design.md").write_text(
+        DEMO, encoding="utf-8"
+    )
+    toctree = "   page\n   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(f"Page\n====\n\nSee {cited}.\n", encoding="utf-8")
+    return src
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_links_an_item_citation_to_its_item(tmp_path):
+    """An item's anchor is derived from its list (items spec §3.1), so a link lands.
+
+    Holds items spec §2 decision 10.
+    """
+    src = demo_site(tmp_path, f"demo spec {SECTION}3 item 2")
+
+    html, warning = build(src, tmp_path)
+
+    page = (html / "page.html").read_text(encoding="utf-8")
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'demo-design.html#demo-spec-3-item-2"' in page
+    assert '<li id="demo-spec-3-item-2"' in demo
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_links_a_row_citation_to_its_row(tmp_path):
+    """A roadmap row's anchor is derived from its table (items spec §3.1).
+
+    Holds items spec §2 decision 10.
+    """
+    src = demo_site(tmp_path, f"row 1 of demo spec {SECTION}4")
+
+    html, warning = build(src, tmp_path)
+
+    page = (html / "page.html").read_text(encoding="utf-8")
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'demo-design.html#demo-spec-4-row-1"' in page
+    assert 'id="demo-spec-4-row-1"' in demo
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_warns_of_a_citation_naming_no_item(tmp_path):
+    """A citation of an item that does not exist fails a build run as CI runs it.
+
+    Holds items spec §2 decision 10.
+    """
+    src = demo_site(tmp_path, f"demo spec {SECTION}3 item 9")
+
+    _, warning = build(src, tmp_path)
+
+    assert "undefined label" in warning
+    assert "demo-spec-3-item-9" in warning
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_build_warns_of_a_citation_naming_no_row(tmp_path):
+    """A citation of a row that does not exist fails a build run as CI runs it.
+
+    Holds items spec §2 decision 10.
+    """
+    src = demo_site(tmp_path, f"row 9 of demo spec {SECTION}4")
+
+    _, warning = build(src, tmp_path)
+
+    assert "undefined label" in warning
+    assert "demo-spec-4-row-9" in warning
+
+
+#: A specification whose Items list restarts at "1." after a blank line, which
+#: MyST merges into the list already open, as CommonMark does.
+RESTARTED = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "(demo-spec-6)=\n## 6. Items\n\n"
+    "1. **Alpha.** First.\n2. **Beta.** Second.\n\n"
+    "1. **Gamma.** Restarted, but the same list.\n"
+)
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_restarted_list_names_its_third_item_by_position(tmp_path):
+    """The build and the grammar must agree: item 3 is the restarted ``1.``.
+
+    ``ItemTargets`` has always numbered an enumerated list's items by position,
+    as the real doctree does; the grammar's ``listed()`` (which declares which
+    anchors a citation may resolve to) read the digit written instead, which for
+    a restarted list disagreed. Citing item 3 must land on "Gamma", the item
+    actually third in the merged list, not "Alpha" under a second anchor.
+    """
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    (src / "developer" / "specs" / "2026-01-01-demo-design.md").write_text(
+        RESTARTED, encoding="utf-8"
+    )
+    toctree = "   page\n   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(
+        f"Page\n====\n\nSee demo spec {SECTION}6 item 3.\n", encoding="utf-8"
+    )
+
+    html, warning = build(src, tmp_path)
+
+    page = (html / "page.html").read_text(encoding="utf-8")
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'demo-design.html#demo-spec-6-item-3"' in page
+    assert '<li id="demo-spec-6-item-3"><p><strong>Gamma.</strong>' in demo
+    assert '<li id="demo-spec-6-item-1"><p><strong>Alpha.</strong>' in demo
+
+
+#: A specification whose first item runs on to a line written flush beneath it,
+#: which CommonMark reads as more of the item, so that the item after it is still
+#: the list's.
+LAZY = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "(demo-spec-6)=\n## 6. Items\n\n"
+    "1. **Alpha.** First item.\nMore of the first item.\n2. **Beta.** Second item.\n"
+)
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_lazy_line_leaves_the_item_after_it_in_its_list(tmp_path):
+    """The build and the grammar must agree: the item after a lazy line is item 2.
+
+    MyST reads a flush line straight after an item's text as more of the item, so
+    Beta is the list's second item, and the build gives it that anchor. The
+    grammar, which declares the anchors a citation may name, must give it too.
+    """
+    grammar = _load("geovista_citations")
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    spec.write_text(LAZY, encoding="utf-8")
+    toctree = "   page\n   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(
+        f"Page\n====\n\nSee demo spec {SECTION}6 item 2.\n", encoding="utf-8"
+    )
+
+    html, warning = build(src, tmp_path)
+
+    page = (html / "page.html").read_text(encoding="utf-8")
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'demo-design.html#demo-spec-6-item-2"' in page
+    assert '<li id="demo-spec-6-item-2"><p><strong>Beta.</strong>' in demo
+    assert [(i.number, i.title) for i in grammar.listed(LAZY)] == [
+        (1, "Alpha."),
+        (2, "Beta."),
+    ]
+    assert "demo-spec-6-item-2" in grammar.namespace([spec]).anchors
+
+
+#: A specification whose first item ends in an indented code block, with a line
+#: written flush beneath the code, which ends the list: Beta opens a second one.
+CODED = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "(demo-spec-3)=\n## 3. Items\n\n"
+    "1. **Alpha.** First.\n\n       print(123)\nOutside the list.\n\n"
+    "2. **Beta.** Second.\n"
+)
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_flush_line_after_code_leaves_the_next_item_unanchored(tmp_path):
+    """The build and the grammar must agree: Beta is in a second list, unanchored.
+
+    A lazy line continues only an open paragraph, and an indented code block
+    closes the one before it, so the flush line ends the list. The build names
+    only a section's first list, so neither it nor the grammar has item 2, and a
+    citation of it fails in both.
+    """
+    grammar = _load("geovista_citations")
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    spec.write_text(CODED, encoding="utf-8")
+    toctree = "   page\n   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(
+        f"Page\n====\n\nSee demo spec {SECTION}3 item 2.\n", encoding="utf-8"
+    )
+
+    html, warning = build(src, tmp_path)
+
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert "undefined label: 'demo-spec-3-item-2'" in warning
+    assert 'id="demo-spec-3-item-1"' in demo
+    assert 'id="demo-spec-3-item-2"' not in demo
+    assert [(i.number, i.title) for i in grammar.listed(CODED)] == [(1, "Alpha.")]
+    assert "demo-spec-3-item-2" not in grammar.namespace([spec]).anchors

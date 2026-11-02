@@ -89,7 +89,6 @@ TRACKED = citations.TRACKED
 ANCHOR = citations.ANCHOR
 HEADING = citations.HEADING
 FENCE = citations.FENCE
-TARGETED = citations.TARGETED
 LABEL = citations.LABEL
 Citation = citations.Citation
 Namespace = citations.Namespace
@@ -101,6 +100,10 @@ prose = citations.prose
 namespace = citations.namespace
 scan = citations.scan
 section_role = citations.section_role
+alternation = citations.alternation
+NUMBER = citations.NUMBER
+GAP = citations.GAP
+MEMBER = citations.MEMBER
 
 
 def where(path: Path, number: int) -> str:
@@ -314,11 +317,14 @@ def resolution(path: Path, text: str, names: Namespace) -> list[str]:
                     f"{where(path, number)}: {citation.text} names no document, "
                     "and this file owns no sections"
                 )
-            elif citation.slug not in names.anchors:
-                problems.append(
-                    f"{where(path, number)}: {citation.text} names {citation.slug}, "
-                    "which no specification declares"
-                )
+                continue
+            # a range names both its ends, and each is checked (items spec §3.1)
+            problems.extend(
+                f"{where(path, number)}: {citation.text} names {slug}, "
+                "which no specification declares"
+                for slug in (citation.slug, *citation.ends)
+                if slug not in names.anchors
+            )
     return problems
 
 
@@ -529,6 +535,25 @@ def test_resolution_finds_each_dangling_and_ownerless_citation(tmp_path):
     assert "this file owns no sections" in problems[1]
 
 
+def test_resolution_checks_both_ends_of_a_range(tmp_path):
+    """A range names its far end too, so a far end past the roadmap is reported.
+
+    Holds items spec §2 decision 10.
+    """
+    roadmap = "| # | Scope | Status |\n|---|---|---|\n| 1 | x | candidate |\n"
+    _, names = demo(tmp_path, f"{DEMO}\n{roadmap}")
+    text = f"# rows 1 to 2 of demo spec {SECTION}2, row 1 of {SECTION}2\n"
+
+    problems = resolution(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        (
+            f"rows 1 to 2 of demo spec {SECTION}2 names demo-spec-2-row-2, "
+            "which no specification declares"
+        )
+    ]
+
+
 def test_form_finds_each_citation_without_its_sign(tmp_path):
     """The sign is what separates a citation from a sentence holding a number."""
     _, names = demo(tmp_path, DEMO)
@@ -539,6 +564,175 @@ def test_form_finds_each_citation_without_its_sign(tmp_path):
     assert [p.split(": ", 1)[1] for p in problems] == [
         "'demo spec 2.1' has no section sign"
     ]
+
+
+#: The word an item, a row or a decision is named by, singular only: a plural names
+#: no one of them.
+KIND = r"decision|item|row"
+
+
+def near_misses(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find a citation in a form the grammar does not read (items spec §7 item 1).
+
+    None of the three forms below is linked or checked, so each reads as prose rather
+    than a citation, and review passes it by. A known prefix followed directly by
+    ``row``, ``item`` or ``decision`` carries no section sign at all; a section sign
+    followed by a comma and one of those words carries one the grammar cannot read
+    past the comma; and ``decision`` named with its section after ``of`` uses the word
+    order the grammar accepts only for an item or a row. Each is reported with the
+    citation it should become, read without regard to case, as a sentence may open on
+    one. An item or a row read after the comma is not reported if it opens a citation
+    of its own, naming its section after ``of``, since the comma there only parts two
+    citations in a list.
+
+    Parameters
+    ----------
+    path : Path
+        The file.
+    text : str
+        Its text.
+    names : Namespace
+        The known prefixes.
+
+    Returns
+    -------
+    list of str
+        One message per fault, located with :func:`where`.
+
+    """
+    known = alternation(names.prefixes)
+    missing_sign = re.compile(
+        rf"(?<![\w-])(?P<prefix>{known}){GAP}"
+        rf"(?P<kind>{KIND}){GAP}(?P<member>{MEMBER})",
+        flags=re.IGNORECASE,
+    )
+    comma_form = re.compile(
+        rf"{SECTION}(?P<num>{NUMBER}),[^\S\n]*(?P<kind>{KIND}){GAP}(?P<member>{MEMBER})",
+        flags=re.IGNORECASE,
+    )
+    # an item or a row after the comma may open a citation of its own, as
+    # ``row 6 of §9`` does in ``§8, row 6 of §9``: that comma only parts two
+    # citations in a list, so each member is read ahead before it is reported
+    pre_form = re.compile(
+        rf"{GAP}of{GAP}(?:{known}[^\S\n]*)?{SECTION}{NUMBER}", flags=re.IGNORECASE
+    )
+    decision_of = re.compile(
+        rf"\bdecision{GAP}(?P<member>{MEMBER}){GAP}of{GAP}"
+        rf"(?:(?P<prefix>{known})[^\S\n]*)?{SECTION}(?P<num>{NUMBER})",
+        flags=re.IGNORECASE,
+    )
+    problems = []
+    for number, line in source_lines(path, text):
+        plain, _ = prose(line)
+        for match in missing_sign.finditer(plain):
+            kind = match["kind"].lower()
+            fix = f"{match['prefix']} {SECTION}{ELLIPSIS} {kind} {match['member']}"
+            problems.append(
+                f"{where(path, number)}: {match[0]!r} carries no section sign at "
+                f"all; write it as {fix!r}, with the section it names"
+            )
+        for match in comma_form.finditer(plain):
+            kind = match["kind"].lower()
+            if kind != "decision" and pre_form.match(plain, match.end()):
+                continue
+            if kind == "row":
+                fix = f"row {match['member']} of {SECTION}{match['num']}"
+            else:
+                fix = f"{SECTION}{match['num']} {kind} {match['member']}"
+            problems.append(
+                f"{where(path, number)}: {match[0]!r} is a near-miss citation; "
+                f"write {fix!r}"
+            )
+        for match in decision_of.finditer(plain):
+            prefix = f"{match['prefix']} " if match["prefix"] else ""
+            fix = f"{prefix}{SECTION}{match['num']} decision {match['member']}"
+            problems.append(
+                f"{where(path, number)}: {match[0]!r} is a near-miss citation; "
+                f"write {fix!r}"
+            )
+    return problems
+
+
+def test_near_misses_finds_each_form(tmp_path):
+    """One of each near miss, beside three valid forms already read as citations.
+
+    Holds items spec §2 decision 10.
+    """
+    _, names = demo(tmp_path, DEMO)
+    text = (
+        f"# demo spec item 9.\n"
+        f"# demo spec {SECTION}2, item 3.\n"
+        f"# decision 1 of demo spec {SECTION}2.\n"
+        f"# Valid: demo spec {SECTION}2 item 3, item 3 of demo spec {SECTION}2, "
+        f"and demo spec {SECTION}2 decision 1.\n"
+    )
+    path = tmp_path / "module.py"
+
+    problems = near_misses(path, text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        (
+            f"'demo spec item 9' carries no section sign at all; write it as "
+            f"'demo spec {SECTION}{ELLIPSIS} item 9', with the section it names"
+        ),
+        f"'{SECTION}2, item 3' is a near-miss citation; write '{SECTION}2 item 3'",
+        (
+            f"'decision 1 of demo spec {SECTION}2' is a near-miss citation; "
+            f"write 'demo spec {SECTION}2 decision 1'"
+        ),
+    ]
+
+
+def test_near_misses_rewrites_a_comma_row_before_its_section(tmp_path):
+    """A row never trails its section, so the fix reorders rather than drop a comma."""
+    _, names = demo(tmp_path, DEMO)
+    text = f"# See {SECTION}2, row 3 of the roadmap.\n"
+
+    problems = near_misses(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"'{SECTION}2, row 3' is a near-miss citation; write 'row 3 of {SECTION}2'"
+    ]
+
+
+def test_near_misses_comma_form_reads_any_case(tmp_path):
+    """A sentence may open on the word, as the corpus does, so case must not matter."""
+    _, names = demo(tmp_path, DEMO)
+    text = f"# {SECTION}8, Item 3 opens a sentence, and {SECTION}9, ROW 6 too.\n"
+
+    problems = near_misses(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"'{SECTION}8, Item 3' is a near-miss citation; write '{SECTION}8 item 3'",
+        f"'{SECTION}9, ROW 6' is a near-miss citation; write 'row 6 of {SECTION}9'",
+    ]
+
+
+def test_near_misses_passes_a_list_of_valid_citations(tmp_path):
+    """A row or an item opening its own citation after a comma is no near miss."""
+    _, names = demo(tmp_path, DEMO)
+    text = (
+        f"# item 3 of demo spec {SECTION}8, row 6 of demo spec {SECTION}9, "
+        f"and decision 1 of demo spec {SECTION}2.\n"
+    )
+
+    problems = near_misses(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        (
+            f"'decision 1 of demo spec {SECTION}2' is a near-miss citation; "
+            f"write 'demo spec {SECTION}2 decision 1'"
+        )
+    ]
+
+
+def test_no_citation_is_a_near_miss(texts, names):
+    """Settles items spec §7 item 1 (#2804): every near-miss in the corpus is fixed."""
+    problems = [
+        p for path, text in texts.items() for p in near_misses(path, text, names)
+    ]
+
+    assert not problems, "\n".join(problems)
 
 
 def paired(tmp_path: Path, body: str) -> tuple[Path, Namespace]:
@@ -1138,13 +1332,32 @@ def carried(rest: str) -> str:
     return text[1:]
 
 
-def roadmap_header(cells: list[str]) -> bool:
-    """Decide whether a table's header is a roadmap's: ``#``, ``Scope`` and ``Status``.
+#: A roadmap is read by its whole header, as the build and the guard read it.
+roadmap_header = citations.roadmap_header
 
-    A Verification table has a Status column too, so a roadmap is read by its whole
-    header (ledger spec §3.6), which a type coverage roadmap extends with ``Lines``.
+
+def row_numbers(path: Path, text: str) -> list[str]:
+    """Find each roadmap row whose first cell is no row number, as ``**1**`` is.
+
+    A citation names a row by its first cell, so a cell that is no number, with a
+    letter or without, names nothing, and the grammar passes the row over.
     """
-    return bool(cells) and cells[0] == "#" and {"Scope", "Status"} <= set(cells)
+    problems = []
+    table: list[tuple[int, str]] = []
+    for number, line in [*read_lines(text), (0, "")]:
+        if line.startswith("|"):
+            table.append((number, line))
+            continue
+        if table and roadmap_header(citations.cells(table[0][1])):
+            for row, written in table[2:]:
+                cell = (citations.cells(written) or [""])[0]
+                if not citations.ROW_NUMBER.fullmatch(cell):
+                    problems.append(
+                        f"{where(path, row)}: row {cell!r} is not numbered as a "
+                        "row: number it as `1` or `1a`"
+                    )
+        table = []
+    return problems
 
 
 def statuses(text: str) -> Iterator[tuple[int, str, str]]:
@@ -1200,10 +1413,20 @@ def statuses(text: str) -> Iterator[tuple[int, str, str]]:
             item.append(line.strip())
 
 
-def status(path: Path, text: str) -> list[str]:
-    """Find each status outside the vocabulary, or terminal and unevidenced."""
+def status(path: Path, text: str, *, unitemed: bool | None = None) -> list[str]:
+    """Find each status outside the vocabulary, or terminal and unevidenced.
+
+    An open item is read in the grammar of docs spec §3.6 only while its
+    specification waits to be brought into that of items spec §3.2, as
+    :data:`UNITEMED` says unless ``unitemed`` does; after that, the rules of
+    items spec §3.7 hold it instead.
+    """
+    if unitemed is None:
+        unitemed = path.name in UNITEMED
     problems = []
     for number, kind, written in statuses(text):
+        if kind == "item" and not unitemed:
+            continue
         if kind == "row":
             state = next((s for s in ROW_STATES if written.startswith(s)), written)
             rest, states = written[len(state) :], ROW_STATES
@@ -1244,7 +1467,7 @@ def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
     )
     path, _ = demo(tmp_path, roadmap)
 
-    problems = status(path, path.read_text(encoding="utf-8"))
+    problems = status(path, path.read_text(encoding="utf-8"), unitemed=True)
 
     assert [p.split(": ", 1)[1] for p in problems] == [
         f"{LANDED} carries no date and reference",
@@ -1279,7 +1502,7 @@ def test_status_finds_a_date_no_calendar_holds(tmp_path):
     )
     path, _ = demo(tmp_path, roadmap)
 
-    problems = status(path, path.read_text(encoding="utf-8"))
+    problems = status(path, path.read_text(encoding="utf-8"), unitemed=True)
 
     assert [p.split(": ", 1)[1] for p in problems] == [
         f"{LANDED} carries 2026-02-30, which is not a date",
@@ -1304,7 +1527,7 @@ def test_status_reads_bullets_and_a_roadmap_wherever_it_sits(tmp_path):
     )
     path, _ = demo(tmp_path, body)
 
-    problems = status(path, path.read_text(encoding="utf-8"))
+    problems = status(path, path.read_text(encoding="utf-8"), unitemed=True)
 
     assert [p.split(": ", 1)[1] for p in problems] == [
         "'shipped' is not a status",
@@ -1312,6 +1535,34 @@ def test_status_reads_bullets_and_a_roadmap_wherever_it_sits(tmp_path):
         "Resolved carries no date and reference",
         "an open item with no status",
     ]
+
+
+def test_row_numbers_finds_a_row_not_numbered_as_one(tmp_path):
+    """A row is cited by its number, so a first cell that is none is reported."""
+    roadmap = (
+        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        "| 1 | a | not started |\n| 1a | b | not started |\n"
+        "| **2** | c | not started |\n| ~~3~~ | d | not started |\n"
+        "| 4. | e | not started |\n| | f | not started |\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n| **1** | pending | |\n"
+    )
+    path, _ = demo(tmp_path, roadmap)
+
+    problems = row_numbers(path, path.read_text(encoding="utf-8"))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"row {cell!r} is not numbered as a row: number it as `1` or `1a`"
+        for cell in ["**2**", "~~3~~", "4.", ""]
+    ]
+    assert problems[0].startswith(f"{where(path, 10)}: ")
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_every_roadmap_row_is_numbered_as_a_row(spec):
+    """Every roadmap row can be cited, as items spec §3.1 cites one by number."""
+    problems = row_numbers(spec, spec.read_text(encoding="utf-8"))
+
+    assert not problems, "\n".join(problems)
 
 
 def test_both_kinds_of_status_are_read(specs):
@@ -1926,87 +2177,6 @@ def test_row_4_pairs_the_transform_with_its_output_gate():
     assert "tests/docs" in task["cmd"], f"{OUTPUT_TASK} no longer runs tests/docs"
     assert OUTPUT_TASK in workflow.read_text(encoding="utf-8"), (
         f"{workflow.name} no longer runs {OUTPUT_TASK}"
-    )
-
-
-#: The words naming an item after a citation, as in ``§8 item 9``.
-AFTER = re.compile(r"`?,?[^\S\n]*\bitems?[^\S\n]+\d+")
-
-#: The words naming a roadmap row before a citation, as in "rows 2 to 4 of".
-BEFORE = re.compile(r"\brows?\s+\d+[a-c]?(?:\s+(?:to|and)\s+\d+[a-c]?)?\s+of\s+$")
-
-#: A comment marker opening a line, stripped so a wrapped comment reads as one.
-LEADER = re.compile(r"^\s*(?:#+:?|//)?\s*")
-
-
-def legible(line: str) -> str:
-    """Blank a line's inline code, but keep the text a role displays."""
-
-    def shown(match: re.Match[str]) -> str:
-        if match["role"] is not None and len(match["ticks"]) == 1:
-            targeted = TARGETED.match(match["body"])
-            return targeted["text"] if targeted else match["body"]
-        return " "
-
-    return citations.SPAN.sub(shown, line)
-
-
-def numbered(texts: dict[Path, str], names: Namespace) -> int:
-    """Count the citations of an item or a roadmap row outside the specifications.
-
-    An item follows its citation, as in ``typing spec §8 item 9``, and a row
-    precedes it, as in ``rows 2 to 4 of docs spec §4``. Lines are joined, so a
-    reference wrapped across two reads as one.
-
-    It is a trigger, not a census, and errs low. It misses a citation whose
-    prefix carries from earlier in a run, as the second item cited in
-    ``typing spec §8 items 5, §8 item 9``, and the form written as
-    ``item 9 of typing spec §8``, which nothing outside the specifications uses.
-    It also counts the comments of this module that cite rows, two of today's
-    eight.
-    """
-    count = 0
-    for path, text in texts.items():
-        if path in names.owners:
-            continue
-        joined = " ".join(
-            LEADER.sub("", legible(line)) for _, line in source_lines(path, text)
-        )
-        for match in names.signed.finditer(joined):
-            if match["prefix"] is None:
-                continue
-            item = AFTER.match(joined, match.end())
-            row = BEFORE.search(joined[max(0, match.start() - 40) : match.start()])
-            count += bool(item or row)
-    return count
-
-
-#: Citations of items and roadmap rows outside the specifications past which row 5
-#: of citation spec §9 activates: a little over three times the six there were.
-NUMBERED_CEILING = 20
-
-
-def test_numbered_counts_items_and_rows_and_nothing_else(tmp_path):
-    """Two items, a row and a run of rows are four; a section alone is none."""
-    _, names = demo(tmp_path, DEMO)
-    spec = f"demo spec {SECTION}"
-    texts = {
-        tmp_path / "a.py": f"# {spec}1 item 3, and {spec}2 items 4\n",
-        tmp_path / "b.md": f"See row 2 of {spec}1, and rows 3\nto 4 of {spec}2.\n",
-        tmp_path / "c.md": f"See {spec}1 and item 5 of the list.\n",
-    }
-
-    assert numbered(texts, names) == 4
-
-
-def test_row_5_waits_until_items_and_rows_are_cited_often(texts, names):
-    """Triggers (item 6): the scale at which items and rows want links of their own."""
-    count = numbered(texts, names)
-
-    assert count > 0, "no item or row is cited: the count is vacuous"
-    assert count <= NUMBERED_CEILING, (
-        f"{count} citations of items and rows outside the specifications, past "
-        f"{NUMBERED_CEILING}: row 5 of the citation links roadmap has activated."
     )
 
 
@@ -2633,3 +2803,683 @@ def test_ledger_rules_read_states_without_their_variation_selector(tmp_path):
     assert ledger_entries(path, text) == []
     assert ledger_table(path, text) == []
     assert ledger_retirements(path, text) == []
+
+
+#: Open Items (items spec §3.7): the states and parts of items spec §3.2, from the
+#: grammar, which builds them by name.
+OPEN = citations.OPEN
+DEFERRED = citations.DEFERRED
+RESOLVED = citations.RESOLVED
+ABANDONED = citations.ABANDONED
+GRADUATED = citations.GRADUATED
+ITEMED_STATES = citations.ITEMED_STATES
+SETTLED = (RESOLVED, ABANDONED, GRADUATED)
+FOUND = citations.FOUND
+OWED = citations.OWED
+MOVED = citations.MOVED
+TICKET = citations.TICKET
+DOT = citations.DOT
+items = citations.items
+Item = citations.Item
+Row = citations.Row
+row_anchor = citations.row_anchor
+
+#: The specifications whose open items are not yet in the grammar of
+#: items spec §3.2, each with the row of items spec §8 that brings it in, and read
+#: until then in that of docs spec §3.6 by :func:`status`. Each of those rows
+#: shortens this, and the last empties it.
+UNITEMED = {
+    "2026-10-06-type-coverage-design.md": 3,
+    "2026-10-23-globe-first-crs-design.md": 4,
+    "2026-10-26-globe-heights-layers-design.md": 5,
+    "2026-10-27-globe-scene-design.md": 5,
+    "2026-10-28-heights-as-data-design.md": 5,
+    "2026-10-30-decision-ledger-design.md": 5,
+}
+
+#: Where an item was found, the row that owes it, and the issue that tracks it.
+FOUND_AT = f"{FOUND} 2026-01-01, {{pull}}`1`"
+OWED_BY = f"{OWED} row 2 of {SECTION}2"
+TICKETED = f"{TICKET} {{issue}}`5`"
+
+
+def entry_item(number: int, state: str, *parts: str, title: str = "An item.") -> str:
+    """Write an open item's entry, state first and its parts separated."""
+    return f"{number}. **{state}** ({DOT.join(parts)}) — **{title}** Its reasoning.\n"
+
+
+def graduation(row: int) -> str:
+    """Write the date and pull request of a graduation to ``row``, and the row."""
+    return f"2026-01-01, {{pull}}`1`, to row {row} of {SECTION}2"
+
+
+def moved(row: int, day: str = "2026-01-02") -> str:
+    """Write the part recording a move from ``row``."""
+    return f"{MOVED} row {row}, {day}, {{pull}}`2`"
+
+
+#: A roadmap whose first row has landed and whose others have not.
+ROADMAP = (
+    f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
+    "| 2 | b | not started |\n| 3 | c | candidate: a trigger |\n"
+)
+
+
+def itemed(
+    tmp_path: Path, entries: str, roadmap: str = ROADMAP
+) -> tuple[Path, Namespace]:
+    """Write a ``demo spec`` with a roadmap in its second section and open items."""
+    return demo(
+        tmp_path,
+        "(demo-spec-1)=\n## 1. Purpose\n\n"
+        "(demo-spec-2)=\n## 2. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        f"{roadmap}\n"
+        f"(demo-spec-3)=\n## 3. Open Items\n\nThe items.\n\n{entries}",
+    )
+
+
+#: What a move records: the row it left, then its date and pull request.
+MOVE = re.compile(rf"row{GAP}{MEMBER},")
+#: Any markdown heading, numbered or not, and how deep it sits.
+ANY_HEADING = re.compile(r"^(?P<depth>#{1,6})\s+(?P<title>\S.*?)\s*$")
+
+
+def own_row(path: Path, text: str, cited: str, names: Namespace) -> Row | str:
+    """Find the row of a specification's own roadmap that ``cited`` names.
+
+    The citation is read by the grammar, as every citation is, so that this rule
+    and the build can never disagree about which row it names.
+
+    Parameters
+    ----------
+    path : Path
+        The specification.
+    text : str
+        Its text.
+    cited : str
+        The citation, as ``row 5 of §10``, which may carry the specification's own
+        prefix.
+    names : Namespace
+        The namespace it is read in.
+
+    Returns
+    -------
+    Row or str
+        The row, or what is wrong with the citation, completing "which ...".
+
+    """
+    owner = names.owners.get(path)
+    slug = citations.cited_row(cited, owner, names)
+    if slug is None:
+        return "names no row"
+    if LABEL.match(slug)["prefix"] != owner:
+        return "is another specification's"
+    row = next(
+        (
+            r
+            for r in citations.rows(text)
+            if row_anchor(owner, r.section, r.row) == slug
+        ),
+        None,
+    )
+    return "does not exist" if row is None else row
+
+
+def entry_faults(item: Item) -> list[str]:
+    """Say what is wrong with the parts of an item's parenthetical, if anything."""
+    written = citations.provenance(item.carried)
+    settled = item.state in SETTLED
+    faults = []
+    if settled:
+        lead = written[0][1] if written and written[0][0] is None else ""
+        written = written[1:] if lead else written
+        if item.state == GRADUATED:
+            if not (DATE.search(lead) and PULL.search(lead) and item.graduated):
+                faults.append("graduates with no date, pull and row")
+        elif not (DATE.search(lead) and REFERENCE.search(lead)):
+            faults.append("is settled with no date and reference")
+    kinds = [kind for kind, _ in written]
+    faults += [
+        f"carries {said!r}, which is no part" for kind, said in written if not kind
+    ]
+    if FOUND not in kinds:
+        faults.append(f"carries no {FOUND}")
+    elif not (DATE.search(item.found) and PULL.search(item.found)):
+        faults.append("was found with no date and pull")
+    if not settled:
+        faults += [f"carries no {part}" for part in (OWED, TICKET) if part not in kinds]
+    elif OWED in kinds:
+        faults.append(f"is settled, and still carries {OWED}")
+    ticket = next((said for kind, said in written if kind == TICKET), None)
+    if ticket is not None and item.issue is None:
+        faults.append(f"carries {TICKET} {ticket}, which is no issue")
+    faults += [
+        f"carries {part} twice"
+        for part in (FOUND, OWED, TICKET)
+        if kinds.count(part) > 1
+    ]
+    ranks = [citations.PARTS.index(kind) for kind in kinds if kind]
+    if ranks != sorted(ranks):
+        faults.append("carries its parts out of order")
+    return faults
+
+
+def item_entries(path: Path, text: str) -> list[str]:
+    """Find each fault in an item's entry, item 1 of items spec §3.7.
+
+    Each item of the Open Items section is a numbered entry opening with a state,
+    and its parenthetical carries the parts its state needs, in order: every item
+    where it was found, an open or deferred one the row that owes it and its
+    issue, and a settled one its date and reference first. A settled item carries
+    its issue only if it has one, as one settled before items spec §3.2 may lead
+    with the issue or link that settled it instead (docs spec §3.6).
+    """
+    titles = [h["title"] for _, line in read_lines(text) if (h := HEADING.match(line))]
+    if citations.OPEN_ITEMS.casefold() not in {title.casefold() for title in titles}:
+        return [f"{where(path, 1)}: it has no Open Items section"]
+    found = items(text)
+    opened = {item.line for item in found}
+    problems = unreached(path, text)
+    for number, line in citations._titled(text, citations.OPEN_ITEMS):
+        if ITEM.match(line) is None or number in opened:
+            continue
+        if line.startswith(("-", "*")):
+            problems.append(
+                f"{where(path, number)}: an item is a bullet, not a numbered entry"
+            )
+        else:
+            problems.append(
+                f"{where(path, number)}: an item written after its list has ended"
+            )
+    numbers = [item.number for item in found]
+    if numbers != list(range(1, len(found) + 1)):
+        problems.append(f"{where(path, 1)}: items are numbered {numbers}")
+    for item in found:
+        at = where(path, item.line)
+        if item.state is None:
+            problems.append(f"{at}: item {item.number} opens with no state")
+        elif not item.title:
+            problems.append(f"{at}: item {item.number} has no title")
+        else:
+            problems += [f"{at}: item {item.number} {f}" for f in entry_faults(item)]
+            problems += [
+                f"{at}: item {item.number} carries {bad}, which is not a date"
+                for bad in undated(item.carried)
+            ]
+    return problems
+
+
+def unreached(path: Path, text: str) -> list[str]:
+    """Find a heading that puts items beyond the reach of :func:`items`.
+
+    The items are those of the first section titled Open Items, up to its next
+    heading, so a subsection of it, or a second section of that title, would hold
+    items no rule reads.
+    """
+    problems = []
+    depth: int | None = None
+    seen = False
+    for number, line in read_lines(text):
+        heading = ANY_HEADING.match(line)
+        if heading is None:
+            continue
+        level = len(heading["depth"])
+        numbered = HEADING.match(line)
+        title = numbered["title"] if numbered else heading["title"]
+        if depth is not None and level > depth:
+            problems.append(
+                f"{where(path, number)}: a heading inside Open Items, under which "
+                "items go unread"
+            )
+            continue
+        depth = None
+        if title.casefold() == citations.OPEN_ITEMS.casefold():
+            if seen:
+                problems.append(
+                    f"{where(path, number)}: a second Open Items section, whose items "
+                    "go unread"
+                )
+            seen, depth = True, level
+    return problems
+
+
+def item_owed(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find an item owed by no row, or by one landed, item 2 of items spec §3.7.
+
+    This is the landing gate of items spec §3.5: a row may not land while an open
+    or deferred item still names it.
+    """
+    problems = []
+    for item in items(text):
+        if item.state not in (OPEN, DEFERRED) or item.owed is None:
+            continue
+        row = own_row(path, text, item.owed, names)
+        if isinstance(row, str):
+            why = row
+        elif row.status.startswith(LANDED):
+            why = "has landed"
+        else:
+            continue
+        problems.append(
+            f"{where(path, item.line)}: item {item.number} is owed by {item.owed}, "
+            f"which {why}"
+        )
+    return problems
+
+
+def item_moves(path: Path, text: str) -> list[str]:
+    """Find an item moved too often or not at all, item 3 of items spec §3.7."""
+    problems = []
+    for item in items(text):
+        at = where(path, item.line)
+        count = len(item.moves)
+        if count > 2:
+            problems.append(
+                f"{at}: item {item.number} carries {count} {MOVED}, and must settle "
+                "or graduate instead"
+            )
+        elif item.state == OPEN and count:
+            problems.append(
+                f"{at}: item {item.number} is open, and carries {MOVED}: it is deferred"
+            )
+        elif item.state == DEFERRED and not count:
+            problems.append(
+                f"{at}: item {item.number} is deferred, and carries no {MOVED}"
+            )
+        problems += [
+            f"{at}: item {item.number} carries {MOVED} {move}, which is not a row, "
+            "date and pull"
+            for move in item.moves
+            if not (MOVE.match(move) and DATE.search(move) and PULL.search(move))
+        ]
+    return problems
+
+
+def item_graduated(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find a graduation to a row not citing its issue, items spec §3.7 item 4.
+
+    The item's issue moves with it to the row it became (items spec §3.6), so
+    that the row cites it.
+    """
+    problems = []
+    for item in items(text):
+        if item.state != GRADUATED or item.graduated is None:
+            continue
+        at = where(path, item.line)
+        if item.issue is None:
+            problems.append(
+                f"{at}: item {item.number} graduates with no {TICKET} for its row "
+                "to cite"
+            )
+            continue
+        row = own_row(path, text, item.graduated, names)
+        cited = f"{{issue}}`{item.issue}`"
+        if isinstance(row, str):
+            why = row
+        elif cited not in f"{row.scope} {row.status}":
+            why = f"does not cite {cited}"
+        else:
+            continue
+        problems.append(
+            f"{at}: item {item.number} graduates to {item.graduated}, which {why}"
+        )
+    return problems
+
+
+def item_issues(texts: Mapping[Path, str]) -> list[str]:
+    """Find an issue cited by two items, item 5 of items spec §3.7.
+
+    The rule runs across the collection, since an item of one specification may
+    not share its issue with one of another.
+    """
+    first: dict[int, str] = {}
+    problems = []
+    for path, text in texts.items():
+        for item in items(text):
+            if item.issue is None:
+                continue
+            at = where(path, item.line)
+            if item.issue in first:
+                problems.append(
+                    f"{at}: item {item.number} cites {{issue}}`{item.issue}`, as "
+                    f"{first[item.issue]} does"
+                )
+            else:
+                first[item.issue] = at
+    return problems
+
+
+def test_items_reads_each_part_of_an_entry():
+    """Items spec §3.2: the state, each part, and the title, wrapped or not."""
+    text = (
+        "(demo-spec-7)=\n## 7. Open items\n\n"
+        f"1. **{DEFERRED}** ({FOUND_AT} {DOT.strip()}\n"
+        f"   {OWED_BY} {DOT.strip()} {moved(1)} {DOT.strip()} {TICKETED})\n"
+        "   — **A deferred\n   item.** Its reasoning.\n"
+        f"2. **{GRADUATED}** (2026-02-01, {{pull}}`3`, to row 3 of {SECTION}2"
+        f"{DOT}{FOUND_AT}) — **A graduated item.**\n"
+    )
+
+    deferred, graduated = items(text)
+
+    assert deferred == Item(
+        number=1,
+        line=4,
+        state=DEFERRED,
+        settled="",
+        found="2026-01-01, {pull}`1`",
+        owed=f"row 2 of {SECTION}2",
+        moves=("row 1, 2026-01-02, {pull}`2`",),
+        issue=5,
+        graduated=None,
+        title="A deferred item.",
+        body="Its reasoning.",
+        carried=deferred.carried,
+    )
+    assert graduated.state == GRADUATED
+    assert graduated.settled == f"2026-02-01, {{pull}}`3`, to row 3 of {SECTION}2"
+    assert graduated.graduated == f"row 3 of {SECTION}2"
+    assert (graduated.owed, graduated.issue, graduated.moves) == (None, None, ())
+
+
+def test_items_reads_states_and_parts_without_their_variation_selector():
+    """Items spec §3.2: an emoji typed without U+FE0F is the same state or part."""
+    plain = citations.VS16
+    text = "(demo-spec-7)=\n## 7. Open Items\n\n" + entry_item(
+        1,
+        DEFERRED.replace(plain, ""),
+        FOUND_AT,
+        OWED_BY,
+        moved(1).replace(plain, ""),
+        TICKETED,
+    )
+
+    (deferred,) = items(text)
+
+    assert deferred.state == DEFERRED
+    assert len(deferred.moves) == 1
+
+
+def test_item_entries_finds_an_entry_missing_its_found(tmp_path):
+    """Items spec §3.7 item 1: each state carries the parts it needs, in order.
+
+    Holds items spec §2 decision 2, items spec §2 decision 3, items spec §2 decision 4.
+    """
+    entries = (
+        entry_item(1, OPEN, OWED_BY, TICKETED)
+        + entry_item(2, OPEN, FOUND_AT, OWED_BY)
+        + entry_item(3, OPEN, FOUND_AT, TICKETED)
+        + entry_item(4, OPEN, FOUND_AT, TICKETED, OWED_BY)
+        + entry_item(5, OPEN, FOUND_AT, OWED_BY, "a note", TICKETED)
+        + entry_item(6, OPEN, f"{FOUND} 2026-01-01", OWED_BY, TICKETED)
+        + entry_item(7, OPEN, FOUND_AT, OWED_BY, f"{TICKET} {{pull}}`5`")
+        + entry_item(8, RESOLVED, FOUND_AT, TICKETED)
+        + entry_item(9, RESOLVED, "2026-01-01, {pull}`1`", FOUND_AT, OWED_BY)
+        + entry_item(10, GRADUATED, "2026-01-01, {pull}`1`", FOUND_AT)
+    )
+    path, _ = itemed(tmp_path, entries)
+
+    assert faults(item_entries(path, path.read_text(encoding="utf-8"))) == [
+        f"item 1 carries no {FOUND}",
+        f"item 2 carries no {TICKET}",
+        f"item 3 carries no {OWED}",
+        "item 4 carries its parts out of order",
+        "item 5 carries 'a note', which is no part",
+        "item 6 was found with no date and pull",
+        f"item 7 carries {TICKET} {{pull}}`5`, which is no issue",
+        "item 8 is settled with no date and reference",
+        f"item 9 is settled, and still carries {OWED}",
+        "item 10 graduates with no date, pull and row",
+    ]
+
+
+def test_item_entries_passes_a_settled_item_without_its_issue(tmp_path):
+    """Items spec §3.2: an item settled before it keeps its history, with no issue.
+
+    Holds items spec §2 decision 4.
+    """
+    entries = (
+        entry_item(1, RESOLVED, "2026-01-01, {issue}`3`", FOUND_AT)
+        + entry_item(2, ABANDONED, "2026-01-01, [x](https://github.com/o/r/pull/1)")
+        + entry_item(3, RESOLVED, "2026-01-01, {pull}`1`", FOUND_AT, TICKETED)
+    )
+    path, _ = itemed(tmp_path, entries)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(item_entries(path, text)) == [f"item 2 carries no {FOUND}"]
+    fixed = text.replace("pull/1)", f"pull/1){DOT}{FOUND_AT}")
+    assert item_entries(path, fixed) == []
+
+
+def test_item_entries_wants_numbered_titled_items_in_one_list(tmp_path):
+    """Items spec §3.2: a numbered entry, with a title, in the section's list."""
+    entries = (
+        f"1. **{OPEN}** ({FOUND_AT}{DOT}{OWED_BY}{DOT}{TICKETED}) — Untitled.\n"
+        + entry_item(3, OPEN, FOUND_AT, OWED_BY, TICKETED)
+        + f"\nA paragraph.\n\n- **{OPEN}** ({FOUND_AT}) — **A bullet.**\n"
+        + entry_item(4, OPEN, FOUND_AT, OWED_BY, TICKETED)
+    )
+    path, _ = itemed(tmp_path, entries)
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    first = next(n for n, line in enumerate(lines, 1) if line.startswith("1. "))
+    bullet = lines.index(f"- **{OPEN}** ({FOUND_AT}) — **A bullet.**") + 1
+
+    assert item_entries(path, text) == [
+        f"{where(path, bullet)}: an item is a bullet, not a numbered entry",
+        f"{where(path, bullet + 1)}: an item written after its list has ended",
+        f"{where(path, 1)}: items are numbered [1, 3]",
+        f"{where(path, first)}: item 1 has no title",
+    ]
+    gaps = text.replace("## 3. Open Items", "## 3. Gaps")
+    assert faults(item_entries(path, gaps)) == ["it has no Open Items section"]
+
+
+@pytest.mark.parametrize(
+    "after",
+    [
+        "(demo-spec-3-1)=\n### 3.1 More\n\n",
+        "(demo-spec-4)=\n## 4. Open items\n\n",
+    ],
+    ids=["subsection", "second-section"],
+)
+def test_item_entries_reports_items_no_rule_reads(tmp_path, after):
+    """Review Focus 4 of its plan: no item sits where :func:`items` cannot read it.
+
+    An item under a subsection of Open Items, or under a second section of that
+    title, would pass every rule unread, as :func:`status` reads only the items
+    of a specification that :data:`UNITEMED` names.
+    """
+    entries = entry_item(1, OPEN, FOUND_AT, OWED_BY, TICKETED)
+    hidden = "1. **Open** - **Unread.**\n"
+    path, _ = itemed(tmp_path, f"{entries}\n{after}{hidden}")
+    text = path.read_text(encoding="utf-8")
+    heading = next(
+        n
+        for n, line in enumerate(text.splitlines(), 1)
+        if line.startswith("#") and n > items(text)[0].line
+    )
+    expected = (
+        "a heading inside Open Items, under which items go unread"
+        if after.count("#") == 3
+        else "a second Open Items section, whose items go unread"
+    )
+
+    assert item_entries(path, text) == [f"{where(path, heading)}: {expected}"]
+
+
+def test_item_owed_names_a_row_that_has_not_landed(tmp_path):
+    """Items spec §3.7 item 2, the landing gate of items spec §3.5.
+
+    Holds items spec §2 decision 3, items spec §2 decision 5.
+    """
+    entries = (
+        entry_item(1, OPEN, FOUND_AT, f"{OWED} row 1 of {SECTION}2", TICKETED)
+        + entry_item(2, OPEN, FOUND_AT, f"{OWED} row 9 of {SECTION}2", TICKETED)
+        + entry_item(3, OPEN, FOUND_AT, f"{OWED} row 2 of other spec {SECTION}2")
+        + entry_item(4, OPEN, FOUND_AT, f"{OWED} the next release", TICKETED)
+        + entry_item(5, DEFERRED, FOUND_AT, OWED_BY, moved(1), TICKETED)
+        + entry_item(6, OPEN, FOUND_AT, f"{OWED} row 3 of demo spec {SECTION}2")
+        + entry_item(7, OPEN, FOUND_AT, f"{OWED} row 6a of {SECTION}2", TICKETED)
+        + entry_item(8, OPEN, FOUND_AT, f"{OWED} row 1 of Demo Spec {SECTION}2")
+        + entry_item(9, OPEN, FOUND_AT, f"{OWED} rows 2 to 3 of {SECTION}2")
+    )
+    lettered = f"| 6a | d | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
+    path, _ = itemed(tmp_path, entries, ROADMAP + lettered)
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        "(other-spec-2)=\n## 2. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        "| 2 | b | not started |\n",
+        encoding="utf-8",
+    )
+    names = namespace([path, other])
+    others = "another specification's"
+
+    assert faults(item_owed(path, path.read_text(encoding="utf-8"), names)) == [
+        f"item 1 is owed by row 1 of {SECTION}2, which has landed",
+        f"item 2 is owed by row 9 of {SECTION}2, which does not exist",
+        f"item 3 is owed by row 2 of other spec {SECTION}2, which is {others}",
+        "item 4 is owed by the next release, which names no row",
+        f"item 7 is owed by row 6a of {SECTION}2, which has landed",
+        f"item 8 is owed by row 1 of Demo Spec {SECTION}2, which has landed",
+        f"item 9 is owed by rows 2 to 3 of {SECTION}2, which names no row",
+    ]
+
+
+def test_item_moves_wants_one_or_two_for_a_deferred_item(tmp_path):
+    """Items spec §3.7 item 3: none while open, one or two when deferred, not three.
+
+    Holds items spec §2 decision 6, items spec §2 decision 7.
+    """
+    entries = (
+        entry_item(1, DEFERRED, FOUND_AT, OWED_BY, TICKETED)
+        + entry_item(2, DEFERRED, FOUND_AT, OWED_BY, moved(1), TICKETED)
+        + entry_item(3, DEFERRED, FOUND_AT, OWED_BY, moved(1), moved(1), TICKETED)
+        + entry_item(
+            4, DEFERRED, FOUND_AT, OWED_BY, moved(1), moved(1), moved(1), TICKETED
+        )
+        + entry_item(5, OPEN, FOUND_AT, OWED_BY, moved(1), TICKETED)
+        + entry_item(6, DEFERRED, FOUND_AT, OWED_BY, f"{MOVED} row 1", TICKETED)
+    )
+    path, _ = itemed(tmp_path, entries)
+
+    assert faults(item_moves(path, path.read_text(encoding="utf-8"))) == [
+        f"item 1 is deferred, and carries no {MOVED}",
+        f"item 4 carries 3 {MOVED}, and must settle or graduate instead",
+        f"item 5 is open, and carries {MOVED}: it is deferred",
+        f"item 6 carries {MOVED} row 1, which is not a row, date and pull",
+    ]
+
+
+def test_item_graduated_names_a_row_that_cites_its_issue(tmp_path):
+    """Items spec §3.7 item 4: the row an item became carries its issue.
+
+    Holds items spec §2 decision 7.
+    """
+    roadmap = ROADMAP + "| 4 | An item, {issue}`5` | not started |\n"
+    entries = (
+        entry_item(1, GRADUATED, graduation(4), FOUND_AT, TICKETED)
+        + entry_item(2, GRADUATED, graduation(3), FOUND_AT, TICKETED)
+        + entry_item(3, GRADUATED, graduation(8), FOUND_AT, TICKETED)
+        + entry_item(4, GRADUATED, graduation(4), FOUND_AT)
+    )
+    path, names = itemed(tmp_path, entries, roadmap)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(item_graduated(path, text, names)) == [
+        f"item 2 graduates to row 3 of {SECTION}2, which does not cite {{issue}}`5`",
+        f"item 3 graduates to row 8 of {SECTION}2, which does not exist",
+        f"item 4 graduates with no {TICKET} for its row to cite",
+    ]
+
+
+def test_item_issues_finds_two_items_citing_one_issue(tmp_path):
+    """Items spec §3.7 item 5: one issue per item, across the collection.
+
+    Holds items spec §2 decision 2.
+    """
+    first = itemed(tmp_path, entry_item(1, OPEN, FOUND_AT, OWED_BY, TICKETED))[0]
+    second = tmp_path / "2026-01-02-other-design.md"
+    second.write_text(
+        "(other-spec-8)=\n## 8. Open Items\n\n"
+        + entry_item(1, OPEN, FOUND_AT, OWED_BY, f"{TICKET} {{issue}}`6`")
+        + entry_item(2, RESOLVED, "2026-01-01, {pull}`1`", FOUND_AT, TICKETED)
+        + entry_item(3, OPEN, FOUND_AT, OWED_BY, f"{TICKET} {{issue}}`7`"),
+        encoding="utf-8",
+    )
+    texts = {path: path.read_text(encoding="utf-8") for path in (first, second)}
+    (cited,) = items(texts[first])
+    repeated = items(texts[second])[1]
+
+    expected = f"item 2 cites {{issue}}`5`, as {where(first, cited.line)} does"
+
+    assert item_issues(texts) == [f"{where(second, repeated.line)}: {expected}"]
+
+
+def test_each_grammar_is_read_where_the_other_is_expected(tmp_path):
+    """Review Focus 4 of its plan: neither grammar passes unread in the other's place.
+
+    An item in the grammar of docs spec §3.6 has no state to the rules of
+    items spec §3.7, and an item in that of items spec §3.2 has no status to the
+    rule of docs spec §3.6, which reads the specifications :data:`UNITEMED` names.
+
+    Holds items spec §2 decision 9.
+    """
+    old = "1. **Open** ({issue}`5`) — **An item.** Its reasoning.\n"
+    new = entry_item(1, OPEN, FOUND_AT, OWED_BY, TICKETED)
+    path, _ = itemed(tmp_path, old)
+    text = path.read_text(encoding="utf-8")
+
+    assert faults(item_entries(path, text)) == ["item 1 opens with no state"]
+    assert status(path, text, unitemed=True) == []
+    assert faults(status(path, text.replace(old, new), unitemed=True)) == [
+        f"{OPEN!r} is not a status"
+    ]
+    assert item_entries(path, text.replace(old, new)) == []
+    assert status(path, text) == []
+
+
+@pytest.mark.parametrize(
+    "spec",
+    [s for s in specifications() if s.name not in UNITEMED],
+    ids=lambda path: path.name,
+)
+def test_every_itemed_specification_holds_its_items(spec, names):
+    """Open Items (item 10): items spec §3.7, every rule on every item.
+
+    Holds items spec §2 decision 9.
+    """
+    text = spec.read_text(encoding="utf-8")
+    problems = (
+        item_entries(spec, text)
+        + item_owed(spec, text, names)
+        + item_moves(spec, text)
+        + item_graduated(spec, text, names)
+    )
+
+    assert not problems, "\n".join(problems)
+
+
+def test_no_two_items_cite_one_issue(specs):
+    """Open Items (item 10): items spec §3.7 item 5, across the collection."""
+    texts = {
+        spec: spec.read_text(encoding="utf-8")
+        for spec in specs
+        if spec.name not in UNITEMED
+    }
+    problems = item_issues(texts)
+
+    assert not problems, "\n".join(problems)
+
+
+def test_unitemed_names_specifications_still_waiting(specs):
+    """An exemption cannot outlive the row of items spec §8 that ends it."""
+    names = {spec.name for spec in specs}
+    rows = roadmap_rows(
+        (SPECS / "2026-11-02-open-items-design.md").read_text(encoding="utf-8")
+    )
+
+    assert set(UNITEMED) <= names
+    assert not [
+        name for name, row in UNITEMED.items() if rows[str(row)].startswith(LANDED)
+    ]

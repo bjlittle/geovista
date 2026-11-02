@@ -16,8 +16,11 @@ citation in the repository with the specification as it stood when the citing
 line was written, which finds one that arrived by a branch older than the
 renumber. The design is the citation links design, citation spec §4.5.
 
-Numbered items and roadmap rows are cited by number too, in forms no grammar
-reads, so they are held to being appended: one that moves or goes fails.
+Numbered items and roadmap rows are cited by number too, so they are held to
+being appended: one that moves or goes fails. An item with no bold title, such as
+a step of a procedure, is held so only once something cites it (#2806), on the
+base branch or now. A citation of an item or a row names its section as well, and
+goes stale with it.
 
 The citations are read with the grammar of "docs/src/_ext/geovista_citations.py",
 which the conventions test and the documentation build share.
@@ -27,7 +30,7 @@ which the conventions test and the documentation build share.
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import difflib
 import importlib.util
 from pathlib import Path
@@ -38,6 +41,7 @@ import traceback
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
     from types import ModuleType
 
 #: The section of the repository checks page that documents this check.
@@ -218,81 +222,118 @@ def pair(
     return fates
 
 
-#: An item of a numbered list, opening at the left margin.
-ITEM = re.compile(r"^(?P<number>\d+)\.\s+(?P<rest>\S.*)$")
-
 #: A run of bold text, which may wrap.
 BOLD = grammar.BOLD
 
-#: The statuses an open item opens with, before its title.
-STATES = frozenset({"Open", "Resolved", "Deferred", "Abandoned"})
+#: The statuses an open item opens with, before its title: a word in the grammar
+#: of docs spec §3.6, and a state of items spec §3.2.
+STATES = frozenset(
+    {"Open", "Resolved", "Deferred", "Abandoned", *grammar.ITEMED_STATES}
+)
 
 #: The states a decision opens with (ledger spec §3.2, §3.3), read with or without
 #: their variation selectors.
 DECIDED = (grammar.AGREED, grammar.RETIRED)
 
-#: The header of a roadmap table: its number, its scope, and somewhere a status.
-ROADMAP = re.compile(r"^\|\s*#\s*\|\s*Scope\s*\|.*\bStatus\s*\|")
+
+def _stated(bold: str) -> bool:
+    """Say whether a bold run is a state, with or without its variation selector."""
+    return bold.replace(grammar.VS16, "") in {
+        state.replace(grammar.VS16, "") for state in STATES
+    } or (grammar.state_of(bold, DECIDED) is not None)
 
 
-def numbered_items(text: str) -> dict[str, dict[str, Section]]:
-    """Read every numbered item opening with a bold title, by section and number.
+def numbered_items(
+    text: str, cited: Collection[str] = frozenset()
+) -> dict[str, dict[str, Section]]:
+    """Read every numbered item that is frozen, by section and number.
 
-    Each is read as a :class:`Section` keyed by its number, titled by its bold
-    title, the one after its status if it opens with one, with its text as the
-    body, so that items pair as sections do.
+    An item opening with a bold title is frozen. Each is read as a
+    :class:`Section` keyed by its number, titled by its bold title, the one after
+    its state if it opens with one, with its text as the body, so that items pair
+    as sections do. The lists and their items are those :func:`grammar.numbered`
+    reads, as the build does. An item with no title, as a step of a procedure,
+    is frozen only once something cites it (#2806), and is titled by its text,
+    which is what it is paired by.
+
+    An item of a section's first list is numbered as :func:`grammar.listed`, the
+    build and a citation number it, by its place, so a ``1.`` that restarts the
+    list after a blank line continues it. A decision keeps the number written,
+    which its own rules hold to its place. A later list, which no citation can
+    reach, is keyed apart from the first, as ``1 of list 2``.
+
+    Parameters
+    ----------
+    text : str
+        The specification.
+    cited : collection of str, optional
+        The anchors of the items cited, e.g. ``scene-spec-4-4-item-2``.
+
+    Returns
+    -------
+    dict
+        The items of each section, keyed by the section's anchor, then by number.
+
     """
     found: dict[str, dict[str, Section]] = {}
-    lines = [line for _, line in grammar.read_lines(text)]
-    current = None
-    lists = 0
-    for index, line in enumerate(lines):
-        anchor = grammar.ANCHOR.match(line)
-        if anchor is not None:
-            current, lists = f"{anchor['slug']}-{anchor['num']}", 0
+    # the anchor of each section, by the line declaring it
+    anchors = [
+        (number, f"{anchor['slug']}-{anchor['num']}")
+        for number, line in grammar.read_lines(text)
+        if (anchor := grammar.ANCHOR.match(line)) is not None
+    ]
+    for entry in grammar.numbered(text):
+        current = next((key for at, key in reversed(anchors) if at < entry.line), None)
+        if current is None or not entry.text.startswith("**"):
             continue
-        item = ITEM.match(line)
-        if current is None or item is None or not item["rest"].startswith("**"):
-            continue
-        body = [item["rest"]]
-        for following in lines[index + 1 :]:
-            if not following[:1].isspace() or not following.strip():
-                break
-            body.append(following.strip())
-        joined = " ".join(body)
+        joined = entry.text
         bolds = [match["text"].replace("\n", " ") for match in BOLD.finditer(joined)]
         if not bolds:
             # a bold title not yet closed, as an item mid-edit has
             continue
-        stated = bolds[0] in STATES or grammar.state_of(bolds[0], DECIDED) is not None
-        title = bolds[1] if stated and len(bolds) > 1 else bolds[0]
-        number = item["number"]
-        listed = found.setdefault(current, {})
-        if number == "1" and listed:
-            lists += 1
-        # a second list in the section numbers from 1 again, so it is kept apart
-        key = number if not lists else f"{number} of list {lists + 1}"
-        listed[key] = Section(key, title, joined)
+        title = bolds[1] if _stated(bolds[0]) and len(bolds) > 1 else bolds[0]
+        if entry.index:
+            # a later list in the section, which no citation can reach, kept apart
+            key = f"{entry.written} of list {entry.index + 1}"
+        elif (entry.section, entry.title) == ("2", grammar.DECISIONS):
+            key = str(entry.written)
+        else:
+            key = str(entry.number)
+        found.setdefault(current, {})[key] = Section(key, title, joined)
+    owner = _prefix(text)
+    for entry in grammar.listed(text) if owner is not None and cited else ():
+        anchor = grammar.item_anchor(owner, entry.section, entry.number)
+        if entry.title is None and anchor in cited and entry.body:
+            # numbered as a citation numbers it, by its place in the first list
+            section = f"{owner}-{entry.section.replace('.', '-')}"
+            key = str(entry.number)
+            found.setdefault(section, {}).setdefault(
+                key, Section(key, entry.body, entry.body)
+            )
     return found
+
+
+def item_anchors(text: str) -> frozenset[str]:
+    """Spell the anchor of every item a specification lists, as the build gives it."""
+    owner = _prefix(text)
+    if owner is None:
+        return frozenset()
+    return frozenset(
+        grammar.item_anchor(owner, entry.section, entry.number)
+        for entry in grammar.listed(text)
+    )
 
 
 def roadmap_rows(text: str) -> dict[str, Section]:
-    """Read every row of a roadmap table, keyed by its number and titled by scope."""
-    found: dict[str, Section] = {}
-    inside = False
-    for _, line in grammar.read_lines(text):
-        if ROADMAP.match(line):
-            inside = True
-            continue
-        if not line.startswith("|"):
-            inside = False
-            continue
-        cells = grammar.cells(line)
-        if inside and cells and not set(cells[0]) <= set("-: "):
-            # a row mid-edit may have its number and nothing else yet
-            scope = cells[1] if len(cells) > 1 else ""
-            found[cells[0]] = Section(cells[0], scope, scope)
-    return found
+    """Read every row of a roadmap table, keyed by its number and titled by scope.
+
+    The rows are those :func:`grammar.rows` reads, under the header
+    :func:`grammar.roadmap_header` recognises, so the guard holds exactly the rows
+    a citation can name.
+    """
+    return {
+        row.row: Section(row.row, row.scope, row.scope) for row in grammar.rows(text)
+    }
 
 
 def _split(old: str, new: str | None) -> bool:
@@ -300,13 +341,32 @@ def _split(old: str, new: str | None) -> bool:
     return new is not None and re.fullmatch(rf"{re.escape(old)}[a-z]", new) is not None
 
 
-def frozen(base_text: str, head_text: str) -> list[str]:
+def frozen(
+    base_text: str,
+    head_text: str,
+    cited: Collection[str] = frozenset(),
+    was_cited: Collection[str] = frozenset(),
+) -> list[str]:
     """Report each numbered item and roadmap row that moved or went.
+
+    An untitled item is held only if it is cited, on the base branch or now. A
+    citation is read as it stands now, so one the pull request did not touch names
+    an item by the base branch's numbering, and one it rewrote may name it by its
+    section's new number: both hold the item. One the base branch made holds it
+    too, so that rewriting the citation along with the item it moves never frees
+    the item. In a section holding one, every item of its list is paired,
+    then and now, so that an uncited neighbour takes its own number and never
+    leaves its number free for the cited one to be paired with in place; only the
+    items held are reported. A section holding none is read as it always was.
 
     Parameters
     ----------
     base_text, head_text : str
         The specification on the base branch and now.
+    cited : collection of str, optional
+        The anchors the corpus cites, which :func:`cited` reads.
+    was_cited : collection of str, optional
+        The anchors the corpus cited on the base branch, by its numbering.
 
     Returns
     -------
@@ -316,7 +376,28 @@ def frozen(base_text: str, head_text: str) -> list[str]:
     """
     problems: list[str] = []
     fates = pair(sections(base_text), sections(head_text))
-    base_items, head_items = numbered_items(base_text), numbered_items(head_text)
+    based = set(cited) | set(was_cited)
+    was = {fate.anchor: old for old, fate in fates.items() if fate.anchor is not None}
+    for anchor in cited:
+        label = grammar.LABEL.match(anchor)
+        old = was.get(_section(anchor)) if label is not None else None
+        if old is not None and label["item"] is not None:
+            based.add(f"{old}-item-{label['item']}")
+    base_items = numbered_items(base_text, based)
+    titled = numbered_items(base_text)
+    # the number of each cited untitled item, by the section holding it
+    untitled = {
+        section: added
+        for section, listed in base_items.items()
+        if (added := set(listed) - set(titled.get(section, {})))
+    }
+    neighbours = numbered_items(
+        base_text, {a for a in item_anchors(base_text) if _section(a) in untitled}
+    )
+    now = {fates[s].anchor for s in untitled if s in fates}
+    head_items = numbered_items(
+        head_text, {a for a in item_anchors(head_text) if _section(a) in now}
+    )
     for anchor, listed in base_items.items():
         fate = fates.get(anchor)
         if fate is None:
@@ -328,17 +409,31 @@ def frozen(base_text: str, head_text: str) -> list[str]:
                 for number, item in listed.items()
             ]
             continue
-        paired = pair(listed, head_items.get(fate.anchor, {}), in_place=True)
+        paired = pair(
+            neighbours.get(anchor, listed),
+            head_items.get(fate.anchor, {}),
+            in_place=True,
+        )
         for number, item in paired.items():
+            if number not in listed:
+                # an uncited untitled neighbour, free to change
+                continue
             if item.kind == "moved":
                 problems.append(
                     f'{fate.title}, item {number} "{listed[number].title}" is now '
                     f"item {item.anchor}: append an item rather than insert it"
                 )
             elif item.kind == "removed":
+                # an untitled item is paired by its text, so a heavy rewording
+                # loses it as surely as a removal does
+                lost = (
+                    "removed, or reworded past recognition"
+                    if number in untitled.get(anchor, ())
+                    else "removed"
+                )
                 problems.append(
                     f'{fate.title}, item {number} "{listed[number].title}" was '
-                    "removed: mark it as no longer applying, in place"
+                    f"{lost}: mark it as no longer applying, in place"
                 )
     base_rows, head_rows = roadmap_rows(base_text), roadmap_rows(head_text)
     for number, row in pair(base_rows, head_rows, in_place=True).items():
@@ -370,7 +465,8 @@ class Finding:
     fate : Fate
         What became of the section it was written against.
     old : str
-        The anchor it names, which no longer holds that section.
+        The anchor it names, which no longer holds that section, or which lies
+        in it, as an item or a row does.
 
     """
 
@@ -386,19 +482,69 @@ def _number(anchor: str) -> str:
     return grammar.LABEL.match(anchor)["num"].replace("-", ".")
 
 
+def _section(anchor: str) -> str:
+    """Spell the anchor of the section an anchor lies in.
+
+    A section lies in itself, and an item, a row or a decision in the section
+    that holds it, as ``typing-spec-8-item-9`` lies in ``typing-spec-8``.
+    """
+    label = grammar.LABEL.match(anchor)
+    return anchor if label is None else f"{label['prefix']}-{label['num']}"
+
+
+def _left(
+    fates: dict[str, Fate], anchor: str, ends: tuple[str, ...]
+) -> tuple[str, Fate] | None:
+    """Find what a citation names whose section moved or went, with its fate.
+
+    A citation names its anchor and, for a range, its far end too, and each is
+    checked by the section it lies in (items spec §3.1).
+    """
+    for named in (anchor, *ends):
+        fate = fates.get(_section(named))
+        if fate is not None and fate.kind != "kept":
+            return named, fate
+    return None
+
+
+#: The sign and number of the section a citation names, after any member it names.
+SIGNED = re.compile(rf"(?P<sign>{grammar.SECTION}[^\S\n]*){grammar.NUMBER}")
+
+
+def _renumbered(shown: str, new: str, *, member: bool = False) -> str:
+    """Give the section a citation shows the number ``new``, and nothing else.
+
+    The number follows the section sign, whether an item, a row or a decision is
+    named before it or after. A role's display without a sign ends with the
+    section's number, unless the role targets a ``member`` of the section, whose
+    own number it then ends with, and which is left as written.
+    """
+    if SIGNED.search(shown) is not None:
+        return SIGNED.sub(lambda match: match["sign"] + new, shown, count=1)
+    return shown if member else re.sub(r"\d+(?:\.\d+)*$", new, shown)
+
+
 def _citations(
     path: Path, line: str, names: object
-) -> list[tuple[int, int, str, str, str]]:
-    """Find a line's citations, as their span, text, anchor and kind of writing.
+) -> list[tuple[int, int, str, str, str, tuple[str, ...]]]:
+    """Find a line's citations, as their span, text, anchor, kind of writing and ends.
 
     A plain citation spans its text; a role spans its body, between the
     backticks, so that a rewrite can turn its display and its target together.
+    The ends are the anchors of a range's far end, which a role never names.
     """
-    found: list[tuple[int, int, str, str, str]] = []
+    found: list[tuple[int, int, str, str, str, tuple[str, ...]]] = []
     plain, _ = grammar.prose(line)
     owner = names.owners.get(path)
     found.extend(
-        (citation.start, citation.end, citation.text, citation.slug, "plain")
+        (
+            citation.start,
+            citation.end,
+            citation.text,
+            citation.slug,
+            "plain",
+            citation.ends,
+        )
         for citation in grammar.scan(plain, names.signed, owner)
         if citation.slug is not None
     )
@@ -415,6 +561,7 @@ def _citations(
                     shown or target,
                     target,
                     "role",
+                    (),
                 )
             )
     return found
@@ -427,6 +574,9 @@ def stale(
     changed: dict[Path, set[int]],
 ) -> list[Finding]:
     """Find each untouched citation of a section that moved or went.
+
+    A citation of an item or a row of the section, or of a range of them, is a
+    citation of the section too.
 
     Parameters
     ----------
@@ -451,11 +601,38 @@ def stale(
         for number, line in grammar.source_lines(path, text):
             if number in touched:
                 continue
-            for _, _, cited, anchor, _ in _citations(path, line, names):
-                fate = fates.get(anchor)
-                if fate is not None and fate.kind != "kept":
-                    findings.append(Finding(path, number, cited, fate, anchor))
+            for _, _, cited, anchor, _, ends in _citations(path, line, names):
+                left = _left(fates, anchor, ends)
+                if left is not None:
+                    findings.append(Finding(path, number, cited, left[1], left[0]))
     return findings
+
+
+def cited(texts: dict[Path, str], names: object) -> frozenset[str]:
+    """Read every anchor the corpus cites, a range's far end included.
+
+    An untitled item is frozen once it is among them (#2806).
+
+    Parameters
+    ----------
+    texts : dict
+        The corpus, each file's text keyed by its path.
+    names : Namespace
+        The citation grammar of the specifications as they are now.
+
+    Returns
+    -------
+    frozenset of str
+        The anchors, as ``scene-spec-4-4-item-2``.
+
+    """
+    return frozenset(
+        named
+        for path, text in texts.items()
+        for _, line in grammar.source_lines(path, text)
+        for _, _, _, anchor, _, ends in _citations(path, line, names)
+        for named in (anchor, *ends)
+    )
 
 
 def describe(finding: Finding, root: Path, now: dict[str, Section]) -> str:
@@ -471,7 +648,7 @@ def describe(finding: Finding, root: Path, now: dict[str, Section]) -> str:
     if finding.fate.kind == "moved":
         return f"{head}, which is now {grammar.SECTION}{_number(finding.fate.anchor)}"
     sign = f"{grammar.SECTION}{_number(finding.old)}"
-    later = now.get(finding.old)
+    later = now.get(_section(finding.old))
     return f"{head}, which was removed; {sign} is " + (
         f'now "{later.title}"' if later is not None else "no longer a section"
     )
@@ -482,28 +659,34 @@ def rewrite(
 ) -> str:
     """Move each citation of a moved section, on the lines given, to its new number.
 
-    A citation of a removed section has no new number, and is left as written.
+    Only the section's number changes: an item, a row or a decision the citation
+    names keeps the number written. A citation of a removed section has no new
+    number, and is left as written.
     """
     out = text.splitlines(keepends=True)
     for number, line in grammar.source_lines(path, text):
         if number not in lines:
             continue
         edits = []
-        for start, end, _, anchor, kind in _citations(path, line, names):
-            fate = fates.get(anchor)
+        for start, end, _, anchor, kind, _ in _citations(path, line, names):
+            fate = fates.get(_section(anchor))
             if fate is None or fate.kind != "moved":
                 continue
             new = _number(fate.anchor)
+            # what the anchor names within its section, as "-item-2", if anything
+            target = fate.anchor + anchor[len(_section(anchor)) :]
             if kind == "plain":
-                replaced = re.sub(r"\d+(?:\.\d+)*$", new, line[start:end])
+                replaced = _renumbered(line[start:end], new)
             else:
                 targeted = grammar.TARGETED.match(line[start:end])
                 if targeted is None:
                     # a role naming only its target
-                    replaced = fate.anchor
+                    replaced = target
                 else:
-                    shown = re.sub(r"\d+(?:\.\d+)*$", new, targeted["text"])
-                    replaced = f"{shown} <{fate.anchor}>"
+                    shown = _renumbered(
+                        targeted["text"], new, member=target != fate.anchor
+                    )
+                    replaced = f"{shown} <{target}>"
             edits.append((start, end, replaced))
         edited = line
         for start, end, replaced in sorted(edits, reverse=True):
@@ -685,6 +868,67 @@ def _fates(
         if after != before:
             fates.update(pair(sections(before), sections(after) if after else {}))
     return fates
+
+
+def _governed(relative: str) -> bool:
+    """Say whether :func:`grammar.corpus` would gather a file at this path."""
+    parts = relative.split("/")[:-1]
+    return all(grammar.entered(part) for part in parts) and not any(
+        relative.startswith(f"{pruned}/") for pruned in grammar.PRUNED
+    )
+
+
+def was_cited(
+    root: Path, ref: str, texts: dict[Path, str], names: object
+) -> tuple[frozenset[str], frozenset[str]]:
+    """Read the anchors the corpus cites now, and those it cited at ``ref``.
+
+    A file the pull request did not change cites the same at ``ref`` as now, so
+    only the files it changed are read at ``ref``, each by the prefix its
+    specification owned there, if any. A file not yet added was not there.
+
+    Parameters
+    ----------
+    root : Path
+        The repository.
+    ref : str
+        The commit the pull request branched from.
+    texts : dict
+        The corpus, each file's text keyed by its path.
+    names : Namespace
+        The citation grammar of the specifications as they are now.
+
+    Returns
+    -------
+    tuple of frozenset of str
+        The anchors cited now, and those cited at ``ref``.
+
+    """
+    diffed = git(root, "diff", "--name-only", "--no-renames", "-z", ref, "--")
+    changed = [name for name in diffed.split("\0") if name]
+    untracked = git(root, "ls-files", "--others", "--exclude-standard", "-z")
+    touched = {root / name for name in [*changed, *untracked.split("\0")] if name}
+    kept = cited({p: t for p, t in texts.items() if p not in touched}, names)
+    now = cited({p: t for p, t in texts.items() if p in touched}, names)
+    owners = {
+        spec: prefix
+        for spec in _listed(root, ref)
+        if (held := at(root, ref, spec)) is not None
+        and (prefix := _prefix(held)) is not None
+    }
+    then: dict[Path, str] = {}
+    for name in changed:
+        if not _governed(name):
+            continue
+        try:
+            text = at(root, ref, root / name)
+        except UnicodeDecodeError:
+            # not text, which the corpus drops too
+            continue
+        if text is not None:
+            then[root / name] = text
+    based = replace(names, owners={**names.owners, **owners})
+    return kept | now, kept | cited(then, based)
 
 
 def _ancestor(root: Path, older: str, newer: str) -> bool:
@@ -886,15 +1130,15 @@ def since_written(
                 continue
             if baseline is not None and _ancestor(root, commit, baseline):
                 commit = baseline
-            for _, _, citation, anchor, _ in found:
+            for _, _, citation, anchor, _, ends in found:
                 spec = owners.get(grammar.LABEL.match(anchor)["prefix"])
                 if spec is None:
                     continue
                 if (commit, spec) not in chained:
                     chained[commit, spec] = _chain(root, spec, commit, line)
-                fate = chained[commit, spec].get(anchor)
-                if fate is not None and fate.kind != "kept":
-                    findings.append(Finding(path, number, citation, fate, anchor))
+                left = _left(chained[commit, spec], anchor, ends)
+                if left is not None:
+                    findings.append(Finding(path, number, citation, left[1], left[0]))
     return findings
 
 
@@ -976,13 +1220,17 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
             # each line the pull request changed, followed from where it was
             # written on its branch, which a renumber merged since may have moved
             findings += since_written(root, texts, names, changed, args.base)
+            anchors, based = was_cited(root, branched, texts, names)
             for base, current in counterparts.items():
                 before = at(root, branched, base)
                 if before is not None and current is not None:
                     problems += [
                         f"{current.relative_to(root).as_posix()}: {problem}"
                         for problem in frozen(
-                            before, current.read_text(encoding="utf-8")
+                            before,
+                            current.read_text(encoding="utf-8"),
+                            anchors,
+                            based,
                         )
                     ]
             scope = f"the specifications changed since {args.base}"
@@ -1023,7 +1271,7 @@ def _fix(
     for finding in findings:
         if finding.fate.kind == "moved":
             lines = moved.setdefault(finding.path, {})
-            lines.setdefault(finding.line, {})[finding.old] = finding.fate
+            lines.setdefault(finding.line, {})[_section(finding.old)] = finding.fate
     for path, lines in moved.items():
         original = texts[path]
         out = original.splitlines(keepends=True)

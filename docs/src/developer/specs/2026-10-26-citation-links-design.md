@@ -27,8 +27,8 @@
 The specifications are living documents, and they are growing. Six are published, and the
 globe-first CRS work has two of them and more to come. Each is cited by section: 215 times
 from inside the specifications, with hand-written `{ref}` roles, and 68 times from
-everywhere else. That second count is the trigger of rows 2 to 4 of
-docs spec §4, which activate past seventy, and the next change to cite
+everywhere else. That second count is the trigger of
+rows 2 to 4 of docs spec §4, which activate past seventy, and the next change to cite
 a specification from code will pass it.
 
 The links that matter are the ones a reader follows on the documentation site. Today those
@@ -221,8 +221,8 @@ produces from a citation in a heading (tephpy#96).
 It joins `tests/docs`, so it runs in the job that builds the full gallery and runs that
 suite under `--browser-strict`, where a missing build fails instead of skipping. Locally,
 `pixi run -e geovista tests-docs-browser` builds and runs it. `OUTPUT_GATE` in the
-conventions test, which pairs the transform with its output check (row 4 of
-docs spec §4), changes to name this module.
+conventions test, which pairs the transform with its output check
+(row 4 of docs spec §4), changes to name this module.
 
 (citation-spec-4-4)=
 ### 4.4 Collapsing the Roles
@@ -318,15 +318,17 @@ declaring `CHECK`, with a row and a section on the repository checks page
 (citation-spec-4-6)=
 ### 4.6 Items and Rows
 
-Items and rows are referred to by number, and only six of the references are in a form the
-grammar could read (§3.1), so the guard protects them by
-refusing to renumber them. Two kinds are frozen:
+Items and rows are referred to by number. When this specification was written, only six of
+the references were in a form the grammar could read (§3.1); since row 5 of §9 landed, the
+grammar reads them all. The guard protects them by refusing to renumber them. Two kinds are
+frozen:
 
 - **Every numbered item that opens with a bold title**, in any specification. That takes in
   the open items of each specification, whose title is the bold run after the status, and
-  lists such as the assertions of docs spec §3.5, which the tests
-  name by number. A title that wraps is read whole. A numbered list without bold titles,
-  such as the steps of a procedure, is not frozen.
+  lists such as the assertions of docs spec §3.5, which the tests name by number. A title
+  that wraps is read whole. A numbered list without bold titles, such as the steps of a
+  procedure, is not frozen until something cites one of its items, then that item is frozen,
+  as items spec §7 item 2 settled.
 - **Every row of a roadmap table**, the table whose header is `#`, `Scope` and `Status`,
   matched by its scope.
 
@@ -413,8 +415,8 @@ The changelog guidelines say so.
 In scope are the shared grammar, the transform, the output check, the collapse of the
 section roles, the renumber guard and its fix, the rules for items and rows, the edits to
 the parent of §4.7, and the changelog guidelines. Out of scope
-are citations of items and rows as links in their own right (row 5 of
-§9), and row 5 of docs spec §4, GitHub
+are citations of items and rows as links in their own right
+(row 5 of §9), and row 5 of docs spec §4, GitHub
 reference roles, which is unchanged.
 
 (citation-spec-8)=
@@ -432,17 +434,18 @@ today.
 | 2 | The transform and the output check, which land together; the ceiling test retires | ✅ landed (2026-10-27, {pull}`2738`) |
 | 3 | The renumber guard, its fix, its nightly audit, and the rules for items and rows | ✅ landed (2026-10-27, {pull}`2740`) |
 | 4 | Collapsing the roles; the agreement assertion retires; the changelog guidelines | ✅ landed (2026-10-27, {pull}`2745`) |
-| 5 | Items and rows as citations in their own right | candidate: more than twenty citations of items and rows outside the specifications |
+| 5 | Items and rows as citations in their own right | ✅ landed (2026-11-02, {pull}`2807`) |
 
-Statuses follow docs spec §3.6, and {issue}`2566` tracks rows 1 to
-4. Rows 2 to 4 each build on row 1. Row 2 follows it, because the next change to cite a
+Statuses follow docs spec §3.6, and {issue}`2566` tracks
+rows 1 to 4. Rows 2 to 4 each build on row 1. Row 2 follows it, because the next change to cite a
 specification from code fails the ceiling test until row 2 lands. Row 3 needs only row 1, so
 it can come before or after row 2. Row 4 needs row 2.
 
-Row 5's trigger is asserted by the conventions test from row 1 on. It counts, outside the
+Row 5's trigger was asserted by the conventions test from row 1 on. It counted, outside the
 specifications, the citations followed by `item N` or `items N`, and those preceded by
-`row N of` or `rows N to M of`, reading across line breaks. It fails past twenty, a little
-over three times the six of §3.1.
+`row N of` or `rows N to M of`, reading across line breaks, and failed past twenty, a little
+over three times the six of §3.1. Row 5 landed before it fired, with
+row 1 of items spec §8, and the test retired with it.
 
 (citation-spec-10)=
 ## 10. References

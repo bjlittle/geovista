@@ -155,8 +155,8 @@ z = 0 rather than 3.0 km, and the base layer 6.4 km below it rather than 10.0 km
 plotter's own layers all span the globe and shrink by the same factor, so they keep their
 order: base layer, then data, then coastlines and graticule. Beside a map 40,075 km across
 these offsets are small,
-so the image tests should change only where offsets are large, and item 2 of
-§8 records what they actually show.
+so the image tests should change only where offsets are large, and
+item 2 of §8 records what they actually show.
 
 The ORCA2 cloud of the gallery's `eqc` example covers only the North Atlantic, so its own
 length was 4,007,091 rather than a global mesh's. Under the rule its depths are 1.59 times
@@ -167,8 +167,8 @@ what they were, and its deepest point, at 5,275 m, moves from z = −211,365 to 
 
 A CRS that offers no ellipsoid, or no unit on its first axis, has no `R` to compute, and
 `transform_mesh` then raises a `ValueError` naming the CRS rather than guessing a scale.
-No CRS that `transform_mesh` can reach is affected, by item 1 of
-§8, so the guard is tested on the helper directly.
+No CRS that `transform_mesh` can reach is affected, by
+item 1 of §8, so the guard is tested on the helper directly.
 
 Units come from the first horizontal axis. A projected CRS uses one unit on both axes, a
 latitude-first geographic CRS such as EPSG:4269 uses degrees on both, and an unusual angular
@@ -237,19 +237,19 @@ which nothing outside `transform_mesh` needs yet.
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **Resolved** (2026-10-08, {pull}`2591`) — **Can a CRS that `transform_mesh` reaches
-   lack an ellipsoid or an axis unit?** No. A compound CRS and a bound one report the
-   ellipsoid and first axis of their horizontal component, a rotated pole CRS is a
-   derived geographic one in degrees, and a geocentric one is in metres. An engineering
-   CRS and a vertical one, such as EPSG:5703, have no ellipsoid, and `pyproj` refuses to
-   build a transformer to either, so `transform_mesh` fails before it needs `R`. The
-   `ValueError` of §3.4 is tested on the helper directly.
-2. **Resolved** (2026-10-09, {pull}`2591`) — **Which image baselines move?** Two, each by
-   a fraction of a pixel, as the camera frames the new scene bounds. One is the ORCA2 `eqc`
-   gallery image, whose cloud is 1.59 times deeper by §3.3. The
-   other is the UK LAM scene of `test_view_poi` in `eqc`, whose mesh at `zlevel=10` rises
-   to about 6.4 km. {user}`bjlittle` approved both, and `bjlittle/geovista-data` released
-   them as 2026.10.2.
+1. **🏁 Resolved** (2026-10-08, {pull}`2591` · 🔎 2026-10-08, {pull}`2589`) — **Can a CRS
+   that `transform_mesh` reaches lack an ellipsoid or an axis unit?** No. A compound CRS
+   and a bound one report the ellipsoid and first axis of their horizontal component, a
+   rotated pole CRS is a derived geographic one in degrees, and a geocentric one is in
+   metres. An engineering CRS and a vertical one, such as EPSG:5703, have no ellipsoid, and
+   `pyproj` refuses to build a transformer to either, so `transform_mesh` fails before it
+   needs `R`. The `ValueError` of §3.4 is tested on the helper directly.
+2. **🏁 Resolved** (2026-10-09, {pull}`2591` · 🔎 2026-10-08, {pull}`2589`) — **Which image
+   baselines move?** Two, each by a fraction of a pixel, as the camera frames the new scene
+   bounds. One is the ORCA2 `eqc` gallery image, whose cloud is 1.59 times deeper by §3.3.
+   The other is the UK LAM scene of `test_view_poi` in `eqc`, whose mesh at `zlevel=10`
+   rises to about 6.4 km. {user}`bjlittle` approved both, and `bjlittle/geovista-data`
+   released them as 2026.10.2.
 
 (zlevel-spec-9)=
 ## 9. References

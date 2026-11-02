@@ -386,7 +386,7 @@ from its heights when it is added.
 Because the heights stay as data, a point's height is read back from the data, not from
 its position: a picked point reports the height it was given, and changing `V` rebuilds the
 positions from the same heights. The scene can report `R`, `s` and `V`, so a vertical scale
-shown to the viewer can be exact (§9, row 6). Everything that turns a height into a
+shown to the viewer can be exact (row 6 of §9). Everything that turns a height into a
 position goes through `V`, and nothing assumes it is a straight line, so a later form of
 it changes nothing else.
 
@@ -424,7 +424,7 @@ fall back on their places and a depth bias, each place 256 units nearer the view
 one below it, and surfaces that share a place share its bias. That can leave the sliver at
 the limb that §3.5 measured for depth bias alone. Whether a
 surface's bias also pulls its far side over the horizon, as a bias of 256 did for lines, is
-not yet measured (§8, item 7).
+not yet measured (§8 item 7).
 
 **On a projected map**, where every layer at one height lies in one plane, layers are kept
 apart by depth bias alone, each place 256 units nearer the viewer than the one below it,
@@ -557,8 +557,8 @@ Each carries the status grammar of docs spec §3.6.
 
 1. **Open** — **The vertical scale shown to the viewer.** Its form, a ruler beside the globe
    or a scale bar on the map, and how it marks the vertical mapping: two scales for two
-   factors, and ticks that follow the mapping where it is not a straight line. Row 6 of
-   §9 owns it.
+   factors, and ticks that follow the mapping where it is not a straight line.
+   Row 6 of §9 owns it.
 2. **Open** — **A warped base layer.** The base layer is lowered by the sag of the surfaces
    above it. When it is terrain, warped by its own heights, that lowering moves terrain
    that may be visible where no surface covers it. Whether to lower it only beneath the

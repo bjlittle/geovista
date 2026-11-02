@@ -238,8 +238,8 @@ methods of `GeoPlotter`:
   points are, and records the surface's globe, or no globe when the surface has none.
 
 A mesh added to a scene whose globe differs from the one it records is drawn at the
-scene's globe, and the mesh drawn records the scene's globe. Every height is 0 until row 3
-of globe spec §9, so on the globe this is a scale by the ratio of the two render radii,
+scene's globe, and the mesh drawn records the scene's globe. Every height is 0 until
+row 3 of globe spec §9, so on the globe this is a scale by the ratio of the two render radii,
 and on a projected map it changes nothing. Row 3 makes it a rebuild from heights
 (globe spec §4.4). A mesh built at another render radius on purpose, to float above the
 surface, is repositioned too, so floating it is a lift (globe spec §4.5). A mesh that
@@ -386,8 +386,8 @@ first mesh's field data (§3.3), and is outside `geovista`'s control. The docume
 
 The tests and the pages of §3.1 move to `globe=`. No example in the README passes `radius=`,
 and the test of {issue}`2756` runs them all against the change. The gallery example moves to
-a `zlevel` of 1,000, which floats its arrows the same 10% of the radius until row 5 of
-globe spec §9 replaces `zlevel` with the lift. The H3 example draws its icosahedron's edges
+a `zlevel` of 1,000, which floats its arrows the same 10% of the radius until
+row 5 of globe spec §9 replaces `zlevel` with the lift. The H3 example draws its icosahedron's edges
 at a z-level of 61 rather than 60, one level above its coarsest cells as before, since a
 z-level now lifts its lines from the render radius (§4.2).
 

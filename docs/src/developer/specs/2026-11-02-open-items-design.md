@@ -126,10 +126,12 @@ These were decided with {user}`bjlittle` on 2026-11-02.
 (items-spec-3-1)=
 ### 3.1 Citing an Item and a Row
 
-An item is any top-level numbered item of a section: an open item, or a numbered step of
-a design section, such as the items of scene spec §4.4. It is cited as
-`typing spec §8 item 9`, the citation of its section, then the word `item` and its number,
-or the other way round, as `item 9 of typing spec §8`. Within a specification, `§8 item 9`
+An item is a top-level item of the first numbered list of a section: an open item, or a
+numbered step of a design section, such as the items of scene spec §4.4. A later list in
+the same section, such as the steps of a procedure after its design, has no items a
+citation can reach. An item is cited as `typing spec §8 item 9`, the citation of its
+section, then the word `item` and its number, or the other way round, as
+`item 9 of typing spec §8`. Within a specification, `§8 item 9`
 and `item 9 of §8` mean its own item. The section is always named, because specifications
 number their Open Items section differently, seventh in one and eighth in another. Each item
 carries an anchor, `<prefix>-spec-N-item-M`, and the citation transform links the whole
@@ -147,12 +149,13 @@ end is checked. The forms are those the collection already writes, so no citatio
 changes; what changes is that each now names something that exists.
 
 Items and rows are numbered and keep their numbers, so the renumber guard of
-citation spec §4.6 already freezes them. Together the two forms deliver row 5 of
-citation spec §9 before its trigger. That trigger is more than twenty citations of items
+citation spec §4.6 already freezes a titled item, an untitled one once something cites it,
+and every row. Together the two forms deliver
+row 5 of citation spec §9 before its trigger. That trigger is more than twenty citations of items
 and rows outside the specifications, and there were 11 when this specification was
 written. The reason to deliver it now is this specification's own: 🎯 is a citation of a
-row, and the landing gate of §3.5 cannot hold an item to a row it cannot read. Row 1 of
-§8 lands that row, and retires the test that held it back.
+row, and the landing gate of §3.5 cannot hold an item to a row it cannot read.
+Row 1 of §8 lands that row, and retires the test that held it back.
 
 (items-spec-3-2)=
 ### 3.2 An Item's Entry
@@ -398,28 +401,77 @@ it.
 (items-spec-7)=
 ## 7. Open Items
 
-Each carries the status grammar of docs spec §3.6 until row 1 of §8 brings this
-specification in, and §3.2 after it.
+Each carries the status grammar of §3.2.
 
-1. **Open** ({issue}`2804`) — **A near-miss citation is not flagged.** A citation written in
+1. **🏁 Resolved** (2026-11-02, {pull}`2807` · 🔎 2026-11-02, {pull}`2803` ·
+   🎫 {issue}`2804`) — **A near-miss citation is not flagged.** A citation written in
    a form the grammar does not read is neither linked nor checked, and reads as a citation
    to a person, so review passes it. Four were found in two days: `(§2, decision 1)` and
    `decision 12 of §2` in the crs specification, `decision 12 of the CRS specification` on
    the repository checks page, and a prefix followed by `row` with no `§` in §1 of this
    specification. The grammar row 1 of §8 teaches could flag a prefix followed by `row`,
    `item` or `decision` with no `§`, and a section followed by a comma and one of them.
-   Found while writing this specification ({pull}`2803`), and owed by row 1 of §8.
+   Found while writing this specification ({pull}`2803`), and owed by row 1 of §8. Row 1
+   added `near_misses` to `tests/test_spec_conventions.py`, flagging the two forms above
+   and a third, `decision N of §M`, and fixed the six citations it found, all comma
+   near-misses in the crs and globe specifications.
+2. **🏁 Resolved** (2026-11-02, {pull}`2807` · 🔎 2026-11-02, {pull}`2807` ·
+   🎫 {issue}`2806`) — **Cited untitled items are not frozen.** §3.1 says the
+   renumber guard of citation spec §4.6 freezes every item, but it freezes only those
+   opening with a bold title, and leaves an untitled list, such as the steps of a
+   procedure, free to change. Of the 222 top-level numbered items, 32 are untitled, and
+   two are cited from code already, as `scene spec §4.4 item 2` in `globe.py`. Settled by
+   {user}`bjlittle` on 2026-11-02, as option (b): the guard freezes an untitled item once
+   something cites it, pairing it by its text, and an uncited one stays free. Found while
+   planning row 1 of §8, which owes it. Row 1 made the renumber guard do exactly that: it
+   now freezes an untitled item once something cites it, pairing the item by its text.
+3. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2809`) — **A
+   graduation to a row that has moved on passes.** `item_graduated` does not check the
+   target row's status, so a graduation to a row that has already landed passes. A check of
+   the status alone would fail every graduated item once its row moves on, as §3.6 means it
+   to, so the check needs the row's status when the item graduated.
+4. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2810`) — **A heavily
+   reworded cited untitled item can pass in place.** An insert and a removal before a cited
+   untitled item, with the item itself heavily reworded, leave it at its own number. Its
+   text no longer pairs, so the renumber guard pairs the leftover by number and passes it as
+   reworded in place.
+5. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2811`) — **A citation
+   such as item 9a is read as item 9.** The trailing form reads an item's number as digits
+   alone, so `§8 item 9a` links item 9 with a stray letter, while the leading form reads
+   `9a` and fails. The two forms should read a label alike.
+6. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2812`) — **An item
+   state is matched by its prefix.** A state is read by its prefix, so a misspelt state such
+   as `Openly` reads as Open. Item states should match exactly.
+7. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2813`) — **A new item
+   can share an issue with an old-grammar item unseen.** `item_issues` reads only the
+   specifications brought in, so a new 🎫 can cite an issue an old-grammar item already
+   cites, and the clash surfaces only when that specification is brought in.
+8. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2814`) — **The
+   renumber guard advises append when an item was removed.** Removing an uncited item before
+   a cited one is reported with the advice to append rather than insert, which is wrong for
+   a removal. The advice should follow the direction of the move.
+9. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2815`) — **An item's
+   parenthetical is split on a middle dot inside a link or code span.** The parts are split
+   on every middle dot, so one inside a link's text or a code span breaks the entry. It
+   fails loudly, and no item holds one today.
+10. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2818`) — **A list
+    after an unnumbered subheading is anchored by the grammar alone.** The grammar files a
+    numbered list under the last numbered heading above it, while the build names only a
+    numbered section's direct children. A list after an unnumbered subheading would be cited
+    and checked in source but have no anchor in the build. Nothing in the corpus does this
+    yet.
 
 (items-spec-8)=
 ## 8. Roadmap
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The items: citations of items and rows with their anchors (delivering row 5 of citation spec §9), the entry of §3.2, the suite of §3.7, the label, what GitHub answers (§3.8), the parents' notes, the documentation of §3.12, this specification's own Verification table and items, and the docs, zlevel, checks and citation specifications brought in | not started |
+| 1 | The items: citations of items and rows with their anchors (delivering row 5 of citation spec §9), the entry of §3.2, the suite of §3.7, the label, what GitHub answers (§3.8), the parents' notes, the documentation of §3.12, this specification's own Verification table and items, and the docs, zlevel, checks and citation specifications brought in | ✅ landed (2026-11-02, {pull}`2807`) |
 | 2 | The report's roadmap and open items (§3.9) | not started |
 | 3 | The typing specification's items brought in, with the `candidate` rows they wait on | not started |
 | 4 | The crs specification's items brought in | not started |
 | 5 | The globe, scene, heights and ledger specifications' items brought in | not started |
+| 6 | Hardening: the open items found while landing row 1, §7 items 3 to 10 | not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
 after it. Rows 3 to 5 each raise the issues their specifications' items lack, and need
@@ -443,17 +495,17 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ⏳ pending | row 1 of §8 |
-| 2 | ⏳ pending | row 1 of §8 |
-| 3 | ⏳ pending | row 1 of §8 |
-| 4 | ⏳ pending | row 1 of §8 |
-| 5 | ⏳ pending | row 1 of §8 |
-| 6 | ⏳ pending | row 1 of §8 |
-| 7 | ⏳ pending | row 1 of §8 |
-| 8 | ⏳ pending | rows 1 to 3 of §8 |
-| 9 | ⏳ pending | row 1 of §8 |
-| 10 | ⏳ pending | row 1 of §8 |
-| 11 | ⏳ pending | row 1 of §8 |
+| 1 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2807`) | Checked in review that the gaps found while delivering row 1 (#2804, #2806) were each captured as an open item with its own labelled issue. |
+| 2 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| 3 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py` |
+| 4 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| 5 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py` |
+| 6 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| 7 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py` |
+| 8 | ⏳ pending | row 3 of §8 |
+| 9 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py` |
+| 10 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_renumbering.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
+| 11 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2807`) | Checked in review that the specifications index says an agent may add the `spec: open item` label. |
 | 12 | ⏳ pending | row 2 of §8 |
 | 13 | ⏳ pending | rows 1 to 5 of §8 |
 | 14 | ⏳ pending | rows 1 to 2 of §8 |

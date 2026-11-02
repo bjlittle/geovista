@@ -238,8 +238,8 @@ the ratio of render radii (scene spec §4.2). A mesh without heights is built at
 its points lie, as any mesh that records no globe is (scene spec §4.4). Given to `resize` or
 `transform_mesh`, it is positioned at `Globe()`, as such a mesh is.
 
-A mesh with heights is never read at the one radius its points lie at, under item 2 of
-scene spec §4.4. Its points lie at their heights, so heights that are all equal would read
+A mesh with heights is never read at the one radius its points lie at, under
+item 2 of scene spec §4.4. Its points lie at their heights, so heights that are all equal would read
 as a globe at the lifted radius, and the mesh would be lifted twice. `Globe.from_mesh`
 reads such a mesh at its `gvRadius`, if it has one, and otherwise returns `None`.
 
