@@ -1113,11 +1113,19 @@ def test_main_cannot_list_the_labelled(script, itemed, labels, monkeypatch, caps
 
     monkeypatch.setattr(script.conventions, "specifications", list)
 
+    error = urllib.error.HTTPError(
+        "https://api.github.com/repos/bjlittle/geovista/issues",
+        403,
+        "rate limited",
+        {},
+        None,
+    )
+
     def listed() -> list[int]:
-        url = "https://api.github.com/repos/bjlittle/geovista/issues"
-        raise urllib.error.HTTPError(url, 403, "rate limited", {}, None)
+        raise error
 
     status = script.main(["--drift"], resolve=itemed, labelled=labels, listed=listed)
+    error.close()
 
     captured = capsys.readouterr()
     assert status == 2
