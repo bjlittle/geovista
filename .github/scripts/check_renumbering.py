@@ -1229,19 +1229,23 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
             # each line the pull request changed, followed from where it was
             # written on its branch, which a renumber merged since may have moved
             findings += since_written(root, texts, names, changed, args.base)
-            anchors, based = was_cited(root, branched, texts, names)
-            for base, current in counterparts.items():
-                before = at(root, branched, base)
-                if before is not None and current is not None:
-                    problems += [
-                        f"{current.relative_to(root).as_posix()}: {problem}"
-                        for problem in frozen(
-                            before,
-                            current.read_text(encoding="utf-8"),
-                            anchors,
-                            based,
-                        )
-                    ]
+            # an item or a row moves only with its specification, so what the
+            # corpus cites, which costs a second to read, is read only for one
+            # the pull request changed
+            held = [
+                (current, before, after)
+                for base, current in counterparts.items()
+                if current is not None
+                and (before := at(root, branched, base)) is not None
+                and (after := current.read_text(encoding="utf-8")) != before
+            ]
+            if held:
+                anchors, based = was_cited(root, branched, texts, names)
+            for current, before, after in held:
+                problems += [
+                    f"{current.relative_to(root).as_posix()}: {problem}"
+                    for problem in frozen(before, after, anchors, based)
+                ]
             scope = f"the specifications changed since {args.base}"
         if args.fix:
             findings = _fix(texts, names, findings)

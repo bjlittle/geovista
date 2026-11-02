@@ -1540,3 +1540,32 @@ def test_a_roadmap_scope_keeps_an_escaped_pipe(guard):
     text = spec(("4", "Roadmap", roadmap(("1", "a \\| b"))))
 
     assert guard.roadmap_rows(text)["1"].title == "a \\| b"
+
+
+def test_the_corpus_is_read_for_citations_only_once_a_specification_changed(
+    guard, repo, capsys, monkeypatch
+):
+    """Reading what the corpus cites costs a second a run, and holds no item here.
+
+    An item or a row moves only with its specification, so a pull request that
+    changes none has nothing to hold, and never reads what the corpus cites.
+    """
+    reads: list[int] = []
+    cited_anchors = guard.cited_anchors
+
+    def counted(texts: dict[Path, str], names: object) -> frozenset[str]:
+        reads.append(len(texts))
+        return cited_anchors(texts, names)
+
+    monkeypatch.setattr(guard, "cited_anchors", counted)
+    commit(repo, {"src/other.py": "# still nothing cited\n"}, "other")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+    assert reads == []
+
+    commit(repo, {str(SPECS / NAME): INSERTED}, "insert")
+    run(guard, repo, capsys=capsys)
+
+    assert reads
