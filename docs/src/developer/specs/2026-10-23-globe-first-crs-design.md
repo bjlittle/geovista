@@ -725,6 +725,11 @@ Each carries the status grammar of docs spec §3.6.
     `geovista` returns or draws carries only current fields (scene spec §4.4 and
     scene spec §4.5). `bjlittle/geovista-data` reissues the pantry's assets in the new form
     ({issue}`2753`), which no longer has to land with row 2 of globe spec §9.
+13. **Open** ({issue}`2802`) — **Coordinates as quantities.** §4.9 names the globe's
+    radius, the densification tolerance and the domain angles, but not the lons and lats a
+    `Transform` factory takes, which refuse a `pint` quantity today. Whether they join the
+    quantities of §4.9, read through `geovista.units.to_degrees`, is settled before row 5
+    of §10 lands, which §2 decision 13 also waits on.
 
 (crs-spec-9)=
 ## 9. Scope
