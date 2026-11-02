@@ -1332,13 +1332,32 @@ def carried(rest: str) -> str:
     return text[1:]
 
 
-def roadmap_header(cells: list[str]) -> bool:
-    """Decide whether a table's header is a roadmap's: ``#``, ``Scope`` and ``Status``.
+#: A roadmap is read by its whole header, as the build and the guard read it.
+roadmap_header = citations.roadmap_header
 
-    A Verification table has a Status column too, so a roadmap is read by its whole
-    header (ledger spec §3.6), which a type coverage roadmap extends with ``Lines``.
+
+def row_numbers(path: Path, text: str) -> list[str]:
+    """Find each roadmap row whose first cell is no row number, as ``**1**`` is.
+
+    A citation names a row by its first cell, so a cell that is no number, with a
+    letter or without, names nothing, and the grammar passes the row over.
     """
-    return bool(cells) and cells[0] == "#" and {"Scope", "Status"} <= set(cells)
+    problems = []
+    table: list[tuple[int, str]] = []
+    for number, line in [*read_lines(text), (0, "")]:
+        if line.startswith("|"):
+            table.append((number, line))
+            continue
+        if table and roadmap_header(citations.cells(table[0][1])):
+            for row, written in table[2:]:
+                cell = (citations.cells(written) or [""])[0]
+                if not citations.ROW_NUMBER.fullmatch(cell):
+                    problems.append(
+                        f"{where(path, row)}: row {cell!r} is not numbered as a "
+                        "row: number it as `1` or `1a`"
+                    )
+        table = []
+    return problems
 
 
 def statuses(text: str) -> Iterator[tuple[int, str, str]]:
@@ -1516,6 +1535,34 @@ def test_status_reads_bullets_and_a_roadmap_wherever_it_sits(tmp_path):
         "Resolved carries no date and reference",
         "an open item with no status",
     ]
+
+
+def test_row_numbers_finds_a_row_not_numbered_as_one(tmp_path):
+    """A row is cited by its number, so a first cell that is none is reported."""
+    roadmap = (
+        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        "| 1 | a | not started |\n| 1a | b | not started |\n"
+        "| **2** | c | not started |\n| ~~3~~ | d | not started |\n"
+        "| 4. | e | not started |\n| | f | not started |\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n| **1** | pending | |\n"
+    )
+    path, _ = demo(tmp_path, roadmap)
+
+    problems = row_numbers(path, path.read_text(encoding="utf-8"))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"row {cell!r} is not numbered as a row: number it as `1` or `1a`"
+        for cell in ["**2**", "~~3~~", "4.", ""]
+    ]
+    assert problems[0].startswith(f"{where(path, 10)}: ")
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_every_roadmap_row_is_numbered_as_a_row(spec):
+    """Every roadmap row can be cited, as items spec §3.1 cites one by number."""
+    problems = row_numbers(spec, spec.read_text(encoding="utf-8"))
+
+    assert not problems, "\n".join(problems)
 
 
 def test_both_kinds_of_status_are_read(specs):

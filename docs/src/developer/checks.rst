@@ -340,6 +340,11 @@ For an open item, it names the item, and says one of these:
   citation the message gives, with its section sign where the grammar reads
   it.
 
+For a roadmap row, it says ``row '…' is not numbered as a row``: write its first
+cell as a plain number, ``1``, or with a letter, ``1a``, for a row split in two.
+A citation names a row by that cell, so ``**1**``, ``~~1~~`` or ``1.`` names
+nothing (items spec §3.1).
+
 **Declaring an exception:** None for the conventions. A specification not yet
 brought into the ledger is named in ``UNLEDGERED``, beside the row of
 ledger spec §8 that brings it in. That list is not an exception either: the test

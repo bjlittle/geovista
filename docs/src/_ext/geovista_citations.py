@@ -153,6 +153,9 @@ GRADUATES = re.compile(r"(?:^|[\s,])to\s+(?P<row>rows?\s.*?)\s*$")
 #: A table cell boundary: a pipe, unless escaped.
 PIPE = re.compile(r"(?<!\\)\|")
 
+#: The first cell of a roadmap row: its number, which may carry a letter, as ``6a``.
+ROW_NUMBER = re.compile(r"[0-9]+[a-z]?")
+
 
 @dataclass(frozen=True)
 class Citation:
@@ -712,6 +715,9 @@ def roadmap_header(header: list[str]) -> bool:
 def rows(text: str) -> list[Row]:
     """Read the rows of every roadmap table of a specification, wherever it sits.
 
+    A row is read only if its first cell is a row number, as ``7`` or ``6a``, so a
+    cell written otherwise, as ``**7**`` or ``7.``, names no anchor.
+
     Parameters
     ----------
     text : str
@@ -736,7 +742,9 @@ def rows(text: str) -> list[Row]:
                 scope, status = header.index("Scope"), header.index("Status")
                 for written, row in table[2:]:
                     parts = [*cells(row), *[""] * len(header)]
-                    if parts[0]:
+                    # a cell such as "**1**" names no row, and the conventions
+                    # test reports it where it is written
+                    if ROW_NUMBER.fullmatch(parts[0]):
                         found.append(
                             Row(section, parts[0], written, parts[scope], parts[status])
                         )

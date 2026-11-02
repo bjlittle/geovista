@@ -553,6 +553,21 @@ def test_rows_reads_every_roadmap_and_no_other_table(citations):
     assert [r.line for r in found] == [29, 30, 31]
 
 
+@pytest.mark.parametrize("cell", ["**1**", "~~3~~", "7.", "one"])
+def test_rows_passes_over_a_row_not_numbered_as_one(tmp_path, citations, cell):
+    """A first cell that is no row number names no row, and crashes nothing.
+
+    The conventions test reports such a cell where it is written, so passing over
+    it here keeps the build, the suites and the checks running until it is fixed.
+    """
+    body = LISTED.replace("| 7 | The rest |", f"| {cell} | The rest |")
+
+    _, names = demo(tmp_path, body, citations)
+
+    assert [r.row for r in citations.rows(body)] == ["6a", "6b"]
+    assert "demo-spec-4-row-6b" in names.anchors
+
+
 def test_a_label_reads_an_item_and_a_row_anchor(tmp_path, citations):
     """Every anchor carries a prefix a reader can find, items and rows included."""
     _, names = demo(tmp_path, LISTED, citations)
