@@ -315,6 +315,8 @@ For an open item, it names the item, and says one of these:
 - *opens with no state* or *has no title*: open the entry with its state in
   bold, a dash, then its title in bold, as the specifications index's
   :ref:`gv-developer-specs-items` shows.
+- *carries '…', which is no part*: remove the stray text, or give it the emoji
+  of the part it was meant to be.
 - *carries no 🔎*, *was found with no date and pull*, *carries no 🎯* or *carries
   no 🎫*, *is settled, and still carries 🎯*, *carries 🎫 …, which is no issue*,
   *carries … twice*, *carries its parts out of order*, *graduates with no date,
@@ -484,8 +486,8 @@ pull request a decision cites has merged, a verified or retired row is dated by
 its pull request's merge, and a signed-off row's reviewer added the
 ``signed-off`` label to the pull request it cites, which still carries it. An
 open item's issue exists, carries the ``spec: open item`` label, and every pull
-request it cites — found, moved or settled — has merged, or is the pull
-request being checked.
+request it cites (found, moved or settled) has merged, or is the pull request
+being checked.
 
 **Why:** A status is how a reader learns what has happened, and one citing the
 wrong pull request, or one that never merged, misleads them. An open item left
@@ -515,7 +517,7 @@ pull request, so that it can be a required check.
 For an open item:
 
 - *is not a pull request*, *does not exist*, *is an issue* or *is a pull
-  request*: cite the kind of work each part asks for — 🔎, ⬅️ and a terminal
+  request*: cite the kind of work each part asks for: 🔎, ⬅️ and a terminal
   state a pull request, 🎫 an issue.
 - *has not merged*: cite a pull request that has merged, or wait, since the
   pull request being checked may still be open.
