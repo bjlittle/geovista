@@ -451,8 +451,11 @@ def listed(text: str) -> list[Listed]:
     rather than linking the wrong item. A list ends at the first line written flush
     after it, a fence included, as markdown ends one. As in CommonMark, a list may
     interrupt a paragraph only if it opens at 1, so a wrapped line that happens to
-    open with ``4.`` is prose, not an item. The Decisions are no items, since a
-    decision is cited only as one (ledger spec §2 decision 1).
+    open with ``4.`` is prose, not an item. A restarted list, a ``1.`` following
+    the one already open after only a blank line, is the same list to MyST, as it
+    is to CommonMark, so its items are numbered by position, not by the digit
+    written, matching the anchors the build gives them. The Decisions are no
+    items, since a decision is cited only as one (ledger spec §2 decision 1).
 
     Parameters
     ----------
@@ -493,7 +496,12 @@ def listed(text: str) -> list[Listed]:
             continue
         item = NUMBERED.match(line)
         if item is not None and (opened or not after or item["number"] == "1"):
-            entries.append((section, int(item["number"]), number, [item["body"]]))
+            # MyST, like CommonMark, merges a restarted "1." into the list already
+            # open rather than reading it as the list's own start, and the build
+            # numbers by position too (DecisionTargets, ItemTargets): a written
+            # digit sets only where the first item of a list begins
+            position = entries[-1][1] + 1 if opened else int(item["number"])
+            entries.append((section, position, number, [item["body"]]))
         elif opened and line[:1].isspace() and line.strip():
             entries[-1][3].append(line.strip())
         elif opened and line.strip():

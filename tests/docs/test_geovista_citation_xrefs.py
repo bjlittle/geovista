@@ -667,3 +667,48 @@ def test_a_build_warns_of_a_citation_naming_no_row(tmp_path):
 
     assert "undefined label" in warning
     assert "demo-spec-4-row-9" in warning
+
+
+#: A specification whose Items list restarts at "1." after a blank line, which
+#: MyST merges into the list already open, as CommonMark does (review round 1).
+RESTARTED = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "(demo-spec-6)=\n## 6. Items\n\n"
+    "1. **Alpha.** First.\n2. **Beta.** Second.\n\n"
+    "1. **Gamma.** Restarted, but the same list.\n"
+)
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_restarted_list_names_its_third_item_by_position(tmp_path):
+    """The build and the grammar must agree: item 3 is the restarted ``1.``.
+
+    ``ItemTargets`` has always numbered an enumerated list's items by position,
+    as the real doctree does; the grammar's ``listed()`` (which declares which
+    anchors a citation may resolve to) read the digit written instead, which for
+    a restarted list disagreed. Citing item 3 must land on "Gamma", the item
+    actually third in the merged list, not "Alpha" under a second anchor.
+    """
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    (src / "developer" / "specs" / "2026-01-01-demo-design.md").write_text(
+        RESTARTED, encoding="utf-8"
+    )
+    toctree = "   page\n   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(
+        f"Page\n====\n\nSee demo spec {SECTION}6 item 3.\n", encoding="utf-8"
+    )
+
+    html, warning = build(src, tmp_path)
+
+    page = (html / "page.html").read_text(encoding="utf-8")
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'demo-design.html#demo-spec-6-item-3"' in page
+    assert '<li id="demo-spec-6-item-3"><p><strong>Gamma.</strong>' in demo
+    assert '<li id="demo-spec-6-item-1"><p><strong>Alpha.</strong>' in demo

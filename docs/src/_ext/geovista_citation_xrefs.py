@@ -34,6 +34,7 @@ from sphinx.transforms import SphinxTransform
 from sphinx.util import logging
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     import re
 
     from sphinx.application import Sphinx
@@ -140,17 +141,11 @@ class DecisionTargets(SphinxTransform):
         for section in self.document.findall(nodes.section):
             if f"{owner}-2" not in section["ids"]:
                 continue
-            listing = next(
-                (c for c in section.children if isinstance(c, nodes.enumerated_list)),
-                None,
+            _name_enumerated(
+                self.document,
+                section,
+                lambda n, owner=owner: geovista_citations.decision_anchor(owner, n),
             )
-            if listing is None:
-                return
-            start = listing.get("start", 1)
-            for offset, item in enumerate(listing.children):
-                name = geovista_citations.decision_anchor(owner, start + offset)
-                item["names"].append(name)
-                self.document.note_explicit_target(item, item)
             return
 
 
@@ -178,22 +173,14 @@ class ItemTargets(SphinxTransform):
             number = _section_number(section, owner)
             if number is None or number == "2":
                 continue
-            self._name_items(section, owner, number)
+            _name_enumerated(
+                self.document,
+                section,
+                lambda n, owner=owner, number=number: geovista_citations.item_anchor(
+                    owner, number, n
+                ),
+            )
             self._name_rows(section, owner, number)
-
-    def _name_items(self, section: nodes.section, owner: str, number: str) -> None:
-        """Name the first numbered list's items of ``section``, if it has one."""
-        listing = next(
-            (c for c in section.children if isinstance(c, nodes.enumerated_list)),
-            None,
-        )
-        if listing is None:
-            return
-        start = listing.get("start", 1)
-        for offset, item in enumerate(listing.children):
-            name = geovista_citations.item_anchor(owner, number, start + offset)
-            item["names"].append(name)
-            self.document.note_explicit_target(item, item)
 
     def _name_rows(self, section: nodes.section, owner: str, number: str) -> None:
         """Name the body rows of every roadmap table directly under ``section``."""
@@ -210,6 +197,38 @@ class ItemTargets(SphinxTransform):
                 name = geovista_citations.row_anchor(owner, number, cells[0])
                 row["names"].append(name)
                 self.document.note_explicit_target(row, row)
+
+
+def _name_enumerated(
+    document: nodes.document, section: nodes.section, namer: Callable[[int], str]
+) -> None:
+    """Name the first numbered list's items of ``section`` with ``namer``, if any.
+
+    Shared by :class:`DecisionTargets` and :class:`ItemTargets`: both name a
+    section's first list, one item at a time, from the number CommonMark would
+    give it, ``start`` plus its position, whichever anchor it is given.
+
+    Parameters
+    ----------
+    document : docutils.nodes.document
+        The document the list sits in, whose explicit targets record each anchor.
+    section : docutils.nodes.section
+        The section under consideration.
+    namer : callable
+        Spells an item's anchor from its number.
+
+    """
+    listing = next(
+        (c for c in section.children if isinstance(c, nodes.enumerated_list)),
+        None,
+    )
+    if listing is None:
+        return
+    start = listing.get("start", 1)
+    for offset, item in enumerate(listing.children):
+        name = namer(start + offset)
+        item["names"].append(name)
+        document.note_explicit_target(item, item)
 
 
 def _section_number(section: nodes.section, owner: str) -> str | None:

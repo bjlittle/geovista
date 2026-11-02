@@ -572,3 +572,29 @@ def test_a_wrapped_number_continuing_a_paragraph_is_no_item(tmp_path, citations)
         ("10", 2),
     ]
     assert "demo-spec-9-item-4" not in names.anchors
+
+
+def test_a_restarted_list_is_numbered_by_position(tmp_path, citations):
+    """A "1." restarting a list after a blank line is still that list to MyST.
+
+    MyST merges it exactly as CommonMark does, and the build names every item by
+    its position, ``start`` plus its offset in the merged list
+    (``DecisionTargets``/``ItemTargets``), never by the digit restarting it.
+    Review round 1 found ``listed()`` disagreeing, reading the digit instead and
+    silently giving the third item the first item's anchor.
+    """
+    body = (
+        "(demo-spec-1)=\n## 1. Purpose\n\n"
+        "(demo-spec-6)=\n## 6. Items\n\n"
+        "1. **One.** First.\n2. **Two.** Second.\n\n"
+        "1. **Three.** Restarted, but the same list.\n"
+    )
+    _, names = demo(tmp_path, body, citations)
+
+    found = citations.listed(body)
+
+    assert [(i.section, i.number) for i in found] == [("6", 1), ("6", 2), ("6", 3)]
+    assert found[2].title == "Three."
+    assert {"demo-spec-6-item-1", "demo-spec-6-item-2", "demo-spec-6-item-3"} <= (
+        names.anchors
+    )
