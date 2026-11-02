@@ -41,6 +41,8 @@ a page, a specification or the API reference, it is a link to the section it nam
       - :doc:`2026-10-26-citation-links-design`
     * - └─ ``ledger spec §…``
       - :doc:`2026-10-30-decision-ledger-design`
+    * - |indent| └─ ``items spec §…``
+      - :doc:`2026-11-02-open-items-design`
     * - ``typing spec §…``
       - :doc:`2026-10-06-type-coverage-design`
     * - ``zlevel spec §…``
@@ -175,3 +177,4 @@ cites. It is a view of the ledger, never a check: it exits 0 whatever it finds
     2026-10-27-globe-scene-design
     2026-10-28-heights-as-data-design
     2026-10-30-decision-ledger-design
+    2026-11-02-open-items-design

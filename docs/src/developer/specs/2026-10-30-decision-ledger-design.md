@@ -14,7 +14,7 @@
 - **Scope:** the decisions of every specification as a ledger: how a decision is cited, the
   provenance it carries, how it is retired, and the evidence that it was delivered
 - **Lineage:** [docs spec](2026-10-06-published-specs-design.md) › **ledger spec**
-- **Children:** none
+- **Children:** [items spec](2026-11-02-open-items-design.md)
 - **Extends:** docs spec §3.2, whose citation form gains a decision,
   docs spec §3.5, whose suite gains the ledger, and
   docs spec §3.6, whose status vocabulary gains the states of a decision and of its
