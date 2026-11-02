@@ -454,6 +454,12 @@ Each carries the status grammar of §3.2.
    parenthetical is split on a middle dot inside a link or code span.** The parts are split
    on every middle dot, so one inside a link's text or a code span breaks the entry. It
    fails loudly, and no item holds one today.
+10. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2818`) — **A list
+    after an unnumbered subheading is anchored by the grammar alone.** The grammar files a
+    numbered list under the last numbered heading above it, while the build names only a
+    numbered section's direct children. A list after an unnumbered subheading would be cited
+    and checked in source but have no anchor in the build. Nothing in the corpus does this
+    yet.
 
 (items-spec-8)=
 ## 8. Roadmap
@@ -465,7 +471,7 @@ Each carries the status grammar of §3.2.
 | 3 | The typing specification's items brought in, with the `candidate` rows they wait on | not started |
 | 4 | The crs specification's items brought in | not started |
 | 5 | The globe, scene, heights and ledger specifications' items brought in | not started |
-| 6 | Hardening: the open items found while landing row 1, §7 items 3 to 9 | not started |
+| 6 | Hardening: the open items found while landing row 1, §7 items 3 to 10 | not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
 after it. Rows 3 to 5 each raise the issues their specifications' items lack, and need
