@@ -425,6 +425,35 @@ Each carries the status grammar of §3.2.
    something cites it, pairing it by its text, and an uncited one stays free. Found while
    planning row 1 of §8, which owes it. Row 1 made the renumber guard do exactly that: it
    now freezes an untitled item once something cites it, pairing the item by its text.
+3. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2809`) — **A
+   graduation to a row that has moved on passes.** `item_graduated` does not check the
+   target row's status, so a graduation to a row that has already landed passes. A check of
+   the status alone would fail every graduated item once its row moves on, as §3.6 means it
+   to, so the check needs the row's status when the item graduated.
+4. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2810`) — **A heavily
+   reworded cited untitled item can pass in place.** An insert and a removal before a cited
+   untitled item, with the item itself heavily reworded, leave it at its own number. Its
+   text no longer pairs, so the renumber guard pairs the leftover by number and passes it as
+   reworded in place.
+5. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2811`) — **A citation
+   such as item 9a is read as item 9.** The trailing form reads an item's number as digits
+   alone, so `§8 item 9a` links item 9 with a stray letter, while the leading form reads
+   `9a` and fails. The two forms should read a label alike.
+6. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2812`) — **An item
+   state is matched by its prefix.** A state is read by its prefix, so a misspelt state such
+   as `Openly` reads as Open. Item states should match exactly.
+7. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2813`) — **A new item
+   can share an issue with an old-grammar item unseen.** `item_issues` reads only the
+   specifications brought in, so a new 🎫 can cite an issue an old-grammar item already
+   cites, and the clash surfaces only when that specification is brought in.
+8. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2814`) — **The
+   renumber guard advises append when an item was removed.** Removing an uncited item before
+   a cited one is reported with the advice to append rather than insert, which is wrong for
+   a removal. The advice should follow the direction of the move.
+9. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2815`) — **An item's
+   parenthetical is split on a middle dot inside a link or code span.** The parts are split
+   on every middle dot, so one inside a link's text or a code span breaks the entry. It
+   fails loudly, and no item holds one today.
 
 (items-spec-8)=
 ## 8. Roadmap
@@ -436,6 +465,7 @@ Each carries the status grammar of §3.2.
 | 3 | The typing specification's items brought in, with the `candidate` rows they wait on | not started |
 | 4 | The crs specification's items brought in | not started |
 | 5 | The globe, scene, heights and ledger specifications' items brought in | not started |
+| 6 | Hardening: the open items found while landing row 1, §7 items 3 to 9 | not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
 after it. Rows 3 to 5 each raise the issues their specifications' items lack, and need
