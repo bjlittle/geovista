@@ -32,6 +32,23 @@ With "--pull" a status may cite that pull request while it is still open, as a
 pull request can record what it resolves, and the date of a "✅ landed" row
 citing it is not checked.
 
+It asks GitHub about each open item too, once its specification is in the
+grammar of items spec §3.2 (items spec §3.8):
+
+- Its issue exists, is an issue rather than a pull request, and carries the
+  "spec: open item" label (items spec §3.3).
+- The pull request of where it was found, of each move, and of a settled
+  state exists and has merged, or is the one being checked.
+- A move is dated within a day of its pull request's merge. A settled item's
+  date and reference are held as a "Resolved" status's are, so its date may
+  come before the merge that records it.
+
+With "--drift" it also reports an open or deferred item whose issue has closed,
+and lists every open issue carrying the label, reporting any that no item
+cites, in either grammar: a gap raised as an issue and never written into a
+specification (items spec §2 decision 2). A pull request carrying the label, or
+an issue that has closed, is no such gap.
+
 It asks GitHub about each ledger too (ledger spec §3.7):
 
 - Every pull request a decision cites has merged, or is the one being checked.
@@ -66,10 +83,11 @@ import sys
 import traceback
 from typing import TYPE_CHECKING
 import urllib.error
+import urllib.parse
 import urllib.request
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable, Iterable, Iterator, Mapping
     from types import ModuleType
 
 #: The section of the repository checks page that documents this check.
@@ -134,10 +152,17 @@ class Work:
     kind: str
     state: str
     when: date | None
+    labels: frozenset[str] = frozenset()
 
 
 #: Look up the work at a repository and number, or None when there is none.
 type Resolver = Callable[[str, int], Work | None]
+
+#: List the open issues, not pull requests, carrying the label of an open item.
+type Lister = Callable[[], list[int]]
+
+#: The label the issue of every open item carries (items spec §3.3).
+ITEM_LABEL = "spec: open item"
 
 #: The label a reviewer adds to sign off the decisions a pull request records.
 SIGN_OFF = "signed-off"
@@ -193,13 +218,29 @@ def _parse(kind: str, written: str) -> tuple[str, str] | None:
     return None if bold is None else (bold["state"].strip(), bold["rest"])
 
 
-def cited(text: str) -> list[Reference]:
-    """Return every reference that a status of the specification carries."""
+def cited(text: str, *, unitemed: bool = True) -> list[Reference]:
+    """Return every reference that a status of the specification carries.
+
+    An open item is read in the grammar of docs spec §3.6 only while
+    ``unitemed``, as :func:`item_cited` reads it after that.
+    """
     found = []
     for _, kind, written in conventions.statuses(text):
+        if kind == "item" and not unitemed:
+            continue
         if (parsed := _parse(kind, written)) is not None:
             found += references(conventions.carried(parsed[1]))
     return found
+
+
+def item_cited(text: str) -> list[Reference]:
+    """Return every reference an open item carries, in items spec §3.2's grammar."""
+    return [
+        reference
+        for item in conventions.items(text)
+        if item.state is not None
+        for reference in references(item.carried)
+    ]
 
 
 def ledger_cited(text: str) -> list[Reference]:
@@ -210,6 +251,25 @@ def ledger_cited(text: str) -> list[Reference]:
     for row in conventions.ledger(text) or []:
         found += references(conventions.carried(conventions.opened(row.status)[1]))
     return found
+
+
+def _resolved(
+    evidence: str, resolve: Resolver
+) -> tuple[list[tuple[Reference, Work]], list[str]]:
+    """Resolve each reference, keeping the work that is the kind its role says."""
+    found = []
+    faults = []
+    for reference in references(evidence):
+        work = resolve(reference.repository, reference.number)
+        if work is None:
+            faults.append(f"{reference.text} does not exist")
+        elif reference.role == "pull" and work.kind == "issue":
+            faults.append(f"{reference.text} is an issue")
+        elif reference.role == "issue" and work.kind == "pull":
+            faults.append(f"{reference.text} is a pull request")
+        else:
+            found.append((reference, work))
+    return found, faults
 
 
 def _terminal(
@@ -284,6 +344,7 @@ def check(
     *,
     pull: int | None = None,
     drift: bool = False,
+    unitemed: bool = True,
 ) -> list[str]:
     """Check the work cited by each status of a specification.
 
@@ -300,6 +361,10 @@ def check(
         while it is still open.
     drift : bool, default=False
         Whether to also report a non-terminal status whose work has moved on.
+    unitemed : bool, default=True
+        Whether the open items are in the grammar of docs spec §3.6, as they are
+        until :data:`UNITEMED` no longer names the specification. After that,
+        :func:`check_items` reads them instead.
 
     Returns
     -------
@@ -309,29 +374,152 @@ def check(
     """
     problems = []
     for number, kind, written in conventions.statuses(text):
+        if kind == "item" and not unitemed:
+            continue
         if (parsed := _parse(kind, written)) is None:
             # a malformed status is the unit test's to report
             continue
         state, rest = parsed
         evidence = conventions.carried(rest)
-        found = []
-        faults = []
-        for reference in references(evidence):
-            work = resolve(reference.repository, reference.number)
-            if work is None:
-                faults.append(f"{reference.text} does not exist")
-            elif reference.role == "pull" and work.kind == "issue":
-                faults.append(f"{reference.text} is an issue")
-            elif reference.role == "issue" and work.kind == "pull":
-                faults.append(f"{reference.text} is a pull request")
-            else:
-                found.append((reference, work))
+        found, faults = _resolved(evidence, resolve)
         if state in conventions.TERMINAL:
             faults += _terminal(state, evidence, found, pull)
         elif drift:
             faults += _drift(state, found)
         problems += [f"{conventions.where(path, number)}: {fault}" for fault in faults]
     return problems
+
+
+def check_items(
+    path: Path,
+    text: str,
+    resolve: Resolver,
+    *,
+    pull: int | None = None,
+    drift: bool = False,
+) -> list[str]:
+    """Check the work each open item cites, as items spec §3.8 asks.
+
+    Parameters
+    ----------
+    path : Path
+        The specification, to locate each fault.
+    text : str
+        The specification.
+    resolve : Resolver
+        Look up the work at a repository and number.
+    pull : int, optional
+        The number of the pull request being checked, which may not have merged.
+    drift : bool, default=False
+        Whether to also report an open or deferred item whose issue has closed.
+
+    Returns
+    -------
+    list of str
+        One message per fault, as ``path:line: message``.
+
+    """
+    problems = []
+
+    def merged(
+        works: list[tuple[Reference, Work]], when: date | None = None
+    ) -> list[str]:
+        faults = []
+        for reference, work in works:
+            if work.kind != "pull":
+                faults.append(f"{reference.text} is not a pull request")
+            elif reference.repository == REPOSITORY and reference.number == pull:
+                # it merges after the check, so there is no date to hold it to yet
+                continue
+            elif work.state != "merged":
+                faults.append(f"{reference.text} has not merged")
+            elif when and work.when and abs((when - work.when).days) > 1:
+                faults.append(
+                    f"moved on {when}, but {reference.text} merged on {work.when}"
+                )
+        return faults
+
+    for item in conventions.items(text):
+        if item.state is None:
+            # an entry outside the grammar is the unit test's to report
+            continue
+        faults = []
+        found, missing = _resolved(item.found, resolve)
+        faults += missing + merged(found)
+        for move in item.moves:
+            found, missing = _resolved(move, resolve)
+            written = conventions.DATE.search(move)
+            when = None if written is None else conventions.dated(written[0])
+            faults += missing + merged(found, when)
+        if item.settled:
+            found, missing = _resolved(item.settled, resolve)
+            # a settled item is held as a Resolved status is (docs spec §3.6): its
+            # pull request has merged, an issue may be open, and its date may come
+            # before the merge that records it
+            faults += missing + _terminal("Resolved", item.settled, found, pull)
+        if item.issue is not None:
+            faults += _ticket(item.issue, item.state, resolve, drift=drift)
+        at = conventions.where(path, item.line)
+        problems += [f"{at}: {fault}" for fault in faults]
+    return problems
+
+
+def _ticket(issue: int, state: str, resolve: Resolver, *, drift: bool) -> list[str]:
+    """Check the issue an item in ``state`` cites: an issue, and labelled.
+
+    With ``drift``, an open or deferred item's issue is open too.
+    """
+    reference = f"{{issue}}`{issue}`"
+    found, faults = _resolved(reference, resolve)
+    for _, work in found:
+        if ITEM_LABEL not in work.labels:
+            faults.append(f"{reference} carries no {ITEM_LABEL} label")
+        if (
+            drift
+            and state in (conventions.OPEN, conventions.DEFERRED)
+            and work.state != "open"
+        ):
+            faults.append(f"{state}, but {reference} has closed")
+    return faults
+
+
+def uncited(numbers: Iterable[int], texts: Mapping[Path, str]) -> list[str]:
+    """Report each open labelled issue that no open item cites.
+
+    An item cites its issue in the grammar of items spec §3.2, or, while
+    :data:`UNITEMED` names its specification, in that of docs spec §3.6, so both
+    are read.
+
+    Parameters
+    ----------
+    numbers : iterable of int
+        The open issues carrying the label of an open item.
+    texts : mapping of Path to str
+        Every specification, by its path.
+
+    Returns
+    -------
+    list of str
+        One message per issue no item cites, in order of number.
+
+    """
+    cites = set()
+    for path, text in texts.items():
+        cites |= {item.issue for item in conventions.items(text) if item.issue}
+        if path.name not in conventions.UNITEMED:
+            continue
+        for _, kind, written in conventions.statuses(text):
+            if kind != "item" or (parsed := _parse(kind, written)) is None:
+                continue
+            cites |= {
+                reference.number
+                for reference in references(conventions.carried(parsed[1]))
+                if reference.role == "issue" and reference.repository == REPOSITORY
+            }
+    return [
+        f"{{issue}}`{number}` carries the {ITEM_LABEL} label, and no item cites it"
+        for number in sorted(set(numbers) - cites)
+    ]
 
 
 def check_ledger(
@@ -552,16 +740,67 @@ def github(token: str | None = None) -> Resolver:
                     state = "merged" if merged else found["state"]
                     cache[key] = Work("pull", state, when(merged or found["closed_at"]))
                 else:
-                    cache[key] = Work("issue", found["state"], when(found["closed_at"]))
+                    labels = frozenset(
+                        # a label is an object, though an old answer named it alone
+                        label["name"] if isinstance(label, dict) else label
+                        for label in found.get("labels") or []
+                    )
+                    cache[key] = Work(
+                        "issue", found["state"], when(found["closed_at"]), labels
+                    )
         return cache[key]
 
     return resolve
+
+
+def labelled_issues(token: str | None = None) -> Lister:
+    """Return a lister of every open issue carrying the label of an open item.
+
+    The issues endpoint serves pull requests too, so a pull request carrying the
+    label is left out, as is an issue that has closed: neither is a gap waiting
+    for an item.
+
+    Parameters
+    ----------
+    token : str, optional
+        A GitHub token, which raises the rate limit.
+
+    Returns
+    -------
+    Lister
+        The lister, reading every page of GitHub's answer.
+
+    """
+    headers = _headers(token)
+    query = urllib.parse.urlencode(
+        {"labels": ITEM_LABEL, "state": "open", "per_page": 100},
+        quote_via=urllib.parse.quote,
+    )
+
+    def listed() -> list[int]:
+        numbers = []
+        url: str | None = f"{API}/repos/{REPOSITORY}/issues?{query}"
+        while url:
+            request = urllib.request.Request(url, headers=headers)  # noqa: S310
+            with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
+                page = json.load(response)
+                following = NEXT.search(response.headers.get("Link") or "")
+            numbers += [
+                found["number"]
+                for found in page
+                if "pull_request" not in found and found["state"] == "open"
+            ]
+            url = following["url"] if following else None
+        return sorted(numbers)
+
+    return listed
 
 
 def main(
     argv: list[str] | None = None,
     resolve: Resolver | None = None,
     labelled: Labeller | None = None,
+    listed: Lister | None = None,
 ) -> int:
     """Check every specification, printing each fault.
 
@@ -573,6 +812,9 @@ def main(
         Look up the work at a repository and number. Defaults to asking GitHub.
     labelled : Labeller, optional
         Read the label events of a pull request. Defaults to asking GitHub.
+    listed : Lister, optional
+        List the open issues carrying the label of an open item, read only with
+        ``--drift``. Defaults to asking GitHub.
 
     Returns
     -------
@@ -600,14 +842,32 @@ def main(
         resolve = github(token)
     if labelled is None:
         labelled = labeller(token)
+    if listed is None:
+        listed = labelled_issues(token)
     specifications = conventions.specifications()
+    texts = {path: path.read_text(encoding="utf-8") for path in specifications}
+
+    def unitemed(path: Path) -> bool:
+        return path.name in conventions.UNITEMED
 
     try:
         problems = []
-        for path in specifications:
-            text = path.read_text(encoding="utf-8")
-            problems += check(path, text, resolve, pull=args.pull, drift=args.drift)
+        for path, text in texts.items():
+            problems += check(
+                path,
+                text,
+                resolve,
+                pull=args.pull,
+                drift=args.drift,
+                unitemed=unitemed(path),
+            )
+            if not unitemed(path):
+                problems += check_items(
+                    path, text, resolve, pull=args.pull, drift=args.drift
+                )
             problems += check_ledger(path, text, resolve, labelled, pull=args.pull)
+        if args.drift:
+            problems += uncited(listed(), texts)
     except (urllib.error.URLError, TimeoutError) as error:
         print(f"could not ask GitHub: {error}", file=sys.stderr)
         if isinstance(error, urllib.error.HTTPError) and error.code in (403, 429):
@@ -630,8 +890,12 @@ def main(
     if problems:
         print(breadcrumb.breadcrumb(CHECK))
 
-    texts = [path.read_text(encoding="utf-8") for path in specifications]
-    count = sum(len(cited(text)) + len(ledger_cited(text)) for text in texts)
+    count = sum(
+        len(cited(text, unitemed=unitemed(path)))
+        + len(ledger_cited(text))
+        + (0 if unitemed(path) else len(item_cited(text)))
+        for path, text in texts.items()
+    )
     verdict = f"{len(problems)} fault(s)" if problems else "all hold"
     print(
         f"checked {count} reference(s) across {len(specifications)} "

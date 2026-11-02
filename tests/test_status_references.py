@@ -17,6 +17,8 @@ from __future__ import annotations
 
 from datetime import date
 import importlib.util
+import io
+import json
 from pathlib import Path
 import sys
 from typing import TYPE_CHECKING, Self
@@ -780,3 +782,315 @@ def test_the_changed_step_sees_a_specification_moved_away(tmp_path):
     subprocess.run(["bash", "-c", run], cwd=tmp_path, env=env, check=True)  # noqa: S603, S607
 
     assert output.read_text(encoding="utf-8").strip() == "watched=true"
+
+
+#: The label every open item's issue carries (items spec §3.3).
+ITEM_LABEL = "spec: open item"
+
+
+@pytest.fixture
+def itemed(script, record):
+    """Provide the record, with the issues an open item cites, labelled or not."""
+    labelled = frozenset({ITEM_LABEL})
+    known = {
+        (REPOSITORY, 5): script.Work("issue", "open", None),
+        (REPOSITORY, 22): script.Work("issue", "open", None, labelled),
+        (REPOSITORY, 23): script.Work(
+            "issue", "closed", date(2026, 10, 8), labelled | {"type: bug"}
+        ),
+    }
+    return lambda repository, number: (
+        known.get((repository, number)) or record(repository, number)
+    )
+
+
+def item(script, state: str, *parts: str, settled: str = "") -> str:
+    """Write an open item's state and parenthetical, in items spec §3.2's grammar.
+
+    A part is written as ``found``, ``owed``, ``moved`` or ``ticket`` and what it
+    holds, so the emojis are built by the grammar rather than written here.
+    """
+    grammar = script.conventions
+    emoji = {
+        "found": grammar.FOUND,
+        "owed": grammar.OWED,
+        "moved": grammar.MOVED,
+        "ticket": grammar.TICKET,
+    }
+    written = [settled] if settled else []
+    for part in parts:
+        kind, said = part.split(" ", 1)
+        written.append(f"{emoji[kind]} {said}")
+    return f"**{getattr(grammar, state)}** ({grammar.DOT.join(written)})"
+
+
+FOUND = "found 2026-10-07, {pull}`10`"
+OWED = "owed row 1 of \N{SECTION SIGN}4"
+
+
+def item_faults(script, resolve, text, **kwargs: object) -> list[str]:
+    """Check a specification's open items, reporting each fault without its location."""
+    found = script.check_items(Path("x.md"), text, resolve, **kwargs)
+    return [problem.split(": ", maxsplit=1)[1] for problem in found]
+
+
+def test_an_items_issue_carries_the_label(script, itemed):
+    """Items spec §3.3: the issue an item cites carries ``spec: open item``."""
+    unlabelled = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`5`"),))
+    labelled = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`22`"),))
+
+    assert item_faults(script, itemed, unlabelled) == [
+        "{issue}`5` carries no spec: open item label"
+    ]
+    assert item_faults(script, itemed, labelled) == []
+
+
+@pytest.mark.parametrize(
+    ("ticket", "expected"),
+    [
+        ("{issue}`10`", "{issue}`10` is a pull request"),
+        ("{issue}`99`", "{issue}`99` does not exist"),
+    ],
+)
+def test_an_items_issue_is_an_issue_that_exists(script, itemed, ticket, expected):
+    """Items spec §3.8: a ticket naming a pull request, or nothing, is caught."""
+    text = spec(items=(item(script, "OPEN", FOUND, OWED, f"ticket {ticket}"),))
+
+    assert item_faults(script, itemed, text) == [expected]
+
+
+@pytest.mark.parametrize(
+    ("day", "expected"),
+    [
+        ("2026-10-08", []),
+        ("2026-10-09", ["moved on 2026-10-09, but {pull}`10` merged on 2026-10-07"]),
+    ],
+)
+def test_a_move_is_dated_by_its_merge(script, itemed, day, expected):
+    """Items spec §3.8: a move is dated within a day of its pull request's merge."""
+    text = spec(
+        items=(
+            item(
+                script,
+                "DEFERRED",
+                FOUND,
+                OWED,
+                f"moved row 1, {day}, {{pull}}`10`",
+                "ticket {issue}`22`",
+            ),
+        )
+    )
+
+    assert item_faults(script, itemed, text) == expected
+
+
+@pytest.mark.parametrize(
+    "parts",
+    [
+        ("found 2026-10-07, {pull}`12`", OWED, "ticket {issue}`22`"),
+        (FOUND, OWED, "moved row 1, 2026-10-01, {pull}`12`", "ticket {issue}`22`"),
+    ],
+    ids=["found", "moved"],
+)
+def test_an_items_pull_request_has_merged(script, itemed, parts):
+    """Items spec §3.8: the pull requests of found and moved have merged."""
+    state = "DEFERRED" if len(parts) == 4 else "OPEN"
+    text = spec(items=(item(script, state, *parts),))
+
+    assert item_faults(script, itemed, text) == ["{pull}`12` has not merged"]
+    # the pull request being checked may write the item while it is still open
+    assert item_faults(script, itemed, text, pull=12) == []
+
+
+@pytest.mark.parametrize(
+    ("state", "settled", "expected"),
+    [
+        ("RESOLVED", "2026-10-01, {pull}`11`", []),
+        ("RESOLVED", "2026-10-01, {issue}`20`", []),
+        ("RESOLVED", "2026-10-07, {pull}`12`", ["{pull}`12` is still open"]),
+        ("ABANDONED", "2026-10-07, {pull}`13`", ["{pull}`13` closed without merging"]),
+        (
+            "GRADUATED",
+            "2026-10-07, {pull}`12`, to row 2 of \N{SECTION SIGN}4",
+            ["{pull}`12` is still open"],
+        ),
+        ("RESOLVED", "2026-02-30, {pull}`10`", ["2026-02-30 is not a date"]),
+    ],
+)
+def test_a_settled_item_follows_docs_spec_3_6(script, itemed, state, settled, expected):
+    """Items spec §3.8: a settled item's work is held as a Resolved status is.
+
+    Its pull request has merged, an issue it cites may still be open, and its
+    date may come before the merge that records it (docs spec §3.6).
+    """
+    parts = (FOUND, "ticket {issue}`23`")
+    text = spec(items=(item(script, state, *parts, settled=settled),))
+
+    assert item_faults(script, itemed, text) == expected
+
+
+def test_a_settled_item_may_cite_the_pull_being_checked(script, itemed):
+    """The pull request that settles an item may cite itself while still open."""
+    settled = "2026-10-07, {pull}`12`"
+    text = spec(items=(item(script, "RESOLVED", FOUND, settled=settled),))
+
+    assert item_faults(script, itemed, text, pull=12) == []
+
+
+@pytest.mark.parametrize("state", ["OPEN", "DEFERRED"])
+def test_drift_an_item_whose_issue_closed(script, itemed, state):
+    """Items spec §3.8: an open or deferred item whose issue closed is drift."""
+    moved = ("moved row 1, 2026-10-07, {pull}`10`",) if state == "DEFERRED" else ()
+    text = spec(items=(item(script, state, FOUND, OWED, *moved, "ticket {issue}`23`"),))
+    written = getattr(script.conventions, state)
+
+    assert item_faults(script, itemed, text) == []
+    assert item_faults(script, itemed, text, drift=True) == [
+        f"{written}, but {{issue}}`23` has closed"
+    ]
+
+
+def test_no_drift_from_a_settled_items_closed_issue(script, itemed):
+    """A settled item's issue is closed by settling it, which is no drift."""
+    settled = "2026-10-08, {pull}`11`"
+    text = spec(
+        items=(item(script, "RESOLVED", FOUND, "ticket {issue}`23`", settled=settled),)
+    )
+
+    assert item_faults(script, itemed, text, drift=True) == []
+
+
+def test_an_old_grammar_item_is_left_to_check(script, itemed):
+    """An item not in items spec §3.2's grammar is read by check, not check_items."""
+    text = spec(items=("**Resolved** (2026-10-07, {pull}`12`)",))
+
+    assert item_faults(script, itemed, text) == []
+
+
+def test_check_leaves_the_items_of_a_specification_brought_in(script, itemed):
+    """A specification brought in has its items checked once, by check_items."""
+    text = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`10`"),))
+
+    assert check(script, itemed, text, unitemed=False) == []
+
+
+def test_an_open_labelled_issue_no_item_cites_is_drift(script):
+    """Items spec §3.8: every open labelled issue is cited, in either grammar.
+
+    A specification still waiting to be brought in cites its issues in the
+    grammar of docs spec §3.6, and those count as cited too.
+    """
+    itemed = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`22`"),))
+    waiting = spec(items=("**Open** ({issue}`2804`)",))
+    name = next(iter(script.conventions.UNITEMED))
+    texts = {Path("x.md"): itemed, Path(name): waiting}
+
+    assert script.uncited([22, 24, 2804], texts) == [
+        "{issue}`24` carries the spec: open item label, and no item cites it"
+    ]
+
+
+def test_an_old_grammar_item_outside_unitemed_cites_nothing(script):
+    """The grammar of docs spec §3.6 is read only where :data:`UNITEMED` keeps it."""
+    texts = {Path("x.md"): spec(items=("**Open** ({issue}`24`)",))}
+
+    assert script.uncited([24], texts) == [
+        "{issue}`24` carries the spec: open item label, and no item cites it"
+    ]
+
+
+class Answer(io.BytesIO):
+    """A page of a GitHub answer, as ``urllib.request.urlopen`` returns it."""
+
+    def __init__(self, body: object, link: str | None = None) -> None:
+        super().__init__(json.dumps(body).encode())
+        self.headers = {"Link": link} if link else {}
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        return None
+
+
+def test_a_closed_issue_or_pull_request_is_never_listed(script, monkeypatch):
+    """Review Focus 5: only an open issue carrying the label is listed, every page.
+
+    A pull request carrying the label, or a labelled issue that has closed, is
+    no gap waiting for an item, so neither is reported as uncited.
+    """
+    from urllib.parse import parse_qs, urlsplit  # noqa: PLC0415
+
+    def issue(number: int, state: str = "open", **more: object) -> dict:
+        return {"number": number, "state": state, **more}
+
+    pages = {
+        "1": Answer(
+            [issue(7), issue(8, pull_request={"url": "x"})],
+            '<https://api.github.com/x?page=2>; rel="next"',
+        ),
+        "2": Answer([issue(9, "closed"), issue(11)]),
+    }
+    asked = []
+
+    def urlopen(request: object, timeout: float) -> Answer:  # noqa: ARG001
+        asked.append(request.full_url)
+        return pages["2" if "page=2" in request.full_url else "1"]
+
+    monkeypatch.setattr(script.urllib.request, "urlopen", urlopen)
+
+    assert script.labelled_issues()() == [7, 11]
+    query = parse_qs(urlsplit(asked[0]).query)
+    assert query["labels"] == [ITEM_LABEL]
+    assert query["state"] == ["open"]
+
+
+def test_github_reads_an_issues_labels(script, monkeypatch):
+    """The resolver answers with the labels an issue carries."""
+    answer = {
+        "state": "open",
+        "closed_at": None,
+        "labels": [{"name": ITEM_LABEL}, {"name": "type: bug"}],
+    }
+    monkeypatch.setattr(
+        script.urllib.request, "urlopen", lambda _request, **_: Answer(answer)
+    )
+
+    work = script.github()(REPOSITORY, 5)
+
+    assert work == script.Work(
+        "issue", "open", None, frozenset({ITEM_LABEL, "type: bug"})
+    )
+
+
+def test_main_checks_the_items_and_lists_the_labelled(
+    script, itemed, labels, tmp_path, monkeypatch, capsys
+):
+    """The nightly run checks every item and every labelled issue."""
+    path = tmp_path / "2026-01-01-demo-design.md"
+    text = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`5`"),))
+    path.write_text(text, encoding="utf-8")
+    monkeypatch.setattr(script.conventions, "specifications", lambda: [path])
+
+    status = script.main(
+        ["--drift"], resolve=itemed, labelled=labels, listed=lambda: [5, 24]
+    )
+
+    captured = capsys.readouterr()
+    assert status == 1
+    assert "{issue}`5` carries no spec: open item label" in captured.out
+    assert "{issue}`24` carries the spec: open item label" in captured.out
+    assert "{issue}`5` carries the spec" not in captured.out
+    # its found pull request and its issue
+    assert "checked 2 reference(s) across 1 specification(s)" in captured.err
+
+
+def test_main_lists_the_labelled_only_for_drift(script, itemed, labels, monkeypatch):
+    """A pull request is not failed by a labelled issue some other work raised."""
+    monkeypatch.setattr(script.conventions, "specifications", list)
+
+    def listed() -> list[int]:
+        message = "listed"
+        raise AssertionError(message)
+
+    assert script.main([], resolve=itemed, labelled=labels, listed=listed) == 0
