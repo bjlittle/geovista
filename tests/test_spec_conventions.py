@@ -1349,15 +1349,18 @@ def row_numbers(path: Path, text: str) -> list[str]:
     """Find each roadmap row whose first cell is no row number, as ``**1**`` is.
 
     A citation names a row by its first cell, so a cell that is no number, with a
-    letter or without, names nothing, and the grammar passes the row over.
+    letter or without, names nothing, and the grammar passes the row over. A table
+    before any numbered heading lies in no section, so names no row whatever its
+    cells, and is passed over as the grammar's rows() passes it over.
     """
     problems = []
     table: list[tuple[int, str]] = []
+    headed = False
     for number, line in [*read_lines(text), (0, "")]:
         if line.startswith("|"):
             table.append((number, line))
             continue
-        if table and roadmap_header(citations.cells(table[0][1])):
+        if headed and table and roadmap_header(citations.cells(table[0][1])):
             for row, written in table[2:]:
                 cell = (citations.cells(written) or [""])[0]
                 if not citations.ROW_NUMBER.fullmatch(cell):
@@ -1366,6 +1369,7 @@ def row_numbers(path: Path, text: str) -> list[str]:
                         "row: number it as `1` or `1a`"
                     )
         table = []
+        headed = headed or HEADING.match(line) is not None
     return problems
 
 
@@ -1564,6 +1568,22 @@ def test_row_numbers_finds_a_row_not_numbered_as_one(tmp_path):
         for cell in ["**2**", "~~3~~", "4.", ""]
     ]
     assert problems[0].startswith(f"{where(path, 10)}: ")
+
+
+def test_row_numbers_passes_over_a_roadmap_before_any_section(tmp_path):
+    """A table before any numbered heading lies in no section, so names no row.
+
+    The grammar's rows() and the build both pass it over, and so does the rule.
+    """
+    roadmap = "| # | Scope | Status |\n|---|---|---|\n| **1** | a | not started |\n"
+    path, _ = demo(tmp_path, f"{roadmap}\n{DEMO}\n{roadmap}")
+
+    problems = row_numbers(path, path.read_text(encoding="utf-8"))
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        "row '**1**' is not numbered as a row: number it as `1` or `1a`"
+    ]
+    assert problems[0].startswith(f"{where(path, 15)}: ")
 
 
 @pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)

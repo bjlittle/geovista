@@ -886,3 +886,40 @@ def test_the_build_and_the_grammar_anchor_the_same_items(tmp_path, case):
 
     assert warning == ""
     assert built == declared == expected
+
+
+#: A roadmap whose rows the grammar reads only where the first cell is a number,
+#: as ``1`` or ``5a`` is, and passes over where it is anything else.
+NUMBERED_ROWS = (
+    "| # | Scope | Status |\n|---|---|---|\n"
+    "| 1 | a | not started |\n| **2** | b | not started |\n"
+    "| 3. | c | not started |\n| 5a | d | not started |\n"
+)
+
+
+@pytest.mark.usefixtures("docs")
+def test_the_build_anchors_only_the_rows_the_grammar_reads(tmp_path):
+    """A row the grammar names no anchor for, as ``**2**``, has none built either.
+
+    The rendered cell of ``**2**`` reads ``2``, so the build reads the cell's
+    markup as the grammar does, rather than its text.
+    """
+    grammar = _load("geovista_citations")
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    spec.write_text(LISTED + NUMBERED_ROWS, encoding="utf-8")
+    toctree = "   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+
+    html, warning = build(src, tmp_path)
+
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+    built = set(re.findall(r'id="(demo-spec-[\d-]+-row-[^"]+)"', demo))
+    declared = {a for a in grammar.namespace([spec]).anchors if "-row-" in a}
+
+    assert warning == ""
+    assert built == declared == {"demo-spec-3-row-1", "demo-spec-3-row-5a"}
