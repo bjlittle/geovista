@@ -554,3 +554,21 @@ def test_a_label_reads_an_item_and_a_row_anchor(tmp_path, citations):
     assert names.prefixes == {"demo-spec"}
     assert citations.LABEL.match("typing-spec-4-row-6a")["row"] == "6a"
     assert citations.LABEL.match("scene-spec-4-4-item-2")["num"] == "4-4"
+
+
+def test_a_wrapped_number_continuing_a_paragraph_is_no_item(tmp_path, citations):
+    """A list interrupts a paragraph only if it opens at 1, as in CommonMark."""
+    body = (
+        "(demo-spec-1)=\n## 1. Purpose\n\n"
+        "(demo-spec-9)=\n## 9. Roadmap\n\n"
+        "Prose that tracks rows 1 to\n4. Rows 2 to 4 each build on row 1.\n\n"
+        "(demo-spec-10)=\n## 10. Steps\n\n"
+        "Prose before a list.\n1. A step.\n2. Another.\n"
+    )
+    _, names = demo(tmp_path, body, citations)
+
+    assert [(i.section, i.number) for i in citations.listed(body)] == [
+        ("10", 1),
+        ("10", 2),
+    ]
+    assert "demo-spec-9-item-4" not in names.anchors

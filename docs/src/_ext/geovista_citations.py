@@ -449,8 +449,10 @@ def listed(text: str) -> list[Listed]:
     second list, such as the steps of a procedure under its design, names nothing
     a citation can reach, and a citation of one past the first list's end fails
     rather than linking the wrong item. A list ends at the first line written flush
-    after it, a fence included, as markdown ends one. The Decisions are no items,
-    since a decision is cited only as one (ledger spec §2 decision 1).
+    after it, a fence included, as markdown ends one. As in CommonMark, a list may
+    interrupt a paragraph only if it opens at 1, so a wrapped line that happens to
+    open with ``4.`` is prose, not an item. The Decisions are no items, since a
+    decision is cited only as one (ledger spec §2 decision 1).
 
     Parameters
     ----------
@@ -467,6 +469,8 @@ def listed(text: str) -> list[Listed]:
     entries: list[tuple[str, int, int, list[str]]] = []
     section: str | None = None
     ended = False
+    # whether the line before is prose, which only a list opening at 1 interrupts
+    paragraph = False
     previous = 0
     for number, line in read_lines(text):
         # a flush line read_lines skips, such as a fence's rail, ends a list too
@@ -474,10 +478,12 @@ def listed(text: str) -> list[Listed]:
             s.strip() and not s[:1].isspace() for s in raw[previous : number - 1]
         )
         previous = number
+        after, paragraph = paragraph and not skipped, bool(line.strip())
         heading = HEADING.match(line)
         if heading is not None:
             decided = heading["num"] == "2" and heading["title"] == DECISIONS
             section, ended = (None if decided else heading["num"]), False
+            paragraph = False
             continue
         if section is None or ended:
             continue
@@ -486,7 +492,7 @@ def listed(text: str) -> list[Listed]:
             ended = True
             continue
         item = NUMBERED.match(line)
-        if item is not None:
+        if item is not None and (opened or not after or item["number"] == "1"):
             entries.append((section, int(item["number"]), number, [item["body"]]))
         elif opened and line[:1].isspace() and line.strip():
             entries[-1][3].append(line.strip())
