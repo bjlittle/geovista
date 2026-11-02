@@ -1054,6 +1054,8 @@ def test_a_closed_issue_or_pull_request_is_never_listed(script, monkeypatch):
     query = parse_qs(urlsplit(asked[0]).query)
     assert query["labels"] == [ITEM_LABEL]
     assert query["state"] == ["open"]
+    # parse_qs reads "+" as a space too, so the label's spaces are pinned as written
+    assert "labels=spec%3A%20open%20item" in urlsplit(asked[0]).query.split("&")
 
 
 def test_github_reads_an_issues_labels(script, monkeypatch):

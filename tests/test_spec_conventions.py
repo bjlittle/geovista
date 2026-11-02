@@ -695,6 +695,29 @@ def test_near_misses_rewrites_a_comma_row_before_its_section(tmp_path):
     ]
 
 
+def test_near_misses_keeps_a_comma_decision_naming_its_own_section(tmp_path):
+    """A decision never opens a citation naming its section after ``of``.
+
+    So the comma before one parts no two citations, unlike an item's or a row's,
+    and the comma form stays a near miss, beside the ``of`` form after it.
+    """
+    _, names = demo(tmp_path, DEMO)
+    text = f"# See {SECTION}8, decision 1 of demo spec {SECTION}2.\n"
+
+    problems = near_misses(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        (
+            f"'{SECTION}8, decision 1' is a near-miss citation; "
+            f"write '{SECTION}8 decision 1'"
+        ),
+        (
+            f"'decision 1 of demo spec {SECTION}2' is a near-miss citation; "
+            f"write 'demo spec {SECTION}2 decision 1'"
+        ),
+    ]
+
+
 def test_near_misses_comma_form_reads_any_case(tmp_path):
     """A sentence may open on the word, as the corpus does, so case must not matter."""
     _, names = demo(tmp_path, DEMO)
