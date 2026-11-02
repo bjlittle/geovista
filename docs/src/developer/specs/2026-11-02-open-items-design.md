@@ -386,14 +386,24 @@ it.
 (items-spec-7)=
 ## 7. Open Items
 
-None yet. Each follows §3.2.
+Each carries the status grammar of docs spec §3.6 until row 1 of §8 brings this
+specification in, and §3.2 after it.
+
+1. **Open** ({issue}`2804`) — **A near-miss citation is not flagged.** A citation written in
+   a form the grammar does not read is neither linked nor checked, and reads as a citation
+   to a person, so review passes it. Four were found in two days: `(§2, decision 1)` and
+   `decision 12 of §2` in the crs specification, `decision 12 of the CRS specification` on
+   the repository checks page, and a prefix followed by `row` with no `§` in §1 of this
+   specification. The grammar row 1 of §8 teaches could flag a prefix followed by `row`,
+   `item` or `decision` with no `§`, and a section followed by a comma and one of them.
+   Found while writing this specification ({pull}`2803`), and owed by row 1 of §8.
 
 (items-spec-8)=
 ## 8. Roadmap
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The items: citations of items and rows with their anchors (delivering row 5 of citation spec §9), the entry of §3.2, the suite of §3.7, the label, what GitHub answers (§3.8), the parents' notes, the documentation of §3.12, this specification's own Verification table, and the docs, zlevel, checks and citation specifications brought in | not started |
+| 1 | The items: citations of items and rows with their anchors (delivering row 5 of citation spec §9), the entry of §3.2, the suite of §3.7, the label, what GitHub answers (§3.8), the parents' notes, the documentation of §3.12, this specification's own Verification table and items, and the docs, zlevel, checks and citation specifications brought in | not started |
 | 2 | The report's roadmap and open items (§3.9) | not started |
 | 3 | The typing specification's items brought in, with the `candidate` rows they wait on | not started |
 | 4 | The crs specification's items brought in | not started |
