@@ -158,7 +158,7 @@ The state is first, in bold. The parenthesis holds the parts of the item's prove
 led by its emoji and separated by `·`. The bold run after the dash is the item's title,
 and its reasoning follows.
 
-| state | means | the parenthesis carries |
+| State | Meaning | Parenthesis Carries |
 |---|---|---|
 | ❓ Open | a gap still to settle | 🔎, 🎯, 🎫 |
 | ⏭️ Deferred | an open item moved at least once | 🔎, 🎯, one ⬅️ per move, 🎫 |
@@ -166,7 +166,7 @@ and its reasoning follows.
 | 🚫 Abandoned | dropped, its reason in its text | the date and where the reasoning was recorded, then 🔎, 🎫 |
 | 🎓 Graduated | promoted to a row of its own | the date and pull request, `to row N of §M`, then 🔎, 🎫 |
 
-| part | means |
+| Part | Meaning |
 |---|---|
 | 🔎 date, {pull} | found: when, and in which pull request, the gap surfaced |
 | 🎯 row N of §M | owed by: the row of this specification that must settle it |
