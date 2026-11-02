@@ -258,7 +258,7 @@ The model carries:
   6,378,137 m, which is the sphere `cartopy` uses for its spherical classes;
 - the scale between physical units and the units the scene is rendered in, so a scene can
   be rendered at a normalised radius of 1 while every height and tolerance stays physical
-  (§8, item 3);
+  (§8 item 3);
 - an explicit vertical mapping, at first an exaggeration above sea level and another
   below it, applied once by the scene (globe spec §4.1 and globe spec §4.4).
 
@@ -323,7 +323,7 @@ on the circle it was cut on, at the radius interpolated for it.
 
 VTK, through `pyvista`, does the clipping and cutting. `pyvista` 0.49 made clipping by a
 plane, clipping by a surface, transforms and extraction faster, and `pyvista` 0.49 is the
-floor (§8, item 9). Manifold, through `pyvista-manifold`, is not part
+floor (§8 item 9). Manifold, through `pyvista-manifold`, is not part
 of the foundation: its booleans need closed solids, so it cannot cut an open data mesh.
 It belongs to the region solids of project 4.
 
@@ -588,8 +588,8 @@ carries a verdict.
 
 | Departure | Measured | Verdict |
 |---|---|---|
-| A forced sphere of radius 6,378,137 m for 14 classes, including `Orthographic`, `Miller`, `Gnomonic` and `NearsidePerspective` | no difference for sphere-only methods such as `robin`; `Orthographic` moves 7.6 km east and 22.7 km north at 90°E 45°N against PROJ's ellipsoidal `ortho`, and `Miller` 11.2 km and 6.0 km | **Open** (§8, item 1): it dates from PROJ's spherical-only `ortho` before 7.2 |
-| Domains as rectangles or ellipses in projected metres | `NorthPolarStereo`'s ±5×10⁷ m reaches 61.4°S; `Gnomonic`'s reaches 82.7° from its centre; `TransverseMercator`'s ±2×10⁷ m by ±1×10⁷ m includes the near-singular regions; `ObliqueMercator` reuses `Mercator`'s latitude-limit extents | **Challenged**: limits are angles on the globe, with defaults per class (§8, item 2) |
+| A forced sphere of radius 6,378,137 m for 14 classes, including `Orthographic`, `Miller`, `Gnomonic` and `NearsidePerspective` | no difference for sphere-only methods such as `robin`; `Orthographic` moves 7.6 km east and 22.7 km north at 90°E 45°N against PROJ's ellipsoidal `ortho`, and `Miller` 11.2 km and 6.0 km | **Open** (§8 item 1): it dates from PROJ's spherical-only `ortho` before 7.2 |
+| Domains as rectangles or ellipses in projected metres | `NorthPolarStereo`'s ±5×10⁷ m reaches 61.4°S; `Gnomonic`'s reaches 82.7° from its centre; `TransverseMercator`'s ±2×10⁷ m by ±1×10⁷ m includes the near-singular regions; `ObliqueMercator` reuses `Mercator`'s latitude-limit extents | **Challenged**: limits are angles on the globe, with defaults per class (§8 item 2) |
 | Regional defaults: `Mercator` from −80° to 84°, and `LambertConformal` centred on the contiguous United States (−96°, 39°, parallels 33° and 45°) with a cutoff at −30° | as stated | **Inherited**, for familiarity, with the reason for each documented on its class |
 | Degree-like units, `to_meter=111319.49`, for `LambertCylindrical` and `RotatedPole` | as stated | **Inherited** for `RotatedPole`, whose users think in rotated degrees; **challenged** for `LambertCylindrical`, which takes PROJ's metres |
 | Hand-written national grids: `OSNI` mixes the WGS84 ellipsoid with modified Airy axes and carries no datum, where `OSGB` carries its datum | as stated | **Challenged**: national grids are built from their EPSG definitions |

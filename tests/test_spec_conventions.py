@@ -101,6 +101,10 @@ prose = citations.prose
 namespace = citations.namespace
 scan = citations.scan
 section_role = citations.section_role
+alternation = citations.alternation
+NUMBER = citations.NUMBER
+GAP = citations.GAP
+MEMBER = citations.MEMBER
 
 
 def where(path: Path, number: int) -> str:
@@ -558,6 +562,129 @@ def test_form_finds_each_citation_without_its_sign(tmp_path):
     assert [p.split(": ", 1)[1] for p in problems] == [
         "'demo spec 2.1' has no section sign"
     ]
+
+
+#: The word an item, a row or a decision is named by, singular only: a plural names
+#: no one of them.
+KIND = r"decision|item|row"
+
+
+def near_misses(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find a citation in a form the grammar does not read (items spec §7 item 1).
+
+    None of the three forms below is linked or checked, so each reads as prose rather
+    than a citation, and review passes it by. A known prefix followed directly by
+    ``row``, ``item`` or ``decision`` carries no section sign at all; a section sign
+    followed by a comma and one of those words carries one the grammar cannot read
+    past the comma; and ``decision`` named with its section after ``of`` uses the word
+    order the grammar accepts only for an item or a row. Each is reported with the
+    citation it should become.
+
+    Parameters
+    ----------
+    path : Path
+        The file.
+    text : str
+        Its text.
+    names : Namespace
+        The known prefixes.
+
+    Returns
+    -------
+    list of str
+        One message per fault, located with :func:`where`.
+
+    """
+    known = alternation(names.prefixes)
+    missing_sign = re.compile(
+        rf"(?<![\w-])(?P<prefix>{known}){GAP}"
+        rf"(?P<kind>{KIND}){GAP}(?P<member>{MEMBER})",
+        flags=re.IGNORECASE,
+    )
+    comma_form = re.compile(
+        rf"{SECTION}(?P<num>{NUMBER}),[^\S\n]*(?P<kind>{KIND}){GAP}(?P<member>{MEMBER})"
+    )
+    decision_of = re.compile(
+        rf"\bdecision{GAP}(?P<member>{MEMBER}){GAP}of{GAP}"
+        rf"(?:(?P<prefix>{known})[^\S\n]*)?{SECTION}(?P<num>{NUMBER})",
+        flags=re.IGNORECASE,
+    )
+    problems = []
+    for number, line in source_lines(path, text):
+        plain, _ = prose(line)
+        for match in missing_sign.finditer(plain):
+            kind = match["kind"].lower()
+            fix = f"{match['prefix']} {SECTION}{ELLIPSIS} {kind} {match['member']}"
+            problems.append(
+                f"{where(path, number)}: {match[0]!r} carries no section sign at "
+                f"all; write it as {fix!r}, with the section it names"
+            )
+        for match in comma_form.finditer(plain):
+            kind = match["kind"].lower()
+            if kind == "row":
+                fix = f"row {match['member']} of {SECTION}{match['num']}"
+            else:
+                fix = f"{SECTION}{match['num']} {kind} {match['member']}"
+            problems.append(
+                f"{where(path, number)}: {match[0]!r} is a near-miss citation; "
+                f"write {fix!r}"
+            )
+        for match in decision_of.finditer(plain):
+            prefix = f"{match['prefix']} " if match["prefix"] else ""
+            fix = f"{prefix}{SECTION}{match['num']} decision {match['member']}"
+            problems.append(
+                f"{where(path, number)}: {match[0]!r} is a near-miss citation; "
+                f"write {fix!r}"
+            )
+    return problems
+
+
+def test_near_misses_finds_each_form(tmp_path):
+    """One of each near miss, beside three valid forms already read as citations."""
+    _, names = demo(tmp_path, DEMO)
+    text = (
+        f"# demo spec item 9.\n"
+        f"# demo spec {SECTION}2, item 3.\n"
+        f"# decision 1 of demo spec {SECTION}2.\n"
+        f"# Valid: demo spec {SECTION}2 item 3, item 3 of demo spec {SECTION}2, "
+        f"and demo spec {SECTION}2 decision 1.\n"
+    )
+    path = tmp_path / "module.py"
+
+    problems = near_misses(path, text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        (
+            f"'demo spec item 9' carries no section sign at all; write it as "
+            f"'demo spec {SECTION}{ELLIPSIS} item 9', with the section it names"
+        ),
+        f"'{SECTION}2, item 3' is a near-miss citation; write '{SECTION}2 item 3'",
+        (
+            f"'decision 1 of demo spec {SECTION}2' is a near-miss citation; "
+            f"write 'demo spec {SECTION}2 decision 1'"
+        ),
+    ]
+
+
+def test_near_misses_rewrites_a_comma_row_before_its_section(tmp_path):
+    """A row never trails its section, so the fix reorders rather than drop a comma."""
+    _, names = demo(tmp_path, DEMO)
+    text = f"# See {SECTION}2, row 3 of the roadmap.\n"
+
+    problems = near_misses(tmp_path / "module.py", text, names)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"'{SECTION}2, row 3' is a near-miss citation; write 'row 3 of {SECTION}2'"
+    ]
+
+
+def test_no_citation_is_a_near_miss(texts, names):
+    """Settles items spec §7 item 1 (#2804): every near-miss in the corpus is fixed."""
+    problems = [
+        p for path, text in texts.items() for p in near_misses(path, text, names)
+    ]
+
+    assert not problems, "\n".join(problems)
 
 
 def paired(tmp_path: Path, body: str) -> tuple[Path, Namespace]:
