@@ -436,8 +436,8 @@ today.
 | 4 | Collapsing the roles; the agreement assertion retires; the changelog guidelines | ✅ landed (2026-10-27, {pull}`2745`) |
 | 5 | Items and rows as citations in their own right | ✅ landed (2026-11-02, {pull}`2807`) |
 
-Statuses follow docs spec §3.6, and {issue}`2566` tracks
-rows 1 to 4. Rows 2 to 4 each build on row 1. Row 2 follows it, because the next change to cite a
+Statuses follow docs spec §3.6, and {issue}`2566` tracks rows 1 to 4.
+Rows 2 to 4 each build on row 1. Row 2 follows it, because the next change to cite a
 specification from code fails the ceiling test until row 2 lands. Row 3 needs only row 1, so
 it can come before or after row 2. Row 4 needs row 2.
 

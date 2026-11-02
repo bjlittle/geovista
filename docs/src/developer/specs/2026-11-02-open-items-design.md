@@ -150,8 +150,8 @@ changes; what changes is that each now names something that exists.
 
 Items and rows are numbered and keep their numbers, so the renumber guard of
 citation spec §4.6 already freezes a titled item, an untitled one once something cites it,
-and every row. Together the two forms deliver
-row 5 of citation spec §9 before its trigger. That trigger is more than twenty citations of items
+and every row. Together the two forms deliver row 5 of citation spec §9 before its trigger.
+That trigger is more than twenty citations of items
 and rows outside the specifications, and there were 11 when this specification was
 written. The reason to deliver it now is this specification's own: 🎯 is a citation of a
 row, and the landing gate of §3.5 cannot hold an item to a row it cannot read.
