@@ -33,10 +33,10 @@ input the design never named, or a test shows a decision holding only in part. E
 gap is follow-on work, and the specification is only a true picture of what is left to do
 if the gap is written into it.
 
-Today that depends on someone noticing. Ledger spec row 5 found that `Transform.from_points`
-refuses a `pint` quantity, a gap in crs spec §2 decision 13. It was raised as {issue}`2802`,
-and was written into the crs specification only because {user}`bjlittle` asked whether it
-had been. Of the 33 items still open or deferred in the collection when this specification
+Today that depends on someone noticing. Row 5 of ledger spec §8 found that
+`Transform.from_points` refuses a `pint` quantity, a gap in crs spec §2 decision 13. It
+was raised as {issue}`2802`, and was written into the crs specification only because
+{user}`bjlittle` asked whether it had been. Of the 33 items still open or deferred in the collection when this specification
 was written, 23 cite no issue, and none but that one says which roadmap row must settle it.
 A row can land while a question it depended on is still open, and nothing notices.
 
