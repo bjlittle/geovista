@@ -1440,10 +1440,10 @@ def test_the_audit_shows_each_revision_once(guard, repo, capsys, monkeypatch):
     shown: list[str] = []
     real = guard.git
 
-    def counting(root: Path, *args: str) -> str:
+    def counting(root: Path, *args: str, **kwargs: str) -> str:
         if args[0] == "show":
             shown.append(args[1])
-        return real(root, *args)
+        return real(root, *args, **kwargs)
 
     monkeypatch.setattr(guard, "git", counting)
 

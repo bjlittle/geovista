@@ -1030,7 +1030,7 @@ def test_a_closed_issue_or_pull_request_is_never_listed(script, monkeypatch):
     A pull request carrying the label, or a labelled issue that has closed, is
     no gap waiting for an item, so neither is reported as uncited.
     """
-    from urllib.parse import parse_qs, urlsplit  # noqa: PLC0415
+    from urllib.parse import parse_qs, quote, urlsplit  # noqa: PLC0415
 
     def issue(number: int, state: str = "open", **more: object) -> dict:
         return {"number": number, "state": state, **more}
@@ -1055,7 +1055,8 @@ def test_a_closed_issue_or_pull_request_is_never_listed(script, monkeypatch):
     assert query["labels"] == [ITEM_LABEL]
     assert query["state"] == ["open"]
     # parse_qs reads "+" as a space too, so the label's spaces are pinned as written
-    assert "labels=spec%3A%20open%20item" in urlsplit(asked[0]).query.split("&")
+    labels = f"labels={quote(ITEM_LABEL, safe='')}"
+    assert labels in urlsplit(asked[0]).query.split("&")
 
 
 def test_github_reads_an_issues_labels(script, monkeypatch):

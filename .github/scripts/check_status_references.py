@@ -584,7 +584,9 @@ def check_ledger(
     for decision in conventions.decisions(text):
         faults = []
         for reference, work in pulled(decision.carried):
-            fault = found(reference, work) or _unmerged(reference, work, pull)
+            fault = found(reference, work)
+            if fault is None and work is not None:
+                fault = _unmerged(reference, work, pull)
             if fault is not None:
                 faults.append(fault)
         at = conventions.where(path, decision.line)

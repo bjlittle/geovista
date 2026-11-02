@@ -825,11 +825,14 @@ LISTED = (
 
 #: Lists the build and the grammar must anchor alike, each with the item anchors
 #: both give it: a list nested in an item, a list in a block quote, a list in a
-#: numbered subsection, and a first list opening at 3 that restarts at 1.
+#: numbered subsection, and a first list opening at 3 that restarts at 1. Each list
+#: not anchored holds a count of items its anchored one does not, so anchoring the
+#: wrong list changes the anchors.
 ANCHORED = {
     "nested": (
         (
-            "1. **Alpha.** First.\n\n   1. Nested one.\n   2. Nested two.\n\n"
+            "1. **Alpha.** First.\n\n"
+            "   1. Nested one.\n   2. Nested two.\n   3. Nested three.\n\n"
             "2. **Beta.** Second.\n"
         ),
         {"demo-spec-3-item-1", "demo-spec-3-item-2"},
