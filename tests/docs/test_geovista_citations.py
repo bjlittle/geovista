@@ -700,3 +700,29 @@ def test_a_line_that_opens_no_block_continues_its_item(citations, line):
     text = LAZY.replace("More of the first item.", line)
 
     assert [i.title for i in citations.listed(text)] == ["Alpha.", "Beta."]
+
+
+#: A list whose first item ends in an indented code block, then a line written
+#: flush beneath the code, which no open paragraph takes in, so the list ends there.
+CODED = (
+    "(demo-spec-1)=\n## 1. Purpose\n\n"
+    "(demo-spec-3)=\n## 3. Items\n\n"
+    "1. **Alpha.** First.\n\n       print(123)\nOutside the list.\n\n"
+    "2. **Beta.** Second.\n"
+)
+
+
+def test_a_flush_line_after_an_items_code_ends_its_list(tmp_path, citations):
+    """Only a paragraph takes a lazy line in, so Beta opens a second list.
+
+    The build names only the first list's items, so the grammar must declare no
+    anchor for Beta, and a citation of item 2 fails as the build's does.
+    """
+    _, names = demo(tmp_path, CODED, citations)
+    decided = CODED.replace("## 3. Items", "## 2. Decisions").replace("-3)", "-2)")
+    itemed = CODED.replace("## 3. Items", "## 3. Open Items")
+
+    assert [(i.number, i.title) for i in citations.listed(CODED)] == [(1, "Alpha.")]
+    assert "demo-spec-3-item-2" not in names.anchors
+    assert [d.title for d in citations.decisions(decided)] == ["Alpha."]
+    assert [i.title for i in citations.items(itemed)] == ["Alpha."]

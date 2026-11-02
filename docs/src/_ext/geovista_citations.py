@@ -20,20 +20,27 @@ carries the ``geovista_`` prefix. A test or a script loads it by path, and must
 register it in ``sys.modules`` before executing it, as the dataclasses below
 resolve their annotations through it.
 
-Nothing here needs ``sphinx``, a build or a network. The module sits inside the
-corpus it governs, so it builds the section sign rather than write it.
+Nothing here needs ``sphinx``, a build or a network. A numbered list is read with
+``markdown-it-py``, the parser MyST is built on, so that its items are the ones the
+build names. The module sits inside the corpus it governs, so it builds the section
+sign rather than write it.
 
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+import functools
 from pathlib import Path
 import re
 from typing import TYPE_CHECKING
 
+from markdown_it import MarkdownIt
+
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Callable, Iterable, Iterator
+
+    from markdown_it.rules_block import StateBlock
 
 #: The repository root, beneath which the corpus is derived.
 REPO = Path(__file__).parents[3]
@@ -137,37 +144,13 @@ OPEN_ITEMS = "Open Items"
 #: The header of the ledger, cell by cell.
 LEDGER_HEADER = ("Decision", "Status", "Evidence")
 
-#: A top-level numbered item, and the bold runs an entry opens with.
-NUMBERED = re.compile(r"^(?P<number>\d+)\.\s+(?P<body>.*)$")
+#: The number an item of a numbered list opens with, as ``4.``, and the space after.
+MARKER = re.compile(r"^[ \t]*\d+[.)][ \t]*")
 
-#: The tags of a block of HTML that may end a paragraph, as CommonMark lists them
-#: (its HTML blocks of type 6). An inline tag, as ``<span>``, ends none.
-BLOCK_TAGS = (
-    "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup"
-    "|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame"
-    "|frameset|h1|h2|h3|h4|h5|h6|head|header|hr|html|iframe|legend|li|link|main|menu"
-    "|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table"
-    "|tbody|td|tfoot|th|thead|title|tr|track|ul"
-)
+#: A line MyST reads as a block of its own, which ends a paragraph above it with no
+#: blank line between: a target, a comment, a block break, or a footnote.
+MYST_LINE = re.compile(r"\(.+\)=\s*$|%|\+(?:[ \t]*\+){2,}|\[\^[^\]\s]+\]:")
 
-#: A line opening a block that ends the paragraph above it with no blank line
-#: between, as MyST reads one: a heading, a quote, a thematic break, a list, a
-#: block of HTML, a footnote, or MyST's own target, comment and block break. A
-#: fence does too, which :func:`interrupts` reads as :func:`read_lines` does.
-INTERRUPTS = re.compile(
-    r"#{1,6}(?:[ \t]|$)"
-    r"|>"
-    r"|(?:\*[ \t]*){3,}$|(?:-[ \t]*){3,}$|(?:_[ \t]*){3,}$"
-    r"|[-*+](?:[ \t]|$)"
-    r"|\d{1,9}[.)](?:[ \t]|$)"
-    r"|<(?:!--|\?|![A-Z]|!\[CDATA\[)"
-    r"|(?i:<(?:script|pre|style|textarea)(?=[ \t>]|$))"
-    rf"|(?i:</?(?:{BLOCK_TAGS})(?=[ \t]|/?>|$))"
-    r"|\[\^[^\]\s]+\]:"
-    r"|\(.+\)=[ \t]*$"
-    r"|%"
-    r"|\+(?:[ \t]*\+){2,}"
-)
 #: A bold run, which may hold an emphasised word, as ``**A *very* big title.**``.
 BOLD = re.compile(r"\*\*(?P<text>.+?)\*\*", flags=re.DOTALL)
 #: The bold run an item opens with when it carries a state, ``**Open**`` in the
@@ -360,7 +343,7 @@ class Listed:
     section : str
         The number of the section holding it, as ``4.4``.
     number : int
-        Its number in the list, as written.
+        Its number in the list, by its place, as the build numbers it.
     line : int
         The line its entry opens on.
     title : str or None
@@ -403,6 +386,45 @@ class Row:
     line: int
     scope: str
     status: str
+
+
+@dataclass(frozen=True)
+class Numbered:
+    """One item of a top-level numbered list, as MyST reads it.
+
+    Attributes
+    ----------
+    heading : int
+        The line of the numbered heading the list sits under, or 0 before one.
+    section : str or None
+        That heading's number, as ``4.4``, or ``None`` before one.
+    title : str or None
+        That heading's title, or ``None`` before one.
+    index : int
+        Which of the section's numbered lists holds it, from 0 for the first.
+    written : int
+        Its number as written.
+    number : int
+        Its number by its place: its list's start, plus the items before it.
+    line : int
+        The line it opens on.
+    end : int
+        The last line it runs to.
+    text : str
+        Its text, less its number and any fenced code, its lines stripped and
+        joined by single spaces.
+
+    """
+
+    heading: int
+    section: str | None
+    title: str | None
+    index: int
+    written: int
+    number: int
+    line: int
+    end: int
+    text: str
 
 
 def cells(line: str) -> list[str]:
@@ -488,50 +510,131 @@ def _section(text: str, number: str, title: str) -> list[tuple[int, str]]:
     return found
 
 
-def _entries(lines: Iterable[tuple[int, str]]) -> list[tuple[int, int, list[str]]]:
-    """Read the numbered entries of a section's list, as markdown reads them.
+def _myst_line(state: StateBlock, start: int, end: int, silent: bool) -> bool:  # noqa: ARG001, FBT001
+    """Read a line MyST reads as a block of its own (:data:`MYST_LINE`).
 
-    An entry runs from its number to the next, taking in each indented line, and
-    a line written flush straight after its text that opens no block, which
-    CommonMark reads as more of the entry (:func:`interrupts`). The list ends at
-    any other line written flush after it: one after a blank line, or one opening
-    a block, a fence included.
+    MyST adds each to CommonMark as a block able to end a paragraph, and so a
+    list, which is all that is read of it here.
+    """
+    if state.sCount[start] - state.blkIndent >= 4:
+        # a line of an indented code block
+        return False
+    line = state.src[state.bMarks[start] + state.tShift[start] : state.eMarks[start]]
+    if MYST_LINE.match(line) is None:
+        return False
+    if not silent:
+        state.push("myst_line", "", 0).map = [start, start + 1]
+        state.line = start + 1
+    return True
+
+
+#: The parser a numbered list is read with: CommonMark with tables, as MyST's is,
+#: and the lines MyST reads as blocks of their own.
+MARKDOWN = MarkdownIt("commonmark").enable("table")
+MARKDOWN.block.ruler.before(
+    "blockquote",
+    "myst_line",
+    _myst_line,
+    {"alt": ["paragraph", "reference", "blockquote", "list"]},
+)
+
+
+@functools.lru_cache(maxsize=64)
+def numbered(text: str) -> tuple[Numbered, ...]:
+    """Read every item of each top-level numbered list, as MyST reads it.
+
+    The lists are read by the parser MyST is built on, so where a list ends, and
+    which items it holds, is never decided here: a line written flush straight
+    after an item's paragraph is more of it, a list interrupts a paragraph only if
+    it opens at 1, and a ``1.`` after a blank line continues the list already
+    open, all as CommonMark has it. Each item is numbered by its place, as the
+    build numbers it, and keeps the number written too. A list is placed under the
+    numbered heading before it, whatever headings without a number come between.
 
     Parameters
     ----------
-    lines : iterable of tuple of (int, str)
-        The section's numbered lines, less its code, as :func:`read_lines` yields.
+    text : str
+        The specification.
 
     Returns
     -------
-    list of tuple of (int, int, list of str)
-        Each entry's number as written, the line it opens on, and its lines.
+    tuple of Numbered
+        In the order written.
 
     """
-    entries: list[tuple[int, int, list[str]]] = []
-    # the line the open entry's text last ran to, which a lazy line must follow
-    last = 0
-    for number, line in lines:
-        item = NUMBERED.match(line)
-        lazy = number == last + 1 and not interrupts(line)
-        if item is not None:
-            entries.append((int(item["number"]), number, [item["body"]]))
-        elif entries and line.strip() and (line[:1].isspace() or lazy):
-            entries[-1][2].append(line.strip())
-        elif line.strip() and entries:
-            break
-        else:
-            continue
-        last = number
-    return entries
+    lines = text.splitlines()
+    prose = {number for number, _ in read_lines(text)}
+    found: list[Numbered] = []
+    heading, section, title = 0, None, None
+    index, start, offset, inside = -1, 1, 0, False
+    for token in MARKDOWN.parse(text):
+        if token.type == "heading_open" and token.level == 0 and token.map:
+            match = HEADING.match(lines[token.map[0]])
+            if match is not None:
+                heading, section, title = token.map[0] + 1, match["num"], match["title"]
+                index = -1
+        elif token.type == "ordered_list_open" and token.level == 0:
+            index, offset, inside = index + 1, 0, True
+            start = int(token.attrGet("start") or 1)
+        elif token.type == "ordered_list_close" and token.level == 0:
+            inside = False
+        elif token.type == "list_item_open" and inside and token.level == 1:
+            first, last = token.map[0] + 1, token.map[1]
+            opening = lines[first - 1]
+            parts = [opening[MARKER.match(opening).end() :]]
+            parts += [
+                lines[n - 1].strip()
+                for n in range(first + 1, last + 1)
+                if n in prose and lines[n - 1].strip()
+            ]
+            found.append(
+                Numbered(
+                    heading=heading,
+                    section=section,
+                    title=title,
+                    index=index,
+                    written=int(token.info),
+                    number=start + offset,
+                    line=first,
+                    end=last,
+                    text=" ".join(parts),
+                )
+            )
+            offset += 1
+    return tuple(found)
+
+
+def _first_list(text: str, wanted: Callable[[re.Match[str]], bool]) -> list[Numbered]:
+    """Read the first numbered list under the first numbered heading ``wanted``."""
+    first = next(
+        (
+            number
+            for number, line in read_lines(text)
+            if (heading := HEADING.match(line)) is not None and wanted(heading)
+        ),
+        None,
+    )
+    return [
+        entry
+        for entry in numbered(text)
+        if first is not None and entry.heading == first and entry.index == 0
+    ]
+
+
+def decision_entries(text: str) -> list[Numbered]:
+    """Read the items of a specification's Decisions, its second section's list."""
+    return _first_list(
+        text, lambda heading: (heading["num"], heading["title"]) == ("2", DECISIONS)
+    )
 
 
 def decisions(text: str) -> list[Decision]:
     """Read the decisions of a specification: the numbered items of its Decisions.
 
-    An entry runs as :func:`_entries` reads it, so a title or a parenthetical
-    that wraps is read whole. A bulleted item is not a decision, since it has no
-    number to be cited by.
+    An entry is an item of the section's first numbered list, as
+    :func:`numbered` reads it, so a title or a parenthetical that wraps is read
+    whole. A bulleted item is not a decision, since it has no number to be cited
+    by.
 
     Parameters
     ----------
@@ -545,8 +648,8 @@ def decisions(text: str) -> list[Decision]:
 
     """
     found = []
-    for number, line, parts in _entries(_section(text, "2", DECISIONS)):
-        joined = " ".join(parts)
+    for entry in decision_entries(text):
+        number, line, joined = entry.written, entry.line, entry.text
         runs = list(BOLD.finditer(joined))
         state = state_of(runs[0]["text"], (AGREED, RETIRED)) if runs else None
         carried = ""
@@ -609,7 +712,7 @@ def items(text: str) -> list[Item]:
     """Read the open items of a specification, in the grammar of items spec §3.2.
 
     The items are the numbered entries of its Open Items section, whatever its
-    number and its case. An entry runs as :func:`_entries` reads it, so a title or
+    number and its case, as :func:`numbered` reads its first list, so a title or
     a parenthetical that wraps is read whole. A part is read by its emoji,
     whatever it holds, so that a rule can say what is wrong with it.
 
@@ -625,8 +728,11 @@ def items(text: str) -> list[Item]:
 
     """
     found = []
-    for number, line, parts in _entries(_titled(text, OPEN_ITEMS)):
-        rest = " ".join(parts)
+    entries = _first_list(
+        text, lambda heading: heading["title"].casefold() == OPEN_ITEMS.casefold()
+    )
+    for entry in entries:
+        number, line, rest = entry.written, entry.line, entry.text
         opening = BOLD.match(rest)
         state = state_of(opening["text"].strip(), ITEMED_STATES) if opening else None
         carried = ""
@@ -686,17 +792,10 @@ def listed(text: str) -> list[Listed]:
     Only the top-level items of a section's first numbered list are its items, so a
     second list, such as the steps of a procedure under its design, names nothing
     a citation can reach, and a citation of one past the first list's end fails
-    rather than linking the wrong item. A list ends at a line written flush after
-    it, as markdown ends one: one after a blank line, or one opening a block, a
-    fence included. A flush line straight after an item's text that opens no
-    block is, in CommonMark, a lazy continuation of the item, which the list keeps
-    (:func:`interrupts`). As in CommonMark, a list may interrupt a paragraph only
-    if it opens at 1, so a wrapped line that happens to open with ``4.`` is prose,
-    not an item. A restarted list, a ``1.`` following
-    the one already open after only a blank line, is the same list to MyST, as it
-    is to CommonMark, so its items are numbered by position, not by the digit
-    written, matching the anchors the build gives them. The Decisions are no
-    items, since a decision is cited only as one (ledger spec §2 decision 1).
+    rather than linking the wrong item. The lists are read by :func:`numbered`, as
+    MyST reads them, and each item is numbered by its place, matching the anchor
+    the build gives it. The Decisions are no items, since a decision is cited only
+    as one (ledger spec §2 decision 1).
 
     Parameters
     ----------
@@ -709,52 +808,12 @@ def listed(text: str) -> list[Listed]:
         In the order written.
 
     """
-    raw = text.splitlines()
-    entries: list[tuple[str, int, int, list[str]]] = []
-    section: str | None = None
-    ended = False
-    # whether the line before is prose, which only a list opening at 1 interrupts
-    paragraph = False
-    previous = 0
-    # the line the open item's text last ran to, which a lazy line must follow
-    last = 0
-    for number, line in read_lines(text):
-        # a flush line read_lines skips, such as a fence's rail, ends a list too
-        skipped = any(
-            s.strip() and not s[:1].isspace() for s in raw[previous : number - 1]
-        )
-        previous = number
-        after, paragraph = paragraph and not skipped, bool(line.strip())
-        heading = HEADING.match(line)
-        if heading is not None:
-            decided = heading["num"] == "2" and heading["title"] == DECISIONS
-            section, ended = (None if decided else heading["num"]), False
-            paragraph = False
-            continue
-        if section is None or ended:
-            continue
-        opened = bool(entries) and entries[-1][0] == section
-        lazy = number == last + 1 and not interrupts(line)
-        if opened and skipped:
-            ended = True
-            continue
-        item = NUMBERED.match(line)
-        if item is not None and (opened or not after or item["number"] == "1"):
-            # MyST, like CommonMark, merges a restarted "1." into the list already
-            # open rather than reading it as the list's own start, and the build
-            # numbers by position too (DecisionTargets, ItemTargets): a written
-            # digit sets only where the first item of a list begins
-            position = entries[-1][1] + 1 if opened else int(item["number"])
-            entries.append((section, position, number, [item["body"]]))
-            last = number
-        elif opened and line.strip() and (line[:1].isspace() or lazy):
-            entries[-1][3].append(line.strip())
-            last = number
-        elif opened and line.strip():
-            ended = True
     return [
-        _entry(section, number, line, " ".join(parts))
-        for section, number, line, parts in entries
+        _entry(entry.section, entry.number, entry.line, entry.text)
+        for entry in numbered(text)
+        if entry.section is not None
+        and entry.index == 0
+        and (entry.section, entry.title) != ("2", DECISIONS)
     ]
 
 
@@ -949,19 +1008,6 @@ def holds_code(info: str) -> bool:
     if not info.startswith("{"):
         return True
     return info[1:].partition("}")[0] in CODE_DIRECTIVES
-
-
-def interrupts(line: str) -> bool:
-    """Decide whether a flush line ends the paragraph straight above it.
-
-    A line opening no block that can interrupt a paragraph (:data:`INTERRUPTS`)
-    is, in CommonMark, a lazy continuation of it, even in a list item whose
-    other lines are indented.
-    """
-    fence = FENCE.match(line)
-    if fence is not None and not (fence["rail"][0] == "`" and "`" in fence["info"]):
-        return True
-    return INTERRUPTS.match(line) is not None
 
 
 def read_lines(text: str) -> Iterator[tuple[int, str]]:

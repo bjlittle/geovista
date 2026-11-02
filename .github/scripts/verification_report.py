@@ -112,30 +112,14 @@ def group(path: Path, root: Path, specs: Collection[Path] = ()) -> str:
 def _entries(text: str, slug: str) -> dict[int, str]:
     """Map each line of a decision's own entry to that decision's anchor.
 
-    An entry runs as the grammar reads it: to the next decision, or to the first
-    line written flush after it, its indented paragraphs and blank lines between.
-    A flush line straight after its text that opens no block is more of it, as
-    markdown reads it (:func:`grammar.interrupts`).
+    An entry runs as the grammar reads it (:func:`grammar.decision_entries`): the
+    lines of its item in the Decisions' list, as markdown reads them.
     """
-    lines = text.splitlines()
-    # the lines that are not code, as the grammar reads them
-    prose = {number for number, _ in grammar.read_lines(text)}
-    found = grammar.decisions(text)
-    owned: dict[int, str] = {}
-    for index, decision in enumerate(found):
-        last = found[index + 1].line - 1 if index + 1 < len(found) else len(lines)
-        for number in range(decision.line, last + 1):
-            line = lines[number - 1]
-            flush = line.strip() and not line[:1].isspace()
-            lazy = (
-                number - 1 in prose
-                and lines[number - 2].strip()
-                and not grammar.interrupts(line)
-            )
-            if number > decision.line and flush and not lazy:
-                break
-            owned[number] = grammar.decision_anchor(slug, decision.number)
-    return owned
+    return {
+        number: grammar.decision_anchor(slug, entry.written)
+        for entry in grammar.decision_entries(text)
+        for number in range(entry.line, entry.end + 1)
+    }
 
 
 def citations_of(texts: Mapping[Path, str], names: Namespace) -> dict[str, list[Cited]]:

@@ -771,3 +771,47 @@ def test_a_lazy_line_leaves_the_item_after_it_in_its_list(tmp_path):
         (2, "Beta."),
     ]
     assert "demo-spec-6-item-2" in grammar.namespace([spec]).anchors
+
+
+#: A specification whose first item ends in an indented code block, with a line
+#: written flush beneath the code, which ends the list: Beta opens a second one.
+CODED = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "(demo-spec-3)=\n## 3. Items\n\n"
+    "1. **Alpha.** First.\n\n       print(123)\nOutside the list.\n\n"
+    "2. **Beta.** Second.\n"
+)
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_flush_line_after_code_leaves_the_next_item_unanchored(tmp_path):
+    """The build and the grammar must agree: Beta is in a second list, unanchored.
+
+    A lazy line continues only an open paragraph, and an indented code block
+    closes the one before it, so the flush line ends the list. The build names
+    only a section's first list, so neither it nor the grammar has item 2, and a
+    citation of it fails in both.
+    """
+    grammar = _load("geovista_citations")
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    spec.write_text(CODED, encoding="utf-8")
+    toctree = "   page\n   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(
+        f"Page\n====\n\nSee demo spec {SECTION}3 item 2.\n", encoding="utf-8"
+    )
+
+    html, warning = build(src, tmp_path)
+
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert "undefined label: 'demo-spec-3-item-2'" in warning
+    assert 'id="demo-spec-3-item-1"' in demo
+    assert 'id="demo-spec-3-item-2"' not in demo
+    assert [(i.number, i.title) for i in grammar.listed(CODED)] == [(1, "Alpha.")]
+    assert "demo-spec-3-item-2" not in grammar.namespace([spec]).anchors

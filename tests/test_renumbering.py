@@ -1254,6 +1254,17 @@ def test_an_item_of_a_restarted_list_is_numbered_by_its_place(guard):
     ]
 
 
+def test_an_item_after_code_and_a_flush_line_is_in_a_second_list(guard):
+    """The flush line ends the list, as the build reads it, so Beta is apart."""
+    listed = "1. **Alpha.** First.\n\n       print(123)\nOutside the list.\n\n"
+    text = spec(("8", "Items", listed + "2. **Beta.** Second."))
+
+    found = guard.numbered_items(text)["demo-spec-8"]
+
+    assert list(found) == ["1", "2 of list 2"]
+    assert "Outside the list." not in found["1"].body
+
+
 def test_an_item_after_a_lazy_line_is_numbered_in_its_list(guard):
     """A flush line straight after an item's text is more of it, as MyST reads it.
 

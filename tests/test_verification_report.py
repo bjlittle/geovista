@@ -335,3 +335,29 @@ def test_a_decisions_lazy_line_is_its_own_entry(script, tmp_path, capsys):
 
     assert "### Decision 2: Two." in out
     assert f"demo spec {s}2 decision 1 is in force and cited nowhere" in findings
+
+
+def test_a_line_after_a_decisions_code_is_no_part_of_it(script, tmp_path, capsys):
+    """A flush line after an indented code block ends the list, and the entry.
+
+    So the decision's citation there is one of it from its specification.
+    """
+    s = SECTION
+    write(
+        tmp_path,
+        "docs/src/developer/specs/2026-01-01-demo-design.md",
+        "# Demo Specification\n\n"
+        f"- **Citation prefix:** `demo spec {s}{ELLIPSIS}`\n\n"
+        "(demo-spec-2)=\n## 2. Decisions\n\n"
+        f"1. **{AGREED}** ({AGREEMENT}) — **One.** Reasoning.\n\n"
+        "       print(123)\n"
+        f"The design keeps {s}2 decision 1.\n"
+        "\n(demo-spec-4)=\n## 4. Verification\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n"
+        f"| 1 | {PENDING} | |\n",
+    )
+
+    _, out = run(script, tmp_path, capsys)
+    spec = "docs/src/developer/specs/2026-01-01-demo-design.md"
+
+    assert f"**specifications:** `{spec}:11`" in out
