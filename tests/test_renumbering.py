@@ -402,10 +402,20 @@ def test_a_row_removed_fails(guard):
 def test_a_roadmap_with_more_columns_is_read(guard):
     """The type coverage roadmap counts lines between its scope and status."""
     header = "| # | Scope | Lines | Status |\n|---|---|---:|---|\n"
-    table = header + "| 6a | The library | 40 | done |"
+    table = spec(("4", "Roadmap", header + "| 6a | The library | 40 | done |"))
 
     assert list(guard.roadmap_rows(table)) == ["6a"]
     assert guard.roadmap_rows(table)["6a"].title == "The library"
+
+
+def test_a_roadmap_is_read_by_its_header_as_the_grammar_reads_it(guard):
+    """Its columns may come in any order, and a row not numbered as one is no row."""
+    header = "| # | Lines | Scope | Status |\n|---|---:|---|---|\n"
+    body = "| 1 | 40 | The library | done |\n| **2** | 9 | The tests | done |"
+    table = spec(("4", "Roadmap", header + body))
+
+    assert list(guard.roadmap_rows(table)) == ["1"]
+    assert guard.roadmap_rows(table)["1"].title == "The library"
 
 
 #: A section inserted at 2, moving Design to 3 and Testing to 4.
@@ -1154,7 +1164,7 @@ def test_a_table_row_of_one_cell_is_read_without_failing(guard):
     """A roadmap row mid-edit has its number and nothing else yet."""
     table = "| # | Scope | Status |\n|---|---|---|\n| 1 | The grammar | done |\n| 2 |"
 
-    assert list(guard.roadmap_rows(table)) == ["1", "2"]
+    assert list(guard.roadmap_rows(spec(("4", "Roadmap", table)))) == ["1", "2"]
 
 
 def test_two_numbered_lists_in_a_section_are_kept_apart(guard):
@@ -1166,6 +1176,27 @@ def test_two_numbered_lists_in_a_section_are_kept_apart(guard):
         "The first question.",
         "The second question, wrapped.",
         "The third question.",
+    ]
+
+
+def test_an_item_of_a_restarted_list_is_numbered_by_its_place(guard):
+    """A ``1.`` after a blank line continues the list, as the build numbers it.
+
+    The fourth item is written ``1.``, but MyST reads it as item 4, so appending to
+    the run before it makes it item 5, and a citation of item 4 then names the new
+    item instead.
+    """
+    a, b, c, d, e = (f"**Open** — **Question {name}.**" for name in "ABCDE")
+    base = items(a, b, c) + "\n\n" + items(d)
+    head = items(a, b, c, e) + "\n\n" + items(d)
+
+    problems = frozen(guard, base, head, frozenset({"demo-spec-8-item-4"}))
+
+    assert problems == [
+        (
+            'Open Items, item 4 "Question D." is now item 5: append an item '
+            "rather than insert it"
+        )
     ]
 
 

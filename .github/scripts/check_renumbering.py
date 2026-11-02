@@ -237,9 +237,6 @@ STATES = frozenset(
 #: their variation selectors.
 DECIDED = (grammar.AGREED, grammar.RETIRED)
 
-#: The header of a roadmap table: its number, its scope, and somewhere a status.
-ROADMAP = re.compile(r"^\|\s*#\s*\|\s*Scope\s*\|.*\bStatus\s*\|")
-
 
 def _stated(bold: str) -> bool:
     """Say whether a bold run is a state, with or without its variation selector."""
@@ -260,6 +257,12 @@ def numbered_items(
     only once something cites it (#2806), and is titled by its text, which is
     what it is paired by.
 
+    An item of a section's first list is numbered as :func:`grammar.listed`, the
+    build and a citation number it, by its place, so a ``1.`` that restarts the
+    list after a blank line continues it. A decision keeps the number written,
+    which its own rules hold to its place. A later list, which no citation can
+    reach, is keyed apart from the first, as ``1 of list 2``.
+
     Parameters
     ----------
     text : str
@@ -274,19 +277,24 @@ def numbered_items(
 
     """
     found: dict[str, dict[str, Section]] = {}
-    lines = [line for _, line in grammar.read_lines(text)]
+    lines = list(grammar.read_lines(text))
+    # the number each line opening an item or a decision is cited by
+    placed = {entry.line: str(entry.number) for entry in grammar.listed(text)}
+    placed |= {
+        decision.line: str(decision.number) for decision in grammar.decisions(text)
+    }
     current = None
-    lists = 0
-    for index, line in enumerate(lines):
+    lists = 1
+    for index, (written, line) in enumerate(lines):
         anchor = grammar.ANCHOR.match(line)
         if anchor is not None:
-            current, lists = f"{anchor['slug']}-{anchor['num']}", 0
+            current, lists = f"{anchor['slug']}-{anchor['num']}", 1
             continue
         item = ITEM.match(line)
         if current is None or item is None or not item["rest"].startswith("**"):
             continue
         body = [item["rest"]]
-        for following in lines[index + 1 :]:
+        for _, following in lines[index + 1 :]:
             if not following[:1].isspace() or not following.strip():
                 break
             body.append(following.strip())
@@ -297,12 +305,13 @@ def numbered_items(
             continue
         title = bolds[1] if _stated(bolds[0]) and len(bolds) > 1 else bolds[0]
         number = item["number"]
-        listed = found.setdefault(current, {})
-        if number == "1" and listed:
-            lists += 1
-        # a second list in the section numbers from 1 again, so it is kept apart
-        key = number if not lists else f"{number} of list {lists + 1}"
-        listed[key] = Section(key, title, joined)
+        key = placed.get(written)
+        if key is None:
+            # a later list in the section, numbering from 1 again, is kept apart
+            if number == "1" or lists == 1:
+                lists += 1
+            key = f"{number} of list {lists}"
+        found.setdefault(current, {})[key] = Section(key, title, joined)
     owner = _prefix(text)
     for entry in grammar.listed(text) if owner is not None and cited else ():
         anchor = grammar.item_anchor(owner, entry.section, entry.number)
@@ -328,22 +337,15 @@ def item_anchors(text: str) -> frozenset[str]:
 
 
 def roadmap_rows(text: str) -> dict[str, Section]:
-    """Read every row of a roadmap table, keyed by its number and titled by scope."""
-    found: dict[str, Section] = {}
-    inside = False
-    for _, line in grammar.read_lines(text):
-        if ROADMAP.match(line):
-            inside = True
-            continue
-        if not line.startswith("|"):
-            inside = False
-            continue
-        cells = grammar.cells(line)
-        if inside and cells and not set(cells[0]) <= set("-: "):
-            # a row mid-edit may have its number and nothing else yet
-            scope = cells[1] if len(cells) > 1 else ""
-            found[cells[0]] = Section(cells[0], scope, scope)
-    return found
+    """Read every row of a roadmap table, keyed by its number and titled by scope.
+
+    The rows are those :func:`grammar.rows` reads, under the header
+    :func:`grammar.roadmap_header` recognises, so the guard holds exactly the rows
+    a citation can name.
+    """
+    return {
+        row.row: Section(row.row, row.scope, row.scope) for row in grammar.rows(text)
+    }
 
 
 def _split(old: str, new: str | None) -> bool:
