@@ -787,6 +787,60 @@ def test_an_untitled_item_is_frozen_once_the_corpus_cites_it(guard, repo, capsys
         assert code == 0, out
 
 
+@pytest.mark.parametrize("where", ["code", "spec"])
+def test_an_untitled_item_the_base_branch_cites_stays_frozen(
+    guard, repo, capsys, where
+):
+    """Moving the citation along with the step it cites does not free the step.
+
+    The citation now names item 3, which the base branch's list never had, so
+    the step is held by the citation the base branch made of it, whether the
+    citation is in code or in the specification itself, of its own section.
+    """
+    steps = "1. Fetch the assets.\n2. Build the pages."
+    inserted = "1. Fetch the assets.\n2. Clean the tree.\n3. Build the pages."
+
+    def files(listed: str, item: int) -> dict[str, str]:
+        if where == "code":
+            return {
+                str(SPECS / NAME): spec(("4", "Steps", listed)),
+                "src/steps.py": f"# see demo spec {SECTION}4 item {item}\n",
+            }
+        return {
+            str(SPECS / NAME): spec(
+                ("4", "Steps", listed),
+                ("5", "Notes", f"The build is {SECTION}4 item {item}."),
+            )
+        }
+
+    commit(repo, files(steps, 2), "steps")
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    commit(repo, files(inserted, 3), "insert, and cite the step's new number")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1, out
+    assert 'item 2 "Build the pages." is now item 3' in out
+
+
+def test_a_changed_file_that_is_not_text_is_not_read_for_citations(guard, repo, capsys):
+    """Its base version is no text to cite from, as the corpus drops it now."""
+    (repo / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n\x00\xff")
+    git(repo, "add", "logo.png")
+    git(repo, "commit", "--quiet", "--message", "logo")
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    (repo / "logo.png").write_bytes(b"\x89PNG\r\n\x1a\n\x00\xfe")
+    git(repo, "commit", "--quiet", "--all", "--message", "logo again")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+
+
 def test_the_audit_finds_an_item_citation_older_than_the_renumber(guard, repo, capsys):
     """Naming an item of a section is citing the section, which moved."""
     git(repo, "switch", "--quiet", "main")

@@ -18,8 +18,9 @@ renumber. The design is the citation links design, citation spec §4.5.
 
 Numbered items and roadmap rows are cited by number too, so they are held to
 being appended: one that moves or goes fails. An item with no bold title, such as
-a step of a procedure, is held so only once something cites it (#2806). A citation
-of an item or a row names its section as well, and goes stale with it.
+a step of a procedure, is held so only once something cites it (#2806), on the
+base branch or now. A citation of an item or a row names its section as well, and
+goes stale with it.
 
 The citations are read with the grammar of "docs/src/_ext/geovista_citations.py",
 which the conventions test and the documentation build share.
@@ -29,7 +30,7 @@ which the conventions test and the documentation build share.
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import difflib
 import importlib.util
 from pathlib import Path
@@ -354,14 +355,19 @@ def _split(old: str, new: str | None) -> bool:
 
 
 def frozen(
-    base_text: str, head_text: str, cited: Collection[str] = frozenset()
+    base_text: str,
+    head_text: str,
+    cited: Collection[str] = frozenset(),
+    was_cited: Collection[str] = frozenset(),
 ) -> list[str]:
     """Report each numbered item and roadmap row that moved or went.
 
-    An untitled item is held only if it is cited. A citation is read as it stands
-    now, so one the pull request did not touch names an item by the base branch's
-    numbering, and one it rewrote may name it by its section's new number: both
-    hold the item. In a section holding one, every item of its list is paired,
+    An untitled item is held only if it is cited, on the base branch or now. A
+    citation is read as it stands now, so one the pull request did not touch names
+    an item by the base branch's numbering, and one it rewrote may name it by its
+    section's new number: both hold the item. One the base branch made holds it
+    too, so that rewriting the citation along with the item it moves never frees
+    the item. In a section holding one, every item of its list is paired,
     then and now, so that an uncited neighbour takes its own number and never
     leaves its number free for the cited one to be paired with in place; only the
     items held are reported. A section holding none is read as it always was.
@@ -372,6 +378,8 @@ def frozen(
         The specification on the base branch and now.
     cited : collection of str, optional
         The anchors the corpus cites, which :func:`cited` reads.
+    was_cited : collection of str, optional
+        The anchors the corpus cited on the base branch, by its numbering.
 
     Returns
     -------
@@ -381,7 +389,7 @@ def frozen(
     """
     problems: list[str] = []
     fates = pair(sections(base_text), sections(head_text))
-    based = set(cited)
+    based = set(cited) | set(was_cited)
     was = {fate.anchor: old for old, fate in fates.items() if fate.anchor is not None}
     for anchor in cited:
         label = grammar.LABEL.match(anchor)
@@ -875,6 +883,67 @@ def _fates(
     return fates
 
 
+def _governed(relative: str) -> bool:
+    """Say whether :func:`grammar.corpus` would gather a file at this path."""
+    parts = relative.split("/")[:-1]
+    return all(grammar.entered(part) for part in parts) and not any(
+        relative.startswith(f"{pruned}/") for pruned in grammar.PRUNED
+    )
+
+
+def was_cited(
+    root: Path, ref: str, texts: dict[Path, str], names: object
+) -> tuple[frozenset[str], frozenset[str]]:
+    """Read the anchors the corpus cites now, and those it cited at ``ref``.
+
+    A file the pull request did not change cites the same at ``ref`` as now, so
+    only the files it changed are read at ``ref``, each by the prefix its
+    specification owned there, if any. A file not yet added was not there.
+
+    Parameters
+    ----------
+    root : Path
+        The repository.
+    ref : str
+        The commit the pull request branched from.
+    texts : dict
+        The corpus, each file's text keyed by its path.
+    names : Namespace
+        The citation grammar of the specifications as they are now.
+
+    Returns
+    -------
+    tuple of frozenset of str
+        The anchors cited now, and those cited at ``ref``.
+
+    """
+    diffed = git(root, "diff", "--name-only", "--no-renames", "-z", ref, "--")
+    changed = [name for name in diffed.split("\0") if name]
+    untracked = git(root, "ls-files", "--others", "--exclude-standard", "-z")
+    touched = {root / name for name in [*changed, *untracked.split("\0")] if name}
+    kept = cited({p: t for p, t in texts.items() if p not in touched}, names)
+    now = cited({p: t for p, t in texts.items() if p in touched}, names)
+    owners = {
+        spec: prefix
+        for spec in _listed(root, ref)
+        if (held := at(root, ref, spec)) is not None
+        and (prefix := _prefix(held)) is not None
+    }
+    then: dict[Path, str] = {}
+    for name in changed:
+        if not _governed(name):
+            continue
+        try:
+            text = at(root, ref, root / name)
+        except UnicodeDecodeError:
+            # not text, which the corpus drops too
+            continue
+        if text is not None:
+            then[root / name] = text
+    based = replace(names, owners={**names.owners, **owners})
+    return kept | now, kept | cited(then, based)
+
+
 def _ancestor(root: Path, older: str, newer: str) -> bool:
     """Say whether ``older`` is an ancestor of ``newer``."""
     try:
@@ -1164,14 +1233,17 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
             # each line the pull request changed, followed from where it was
             # written on its branch, which a renumber merged since may have moved
             findings += since_written(root, texts, names, changed, args.base)
-            anchors = cited(texts, names)
+            anchors, based = was_cited(root, branched, texts, names)
             for base, current in counterparts.items():
                 before = at(root, branched, base)
                 if before is not None and current is not None:
                     problems += [
                         f"{current.relative_to(root).as_posix()}: {problem}"
                         for problem in frozen(
-                            before, current.read_text(encoding="utf-8"), anchors
+                            before,
+                            current.read_text(encoding="utf-8"),
+                            anchors,
+                            based,
                         )
                     ]
             scope = f"the specifications changed since {args.base}"
