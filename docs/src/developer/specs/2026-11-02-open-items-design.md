@@ -114,6 +114,11 @@ These were decided with {user}`bjlittle` on 2026-11-02.
     brought in, and this specification is governed by its own rules.** The 46 items already
     written are given their provenance, and each open one its issue and its row, so the
     rules describe the whole collection, not only what is written from today.
+14. **🤝 Agreed** (2026-11-02, {user}`bjlittle`, {pull}`2803`) — **The workflow is documented
+    where contributors meet it.** The specifications index says how to raise an item with
+    its issue and label, cite one, owe it to a row, and move, settle or promote it when a
+    row lands. The repository checks page explains each new failure and how to fix it, as
+    ledger spec §2 decision 15 asked of the ledger.
 
 (items-spec-3)=
 ## 3. Design
@@ -334,12 +339,16 @@ ledger specification in settles or narrows that item to roadmap rows.
 (items-spec-3-12)=
 ### 3.12 Documenting the Workflow
 
-Row 1 of §8 documents the workflow where a contributor meets it. The specifications index
-gains a section on open items, beside its section on decisions: how to raise one with its
-issue and label, cite one, owe it to a row, move it, and settle or promote it when a row
-lands. The repository checks page gains each failure of §3.7 under `spec-conventions` and
-each of §3.8 under `spec-statuses`, saying how to fix it, and `docs/AGENTS.md` gains the
-rule an agent needs in its line on specifications.
+Row 1 of §8 documents the workflow where a contributor meets it (§2 decision 14). The
+specifications index gains a section on open items, beside its section on decisions: how
+to raise one with its issue and label, cite one, owe it to a row, move it, and settle or
+promote it when a row lands, with an example of each state. It says who may add the
+`spec: open item` label, and that an agent may. The repository checks page gains each
+failure of §3.7 under `spec-conventions` and each of §3.8 under `spec-statuses`, saying how
+to fix it, and `docs/AGENTS.md` gains the rule an agent needs in its line on
+specifications. Row 2 adds the report's roadmap and open items to the index's paragraph on
+the report, and each bring-in row adds nothing, since the workflow is the same for every
+specification.
 
 (items-spec-4)=
 ## 4. Alternatives Considered
@@ -444,3 +453,4 @@ Each row follows ledger spec §3.4.
 | 11 | ⏳ pending | row 1 of §8 |
 | 12 | ⏳ pending | row 2 of §8 |
 | 13 | ⏳ pending | rows 1 to 5 of §8 |
+| 14 | ⏳ pending | rows 1 to 2 of §8 |
