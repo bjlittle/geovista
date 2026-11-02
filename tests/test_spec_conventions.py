@@ -89,7 +89,6 @@ TRACKED = citations.TRACKED
 ANCHOR = citations.ANCHOR
 HEADING = citations.HEADING
 FENCE = citations.FENCE
-TARGETED = citations.TARGETED
 LABEL = citations.LABEL
 Citation = citations.Citation
 Namespace = citations.Namespace
@@ -2131,90 +2130,6 @@ def test_row_4_pairs_the_transform_with_its_output_gate():
     assert "tests/docs" in task["cmd"], f"{OUTPUT_TASK} no longer runs tests/docs"
     assert OUTPUT_TASK in workflow.read_text(encoding="utf-8"), (
         f"{workflow.name} no longer runs {OUTPUT_TASK}"
-    )
-
-
-#: The words naming an item after a citation, as in ``§8 item 9``.
-AFTER = re.compile(r"`?,?[^\S\n]*\bitems?[^\S\n]+\d+")
-
-#: The words naming a roadmap row before a citation, as in "rows 2 to 4 of".
-BEFORE = re.compile(r"\brows?\s+\d+[a-c]?(?:\s+(?:to|and)\s+\d+[a-c]?)?\s+of\s+$")
-
-#: A comment marker opening a line, stripped so a wrapped comment reads as one.
-LEADER = re.compile(r"^\s*(?:#+:?|//)?\s*")
-
-
-def legible(line: str) -> str:
-    """Blank a line's inline code, but keep the text a role displays."""
-
-    def shown(match: re.Match[str]) -> str:
-        if match["role"] is not None and len(match["ticks"]) == 1:
-            targeted = TARGETED.match(match["body"])
-            return targeted["text"] if targeted else match["body"]
-        return " "
-
-    return citations.SPAN.sub(shown, line)
-
-
-def numbered(texts: dict[Path, str], names: Namespace) -> int:
-    """Count the citations of an item or a roadmap row outside the specifications.
-
-    An item follows its citation, as in ``typing spec §8 item 9``, and a row
-    precedes it, as in ``rows 2 to 4 of docs spec §4``. Lines are joined, so a
-    reference wrapped across two reads as one.
-
-    It is a trigger, not a census, and errs low. It misses a citation whose
-    prefix carries from earlier in a run, as the second item cited in
-    ``typing spec §8 items 5, §8 item 9``, and the form written as
-    ``item 9 of typing spec §8``, which nothing outside the specifications uses.
-    It also counts the comments of this module that cite rows, two of today's
-    eight.
-    """
-    count = 0
-    for path, text in texts.items():
-        if path in names.owners:
-            continue
-        joined = " ".join(
-            LEADER.sub("", legible(line)) for _, line in source_lines(path, text)
-        )
-        for match in names.signed.finditer(joined):
-            if match["prefix"] is None:
-                continue
-            # read around the section, as the grammar's match takes in an item or
-            # a row it names
-            start = match.start("prefix")
-            item = AFTER.match(joined, match.end("num"))
-            row = BEFORE.search(joined[max(0, start - 40) : start])
-            count += bool(item or row)
-    return count
-
-
-#: Citations of items and roadmap rows outside the specifications past which
-#: row 5 of citation spec §9 activates: a little over three times the six there were.
-NUMBERED_CEILING = 20
-
-
-def test_numbered_counts_items_and_rows_and_nothing_else(tmp_path):
-    """Two items, a row and a run of rows are four; a section alone is none."""
-    _, names = demo(tmp_path, DEMO)
-    spec = f"demo spec {SECTION}"
-    texts = {
-        tmp_path / "a.py": f"# {spec}1 item 3, and {spec}2 items 4\n",
-        tmp_path / "b.md": f"See row 2 of {spec}1, and rows 3\nto 4 of {spec}2.\n",
-        tmp_path / "c.md": f"See {spec}1 and item 5 of the list.\n",
-    }
-
-    assert numbered(texts, names) == 4
-
-
-def test_row_5_waits_until_items_and_rows_are_cited_often(texts, names):
-    """Triggers (item 6): the scale at which items and rows want links of their own."""
-    count = numbered(texts, names)
-
-    assert count > 0, "no item or row is cited: the count is vacuous"
-    assert count <= NUMBERED_CEILING, (
-        f"{count} citations of items and rows outside the specifications, past "
-        f"{NUMBERED_CEILING}: row 5 of the citation links roadmap has activated."
     )
 
 

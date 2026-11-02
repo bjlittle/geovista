@@ -40,10 +40,9 @@ allowed an exception, declared in a list beside the check:
 | specification statuses | `.github/scripts/check_status_references.py`, run by `ci-spec-status.yml` | none |
 
 `EXCLUDED_DIRS`, beside `EXEMPT`, is not an exception: it names trees that Sphinx does not
-publish as written. `NUMBERED_CEILING`, in the specification conventions, is not one
-either. It is the trigger of row 5 of citation spec §9, and raising
-it is a change to that specification. It replaced `CEILING`, the trigger of
-rows 2 to 4 of docs spec §4, which retired when those rows were built.
+publish as written. Neither was `NUMBERED_CEILING`, in the specification conventions,
+the trigger of row 5 of citation spec §9, which retired when that row was built, as
+`CEILING`, the trigger of rows 2 to 4 of docs spec §4, had before it.
 
 A contributor usually meets one of these checks by failing it. The failure says what is
 wrong but not why the rule exists, or whether an exception is allowed and where it goes.

@@ -344,10 +344,9 @@ For an open item, it names the item, and says one of these:
 brought into the ledger is named in ``UNLEDGERED``, beside the row of
 ledger spec §8 that brings it in. That list is not an exception either: the test
 fails if the row lands while the specification is still named, so the list cannot
-outlive its work. Its ``NUMBERED_CEILING`` is the trigger of
-row 5 of citation spec §9, and raising it is a change to that specification. A
-specification whose open items are not yet in the grammar of items spec §3.2 is
-named in ``UNITEMED`` the same way, beside the row that brings it in.
+outlive its work. A specification whose open items are not yet in the grammar
+of items spec §3.2 is named in ``UNITEMED`` the same way, beside the row that
+brings it in.
 
 **More:** docs spec §3.5, items spec §3.7.
 
