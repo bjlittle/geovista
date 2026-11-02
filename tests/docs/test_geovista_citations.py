@@ -619,3 +619,84 @@ def test_a_restarted_list_is_numbered_by_position(tmp_path, citations):
     assert {"demo-spec-6-item-1", "demo-spec-6-item-2", "demo-spec-6-item-3"} <= (
         names.anchors
     )
+
+
+#: A list whose first item runs on to a line written flush beneath it, with no
+#: blank line between: a lazy continuation of the item's paragraph, in CommonMark.
+LAZY = (
+    "(demo-spec-1)=\n## 1. Purpose\n\n"
+    "(demo-spec-6)=\n## 6. Items\n\n"
+    "1. **Alpha.** First item.\nMore of the first item.\n2. **Beta.** Second item.\n"
+)
+
+
+def test_a_lazy_line_continues_its_item(tmp_path, citations):
+    """A flush line straight after an item's text is more of it, as MyST reads it.
+
+    So the item after it is still the list's, and has its anchor.
+    """
+    _, names = demo(tmp_path, LAZY, citations)
+
+    found = citations.listed(LAZY)
+
+    assert [(i.section, i.number, i.title) for i in found] == [
+        ("6", 1, "Alpha."),
+        ("6", 2, "Beta."),
+    ]
+    assert found[0].body == "First item. More of the first item."
+    assert "demo-spec-6-item-2" in names.anchors
+
+
+def test_a_lazy_line_continues_a_decision_and_an_open_item(citations):
+    """The Decisions and the Open Items are read as the build reads any list."""
+    decided = LAZY.replace("## 6. Items", "## 2. Decisions").replace("-6)", "-2)")
+    itemed = LAZY.replace("## 6. Items", "## 6. Open Items")
+
+    one, two = citations.decisions(decided)
+    first, second = citations.items(itemed)
+    whole = "First item. More of the first item."
+
+    assert (one.title, one.body, two.number, two.title) == ("Alpha.", whole, 2, "Beta.")
+    assert (first.title, first.body, second.number, second.title) == (
+        "Alpha.",
+        whole,
+        2,
+        "Beta.",
+    )
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "# A heading",
+        "- A bullet.",
+        "* A bullet.",
+        "> A quote.",
+        "---",
+        "* * *",
+        "1) Another list.",
+        "<div>",
+        "<!-- A comment. -->",
+        "(demo-target)=",
+        "% A comment.",
+        "+++",
+        "[^1]: A footnote.",
+    ],
+)
+def test_a_block_written_flush_after_an_item_ends_its_list(citations, line):
+    """A block that interrupts a paragraph ends the list instead, as MyST reads it."""
+    text = LAZY.replace("More of the first item.", line)
+
+    assert [i.title for i in citations.listed(text)] == ["Alpha."]
+    assert len(citations.decisions(text.replace("## 6. Items", "## 2. Decisions"))) == 1
+    assert len(citations.items(text.replace("## 6. Items", "## 6. Open Items"))) == 1
+
+
+@pytest.mark.parametrize(
+    "line", ["#hashtag", "<span>Inline.</span>", ":::", "$$", "===", "| a | b |"]
+)
+def test_a_line_that_opens_no_block_continues_its_item(citations, line):
+    """Only a block able to interrupt a paragraph ends one, as MyST reads it."""
+    text = LAZY.replace("More of the first item.", line)
+
+    assert [i.title for i in citations.listed(text)] == ["Alpha.", "Beta."]

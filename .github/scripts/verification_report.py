@@ -114,15 +114,25 @@ def _entries(text: str, slug: str) -> dict[int, str]:
 
     An entry runs as the grammar reads it: to the next decision, or to the first
     line written flush after it, its indented paragraphs and blank lines between.
+    A flush line straight after its text that opens no block is more of it, as
+    markdown reads it (:func:`grammar.interrupts`).
     """
     lines = text.splitlines()
+    # the lines that are not code, as the grammar reads them
+    prose = {number for number, _ in grammar.read_lines(text)}
     found = grammar.decisions(text)
     owned: dict[int, str] = {}
     for index, decision in enumerate(found):
         last = found[index + 1].line - 1 if index + 1 < len(found) else len(lines)
         for number in range(decision.line, last + 1):
             line = lines[number - 1]
-            if number > decision.line and line.strip() and not line[:1].isspace():
+            flush = line.strip() and not line[:1].isspace()
+            lazy = (
+                number - 1 in prose
+                and lines[number - 2].strip()
+                and not grammar.interrupts(line)
+            )
+            if number > decision.line and flush and not lazy:
                 break
             owned[number] = grammar.decision_anchor(slug, decision.number)
     return owned

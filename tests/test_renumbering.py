@@ -1254,6 +1254,29 @@ def test_an_item_of_a_restarted_list_is_numbered_by_its_place(guard):
     ]
 
 
+def test_an_item_after_a_lazy_line_is_numbered_in_its_list(guard):
+    """A flush line straight after an item's text is more of it, as MyST reads it.
+
+    So the item after it keeps the number the build gives it, and its predecessor
+    is read whole.
+    """
+    a, b, c = (f"**Open** — **Question {name}.**" for name in "ABC")
+    base = f"1. {a}\nMore of the first.\n2. {b}"
+    head = f"1. {a}\nMore of the first.\n2. {c}\n3. {b}"
+    text = spec(("1", "Purpose", PURPOSE), ("8", "Open Items", base))
+
+    found = guard.numbered_items(text)["demo-spec-8"]
+
+    assert list(found) == ["1", "2"]
+    assert found["1"].body.endswith("More of the first.")
+    assert frozen(guard, base, head) == [
+        (
+            'Open Items, item 2 "Question B." is now item 3: append an item '
+            "rather than insert it"
+        )
+    ]
+
+
 @pytest.mark.parametrize(
     "setting",
     [

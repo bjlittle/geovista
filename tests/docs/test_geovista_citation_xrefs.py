@@ -724,3 +724,50 @@ def test_a_restarted_list_names_its_third_item_by_position(tmp_path):
     assert 'demo-design.html#demo-spec-6-item-3"' in page
     assert '<li id="demo-spec-6-item-3"><p><strong>Gamma.</strong>' in demo
     assert '<li id="demo-spec-6-item-1"><p><strong>Alpha.</strong>' in demo
+
+
+#: A specification whose first item runs on to a line written flush beneath it,
+#: which CommonMark reads as more of the item, so that the item after it is still
+#: the list's.
+LAZY = (
+    "# Demo\n\n(demo-spec-1)=\n## 1. One\n\nText.\n\n"
+    "(demo-spec-6)=\n## 6. Items\n\n"
+    "1. **Alpha.** First item.\nMore of the first item.\n2. **Beta.** Second item.\n"
+)
+
+
+@pytest.mark.usefixtures("docs")
+def test_a_lazy_line_leaves_the_item_after_it_in_its_list(tmp_path):
+    """The build and the grammar must agree: the item after a lazy line is item 2.
+
+    MyST reads a flush line straight after an item's text as more of the item, so
+    Beta is the list's second item, and the build gives it that anchor. The
+    grammar, which declares the anchors a citation may name, must give it too.
+    """
+    grammar = _load("geovista_citations")
+    src = tmp_path / "src"
+    (src / "developer" / "specs").mkdir(parents=True)
+    (src / "conf.py").write_text(CONF, encoding="utf-8")
+    spec = src / "developer" / "specs" / "2026-01-01-demo-design.md"
+    spec.write_text(LAZY, encoding="utf-8")
+    toctree = "   page\n   developer/specs/2026-01-01-demo-design\n"
+    (src / "index.rst").write_text(f"Index\n=====\n\n.. toctree::\n\n{toctree}")
+    (src / "page.rst").write_text(
+        f"Page\n====\n\nSee demo spec {SECTION}6 item 2.\n", encoding="utf-8"
+    )
+
+    html, warning = build(src, tmp_path)
+
+    page = (html / "page.html").read_text(encoding="utf-8")
+    demo = (html / "developer/specs/2026-01-01-demo-design.html").read_text(
+        encoding="utf-8"
+    )
+
+    assert warning == ""
+    assert 'demo-design.html#demo-spec-6-item-2"' in page
+    assert '<li id="demo-spec-6-item-2"><p><strong>Beta.</strong>' in demo
+    assert [(i.number, i.title) for i in grammar.listed(LAZY)] == [
+        (1, "Alpha."),
+        (2, "Beta."),
+    ]
+    assert "demo-spec-6-item-2" in grammar.namespace([spec]).anchors

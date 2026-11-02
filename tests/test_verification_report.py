@@ -307,3 +307,31 @@ def test_a_line_citing_a_decision_twice_is_listed_once(script, repo, capsys):
     _, out = run(script, repo, capsys)
 
     assert out.count("`src/twice.py:1`") == 1
+
+
+def test_a_decisions_lazy_line_is_its_own_entry(script, tmp_path, capsys):
+    """A flush line straight after a decision's text is more of it, as MyST reads it.
+
+    So the decision after it is read, and the decision's citation of itself there
+    is no citation of it.
+    """
+    s = SECTION
+    write(
+        tmp_path,
+        "docs/src/developer/specs/2026-01-01-demo-design.md",
+        "# Demo Specification\n\n"
+        f"- **Citation prefix:** `demo spec {s}{ELLIPSIS}`\n\n"
+        "(demo-spec-2)=\n## 2. Decisions\n\n"
+        f"1. **{AGREED}** ({AGREEMENT}) — **One.** Reasoning\n"
+        f"that keeps {s}2 decision 1 in its own words.\n"
+        + entry(2, "Two.")
+        + "\n(demo-spec-4)=\n## 4. Verification\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n"
+        f"| 1 | {PENDING} | |\n| 2 | {PENDING} | |\n",
+    )
+
+    _, out = run(script, tmp_path, capsys)
+    findings = out[out.index("## Findings") :]
+
+    assert "### Decision 2: Two." in out
+    assert f"demo spec {s}2 decision 1 is in force and cited nowhere" in findings

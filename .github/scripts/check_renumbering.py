@@ -254,9 +254,10 @@ def numbered_items(
     An item opening with a bold title is frozen. Each is read as a
     :class:`Section` keyed by its number, titled by its bold title, the one after
     its state if it opens with one, with its text as the body, so that items pair
-    as sections do. An item with no title, as a step of a procedure, is frozen
-    only once something cites it (#2806), and is titled by its text, which is
-    what it is paired by.
+    as sections do. The text runs as the build reads it, a flush line straight
+    after it that opens no block included (:func:`grammar.interrupts`). An item
+    with no title, as a step of a procedure, is frozen only once something cites
+    it (#2806), and is titled by its text, which is what it is paired by.
 
     An item of a section's first list is numbered as :func:`grammar.listed`, the
     build and a citation number it, by its place, so a ``1.`` that restarts the
@@ -295,10 +296,18 @@ def numbered_items(
         if current is None or item is None or not item["rest"].startswith("**"):
             continue
         body = [item["rest"]]
-        for _, following in lines[index + 1 :]:
-            if not following[:1].isspace() or not following.strip():
+        last = written
+        for at, following in lines[index + 1 :]:
+            # a flush line straight after the text, opening no block, is more of it
+            lazy = (
+                at == last + 1
+                and grammar.NUMBERED.match(following) is None
+                and not grammar.interrupts(following)
+            )
+            if not following.strip() or not (following[:1].isspace() or lazy):
                 break
             body.append(following.strip())
+            last = at
         joined = " ".join(body)
         bolds = [match["text"].replace("\n", " ") for match in BOLD.finditer(joined)]
         if not bolds:
