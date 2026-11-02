@@ -715,15 +715,20 @@ class GitError(RuntimeError):
     """Git could not answer, which is never a finding."""
 
 
-def git(root: Path, *args: str) -> str:
-    """Run git in ``root``, returning its output."""
+def git(root: Path, *args: str, errors: str = "strict") -> str:
+    """Run git in ``root``, returning its output.
+
+    The output is decoded as UTF-8, and ``errors`` says what becomes of a byte
+    that does not decode, as :meth:`bytes.decode` does.
+    """
     try:
         # git by name, with arguments this script builds, never a shell
         done = subprocess.run(  # noqa: S603
             ["git", "--no-pager", *args],  # noqa: S607
             cwd=root,
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors=errors,
             check=True,
         )
     except subprocess.CalledProcessError as error:
@@ -765,7 +770,8 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
     """Read the lines changed since ``base`` branched, as they are numbered now."""
     changed: dict[Path, set[int]] = {}
     current: Path | None = None
-    # the format is pinned, so that no local diff setting changes what is read
+    # the format is pinned, so that no local diff setting changes what is read;
+    # a text file that is not UTF-8, which the corpus skips, is passed over too
     diff = git(
         root,
         "diff",
@@ -776,6 +782,7 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
         "--dst-prefix=b/",
         base,
         "--",
+        errors="replace",
     )
     for line in diff.splitlines():
         if diffed := DIFFED.match(line):

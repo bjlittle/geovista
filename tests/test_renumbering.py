@@ -841,6 +841,28 @@ def test_a_changed_file_that_is_not_text_is_not_read_for_citations(guard, repo, 
     assert code == 0, out
 
 
+def test_a_changed_text_file_that_is_not_utf8_is_passed_over(guard, repo, capsys):
+    """A Latin-1 file has no NUL byte, so git diffs it as text (#2817).
+
+    The corpus skips a file that is not UTF-8, so the guard passes over it too,
+    rather than fail to decode its diff.
+    """
+    acute = "\N{LATIN SMALL LETTER E WITH ACUTE}"
+    notes = repo / "notes.txt"
+    notes.write_bytes(f"r{acute}sum{acute}\n".encode("latin-1"))
+    git(repo, "add", "notes.txt")
+    git(repo, "commit", "--quiet", "--message", "notes")
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    notes.write_bytes("na\N{LATIN SMALL LETTER I WITH DIAERESIS}ve\n".encode("latin-1"))
+    git(repo, "commit", "--quiet", "--all", "--message", "notes again")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+
+
 def test_the_audit_finds_an_item_citation_older_than_the_renumber(guard, repo, capsys):
     """Naming an item of a section is citing the section, which moved."""
     git(repo, "switch", "--quiet", "main")
