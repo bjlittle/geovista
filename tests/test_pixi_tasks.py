@@ -12,7 +12,9 @@ the tables to the manifest, so a task can be added without a row, as
 ``check-spec-renumbering`` was, or renamed and leave a row behind.
 
 These tests read both as text, and hold every task to a row on the packaging page
-and on the page its feature maps to. A page may list a task of another feature
+and on the page its feature maps to. A task's name is local to its feature, so
+two features may each declare a task of the same name, and the packaging page
+gives each a row under its own feature. A page may list a task of another feature
 too, as the testing page lists the browser tests of the documentation.
 
 """
@@ -68,8 +70,11 @@ def _manifest() -> dict[str, Any]:
     return tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
 
 
-def _tasks(manifest: dict[str, Any]) -> dict[str, str]:
-    """Map each pixi task of a manifest to the feature that declares it.
+def _tasks(manifest: dict[str, Any]) -> set[tuple[str, str]]:
+    """Return each pixi task of a manifest, with the feature that declares it.
+
+    A task's name is local to its feature, so a name two features declare is two
+    tasks.
 
     Parameters
     ----------
@@ -78,14 +83,15 @@ def _tasks(manifest: dict[str, Any]) -> dict[str, str]:
 
     Returns
     -------
-    dict of str
-        The feature of each task, :data:`DEFAULT` for one of "[tool.pixi.tasks]".
+    set of tuple
+        The name and feature of each task, :data:`DEFAULT` for the feature of one
+        of "[tool.pixi.tasks]".
 
     """
     pixi = manifest["tool"]["pixi"]
-    tasks = dict.fromkeys(pixi.get("tasks", {}), DEFAULT)
+    tasks = {(name, DEFAULT) for name in pixi.get("tasks", {})}
     for feature, table in pixi.get("feature", {}).items():
-        tasks.update(dict.fromkeys(table.get("tasks", {}), feature))
+        tasks |= {(name, feature) for name in table.get("tasks", {})}
     return tasks
 
 
@@ -93,7 +99,9 @@ def _table(text: str) -> list[tuple[str, str | None]]:
     """Read the rows of the "Pixi Tasks" table of a page.
 
     The table is a grid table with a column whose header names a task, and
-    perhaps a "Feature" column, whose cell spans the rows of its tasks.
+    perhaps a "Feature" column, whose cell spans the rows of its tasks. A rule
+    across that column closes the cell, so a row under a cell naming no feature
+    has none, rather than the feature of the cell above.
 
     Parameters
     ----------
@@ -104,7 +112,8 @@ def _table(text: str) -> list[tuple[str, str | None]]:
     -------
     list of tuple
         The task each row names, and the feature its "Feature" column names, or
-        ``None`` for a table with no such column, in the order written.
+        ``None`` where the column names none or the table has no such column, in
+        the order written.
 
     """
     lines = text.splitlines()
@@ -128,9 +137,11 @@ def _table(text: str) -> list[tuple[str, str | None]]:
     for line in lines[index + 1 :]:
         if not line.strip().startswith(("|", "+")):
             break
-        if not line.strip().startswith("|"):
-            continue
         values = cells(line)
+        if not line.strip().startswith("|"):
+            if feature is not None and set(values[feature]) == {"-"}:
+                current = None
+            continue
         if feature is not None and (match := FEATURE.match(values[feature])):
             current = match["name"]
         if match := TASK.match(values[task]):
@@ -138,29 +149,50 @@ def _table(text: str) -> list[tuple[str, str | None]]:
     return rows
 
 
-def _unlisted(tasks: dict[str, str], rows: list[tuple[str, str | None]]) -> list[str]:
-    """Return the tasks with no row, in order."""
-    listed = {name for name, _ in rows}
-    return sorted(set(tasks) - listed)
+def _unlisted(
+    tasks: set[tuple[str, str]], rows: list[tuple[str, str | None]]
+) -> list[str]:
+    """Return the tasks with no row, as ``name {feature}``, in order.
+
+    A row naming a feature lists the task of that feature, and a row naming none
+    lists the task of its name in any feature, so :func:`_misfiled` reports a
+    row of the packaging page that names none.
+    """
+    listed = set(rows)
+    return sorted(
+        f"{name} {{{feature}}}"
+        for name, feature in tasks
+        if (name, feature) not in listed and (name, None) not in listed
+    )
 
 
-def _unknown(tasks: dict[str, str], rows: list[tuple[str, str | None]]) -> list[str]:
+def _unknown(
+    tasks: set[tuple[str, str]], rows: list[tuple[str, str | None]]
+) -> list[str]:
     """Return the rows naming a task the manifest does not declare, in order."""
-    return sorted({name for name, _ in rows} - set(tasks))
+    return sorted({name for name, _ in rows} - {name for name, _ in tasks})
 
 
-def _misfiled(tasks: dict[str, str], rows: list[tuple[str, str | None]]) -> list[str]:
-    """Return the rows naming another feature than the one declaring the task."""
+def _misfiled(
+    tasks: set[tuple[str, str]], rows: list[tuple[str, str | None]]
+) -> list[str]:
+    """Return the rows naming no feature, or one that does not declare the task.
+
+    For a table with a "Feature" column, where every row must name a feature.
+    """
+    declared: dict[str, list[str]] = {}
+    for name, feature in sorted(tasks):
+        declared.setdefault(name, []).append(feature)
     return [
-        f"{name} (row {feature!r}, manifest {tasks[name]!r})"
+        f"{name} (row {feature!r}, manifest {declared[name]!r})"
         for name, feature in rows
-        if name in tasks and feature is not None and feature != tasks[name]
+        if name in declared and feature not in declared[name]
     ]
 
 
-def _unmapped(tasks: dict[str, str]) -> list[str]:
+def _unmapped(tasks: set[tuple[str, str]]) -> list[str]:
     """Return the features with tasks but no page in :data:`FEATURE_PAGES`."""
-    return sorted(set(tasks.values()) - set(FEATURE_PAGES))
+    return sorted({feature for _, feature in tasks} - set(FEATURE_PAGES))
 
 
 @cache
@@ -210,6 +242,20 @@ def test_a_table_reads_a_feature_spanning_its_tasks():
     assert _table(PACKAGING_TABLE) == expected
 
 
+def test_a_table_reads_a_blank_feature_as_none():
+    """A row under a "Feature" cell naming no feature has none."""
+    blank = PACKAGING_TABLE.replace("| ``{docs}``  |", "|             |")
+    expected = [("make", None), ("clean", None), ("unit", "test")]
+    assert _table(blank) == expected
+
+
+def test_a_blank_feature_takes_none_from_the_cell_above():
+    """A rule across the "Feature" column closes the cell above."""
+    blank = PACKAGING_TABLE.replace("| ``{test}``  |", "|             |")
+    expected = [("make", "docs"), ("clean", "docs"), ("unit", None)]
+    assert _table(blank) == expected
+
+
 def test_a_table_reads_a_task_as_a_label():
     """A task written as a GUI label is read, with no feature."""
     assert _table(PAGE_TABLE) == [("unit", None)]
@@ -230,34 +276,76 @@ def test_tasks_take_the_feature_declaring_them():
             }
         }
     }
-    assert _tasks(manifest) == {"download": DEFAULT, "make": "docs"}
+    assert _tasks(manifest) == {("download", DEFAULT), ("make", "docs")}
+
+
+def test_a_name_two_features_declare_is_two_tasks():
+    """A task's name is local to its feature, so neither declaration is lost."""
+    manifest = {
+        "tool": {
+            "pixi": {
+                "feature": {
+                    "hidden": {"tasks": {"make": "echo hidden"}},
+                    "docs": {"tasks": {"make": "make"}},
+                }
+            }
+        }
+    }
+    tasks = _tasks(manifest)
+    assert tasks == {("make", "hidden"), ("make", "docs")}
+    assert _unmapped(tasks) == ["hidden"]
 
 
 def test_a_task_with_no_row_is_unlisted():
     """A task no row names is reported."""
-    tasks = {"make": "docs", "clean": "docs", "serve": "docs"}
-    assert _unlisted(tasks, [("make", "docs"), ("clean", "docs")]) == ["serve"]
+    tasks = {("make", "docs"), ("clean", "docs"), ("serve", "docs")}
+    rows = [("make", "docs"), ("clean", "docs")]
+    assert _unlisted(tasks, rows) == ["serve {docs}"]
+
+
+def test_a_row_lists_the_task_of_its_feature_alone():
+    """A row under one feature leaves the task of that name in another unlisted."""
+    tasks = {("make", "docs"), ("make", "hidden")}
+    assert _unlisted(tasks, [("make", "docs")]) == ["make {hidden}"]
+
+
+def test_a_row_naming_no_feature_lists_the_task_in_any():
+    """A row of a table with no "Feature" column lists the task by name."""
+    tasks = {("make", "docs"), ("make", "hidden")}
+    assert _unlisted(tasks, [("make", None)]) == []
 
 
 def test_a_row_naming_no_task_is_unknown():
     """A row naming a task the manifest lacks is reported."""
-    assert _unknown({"make": "docs"}, [("make", None), ("gone", None)]) == ["gone"]
+    tasks = {("make", "docs")}
+    assert _unknown(tasks, [("make", None), ("gone", None)]) == ["gone"]
 
 
 def test_a_row_naming_another_feature_is_misfiled():
     """A row whose feature is not the task's is reported."""
-    misfiled = _misfiled({"make": "docs"}, [("make", "test")])
-    assert misfiled == ["make (row 'test', manifest 'docs')"]
+    misfiled = _misfiled({("make", "docs")}, [("make", "test")])
+    assert misfiled == ["make (row 'test', manifest ['docs'])"]
 
 
-def test_a_row_naming_no_feature_is_never_misfiled():
-    """A row of a table without a "Feature" column names no feature."""
-    assert _misfiled({"make": "docs"}, [("make", None)]) == []
+def test_a_row_naming_any_feature_of_the_task_is_filed():
+    """A row under any feature declaring a task of its name is filed rightly."""
+    tasks = {("make", "docs"), ("make", "hidden")}
+    assert _misfiled(tasks, [("make", "hidden"), ("make", "docs")]) == []
+
+
+def test_a_row_naming_no_feature_is_misfiled():
+    """A row under a "Feature" cell naming no feature is reported."""
+    blank = PACKAGING_TABLE.replace("| ``{docs}``  |", "|             |")
+    tasks = {("make", "docs"), ("clean", "docs"), ("unit", "test")}
+    assert _misfiled(tasks, _table(blank)) == [
+        "make (row None, manifest ['docs'])",
+        "clean (row None, manifest ['docs'])",
+    ]
 
 
 def test_a_feature_with_no_page_is_unmapped():
     """A feature that is not in the map is reported."""
-    assert _unmapped({"make": "docs", "qt": "qt"}) == ["qt"]
+    assert _unmapped({("make", "docs"), ("view", "qt")}) == ["qt"]
 
 
 @pytest.mark.parametrize("page", sorted({PACKAGING, *FEATURE_PAGES.values()}))
@@ -282,8 +370,8 @@ def test_every_task_has_a_packaging_row():
 def test_every_task_has_a_row_on_its_features_page(page):
     """The page of each feature lists the tasks of that feature."""
     tasks = {
-        name: feature
-        for name, feature in _tasks(_manifest()).items()
+        (name, feature)
+        for name, feature in _tasks(_manifest())
         if FEATURE_PAGES.get(feature) == page
     }
     unlisted = _unlisted(tasks, _page(page))
@@ -298,6 +386,7 @@ def test_every_row_names_a_task(page):
 
 
 def test_the_packaging_rows_name_each_tasks_feature():
-    """The "Feature" column of the packaging page names the feature of each task."""
+    """Every row of the packaging page names a feature that declares its task."""
     misfiled = _misfiled(_tasks(_manifest()), _page(PACKAGING))
-    assert not misfiled, f"rows on {PACKAGING}.rst naming another feature: {misfiled}"
+    message = f"rows on {PACKAGING}.rst naming no feature, or another: {misfiled}"
+    assert not misfiled, message

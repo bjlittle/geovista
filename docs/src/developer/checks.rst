@@ -438,8 +438,9 @@ Pixi Task Tables
 "Pixi Tasks" table of the packaging page, and in the table of the page for its
 feature. That page is the documentation page for the ``docs`` and ``geovista``
 features, and the testing page for the ``test`` feature and the default tasks.
-No row names a task that no longer exists, and the packaging page names the
-feature of each task.
+No row names a task that no longer exists, and each row on the packaging page
+sits under a feature that declares its task. Task names are local to a feature,
+so when two features declare the same name, each needs its own row.
 
 **Why:** The tables are written by hand, and nothing else ties them to the
 manifest. ``check-spec-renumbering`` had no row on either page from the
@@ -449,8 +450,9 @@ nearly shipped without one.
 **What enforces it:** :bash:`tests/test_pixi_tasks.py`, which reads the manifest
 and the three pages as text, in every run of the unit tests.
 
-**When it fails:** The message names the task and the page, and for a row on the
-packaging page under the wrong feature, both features. Add or correct the row.
+**When it fails:** The message names the task and the page. For a row on the
+packaging page under no feature or the wrong one, it also names the features
+that declare the task. Add or correct the row.
 A new feature with tasks also needs an entry in ``FEATURE_PAGES``, naming the
 page that documents them. A page may list a task of another feature as well, as
 the testing page lists the browser tests of the documentation.
