@@ -35,6 +35,7 @@ from typing import TYPE_CHECKING, Any
 
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
+from packaging.utils import canonicalize_name
 from packaging.version import Version
 import pytest
 import yaml
@@ -93,6 +94,13 @@ NEUTRAL = frozenset({"ignore_missing_imports", "module"})
 
 #: The core requirements, whose floors a "pip" install honours.
 REQUIREMENTS = ROOT / "requirements" / "pypi-core.txt"
+#: The requirements of ``pip install -e .[test,exam]``, which "ci-tests-pypi.yml"
+#: runs these tests in.
+PIP_INSTALLED = (
+    REQUIREMENTS,
+    ROOT / "requirements" / "pypi-optional-test.txt",
+    ROOT / "requirements" / "pypi-optional-exam.txt",
+)
 
 #: The candidate rows of typing spec §4, each waiting on an upstream release,
 #: and each held by a test here that fails when its trigger fires.
@@ -100,9 +108,20 @@ ROW_8 = "row 8 of typing spec §4"
 ROW_9 = "row 9 of typing spec §4"
 ROW_10 = "row 10 of typing spec §4"
 ROW_11 = "row 11 of typing spec §4"
+#: What landing each row withdraws, by the open items it owes.
+WITHDRAW = {
+    ROW_8: (
+        "the gallery override of typing spec §3.4 (typing spec §8 item 2), and the "
+        "cast and typed locals of typing spec §8 item 6, item 8 and item 10"
+    ),
+    ROW_9: "the lazy_loader override of typing spec §8 item 5",
+    ROW_10: "the casts in Transform.from_tiff of typing spec §8 item 7",
+    ROW_11: "the name from UNTYPED and the override of typing spec §8 item 9",
+}
 
-#: The first "pyvista" release after pull requests 9162, 9262, 9344 and 9351
-#: merged. None of them is in 0.49.2, cut from the 0.49 release branch.
+#: The next "pyvista" release from its "main", where pull requests 9162, 9262,
+#: 9344 and 9351 merged. 0.49.1 and 0.49.2 came from the 0.49 release branch,
+#: and carry none of them.
 PYVISTA_FIXED = Version("0.50.0")
 #: The first Python with the lazy imports of PEP 810, which can replace
 #: "lazy_loader".
@@ -314,6 +333,23 @@ def _hook() -> dict[str, Any]:
     return hooks[0]
 
 
+def _land(row: str) -> str:
+    """Return what to do once a row's trigger has fired.
+
+    Parameters
+    ----------
+    row : str
+        The citation of a row of :data:`WITHDRAW`.
+
+    Returns
+    -------
+    str
+        The row to land, and what it withdraws.
+
+    """
+    return f"land {row}: withdraw {WITHDRAW[row]}"
+
+
 def _floor(specifier: str) -> Version | None:
     """Return the lowest version a specifier admits.
 
@@ -386,8 +422,8 @@ def _pyvista_released(floors: Mapping[str, Version]) -> list[str]:
 
     """
     return [
-        f"{where}: the pyvista floor is {floor}, which carries the fixes "
-        f"typing spec §3.4 waits on, so land {ROW_8}"
+        f"{where}: the pyvista floor is {floor}, which carries the fixes of "
+        f"pyvista pull requests 9162, 9262, 9344 and 9351, so {_land(ROW_8)}"
         for where, floor in floors.items()
         if floor >= PYVISTA_FIXED
     ]
@@ -464,20 +500,23 @@ def _stubs_widened(source: str) -> list[str]:
     Returns
     -------
     list of str
-        One message if the module-level ``xy`` types its ``rows`` other than
-        as :data:`STUB_ROWS`, or is gone, and none otherwise.
+        One message unless the module-level ``xy`` is defined once and types
+        its ``rows`` as :data:`STUB_ROWS`. An overload of it, or its absence,
+        reads as a change, since either may be how the stubs come to take an
+        array.
 
     """
-    found = None
-    for node in ast.parse(source).body:
-        if isinstance(node, ast.FunctionDef) and node.name == "xy":
-            for arg in node.args.args:
-                if arg.arg == "rows" and arg.annotation is not None:
-                    found = ast.unparse(arg.annotation)
-    if found == STUB_ROWS:
+    found = [
+        ast.unparse(arg.annotation) if arg.annotation is not None else None
+        for node in ast.parse(source).body
+        if isinstance(node, ast.FunctionDef) and node.name == "xy"
+        for arg in node.args.args
+        if arg.arg == "rows"
+    ]
+    if found == [STUB_ROWS]:
         return []
     message = f"rasterio.transform.xy types its rows as {found}, not {STUB_ROWS}"
-    return [f"{message}: if it takes an array, land {ROW_10}"]
+    return [f"{message}; if it takes an array, {_land(ROW_10)}"]
 
 
 def test_no_module_ignores_errors():
@@ -765,15 +804,15 @@ def test_row_9_waits_on_lazy_loader():
     """Triggers: row 9 of typing spec §4 waits on a typed "lazy_loader".
 
     The override of typing spec §8 item 5 comes out when "lazy_loader" ships
-    ``py.typed``, read from the locked environment, or when the Python floor
+    ``py.typed``, read from the installed environment, or when the Python floor
     has the lazy imports of PEP 810 to replace it, whichever is first.
 
     """
     typed = _typed(("lazy_loader",), metadata.packages_distributions(), metadata.files)
-    assert not typed, f"lazy_loader ships py.typed, so land {ROW_9}"
+    assert not typed, f"lazy_loader ships py.typed, so {_land(ROW_9)}"
     manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
     requires = manifest["project"]["requires-python"]
-    assert not _lazy_imports(requires), f"PEP 810 is in {requires}: land {ROW_9}"
+    assert not _lazy_imports(requires), f"PEP 810 is in {requires}: {_land(ROW_9)}"
 
 
 def test_row_10_waits_on_the_rasterio_stubs():
@@ -817,8 +856,34 @@ def test_row_11_waits_on_annotations():
 
     """
     typed = _typed(UNTYPED, metadata.packages_distributions(), metadata.files)
-    withdraw = "withdraw each from UNTYPED and the override of typing spec §8 item 9"
-    assert not typed, f"{typed} typed: {withdraw}, landing {ROW_11} with the last"
+    landing = f"withdraw {WITHDRAW[ROW_11]}, and land {ROW_11} with the last"
+    assert not typed, f"{typed} typed: for each, {landing}"
+
+
+def test_a_pip_install_holds_every_distribution_a_trigger_reads():
+    """The triggers read only what ``pip install -e .[test,exam]`` installs.
+
+    "ci-tests-pypi.yml" installs those extras, as does the geovista job in the
+    downstream integration matrix of "pyvista", and each runs these tests. A
+    trigger reading a distribution neither extra declares fails there, rather
+    than skipping.
+
+    """
+    modules = ("lazy_loader", *UNTYPED)
+    packages = metadata.packages_distributions()
+    read = {"types-rasterio"} | {
+        distribution for module in modules for distribution in packages[module]
+    }
+    declared = {
+        canonicalize_name(Requirement(text).name)
+        for path in PIP_INSTALLED
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if (text := line.partition("#")[0].strip())
+    }
+    missing = sorted(
+        name for name in map(canonicalize_name, read) if name not in declared
+    )
+    assert not missing, f"declare in {PIP_INSTALLED[1].name}: {missing}"
 
 
 def test_floor_is_the_highest_lower_bound():
@@ -836,7 +901,16 @@ def test_row_8_fires_at_the_pyvista_release():
     (problem,) = _pyvista_released(floors)
 
     assert problem.startswith("b: ")
-    assert ROW_8 in problem
+    assert problem.endswith(_land(ROW_8))
+
+
+@pytest.mark.parametrize("row", [ROW_8, ROW_9, ROW_10, ROW_11])
+def test_a_landing_says_what_to_withdraw(row):
+    """Each trigger's message names its row, and the items it withdraws."""
+    landing = _land(row)
+
+    assert landing.startswith(f"land {row}: withdraw ")
+    assert "typing spec §8 item " in landing
 
 
 def test_row_9_fires_at_a_typed_release():
@@ -864,8 +938,25 @@ def test_row_10_fires_when_the_stubs_take_arrays():
 
     assert not _stubs_widened(source)
     (problem,) = _stubs_widened(widened)
-    assert ROW_10 in problem
-    assert ROW_10 in _stubs_widened("def other(): ...\n")[0]
+    assert problem.endswith(_land(ROW_10))
+    assert _stubs_widened("def other(): ...\n")[0].endswith(_land(ROW_10))
+
+
+def test_row_10_fires_when_an_overload_takes_arrays():
+    """Triggers: ``xy`` widened through an overload names row 10.
+
+    Typeshed may widen ``xy`` with an overload per input, since a scalar and a
+    sequence return different types, leaving one overload as it was.
+    """
+    source = (
+        "@overload\n"
+        "def xy(transform, rows: ArrayLike, cols): ...\n"
+        "@overload\n"
+        "def xy(transform, rows: int | Sequence[int], cols): ...\n"
+    )
+
+    (problem,) = _stubs_widened(source)
+    assert problem.endswith(_land(ROW_10))
 
 
 def test_row_11_fires_at_a_stub_package():

@@ -417,8 +417,9 @@ the lines its change clears from that 68, so 6a's 11 includes three untyped impo
 Rows 8 to 11 wait on releases upstream, so each is a `candidate` (items spec §2 decision 8),
 and the items of §8 they owe name them. `tests/test_ci_typing.py` asserts every trigger,
 failing with the row to land. Row 8 fires when the `pyvista` floor reaches 0.50.0, in
-`requirements/pypi-core.txt` or the pixi manifest. That is the first release after
-`pyvista` pull requests 9162, 9262, 9344 and 9351 merged, and 0.49.2 carries none of them.
+`requirements/pypi-core.txt` or the pixi manifest. That is the next release from
+`pyvista`'s `main`, where pull requests 9162, 9262, 9344 and 9351 merged. 0.49.1 and
+0.49.2 came from its 0.49 release branch, and carry none of them.
 The row withdraws the whole override of §3.4, including its `no-untyped-call` half, which
 waits on the annotations of `Camera.zoom` and has no item of its own. Row 9 reads the
 locked `lazy_loader` and `requires-python`, and row 10 the installed stubs. Row 11 reads
@@ -466,8 +467,8 @@ relaxation of strict mode beyond the three this specification gives reasons for:
 `geovista.cli`'s and `geovista.qt`'s in §3.1, and the gallery's
 in §3.4. Adding, changing or withdrawing one is then a change to
 the test ({issue}`2687`). The same module asserts the triggers of rows 8 to 11 of §4,
-reading the floors in the manifests and the distributions in the locked environment, and
-fails when one fires.
+reading the floors in the manifests and the distributions installed, and fails when one
+fires.
 
 Changes 2 to 4 of the roadmap each add tests passing lists where arrays were passed before,
 so that the widened contract of §3.3 is exercised rather than
@@ -544,24 +545,24 @@ Each carries the grammar of items spec §3.2.
    for `no-untyped-call` in the override, whose comment now names its real causes.
 4. **🏁 Resolved** (2026-10-07,
    [`lazy-loader` issue 181](https://github.com/scientific-python/lazy-loader/issues/181)
-   · 🔎 2026-10-06, {pull}`2564`) — **Whether to pursue `lazy_loader` upstream.** Yes, after measuring. It is 19 of the
-   29 untyped imports, one for each of the 20 library modules that import it except
-   `__init__.py`, which `mypy` reads through `__init__.pyi` instead. With a typed copy on
-   `mypy_path` and the library checked under `--strict`, a bare `py.typed` marker turns
-   those 19 into 42 `no-untyped-call`, one at every `lazy.load`, the way `Camera.zoom`
-   behaves in §3.4. The marker together with annotations on
-   `load` and `attach` and a return type on `attach_stub` clears all 19 and leaves every
-   other error unchanged, line for line, so the request asks for both and offers a
-   follow-up pull request. A maintainer's advice there, in its issue 165, is to keep
-   using `lazy_loader` until Python 3.15 is the floor and then move to the `lazy import`
-   of PEP 810. This item argued until 2026-10-07 that it was also the root of item 3; it
-   is not, which left the import count as the whole case.
+   · 🔎 2026-10-06, {pull}`2564`) — **Whether to pursue `lazy_loader` upstream.** Yes, after
+   measuring. It is 19 of the 29 untyped imports, one for each of the 20 library modules
+   that import it except `__init__.py`, which `mypy` reads through `__init__.pyi` instead.
+   With a typed copy on `mypy_path` and the library checked under `--strict`, a bare
+   `py.typed` marker turns those 19 into 42 `no-untyped-call`, one at every `lazy.load`, the
+   way `Camera.zoom` behaves in §3.4. The marker together with annotations on `load` and
+   `attach` and a return type on `attach_stub` clears all 19 and leaves every other error
+   unchanged, line for line, so the request asks for both and offers a follow-up pull
+   request. A maintainer's advice there, in its issue 165, is to keep using `lazy_loader`
+   until Python 3.15 is the floor and then move to the `lazy import` of PEP 810. This item
+   argued until 2026-10-07 that it was also the root of item 3; it is not, which left the
+   import count as the whole case.
 5. **❓ Open** (🔎 2026-10-07, {pull}`2572` · 🎯 row 9 of §4 · 🎫 {issue}`2570`) — **The
-   `lazy_loader` override comes out when upstream allows.** The `ignore_missing_imports` override for `lazy_loader` clears all 19
-   locally. It was meant for change 6, and change 2 brought it in, because `transform.py`
-   imports `lazy_loader`, as most library modules do, and could not leave the ratchet
-   without it. It comes out when the floor reaches a release carrying the marker, or when
-   PEP 810 replaces `lazy_loader`, whichever is first.
+   `lazy_loader` override comes out when upstream allows.** The `ignore_missing_imports`
+   override for `lazy_loader` clears all 19 locally. It was meant for change 6, and change 2
+   brought it in, because `transform.py` imports `lazy_loader`, as most library modules do,
+   and could not leave the ratchet without it. It comes out when the floor reaches a release
+   carrying the marker, or when PEP 810 replaces `lazy_loader`, whichever is first.
 6. **❓ Open** (🔎 2026-10-08, {pull}`2580` · 🎯 row 8 of §4 · 🎫 {issue}`2851`) — **The
    cast in `transform_mesh`, and a typed local in `core.py`, wait on the same `pyvista`
    release.** `pyvista` 0.49 annotates
@@ -594,17 +595,17 @@ Each carries the grammar of items spec §3.2.
    the trigger items 2 and 6 already wait on. `main` types `to_image` as returning
    `ImageData | None`, so the local in `wrap_texture` already allows `None`.
 9. **❓ Open** (🔎 2026-10-11, {pull}`2631` · 🎯 row 11 of §4 · 🎫 {issue}`2629`) — **Five
-   dependencies ship no annotations.** The latest releases of `pooch` (1.9.0), `geopy` (2.5.0), `cartopy` (0.26.0), `cmocean` (4.0.3)
-   and `h3` (4.5.0) carry no `py.typed` and have no stubs on conda-forge or in typeshed,
-   so one `ignore_missing_imports` override makes each import `Any`. Change 6c brought
-   the entries for `geopy` and `fastparquet` to life by taking `pantry/data.py` out of the
-   ratchet, and change 7 added the last three, which only the gallery imports.
-   `fastparquet` came out when the earthquakes sample moved to `pyarrow`
-   ({pull}`2783`), which `pantry/data.py` finds with `find_spec` and never imports, as
-   `pyarrow` ships no annotations either. Each name comes out when its
-   distribution or a stub package types it. `pooch`, `cartopy`, `cmocean` and `h3` have
-   open upstream issues asking for annotations; `cmocean`'s offers a stub file for its
-   colormaps, which would not lift the override without a `py.typed` marker.
+   dependencies ship no annotations.** The latest releases of `pooch` (1.9.0), `geopy`
+   (2.5.0), `cartopy` (0.26.0), `cmocean` (4.0.3) and `h3` (4.5.0) carry no `py.typed` and
+   have no stubs on conda-forge or in typeshed, so one `ignore_missing_imports` override
+   makes each import `Any`. Change 6c brought the entries for `geopy` and `fastparquet` to
+   life by taking `pantry/data.py` out of the ratchet, and change 7 added the last three,
+   which only the gallery imports. `fastparquet` came out when the earthquakes sample moved
+   to `pyarrow` ({pull}`2783`), which `pantry/data.py` finds with `find_spec` and never
+   imports, as `pyarrow` ships no annotations either. Each name comes out when its
+   distribution or a stub package types it. `pooch`, `cartopy`, `cmocean` and `h3` have open
+   upstream issues asking for annotations; `cmocean`'s offers a stub file for its colormaps,
+   which would not lift the override without a `py.typed` marker.
 10. **❓ Open** (🔎 2026-10-21, {pull}`2676` · 🎯 row 8 of §4 · 🎫 {issue}`2853`) —
     **Four typed locals wait on the same `pyvista` release.**
     `pyvista` 0.49 types its arrays with Python's `int`, `bool` and `float` as the dtype.
