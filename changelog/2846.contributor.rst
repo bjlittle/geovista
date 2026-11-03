@@ -1,0 +1,5 @@
+``pixi run -e test verification-report`` now shows each specification's roadmap
+before its decisions, and its open items after them, with each item's state, the
+row that owes it and how often it has moved. It also flags an item on its last
+move, which must settle or graduate when its row lands, and an item owed by a
+row in progress, which that row's pull request must answer. (:user:`claude`)
