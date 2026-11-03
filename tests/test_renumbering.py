@@ -1080,11 +1080,22 @@ def test_an_added_line_that_looks_like_a_diff_header_is_read_as_a_line(
     assert "src/notes.py:3:" not in out
 
 
-def test_the_audit_finds_an_item_citation_older_than_the_renumber(guard, repo, capsys):
-    """Naming an item of a section is citing the section, which moved."""
+@pytest.mark.parametrize(
+    "name",
+    ["src/late.py", "src/back\\slash.py", "src/[draft]notes.py"],
+    ids=["plain", "backslash", "bracket"],
+)
+def test_the_audit_finds_an_item_citation_older_than_the_renumber(
+    guard, repo, capsys, name
+):
+    """Naming an item of a section is citing the section, which moved.
+
+    A name holding a backslash or a bracket is found by its blame as any other
+    name is: git matches a pathspec literally before it reads one as a glob.
+    """
     git(repo, "switch", "--quiet", "main")
     git(repo, "switch", "--quiet", "--create", "late")
-    commit(repo, {"src/late.py": f"# see demo spec {SECTION}3 item 1\n"}, "late")
+    commit(repo, {name: f"# see demo spec {SECTION}3 item 1\n"}, "late")
     git(repo, "switch", "--quiet", "main")
     commit(
         repo,
@@ -1100,7 +1111,7 @@ def test_the_audit_finds_an_item_citation_older_than_the_renumber(guard, repo, c
     code, out = run(guard, repo, "--audit", capsys=capsys)
 
     assert code == 1
-    assert f'src/late.py:1: demo spec {SECTION}3 item 1 was "Testing"' in out
+    assert f'{name}:1: demo spec {SECTION}3 item 1 was "Testing"' in out
 
 
 def test_fix_rewrites_a_member_citation_by_its_section(guard, repo, capsys):
