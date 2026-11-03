@@ -1,0 +1,4 @@
+Fixed the renumber guard's reading of changed files whose names aren't plain
+ASCII. A non-ASCII path is no longer dropped from the diff, so its changed
+lines are judged like any other file's, and a file name that isn't UTF-8 is
+read by the name Python gives it rather than ending the check. (:user:`claude`)
