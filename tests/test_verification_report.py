@@ -404,7 +404,7 @@ def test_a_line_after_a_decisions_code_is_no_part_of_it(script, tmp_path, capsys
 def test_report_shows_each_roadmap_row_with_its_status(script, repo, capsys):
     """Each roadmap row, with its scope and status, before the ledger.
 
-    Holds items spec \N{SECTION SIGN}2 decision 12.
+    Holds items spec §2 decision 12.
     """
     _, out = run(script, repo, capsys, "demo")
     roadmap = out[out.index("### Roadmap") : out.index("### Decision 1: One.")]
@@ -421,7 +421,7 @@ def test_report_shows_each_open_item_with_its_state_owed_row_and_moves(
 ):
     """Each open item, with its state, the row that owes it and its moves, last.
 
-    Holds items spec \N{SECTION SIGN}2 decision 12.
+    Holds items spec §2 decision 12.
     """
     _, out = run(script, repo, capsys, "demo")
     items = out[out.index("### Open Items") : out.index("## Findings")]
@@ -442,7 +442,7 @@ def test_a_specification_without_a_roadmap_or_items_says_so(script, repo, capsys
 
 
 def test_an_item_in_the_old_grammar_shows_its_status(script, tmp_path, capsys):
-    """An item in the grammar of docs spec \N{SECTION SIGN}3.6 shows its own status.
+    """An item in the grammar of docs spec §3.6 shows its own status.
 
     It leads with its status in bold, and its title follows, so neither is taken for
     the other, and it makes no finding.
@@ -472,7 +472,7 @@ def test_an_item_in_the_old_grammar_shows_its_status(script, tmp_path, capsys):
 def test_an_item_on_its_last_move_is_a_finding(script, repo, capsys):
     """An item with two moves must settle or graduate when its row lands.
 
-    Holds items spec \N{SECTION SIGN}2 decision 12.
+    Holds items spec §2 decision 12.
     """
     _, out = run(script, repo, capsys, "demo")
     findings = out[out.index("## Findings") :]
@@ -487,7 +487,7 @@ def test_an_item_on_its_last_move_is_a_finding(script, repo, capsys):
 def test_an_item_owed_by_a_row_in_progress_is_a_finding(script, repo, capsys):
     """An item owed by a row in progress is one that row's pull request must answer.
 
-    Holds items spec \N{SECTION SIGN}2 decision 12.
+    Holds items spec §2 decision 12.
     """
     _, out = run(script, repo, capsys, "demo")
     findings = out[out.index("## Findings") :]

@@ -54,7 +54,7 @@ PLANS = Path("docs") / "src" / "developer" / "plans"
 #: What a table cell holds when it has nothing to say.
 EM_DASH = "\N{EM DASH}"
 
-#: The title of an item in the grammar of docs spec \N{SECTION SIGN}3.6, after its
+#: The title of an item in the grammar of docs spec §3.6, after its
 #: status, any parenthesis and a dash.
 OLD_TITLE = re.compile(
     r"(?:\(.*?\)\s*)?[\N{EM DASH}\N{EN DASH}-]\s*\*\*(?P<title>.+?)\*\*"
@@ -122,7 +122,7 @@ def _items_section(text: str) -> str | None:
 def _roadmap(text: str) -> list[str]:
     """Write a specification's roadmap, each row with its scope and status.
 
-    Only the rows of its own Roadmap section are shown (items spec \N{SECTION SIGN}3.9).
+    Only the rows of its own Roadmap section are shown (items spec §3.9).
     """
     section = _section(text, "Roadmap")
     rows = [row for row in grammar.rows(text) if row.section == section]
@@ -139,7 +139,7 @@ def _roadmap(text: str) -> list[str]:
 def _stated(item: Item) -> tuple[str, str]:
     """Read an item's state and title, as the table shows them.
 
-    An item still in the grammar of docs spec \N{SECTION SIGN}3.6 leads with its
+    An item still in the grammar of docs spec §3.6 leads with its
     status in bold, which the grammar reads as its title, and its title follows a
     dash, so the status is shown as its state.
     """
@@ -172,7 +172,7 @@ def _item_findings(path: Path, text: str, prefix: str, names: Namespace) -> list
 
     The row an item names is read as the conventions test reads it, and an item
     owed by no row of its own roadmap, by a landed row, or moved three times, is
-    left to the suite, which refuses each (items spec \N{SECTION SIGN}3.9).
+    left to the suite, which refuses each (items spec §3.9).
     """
     section = _items_section(text)
     found = []
