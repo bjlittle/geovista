@@ -42,47 +42,51 @@ how `geovista` stops writing a field, and in time stops reading it.
 
 These were decided with {user}`bjlittle` while the design was written.
 
-1. **The globe takes the place of every radius.** Wherever `geovista` sets the size of a
-   sphere, it takes a globe. A partial change would leave a mesh built at one radius in a
-   scene at another, with nothing to say which, and would put off design questions that
-   are better faced now.
-2. **`radius=` is removed, with no alias.** Today's `radius` is the radius a mesh is drawn
-   at, which the globe calls its render radius. A user who passes 6,371,000 reads it as the
-   Earth's radius, which the globe calls its radius. An alias would keep that ambiguity.
-   crs spec §2 decision 4 allows the break, and a caller still passing `radius=` gets
-   Python's error for an unexpected keyword.
-3. **A mesh records its globe in four fields:** `gvGlobeRadius`, in metres,
-   `gvGlobeRenderRadius`, `gvGlobeExaggerationAbove` and `gvGlobeExaggerationBelow`, each a
-   float64 field array of one value. The two exaggerations are the first form of the
-   vertical mapping of globe spec §4.1, above and below sea level. Each is named for a
-   reader who opens the file in ParaView, and none depends on its place in an array.
-4. **A mesh that records no globe is read, never refused.** It is placed on the default
-   globe, at its `gvRadius` where it has one, and otherwise at the one radius its points
-   lie at, if they lie at one. No position changes: today's `gvRadius` is exactly the render
-   radius, and the Earth's radius was never recorded. A mesh saved with a z-level is the
-   exception (§4.4). A mesh whose globe cannot be read
-   this way, such as one warped by its heights outside `geovista`, has no globe, and is
-   drawn where its points are. This settles crs spec §8 item 12.
-5. **Every mesh `geovista` produces carries only current fields.** A retired field found
-   on a mesh is translated into what replaced it, and removed, in the mesh `geovista`
-   returns or draws, so that saving that mesh does not carry the field forward. A mesh
-   given to `geovista` only to read is never changed, unless the caller asked for the
-   change in place.
-6. **A public function cleans a mesh.** `geovista.common.sanitize_legacy` translates and
-   removes every retired field in place, beside `sanitize` and `sanitize_vtk`, which purge
-   index arrays. It serves a user cleaning saved files, and the refresh of the pantry's
-   assets ({issue}`2753`).
-7. **One table holds every retired field.** `gvRadius` is the first. `gvZScale` and
-   `gvZLevel` join it when row 5 of globe spec §9 removes `zlevel`. When `geovista` stops
-   reading them is decided once they are all in it (§8 item 1).
-8. **A public value with a unit is a quantity.** Inside, `geovista` passes plain floats in
-   SI, as crs spec §4.9 says. A public attribute or result that reports a physical value,
-   such as a globe's radius, returns a `pint` quantity, so that the public API describes
-   itself.
-9. **geovista's view of a mesh lives in one namespace, `mesh.gv`.** It holds the mesh's
-   `globe` and `crs`, both read-only, and is open to more. `mesh1.gv == mesh2.gv` when
-   `geovista` describes the two meshes the same way, and
-   `mesh1.gv.globe == mesh2.gv.globe` when their globes are equal.
+1. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **The globe takes the place
+   of every radius.** Wherever `geovista` sets the size of a sphere, it takes a globe. A
+   partial change would leave a mesh built at one radius in a scene at another, with nothing
+   to say which, and would put off design questions that are better faced now.
+2. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **`radius=` is removed, with
+   no alias.** Today's `radius` is the radius a mesh is drawn at, which the globe calls its
+   render radius. A user who passes 6,371,000 reads it as the Earth's radius, which the
+   globe calls its radius. An alias would keep that ambiguity. crs spec §2 decision 4 allows
+   the break, and a caller still passing `radius=` gets Python's error for an unexpected
+   keyword.
+3. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **A mesh records its globe in
+   four fields:** `gvGlobeRadius`, in metres, `gvGlobeRenderRadius`,
+   `gvGlobeExaggerationAbove` and `gvGlobeExaggerationBelow`, each a float64 field array of
+   one value. The two exaggerations are the first form of the vertical mapping of
+   globe spec §4.1, above and below sea level. Each is named for a reader who opens the file
+   in ParaView, and none depends on its place in an array.
+4. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **A mesh that records no
+   globe is read, never refused.** It is placed on the default globe, at its `gvRadius`
+   where it has one, and otherwise at the one radius its points lie at, if they lie at one.
+   No position changes: today's `gvRadius` is exactly the render radius, and the Earth's
+   radius was never recorded. A mesh saved with a z-level is the exception (§4.4). A mesh
+   whose globe cannot be read this way, such as one warped by its heights outside
+   `geovista`, has no globe, and is drawn where its points are. This settles
+   crs spec §8 item 12.
+5. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **Every mesh `geovista`
+   produces carries only current fields.** A retired field found on a mesh is translated
+   into what replaced it, and removed, in the mesh `geovista` returns or draws, so that
+   saving that mesh does not carry the field forward. A mesh given to `geovista` only to
+   read is never changed, unless the caller asked for the change in place.
+6. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **A public function cleans a
+   mesh.** `geovista.common.sanitize_legacy` translates and removes every retired field in
+   place, beside `sanitize` and `sanitize_vtk`, which purge index arrays. It serves a user
+   cleaning saved files, and the refresh of the pantry's assets ({issue}`2753`).
+7. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **One table holds every
+   retired field.** `gvRadius` is the first. `gvZScale` and `gvZLevel` join it when
+   row 5 of globe spec §9 removes `zlevel`. When `geovista` stops reading them is decided
+   once they are all in it (§8 item 1).
+8. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **A public value with a unit
+   is a quantity.** Inside, `geovista` passes plain floats in SI, as crs spec §4.9 says. A
+   public attribute or result that reports a physical value, such as a globe's radius,
+   returns a `pint` quantity, so that the public API describes itself.
+9. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **geovista's view of a mesh
+   lives in one namespace, `mesh.gv`.** It holds the mesh's `globe` and `crs`, both
+   read-only, and is open to more. `mesh1.gv == mesh2.gv` when `geovista` describes the two
+   meshes the same way, and `mesh1.gv.globe == mesh2.gv.globe` when their globes are equal.
 
 (scene-spec-3)=
 ## 3. What Exists Today
@@ -220,7 +224,7 @@ methods of `GeoPlotter`:
 - `GeoPlotter` takes `globe=` when it is made, `Globe()` by default, and every layer it
   adds takes its geometry from that globe, the base layer, coastlines and graticule
   included. Its methods take no globe of their own, since a scene has one
-  (globe spec §2 decision 4). `GeoPlotter.globe` reports it, read-only, so a vertical
+  (globe spec §2 decision 7). `GeoPlotter.globe` reports it, read-only, so a vertical
   scale can be exact (globe spec §4.4).
 - A function that builds a mesh, such as a `Transform` constructor or `geodesic.line`,
   uses `Globe()` when given none, and records the globe it used on the mesh.

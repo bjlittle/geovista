@@ -54,28 +54,36 @@ becomes a matter of display, owned by the scene, and never moves data.
 
 These were decided with {user}`bjlittle` while the design was written.
 
-1. **Height and layering are separate concerns, and never mixed.** A height is physics. A
-   layer's order is display. Nothing done to stop two layers fighting may move data, or
-   reach a projected coordinate.
-2. **This work comes forward.** The parent specification gave heights in physical units,
-   and what replaces `zlevel`, to the later design of region solids and the vertical. They
-   are core, and are designed here, as row 2 of the parent's roadmap. Volumes, plumes as
-   solids, and a floor and ceiling stay with that later design.
-3. **Heights and depths arrive computed.** Turning model levels into heights, as from the
-   hybrid height of the Unified Model and LFRic and the orography beneath it, is done
-   upstream, by Iris or `xarray`. `geovista` owns the reference, the units and the
-   rendering. It may offer the conversion later, once this design has matured.
-4. **One globe per scene.** A scene has one Earth radius, one render scale and one vertical
+1. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2732`) — **Height and layering are
+   separate concerns, and never mixed.** A height is physics. A layer's order is display.
+   Nothing done to stop two layers fighting may move data, or reach a projected coordinate.
+2. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2732`) — **This work comes forward.**
+   The parent specification gave heights in physical units, and what replaces `zlevel`, to
+   the later design of region solids and the vertical. They are core, and are designed here,
+   as row 2 of the parent's roadmap. Volumes, plumes as solids, and a floor and ceiling stay
+   with that later design.
+3. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2732`) — **Heights and depths arrive
+   computed.** Turning model levels into heights, as from the hybrid height of the Unified
+   Model and LFRic and the orography beneath it, is done upstream, by Iris or `xarray`.
+   `geovista` owns the reference, the units and the rendering. It may offer the conversion
+   later, once this design has matured.
+4. **🗄️ Retired** (2026-10-27, {user}`bjlittle`, {pull}`2757`; agreed 2026-10-26,
+   {pull}`2732`) — **One globe per scene.** A scene has one Earth radius, one render scale
+   and one vertical exaggeration, and every layer takes its geometry from them, as
+   crs spec §4.1 requires. Retired because the scene's vertical mapping became an
+   exaggeration above sea level and another below it; replaced by §2 decision 7.
+5. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2732`) — **`zlevel` and `zscale` are
+   removed.** It is a breaking change, which crs spec §2 decision 4 allows. Physical
+   stacking becomes heights, display stacking becomes the order of layers, and a layer that
+   must be seen apart is lifted (§4.5).
+6. **🤝 Agreed** (2026-10-26, {user}`bjlittle`, {pull}`2732`) — **The evidence travels with
+   the design.** The measurements that shaped it, the layering spike above all, are recorded
+   here with their method, environment and date, so that a later reader can see why the
+   design took the form it did, and repeat the measurement.
+7. **🤝 Agreed** (2026-10-27, {user}`bjlittle`, {pull}`2757`) — **One globe per scene, with
+   one vertical mapping.** A scene has one Earth radius, one render scale and one vertical
    mapping, at first an exaggeration above sea level and another below it (§4.1), and every
-   layer takes its geometry from them, as
-   crs spec §4.1 requires.
-5. **`zlevel` and `zscale` are removed.** It is a breaking change, which
-   crs spec §2 decision 4 allows. Physical stacking becomes heights, display
-   stacking becomes the order of layers, and a layer that must be seen apart is lifted
-   (§4.5).
-6. **The evidence travels with the design.** The measurements that shaped it, the layering
-   spike above all, are recorded here with their method, environment and date, so that a
-   later reader can see why the design took the form it did, and repeat the measurement.
+   layer takes its geometry from them, as crs spec §4.1 requires.
 
 (globe-spec-3)=
 ## 3. What Exists Today

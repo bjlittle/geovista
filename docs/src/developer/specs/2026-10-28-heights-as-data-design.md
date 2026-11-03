@@ -42,44 +42,49 @@ depths of an ocean model, which arrive masked over land.
 
 These were decided with {user}`bjlittle` while the design was written.
 
-1. **A mesh stores its heights in one point array, `gvHeight`.** It is float64, in metres
-   above mean sea level. A mesh without it is at sea level. The prefix matches the fields
-   of the globe (scene spec §2 decision 3), and leaves a user's own array named `height`
-   alone.
-2. **A depth is a negative height.** `depth=` is offered beside `height=`, positive
-   downward, and negated once where it is given. `mesh.gv.depth` is offered beside
-   `mesh.gv.height`, and negates the heights where they are read. No depth is stored, so a
-   mesh has one array and one sign.
-3. **A missing height is no height.** A masked or NaN height is stored as NaN, and its point
-   is drawn at sea level, as a mesh given no height is. Only an infinite height is refused.
-   This amends globe spec §4.3, which refused every height that is not finite, so that an
-   ocean's depths, masked over land, load as its data does today, and `threshold` drops
-   the land (§3.2).
-4. **Heights enter where a mesh is built and where it is added to a scene.** The bridge's
-   constructors, its `Transform` factory, `to_structured_grid`, `GeoPlotter.add_mesh` and
-   `GeoPlotter.add_points` take them, as globe spec §4.3 names. `resize` and
-   `transform_mesh` take none, and position a mesh from the heights it carries.
-5. **Heights are given once.** A mesh that carries heights and is given more is refused,
-   and so is `height=` given with `depth=`. `geovista` never picks one set of heights over
-   another.
-6. **A height and a z-level are never given together.** Until row 5 of globe spec §9
-   removes `zlevel`, a mesh with heights and a z-level other than 0 is refused. A height is
-   physics and a z-level is display, which globe spec §2 decision 1 keeps apart. Drawing a
-   layer apart becomes the lift of row 4.
-7. **A scene's globe is fixed when the scene is made.** Positions are built from heights
-   when a mesh is added, and `GeoPlotter.globe` stays read-only (scene spec §6). A scene
-   that replaces its globe and rebuilds every layer from its heights, as globe spec §4.1
-   describes, is §8 item 1.
-8. **`from_cartesian` reads positions, and nothing else.** Its third column stays the
-   z-level, which is 0 for a mesh with heights. Heights are read from `gvHeight`, through
-   `mesh.gv.height`.
-9. **Heights given for each cell stay refused,** as globe spec §8 item 6 defers them
-   ({issue}`2728`).
-10. **A CRS whose vertical axis is an ellipsoidal height is refused only with heights.**
-    Without heights, its horizontal axes are read, as they are today (§3.4).
-11. **`vertical_units=` names the unit of heights given as plain numbers,** a CF unit string
-    read by `geovista.units.to_metres`, for `height=`, `depth=` and the `zs` of
-    `to_structured_grid` alike.
+1. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A mesh stores its heights
+   in one point array, `gvHeight`.** It is float64, in metres above mean sea level. A mesh
+   without it is at sea level. The prefix matches the fields of the globe
+   (scene spec §2 decision 3), and leaves a user's own array named `height` alone.
+2. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A depth is a negative
+   height.** `depth=` is offered beside `height=`, positive downward, and negated once where
+   it is given. `mesh.gv.depth` is offered beside `mesh.gv.height`, and negates the heights
+   where they are read. No depth is stored, so a mesh has one array and one sign.
+3. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A missing height is no
+   height.** A masked or NaN height is stored as NaN, and its point is drawn at sea level,
+   as a mesh given no height is. Only an infinite height is refused. This amends
+   globe spec §4.3, which refused every height that is not finite, so that an ocean's
+   depths, masked over land, load as its data does today, and `threshold` drops the land
+   (§3.2).
+4. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **Heights enter where a mesh
+   is built and where it is added to a scene.** The bridge's constructors, its `Transform`
+   factory, `to_structured_grid`, `GeoPlotter.add_mesh` and `GeoPlotter.add_points` take
+   them, as globe spec §4.3 names. `resize` and `transform_mesh` take none, and position a
+   mesh from the heights it carries.
+5. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **Heights are given once.** A
+   mesh that carries heights and is given more is refused, and so is `height=` given with
+   `depth=`. `geovista` never picks one set of heights over another.
+6. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A height and a z-level are
+   never given together.** Until row 5 of globe spec §9 removes `zlevel`, a mesh with
+   heights and a z-level other than 0 is refused. A height is physics and a z-level is
+   display, which globe spec §2 decision 1 keeps apart. Drawing a layer apart becomes the
+   lift of row 4.
+7. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A scene's globe is fixed
+   when the scene is made.** Positions are built from heights when a mesh is added, and
+   `GeoPlotter.globe` stays read-only (scene spec §6). A scene that replaces its globe and
+   rebuilds every layer from its heights, as globe spec §4.1 describes, is §8 item 1.
+8. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **`from_cartesian` reads
+   positions, and nothing else.** Its third column stays the z-level, which is 0 for a mesh
+   with heights. Heights are read from `gvHeight`, through `mesh.gv.height`.
+9. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **Heights given for each cell
+   stay refused,** as globe spec §8 item 6 defers them ({issue}`2728`).
+10. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A CRS whose vertical axis
+    is an ellipsoidal height is refused only with heights.** Without heights, its horizontal
+    axes are read, as they are today (§3.4).
+11. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **`vertical_units=` names
+    the unit of heights given as plain numbers,** a CF unit string read by
+    `geovista.units.to_metres`, for `height=`, `depth=` and the `zs` of `to_structured_grid`
+    alike.
 
 (heights-spec-3)=
 ## 3. What Exists Today
