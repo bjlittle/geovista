@@ -23,6 +23,8 @@ from typing import TYPE_CHECKING, Literal
 
 import lazy_loader as lazy
 
+from .units import _angle, _angle_array, _lonlats
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -31,6 +33,7 @@ if TYPE_CHECKING:
     import pyvista as pv
 
     from .globe import Globe
+    from .units import Quantity
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -1003,8 +1006,8 @@ def set_jupyter_backend(*, backend: str | None = None) -> bool:
 
 
 def to_cartesian(
-    lons: ArrayLike,
-    lats: ArrayLike,
+    lons: ArrayLike | Quantity,
+    lats: ArrayLike | Quantity,
     *,
     globe: Globe | None = None,
     zlevel: float | ArrayLike | None = None,
@@ -1015,10 +1018,14 @@ def to_cartesian(
 
     Parameters
     ----------
-    lons : :data:`~numpy.typing.ArrayLike`
+    lons : :data:`~numpy.typing.ArrayLike` or pint.Quantity
         The longitude values (degrees) to be converted.
-    lats : :data:`~numpy.typing.ArrayLike`
+        A ``pint`` quantity, from any registry, is read in degrees. Give `lats` as a
+        quantity too.
+    lats : :data:`~numpy.typing.ArrayLike` or pint.Quantity
         The latitude values (degrees) to be converted.
+        A ``pint`` quantity, from any registry, is read in degrees. Give `lons` as a
+        quantity too.
     globe : :class:`~geovista.globe.Globe`, optional
         The globe whose render radius the points lie at. Defaults to
         ``Globe()``, whose render radius is :data:`RADIUS`.
@@ -1046,6 +1053,8 @@ def to_cartesian(
     """
     # geovista.globe imports this module
     from .globe import _resolve  # noqa: PLC0415
+
+    lons, lats = _lonlats(lons, lats)
 
     return _to_cartesian(
         lons,
@@ -1145,8 +1154,8 @@ def _to_cartesian(
 
 
 def vectors_to_cartesian(
-    lons: ArrayLike,
-    lats: ArrayLike,
+    lons: ArrayLike | Quantity,
+    lats: ArrayLike | Quantity,
     vectors: Vector3DLike,
     *,
     globe: Globe | None = None,
@@ -1157,12 +1166,16 @@ def vectors_to_cartesian(
 
     Parameters
     ----------
-    lons : ArrayLike
+    lons : ArrayLike or pint.Quantity
         The longitude points of the `vectors` (in degrees). Must be the same
         shape as `lats`.
-    lats : ArrayLike
+        A ``pint`` quantity, from any registry, is read in degrees. Give `lats` as a
+        quantity too.
+    lats : ArrayLike or pint.Quantity
         The latitude points of the `vectors` (in degrees). Must be the same
         shape as `lons`.
+        A ``pint`` quantity, from any registry, is read in degrees. Give `lons` as a
+        quantity too.
     vectors : Vector3DLike
         The eastward (``U``), northward (``V``) and upward (``W``) vector components.
         All shapes must be the same as `lons` and `lats`.
@@ -1192,6 +1205,8 @@ def vectors_to_cartesian(
     """
     # geovista.globe imports this module
     from .globe import _resolve  # noqa: PLC0415
+
+    lons, lats = _lonlats(lons, lats)
 
     return _vectors_to_cartesian(
         lons,
@@ -1572,10 +1587,10 @@ def vtk_warnings_on() -> None:
 
 
 def wrap(
-    lons: ArrayLike,
+    lons: ArrayLike | Quantity,
     *,
-    base: float | None = None,
-    period: float | None = None,
+    base: float | Quantity | None = None,
+    period: float | Quantity | None = None,
     rtol: float | None = None,
     atol: float | None = None,
     dtype: DTypeLike | None = None,
@@ -1584,13 +1599,17 @@ def wrap(
 
     Parameters
     ----------
-    lons : :data:`~numpy.typing.ArrayLike`
+    lons : :data:`~numpy.typing.ArrayLike` or pint.Quantity
         One or more longitude values to be wrapped in the interval.
-    base : float, optional
+        A ``pint`` quantity, from any registry, is read in degrees, so a plain
+        `base` or `period` given with it is in degrees too.
+    base : float or pint.Quantity, optional
         The start limit of the half-open interval. Defaults to :data:`BASE`.
-    period : float, optional
+        A ``pint`` quantity, from any registry, is read in degrees.
+    period : float or pint.Quantity, optional
         The end limit of the half-open interval expressed as a length
         from the `base`, in the same units. Defaults to :data:`PERIOD`.
+        A ``pint`` quantity, from any registry, is read in degrees.
     rtol : float, optional
         The relative tolerance for longitudes close to the 'wrap meridian' -
         that is ``base + period`` - to be considered equal to the wrap
@@ -1630,6 +1649,9 @@ def wrap(
     array([89.,  0.,  1.])
 
     """
+    lons = _angle_array("lons", lons)
+    base, period = _angle("base", base), _angle("period", period)
+
     if not isinstance(lons, Iterable):
         lons = np.atleast_1d(lons)
 

@@ -13,7 +13,6 @@ Notes
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -30,6 +29,7 @@ from .common import (
 )
 from .crs import WGS84, to_wkt
 from .globe import _resolve
+from .units import _angle, _angle_array
 
 if TYPE_CHECKING:
     import numpy as np
@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     import pyvista as pv
 
     from .globe import Globe
+    from .units import Quantity
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -178,14 +179,15 @@ def _step_period(lon: float, lat: float) -> tuple[float, float]:
     return (lon, lat)
 
 
-def create_meridian_labels(lons: list[float] | float) -> list[str]:
+def create_meridian_labels(lons: list[float] | float | Quantity) -> list[str]:
     """Generate labels for the meridians.
 
     Parameters
     ----------
-    lons : list of float
+    lons : list of float or pint.Quantity
         The meridian lines that require a label of their location east or west relative
         to the prime meridian.
+        A ``pint`` quantity, from any registry, is read in degrees.
 
     Returns
     -------
@@ -199,10 +201,7 @@ def create_meridian_labels(lons: list[float] | float) -> list[str]:
     """
     result = []
 
-    if not isinstance(lons, Iterable):
-        lons = [lons]
-
-    for lon in lons:
+    for lon in np.atleast_1d(_angle_array("lons", lons)):
         # TODO @bjlittle: Explicit truncation is performed, perhaps offer format
         #                 control when required.
         value = int(lon)
@@ -220,14 +219,14 @@ def create_meridian_labels(lons: list[float] | float) -> list[str]:
 
 def create_meridians(
     *,
-    start: float | None = None,
-    stop: float | None = None,
-    step: float | None = None,
-    lat_step: float | None = None,
+    start: float | Quantity | None = None,
+    stop: float | Quantity | None = None,
+    step: float | Quantity | None = None,
+    lat_step: float | Quantity | None = None,
     n_samples: int | None = None,
     factor: float | None = None,
     closed_interval: bool | None = None,
-    central_meridian: float | None = None,
+    central_meridian: float | Quantity | None = None,
     globe: Globe | None = None,
     zlevel: int | None = None,
     zscale: float | None = None,
@@ -236,19 +235,23 @@ def create_meridians(
 
     Parameters
     ----------
-    start : float, optional
+    start : float or pint.Quantity, optional
         The first line of longitude (degrees). The graticule will include this
         meridian. Defaults to :data:`LONGITUDE_START`.
-    stop : float, optional
+        A ``pint`` quantity, from any registry, is read in degrees.
+    stop : float or pint.Quantity, optional
         The last line of longitude (degrees). The graticule will include this meridian
         when it is a multiple of ``step``. Also see ``closed_interval``. Defaults to
         :data:`LONGITUDE_STOP`.
-    step : float, optional
+        A ``pint`` quantity, from any registry, is read in degrees.
+    step : float or pint.Quantity, optional
         The delta (degrees) between neighbouring meridians. Defaults to
         :data:`LONGITUDE_STEP`.
-    lat_step : float, optional
+        A ``pint`` quantity, from any registry, is read in degrees.
+    lat_step : float or pint.Quantity, optional
         The delta (degrees) between neighbouring parallels. Sets the
         frequency of the labels. Defaults to :data:`LATITUDE_STEP`.
+        A ``pint`` quantity, from any registry, is read in degrees.
     n_samples : int, optional
         The number of points in a single line of longitude. Defaults to
         :data:`LONGITUDE_N_SAMPLES`.
@@ -260,9 +263,10 @@ def create_meridians(
         Longitude values will be in the half-closed interval [-180, 180). Otherwise,
         longitudes will be in the closed interval [-180, 180]. Defaults to
         :data:`GRATICULE_CLOSED_INTERVAL`.
-    central_meridian : float, optional
+    central_meridian : float or pint.Quantity, optional
         The central meridian of the longitude range. Defaults to
         :data:`geovista.common.CENTRAL_MERIDIAN`.
+        A ``pint`` quantity, from any registry, is read in degrees.
     globe : :class:`~geovista.globe.Globe`, optional
         The globe the lines are drawn on, which each records. Defaults to
         ``Globe()``.
@@ -285,6 +289,14 @@ def create_meridians(
     .. versionadded:: 0.3.0
 
     """
+    start, stop, step = (
+        _angle("start", start),
+        _angle("stop", stop),
+        _angle("step", step),
+    )
+    lat_step = _angle("lat_step", lat_step)
+    central_meridian = _angle("central_meridian", central_meridian)
+
     if start is None:
         start = LONGITUDE_START
 
@@ -389,15 +401,16 @@ def create_meridians(
 
 
 def create_parallel_labels(
-    lats: list[float] | float, *, poles_parallel: bool | None = None
+    lats: list[float] | float | Quantity, *, poles_parallel: bool | None = None
 ) -> list[str]:
     """Generate labels for the parallels.
 
     Parameters
     ----------
-    lats : list of float
+    lats : list of float or pint.Quantity
         The lines of latitude that require a label of their location north or
         south relative to the equator.
+        A ``pint`` quantity, from any registry, is read in degrees.
     poles_parallel : bool, optional
         Whether to generate a label for the north/south poles. Defaults to
         :data:`LATITUDE_POLES_PARALLEL`.
@@ -417,10 +430,7 @@ def create_parallel_labels(
     if poles_parallel is None:
         poles_parallel = LATITUDE_POLES_PARALLEL
 
-    if not isinstance(lats, Iterable):
-        lats = [lats]
-
-    for lat in lats:
+    for lat in np.atleast_1d(_angle_array("lats", lats)):
         # explicit truncation, perhaps offer format control when required
         value = int(lat)
         direction = LABEL_NORTH
@@ -440,10 +450,10 @@ def create_parallel_labels(
 
 def create_parallels(
     *,
-    start: float | None = None,
-    stop: float | None = None,
-    step: float | None = None,
-    lon_step: float | None = None,
+    start: float | Quantity | None = None,
+    stop: float | Quantity | None = None,
+    step: float | Quantity | None = None,
+    lon_step: float | Quantity | None = None,
     n_samples: int | None = None,
     factor: float | None = None,
     poles_parallel: bool | None = None,
@@ -456,20 +466,24 @@ def create_parallels(
 
     Parameters
     ----------
-    start : float, optional
+    start : float or pint.Quantity, optional
         The first line of latitude (degrees). The graticule will include this
         parallel. Also see ``poles_parallel``. Defaults to :data:`LATITUDE_START`.
-    stop : float, optional
+        A ``pint`` quantity, from any registry, is read in degrees.
+    stop : float or pint.Quantity, optional
         The last line of latitude (degrees). The graticule will include this parallel
         when it is a multiple of ``step``. Also see ``poles_parallel``. Defaults to
         :data:`LATITUDE_STOP`.
-    step : float, optional
+        A ``pint`` quantity, from any registry, is read in degrees.
+    step : float or pint.Quantity, optional
         The delta (degrees) between neighbouring parallels. Defaults to
         :data:`LATITUDE_STEP`.
-    lon_step : float, optional
+        A ``pint`` quantity, from any registry, is read in degrees.
+    lon_step : float or pint.Quantity, optional
         The delta (degrees) between neighbouring meridians. Sets the
         frequency of the labels. Defaults to
         :data:`LONGITUDE_STEP`.
+        A ``pint`` quantity, from any registry, is read in degrees.
     n_samples : int, optional
         The number of points in a single line of latitude. Defaults to
         :data:`LATITUDE_N_SAMPLES`.
@@ -505,6 +519,13 @@ def create_parallels(
     .. versionadded:: 0.3.0
 
     """
+    start, stop, step = (
+        _angle("start", start),
+        _angle("stop", stop),
+        _angle("step", step),
+    )
+    lon_step = _angle("lon_step", lon_step)
+
     if start is None:
         start = LATITUDE_START
 

@@ -73,6 +73,7 @@ from .themes import resolve_theme_name
 from .transform import (
     _apply_datum,
     _carry_levels,
+    _coordinates,
     _point_levels,
     _slice_seam,
     transform_mesh,
@@ -585,12 +586,12 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
     def add_graticule(  # noqa: PLR0913
         self,
         *,
-        lon_start: float | None = None,
-        lon_stop: float | None = None,
-        lon_step: float | None = None,
-        lat_start: float | None = None,
-        lat_stop: float | None = None,
-        lat_step: float | None = None,
+        lon_start: float | Quantity | None = None,
+        lon_stop: float | Quantity | None = None,
+        lon_step: float | Quantity | None = None,
+        lat_start: float | Quantity | None = None,
+        lat_stop: float | Quantity | None = None,
+        lat_step: float | Quantity | None = None,
         n_samples: int | tuple[int | None, int | None] | None = None,
         factor: float | None = None,
         poles_parallel: bool | None = None,
@@ -609,28 +610,34 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        lon_start : float, optional
+        lon_start : float or pint.Quantity, optional
             The first line of longitude (degrees). The graticule will include this
             meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
-        lon_stop : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        lon_stop : float or pint.Quantity, optional
             The last line of longitude (degrees). The graticule will include this
             meridian when it is a multiple of `lon_step`. Also see
             ``closed_interval`` in :func:`~geovista.gridlines.create_meridians`.
             Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
-        lon_step : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        lon_step : float or pint.Quantity, optional
             The delta (degrees) between neighbouring meridians. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
-        lat_start : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        lat_start : float or pint.Quantity, optional
             The first line of latitude (degrees). The graticule will include this
             parallel. Also see `poles_parallel`. Defaults to
             :data:`geovista.gridlines.LATITUDE_START`.
-        lat_stop : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        lat_stop : float or pint.Quantity, optional
             The last line of latitude (degrees). The graticule will include this
             parallel when it is a multiple of `lat_step`. Defaults to
             :data:`geovista.gridlines.LATITUDE_STOP`.
-        lat_step : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        lat_step : float or pint.Quantity, optional
             The delta (degrees) between neighbouring parallels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
+            A ``pint`` quantity, from any registry, is read in degrees.
         n_samples : int | tuple[int | None, int | None], optional
             The number of points in a single line of longitude and latitude.
             If a single integer is provided, both meridians and parallels will
@@ -976,10 +983,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
     def add_meridian(
         self,
-        lon: float,
+        lon: float | Quantity,
         /,
         *,
-        lat_step: float | None = None,
+        lat_step: float | Quantity | None = None,
         n_samples: int | None = None,
         factor: float | None = None,
         show_labels: bool | None = None,
@@ -993,12 +1000,14 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        lon : float
+        lon : float or pint.Quantity
             The constant line of longitude (degrees) to generate.
-        lat_step : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        lat_step : float or pint.Quantity, optional
             The delta (degrees) between neighbouring parallels. Sets the
             frequency of the labels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
+            A ``pint`` quantity, from any registry, is read in degrees.
         n_samples : int, optional
             The number of points in a single line of longitude. Defaults to
             :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
@@ -1050,10 +1059,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
     def add_meridians(
         self,
         *,
-        start: float | None = None,
-        stop: float | None = None,
-        step: float | None = None,
-        lat_step: float | None = None,
+        start: float | Quantity | None = None,
+        stop: float | Quantity | None = None,
+        step: float | Quantity | None = None,
+        lat_step: float | Quantity | None = None,
         n_samples: int | None = None,
         factor: float | None = None,
         show_labels: bool | None = None,
@@ -1067,21 +1076,25 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        start : float, optional
+        start : float or pint.Quantity, optional
             The first line of longitude (degrees). The graticule will include this
             meridian. Defaults to :data:`geovista.gridlines.LONGITUDE_START`.
-        stop : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        stop : float or pint.Quantity, optional
             The last line of longitude (degrees). The graticule will include this
             meridian when it is a multiple of `step`. Also see
             ``closed_interval`` in :func:`~geovista.gridlines.create_meridians`.
             Defaults to :data:`geovista.gridlines.LONGITUDE_STOP`.
-        step : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        step : float or pint.Quantity, optional
             The delta (degrees) between neighbouring meridians. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
-        lat_step : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        lat_step : float or pint.Quantity, optional
             The delta (degrees) between neighbouring parallels. Sets the
             frequency of the labels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
+            A ``pint`` quantity, from any registry, is read in degrees.
         n_samples : int, optional
             The number of points in a single line of longitude. Defaults to
             :data:`geovista.gridlines.LONGITUDE_N_SAMPLES`.
@@ -1181,10 +1194,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
     def add_parallel(
         self,
-        lat: float,
+        lat: float | Quantity,
         /,
         *,
-        lon_step: float | None = None,
+        lon_step: float | Quantity | None = None,
         n_samples: int | None = None,
         factor: float | None = None,
         poles_parallel: bool | None = None,
@@ -1199,12 +1212,14 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        lat : float
+        lat : float or pint.Quantity
             The constant line of latitude (degrees) to generate.
-        lon_step : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        lon_step : float or pint.Quantity, optional
             The delta (degrees) between neighbouring meridians. Sets the
             frequency of the labels. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
+            A ``pint`` quantity, from any registry, is read in degrees.
         n_samples : int, optional
             The number of points in a single line of latitude. Defaults to
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
@@ -1260,10 +1275,10 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
     def add_parallels(
         self,
         *,
-        start: float | None = None,
-        stop: float | None = None,
-        step: float | None = None,
-        lon_step: float | None = None,
+        start: float | Quantity | None = None,
+        stop: float | Quantity | None = None,
+        step: float | Quantity | None = None,
+        lon_step: float | Quantity | None = None,
         n_samples: int | None = None,
         factor: float | None = None,
         poles_parallel: bool | None = None,
@@ -1279,21 +1294,25 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        start : float, optional
+        start : float or pint.Quantity, optional
             The first line of latitude (degrees). The graticule will include this
             parallel. Also see `poles_parallel`. Defaults to
             :data:`geovista.gridlines.LATITUDE_START`.
-        stop : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        stop : float or pint.Quantity, optional
             The last line of latitude (degrees). The graticule will include this
             parallel when it is a multiple of `step`. Also see `poles_parallel`.
             Defaults to :data:`geovista.gridlines.LATITUDE_STOP`.
-        step : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        step : float or pint.Quantity, optional
             The delta (degrees) between neighbouring parallels. Defaults to
             :data:`geovista.gridlines.LATITUDE_STEP`.
-        lon_step : float, optional
+            A ``pint`` quantity, from any registry, is read in degrees.
+        lon_step : float or pint.Quantity, optional
             The delta (degrees) between neighbouring meridians. Sets the
             frequency of the labels. Defaults to
             :data:`geovista.gridlines.LONGITUDE_STEP`.
+            A ``pint`` quantity, from any registry, is read in degrees.
         n_samples : int, optional
             The number of points in a single line of latitude. Defaults to
             :data:`geovista.gridlines.LATITUDE_N_SAMPLES`.
@@ -1557,8 +1576,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
     def view_poi(
         self,
-        x: float | None = None,
-        y: float | None = None,
+        x: float | Quantity | None = None,
+        y: float | Quantity | None = None,
         *,
         crs: CRSLike | None = None,
     ) -> None:
@@ -1574,14 +1593,18 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        x : float, optional
+        x : float or pint.Quantity, optional
             The spatial x-value point, in canonical `crs` units, of the POI.
             Defaults to ``0`` if unspecified and `y` has been provided,
             otherwise ``None``.
-        y : float, optional
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `y` as a quantity too, unless it is left out.
+        y : float or pint.Quantity, optional
             The spatial y-value point, in canonical `crs` units, of the POI.
             Defaults to ``0`` if unspecified and `x` has been provided,
             otherwise ``None``.
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `x` as a quantity too, unless it is left out.
         crs : CRSLike, optional
             The Coordinate Reference System of the POI. May be anything accepted by
             :meth:`pyproj.crs.CRS.from_user_input`. Defaults to ``EPSG:4326`` i.e.,
@@ -1634,10 +1657,18 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             # at the very least x or y has been provided
             # default any unset to 0, which allows the API to support the
             # convenience "view_poi(x=30)" instead of "view_poi(x=30, y=0)"
-            if x is None:
-                x = 0
-            if y is None:
-                y = 0
+            if x is None or y is None:
+                # in the units of the other, if it has any, as 0 is 0 in any unit
+                given = y if x is None else x
+                zero: float | Quantity = 0 if given is None else 0 * given
+                if x is None:
+                    x = zero
+                if y is None:
+                    y = zero
+            x, y = (
+                float(np.asarray(value))
+                for value in _coordinates(x, y, crs, x_name="x", y_name="y")
+            )
 
         if use_mesh_poi:
             if self._poi is None:

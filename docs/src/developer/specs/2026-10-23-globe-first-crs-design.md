@@ -557,8 +557,9 @@ Every physical quantity that crosses the API boundary has a unit. In the foundat
 are the globe's radius (§4.1), the densification tolerance, a
 length or an angle (§4.2), and the angles of domain options, such
 as a cap's radius or a band's half-width (§4.3). Heights and
-depths join them in project 4 (§9). So do the coordinates a `Transform` factory takes,
-read in the units of the axes of their CRS (§8 item 13).
+depths join them in project 4 (§9). So do the coordinates and angles the public API
+takes: in the units of the axes of their CRS where a function takes one, as a `Transform`
+factory does, and in degrees where it takes none (§8 item 13).
 
 A function takes each such quantity in one of three forms:
 
