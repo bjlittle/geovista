@@ -536,3 +536,20 @@ released, since 0.6 is the first release that writes the globe and no retired fi
 - The globe-first CRS design: crs spec §2 decision 4, crs spec §2 decision 14,
   crs spec §3.4, crs spec §6 and crs spec §8 item 12.
 - {issue}`2753`, the refresh of the pantry's assets.
+
+(scene-spec-11)=
+## 11. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
+| 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
+| 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_to_mesh.py` |
+| 4 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_from_mesh.py` |
+| 5 | ✅ verified (2026-10-28, {pull}`2766`) | `tests/common/test_current_fields.py` |
+| 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize.py`, `tests/common/test_sanitize_legacy.py` |
+| 7 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize_legacy.py` |
+| 8 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_Globe.py` |
+| 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_GeoVistaAccessor.py` |

@@ -2225,12 +2225,10 @@ decision_anchor = citations.decision_anchor
 Decision = citations.Decision
 
 #: The specifications not yet in the ledger, each with the row of ledger spec §8
-#: that brings it in. Each of those rows shortens this, and the last empties it.
-UNLEDGERED = {
-    "2026-10-26-globe-heights-layers-design.md": 6,
-    "2026-10-27-globe-scene-design.md": 6,
-    "2026-10-28-heights-as-data-design.md": 6,
-}
+#: that brings it in. Each of those rows shortens this, and row 6 empties it.
+#: Stays a dict, not removed, since test_unledgered_names_specifications_still_waiting
+#: reads it unconditionally.
+UNLEDGERED: dict[str, int] = {}
 
 #: The roles a provenance carries.
 USER = re.compile(r"\{user\}`(?P<login>[^`]+)`")
@@ -2735,7 +2733,11 @@ def test_every_ledgered_specification_holds_its_ledger(spec, names, decided):
 
 
 def test_unledgered_names_specifications_still_waiting(specs):
-    """An exemption cannot outlive the row of ledger spec §8 that ends it."""
+    """An exemption cannot outlive the row of ledger spec §8 that ends it.
+
+    Ledger spec §2 decision 12: every existing specification is brought into the
+    ledger, which an empty ``UNLEDGERED`` delivers.
+    """
     names = {spec.name for spec in specs}
     rows = roadmap_rows(
         (SPECS / "2026-10-30-decision-ledger-design.md").read_text(encoding="utf-8")

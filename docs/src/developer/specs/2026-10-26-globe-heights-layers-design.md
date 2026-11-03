@@ -644,3 +644,18 @@ own. Row 2 of the parent's roadmap lands with row 5 here.
   relative offset parameters of each mapper:
   <https://vtk.org/doc/nightly/html/classvtkMapper.html>
 - `pint`: <https://github.com/hgrecco/pint>, and `pint-cf`: <https://github.com/pgamez/pint-cf>
+
+(globe-spec-11)=
+## 11. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ⏳ pending | rows 3 to 5 of §9 |
+| 2 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that this specification designs heights in physical units and the replacement of `zlevel` as row 2 of crs spec §10, and leaves volumes, plumes and region solids to §7. |
+| 3 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that row 1 of heights spec §9 ({pull}`2777`) takes heights and depths only as lengths, through `height=`, `depth=` and the `zs` of `to_structured_grid`, and converts no model level. |
+| 4 | 🗄️ retired (2026-10-27, {pull}`2757`) | replaced by §2 decision 7 |
+| 5 | ⏳ pending | row 5 of §9 |
+| 6 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that §3.2, §3.5 and §3.6 record each measurement with its method, environment, commit and date. |
+| 7 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/geoplotter/test_add_mesh.py`, `tests/geoplotter/test_GeoPlotterBase.py` |

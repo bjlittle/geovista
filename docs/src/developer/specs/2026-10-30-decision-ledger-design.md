@@ -490,7 +490,7 @@ Each row follows §3.4.
 | 9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 10 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 11 | ✅ verified (2026-10-31, {pull}`2792`) | `tests/test_verification_report.py` |
-| 12 | ⏳ pending |  |
+| 12 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/test_spec_conventions.py` |
 | 13 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 14 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
 | 15 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
