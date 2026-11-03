@@ -47,7 +47,7 @@ pixi run download                        # Fetch offline assets
 ```
 
 **`geovista` is the superset environment** — development, testing, docs and all; prefer `pixi run -e geovista ...`.
-⚠️ **A new pixi task gets a row in the task tables of its pages**: `docs/src/developer/packaging.rst` always, and `testing.rst` or `documentation.rst` for the workflow it serves.
+⚠️ **A new pixi task gets a row in the task tables of its pages**: `docs/src/developer/packaging.rst` always, and the page its feature maps to in `FEATURE_PAGES` of `tests/test_pixi_tasks.py`, which enforces both.
 
 **Use `--frozen` to reproduce CI.** Every CI job runs `pixi run --frozen`,
 which resolves strictly from `pixi.lock` — so `pixi run --frozen -e <env>`
