@@ -1044,7 +1044,8 @@ def to_cartesian(
     Returns
     -------
     :class:`~numpy.ndarray`
-        The ``xyz`` spherical cartesian points.
+        The ``xyz`` spherical cartesian points. A masked longitude or latitude is
+        read as NaN, so the point it gives is missing too.
 
     Notes
     -----
@@ -1056,9 +1057,10 @@ def to_cartesian(
 
     lons, lats = _lonlats(lons, lats)
 
+    # a masked coordinate is missing, so it is NaN rather than its masked value
     return _to_cartesian(
-        lons,
-        lats,
+        nan_mask(lons),
+        nan_mask(lats),
         radius=_resolve(globe).render_radius,
         zlevel=zlevel,
         zscale=zscale,

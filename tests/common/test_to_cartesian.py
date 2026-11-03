@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
+import pint
 import pytest
 
 from geovista.common import RADIUS, ZLEVEL_SCALE, to_cartesian
@@ -16,6 +17,9 @@ from geovista.globe import Globe
 
 #: A render radius of 1, and the Earth's radius.
 RADII = [1.0, 6378137.0]
+
+#: A registry of ``pint``'s own, apart from the one ``geovista.units`` reads with.
+UREG = pint.UnitRegistry()
 
 
 def _distance(pts: npt.ArrayLike, stacked: bool = True) -> float:  # noqa: FBT001
@@ -131,3 +135,30 @@ def test_radius_is_gone():
     """Test the radius keyword is refused."""
     with pytest.raises(TypeError, match="radius"):
         _ = to_cartesian([0], [0], radius=2.0)
+
+
+@pytest.mark.parametrize("stacked", [True, False])
+@pytest.mark.parametrize("units", [None, "degree", "radian"])
+@pytest.mark.parametrize("masked", ["lons", "lats", "both"])
+def test_a_masked_coordinate_is_read_as_nan(masked, units, stacked):
+    """Test a masked longitude or latitude gives a missing point, never a real one.
+
+    A plain masked array and a quantity of one are read alike.
+    """
+    lons = np.ma.array([30.0, 10.0], mask=[masked != "lats", False])
+    lats = np.ma.array([45.0, 20.0], mask=[masked != "lons", False])
+    expected = to_cartesian(lons.filled(np.nan), lats.filled(np.nan), stacked=stacked)
+    if units is not None:
+        scale = np.radians if units == "radian" else np.asanyarray
+        lons, lats = (
+            UREG.Quantity(scale(lons), units),
+            UREG.Quantity(scale(lats), units),
+        )
+
+    result = to_cartesian(lons, lats, stacked=stacked)
+    missing, present = (result[0], result[1]) if stacked else result.T
+
+    assert not np.ma.isMaskedArray(result)
+    assert np.isnan(missing).any()
+    assert np.isfinite(present).all()
+    np.testing.assert_allclose(result, expected, rtol=1e-12)
