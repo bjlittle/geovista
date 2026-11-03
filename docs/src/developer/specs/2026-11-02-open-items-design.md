@@ -460,6 +460,15 @@ Each carries the status grammar of §3.2.
     numbered section's direct children. A list after an unnumbered subheading would be cited
     and checked in source but have no anchor in the build. Nothing in the corpus does this
     yet.
+11. **❓ Open** (🔎 2026-11-03, {pull}`2826` · 🎯 row 6 of §8 · 🎫 {issue}`2839`) — **An item
+    owed by another specification's row.** §3.4 has an item owed by a row of its own
+    specification, so an item whose work belongs to another specification's row needs a row
+    of its own that lands with the other. Row 5 of §8 met this three times:
+    heights spec §8 item 3 waits on row 4 of globe spec §9, globe spec §8 item 9 belongs
+    with the vector work of crs spec §4.5, and globe spec §8 item 11 could equally be owed
+    by the cutting engine of crs spec §10. Whether the rule is right, or an item may be owed
+    by another specification's row, is open. A local row keeps the check simple, and costs a
+    row whose only work is to wait on another.
 
 (items-spec-8)=
 ## 8. Roadmap
@@ -471,7 +480,7 @@ Each carries the status grammar of §3.2.
 | 3 | The typing specification's items brought in, with the `candidate` rows they wait on | not started |
 | 4 | The crs specification's items brought in | not started |
 | 5 | The globe, scene, heights and ledger specifications' items brought in | not started |
-| 6 | Hardening: the open items found while landing row 1, §7 items 3 to 10 | not started |
+| 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 11 | not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
 after it. Rows 3 to 5 each raise the issues their specifications' items lack, and need

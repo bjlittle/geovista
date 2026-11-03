@@ -564,54 +564,66 @@ Out of scope, recorded so they are not forgotten:
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **Open** — **The vertical scale shown to the viewer.** Its form, a ruler beside the globe
-   or a scale bar on the map, and how it marks the vertical mapping: two scales for two
-   factors, and ticks that follow the mapping where it is not a straight line.
-   Row 6 of §9 owns it.
-2. **Open** — **A warped base layer.** The base layer is lowered by the sag of the surfaces
-   above it. When it is terrain, warped by its own heights, that lowering moves terrain
-   that may be visible where no surface covers it. Whether to lower it only beneath the
-   surfaces, or accept the offset and record it, needs measuring with the LFRic orography.
-3. **Open** — **Data surfaces at one height on different meshes.** They fall back on order
-   and depth bias, which leaves a sliver at the limb for a coarse mesh. Whether that is ever
-   seen in practice, and what to do if it is.
-4. **Open** — **The physical render radius.** §3.5 found layering the
-   same at the Earth's radius. Picking, clipping planes and interaction at that scale are
-   not yet measured, before the default could change.
-5. **Open** — **The ideal of the coastline measure.** It over-counts at the limb, so the
-   limb's visibility is understated. A tighter ideal would let the limb be tested too.
-6. **Deferred** (until users ask for it, {issue}`2728`) — **Heights given for each cell.**
-   They are refused (§4.3). Averaging them onto the vertices lowers
+1. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 6 of §9 · 🎫 {issue}`2828`) — **The
+   vertical scale shown to the viewer.** Its form, a ruler beside the globe or a scale bar
+   on the map, and how it marks the vertical mapping: two scales for two factors, and ticks
+   that follow the mapping where it is not a straight line. Row 6 of §9 owns it.
+2. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 4 of §9 · 🎫 {issue}`2829`) — **A warped
+   base layer.** The base layer is lowered by the sag of the surfaces above it. When it is
+   terrain, warped by its own heights, that lowering moves terrain that may be visible where
+   no surface covers it. Whether to lower it only beneath the surfaces, or accept the offset
+   and record it, needs measuring with the LFRic orography.
+3. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 4 of §9 · 🎫 {issue}`2830`) — **Data
+   surfaces at one height on different meshes.** They fall back on order and depth bias,
+   which leaves a sliver at the limb for a coarse mesh. Whether that is ever seen in
+   practice, and what to do if it is.
+4. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 10 of §9 · 🎫 {issue}`2831`) — **The
+   physical render radius.** §3.5 found layering the same at the Earth's radius. Picking,
+   clipping planes and interaction at that scale are not yet measured, before the default
+   could change.
+5. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 4 of §9 · 🎫 {issue}`2832`) — **The ideal
+   of the coastline measure.** It over-counts at the limb, so the limb's visibility is
+   understated. A tighter ideal would let the limb be tested too.
+6. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 7 of §9 · 🎫 {issue}`2728`) — **Heights
+   given for each cell.** They are refused (§4.3). Averaging them onto the vertices lowers
    every peak and raises every valley without a word. Drawing each cell flat at its own
    height is honest but stepped. Users will want cell-centred heights to work as they are,
    and the issue holds the options for that conversation.
-7. **Open** — **A biased surface at the limb.** A surface a place above another is drawn
-   256 units nearer the viewer. A bias of 256 on lines pulled the far side's coastlines
-   over the horizon (§3.5), and no surface was measured with one.
-   Whether a surface's far side shows past the horizon, and if it does, whether to shrink
-   the bias or apply it only where surfaces overlap, needs measuring before row 4 is
-   planned.
-8. **Open** — **Bands, and functions of height.** A vertical mapping in bands, such as a
-   stratosphere compressed further than the troposphere beneath it, or one that follows a
-   function of height. Either is recorded as a table of heights and the offsets they are
-   drawn at, since a mesh records its globe losslessly (crs spec §2 decision 14) and a
-   Python function cannot be saved in a file: a function is sampled into the table when
-   the globe is made. A mesh records the table as a second form, beside the two factors,
-   which are not retired. Any form keeps the three rules of §4.1. A mapping that is not a
-   straight line distorts how thick a layer and how steep a slope look, so the vertical
-   scale's ticks must follow it (item 1).
-9. **Open** — **Vectors under the vertical mapping.** An arrow is drawn against a
-   stretched vertical, so to stay tangent to an exaggerated surface its vertical component
-   scales by the slope of the mapping at its height: in the first form, the factor above or
-   below sea level. The 3-D winds of §3.6 stretch theirs by 1,500 by hand. Whether
-   `geovista` applies the slope, and how a user asks for more to make a weak vertical wind
-   legible, belongs with the vector work of crs spec §4.5.
-10. **Deferred** (until users ask for it, {issue}`2782`) — **Heights against another
-    vertical datum.** A height above the ellipsoid is refused (§4.3). Read as a height
-    above mean sea level, it would be off by the geoid's undulation, up to 106 m. PROJ
-    converts it with a geoid grid, but without the grid it quietly applies no
-    correction. The issue holds the measurements and the options, among them refusing
-    when the grid is missing and fetching the grid through `geovista`'s cache.
+7. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 4 of §9 · 🎫 {issue}`2833`) — **A biased
+   surface at the limb.** A surface a place above another is drawn 256 units nearer the
+   viewer. A bias of 256 on lines pulled the far side's coastlines over the horizon (§3.5),
+   and no surface was measured with one. Whether a surface's far side shows past the
+   horizon, and if it does, whether to shrink the bias or apply it only where surfaces
+   overlap, needs measuring before row 4 is planned.
+8. **❓ Open** (🔎 2026-10-27, {pull}`2757` · 🎯 row 9 of §9 · 🎫 {issue}`2834`) — **Bands, and
+   functions of height.** A vertical mapping in bands, such as a stratosphere compressed
+   further than the troposphere beneath it, or one that follows a function of height. Either
+   is recorded as a table of heights and the offsets they are drawn at, since a mesh records
+   its globe losslessly (crs spec §2 decision 14) and a Python function cannot be saved in a
+   file: a function is sampled into the table when the globe is made. A mesh records the
+   table as a second form, beside the two factors, which are not retired. Any form keeps the
+   three rules of §4.1. A mapping that is not a straight line distorts how thick a layer and
+   how steep a slope look, so the vertical scale's ticks must follow it (item 1).
+9. **❓ Open** (🔎 2026-10-27, {pull}`2757` · 🎯 row 5 of §9 · 🎫 {issue}`2835`) — **Vectors
+   under the vertical mapping.** An arrow is drawn against a stretched vertical, so to stay
+   tangent to an exaggerated surface its vertical component scales by the slope of the
+   mapping at its height: in the first form, the factor above or below sea level. The 3-D
+   winds of §3.6 stretch theirs by 1,500 by hand. Whether `geovista` applies the slope, and
+   how a user asks for more to make a weak vertical wind legible, belongs with the vector
+   work of crs spec §4.5.
+10. **❓ Open** (🔎 2026-10-30, {pull}`2777` · 🎯 row 8 of §9 · 🎫 {issue}`2782`) — **Heights
+    against another vertical datum.** A height above the ellipsoid is refused (§4.3). Read
+    as a height above mean sea level, it would be off by the geoid's undulation, up to
+    106 m. PROJ converts it with a geoid grid, but without the grid it quietly applies no
+    correction. The issue holds the measurements and the options, among them refusing when
+    the grid is missing and fetching the grid through `geovista`'s cache.
+11. **❓ Open** (🔎 2026-10-30, {pull}`2777` · 🎯 row 10 of §9 · 🎫 {issue}`2779`) — **`remesh`
+    at the Earth's render radius.** At a render radius of the Earth's radius, `remesh`
+    misses a cut, or crashes inside `vtkIntersectionPolyDataFilter`, where the same mesh at
+    a render radius of 1 cuts cleanly. It happens without heights, and heights, which move
+    points off one radius, make more cuts miss. Heights spec §6 asks every heights test to
+    hold at both radii, while the tests of a cut at the seam run at a render radius of 1
+    alone. Found in the review of {pull}`2777`, it belongs with item 4.
 
 (globe-spec-9)=
 ## 9. Roadmap
@@ -624,6 +636,10 @@ Each carries the status grammar of docs spec §3.6.
 | 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, the lift, and the measures of §3.5 as tests | not started |
 | 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | not started |
 | 6 | A vertical scale for the viewer | candidate: a scene with heights that a scientist shows |
+| 7 | Heights given for each cell | candidate: a user asks for it, which no check can observe |
+| 8 | Heights against another vertical datum | candidate: a user asks for it, which no check can observe |
+| 9 | A vertical mapping in bands, or as a function of height | candidate: a user asks for it, which no check can observe |
+| 10 | The render radius at the Earth's radius: picking, clipping planes and interaction measured, with `remesh` at that radius ({issue}`2779`) | not started |
 
 Statuses follow docs spec §3.6. Each row that changes the public API updates the README's
 examples in the same pull request ({issue}`2756`). Rows 1 to 5 come in order, and each

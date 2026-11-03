@@ -2867,10 +2867,6 @@ row_anchor = citations.row_anchor
 UNITEMED = {
     "2026-10-06-type-coverage-design.md": 3,
     "2026-10-23-globe-first-crs-design.md": 4,
-    "2026-10-26-globe-heights-layers-design.md": 5,
-    "2026-10-27-globe-scene-design.md": 5,
-    "2026-10-28-heights-as-data-design.md": 5,
-    "2026-10-30-decision-ledger-design.md": 5,
 }
 
 #: Where an item was found, the row that owes it, and the issue that tracks it.

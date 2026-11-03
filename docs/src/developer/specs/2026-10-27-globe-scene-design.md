@@ -509,10 +509,11 @@ Out of scope:
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **Open** — **When retired fields stop being read.** The release after which
-   `geovista` refuses a retired field rather than translating it, and what refusing it
-   looks like, to settle once row 5 of globe spec §9 has added `gvZScale` and `gvZLevel` to
-   the table of §4.5 ({issue}`2758`).
+1. **❓ Open** (🔎 2026-10-27, {pull}`2757` · 🎯 row 3 of §9 · 🎫 {issue}`2758`) — **When
+   retired fields stop being read.** The release after which `geovista` refuses a retired
+   field rather than translating it, and what refusing it looks like, to settle once
+   row 5 of globe spec §9 has added `gvZScale` and `gvZLevel` to the table of §4.5
+   ({issue}`2758`).
 
 (scene-spec-9)=
 ## 9. Roadmap
@@ -521,6 +522,7 @@ Each carries the status grammar of docs spec §3.6.
 |---|---|---|
 | 1 | The globe and its record: `geovista.Globe` with its radius as a quantity, the four fields, `Globe.from_mesh` and `Globe.to_mesh`, meshes that record no globe, the `mesh.gv` namespace with `globe`, `crs` and its equality, the table of retired fields, `sanitize_legacy` and `sanitize(legacy=...)`, and the round trip of crs spec §6 | ✅ landed (2026-10-28, {pull}`2761`) |
 | 2 | Every radius becomes a globe: `globe=` in place of `radius=` on the 34 functions, `GeoPlotter(globe=...)` and `GeoPlotter.globe`, `combine` refusing meshes described differently, only current fields in every mesh returned or drawn, and the gallery, tests and documentation moved to `globe=` | ✅ landed (2026-10-28, {pull}`2766`) |
+| 3 | The release after which a retired field is refused, once row 5 of globe spec §9 adds `gvZScale` and `gvZLevel` | not started |
 
 Statuses follow docs spec §3.6. Row 1 adds to the API and breaks nothing. Row 2 is
 breaking, and carries a `breaking` fragment beside its own. Row 2 is planned once row 1

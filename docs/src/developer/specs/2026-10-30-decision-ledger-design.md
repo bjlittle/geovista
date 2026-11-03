@@ -434,12 +434,14 @@ an open item other than `landed`, which §7 holds open.
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **Open** — **The other states have no emoji.** A roadmap row that has landed carries ✅,
-   and with this specification so do the states of a decision and of its verification. A
-   row `in progress`, `not started` or `candidate`, and an open item, carry none. Giving
-   them emojis would make every status in the collection read alike, but it changes the
+1. **❓ Open** (🔎 2026-10-30, {pull}`2785` · 🎯 row 7 of §8 · 🎫 {issue}`2837`) — **The other
+   states have no emoji.** A roadmap row that has landed carries ✅, and with this
+   specification so do the states of a decision and of its verification. A row
+   `in progress`, `not started` or `candidate`, and an open item, carry none. Giving them
+   emojis would make every status in the collection read alike, but it changes the
    vocabulary of docs spec §3.6 and every specification that uses it, so it is a change of
-   its own.
+   its own. Items spec §2 decision 9 has since given an open item's states theirs, so the
+   item is narrowed to a roadmap row's states.
 
 (ledger-spec-8)=
 ## 8. Roadmap
@@ -452,6 +454,7 @@ Each carries the status grammar of docs spec §3.6.
 | 4 | The typing, zlevel and checks specifications brought into the ledger | ✅ landed (2026-11-01, {pull}`2796`) |
 | 5 | The crs specification brought into the ledger | ✅ landed (2026-11-02, {pull}`2799`) |
 | 6 | The globe, scene and heights specifications brought into the ledger | not started |
+| 7 | Emojis for a roadmap row's states | not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 6 each need row 1. Row 1 brings in the docs and
 citation specifications itself, as it retires a decision of the citation specification and

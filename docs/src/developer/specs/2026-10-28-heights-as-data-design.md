@@ -393,18 +393,27 @@ Out of scope:
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **Open** — **A scene whose globe can be replaced.** Globe spec §4.1 has a scene rebuild
-   every position from its layers' heights when its vertical mapping changes. Row 3 fixes a
-   scene's globe when the scene is made (§2 decision 7), so a new exaggeration means a new
-   plotter ({issue}`2769`).
-2. **Open** — **Heights from a raster band.** `Transform.from_tiff` builds its points from
-   the file, and `extract` may drop some of them, so an array of heights cannot be matched
-   to them. A digital elevation model is a GeoTIFF, and one of its bands could be read as
-   the heights of the points ({issue}`2770`).
-3. **Open** — **A surface below sea level, under the base layer.** The base layer is opaque
-   at sea level, so an ocean floor drawn at its depth cannot be seen from outside the
-   globe. Until row 4, a user drops the base layer or gives it an opacity.
-   Row 4 of globe spec §9 owns it, with the base layer's lowering (globe spec §4.5).
+1. **❓ Open** (🔎 2026-10-29, {pull}`2771` · 🎯 row 3 of §9 · 🎫 {issue}`2769`) — **A scene
+   whose globe can be replaced.** Globe spec §4.1 has a scene rebuild every position from
+   its layers' heights when its vertical mapping changes. Row 3 fixes a scene's globe when
+   the scene is made (§2 decision 7), so a new exaggeration means a new plotter
+   ({issue}`2769`).
+2. **❓ Open** (🔎 2026-10-29, {pull}`2771` · 🎯 row 4 of §9 · 🎫 {issue}`2770`) — **Heights
+   from a raster band.** `Transform.from_tiff` builds its points from the file, and
+   `extract` may drop some of them, so an array of heights cannot be matched to them. A
+   digital elevation model is a GeoTIFF, and one of its bands could be read as the heights
+   of the points ({issue}`2770`).
+3. **❓ Open** (🔎 2026-10-29, {pull}`2771` · 🎯 row 5 of §9 · 🎫 {issue}`2836`) — **A surface
+   below sea level, under the base layer.** The base layer is opaque at sea level, so an
+   ocean floor drawn at its depth cannot be seen from outside the globe. Until row 4, a user
+   drops the base layer or gives it an opacity. Row 4 of globe spec §9 owns it, with the
+   base layer's lowering (globe spec §4.5).
+4. **❓ Open** (🔎 2026-11-03, {pull}`2826` · 🎯 row 2 of §9 · 🎫 {issue}`2838`) — **Heights
+   read back without their unit.** `mesh.gv.height` and `mesh.gv.depth` return plain float64
+   arrays in metres, while scene spec §2 decision 8 makes a public value with a unit a
+   `pint` quantity, and crs spec §4.9 counts heights and depths among them. Either they
+   return quantities, or this specification records an exception for arrays read back, such
+   as one that keeps `pint` unloaded. It is settled before 0.6 releases the API.
 
 (heights-spec-9)=
 ## 9. Roadmap
@@ -413,6 +422,9 @@ Each carries the status grammar of docs spec §3.6.
 |---|---|---|
 | 1 | Heights on a mesh: `gvHeight`, `height=`, `depth=` and `vertical_units=` on the bridge, `to_structured_grid` reading its `zs` as heights, positions from heights on the globe and on a map through the bridge, `resize` and `transform_mesh`, `mesh.gv.height` and `mesh.gv.depth`, missing heights, heights through the filters and `combine`, and the refusals of §4.4 | ✅ landed (2026-10-30, {pull}`2777`) |
 | 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | not started |
+| 3 | A scene whose globe can be replaced, rebuilding every layer from its heights | not started |
+| 4 | Heights from a raster band in `Transform.from_tiff`, before row 5 of globe spec §9 | not started |
+| 5 | A surface below sea level seen past the base layer, landing with row 4 of globe spec §9 | not started |
 
 Statuses follow docs spec §3.6. Row 2 is planned once row 1 has landed. Until it lands, a
 scene scales a mesh with heights that records another globe by the ratio of render radii,
