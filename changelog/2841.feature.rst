@@ -1,0 +1,5 @@
+The builders of :class:`geovista.bridge.Transform` and
+:meth:`geovista.geoplotter.GeoPlotterBase.add_points` take ``xs`` and ``ys`` as
+``pint`` quantities from any registry, and read them in the units of the axes of
+their ``crs``, as an angle for a geographic CRS and a length for a projected one.
+Give both as quantities, or neither. (:user:`claude`)

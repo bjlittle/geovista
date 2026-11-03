@@ -47,10 +47,11 @@ from .globe import (
     _refuse_zlevel,
     _resolve,
 )
-from .transform import transform_points
+from .transform import _angles, transform_points
+from .units import _Quantity, to_degrees, to_metres
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
 
     import numpy as np
     from numpy.typing import ArrayLike
@@ -98,6 +99,159 @@ NAME_VECTORS: str = "vector_data"
 
 RIO_SIEVE_SIZE: int = 800
 """The default size of the :func:`rasterio.features.sieve` filter."""
+
+
+def _reads(read: Callable[[Quantity], object], value: Quantity) -> bool:
+    """Decide whether a quantity is of the kind a reader of `geovista.units` reads.
+
+    Parameters
+    ----------
+    read : callable
+        :func:`~geovista.units.to_degrees` or :func:`~geovista.units.to_metres`.
+    value : pint.Quantity
+        The quantity.
+
+    Returns
+    -------
+    bool
+        Whether `read` converts `value`, rather than refusing it.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    try:
+        read(value)
+    except ValueError:
+        return False
+    return True
+
+
+def _in_axis_units(name: str, value: Quantity, crs: pyproj.CRS) -> ArrayLike:
+    """Convert a quantity to the units pyproj takes for the horizontal axes of a CRS.
+
+    Parameters
+    ----------
+    name : str
+        The name of the argument `value` was given as, to name it in a message.
+    value : pint.Quantity
+        The x-values or y-values of the points, from any ``pint`` registry.
+    crs : CRS
+        The CRS of the points.
+
+    Returns
+    -------
+    ArrayLike
+        The values in the units :mod:`pyproj` takes for the axes of the `crs`,
+        masked where the magnitude of `value` is. Those are the units the axes are
+        declared in, apart from radians, which :mod:`pyproj` takes in degrees.
+
+    Raises
+    ------
+    ValueError
+        If `value` is a length for a CRS whose axes are angles, or an angle for
+        a CRS whose axes are lengths, or its units cannot be read.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # the horizontal axes of a crs share one unit, so the first names it,
+    # whichever of longitude and latitude it is
+    axis = crs.axis_info[0]
+    unit = axis.unit_name
+
+    if crs.is_geographic:
+        read, other = to_degrees, to_metres
+        # the degrees in a unit of the axis as pyproj takes it, which is 1 for an
+        # axis declared in radians, as pyproj takes those in degrees
+        _, east, north = _angles(crs)
+        scale = 1.0 / (east if name == "xs" else north)
+        emsg = (
+            f"{name!r} is a length, but 'crs' measures its axes in {unit!r}. For "
+            "eastings and northings, pass the projected CRS they are in."
+        )
+    else:
+        read, other = to_metres, to_degrees
+        # a metre in the units of the axes
+        scale = 1.0 / axis.unit_conversion_factor
+        emsg = (
+            f"{name!r} is an angle, but 'crs' measures its axes in {unit!r}. For "
+            "longitudes and latitudes, pass crs=geovista.crs.WGS84, or the "
+            "geographic CRS of 'crs', crs.geodetic_crs."
+        )
+
+    try:
+        converted = read(value)
+    except ValueError as err:
+        if not _reads(other, value):
+            raise
+        raise ValueError(emsg) from err
+
+    result = np.multiply(converted, scale)
+
+    # a masked point has no position, which the conversion leaves as NaN, so
+    # its mask is given back
+    mask = np.ma.getmask(value.magnitude)
+    return result if mask is np.ma.nomask else np.ma.masked_array(result, mask=mask)
+
+
+def _coordinates(
+    xs: ArrayLike | Quantity, ys: ArrayLike | Quantity, crs: CRSLike | None
+) -> tuple[ArrayLike, ArrayLike]:
+    """Read the x-values and y-values of points in the units of their CRS.
+
+    A plain number is in those units already, and is returned as it is given.
+    A ``pint`` quantity is converted to them (crs spec §2 decision 13), but
+    only both of `xs` and `ys` or neither may be one, as a plain number beside
+    a quantity is more likely a mistake than a number in the units of the CRS.
+
+    Parameters
+    ----------
+    xs : ArrayLike or pint.Quantity
+        The x-values of the points.
+    ys : ArrayLike or pint.Quantity
+        The y-values of the points.
+    crs : CRSLike, optional
+        The CRS of the points. Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
+
+    Returns
+    -------
+    tuple of ArrayLike
+        The x-values and the y-values, in the units of the axes of the `crs`.
+
+    Raises
+    ------
+    ValueError
+        If only one of `xs` and `ys` is a quantity, or a quantity is not of the
+        kind the axes of the `crs` measure, or its units cannot be read.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    given = {"xs": isinstance(xs, _Quantity), "ys": isinstance(ys, _Quantity)}
+
+    if not any(given.values()):
+        return cast("ArrayLike", xs), cast("ArrayLike", ys)
+
+    if not all(given.values()):
+        alone = "xs" if given["xs"] else "ys"
+        emsg = (
+            "Give 'xs' and 'ys' both as pint quantities, or neither, got "
+            f"{alone!r} alone."
+        )
+        raise ValueError(emsg)
+
+    crs = pyproj.CRS.from_user_input(WGS84 if crs is None else crs)
+
+    return (
+        _in_axis_units("xs", cast("Quantity", xs), crs),
+        _in_axis_units("ys", cast("Quantity", ys), crs),
+    )
 
 
 class Transform:  # numpydoc ignore=PR01
@@ -545,8 +699,8 @@ class Transform:  # numpydoc ignore=PR01
     @classmethod
     def from_1d(
         cls,
-        xs: ArrayLike,
-        ys: ArrayLike,
+        xs: ArrayLike | Quantity,
+        ys: ArrayLike | Quantity,
         /,
         *,
         data: ArrayLike | None = None,
@@ -575,16 +729,20 @@ class Transform:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        xs : ArrayLike
+        xs : ArrayLike or pint.Quantity
             A 1D array of x-values, in canonical `crs` units, defining the
             contiguous face x-value boundaries of the mesh. Creating a mesh
             with ``N``-faces in the `crs` x-axis requires a ``(N+1,)`` array.
             Alternatively, a ``(N, 2)`` contiguous bounds array may be provided.
-        ys : ArrayLike
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `ys` as a quantity too.
+        ys : ArrayLike or pint.Quantity
             A 1D array of y-values, in canonical `crs` units, defining the
             contiguous face y-value boundaries of the mesh. Creating a mesh
             with ``M``-faces in the `crs` y-axis requires a ``(M+1,)`` array.
             Alternatively, a ``(M, 2)`` contiguous bounds array may be provided.
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `xs` as a quantity too.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh. The size of the data
             must match either the shape of the fully formed mesh points
@@ -642,7 +800,7 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        xs, ys = cls._as_contiguous_1d(xs, ys)
+        xs, ys = cls._as_contiguous_1d(*_coordinates(xs, ys, crs))
         mxs, mys = np.meshgrid(xs, ys, indexing="xy")
         return Transform.from_2d(
             mxs,
@@ -663,8 +821,8 @@ class Transform:  # numpydoc ignore=PR01
     @classmethod
     def from_2d(
         cls,
-        xs: ArrayLike,
-        ys: ArrayLike,
+        xs: ArrayLike | Quantity,
+        ys: ArrayLike | Quantity,
         /,
         *,
         data: ArrayLike | None = None,
@@ -695,16 +853,20 @@ class Transform:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        xs : ArrayLike
+        xs : ArrayLike or pint.Quantity
             A 2D array of x-values, in canonical `crs` units, defining the
             face x-value boundaries of the mesh. Creating a ``(M, N)`` mesh
             requires a ``(M+1, N+1)`` x-axis array. Alternatively, a ``(M, N, 4)``
             array may be provided.
-        ys : ArrayLike
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `ys` as a quantity too.
+        ys : ArrayLike or pint.Quantity
             A 2D array of y-values, in canonical `crs` units, defining the
             face y-value boundaries of the mesh. Creating a ``(M, N)`` mesh
             requires a ``(M+1, N+1)`` y-axis array. Alternatively, a ``(M, N, 4)``
             array may be provided.
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `xs` as a quantity too.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh. The size of the data
             must match either the shape of the fully formed mesh points
@@ -762,7 +924,7 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        xs, ys = np.asanyarray(xs), np.asanyarray(ys)
+        xs, ys = map(np.asanyarray, _coordinates(xs, ys, crs))
         cls._verify_2d(xs, ys)
         shape, ndim = xs.shape, xs.ndim
 
@@ -803,8 +965,8 @@ class Transform:  # numpydoc ignore=PR01
     @classmethod
     def from_points(
         cls,
-        xs: ArrayLike,
-        ys: ArrayLike,
+        xs: ArrayLike | Quantity,
+        ys: ArrayLike | Quantity,
         /,
         *,
         data: ArrayLike | None = None,
@@ -828,12 +990,16 @@ class Transform:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        xs : ArrayLike
+        xs : ArrayLike or pint.Quantity
             A 1D, 2D or 3D array of point-cloud x-values, in canonical `crs` units.
             Must have the same shape as the `ys`.
-        ys : ArrayLike
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `ys` as a quantity too.
+        ys : ArrayLike or pint.Quantity
             A 1D, 2D or 3D array of point-cloud y-values, in canonical `crs` units.
             Must have the same shape as the `xs`.
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `xs` as a quantity too.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh points defined by
             `xs` and `ys`.
@@ -902,7 +1068,7 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.2.0
 
         """
-        xs, ys = np.atleast_1d(xs), np.atleast_1d(ys)
+        xs, ys = map(np.atleast_1d, _coordinates(xs, ys, crs))
 
         if clean is None:
             clean = BRIDGE_CLEAN
@@ -1306,8 +1472,8 @@ class Transform:  # numpydoc ignore=PR01
     @classmethod
     def from_unstructured(
         cls,
-        xs: ArrayLike,
-        ys: ArrayLike,
+        xs: ArrayLike | Quantity,
+        ys: ArrayLike | Quantity,
         /,
         *,
         connectivity: ArrayLike | Shape | None = None,
@@ -1336,12 +1502,16 @@ class Transform:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        xs : ArrayLike
+        xs : ArrayLike or pint.Quantity
             A 1D array of x-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
-        ys : ArrayLike
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `ys` as a quantity too.
+        ys : ArrayLike or pint.Quantity
             A 1D array of y-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `xs` as a quantity too.
         connectivity : ArrayLike or Shape, optional
             Defines the topology of each face in the unstructured mesh in terms
             of indices into the provided `xs` and `ys` mesh geometry
@@ -1425,7 +1595,7 @@ class Transform:  # numpydoc ignore=PR01
         if clean is None:
             clean = BRIDGE_CLEAN
 
-        xs, ys = np.asanyarray(xs), np.asanyarray(ys)
+        xs, ys = map(np.asanyarray, _coordinates(xs, ys, crs))
         shape = xs.shape
 
         if ys.shape != shape:
@@ -1613,8 +1783,8 @@ class Transform:  # numpydoc ignore=PR01
     @classmethod
     def to_structured_grid(
         cls,
-        xs: ArrayLike,
-        ys: ArrayLike,
+        xs: ArrayLike | Quantity,
+        ys: ArrayLike | Quantity,
         zs: ArrayLike,
         /,
         *,
@@ -1632,12 +1802,16 @@ class Transform:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        xs : ArrayLike
+        xs : ArrayLike or pint.Quantity
             The 1D array of x-values, in canonical `crs` units, defining the
             x-axis cell bounds of the grid.
-        ys : ArrayLike
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `ys` as a quantity too.
+        ys : ArrayLike or pint.Quantity
             The 1D array of y-values, in canonical `crs` units, defining the
             y-axis cell bounds of the grid.
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `xs` as a quantity too.
         zs : ArrayLike or pint.Quantity
             The 1D array of heights above mean sea level defining the bounds of
             the layers of the grid, each finite, spaced as given. A plain number
@@ -1672,6 +1846,8 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.6.0
 
         """
+        xs, ys = _coordinates(xs, ys, crs)
+
         # the levels are heights, each a coordinate, so none may be missing
         heights = _heights(zs, None, vertical_units, crs=crs)
         xs, ys, zs = np.atleast_1d(xs), np.atleast_1d(ys), np.atleast_1d(heights)
@@ -1745,8 +1921,8 @@ class Transform:  # numpydoc ignore=PR01
 
     def __init__(
         self,
-        xs: ArrayLike,
-        ys: ArrayLike,
+        xs: ArrayLike | Quantity,
+        ys: ArrayLike | Quantity,
         /,
         *,
         connectivity: ArrayLike | Shape | None = None,
@@ -1767,12 +1943,16 @@ class Transform:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        xs : ArrayLike
+        xs : ArrayLike or pint.Quantity
             A 1D array of x-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
-        ys : ArrayLike
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `ys` as a quantity too.
+        ys : ArrayLike or pint.Quantity
             A 1D array of y-values, in canonical `crs` units, defining the
             vertices of each face in the mesh.
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `xs` as a quantity too.
         connectivity : ArrayLike or Shape, optional
             Defines the topology of each face in the unstructured mesh in terms
             of indices into the provided `xs` and `ys` mesh geometry
@@ -1830,7 +2010,7 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        xs, ys = np.asanyarray(xs), np.asanyarray(ys)
+        xs, ys = map(np.asanyarray, _coordinates(xs, ys, crs))
         globe = _resolve(globe)
 
         if connectivity is None:

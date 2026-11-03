@@ -557,7 +557,8 @@ Every physical quantity that crosses the API boundary has a unit. In the foundat
 are the globe's radius (§4.1), the densification tolerance, a
 length or an angle (§4.2), and the angles of domain options, such
 as a cap's radius or a band's half-width (§4.3). Heights and
-depths join them in project 4 (§9).
+depths join them in project 4 (§9). So do the coordinates a `Transform` factory takes,
+read in the units of the axes of their CRS (§8 item 13).
 
 A function takes each such quantity in one of three forms:
 
@@ -725,11 +726,15 @@ Each carries the status grammar of docs spec §3.6.
     `geovista` returns or draws carries only current fields (scene spec §4.4 and
     scene spec §4.5). `bjlittle/geovista-data` reissues the pantry's assets in the new form
     ({issue}`2753`), which no longer has to land with row 2 of globe spec §9.
-13. **Open** ({issue}`2802`) — **Coordinates as quantities.** §4.9 names the globe's
-    radius, the densification tolerance and the domain angles, but not the lons and lats a
-    `Transform` factory takes, which refuse a `pint` quantity today. Whether they join the
-    quantities of §4.9, read through `geovista.units.to_degrees`, is settled before
-    row 5 of §10 lands, which §2 decision 13 also waits on.
+13. **Resolved** (2026-11-03, {pull}`2841`) — **Coordinates as quantities.** §4.9 names
+    the globe's radius, the densification tolerance and the domain angles, but not the lons
+    and lats a `Transform` factory takes, which refuse a `pint` quantity today. Whether they
+    join the quantities of §4.9, read through `geovista.units.to_degrees`, is settled before
+    row 5 of §10 lands, which §2 decision 13 also waits on. They join them ({issue}`2802`).
+    A factory reads `xs` and `ys` given as quantities in the units of its CRS's axes, as an
+    angle for a geographic CRS and a length for a projected one. It refuses a quantity of
+    the other kind, and one given beside plain numbers. The other public functions that
+    take coordinates follow in {issue}`2840`.
 
 (crs-spec-9)=
 ## 9. Scope
