@@ -489,7 +489,7 @@ Each carries the status grammar of §3.2.
 | 2 | The report's roadmap and open items (§3.9) | not started |
 | 3 | The typing specification's items brought in, with the `candidate` rows they wait on | not started |
 | 4 | The crs specification's items brought in | not started |
-| 5 | The globe, scene, heights and ledger specifications' items brought in | not started |
+| 5 | The globe, scene, heights and ledger specifications' items brought in | ✅ landed (2026-11-03, {pull}`2826`) |
 | 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
