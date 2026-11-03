@@ -17,6 +17,7 @@ spec`` that no document declares.
 from __future__ import annotations
 
 import importlib.util
+import os
 from pathlib import Path
 import sys
 from typing import TYPE_CHECKING
@@ -880,6 +881,80 @@ def test_a_changed_text_file_that_is_not_utf8_is_passed_over(guard, repo, capsys
     git(repo, "switch", "--quiet", "--create", "more")
     notes.write_bytes("na\N{LATIN SMALL LETTER I WITH DIAERESIS}ve\n".encode("latin-1"))
     git(repo, "commit", "--quiet", "--all", "--message", "notes again")
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 0, out
+
+
+def test_a_changed_file_with_a_non_ascii_name_is_judged_by_its_lines(
+    guard, repo, capsys
+):
+    """A diff's header quotes such a name, unless git is told not to (#2820).
+
+    The line the pull request wrote cites the new numbering, and is not stale;
+    the line it left behind cites the old, and is reported and fixed, as in a
+    file with a plain name.
+    """
+    acute = "\N{LATIN SMALL LETTER E WITH ACUTE}"
+    name = f"src/r{acute}sum{acute}.py"
+    commit(repo, {name: f"# see demo spec {SECTION}2\n# nothing cited\n"}, "cite")
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+            name: f"# see demo spec {SECTION}2\n# see demo spec {SECTION}3\n",
+        },
+        "insert",
+    )
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1, out
+    assert f'{name}:1: demo spec {SECTION}2 was "Design", which is now' in out
+    assert f"{name}:2:" not in out
+
+    code, out = run(guard, repo, "--fix", capsys=capsys)
+
+    assert code == 0, out
+    assert (repo / name).read_text(encoding="utf-8") == (
+        f"# see demo spec {SECTION}3\n# see demo spec {SECTION}3\n"
+    )
+
+
+@pytest.mark.parametrize("added", [True, False], ids=["committed", "untracked"])
+def test_a_changed_file_whose_name_is_not_utf8_is_read_by_that_name(
+    guard, repo, capsys, added
+):
+    """A name is bytes, which git prints as they are, under ``-z`` (#2820).
+
+    The corpus keys such a file by the name Python gives it, its stray byte
+    escaped, so the guard reads git's names the same way: the file's changed
+    line cites the new numbering, and is not stale.
+    """
+    name = os.fsdecode(b"src/na\xefve.py")
+    if added:
+        commit(repo, {name: f"# see demo spec {SECTION}2\n"}, "cite")
+        git(repo, "switch", "--quiet", "main")
+        git(repo, "merge", "--quiet", "--ff-only", "work")
+        git(repo, "switch", "--quiet", "--create", "more")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "insert",
+    )
+    (repo / name).write_text(f"# see demo spec {SECTION}3\n", encoding="utf-8")
+    if added:
+        git(repo, "commit", "--quiet", "--all", "--message", "cite again")
 
     code, out = run(guard, repo, capsys=capsys)
 

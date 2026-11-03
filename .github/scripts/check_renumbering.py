@@ -758,6 +758,11 @@ def git(root: Path, *args: str, errors: str = "strict") -> str:
     return done.stdout
 
 
+#: How a path git prints is decoded: a name is bytes, and one that is not UTF-8
+#: keeps each stray byte as a lone surrogate, as Python names the file it walks,
+#: so that it is the very path the corpus holds (#2820).
+NAMES = "surrogateescape"
+
 #: A commit's full name, whose contents never change.
 COMMIT = re.compile(r"[0-9a-f]{40}")
 
@@ -791,10 +796,13 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
     """Read the lines changed since ``base`` branched, as they are numbered now."""
     changed: dict[Path, set[int]] = {}
     current: Path | None = None
-    # the format is pinned, so that no local diff setting changes what is read;
-    # a text file that is not UTF-8, which the corpus skips, is passed over too
+    # the format is pinned, so that no local diff setting changes what is read,
+    # and a path is printed as it is, never quoted for a byte beyond ASCII; a text
+    # file that is not UTF-8, which the corpus skips, is passed over too
     diff = git(
         root,
+        "-c",
+        "core.quotePath=false",
         "diff",
         "--unified=0",
         "--no-color",
@@ -803,7 +811,7 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
         "--dst-prefix=b/",
         base,
         "--",
-        errors="replace",
+        errors=NAMES,
     )
     for line in diff.splitlines():
         if diffed := DIFFED.match(line):
@@ -814,9 +822,10 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
             start, count = int(hunk["start"]), int(hunk["count"] or 1)
             changed.setdefault(current, set()).update(range(start, start + count))
     # a file not yet added is the author's own, every line of it
-    for name in git(root, "ls-files", "--others", "--exclude-standard", "-z").split(
-        "\0"
-    ):
+    untracked = git(
+        root, "ls-files", "--others", "--exclude-standard", "-z", errors=NAMES
+    )
+    for name in untracked.split("\0"):
         path = root / name
         if name and path.is_file():
             count = len(path.read_text(encoding="utf-8", errors="replace").splitlines())
@@ -838,7 +847,7 @@ def _listed(root: Path, ref: str) -> list[Path]:
     """List the specifications at ``ref``."""
     if (root, ref) in LISTED:
         return LISTED[root, ref]
-    listed = git(root, "ls-tree", "-z", "--name-only", ref, f"{SPECS}/")
+    listed = git(root, "ls-tree", "-z", "--name-only", ref, f"{SPECS}/", errors=NAMES)
     names = [root / name for name in listed.split("\0") if name.endswith(".md")]
     if COMMIT.fullmatch(ref):
         LISTED[root, ref] = names
@@ -932,9 +941,13 @@ def was_cited(
         The anchors cited now, and those cited at ``ref``.
 
     """
-    diffed = git(root, "diff", "--name-only", "--no-renames", "-z", ref, "--")
+    diffed = git(
+        root, "diff", "--name-only", "--no-renames", "-z", ref, "--", errors=NAMES
+    )
     changed = [name for name in diffed.split("\0") if name]
-    untracked = git(root, "ls-files", "--others", "--exclude-standard", "-z")
+    untracked = git(
+        root, "ls-files", "--others", "--exclude-standard", "-z", errors=NAMES
+    )
     touched = {root / name for name in [*changed, *untracked.split("\0")] if name}
     kept = cited_anchors({p: t for p, t in texts.items() if p not in touched}, names)
     now = cited_anchors({p: t for p, t in texts.items() if p in touched}, names)
