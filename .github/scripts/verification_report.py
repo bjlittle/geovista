@@ -4,13 +4,17 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Report how each specification decision is verified, and where it is cited.
+"""Report each specification's decisions, roadmap and open items.
 
-For every specification, or the one a prefix names, the report lists each
-decision with its state, then every place in the repository that cites it,
-grouped as source, tests, documentation, specifications and plans. It flags what
-does not agree: a verified row whose test no longer cites its decision, and a
-decision in force that nothing anywhere cites (ledger spec §3.8).
+For every specification, or the one a prefix names, the report shows its
+roadmap, each row with its status, then each decision with its state and every
+place in the repository that cites it, grouped as source, tests, documentation,
+specifications and plans, and last its open items, each with its state, the row
+that owes it and how often it has moved (items spec §3.9). It flags what does
+not agree: a verified row whose test no longer cites its decision, and a
+decision in force that nothing anywhere cites (ledger spec §3.8). It also flags
+an item on its last move, which must settle or graduate when its row lands, and
+an item owed by a row in progress, which that row's pull request must answer.
 
 It is a view of the ledger on demand, never a gate: it exits 0 whatever it finds,
 and 2 only when it cannot read a specification, or a prefix names none. The
@@ -47,6 +51,15 @@ REPO = Path(__file__).parents[2]
 SPECS = Path("docs") / "src" / "developer" / "specs"
 PLANS = Path("docs") / "src" / "developer" / "plans"
 
+#: What a table cell holds when it has nothing to say.
+EM_DASH = "\N{EM DASH}"
+
+#: The title of an item in the grammar of docs spec §3.6, after its
+#: status, any parenthesis and a dash.
+OLD_TITLE = re.compile(
+    r"(?:\(.*?\)\s*)?[\N{EM DASH}\N{EN DASH}-]\s*\*\*(?P<title>.+?)\*\*"
+)
+
 #: The groups citations are listed under, in the order they are listed.
 GROUPS = ("source", "tests", "documentation", "specifications", "plans")
 
@@ -67,6 +80,10 @@ grammar = conventions.citations
 #: The grammar's types, which the annotations below name.
 Namespace = grammar.Namespace
 LedgerRow = grammar.LedgerRow
+Item = grammar.Item
+
+#: How often an item in each unsettled state may have moved (items spec §3.7).
+MOVES = {grammar.OPEN: (0,), grammar.DEFERRED: (1, 2)}
 
 #: The MyST roles a status carries, and the GitHub Markdown each reads as.
 ROLES = (
@@ -81,6 +98,106 @@ def markdown(status: str) -> str:
     for role, written in ROLES:
         status = role.sub(written, status)
     return status
+
+
+def _cell(text: str) -> str:
+    """Write a table cell as GitHub Markdown, escaping a pipe that would end it."""
+    return markdown(grammar.PIPE.sub(r"\\|", text))
+
+
+def _section(text: str, title: str) -> str | None:
+    """Find the number of the section a specification titles so, whatever its case."""
+    return next(
+        (
+            heading["num"]
+            for heading, _ in grammar.headed(text)
+            if heading["title"].casefold() == title.casefold()
+        ),
+        None,
+    )
+
+
+def _items_section(text: str) -> str | None:
+    """Find the number of a specification's Open Items section, which names an item."""
+    return _section(text, grammar.OPEN_ITEMS)
+
+
+def _roadmap(text: str) -> list[str]:
+    """Write a specification's roadmap, each row with its scope and status.
+
+    Only the rows of its own Roadmap section are shown (items spec §3.9).
+    """
+    section = _section(text, "Roadmap")
+    rows = [row for row in grammar.rows(text) if row.section == section]
+    if not rows:
+        return ["No roadmap.", ""]
+    return [
+        "| # | Scope | Status |",
+        "|---|---|---|",
+        *(f"| {row.row} | {_cell(row.scope)} | {_cell(row.status)} |" for row in rows),
+        "",
+    ]
+
+
+def _stated(item: Item) -> tuple[str, str]:
+    """Read an item's state and title, as the table shows them.
+
+    An item still in the grammar of docs spec §3.6 leads with its
+    status in bold, which the grammar reads as its title, and its title follows a
+    dash, so the status is shown as its state.
+    """
+    if item.state is not None:
+        return item.state, item.title
+    old = OLD_TITLE.match(item.body)
+    if old is None:
+        return "no state", item.title
+    return item.title, old["title"]
+
+
+def _open_items(text: str) -> list[str]:
+    """Write a specification's open items, each with its state, owing row and moves."""
+    found = grammar.items(text)
+    if not found:
+        return ["No open items.", ""]
+    lines = ["| Item | State | Owed by | Moves |", "|---|---|---|---|"]
+    for item in found:
+        state, title = _stated(item)
+        owed = _cell(item.owed) if item.owed else EM_DASH
+        lines.append(
+            f"| {item.number}: {_cell(title)} | {_cell(state)} | {owed} | "
+            f"{len(item.moves)} |"
+        )
+    return [*lines, ""]
+
+
+def _item_findings(path: Path, text: str, prefix: str, names: Namespace) -> list[str]:
+    """Find an item on its last move, and one owed by a row in progress.
+
+    The row an item names is read as the conventions test reads it. An item owed
+    by no row of its own roadmap or by a landed row, and one whose moves its state
+    does not allow, an open item that moved or one moved three times, are left to
+    the suite, which refuses each (items spec §3.7, §3.9).
+    """
+    section = _items_section(text)
+    found = []
+    for item in grammar.items(text):
+        if item.owed is None or len(item.moves) not in MOVES.get(item.state, ()):
+            continue
+        row = conventions.own_row(path, text, item.owed, names)
+        if isinstance(row, str) or row.status.startswith(conventions.LANDED):
+            continue
+        name = f"{prefix} {grammar.SECTION}{section} item {item.number}"
+        if len(item.moves) == 2:
+            found.append(
+                f"{name} is on its last move: when {item.owed} lands, it must "
+                "settle or graduate."
+            )
+        if row.status.startswith("in progress"):
+            found.append(
+                f"{name} is owed by {item.owed}, which is in progress: its pull "
+                "request must answer it."
+            )
+    return found
 
 
 @dataclass(frozen=True)
@@ -225,7 +342,8 @@ def report(
         text = spec.read_text(encoding="utf-8")
         slug = names.owners[spec]
         prefix = slug.replace("-", " ")
-        out += [f"## {prefix}: {_title(text)}", ""]
+        out += [f"## {prefix}: {_title(text)}", "", "### Roadmap", ""]
+        out += _roadmap(text)
         rows = {row.decision: row for row in grammar.ledger(text) or []}
         if rows:
             out += [grammar.summary(row.status for row in rows.values()), ""]
@@ -253,6 +371,9 @@ def report(
                 findings.append(f"{name} is in force and cited nowhere.")
             if row is not None:
                 findings += _evidence(name, anchor, row, names, root)
+        out += ["### Open Items", ""]
+        out += _open_items(text)
+        findings += _item_findings(spec, text, prefix, names)
     out += ["## Findings", ""]
     out += [f"- {finding}" for finding in findings] or ["No findings."]
     return "\n".join(out) + "\n"

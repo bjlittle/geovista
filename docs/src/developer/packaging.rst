@@ -538,8 +538,8 @@ The following tasks are defined for each of our features:
    |                |                                |    :ref:`Image Tests Generation <tippy-gv-developer-testing-image-tests-generation>`) |
    |                |                                |    within the :bash:`test_images_failed` directory for analysis and investigation.    |
    |                +--------------------------------+---------------------------------------------------------------------------------------+
-   |                | ``verification-report``        | Report how each design specification decision is verified, and where it is            |
-   |                |                                | cited e.g.,                                                                           |
+   |                | ``verification-report``        | Report each design specification's decisions, roadmap and open items, and where each  |
+   |                |                                | decision is cited e.g.,                                                               |
    |                |                                |                                                                                       |
    |                |                                | .. code:: console                                                                     |
    |                |                                |                                                                                       |

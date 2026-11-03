@@ -37,6 +37,20 @@ ELLIPSIS = "\N{HORIZONTAL ELLIPSIS}"
 AGREED = "\N{HANDSHAKE} Agreed"
 VERIFIED = "\N{WHITE HEAVY CHECK MARK} verified"
 PENDING = "\N{HOURGLASS WITH FLOWING SAND} pending"
+LANDED = "\N{WHITE HEAVY CHECK MARK} landed"
+
+#: An item's states and the parts of its parenthesis, built rather than written.
+OPEN = "\N{BLACK QUESTION MARK ORNAMENT} Open"
+DEFERRED = (
+    "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}"
+    "\N{VARIATION SELECTOR-16} Deferred"
+)
+RESOLVED = "\N{CHEQUERED FLAG} Resolved"
+FOUND = "\N{RIGHT-POINTING MAGNIFYING GLASS}"
+OWED = "\N{DIRECT HIT}"
+MOVED = "\N{LEFTWARDS BLACK ARROW}\N{VARIATION SELECTOR-16}"
+TICKET = "\N{TICKET}"
+DOT = " \N{MIDDLE DOT} "
 
 #: Provenance a decision in force carries.
 AGREEMENT = "2026-01-01, {user}`bjlittle`, {pull}`1`"
@@ -62,6 +76,18 @@ def write(root: Path, name: str, text: str) -> None:
 def entry(number: int, title: str) -> str:
     """Write a decision in force."""
     return f"{number}. **{AGREED}** ({AGREEMENT}) — **{title}** Reasoning.\n"
+
+
+def item(number: int, state: str, owed: str | None, moves: int, title: str) -> str:
+    """Write an open item, owed by a row, moved from it as often as asked."""
+    parts = [f"{FOUND} 2026-01-01, {{pull}}`1`"]
+    if owed is not None:
+        parts.append(f"{OWED} {owed}")
+    parts += [f"{MOVED} row 1, 2026-01-0{n + 2}, {{pull}}`1`" for n in range(moves)]
+    parts.append(f"{TICKET} {{issue}}`{100 + number}`")
+    if state == RESOLVED:
+        parts.insert(0, "2026-01-05, {pull}`1`")
+    return f"{number}. **{state}** ({DOT.join(parts)}) — **{title}** Its text.\n"
 
 
 @pytest.fixture
@@ -92,7 +118,19 @@ def repo(tmp_path: Path) -> Path:
         f"| 2 | {PENDING} | |\n"
         f"| 3 | {PENDING} | |\n"
         f"| 4 | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
-        "`tests/test_silent.py`, `tests/test_gone.py` |\n",
+        "`tests/test_silent.py`, `tests/test_gone.py` |\n"
+        "\n(demo-spec-5)=\n## 5. Open Items\n\n"
+        + item(1, OPEN, f"row 2 of {s}6", 0, "Owed in progress.")
+        + item(2, DEFERRED, f"row 3 of {s}6", 2, "On its last move.")
+        + item(3, DEFERRED, f"row 3 of {s}6", 3, "Moved too often.")
+        + item(4, DEFERRED, f"row 1 of {s}6", 2, "Owed by a landed row.")
+        + item(5, RESOLVED, None, 0, "Settled.")
+        + "\n(demo-spec-6)=\n## 6. Roadmap\n\n"
+        "| # | Scope | Status |\n|---|---|---|\n"
+        f"| 1 | The first | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
+        "| 2 | The second | in progress |\n"
+        "| 3 | The work of {issue}`7`, with `a \\| b` kept | not started |\n"
+        "| 4 | The fourth, when a user asks | candidate |\n",
     )
     write(
         tmp_path,
@@ -361,3 +399,158 @@ def test_a_line_after_a_decisions_code_is_no_part_of_it(script, tmp_path, capsys
     spec = "docs/src/developer/specs/2026-01-01-demo-design.md"
 
     assert f"**specifications:** `{spec}:11`" in out
+
+
+def test_report_shows_each_roadmap_row_with_its_status(script, repo, capsys):
+    """Each roadmap row, with its scope and status, before the ledger.
+
+    Holds items spec §2 decision 12.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    roadmap = out[out.index("### Roadmap") : out.index("### Decision 1: One.")]
+
+    assert roadmap.index("| # | Scope | Status |") < roadmap.index(
+        "2 of 4 decisions in force verified"
+    )
+    assert f"| 1 | The first | {LANDED} (2026-01-01, #1) |" in roadmap
+    assert "| 3 | The work of #7, with `a \\| b` kept | not started |" in roadmap
+
+
+def test_report_shows_each_open_item_with_its_state_owed_row_and_moves(
+    script, repo, capsys
+):
+    """Each open item, with its state, the row that owes it and its moves, last.
+
+    Holds items spec §2 decision 12.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    items = out[out.index("### Open Items") : out.index("## Findings")]
+
+    assert out.index("### Decision 4: Four.") < out.index("### Open Items")
+    assert "| Item | State | Owed by | Moves |" in items
+    assert f"| 2: On its last move. | {DEFERRED} | row 3 of {SECTION}6 | 2 |" in items
+    assert f"| 5: Settled. | {RESOLVED} | \N{EM DASH} | 0 |" in items
+
+
+def test_a_specification_without_a_roadmap_or_items_says_so(script, repo, capsys):
+    """A specification with neither section says so, rather than leaving a gap."""
+    code, out = run(script, repo, capsys, "lone")
+
+    assert code == 0
+    assert "No roadmap." in out
+    assert "No open items." in out
+
+
+def test_an_item_in_the_old_grammar_shows_its_status(script, tmp_path, capsys):
+    """An item in the grammar of docs spec §3.6 shows its own status.
+
+    It leads with its status in bold, and its title follows, so neither is taken for
+    the other, and it makes no finding.
+    """
+    s = SECTION
+    write(
+        tmp_path,
+        "docs/src/developer/specs/2026-01-01-old-design.md",
+        "# Old Specification\n\n"
+        f"- **Citation prefix:** `old spec {s}{ELLIPSIS}`\n\n"
+        "(old-spec-7)=\n## 7. Open Items\n\n"
+        "1. **Open** \N{EM DASH} **Old.** Its text.\n"
+        "2. **Resolved** (2026-01-01, {pull}`1`) \N{EM DASH} **Settled.** Its text.\n"
+        "3. **Unstated.** Its text.\n",
+    )
+
+    code, out = run(script, tmp_path, capsys)
+    findings = out[out.index("## Findings") :]
+
+    assert code == 0
+    assert "| 1: Old. | Open | \N{EM DASH} | 0 |" in out
+    assert "| 2: Settled. | Resolved | \N{EM DASH} | 0 |" in out
+    assert "| 3: Unstated. | no state | \N{EM DASH} | 0 |" in out
+    assert "item" not in findings
+
+
+def test_an_item_on_its_last_move_is_a_finding(script, repo, capsys):
+    """An item with two moves must settle or graduate when its row lands.
+
+    Holds items spec §2 decision 12.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+    s = SECTION
+
+    assert (
+        f"demo spec {s}5 item 2 is on its last move: when row 3 of {s}6 lands, it "
+        "must settle or graduate." in findings
+    )
+
+
+def test_an_item_owed_by_a_row_in_progress_is_a_finding(script, repo, capsys):
+    """An item owed by a row in progress is one that row's pull request must answer.
+
+    Holds items spec §2 decision 12.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+    s = SECTION
+
+    assert (
+        f"demo spec {s}5 item 1 is owed by row 2 of {s}6, which is in progress: its "
+        "pull request must answer it." in findings
+    )
+
+
+def test_a_gap_the_suite_refuses_is_not_repeated(script, repo, capsys):
+    """Three moves, or a landed row, the suite refuses, so neither is a finding."""
+    _, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+    s = SECTION
+
+    assert f"{s}5 item 3 " not in findings
+    assert f"{s}5 item 4 " not in findings
+    assert f"{s}5 item 5 " not in findings
+
+
+@pytest.mark.parametrize("owed", ["row 1 of lone spec {s}3", "row 9 of {s}6"])
+def test_an_item_owed_by_no_row_of_its_own_makes_no_finding(script, repo, capsys, owed):
+    """An item owed by no row of its own roadmap is the suite's to refuse."""
+    spec = repo / "docs/src/developer/specs/2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    written = item(6, OPEN, owed.format(s=SECTION), 2, "Owed elsewhere.")
+    spec.write_text(
+        text.replace("\n(demo-spec-6)=", written + "\n(demo-spec-6)=", 1),
+        encoding="utf-8",
+    )
+
+    code, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+
+    assert code == 0
+    assert "| 6: Owed elsewhere. |" in out
+    assert f"{SECTION}5 item 6 " not in findings
+
+
+@pytest.mark.parametrize(
+    ("state", "owed", "moves"),
+    [(OPEN, "row 3 of {s}6", 2), (DEFERRED, "row 2 of {s}6", 3)],
+    ids=["open-moved", "moved-thrice"],
+)
+def test_an_item_the_suite_refuses_for_its_moves_makes_no_finding(
+    script, repo, capsys, state, owed, moves
+):
+    """An open item that moved, or one moved three times, is the suite's to refuse.
+
+    So neither its last move nor a row in progress makes a finding of it.
+    """
+    spec = repo / "docs/src/developer/specs/2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    written = item(6, state, owed.format(s=SECTION), moves, "Moved wrongly.")
+    spec.write_text(
+        text.replace("\n(demo-spec-6)=", written + "\n(demo-spec-6)=", 1),
+        encoding="utf-8",
+    )
+
+    _, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+
+    assert "| 6: Moved wrongly. |" in out
+    assert f"{SECTION}5 item 6 " not in findings

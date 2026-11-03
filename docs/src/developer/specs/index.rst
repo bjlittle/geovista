@@ -157,12 +157,16 @@ add the label to the merged pull request.
    $ pixi run -e test verification-report
    $ pixi run -e test verification-report heights
 
-It lists, for every specification or the one a prefix names, each decision with
-its state and every place in the repository that cites it, grouped as source,
-tests, documentation, specifications and plans. It also flags a verified row
-whose test no longer cites its decision, and a decision in force that nothing
-cites. It is a view of the ledger, never a check: it exits 0 whatever it finds
-(ledger spec §3.8).
+For every specification, or the one a prefix names, it shows the roadmap with
+each row's status, then each decision with its state and every place in the
+repository that cites it, grouped as source, tests, documentation,
+specifications and plans, and last the open items, each with its state, the row
+that owes it and how often it has moved. It flags a verified row whose test no
+longer cites its decision, and a decision in force that nothing cites. It also
+flags an item on its last move, which must settle or graduate when its row
+lands, and an item owed by a row in progress, which that row's pull request
+must answer. It is a view, never a check: it exits 0 whatever it finds
+(ledger spec §3.8, items spec §3.9).
 
 .. _gv-developer-specs-items:
 .. _tippy-gv-developer-specs-items:
