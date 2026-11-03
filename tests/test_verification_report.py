@@ -527,3 +527,30 @@ def test_an_item_owed_by_no_row_of_its_own_makes_no_finding(script, repo, capsys
     assert code == 0
     assert "| 6: Owed elsewhere. |" in out
     assert f"{SECTION}5 item 6 " not in findings
+
+
+@pytest.mark.parametrize(
+    ("state", "owed", "moves"),
+    [(OPEN, "row 3 of {s}6", 2), (DEFERRED, "row 2 of {s}6", 3)],
+    ids=["open-moved", "moved-thrice"],
+)
+def test_an_item_the_suite_refuses_for_its_moves_makes_no_finding(
+    script, repo, capsys, state, owed, moves
+):
+    """An open item that moved, or one moved three times, is the suite's to refuse.
+
+    So neither its last move nor a row in progress makes a finding of it.
+    """
+    spec = repo / "docs/src/developer/specs/2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    written = item(6, state, owed.format(s=SECTION), moves, "Moved wrongly.")
+    spec.write_text(
+        text.replace("\n(demo-spec-6)=", written + "\n(demo-spec-6)=", 1),
+        encoding="utf-8",
+    )
+
+    _, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+
+    assert "| 6: Moved wrongly. |" in out
+    assert f"{SECTION}5 item 6 " not in findings

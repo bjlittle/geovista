@@ -82,6 +82,9 @@ Namespace = grammar.Namespace
 LedgerRow = grammar.LedgerRow
 Item = grammar.Item
 
+#: How often an item in each unsettled state may have moved (items spec §3.7).
+MOVES = {grammar.OPEN: (0,), grammar.DEFERRED: (1, 2)}
+
 #: The MyST roles a status carries, and the GitHub Markdown each reads as.
 ROLES = (
     (re.compile(r"\{pull\}`(?P<number>\d+)`"), r"#\g<number>"),
@@ -170,14 +173,15 @@ def _open_items(text: str) -> list[str]:
 def _item_findings(path: Path, text: str, prefix: str, names: Namespace) -> list[str]:
     """Find an item on its last move, and one owed by a row in progress.
 
-    The row an item names is read as the conventions test reads it, and an item
-    owed by no row of its own roadmap, by a landed row, or moved three times, is
-    left to the suite, which refuses each (items spec §3.9).
+    The row an item names is read as the conventions test reads it. An item owed
+    by no row of its own roadmap or by a landed row, and one whose moves its state
+    does not allow, an open item that moved or one moved three times, are left to
+    the suite, which refuses each (items spec §3.7, §3.9).
     """
     section = _items_section(text)
     found = []
     for item in grammar.items(text):
-        if item.state not in (grammar.OPEN, grammar.DEFERRED) or item.owed is None:
+        if item.owed is None or len(item.moves) not in MOVES.get(item.state, ()):
             continue
         row = conventions.own_row(path, text, item.owed, names)
         if isinstance(row, str) or row.status.startswith(conventions.LANDED):
