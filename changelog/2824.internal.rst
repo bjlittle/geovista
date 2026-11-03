@@ -1,0 +1,4 @@
+Fixed three edge cases in the renumber guard. It reports a stale citation in a
+file whose name isn't UTF-8 instead of crashing, reads the changed lines of a
+file whose name git quotes, and no longer takes an added line that looks like
+a diff header for one. (:user:`claude`)
