@@ -163,6 +163,35 @@ def _open_items(text: str) -> list[str]:
     return [*lines, ""]
 
 
+def _item_findings(path: Path, text: str, prefix: str, names: Namespace) -> list[str]:
+    """Find an item on its last move, and one owed by a row in progress.
+
+    The row an item names is read as the conventions test reads it, and an item
+    owed by no row of its own roadmap, by a landed row, or moved three times, is
+    left to the suite, which refuses each (items spec \N{SECTION SIGN}3.9).
+    """
+    section = _items_section(text)
+    found = []
+    for item in grammar.items(text):
+        if item.state not in (grammar.OPEN, grammar.DEFERRED) or item.owed is None:
+            continue
+        row = conventions.own_row(path, text, item.owed, names)
+        if isinstance(row, str) or row.status.startswith(conventions.LANDED):
+            continue
+        name = f"{prefix} {grammar.SECTION}{section} item {item.number}"
+        if len(item.moves) == 2:
+            found.append(
+                f"{name} is on its last move: when {item.owed} lands, it must "
+                "settle or graduate."
+            )
+        if row.status.startswith("in progress"):
+            found.append(
+                f"{name} is owed by {item.owed}, which is in progress: its pull "
+                "request must answer it."
+            )
+    return found
+
+
 @dataclass(frozen=True)
 class Cited:
     """A place a decision is cited."""
@@ -336,6 +365,7 @@ def report(
                 findings += _evidence(name, anchor, row, names, root)
         out += ["### Open Items", ""]
         out += _open_items(text)
+        findings += _item_findings(spec, text, prefix, names)
     out += ["## Findings", ""]
     out += [f"- {finding}" for finding in findings] or ["No findings."]
     return "\n".join(out) + "\n"

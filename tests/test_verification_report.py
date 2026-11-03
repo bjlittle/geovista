@@ -123,7 +123,7 @@ def repo(tmp_path: Path) -> Path:
         + item(1, OPEN, f"row 2 of {s}6", 0, "Owed in progress.")
         + item(2, DEFERRED, f"row 3 of {s}6", 2, "On its last move.")
         + item(3, DEFERRED, f"row 3 of {s}6", 3, "Moved too often.")
-        + item(4, OPEN, f"row 1 of {s}6", 0, "Owed by a landed row.")
+        + item(4, DEFERRED, f"row 1 of {s}6", 2, "Owed by a landed row.")
         + item(5, RESOLVED, None, 0, "Settled.")
         + "\n(demo-spec-6)=\n## 6. Roadmap\n\n"
         "| # | Scope | Status |\n|---|---|---|\n"
@@ -467,3 +467,63 @@ def test_an_item_in_the_old_grammar_shows_its_status(script, tmp_path, capsys):
     assert "| 2: Settled. | Resolved | \N{EM DASH} | 0 |" in out
     assert "| 3: Unstated. | no state | \N{EM DASH} | 0 |" in out
     assert "item" not in findings
+
+
+def test_an_item_on_its_last_move_is_a_finding(script, repo, capsys):
+    """An item with two moves must settle or graduate when its row lands.
+
+    Holds items spec \N{SECTION SIGN}2 decision 12.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+    s = SECTION
+
+    assert (
+        f"demo spec {s}5 item 2 is on its last move: when row 3 of {s}6 lands, it "
+        "must settle or graduate." in findings
+    )
+
+
+def test_an_item_owed_by_a_row_in_progress_is_a_finding(script, repo, capsys):
+    """An item owed by a row in progress is one that row's pull request must answer.
+
+    Holds items spec \N{SECTION SIGN}2 decision 12.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+    s = SECTION
+
+    assert (
+        f"demo spec {s}5 item 1 is owed by row 2 of {s}6, which is in progress: its "
+        "pull request must answer it." in findings
+    )
+
+
+def test_a_gap_the_suite_refuses_is_not_repeated(script, repo, capsys):
+    """Three moves, or a landed row, the suite refuses, so neither is a finding."""
+    _, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+    s = SECTION
+
+    assert f"{s}5 item 3 " not in findings
+    assert f"{s}5 item 4 " not in findings
+    assert f"{s}5 item 5 " not in findings
+
+
+@pytest.mark.parametrize("owed", ["row 1 of lone spec {s}3", "row 9 of {s}6"])
+def test_an_item_owed_by_no_row_of_its_own_makes_no_finding(script, repo, capsys, owed):
+    """An item owed by no row of its own roadmap is the suite's to refuse."""
+    spec = repo / "docs/src/developer/specs/2026-01-01-demo-design.md"
+    text = spec.read_text(encoding="utf-8")
+    written = item(6, OPEN, owed.format(s=SECTION), 2, "Owed elsewhere.")
+    spec.write_text(
+        text.replace("\n(demo-spec-6)=", written + "\n(demo-spec-6)=", 1),
+        encoding="utf-8",
+    )
+
+    code, out = run(script, repo, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+
+    assert code == 0
+    assert "| 6: Owed elsewhere. |" in out
+    assert f"{SECTION}5 item 6 " not in findings
