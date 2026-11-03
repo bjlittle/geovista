@@ -244,10 +244,11 @@ methods of `GeoPlotter`:
 A mesh added to a scene whose globe differs from the one it records is drawn at the
 scene's globe, and the mesh drawn records the scene's globe. Every height is 0 until
 row 3 of globe spec §9, so on the globe this is a scale by the ratio of the two render
-radii, and on a projected map it changes nothing. Row 3 makes it a rebuild from heights
-(globe spec §4.4). A mesh built at another render radius on purpose, to float above the
-surface, is repositioned too, so floating it is a lift (globe spec §4.5). A mesh that
-records no globe is drawn where it lies, even when §4.4 reads a globe from its points.
+radii, and on a projected map it changes nothing. Row 3 of globe spec §9 makes it a
+rebuild from heights (globe spec §4.4). A mesh built at another render radius on purpose,
+to float above the surface, is repositioned too, so floating it is a lift
+(globe spec §4.5). A mesh that records no globe is drawn where it lies, even when §4.4
+reads a globe from its points.
 A mesh from outside `geovista` follows a scene at another render radius once it is
 resized to it, with `resize(mesh, globe=plotter.globe)`.
 
@@ -499,8 +500,9 @@ Out of scope:
 
 - heights, and the effect of the vertical mapping, which are row 3 of globe spec §9;
 - a vertical mapping in bands, or as a function of height (globe spec §8 item 8);
-- layering, row 4, and the removal of `zlevel` and `zscale`, row 5;
-- when `geovista` stops reading retired fields (§8 item 1);
+- layering, row 4 of globe spec §9, and the removal of `zlevel` and `zscale`,
+  row 5 of globe spec §9;
+- when `geovista` stops reading retired fields, left to row 3 of §9 (§8 item 1);
 - the refresh of the pantry's assets ({issue}`2753`), which `sanitize_legacy` serves;
 - a physical render radius by default (globe spec §8 item 4).
 
@@ -527,8 +529,9 @@ Each carries the status grammar of docs spec §3.6.
 Statuses follow docs spec §3.6. Row 1 adds to the API and breaks nothing. Row 2 is
 breaking, and carries a `breaking` fragment beside its own. Row 2 is planned once row 1
 has landed, and after {issue}`2756`, so that the README's examples are run against it.
-Row 2 of globe spec §9 lands with it. Both rows land before 0.6 is
-released, since 0.6 is the first release that writes the globe and no retired field.
+Row 2 of globe spec §9 lands with it. Rows 1 and 2 land before 0.6 is released, since 0.6
+is the first release that writes the globe and no retired field. Row 3 is planned once
+row 5 of globe spec §9 has added `gvZScale` and `gvZLevel` to the table of §4.5.
 
 (scene-spec-10)=
 ## 10. References

@@ -462,13 +462,23 @@ Each carries the status grammar of §3.2.
     yet.
 11. **❓ Open** (🔎 2026-11-03, {pull}`2826` · 🎯 row 6 of §8 · 🎫 {issue}`2839`) — **An item
     owed by another specification's row.** §3.4 has an item owed by a row of its own
-    specification, so an item whose work belongs to another specification's row needs a row
-    of its own that lands with the other. Row 5 of §8 met this three times:
+    specification. When the work belongs to another specification's row, §3.4's own answer
+    is to write the item in the specification whose row does the work:
+    heights spec §8 item 3 could live in the globe specification, owed by
+    row 4 of globe spec §9. Otherwise the item needs a row of its own that lands with the
+    other, or may be owed by another specification's row. Row 5 of §8 met this where
     heights spec §8 item 3 waits on row 4 of globe spec §9, globe spec §8 item 9 belongs
     with the vector work of crs spec §4.5, and globe spec §8 item 11 could equally be owed
-    by the cutting engine of crs spec §10. Whether the rule is right, or an item may be owed
-    by another specification's row, is open. A local row keeps the check simple, and costs a
-    row whose only work is to wait on another.
+    by the cutting engine, row 3 of crs spec §10. Which answer is right is open. A local row
+    keeps the check simple, and costs a row whose only work is to wait on another.
+12. **❓ Open** (🔎 2026-11-03, {pull}`2826` · 🎯 row 6 of §8 · 🎫 {issue}`2842`) — **A
+    decision restated under a retired decision's title fails the renumber guard.**
+    Ledger spec §3.3 retires a decision by keeping its entry and agreeing a new one for what
+    replaced it, but the renumber guard of citation spec §4.6 pairs sections by title before
+    number, so a new decision given the retired one's title reads as the retired decision
+    moved to a new number. Row 6 of ledger spec §8 avoided it by giving
+    globe spec §2 decision 7 a title of its own. A retired entry still sits at its own
+    number, so the guard could pair it there before it pairs by title.
 
 (items-spec-8)=
 ## 8. Roadmap
@@ -480,7 +490,7 @@ Each carries the status grammar of §3.2.
 | 3 | The typing specification's items brought in, with the `candidate` rows they wait on | not started |
 | 4 | The crs specification's items brought in | not started |
 | 5 | The globe, scene, heights and ledger specifications' items brought in | not started |
-| 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 11 | not started |
+| 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
 after it. Rows 3 to 5 each raise the issues their specifications' items lack, and need

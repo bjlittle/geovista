@@ -645,7 +645,11 @@ Statuses follow docs spec §3.6. Each row that changes the public API updates th
 examples in the same pull request ({issue}`2756`). Rows 1 to 5 come in order, and each
 is planned once the rows before it have landed. Row 4 needs a renderer in CI, which the
 image tests already have. Row 5 is breaking, and carries a `breaking` fragment beside its
-own. Row 2 of the parent's roadmap lands with row 5 here.
+own. Row 2 of the parent's roadmap lands with row 5 here. Rows 6 to 9 are candidates: row 6
+waits on a scene with heights that a scientist shows, and rows 7 to 9 each wait on a user
+asking for them. Row 10 is not started. It measures picking, clipping planes and
+interaction at the Earth's render radius, and `remesh` there ({issue}`2779`), before the
+default could change (§8 item 4).
 
 (globe-spec-10)=
 ## 10. References
