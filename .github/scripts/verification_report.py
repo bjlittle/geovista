@@ -192,7 +192,7 @@ def _item_findings(path: Path, text: str, prefix: str, names: Namespace) -> list
                 f"{name} is on its last move: when {item.owed} lands, it must "
                 "settle or graduate."
             )
-        if row.status.startswith("in progress"):
+        if row.status.startswith(conventions.IN_PROGRESS):
             found.append(
                 f"{name} is owed by {item.owed}, which is in progress: its pull "
                 "request must answer it."
@@ -344,6 +344,7 @@ def report(
         prefix = slug.replace("-", " ")
         out += [f"## {prefix}: {_title(text)}", "", "### Roadmap", ""]
         out += _roadmap(text)
+        out += ["### Decisions", ""]
         rows = {row.decision: row for row in grammar.ledger(text) or []}
         if rows:
             out += [grammar.summary(row.status for row in rows.values()), ""]
