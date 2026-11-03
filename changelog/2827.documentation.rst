@@ -1,0 +1,3 @@
+The :ref:`title style <gv-developer-documentation-title-style>` now covers table
+titles and column headers, and the column headers of the design specifications
+follow it. (:user:`claude`)
