@@ -47,6 +47,15 @@ REPO = Path(__file__).parents[2]
 SPECS = Path("docs") / "src" / "developer" / "specs"
 PLANS = Path("docs") / "src" / "developer" / "plans"
 
+#: What a table cell holds when it has nothing to say.
+EM_DASH = "\N{EM DASH}"
+
+#: The title of an item in the grammar of docs spec \N{SECTION SIGN}3.6, after its
+#: status, any parenthesis and a dash.
+OLD_TITLE = re.compile(
+    r"(?:\(.*?\)\s*)?[\N{EM DASH}\N{EN DASH}-]\s*\*\*(?P<title>.+?)\*\*"
+)
+
 #: The groups citations are listed under, in the order they are listed.
 GROUPS = ("source", "tests", "documentation", "specifications", "plans")
 
@@ -67,6 +76,7 @@ grammar = conventions.citations
 #: The grammar's types, which the annotations below name.
 Namespace = grammar.Namespace
 LedgerRow = grammar.LedgerRow
+Item = grammar.Item
 
 #: The MyST roles a status carries, and the GitHub Markdown each reads as.
 ROLES = (
@@ -81,6 +91,76 @@ def markdown(status: str) -> str:
     for role, written in ROLES:
         status = role.sub(written, status)
     return status
+
+
+def _cell(text: str) -> str:
+    """Write a table cell as GitHub Markdown, escaping a pipe that would end it."""
+    return markdown(grammar.PIPE.sub(r"\\|", text))
+
+
+def _section(text: str, title: str) -> str | None:
+    """Find the number of the section a specification titles so, whatever its case."""
+    return next(
+        (
+            heading["num"]
+            for heading, _ in grammar.headed(text)
+            if heading["title"].casefold() == title.casefold()
+        ),
+        None,
+    )
+
+
+def _items_section(text: str) -> str | None:
+    """Find the number of a specification's Open Items section, which names an item."""
+    return _section(text, grammar.OPEN_ITEMS)
+
+
+def _roadmap(text: str) -> list[str]:
+    """Write a specification's roadmap, each row with its scope and status.
+
+    Only the rows of its own Roadmap section are shown (items spec \N{SECTION SIGN}3.9).
+    """
+    section = _section(text, "Roadmap")
+    rows = [row for row in grammar.rows(text) if row.section == section]
+    if not rows:
+        return ["No roadmap.", ""]
+    return [
+        "| # | Scope | Status |",
+        "|---|---|---|",
+        *(f"| {row.row} | {_cell(row.scope)} | {_cell(row.status)} |" for row in rows),
+        "",
+    ]
+
+
+def _stated(item: Item) -> tuple[str, str]:
+    """Read an item's state and title, as the table shows them.
+
+    An item still in the grammar of docs spec \N{SECTION SIGN}3.6 leads with its
+    status in bold, which the grammar reads as its title, and its title follows a
+    dash, so the status is shown as its state.
+    """
+    if item.state is not None:
+        return item.state, item.title
+    old = OLD_TITLE.match(item.body)
+    if old is None:
+        return "no state", item.title
+    return item.title, old["title"]
+
+
+def _open_items(text: str) -> list[str]:
+    """Write a specification's open items, each with its state, owing row and moves."""
+    found = grammar.items(text)
+    if not found:
+        return ["No open items.", ""]
+    lines = ["| Item | State | Owed by | Moves |", "|---|---|---|---|"]
+    for item in found:
+        state, title = _stated(item)
+        owed = _cell(item.owed) if item.owed else EM_DASH
+        lines.append(
+            f"| {item.number}: {_cell(title)} | {_cell(state)} | {owed} | "
+            f"{len(item.moves)} |"
+        )
+    return [*lines, ""]
 
 
 @dataclass(frozen=True)
@@ -225,7 +305,8 @@ def report(
         text = spec.read_text(encoding="utf-8")
         slug = names.owners[spec]
         prefix = slug.replace("-", " ")
-        out += [f"## {prefix}: {_title(text)}", ""]
+        out += [f"## {prefix}: {_title(text)}", "", "### Roadmap", ""]
+        out += _roadmap(text)
         rows = {row.decision: row for row in grammar.ledger(text) or []}
         if rows:
             out += [grammar.summary(row.status for row in rows.values()), ""]
@@ -253,6 +334,8 @@ def report(
                 findings.append(f"{name} is in force and cited nowhere.")
             if row is not None:
                 findings += _evidence(name, anchor, row, names, root)
+        out += ["### Open Items", ""]
+        out += _open_items(text)
     out += ["## Findings", ""]
     out += [f"- {finding}" for finding in findings] or ["No findings."]
     return "\n".join(out) + "\n"
