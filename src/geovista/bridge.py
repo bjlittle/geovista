@@ -19,7 +19,6 @@ Notes
 
 from __future__ import annotations
 
-import math
 import pathlib
 from typing import TYPE_CHECKING, cast
 import warnings
@@ -48,7 +47,7 @@ from .globe import (
     _refuse_zlevel,
     _resolve,
 )
-from .transform import transform_points
+from .transform import _angles, transform_points
 from .units import _Quantity, to_degrees, to_metres
 
 if TYPE_CHECKING:
@@ -130,7 +129,7 @@ def _reads(read: Callable[[Quantity], object], value: Quantity) -> bool:
 
 
 def _in_axis_units(name: str, value: Quantity, crs: pyproj.CRS) -> ArrayLike:
-    """Convert a quantity to the units of the horizontal axes of a CRS.
+    """Convert a quantity to the units pyproj takes for the horizontal axes of a CRS.
 
     Parameters
     ----------
@@ -144,8 +143,9 @@ def _in_axis_units(name: str, value: Quantity, crs: pyproj.CRS) -> ArrayLike:
     Returns
     -------
     ArrayLike
-        The values in the units of the axes of the `crs`, masked where the
-        magnitude of `value` is.
+        The values in the units :mod:`pyproj` takes for the axes of the `crs`,
+        masked where the magnitude of `value` is. Those are the units the axes are
+        declared in, apart from radians, which :mod:`pyproj` takes in degrees.
 
     Raises
     ------
@@ -165,8 +165,10 @@ def _in_axis_units(name: str, value: Quantity, crs: pyproj.CRS) -> ArrayLike:
 
     if crs.is_geographic:
         read, other = to_degrees, to_metres
-        # a degree in the units of the axes, which is exactly 1 for degrees
-        scale = math.radians(1.0) / axis.unit_conversion_factor
+        # the degrees in a unit of the axis as pyproj takes it, which is 1 for an
+        # axis declared in radians, as pyproj takes those in degrees
+        _, east, north = _angles(crs)
+        scale = 1.0 / (east if name == "xs" else north)
         emsg = (
             f"{name!r} is a length, but 'crs' measures its axes in {unit!r}. For "
             "eastings and northings, pass the projected CRS they are in."

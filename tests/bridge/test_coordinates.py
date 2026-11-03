@@ -108,6 +108,32 @@ def test_degrees_are_read_exactly(builder):
     np.testing.assert_array_equal(build(xs, ys).points, expected)
 
 
+@pytest.mark.parametrize("unit", ["degree", "radian"])
+def test_an_angle_for_a_crs_declared_in_radians(projectable, in_radians, unit):
+    """An angle is read in degrees for a CRS declared in radians, as pyproj takes it."""
+    build, lons, lats = projectable
+    crs = in_radians("EPSG:4326")
+    expected = build(lons, lats, crs=crs).points
+    xs = UREG.Quantity(lons, "degree").to(unit)
+    ys = UREG.Quantity(lats, "degree").to(unit)
+    np.testing.assert_allclose(build(xs, ys, crs=crs).points, expected, rtol=1e-12)
+
+
+@pytest.mark.usefixtures("no_network")
+def test_an_angle_for_a_crs_in_grads(projectable):
+    """An angle is read in grads for NTF (Paris), as pyproj takes it."""
+    build, lons, lats = projectable
+    # a small mesh in France, east of the Paris meridian, in grads
+    xs, ys = lons / 10.0, 52.0 + lats / 10.0
+    expected = build(xs, ys, crs="EPSG:4807").points
+    # a grad is 0.9 degrees
+    qxs = UREG.Quantity(xs * 0.9, "degree")
+    qys = UREG.Quantity(ys * 0.9, "degree")
+    np.testing.assert_allclose(
+        build(qxs, qys, crs="EPSG:4807").points, expected, rtol=1e-12
+    )
+
+
 @pytest.mark.parametrize(
     ("crs", "axis_metres", "unit", "unit_metres"),
     [
