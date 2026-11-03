@@ -811,7 +811,7 @@ def test_an_untitled_item_is_frozen_once_the_corpus_cites_it(guard, repo, capsys
         assert code == 0, out
 
 
-@pytest.mark.parametrize("where", ["code", "spec"])
+@pytest.mark.parametrize("where", ["code", "spec", "carriage-return"])
 def test_an_untitled_item_the_base_branch_cites_stays_frozen(
     guard, repo, capsys, where
 ):
@@ -820,15 +820,18 @@ def test_an_untitled_item_the_base_branch_cites_stays_frozen(
     The citation now names item 3, which the base branch's list never had, so
     the step is held by the citation the base branch made of it, whether the
     citation is in code or in the specification itself, of its own section.
+    A file whose name holds a carriage return is read at the base by that very
+    name, never one whose return became a newline.
     """
     steps = "1. Fetch the assets.\n2. Build the pages."
     inserted = "1. Fetch the assets.\n2. Clean the tree.\n3. Build the pages."
 
     def files(listed: str, item: int) -> dict[str, str]:
-        if where == "code":
+        if where != "spec":
+            cites = "src/steps.py" if where == "code" else "src/a\rb.py"
             return {
                 str(SPECS / NAME): spec(("4", "Steps", listed)),
-                "src/steps.py": f"# see demo spec {SECTION}4 item {item}\n",
+                cites: f"# see demo spec {SECTION}4 item {item}\n",
             }
         return {
             str(SPECS / NAME): spec(
@@ -937,17 +940,22 @@ def test_a_changed_file_with_a_non_ascii_name_is_judged_by_its_lines(
     )
 
 
+@pytest.mark.parametrize(
+    "name",
+    [os.fsdecode(b"src/na\xefve.py"), "src/a\rb.py"],
+    ids=["not-utf8", "carriage-return"],
+)
 @pytest.mark.parametrize("added", [True, False], ids=["committed", "untracked"])
 def test_a_changed_file_whose_name_is_not_utf8_is_read_by_that_name(
-    guard, repo, capsys, added
+    guard, repo, capsys, added, name
 ):
     """A name is bytes, which git prints as they are, under ``-z`` (#2820).
 
     The corpus keys such a file by the name Python gives it, its stray byte
     escaped, so the guard reads git's names the same way: the file's changed
-    line cites the new numbering, and is not stale.
+    line cites the new numbering, and is not stale. A carriage return in a name
+    is kept, never read as a newline, so that it names the file the corpus does.
     """
-    name = os.fsdecode(b"src/na\xefve.py")
     if added:
         commit(repo, {name: f"# see demo spec {SECTION}2\n"}, "cite")
         git(repo, "switch", "--quiet", "main")

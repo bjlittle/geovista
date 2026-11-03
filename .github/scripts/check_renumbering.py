@@ -740,7 +740,9 @@ def git(root: Path, *args: str, errors: str = "strict") -> str:
     """Run git in ``root``, returning its output.
 
     The output is decoded as UTF-8, and ``errors`` says what becomes of a byte
-    that does not decode, as :meth:`bytes.decode` does.
+    that does not decode, as :meth:`bytes.decode` does. It is decoded from the
+    bytes git wrote, with no newline translated, since a name may hold a
+    carriage return that text mode would read as a newline.
     """
     try:
         # git by name, with arguments this script builds, never a shell
@@ -748,14 +750,13 @@ def git(root: Path, *args: str, errors: str = "strict") -> str:
             ["git", "--no-pager", *args],  # noqa: S607
             cwd=root,
             capture_output=True,
-            encoding="utf-8",
-            errors=errors,
             check=True,
         )
     except subprocess.CalledProcessError as error:
-        emsg = f"git {' '.join(args)}: {error.stderr.strip()}"
+        said = error.stderr.decode("utf-8", "backslashreplace").strip()
+        emsg = f"git {' '.join(args)}: {said}"
         raise GitError(emsg) from error
-    return done.stdout
+    return done.stdout.decode("utf-8", errors)
 
 
 #: How a path git prints is decoded: a name is bytes, and one that is not UTF-8
@@ -791,9 +792,12 @@ def at(root: Path, ref: str, path: Path) -> str | None:
     if key in SHOWN:
         return SHOWN[key]
     try:
-        text: str | None = git(root, "show", f"{ref}:{relative}")
+        shown = git(root, "show", f"{ref}:{relative}")
     except GitError:
         text = None
+    else:
+        # a file's lines end as reading it from disk ends them
+        text = shown.replace("\r\n", "\n").replace("\r", "\n")
     if COMMIT.fullmatch(ref):
         SHOWN[key] = text
     return text
