@@ -962,8 +962,8 @@ e.g.,
    |                                        | This is a one-off, as ``playwright`` manages the                 |
    |                                        | browser separately from its ``python`` bindings.                 |
    +----------------------------------------+------------------------------------------------------------------+
-   | :guilabel:`verification-report`        | Report how each design specification decision is verified,       |
-   |                                        | and where it is cited. See                                       |
+   | :guilabel:`verification-report`        | Report each design specification's decisions, roadmap and open   |
+   |                                        | items, and where each decision is cited. See                     |
    |                                        | :ref:`tippy-gv-developer-specs-decisions` e.g.,                  |
    |                                        |                                                                  |
    |                                        | .. code:: console                                                |

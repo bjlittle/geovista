@@ -4,13 +4,17 @@
 # This file is part of GeoVista and is distributed under the 3-Clause BSD license.
 # See the LICENSE file in the package root directory for licensing details.
 
-"""Report how each specification decision is verified, and where it is cited.
+"""Report each specification's decisions, roadmap and open items.
 
-For every specification, or the one a prefix names, the report lists each
-decision with its state, then every place in the repository that cites it,
-grouped as source, tests, documentation, specifications and plans. It flags what
-does not agree: a verified row whose test no longer cites its decision, and a
-decision in force that nothing anywhere cites (ledger spec §3.8).
+For every specification, or the one a prefix names, the report shows its
+roadmap, each row with its status, then each decision with its state and every
+place in the repository that cites it, grouped as source, tests, documentation,
+specifications and plans, and last its open items, each with its state, the row
+that owes it and how often it has moved (items spec §3.9). It flags what does
+not agree: a verified row whose test no longer cites its decision, and a
+decision in force that nothing anywhere cites (ledger spec §3.8). It also flags
+an item on its last move, which must settle or graduate when its row lands, and
+an item owed by a row in progress, which that row's pull request must answer.
 
 It is a view of the ledger on demand, never a gate: it exits 0 whatever it finds,
 and 2 only when it cannot read a specification, or a prefix names none. The

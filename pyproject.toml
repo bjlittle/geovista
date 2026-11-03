@@ -724,7 +724,7 @@ description = "Check the work each specification status cites against GitHub"
 [tool.pixi.feature.test.tasks.verification-report]
 args = [{ "arg" = "prefix", "default" = "" }]
 cmd = "python .github/scripts/verification_report.py{% if prefix | length %} {{ prefix }}{% endif %}"
-description = "Report how each specification decision is verified, and where it is cited"
+description = "Report each specification's decisions, roadmap and open items, and where each decision is cited"
 
 [tool.pixi.feature.test.tasks.tests-clean]
 cmd = "rm -rf docs/image_cache tests/plotting/unit_image_cache test_images test_images_failed"
