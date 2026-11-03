@@ -407,13 +407,33 @@ def test_report_shows_each_roadmap_row_with_its_status(script, repo, capsys):
     Holds items spec §2 decision 12.
     """
     _, out = run(script, repo, capsys, "demo")
-    roadmap = out[out.index("### Roadmap") : out.index("### Decision 1: One.")]
+    roadmap = out[out.index("### Roadmap") : out.index("### Decisions\n")]
 
-    assert roadmap.index("| # | Scope | Status |") < roadmap.index(
-        "2 of 4 decisions in force verified"
-    )
+    assert "| # | Scope | Status |" in roadmap
     assert f"| 1 | The first | {LANDED} (2026-01-01, #1) |" in roadmap
     assert "| 3 | The work of #7, with `a \\| b` kept | not started |" in roadmap
+
+
+def test_report_shows_the_ledger_summary_under_a_heading_of_its_own(
+    script, repo, capsys
+):
+    """The ledger's summary opens the decisions, after the roadmap.
+
+    Holds items spec §2 decision 12.
+    """
+    _, out = run(script, repo, capsys, "demo")
+    decisions = out[out.index("### Decisions\n") : out.index("### Decision 1: One.")]
+
+    assert out.index("### Roadmap") < out.index("### Decisions\n")
+    assert "2 of 4 decisions in force verified" in decisions
+
+
+def test_a_specification_without_numbered_decisions_says_so(script, repo, capsys):
+    """A specification with no numbered decision says so under its heading."""
+    _, out = run(script, repo, capsys, "lone")
+    decisions = out[out.index("### Decisions\n") : out.index("### Open Items")]
+
+    assert "No numbered decisions." in decisions
 
 
 def test_report_shows_each_open_item_with_its_state_owed_row_and_moves(

@@ -1303,8 +1303,9 @@ def test_no_code_span_in_a_specification_crosses_a_line(spec):
 
 
 LANDED = "\N{WHITE HEAVY CHECK MARK} landed"
+IN_PROGRESS = "in progress"
 #: The roadmap states and the open-item states of docs spec §3.6.
-ROW_STATES = (LANDED, "in progress", "not started", "candidate")
+ROW_STATES = (LANDED, IN_PROGRESS, "not started", "candidate")
 ITEM_STATES = ("Resolved", "Abandoned", "Deferred", "Open")
 TERMINAL = frozenset({LANDED, "Resolved", "Abandoned"})
 DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
