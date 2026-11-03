@@ -1,0 +1,7 @@
+Brought the globe, scene and heights specifications into the decision ledger,
+which is now complete for every specification, and their open items, with the
+ledger specification's own, into the open items grammar. Each decision records
+who agreed it and when, and each specification ends with a Verification table:
+18 decisions are verified by tests, 3 are signed off, 5 wait on later work, and
+one is retired, replaced by a decision that says what changed. Every open item
+has an issue of its own and the roadmap row that owes it. (:user:`claude`)
