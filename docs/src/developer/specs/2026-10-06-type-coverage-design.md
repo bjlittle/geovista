@@ -513,19 +513,20 @@ Out of scope:
 (typing-spec-8)=
 ## 8. Open Items
 
-Each carries the status grammar of docs spec §3.6.
+Each carries the grammar of items spec §3.2.
 
-1. **Resolved** (2026-10-06, {issue}`2568` and {issue}`2569`) — **Are the
-   §3.4 defects reported upstream?** This item asserted that
+1. **🏁 Resolved** (2026-10-06, {issue}`2568` and {issue}`2569` · 🔎 2026-10-06,
+   {pull}`2564`) — **Are the §3.4 defects reported upstream?** This item asserted that
    neither was, and raising the issues to track them showed both halves of that wrong.
    One defect was reported in 2024 and has been fixed on `pyvista` `main` since September
    2026. The other is not upstream at all. Each now has its own trigger and its own
    issue, below.
-2. **Open** ({issue}`2568`) — **The `call-arg` suppression will outlive its cause.**
+2. **❓ Open** (🔎 2026-10-07, {pull}`2567` · 🎯 row 8 of §4 · 🎫 {issue}`2568`) — **The
+   `call-arg` suppression will outlive its cause.**
    `pyvista` pull request 9162 fixes it, and the pin in `pyproject.toml` is
    `>=0.48.0,<0.50.0`, so what matters is the floor rather than the ceiling. Withdraw
    that half of the override when the floor reaches the release carrying the fix.
-3. **Resolved** (2026-10-11, {pull}`2619`) — **The
+3. **🏁 Resolved** (2026-10-11, {pull}`2619` · 🔎 2026-10-07, {pull}`2567`) — **The
    `attr-defined` suppression hid a bug of ours.** It is labelled upstream in
    `pyproject.toml`, and the cause is one annotation in `geoplotter.py`, described in
    §3.4. Until it is corrected, 45 errors in the gallery sit
@@ -541,9 +542,9 @@ Each carries the status grammar of docs spec §3.6.
    paraphrase of the override's comment while saying it quoted it; it now quotes
    `pyproject.toml` verbatim. Change 5 removed the annotation and swapped `attr-defined`
    for `no-untyped-call` in the override, whose comment now names its real causes.
-4. **Resolved** (2026-10-07,
-   [`lazy-loader` issue 181](https://github.com/scientific-python/lazy-loader/issues/181))
-   — **Whether to pursue `lazy_loader` upstream.** Yes, after measuring. It is 19 of the
+4. **🏁 Resolved** (2026-10-07,
+   [`lazy-loader` issue 181](https://github.com/scientific-python/lazy-loader/issues/181)
+   · 🔎 2026-10-06, {pull}`2564`) — **Whether to pursue `lazy_loader` upstream.** Yes, after measuring. It is 19 of the
    29 untyped imports, one for each of the 20 library modules that import it except
    `__init__.py`, which `mypy` reads through `__init__.pyi` instead. With a typed copy on
    `mypy_path` and the library checked under `--strict`, a bare `py.typed` marker turns
@@ -555,14 +556,15 @@ Each carries the status grammar of docs spec §3.6.
    using `lazy_loader` until Python 3.15 is the floor and then move to the `lazy import`
    of PEP 810. This item argued until 2026-10-07 that it was also the root of item 3; it
    is not, which left the import count as the whole case.
-5. **Open** ({issue}`2570`) — **The `lazy_loader` override comes out when upstream
-   allows.** The `ignore_missing_imports` override for `lazy_loader` clears all 19
+5. **❓ Open** (🔎 2026-10-07, {pull}`2572` · 🎯 row 9 of §4 · 🎫 {issue}`2570`) — **The
+   `lazy_loader` override comes out when upstream allows.** The `ignore_missing_imports` override for `lazy_loader` clears all 19
    locally. It was meant for change 6, and change 2 brought it in, because `transform.py`
    imports `lazy_loader`, as most library modules do, and could not leave the ratchet
    without it. It comes out when the floor reaches a release carrying the marker, or when
    PEP 810 replaces `lazy_loader`, whichever is first.
-6. **Open** ({issue}`2568`) — **The cast in `transform_mesh`, and a typed local in
-   `core.py`, wait on the same `pyvista` release.** `pyvista` 0.49 annotates
+6. **❓ Open** (🔎 2026-10-08, {pull}`2580` · 🎯 row 8 of §4 · 🎫 {issue}`2851`) — **The
+   cast in `transform_mesh`, and a typed local in `core.py`, wait on the same `pyvista`
+   release.** `pyvista` 0.49 annotates
    `pyvista_ndarray.__setitem__` with `key: int | NumpyArray[int]`, which refuses the
    tuple index of `mesh.points[:, 0]` that it accepts at runtime, so change 2 sets the
    points through a `typing.cast`. The annotation refuses a slice key in the same way, so
@@ -570,13 +572,15 @@ Each carries the status grammar of docs spec §3.6.
    `pyvista` pull request 9262 widens the key, merged on 2026-09-23 after 0.49.0, so the
    cast and the local come out with the floor that carries it, the trigger item 2 already
    waits on.
-7. **Open** ({issue}`2601`) — **The cast in `from_tiff` waits on typeshed.**
+7. **❓ Open** (🔎 2026-10-09, {pull}`2599` · 🎯 row 10 of §4 · 🎫 {issue}`2601`) — **The
+   cast in `from_tiff` waits on typeshed.**
    `types-rasterio` types the rows and columns of `rasterio.transform.xy` as
    `int | Sequence[int]`. `rasterio` takes arrays, which is what `Transform.from_tiff`
    passes, so change 3 passes them through a `typing.cast`. It comes out when the stubs
    accept arrays. The report to typeshed covers two other gaps as well, which the code
    handles without a cast.
-8. **Open** ({issue}`2568`) — **Ten typed locals wait on the same `pyvista` release.**
+8. **❓ Open** (🔎 2026-10-11, {pull}`2619` · 🎯 row 8 of §4 · 🎫 {issue}`2852`) — **Ten
+   typed locals wait on the same `pyvista` release.**
    `pyvista` 0.49 leaves `GPUInfo.__init__`, `GPUInfo.get_info`, `Texture.__init__`,
    `Texture.to_image`, `Theme.__init__` and `PolyData.append_polydata` unannotated, and its
    `_Wrapped` decorator, item 2's cause, breaks `self.reset_camera(render=False)`. So
@@ -589,8 +593,8 @@ Each carries the status grammar of docs spec §3.6.
    `main` fixes every defect, and the locals come out with the floor that carries them,
    the trigger items 2 and 6 already wait on. `main` types `to_image` as returning
    `ImageData | None`, so the local in `wrap_texture` already allows `None`.
-9. **Open** ({issue}`2629`) — **Five dependencies ship no annotations.** The latest
-   releases of `pooch` (1.9.0), `geopy` (2.5.0), `cartopy` (0.26.0), `cmocean` (4.0.3)
+9. **❓ Open** (🔎 2026-10-11, {pull}`2631` · 🎯 row 11 of §4 · 🎫 {issue}`2629`) — **Five
+   dependencies ship no annotations.** The latest releases of `pooch` (1.9.0), `geopy` (2.5.0), `cartopy` (0.26.0), `cmocean` (4.0.3)
    and `h3` (4.5.0) carry no `py.typed` and have no stubs on conda-forge or in typeshed,
    so one `ignore_missing_imports` override makes each import `Any`. Change 6c brought
    the entries for `geopy` and `fastparquet` to life by taking `pantry/data.py` out of the
@@ -601,7 +605,8 @@ Each carries the status grammar of docs spec §3.6.
    distribution or a stub package types it. `pooch`, `cartopy`, `cmocean` and `h3` have
    open upstream issues asking for annotations; `cmocean`'s offers a stub file for its
    colormaps, which would not lift the override without a `py.typed` marker.
-10. **Open** ({issue}`2568`) — **Four typed locals wait on the same `pyvista` release.**
+10. **❓ Open** (🔎 2026-10-21, {pull}`2676` · 🎯 row 8 of §4 · 🎫 {issue}`2853`) —
+    **Four typed locals wait on the same `pyvista` release.**
     `pyvista` 0.49 types its arrays with Python's `int`, `bool` and `float` as the dtype.
     `numpy.float64` subclasses `float`, so a float array passes into `pyvista`, but
     `numpy.intp` and `numpy.bool` subclass neither `int` nor `bool`, so `extract_cells`
