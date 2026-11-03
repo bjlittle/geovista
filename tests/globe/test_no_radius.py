@@ -12,10 +12,19 @@ import importlib
 import inspect
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 import geovista
-from geovista.common import get_modules
+from geovista.bridge import Transform
+from geovista.common import get_modules, to_cartesian
+from geovista.core import resize
+from geovista.geodesic import BBox, line
+from geovista.geometry import coastlines
+from geovista.globe import Globe
+from geovista.gridlines import create_meridians, create_parallels
+from geovista.pantry.meshes import regular_grid
+from geovista.transform import transform_mesh
 
 #: The package source, whose modules the guards read.
 PACKAGE = Path(geovista.__file__).parent
@@ -27,6 +36,58 @@ PRIVATE = [
     ("geodesic", "BBox._generate_bbox_mesh"),
     ("transform", "_record_zlevels"),
 ]
+
+#: The public functions of scene spec §3.1 that took a radius, but the methods of
+#: GeoPlotter, which take the globe of their scene, and the plotter that takes it.
+SIZED = [
+    ("bridge", "Transform.__init__"),
+    ("bridge", "Transform.from_1d"),
+    ("bridge", "Transform.from_2d"),
+    ("bridge", "Transform.from_points"),
+    ("bridge", "Transform.from_tiff"),
+    ("bridge", "Transform.from_unstructured"),
+    ("bridge", "Transform.to_structured_grid"),
+    ("common", "to_cartesian"),
+    ("common", "vectors_to_cartesian"),
+    ("common", "to_lonlat"),
+    ("common", "to_lonlats"),
+    ("core", "resize"),
+    ("geodesic", "line"),
+    ("geodesic", "BBox.boundary"),
+    ("geometry", "coastlines"),
+    ("geometry", "load_coastlines"),
+    ("geoplotter", "GeoPlotterBase.__init__"),
+    ("gridlines", "create_meridians"),
+    ("gridlines", "create_parallels"),
+    ("pantry.meshes", "regular_grid"),
+    ("search", "KDTree.query"),
+    ("transform", "transform_mesh"),
+]
+
+#: The globe each builder below is given.
+GLOBE = Globe(render_radius=2)
+
+#: A mesh each builder of scene spec §3.1 makes from the globe it is given.
+BUILT = {
+    "Transform": Transform([0.0, 10.0], [0.0, 10.0], globe=GLOBE),
+    "from_1d": lambda: Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0], globe=GLOBE),
+    "from_2d": lambda: Transform.from_2d(
+        *np.meshgrid([0.0, 10.0, 20.0], [0.0, 10.0]), globe=GLOBE
+    ),
+    "from_points": lambda: Transform.from_points([0.0, 10.0], [0.0, 10.0], globe=GLOBE),
+    "line": lambda: line([0, 10], [0, 10], globe=GLOBE),
+    "boundary": lambda: BBox([0, 10, 10, 0], [0, 0, 10, 10]).boundary(globe=GLOBE),
+    "coastlines": lambda: coastlines(resolution="110m", globe=GLOBE),
+    "meridians": lambda: create_meridians(globe=GLOBE).blocks[0],
+    "parallels": lambda: create_parallels(globe=GLOBE).blocks[0],
+    "regular_grid": lambda: regular_grid(globe=GLOBE),
+    "resize": lambda: resize(
+        Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0]), globe=GLOBE
+    ),
+    "transform_mesh": lambda: transform_mesh(
+        Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0]), "+proj=eqc", globe=GLOBE
+    ),
+}
 
 
 def _callables(module: object) -> list[tuple[str, object]]:
@@ -80,6 +141,41 @@ def test_no_function_takes_a_radius():
             if "radius" in _parameters(function)
         )
     assert offenders == ["geovista.globe.Globe.__init__"]
+
+
+@pytest.mark.parametrize(("module", "qualname"), SIZED)
+def test_every_function_that_sizes_a_sphere_takes_a_globe(module, qualname):
+    """Test each function of the census takes a globe, by keyword and none by default.
+
+    Holds scene spec §2 decision 1.
+    """
+    value: object = importlib.import_module(f"geovista.{module}")
+    for part in qualname.split("."):
+        value = getattr(value, part)
+    if isinstance(value, classmethod):
+        value = value.__func__
+    parameter = inspect.signature(value).parameters.get("globe")  # type: ignore[arg-type]
+    assert parameter is not None
+    assert parameter.kind in (parameter.KEYWORD_ONLY, parameter.POSITIONAL_OR_KEYWORD)
+    assert parameter.default is None
+
+
+@pytest.mark.parametrize("build", BUILT.values(), ids=BUILT.keys())
+def test_every_builder_uses_the_globe_given(build):
+    """Test each builder of the census makes its mesh on the globe it is given.
+
+    Holds scene spec §2 decision 1.
+    """
+    assert Globe.from_mesh(build()) == GLOBE
+
+
+def test_cartesian_points_lie_on_the_globe_given():
+    """Test points converted to cartesian lie at the render radius of the globe given.
+
+    Holds scene spec §2 decision 1.
+    """
+    xyz = to_cartesian([0, 10, 20], [0, 10, -10], globe=GLOBE)
+    np.testing.assert_allclose(np.linalg.norm(xyz, axis=-1), GLOBE.render_radius)
 
 
 @pytest.mark.parametrize(("module", "qualname"), PRIVATE)
