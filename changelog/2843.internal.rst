@@ -1,0 +1,4 @@
+Added the ``pixi-task-tables`` repository check. It holds the "Pixi Tasks"
+tables of the developer pages to the tasks in ``pyproject.toml``, and fails when
+a task has no row on the packaging page or on the page for its feature, or when
+a row names a task that no longer exists. (:user:`claude`)
