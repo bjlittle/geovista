@@ -401,6 +401,10 @@ they don't have, where a misspelt one was accepted silently.
 | 6b | `core`, `search`, `filters`, `gridlines`, `crs` | 38 | ✅ landed (2026-10-21, {pull}`2676`) |
 | 6c | `pantry` and its three modules, `raster`, `report`, `themes` | 19 | ✅ landed (2026-10-21, {pull}`2680`) |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | ✅ landed (2026-10-21, {pull}`2681`) |
+| 8 | The `pyvista` release carrying the fixes of §3.4 as the floor, and the override of §3.4 and the casts and typed locals waiting on it withdrawn | 0 | candidate: the `pyvista` floor reaches 0.50.0 |
+| 9 | The `lazy_loader` override withdrawn | 0 | candidate: `lazy_loader` ships `py.typed`, or the Python floor reaches 3.15 |
+| 10 | The cast in `Transform.from_tiff` withdrawn | 0 | candidate: `types-rasterio` takes an array for the rows of `rasterio.transform.xy` |
+| 11 | The override for the distributions that ship no annotations withdrawn | 0 | candidate: one of them ships `py.typed`, or gains a stub package |
 
 Row 6, the seventeen library modules left in the ratchet, was split into three pull
 requests ({user}`bjlittle`, 2026-10-11). Its count of 51 does not reproduce. Lifted at the
@@ -409,6 +413,17 @@ census commit, the seventeen report 71 lines, and on `main` before 6a, 53. Ten o
 (§3.3), and with those imports the 53 becomes 68. Each row counts
 the lines its change clears from that 68, so 6a's 11 includes three untyped imports in
 `pantry/data.py`.
+
+Rows 8 to 11 wait on releases upstream, so each is a `candidate` (items spec §2 decision 8),
+and the items of §8 they owe name them. `tests/test_ci_typing.py` asserts every trigger,
+failing with the row to land. Row 8 fires when the `pyvista` floor reaches 0.50.0, in
+`requirements/pypi-core.txt` or the pixi manifest. That is the first release after
+`pyvista` pull requests 9162, 9262, 9344 and 9351 merged, and 0.49.2 carries none of them.
+The row withdraws the whole override of §3.4, including its `no-untyped-call` half, which
+waits on the annotations of `Camera.zoom` and has no item of its own. Row 9 reads the
+locked `lazy_loader` and `requires-python`, and row 10 the installed stubs. Row 11 reads
+each distribution its override names. They gain annotations one at a time, so each name
+comes out in a pull request of its own, and the row lands with the last.
 
 Statuses follow docs spec §3.6: a landed row names the date and the
 pull request that landed it. This is a living document, so a change that measures something
@@ -450,7 +465,9 @@ hook. It also fails on a `# mypy:` comment anywhere in the package, and on any p
 relaxation of strict mode beyond the three this specification gives reasons for:
 `geovista.cli`'s and `geovista.qt`'s in §3.1, and the gallery's
 in §3.4. Adding, changing or withdrawing one is then a change to
-the test ({issue}`2687`).
+the test ({issue}`2687`). The same module asserts the triggers of rows 8 to 11 of §4,
+reading the floors in the manifests and the distributions in the locked environment, and
+fails when one fires.
 
 Changes 2 to 4 of the roadmap each add tests passing lists where arrays were passed before,
 so that the widened contract of §3.3 is exercised rather than

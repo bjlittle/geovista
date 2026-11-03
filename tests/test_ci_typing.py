@@ -13,22 +13,34 @@ no module may configure "mypy" inline, the per-module relaxations stay the
 ones the specification gives reasons for, and the workflow that runs "mypy"
 for "pre-commit.ci" must keep running it.
 
+They also assert the triggers of the candidate rows of the roadmap, each of
+which waits on a release upstream, and fail with the row to land when one
+fires.
+
 See "docs/src/developer/specs/2026-10-06-type-coverage-design.md", section 3.2.
 
 """
 
 from __future__ import annotations
 
+import ast
 from functools import cache
+from importlib import metadata
 import io
-from pathlib import Path
+from pathlib import Path, PurePath, PurePosixPath
 import re
 import tokenize
 import tomllib
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+from packaging.requirements import Requirement
+from packaging.specifiers import SpecifierSet
+from packaging.version import Version
 import pytest
 import yaml
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable, Mapping
 
 #: The section of the repository checks page that documents this check.
 CHECK = "strict-typing"
@@ -78,6 +90,29 @@ SAMPLES = (
 #: The override settings that relax nothing "mypy" checks in a module: which
 #: modules a block applies to, and whether an import of them may be missing.
 NEUTRAL = frozenset({"ignore_missing_imports", "module"})
+
+#: The core requirements, whose floors a "pip" install honours.
+REQUIREMENTS = ROOT / "requirements" / "pypi-core.txt"
+
+#: The candidate rows of typing spec §4, each waiting on an upstream release,
+#: and each held by a test here that fails when its trigger fires.
+ROW_8 = "row 8 of typing spec §4"
+ROW_9 = "row 9 of typing spec §4"
+ROW_10 = "row 10 of typing spec §4"
+ROW_11 = "row 11 of typing spec §4"
+
+#: The first "pyvista" release after pull requests 9162, 9262, 9344 and 9351
+#: merged. None of them is in 0.49.2, cut from the 0.49 release branch.
+PYVISTA_FIXED = Version("0.50.0")
+#: The first Python with the lazy imports of PEP 810, which can replace
+#: "lazy_loader".
+LAZY_IMPORTS = Version("3.15")
+#: How "types-rasterio" types the rows of "rasterio.transform.xy", refusing the
+#: array that "Transform.from_tiff" passes (typing spec §8 item 7).
+STUB_ROWS = "int | Sequence[int]"
+#: The modules of the override citing typing spec §8 item 9, none of which
+#: ships annotations. Withdrawing one from the override withdraws it here.
+UNTYPED = ("cartopy", "cmocean", "geopy", "h3", "pooch")
 
 
 def _modules(override: dict[str, Any]) -> tuple[str, ...]:
@@ -277,6 +312,172 @@ def _hook() -> dict[str, Any]:
     ]
     assert hooks, "no local 'mypy' hook: is the skip still needed?"
     return hooks[0]
+
+
+def _floor(specifier: str) -> Version | None:
+    """Return the lowest version a specifier admits.
+
+    Parameters
+    ----------
+    specifier : str
+        A version specifier, such as ``>=0.49.0,<0.50.0``.
+
+    Returns
+    -------
+    Version or None
+        The highest of its lower bounds, which every clause admits, or None
+        when it has no lower bound.
+
+    """
+    bounds = [
+        Version(clause.version.removesuffix(".*"))
+        for clause in SpecifierSet(specifier)
+        if clause.operator in {">=", ">", "==", "~=", "==="}
+    ]
+    return max(bounds, default=None)
+
+
+def _pyvista_floors() -> dict[str, Version]:
+    """Return every floor the repository declares for "pyvista".
+
+    Returns
+    -------
+    dict of str to Version
+        Each floor, by where it is declared: the core requirements a "pip"
+        install reads, and each pixi table, which neither reads the other.
+
+    """
+    specifiers = {}
+    for line in REQUIREMENTS.read_text(encoding="utf-8").splitlines():
+        if text := line.partition("#")[0].strip():
+            requirement = Requirement(text)
+            if requirement.name == "pyvista":
+                where = REQUIREMENTS.relative_to(ROOT).as_posix()
+                specifiers[where] = str(requirement.specifier)
+    pixi = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))["tool"]["pixi"]
+    tables = {"[tool.pixi.dependencies]": pixi.get("dependencies", {})}
+    for name, feature in pixi.get("feature", {}).items():
+        for kind in ("dependencies", "pypi-dependencies"):
+            tables[f"[tool.pixi.feature.{name}.{kind}]"] = feature.get(kind, {})
+    for where, table in tables.items():
+        if (spec := table.get("pyvista")) is not None:
+            specifiers[where] = (
+                spec.get("version", "") if isinstance(spec, dict) else spec
+            )
+    return {
+        where: floor
+        for where, specifier in specifiers.items()
+        if (floor := _floor(specifier)) is not None
+    }
+
+
+def _pyvista_released(floors: Mapping[str, Version]) -> list[str]:
+    """Return each floor at the "pyvista" release row 8 waits on.
+
+    Parameters
+    ----------
+    floors : dict of str to Version
+        Each floor, by where it is declared.
+
+    Returns
+    -------
+    list of str
+        One message for each floor at or past :data:`PYVISTA_FIXED`.
+
+    """
+    return [
+        f"{where}: the pyvista floor is {floor}, which carries the fixes "
+        f"typing spec §3.4 waits on, so land {ROW_8}"
+        for where, floor in floors.items()
+        if floor >= PYVISTA_FIXED
+    ]
+
+
+def _typed(
+    modules: Iterable[str],
+    packages: Mapping[str, list[str]],
+    files: Callable[[str], Iterable[PurePath] | None],
+) -> list[str]:
+    """Return the modules that now ship annotations, or have stubs.
+
+    Parameters
+    ----------
+    modules : iterable of str
+        The top-level modules to look for.
+    packages : dict of str to list of str
+        The distributions providing each top-level module, as
+        :func:`importlib.metadata.packages_distributions` gives them.
+    files : callable
+        The files a distribution installs, as :func:`importlib.metadata.files`.
+
+    Returns
+    -------
+    list of str
+        Each module with a ``py.typed`` beneath it, or a ``<module>-stubs``
+        package installed beside it. A module that is not installed fails,
+        since reading it as untyped would hold a trigger that cannot fire.
+
+    """
+    typed = []
+    for module in modules:
+        distributions = packages.get(module)
+        assert distributions, f"{module} is not installed, so cannot be read"
+        marked = False
+        for distribution in distributions:
+            installed = files(distribution)
+            assert installed is not None, f"{distribution} lists no files"
+            marked |= any(
+                path.name == "py.typed" and path.parts[0] == module
+                for path in installed
+            )
+        if marked or f"{module}-stubs" in packages:
+            typed.append(module)
+    return typed
+
+
+def _lazy_imports(requires: str) -> bool:
+    """Return whether a Python floor has the lazy imports of PEP 810.
+
+    Parameters
+    ----------
+    requires : str
+        The ``requires-python`` specifier.
+
+    Returns
+    -------
+    bool
+        Whether its floor is at or past :data:`LAZY_IMPORTS`.
+
+    """
+    floor = _floor(requires)
+    return floor is not None and floor >= LAZY_IMPORTS
+
+
+def _stubs_widened(source: str) -> list[str]:
+    """Return a message if the stubs no longer type rows as row 10 waits on.
+
+    Parameters
+    ----------
+    source : str
+        The text of ``rasterio-stubs/transform.pyi``.
+
+    Returns
+    -------
+    list of str
+        One message if the module-level ``xy`` types its ``rows`` other than
+        as :data:`STUB_ROWS`, or is gone, and none otherwise.
+
+    """
+    found = None
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.FunctionDef) and node.name == "xy":
+            for arg in node.args.args:
+                if arg.arg == "rows" and arg.annotation is not None:
+                    found = ast.unparse(arg.annotation)
+    if found == STUB_ROWS:
+        return []
+    message = f"rasterio.transform.xy types its rows as {found}, not {STUB_ROWS}"
+    return [f"{message}: if it takes an array, land {ROW_10}"]
 
 
 def test_no_module_ignores_errors():
@@ -542,3 +743,151 @@ def test_no_global_suppression():
     assert not mypy.get("disable_error_code", []), "disable per module, not globally"
     assert mypy["files"] == ["src/geovista"], "the whole package is checked"
     assert mypy["exclude"] == [], "an exclude drops modules from the run"
+
+
+def test_row_8_waits_on_the_pyvista_release():
+    """Triggers: row 8 of typing spec §4 waits on the "pyvista" floor.
+
+    The gallery override of typing spec §3.4, the casts and the typed locals
+    of typing spec §8 item 2, item 6, item 8 and item 10 come out with the
+    floor that carries "pyvista"'s fixes, so a floor raised to that release
+    without them fails here.
+
+    """
+    floors = _pyvista_floors()
+    assert REQUIREMENTS.relative_to(ROOT).as_posix() in floors, "no pip floor read"
+    assert any(where.startswith("[tool.pixi") for where in floors), "no pixi floor"
+    problems = _pyvista_released(floors)
+    assert not problems, problems
+
+
+def test_row_9_waits_on_lazy_loader():
+    """Triggers: row 9 of typing spec §4 waits on a typed "lazy_loader".
+
+    The override of typing spec §8 item 5 comes out when "lazy_loader" ships
+    ``py.typed``, read from the locked environment, or when the Python floor
+    has the lazy imports of PEP 810 to replace it, whichever is first.
+
+    """
+    typed = _typed(("lazy_loader",), metadata.packages_distributions(), metadata.files)
+    assert not typed, f"lazy_loader ships py.typed, so land {ROW_9}"
+    manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
+    requires = manifest["project"]["requires-python"]
+    assert not _lazy_imports(requires), f"PEP 810 is in {requires}: land {ROW_9}"
+
+
+def test_row_10_waits_on_the_rasterio_stubs():
+    """Triggers: row 10 of typing spec §4 waits on stubs that take arrays.
+
+    The cast in ``Transform.from_tiff`` of typing spec §8 item 7 comes out when
+    the installed "types-rasterio" stops refusing an array for the rows of
+    ``rasterio.transform.xy``.
+
+    """
+    stubs = Path(
+        str(
+            metadata.distribution("types-rasterio").locate_file(
+                "rasterio-stubs/transform.pyi"
+            )
+        )
+    )
+    assert stubs.is_file(), f"{stubs} is missing"
+    problems = _stubs_widened(stubs.read_text(encoding="utf-8"))
+    assert not problems, problems
+
+
+def test_row_11_names_the_untyped_override():
+    """:data:`UNTYPED` is exactly what the override of typing spec §8 item 9 names."""
+    manifest = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
+    overrides = manifest["tool"]["mypy"].get("overrides", [])
+    named = [
+        {module.removesuffix(".*") for module in _modules(override)}
+        for override in overrides
+        if override.get("ignore_missing_imports")
+    ]
+    assert set(UNTYPED) in named, f"no override names exactly {UNTYPED}: {named}"
+
+
+def test_row_11_waits_on_annotations():
+    """Triggers: row 11 of typing spec §4 waits on each untyped distribution.
+
+    Each name of the override of typing spec §8 item 9 comes out when its
+    distribution ships ``py.typed`` or a stub package for it is installed,
+    in a pull request of its own, and the row lands with the last.
+
+    """
+    typed = _typed(UNTYPED, metadata.packages_distributions(), metadata.files)
+    withdraw = "withdraw each from UNTYPED and the override of typing spec §8 item 9"
+    assert not typed, f"{typed} typed: {withdraw}, landing {ROW_11} with the last"
+
+
+def test_floor_is_the_highest_lower_bound():
+    """A specifier's floor is the lowest version it admits."""
+    assert _floor(">=0.49.0,<0.50.0") == Version("0.49.0")
+    assert _floor(">=0.48,>=0.49.1") == Version("0.49.1")
+    assert _floor("==0.50.0") == Version("0.50.0")
+    assert _floor("<0.50") is None
+
+
+def test_row_8_fires_at_the_pyvista_release():
+    """Triggers: a floor at the release carrying the fixes names row 8."""
+    floors = {"a": Version("0.49.2"), "b": Version("0.50.0")}
+
+    (problem,) = _pyvista_released(floors)
+
+    assert problem.startswith("b: ")
+    assert ROW_8 in problem
+
+
+def test_row_9_fires_at_a_typed_release():
+    """Triggers: a ``py.typed`` in ``lazy_loader`` names row 9."""
+    packages = {"lazy_loader": ["lazy-loader"]}
+    files = {"lazy-loader": [PurePosixPath("lazy_loader/py.typed")]}
+
+    assert _typed(("lazy_loader",), packages, files.__getitem__) == ["lazy_loader"]
+
+
+def test_row_9_fires_at_lazy_imports():
+    """Triggers: a Python floor that has PEP 810's lazy imports names row 9."""
+    assert _lazy_imports(">=3.15")
+    assert not _lazy_imports(">=3.14")
+
+
+def test_row_10_fires_when_the_stubs_take_arrays():
+    """Triggers: ``xy`` typing its rows as anything else names row 10."""
+    source = (
+        "def xy(transform, rows: int | Sequence[int], cols): ...\n"
+        "class AffineTransformer:\n"
+        "    def xy(self, rows: ArrayLike, cols): ...\n"
+    )
+    widened = source.replace("int | Sequence[int]", "ArrayLike", 1)
+
+    assert not _stubs_widened(source)
+    (problem,) = _stubs_widened(widened)
+    assert ROW_10 in problem
+    assert ROW_10 in _stubs_widened("def other(): ...\n")[0]
+
+
+def test_row_11_fires_at_a_stub_package():
+    """Triggers: a stub package for one name names it, and no other."""
+    packages = {"pooch": ["pooch"], "geopy": ["geopy"], "geopy-stubs": ["types-geopy"]}
+    files = {
+        "geopy": [PurePosixPath("geopy/__init__.py")],
+        "pooch": [PurePosixPath("pooch/__init__.py")],
+    }
+
+    assert _typed(("geopy", "pooch"), packages, files.__getitem__) == ["geopy"]
+
+
+def test_typed_ignores_a_marker_of_another_module():
+    """A ``py.typed`` counts only beneath the module it is looked for in."""
+    packages = {"cartopy": ["Cartopy"]}
+    files = {"Cartopy": [PurePosixPath("cartopy_vendor/py.typed")]}
+
+    assert _typed(("cartopy",), packages, files.__getitem__) == []
+
+
+def test_typed_refuses_a_module_that_is_not_installed():
+    """No distribution for a name fails, rather than reading it as untyped."""
+    with pytest.raises(AssertionError, match="h3"):
+        _typed(("h3",), {}, {}.__getitem__)
