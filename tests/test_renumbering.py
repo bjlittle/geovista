@@ -971,6 +971,115 @@ def test_a_changed_file_whose_name_is_not_utf8_is_read_by_that_name(
     assert code == 0, out
 
 
+def test_a_stale_citation_in_a_file_whose_name_is_not_utf8_is_reported(
+    guard, repo, capsys
+):
+    """Such a name holds a lone surrogate, which no output can encode (#2822).
+
+    The report shows its stray byte escaped, rather than end in a traceback, and
+    so does the fix, which would otherwise rewrite the file and then fail.
+    """
+    name = os.fsdecode(b"src/na\xefve.py")
+    commit(repo, {name: f"# see demo spec {SECTION}2\n"}, "cite")
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+        },
+        "insert",
+    )
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1, out
+    assert f'src/na\\xefve.py:1: demo spec {SECTION}2 was "Design", which is' in out
+
+    code, out = run(guard, repo, "--fix", capsys=capsys)
+
+    assert code == 0, out
+    assert "fixed na\\xefve.py, lines 1" in out
+    assert (repo / name).read_text(encoding="utf-8") == f"# see demo spec {SECTION}3\n"
+
+
+@pytest.mark.parametrize(
+    "name",
+    ['src/a"b.py', "src/a\\b.py", "src/a\tb.py", "src/a\nb.py"],
+    ids=["quote", "backslash", "tab", "newline"],
+)
+def test_a_changed_file_whose_name_git_quotes_is_judged_by_its_lines(
+    guard, repo, capsys, name
+):
+    """Git quotes a name holding these whatever its settings, escaping each (#2822).
+
+    The header is unquoted, so the file is judged by its lines as one with a
+    plain name: the line the pull request wrote cites the new numbering, and is
+    not stale, while the line it left behind is.
+    """
+    commit(repo, {name: f"# see demo spec {SECTION}2\n# nothing cited\n"}, "cite")
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+            name: f"# see demo spec {SECTION}2\n# see demo spec {SECTION}3\n",
+        },
+        "insert",
+    )
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1, out
+    assert f'{name}:1: demo spec {SECTION}2 was "Design", which is now' in out
+    assert f"{name}:2:" not in out
+
+
+def test_an_added_line_that_looks_like_a_diff_header_is_read_as_a_line(
+    guard, repo, capsys
+):
+    """Prefixed with its ``+``, the line reads ``+++ b/src/cites.py`` (#2822).
+
+    Were it read as a header, the hunk after it would be taken for that file's,
+    and the line of ``src/notes.py`` it changed, which cites the new numbering,
+    for untouched, and so stale.
+    """
+    commit(
+        repo,
+        {
+            "src/cites.py": f"# one\n# two\n# see demo spec {SECTION}2\n",
+            "src/notes.py": "# one\n# two\n# three\n",
+        },
+        "cite",
+    )
+    git(repo, "switch", "--quiet", "main")
+    git(repo, "merge", "--quiet", "--ff-only", "work")
+    git(repo, "switch", "--quiet", "--create", "more")
+    commit(
+        repo,
+        {
+            str(SPECS / NAME): INSERTED,
+            "src/code.py": f"# see demo spec {SECTION}3\n",
+            "CHANGELOG.rst": f"Released: see demo spec {SECTION}4.\n",
+            "src/notes.py": f"++ b/src/cites.py\n# two\n# see demo spec {SECTION}3\n",
+        },
+        "insert",
+    )
+
+    code, out = run(guard, repo, capsys=capsys)
+
+    assert code == 1, out
+    assert f'src/cites.py:3: demo spec {SECTION}2 was "Design", which is now' in out
+    assert "src/notes.py:3:" not in out
+
+
 def test_the_audit_finds_an_item_citation_older_than_the_renumber(guard, repo, capsys):
     """Naming an item of a section is citing the section, which moved."""
     git(repo, "switch", "--quiet", "main")

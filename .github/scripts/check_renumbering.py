@@ -763,6 +763,20 @@ def git(root: Path, *args: str, errors: str = "strict") -> str:
 #: so that it is the very path the corpus holds (#2820).
 NAMES = "surrogateescape"
 
+
+def _say(text: str) -> None:
+    r"""Print a line of the report, whatever the names it holds.
+
+    A name that is not UTF-8 keeps each stray byte as a lone surrogate, as
+    :data:`NAMES` reads it, which no output can encode, so the byte is shown
+    escaped, as ``\xef``, and so is any character the output's own encoding
+    lacks (#2822).
+    """
+    encoding = sys.stdout.encoding or "utf-8"
+    text = text.encode("utf-8", NAMES).decode("utf-8", "backslashreplace")
+    print(text.encode(encoding, "backslashreplace").decode(encoding))
+
+
 #: A commit's full name, whose contents never change.
 COMMIT = re.compile(r"[0-9a-f]{40}")
 
@@ -785,17 +799,47 @@ def at(root: Path, ref: str, path: Path) -> str | None:
     return text
 
 
-#: A file a unified diff names, as changed.
-DIFFED = re.compile(r"^\+\+\+ b/(?P<path>.+)$")
+#: A file a unified diff names, as changed. Git quotes a name holding a ``"``, a
+#: backslash or a control character, whatever its settings, and ends the header
+#: with a tab when the name holds a space.
+DIFFED = re.compile(r'^\+\+\+ (?P<quote>"?)b/(?P<path>.+?)(?P=quote)\t?$')
+
+#: An escape in a name git quotes: a byte in octal, or a character.
+ESCAPE = re.compile(rb"\\(?:(?P<octal>[0-7]{3})|(?P<char>.))", re.DOTALL)
+
+#: The byte each character escapes, as C writes them.
+ESCAPED = {
+    b"a": b"\a",
+    b"b": b"\b",
+    b"t": b"\t",
+    b"n": b"\n",
+    b"v": b"\v",
+    b"f": b"\f",
+    b"r": b"\r",
+    b'"': b'"',
+    b"\\": b"\\",
+}
 
 #: The lines of a hunk, as they are now.
 HUNK = re.compile(r"^@@ -\S+ \+(?P<start>\d+)(?:,(?P<count>\d+))? @@")
+
+
+def _unquoted(name: str) -> str:
+    """Read a name git quoted, its escapes undone, as the name it is."""
+
+    def byte(escape: re.Match[bytes]) -> bytes:
+        if escape["octal"] is not None:
+            return bytes([int(escape["octal"], 8)])
+        return ESCAPED[escape["char"]]
+
+    return ESCAPE.sub(byte, name.encode("utf-8", NAMES)).decode("utf-8", NAMES)
 
 
 def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
     """Read the lines changed since ``base`` branched, as they are numbered now."""
     changed: dict[Path, set[int]] = {}
     current: Path | None = None
+    header = False
     # the format is pinned, so that no local diff setting changes what is read,
     # and a path is printed as it is, never quoted for a byte beyond ASCII; a text
     # file that is not UTF-8, which the corpus skips, is passed over too
@@ -816,13 +860,21 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
     # git frames its records by LF alone, and a path may hold a character
     # Python also counts as a line break, such as U+2028
     for line in diff.split("\n"):
-        if diffed := DIFFED.match(line):
-            # git ends the header with a tab when the path holds a space
-            current = root / diffed["path"].rstrip("\t")
+        if line.startswith("diff --git "):
+            # a file's header runs from here to its first hunk, and only there is
+            # a name read: a line of a hunk starts with "+", "-" or a backslash,
+            # never "diff", and an added one may read as "+++ b/" (#2822)
+            header, current = True, None
             continue
-        if (hunk := HUNK.match(line)) and current is not None:
-            start, count = int(hunk["start"]), int(hunk["count"] or 1)
-            changed.setdefault(current, set()).update(range(start, start + count))
+        if header and (diffed := DIFFED.match(line)):
+            path = diffed["path"]
+            current = root / (_unquoted(path) if diffed["quote"] else path)
+            continue
+        if hunk := HUNK.match(line):
+            header = False
+            if current is not None:
+                start, count = int(hunk["start"]), int(hunk["count"] or 1)
+                changed.setdefault(current, set()).update(range(start, start + count))
     # a file not yet added is the author's own, every line of it
     untracked = git(
         root, "ls-files", "--others", "--exclude-standard", "-z", errors=NAMES
@@ -1294,13 +1346,13 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
         return 2
 
     for finding in findings:
-        print(describe(finding, root, now))
+        _say(describe(finding, root, now))
     for problem in problems:
-        print(problem)
+        _say(problem)
     if findings or problems:
         print(breadcrumb.breadcrumb(CHECK))
         return 1
-    print(f"checked {scope}: no citation went stale")
+    _say(f"checked {scope}: no citation went stale")
     return 0
 
 
@@ -1326,7 +1378,7 @@ def _fix(
             rewritten = rewrite(original, path, fates, names, {number})
             out[number - 1] = rewritten.splitlines(keepends=True)[number - 1]
         path.write_text("".join(out), encoding="utf-8")
-        print(f"fixed {path.name}, lines {', '.join(map(str, sorted(lines)))}")
+        _say(f"fixed {path.name}, lines {', '.join(map(str, sorted(lines)))}")
     return [finding for finding in findings if finding.fate.kind != "moved"]
 
 
