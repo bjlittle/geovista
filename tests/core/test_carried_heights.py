@@ -149,7 +149,10 @@ WEST_HEIGHTS = np.array([1000.0, -4000.0, np.nan, 250.0, 0.0, -10.0])
 
 @pytest.mark.parametrize("data", [True, False])
 def test_combine_keeps_heights(data):
-    """Combined heights follow each mesh's points, with 0 for one without them."""
+    """Combined heights follow each mesh's points, with 0 for one without them.
+
+    Holds heights spec §2 decision 1.
+    """
     west = Transform.from_1d(WEST, LATS, height=WEST_HEIGHTS)
     east = Transform.from_1d(EAST, LATS)
     result = combine(west, east, data=data)

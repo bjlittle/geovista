@@ -202,7 +202,10 @@ def test_a_small_lift_of_float32_points(radius):
 
 
 def test_a_mesh_with_heights_reports_no_level():
-    """A cloud with heights carries no z-level, whatever its radii encode."""
+    """A cloud with heights carries no z-level, whatever its radii encode.
+
+    Holds heights spec §2 decision 8.
+    """
     cloud = Transform.from_points(
         [0.0, 10.0, 20.0], [0.0, 10.0, 20.0], zlevel=[1, 2, 3]
     )

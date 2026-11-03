@@ -113,14 +113,20 @@ def test_a_recorded_value_is_checked():
 
 @pytest.mark.parametrize("render_radius", RADII)
 def test_gvradius_gives_the_render_radius(legacy, render_radius):
-    """Test that a gvRadius is read as the render radius (scene spec §4.4 item 1)."""
+    """Test that a gvRadius is read as the render radius (scene spec §4.4 item 1).
+
+    Holds scene spec §2 decision 4.
+    """
     mesh = legacy(sphere(render_radius))
     assert Globe.from_mesh(mesh) == Globe(render_radius=render_radius)
 
 
 @pytest.mark.parametrize("render_radius", RADII)
 def test_a_sphere_reads_at_its_radius(render_radius):
-    """Test that points at one radius give it (scene spec §4.4 item 2)."""
+    """Test that points at one radius give it (scene spec §4.4 item 2).
+
+    Holds scene spec §2 decision 4.
+    """
     mesh = sphere(render_radius, record=False)
     assert Globe.from_mesh(mesh) == Globe(render_radius=render_radius)
 

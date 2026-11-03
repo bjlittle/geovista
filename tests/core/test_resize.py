@@ -449,7 +449,10 @@ def test_the_same_globe_rebuilds_misplaced_points():
 
 
 def test_a_zlevel_is_refused_with_heights():
-    """A mesh with heights takes no z-level other than 0."""
+    """A mesh with heights takes no z-level other than 0.
+
+    Holds heights spec §2 decision 6.
+    """
     mesh = Transform.from_1d(HEIGHT_XS, HEIGHT_YS, height=HEIGHTS)
     with pytest.raises(ValueError, match="z-level"):
         resize(mesh, zlevel=1)

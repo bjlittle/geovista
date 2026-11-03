@@ -41,7 +41,10 @@ def test_none_without_heights():
 
 
 def test_depth_is_the_negation():
-    """A depth is the negation of a height, and a missing one stays missing."""
+    """A depth is the negation of a height, and a missing one stays missing.
+
+    Holds heights spec §2 decision 2.
+    """
     mesh = _with_heights([100.0, -4000.0, np.nan])
     np.testing.assert_array_equal(mesh.gv.depth[:3], [-100.0, 4000.0, np.nan])
 

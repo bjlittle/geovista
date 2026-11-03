@@ -36,7 +36,10 @@ RADII = [1.0, 6378137.0]
 
 
 def test_the_table_lists_gvradius():
-    """Test that gvRadius is a retired field, last written by 0.5.3."""
+    """Test that gvRadius is a retired field, last written by 0.5.3.
+
+    Holds scene spec §2 decision 7.
+    """
     (entry,) = [e for e in RETIRED_FIELDS if e.name == GV_FIELD_RADIUS]
     assert (entry.association, entry.last_written) == ("field", "0.5.3")
     assert "gvGlobeRenderRadius" in entry.replacement
@@ -117,7 +120,10 @@ def _cleaned(mesh: pv.PolyData) -> pv.PolyData:
 
 
 def test_a_legacy_cloud_keeps_its_heights(legacy):
-    """Test that a cloud saved by 0.5 reads back at its heights, cleaned or not."""
+    """Test that a cloud saved by 0.5 reads back at its heights, cleaned or not.
+
+    Holds scene spec §2 decision 6.
+    """
     cloud = legacy(_cloud())
     np.testing.assert_allclose(from_cartesian(cloud)[:, 2], [1, 2, 3])
     sanitize(cloud)

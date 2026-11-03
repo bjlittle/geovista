@@ -334,7 +334,10 @@ def _surface(globe: Globe | None = None) -> pv.PolyData:
 
 @pytest.mark.parametrize("radius", RADII)
 def test_drawn_at_the_scenes_globe(radius):
-    """A mesh on another globe is drawn at the scene's, and records it."""
+    """A mesh on another globe is drawn at the scene's, and records it.
+
+    Holds globe spec §2 decision 7.
+    """
     p = GeoPlotter(globe=Globe(render_radius=radius))
     drawn = p.add_mesh(_surface()).mapper.dataset
     np.testing.assert_allclose(distance(drawn, mean=False), radius, rtol=1e-12)

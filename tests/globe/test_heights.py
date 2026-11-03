@@ -25,7 +25,10 @@ def test_metres_by_default():
     [(1000, "ft", 304.8), (2, "km", 2000.0), (5, "m", 5.0)],
 )
 def test_vertical_units(value, units, metres):
-    """A plain height is in the unit that vertical_units names."""
+    """A plain height is in the unit that vertical_units names.
+
+    Holds heights spec §2 decision 11.
+    """
     assert _heights(value, None, units) == pytest.approx(metres)
 
 
@@ -36,7 +39,10 @@ def test_a_quantity_from_any_registry():
 
 
 def test_depth_is_negated():
-    """A depth is negated once, and a negative depth is above sea level."""
+    """A depth is negated once, and a negative depth is above sea level.
+
+    Holds heights spec §2 decision 2.
+    """
     assert _heights(None, 4000, None) == -4000.0
     assert _heights(None, -10, None) == 10.0
     assert _heights(None, 1000, "ft") == pytest.approx(-304.8)
@@ -69,7 +75,10 @@ def test_height_with_depth():
 
 @pytest.mark.parametrize("value", [np.inf, -np.inf])
 def test_infinite(value):
-    """An infinite height is refused, as a scalar or in an array."""
+    """An infinite height is refused, as a scalar or in an array.
+
+    Holds heights spec §2 decision 3.
+    """
     with pytest.raises(ValueError, match="infinite"):
         _heights(value, None, None)
     with pytest.raises(ValueError, match=r"infinite.*index 1"):
@@ -97,7 +106,10 @@ def test_vertical_units_alone():
 
 @pytest.mark.parametrize("crs", ["EPSG:4979"])
 def test_an_ellipsoidal_height(crs):
-    """Heights above the ellipsoid are refused, as heights are above sea level."""
+    """Heights above the ellipsoid are refused, as heights are above sea level.
+
+    Holds heights spec §2 decision 10.
+    """
     with pytest.raises(ValueError, match="Ellipsoidal height"):
         _heights(1, None, None, crs=crs)
 
@@ -131,7 +143,10 @@ def test_one_for_each_point():
 
 
 def test_cells_are_refused():
-    """A height for each cell is refused, naming the issue that would add it."""
+    """A height for each cell is refused, naming the issue that would add it.
+
+    Holds heights spec §2 decision 9.
+    """
     with pytest.raises(ValueError, match="2728"):
         _for_points(np.arange(12.0), 20, 12)
 
@@ -159,7 +174,10 @@ def test_zero_counts_as_none(zlevel):
 
 @pytest.mark.parametrize("zlevel", [2, [0, 1]], ids=["scalar", "array"])
 def test_a_zlevel_is_refused(zlevel):
-    """A z-level other than 0 is refused with heights, naming it."""
+    """A z-level other than 0 is refused with heights, naming it.
+
+    Holds heights spec §2 decision 6.
+    """
     with pytest.raises(ValueError, match=rf"z-level.*{zlevel}".replace("[", r"\[")):
         _refuse_zlevel(zlevel)
 

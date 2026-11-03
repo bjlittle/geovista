@@ -59,7 +59,10 @@ def _parameters(function: object) -> list[str]:
 
 
 def test_no_function_takes_a_radius():
-    """Test no public function or method of geovista takes a radius, but the globe."""
+    """Test no public function or method of geovista takes a radius, but the globe.
+
+    Holds scene spec §2 decision 1, scene spec §2 decision 2.
+    """
     offenders = []
     for name in get_modules("geovista"):
         if name == "__main__":
