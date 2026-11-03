@@ -89,6 +89,7 @@ if TYPE_CHECKING:
     from pyvista.plotting.themes import Theme
 
     from geovista.crs import CRSLike
+    from geovista.units import Quantity
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -1401,8 +1402,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         self,
         points: ArrayLike | pv.PolyData | None = None,
         *,
-        xs: ArrayLike | None = None,
-        ys: ArrayLike | None = None,
+        xs: ArrayLike | Quantity | None = None,
+        ys: ArrayLike | Quantity | None = None,
         scalars: str | ArrayLike | None = None,
         crs: CRSLike | None = None,
         style: str | None = None,
@@ -1421,12 +1422,16 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             Passed to :func:`pyvista.wrap` without any
             cartographic transformation, i.e. ``0 0 0`` is centre of the globe
             (the plot origin), ``0 0 1`` is the north pole.
-        xs : ArrayLike, optional
+        xs : ArrayLike or pint.Quantity, optional
             A 1D, 2D or 3D array of point-cloud x-values, in canonical `crs` units.
-            Must have the same shape as the `ys`.
-        ys : ArrayLike
+            Must have the same shape as the `ys`. A ``pint`` quantity, from any
+            registry, carries its own units, and is read in those of the `crs`.
+            Give `ys` as a quantity too.
+        ys : ArrayLike or pint.Quantity, optional
             A 1D, 2D or 3D array of point-cloud y-values, in canonical `crs` units.
-            Must have the same shape as the `xs`.
+            Must have the same shape as the `xs`. A ``pint`` quantity, from any
+            registry, carries its own units, and is read in those of the `crs`.
+            Give `xs` as a quantity too.
         scalars : str or ArrayLike, optional
             Values used to color the points. Either, the string name of an array that is
             present on the `points` mesh or an array equal to the number of points.

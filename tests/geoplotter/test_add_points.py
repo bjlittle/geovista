@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pint
 from pyproj import CRS
 from pyproj.exceptions import CRSError
 import pytest
@@ -160,3 +161,14 @@ def test_at_the_scenes_globe(radius):
     drawn = p.add_points(xs=[0.0, 10.0], ys=[0.0, 10.0]).mapper.dataset
     np.testing.assert_allclose(np.linalg.norm(drawn.points, axis=1), radius, rtol=1e-6)
     assert Globe.from_mesh(drawn) == p.globe
+
+
+def test_xs_ys_as_quantities():
+    """Points given as quantities are drawn where their degrees are."""
+    ureg = pint.UnitRegistry()
+    p = GeoPlotter()
+    expected = p.add_points(xs=[0.0, 10.0], ys=[0.0, 20.0]).mapper.dataset.points
+    xs = ureg.Quantity(np.radians([0.0, 10.0]), "radian")
+    ys = ureg.Quantity(np.radians([0.0, 20.0]), "radian")
+    drawn = p.add_points(xs=xs, ys=ys).mapper.dataset
+    np.testing.assert_allclose(drawn.points, expected, rtol=1e-12)
