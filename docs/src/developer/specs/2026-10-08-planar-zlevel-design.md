@@ -44,7 +44,7 @@ brings its own length, so the same level puts meshes of different sizes at diffe
 heights. Measured on `main` at 3d4a5a88 with `+proj=eqc` and the default `zscale` of 1e-4,
 a mesh at `zlevel=1` sits at:
 
-| mesh | z |
+| Mesh | z |
 |---|---|
 | global, 360° × 180° | 1,001.9 |
 | regional, 40° × 20° | 111.3 |
@@ -113,7 +113,7 @@ a level the same proportion of the Earth's radius in either. `pyproj` supplies b
 as `CRS.ellipsoid.semi_major_metre` and the `unit_conversion_factor` of the first entry in
 `CRS.axis_info`. Measured on 2026-10-08:
 
-| CRS | unit | `R` |
+| CRS | Unit | `R` |
 |---|---|---|
 | `+proj=eqc` | metre | 6,378,137 |
 | `+proj=eqc +units=km` | kilometre | 6,378.137 |

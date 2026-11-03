@@ -472,9 +472,10 @@ capitalized, as in "Reading-Time Banner".
 Keep the literal case of code and API identifiers, filenames, paths and commands;
 of project names, such as ``geovista``, ``pyvista`` and ``pixi``; and of acronyms
 and scientific symbols. The rule applies to page titles, section titles, rubrics,
-card titles and link text that names a section. It does not apply to generated API
-pages, numpydoc section headers, changelog entries, or anything that is a full
-sentence, such as captions and admonition text, which use sentence case.
+card titles, table titles, table column headers and link text that names a section.
+It does not apply to generated API pages, numpydoc section headers, changelog
+entries, or anything that is a full sentence, such as captions and admonition text,
+which use sentence case.
 
 
 .. _gv-developer-documentation-cross-references:

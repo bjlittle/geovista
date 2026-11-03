@@ -94,7 +94,7 @@ Measured at `a0f95dbe`, 34 functions in 10 modules take a `radius`, and each is 
 of a sphere, by default `common.RADIUS`, which is 1. The first count found 33, and missed
 `pantry.meshes.regular_grid`, which was found when row 2 of §9 was planned:
 
-| module | functions |
+| Module | Functions |
 |---|---|
 | `bridge` | `Transform.__init__`, `from_1d`, `from_2d`, `from_points`, `from_tiff`, `from_unstructured` and `to_structured_grid` |
 | `common` | `to_cartesian`, `vectors_to_cartesian`, `to_lonlat` and `to_lonlats` |
@@ -378,7 +378,7 @@ first mesh's field data (§3.3), and is outside `geovista`'s control. The docume
 (scene-spec-4-8)=
 ### 4.8 What Goes
 
-| today | becomes |
+| Today | Becomes |
 |---|---|
 | `radius=` on the 33 functions of §3.1 | `globe=`, or the scene's globe for a `GeoPlotter` method |
 | `gvRadius`, written | `gvGlobeRadius`, `gvGlobeRenderRadius`, `gvGlobeExaggerationAbove` and `gvGlobeExaggerationBelow`; `gvRadius` is read, and cleaned (§4.5) |

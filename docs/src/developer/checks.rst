@@ -33,7 +33,7 @@ Where It Failed
     :widths: 35 65
 
     * - Check
-      - Where an exception goes
+      - Where an Exception Goes
     * - :ref:`Image Marker <gv-developer-checks-image-marker>`
       - ``EXEMPT`` in :bash:`tests/test_image_marker.py`
     * - :ref:`Reading-Time Banner <gv-developer-checks-reading-time-banner>`
@@ -62,7 +62,7 @@ Where It Failed
     :widths: 35 65
 
     * - Check
-      - Where an exception goes
+      - Where an Exception Goes
     * - :ref:`Changelog Fragment <gv-developer-checks-changelog-fragment>`
       - the ``skip-changelog`` label
     * - :ref:`Specification Statuses <gv-developer-checks-spec-statuses>`

@@ -28,7 +28,7 @@ three the type coverage specification gives reasons for. When this specification
 written there were eight such rules, each enforced by a test or a script, and several
 allowed an exception, declared in a list beside the check:
 
-| check | enforced by | where an exception goes |
+| Check | Enforced By | Where an Exception Goes |
 |---|---|---|
 | image marker | `tests/test_image_marker.py` | `EXEMPT`, in that module |
 | reading-time banner | `tests/docs/test_readingtime_coverage.py` | `EXEMPT`, in that module |
