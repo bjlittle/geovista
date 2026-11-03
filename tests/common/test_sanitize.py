@@ -83,7 +83,10 @@ def test(lam_uk, extra):
 
 
 def test_legacy_by_default(legacy):
-    """Test that retired fields are cleaned by default."""
+    """Test that retired fields are cleaned by default.
+
+    Holds scene spec §2 decision 6.
+    """
     mesh = legacy(Transform.from_1d(LONS, LATS))
     sanitize(mesh)
     assert GV_FIELD_RADIUS not in mesh.field_data

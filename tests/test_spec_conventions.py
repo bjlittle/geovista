@@ -2225,12 +2225,10 @@ decision_anchor = citations.decision_anchor
 Decision = citations.Decision
 
 #: The specifications not yet in the ledger, each with the row of ledger spec §8
-#: that brings it in. Each of those rows shortens this, and the last empties it.
-UNLEDGERED = {
-    "2026-10-26-globe-heights-layers-design.md": 6,
-    "2026-10-27-globe-scene-design.md": 6,
-    "2026-10-28-heights-as-data-design.md": 6,
-}
+#: that brings it in. Each of those rows shortens this, and row 6 empties it.
+#: Stays a dict, not removed, since test_unledgered_names_specifications_still_waiting
+#: reads it unconditionally.
+UNLEDGERED: dict[str, int] = {}
 
 #: The roles a provenance carries.
 USER = re.compile(r"\{user\}`(?P<login>[^`]+)`")
@@ -2720,7 +2718,12 @@ def decided(specs, names) -> dict[str, Decision]:
     ids=lambda path: path.name,
 )
 def test_every_ledgered_specification_holds_its_ledger(spec, names, decided):
-    """Ledger (item 9): ledger spec §2 decision 13, every rule on every ledger."""
+    """Ledger spec §2 decision 12, §2 decision 13: every rule, on every specification.
+
+    ``UNLEDGERED`` is empty, so this parametrizes over every specification in the
+    collection (decision 12), and holds every ledger rule on each of them
+    (item 9, decision 13).
+    """
     text = spec.read_text(encoding="utf-8")
     problems = (
         ledger_entries(spec, text)
@@ -2864,10 +2867,6 @@ row_anchor = citations.row_anchor
 UNITEMED = {
     "2026-10-06-type-coverage-design.md": 3,
     "2026-10-23-globe-first-crs-design.md": 4,
-    "2026-10-26-globe-heights-layers-design.md": 5,
-    "2026-10-27-globe-scene-design.md": 5,
-    "2026-10-28-heights-as-data-design.md": 5,
-    "2026-10-30-decision-ledger-design.md": 5,
 }
 
 #: Where an item was found, the row that owes it, and the issue that tracks it.

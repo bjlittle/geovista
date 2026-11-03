@@ -104,7 +104,10 @@ def test_the_crs_cannot_be_set():
 
 
 def test_equal_when_the_crs_and_globe_are():
-    """Test that namespaces compare CRSs and globes, never geometry."""
+    """Test that namespaces compare CRSs and globes, never geometry.
+
+    Holds scene spec §2 decision 9.
+    """
     mesh = Transform.from_1d(LONS, LATS)
     assert mesh.gv == Transform.from_1d(LONS[:5], LATS).gv
     other = Transform.from_1d(LONS, LATS)

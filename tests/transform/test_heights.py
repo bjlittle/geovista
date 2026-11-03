@@ -136,7 +136,10 @@ def test_missing_heights_on_a_map():
 
 
 def test_a_zlevel_is_refused_with_heights():
-    """A mesh with heights takes no z-level other than 0."""
+    """A mesh with heights takes no z-level other than 0.
+
+    Holds heights spec §2 decision 6.
+    """
     mesh = Transform.from_1d(XS, YS, height=HEIGHTS)
     with pytest.raises(ValueError, match="z-level"):
         transform_mesh(mesh, "+proj=eqc", zlevel=1)
@@ -178,7 +181,10 @@ def test_no_globe_is_the_default():
 
 @pytest.mark.parametrize("kind", ["surface", "cloud"])
 def test_an_ellipsoidal_target_is_refused(kind):
-    """A mesh with heights is never transformed to a height above the ellipsoid."""
+    """A mesh with heights is never transformed to a height above the ellipsoid.
+
+    Holds heights spec §2 decision 10.
+    """
     if kind == "surface":
         mesh = Transform.from_1d(XS, YS, height=HEIGHTS)
         bare = Transform.from_1d(XS, YS)

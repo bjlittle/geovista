@@ -33,53 +33,58 @@ point is drawn (globe spec §4.3, globe spec §4.4).
 
 The parent fixes the formulas, the reference and most of the refusals. It left open how a
 mesh stores its heights, which functions take them, how a height lives beside `zlevel`
-until row 5 removes it, and what a scene does when its globe changes. {user}`bjlittle`
-settled these while this was written, along with a case the parent did not consider: the
-depths of an ocean model, which arrive masked over land.
+until row 5 of globe spec §9 removes it, and what a scene does when its globe changes.
+{user}`bjlittle` settled these while this was written, along with a case the parent did
+not consider: the depths of an ocean model, which arrive masked over land.
 
 (heights-spec-2)=
 ## 2. Decisions
 
 These were decided with {user}`bjlittle` while the design was written.
 
-1. **A mesh stores its heights in one point array, `gvHeight`.** It is float64, in metres
-   above mean sea level. A mesh without it is at sea level. The prefix matches the fields
-   of the globe (scene spec §2 decision 3), and leaves a user's own array named `height`
-   alone.
-2. **A depth is a negative height.** `depth=` is offered beside `height=`, positive
-   downward, and negated once where it is given. `mesh.gv.depth` is offered beside
-   `mesh.gv.height`, and negates the heights where they are read. No depth is stored, so a
-   mesh has one array and one sign.
-3. **A missing height is no height.** A masked or NaN height is stored as NaN, and its point
-   is drawn at sea level, as a mesh given no height is. Only an infinite height is refused.
-   This amends globe spec §4.3, which refused every height that is not finite, so that an
-   ocean's depths, masked over land, load as its data does today, and `threshold` drops
-   the land (§3.2).
-4. **Heights enter where a mesh is built and where it is added to a scene.** The bridge's
-   constructors, its `Transform` factory, `to_structured_grid`, `GeoPlotter.add_mesh` and
-   `GeoPlotter.add_points` take them, as globe spec §4.3 names. `resize` and
-   `transform_mesh` take none, and position a mesh from the heights it carries.
-5. **Heights are given once.** A mesh that carries heights and is given more is refused,
-   and so is `height=` given with `depth=`. `geovista` never picks one set of heights over
-   another.
-6. **A height and a z-level are never given together.** Until row 5 of globe spec §9
-   removes `zlevel`, a mesh with heights and a z-level other than 0 is refused. A height is
-   physics and a z-level is display, which globe spec §2 decision 1 keeps apart. Drawing a
-   layer apart becomes the lift of row 4.
-7. **A scene's globe is fixed when the scene is made.** Positions are built from heights
-   when a mesh is added, and `GeoPlotter.globe` stays read-only (scene spec §6). A scene
-   that replaces its globe and rebuilds every layer from its heights, as globe spec §4.1
-   describes, is §8 item 1.
-8. **`from_cartesian` reads positions, and nothing else.** Its third column stays the
-   z-level, which is 0 for a mesh with heights. Heights are read from `gvHeight`, through
-   `mesh.gv.height`.
-9. **Heights given for each cell stay refused,** as globe spec §8 item 6 defers them
-   ({issue}`2728`).
-10. **A CRS whose vertical axis is an ellipsoidal height is refused only with heights.**
-    Without heights, its horizontal axes are read, as they are today (§3.4).
-11. **`vertical_units=` names the unit of heights given as plain numbers,** a CF unit string
-    read by `geovista.units.to_metres`, for `height=`, `depth=` and the `zs` of
-    `to_structured_grid` alike.
+1. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A mesh stores its heights
+   in one point array, `gvHeight`.** It is float64, in metres above mean sea level. A mesh
+   without it is at sea level. The prefix matches the fields of the globe
+   (scene spec §2 decision 3), and leaves a user's own array named `height` alone.
+2. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A depth is a negative
+   height.** `depth=` is offered beside `height=`, positive downward, and negated once where
+   it is given. `mesh.gv.depth` is offered beside `mesh.gv.height`, and negates the heights
+   where they are read. No depth is stored, so a mesh has one array and one sign.
+3. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A missing height is no
+   height.** A masked or NaN height is stored as NaN, and its point is drawn at sea level,
+   as a mesh given no height is. Only an infinite height is refused. This amends
+   globe spec §4.3, which refused every height that is not finite, so that an ocean's
+   depths, masked over land, load as its data does today, and `threshold` drops the land
+   (§3.2).
+4. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **Heights enter where a mesh
+   is built and where it is added to a scene.** The bridge's constructors, its `Transform`
+   factory, `to_structured_grid`, `GeoPlotter.add_mesh` and `GeoPlotter.add_points` take
+   them, as globe spec §4.3 names. `resize` and `transform_mesh` take none, and position a
+   mesh from the heights it carries.
+5. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **Heights are given once.** A
+   mesh that carries heights and is given more is refused, and so is `height=` given with
+   `depth=`. `geovista` never picks one set of heights over another.
+6. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A height and a z-level are
+   never given together.** Until row 5 of globe spec §9 removes `zlevel`, a mesh with
+   heights and a z-level other than 0 is refused. A height is physics and a z-level is
+   display, which globe spec §2 decision 1 keeps apart. Drawing a layer apart becomes the
+   lift of row 4 of globe spec §9.
+7. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A scene's globe is fixed
+   when the scene is made.** Positions are built from heights when a mesh is added, and
+   `GeoPlotter.globe` stays read-only (scene spec §6). A scene that replaces its globe and
+   rebuilds every layer from its heights, as globe spec §4.1 describes, is §8 item 1.
+8. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **`from_cartesian` reads
+   positions, and nothing else.** Its third column stays the z-level, which is 0 for a mesh
+   with heights. Heights are read from `gvHeight`, through `mesh.gv.height`.
+9. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **Heights given for each cell
+   stay refused,** as globe spec §8 item 6 defers them ({issue}`2728`).
+10. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **A CRS whose vertical axis
+    is an ellipsoidal height is refused only with heights.** Without heights, its horizontal
+    axes are read, as they are today (§3.4).
+11. **🤝 Agreed** (2026-10-29, {user}`bjlittle`, {pull}`2771`) — **`vertical_units=` names
+    the unit of heights given as plain numbers,** a CF unit string read by
+    `geovista.units.to_metres`, for `height=`, `depth=` and the `zs` of `to_structured_grid`
+    alike.
 
 (heights-spec-3)=
 ## 3. What Exists Today
@@ -274,32 +279,33 @@ Each of these raises a `ValueError` that names what was given:
   vertical axis is gravity-related, or for none ({issue}`2782`).
 
 (heights-spec-4-5)=
-### 4.5 What Row 3 Leaves Alone
+### 4.5 What This Design Leaves Alone
 
 - **Picking** gains nothing. A picked point's index reads its height from `mesh.gv.height`,
   which is what globe spec §4.4 asks of a picked point.
 - **Lines and the search tree.** A geodesic line or a bounding box placed on a surface with
   heights lies where it does today, and `KDTree` searches the positions it is given. Lines
-  at their true heights are row 4's (globe spec §4.5).
+  at their true heights belong to row 4 of globe spec §9 (globe spec §4.5).
 - **The base layer** is opaque at sea level, so it hides a surface below it from outside the
   globe (§8 item 3).
 - **Vectors** keep their components. How the vertical mapping bends an arrow is
   globe spec §8 item 9.
 - **The gallery and the README** keep their z-levels and their hand-warped orography until
-  row 5 of globe spec §9 migrates them. Row 3 changes two examples, `grid/reykjanes` and
-  `grid/reykjanes_contour`, whose `zs` it reads as heights. Their levels are 250 m apart,
-  and were drawn half a cell of latitude apart before they were heights. Each example gives
-  its grid and its scene `Globe(exaggeration=22.34)`, which draws them that far apart, so
-  their images stand. {user}`bjlittle` plans to redesign `to_structured_grid` once row 1
-  lands ({issue}`2774`).
+  row 5 of globe spec §9 migrates them. Row 3 of globe spec §9 changes two examples,
+  `grid/reykjanes` and `grid/reykjanes_contour`, whose `zs` it reads as heights. Their
+  levels are 250 m apart, and were drawn half a cell of latitude apart before they were
+  heights. Each example gives its grid and its scene `Globe(exaggeration=22.34)`, which
+  draws them that far apart, so their images stand. {user}`bjlittle` plans to redesign
+  `to_structured_grid` once row 1 lands ({issue}`2774`).
 
 (heights-spec-5)=
 ## 5. Alternatives Considered
 
 - **A height and a z-level that add.** Rejected, by §2 decision 6. It needs a combined
-  behaviour on the globe, on a map and in point clouds, each to design and test, and row 5
-  removes it.
-- **A scene whose globe can be replaced in row 3.** Deferred, by §2 decision 7. The scene
+  behaviour on the globe, on a map and in point clouds, each to design and test, and
+  row 5 of globe spec §9 removes it.
+- **A scene whose globe can be replaced in row 3 of globe spec §9.** Deferred, by
+  §2 decision 7. The scene
   would keep each layer's mesh, texture, z-level and transform, and rebuild every actor from
   them, which is a larger piece of work than the heights themselves (§8 item 1).
 - **New heights replacing a mesh's own on the copy drawn.** Rejected, by §2 decision 5.
@@ -312,7 +318,7 @@ Each of these raises a `ValueError` that names what was given:
   ways to give heights, each needing the refusal of §2 decision 5, for nothing the bridge
   and the scene do not already offer.
 - **`from_cartesian` reporting heights.** Rejected, by §2 decision 8. One column would carry
-  two meanings until row 5.
+  two meanings until row 5 of globe spec §9.
 - **Refusing a missing height, as the parent did.** Rejected, by §2 decision 3. Data
   masked over land, loaded as the gallery loads it, would be refused. Refusing it only when
   a mesh is drawn was also rejected: a point a sea cell shares with a land cell may keep a
@@ -322,10 +328,10 @@ Each of these raises a `ValueError` that names what was given:
   own height, or averaging heights onto the points, each needs its own argument.
 - **Refusing a CRS with an ellipsoidal height whenever it is given.** Rejected, by
   §2 decision 10. Callers who pass `EPSG:4979` for longitudes and latitudes would break.
-- **Lowering the base layer below the deepest height in row 3.** Deferred to row 4, which
-  owns the base layer's lowering (globe spec §4.5).
-- **A gallery example of heights in row 3.** Deferred to row 5, which migrates the
-  orography example to heights.
+- **Lowering the base layer below the deepest height in row 3 of globe spec §9.** Deferred
+  to row 4 of globe spec §9, which owns the base layer's lowering (globe spec §4.5).
+- **A gallery example of heights in row 3 of globe spec §9.** Deferred to
+  row 5 of globe spec §9, which migrates the orography example to heights.
 - **`height_units` and `depth_units`.** Rejected, by §2 decision 11. Two keywords on every
   builder, and a third for the `zs` of `to_structured_grid`.
 - **Arrays from `mesh.gv.height` that can be written.** Rejected, by §4.1. Writing to one
@@ -376,10 +382,11 @@ In scope: `gvHeight`, `height=`, `depth=` and `vertical_units=`, `mesh.gv.height
 Out of scope:
 
 - heights given for each cell ({issue}`2728`);
-- a scene whose globe can be replaced (§8 item 1);
-- heights read from a raster band (§8 item 2);
+- a scene whose globe can be replaced, left to row 3 of §9 (§8 item 1);
+- heights read from a raster band, left to row 4 of §9 (§8 item 2);
 - layering, the base layer's lowering and the lift, which are row 4 of globe spec §9;
-- removing `zlevel` and `zscale`, and migrating the gallery and the README, which are row 5;
+- removing `zlevel` and `zscale`, and migrating the gallery and the README, which are
+  row 5 of globe spec §9;
 - a vertical mapping in bands, or as a function of height (globe spec §8 item 8);
 - converting heights between vertical datums (globe spec §7, {issue}`2782`).
 
@@ -388,18 +395,29 @@ Out of scope:
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **Open** — **A scene whose globe can be replaced.** Globe spec §4.1 has a scene rebuild
-   every position from its layers' heights when its vertical mapping changes. Row 3 fixes a
+1. **❓ Open** (🔎 2026-10-29, {pull}`2771` · 🎯 row 3 of §9 · 🎫 {issue}`2769`) — **A scene
+   whose globe can be replaced.** Globe spec §4.1 has a scene rebuild every position from
+   its layers' heights when its vertical mapping changes. Row 3 of globe spec §9 fixes a
    scene's globe when the scene is made (§2 decision 7), so a new exaggeration means a new
    plotter ({issue}`2769`).
-2. **Open** — **Heights from a raster band.** `Transform.from_tiff` builds its points from
-   the file, and `extract` may drop some of them, so an array of heights cannot be matched
-   to them. A digital elevation model is a GeoTIFF, and one of its bands could be read as
-   the heights of the points ({issue}`2770`).
-3. **Open** — **A surface below sea level, under the base layer.** The base layer is opaque
-   at sea level, so an ocean floor drawn at its depth cannot be seen from outside the
-   globe. Until row 4, a user drops the base layer or gives it an opacity.
-   Row 4 of globe spec §9 owns it, with the base layer's lowering (globe spec §4.5).
+2. **❓ Open** (🔎 2026-10-29, {pull}`2771` · 🎯 row 4 of §9 · 🎫 {issue}`2770`) — **Heights
+   from a raster band.** `Transform.from_tiff` builds its points from the file, and
+   `extract` may drop some of them, so an array of heights cannot be matched to them. A
+   digital elevation model is a GeoTIFF, and one of its bands could be read as the heights
+   of the points ({issue}`2770`).
+3. **❓ Open** (🔎 2026-10-29, {pull}`2771` · 🎯 row 5 of §9 · 🎫 {issue}`2836`) — **A surface
+   below sea level, under the base layer.** The base layer is opaque at sea level, so an
+   ocean floor drawn at its depth cannot be seen from outside the globe. Until
+   row 4 of globe spec §9, a user drops the base layer or gives it an opacity. That row
+   owns it, with the base layer's lowering (globe spec §4.5).
+4. **❓ Open** (🔎 2026-11-03, {pull}`2826` · 🎯 row 2 of §9 · 🎫 {issue}`2838`) — **Heights
+   read back without their unit.** `mesh.gv.height` and `mesh.gv.depth` return plain float64
+   arrays in metres, while scene spec §2 decision 8 makes a public value with a unit a
+   `pint` quantity, and crs spec §4.9 counts heights and depths among them. Either they
+   return quantities, or this specification records an exception for arrays read back, such
+   as one that keeps `pint` unloaded. An exception would change what
+   scene spec §2 decision 8 means, so it would retire that decision and agree a new one
+   (ledger spec §3.3), not edit it. It is settled before 0.6 releases the API.
 
 (heights-spec-9)=
 ## 9. Roadmap
@@ -408,12 +426,21 @@ Each carries the status grammar of docs spec §3.6.
 |---|---|---|
 | 1 | Heights on a mesh: `gvHeight`, `height=`, `depth=` and `vertical_units=` on the bridge, `to_structured_grid` reading its `zs` as heights, positions from heights on the globe and on a map through the bridge, `resize` and `transform_mesh`, `mesh.gv.height` and `mesh.gv.depth`, missing heights, heights through the filters and `combine`, and the refusals of §4.4 | ✅ landed (2026-10-30, {pull}`2777`) |
 | 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | not started |
+| 3 | A scene whose globe can be replaced, rebuilding every layer from its heights | not started |
+| 4 | Heights from a raster band in `Transform.from_tiff`, before row 5 of globe spec §9 | not started |
+| 5 | A surface below sea level seen past the base layer, landing with row 4 of globe spec §9 | not started |
 
 Statuses follow docs spec §3.6. Row 2 is planned once row 1 has landed. Until it lands, a
 scene scales a mesh with heights that records another globe by the ratio of render radii,
-as row 2 of scene spec §9 left it. Neither row breaks a release, since the `zlevel` and
-`zscale` that `to_structured_grid` loses have never been released, and neither changes an
-example in the README. Row 3 of globe spec §9 lands with row 2, before 0.6 is released.
+as row 2 of scene spec §9 left it. Neither row 1 nor row 2 breaks a release, since the
+`zlevel` and `zscale` that `to_structured_grid` loses have never been released, and neither
+changes an example in the README. Row 3 of globe spec §9 lands with row 2, before 0.6 is
+released.
+
+Rows 3 to 5 each wait on a row of globe spec §9. Row 3 lands with or after
+row 3 of globe spec §9, which fixes a scene's globe when the scene is made. Row 4 lands
+before row 5 of globe spec §9, which migrates the gallery. Row 5 lands with
+row 4 of globe spec §9, which lowers the base layer.
 
 (heights-spec-10)=
 ## 10. References
@@ -424,3 +451,22 @@ example in the README. Row 3 of globe spec §9 lands with row 2, before 0.6 is r
   scene spec §4.3, scene spec §4.4 and scene spec §4.6.
 - {issue}`2728`, heights given for each cell.
 - {issue}`2782`, heights above the ellipsoid and other vertical datums.
+
+(heights-spec-11)=
+## 11. Verification
+
+Each row follows ledger spec §3.4.
+
+| Decision | Status | Evidence |
+|---|---|---|
+| 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_carried_heights.py`, `tests/globe/test_vertical.py` |
+| 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_heights.py`, `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
+| 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/globe/test_vertical.py` |
+| 4 | ⏳ pending | rows 1 to 2 of §9 |
+| 5 | ⏳ pending | rows 1 to 2 of §9 |
+| 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_resize.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
+| 7 | ⏳ pending | row 2 of §9 |
+| 8 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/common/test_from_cartesian.py` |
+| 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
+| 10 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
+| 11 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/bridge/test_to_structured_grid.py`, `tests/globe/test_heights.py` |

@@ -103,9 +103,9 @@ silently drops the coverage and the job still exits 0. `tests/docs` does this
 with `--browser-strict`; follow the pattern for any new guarded suite.
 
 ⚠️ **`bash -l {0}` drops errexit.** Enable it, or keep the real check last.
-**Git path gates need `-z`, NUL splitting and `--no-renames`**: quoting hides
-non-ASCII paths, a move hides the old watched path (#2789, #2791). Keep name bytes with
-`surrogateescape`; split on NUL or LF, never `str.splitlines()` (U+2028, #2823).
+**Git path gates need `-z`, NUL splitting and `--no-renames`** (#2789, #2791).
+Capture bytes, then decode with `surrogateescape`: text mode changes CR to LF (#2824).
+Split on NUL or LF, never `str.splitlines()` (U+2028, #2823).
 
 ⚠️ **On `issues`, `issue_comment` and `pull_request_target`, `github.ref` is the
 default or base branch**, so key `concurrency` on the issue or PR number. Suppress

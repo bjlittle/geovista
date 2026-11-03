@@ -426,20 +426,23 @@ and bringing the nine existing specifications into the ledger.
 
 Out of scope: what any decision says; whether an edit to a decision's wording changes its
 meaning, which is left to review (§2 decision 3); plans, which are frozen and may cite a
-decision but are not governed by the ledger; and emojis for the states of a roadmap row or
-an open item other than `landed`, which §7 holds open.
+decision but are not governed by the ledger; and emojis for the states of a roadmap row
+other than `landed`, which §7 holds open, since items spec §2 decision 9 gave an open
+item's states theirs.
 
 (ledger-spec-7)=
 ## 7. Open Items
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **Open** — **The other states have no emoji.** A roadmap row that has landed carries ✅,
-   and with this specification so do the states of a decision and of its verification. A
-   row `in progress`, `not started` or `candidate`, and an open item, carry none. Giving
-   them emojis would make every status in the collection read alike, but it changes the
+1. **❓ Open** (🔎 2026-10-30, {pull}`2785` · 🎯 row 7 of §8 · 🎫 {issue}`2837`) — **The other
+   states have no emoji.** A roadmap row that has landed carries ✅, and with this
+   specification so do the states of a decision and of its verification. A row
+   `in progress`, `not started` or `candidate`, and an open item, carry none. Giving them
+   emojis would make every status in the collection read alike, but it changes the
    vocabulary of docs spec §3.6 and every specification that uses it, so it is a change of
-   its own.
+   its own. Items spec §2 decision 9 has since given an open item's states theirs, so the
+   item is narrowed to a roadmap row's states.
 
 (ledger-spec-8)=
 ## 8. Roadmap
@@ -451,16 +454,19 @@ Each carries the status grammar of docs spec §3.6.
 | 3 | The verification report (§3.8) | ✅ landed (2026-10-31, {pull}`2792`) |
 | 4 | The typing, zlevel and checks specifications brought into the ledger | ✅ landed (2026-11-01, {pull}`2796`) |
 | 5 | The crs specification brought into the ledger | ✅ landed (2026-11-02, {pull}`2799`) |
-| 6 | The globe, scene and heights specifications brought into the ledger | not started |
+| 6 | The globe, scene and heights specifications brought into the ledger | ✅ landed (2026-11-03, {pull}`2826`) |
+| 7 | Emojis for a roadmap row's states | not started |
 
-Statuses follow docs spec §3.6. Rows 2 to 6 each need row 1. Row 1 brings in the docs and
+Statuses follow docs spec §3.6. Rows 2 to 7 each need row 1. Row 1 brings in the docs and
 citation specifications itself, as it retires a decision of the citation specification and
 adds notes to the docs specification. Rows 2 and 3 need nothing else, and can land in either
 order. Once row 2 has merged, `status references` becomes a required check, a repository
 setting {user}`bjlittle` changes (§3.7). Rows 4 to 6 can land in any order after row 1, but
 best after that change: a sign-off they record before it is held by review alone, and is
 checked against GitHub by the nightly run. Row 6 brings in the three specifications together
-because each extends the one before, and their decisions cite one another.
+because each extends the one before, and their decisions cite one another. Row 7 changes the
+vocabulary of docs spec §3.6 and every specification that uses it, so it lands on its own
+(§7 item 1).
 
 (ledger-spec-9)=
 ## 9. References
@@ -490,7 +496,7 @@ Each row follows §3.4.
 | 9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 10 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 11 | ✅ verified (2026-10-31, {pull}`2792`) | `tests/test_verification_report.py` |
-| 12 | ⏳ pending |  |
+| 12 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/test_spec_conventions.py` |
 | 13 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 14 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
 | 15 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |

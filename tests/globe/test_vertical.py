@@ -40,7 +40,10 @@ def test_mapped():
 
 @pytest.mark.parametrize("radius", RADII)
 def test_on_globe(radius, at_heights):
-    """Each point lies at s (R + V(h)), with a missing height at sea level."""
+    """Each point lies at s (R + V(h)), with a missing height at sea level.
+
+    Holds heights spec §2 decision 3.
+    """
     globe = Globe(render_radius=radius, exaggeration=20, exaggeration_below=100)
     lons, lats = [0.0, 90.0, -170.0, 45.0], [0.0, 30.0, -60.0, 89.0]
     result = _on_globe(globe, lons, lats, HEIGHTS)
@@ -51,7 +54,10 @@ def test_on_globe(radius, at_heights):
 
 
 def test_recorded_never_active():
-    """Heights are recorded as float64, and never become the active scalars."""
+    """Heights are recorded as float64, and never become the active scalars.
+
+    Holds heights spec §2 decision 1.
+    """
     mesh = pv.PolyData(np.eye(4, 3))
     _record_heights(mesh, [1, 2, 3, 4])
     assert mesh.active_scalars_name is None

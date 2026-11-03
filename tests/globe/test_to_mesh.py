@@ -34,7 +34,10 @@ FIELDS = [
 
 
 def test_the_field_names():
-    """Test that each field is named for a reader of the file."""
+    """Test that each field is named for a reader of the file.
+
+    Holds scene spec §2 decision 3.
+    """
     assert FIELDS == [
         "gvGlobeRadius",
         "gvGlobeRenderRadius",
@@ -44,7 +47,10 @@ def test_the_field_names():
 
 
 def test_writes_four_float64_fields_and_no_gvradius(legacy):
-    """Test that a globe is written as four float64 values, replacing gvRadius."""
+    """Test that a globe is written as four float64 values, replacing gvRadius.
+
+    Holds scene spec §2 decision 3.
+    """
     mesh = legacy(Transform.from_1d(LONS, LATS))
     assert GV_FIELD_RADIUS in mesh.field_data
     Globe(exaggeration=20, exaggeration_below=100).to_mesh(mesh)

@@ -46,7 +46,10 @@ def test_levels_at_their_heights(radius, at_heights):
 
 
 def test_levels_in_another_unit():
-    """Levels in another unit, or as a quantity, read back in metres."""
+    """Levels in another unit, or as a quantity, read back in metres.
+
+    Holds heights spec §2 decision 11.
+    """
     grid = Transform.to_structured_grid(XS, YS, [0, 1, 3], vertical_units="km")
     np.testing.assert_array_equal(np.unique(grid.gv.height), [0.0, 1000.0, 3000.0])
 

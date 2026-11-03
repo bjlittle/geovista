@@ -99,6 +99,19 @@ def builder(request) -> tuple[Callable[..., pv.PolyData], np.ndarray, np.ndarray
     return BUILDERS[request.param]
 
 
+def test_stored_as_gvheight(builder):
+    """Heights are stored in one float64 point array, named exactly gvHeight.
+
+    Holds heights spec §2 decision 1.
+    """
+    build, lons, *_ = builder
+    heights = _heights(lons.size)
+    mesh = build(height=heights)
+    assert mesh.point_data.keys() == ["gvHeight"]
+    assert mesh.point_data["gvHeight"].dtype == np.float64
+    np.testing.assert_array_equal(mesh.point_data["gvHeight"], heights)
+
+
 @pytest.mark.parametrize(
     ("given", "metres"),
     [
@@ -109,7 +122,10 @@ def builder(request) -> tuple[Callable[..., pv.PolyData], np.ndarray, np.ndarray
     ids=["vertical_units", "quantity", "metres"],
 )
 def test_reads_back_in_metres(builder, given, metres):
-    """A height in any form reads back in metres at every point."""
+    """A height in any form reads back in metres at every point.
+
+    Holds heights spec §2 decision 11.
+    """
     build, *_ = builder
     np.testing.assert_allclose(build(**given).gv.height, metres)
 
@@ -131,7 +147,10 @@ def test_placed_by_the_formula(builder, radius, at_heights):
 
 
 def test_depth_gives_the_negated_height(builder):
-    """A depth places a point where the negated height does."""
+    """A depth places a point where the negated height does.
+
+    Holds heights spec §2 decision 2.
+    """
     build, lons, *_ = builder
     depths = _heights(lons.size)
     mesh = build(depth=depths)
@@ -140,7 +159,10 @@ def test_depth_gives_the_negated_height(builder):
 
 
 def test_missing_heights_at_sea_level(builder):
-    """A masked height and a NaN read back as NaN, and lie at sea level."""
+    """A masked height and a NaN read back as NaN, and lie at sea level.
+
+    Holds heights spec §2 decision 3.
+    """
     build, lons, *_ = builder
     heights = np.ma.masked_array(np.full(lons.size, 100.0), mask=False)
     heights[0] = np.ma.masked
@@ -178,7 +200,10 @@ def test_the_data_stays_active(build, name):
 
 
 def test_a_cloud_records_no_zscale():
-    """A cloud with heights carries no z-level."""
+    """A cloud with heights carries no z-level.
+
+    Holds heights spec §2 decision 8.
+    """
     cloud = Transform.from_points(CLOUD_LONS, CLOUD_LATS, height=_heights(4))
     assert GV_FIELD_ZSCALE not in cloud.field_data
     np.testing.assert_array_equal(from_cartesian(cloud)[:, 2], 0.0)
@@ -237,7 +262,10 @@ def test_height_with_depth(builder):
 
 
 def test_height_with_a_zlevel(builder):
-    """A height is never given with a z-level other than 0."""
+    """A height is never given with a z-level other than 0.
+
+    Holds heights spec §2 decision 6.
+    """
     build, lons, *_ = builder
     with pytest.raises(ValueError, match=r"z-level.*zlevel=2"):
         build(height=_heights(lons.size), zlevel=2)
@@ -262,7 +290,10 @@ def test_zero_zlevel_with_heights(builder):
 
 @pytest.mark.parametrize("name", ["from_1d", "from_2d", "from_unstructured", "call"])
 def test_a_height_for_each_cell(name):
-    """A height for each cell is refused, naming the issue that would add it."""
+    """A height for each cell is refused, naming the issue that would add it.
+
+    Holds heights spec §2 decision 9.
+    """
     build, *_, n_cells = BUILDERS[name]
     with pytest.raises(ValueError, match="2728"):
         build(height=np.arange(float(n_cells)))
@@ -293,7 +324,10 @@ def test_vertical_units_alone(builder):
 
 @pytest.mark.parametrize("build", ["from_1d", "from_points"])
 def test_an_ellipsoidal_height(build):
-    """Heights are refused with a CRS whose height is above the ellipsoid."""
+    """Heights are refused with a CRS whose height is above the ellipsoid.
+
+    Holds heights spec §2 decision 10.
+    """
     build = BUILDERS[build][0]
     with pytest.raises(ValueError, match="Ellipsoidal height"):
         build(height=100.0, crs="EPSG:4979")
