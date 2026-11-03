@@ -2718,7 +2718,12 @@ def decided(specs, names) -> dict[str, Decision]:
     ids=lambda path: path.name,
 )
 def test_every_ledgered_specification_holds_its_ledger(spec, names, decided):
-    """Ledger (item 9): ledger spec §2 decision 13, every rule on every ledger."""
+    """Ledger spec §2 decision 12, §2 decision 13: every rule, on every specification.
+
+    ``UNLEDGERED`` is empty, so this parametrizes over every specification in the
+    collection (decision 12), and holds every ledger rule on each of them
+    (item 9, decision 13).
+    """
     text = spec.read_text(encoding="utf-8")
     problems = (
         ledger_entries(spec, text)
@@ -2733,11 +2738,7 @@ def test_every_ledgered_specification_holds_its_ledger(spec, names, decided):
 
 
 def test_unledgered_names_specifications_still_waiting(specs):
-    """An exemption cannot outlive the row of ledger spec §8 that ends it.
-
-    Ledger spec §2 decision 12: every existing specification is brought into the
-    ledger, which an empty ``UNLEDGERED`` delivers.
-    """
+    """An exemption cannot outlive the row of ledger spec §8 that ends it."""
     names = {spec.name for spec in specs}
     rows = roadmap_rows(
         (SPECS / "2026-10-30-decision-ledger-design.md").read_text(encoding="utf-8")
