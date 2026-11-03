@@ -38,10 +38,7 @@ def test_a_given_globe():
 
 
 def test_the_globe_cannot_be_set():
-    """Test the globe of a scene cannot be replaced.
-
-    Holds globe spec §2 decision 7.
-    """
+    """Test the globe of a scene cannot be replaced."""
     p = GeoPlotter()
     with pytest.raises(AttributeError):
         p.globe = Globe(render_radius=2)  # type: ignore[misc]

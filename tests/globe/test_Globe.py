@@ -187,10 +187,7 @@ def test_the_repr_rebuilds_the_globe():
 
 
 def test_the_radius_adds_to_a_quantity_of_the_application_registry():
-    """Test that the radius is a quantity of pint's application registry.
-
-    Holds scene spec §2 decision 8.
-    """
+    """Test that the radius is a quantity of pint's application registry."""
     other = pint.get_application_registry().Quantity(1, "km")
     assert (Globe().radius + other).to("m").magnitude == 6379137.0
 

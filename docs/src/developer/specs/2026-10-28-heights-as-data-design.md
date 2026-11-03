@@ -413,7 +413,9 @@ Each carries the status grammar of docs spec §3.6.
    arrays in metres, while scene spec §2 decision 8 makes a public value with a unit a
    `pint` quantity, and crs spec §4.9 counts heights and depths among them. Either they
    return quantities, or this specification records an exception for arrays read back, such
-   as one that keeps `pint` unloaded. It is settled before 0.6 releases the API.
+   as one that keeps `pint` unloaded. An exception would change what
+   scene spec §2 decision 8 means, so it would retire that decision and agree a new one
+   (ledger spec §3.3), not edit it. It is settled before 0.6 releases the API.
 
 (heights-spec-9)=
 ## 9. Roadmap
