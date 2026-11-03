@@ -1,0 +1,8 @@
+Brought the type coverage specification's open items into the open items
+grammar. Each item now records the pull request that first wrote it, and each
+of the seven still open has an issue of its own and the roadmap row that owes
+it. Those rows are four new candidates, each waiting on an upstream release,
+and :bash:`tests/test_ci_typing.py` fails when one arrives, naming the row to
+land: a ``pyvista`` floor of 0.50.0, a typed ``lazy_loader`` or a Python floor
+of 3.15, ``rasterio`` stubs that take an array, or annotations for ``pooch``,
+``geopy``, ``cartopy``, ``cmocean`` or ``h3``. (:user:`claude`)
