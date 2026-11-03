@@ -887,17 +887,27 @@ def test_a_changed_text_file_that_is_not_utf8_is_passed_over(guard, repo, capsys
     assert code == 0, out
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        (
+            "src/r\N{LATIN SMALL LETTER E WITH ACUTE}"
+            "sum\N{LATIN SMALL LETTER E WITH ACUTE}.py"
+        ),
+        "src/a\N{LINE SEPARATOR}b.py",
+    ],
+    ids=["accented", "line-separator"],
+)
 def test_a_changed_file_with_a_non_ascii_name_is_judged_by_its_lines(
-    guard, repo, capsys
+    guard, repo, capsys, name
 ):
     """A diff's header quotes such a name, unless git is told not to (#2820).
 
     The line the pull request wrote cites the new numbering, and is not stale;
     the line it left behind cites the old, and is reported and fixed, as in a
-    file with a plain name.
+    file with a plain name. A name may hold a character Python counts as a line
+    break, such as U+2028, which git does not, so the diff is split on LF alone.
     """
-    acute = "\N{LATIN SMALL LETTER E WITH ACUTE}"
-    name = f"src/r{acute}sum{acute}.py"
     commit(repo, {name: f"# see demo spec {SECTION}2\n# nothing cited\n"}, "cite")
     git(repo, "switch", "--quiet", "main")
     git(repo, "merge", "--quiet", "--ff-only", "work")

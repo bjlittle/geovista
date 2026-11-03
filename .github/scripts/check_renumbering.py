@@ -813,7 +813,9 @@ def changed_lines(root: Path, base: str) -> dict[Path, set[int]]:
         "--",
         errors=NAMES,
     )
-    for line in diff.splitlines():
+    # git frames its records by LF alone, and a path may hold a character
+    # Python also counts as a line break, such as U+2028
+    for line in diff.split("\n"):
         if diffed := DIFFED.match(line):
             # git ends the header with a tab when the path holds a space
             current = root / diffed["path"].rstrip("\t")
