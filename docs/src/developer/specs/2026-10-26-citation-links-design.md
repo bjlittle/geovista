@@ -93,7 +93,7 @@ specifications design on that date.
 
 Measured on `main` at `7f11f403`, with the parser of `tests/test_spec_conventions.py`:
 
-| where | role | plain | rendered |
+| Where | Role | Plain | Rendered |
 |---|---:|---:|---|
 | the six specifications | 215 | 4 | yes, as links (roles) or as text (plain) |
 | developer pages, `checks.rst` and `specs/index.rst` | 7 | 1 | yes |
@@ -138,7 +138,7 @@ renamed and none has moved. So nothing is stale yet, and nothing would say so if
 [`bjlittle/tephpy`](https://github.com/bjlittle/tephpy) built this first, and geovista's
 conventions are a port of it. At `29896cf`:
 
-| piece | lines |
+| Piece | Lines |
 |---|---:|
 | `docs/src/_ext/tephpy_citations.py`, the shared grammar | 537 |
 | `docs/src/_ext/tephpy_citation_xrefs.py`, the transform | 428 |

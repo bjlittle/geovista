@@ -179,7 +179,7 @@ the weight that rounding gives the third vertex grows as the triangle shrinks.
 (heights-spec-4-2)=
 ### 4.2 Where Heights Enter
 
-| function | takes |
+| Function | Takes |
 |---|---|
 | `Transform.from_1d`, `from_2d`, `from_points` and `from_unstructured` | `height=`, `depth=`, `vertical_units=` |
 | `Transform(...)`, the factory | the same, when it is made, carried by every mesh it makes |

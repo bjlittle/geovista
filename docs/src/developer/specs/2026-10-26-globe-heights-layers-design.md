@@ -101,7 +101,7 @@ lines, and in 11 of the gallery's examples, which use them in three different wa
 Measured on 2026-10-26 at `7ca628c1`, a mesh of radius 6,371,000 with `zlevel=10`, on the
 globe and in Robinson:
 
-| | data mesh | coastlines | the same mesh at `zlevel=10` |
+| | Data Mesh | Coastlines | The Same Mesh at `zlevel=10` |
 |---|---|---|---|
 | globe | radius 6,371,000 | radius 1.0001, inside the mesh | 6,371 m above it |
 | Robinson | z = 0 | z = 1,913 m | z = 6,378 m |
@@ -132,7 +132,7 @@ themselves:
 
 The samples that `geovista.pantry` serves, and those of `bjlittle/geovista-jav-2026`:
 
-| source | vertical coordinate | what it is |
+| Source | Vertical Coordinate | What It Is |
 |---|---|---|
 | NAME, Reykjanes | `altitude`, m, `positive: up` | above mean sea level |
 | NEMO, ORCA2 | `deptht`, m, `positive: down`, labelled `model_level_number` | model levels at known depths below the sea surface |
@@ -179,7 +179,7 @@ layers truly coincide. On the globe they do not: each mesh is flat between its v
 so the middle of each cell sits below the sphere its vertices lie on. That sag grows with
 the square of a cell's size:
 
-| mesh | sag of a cell's centre, as a fraction of the radius | at 6,378,137 m |
+| Mesh | Sag of a Cell's Centre, as a Fraction of the Radius | At 6,378,137 m |
 |---|---|---|
 | C96 | 6.7 × 10⁻⁵ | 427 m |
 | 1° grid | 7.6 × 10⁻⁵ | 486 m |
@@ -195,7 +195,7 @@ seen in practice, but rectilinear grids and meshes users build can be coarser st
 **Results**, as the worst case over every view, bleed and coastline visibility, on the GPU,
 with llvmpipe within a few points throughout:
 
-| layering | C48 | 1° grid | 5° grid | Robinson, all three |
+| Layering | C48 | 1° Grid | 5° Grid | Robinson, All Three |
 |---|---|---|---|---|
 | today's offsets | 0% / 76% | 0% / 63% | 65% / 75% | ≤ 0.3% / 88% |
 | none, every layer at one radius | 100% / 45% | 80% / 44% | 100% / 36% | ≤ 52% / 82% |
@@ -236,7 +236,7 @@ plotters in one process, so each block of the measurement ran in a process of it
 Measured on 2026-10-27 at `a0f95dbe`. Of the gallery's 48 examples, 30 have no vertical at
 all. Each of the rest meets it in a way of its own, at the Earth's radius of 6,378,137 m:
 
-| example | today | in this design |
+| Example | Today | In This Design |
 |---|---|---|
 | `warp/from_unstructured__lfric_orog` | warps along point normals by 2 × 10⁻⁵ per metre, an exaggeration of 127.6, chosen by hand | heights, with an exaggeration it states |
 | `warp/from_unstructured__lfric_orog_eqc` | warps a Plate Carrée map by 200 per metre, an exaggeration of 200 | the same heights and exaggeration as on the globe |
@@ -463,7 +463,7 @@ Heights, the order and the lift keep apart the jobs that `zlevel` did in one num
 
 When row 5 of §9 lands:
 
-| today | becomes |
+| Today | Becomes |
 |---|---|
 | `zlevel` on `add_mesh`, `add_points`, the bridge and the built-in layers | `height` or `depth` for a physical height, a layer's order for which layer shows, or a lift to draw it apart (§4.5) |
 | `zscale` | the globe's vertical mapping |

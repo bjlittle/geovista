@@ -39,7 +39,7 @@ exists.
 
 The measurement, taken on 2026-10-06:
 
-| | count |
+| | Count |
 |---|---|
 | published specifications reachable from the documentation | 0 |
 | specifications rendered to HTML | 1 |
@@ -146,7 +146,7 @@ with the prefix naming which. The index's table lists every prefix in use, and
 §3.5 holds it complete. When this specification was written there
 were two:
 
-| citation | document |
+| Citation | Document |
 |---|---|
 | `docs spec §…` | this document |
 | `typing spec §…` | `2026-10-06-type-coverage-design.md` |
@@ -357,7 +357,7 @@ work that put it there.
 The vocabulary is closed, so that a reader scanning a column is reading a known set rather
 than inferring one from English:
 
-| status | where | carries |
+| Status | Where | Carries |
 |---|---|---|
 | `candidate` | roadmap row | the trigger that would promote it |
 | `not started` | roadmap row | the issue tracking it, if one is raised |
@@ -616,7 +616,7 @@ that was taken from one that was dropped.
   `docs/src/developer/specs/2026-08-03-published-specs-design.md`, cited there as
   `docs spec §…`. Surveyed on 2026-10-06 at `ee80574`:
 
-  | piece | lines |
+  | Piece | Lines |
   |---|---|
   | `docs/src/_ext/tephpy_citations.py` — the shared citation grammar | 537 |
   | `docs/src/_ext/tephpy_citation_xrefs.py` — the build-time transform | 428 |

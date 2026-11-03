@@ -152,7 +152,7 @@ The 71 failing PROJ methods and 21 failing `cartopy` classes fall into six class
 needing something different on the globe before it can be projected. Two methods,
 `august` and `bacon`, fail without a class yet: each tears its cells at the south pole.
 
-| # | Class | What goes wrong | PROJ | `cartopy` | Issue |
+| # | Class | What Goes Wrong | PROJ | `cartopy` | Issue |
 |---|---|---|---|---|---|
 | 1 | Latitude limits | a pole goes to infinity | 9 | 3 | {issue}`140` |
 | 2 | A cap around a centre | only a cap is valid, and the far side raises or runs away | 18 | 9 | {issue}`1402` |
@@ -220,7 +220,7 @@ sample was given EPSG:3857, whose WKT holds a degree sign, a radius of
 6,378,137.123456789 m as float64 field data, and a float64 height for each point. It was
 saved with `pyvista` and read back:
 
-| format | size | CRS, radius, heights and points |
+| Format | Size | CRS, Radius, Heights and Points |
 |---|---|---|
 | legacy `.vtk`, binary, the default | 1.00 MB | exact |
 | legacy `.vtk`, ASCII | 1.16 MB | the CRS exact; every double rounded to 11 significant figures, so the radius reads 6,378,137.1235 m and heights are off by up to 5 × 10⁻⁸ m |

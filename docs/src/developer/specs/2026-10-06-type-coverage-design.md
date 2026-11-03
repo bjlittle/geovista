@@ -35,7 +35,7 @@ succeeds against anything.
 The size of what it misses was measured on 2026-10-06, by running the same configuration
 inside the `geovista` pixi environment where the real types are present:
 
-| | errors | distinct source lines |
+| | Errors | Distinct Source Lines |
 |---|---|---|
 | `src/geovista` excluding `examples/` | 492 | 186, across 22 of 25 modules |
 | `src/geovista/examples/` | 150 | 142 |

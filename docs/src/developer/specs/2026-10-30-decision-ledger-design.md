@@ -34,7 +34,7 @@ different claims, and only the first is written down anywhere.
 
 The measurement, taken on 2026-10-30:
 
-| | count |
+| | Count |
 |---|---|
 | specifications | 9 |
 | decisions | 69 |
@@ -210,7 +210,7 @@ strike-through would.
 The table has one row per decision, in order, from 1 to N. A row is added in the pull
 request that adds its decision, and starts pending. Its states:
 
-| state | meaning | Status carries | Evidence holds |
+| State | Meaning | Status Carries | Evidence Holds |
 |---|---|---|---|
 | `⏳ pending` | not yet shown to be delivered | nothing | optionally, the `candidate` row to deliver it |
 | `✅ verified` | a test exercises it | the date and pull request | each test file, as a path |
