@@ -19,6 +19,7 @@ import geovista
 from geovista.bridge import Transform
 from geovista.common import get_modules, to_cartesian
 from geovista.core import resize
+from geovista.crs import WGS84
 from geovista.geodesic import BBox, line
 from geovista.geometry import coastlines
 from geovista.globe import Globe
@@ -64,28 +65,36 @@ SIZED = [
     ("transform", "transform_mesh"),
 ]
 
-#: The globe each builder below is given.
+#: The globe each builder below is given, at twice the default render radius.
 GLOBE = Globe(render_radius=2)
 
-#: A mesh each builder of scene spec §3.1 makes from the globe it is given.
+#: A mesh each builder of scene spec §3.1 makes on the globe it is given.
 BUILT = {
-    "Transform": Transform([0.0, 10.0], [0.0, 10.0], globe=GLOBE),
-    "from_1d": lambda: Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0], globe=GLOBE),
-    "from_2d": lambda: Transform.from_2d(
-        *np.meshgrid([0.0, 10.0, 20.0], [0.0, 10.0]), globe=GLOBE
+    "Transform": lambda globe: Transform([0.0, 10.0], [0.0, 10.0], globe=globe)(),
+    "from_1d": lambda globe: Transform.from_1d(
+        [0.0, 10.0, 20.0], [0.0, 10.0], globe=globe
     ),
-    "from_points": lambda: Transform.from_points([0.0, 10.0], [0.0, 10.0], globe=GLOBE),
-    "line": lambda: line([0, 10], [0, 10], globe=GLOBE),
-    "boundary": lambda: BBox([0, 10, 10, 0], [0, 0, 10, 10]).boundary(globe=GLOBE),
-    "coastlines": lambda: coastlines(resolution="110m", globe=GLOBE),
-    "meridians": lambda: create_meridians(globe=GLOBE).blocks[0],
-    "parallels": lambda: create_parallels(globe=GLOBE).blocks[0],
-    "regular_grid": lambda: regular_grid(globe=GLOBE),
-    "resize": lambda: resize(
-        Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0]), globe=GLOBE
+    "from_2d": lambda globe: Transform.from_2d(
+        *np.meshgrid([0.0, 10.0, 20.0], [0.0, 10.0]), globe=globe
     ),
-    "transform_mesh": lambda: transform_mesh(
-        Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0]), "+proj=eqc", globe=GLOBE
+    "from_points": lambda globe: Transform.from_points(
+        [0.0, 10.0], [0.0, 10.0], globe=globe
+    ),
+    "line": lambda globe: line([0, 10], [0, 10], globe=globe),
+    "boundary": lambda globe: BBox([0, 10, 10, 0], [0, 0, 10, 10]).boundary(
+        globe=globe
+    ),
+    "coastlines": lambda globe: coastlines(resolution="110m", globe=globe),
+    "meridians": lambda globe: create_meridians(globe=globe).blocks[0],
+    "parallels": lambda globe: create_parallels(globe=globe).blocks[0],
+    "regular_grid": lambda globe: regular_grid(globe=globe),
+    "resize": lambda globe: resize(
+        Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0]), globe=globe
+    ),
+    "transform_mesh": lambda globe: transform_mesh(
+        transform_mesh(Transform.from_1d([0.0, 10.0, 20.0], [0.0, 10.0]), "+proj=eqc"),
+        WGS84,
+        globe=globe,
     ),
 }
 
@@ -164,9 +173,14 @@ def test_every_function_that_sizes_a_sphere_takes_a_globe(module, qualname):
 def test_every_builder_uses_the_globe_given(build):
     """Test each builder of the census makes its mesh on the globe it is given.
 
+    The mesh records the globe, and its points, lifts included, lie at twice those
+    built on the default globe, as the render radius is twice the default.
+
     Holds scene spec §2 decision 1.
     """
-    assert Globe.from_mesh(build()) == GLOBE
+    mesh = build(GLOBE)
+    assert Globe.from_mesh(mesh) == GLOBE
+    np.testing.assert_allclose(mesh.points, 2 * build(Globe()).points)
 
 
 def test_cartesian_points_lie_on_the_globe_given():
