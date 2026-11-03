@@ -22,12 +22,15 @@ from pykdtree.kdtree import KDTree as pyKDTree
 from .common import VTK_CELL_IDS, StrEnumPlus, _to_cartesian, to_cartesian
 from .crs import WGS84, from_wkt
 from .globe import Globe, _resolve
-from .transform import transform_points
+from .transform import _coordinates, transform_points
+from .units import _lonlats
 
 if TYPE_CHECKING:
     import numpy as np
     from numpy.typing import ArrayLike
     import pyvista as pv
+
+    from .units import Quantity
 
     type NearestNeighbours = tuple[ArrayLike, ArrayLike]
     """Type alias for a tuple of nearest neighbour distances and indices.""" ""
@@ -265,8 +268,8 @@ class KDTree:  # numpydoc ignore=PR01
 
     def query(
         self,
-        lons: float | ArrayLike,
-        lats: float | ArrayLike,
+        lons: float | ArrayLike | Quantity,
+        lats: float | ArrayLike | Quantity,
         /,
         *,
         k: int | None = None,
@@ -280,10 +283,14 @@ class KDTree:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        lons : float or ArrayLike
+        lons : float or ArrayLike or pint.Quantity
             One or more longitude values for the query points-of-interest.
-        lats : float or ArrayLike
+            A ``pint`` quantity, from any registry, is read in degrees. Give `lats` as a
+            quantity too.
+        lats : float or ArrayLike or pint.Quantity
             One or more latitude values for the query points-of-interest.
+            A ``pint`` quantity, from any registry, is read in degrees. Give `lons` as a
+            quantity too.
         k : int, optional
             The number of nearest neighbours to find per point-of-interest. Defaults
             to :data:`KDTREE_K`.
@@ -318,6 +325,8 @@ class KDTree:  # numpydoc ignore=PR01
         .. versionadded:: 0.3.0
 
         """
+        lons, lats = _lonlats(lons, lats)
+
         if k is None:
             k = KDTREE_K
 
@@ -380,8 +389,8 @@ def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:
 def find_nearest_cell(
     mesh: pv.PolyData,
     /,
-    x: float,
-    y: float,
+    x: float | Quantity,
+    y: float | Quantity,
     z: float | None = 0,
     *,
     single: bool | None = False,
@@ -399,12 +408,16 @@ def find_nearest_cell(
     ----------
     mesh : PolyData
         The mesh defining the points, cells and CRS.
-    x : float
+    x : float or pint.Quantity
         The POI x-coordinate. Defaults to ``longitude`` if no `mesh` CRS is
         available.
-    y : float
+        A ``pint`` quantity, from any registry, carries its own units, and is read in
+        those of the CRS of the `mesh`. Give `y` as a quantity too.
+    y : float or pint.Quantity
         The POI y-coordinate. Defaults to ``latitude`` if no `mesh` CRS is
         available.
+        A ``pint`` quantity, from any registry, carries its own units, and is read in
+        those of the CRS of the `mesh`. Give `x` as a quantity too.
     z : float, optional
         The POI z-coordinate, if applicable. Defaults to zero.
     single : bool, default=False
@@ -423,11 +436,12 @@ def find_nearest_cell(
 
     """
     crs = from_wkt(mesh)
+    px, py = _coordinates(x, y, crs, x_name="x", y_name="y", crs_name=None)
     poi = (
         # on the globe of the mesh, whose points it is compared with
-        to_cartesian(x, y, globe=Globe.from_mesh(mesh) or Globe())[0]
+        to_cartesian(px, py, globe=Globe.from_mesh(mesh) or Globe())[0]
         if crs in [WGS84, None]
-        else np.array([x, y, 0 if z is None else z], dtype=float)
+        else np.array([px, py, 0 if z is None else z], dtype=float)
     )
     cid = mesh.find_closest_cell(poi)
     # a single point has a single closest cell

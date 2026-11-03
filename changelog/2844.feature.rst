@@ -1,0 +1,8 @@
+The public functions that take longitudes and latitudes, coordinates in a CRS,
+or the angles of a graticule take them as ``pint`` quantities from any registry
+too, as the builders of :class:`geovista.bridge.Transform` do. Among them are
+:func:`geovista.transform.transform_points`, :class:`geovista.geodesic.BBox`,
+:func:`geovista.geodesic.line`, :meth:`geovista.search.KDTree.query`,
+:meth:`geovista.geoplotter.GeoPlotterBase.view_poi` and
+:meth:`geovista.geoplotter.GeoPlotterBase.add_graticule`. A quantity is read in
+the units of the function's CRS, or in degrees where it takes none. (:user:`claude`)

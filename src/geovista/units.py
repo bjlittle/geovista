@@ -26,7 +26,7 @@ Notes
 from __future__ import annotations
 
 from functools import cache
-from typing import TYPE_CHECKING, Any, Protocol, overload, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, cast, overload, runtime_checkable
 import warnings
 
 import lazy_loader as lazy
@@ -45,6 +45,13 @@ __all__ = ["Quantity", "as_quantity", "to_degrees", "to_metres"]
 
 type Quantity = pint.Quantity
 """Type alias for a ``pint`` quantity, which only this module may import."""
+
+#: The decimal places of a degree an angle converted from another unit snaps to.
+_GRID = 9
+
+#: The furthest, in degrees, a converted angle snaps, well above the noise of a
+#: conversion and well below any angle that means something on the globe.
+_SNAP = 1e-11
 
 
 @runtime_checkable
@@ -340,3 +347,255 @@ def as_quantity(metres: float) -> Quantity:
     # the object pint.set_application_registry swaps the registry inside
     quantity: pint.Quantity = pint.application_registry.Quantity(float(metres), "m")
     return quantity
+
+
+def _masked(
+    values: float | NDArray[np.float64], quantity: Quantity
+) -> float | NDArray[np.float64]:
+    """Give converted values the mask of the magnitude of their quantity.
+
+    A conversion leaves a masked element as NaN, and a masked point has no
+    position, so its mask is given back.
+
+    Parameters
+    ----------
+    values : float or ndarray
+        The converted values.
+    quantity : pint.Quantity
+        The quantity they were converted from.
+
+    Returns
+    -------
+    float or ndarray
+        The values, masked where the magnitude of `quantity` is.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    mask = np.ma.getmask(quantity.magnitude)
+    return values if mask is np.ma.nomask else np.ma.masked_array(values, mask=mask)
+
+
+def _read_angle(
+    name: str, value: Quantity, *, radians: bool
+) -> float | NDArray[np.float64]:
+    """Read a quantity that is an angle, naming its argument if it is not one.
+
+    A value within :data:`_SNAP` degrees of a number of :data:`_GRID` decimal
+    places is taken as that number, so that a whole number of degrees given in
+    radians reads as that number. The conversion leaves 30 degrees in radians as
+    29.999999999999996 degrees, which would draw an extra line of a graticule, or
+    label one a degree down. The snap moves a position by a micrometre at most.
+
+    Parameters
+    ----------
+    name : str
+        The name of the argument `value` was given as.
+    value : pint.Quantity
+        The angle.
+    radians : bool
+        Whether to read it in radians, rather than in degrees.
+
+    Returns
+    -------
+    float or ndarray
+        The angle, masked where the magnitude of `value` is.
+
+    Raises
+    ------
+    ValueError
+        If `value` is not an angle, or its units cannot be read.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    try:
+        degrees = to_degrees(value)
+    except ValueError as err:
+        emsg = f"Cannot read {name!r} as an angle: {err}"
+        raise ValueError(emsg) from err
+
+    snapped = np.round(degrees, _GRID)
+    degrees = np.where(np.abs(degrees - snapped) <= _SNAP, snapped, degrees)
+    result: NDArray[np.float64] = np.radians(degrees) if radians else degrees
+    return _masked(float(result) if result.ndim == 0 else result, value)
+
+
+@overload
+def _angle(
+    name: str, value: None, *, radians: bool = ...
+) -> None: ...  # numpydoc ignore=GL08
+
+
+@overload
+def _angle(
+    name: str, value: float | Quantity, *, radians: bool = ...
+) -> float: ...  # numpydoc ignore=GL08
+
+
+def _angle(
+    name: str, value: float | Quantity | None, *, radians: bool = False
+) -> float | None:
+    """Read an argument that is one angle, given as a number or a quantity.
+
+    Parameters
+    ----------
+    name : str
+        The name of the argument, to name it in a message.
+    value : float or pint.Quantity, optional
+        The angle. A plain number, or ``None``, is returned as it is given.
+    radians : bool, default=False
+        Whether to read a quantity in radians, rather than in degrees.
+
+    Returns
+    -------
+    float, optional
+        The angle.
+
+    Raises
+    ------
+    ValueError
+        If a quantity is not an angle, or its units cannot be read.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # pint's quantity holds its magnitude and units as properties, which the
+    # protocol does not, so a test of it narrows no type
+    quantity = isinstance(value, _Quantity)
+    if not quantity:
+        return cast("float | None", value)
+    return float(_read_angle(name, cast("Quantity", value), radians=radians))
+
+
+def _angle_array(
+    name: str, value: ArrayLike | Quantity, *, radians: bool = False
+) -> ArrayLike:
+    """Read an argument that is an array of angles, given plain or as a quantity.
+
+    Parameters
+    ----------
+    name : str
+        The name of the argument, to name it in a message.
+    value : ArrayLike or pint.Quantity
+        The angles. Plain numbers are returned as they are given.
+    radians : bool, default=False
+        Whether to read a quantity in radians, rather than in degrees.
+
+    Returns
+    -------
+    ArrayLike
+        The angles, masked where the magnitude of a quantity is.
+
+    Raises
+    ------
+    ValueError
+        If a quantity is not an angle, or its units cannot be read.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    quantity = isinstance(value, _Quantity)
+    if not quantity:
+        return cast("ArrayLike", value)
+    return _read_angle(name, cast("Quantity", value), radians=radians)
+
+
+def _both(x_name: str, x: object, y_name: str, y: object) -> bool:
+    """Decide whether the coordinates of a position are given as quantities.
+
+    Both or neither may be, as a plain number beside a quantity is more likely a
+    mistake than a number in the documented unit (crs spec §8 item 13).
+
+    Parameters
+    ----------
+    x_name : str
+        The name of the argument `x` was given as.
+    x : object
+        The x-values, or longitudes.
+    y_name : str
+        The name of the argument `y` was given as.
+    y : object
+        The y-values, or latitudes.
+
+    Returns
+    -------
+    bool
+        Whether both are quantities.
+
+    Raises
+    ------
+    ValueError
+        If only one of them is a quantity.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    x_quantity, y_quantity = isinstance(x, _Quantity), isinstance(y, _Quantity)
+
+    if x_quantity != y_quantity:
+        alone = x_name if x_quantity else y_name
+        emsg = (
+            f"Give {x_name!r} and {y_name!r} both as pint quantities, or neither, "
+            f"got {alone!r} alone."
+        )
+        raise ValueError(emsg)
+
+    return x_quantity
+
+
+def _lonlats(
+    lons: ArrayLike | Quantity,
+    lats: ArrayLike | Quantity,
+    *,
+    lon_name: str = "lons",
+    lat_name: str = "lats",
+    radians: bool = False,
+) -> tuple[ArrayLike, ArrayLike]:
+    """Read the longitudes and latitudes of points, given plain or as quantities.
+
+    Parameters
+    ----------
+    lons : ArrayLike or pint.Quantity
+        The longitudes.
+    lats : ArrayLike or pint.Quantity
+        The latitudes.
+    lon_name : str, default="lons"
+        The name of the argument `lons` was given as.
+    lat_name : str, default="lats"
+        The name of the argument `lats` was given as.
+    radians : bool, default=False
+        Whether to read quantities in radians, rather than in degrees.
+
+    Returns
+    -------
+    tuple of ArrayLike
+        The longitudes and the latitudes.
+
+    Raises
+    ------
+    ValueError
+        If only one of them is a quantity, or either is not an angle.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if not _both(lon_name, lons, lat_name, lats):
+        return cast("ArrayLike", lons), cast("ArrayLike", lats)
+
+    return (
+        _angle_array(lon_name, lons, radians=radians),
+        _angle_array(lat_name, lats, radians=radians),
+    )

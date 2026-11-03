@@ -30,7 +30,8 @@ from .common import (
 from .common import cast_UnstructuredGrid_to_PolyData as cast
 from .crs import WGS84, CRSLike, from_wkt, to_wkt
 from .globe import Globe, _resolve
-from .transform import transform_mesh, transform_points
+from .transform import _coordinates, transform_mesh, transform_points
+from .units import _angle, _both, _lonlats
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -39,6 +40,8 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     import pyproj
     import pyvista as pv
+
+    from .units import Quantity
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -156,8 +159,8 @@ class BBox:  # numpydoc ignore=PR01
 
     def __init__(
         self,
-        xs: ArrayLike,
-        ys: ArrayLike,
+        xs: ArrayLike | Quantity,
+        ys: ArrayLike | Quantity,
         *,
         crs: CRSLike | None = WGS84,
         ellps: str | None = ELLIPSE,
@@ -177,13 +180,17 @@ class BBox:  # numpydoc ignore=PR01
 
         Parameters
         ----------
-        xs : ArrayLike
+        xs : ArrayLike or pint.Quantity
             The x-coordinates of the bounding-box in canonical `crs` units.
             Note that longitudes will be wrapped to the half-closed interval
             ``[-180, 180)``.
-        ys : ArrayLike
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `ys` as a quantity too.
+        ys : ArrayLike or pint.Quantity
             The y-coordinates of the bounding-box in canonical `crs` units.
             Note that latitudes are in the closed interval ``[-90, 90]``.
+            A ``pint`` quantity, from any registry, carries its own units, and is read
+            in those of the `crs`. Give `xs` as a quantity too.
         crs : str, optional
             The Coordinate Reference System of the provided `xs` and `ys`.
             Defaults to :data:`geovista.crs.WGS84`.
@@ -202,8 +209,7 @@ class BBox:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
-        xs = np.atleast_1d(xs)
-        ys = np.atleast_1d(ys)
+        xs, ys = map(np.atleast_1d, _coordinates(xs, ys, crs))
         nx, ny = xs.size, ys.size
 
         if nx != ny:
@@ -1047,8 +1053,8 @@ class BBox:  # numpydoc ignore=PR01
 
 
 def line(
-    lons: ArrayLike,
-    lats: ArrayLike,
+    lons: ArrayLike | Quantity,
+    lats: ArrayLike | Quantity,
     *,
     surface: pv.PolyData | None = None,
     globe: Globe | None = None,
@@ -1066,13 +1072,17 @@ def line(
 
     Parameters
     ----------
-    lons : ArrayLike
+    lons : ArrayLike or pint.Quantity
         The longitudes (degrees) of the geodesic line segments, in the half-closed
         interval ``[-180, 180)``. Note that longitudes will be wrapped to this
         interval.
-    lats : ArrayLike
+        A ``pint`` quantity, from any registry, is read in degrees. Give `lats` as a
+        quantity too.
+    lats : ArrayLike or pint.Quantity
         The latitudes (degrees) of the geodesic line segments, in the closed
         interval ``[-90, 90]``.
+        A ``pint`` quantity, from any registry, is read in degrees. Give `lons` as a
+        quantity too.
     surface : PolyData, optional
         The surface that the geodesic line will be rendered over.
     globe : :class:`~geovista.globe.Globe`, optional
@@ -1122,6 +1132,8 @@ def line(
     >>> p.show()
 
     """
+    lons, lats = _lonlats(lons, lats)
+
     record: Globe | None
     if surface is not None:
         # where the surface's points are, which its globe may not say
@@ -1211,10 +1223,10 @@ def line(
 
 
 def npoints(
-    start_lon: float,
-    start_lat: float,
-    end_lon: float,
-    end_lat: float,
+    start_lon: float | Quantity,
+    start_lat: float | Quantity,
+    end_lon: float | Quantity,
+    end_lat: float | Quantity,
     *,
     npts: int | None = GEODESIC_NPTS,
     radians: bool | None = False,
@@ -1233,14 +1245,22 @@ def npoints(
 
     Parameters
     ----------
-    start_lon : float
+    start_lon : float or pint.Quantity
         The longitude of the start-point for the geodesic line.
-    start_lat : float
+        A ``pint`` quantity, from any registry, is read in degrees, or in radians when
+        `radians` is ``True``. Give `start_lat` as a quantity too.
+    start_lat : float or pint.Quantity
         The latitude of the start-point for the geodesic line.
-    end_lon : float
+        A ``pint`` quantity, from any registry, is read in degrees, or in radians when
+        `radians` is ``True``. Give `start_lon` as a quantity too.
+    end_lon : float or pint.Quantity
         The longitude of the end-point for the geodesic line.
-    end_lat : float
+        A ``pint`` quantity, from any registry, is read in degrees, or in radians when
+        `radians` is ``True``. Give `end_lat` as a quantity too.
+    end_lat : float or pint.Quantity
         The latitude of the end-point for the geodesic line.
+        A ``pint`` quantity, from any registry, is read in degrees, or in radians when
+        `radians` is ``True``. Give `end_lon` as a quantity too.
     npts : int, optional
         The number of points to be returned, which may include the start-point
         and/or the end-point, if required. Defaults to :data:`GEODESIC_NPTS`.
@@ -1277,6 +1297,15 @@ def npoints(
            [21.84 , 23.62 , 25.34 , 26.98 , 28.53 ]], dtype=float16)
 
     """
+    # a quantity is read in the unit the flag names, as a plain number is given
+    radians = bool(radians)
+    _both("start_lon", start_lon, "start_lat", start_lat)
+    _both("end_lon", end_lon, "end_lat", end_lat)
+    start_lon = _angle("start_lon", start_lon, radians=radians)
+    start_lat = _angle("start_lat", start_lat, radians=radians)
+    end_lon = _angle("end_lon", end_lon, radians=radians)
+    end_lat = _angle("end_lat", end_lat, radians=radians)
+
     if npts is None:
         npts = GEODESIC_NPTS
 
@@ -1303,8 +1332,8 @@ def npoints(
 
 
 def npoints_by_idx(
-    lons: ArrayLike,
-    lats: ArrayLike,
+    lons: ArrayLike | Quantity,
+    lats: ArrayLike | Quantity,
     start_idx: int,
     end_idx: int,
     *,
@@ -1325,10 +1354,14 @@ def npoints_by_idx(
 
     Parameters
     ----------
-    lons : ArrayLike
+    lons : ArrayLike or pint.Quantity
         The longitudes to be sampled by the provided indices.
-    lats : ArrayLike
+        A ``pint`` quantity, from any registry, is read in degrees, or in radians when
+        `radians` is ``True``. Give `lats` as a quantity too.
+    lats : ArrayLike or pint.Quantity
         The latitudes to be sampled by the provided indices.
+        A ``pint`` quantity, from any registry, is read in degrees, or in radians when
+        `radians` is ``True``. Give `lons` as a quantity too.
     start_idx : int
         The index of the start-point.
     end_idx : int
@@ -1375,7 +1408,8 @@ def npoints_by_idx(
     if geod is None:
         geod = pyproj.Geod(ellps=ELLIPSE)
 
-    lons, lats = np.asanyarray(lons), np.asanyarray(lats)
+    # a quantity is read in the unit the flag names, as a plain number is given
+    lons, lats = map(np.asanyarray, _lonlats(lons, lats, radians=bool(radians)))
     start_lonlat = lons[start_idx], lats[start_idx]
     end_lonlat = lons[end_idx], lats[end_idx]
 
@@ -1465,8 +1499,8 @@ def panel(
 
 
 def wedge(
-    lon1: float,
-    lon2: float,
+    lon1: float | Quantity,
+    lon2: float | Quantity,
     *,
     ellps: str | None = ELLIPSE,
     c: int = BBOX_C,
@@ -1476,10 +1510,12 @@ def wedge(
 
     Parameters
     ----------
-    lon1 : float
+    lon1 : float or pint.Quantity
         The first longitude (degrees) defining the geodesic wedge region.
-    lon2 : float
+        A ``pint`` quantity, from any registry, is read in degrees.
+    lon2 : float or pint.Quantity
         The second longitude (degrees) defining the geodesic wedge region.
+        A ``pint`` quantity, from any registry, is read in degrees.
     ellps : str, optional
         The ellipsoid for geodesic calculations. See :func:`pyproj.list.get_ellps_map`.
         Defaults to :data:`ELLIPSE`.
@@ -1514,6 +1550,7 @@ def wedge(
     >>> p.show()
 
     """
+    lon1, lon2 = _angle("lon1", lon1), _angle("lon2", lon2)
     delta = abs(lon1 - lon2)
 
     if 0 < delta >= 180:

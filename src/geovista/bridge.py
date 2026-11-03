@@ -47,11 +47,10 @@ from .globe import (
     _refuse_zlevel,
     _resolve,
 )
-from .transform import _angles, transform_points
-from .units import _Quantity, to_degrees, to_metres
+from .transform import _coordinates, transform_points
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
+    from collections.abc import Sequence
 
     import numpy as np
     from numpy.typing import ArrayLike
@@ -99,159 +98,6 @@ NAME_VECTORS: str = "vector_data"
 
 RIO_SIEVE_SIZE: int = 800
 """The default size of the :func:`rasterio.features.sieve` filter."""
-
-
-def _reads(read: Callable[[Quantity], object], value: Quantity) -> bool:
-    """Decide whether a quantity is of the kind a reader of `geovista.units` reads.
-
-    Parameters
-    ----------
-    read : callable
-        :func:`~geovista.units.to_degrees` or :func:`~geovista.units.to_metres`.
-    value : pint.Quantity
-        The quantity.
-
-    Returns
-    -------
-    bool
-        Whether `read` converts `value`, rather than refusing it.
-
-    Notes
-    -----
-    .. versionadded:: 0.6.0
-
-    """
-    try:
-        read(value)
-    except ValueError:
-        return False
-    return True
-
-
-def _in_axis_units(name: str, value: Quantity, crs: pyproj.CRS) -> ArrayLike:
-    """Convert a quantity to the units pyproj takes for the horizontal axes of a CRS.
-
-    Parameters
-    ----------
-    name : str
-        The name of the argument `value` was given as, to name it in a message.
-    value : pint.Quantity
-        The x-values or y-values of the points, from any ``pint`` registry.
-    crs : CRS
-        The CRS of the points.
-
-    Returns
-    -------
-    ArrayLike
-        The values in the units :mod:`pyproj` takes for the axes of the `crs`,
-        masked where the magnitude of `value` is. Those are the units the axes are
-        declared in, apart from radians, which :mod:`pyproj` takes in degrees.
-
-    Raises
-    ------
-    ValueError
-        If `value` is a length for a CRS whose axes are angles, or an angle for
-        a CRS whose axes are lengths, or its units cannot be read.
-
-    Notes
-    -----
-    .. versionadded:: 0.6.0
-
-    """
-    # the horizontal axes of a crs share one unit, so the first names it,
-    # whichever of longitude and latitude it is
-    axis = crs.axis_info[0]
-    unit = axis.unit_name
-
-    if crs.is_geographic:
-        read, other = to_degrees, to_metres
-        # the degrees in a unit of the axis as pyproj takes it, which is 1 for an
-        # axis declared in radians, as pyproj takes those in degrees
-        _, east, north = _angles(crs)
-        scale = 1.0 / (east if name == "xs" else north)
-        emsg = (
-            f"{name!r} is a length, but 'crs' measures its axes in {unit!r}. For "
-            "eastings and northings, pass the projected CRS they are in."
-        )
-    else:
-        read, other = to_metres, to_degrees
-        # a metre in the units of the axes
-        scale = 1.0 / axis.unit_conversion_factor
-        emsg = (
-            f"{name!r} is an angle, but 'crs' measures its axes in {unit!r}. For "
-            "longitudes and latitudes, pass crs=geovista.crs.WGS84, or the "
-            "geographic CRS of 'crs', crs.geodetic_crs."
-        )
-
-    try:
-        converted = read(value)
-    except ValueError as err:
-        if not _reads(other, value):
-            raise
-        raise ValueError(emsg) from err
-
-    result = np.multiply(converted, scale)
-
-    # a masked point has no position, which the conversion leaves as NaN, so
-    # its mask is given back
-    mask = np.ma.getmask(value.magnitude)
-    return result if mask is np.ma.nomask else np.ma.masked_array(result, mask=mask)
-
-
-def _coordinates(
-    xs: ArrayLike | Quantity, ys: ArrayLike | Quantity, crs: CRSLike | None
-) -> tuple[ArrayLike, ArrayLike]:
-    """Read the x-values and y-values of points in the units of their CRS.
-
-    A plain number is in those units already, and is returned as it is given.
-    A ``pint`` quantity is converted to them (crs spec §2 decision 13), but
-    only both of `xs` and `ys` or neither may be one, as a plain number beside
-    a quantity is more likely a mistake than a number in the units of the CRS.
-
-    Parameters
-    ----------
-    xs : ArrayLike or pint.Quantity
-        The x-values of the points.
-    ys : ArrayLike or pint.Quantity
-        The y-values of the points.
-    crs : CRSLike, optional
-        The CRS of the points. Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
-
-    Returns
-    -------
-    tuple of ArrayLike
-        The x-values and the y-values, in the units of the axes of the `crs`.
-
-    Raises
-    ------
-    ValueError
-        If only one of `xs` and `ys` is a quantity, or a quantity is not of the
-        kind the axes of the `crs` measure, or its units cannot be read.
-
-    Notes
-    -----
-    .. versionadded:: 0.6.0
-
-    """
-    given = {"xs": isinstance(xs, _Quantity), "ys": isinstance(ys, _Quantity)}
-
-    if not any(given.values()):
-        return cast("ArrayLike", xs), cast("ArrayLike", ys)
-
-    if not all(given.values()):
-        alone = "xs" if given["xs"] else "ys"
-        emsg = (
-            "Give 'xs' and 'ys' both as pint quantities, or neither, got "
-            f"{alone!r} alone."
-        )
-        raise ValueError(emsg)
-
-    crs = pyproj.CRS.from_user_input(WGS84 if crs is None else crs)
-
-    return (
-        _in_axis_units("xs", cast("Quantity", xs), crs),
-        _in_axis_units("ys", cast("Quantity", ys), crs),
-    )
 
 
 class Transform:  # numpydoc ignore=PR01

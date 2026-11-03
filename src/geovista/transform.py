@@ -52,6 +52,7 @@ from .globe import (
     _resolve,
     _subtended,
 )
+from .units import _both, _masked, to_degrees, to_metres
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -60,6 +61,8 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, NDArray
     import pyproj
     import pyvista as pv
+
+    from .units import Quantity
 
 # lazy import third-party dependencies
 np = lazy.load("numpy")
@@ -302,8 +305,8 @@ def transform_mesh(
 def transform_point(
     src_crs: CRSLike,
     tgt_crs: CRSLike,
-    x: ArrayLike,
-    y: ArrayLike,
+    x: ArrayLike | Quantity,
+    y: ArrayLike | Quantity,
     z: ArrayLike | None = None,
     *,
     trap: bool | None = True,
@@ -320,14 +323,18 @@ def transform_point(
         The target Coordinate Reference System (CRS) of the transform for
         the spatial point. May be anything accepted by
         :meth:`pyproj.crs.CRS.from_user_input`.
-    x : ArrayLike
+    x : ArrayLike or pint.Quantity
         The spatial point x-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. Must be a scalar
         or a single valued 1D array.
-    y : ArrayLike
+        A ``pint`` quantity, from any registry, carries its own units, and is read in
+        those of the `src_crs`. Give `y` as a quantity too.
+    y : ArrayLike or pint.Quantity
         The spatial point y-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. Must be a scalar
         or a single valued 1D array.
+        A ``pint`` quantity, from any registry, carries its own units, and is read in
+        those of the `src_crs`. Give `x` as a quantity too.
     z : ArrayLike, optional
         The spatial point z-value, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. Must be a scalar
@@ -348,6 +355,7 @@ def transform_point(
     .. versionadded:: 0.4.0
 
     """
+    x, y = _coordinates(x, y, src_crs, x_name="x", y_name="y", crs_name="src_crs")
     result = transform_points(
         src_crs=src_crs, tgt_crs=tgt_crs, xs=x, ys=y, zs=z, trap=trap
     )
@@ -359,8 +367,8 @@ def transform_point(
 def transform_points(
     src_crs: CRSLike,
     tgt_crs: CRSLike,
-    xs: ArrayLike,
-    ys: ArrayLike,
+    xs: ArrayLike | Quantity,
+    ys: ArrayLike | Quantity,
     zs: ArrayLike | None = None,
     *,
     trap: bool | None = True,
@@ -377,14 +385,18 @@ def transform_points(
         The target Coordinate Reference System (CRS) of the transform for
         the spatial points. May be anything accepted by
         :meth:`pyproj.crs.CRS.from_user_input`.
-    xs : ArrayLike
+    xs : ArrayLike or pint.Quantity
         The spatial points x-values, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar,
         1D or 2D.
-    ys : ArrayLike
+        A ``pint`` quantity, from any registry, carries its own units, and is read in
+        those of the `src_crs`. Give `ys` as a quantity too.
+    ys : ArrayLike or pint.Quantity
         The spatial points y-values, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar,
         1D or 2D.
+        A ``pint`` quantity, from any registry, carries its own units, and is read in
+        those of the `src_crs`. Give `xs` as a quantity too.
     zs : ArrayLike, optional
         The spatial points z-values, in canonical `src_crs` units, to be
         transformed from the `src_crs` to the `tgt_crs`. May be scalar,
@@ -407,8 +419,7 @@ def transform_points(
     .. versionadded:: 0.4.0
 
     """
-    xs = np.atleast_1d(xs)
-    ys = np.atleast_1d(ys)
+    xs, ys = map(np.atleast_1d, _coordinates(xs, ys, src_crs, crs_name="src_crs"))
 
     if zs is not None:
         zs = np.atleast_1d(zs)
@@ -860,6 +871,176 @@ def _lonlats(
     # an area of use is in degrees east of Greenwich, which a geographic CRS need
     # not be, such as NTF (Paris) in grads east of Paris
     return _to_greenwich(geographic, xs, ys)
+
+
+def _reads(read: Callable[[Quantity], object], value: Quantity) -> bool:
+    """Decide whether a quantity is of the kind a reader of `geovista.units` reads.
+
+    Parameters
+    ----------
+    read : callable
+        :func:`~geovista.units.to_degrees` or :func:`~geovista.units.to_metres`.
+    value : pint.Quantity
+        The quantity.
+
+    Returns
+    -------
+    bool
+        Whether `read` converts `value`, rather than refusing it.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    try:
+        read(value)
+    except ValueError:
+        return False
+    return True
+
+
+def _in_axis_units(
+    name: str,
+    value: Quantity,
+    crs: pyproj.CRS,
+    *,
+    direction: str,
+    crs_name: str | None,
+) -> ArrayLike:
+    """Convert a quantity to the units pyproj takes for a horizontal axis of a CRS.
+
+    Parameters
+    ----------
+    name : str
+        The name of the argument `value` was given as, to name it in a message.
+    value : pint.Quantity
+        The x-values or y-values of the points, from any ``pint`` registry.
+    crs : CRS
+        The CRS of the points.
+    direction : str
+        The axis of `value`, ``"east"`` for x-values or ``"north"`` for y-values.
+    crs_name : str, optional
+        The name of the argument `crs` was given as, to name it in a message, or
+        ``None`` for a CRS that is not an argument, such as that of a mesh.
+
+    Returns
+    -------
+    ArrayLike
+        The values in the units :mod:`pyproj` takes for the axis of the `crs`,
+        masked where the magnitude of `value` is. Those are the units the axis is
+        declared in, apart from radians, which :mod:`pyproj` takes in degrees.
+
+    Raises
+    ------
+    ValueError
+        If `value` is a length for a CRS whose axes are angles, or an angle for
+        a CRS whose axes are lengths, or its units cannot be read.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    # the horizontal axes of a crs share one unit, so the first names it,
+    # whichever of longitude and latitude it is
+    axis = crs.axis_info[0]
+    unit = axis.unit_name
+    subject = "the CRS" if crs_name is None else repr(crs_name)
+
+    if crs.is_geographic:
+        read, other = to_degrees, to_metres
+        # the degrees in a unit of the axis as pyproj takes it, which is 1 for an
+        # axis declared in radians, as pyproj takes those in degrees
+        _, east, north = _angles(crs)
+        scale = 1.0 / (east if direction == "east" else north)
+        emsg = f"{name!r} is a length, but {subject} measures its axes in {unit!r}."
+        advice = " For eastings and northings, pass the projected CRS they are in."
+    else:
+        read, other = to_metres, to_degrees
+        # a metre in the units of the axes
+        scale = 1.0 / axis.unit_conversion_factor
+        emsg = f"{name!r} is an angle, but {subject} measures its axes in {unit!r}."
+        advice = (
+            f" For longitudes and latitudes, pass {crs_name}=geovista.crs.WGS84, or "
+            f"the geographic CRS of {subject}, {crs_name}.geodetic_crs."
+        )
+
+    if crs_name is not None:
+        emsg += advice
+
+    try:
+        converted = read(value)
+    except ValueError as err:
+        if not _reads(other, value):
+            raise
+        raise ValueError(emsg) from err
+
+    result: ArrayLike = _masked(np.multiply(converted, scale), value)
+    return result
+
+
+def _coordinates(
+    xs: ArrayLike | Quantity,
+    ys: ArrayLike | Quantity,
+    crs: CRSLike | None,
+    *,
+    x_name: str = "xs",
+    y_name: str = "ys",
+    crs_name: str | None = "crs",
+) -> tuple[ArrayLike, ArrayLike]:
+    """Read the x-values and y-values of points in the units of their CRS.
+
+    A plain number is in those units already, and is returned as it is given.
+    A ``pint`` quantity is converted to them (crs spec §2 decision 13), but
+    only both of `xs` and `ys` or neither may be one.
+
+    Parameters
+    ----------
+    xs : ArrayLike or pint.Quantity
+        The x-values of the points.
+    ys : ArrayLike or pint.Quantity
+        The y-values of the points.
+    crs : CRSLike, optional
+        The CRS of the points. Defaults to ``EPSG:4326`` i.e., ``WGS 84``.
+    x_name : str, default="xs"
+        The name of the argument `xs` was given as, to name it in a message.
+    y_name : str, default="ys"
+        The name of the argument `ys` was given as, to name it in a message.
+    crs_name : str, optional
+        The name of the argument `crs` was given as, to name it in a message, or
+        ``None`` for a CRS that is not an argument, such as that of a mesh.
+        Defaults to ``"crs"``.
+
+    Returns
+    -------
+    tuple of ArrayLike
+        The x-values and the y-values, in the units of the axes of the `crs`.
+
+    Raises
+    ------
+    ValueError
+        If only one of `xs` and `ys` is a quantity, or a quantity is not of the
+        kind the axes of the `crs` measure, or its units cannot be read.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if not _both(x_name, xs, y_name, ys):
+        return cast("ArrayLike", xs), cast("ArrayLike", ys)
+
+    crs = pyproj.CRS.from_user_input(WGS84 if crs is None else crs)
+
+    return (
+        _in_axis_units(
+            x_name, cast("Quantity", xs), crs, direction="east", crs_name=crs_name
+        ),
+        _in_axis_units(
+            y_name, cast("Quantity", ys), crs, direction="north", crs_name=crs_name
+        ),
+    )
 
 
 def _angles(crs: pyproj.CRS) -> tuple[float, float, float]:
