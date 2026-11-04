@@ -1010,6 +1010,92 @@ def test_an_old_grammar_item_outside_unitemed_cites_nothing(script):
     ]
 
 
+def test_an_uncited_issue_an_open_pull_request_names_is_in_flight(script):
+    """Items spec §3.8: an open pull request naming the issue is writing its item.
+
+    The pull request that raises an item raises its issue, and the item reaches
+    the main branch only when it merges, so until then the issue is in flight,
+    not a gap. Only an uncited issue is asked about.
+    """
+    texts = {
+        Path("x.md"): spec(
+            items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`22`"),)
+        )
+    }
+    asked = []
+
+    def referred(number: int) -> list[int]:
+        asked.append(number)
+        return [2850] if number == 24 else []
+
+    assert script.uncited([22, 24, 25], texts, referred) == [
+        "{issue}`25` carries the spec: open item label, and no item cites it"
+    ]
+    assert asked == [24, 25]
+
+
+def test_referrers_reads_the_open_pull_requests_naming_an_issue(script, monkeypatch):
+    """Only an open pull request of this repository, on any page, names an issue."""
+
+    def source(number: int, state: str = "open", **more: object) -> dict:
+        found = {
+            "number": number,
+            "state": state,
+            "pull_request": {"url": "x"},
+            "repository": {"full_name": REPOSITORY},
+        }
+        return {"event": "cross-referenced", "source": {"issue": {**found, **more}}}
+
+    issue = source(3)
+    del issue["source"]["issue"]["pull_request"]
+    pages = {
+        "1": Answer(
+            [
+                source(1),
+                source(2, "closed"),
+                issue,
+                {"event": "labeled", "label": {"name": ITEM_LABEL}},
+            ],
+            '<https://api.github.com/x?page=2>; rel="next"',
+        ),
+        "2": Answer([source(4, repository={"full_name": "other/repo"}), source(5)]),
+    }
+    asked = []
+
+    def urlopen(request: object, timeout: float) -> Answer:  # noqa: ARG001
+        asked.append(request.full_url)
+        return pages["2" if "page=2" in request.full_url else "1"]
+
+    monkeypatch.setattr(script.urllib.request, "urlopen", urlopen)
+
+    assert script.referrers()(24) == [1, 5]
+    assert asked[0].startswith(f"{script.API}/repos/{REPOSITORY}/issues/24/timeline")
+
+
+def test_main_passes_an_issue_in_flight_under_drift(
+    script, itemed, labels, tmp_path, monkeypatch, capsys
+):
+    """The nightly run leaves an issue an open pull request names to that pull."""
+    path = tmp_path / "2026-01-01-demo-design.md"
+    text = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`5`"),))
+    path.write_text(text, encoding="utf-8")
+    monkeypatch.setattr(script.conventions, "specifications", lambda: [path])
+    labelled = script.Work("issue", "open", None, frozenset({ITEM_LABEL}))
+
+    def resolve(repository: str, number: int) -> object:
+        return labelled if number == 5 else itemed(repository, number)
+
+    status = script.main(
+        ["--drift"],
+        resolve=resolve,
+        labelled=labels,
+        listed=lambda: [5, 24],
+        referred=lambda number: [2850] if number == 24 else [],
+    )
+
+    assert status == 0, capsys.readouterr().out
+
+
 class Answer(io.BytesIO):
     """A page of a GitHub answer, as ``urllib.request.urlopen`` returns it."""
 

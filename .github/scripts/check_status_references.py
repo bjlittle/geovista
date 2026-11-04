@@ -47,7 +47,8 @@ With "--drift" it also reports an open or deferred item whose issue has closed,
 and lists every open issue carrying the label, reporting any that no item
 cites, in either grammar: a gap raised as an issue and never written into a
 specification (items spec §2 decision 2). A pull request carrying the label, or
-an issue that has closed, is no such gap.
+an issue that has closed, is no such gap, and nor is an issue that an open pull
+request names, as the one writing its item does before it merges.
 
 It asks GitHub about each ledger too (ledger spec §3.7):
 
@@ -160,6 +161,9 @@ type Resolver = Callable[[str, int], Work | None]
 
 #: List the open issues, not pull requests, carrying the label of an open item.
 type Lister = Callable[[], list[int]]
+
+#: List the open pull requests of this repository that name an issue, by number.
+type Referrer = Callable[[int], list[int]]
 
 #: The label the issue of every open item carries (items spec §3.3).
 ITEM_LABEL = "spec: open item"
@@ -504,12 +508,18 @@ def _ticket(issue: int, state: str, resolve: Resolver, *, drift: bool) -> list[s
     return faults
 
 
-def uncited(numbers: Iterable[int], texts: Mapping[Path, str]) -> list[str]:
+def uncited(
+    numbers: Iterable[int],
+    texts: Mapping[Path, str],
+    referred: Referrer | None = None,
+) -> list[str]:
     """Report each open labelled issue that no item cites, whatever its state.
 
     An item cites its issue in the grammar of items spec §3.2, or, while
     :data:`UNITEMED` names its specification, in that of docs spec §3.6, so both
-    are read.
+    are read. An issue that an open pull request names is in flight rather than
+    uncited: the pull request raising an item raises its issue too (items
+    spec §3.3), and the item reaches these specifications only once it merges.
 
     Parameters
     ----------
@@ -517,11 +527,15 @@ def uncited(numbers: Iterable[int], texts: Mapping[Path, str]) -> list[str]:
         The open issues carrying the label of an open item.
     texts : mapping of Path to str
         Every specification, by its path.
+    referred : Referrer, optional
+        List the open pull requests naming an issue, asked only of an issue no
+        item cites. Defaults to none, so every such issue is reported.
 
     Returns
     -------
     list of str
-        One message per issue no item cites, in order of number.
+        One message per issue no item cites and no open pull request names, in
+        order of number.
 
     """
     cites = set()
@@ -536,6 +550,7 @@ def uncited(numbers: Iterable[int], texts: Mapping[Path, str]) -> list[str]:
     return [
         f"{{issue}}`{number}` carries the {ITEM_LABEL} label, and no item cites it"
         for number in sorted(set(numbers) - cites)
+        if referred is None or not referred(number)
     ]
 
 
@@ -803,11 +818,52 @@ def labelled_issues(token: str | None = None) -> Lister:
     return listed
 
 
+def referrers(token: str | None = None) -> Referrer:
+    """Return a referrer, reading the open pull requests that name an issue.
+
+    GitHub records a mention of an issue in a pull request's description,
+    comments or commits as a ``cross-referenced`` event on the issue's timeline.
+
+    Parameters
+    ----------
+    token : str, optional
+        A GitHub token, which raises the rate limit.
+
+    Returns
+    -------
+    Referrer
+        The referrer, reading every page of the issue's timeline, and keeping
+        each pull request of this repository that is still open.
+
+    """
+    headers = _headers(token)
+
+    def referred(number: int) -> list[int]:
+        url = f"{API}/repos/{REPOSITORY}/issues/{number}/timeline?per_page=100"
+        pulls = set()
+        for page in _pages(url, headers):
+            for event in page:
+                if event.get("event") != "cross-referenced":
+                    continue
+                source = (event.get("source") or {}).get("issue") or {}
+                repository = (source.get("repository") or {}).get("full_name")
+                if (
+                    "pull_request" in source
+                    and source.get("state") == "open"
+                    and repository == REPOSITORY
+                ):
+                    pulls.add(source["number"])
+        return sorted(pulls)
+
+    return referred
+
+
 def main(
     argv: list[str] | None = None,
     resolve: Resolver | None = None,
     labelled: Labeller | None = None,
     listed: Lister | None = None,
+    referred: Referrer | None = None,
 ) -> int:
     """Check every specification, printing each fault.
 
@@ -822,6 +878,9 @@ def main(
     listed : Lister, optional
         List the open issues carrying the label of an open item, read only with
         ``--drift``. Defaults to asking GitHub.
+    referred : Referrer, optional
+        List the open pull requests naming an issue no item cites, read only
+        with ``--drift``. Defaults to asking GitHub.
 
     Returns
     -------
@@ -851,6 +910,8 @@ def main(
         labelled = labeller(token)
     if listed is None:
         listed = labelled_issues(token)
+    if referred is None:
+        referred = referrers(token)
 
     def unitemed(path: Path) -> bool:
         return path.name in conventions.UNITEMED
@@ -876,7 +937,7 @@ def main(
                 )
             problems += check_ledger(path, text, resolve, labelled, pull=args.pull)
         if args.drift:
-            problems += uncited(listed(), texts)
+            problems += uncited(listed(), texts, referred)
     except (urllib.error.URLError, TimeoutError) as error:
         print(f"could not ask GitHub: {error}", file=sys.stderr)
         if isinstance(error, urllib.error.HTTPError) and error.code in (403, 429):
