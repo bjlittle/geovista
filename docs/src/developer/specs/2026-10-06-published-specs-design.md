@@ -359,14 +359,18 @@ than inferring one from English:
 
 | Status | Where | Carries |
 |---|---|---|
-| `candidate` | roadmap row | the trigger that would promote it |
-| `not started` | roadmap row | the issue tracking it, if one is raised |
-| `in progress` | roadmap row | the pull request, open |
+| `💡 candidate` | roadmap row | the trigger that would promote it |
+| `📋 not started` | roadmap row | the issue tracking it, if one is raised |
+| `🚧 in progress` | roadmap row | the pull request, open |
 | `✅ landed` | roadmap row | the date, and every pull request that did it |
 | **Open** | open item | the issue, if one is raised; otherwise the row that owns it |
 | **Resolved** | open item | the date, and the pull request or issue that settled it |
 | **Deferred** | open item | the horizon it is deferred to, and the issue holding it |
 | **Abandoned** | open item | the date, and where the reasoning was recorded |
+
+Each roadmap state carries its emoji, as ledger spec §2 decision 16 agreed, so a bare
+`not started` is refused with the form it should take. The states of an open item carry
+theirs too, in the grammar of items spec §3.2.
 
 A terminal status — `landed`, **Resolved**, **Abandoned** — always carries a date and a
 reference. The two non-terminal ones may carry neither: **Open** with nothing beside it is
@@ -451,7 +455,7 @@ other, so a family drawn wrongly in any one of them fails the suite.
 | 2 | Citation cross-reference transform | ✅ landed (2026-10-27, {pull}`2738`) |
 | 3 | Citation integrity hook | ✅ landed (2026-10-07, {pull}`2573`) |
 | 4 | Rendered-output gate | ✅ landed (2026-10-27, {pull}`2738`) |
-| 5 | GitHub reference roles and hardcoded-link detection | candidate |
+| 5 | GitHub reference roles and hardcoded-link detection | 💡 candidate |
 | 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
 
 `candidate` and `not started` are different states, which is why
