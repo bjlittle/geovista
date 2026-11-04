@@ -279,6 +279,8 @@ specification it asserts that:
 5. No two items cite the same issue.
 6. Every citation of an item or a row, anywhere in the corpus of docs spec §3.5, names one
    that exists.
+7. A row whose scope says it lands *with* another row, citing it, as §3.4 has it, has
+   landed by the same pull request as that row, or neither has.
 
 The second assertion is the landing gate of §3.5, since landing a row is changing its
 status. A specification not yet brought in is named in a list the test keeps, beside the row
@@ -515,13 +517,14 @@ Each carries the status grammar of §3.2.
     report was {issue}`2856`, of the three issues {pull}`2850` raised for row 3 of §8.
     {pull}`2859` made drift pass over an issue that an open pull request names, read from
     the cross-references on the issue's timeline.
-14. **❓ Open** (🔎 2026-11-04, {pull}`2876` · 🎯 row 7 of §8 · 🎫 {issue}`2875`) — **A row
-    landing with another specification's row is not checked to land with it.** §3.4 has
-    such a row name the other in its scope, as row 5 of heights spec §9 names
-    row 4 of globe spec §9, and land in the same pull request. Nothing checks it, so a row so scoped
-    could land without the row it names, or after it, and the suite would pass. A check
-    could read a scope's *landing with* and fail when one row has landed and the other has
-    not, or when they landed in different pull requests.
+14. **🏁 Resolved** (2026-11-04, {pull}`2879` · 🔎 2026-11-04, {pull}`2876` ·
+    🎫 {issue}`2875`) — **A row landing with another specification's row is not checked
+    to land with it.** §3.4 has such a row name the other in its scope, as
+    row 5 of heights spec §9 names row 4 of globe spec §9, and land in the same pull
+    request. Nothing checks it, so a row so scoped could land without the row it names, or
+    after it, and the suite would pass. A check could read a scope's *landing with* and
+    fail when one row has landed and the other has not, or when they landed in different
+    pull requests. {pull}`2879` adds that check, as item 7 of §3.7.
 
 (items-spec-8)=
 ## 8. Roadmap

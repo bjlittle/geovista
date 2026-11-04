@@ -348,7 +348,8 @@ For an open item, it names the item, and says one of these:
 - *graduates with no 🎫 for its row to cite*, or *graduates to …, which does
   not cite …*, *… names no row*, *… is another specification's* or *… does not
   exist*: graduate to a row of the item's own roadmap that cites the item's
-  issue.
+  issue. *… which had landed on …, before its graduation*: graduate to a row
+  still to be done, adding one if need be.
 - ``item N cites {issue}`M`, as … does``: give the item its own issue; one
   issue tracks one item.
 - *carries no section sign at all* or *is a near-miss citation*: write the
@@ -358,10 +359,13 @@ For an open item, it names the item, and says one of these:
 For a roadmap row, it says ``row '…' is not numbered as a row``: write its first
 cell as a plain number, ``1``, or with a letter, ``1a``, for a row split in two.
 A citation names a row by that cell, so ``**1**``, ``~~1~~`` or ``1.`` names
-nothing (items spec §3.1). When it says ``'not started' is not a status: write
-📋 not started``, or the same for ``in progress`` or ``candidate``, give the state
-its emoji: ``🚧 in progress``, ``📋 not started`` or ``💡 candidate``, as
-ledger spec §2 decision 16 agreed.
+nothing (items spec §3.1). When it says *row N lands with …, which has not
+landed*, *… which has landed without it* or *… which landed in another pull
+request*, land the two rows in one pull request: a row scoped *landing with*
+another lands with it (items spec §3.4). When it says ``'not started' is not a
+status: write 📋 not started``, or the same for ``in progress`` or ``candidate``,
+give the state its emoji: ``🚧 in progress``, ``📋 not started`` or
+``💡 candidate``, as ledger spec §2 decision 16 agreed.
 
 **Declaring an exception:** None for the conventions. A specification not yet
 brought into the ledger is named in ``UNLEDGERED``, beside the row of

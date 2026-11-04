@@ -1,0 +1,4 @@
+The conventions test now checks that a roadmap row scoped as landing with
+another specification's row lands with it, in the same pull request, settling
+items spec §7 item 14 and landing row 7 of items spec §8, the last row of the
+open items specification. (:user:`claude`)
