@@ -1802,3 +1802,76 @@ def test_the_corpus_is_read_for_citations_only_once_a_specification_changed(
     run(guard, repo, capsys=capsys)
 
     assert reads
+
+
+def test_an_item_moved_up_by_a_removal_is_told_to_keep_the_removed_item(guard):
+    """Items spec §7 item 8: the advice follows the direction of the move.
+
+    An item that moved down was pushed by an insert, so it is told to append. One
+    that moved up was pulled by a removal, so it is told to keep what was removed.
+    """
+    problems = frozen(guard, items(ONE, TWO, THREE), items(ONE, THREE))
+
+    moved = next(problem for problem in problems if "is now item 2" in problem)
+    assert "append" not in moved
+    assert moved.endswith(
+        "is now item 2: an item before it was removed, so keep that item in "
+        "place, marked as no longer applying"
+    )
+
+
+def test_a_row_moved_up_by_a_removal_is_told_to_keep_the_removed_row(guard):
+    """Items spec §7 item 8: a row is advised by the direction of its move too."""
+    base = spec(("4", "Roadmap", roadmap(("1", "a"), ("2", "b"), ("3", "c"))))
+    head = spec(("4", "Roadmap", roadmap(("1", "a"), ("2", "c"))))
+
+    problems = guard.frozen(base, head)
+
+    moved = next(problem for problem in problems if "is now row 2" in problem)
+    assert moved.endswith(
+        "is now row 2: a row before it was removed, so keep that row in place, "
+        "marked as no longer applying"
+    )
+
+
+def test_a_cited_item_reworded_past_recognition_as_its_neighbours_move_fails(guard):
+    """Items spec §7 item 4: an item kept only by its number, past a shift, fails.
+
+    A removal and an insert before a cited step leave it at its own number. Its
+    text, reworded past recognition, pairs with nothing, so only its number holds
+    it, and that cannot tell it from a new step written in its place.
+    """
+    cited = frozenset({"demo-spec-8-item-3"})
+    head = "1. Build the pages.\n2. Check the links.\n3. Publish the site to the host."
+
+    (problem,) = frozen(guard, STEPS, head, cited)
+
+    assert problem.startswith('Open Items, item 3 "Serve them." holds item 3 only')
+    assert (
+        frozen(guard, STEPS, STEPS.replace("Serve them.", "Publish it."), cited) == []
+    )
+
+
+#: A decision retired in place, and a new one agreed under its title.
+RETIRED = "\N{FILE CABINET}\N{VARIATION SELECTOR-16} Retired"
+
+
+def test_a_decision_restated_under_a_retired_ones_title_passes(guard):
+    """Items spec §7 item 12: a retired entry is paired at its own number first.
+
+    Ledger spec §3.3 retires a decision by keeping its entry, so a new decision
+    agreed under the same title, with the retired one's text, is new, and the
+    retired one has not moved.
+    """
+    retired = (
+        f"**{RETIRED}** (2026-11-01, {{pull}}`2`; agreed 2026-10-30, {{pull}}`1`)"
+        " — **The second.** An older B, retired."
+    )
+    restated = SECOND.replace("2026-10-30", "2026-11-01").replace("`1`", "`2`")
+    base = spec(("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, SECOND)))
+    head = spec(
+        ("1", "Purpose", PURPOSE),
+        ("2", "Decisions", items(FIRST, retired, restated)),
+    )
+
+    assert guard.frozen(base, head) == []
