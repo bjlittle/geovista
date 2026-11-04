@@ -318,10 +318,9 @@ fault. For the ledger, it names the decision or row, and says one of these:
 For an open item, it names the item, and says one of these:
 
 - ``'❓ Open' is not a status``, or the same for another state of
-  items spec §3.2: the specification is still named in ``UNITEMED``, waiting for
-  its row of items spec §8 to bring it in, so its items keep the grammar of
-  docs spec §3.6. Write the state as a word, as ``**Open**``, and still give a
-  new item its own issue labelled ``spec: open item``.
+  items spec §3.2: the specification is named in ``UNITEMED``, so its items are
+  read in the grammar of docs spec §3.6. Every specification has left that list,
+  so take it out, and write its items in the grammar of items spec §3.2.
 - *it has no Open Items section*, *a heading inside Open Items, under which
   items go unread*, *a second Open Items section, whose items go unread*, *an
   item is a bullet, not a numbered entry*, *an item written after its list has
@@ -365,9 +364,9 @@ nothing (items spec §3.1).
 brought into the ledger is named in ``UNLEDGERED``, beside the row of
 ledger spec §8 that brings it in. That list is not an exception either: the test
 fails if the row lands while the specification is still named, so the list cannot
-outlive its work. A specification whose open items are not yet in the grammar
-of items spec §3.2 is named in ``UNITEMED`` the same way, beside the row that
-brings it in.
+outlive its work. ``UNITEMED`` named, the same way, each specification whose open
+items were not yet in the grammar of items spec §3.2. Row 4 of items spec §8
+emptied it, and a test keeps it empty.
 
 **More:** docs spec §3.5, items spec §3.7.
 
@@ -584,9 +583,8 @@ For an open item:
 - ``{issue}`N` carries no spec: open item label``: add the label to the issue
   the item cites. An agent may.
 - ``❓ Open, but {issue}`N` has closed`` or
-  ``⏭️ Deferred, but {issue}`N` has closed`` (nightly ``drift``), or the same
-  with ``Open`` or ``Deferred`` in a specification not yet brought in: settle or
-  move the item, since its issue has closed.
+  ``⏭️ Deferred, but {issue}`N` has closed`` (nightly ``drift``): settle or move
+  the item, since its issue has closed.
 - ``{issue}`N` carries the spec: open item label, and no item cites it``
   (nightly ``drift``): write the gap into a specification as an open item
   citing the issue, or remove the label if it tracks something else. An issue

@@ -498,7 +498,7 @@ Each carries the status grammar of §3.2.
 | 1 | The items: citations of items and rows with their anchors (delivering row 5 of citation spec §9), the entry of §3.2, the suite of §3.7, the label, what GitHub answers (§3.8), the parents' notes, the documentation of §3.12, this specification's own Verification table and items, and the docs, zlevel, checks and citation specifications brought in | ✅ landed (2026-11-02, {pull}`2807`) |
 | 2 | The report's roadmap and open items (§3.9) | ✅ landed (2026-11-03, {pull}`2846`) |
 | 3 | The typing specification's items brought in, with the `candidate` rows they wait on | ✅ landed (2026-11-04, {pull}`2850`) |
-| 4 | The crs specification's items brought in | not started |
+| 4 | The crs specification's items brought in | ✅ landed (2026-11-04, {pull}`2873`) |
 | 5 | The globe, scene, heights and ledger specifications' items brought in | ✅ landed (2026-11-03, {pull}`2826`) |
 | 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | not started |
 
@@ -536,5 +536,5 @@ Each row follows ledger spec §3.4.
 | 10 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_renumbering.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
 | 11 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2807`) | Checked in review that the specifications index says an agent may add the `spec: open item` label. |
 | 12 | ✅ verified (2026-11-03, {pull}`2846`) | `tests/test_verification_report.py` |
-| 13 | ⏳ pending | rows 1 to 5 of §8 |
+| 13 | ✅ verified (2026-11-04, {pull}`2873`) | `tests/test_spec_conventions.py` |
 | 14 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2846`) | Checked in review that the specifications index says how to raise, cite, owe, move, settle and promote an item, and what the verification report shows of each, and that the repository checks page explains each failure the item rules raise. |

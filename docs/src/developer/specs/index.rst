@@ -177,9 +177,8 @@ Open Items
 A specification's Open Items section tracks a gap found while delivering it:
 an input the design missed, or a decision a test only partly held. Each item
 has a state, where it was found, and an issue that tracks it, set out in
-items spec §3.1, §3.2, §3.3, §3.4. Until its row of items spec §8 brings a
-specification in, its items keep the grammar of docs spec §3.6, but a new item
-still gets its own issue labelled ``spec: open item``.
+items spec §3.1, §3.2, §3.3, §3.4. Every specification's items are in that
+grammar.
 
 **Raising an item.** Append it to the end of the Open Items section, in the
 same pull request that raises its issue, labelled ``spec: open item``:

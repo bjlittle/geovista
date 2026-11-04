@@ -1,0 +1,6 @@
+Brought the globe-first CRS specification's open items into the open items
+grammar, the last specification to come in, so every specification is now held
+to the same rules for its open items. Each of the nine still open has an issue of
+its own and the roadmap row that owes it, two of them new: one deletes today's
+seam and transform path once every class of projection has landed, and a
+candidate waits on the regions design. (:user:`claude`)

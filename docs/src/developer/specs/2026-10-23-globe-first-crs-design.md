@@ -680,45 +680,58 @@ quietly wrong.
 (crs-spec-8)=
 ## 8. Open Items
 
-Each carries the status grammar of docs spec §3.6.
+Each carries the grammar of items spec §3.2.
 
-1. **Open** — **Inherit or challenge `cartopy`'s forced sphere?** Following PROJ's
-   ellipsoidal `ortho` is more faithful, but moves an orthographic view by up to tens of
-   kilometres against `cartopy`. The same question applies to the other 13 classes,
-   though for sphere-only methods it changes nothing.
-2. **Open** — **The default domain of each class.** Settled so far: `Mercator`'s −80° and
-   84°, and `LambertConformal`'s cutoff at −30°. Still to settle are the default cap of a
+1. **❓ Open** (🔎 2026-10-24, {pull}`2717` · 🎯 row 5 of §10 · 🎫 {issue}`2864`) —
+   **Inherit or challenge `cartopy`'s forced sphere?** Following PROJ's ellipsoidal
+   `ortho` is more faithful, but moves an orthographic view by up to tens of kilometres
+   against `cartopy`. The same question applies to the other 13 classes, though for
+   sphere-only methods it changes nothing.
+2. **❓ Open** (🔎 2026-10-24, {pull}`2717` · 🎯 row 7 of §10 · 🎫 {issue}`2865`) — **The
+   default domain of each class.** Settled so far: `Mercator`'s −80° and 84°, and
+   `LambertConformal`'s cutoff at −30°. Still to settle are the default cap of a
    polar stereographic and a gnomonic view, and the default band of a transverse
    Mercator. A transverse Mercator band is a full ring around the globe, so its default
    presumably takes only the half of the ring on the central meridian's side, from pole to
    pole, and its half-width is open. A national grid takes the area of use of its EPSG
    definition (§4.8).
-3. **Open** — **Physical or normalised render units.** Rendering at the Earth's radius in
-   metres makes every coordinate physical, but VTK's precision and cameras at that scale
-   need checking against rendering at a normalised radius of 1.
-4. **Open** — **The form and names of the domain options and of the record**
-   (§4.4 and §4.6), to be settled with an
-   early adopter's code in hand.
-5. **Open** — **An escape hatch for unsupported methods, once today's path is gone.**
-   Whether a power user may then project to a method the registry does not hold, at their
-   own risk and with a loud warning, or whether the error is final.
-6. **Open** — **The angle a seam point moves into its own side.** It must exceed PROJ's
-   tolerance for wrapping a longitude, and needs measuring per class.
-7. **Open** — **Upstream.** Whether to ask PROJ to expose each method's valid domain, which
-   would let `geovista`'s registry check itself against PROJ.
-8. **Open** — **Spilhaus's faces**, which must be derived from PROJ's implementation, and
-   verified against it.
-9. **Open** — **The `pyvista` floor of 0.49**, which needs confirming against the clipping
-   paths the engine uses, and the pins of `requirements/`.
-10. **Open** — **The fate of `geodesic.BBox` and `GeoPlotter(manifold=...)`.** The regions
-    design of project 3 replaces them. Until it lands, they keep working on top of the
-    engine.
-11. **Resolved** (2026-10-26, {pull}`2732`) — **`pint-cf`'s maturity.** It is at 0.2.1.
+3. **🚫 Abandoned** (2026-10-26, {pull}`2732` · 🔎 2026-10-24, {pull}`2717`) — **Physical
+   or normalised render units.** Rendering at the Earth's radius in metres makes every
+   coordinate physical, but VTK's precision and cameras at that scale need checking
+   against rendering at a normalised radius of 1. The globe specification took the
+   question on in {pull}`2732`, which measured layering at the Earth's radius and left
+   the rest as globe spec §8 item 4, owed by row 10 of globe spec §9. One question
+   tracked twice would split its answer, so it lives there.
+4. **❓ Open** (🔎 2026-10-24, {pull}`2717` · 🎯 row 5 of §10 · 🎫 {issue}`2866`) — **The
+   form and names of the domain options and of the record** (§4.4 and §4.6), to be
+   settled with an early adopter's code in hand.
+5. **❓ Open** (🔎 2026-10-24, {pull}`2717` · 🎯 row 14 of §10 · 🎫 {issue}`2867`) — **An
+   escape hatch for unsupported methods, once today's path is gone.** Whether a power user
+   may then project to a method the registry does not hold, at their own risk and with a
+   loud warning, or whether the error is final.
+6. **❓ Open** (🔎 2026-10-24, {pull}`2717` · 🎯 row 3 of §10 · 🎫 {issue}`2868`) — **The
+   angle a seam point moves into its own side.** It must exceed PROJ's tolerance for
+   wrapping a longitude, and needs measuring per class.
+7. **❓ Open** (🔎 2026-10-24, {pull}`2717` · 🎯 row 4 of §10 · 🎫 {issue}`2869`) —
+   **Upstream.** Whether to ask PROJ to expose each method's valid domain, which would let
+   `geovista`'s registry check itself against PROJ.
+8. **❓ Open** (🔎 2026-10-24, {pull}`2717` · 🎯 row 11 of §10 · 🎫 {issue}`2870`) —
+   **Spilhaus's faces**, which must be derived from PROJ's implementation, and verified
+   against it.
+9. **❓ Open** (🔎 2026-10-24, {pull}`2717` · 🎯 row 3 of §10 · 🎫 {issue}`2871`) — **The
+   `pyvista` floor of 0.49**, which needs confirming against the clipping paths the engine
+   uses, and the pins of `requirements/`.
+10. **❓ Open** (🔎 2026-10-24, {pull}`2717` · 🎯 row 15 of §10 · 🎫 {issue}`2872`) — **The
+    fate of `geodesic.BBox` and `GeoPlotter(manifold=...)`.** The regions design of project
+    3 replaces them. Until it lands, they keep working on top of the engine.
+11. **🏁 Resolved** (2026-10-26, {pull}`2732` · 🔎 2026-10-24, {pull}`2717`) —
+    **`pint-cf`'s maturity.** It is at 0.2.1.
     Whether `geovista` depends on it as it stands, contributes to it, or keeps the CF
     strings it needs behind a small adapter of its own until it matures. It depends on
     `pint-cf` as it stands, on PyPI and conda-forge, behind `geovista.units`, so replacing
     it would touch one module (globe spec §4.2).
-12. **Resolved** (2026-10-27, {pull}`2757`) — **Files written before the globe.** Today's
+12. **🏁 Resolved** (2026-10-27, {pull}`2757` · 🔎 2026-10-27, {pull}`2752`) — **Files
+    written before the globe.** Today's
     files carry `gvCRS`, which reads as it is, and may carry `gvRadius`, `gvZScale` or
     `gvZLevel` (§3.4), the pantry's coastlines among them. Whether `geovista` reads those,
     taking `gvRadius` as a render radius on the default globe, or refuses them. They are
@@ -727,7 +740,8 @@ Each carries the status grammar of docs spec §3.6.
     `geovista` returns or draws carries only current fields (scene spec §4.4 and
     scene spec §4.5). `bjlittle/geovista-data` reissues the pantry's assets in the new form
     ({issue}`2753`), which no longer has to land with row 2 of globe spec §9.
-13. **Resolved** (2026-11-03, {pull}`2841`) — **Coordinates as quantities.** §4.9 names
+13. **🏁 Resolved** (2026-11-03, {pull}`2841` · 🔎 2026-11-02, {pull}`2799`) —
+    **Coordinates as quantities.** §4.9 names
     the globe's radius, the densification tolerance and the domain angles, but not the lons
     and lats a `Transform` factory takes, which refuse a `pint` quantity today. Whether they
     join the quantities of §4.9, read through `geovista.units.to_degrees`, is settled before
@@ -791,13 +805,17 @@ The CRS work of this design closes {issue}`140`, {issue}`1402`, {issue}`2674` an
 | 11 | Class 6, Spilhaus | not started |
 | 12 | Cut once, map many | not started |
 | 13 | Display refinement, as an explicit opt-in | not started |
+| 14 | Today's seam and transform path deleted once every class has landed, and whether an unsupported method has an escape hatch decided | not started |
+| 15 | The regions of §9 item 1, as a design of their own, deciding the fate of `geodesic.BBox` and `GeoPlotter(manifold=...)` | candidate: that design begins, which no check can observe |
 
 Statuses follow docs spec §3.6. Rows 1 to 4 come first and in
 order, since everything else stands on them. From row 4, a method whose class has not
-landed keeps today's path, and the last class row deletes that path. Rows 5 to 13 may
-then proceed in any order that suits the early adopters, and each lands with its tests,
-its image baselines and a towncrier fragment. Each breaking change carries a `breaking`
-fragment.
+landed keeps today's path, and row 14 deletes that path once the last class row has
+landed (§2 decision 12). Rows 5 to 13 may then proceed in any order that suits the early
+adopters, and each lands with its tests, its image baselines and a towncrier fragment.
+Each breaking change carries a `breaking` fragment. Row 15 is a candidate, since the
+regions design is out of scope (§9), and the row is where the open item it would settle
+waits.
 
 (crs-spec-11)=
 ## 11. References
