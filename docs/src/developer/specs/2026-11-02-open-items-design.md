@@ -533,7 +533,7 @@ Each carries the status grammar of §3.2.
 | 3 | The typing specification's items brought in, with the `candidate` rows they wait on | ✅ landed (2026-11-04, {pull}`2850`) |
 | 4 | The crs specification's items brought in | ✅ landed (2026-11-04, {pull}`2873`) |
 | 5 | The globe, scene, heights and ledger specifications' items brought in | ✅ landed (2026-11-03, {pull}`2826`) |
-| 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | 🚧 in progress ({pull}`2878`) |
+| 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | ✅ landed (2026-11-04, {pull}`2878`) |
 | 7 | A row landing with another specification's row checked to land with it, §7 item 14 | 📋 not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
