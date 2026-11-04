@@ -536,5 +536,5 @@ Each row follows ledger spec §3.4.
 | 10 | ✅ verified (2026-11-02, {pull}`2807`) | `tests/test_spec_conventions.py`, `tests/test_renumbering.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
 | 11 | ✍️ signed off (2026-11-02, {user}`bjlittle`, {pull}`2807`) | Checked in review that the specifications index says an agent may add the `spec: open item` label. |
 | 12 | ✅ verified (2026-11-03, {pull}`2846`) | `tests/test_verification_report.py` |
-| 13 | ⏳ pending | rows 1 to 5 of §8 |
+| 13 | ✅ verified (2026-11-04, {pull}`2873`) | `tests/test_spec_conventions.py` |
 | 14 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2846`) | Checked in review that the specifications index says how to raise, cite, owe, move, settle and promote an item, and what the verification report shows of each, and that the repository checks page explains each failure the item rules raise. |
