@@ -1000,17 +1000,19 @@ def test_check_leaves_the_items_of_a_specification_brought_in(script, itemed):
     assert check(script, itemed, text, unitemed=False) == []
 
 
-def test_an_open_labelled_issue_no_item_cites_is_drift(script):
+def test_an_open_labelled_issue_no_item_cites_is_drift(script, monkeypatch):
     """Items spec §3.8: every open labelled issue is cited, in either grammar.
 
     A specification still waiting to be brought in cites its issues in the
-    grammar of docs spec §3.6, and those count as cited too.
+    grammar of docs spec §3.6, and those count as cited too. Every
+    specification has been brought in, so this one waits only here.
 
     Holds items spec §2 decision 2.
     """
     itemed = spec(items=(item(script, "OPEN", FOUND, OWED, "ticket {issue}`22`"),))
     waiting = spec(items=("**Open** ({issue}`2804`)",))
-    name = next(iter(script.conventions.UNITEMED))
+    name = "2026-01-01-waiting-design.md"
+    monkeypatch.setitem(script.conventions.UNITEMED, name, 4)
     texts = {Path("x.md"): itemed, Path(name): waiting}
 
     assert script.uncited([22, 24, 2804], texts) == [

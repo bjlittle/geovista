@@ -2863,11 +2863,10 @@ row_anchor = citations.row_anchor
 
 #: The specifications whose open items are not yet in the grammar of
 #: items spec §3.2, each with the row of items spec §8 that brings it in, and read
-#: until then in that of docs spec §3.6 by :func:`status`. Each of those rows
-#: shortens this, and the last empties it.
-UNITEMED = {
-    "2026-10-23-globe-first-crs-design.md": 4,
-}
+#: until then in that of docs spec §3.6 by :func:`status`. Row 4 of items spec §8
+#: emptied it. It stays a dict, as ``UNLEDGERED`` does, since the rules that read
+#: the old grammar, and their tests, take their names from it.
+UNITEMED: dict[str, int] = {}
 
 #: Where an item was found, the row that owes it, and the issue that tracks it.
 FOUND_AT = f"{FOUND} 2026-01-01, {{pull}}`1`"
@@ -3505,6 +3504,18 @@ def test_no_two_items_cite_one_issue(specs):
     problems = item_issues(texts)
 
     assert not problems, "\n".join(problems)
+
+
+def test_every_specification_is_itemed():
+    """No specification is exempt from the items rules, this one included.
+
+    Rows 1, 3, 4 and 5 of items spec §8 brought every item already written into
+    the grammar of items spec §3.2, so the rules of items spec §3.7 now read
+    every specification, and a new one is held to them from the day it lands.
+
+    Holds items spec §2 decision 13.
+    """
+    assert not UNITEMED, f"exempt from the items rules: {sorted(UNITEMED)}"
 
 
 def test_unitemed_names_specifications_still_waiting(specs):
