@@ -518,8 +518,9 @@ def uncited(
     An item cites its issue in the grammar of items spec §3.2, or, while
     :data:`UNITEMED` names its specification, in that of docs spec §3.6, so both
     are read. An issue that an open pull request names is in flight rather than
-    uncited: the pull request raising an item raises its issue too (items
-    spec §3.3), and the item reaches these specifications only once it merges.
+    uncited: the pull request raising an item raises its issue too
+    (items spec §3.3), and the item reaches these specifications only once it
+    merges.
 
     Parameters
     ----------

@@ -1,0 +1,4 @@
+The nightly check of the specification statuses no longer reports a labelled
+open item issue that an open pull request names. The pull request that raises
+an item raises its issue too, and the item reaches ``main`` only when it
+merges, so until then the issue is in flight rather than a gap. (:user:`claude`)
