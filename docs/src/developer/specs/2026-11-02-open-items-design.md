@@ -228,6 +228,14 @@ the work is planned, or as a `candidate` with its trigger when it waits on somet
 outside the project (§2 decision 8). A `candidate` row's trigger is asserted or admitted,
 as docs spec §2 decision 6 requires of every row.
 
+When the work belongs to another specification's row, the item stays where it was written,
+and is owed by a row of its own roadmap whose scope names the other:
+row 5 of heights spec §9 is scoped *landing with row 4 of globe spec §9*, and the two land
+in one pull request, as row 6 of ledger spec §8 and row 5 of §8 did in {pull}`2826`. When
+the work lies outside every roadmap, a `💡 candidate` row waits for it, as
+row 15 of crs spec §10 waits on the regions design. 🎯 never names another specification's row, so the landing gate of §3.5 reads one
+roadmap (§7 item 11).
+
 (items-spec-3-5)=
 ### 3.5 Landing a Row
 
@@ -444,10 +452,13 @@ Each carries the status grammar of §3.2.
 6. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2812`) — **An item
    state is matched by its prefix.** A state is read by its prefix, so a misspelt state such
    as `Openly` reads as Open. Item states should match exactly.
-7. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2813`) — **A new item
-   can share an issue with an old-grammar item unseen.** `item_issues` reads only the
-   specifications brought in, so a new 🎫 can cite an issue an old-grammar item already
-   cites, and the clash surfaces only when that specification is brought in.
+7. **🏁 Resolved** (2026-11-04, {pull}`2873` · 🔎 2026-11-02, {pull}`2807` ·
+   🎫 {issue}`2813`) — **A new item can share an issue with an old-grammar item unseen.**
+   `item_issues` reads only the specifications brought in, so a new 🎫 can cite an issue an
+   old-grammar item already cites, and the clash surfaces only when that specification is
+   brought in. Row 4 of §8 emptied `UNITEMED` in {pull}`2873`, so `item_issues` reads every
+   specification, and `test_every_specification_is_itemed` keeps it so: no old-grammar
+   item is left to share an issue unseen.
 8. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2814`) — **The
    renumber guard advises append when an item was removed.** Removing an uncited item before
    a cited one is reported with the advice to append rather than insert, which is wrong for
@@ -462,8 +473,8 @@ Each carries the status grammar of §3.2.
     numbered section's direct children. A list after an unnumbered subheading would be cited
     and checked in source but have no anchor in the build. Nothing in the corpus does this
     yet.
-11. **❓ Open** (🔎 2026-11-03, {pull}`2826` · 🎯 row 6 of §8 · 🎫 {issue}`2839`) — **An item
-    owed by another specification's row.** §3.4 has an item owed by a row of its own
+11. **🏁 Resolved** (2026-11-04, {pull}`2876` · 🔎 2026-11-03, {pull}`2826` ·
+    🎫 {issue}`2839`) — **An item owed by another specification's row.** §3.4 has an item owed by a row of its own
     specification. When the work belongs to another specification's row, §3.4's own answer
     is to write the item in the specification whose row does the work:
     heights spec §8 item 3 could live in the globe specification, owed by
@@ -472,7 +483,10 @@ Each carries the status grammar of §3.2.
     heights spec §8 item 3 waits on row 4 of globe spec §9, globe spec §8 item 9 belongs
     with the vector work of crs spec §4.5, and globe spec §8 item 11 could equally be owed
     by the cutting engine, row 3 of crs spec §10. Which answer is right is open. A local row
-    keeps the check simple, and costs a row whose only work is to wait on another.
+    keeps the check simple, and costs a row whose only work is to wait on another. Settled
+    by {user}`bjlittle` on 2026-11-04: an item is always owed by a row of its own
+    specification, as §3.4 now says, which keeps the check simple at the cost of a row that
+    waits on another. Whether such a row lands with the one it names is item 14.
 12. **❓ Open** (🔎 2026-11-03, {pull}`2826` · 🎯 row 6 of §8 · 🎫 {issue}`2842`) — **A
     decision restated under a retired decision's title fails the renumber guard.**
     Ledger spec §3.3 retires a decision by keeping its entry and agreeing a new one for what
@@ -489,6 +503,13 @@ Each carries the status grammar of §3.2.
     report was {issue}`2856`, of the three issues {pull}`2850` raised for row 3 of §8.
     {pull}`2859` made drift pass over an issue that an open pull request names, read from
     the cross-references on the issue's timeline.
+14. **❓ Open** (🔎 2026-11-04, {pull}`2876` · 🎯 row 7 of §8 · 🎫 {issue}`2875`) — **A row
+    landing with another specification's row is not checked to land with it.** §3.4 has
+    such a row name the other in its scope, as row 5 of heights spec §9 names
+    row 4 of globe spec §9, and land in the same pull request. Nothing checks it, so a row so scoped
+    could land without the row it names, or after it, and the suite would pass. A check
+    could read a scope's *landing with* and fail when one row has landed and the other has
+    not, or when they landed in different pull requests.
 
 (items-spec-8)=
 ## 8. Roadmap
@@ -501,10 +522,12 @@ Each carries the status grammar of §3.2.
 | 4 | The crs specification's items brought in | ✅ landed (2026-11-04, {pull}`2873`) |
 | 5 | The globe, scene, heights and ledger specifications' items brought in | ✅ landed (2026-11-03, {pull}`2826`) |
 | 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | 📋 not started |
+| 7 | A row landing with another specification's row checked to land with it, §7 item 14 | 📋 not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
 after it. Rows 3 to 5 each raise the issues their specifications' items lack, and need
-{user}`bjlittle`'s judgement on the row that owes each item (§3.10).
+{user}`bjlittle`'s judgement on the row that owes each item (§3.10). Row 7 follows row 6, as
+the check that settling §7 item 11 called for (§3.4).
 
 (items-spec-9)=
 ## 9. References
