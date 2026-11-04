@@ -355,12 +355,12 @@ def _drift(state: str, works: list[tuple[Reference, Work]]) -> list[str]:
     """Report a non-terminal status whose work has moved on without it."""
     problems = []
     for reference, work in works:
-        if state == "in progress" and work.kind == "pull":
+        if state == conventions.IN_PROGRESS and work.kind == "pull":
             if work.state != "open":
                 moved = "merged" if work.state == "merged" else "closed"
                 problems.append(f"{state}, but {reference.text} has {moved}")
         elif (
-            state in ("not started", "Open", "Deferred")
+            state in (conventions.NOT_STARTED, "Open", "Deferred")
             # these are held by an issue, and a pull request beside it is context
             and work.kind == "issue"
             and work.state != "open"

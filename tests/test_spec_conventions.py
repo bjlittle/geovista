@@ -540,7 +540,7 @@ def test_resolution_checks_both_ends_of_a_range(tmp_path):
 
     Holds items spec §2 decision 10.
     """
-    roadmap = "| # | Scope | Status |\n|---|---|---|\n| 1 | x | candidate |\n"
+    roadmap = f"| # | Scope | Status |\n|---|---|---|\n| 1 | x | {CANDIDATE} |\n"
     _, names = demo(tmp_path, f"{DEMO}\n{roadmap}")
     text = f"# rows 1 to 2 of demo spec {SECTION}2, row 1 of {SECTION}2\n"
 
@@ -1303,9 +1303,14 @@ def test_no_code_span_in_a_specification_crosses_a_line(spec):
 
 
 LANDED = "\N{WHITE HEAVY CHECK MARK} landed"
-IN_PROGRESS = "in progress"
-#: The roadmap states and the open-item states of docs spec §3.6.
-ROW_STATES = (LANDED, IN_PROGRESS, "not started", "candidate")
+IN_PROGRESS = "\N{CONSTRUCTION SIGN} in progress"
+NOT_STARTED = "\N{CLIPBOARD} not started"
+CANDIDATE = "\N{ELECTRIC LIGHT BULB} candidate"
+#: The roadmap states and the open-item states of docs spec §3.6. Each roadmap
+#: state carries its emoji (ledger spec §2 decision 16).
+ROW_STATES = (LANDED, IN_PROGRESS, NOT_STARTED, CANDIDATE)
+#: Each roadmap state as it was written before it carried its emoji.
+BARE_STATES = {state.split(" ", 1)[1]: state for state in ROW_STATES}
 ITEM_STATES = ("Resolved", "Abandoned", "Deferred", "Open")
 TERMINAL = frozenset({LANDED, "Resolved", "Abandoned"})
 DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
@@ -1451,7 +1456,16 @@ def status(path: Path, text: str, *, unitemed: bool | None = None) -> list[str]:
                 continue
             state, rest, states = bold["state"].strip(), bold["rest"], ITEM_STATES
         if state not in states:
-            problems.append(f"{where(path, number)}: {state!r} is not a status")
+            bare = next(
+                (b for b in BARE_STATES if kind == "row" and written.startswith(b)),
+                None,
+            )
+            hint = (
+                f"{bare!r} is not a status: write {BARE_STATES[bare]}" if bare else ""
+            )
+            problems.append(
+                f"{where(path, number)}: {hint or f'{state!r} is not a status'}"
+            )
         elif state in TERMINAL:
             evidence = carried(rest)
             stamp = DATE.search(evidence)
@@ -1473,7 +1487,7 @@ def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
         "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
         f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
         f"| 2 | b | {LANDED} (2026-01-01) |\n| 3 | c | shipped |\n"
-        "| 4 | d | candidate |\n\n"
+        "| 4 | d | \N{ELECTRIC LIGHT BULB} candidate |\n\n"
         "(demo-spec-2)=\n## 2. Open Items\n\n"
         "1. **Resolved** (2026-01-01, [x](https://github.com/o/r/issues/1)) - **A.**\n"
         "2. **Resolved** (no date,\n   {issue}`2`) - **B.**\n"
@@ -1487,6 +1501,28 @@ def test_status_finds_an_unknown_state_and_unevidenced_terminals(tmp_path):
         f"{LANDED} carries no date and reference",
         "'shipped' is not a status",
         "Resolved carries no date and reference",
+    ]
+
+
+@pytest.mark.parametrize("state", [IN_PROGRESS, NOT_STARTED, CANDIDATE])
+def test_a_roadmap_state_carries_its_emoji(tmp_path, state):
+    """A roadmap row's state carries its emoji, as a landed row always has.
+
+    A bare state is refused, with the form it should take.
+
+    Holds ledger spec §2 decision 16.
+    """
+    bare = state.split(" ", 1)[1]
+    roadmap = (
+        "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
+        f"| 1 | a | {state} |\n| 2 | b | {bare} |\n\n"
+    )
+    path, _ = demo(tmp_path, roadmap)
+
+    problems = status(path, path.read_text(encoding="utf-8"), unitemed=False)
+
+    assert [p.split(": ", 1)[1] for p in problems] == [
+        f"'{bare}' is not a status: write {state}"
     ]
 
 
@@ -1555,9 +1591,9 @@ def test_row_numbers_finds_a_row_not_numbered_as_one(tmp_path):
     """A row is cited by its number, so a first cell that is none is reported."""
     roadmap = (
         "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
-        "| 1 | a | not started |\n| 1a | b | not started |\n"
-        "| **2** | c | not started |\n| ~~3~~ | d | not started |\n"
-        "| 4. | e | not started |\n| | f | not started |\n\n"
+        f"| 1 | a | {NOT_STARTED} |\n| 1a | b | {NOT_STARTED} |\n"
+        f"| **2** | c | {NOT_STARTED} |\n| ~~3~~ | d | {NOT_STARTED} |\n"
+        f"| 4. | e | {NOT_STARTED} |\n| | f | {NOT_STARTED} |\n\n"
         "| Decision | Status | Evidence |\n|---|---|---|\n| **1** | pending | |\n"
     )
     path, _ = demo(tmp_path, roadmap)
@@ -1576,7 +1612,7 @@ def test_row_numbers_passes_over_a_roadmap_before_any_section(tmp_path):
 
     The grammar's rows() and the build both pass it over, and so does the rule.
     """
-    roadmap = "| # | Scope | Status |\n|---|---|---|\n| **1** | a | not started |\n"
+    roadmap = f"| # | Scope | Status |\n|---|---|---|\n| **1** | a | {NOT_STARTED} |\n"
     path, _ = demo(tmp_path, f"{roadmap}\n{DEMO}\n{roadmap}")
 
     problems = row_numbers(path, path.read_text(encoding="utf-8"))
@@ -2246,7 +2282,10 @@ AGREEMENT = "2026-01-01, {user}`bjlittle`, {pull}`1`"
 
 
 def ledgered(
-    tmp_path: Path, entries: str, rows: str, roadmap: str = "| 1 | a | not started |\n"
+    tmp_path: Path,
+    entries: str,
+    rows: str,
+    roadmap: str = "| 1 | a | \N{CLIPBOARD} not started |\n",
 ) -> tuple[Path, Namespace]:
     """Write a ``demo spec`` with decisions, a roadmap and a Verification table."""
     return demo(
@@ -2467,14 +2506,14 @@ def roadmap_rows(text: str) -> dict[str, str]:
 def ledger_complete(path: Path, text: str) -> list[str]:
     """Find a pending decision once the roadmap is done, item 7 of ledger spec §3.6."""
     rows = roadmap_rows(text)
-    if any(s.startswith(("in progress", "not started")) for s in rows.values()):
+    if any(s.startswith((IN_PROGRESS, NOT_STARTED)) for s in rows.values()):
         return []
     problems = []
     for row in ledger(text) or []:
         if opened(row.status)[0] != PENDING:
             continue
         named = re.search(r"\brow (\d+) of\b", row.evidence)
-        if named and rows.get(named[1], "").startswith("candidate"):
+        if named and rows.get(named[1], "").startswith(CANDIDATE):
             continue
         problems.append(
             f"{where(path, row.line)}: decision {row.decision} is pending, and no "
@@ -2651,14 +2690,19 @@ def test_ledger_complete_once_the_roadmap_is(tmp_path):
     """Ledger spec §2 decision 8: a done roadmap leaves no decision pending."""
     entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
     rows = f"| 1 | {PENDING} | |\n| 2 | {PENDING} | row 2 of {SECTION}3 |\n"
-    roadmap = f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n| 2 | b | candidate |\n"
+    roadmap = (
+        f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n| 2 | b | {CANDIDATE} |\n"
+    )
     path, _ = ledgered(tmp_path, entries, rows, roadmap)
     text = path.read_text(encoding="utf-8")
 
     assert faults(ledger_complete(path, text)) == [
         "decision 1 is pending, and no row of the roadmap is left to deliver it"
     ]
-    open_roadmap = text.replace("| 2 | b | candidate |", "| 2 | b | not started |")
+    open_roadmap = text.replace(
+        "| 2 | b | \N{ELECTRIC LIGHT BULB} candidate |",
+        "| 2 | b | \N{CLIPBOARD} not started |",
+    )
     assert ledger_complete(path, open_roadmap) == []
 
 
@@ -2806,11 +2850,11 @@ def test_statuses_reads_past_an_escaped_pipe():
     """A scope may hold an escaped pipe, which does not move the Status column."""
     text = (
         "(demo-spec-1)=\n## 1. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
-        "| 1 | a \\| b | not started |\n"
+        "| 1 | a \\| b | \N{CLIPBOARD} not started |\n"
     )
 
-    assert [status for _, _, status in statuses(text)] == ["not started"]
-    assert roadmap_rows(text) == {"1": "not started"}
+    assert [status for _, _, status in statuses(text)] == ["\N{CLIPBOARD} not started"]
+    assert roadmap_rows(text) == {"1": "\N{CLIPBOARD} not started"}
 
 
 def test_ledger_entries_wants_a_title(tmp_path):
@@ -2892,7 +2936,7 @@ def moved(row: int, day: str = "2026-01-02") -> str:
 #: A roadmap whose first row has landed and whose others have not.
 ROADMAP = (
     f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
-    "| 2 | b | not started |\n| 3 | c | candidate: a trigger |\n"
+    f"| 2 | b | {NOT_STARTED} |\n| 3 | c | {CANDIDATE}: a trigger |\n"
 )
 
 
@@ -3363,7 +3407,7 @@ def test_item_owed_names_a_row_that_has_not_landed(tmp_path):
     other = tmp_path / "2026-01-02-other-design.md"
     other.write_text(
         "(other-spec-2)=\n## 2. Roadmap\n\n| # | Scope | Status |\n|---|---|---|\n"
-        "| 2 | b | not started |\n",
+        "| 2 | b | \N{CLIPBOARD} not started |\n",
         encoding="utf-8",
     )
     names = namespace([path, other])
@@ -3410,7 +3454,7 @@ def test_item_graduated_names_a_row_that_cites_its_issue(tmp_path):
 
     Holds items spec §2 decision 7.
     """
-    roadmap = ROADMAP + "| 4 | An item, {issue}`5` | not started |\n"
+    roadmap = ROADMAP + "| 4 | An item, {issue}`5` | \N{CLIPBOARD} not started |\n"
     entries = (
         entry_item(1, GRADUATED, graduation(4), FOUND_AT, TICKETED)
         + entry_item(2, GRADUATED, graduation(3), FOUND_AT, TICKETED)

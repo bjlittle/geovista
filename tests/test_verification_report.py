@@ -128,9 +128,10 @@ def repo(tmp_path: Path) -> Path:
         + "\n(demo-spec-6)=\n## 6. Roadmap\n\n"
         "| # | Scope | Status |\n|---|---|---|\n"
         f"| 1 | The first | {LANDED} (2026-01-01, {{pull}}`1`) |\n"
-        "| 2 | The second | in progress |\n"
-        "| 3 | The work of {issue}`7`, with `a \\| b` kept | not started |\n"
-        "| 4 | The fourth, when a user asks | candidate |\n",
+        "| 2 | The second | \N{CONSTRUCTION SIGN} in progress |\n"
+        "| 3 | The work of {issue}`7`, with `a \\| b` kept "
+        "| \N{CLIPBOARD} not started |\n"
+        "| 4 | The fourth, when a user asks | \N{ELECTRIC LIGHT BULB} candidate |\n",
     )
     write(
         tmp_path,
@@ -411,7 +412,10 @@ def test_report_shows_each_roadmap_row_with_its_status(script, repo, capsys):
 
     assert "| # | Scope | Status |" in roadmap
     assert f"| 1 | The first | {LANDED} (2026-01-01, #1) |" in roadmap
-    assert "| 3 | The work of #7, with `a \\| b` kept | not started |" in roadmap
+    assert (
+        "| 3 | The work of #7, with `a \\| b` kept | \N{CLIPBOARD} not started |"
+        in roadmap
+    )
 
 
 def test_report_shows_the_ledger_summary_under_a_heading_of_its_own(

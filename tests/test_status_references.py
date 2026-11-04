@@ -221,9 +221,18 @@ def test_abandoned(script, record):
 @pytest.mark.parametrize(
     ("status", "expected"),
     [
-        ("in progress ({pull}`10`)", "in progress, but {pull}`10` has merged"),
-        ("in progress ({pull}`13`)", "in progress, but {pull}`13` has closed"),
-        ("not started ({issue}`21`)", "not started, but {issue}`21` has closed"),
+        (
+            "\N{CONSTRUCTION SIGN} in progress ({pull}`10`)",
+            "\N{CONSTRUCTION SIGN} in progress, but {pull}`10` has merged",
+        ),
+        (
+            "\N{CONSTRUCTION SIGN} in progress ({pull}`13`)",
+            "\N{CONSTRUCTION SIGN} in progress, but {pull}`13` has closed",
+        ),
+        (
+            "\N{CLIPBOARD} not started ({issue}`21`)",
+            "\N{CLIPBOARD} not started, but {issue}`21` has closed",
+        ),
     ],
 )
 def test_drift_row(script, record, status, expected):
@@ -245,7 +254,11 @@ def test_drift_item(script, record, state):
 
 @pytest.mark.parametrize(
     "status",
-    ["in progress ({pull}`12`)", "not started ({issue}`20`)", "candidate"],
+    [
+        "\N{CONSTRUCTION SIGN} in progress ({pull}`12`)",
+        "\N{CLIPBOARD} not started ({issue}`20`)",
+        "\N{ELECTRIC LIGHT BULB} candidate",
+    ],
 )
 def test_no_drift_row(script, record, status):
     """Test a row whose work is still where it says passes."""
@@ -263,7 +276,7 @@ def test_no_drift_item(script, record, item):
 @pytest.mark.parametrize(
     "status",
     [
-        "not started ({issue}`20`, {pull}`10`)",
+        "\N{CLIPBOARD} not started ({issue}`20`, {pull}`10`)",
         "**Open** ({issue}`20`, {pull}`10`)",
         "**Deferred** ({issue}`20`, {pull}`13`)",
     ],

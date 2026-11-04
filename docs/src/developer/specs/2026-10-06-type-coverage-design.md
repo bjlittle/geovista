@@ -401,11 +401,11 @@ they don't have, where a misspelt one was accepted silently.
 | 6b | `core`, `search`, `filters`, `gridlines`, `crs` | 38 | ✅ landed (2026-10-21, {pull}`2676`) |
 | 6c | `pantry` and its three modules, `raster`, `report`, `themes` | 19 | ✅ landed (2026-10-21, {pull}`2680`) |
 | 7 | `examples/`, its ratchet entry, and the ratchet retired | 20 | ✅ landed (2026-10-21, {pull}`2681`) |
-| 8 | The `pyvista` release carrying the fixes of §3.4 as the floor, and the override of §3.4 and the casts and typed locals waiting on it withdrawn | 0 | candidate: the `pyvista` floor reaches 0.50.0 |
-| 9 | The `lazy_loader` override withdrawn | 0 | candidate: `lazy_loader` ships `py.typed`, or the Python floor reaches 3.15 |
-| 10 | The cast in `Transform.from_tiff` withdrawn | 0 | candidate: `types-rasterio` takes an array for the rows of `rasterio.transform.xy` |
-| 11 | The override for the distributions that ship no annotations withdrawn | 0 | candidate: one of them ships `py.typed`, or gains a stub package |
-| 12 | The trigger tests of rows 8 to 11 hardened | 0 | not started |
+| 8 | The `pyvista` release carrying the fixes of §3.4 as the floor, and the override of §3.4 and the casts and typed locals waiting on it withdrawn | 0 | 💡 candidate: the `pyvista` floor reaches 0.50.0 |
+| 9 | The `lazy_loader` override withdrawn | 0 | 💡 candidate: `lazy_loader` ships `py.typed`, or the Python floor reaches 3.15 |
+| 10 | The cast in `Transform.from_tiff` withdrawn | 0 | 💡 candidate: `types-rasterio` takes an array for the rows of `rasterio.transform.xy` |
+| 11 | The override for the distributions that ship no annotations withdrawn | 0 | 💡 candidate: one of them ships `py.typed`, or gains a stub package |
+| 12 | The trigger tests of rows 8 to 11 hardened | 0 | 📋 not started |
 
 Row 6, the seventeen library modules left in the ratchet, was split into three pull
 requests ({user}`bjlittle`, 2026-10-11). Its count of 51 does not reproduce. Lifted at the

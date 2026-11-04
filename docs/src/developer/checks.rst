@@ -313,7 +313,7 @@ fault. For the ledger, it names the decision or row, and says one of these:
 - *replaced by …, no decision* or *…, which is not in force*: cite the decision in
   force that replaced it.
 - *is pending, and no row of the roadmap is left to deliver it*: verify it, sign
-  it off, or name the ``candidate`` row that will deliver it.
+  it off, or name the ``💡 candidate`` row that will deliver it.
 
 For an open item, it names the item, and says one of these:
 
@@ -358,7 +358,10 @@ For an open item, it names the item, and says one of these:
 For a roadmap row, it says ``row '…' is not numbered as a row``: write its first
 cell as a plain number, ``1``, or with a letter, ``1a``, for a row split in two.
 A citation names a row by that cell, so ``**1**``, ``~~1~~`` or ``1.`` names
-nothing (items spec §3.1).
+nothing (items spec §3.1). When it says ``'not started' is not a status: write
+📋 not started``, or the same for ``in progress`` or ``candidate``, give the state
+its emoji: ``🚧 in progress``, ``📋 not started`` or ``💡 candidate``, as
+ledger spec §2 decision 16 agreed.
 
 **Declaring an exception:** None for the conventions. A specification not yet
 brought into the ledger is named in ``UNLEDGERED``, beside the row of

@@ -217,7 +217,7 @@ must settle or graduate (items spec §3.6).
 
 **Settling or promoting it at a landing.** The pull request that lands a row
 owing an item resolves it, abandons it, or graduates it to a row of its own,
-at least a ``candidate``:
+at least a ``💡 candidate``:
 
 .. code:: markdown
 

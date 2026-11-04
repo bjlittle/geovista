@@ -129,6 +129,10 @@ to record its decisions in the form they describe (§3.2).
     where contributors meet it.** The specifications index says how to add, cite, retire,
     verify and sign off a decision, and the repository checks page explains each new failure
     and how to fix it.
+16. **🤝 Agreed** (2026-11-04, {user}`bjlittle`, {pull}`2874`) — **Every roadmap state
+    carries its emoji.** 🚧 in progress, 📋 not started and 💡 candidate, beside ✅ landed,
+    so every status in the collection reads alike, and a bare state is refused with the
+    form it should take. Row 7 of §8 brought it in, settling §7 item 1.
 
 (ledger-spec-3)=
 ## 3. Design
@@ -433,16 +437,18 @@ item's states theirs.
 (ledger-spec-7)=
 ## 7. Open Items
 
-Each carries the status grammar of docs spec §3.6.
+Each carries the grammar of items spec §3.2.
 
-1. **❓ Open** (🔎 2026-10-30, {pull}`2785` · 🎯 row 7 of §8 · 🎫 {issue}`2837`) — **The other
-   states have no emoji.** A roadmap row that has landed carries ✅, and with this
+1. **🏁 Resolved** (2026-11-04, {pull}`2874` · 🔎 2026-10-30, {pull}`2785` ·
+   🎫 {issue}`2837`) — **The other states have no emoji.** A roadmap row that has landed carries ✅, and with this
    specification so do the states of a decision and of its verification. A row
    `in progress`, `not started` or `candidate`, and an open item, carry none. Giving them
    emojis would make every status in the collection read alike, but it changes the
    vocabulary of docs spec §3.6 and every specification that uses it, so it is a change of
    its own. Items spec §2 decision 9 has since given an open item's states theirs, so the
-   item is narrowed to a roadmap row's states.
+   item is narrowed to a roadmap row's states. Row 7 of §8 gave them 🚧 in progress,
+   📋 not started and 💡 candidate, chosen by {user}`bjlittle` and agreed as §2 decision 16,
+   in every specification's roadmap and in docs spec §3.6.
 
 (ledger-spec-8)=
 ## 8. Roadmap
@@ -455,7 +461,7 @@ Each carries the status grammar of docs spec §3.6.
 | 4 | The typing, zlevel and checks specifications brought into the ledger | ✅ landed (2026-11-01, {pull}`2796`) |
 | 5 | The crs specification brought into the ledger | ✅ landed (2026-11-02, {pull}`2799`) |
 | 6 | The globe, scene and heights specifications brought into the ledger | ✅ landed (2026-11-03, {pull}`2826`) |
-| 7 | Emojis for a roadmap row's states | not started |
+| 7 | Emojis for a roadmap row's states | ✅ landed (2026-11-04, {pull}`2874`) |
 
 Statuses follow docs spec §3.6. Rows 2 to 7 each need row 1. Row 1 brings in the docs and
 citation specifications itself, as it retires a decision of the citation specification and
@@ -500,3 +506,4 @@ Each row follows §3.4.
 | 13 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
 | 14 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
 | 15 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
+| 16 | ✅ verified (2026-11-04, {pull}`2874`) | `tests/test_spec_conventions.py` |

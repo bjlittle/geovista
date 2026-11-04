@@ -793,20 +793,20 @@ The CRS work of this design closes {issue}`140`, {issue}`1402`, {issue}`2674` an
 | # | Scope | Status |
 |---|---|---|
 | 1 | The coverage test of §6, recording today's outcomes | ✅ landed (2026-10-26, {pull}`2721`) |
-| 2 | The globe model, units, heights and layers, by rows 1 to 5 of globe spec §9 | not started |
-| 3 | The cutting engine: rotate, clip, cut a seam, densify, with the account of each | not started |
-| 4 | The domain registry, and class 0 on the engine, replacing today's seam and transform path with no change to the 91 methods that work | not started |
-| 5 | The CRS interface: `geovista` classes, domain options, and `cartopy` objects read without importing it | not started |
-| 6 | Class 1, latitude limits | not started ({issue}`140`) |
-| 7 | Class 2, caps | not started ({issue}`1402`) |
-| 8 | Class 3, bands | not started ({issue}`2674`) |
-| 9 | Class 4, oblique aspects | not started ({issue}`2519`) |
-| 10 | Class 5, interrupted Goode Homolosine, both emphases | not started |
-| 11 | Class 6, Spilhaus | not started |
-| 12 | Cut once, map many | not started |
-| 13 | Display refinement, as an explicit opt-in | not started |
-| 14 | Today's seam and transform path deleted once every class has landed, and whether an unsupported method has an escape hatch decided | not started |
-| 15 | The regions of §9 item 1, as a design of their own, deciding the fate of `geodesic.BBox` and `GeoPlotter(manifold=...)` | candidate: that design begins, which no check can observe |
+| 2 | The globe model, units, heights and layers, by rows 1 to 5 of globe spec §9 | 📋 not started |
+| 3 | The cutting engine: rotate, clip, cut a seam, densify, with the account of each | 📋 not started |
+| 4 | The domain registry, and class 0 on the engine, replacing today's seam and transform path with no change to the 91 methods that work | 📋 not started |
+| 5 | The CRS interface: `geovista` classes, domain options, and `cartopy` objects read without importing it | 📋 not started |
+| 6 | Class 1, latitude limits | 📋 not started ({issue}`140`) |
+| 7 | Class 2, caps | 📋 not started ({issue}`1402`) |
+| 8 | Class 3, bands | 📋 not started ({issue}`2674`) |
+| 9 | Class 4, oblique aspects | 📋 not started ({issue}`2519`) |
+| 10 | Class 5, interrupted Goode Homolosine, both emphases | 📋 not started |
+| 11 | Class 6, Spilhaus | 📋 not started |
+| 12 | Cut once, map many | 📋 not started |
+| 13 | Display refinement, as an explicit opt-in | 📋 not started |
+| 14 | Today's seam and transform path deleted once every class has landed, and whether an unsupported method has an escape hatch decided | 📋 not started |
+| 15 | The regions of §9 item 1, as a design of their own, deciding the fate of `geodesic.BBox` and `GeoPlotter(manifold=...)` | 💡 candidate: that design begins, which no check can observe |
 
 Statuses follow docs spec §3.6. Rows 1 to 4 come first and in
 order, since everything else stands on them. From row 4, a method whose class has not
