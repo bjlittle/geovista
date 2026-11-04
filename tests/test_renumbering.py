@@ -1802,3 +1802,235 @@ def test_the_corpus_is_read_for_citations_only_once_a_specification_changed(
     run(guard, repo, capsys=capsys)
 
     assert reads
+
+
+def test_an_item_moved_up_by_a_removal_is_told_to_keep_the_removed_item(guard):
+    """Items spec §7 item 8: the advice follows the direction of the move.
+
+    An item that moved down was pushed by an insert, so it is told to append. One
+    that moved up was pulled by a removal, so it is told to keep what was removed.
+    """
+    problems = frozen(guard, items(ONE, TWO, THREE), items(ONE, THREE))
+
+    moved = next(problem for problem in problems if "is now item 2" in problem)
+    assert "append" not in moved
+    assert moved.endswith(
+        "is now item 2: an item before it was removed, so keep that item in "
+        "place, marked as no longer applying"
+    )
+
+
+def test_a_row_moved_up_by_a_removal_is_told_to_keep_the_removed_row(guard):
+    """Items spec §7 item 8: a row is advised by the direction of its move too."""
+    base = spec(("4", "Roadmap", roadmap(("1", "a"), ("2", "b"), ("3", "c"))))
+    head = spec(("4", "Roadmap", roadmap(("1", "a"), ("2", "c"))))
+
+    problems = guard.frozen(base, head)
+
+    moved = next(problem for problem in problems if "is now row 2" in problem)
+    assert moved.endswith(
+        "is now row 2: a row before it was removed, so keep that row in place, "
+        "marked as no longer applying"
+    )
+
+
+def test_a_cited_item_reworded_past_recognition_as_its_neighbours_move_fails(guard):
+    """Items spec §7 item 4: an item kept only by its number, past a shift, fails.
+
+    A removal and an insert before a cited step leave it at its own number. Its
+    text, reworded past recognition, pairs with nothing, so only its number holds
+    it, and that cannot tell it from a new step written in its place.
+    """
+    cited = frozenset({"demo-spec-8-item-3"})
+    head = "1. Build the pages.\n2. Check the links.\n3. Publish the site to the host."
+
+    (problem,) = frozen(guard, STEPS, head, cited)
+
+    assert problem.startswith('Open Items, item 3 "Serve them." holds item 3 only')
+    assert (
+        frozen(guard, STEPS, STEPS.replace("Serve them.", "Publish it."), cited) == []
+    )
+
+
+#: A decision retired in place, and a new one agreed under its title.
+RETIRED = "\N{FILE CABINET}\N{VARIATION SELECTOR-16} Retired"
+
+
+def test_a_decision_restated_under_a_retired_ones_title_passes(guard):
+    """Items spec §7 item 12: a retired entry is paired at its own number first.
+
+    Ledger spec §3.3 retires a decision by keeping its entry, so a new decision
+    agreed under the same title, with the retired one's text, is new, and the
+    retired one has not moved.
+    """
+    retired = (
+        f"**{RETIRED}** (2026-11-01, {{pull}}`2`; agreed 2026-10-30, {{pull}}`1`)"
+        " — **The second.** An older B, retired."
+    )
+    restated = SECOND.replace("2026-10-30", "2026-11-01").replace("`1`", "`2`")
+    base = spec(("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, SECOND)))
+    head = spec(
+        ("1", "Purpose", PURPOSE),
+        ("2", "Decisions", items(FIRST, retired, restated)),
+    )
+
+    assert guard.frozen(base, head) == []
+
+
+def test_a_retired_entry_holds_its_number_only_as_the_decision_there(guard):
+    """Items spec §7 item 12: a retired entry of another decision holds nothing.
+
+    Retiring the third decision and swapping it with the second moves both, so a
+    retired entry is paired at its number only when it is the decision written
+    there on the base branch.
+    """
+    retired = THIRD.replace(f"**{AGREED}**", f"**{RETIRED}**")
+    base = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, SECOND, THIRD))
+    )
+    head = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, retired, SECOND))
+    )
+
+    problems = guard.frozen(base, head)
+
+    assert len(problems) == 2
+    assert any('"The second." is now item 3' in problem for problem in problems)
+    assert any('"The third." is now item 2' in problem for problem in problems)
+
+
+def shared(text: str, state: str = AGREED, provenance: str | None = None) -> str:
+    """Write a decision titled "Shared." with the given text, state and provenance."""
+    provenance = provenance or "2026-10-30, {user}`bjlittle`, {pull}`1`"
+    return f"**{state}** ({provenance}) — **Shared.** {text}"
+
+
+def test_a_retired_entry_sharing_a_title_holds_its_number_only_by_its_text(guard):
+    """Items spec §7 item 12: of two decisions sharing a title, text tells them apart.
+
+    Swapping them and retiring the one now second moves both, though its title
+    matches the decision written there on the base branch.
+    """
+    bravo, charlie = shared("Bravo, as agreed."), shared("Charlie, as agreed.")
+    retired = shared(
+        "Charlie, as agreed.",
+        RETIRED,
+        "2026-11-01, {pull}`2`; agreed 2026-10-30, {pull}`1`",
+    )
+    base = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, bravo, charlie))
+    )
+    head = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, retired, bravo))
+    )
+
+    assert len(guard.frozen(base, head)) == 2
+
+
+def test_a_retired_entry_holds_its_number_only_with_its_own_agreement(guard):
+    """Items spec §7 item 12: a retirement keeps the agreement it retires.
+
+    A retired decision and its replacement share a title, so a retired entry is
+    held at a number only when the agreement it names is the one written there.
+    """
+    old = shared(
+        "Bravo, first agreed.",
+        RETIRED,
+        "2026-11-01, {pull}`2`; agreed 2026-10-30, {pull}`1`",
+    )
+    new = shared(
+        "Bravo, as agreed now.", AGREED, "2026-11-01, {user}`bjlittle`, {pull}`2`"
+    )
+    new_retired = shared(
+        "Bravo, as agreed now.",
+        RETIRED,
+        "2026-11-02, {pull}`3`; agreed 2026-11-01, {pull}`2`",
+    )
+    base = spec(("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, old, new)))
+    head = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, new_retired, old))
+    )
+
+    assert len(guard.frozen(base, head)) == 2
+
+
+def test_a_retired_entry_is_known_by_its_text_not_its_header(guard):
+    """Items spec §7 item 12: retirement headers alike do not make decisions alike.
+
+    Of two decisions sharing a title and an agreement, one already retired,
+    retiring the other at the first one's number moves both, though the two
+    retirement headers read alike.
+    """
+    agreed = "2026-11-01, {pull}`2`; agreed 2026-10-30, {pull}`1`"
+    globe = "Use a registered globe for meshes."
+    heights = "Keep the heights in metres."
+    base = spec(
+        ("1", "Purpose", PURPOSE),
+        (
+            "2",
+            "Decisions",
+            items(FIRST, shared(globe, RETIRED, agreed), shared(heights)),
+        ),
+    )
+    retired = "2026-11-04, {pull}`2877`; agreed 2026-10-30, {pull}`1`"
+    head = spec(
+        ("1", "Purpose", PURPOSE),
+        (
+            "2",
+            "Decisions",
+            items(
+                FIRST, shared(heights, RETIRED, retired), shared(globe, RETIRED, agreed)
+            ),
+        ),
+    )
+
+    assert len(guard.frozen(base, head)) == 2
+
+
+def test_a_replacement_retired_in_place_holds_its_number(guard):
+    """Items spec §7 item 12: an older retirement of the title is no rival to it.
+
+    A decision retired, then its replacement retired in place with its successor
+    appended, leaves every entry where it was, since only a decision of the same
+    agreement can be the one written at a number.
+    """
+    older = shared(
+        "Bravo, first agreed.",
+        RETIRED,
+        "2026-11-01, {pull}`2`; agreed 2026-10-30, {pull}`1`",
+    )
+    replacement = shared(
+        "Bravo, as agreed now.", AGREED, "2026-11-01, {user}`bjlittle`, {pull}`2`"
+    )
+    retired = shared(
+        "Bravo, as agreed now.",
+        RETIRED,
+        "2026-11-04, {pull}`3`; agreed 2026-11-01, {pull}`2`",
+    )
+    successor = shared(
+        "Bravo, as agreed last.", AGREED, "2026-11-04, {user}`bjlittle`, {pull}`3`"
+    )
+    base = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, older, replacement))
+    )
+    head = spec(
+        ("1", "Purpose", PURPOSE),
+        ("2", "Decisions", items(FIRST, older, retired, successor)),
+    )
+
+    assert guard.frozen(base, head) == []
+
+
+def test_a_lettered_row_moved_up_by_a_removal_is_told_to_keep_the_removed_row(guard):
+    """Items spec §7 item 8: a move between lettered rows is read by its letter."""
+    phases = (("6a", "first phase"), ("6b", "second phase"), ("6c", "third phase"))
+    base = spec(("4", "Roadmap", roadmap(*phases)))
+    head = spec(("4", "Roadmap", roadmap(phases[0], ("6b", "third phase"))))
+
+    problems = guard.frozen(base, head)
+
+    moved = next(problem for problem in problems if "is now row 6b" in problem)
+    assert moved.endswith(
+        "is now row 6b: a row before it was removed, so keep that row in place, "
+        "marked as no longer applying"
+    )

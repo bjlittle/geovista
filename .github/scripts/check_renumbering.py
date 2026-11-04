@@ -152,7 +152,11 @@ def _likeness(old: str, new: str) -> float:
 
 
 def pair(
-    base: dict[str, Section], head: dict[str, Section], *, in_place: bool = False
+    base: dict[str, Section],
+    head: dict[str, Section],
+    *,
+    in_place: bool = False,
+    held: Collection[str] = frozenset(),
 ) -> dict[str, Fate]:
     """Pair each section on the base branch with its counterpart, if it has one.
 
@@ -168,6 +172,9 @@ def pair(
         The sections of the specification on the base branch and now.
     in_place : bool, optional
         Pair what is left over by number, as items and rows are.
+    held : collection of str, optional
+        Keys paired with themselves before anything else, as a retired decision
+        is, which keeps its entry at its number (ledger spec §3.3).
 
     Returns
     -------
@@ -177,6 +184,10 @@ def pair(
     """
     paired: dict[str, str] = {}
     free = list(head)
+    for key in held:
+        if key in base and key in free:
+            paired[key] = key
+            free.remove(key)
     titled = sorted(
         (
             (_likeness(section.body, head[other].body), anchor == other, anchor, other)
@@ -341,6 +352,120 @@ def roadmap_rows(text: str) -> dict[str, Section]:
 NAMED = 60
 
 
+def _place(key: str) -> tuple[str, tuple[int, str]]:
+    """Read a key's list and its place in it, as ``("", (6, "b"))`` for ``6b``.
+
+    A place is the number and then any letter, so ``6b`` comes after ``6a`` and
+    before ``7``. A key of a later list, ``1 of list 2``, is placed in that list,
+    so that keys of different lists are never compared.
+    """
+    number, _, listed = key.partition(" of list ")
+    label = re.match(r"(\d+)([a-z]?)", number)
+    return listed, (int(label[1]), label[2])
+
+
+def _advice(old: str, new: str, kind: str) -> str:
+    """Advise on an item or row that moved, by the direction of its move.
+
+    A move down was made by an insert before it, and a move up by a removal, so
+    the one is told to append instead and the other to keep what it removed
+    (items spec §7 item 8).
+    """
+    article = "an" if kind[0] in "aeiou" else "a"
+    if _place(new)[1] < _place(old)[1]:
+        return (
+            f"{article} {kind} before it was removed, so keep that {kind} in place, "
+            "marked as no longer applying"
+        )
+    return f"append {article} {kind} rather than insert it"
+
+
+def _shifted(
+    number: str, fates: dict[str, Fate], head: Collection[str], targets: set[str]
+) -> bool:
+    """Say whether a list moved before an item, by a move, a removal or an insert.
+
+    Parameters
+    ----------
+    number : str
+        The item's key.
+    fates : dict
+        The fate of every item of its list on the base branch.
+    head : collection of str
+        The keys of its list now.
+    targets : set of str
+        The keys now that an item of the base branch paired with.
+
+    """
+    listed, at = _place(number)
+
+    def before(key: str) -> bool:
+        place = _place(key)
+        return place[0] == listed and place[1] < at
+
+    moved = any(before(old) and fate.kind != "kept" for old, fate in fates.items())
+    inserted = any(before(key) and key not in targets for key in head)
+    return moved or inserted
+
+
+#: The agreement a retired decision keeps, as ``agreed 2026-10-30, {pull}`1```.
+AGREED_ON = re.compile(r"agreed (?P<date>\d{4}-\d{2}-\d{2}), \{pull\}`(?P<pull>\d+)`")
+
+#: The agreement a decision in force opens with, its date and its pull request.
+AGREEMENT = re.compile(r"\((?P<date>\d{4}-\d{2}-\d{2}),[^)]*?\{pull\}`(?P<pull>\d+)`")
+
+
+def _agreement(item: Section) -> tuple[str, str] | None:
+    """Read the date and pull request of the agreement an entry records."""
+    found = AGREED_ON.search(item.body) or AGREEMENT.search(item.body)
+    return None if found is None else (found["date"], found["pull"])
+
+
+def _content(item: Section) -> str:
+    """Read an entry's text after its title, without its state and provenance."""
+    runs = list(BOLD.finditer(item.body))
+    if not runs:
+        return item.body
+    stated = _stated(runs[0]["text"].replace("\n", " ")) and len(runs) > 1
+    return item.body[runs[1 if stated else 0].end() :].strip()
+
+
+def _retired(number: str, item: Section, base: dict[str, Section]) -> bool:
+    """Say whether an item is the base branch's decision at its number, retired.
+
+    A retired decision keeps its entry at its number, with its title, its text and
+    the agreement it retires (ledger spec §3.3), so a retired entry holds its
+    number only when it is that decision. Its title must match the entry there,
+    and the agreement it names too, where both record one. Where decisions of that
+    agreement share the title, the entry there must also be the one whose text,
+    read apart from its state and provenance, is likest: a title can be reused,
+    as a retired decision's replacement reuses it.
+    """
+    bold = BOLD.search(item.body)
+    there = base.get(number)
+    if (
+        there is None
+        or bold is None
+        or grammar.state_of(bold["text"], (grammar.RETIRED,)) is None
+        or _plain(there.title) != _plain(item.title)
+    ):
+        return False
+    agreed, recorded = _agreement(item), _agreement(there)
+    if agreed is not None and recorded is not None and agreed != recorded:
+        return False
+    rivals = [
+        other
+        for key, other in base.items()
+        if key != number
+        and _plain(other.title) == _plain(item.title)
+        # a decision of another agreement is another decision, whatever its text
+        and (agreed is None or _agreement(other) in (None, agreed))
+    ]
+    content = _content(item)
+    likeness = _likeness(_content(there), content)
+    return all(_likeness(_content(other), content) < likeness for other in rivals)
+
+
 def _split(old: str, new: str | None) -> bool:
     """Say whether row ``old`` became ``new`` by splitting, as 6 into 6a."""
     return new is not None and re.fullmatch(rf"{re.escape(old)}[a-z]", new) is not None
@@ -428,11 +553,15 @@ def frozen(
                 for number in listed
             ]
             continue
-        paired = pair(
-            neighbours.get(anchor, listed),
-            head_items.get(fate.anchor, {}),
-            in_place=True,
-        )
+        before = neighbours.get(anchor, listed)
+        after = head_items.get(fate.anchor, {})
+        # a retired decision keeps its entry at its number (ledger spec §3.3), so it
+        # is paired there before a new decision under its title can claim it
+        held = {key for key, item in after.items() if _retired(key, item, before)}
+        paired = pair(before, after, in_place=True, held=held)
+        # what pairs without falling back on its number
+        recognised = pair(before, after, held=held)
+        targets = {f.anchor for f in paired.values() if f.anchor is not None}
         for number, item in paired.items():
             if number not in listed:
                 # an uncited untitled neighbour, free to change
@@ -440,7 +569,20 @@ def frozen(
             if item.kind == "moved":
                 problems.append(
                     f'{fate.title}, item {number} "{named(anchor, number)}" is now '
-                    f"item {item.anchor}: append an item rather than insert it"
+                    f"item {item.anchor}: {_advice(number, item.anchor, 'item')}"
+                )
+            elif (
+                item.kind == "kept"
+                and recognised[number].kind == "removed"
+                and _shifted(number, paired, after, targets)
+            ):
+                # its number is all that holds it, and the list moved around it, so
+                # it cannot be told from a new item written in its place
+                problems.append(
+                    f'{fate.title}, item {number} "{named(anchor, number)}" holds '
+                    f"item {number} only by its number, as items before it moved: "
+                    "reword it apart from the move, so it cannot be taken for a new "
+                    "item written in its place"
                 )
             elif item.kind == "removed":
                 # an untitled item is paired by its text, so a heavy rewording
@@ -460,7 +602,7 @@ def frozen(
         if row.kind == "moved" and not _split(number, row.anchor):
             problems.append(
                 f'roadmap row {number} "{base_rows[number].title}" is now row '
-                f"{row.anchor}: append a row rather than insert it"
+                f"{row.anchor}: {_advice(number, row.anchor, 'row')}"
             )
         elif row.kind == "removed" and not split:
             problems.append(
