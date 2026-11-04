@@ -440,11 +440,13 @@ Each carries the status grammar of §3.2.
    target row's status, so a graduation to a row that has already landed passes. A check of
    the status alone would fail every graduated item once its row moves on, as §3.6 means it
    to, so the check needs the row's status when the item graduated.
-4. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2810`) — **A heavily
-   reworded cited untitled item can pass in place.** An insert and a removal before a cited
-   untitled item, with the item itself heavily reworded, leave it at its own number. Its
-   text no longer pairs, so the renumber guard pairs the leftover by number and passes it as
-   reworded in place.
+4. **🏁 Resolved** (2026-11-04, {pull}`2877` · 🔎 2026-11-02, {pull}`2807` ·
+   🎫 {issue}`2810`) — **A heavily reworded cited untitled item can pass in place.** An
+   insert and a removal before a cited untitled item, with the item itself heavily
+   reworded, leave it at its own number. Its text no longer pairs, so the renumber guard
+   pairs the leftover by number and passes it as reworded in place. {pull}`2877` reports a
+   cited item that its number alone holds while the list moved before it, since it cannot
+   be told from a new item written in its place.
 5. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2811`) — **A citation
    such as item 9a is read as item 9.** The trailing form reads an item's number as digits
    alone, so `§8 item 9a` links item 9 with a stray letter, while the leading form reads
@@ -459,10 +461,12 @@ Each carries the status grammar of §3.2.
    brought in. Row 4 of §8 emptied `UNITEMED` in {pull}`2873`, so `item_issues` reads every
    specification, and `test_every_specification_is_itemed` keeps it so: no old-grammar
    item is left to share an issue unseen.
-8. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2814`) — **The
-   renumber guard advises append when an item was removed.** Removing an uncited item before
-   a cited one is reported with the advice to append rather than insert, which is wrong for
-   a removal. The advice should follow the direction of the move.
+8. **🏁 Resolved** (2026-11-04, {pull}`2877` · 🔎 2026-11-02, {pull}`2807` ·
+   🎫 {issue}`2814`) — **The renumber guard advises append when an item was removed.**
+   Removing an uncited item before a cited one is reported with the advice to append rather
+   than insert, which is wrong for a removal. The advice should follow the direction of the
+   move. {pull}`2877` advises an item or row that moved up to keep the one removed before
+   it in place, marked as no longer applying.
 9. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2815`) — **An item's
    parenthetical is split on a middle dot inside a link or code span.** The parts are split
    on every middle dot, so one inside a link's text or a code span breaks the entry. It
@@ -487,14 +491,16 @@ Each carries the status grammar of §3.2.
     by {user}`bjlittle` on 2026-11-04: an item is always owed by a row of its own
     specification, as §3.4 now says, which keeps the check simple at the cost of a row that
     waits on another. Whether such a row lands with the one it names is item 14.
-12. **❓ Open** (🔎 2026-11-03, {pull}`2826` · 🎯 row 6 of §8 · 🎫 {issue}`2842`) — **A
-    decision restated under a retired decision's title fails the renumber guard.**
+12. **🏁 Resolved** (2026-11-04, {pull}`2877` · 🔎 2026-11-03, {pull}`2826` ·
+    🎫 {issue}`2842`) — **A decision restated under a retired decision's title fails the
+    renumber guard.**
     Ledger spec §3.3 retires a decision by keeping its entry and agreeing a new one for what
     replaced it, but the renumber guard of citation spec §4.6 pairs sections by title before
     number, so a new decision given the retired one's title reads as the retired decision
     moved to a new number. Row 6 of ledger spec §8 avoided it by giving
     globe spec §2 decision 7 a title of its own. A retired entry still sits at its own
-    number, so the guard could pair it there before it pairs by title.
+    number, so the guard could pair it there before it pairs by title. {pull}`2877` does:
+    a retired decision is paired at its own number before anything pairs by title.
 13. **🏁 Resolved** (2026-11-04, {pull}`2859` · 🔎 2026-11-04, {pull}`2850` ·
     🎫 {issue}`2858`) — **A labelled issue whose item waits in an open pull request is
     reported as drift.** The pull request that raises an item raises its issue too

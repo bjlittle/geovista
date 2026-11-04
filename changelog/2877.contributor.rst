@@ -1,0 +1,7 @@
+Hardened the renumber guard of citation spec §4.6, settling items spec §7 item 4,
+items spec §7 item 8 and items spec §7 item 12. Its advice now follows the
+direction of a move, so an item or row pulled up by a removal is told to keep the
+removed one in place. A cited item that only its number holds, while the list
+moved before it, is reported. A retired decision is paired at its own number
+first, so a decision agreed under its title is no longer read as it moving.
+(:user:`claude`)
