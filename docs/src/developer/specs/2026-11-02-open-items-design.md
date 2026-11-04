@@ -435,11 +435,13 @@ Each carries the status grammar of §3.2.
    something cites it, pairing it by its text, and an uncited one stays free. Found while
    planning row 1 of §8, which owes it. Row 1 made the renumber guard do exactly that: it
    now freezes an untitled item once something cites it, pairing the item by its text.
-3. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2809`) — **A
-   graduation to a row that has moved on passes.** `item_graduated` does not check the
-   target row's status, so a graduation to a row that has already landed passes. A check of
-   the status alone would fail every graduated item once its row moves on, as §3.6 means it
-   to, so the check needs the row's status when the item graduated.
+3. **🏁 Resolved** (2026-11-04, {pull}`2878` · 🔎 2026-11-02, {pull}`2807` ·
+   🎫 {issue}`2809`) — **A graduation to a row that has moved on passes.** `item_graduated`
+   does not check the target row's status, so a graduation to a row that has already landed
+   passes. A check of the status alone would fail every graduated item once its row moves
+   on, as §3.6 means it to, so the check needs the row's status when the item graduated.
+   {pull}`2878` reads the row's landed date against the graduation's, and fails a row that
+   had landed before it.
 4. **🏁 Resolved** (2026-11-04, {pull}`2877` · 🔎 2026-11-02, {pull}`2807` ·
    🎫 {issue}`2810`) — **A heavily reworded cited untitled item can pass in place.** An
    insert and a removal before a cited untitled item, with the item itself heavily
@@ -447,13 +449,15 @@ Each carries the status grammar of §3.2.
    pairs the leftover by number and passes it as reworded in place. {pull}`2877` reports a
    cited item that its number alone holds while the list moved before it, since it cannot
    be told from a new item written in its place.
-5. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2811`) — **A citation
-   such as item 9a is read as item 9.** The trailing form reads an item's number as digits
-   alone, so `§8 item 9a` links item 9 with a stray letter, while the leading form reads
-   `9a` and fails. The two forms should read a label alike.
-6. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2812`) — **An item
-   state is matched by its prefix.** A state is read by its prefix, so a misspelt state such
-   as `Openly` reads as Open. Item states should match exactly.
+5. **🏁 Resolved** (2026-11-04, {pull}`2878` · 🔎 2026-11-02, {pull}`2807` ·
+   🎫 {issue}`2811`) — **A citation such as item 9a is read as item 9.** The trailing form
+   reads an item's number as digits alone, so `§8 item 9a` links item 9 with a stray
+   letter, while the leading form reads `9a` and fails. The two forms should read a label
+   alike. {pull}`2878` reads the trailing form's number as the leading form does.
+6. **🏁 Resolved** (2026-11-04, {pull}`2878` · 🔎 2026-11-02, {pull}`2807` ·
+   🎫 {issue}`2812`) — **An item state is matched by its prefix.** A state is read by its
+   prefix, so a misspelt state such as `Openly` reads as Open. Item states should match
+   exactly. {pull}`2878` reads a state whole.
 7. **🏁 Resolved** (2026-11-04, {pull}`2873` · 🔎 2026-11-02, {pull}`2807` ·
    🎫 {issue}`2813`) — **A new item can share an issue with an old-grammar item unseen.**
    `item_issues` reads only the specifications brought in, so a new 🎫 can cite an issue an
@@ -467,16 +471,18 @@ Each carries the status grammar of §3.2.
    than insert, which is wrong for a removal. The advice should follow the direction of the
    move. {pull}`2877` advises an item or row that moved up to keep the one removed before
    it in place, marked as no longer applying.
-9. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2815`) — **An item's
-   parenthetical is split on a middle dot inside a link or code span.** The parts are split
-   on every middle dot, so one inside a link's text or a code span breaks the entry. It
-   fails loudly, and no item holds one today.
-10. **❓ Open** (🔎 2026-11-02, {pull}`2807` · 🎯 row 6 of §8 · 🎫 {issue}`2818`) — **A list
-    after an unnumbered subheading is anchored by the grammar alone.** The grammar files a
-    numbered list under the last numbered heading above it, while the build names only a
-    numbered section's direct children. A list after an unnumbered subheading would be cited
-    and checked in source but have no anchor in the build. Nothing in the corpus does this
-    yet.
+9. **🏁 Resolved** (2026-11-04, {pull}`2878` · 🔎 2026-11-02, {pull}`2807` ·
+   🎫 {issue}`2815`) — **An item's parenthetical is split on a middle dot inside a link or
+   code span.** The parts are split on every middle dot, so one inside a link's text or a
+   code span breaks the entry. It fails loudly, and no item holds one today. {pull}`2878`
+   splits only on a middle dot outside every link and code span.
+10. **🏁 Resolved** (2026-11-04, {pull}`2878` · 🔎 2026-11-02, {pull}`2807` ·
+    🎫 {issue}`2818`) — **A list after an unnumbered subheading is anchored by the grammar
+    alone.** The grammar files a numbered list under the last numbered heading above it,
+    while the build names only a numbered section's direct children. A list after an
+    unnumbered subheading would be cited and checked in source but have no anchor in the
+    build. Nothing in the corpus does this yet. {pull}`2878` makes the grammar agree with
+    the build: no list after an unnumbered subheading is the section's first.
 11. **🏁 Resolved** (2026-11-04, {pull}`2876` · 🔎 2026-11-03, {pull}`2826` ·
     🎫 {issue}`2839`) — **An item owed by another specification's row.** §3.4 has an item owed by a row of its own
     specification. When the work belongs to another specification's row, §3.4's own answer

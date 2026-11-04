@@ -1,0 +1,8 @@
+Hardened the citation and item grammar the specifications are checked against,
+landing row 6 of items spec §8. A citation such as ``item 9a`` is read alike
+before or after its section, settling items spec §7 item 5. An item's state is
+read whole, settling items spec §7 item 6. A middle dot inside a link or a code
+span no longer splits an item's provenance, settling items spec §7 item 9. No
+list after an unnumbered subheading is anchored, agreeing with the build and
+settling items spec §7 item 10. A graduation to a row that had already landed is
+refused, settling items spec §7 item 3. (:user:`claude`)
