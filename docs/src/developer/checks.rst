@@ -159,6 +159,15 @@ upstream, bind an annotated local, as the type coverage specification describes.
 A gallery script is published as example code, so a defect it cannot fix is
 suppressed in ``pyproject.toml`` and ``RELAXED``, never in the script.
 
+A test named for a row of typing spec §4 fails when that row's trigger fires,
+because an upstream release has brought what a cast, a typed local or an override
+waits on. Land the row it names, withdrawing what that row's open items describe.
+Row 8 fires on a ``pyvista`` floor of 0.50.0, row 9 on a typed ``lazy_loader`` or a
+Python floor of 3.15, row 10 on stubs that take an array in
+``rasterio.transform.xy``, and row 11 on any name of ``UNTYPED`` gaining
+annotations. Withdraw that name from the override and from ``UNTYPED`` in
+:bash:`tests/test_ci_typing.py`, and row 11 lands with the last.
+
 **Declaring an exception:** A per-module relaxation goes in ``RELAXED`` in
 :bash:`tests/test_ci_typing.py` and in ``pyproject.toml``, only with a reason the
 type coverage specification gives. There is no exception to the other rules.

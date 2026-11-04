@@ -2866,7 +2866,6 @@ row_anchor = citations.row_anchor
 #: until then in that of docs spec §3.6 by :func:`status`. Each of those rows
 #: shortens this, and the last empties it.
 UNITEMED = {
-    "2026-10-06-type-coverage-design.md": 3,
     "2026-10-23-globe-first-crs-design.md": 4,
 }
 

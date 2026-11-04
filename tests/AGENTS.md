@@ -130,14 +130,14 @@ source builds its counterexamples, as `SECTION = "\N{SECTION SIGN}"` does. The `
 fixture comes from `tests/docs/conftest.py`. ⚠️ A new gate declares `CHECK = "<name>"`
 and gets a row and section in `docs/src/developer/checks.rst`.
 
-⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** CI installs every
-prerequisite and builds the gallery deliberately; without the option, a regression that
-stops the carousel being generated skips its three tests and the job still passes,
-having silently lost the coverage it exists to provide. The option turns each unmet
-prerequisite into a failure, and the second `strict` argument of the pixi task passes
-it. Note that pytest honours `pytest_addoption` only in the test-root
-`tests/conftest.py`, so that is where it is registered — not in `tests/docs/`, which
-consumes it.
+⚠️ **A test reading an installed distribution runs under pip too**: `ci-tests-pypi` and
+`pyvista`'s downstream job install `.[test,exam]`, not `devs`, so declare it there (#2850).
+
+⚠️ **A skipping suite is green, so CI must run `--browser-strict`.** Without it, a
+regression that stops the carousel being generated skips its three tests and the job
+passes. The option, the second `strict` argument of the pixi task, turns each unmet
+prerequisite into a failure. pytest honours `pytest_addoption` only in the test-root
+`tests/conftest.py`, so it is registered there, not in `tests/docs/`, which consumes it.
 
 ⚠️ **Only the first `Sphinx` application in a process builds cleanly.** docutils
 registers nodes, directives and roles in a *global* registry, so every later
@@ -196,4 +196,4 @@ use `html.parser.HTMLParser`, and `markdown_it.MarkdownIt("commonmark")` for Mar
 
 ---
 
-**Last Updated**: 28 October 2026
+**Last Updated**: 3 November 2026
