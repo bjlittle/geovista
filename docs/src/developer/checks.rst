@@ -589,7 +589,10 @@ For an open item:
   move the item, since its issue has closed.
 - ``{issue}`N` carries the spec: open item label, and no item cites it``
   (nightly ``drift``): write the gap into a specification as an open item
-  citing the issue, or remove the label if it tracks something else.
+  citing the issue, or remove the label if it tracks something else. An issue
+  that an open pull request names is passed over, as the one writing its item
+  does until it merges, so name the issue in the description of the pull request
+  that raises it.
 
 Run the check before pushing, with the number of your pull request:
 

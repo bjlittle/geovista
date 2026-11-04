@@ -290,8 +290,10 @@ it.
 
 The nightly `drift` run also lists every open issue carrying the label, and reports any that
 no item cites. That is the half of §2 decision 2 that catches a gap raised as an issue and
-never written into a specification. It already reports an ❓ Open item whose issue has
-closed, and now does the same for ⏭️ Deferred.
+never written into a specification. An issue that an open pull request names is passed
+over, since the pull request raising an item raises its issue too, and the item reaches
+the main branch only when it merges (§7 item 13). It already reports an ❓ Open item whose
+issue has closed, and now does the same for ⏭️ Deferred.
 
 (items-spec-3-9)=
 ### 3.9 The Report
@@ -479,6 +481,14 @@ Each carries the status grammar of §3.2.
     moved to a new number. Row 6 of ledger spec §8 avoided it by giving
     globe spec §2 decision 7 a title of its own. A retired entry still sits at its own
     number, so the guard could pair it there before it pairs by title.
+13. **🏁 Resolved** (2026-11-04, {pull}`2859` · 🔎 2026-11-04, {pull}`2850` ·
+    🎫 {issue}`2858`) — **A labelled issue whose item waits in an open pull request is
+    reported as drift.** The pull request that raises an item raises its issue too
+    (§3.3), and the item reaches the main branch only when it merges, so the nightly drift
+    run of §3.8 reported the issue as uncited while the pull request stayed open. The first
+    report was {issue}`2856`, of the three issues {pull}`2850` raised for row 3 of §8.
+    {pull}`2859` made drift pass over an issue that an open pull request names, read from
+    the cross-references on the issue's timeline.
 
 (items-spec-8)=
 ## 8. Roadmap
