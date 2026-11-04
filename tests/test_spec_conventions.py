@@ -3311,6 +3311,18 @@ def test_item_entries_finds_an_entry_missing_its_found(tmp_path):
     ]
 
 
+def test_item_entries_reads_a_state_whole(tmp_path):
+    """Items spec §7 item 6: a misspelt state is no state, however it begins.
+
+    A state was read by its prefix, so ``Openly`` read as Open.
+    """
+    path, _ = itemed(tmp_path, entry_item(1, f"{OPEN}ly", FOUND_AT, OWED_BY, TICKETED))
+
+    problems = item_entries(path, path.read_text(encoding="utf-8"))
+
+    assert faults(problems) == ["item 1 opens with no state"]
+
+
 def test_item_entries_passes_a_settled_item_without_its_issue(tmp_path):
     """Items spec §3.2: an item settled before it keeps its history, with no issue.
 
