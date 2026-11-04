@@ -1899,6 +1899,61 @@ def test_a_retired_entry_holds_its_number_only_as_the_decision_there(guard):
     assert any('"The third." is now item 2' in problem for problem in problems)
 
 
+def shared(text: str, state: str = AGREED, provenance: str | None = None) -> str:
+    """Write a decision titled "Shared." with the given text, state and provenance."""
+    provenance = provenance or "2026-10-30, {user}`bjlittle`, {pull}`1`"
+    return f"**{state}** ({provenance}) — **Shared.** {text}"
+
+
+def test_a_retired_entry_sharing_a_title_holds_its_number_only_by_its_text(guard):
+    """Items spec §7 item 12: of two decisions sharing a title, text tells them apart.
+
+    Swapping them and retiring the one now second moves both, though its title
+    matches the decision written there on the base branch.
+    """
+    bravo, charlie = shared("Bravo, as agreed."), shared("Charlie, as agreed.")
+    retired = shared(
+        "Charlie, as agreed.",
+        RETIRED,
+        "2026-11-01, {pull}`2`; agreed 2026-10-30, {pull}`1`",
+    )
+    base = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, bravo, charlie))
+    )
+    head = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, retired, bravo))
+    )
+
+    assert len(guard.frozen(base, head)) == 2
+
+
+def test_a_retired_entry_holds_its_number_only_with_its_own_agreement(guard):
+    """Items spec §7 item 12: a retirement keeps the agreement it retires.
+
+    A retired decision and its replacement share a title, so a retired entry is
+    held at a number only when the agreement it names is the one written there.
+    """
+    old = shared(
+        "Bravo, first agreed.",
+        RETIRED,
+        "2026-11-01, {pull}`2`; agreed 2026-10-30, {pull}`1`",
+    )
+    new = shared(
+        "Bravo, as agreed now.", AGREED, "2026-11-01, {user}`bjlittle`, {pull}`2`"
+    )
+    new_retired = shared(
+        "Bravo, as agreed now.",
+        RETIRED,
+        "2026-11-02, {pull}`3`; agreed 2026-11-01, {pull}`2`",
+    )
+    base = spec(("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, old, new)))
+    head = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, new_retired, old))
+    )
+
+    assert len(guard.frozen(base, head)) == 2
+
+
 def test_a_lettered_row_moved_up_by_a_removal_is_told_to_keep_the_removed_row(guard):
     """Items spec §7 item 8: a move between lettered rows is read by its letter."""
     phases = (("6a", "first phase"), ("6b", "second phase"), ("6c", "third phase"))

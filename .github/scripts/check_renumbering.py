@@ -408,21 +408,48 @@ def _shifted(
     return moved or inserted
 
 
-def _retired(item: Section, base: Section | None) -> bool:
-    """Say whether an item is the base branch's decision there, now retired.
+#: The agreement a retired decision keeps, as ``agreed 2026-10-30, {pull}`1```.
+AGREED_ON = re.compile(r"agreed (?P<date>\d{4}-\d{2}-\d{2}), \{pull\}`(?P<pull>\d+)`")
 
-    A retired decision keeps its entry at its number and its title
-    (ledger spec §3.3), so a retired entry holds its number only when the base
-    branch's entry there has its title: a retired entry of another decision holds
-    nothing.
+#: The agreement a decision in force opens with, its date and its pull request.
+AGREEMENT = re.compile(r"\((?P<date>\d{4}-\d{2}-\d{2}),[^)]*?\{pull\}`(?P<pull>\d+)`")
+
+
+def _agreement(item: Section) -> tuple[str, str] | None:
+    """Read the date and pull request of the agreement an entry records."""
+    found = AGREED_ON.search(item.body) or AGREEMENT.search(item.body)
+    return None if found is None else (found["date"], found["pull"])
+
+
+def _retired(number: str, item: Section, base: dict[str, Section]) -> bool:
+    """Say whether an item is the base branch's decision at its number, retired.
+
+    A retired decision keeps its entry at its number, with its title, its text and
+    the agreement it retires (ledger spec §3.3), so a retired entry holds its
+    number only when it is that decision. Its title must match the entry there,
+    and the agreement it names too, where both record one. Where decisions share
+    the title, the entry there must also be the one whose text is likest, since a
+    title can be reused, as a retired decision's replacement reuses it.
     """
     bold = BOLD.search(item.body)
-    return (
-        base is not None
-        and bold is not None
-        and grammar.state_of(bold["text"], (grammar.RETIRED,)) is not None
-        and _plain(base.title) == _plain(item.title)
-    )
+    there = base.get(number)
+    if (
+        there is None
+        or bold is None
+        or grammar.state_of(bold["text"], (grammar.RETIRED,)) is None
+        or _plain(there.title) != _plain(item.title)
+    ):
+        return False
+    agreed, recorded = _agreement(item), _agreement(there)
+    if agreed is not None and recorded is not None and agreed != recorded:
+        return False
+    rivals = [
+        other
+        for key, other in base.items()
+        if key != number and _plain(other.title) == _plain(item.title)
+    ]
+    likeness = _likeness(there.body, item.body)
+    return all(_likeness(other.body, item.body) < likeness for other in rivals)
 
 
 def _split(old: str, new: str | None) -> bool:
@@ -516,7 +543,7 @@ def frozen(
         after = head_items.get(fate.anchor, {})
         # a retired decision keeps its entry at its number (ledger spec §3.3), so it
         # is paired there before a new decision under its title can claim it
-        held = {key for key, item in after.items() if _retired(item, before.get(key))}
+        held = {key for key, item in after.items() if _retired(key, item, before)}
         paired = pair(before, after, in_place=True, held=held)
         # what pairs without falling back on its number
         recognised = pair(before, after, held=held)
