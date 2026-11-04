@@ -136,8 +136,48 @@ PARTS = (FOUND, OWED, MOVED, TICKET)
 #: What separates the parts of an item's provenance.
 DOT = " \N{MIDDLE DOT} "
 
-#: A code span or a link, whose text a middle dot in the provenance cannot part.
-SHIELDED = re.compile(r"`[^`\n]*`|\[[^\]\n]*\]\([^)\n]*\)")
+
+def _closing(text: str, start: int, opener: str, closer: str) -> int | None:
+    """Find where the bracket opening at ``start`` closes, nested ones balanced."""
+    depth = 0
+    index = start
+    while index < len(text):
+        char = text[index]
+        if char == "\\":
+            index += 2
+            continue
+        if char == opener:
+            depth += 1
+        elif char == closer:
+            depth -= 1
+            if depth == 0:
+                return index
+        index += 1
+    return None
+
+
+def shielded(text: str) -> list[tuple[int, int]]:
+    """Find each code span and link in ``text``, as the span of characters it covers.
+
+    A code span opens with a run of backticks and closes with a run as long, as
+    :data:`SPAN` reads it. A link is its bracketed text, which may hold brackets of
+    its own, and then its parenthesised target, both balanced, as CommonMark has
+    them. A middle dot inside either is its text, never a separator.
+    """
+    spans = [(match.start(), match.end()) for match in SPAN.finditer(text)]
+    index = 0
+    while (opening := text.find("[", index)) != -1:
+        inside = any(start <= opening < end for start, end in spans)
+        label = None if inside else _closing(text, opening, "[", "]")
+        if label is not None and text[label + 1 : label + 2] == "(":
+            target = _closing(text, label + 1, "(", ")")
+            if target is not None:
+                spans.append((opening, target + 1))
+                index = target + 1
+                continue
+        index = opening + 1
+    return spans
+
 
 #: The titles of the sections holding the decisions, their ledger and the items.
 DECISIONS = "Decisions"
@@ -717,7 +757,10 @@ def provenance(carried: str) -> list[tuple[str | None, str]]:
     # a middle dot inside a link or a code span is its text, and parts nothing, so it
     # is hidden while the parts are split: items spec §7 item 9
     dot, hidden = DOT.strip(), "\0"
-    masked = SHIELDED.sub(lambda span: span[0].replace(dot, hidden), carried.strip())
+    chars = list(carried.strip())
+    for start, end in shielded(carried.strip()):
+        chars[start:end] = [hidden if c == dot else c for c in chars[start:end]]
+    masked = "".join(chars)
     for part in (
         piece.replace(hidden, dot) for piece in re.split(rf"\s*{dot}\s*", masked)
     ):

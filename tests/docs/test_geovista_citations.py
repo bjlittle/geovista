@@ -513,7 +513,10 @@ def test_an_item_label_is_read_alike_in_either_order(tmp_path, citations):
     "inner",
     [
         "[a link {} its text](https://example.com)",
+        "[a [nested] link {} its text](https://github.com/bjlittle/geovista/pull/1)",
         "a code span, `a {} b`",
+        "a code span of two, ``a {} b``",
+        "a code span of four, ````a {} b````",
     ],
 )
 def test_a_middle_dot_inside_a_link_or_code_parts_nothing(citations, inner):
