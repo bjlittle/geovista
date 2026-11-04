@@ -1875,3 +1875,40 @@ def test_a_decision_restated_under_a_retired_ones_title_passes(guard):
     )
 
     assert guard.frozen(base, head) == []
+
+
+def test_a_retired_entry_holds_its_number_only_as_the_decision_there(guard):
+    """Items spec §7 item 12: a retired entry of another decision holds nothing.
+
+    Retiring the third decision and swapping it with the second moves both, so a
+    retired entry is paired at its number only when it is the decision written
+    there on the base branch.
+    """
+    retired = THIRD.replace(f"**{AGREED}**", f"**{RETIRED}**")
+    base = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, SECOND, THIRD))
+    )
+    head = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, retired, SECOND))
+    )
+
+    problems = guard.frozen(base, head)
+
+    assert len(problems) == 2
+    assert any('"The second." is now item 3' in problem for problem in problems)
+    assert any('"The third." is now item 2' in problem for problem in problems)
+
+
+def test_a_lettered_row_moved_up_by_a_removal_is_told_to_keep_the_removed_row(guard):
+    """Items spec §7 item 8: a move between lettered rows is read by its letter."""
+    phases = (("6a", "first phase"), ("6b", "second phase"), ("6c", "third phase"))
+    base = spec(("4", "Roadmap", roadmap(*phases)))
+    head = spec(("4", "Roadmap", roadmap(phases[0], ("6b", "third phase"))))
+
+    problems = guard.frozen(base, head)
+
+    moved = next(problem for problem in problems if "is now row 6b" in problem)
+    assert moved.endswith(
+        "is now row 6b: a row before it was removed, so keep that row in place, "
+        "marked as no longer applying"
+    )

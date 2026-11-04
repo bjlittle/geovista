@@ -352,14 +352,16 @@ def roadmap_rows(text: str) -> dict[str, Section]:
 NAMED = 60
 
 
-def _place(key: str) -> tuple[str, int]:
-    """Read a key's list and number, as ``("", 3)`` for ``3`` or ``6a``.
+def _place(key: str) -> tuple[str, tuple[int, str]]:
+    """Read a key's list and its place in it, as ``("", (6, "b"))`` for ``6b``.
 
-    A key of a later list, ``1 of list 2``, is placed in that list, so that keys
-    of different lists are never compared.
+    A place is the number and then any letter, so ``6b`` comes after ``6a`` and
+    before ``7``. A key of a later list, ``1 of list 2``, is placed in that list,
+    so that keys of different lists are never compared.
     """
     number, _, listed = key.partition(" of list ")
-    return listed, int(re.match(r"\d+", number)[0])
+    label = re.match(r"(\d+)([a-z]?)", number)
+    return listed, (int(label[1]), label[2])
 
 
 def _advice(old: str, new: str, kind: str) -> str:
@@ -406,12 +408,20 @@ def _shifted(
     return moved or inserted
 
 
-def _retired(item: Section) -> bool:
-    """Say whether an item is a retired decision, by the state it opens with."""
+def _retired(item: Section, base: Section | None) -> bool:
+    """Say whether an item is the base branch's decision there, now retired.
+
+    A retired decision keeps its entry at its number and its title
+    (ledger spec §3.3), so a retired entry holds its number only when the base
+    branch's entry there has its title: a retired entry of another decision holds
+    nothing.
+    """
     bold = BOLD.search(item.body)
     return (
-        bold is not None
+        base is not None
+        and bold is not None
         and grammar.state_of(bold["text"], (grammar.RETIRED,)) is not None
+        and _plain(base.title) == _plain(item.title)
     )
 
 
@@ -506,7 +516,7 @@ def frozen(
         after = head_items.get(fate.anchor, {})
         # a retired decision keeps its entry at its number (ledger spec §3.3), so it
         # is paired there before a new decision under its title can claim it
-        held = {key for key, item in after.items() if _retired(item)}
+        held = {key for key, item in after.items() if _retired(item, before.get(key))}
         paired = pair(before, after, in_place=True, held=held)
         # what pairs without falling back on its number
         recognised = pair(before, after, held=held)
