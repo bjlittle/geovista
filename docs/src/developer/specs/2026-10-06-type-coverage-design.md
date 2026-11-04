@@ -405,6 +405,7 @@ they don't have, where a misspelt one was accepted silently.
 | 9 | The `lazy_loader` override withdrawn | 0 | candidate: `lazy_loader` ships `py.typed`, or the Python floor reaches 3.15 |
 | 10 | The cast in `Transform.from_tiff` withdrawn | 0 | candidate: `types-rasterio` takes an array for the rows of `rasterio.transform.xy` |
 | 11 | The override for the distributions that ship no annotations withdrawn | 0 | candidate: one of them ships `py.typed`, or gains a stub package |
+| 12 | The trigger tests of rows 8 to 11 hardened | 0 | not started |
 
 Row 6, the seventeen library modules left in the ratchet, was split into three pull
 requests ({user}`bjlittle`, 2026-10-11). Its count of 51 does not reproduce. Lifted at the
@@ -422,9 +423,12 @@ failing with the row to land. Row 8 fires when the `pyvista` floor reaches 0.50.
 0.49.2 came from its 0.49 release branch, and carry none of them.
 The row withdraws the whole override of §3.4, including its `no-untyped-call` half, which
 waits on the annotations of `Camera.zoom` and has no item of its own. Row 9 reads the
-locked `lazy_loader` and `requires-python`, and row 10 the installed stubs. Row 11 reads
-each distribution its override names. They gain annotations one at a time, so each name
-comes out in a pull request of its own, and the row lands with the last.
+locked `lazy_loader` and `requires-python`, and row 10 the installed stubs. Item 5 waits
+on the floor, but the override only changes what `mypy` reports, and `mypy` runs against
+the lock, so a typed release in the lock is enough. Row 11 reads each distribution its
+override names. They gain annotations one at a time, so each name comes out in a pull
+request of its own, and the row lands with the last. Row 12 hardens those trigger tests
+themselves, and the items of §8 it owes name it.
 
 Statuses follow docs spec §3.6: a landed row names the date and the
 pull request that landed it. This is a living document, so a change that measures something
@@ -618,6 +622,24 @@ Each carries the grammar of items spec §3.2.
     requests 9344 and 9351 replace the annotations. Both merged on 2026-09-29, after the
     0.49 release branch was cut on 2026-09-07, so 0.49.1 doesn't carry them, and the
     locals come out with the floor that does, the trigger items 2, 6 and 8 wait on.
+11. **❓ Open** (🔎 2026-11-03, {pull}`2850` · 🎯 row 12 of §4 · 🎫 {issue}`2860`) —
+    **Row 8 reads only some of the pixi tables.** `_pyvista_floors` in
+    `tests/test_ci_typing.py` reads the floor from `requirements/pypi-core.txt`,
+    `[tool.pixi.dependencies]`, and each feature's `dependencies` and
+    `pypi-dependencies`, but not from a top-level `[tool.pixi.pypi-dependencies]` or a
+    `target` table. A `pyvista` floor raised in one of those would not fire row 8.
+    Neither table exists yet.
+12. **❓ Open** (🔎 2026-11-03, {pull}`2850` · 🎯 row 12 of §4 · 🎫 {issue}`2861`) — **A
+    `py.typed` below a package's root counts as typed.** `_typed` counts a marker
+    anywhere beneath a module, such as a vendored subpackage's, but `mypy` honours only
+    the one at the package root. Rows 9 and 11 would fire early rather than miss a
+    release, so the cost is a false alarm.
+13. **❓ Open** (🔎 2026-11-03, {pull}`2850` · 🎯 row 12 of §4 · 🎫 {issue}`2862`) —
+    **Nothing prompts row 8 when the release it waits on arrives.** Row 8 fires when the
+    `pyvista` floor reaches 0.50.0, and the floor rises only when someone raises it, so
+    nothing says when 0.50.0 ships and the lock picks it up. Items 2, 6, 8 and 10 wait on
+    the floor by design, but a check that reports, without failing, when the locked
+    `pyvista` reaches 0.50.0 could prompt the floor's rise.
 
 (typing-spec-9)=
 ## 9. References

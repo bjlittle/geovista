@@ -1,0 +1,3 @@
+Recorded three gaps in the trigger tests of the type coverage specification's
+candidate rows as open items, each with its own issue, owed by a new roadmap row
+that hardens those tests. (:user:`claude`)
