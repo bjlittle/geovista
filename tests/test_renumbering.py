@@ -1954,6 +1954,73 @@ def test_a_retired_entry_holds_its_number_only_with_its_own_agreement(guard):
     assert len(guard.frozen(base, head)) == 2
 
 
+def test_a_retired_entry_is_known_by_its_text_not_its_header(guard):
+    """Items spec §7 item 12: retirement headers alike do not make decisions alike.
+
+    Of two decisions sharing a title and an agreement, one already retired,
+    retiring the other at the first one's number moves both, though the two
+    retirement headers read alike.
+    """
+    agreed = "2026-11-01, {pull}`2`; agreed 2026-10-30, {pull}`1`"
+    globe = "Use a registered globe for meshes."
+    heights = "Keep the heights in metres."
+    base = spec(
+        ("1", "Purpose", PURPOSE),
+        (
+            "2",
+            "Decisions",
+            items(FIRST, shared(globe, RETIRED, agreed), shared(heights)),
+        ),
+    )
+    retired = "2026-11-04, {pull}`2877`; agreed 2026-10-30, {pull}`1`"
+    head = spec(
+        ("1", "Purpose", PURPOSE),
+        (
+            "2",
+            "Decisions",
+            items(
+                FIRST, shared(heights, RETIRED, retired), shared(globe, RETIRED, agreed)
+            ),
+        ),
+    )
+
+    assert len(guard.frozen(base, head)) == 2
+
+
+def test_a_replacement_retired_in_place_holds_its_number(guard):
+    """Items spec §7 item 12: an older retirement of the title is no rival to it.
+
+    A decision retired, then its replacement retired in place with its successor
+    appended, leaves every entry where it was, since only a decision of the same
+    agreement can be the one written at a number.
+    """
+    older = shared(
+        "Bravo, first agreed.",
+        RETIRED,
+        "2026-11-01, {pull}`2`; agreed 2026-10-30, {pull}`1`",
+    )
+    replacement = shared(
+        "Bravo, as agreed now.", AGREED, "2026-11-01, {user}`bjlittle`, {pull}`2`"
+    )
+    retired = shared(
+        "Bravo, as agreed now.",
+        RETIRED,
+        "2026-11-04, {pull}`3`; agreed 2026-11-01, {pull}`2`",
+    )
+    successor = shared(
+        "Bravo, as agreed last.", AGREED, "2026-11-04, {user}`bjlittle`, {pull}`3`"
+    )
+    base = spec(
+        ("1", "Purpose", PURPOSE), ("2", "Decisions", items(FIRST, older, replacement))
+    )
+    head = spec(
+        ("1", "Purpose", PURPOSE),
+        ("2", "Decisions", items(FIRST, older, retired, successor)),
+    )
+
+    assert guard.frozen(base, head) == []
+
+
 def test_a_lettered_row_moved_up_by_a_removal_is_told_to_keep_the_removed_row(guard):
     """Items spec §7 item 8: a move between lettered rows is read by its letter."""
     phases = (("6a", "first phase"), ("6b", "second phase"), ("6c", "third phase"))

@@ -421,15 +421,25 @@ def _agreement(item: Section) -> tuple[str, str] | None:
     return None if found is None else (found["date"], found["pull"])
 
 
+def _content(item: Section) -> str:
+    """Read an entry's text after its title, without its state and provenance."""
+    runs = list(BOLD.finditer(item.body))
+    if not runs:
+        return item.body
+    stated = _stated(runs[0]["text"].replace("\n", " ")) and len(runs) > 1
+    return item.body[runs[1 if stated else 0].end() :].strip()
+
+
 def _retired(number: str, item: Section, base: dict[str, Section]) -> bool:
     """Say whether an item is the base branch's decision at its number, retired.
 
     A retired decision keeps its entry at its number, with its title, its text and
     the agreement it retires (ledger spec §3.3), so a retired entry holds its
     number only when it is that decision. Its title must match the entry there,
-    and the agreement it names too, where both record one. Where decisions share
-    the title, the entry there must also be the one whose text is likest, since a
-    title can be reused, as a retired decision's replacement reuses it.
+    and the agreement it names too, where both record one. Where decisions of that
+    agreement share the title, the entry there must also be the one whose text,
+    read apart from its state and provenance, is likest: a title can be reused,
+    as a retired decision's replacement reuses it.
     """
     bold = BOLD.search(item.body)
     there = base.get(number)
@@ -446,10 +456,14 @@ def _retired(number: str, item: Section, base: dict[str, Section]) -> bool:
     rivals = [
         other
         for key, other in base.items()
-        if key != number and _plain(other.title) == _plain(item.title)
+        if key != number
+        and _plain(other.title) == _plain(item.title)
+        # a decision of another agreement is another decision, whatever its text
+        and (agreed is None or _agreement(other) in (None, agreed))
     ]
-    likeness = _likeness(there.body, item.body)
-    return all(_likeness(other.body, item.body) < likeness for other in rivals)
+    content = _content(item)
+    likeness = _likeness(_content(there), content)
+    return all(_likeness(_content(other), content) < likeness for other in rivals)
 
 
 def _split(old: str, new: str | None) -> bool:
