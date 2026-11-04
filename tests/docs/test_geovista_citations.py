@@ -532,6 +532,25 @@ def test_a_middle_dot_inside_a_link_or_code_parts_nothing(citations, inner):
     ]
 
 
+def test_a_list_after_an_unnumbered_subheading_is_not_anchored(tmp_path, citations):
+    """Items spec §7 item 10: the grammar anchors what the build anchors.
+
+    The build names only a numbered section's direct children, and a heading
+    with no number opens a subsection of its own, so a list after one is no
+    list of the numbered section, whether or not a list came before it.
+    """
+    after = "(demo-spec-3)=\n## 3. Design\n\n### Notes\n\n1. A step.\n2. Another.\n"
+    before = (
+        "(demo-spec-3)=\n## 3. Design\n\n1. The first.\n\n"
+        "### Notes\n\n1. A later step.\n"
+    )
+
+    assert citations.listed(after) == []
+    assert [(i.section, i.number) for i in citations.listed(before)] == [("3", 1)]
+    _, names = demo(tmp_path, after, citations)
+    assert "demo-spec-3-item-1" not in names.anchors
+
+
 def test_only_the_first_list_of_a_section_is_anchored(tmp_path, citations):
     """Review Focus 1: an item past the first list's end names nothing."""
     _, names = demo(tmp_path, LISTED, citations)

@@ -574,7 +574,10 @@ def numbered(text: str) -> tuple[Numbered, ...]:
     it opens at 1, and a ``1.`` after a blank line continues the list already
     open, all as CommonMark has it. Each item is numbered by its place, as the
     build numbers it, and keeps the number written too. A list is placed under the
-    numbered heading before it, whatever headings without a number come between.
+    numbered heading before it, whatever headings without a number come between,
+    but only one before any of them can be the section's first list, since such
+    a heading opens a subsection, and the build anchors only a numbered section's
+    direct children.
 
     Parameters
     ----------
@@ -598,6 +601,11 @@ def numbered(text: str) -> tuple[Numbered, ...]:
             if match is not None:
                 heading, section, title = token.map[0] + 1, match["num"], match["title"]
                 index = -1
+            else:
+                # a heading with no number opens a subsection, and the build names
+                # only the numbered section's direct children, so no list after it
+                # is the section's first: items spec §7 item 10
+                index = max(index, 0)
         elif token.type == "ordered_list_open" and token.level == 0:
             index, offset, inside = index + 1, 0, True
             start = int(token.attrGet("start") or 1)
