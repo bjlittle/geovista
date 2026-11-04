@@ -47,6 +47,23 @@ def script() -> ModuleType:
     return module
 
 
+@pytest.fixture(autouse=True)
+def offline(script, monkeypatch):
+    """Refuse every request to GitHub that a test has not answered itself.
+
+    A test of :func:`main` passes a fake for each way it asks GitHub, and one
+    it misses would otherwise reach the network, passing online and failing
+    without it. A test of a GitHub-backed default answers ``urlopen`` itself.
+    """
+
+    def urlopen(request: object, timeout: float) -> object:  # noqa: ARG001
+        url = getattr(request, "full_url", request)
+        message = f"a test asked GitHub for {url}"
+        raise AssertionError(message)
+
+    monkeypatch.setattr(script.urllib.request, "urlopen", urlopen)
+
+
 @pytest.fixture
 def record(script):
     """Provide the work GitHub would report, keyed by repository and number."""
@@ -1173,7 +1190,11 @@ def test_main_checks_the_items_and_lists_the_labelled(
     monkeypatch.setattr(script.conventions, "specifications", lambda: [path])
 
     status = script.main(
-        ["--drift"], resolve=itemed, labelled=labels, listed=lambda: [5, 24]
+        ["--drift"],
+        resolve=itemed,
+        labelled=labels,
+        listed=lambda: [5, 24],
+        referred=lambda _: [],
     )
 
     captured = capsys.readouterr()
