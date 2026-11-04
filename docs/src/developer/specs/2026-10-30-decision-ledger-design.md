@@ -461,7 +461,7 @@ Each carries the grammar of items spec §3.2.
 | 4 | The typing, zlevel and checks specifications brought into the ledger | ✅ landed (2026-11-01, {pull}`2796`) |
 | 5 | The crs specification brought into the ledger | ✅ landed (2026-11-02, {pull}`2799`) |
 | 6 | The globe, scene and heights specifications brought into the ledger | ✅ landed (2026-11-03, {pull}`2826`) |
-| 7 | Emojis for a roadmap row's states | 📋 not started |
+| 7 | Emojis for a roadmap row's states | ✅ landed (2026-11-04, {pull}`2874`) |
 
 Statuses follow docs spec §3.6. Rows 2 to 7 each need row 1. Row 1 brings in the docs and
 citation specifications itself, as it retires a decision of the citation specification and
