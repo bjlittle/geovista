@@ -514,6 +514,9 @@ def test_an_item_label_is_read_alike_in_either_order(tmp_path, citations):
     [
         "[a link {} its text](https://example.com)",
         "[a [nested] link {} its text](https://github.com/bjlittle/geovista/pull/1)",
+        "[a `]` {} b](https://github.com/bjlittle/geovista/pull/1)",
+        "[a `[` {} b](https://github.com/bjlittle/geovista/pull/1)",
+        "[a ``]`` {} b](https://github.com/bjlittle/geovista/pull/1)",
         "a code span, `a {} b`",
         "a code span of two, ``a {} b``",
         "a code span of four, ````a {} b````",

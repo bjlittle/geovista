@@ -137,11 +137,25 @@ PARTS = (FOUND, OWED, MOVED, TICKET)
 DOT = " \N{MIDDLE DOT} "
 
 
-def _closing(text: str, start: int, opener: str, closer: str) -> int | None:
-    """Find where the bracket opening at ``start`` closes, nested ones balanced."""
+def _closing(
+    text: str,
+    start: int,
+    opener: str,
+    closer: str,
+    code: Iterable[tuple[int, int]] = (),
+) -> int | None:
+    """Find where the bracket opening at ``start`` closes, nested ones balanced.
+
+    A bracket inside a code span is its text, since a code span binds tighter than
+    a link in CommonMark, so each span of ``code`` is stepped over whole.
+    """
+    ends = dict(code)
     depth = 0
     index = start
     while index < len(text):
+        if index in ends:
+            index = ends[index]
+            continue
         char = text[index]
         if char == "\\":
             index += 2
@@ -164,13 +178,14 @@ def shielded(text: str) -> list[tuple[int, int]]:
     its own, and then its parenthesised target, both balanced, as CommonMark has
     them. A middle dot inside either is its text, never a separator.
     """
-    spans = [(match.start(), match.end()) for match in SPAN.finditer(text)]
+    code = [(match.start(), match.end()) for match in SPAN.finditer(text)]
+    spans = list(code)
     index = 0
     while (opening := text.find("[", index)) != -1:
         inside = any(start <= opening < end for start, end in spans)
-        label = None if inside else _closing(text, opening, "[", "]")
+        label = None if inside else _closing(text, opening, "[", "]", code)
         if label is not None and text[label + 1 : label + 2] == "(":
-            target = _closing(text, label + 1, "(", ")")
+            target = _closing(text, label + 1, "(", ")", code)
             if target is not None:
                 spans.append((opening, target + 1))
                 index = target + 1
