@@ -136,6 +136,64 @@ PARTS = (FOUND, OWED, MOVED, TICKET)
 #: What separates the parts of an item's provenance.
 DOT = " \N{MIDDLE DOT} "
 
+
+def _closing(
+    text: str,
+    start: int,
+    opener: str,
+    closer: str,
+    code: Iterable[tuple[int, int]] = (),
+) -> int | None:
+    """Find where the bracket opening at ``start`` closes, nested ones balanced.
+
+    A bracket inside a code span is its text, since a code span binds tighter than
+    a link in CommonMark, so each span of ``code`` is stepped over whole.
+    """
+    ends = dict(code)
+    depth = 0
+    index = start
+    while index < len(text):
+        if index in ends:
+            index = ends[index]
+            continue
+        char = text[index]
+        if char == "\\":
+            index += 2
+            continue
+        if char == opener:
+            depth += 1
+        elif char == closer:
+            depth -= 1
+            if depth == 0:
+                return index
+        index += 1
+    return None
+
+
+def shielded(text: str) -> list[tuple[int, int]]:
+    """Find each code span and link in ``text``, as the span of characters it covers.
+
+    A code span opens with a run of backticks and closes with a run as long, as
+    :data:`SPAN` reads it. A link is its bracketed text, which may hold brackets of
+    its own, and then its parenthesised target, both balanced, as CommonMark has
+    them. A middle dot inside either is its text, never a separator.
+    """
+    code = [(match.start(), match.end()) for match in SPAN.finditer(text)]
+    spans = list(code)
+    index = 0
+    while (opening := text.find("[", index)) != -1:
+        inside = any(start <= opening < end for start, end in spans)
+        label = None if inside else _closing(text, opening, "[", "]", code)
+        if label is not None and text[label + 1 : label + 2] == "(":
+            target = _closing(text, label + 1, "(", ")", code)
+            if target is not None:
+                spans.append((opening, target + 1))
+                index = target + 1
+                continue
+        index = opening + 1
+    return spans
+
+
 #: The titles of the sections holding the decisions, their ledger and the items.
 DECISIONS = "Decisions"
 VERIFICATION = "Verification"
@@ -571,7 +629,10 @@ def numbered(text: str) -> tuple[Numbered, ...]:
     it opens at 1, and a ``1.`` after a blank line continues the list already
     open, all as CommonMark has it. Each item is numbered by its place, as the
     build numbers it, and keeps the number written too. A list is placed under the
-    numbered heading before it, whatever headings without a number come between.
+    numbered heading before it, whatever headings without a number come between,
+    but only one before any of them can be the section's first list, since such
+    a heading opens a subsection, and the build anchors only a numbered section's
+    direct children.
 
     Parameters
     ----------
@@ -595,6 +656,11 @@ def numbered(text: str) -> tuple[Numbered, ...]:
             if match is not None:
                 heading, section, title = token.map[0] + 1, match["num"], match["title"]
                 index = -1
+            else:
+                # a heading with no number opens a subsection, and the build names
+                # only the numbered section's direct children, so no list after it
+                # is the section's first: items spec §7 item 10
+                index = max(index, 0)
         elif token.type == "ordered_list_open" and token.level == 0:
             index, offset, inside = index + 1, 0, True
             start = int(token.attrGet("start") or 1)
@@ -703,7 +769,16 @@ def provenance(carried: str) -> list[tuple[str | None, str]]:
     found: list[tuple[str | None, str]] = []
     if not carried.strip():
         return found
-    for part in re.split(rf"\s*{DOT.strip()}\s*", carried.strip()):
+    # a middle dot inside a link or a code span is its text, and parts nothing, so it
+    # is hidden while the parts are split: items spec §7 item 9
+    dot, hidden = DOT.strip(), "\0"
+    chars = list(carried.strip())
+    for start, end in shielded(carried.strip()):
+        chars[start:end] = [hidden if c == dot else c for c in chars[start:end]]
+    masked = "".join(chars)
+    for part in (
+        piece.replace(hidden, dot) for piece in re.split(rf"\s*{dot}\s*", masked)
+    ):
         plain = part.replace(VS16, "")
         kind = next((p for p in PARTS if plain.startswith(p.replace(VS16, ""))), None)
         rest = plain[len(kind.replace(VS16, "")) :] if kind else part
@@ -737,7 +812,12 @@ def items(text: str) -> list[Item]:
     for entry in entries:
         number, line, rest = entry.written, entry.line, entry.text
         opening = BOLD.match(rest)
-        state = state_of(opening["text"].strip(), ITEMED_STATES) if opening else None
+        # read whole, never by its prefix, so "Openly" is no state:
+        # items spec §7 item 6
+        written_state = opening["text"].strip().replace(VS16, "") if opening else None
+        state = next(
+            (s for s in ITEMED_STATES if s.replace(VS16, "") == written_state), None
+        )
         carried = ""
         if opening is not None and state is not None:
             rest = rest[opening.end() :].lstrip()
@@ -1131,11 +1211,12 @@ def _trailed(group: str) -> str:
 
     ``decision 3`` or ``item 9``, read only when no item or row was named before
     the citation. A word and then whitespace, so ``decisions`` and ``items`` never
-    match, and a plural names no one of them.
+    match, and a plural names no one of them. An item's number is read as the
+    leading form reads it, so ``item 9a`` names ``9a`` either way.
     """
     return (
         rf"(?({group}lead)|(?:{GAP}(?:decision{GAP}(?P<{group}decision>\d+)"
-        rf"|item{GAP}(?P<{group}item>\d+))(?!\d))?)"
+        rf"|item{GAP}(?P<{group}item>{MEMBER}))(?!\d))?)"
     )
 
 
@@ -1256,7 +1337,8 @@ def scan(
         elif match[f"{group}decision"] is not None:
             slug = f"{slug}-decision-{match[f'{group}decision']}"
         elif match[f"{group}item"] is not None:
-            slug = item_anchor(carried, number, int(match[f"{group}item"]))
+            # read as the leading form reads it, letter and all (items spec §7 item 5)
+            slug = _member(carried, number, "item", match[f"{group}item"])
         yield Citation(match[0], slug, match.start(), match.end(), ends)
 
 

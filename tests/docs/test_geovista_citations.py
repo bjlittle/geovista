@@ -491,6 +491,72 @@ def test_a_decision_is_never_cited_as_an_item(tmp_path, citations):
     assert "demo-spec-2-decision-3" in names.anchors
 
 
+def test_an_item_label_is_read_alike_in_either_order(tmp_path, citations):
+    """Items spec §7 item 5: ``item 9a`` names one anchor, before or after.
+
+    The trailing form read the number as digits alone, so it linked item 9 and
+    left a stray letter, where the leading form read ``9a`` and named nothing.
+    """
+    _, names = demo(tmp_path, LISTED, citations)
+    text = f"demo spec {SECTION}3 item 2a and item 2a of demo spec {SECTION}3"
+
+    found = list(citations.scan(text, names.signed, None))
+
+    assert [c.text for c in found] == [
+        f"demo spec {SECTION}3 item 2a",
+        f"item 2a of demo spec {SECTION}3",
+    ]
+    assert {c.slug for c in found} == {"demo-spec-3-item-2a"}
+
+
+@pytest.mark.parametrize(
+    "inner",
+    [
+        "[a link {} its text](https://example.com)",
+        "[a [nested] link {} its text](https://github.com/bjlittle/geovista/pull/1)",
+        "[a `]` {} b](https://github.com/bjlittle/geovista/pull/1)",
+        "[a `[` {} b](https://github.com/bjlittle/geovista/pull/1)",
+        "[a ``]`` {} b](https://github.com/bjlittle/geovista/pull/1)",
+        "a code span, `a {} b`",
+        "a code span of two, ``a {} b``",
+        "a code span of four, ````a {} b````",
+    ],
+)
+def test_a_middle_dot_inside_a_link_or_code_parts_nothing(citations, inner):
+    """Items spec §7 item 9: only a middle dot in the open separates parts."""
+    dot = citations.DOT.strip()
+    carried = (
+        f"{citations.FOUND} 2026-01-01, {inner.format(dot)}"
+        f"{citations.DOT}{citations.TICKET} {{issue}}`5`"
+    )
+
+    parts = citations.provenance(carried)
+
+    assert parts == [
+        (citations.FOUND, f"2026-01-01, {inner.format(dot)}"),
+        (citations.TICKET, "{issue}`5`"),
+    ]
+
+
+def test_a_list_after_an_unnumbered_subheading_is_not_anchored(tmp_path, citations):
+    """Items spec §7 item 10: the grammar anchors what the build anchors.
+
+    The build names only a numbered section's direct children, and a heading
+    with no number opens a subsection of its own, so a list after one is no
+    list of the numbered section, whether or not a list came before it.
+    """
+    after = "(demo-spec-3)=\n## 3. Design\n\n### Notes\n\n1. A step.\n2. Another.\n"
+    before = (
+        "(demo-spec-3)=\n## 3. Design\n\n1. The first.\n\n"
+        "### Notes\n\n1. A later step.\n"
+    )
+
+    assert citations.listed(after) == []
+    assert [(i.section, i.number) for i in citations.listed(before)] == [("3", 1)]
+    _, names = demo(tmp_path, after, citations)
+    assert "demo-spec-3-item-1" not in names.anchors
+
+
 def test_only_the_first_list_of_a_section_is_anchored(tmp_path, citations):
     """Review Focus 1: an item past the first list's end names nothing."""
     _, names = demo(tmp_path, LISTED, citations)

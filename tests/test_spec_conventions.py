@@ -3192,10 +3192,21 @@ def item_graduated(path: Path, text: str, names: Namespace) -> list[str]:
             continue
         row = own_row(path, text, item.graduated, names)
         cited = f"{{issue}}`{item.issue}`"
+        # a row may move on after the graduation, as items spec §3.6 means it
+        # to, so only one that had landed before it is a fault: items spec §7 item 3
+        graduated = DATE.search(item.settled)
+        landed = DATE.search(row.status) if not isinstance(row, str) else None
         if isinstance(row, str):
             why = row
         elif cited not in f"{row.scope} {row.status}":
             why = f"does not cite {cited}"
+        elif (
+            row.status.startswith(LANDED)
+            and graduated is not None
+            and landed is not None
+            and landed[0] < graduated[0]
+        ):
+            why = f"had landed on {landed[0]}, before its graduation on {graduated[0]}"
         else:
             continue
         problems.append(
@@ -3309,6 +3320,18 @@ def test_item_entries_finds_an_entry_missing_its_found(tmp_path):
         f"item 9 is settled, and still carries {OWED}",
         "item 10 graduates with no date, pull and row",
     ]
+
+
+def test_item_entries_reads_a_state_whole(tmp_path):
+    """Items spec §7 item 6: a misspelt state is no state, however it begins.
+
+    A state was read by its prefix, so ``Openly`` read as Open.
+    """
+    path, _ = itemed(tmp_path, entry_item(1, f"{OPEN}ly", FOUND_AT, OWED_BY, TICKETED))
+
+    problems = item_entries(path, path.read_text(encoding="utf-8"))
+
+    assert faults(problems) == ["item 1 opens with no state"]
 
 
 def test_item_entries_passes_a_settled_item_without_its_issue(tmp_path):
@@ -3469,6 +3492,32 @@ def test_item_graduated_names_a_row_that_cites_its_issue(tmp_path):
         f"item 3 graduates to row 8 of {SECTION}2, which does not exist",
         f"item 4 graduates with no {TICKET} for its row to cite",
     ]
+
+
+def test_item_graduated_names_a_row_that_had_not_landed(tmp_path):
+    """Items spec §7 item 3: a graduation names a row still to be done.
+
+    A row that landed before the graduation cannot be the item's new row, but one
+    that landed after it has only moved on, as items spec §3.6 means it to.
+    """
+    landed = f"{LANDED} (2025-12-01, {{pull}}`9`)"
+    later = f"{LANDED} (2026-02-01, {{pull}}`9`)"
+    roadmap = (
+        ROADMAP
+        + f"| 4 | An item, {{issue}}`5` | {landed} |\n"
+        + f"| 5 | Another, {{issue}}`6` | {later} |\n"
+    )
+    entries = entry_item(1, GRADUATED, graduation(4), FOUND_AT, TICKETED) + entry_item(
+        2, GRADUATED, graduation(5), FOUND_AT, f"{TICKET} {{issue}}`6`"
+    )
+    path, names = itemed(tmp_path, entries, roadmap)
+    text = path.read_text(encoding="utf-8")
+
+    expected = (
+        f"item 1 graduates to row 4 of {SECTION}2, which had landed on 2025-12-01, "
+        "before its graduation on 2026-01-01"
+    )
+    assert faults(item_graduated(path, text, names)) == [expected]
 
 
 def test_item_issues_finds_two_items_citing_one_issue(tmp_path):
