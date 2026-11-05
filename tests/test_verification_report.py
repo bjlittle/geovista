@@ -434,6 +434,36 @@ def test_a_decisions_own_row_is_no_citation_of_it(script, tmp_path, capsys):
     assert out.count(f"`{spec}:") == 1
 
 
+def test_a_rows_evidence_citing_its_own_decision_cites_it(script, tmp_path, capsys):
+    """Only the first cell of a row is passed over, so its Evidence still cites.
+
+    A sign-off may say what it checked of its own decision, and that is a place
+    the decision is cited, as it was before rows cited their decisions. Holds
+    ledger spec §2 decision 17.
+    """
+    s = SECTION
+    signed = "\N{WRITING HAND}\N{VARIATION SELECTOR-16} signed off"
+    write(
+        tmp_path,
+        "docs/src/developer/specs/2026-01-01-demo-design.md",
+        "# Demo Specification\n\n"
+        f"- **Citation prefix:** `demo spec {s}{ELLIPSIS}`\n\n"
+        "(demo-spec-2)=\n## 2. Decisions\n\n"
+        + entry(1, "One.")
+        + "\n(demo-spec-4)=\n## 4. Verification\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n"
+        f"| {s}2 decision 1 | {signed} (2026-01-01, {{user}}`bjlittle`, "
+        f"{{pull}}`1`) | Checked in review that {s}2 decision 1 is drawn. |\n",
+    )
+
+    _, out = run(script, tmp_path, capsys)
+    findings = out[out.index("## Findings") :]
+    spec = "docs/src/developer/specs/2026-01-01-demo-design.md"
+
+    assert f"demo spec {s}2 decision 1 is in force and cited nowhere" not in findings
+    assert f"**specifications:** `{spec}:15`" in out
+
+
 def test_report_shows_each_roadmap_row_with_its_status(script, repo, capsys):
     """Each roadmap row, with its scope and status, before the ledger.
 

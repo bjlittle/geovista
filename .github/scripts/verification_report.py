@@ -227,29 +227,36 @@ def group(path: Path, root: Path, specs: Collection[Path] = ()) -> str:
 
 
 def _entries(text: str, slug: str) -> dict[int, str]:
-    """Map each line of a decision's own entry and row to that decision's anchor.
+    """Map each line of a decision's own entry to that decision's anchor.
 
     An entry runs as the grammar reads it (:func:`grammar.decision_entries`): the
-    lines of its item in the Decisions' list, as markdown reads them. A row of the
-    ledger cites its decision in its first cell (ledger spec §2 decision 17), which
-    is no more a place the decision is cited than its entry is; a citation of
-    another decision in its Evidence still is one.
+    lines of its item in the Decisions' list, as markdown reads them.
     """
-    own = {
+    return {
         number: grammar.decision_anchor(slug, entry.written)
         for entry in grammar.decision_entries(text)
         for number in range(entry.line, entry.end + 1)
     }
-    own |= {
-        row.line: grammar.decision_anchor(slug, row.decision)
-        for row in grammar.ledger(text) or []
-        if row.decision is not None
-    }
-    return own
+
+
+def _first_cell_blanked(line: str) -> str:
+    """Blank a ledger row's first cell to spaces, so its columns survive.
+
+    The first cell names the row's decision by its citation
+    (ledger spec §2 decision 17), which is no more a place the decision is cited
+    than its entry is. Its Status and Evidence are read as written, so a
+    sign-off that cites the decision it checked still cites it.
+    """
+    opening = grammar.PIPE.search(line)
+    if opening is None:
+        return line
+    closing = grammar.PIPE.search(line, opening.end())
+    end = len(line) if closing is None else closing.start()
+    return line[: opening.end()] + " " * (end - opening.end()) + line[end:]
 
 
 def citations_of(texts: Mapping[Path, str], names: Namespace) -> dict[str, list[Cited]]:
-    """Find every citation of a decision, a decision's own entry aside.
+    """Find every citation of a decision, its own entry and row's first cell aside.
 
     Parameters
     ----------
@@ -268,8 +275,11 @@ def citations_of(texts: Mapping[Path, str], names: Namespace) -> dict[str, list[
     for path, text in texts.items():
         owner = names.owners.get(path)
         own = _entries(text, owner) if owner is not None else {}
+        rows = {row.line for row in grammar.ledger(text) or []} if owner else set()
         for number, line in grammar.source_lines(path, text):
             plain = grammar.prose(line)[0]
+            if number in rows:
+                plain = _first_cell_blanked(plain)
             for citation in grammar.scan(plain, names.signed, owner):
                 label = grammar.LABEL.match(citation.slug or "")
                 if label is None or label["decision"] is None:

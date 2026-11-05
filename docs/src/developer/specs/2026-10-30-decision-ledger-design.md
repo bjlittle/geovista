@@ -475,7 +475,7 @@ Each carries the grammar of items spec §3.2.
 | 5 | The crs specification brought into the ledger | ✅ landed (2026-11-02, {pull}`2799`) |
 | 6 | The globe, scene and heights specifications brought into the ledger | ✅ landed (2026-11-03, {pull}`2826`) |
 | 7 | Emojis for a roadmap row's states | ✅ landed (2026-11-04, {pull}`2874`) |
-| 8 | A row of the ledger names its decision by its citation (§2 decision 17): every specification's rows rewritten, a bare number refused, and the report reading a row's own citation as no place its decision is cited | ✅ landed (2026-11-05, {pull}`2882`) |
+| 8 | A row of the ledger names its decision by its citation (§2 decision 17): every specification's rows rewritten, a bare number refused, and the report reading a row's first cell as no place its decision is cited | ✅ landed (2026-11-05, {pull}`2882`) |
 
 Statuses follow docs spec §3.6. Rows 2 to 8 each need row 1. Row 1 brings in the docs and
 citation specifications itself, as it retires a decision of the citation specification and
