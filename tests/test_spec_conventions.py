@@ -3225,10 +3225,17 @@ PULL_LINK = re.compile(
 )
 
 
-def _pulls(status: str) -> set[tuple[str, str]]:
-    """Read the pull requests a status cites, as repository and number."""
-    return {("bjlittle/geovista", m["number"]) for m in PULL_ROLE.finditer(status)} | {
-        (m["repository"], m["number"]) for m in PULL_LINK.finditer(status)
+def _pulls(status: str) -> set[tuple[str, int]]:
+    """Read the pull requests a status cites, as repository and number.
+
+    GitHub reads a repository's name in any case and a number with leading zeros,
+    so each is read as GitHub reads it, and one pull request is one identity.
+    """
+    return {
+        ("bjlittle/geovista", int(m["number"])) for m in PULL_ROLE.finditer(status)
+    } | {
+        (m["repository"].casefold(), int(m["number"]))
+        for m in PULL_LINK.finditer(status)
     }
 
 
@@ -3675,6 +3682,14 @@ def test_landing_together_knows_a_pull_request_by_any_reference(tmp_path):
     ]
     texts, names = landing(tmp_path, seven, seven)
     assert landing_together(texts, names) == []
+    role = f"{LANDED} (2026-01-01, {{pull}}`7`)"
+    for spelling in (
+        "[PR7](https://github.com/BJLittle/GeoVista/pull/7)",
+        "[PR7](https://github.com/bjlittle/geovista/pull/07)",
+        "{pull}`07`",
+    ):
+        texts, names = landing(tmp_path, role, f"{LANDED} (2026-01-01, {spelling})")
+        assert landing_together(texts, names) == [], spelling
     texts, names = landing(tmp_path, issue, issue)
     assert faults(landing_together(texts, names)) == [
         f"row 1 lands with {cited}, but neither names the pull request they landed in"
