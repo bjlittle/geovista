@@ -133,6 +133,11 @@ to record its decisions in the form they describe (§3.2).
     carries its emoji.** 🚧 in progress, 📋 not started and 💡 candidate, beside ✅ landed,
     so every status in the collection reads alike, and a bare state is refused with the
     form it should take. Row 7 of §8 brought it in, settling §7 item 1.
+17. **🤝 Agreed** (2026-11-05, {user}`bjlittle`, {pull}`2882`) — **A row of the ledger
+    names its decision by its citation.** Its first cell reads `§2 decision 3`, not a bare
+    `3`, so the number cannot be taken for a row, an item or another decision that its
+    Evidence cites, and the build links the cell to the decision it verifies. A bare number
+    is refused with the citation to write. Row 8 of §8 brought it in.
 
 (ledger-spec-3)=
 ## 3. Design
@@ -205,14 +210,16 @@ strike-through would.
 ```markdown
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ✅ verified (2026-10-30, {pull}`2777`) | `tests/bridge/test_heights.py` |
-| 4 | ⏳ pending | |
-| 5 | 🗄️ retired (2026-11-04, {pull}`2801`) | replaced by §2 decision 12 |
-| 6 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2777`) | Checked in review that no public API accepts both a height and a z-level. |
+| §2 decision 1 | ✅ verified (2026-10-30, {pull}`2777`) | `tests/bridge/test_heights.py` |
+| §2 decision 4 | ⏳ pending | |
+| §2 decision 5 | 🗄️ retired (2026-11-04, {pull}`2801`) | replaced by §2 decision 12 |
+| §2 decision 6 | ✍️ signed off (2026-10-30, {user}`bjlittle`, {pull}`2777`) | Checked in review that no public API accepts both a height and a z-level. |
 ```
 
-The table has one row per decision, in order, from 1 to N. A row is added in the pull
-request that adds its decision, and starts pending. Its states:
+The table has one row per decision, in order, from 1 to N. A row's first cell is the
+citation of its decision in the form of §3.1, which the build links to the decision
+(§2 decision 17). A row is added in the pull request that adds its decision, and starts
+pending. Its states:
 
 | State | Meaning | Status Carries | Evidence Holds |
 |---|---|---|---|
@@ -253,7 +260,7 @@ specification it asserts that:
    role and a `{pull}` role; a retired one also carries the date and pull request of its
    agreement.
 3. Its last numbered section is titled Verification, and its table has one row per
-   decision, in order.
+   decision, in order, each naming its decision by its citation.
 4. A decision is retired exactly when its row is.
 5. Each test file a verified row names exists, and cites that decision.
 6. Every citation of a decision, anywhere in the corpus of docs spec §3.5, names a decision
@@ -325,7 +332,8 @@ $ pixi run -e test verification-report heights   # one, by prefix
 
 For each specification the report lists every decision with its state, then every place in
 the repository that cites it, grouped as source, tests, documentation, specifications and
-plans. It flags what does not agree: a verified row whose test no longer cites its decision,
+plans. Neither a decision's own entry nor the first cell of its row is such a place. It
+flags what does not agree: a verified row whose test no longer cites its decision,
 and a decision in force that nothing anywhere cites. It writes Markdown to standard output,
 and to the job summary when it runs in CI. It fails only when it cannot read a
 specification; a gap it reports is a finding, not a failure.
@@ -404,6 +412,11 @@ its line on specifications.
 - **Immutable wording.** Retiring a decision to correct a typo would bury the history that
   matters under history that does not (§2 decision 3).
 - **A test function as evidence.** It is finer, but breaks each time a test is renamed.
+- **A bare number in a row's first cell**, the form until row 8 of §8. It is short, but
+  beside an Evidence cell that cites a row, an item or another decision it reads as one of
+  them, and it links nowhere (§2 decision 17).
+- **A bare number that the build links to its decision.** The page would gain the link,
+  but the number would still read as any other beside it, in the source and on the page.
 - **Verification after the Roadmap.** It would renumber the sections after it in every
   specification, and every citation of them.
 - **Starting the ledger from today.** It would leave 69 decisions, and the work already
@@ -462,8 +475,9 @@ Each carries the grammar of items spec §3.2.
 | 5 | The crs specification brought into the ledger | ✅ landed (2026-11-02, {pull}`2799`) |
 | 6 | The globe, scene and heights specifications brought into the ledger | ✅ landed (2026-11-03, {pull}`2826`) |
 | 7 | Emojis for a roadmap row's states | ✅ landed (2026-11-04, {pull}`2874`) |
+| 8 | A row of the ledger names its decision by its citation (§2 decision 17): every specification's rows rewritten, a bare number refused, and the report reading a row's first cell as no place its decision is cited | ✅ landed (2026-11-05, {pull}`2882`) |
 
-Statuses follow docs spec §3.6. Rows 2 to 7 each need row 1. Row 1 brings in the docs and
+Statuses follow docs spec §3.6. Rows 2 to 8 each need row 1. Row 1 brings in the docs and
 citation specifications itself, as it retires a decision of the citation specification and
 adds notes to the docs specification. Rows 2 and 3 need nothing else, and can land in either
 order. Once row 2 has merged, `status references` becomes a required check, a repository
@@ -472,7 +486,8 @@ best after that change: a sign-off they record before it is held by review alone
 checked against GitHub by the nightly run. Row 6 brings in the three specifications together
 because each extends the one before, and their decisions cite one another. Row 7 changes the
 vocabulary of docs spec §3.6 and every specification that uses it, so it lands on its own
-(§7 item 1).
+(§7 item 1). Row 8 rewrites the first cell of every specification's ledger, so it lands on
+its own too.
 
 (ledger-spec-9)=
 ## 9. References
@@ -491,19 +506,20 @@ Each row follows §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
-| 2 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
-| 3 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 6 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 7 | ✅ verified (2026-10-31, {pull}`2789`) | `tests/test_status_references.py` |
-| 8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 10 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 11 | ✅ verified (2026-10-31, {pull}`2792`) | `tests/test_verification_report.py` |
-| 12 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/test_spec_conventions.py` |
-| 13 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 14 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
-| 15 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
-| 16 | ✅ verified (2026-11-04, {pull}`2874`) | `tests/test_spec_conventions.py` |
+| §2 decision 1 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py` |
+| §2 decision 2 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_renumbering.py` |
+| §2 decision 3 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 6 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 7 | ✅ verified (2026-10-31, {pull}`2789`) | `tests/test_status_references.py` |
+| §2 decision 8 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 9 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 10 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 11 | ✅ verified (2026-10-31, {pull}`2792`) | `tests/test_verification_report.py` |
+| §2 decision 12 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/test_spec_conventions.py` |
+| §2 decision 13 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 14 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the provenance of the docs and citation specifications' decisions is that of the commit `git log -S` finds for each. |
+| §2 decision 15 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
+| §2 decision 16 | ✅ verified (2026-11-04, {pull}`2874`) | `tests/test_spec_conventions.py` |
+| §2 decision 17 | ✅ verified (2026-11-05, {pull}`2882`) | `tests/test_spec_conventions.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py`, `tests/test_verification_report.py` |

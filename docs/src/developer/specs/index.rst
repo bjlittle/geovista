@@ -120,8 +120,11 @@ Open it with its state and its provenance, then its title:
    7. **🤝 Agreed** (2026-11-02, {user}`bjlittle`, {pull}`1234`) — **The title.**
       Its reasoning.
 
-In the same pull request, add its row to the Verification table as
-``⏳ pending``.
+In the same pull request, add its row to the Verification table, naming the
+decision by its citation, as ``| §2 decision 7 | ⏳ pending | |``. The build
+links the citation to the decision. A bare ``7`` is refused, since it reads as
+any row, item or decision that the Evidence column cites
+(ledger spec §2 decision 17).
 
 **Citing a decision.** Write ``heights spec §2 decision 3``, or
 ``§2 decision 3`` inside the specification itself. One citation names one

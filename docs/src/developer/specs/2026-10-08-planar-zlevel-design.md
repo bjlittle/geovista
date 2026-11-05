@@ -270,7 +270,7 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
-| 2 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
-| 3 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that {pull}`2591` changed no line of `geoplotter.py`, and that every layer the plotter adds passes through `transform_mesh`. |
-| 4 | ✅ verified (2026-11-01, {pull}`2798`) | `tests/transform/test_transform_mesh.py` |
+| §2 decision 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
+| §2 decision 2 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/transform/test_transform_mesh.py` |
+| §2 decision 3 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that {pull}`2591` changed no line of `geoplotter.py`, and that every layer the plotter adds passes through `transform_mesh`. |
+| §2 decision 4 | ✅ verified (2026-11-01, {pull}`2798`) | `tests/transform/test_transform_mesh.py` |

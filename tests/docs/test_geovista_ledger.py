@@ -35,6 +35,7 @@ PENDING = "\N{HOURGLASS WITH FLOWING SAND} pending"
 VERIFIED = "\N{WHITE HEAVY CHECK MARK} verified"
 SIGNED_OFF = "\N{WRITING HAND}\N{VARIATION SELECTOR-16} signed off"
 RETIRED = "\N{FILE CABINET}\N{VARIATION SELECTOR-16} retired"
+SECTION = "\N{SECTION SIGN}"
 
 
 @pytest.fixture(scope="module")
@@ -95,8 +96,8 @@ SPEC = f"""# Demo
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | {VERIFIED} (2026-10-30, 1) | `x.py` |
-| 2 | {PENDING} | |
+| {SECTION}2 decision 1 | {VERIFIED} (2026-10-30, 1) | `x.py` |
+| {SECTION}2 decision 2 | {PENDING} | |
 
 After the table.
 """

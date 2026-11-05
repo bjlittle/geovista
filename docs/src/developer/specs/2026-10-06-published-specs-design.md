@@ -647,10 +647,10 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/docs/test_readingtime_coverage.py` |
-| 2 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_readingtime_coverage.py` |
-| 3 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
-| 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py` |
-| 6 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that each `candidate` row of §4 names a trigger the conventions test asserts, or says that it is revisited by hand. |
-| 7 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| §2 decision 1 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/docs/test_readingtime_coverage.py` |
+| §2 decision 2 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_readingtime_coverage.py` |
+| §2 decision 3 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 4 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py` |
+| §2 decision 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py` |
+| §2 decision 6 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that each `candidate` row of §4 names a trigger the conventions test asserts, or says that it is revisited by hand. |
+| §2 decision 7 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |

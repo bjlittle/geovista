@@ -300,7 +300,9 @@ fault. For the ledger, it names the decision or row, and says one of these:
   specification with a Verification section whose table is headed ``Decision``,
   ``Status`` and ``Evidence``.
 - *a row names …*, *has a second row*, *is out of order* or *has no row*: give the
-  table one row per decision, in order.
+  table one row per decision, in order, each opening with its decision's citation,
+  ``§2 decision 3``. A row written with a bare number is told the citation to write
+  (ledger spec §2 decision 17).
 - *is not a ledger state*, *is pending, and carries more*, *carries no date …* or
   *… which is not a date*: open the Status cell with a state of ledger spec §3.4,
   carrying what it asks, with dates a calendar holds.

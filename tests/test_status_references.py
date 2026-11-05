@@ -445,7 +445,13 @@ def ledger_spec(entries: tuple[str, ...] = (), rows: tuple[str, ...] = ()) -> st
         for n, carried in enumerate(entries, 1)
     ]
     lines += ["", "## 10. Verification", "", "| Decision | Status | Evidence |"]
-    lines += ["|---|---|---|", *(f"| {n} | {row} |" for n, row in enumerate(rows, 1))]
+    lines += [
+        "|---|---|---|",
+        *(
+            f"| \N{SECTION SIGN}2 decision {n} | {row} |"
+            for n, row in enumerate(rows, 1)
+        ),
+    ]
     return "\n".join(lines) + "\n"
 
 
