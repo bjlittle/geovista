@@ -1,6 +1,6 @@
-Settled two of the open items specification's own open items: an item owed by
-another specification's row is always owed by a row of its own specification
-instead, landing with the other, and the check that two items never share an
-issue now reads every specification. A new open item, and a roadmap row to
-deliver it, cover checking that such a row really lands with the one it names.
-(:user:`claude`)
+Settled items spec §7 item 11 and items spec §7 item 7, two of the open items
+specification's own: an item owed by another specification's row is always owed
+by a row of its own specification instead, landing with the other, and the check
+that two items never share an issue now reads every specification. A new open
+item, and a roadmap row to deliver it, cover checking that such a row really
+lands with the one it names. (:user:`claude`)

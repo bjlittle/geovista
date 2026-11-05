@@ -1,4 +1,5 @@
-Every roadmap state in the design specifications now carries an emoji, as a
-landed row always has: 🚧 in progress, 📋 not started and 💡 candidate. The
-conventions test refuses a bare state with the form it should take, and with it
-the decision ledger specification has nothing left to deliver. (:user:`claude`)
+Every roadmap state in the design specifications now carries an emoji
+(ledger spec §2 decision 16), as a landed row always has: 🚧 in progress, 📋 not
+started and 💡 candidate. The conventions test refuses a bare state with the form
+it should take, and with it the decision ledger specification has nothing left
+to deliver. (:user:`claude`)

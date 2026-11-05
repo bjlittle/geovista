@@ -1,6 +1,7 @@
 Brought the globe, scene and heights specifications into the decision ledger,
 which now covers every specification, and their open items, with the ledger
-specification's own, into the open items grammar. Each decision records who
+specification's own, into the open items grammar, landing
+row 6 of ledger spec §8 and row 5 of items spec §8. Each decision records who
 agreed it and when, and each specification ends with a Verification table: 16
 decisions are verified by tests, 3 are signed off, 7 wait on later work, and one
 is retired, replaced by a decision that says what changed. Each of their open

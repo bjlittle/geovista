@@ -1,3 +1,4 @@
-Grouped the :ref:`specifications <gv-developer-specs>` by family. Each banner
-names its lineage and its children, the index lists each child under its
-parent, and every specification is titled for its topic. (:user:`claude`)
+Grouped the :ref:`specifications <gv-developer-specs>` by family, as
+docs spec §3.7 sets out. Each banner names its lineage and its children, the
+index lists each child under its parent, and every specification is titled for
+its topic. (:user:`claude`)

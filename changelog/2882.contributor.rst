@@ -1,5 +1,6 @@
 Each row of a design specification's Verification table now names its decision
 by its citation, ``§2 decision 3``, in place of a bare number that could be read
-as a row, an item or another decision cited beside it. The docs build links each
-row to its decision, and the conventions test refuses a bare number with the
-citation to write. (:user:`claude`)
+as a row, an item or another decision cited beside it
+(ledger spec §2 decision 17). The docs build links each row to its decision, and
+the conventions test refuses a bare number with the citation to write.
+(:user:`claude`)

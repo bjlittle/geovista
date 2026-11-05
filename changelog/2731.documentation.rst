@@ -1,3 +1,4 @@
-The published specifications design now names the citation namespace table of
-the specifications index as the list of prefixes in use, rather than listing the
-two it began with, so a new specification adds its prefix there. (:user:`claude`)
+The published specifications design now names, in docs spec §3.2, the citation
+namespace table of the specifications index as the list of prefixes in use,
+rather than listing the two it began with, so a new specification adds its
+prefix there. (:user:`claude`)

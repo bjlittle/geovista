@@ -15,6 +15,7 @@ collection pass thirty-five, and the test fails at that point instead of leaving
 the decision to somebody's memory.
 
 The seven ``typing spec 3.1`` citations gained their section sign. Two of the
-publication specification's own rules changed on the way: row 2's trigger
-counted citation prefixes and fired on the very document that declared it, and
-the status rule could not cite an issue in another repository. (:user:`claude`)
+publication specification's own rules changed on the way: the trigger of
+row 2 of docs spec §4 counted citation prefixes and fired on the very document
+that declared it, and the status rule could not cite an issue in another
+repository. (:user:`claude`)
