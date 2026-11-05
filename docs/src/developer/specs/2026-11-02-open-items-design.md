@@ -279,8 +279,8 @@ specification it asserts that:
 5. No two items cite the same issue.
 6. Every citation of an item or a row, anywhere in the corpus of docs spec §3.5, names one
    that exists.
-7. A row whose scope says it lands *with* another row, citing it, as §3.4 has it, has
-   landed by the same pull request as that row, or neither has.
+7. A row whose scope says it lands *with* another row, citing that one row, as §3.4 has
+   it, has landed by the same pull request as that row, which both name, or neither has.
 
 The second assertion is the landing gate of §3.5, since landing a row is changing its
 status. A specification not yet brought in is named in a list the test keeps, beside the row
@@ -537,7 +537,7 @@ Each carries the status grammar of §3.2.
 | 4 | The crs specification's items brought in | ✅ landed (2026-11-04, {pull}`2873`) |
 | 5 | The globe, scene, heights and ledger specifications' items brought in | ✅ landed (2026-11-03, {pull}`2826`) |
 | 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | ✅ landed (2026-11-04, {pull}`2878`) |
-| 7 | A row landing with another specification's row checked to land with it, §7 item 14 | ✅ landed (2026-11-05, {pull}`2879`) |
+| 7 | A row landing with another specification's row checked to land with it, §7 item 14 | 🚧 in progress ({pull}`2879`) |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
 after it. Rows 3 to 5 each raise the issues their specifications' items lack, and need

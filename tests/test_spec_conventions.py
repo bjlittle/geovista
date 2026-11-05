@@ -3218,21 +3218,37 @@ def item_graduated(path: Path, text: str, names: Namespace) -> list[str]:
 #: A row's scope naming the row it lands with (items spec §3.4).
 LANDING_WITH = re.compile(r"\blanding with\s+(?P<rest>.*)$", flags=re.IGNORECASE)
 
+#: A pull request a status cites: by role, in this repository, or by link, in any.
+PULL_ROLE = re.compile(r"\{pull\}`(?P<number>\d+)`")
+PULL_LINK = re.compile(
+    r"\]\(https://github\.com/(?P<repository>[\w.-]+/[\w.-]+)/pull/(?P<number>\d+)\)"
+)
+
+
+def _pulls(status: str) -> set[tuple[str, str]]:
+    """Read the pull requests a status cites, as repository and number."""
+    return {("bjlittle/geovista", m["number"]) for m in PULL_ROLE.finditer(status)} | {
+        (m["repository"], m["number"]) for m in PULL_LINK.finditer(status)
+    }
+
 
 def landing_together(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     """Find a row landing with another that landed apart from it, items spec §7 item 14.
 
     A row owed an item whose work is another specification's row names that row
     in its scope, *landing with* it (items spec §3.4), and the two land in one pull
-    request. So both have landed, by the same pull request, or neither has. A
-    scope that speaks of landing with a row without citing one holds no check.
+    request. So both have landed, by the same pull request, which each names, or
+    neither has. A row lands with one other, so a range is refused. A scope that
+    speaks of landing with a row without citing one, or quotes the words in code,
+    holds no check.
     """
     owners = {prefix: path for path, prefix in names.owners.items()}
     problems = []
     for path, text in texts.items():
         owner = names.owners.get(path)
         for row in citations.rows(text):
-            said = LANDING_WITH.search(row.scope)
+            # code is blanked first, as scan() expects, so quoted words declare nothing
+            said = LANDING_WITH.search(citations.prose(row.scope)[0])
             if said is None:
                 continue
             found = next(
@@ -3245,6 +3261,12 @@ def landing_together(texts: Mapping[Path, str], names: Namespace) -> list[str]:
             )
             label = LABEL.match(found.slug) if found is not None else None
             if label is None or label["row"] is None:
+                continue
+            if found.ends:
+                problems.append(
+                    f"{where(path, row.line)}: row {row.row} lands with {found.text}: "
+                    "cite one row"
+                )
                 continue
             other_path = owners.get(label["prefix"])
             other = next(
@@ -3267,9 +3289,11 @@ def landing_together(texts: Mapping[Path, str], names: Namespace) -> list[str]:
                 problems.append(f"{at}, which has not landed")
             elif theirs and not mine:
                 problems.append(f"{at}, which has landed without it")
-            elif mine and set(PULL.findall(row.status)) != set(
-                PULL.findall(other.status)
-            ):
+            elif mine and not (_pulls(row.status) or _pulls(other.status)):
+                problems.append(
+                    f"{at}, but neither names the pull request they landed in"
+                )
+            elif mine and _pulls(row.status) != _pulls(other.status):
                 problems.append(f"{at}, which landed in another pull request")
     return problems
 
@@ -3632,6 +3656,50 @@ def test_landing_together_finds_a_row_landed_alone_or_apart(tmp_path):
     assert faults(landing_together(texts, names)) == [
         f"row 1 lands with {cited}, which landed in another pull request"
     ]
+
+
+def test_landing_together_knows_a_pull_request_by_any_reference(tmp_path):
+    """A pull request is the same however it is cited, and one must be cited.
+
+    A link to another repository's pull request is as good as a role, and two
+    rows citing no pull request have no landing to share.
+    """
+    cited = f"row 1 of other spec {SECTION}2"
+    seven = f"{LANDED} (2026-01-01, [PR7](https://github.com/o/r/pull/7))"
+    eight = f"{LANDED} (2026-01-02, [PR8](https://github.com/o/r/pull/8))"
+    issue = f"{LANDED} (2026-01-01, {{issue}}`7`)"
+
+    texts, names = landing(tmp_path, seven, eight)
+    assert faults(landing_together(texts, names)) == [
+        f"row 1 lands with {cited}, which landed in another pull request"
+    ]
+    texts, names = landing(tmp_path, seven, seven)
+    assert landing_together(texts, names) == []
+    texts, names = landing(tmp_path, issue, issue)
+    assert faults(landing_together(texts, names)) == [
+        f"row 1 lands with {cited}, but neither names the pull request they landed in"
+    ]
+
+
+def test_landing_together_refuses_a_range(tmp_path):
+    """A row lands with one other row, so a range of them is refused."""
+    scope = f"Mine, landing with rows 1 and 2 of other spec {SECTION}2"
+
+    texts, names = landing(tmp_path, NOT_STARTED, NOT_STARTED, scope)
+
+    assert faults(landing_together(texts, names)) == [
+        f"row 1 lands with rows 1 and 2 of other spec {SECTION}2: cite one row"
+    ]
+
+
+def test_landing_together_reads_no_declaration_in_code(tmp_path):
+    """Quoted in code, the words are an example, and declare nothing."""
+    scope = f"Mine, as `landing with row 1 of other spec {SECTION}2` reads"
+    landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
+
+    texts, names = landing(tmp_path, landed, NOT_STARTED, scope)
+
+    assert landing_together(texts, names) == []
 
 
 def test_landing_together_reads_only_a_cited_row(tmp_path):
