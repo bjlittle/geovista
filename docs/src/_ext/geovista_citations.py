@@ -202,6 +202,11 @@ OPEN_ITEMS = "Open Items"
 #: The header of the ledger, cell by cell.
 LEDGER_HEADER = ("Decision", "Status", "Evidence")
 
+#: The first cell of a ledger's row: its decision's citation, within its own
+#: specification (ledger spec §2 decision 17). ASCII digits only, as "²" is a
+#: digit to str.isdigit, and no int() reads it.
+LEDGER_CELL = re.compile(rf"{SECTION}2 decision (?P<decision>[0-9]+)")
+
 #: The number an item of a numbered list opens with, as ``4.``, and the space after.
 MARKER = re.compile(r"^[ \t]*\d+[.)][ \t]*")
 
@@ -373,7 +378,7 @@ class LedgerRow:
     Attributes
     ----------
     cell : str
-        The first cell as written, which names the decision.
+        The first cell as written, which cites the decision, as ``§2 decision 3``.
     line : int
         The line the row is written on.
     status : str
@@ -390,9 +395,9 @@ class LedgerRow:
 
     @property
     def decision(self) -> int | None:
-        """The decision the row is for, or ``None`` when its first cell is no number."""
-        # ASCII digits only: "²" is a digit to str.isdigit, and no int() reads it
-        return int(self.cell) if re.fullmatch(r"[0-9]+", self.cell) else None
+        """The decision the row is for, or ``None`` when its first cell cites none."""
+        match = LEDGER_CELL.fullmatch(self.cell)
+        return None if match is None else int(match["decision"])
 
 
 @dataclass(frozen=True)

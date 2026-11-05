@@ -677,7 +677,7 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |
-| 2 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the hook and its ratchet went live in row 1 of §4 ({pull}`2565`), before any module was corrected, and that row 7 retired the ratchet ({pull}`2681`). |
-| 3 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/bridge/test_lists.py` |
-| 4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |
+| §2 decision 1 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |
+| §2 decision 2 | ✍️ signed off (2026-11-01, {user}`bjlittle`, {pull}`2796`) | Checked in review that the hook and its ratchet went live in row 1 of §4 ({pull}`2565`), before any module was corrected, and that row 7 retired the ratchet ({pull}`2681`). |
+| §2 decision 3 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/bridge/test_lists.py` |
+| §2 decision 4 | ✅ verified (2026-11-01, {pull}`2796`) | `tests/test_ci_typing.py` |

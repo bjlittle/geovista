@@ -459,14 +459,14 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_carried_heights.py`, `tests/globe/test_vertical.py` |
-| 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_heights.py`, `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
-| 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/globe/test_vertical.py` |
-| 4 | ⏳ pending | rows 1 to 2 of §9 |
-| 5 | ⏳ pending | rows 1 to 2 of §9 |
-| 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_resize.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
-| 7 | ⏳ pending | row 2 of §9 |
-| 8 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/common/test_from_cartesian.py` |
-| 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
-| 10 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
-| 11 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/bridge/test_to_structured_grid.py`, `tests/globe/test_heights.py` |
+| §2 decision 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_carried_heights.py`, `tests/globe/test_vertical.py` |
+| §2 decision 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_heights.py`, `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
+| §2 decision 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/globe/test_vertical.py` |
+| §2 decision 4 | ⏳ pending | rows 1 to 2 of §9 |
+| §2 decision 5 | ⏳ pending | rows 1 to 2 of §9 |
+| §2 decision 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_resize.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
+| §2 decision 7 | ⏳ pending | row 2 of §9 |
+| §2 decision 8 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/common/test_from_cartesian.py` |
+| §2 decision 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
+| §2 decision 10 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
+| §2 decision 11 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/bridge/test_to_structured_grid.py`, `tests/globe/test_heights.py` |

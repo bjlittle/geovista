@@ -227,16 +227,25 @@ def group(path: Path, root: Path, specs: Collection[Path] = ()) -> str:
 
 
 def _entries(text: str, slug: str) -> dict[int, str]:
-    """Map each line of a decision's own entry to that decision's anchor.
+    """Map each line of a decision's own entry and row to that decision's anchor.
 
     An entry runs as the grammar reads it (:func:`grammar.decision_entries`): the
-    lines of its item in the Decisions' list, as markdown reads them.
+    lines of its item in the Decisions' list, as markdown reads them. A row of the
+    ledger cites its decision in its first cell (ledger spec §2 decision 17), which
+    is no more a place the decision is cited than its entry is; a citation of
+    another decision in its Evidence still is one.
     """
-    return {
+    own = {
         number: grammar.decision_anchor(slug, entry.written)
         for entry in grammar.decision_entries(text)
         for number in range(entry.line, entry.end + 1)
     }
+    own |= {
+        row.line: grammar.decision_anchor(slug, row.decision)
+        for row in grammar.ledger(text) or []
+        if row.decision is not None
+    }
+    return own
 
 
 def citations_of(texts: Mapping[Path, str], names: Namespace) -> dict[str, list[Cited]]:

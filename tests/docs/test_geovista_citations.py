@@ -332,8 +332,9 @@ def test_ledger_reads_the_verification_table(citations):
     """The ledger is the table headed Decision, Status and Evidence, and no other."""
     rows = (
         "| Decision | Status | Evidence |\n|---|---|---|\n"
-        "| 1 | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"
-        "| 2 | \N{WHITE HEAVY CHECK MARK} verified (2026-10-30, {pull}`1`) | `x.py` |\n"
+        f"| {SECTION}2 decision 1 | \N{HOURGLASS WITH FLOWING SAND} pending | |\n"
+        f"| {SECTION}2 decision 2 | \N{WHITE HEAVY CHECK MARK} verified "
+        "(2026-10-30, {pull}`1`) | `x.py` |\n"
     )
     text = f"(demo-spec-10)=\n## 10. Verification\n\n{rows}"
     other = (
@@ -351,9 +352,39 @@ def test_ledger_reads_the_verification_table(citations):
 
 def test_a_row_naming_a_superscript_names_no_decision(citations):
     """Review Focus 5 of its plan: a cell no int() reads is reported, never a crash."""
-    row = citations.LedgerRow("\N{SUPERSCRIPT TWO}", 1, "", "")
+    row = citations.LedgerRow(f"{SECTION}2 decision \N{SUPERSCRIPT TWO}", 1, "", "")
 
     assert row.decision is None
+
+
+@pytest.mark.parametrize(
+    ("cell", "decision"),
+    [
+        (f"{SECTION}2 decision 3", 3),
+        (f"{SECTION}2 decision 12", 12),
+        ("3", None),
+        ("decision 3", None),
+        (f"{SECTION}3 decision 3", None),
+        (f"{SECTION}2 decisions 3", None),
+        (f"{SECTION}2 decision 3 and 4", None),
+        (f"demo spec {SECTION}2 decision 3", None),
+        (f"**{SECTION}2 decision 3**", None),
+    ],
+    ids=[
+        "citation",
+        "two-digits",
+        "bare",
+        "no-section",
+        "other-section",
+        "plural",
+        "two",
+        "prefixed",
+        "bold",
+    ],
+)
+def test_a_row_names_its_decision_by_its_citation(citations, cell, decision):
+    """Ledger spec §2 decision 17: a row names its decision as its citation, alone."""
+    assert citations.LedgerRow(cell, 1, "", "").decision == decision
 
 
 def test_cells_keep_an_escaped_pipe(citations):
@@ -366,7 +397,8 @@ def test_ledger_keeps_an_escaped_pipe_in_its_evidence(citations):
     text = (
         "(demo-spec-10)=\n## 10. Verification\n\n"
         "| Decision | Status | Evidence |\n|---|---|---|\n"
-        "| 1 | \N{HOURGLASS WITH FLOWING SAND} pending | a \\| b |\n"
+        f"| {SECTION}2 decision 1 | \N{HOURGLASS WITH FLOWING SAND} pending "
+        "| a \\| b |\n"
     )
 
     assert citations.ledger(text)[0].evidence == "a \\| b"

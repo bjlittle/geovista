@@ -2281,6 +2281,15 @@ def entry(number: int, state: str, carried: str, title: str = "A decision.") -> 
 AGREEMENT = "2026-01-01, {user}`bjlittle`, {pull}`1`"
 
 
+#: A ledger row's first cell written as a bare number, as rows were before.
+BARE = re.compile(r"[0-9]+")
+
+
+def cited(number: int) -> str:
+    """Write the first cell of a decision's row, its citation (ledger spec §3.4)."""
+    return f"{SECTION}2 decision {number}"
+
+
 def ledgered(
     tmp_path: Path,
     entries: str,
@@ -2380,7 +2389,11 @@ def ledger_table(path: Path, text: str) -> list[str]:
     for row in rows:
         at = where(path, row.line)
         if row.decision is None:
-            problems.append(f"{at}: a row names {row.cell!r}, not a decision")
+            # a bare number is the form a row took before ledger spec §2 decision 17
+            fix = (
+                f": write {cited(int(row.cell))!r}" if BARE.fullmatch(row.cell) else ""
+            )
+            problems.append(f"{at}: a row names {row.cell!r}, not a decision{fix}")
             continue
         if row.decision in seen:
             problems.append(f"{at}: decision {row.decision} has a second row")
@@ -2586,7 +2599,7 @@ def test_ledger_table_wants_the_last_section_and_a_row_per_decision(tmp_path):
     """Ledger spec §2 decision 5, ledger spec §2 decision 10: one row each, last."""
     entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
     entries += entry(3, AGREED, AGREEMENT)
-    rows = f"| 1 | {PENDING} | |\n| two | {PENDING} | |\n"
+    rows = f"| {cited(1)} | {PENDING} | |\n| two | {PENDING} | |\n"
     path, _ = ledgered(tmp_path, entries, rows)
     text = path.read_text(encoding="utf-8")
 
@@ -2597,6 +2610,25 @@ def test_ledger_table_wants_the_last_section_and_a_row_per_decision(tmp_path):
     ]
     assert faults(ledger_table(path, text + "\n(demo-spec-5)=\n## 5. After\n")) == [
         "its last section is not titled Verification"
+    ]
+
+
+def test_ledger_table_refuses_a_bare_number_with_the_citation_to_write(tmp_path):
+    """Ledger spec §2 decision 17: a row names its decision by its citation alone.
+
+    A bare number is the form a row took before, so it is refused with the
+    citation to write instead. Another specification's citation names no row of
+    this one, and is refused as any other cell is.
+    """
+    entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
+    rows = f"| 1 | {PENDING} | |\n| demo spec {cited(2)} | {PENDING} | |\n"
+    path, _ = ledgered(tmp_path, entries, rows)
+
+    assert faults(ledger_table(path, path.read_text(encoding="utf-8"))) == [
+        f"a row names '1', not a decision: write '{cited(1)}'",
+        f"a row names 'demo spec {cited(2)}', not a decision",
+        "decision 1 has no row",
+        "decision 2 has no row",
     ]
 
 
@@ -2614,8 +2646,8 @@ def test_ledger_entries_wants_numbered_decisions(tmp_path):
 def test_ledger_table_reports_an_extra_or_repeated_row_at_its_line(tmp_path):
     """Review Focus 5 of its plan: each stray row is reported where it is written."""
     entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
-    rows = f"| 1 | {PENDING} | |\n| 1 | {PENDING} | |\n| 2 | {PENDING} | |\n"
-    rows += f"| 3 | {PENDING} | |\n"
+    rows = f"| {cited(1)} | {PENDING} | |\n| {cited(1)} | {PENDING} | |\n"
+    rows += f"| {cited(2)} | {PENDING} | |\n| {cited(3)} | {PENDING} | |\n"
     path, _ = ledgered(tmp_path, entries, rows)
     text = path.read_text(encoding="utf-8")
     second, third = ledger(text)[1].line, ledger(text)[3].line
@@ -2630,10 +2662,10 @@ def test_ledger_states_carry_what_they_must(tmp_path):
     """Ledger spec §2 decision 9: each state, and what its parenthetical holds."""
     entries = "".join(entry(n, AGREED, AGREEMENT) for n in range(1, 5))
     rows = (
-        f"| 1 | {VERIFIED} ({{pull}}`1`) | `x.py` |\n"
-        f"| 2 | {SIGNED_OFF} (2026-01-01, {{pull}}`1`) | Checked. |\n"
-        f"| 3 | {PENDING} (2026-01-01) | |\n"
-        "| 4 | shipped | |\n"
+        f"| {cited(1)} | {VERIFIED} ({{pull}}`1`) | `x.py` |\n"
+        f"| {cited(2)} | {SIGNED_OFF} (2026-01-01, {{pull}}`1`) | Checked. |\n"
+        f"| {cited(3)} | {PENDING} (2026-01-01) | |\n"
+        f"| {cited(4)} | shipped | |\n"
     )
     path, _ = ledgered(tmp_path, entries, rows)
 
@@ -2650,8 +2682,8 @@ def test_ledger_retirements_agree_in_both_sections(tmp_path):
     retired = f"{AGREEMENT}; agreed 2026-01-01, {{pull}}`1`"
     entries = entry(1, RETIRED_STATE, retired) + entry(2, AGREED, AGREEMENT)
     rows = (
-        f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `x.py` |\n"
-        f"| 2 | {LEDGER_RETIRED} (2026-01-01, {{pull}}`1`) | |\n"
+        f"| {cited(1)} | {VERIFIED} (2026-01-01, {{pull}}`1`) | `x.py` |\n"
+        f"| {cited(2)} | {LEDGER_RETIRED} (2026-01-01, {{pull}}`1`) | |\n"
     )
     path, _ = ledgered(tmp_path, entries, rows)
 
@@ -2665,10 +2697,11 @@ def test_ledger_evidence_must_exist_and_cite_its_decision(tmp_path):
     """Ledger spec §2 decision 6: a test is evidence only if it cites the decision."""
     entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
     entries += entry(3, AGREED, AGREEMENT)
+    verified = f"{VERIFIED} (2026-01-01, {{pull}}`1`)"
     rows = (
-        f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_cites.py` |\n"
-        f"| 2 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_gone.py` |\n"
-        f"| 3 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_cites.py` |\n"
+        f"| {cited(1)} | {verified} | `tests/test_cites.py` |\n"
+        f"| {cited(2)} | {verified} | `tests/test_gone.py` |\n"
+        f"| {cited(3)} | {verified} | `tests/test_cites.py` |\n"
     )
     path, names = ledgered(tmp_path, entries, rows)
     (tmp_path / "tests").mkdir()
@@ -2689,7 +2722,8 @@ def test_ledger_evidence_must_exist_and_cite_its_decision(tmp_path):
 def test_ledger_complete_once_the_roadmap_is(tmp_path):
     """Ledger spec §2 decision 8: a done roadmap leaves no decision pending."""
     entries = entry(1, AGREED, AGREEMENT) + entry(2, AGREED, AGREEMENT)
-    rows = f"| 1 | {PENDING} | |\n| 2 | {PENDING} | row 2 of {SECTION}3 |\n"
+    rows = f"| {cited(1)} | {PENDING} | |\n"
+    rows += f"| {cited(2)} | {PENDING} | row 2 of {SECTION}3 |\n"
     roadmap = (
         f"| 1 | a | {LANDED} (2026-01-01, {{pull}}`1`) |\n| 2 | b | {CANDIDATE} |\n"
     )
@@ -2734,8 +2768,8 @@ def test_ledger_replacement_reads_any_case_and_only_decisions(tmp_path):
         + entry(2, AGREED, AGREEMENT)
     )
     rows = (
-        f"| 1 | {LEDGER_RETIRED} (2026-01-01, {{pull}}`1`) | "
-        f"Replaced by {SECTION}2 decision 9 |\n| 2 | {PENDING} | |\n"
+        f"| {cited(1)} | {LEDGER_RETIRED} (2026-01-01, {{pull}}`1`) | "
+        f"Replaced by {SECTION}2 decision 9 |\n| {cited(2)} | {PENDING} | |\n"
     )
     path, names = ledgered(tmp_path, entries, rows)
     text = path.read_text(encoding="utf-8")
@@ -2798,7 +2832,7 @@ def test_unledgered_names_specifications_still_waiting(specs):
 def test_ledger_evidence_must_be_a_test_file(tmp_path):
     """Ledger spec §2 decision 6: evidence is a test, not any file that cites one."""
     entries = entry(1, AGREED, AGREEMENT)
-    rows = f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `docs/cites.md` |\n"
+    rows = f"| {cited(1)} | {VERIFIED} (2026-01-01, {{pull}}`1`) | `docs/cites.md` |\n"
     path, names = ledgered(tmp_path, entries, rows)
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs" / "cites.md").write_text(
@@ -2818,8 +2852,8 @@ def test_ledger_dates_are_calendar_dates(tmp_path):
     entries = entry(1, AGREED, "2026-02-30, {user}`bjlittle`, {pull}`1`")
     entries += entry(2, RETIRED_STATE, retired)
     rows = (
-        f"| 1 | {VERIFIED} (2026-02-30, {{pull}}`1`) | `x.py` |\n"
-        f"| 2 | {LEDGER_RETIRED} (2026-02-30, {{pull}}`1`) | |\n"
+        f"| {cited(1)} | {VERIFIED} (2026-02-30, {{pull}}`1`) | `x.py` |\n"
+        f"| {cited(2)} | {LEDGER_RETIRED} (2026-02-30, {{pull}}`1`) | |\n"
     )
     path, _ = ledgered(tmp_path, entries, rows)
     text = path.read_text(encoding="utf-8")
@@ -2838,7 +2872,10 @@ def test_ledger_dates_are_calendar_dates(tmp_path):
 def test_ledger_sign_off_says_what_was_checked(tmp_path):
     """Ledger spec §2 decision 6: a sign-off says what the reviewer checked."""
     entries = entry(1, AGREED, AGREEMENT)
-    rows = f"| 1 | {SIGNED_OFF} (2026-01-01, {{user}}`bjlittle`, {{pull}}`1`) | |\n"
+    rows = (
+        f"| {cited(1)} | {SIGNED_OFF} (2026-01-01, {{user}}`bjlittle`, "
+        "{pull}`1`) | |\n"
+    )
     path, _ = ledgered(tmp_path, entries, rows)
 
     assert faults(ledger_table(path, path.read_text(encoding="utf-8"))) == [
@@ -2874,9 +2911,10 @@ def test_ledger_rules_read_states_without_their_variation_selector(tmp_path):
     entries = entry(1, RETIRED_STATE.replace(plain, ""), retired)
     entries += entry(2, AGREED, AGREEMENT)
     rows = (
-        f"| 1 | {LEDGER_RETIRED.replace(plain, '')} (2026-01-01, {{pull}}`1`) | |\n"
-        f"| 2 | {SIGNED_OFF.replace(plain, '')} (2026-01-01, {{user}}`bjlittle`, "
-        "{pull}`1`) | Checked. |\n"
+        f"| {cited(1)} | {LEDGER_RETIRED.replace(plain, '')} "
+        "(2026-01-01, {pull}`1`) | |\n"
+        f"| {cited(2)} | {SIGNED_OFF.replace(plain, '')} "
+        "(2026-01-01, {user}`bjlittle`, {pull}`1`) | Checked. |\n"
     )
     path, _ = ledgered(tmp_path, entries, rows)
     text = path.read_text(encoding="utf-8")

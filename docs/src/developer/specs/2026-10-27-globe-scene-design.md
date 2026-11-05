@@ -549,12 +549,12 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
-| 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
-| 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_to_mesh.py` |
-| 4 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_from_mesh.py` |
-| 5 | ✅ verified (2026-10-28, {pull}`2766`) | `tests/common/test_current_fields.py` |
-| 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize.py`, `tests/common/test_sanitize_legacy.py` |
-| 7 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize_legacy.py` |
-| 8 | ⏳ pending | row 2 of heights spec §9 |
-| 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_GeoVistaAccessor.py` |
+| §2 decision 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
+| §2 decision 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_no_radius.py` |
+| §2 decision 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_to_mesh.py` |
+| §2 decision 4 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/globe/test_from_mesh.py` |
+| §2 decision 5 | ✅ verified (2026-10-28, {pull}`2766`) | `tests/common/test_current_fields.py` |
+| §2 decision 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize.py`, `tests/common/test_sanitize_legacy.py` |
+| §2 decision 7 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize_legacy.py` |
+| §2 decision 8 | ⏳ pending | row 2 of heights spec §9 |
+| §2 decision 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_GeoVistaAccessor.py` |

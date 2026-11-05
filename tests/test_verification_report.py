@@ -114,10 +114,11 @@ def repo(tmp_path: Path) -> Path:
         + f"\n(demo-spec-3)=\n## 3. Design\n\nThe design keeps {s}2 decision 2.\n\n"
         "(demo-spec-4)=\n## 4. Verification\n\n"
         "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | `tests/test_demo.py` |\n"
-        f"| 2 | {PENDING} | |\n"
-        f"| 3 | {PENDING} | |\n"
-        f"| 4 | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
+        f"| {s}2 decision 1 | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
+        "`tests/test_demo.py` |\n"
+        f"| {s}2 decision 2 | {PENDING} | |\n"
+        f"| {s}2 decision 3 | {PENDING} | |\n"
+        f"| {s}2 decision 4 | {VERIFIED} (2026-01-01, {{pull}}`1`) | "
         "`tests/test_silent.py`, `tests/test_gone.py` |\n"
         "\n(demo-spec-5)=\n## 5. Open Items\n\n"
         + item(1, OPEN, f"row 2 of {s}6", 0, "Owed in progress.")
@@ -278,8 +279,9 @@ def test_a_verified_or_signed_off_row_with_no_evidence_is_flagged(script, repo, 
     text = spec.read_text(encoding="utf-8")
     signed = "\N{WRITING HAND}\N{VARIATION SELECTOR-16} signed off"
     text = text.replace("`tests/test_demo.py` |", " |").replace(
-        f"| 2 | {PENDING} | |",
-        f"| 2 | {signed} (2026-01-01, {{user}}`bjlittle`, {{pull}}`1`) | |",
+        f"| {SECTION}2 decision 2 | {PENDING} | |",
+        f"| {SECTION}2 decision 2 | {signed} (2026-01-01, {{user}}`bjlittle`, "
+        "{pull}`1`) | |",
     )
     spec.write_text(text, encoding="utf-8")
 
@@ -366,7 +368,7 @@ def test_a_decisions_lazy_line_is_its_own_entry(script, tmp_path, capsys):
         + entry(2, "Two.")
         + "\n(demo-spec-4)=\n## 4. Verification\n\n"
         "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| 1 | {PENDING} | |\n| 2 | {PENDING} | |\n",
+        f"| {s}2 decision 1 | {PENDING} | |\n| {s}2 decision 2 | {PENDING} | |\n",
     )
 
     _, out = run(script, tmp_path, capsys)
@@ -393,13 +395,43 @@ def test_a_line_after_a_decisions_code_is_no_part_of_it(script, tmp_path, capsys
         f"The design keeps {s}2 decision 1.\n"
         "\n(demo-spec-4)=\n## 4. Verification\n\n"
         "| Decision | Status | Evidence |\n|---|---|---|\n"
-        f"| 1 | {PENDING} | |\n",
+        f"| {s}2 decision 1 | {PENDING} | |\n",
     )
 
     _, out = run(script, tmp_path, capsys)
     spec = "docs/src/developer/specs/2026-01-01-demo-design.md"
 
     assert f"**specifications:** `{spec}:11`" in out
+
+
+def test_a_decisions_own_row_is_no_citation_of_it(script, tmp_path, capsys):
+    """A row names its decision by its citation, which is no place it is cited.
+
+    Its Evidence may cite another decision, and that one is cited there. Holds
+    ledger spec §2 decision 17.
+    """
+    s = SECTION
+    write(
+        tmp_path,
+        "docs/src/developer/specs/2026-01-01-demo-design.md",
+        "# Demo Specification\n\n"
+        f"- **Citation prefix:** `demo spec {s}{ELLIPSIS}`\n\n"
+        "(demo-spec-2)=\n## 2. Decisions\n\n"
+        + entry(1, "One.")
+        + entry(2, "Two.")
+        + "\n(demo-spec-4)=\n## 4. Verification\n\n"
+        "| Decision | Status | Evidence |\n|---|---|---|\n"
+        f"| {s}2 decision 1 | {PENDING} | as {s}2 decision 2 |\n"
+        f"| {s}2 decision 2 | {PENDING} | |\n",
+    )
+
+    _, out = run(script, tmp_path, capsys)
+    findings = out[out.index("## Findings") :]
+    spec = "docs/src/developer/specs/2026-01-01-demo-design.md"
+
+    assert f"demo spec {s}2 decision 1 is in force and cited nowhere" in findings
+    assert f"demo spec {s}2 decision 2 is in force and cited nowhere" not in findings
+    assert out.count(f"`{spec}:") == 1
 
 
 def test_report_shows_each_roadmap_row_with_its_status(script, repo, capsys):
