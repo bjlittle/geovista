@@ -1,3 +1,4 @@
 Recorded three gaps in the trigger tests of the type coverage specification's
-candidate rows as open items, each with its own issue, owed by a new roadmap row
-that hardens those tests. (:user:`claude`)
+candidate rows as open items, items 11 to 13 of typing spec §8, each with its
+own issue, owed by a new roadmap row that hardens those tests,
+row 12 of typing spec §4. (:user:`claude`)

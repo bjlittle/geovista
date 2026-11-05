@@ -1,3 +1,3 @@
-Required in the globe-first CRS specification that a mesh keeps its CRS, globe,
-heights and record through any file format VTK writes, and recorded what each
-format keeps today. (:user:`claude`)
+Required that a mesh keeps its CRS, globe, heights and record through any file
+format VTK writes, as crs spec §2 decision 14, and recorded in crs spec §3.4
+what each format keeps today. (:user:`claude`)

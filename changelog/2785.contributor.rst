@@ -1,4 +1,5 @@
-Published the decision ledger design specification, which makes each decision
-of a specification citeable and permanent, records who agreed it and when, and
-gives every specification a Verification table showing the test or the
-reviewer's sign-off behind each decision. (:user:`claude`)
+Published the
+:doc:`decision ledger design specification </developer/specs/2026-10-30-decision-ledger-design>`,
+which makes each decision of a specification citeable and permanent, records who
+agreed it and when, and gives every specification a Verification table showing
+the test or the reviewer's sign-off behind each decision. (:user:`claude`)

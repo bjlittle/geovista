@@ -1,4 +1,5 @@
-Published the heights as data design specification, which gives a mesh the
-height of each of its points as data, takes heights and depths where a mesh is
-built or added to a scene, draws a missing height at sea level, and refuses a
-height given with a z-level. (:user:`claude`)
+Published the
+:doc:`heights as data design specification </developer/specs/2026-10-28-heights-as-data-design>`,
+which gives a mesh the height of each of its points as data, takes heights and
+depths where a mesh is built or added to a scene, draws a missing height at sea
+level, and refuses a height given with a z-level. (:user:`claude`)

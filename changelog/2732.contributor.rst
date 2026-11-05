@@ -1,4 +1,6 @@
-Published the globe, heights and layers design specification, which designs how
-``geovista`` gives data a height in metres and keeps one layer of a scene from hiding
-another, to replace ``zlevel`` and ``zscale``, starting from a measurement of how layers
-render on the globe and on a map. (:user:`claude`)
+Published the
+:doc:`globe, heights and layers design specification </developer/specs/2026-10-26-globe-heights-layers-design>`,
+which designs how ``geovista`` gives data a height in metres and keeps one layer
+of a scene from hiding another, to replace ``zlevel`` and ``zscale``, starting
+from a measurement of how layers render on the globe and on a map.
+(:user:`claude`)

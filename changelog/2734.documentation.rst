@@ -1,4 +1,6 @@
-Added the citation links design, a child of the published specifications
-design. It links each citation of a specification section at build time, from
-one plain-text form, and adds a guard that fails a renumbered section's untouched
-citations, with a nightly audit behind it. (:user:`claude`)
+Added the
+:doc:`citation links design </developer/specs/2026-10-26-citation-links-design>`,
+a child of the published specifications design. It links each citation of a
+specification section at build time, from one plain-text form, and adds a guard
+that fails a renumbered section's untouched citations, with a nightly audit
+behind it. (:user:`claude`)
