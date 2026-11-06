@@ -325,7 +325,7 @@ Each carries the grammar of items spec §3.2. None is open today.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | Queries: the test of §4.1 and the refusal of an infinite coordinate, `KDTree.query` answering that a missing point has no neighbour (§4.2), and `find_nearest_cell` and `GeoPlotter.view_poi` refusing a missing position (§4.3) | 🚧 in progress ({pull}`2889`) |
+| 1 | Queries: the test of §4.1 and the refusal of an infinite coordinate, `KDTree.query` answering that a missing point has no neighbour (§4.2), and `find_nearest_cell` and `GeoPlotter.view_poi` refusing a missing position (§4.3) | ✅ landed (2026-11-06, {pull}`2889`) |
 | 2 | Geodesic shapes: `geodesic.line`, `BBox` and `wedge` refusing a missing position (§4.4) | 📋 not started |
 | 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) | 📋 not started |
 | 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | 📋 not started |
@@ -358,8 +358,8 @@ Each row follows ledger spec §3.4.
 |---|---|---|
 | §2 decision 1 | ⏳ pending | rows 1 to 5 of §9 |
 | §2 decision 2 | ⏳ pending | rows 1 to 5 of §9 |
-| §2 decision 3 | ⏳ pending | row 1 of §9 |
-| §2 decision 4 | ⏳ pending | row 1 of §9 |
+| §2 decision 3 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/search/test_missing_positions.py` |
+| §2 decision 4 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/geoplotter/test_view_poi.py`, `tests/search/test_missing_positions.py` |
 | §2 decision 5 | ⏳ pending | row 2 of §9 |
 | §2 decision 6 | ⏳ pending | row 3 of §9 |
 | §2 decision 7 | ⏳ pending | row 4 of §9 |
