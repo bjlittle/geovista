@@ -35,6 +35,7 @@ from .common import (
     ZLEVEL_SCALE,
     ZTRANSFORM_FACTOR,
     _current,
+    _refuse_missing_poi,
     _to_cartesian,
     point_cloud,
     to_cartesian,
@@ -79,6 +80,7 @@ from .transform import (
     transform_mesh,
     transform_point,
 )
+from .units import _Quantity
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -1610,6 +1612,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             :meth:`pyproj.crs.CRS.from_user_input`. Defaults to ``EPSG:4326`` i.e.,
             ``WGS 84``.
 
+        Raises
+        ------
+        ValueError
+            If `x` or `y` is masked, NaN or infinite, as such a POI has no position.
+
         Notes
         -----
         .. versionadded:: 0.5.0
@@ -1658,17 +1665,22 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             # default any unset to 0, which allows the API to support the
             # convenience "view_poi(x=30)" instead of "view_poi(x=30, y=0)"
             if x is None or y is None:
-                # in the units of the other, if it has any, as 0 is 0 in any unit
-                given = y if x is None else x
-                zero: float | Quantity = 0 if given is None else 0 * given
+                # in the units of the other, if it has any, as 0 is 0 in any unit,
+                # and present, so a refusal never names the coordinate left out;
+                # pint's quantity holds its units as a property, which the
+                # protocol does not, so its test would narrow no type
+                given: Any = y if x is None else x
+                zero: float | Quantity = (
+                    given.units * 0 if isinstance(given, _Quantity) else 0
+                )
                 if x is None:
                     x = zero
                 if y is None:
                     y = zero
-            x, y = (
-                float(np.asarray(value))
-                for value in _coordinates(x, y, crs, x_name="x", y_name="y")
-            )
+            px, py = _coordinates(x, y, crs, x_name="x", y_name="y")
+            # a missing point-of-interest has no view (positions spec §4.3)
+            _refuse_missing_poi(px, py, x_name="x", y_name="y")
+            x, y = float(np.asarray(px)), float(np.asarray(py))
 
         if use_mesh_poi:
             if self._poi is None:

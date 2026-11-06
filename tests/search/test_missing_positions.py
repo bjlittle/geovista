@@ -16,7 +16,8 @@ import numpy as np
 import pint
 import pytest
 
-from geovista.search import KDTree
+from geovista.search import KDTree, find_nearest_cell
+from geovista.transform import transform_mesh
 
 UREG = pint.UnitRegistry()
 
@@ -181,3 +182,62 @@ def test_infinite_refused(lam_uk, name):
     coordinates[name][1] = np.inf
     with pytest.raises(ValueError, match=rf"'{name}' cannot be infinite"):
         KDTree(lam_uk).query(coordinates["lons"], coordinates["lats"])
+
+
+#: A point-of-interest made missing in its first, second or both coordinates.
+MISSING_POI = pytest.mark.parametrize(
+    ("x", "y", "named"),
+    [
+        (np.ma.masked, 52.0, "'x' is"),
+        (np.nan, 52.0, "'x' is"),
+        (-2.0, np.ma.masked, "'y' is"),
+        (-2.0, np.nan, "'y' is"),
+        (np.nan, np.ma.masked, "'x' and 'y' are"),
+    ],
+    ids=["x-masked", "x-nan", "y-masked", "y-nan", "both"],
+)
+
+
+@MISSING_POI
+def test_find_nearest_cell_refuses(lam_uk, x, y, named):
+    """Test a missing point-of-interest is refused, naming its coordinates.
+
+    Holds positions spec §2 decision 4.
+
+    """
+    emsg = rf"point-of-interest is missing, as {named} masked or NaN"
+    with pytest.raises(ValueError, match=emsg):
+        find_nearest_cell(lam_uk, x, y)
+
+
+def test_find_nearest_cell_refuses_a_masked_quantity(lam_uk):
+    """Test a quantity whose magnitude is masked is refused, naming it.
+
+    Holds positions spec §2 decision 4.
+
+    """
+    x = UREG.Quantity(np.ma.masked_array(-2.0, mask=True), "degree")
+    y = UREG.Quantity(52.0, "degree")
+    with pytest.raises(ValueError, match=r"as 'x' is masked or NaN"):
+        find_nearest_cell(lam_uk, x, y)
+
+
+def test_find_nearest_cell_refuses_on_a_map(lam_uk):
+    """Test a missing point-of-interest is refused on a projected mesh too.
+
+    Holds positions spec §2 decision 4.
+
+    """
+    mesh = transform_mesh(lam_uk, "+proj=eqc")
+    with pytest.raises(ValueError, match=r"as 'x' is masked or NaN"):
+        find_nearest_cell(mesh, np.nan, 0.0)
+
+
+def test_find_nearest_cell_refuses_infinite(lam_uk):
+    """Test an infinite coordinate of a point-of-interest is refused, naming it.
+
+    Holds positions spec §2 decision 2.
+
+    """
+    with pytest.raises(ValueError, match=r"'x' cannot be infinite"):
+        find_nearest_cell(lam_uk, np.inf, 52.0)

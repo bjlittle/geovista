@@ -76,3 +76,68 @@ def test_the_poi_on_another_globe(radius):
         position = np.asarray(p.camera.position)
         directions.append(position / np.linalg.norm(position))
     np.testing.assert_allclose(directions[1], directions[0], atol=1e-6)
+
+
+@pytest.mark.parametrize(
+    ("x", "y", "named"),
+    [
+        (np.ma.masked, 52.0, "'x' is"),
+        (np.nan, 52.0, "'x' is"),
+        (-2.0, np.ma.masked, "'y' is"),
+        (-2.0, np.nan, "'y' is"),
+        (np.nan, np.ma.masked, "'x' and 'y' are"),
+    ],
+    ids=["x-masked", "x-nan", "y-masked", "y-nan", "both"],
+)
+def test_refuses_missing(lam_uk, x, y, named):
+    """Test a missing point-of-interest is refused, naming it, and the camera stays.
+
+    Holds positions spec §2 decision 4.
+
+    """
+    p = GeoPlotter()
+    p.add_mesh(lam_uk)
+    p.view_poi(x=-2.0, y=52.0)
+    position = p.camera.position
+
+    emsg = rf"point-of-interest is missing, as {named} masked or NaN"
+    with pytest.raises(ValueError, match=emsg):
+        p.view_poi(x=x, y=y)
+
+    assert p.camera.position == position
+
+
+@pytest.mark.parametrize(
+    ("given", "named"),
+    [
+        ({"x": np.ma.masked}, "'x'"),
+        ({"x": np.nan}, "'x'"),
+        ({"y": np.nan}, "'y'"),
+    ],
+    ids=["x-masked", "x-nan", "y-nan"],
+)
+def test_one_coordinate_given_missing(lam_uk, given, named):
+    """Test a missing coordinate given alone is refused, naming it alone.
+
+    The coordinate left out is filled with a present 0, so it is never named.
+    Holds positions spec §2 decision 4.
+
+    """
+    p = GeoPlotter()
+    p.add_mesh(lam_uk)
+
+    with pytest.raises(ValueError, match=rf"as {named} is masked or NaN\."):
+        p.view_poi(**given)
+
+
+def test_refuses_infinite(lam_uk):
+    """Test an infinite coordinate of the point-of-interest is refused, naming it.
+
+    Holds positions spec §2 decision 2.
+
+    """
+    p = GeoPlotter()
+    p.add_mesh(lam_uk)
+
+    with pytest.raises(ValueError, match=r"'x' cannot be infinite"):
+        p.view_poi(x=np.inf, y=0.0)

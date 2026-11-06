@@ -24,6 +24,7 @@ from .common import (
     VTK_CELL_IDS,
     StrEnumPlus,
     _missing_positions,
+    _refuse_missing_poi,
     _to_cartesian,
     to_cartesian,
 )
@@ -471,6 +472,11 @@ def find_nearest_cell(
         The cellID of the closest mesh cell, or the cellIDs that share the
         coincident point-of-interest as a node.
 
+    Raises
+    ------
+    ValueError
+        If `x` or `y` is masked, NaN or infinite, as such a POI has no position.
+
     Notes
     -----
     .. versionadded:: 0.1.0
@@ -478,6 +484,8 @@ def find_nearest_cell(
     """
     crs = from_wkt(mesh)
     px, py = _coordinates(x, y, crs, x_name="x", y_name="y", crs_name=None)
+    # a missing point-of-interest has no nearest cell (positions spec §4.3)
+    _refuse_missing_poi(px, py, x_name="x", y_name="y")
     poi = (
         # on the globe of the mesh, whose points it is compared with
         to_cartesian(px, py, globe=Globe.from_mesh(mesh) or Globe())[0]
