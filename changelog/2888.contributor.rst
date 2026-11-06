@@ -1,0 +1,7 @@
+Published the
+:doc:`missing positions design specification </developer/specs/2026-11-06-missing-positions-design>`.
+A position is missing when its longitude or latitude is masked or NaN, and the
+specification says what each public function that takes positions does with
+one: a query answers that it has no neighbour, a point cloud drops it with a
+warning, a geodesic shape refuses it, and a mesh drops the faces that use it.
+(:user:`claude`)
