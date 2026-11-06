@@ -158,7 +158,8 @@ masked or NaN. A masked array whose mask is `nomask` has no missing position.
 
 The same helper refuses an infinite coordinate, before any position is built, with a
 `ValueError` naming the argument as the function calls it: `lons` or `lats`, `xs` or `ys`,
-`x` or `y`, or `lon1` or `lon2`. Conversions refuse it too, by §2 decision 2.
+`x` or `y`, or `lon1` or `lon2`. Conversions refuse it too, by §2 decision 2. An infinite
+value under a mask counts as missing, since a value under a mask is never read.
 
 The test reads positions as given, so a value under a mask is never transformed. A NaN that
 a transform produces, for a position outside a CRS's domain, is not a missing position
@@ -176,8 +177,10 @@ answer. The other points are queried as before, and their answers do not change.
 ### 4.3 Single Positions
 
 `find_nearest_cell` raises a `ValueError` naming `x` or `y` when its point-of-interest is
-missing, and so does `GeoPlotter.view_poi`. The default position of `view_poi`, the centre
-of the last mesh added, is not given by the caller and is out of scope.
+missing, and so does `GeoPlotter.view_poi`. Given one coordinate, `view_poi` sets the other
+to 0, in the units of the one given, so that a refusal names only the coordinate the caller
+gave. The default position of `view_poi`, the centre of the last mesh added, is not given
+by the caller and is out of scope.
 
 (positions-spec-4-4)=
 ### 4.4 Geodesic Shapes
