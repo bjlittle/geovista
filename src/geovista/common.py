@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     import numpy as np
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
     import pyvista as pv
 
     from .globe import Globe
@@ -836,6 +836,151 @@ def nan_mask(data: ArrayLike) -> np.ndarray:
         data = data.filled(np.nan)
 
     return data
+
+
+def _missing(values: ArrayLike, *, name: str) -> NDArray[np.bool_]:
+    """Find where one coordinate of some positions is missing.
+
+    A coordinate is missing where it is masked or NaN, and an infinite one is
+    refused, as positions spec §4.1 decides. A value under a mask is never read,
+    so an infinite one there is missing too.
+
+    Parameters
+    ----------
+    values : ArrayLike
+        The values of the coordinate, with any ``pint`` quantity read already.
+    name : str
+        The name of the argument `values` was given as, to name it in a message.
+
+    Returns
+    -------
+    ndarray of bool
+        ``True`` where a value is masked or NaN, in the shape of `values`.
+
+    Raises
+    ------
+    ValueError
+        If a value that is not masked is infinite.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    array = np.ma.asanyarray(values, dtype=float)
+    # the values under a mask are hidden here, so they are never read
+    filled = np.ma.filled(array, 0.0)
+    infinite = np.isinf(filled)
+
+    if np.any(infinite):
+        if filled.ndim:
+            index = int(np.flatnonzero(infinite)[0])
+            emsg = (
+                f"{name!r} cannot be infinite, got {filled.flat[index]} at "
+                f"index {index}."
+            )
+        else:
+            emsg = f"{name!r} cannot be infinite, got {float(filled)}."
+        raise ValueError(emsg)
+
+    result: NDArray[np.bool_] = np.ma.getmaskarray(array) | np.isnan(filled)
+    return result
+
+
+def _missing_positions(
+    xs: ArrayLike, ys: ArrayLike, *, x_name: str, y_name: str
+) -> NDArray[np.bool_]:
+    """Find the missing positions among some, given as two coordinates.
+
+    A position is missing when either of its coordinates is masked or NaN, and
+    an infinite coordinate is refused, as positions spec §4.1 decides. Read any
+    ``pint`` quantity first, and call this before any position is built.
+
+    Parameters
+    ----------
+    xs : ArrayLike
+        The first coordinate of the positions, such as their longitudes.
+    ys : ArrayLike
+        The second coordinate of the positions, such as their latitudes.
+    x_name : str
+        The name of the argument `xs` was given as, to name it in a message.
+    y_name : str
+        The name of the argument `ys` was given as, to name it in a message.
+
+    Returns
+    -------
+    ndarray of bool
+        ``True`` where a position is missing, in the shape `xs` and `ys`
+        broadcast to.
+
+    Raises
+    ------
+    ValueError
+        If a coordinate that is not masked is infinite, or `xs` and `ys` do not
+        broadcast together.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    x_missing = _missing(xs, name=x_name)
+    y_missing = _missing(ys, name=y_name)
+
+    try:
+        np.broadcast_shapes(x_missing.shape, y_missing.shape)
+    except ValueError as err:
+        emsg = (
+            f"Cannot pair {x_name!r} of shape {x_missing.shape} with {y_name!r} "
+            f"of shape {y_missing.shape}."
+        )
+        raise ValueError(emsg) from err
+
+    return x_missing | y_missing
+
+
+def _refuse_missing_poi(
+    x: ArrayLike, y: ArrayLike, *, x_name: str, y_name: str
+) -> None:
+    """Refuse a point-of-interest that is missing, naming its missing coordinates.
+
+    A function given one position has nothing to answer for a missing one
+    (positions spec §4.3).
+
+    Parameters
+    ----------
+    x : ArrayLike
+        The first coordinate of the point-of-interest.
+    y : ArrayLike
+        The second coordinate of the point-of-interest.
+    x_name : str
+        The name of the argument `x` was given as, to name it in a message.
+    y_name : str
+        The name of the argument `y` was given as, to name it in a message.
+
+    Raises
+    ------
+    ValueError
+        If `x` or `y` is masked or NaN, or either is infinite.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    named = [
+        repr(name)
+        for name, value in ((x_name, x), (y_name, y))
+        if np.any(_missing(value, name=name))
+    ]
+
+    if named:
+        verb = "is" if len(named) == 1 else "are"
+        emsg = (
+            f"The point-of-interest is missing, as {' and '.join(named)} {verb} "
+            "masked or NaN."
+        )
+        raise ValueError(emsg)
 
 
 def point_cloud(mesh: pv.PolyData) -> bool:
