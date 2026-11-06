@@ -179,7 +179,7 @@ Every Python file must begin with this header, and include `from __future__ impo
   alone and `mypy`'s `python_version` the **oldest**, so a bump missing any of
   them leaves that one behind.
 - **Dependencies**: core deps in `requirements/pypi-core.txt`; optional groups in `requirements/pypi-optional-*.txt`. Pixi deps mirrored in `pyproject.toml`.
-- **CRS axis units**: PROJ gives and takes geographic axes declared in radians in degrees. Reuse `geovista.transform._angles` for effective angular units, rather than the declared unit factor (#2841).
+- **CRS coordinates**: PROJ gives and takes geographic axes declared in radians in degrees. Reuse `geovista.transform._angles` for effective angular units, rather than the declared unit factor (#2841). `np.vstack` discards masks even when it returns a `MaskedArray`; fill missing mesh positions with NaN before arithmetic (#2844).
 - **License**: BSD-3-Clause
 
 ## Subdirectory Guides
