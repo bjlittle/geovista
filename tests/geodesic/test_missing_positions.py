@@ -18,7 +18,7 @@ import numpy as np
 import pint
 import pytest
 
-from geovista.geodesic import BBox, line
+from geovista.geodesic import BBox, line, wedge
 
 UREG = pint.UnitRegistry()
 
@@ -200,3 +200,50 @@ def test_bbox_refuses_infinite(name):
     emsg = rf"'{name}' cannot be infinite, got inf at index 2\."
     with pytest.raises(ValueError, match=emsg):
         BBox(coordinates["xs"], coordinates["ys"])
+
+
+@pytest.mark.parametrize(
+    ("lon1", "lon2", "named"),
+    [
+        (np.ma.masked, 30.0, "'lon1' is"),
+        (np.nan, 30.0, "'lon1' is"),
+        (0.0, np.ma.masked, "'lon2' is"),
+        (0.0, np.nan, "'lon2' is"),
+        (np.nan, np.ma.masked, "'lon1' and 'lon2' are"),
+    ],
+    ids=["lon1-masked", "lon1-nan", "lon2-masked", "lon2-nan", "both"],
+)
+def test_wedge_refuses(lon1, lon2, named):
+    """Test a geodesic wedge with a missing longitude is refused, naming it.
+
+    Holds positions spec §2 decision 5.
+
+    """
+    emsg = rf"A geodesic wedge needs both longitudes, but {named} masked or NaN\."
+    with pytest.raises(ValueError, match=emsg):
+        wedge(lon1, lon2)
+
+
+def test_wedge_refuses_a_masked_quantity():
+    """Test a quantity of a masked value is refused as the masked value is.
+
+    Holds positions spec §2 decision 5.
+
+    """
+    lon1 = UREG.Quantity(np.ma.masked_array(10.0, mask=True), "degree")
+    lon2 = UREG.Quantity(30.0, "degree")
+    with pytest.raises(ValueError, match=r"but 'lon1' is masked or NaN"):
+        wedge(lon1, lon2)
+
+
+@pytest.mark.parametrize("name", ["lon1", "lon2"])
+def test_wedge_refuses_infinite(name):
+    """Test an infinite longitude of a geodesic wedge is refused, naming it.
+
+    Holds positions spec §2 decision 2.
+
+    """
+    longitudes = {"lon1": 0.0, "lon2": 0.0}
+    longitudes[name] = np.inf
+    with pytest.raises(ValueError, match=rf"'{name}' cannot be infinite, got inf\."):
+        wedge(longitudes["lon1"], longitudes["lon2"])

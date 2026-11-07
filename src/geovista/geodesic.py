@@ -23,6 +23,8 @@ from .common import (
     GV_MANIFOLD_CELL_IDS,
     ZLEVEL_SCALE,
     StrEnumPlus,
+    _missing,
+    _named,
     _refuse_missing_positions,
     _to_cartesian,
     distance,
@@ -1558,6 +1560,12 @@ def wedge(
     BBox
         The bounding-box that encloses the required geodesic wedge.
 
+    Raises
+    ------
+    ValueError
+        If `lon1` or `lon2` is masked or NaN, or infinite, or the wedge they give is
+        not between 0 and 180 degrees wide.
+
     Notes
     -----
     .. versionadded:: 0.1.0
@@ -1578,6 +1586,20 @@ def wedge(
 
     """
     lon1, lon2 = _angle("lon1", lon1), _angle("lon2", lon2)
+
+    # refuse a missing longitude before the width check reads it
+    named = [
+        name
+        for name, value in (("lon1", lon1), ("lon2", lon2))
+        if np.any(_missing(value, name=name))
+    ]
+    if named:
+        emsg = (
+            f"A geodesic wedge needs both longitudes, but {_named(named)} masked "
+            "or NaN."
+        )
+        raise ValueError(emsg)
+
     delta = abs(lon1 - lon2)
 
     if 0 < delta >= 180:
