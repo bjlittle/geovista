@@ -85,6 +85,13 @@ def test_infinite(value):
         _heights([0.0, value], None, None)
 
 
+def test_infinite_in_a_grid():
+    """An infinite height in a grid is placed by the index in each dimension."""
+    emsg = r"cannot be infinite, got inf at index \(1, 1\)\."
+    with pytest.raises(ValueError, match=emsg):
+        _heights([[0.0, 1.0], [2.0, np.inf]], None, None)
+
+
 def test_not_a_length():
     """A height in a unit that is not a length is refused, naming the unit."""
     with pytest.raises(ValueError, match="'hPa' is not a length"):

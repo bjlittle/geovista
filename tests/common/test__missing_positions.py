@@ -19,13 +19,21 @@ import numpy as np
 import pint
 import pytest
 
-from geovista.common import _missing_positions, _refuse_missing_poi
+from geovista.common import (
+    _missing_positions,
+    _refuse_missing_poi,
+    _refuse_missing_positions,
+)
 from geovista.units import _lonlats
 
 UREG = pint.UnitRegistry()
 
 #: The mask of three positions whose second is missing.
 SECOND = [False, True, False]
+
+#: Four positions of a shape, some of which are made missing.
+LONS = [0.0, 10.0, 20.0, 30.0]
+LATS = [0.0, 5.0, 10.0, 15.0]
 
 
 def missing(xs, ys):
@@ -146,3 +154,78 @@ def test_refuse_missing_poi(x, y, named):
 def test_refuse_missing_poi_passes_a_present_one():
     """Test that a present point-of-interest is not refused."""
     assert _refuse_missing_poi(30.0, 52.0, x_name="x", y_name="y") is None
+
+
+def refuse(lons, lats):
+    """Refuse the positions of a geodesic line given by `lons` and `lats`."""
+    return _refuse_missing_positions(
+        lons, lats, x_name="lons", y_name="lats", shape="geodesic line"
+    )
+
+
+@pytest.mark.parametrize(
+    ("lons", "lats", "emsg"),
+    [
+        (
+            np.ma.masked_array(LONS, mask=[0, 1, 0, 0]),
+            LATS,
+            (
+                r"A geodesic line needs every position given, but 1 of 4 is missing, "
+                r"as 'lons' is masked or NaN\."
+            ),
+        ),
+        (
+            LONS,
+            [0.0, 5.0, np.nan, np.nan],
+            r"but 2 of 4 are missing, as 'lats' is masked or NaN\.",
+        ),
+        (
+            np.ma.masked_array(LONS, mask=[0, 1, 0, 0]),
+            [0.0, np.nan, 10.0, 15.0],
+            r"but 1 of 4 is missing, as 'lons' and 'lats' are masked or NaN\.",
+        ),
+        (
+            np.ma.masked_array(LONS, mask=[1, 0, 0, 0]),
+            [0.0, 5.0, 10.0, np.nan],
+            r"but 2 of 4 are missing, as 'lons' and 'lats' are",
+        ),
+    ],
+    ids=["lons-one", "lats-two", "both-one", "both-two"],
+)
+def test_refuse_missing_positions(lons, lats, emsg):
+    """Test that a shape with a missing position is refused, counting and naming.
+
+    Holds positions spec §2 decision 5.
+
+    """
+    with pytest.raises(ValueError, match=emsg):
+        refuse(lons, lats)
+
+
+@pytest.mark.parametrize(
+    "lons", [LONS, np.ma.masked_array(LONS)], ids=["list", "nomask"]
+)
+def test_refuse_missing_positions_passes_present_ones(lons):
+    """Test that a shape whose positions are all present is not refused."""
+    assert refuse(lons, LATS) is None
+
+
+def test_refuse_missing_positions_refuses_infinite():
+    """Test that a shape with an infinite coordinate is refused, naming it.
+
+    Holds positions spec §2 decision 2.
+
+    """
+    emsg = r"'lats' cannot be infinite, got inf at index 2\."
+    with pytest.raises(ValueError, match=emsg):
+        refuse(LONS, [0.0, 5.0, np.inf, 15.0])
+
+
+@pytest.mark.parametrize("name", ["xs", "ys"])
+def test_infinite_in_a_grid(name):
+    """Test that an infinite coordinate in a grid is placed by each dimension."""
+    coordinates = {"xs": np.zeros((2, 2)), "ys": np.zeros((2, 2))}
+    coordinates[name] = np.array([[0.0, 1.0], [2.0, np.inf]])
+    emsg = rf"'{name}' cannot be infinite, got inf at index \(1, 1\)\."
+    with pytest.raises(ValueError, match=emsg):
+        missing(coordinates["xs"], coordinates["ys"])
