@@ -1,0 +1,9 @@
+Fixed :meth:`geovista.search.KDTree.query` matching a masked point-of-interest
+to the cell under its mask, and a NaN one to an index past the end of the tree.
+A point whose longitude or latitude is masked or NaN now has no neighbour: its
+distance is ``inf`` and its index is the number of points in the tree, as for a
+point beyond ``distance_upper_bound``. :func:`geovista.search.find_nearest_cell`
+and :meth:`geovista.geoplotter.GeoPlotterBase.view_poi` refuse such a point,
+naming the coordinate, and all three refuse an infinite coordinate. This lands
+row 1 of positions spec §9.
+(:user:`claude`)

@@ -14,12 +14,20 @@ Notes
 from __future__ import annotations
 
 from collections.abc import Iterable
+from contextlib import nullcontext
 from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 from pykdtree.kdtree import KDTree as pyKDTree
 
-from .common import VTK_CELL_IDS, StrEnumPlus, _to_cartesian, to_cartesian
+from .common import (
+    VTK_CELL_IDS,
+    StrEnumPlus,
+    _missing_positions,
+    _refuse_missing_poi,
+    _to_cartesian,
+    to_cartesian,
+)
 from .crs import WGS84, from_wkt
 from .globe import Globe, _resolve
 from .transform import _coordinates, transform_points
@@ -318,7 +326,15 @@ class KDTree:  # numpydoc ignore=PR01
         -------
         NearestNeighbours
             The Euclidean distance and index of the k nearest neighbours for each
-            query point-of-interest.
+            query point-of-interest. A point-of-interest whose longitude or
+            latitude is masked or NaN is missing, and has no neighbour: each of its
+            distances is ``inf`` and each of its indices is :attr:`n_points`, the
+            answer for a point beyond `distance_upper_bound`.
+
+        Raises
+        ------
+        ValueError
+            If a longitude or latitude that is not masked is infinite.
 
         Notes
         -----
@@ -326,6 +342,7 @@ class KDTree:  # numpydoc ignore=PR01
 
         """
         lons, lats = _lonlats(lons, lats)
+        missing = _missing_positions(lons, lats, x_name="lons", y_name="lats")
 
         if k is None:
             k = KDTREE_K
@@ -334,16 +351,41 @@ class KDTree:  # numpydoc ignore=PR01
             epsilon = KDTREE_EPSILON
 
         globe = self._globe if globe is None else _resolve(globe)
-        xyz = _to_cartesian(
-            lons, lats, radius=globe.render_radius, zlevel=zlevel, zscale=zscale
-        )
+        any_missing = bool(np.any(missing))
+        # the rows of the missing points are never queried, so what the values
+        # hidden under their masks compute to raises nothing
+        errstate = np.errstate(invalid="ignore") if any_missing else nullcontext()
 
-        result = self._kdtree.query(
-            xyz, k=k, eps=epsilon, distance_upper_bound=distance_upper_bound
+        with errstate:
+            xyz = _to_cartesian(
+                lons, lats, radius=globe.render_radius, zlevel=zlevel, zscale=zscale
+            )
+
+        if not any_missing:
+            result = self._kdtree.query(
+                xyz, k=k, eps=epsilon, distance_upper_bound=distance_upper_bound
+            )
+            assert isinstance(result, tuple)
+            assert len(result) == 2
+            return result
+
+        # one entry for each row of xyz, which a zlevel array may broadcast
+        zshape = () if zlevel is None else np.shape(zlevel)
+        missing = np.broadcast_to(
+            missing, np.broadcast_shapes(missing.shape, zshape)
+        ).ravel()
+        present = ~missing
+
+        # only the present points are queried (positions spec §4.2)
+        distances, indices = self._kdtree.query(
+            xyz[present], k=k, eps=epsilon, distance_upper_bound=distance_upper_bound
         )
-        assert isinstance(result, tuple)
-        assert len(result) == 2
-        return result
+        shape = (missing.size, *distances.shape[1:])
+        all_distances = np.full(shape, np.inf, dtype=distances.dtype)
+        all_indices = np.full(shape, self._n_points, dtype=indices.dtype)
+        all_distances[present] = distances
+        all_indices[present] = indices
+        return all_distances, all_indices
 
 
 def find_cell_neighbours(mesh: pv.PolyData, cid: CellIDLike) -> CellIDs:
@@ -430,6 +472,11 @@ def find_nearest_cell(
         The cellID of the closest mesh cell, or the cellIDs that share the
         coincident point-of-interest as a node.
 
+    Raises
+    ------
+    ValueError
+        If `x` or `y` is masked, NaN or infinite, as such a POI has no position.
+
     Notes
     -----
     .. versionadded:: 0.1.0
@@ -437,6 +484,8 @@ def find_nearest_cell(
     """
     crs = from_wkt(mesh)
     px, py = _coordinates(x, y, crs, x_name="x", y_name="y", crs_name=None)
+    # a missing point-of-interest has no nearest cell (positions spec §4.3)
+    _refuse_missing_poi(px, py, x_name="x", y_name="y")
     poi = (
         # on the globe of the mesh, whose points it is compared with
         to_cartesian(px, py, globe=Globe.from_mesh(mesh) or Globe())[0]
