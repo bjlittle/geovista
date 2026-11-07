@@ -311,7 +311,8 @@ Each test is checked to fail when the behaviour it covers is removed.
 ## 7. Scope
 
 In scope: the test of §4.1, the refusal of an infinite coordinate, and the functions of
-§3.1 as §4.2 to §4.7 describe them.
+§3.1 as §4.2 to §4.7 describe them. In scope too: the width check of `geodesic.wedge`,
+which §8 item 3 records.
 
 Out of scope: everything §4.8 lists.
 
@@ -345,6 +346,15 @@ Each carries the grammar of items spec §3.2.
    one coordinate alone, and that of an angle for a projected CRS. Owed by row 3 of §9, the
    next row to use the test of §4.1.
 
+3. **❓ Open** (🔎 2026-11-07, {pull}`2893` · 🎯 row 6 of §9 · 🎫 {issue}`2894`) — **`geodesic.wedge`
+   builds a bounding-box for two equal longitudes.** It refuses a wedge 180 degrees or more
+   wide, but not one of no width. Its check, `if 0 < delta >= 180`, reads as
+   `0 < delta and delta >= 180`, so `wedge(10, 10)` builds a bounding-box of 132,098 points,
+   though the message of the check asks for a width in the open interval (0, 180). The final
+   review of row 2 found it. The check is older than this specification and has nothing to
+   do with a missing position, and fixing it would refuse calls that build today. Owed by
+   row 6 of §9, added for it, since no other row touches `wedge`.
+
 (positions-spec-9)=
 ## 9. Roadmap
 
@@ -355,10 +365,11 @@ Each carries the grammar of items spec §3.2.
 | 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) | 📋 not started |
 | 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | 📋 not started |
 | 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | 📋 not started |
+| 6 | Wedge width: `geodesic.wedge` refusing a wedge of no width, as the message of its check says (§8 item 3) | 📋 not started |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own, as
 {user}`bjlittle` chose on 2026-11-06. Row 1 brings the test of §4.1, which the others use,
-so rows 2 to 5 each need row 1. {issue}`2849` closes when rows 1 and 2 have landed.
+so rows 2 to 5 each need row 1, and row 6 needs none. {issue}`2849` closes when rows 1 and 2 have landed.
 
 Row 4 changes the mesh built from a NaN coordinate: the faces that use its point are
 dropped, with a warning, where today they are built with a NaN vertex.
