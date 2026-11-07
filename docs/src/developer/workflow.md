@@ -44,7 +44,7 @@ objected to ({pull}`2597`).
 
 Name the options, say what each gives and recommend one. A question nobody
 could answer with confidence today, such as how something will be used a year
-from now, is turned into a choice that can be made now ({pull}`XXXX`).
+from now, is turned into a choice that can be made now ({pull}`2897`).
 
 ### 4. 👥 Start Substantial Work From a Design Specification
 
@@ -194,11 +194,11 @@ request. The maintainer reviews it before it is posted, as with
 
 The pull request that establishes a rule adds it here, never only to an agent's
 memory, so that every session and every contributor sees the same rules
-({pull}`XXXX`).
+({pull}`2897`).
 
 ### 26. 👥 Keep a Rule's Number for Good
 
 A new rule takes the next free number, in whichever section it belongs. A rule
 that no longer holds is retired in place, marked `🗄️`, with the date, the reason
 and what replaced it. It is never deleted or renumbered, so that
-`workflow rule 8` always names the same rule ({pull}`XXXX`).
+`workflow rule 8` always names the same rule ({pull}`2897`).

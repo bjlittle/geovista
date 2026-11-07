@@ -1,0 +1,6 @@
+Added the :ref:`How We Work <gv-developer-workflow>` page to the developer guide.
+It holds the rules ``geovista`` is developed by, for people and AI agents alike,
+and each rule says whether it applies to everyone, to people only or to agents
+only, and where it was agreed. The root ``AGENTS.md`` imports the page, so every
+agent session reads it, and a new repository check keeps each rule numbered for
+good and sourced. (:user:`claude`)
