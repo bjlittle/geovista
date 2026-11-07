@@ -26,7 +26,7 @@ import lazy_loader as lazy
 from .units import _angle, _angle_array, _lonlats
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
 
     import numpy as np
     from numpy.typing import ArrayLike, DTypeLike, NDArray
@@ -838,6 +838,59 @@ def nan_mask(data: ArrayLike) -> np.ndarray:
     return data
 
 
+def _named(names: Sequence[str]) -> str:
+    """Name the coordinates that are missing, with the verb that follows them.
+
+    The phrase completes a refusal of a missing position (positions spec §4.1),
+    such as "'x' is" or "'x' and 'y' are".
+
+    Parameters
+    ----------
+    names : sequence of str
+        The names of the arguments that are missing, one or two of them.
+
+    Returns
+    -------
+    str
+        The names quoted and joined by "and", then "is" for one or "are" for more.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    verb = "is" if len(names) == 1 else "are"
+    return f"{' and '.join(repr(name) for name in names)} {verb}"
+
+
+def _first_true(flags: NDArray[np.bool_]) -> tuple[tuple[int, ...], str]:
+    """Find the first flag that is set, with its index in each dimension.
+
+    A refusal of an infinite value places it by this index (positions spec §4.1).
+
+    Parameters
+    ----------
+    flags : ndarray of bool
+        The flags, of one dimension or more, at least one of which is set.
+
+    Returns
+    -------
+    tuple of int
+        The index of the first flag set, in each dimension, in C order.
+    str
+        The index as text, such as "1" for one dimension or "(1, 1)" for two.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    flat = int(np.flatnonzero(flags)[0])
+    index = tuple(int(i) for i in np.unravel_index(flat, flags.shape))
+    text = str(index[0]) if len(index) == 1 else str(index)
+    return index, text
+
+
 def _missing(values: ArrayLike, *, name: str) -> NDArray[np.bool_]:
     """Find where one coordinate of some positions is missing.
 
@@ -874,11 +927,8 @@ def _missing(values: ArrayLike, *, name: str) -> NDArray[np.bool_]:
 
     if np.any(infinite):
         if filled.ndim:
-            index = int(np.flatnonzero(infinite)[0])
-            emsg = (
-                f"{name!r} cannot be infinite, got {filled.flat[index]} at "
-                f"index {index}."
-            )
+            index, text = _first_true(infinite)
+            emsg = f"{name!r} cannot be infinite, got {filled[index]} at index {text}."
         else:
             emsg = f"{name!r} cannot be infinite, got {float(filled)}."
         raise ValueError(emsg)
@@ -969,16 +1019,65 @@ def _refuse_missing_poi(
 
     """
     named = [
-        repr(name)
+        name
         for name, value in ((x_name, x), (y_name, y))
         if np.any(_missing(value, name=name))
     ]
 
     if named:
-        verb = "is" if len(named) == 1 else "are"
+        emsg = f"The point-of-interest is missing, as {_named(named)} masked or NaN."
+        raise ValueError(emsg)
+
+
+def _refuse_missing_positions(
+    xs: ArrayLike, ys: ArrayLike, *, x_name: str, y_name: str, shape: str
+) -> None:
+    """Refuse a shape with a missing position, counting them and naming each coordinate.
+
+    A shape built from many positions has no meaning with a gap in it, so it is
+    refused before any of it is built (positions spec §4.4). A position is missing
+    when either of its coordinates is masked or NaN, and an infinite coordinate is
+    refused, as positions spec §4.1 decides. Read any ``pint`` quantity first.
+
+    Parameters
+    ----------
+    xs : ArrayLike
+        The first coordinate of the positions, such as their longitudes.
+    ys : ArrayLike
+        The second coordinate of the positions, of the same size as `xs`.
+    x_name : str
+        The name of the argument `xs` was given as, to name it in a message.
+    y_name : str
+        The name of the argument `ys` was given as, to name it in a message.
+    shape : str
+        The shape the positions build, to name it in a message, such as
+        "geodesic line".
+
+    Raises
+    ------
+    ValueError
+        If a position is missing, or a coordinate that is not masked is infinite.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    x_missing = _missing(xs, name=x_name)
+    y_missing = _missing(ys, name=y_name)
+    missing = x_missing | y_missing
+    count = int(np.count_nonzero(missing))
+
+    if count:
+        named = [
+            name
+            for name, flags in ((x_name, x_missing), (y_name, y_missing))
+            if np.any(flags)
+        ]
+        verb = "is" if count == 1 else "are"
         emsg = (
-            f"The point-of-interest is missing, as {' and '.join(named)} {verb} "
-            "masked or NaN."
+            f"A {shape} needs every position given, but {count} of {missing.size} "
+            f"{verb} missing, as {_named(named)} masked or NaN."
         )
         raise ValueError(emsg)
 

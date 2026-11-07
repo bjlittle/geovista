@@ -458,7 +458,7 @@ def _angle(
     Returns
     -------
     float, optional
-        The angle.
+        The angle. A quantity whose magnitude is masked gives NaN.
 
     Raises
     ------
@@ -475,7 +475,9 @@ def _angle(
     quantity = isinstance(value, _Quantity)
     if not quantity:
         return cast("float | None", value)
-    return float(_read_angle(name, cast("Quantity", value), radians=radians))
+    angle = _read_angle(name, cast("Quantity", value), radians=radians)
+    # float() of a masked angle warns, so it is read as NaN first
+    return float(np.ma.filled(angle, np.nan))
 
 
 def _angle_array(

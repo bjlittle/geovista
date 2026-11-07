@@ -9,11 +9,14 @@ from __future__ import annotations
 
 import cartopy.crs as ccrs
 import numpy as np
+import pint
 import pytest
 
 import geovista as gv
 from geovista.geoplotter import GeoPlotter
 from geovista.globe import Globe
+
+UREG = pint.UnitRegistry()
 
 
 def test_no_poi_warning():
@@ -113,8 +116,9 @@ def test_refuses_missing(lam_uk, x, y, named):
         ({"x": np.ma.masked}, "'x'"),
         ({"x": np.nan}, "'x'"),
         ({"y": np.nan}, "'y'"),
+        ({"y": UREG.Quantity(np.nan, "degree")}, "'y'"),
     ],
-    ids=["x-masked", "x-nan", "y-nan"],
+    ids=["x-masked", "x-nan", "y-nan", "y-nan-quantity"],
 )
 def test_one_coordinate_given_missing(lam_uk, given, named):
     """Test a missing coordinate given alone is refused, naming it alone.

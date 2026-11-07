@@ -32,6 +32,7 @@ from .common import (
     GV_FIELD_RADIUS,
     GV_POINT_HEIGHT,
     RADIUS,
+    _first_true,
     _retired,
     _to_cartesian,
 )
@@ -742,10 +743,9 @@ def _heights(
 
     if np.any(infinite):
         if values.ndim:
-            index = int(np.flatnonzero(infinite)[0])
+            index, text = _first_true(infinite)
             emsg = (
-                f"A {keyword} cannot be infinite, got {values.flat[index]} at "
-                f"index {index}."
+                f"A {keyword} cannot be infinite, got {values[index]} at index {text}."
             )
         else:
             emsg = f"A {keyword} cannot be infinite, got {float(values)}."

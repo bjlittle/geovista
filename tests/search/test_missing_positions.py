@@ -142,6 +142,41 @@ def test_a_grid_of_points(lam_uk):
             assert indices[i] == alone_indices[0]
 
 
+def test_a_zlevel_that_broadcasts(lam_uk):
+    """Test a missing point broadcast against a zlevel has no neighbour at any level.
+
+    Holds positions spec §2 decision 3.
+
+    """
+    kdtree = KDTree(lam_uk)
+    lons = np.ma.masked_array(LONS, mask=SECOND)
+    zlevels = [0.0, 1.0]
+    distances, indices = kdtree.query(lons, LATS, zlevel=np.array([[0.0], [1.0]]))
+
+    assert distances.shape == (6,)
+    for row in (1, 4):
+        no_neighbour(kdtree, distances[row], indices[row])
+
+    for row in (0, 2, 3, 5):
+        alone_distances, alone_indices = kdtree.query(
+            LONS[row % 3], LATS[row % 3], zlevel=zlevels[row // 3]
+        )
+        assert distances[row] == alone_distances[0]
+        assert indices[row] == alone_indices[0]
+
+
+def test_a_nan_zlevel_is_not_missing(lam_uk):
+    """Test a NaN zlevel makes no point missing, so none answers as one.
+
+    Holds positions spec §2 decision 1.
+
+    """
+    kdtree = KDTree(lam_uk)
+    distances, indices = kdtree.query(LONS, LATS, zlevel=np.nan)
+    assert not np.any(indices == kdtree.n_points)
+    assert not np.any(np.isinf(distances))
+
+
 def test_a_masked_quantity(lam_uk):
     """Test a quantity of a masked array answers as the masked array does.
 
