@@ -1,0 +1,9 @@
+Fixed :func:`geovista.geodesic.line` building a line almost all of NaN points for
+a masked or NaN position, or raising a ``TypeError`` that named no argument, and
+:class:`geovista.geodesic.BBox` and :func:`geovista.geodesic.wedge` building a
+box around a masked or NaN corner. All three now refuse a position whose
+longitude or latitude is masked or NaN, naming the argument and counting the
+missing positions, and refuse an infinite coordinate. When an infinite coordinate
+or height sits in an array of more than one dimension, the refusal now gives its
+index in each dimension, such as ``(1, 1)``. This lands row 2 of positions spec §9.
+(:user:`claude`)

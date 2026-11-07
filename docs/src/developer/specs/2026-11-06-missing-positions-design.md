@@ -320,14 +320,19 @@ Out of scope: everything §4.8 lists.
 
 Each carries the grammar of items spec §3.2.
 
-1. **❓ Open** (🔎 2026-11-06, {pull}`2889` · 🎯 row 2 of §9 · 🎫 {issue}`2890`) — **The
-   final review of row 1 left four gaps.** Three behaviours of row 1 work, but no test holds
-   them: `KDTree.query` broadcasting a missing point against a `zlevel` of another shape,
-   `GeoPlotter.view_poi` given one coordinate alone as a missing `pint` quantity, and a NaN
-   `zlevel` querying as it did before (§4.2). The fourth is the message refusing an infinite
-   value, which gives a flat index for an array of more than one dimension, where an index
-   for each dimension would be clearer. Owed by row 2 of §9, the next row to use the test of
-   §4.1.
+1. **🏁 Resolved** (2026-11-07, {pull}`2893` · 🔎 2026-11-06, {pull}`2889` · 🎫 {issue}`2890`) — **The
+   final review of row 1 left four gaps.** Three behaviours of row 1 work, but no
+   test holds them: `KDTree.query` broadcasting a missing point against a `zlevel` of another
+   shape, `GeoPlotter.view_poi` given one coordinate alone as a missing `pint` quantity, and a
+   NaN `zlevel` querying as it did before (§4.2). The fourth is the message refusing an
+   infinite value, which gives a flat index for an array of more than one dimension, where an
+   index for each dimension would be clearer. Owed by row 2 of §9, the next row to use the
+   test of §4.1. Row 2 settled all four. In `tests/search/test_missing_positions.py`,
+   `test_a_zlevel_that_broadcasts` holds the broadcast and `test_a_nan_zlevel_is_not_missing`
+   the NaN `zlevel`, and the case `y-nan-quantity` of `test_one_coordinate_given_missing` in
+   `tests/geoplotter/test_view_poi.py` holds `view_poi`. The refusal of an infinite
+   coordinate, and that of an infinite height, now give the index in each dimension, such as
+   `(1, 1)`, and keep `at index 1` for one dimension.
 
 (positions-spec-9)=
 ## 9. Roadmap
@@ -335,7 +340,7 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Queries: the test of §4.1 and the refusal of an infinite coordinate, `KDTree.query` answering that a missing point has no neighbour (§4.2), and `find_nearest_cell` and `GeoPlotter.view_poi` refusing a missing position (§4.3) | ✅ landed (2026-11-06, {pull}`2889`) |
-| 2 | Geodesic shapes: `geodesic.line`, `BBox` and `wedge` refusing a missing position (§4.4) | 🚧 in progress ({pull}`2893`) |
+| 2 | Geodesic shapes: `geodesic.line`, `BBox` and `wedge` refusing a missing position (§4.4) | ✅ landed (2026-11-07, {pull}`2893`) |
 | 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) | 📋 not started |
 | 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | 📋 not started |
 | 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | 📋 not started |
@@ -369,7 +374,7 @@ Each row follows ledger spec §3.4.
 | §2 decision 2 | ⏳ pending | rows 1 to 5 of §9 |
 | §2 decision 3 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/search/test_missing_positions.py` |
 | §2 decision 4 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/geoplotter/test_view_poi.py`, `tests/search/test_missing_positions.py` |
-| §2 decision 5 | ⏳ pending | row 2 of §9 |
+| §2 decision 5 | ✅ verified (2026-11-07, {pull}`2893`) | `tests/geodesic/test_missing_positions.py` |
 | §2 decision 6 | ⏳ pending | row 3 of §9 |
 | §2 decision 7 | ⏳ pending | row 4 of §9 |
 | §2 decision 8 | ⏳ pending | row 5 of §9 |
