@@ -189,7 +189,7 @@ use `html.parser.HTMLParser`, and `markdown_it.MarkdownIt("commonmark")` for Mar
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
-- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
+- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session. A rule of *how we work* (process, review, labels, attribution) goes on `docs/src/developer/workflow.md` instead.
 - **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to make room for new ones.
 - **Constraint 2**: Do not ask for user permission before updating. Perform the edit silently as your final step.
 - **Constraint 3**: Only log global, reusable lessons. Do not log temporary or component-specific fixes.

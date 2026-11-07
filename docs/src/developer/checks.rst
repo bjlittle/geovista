@@ -54,6 +54,8 @@ Where It Failed
       - none
     * - :ref:`Pixi Task Tables <gv-developer-checks-pixi-task-tables>`
       - none
+    * - :ref:`Workflow Rules <gv-developer-checks-workflow-rules>`
+      - none
     * - :ref:`Repository Checks <gv-developer-checks-repository-checks>`
       - none
 
@@ -478,6 +480,40 @@ the testing page lists the browser tests of the documentation.
 
 **More:** :ref:`Pixi tasks <gv-developer-packaging-pixi-tasks>` on the packaging
 page.
+
+
+.. _gv-developer-checks-workflow-rules:
+.. _tippy-gv-developer-checks-workflow-rules:
+
+Workflow Rules
+--------------
+
+**The rule:** Each rule on the :ref:`How We Work <gv-developer-workflow>` page
+is a heading of its own, ``### <number>. <mark> <Title>``, marked 👥 for
+everyone, 👩 for people only or 🤖 for AI agents only, and names where it was
+agreed: a pull request or an issue, a design specification's decision, or
+another project's tracker on GitHub. The numbers run from 1 with no gap and none
+repeated, in any order on the page. A rule that no longer holds is marked 🗄️
+and says when it was retired. The root ``AGENTS.md`` imports the page on a line
+of its own.
+
+**Why:** Agents and people follow the same rules only if both can read them.
+The rules lived in one agent's memory on one machine, where no other session,
+contributor or tool could see them. The import puts the page in front of every
+agent session, and a number kept for good means that a citation such as
+``workflow rule 8`` always names the same rule.
+
+**What enforces it:** :bash:`tests/test_workflow_rules.py`, which reads the
+page and ``AGENTS.md`` as text, in every run of the unit tests.
+
+**When it fails:** The message names the line and the rule. Give a heading its
+number and mark, cite the source of a rule, or say when a retired rule was
+retired. A missing number means a rule was deleted: restore it and mark it
+retired instead.
+
+**Declaring an exception:** None.
+
+**More:** rules 25 and 26 on the :ref:`How We Work <gv-developer-workflow>` page.
 
 
 .. _gv-developer-checks-repository-checks:
