@@ -488,32 +488,34 @@ page.
 Workflow Rules
 --------------
 
-**The rule:** Each rule on the :ref:`How We Work <gv-developer-workflow>` page
-is a heading of its own, ``### <number>. <mark> <Title>``, marked 👥 for
-everyone, 👩 for people only or 🤖 for AI agents only, and names where it was
-agreed: a pull request or an issue, a design specification's decision, or
-another project's tracker on GitHub. The numbers run from 1 with no gap and none
-repeated, in any order on the page. A rule that no longer holds is marked 🗄️
-and says when it was retired. The root ``AGENTS.md`` imports the page on a line
-of its own.
+**The rule:** The :ref:`How We Work <gv-developer-workflow>` page numbers its
+sections in order, as ``## 2. Title``, and each rule within its section, as
+``### 2.4 👥 Title``, marked 👥 for everyone, 👩 for people only or 🤖 for AI
+agents only. Each rule opens with its status: ``🤝 Agreed`` with the date, who
+agreed it and the pull request or issue where, or ``🗄️ Retired`` with the same
+for its retirement and then when and where it was agreed. The root
+``AGENTS.md`` imports the page on a line of its own.
 
 **Why:** Agents and people follow the same rules only if both can read them.
 The rules lived in one agent's memory on one machine, where no other session,
 contributor or tool could see them. The import puts the page in front of every
-agent session, and a number kept for good means that a citation such as
-``workflow rule 8`` always names the same rule.
+agent session, and a status on every rule says where to look for why it holds.
 
-**What enforces it:** :bash:`tests/test_workflow_rules.py`, which reads the
-page and ``AGENTS.md`` as text, in every run of the unit tests.
+**What enforces it:** :bash:`tests/test_workflow_rules.py`, which reads the page
+and ``AGENTS.md`` as text, in every run of the unit tests. The page's reader is
+:bash:`.github/scripts/workflow_rules.py`, which the
+:ref:`renumber guard <gv-developer-checks-spec-renumbering>` shares, to hold each
+rule to its number from one revision to the next.
 
 **When it fails:** The message names the line and the rule. Give a heading its
-number and mark, cite the source of a rule, or say when a retired rule was
-retired. A missing number means a rule was deleted: restore it and mark it
-retired instead.
+number and mark, or a rule its status. A rule numbered out of order was added
+in the wrong place, or one before it was deleted or moved: a new rule goes at
+the end of its section, and one that no longer holds is retired in place.
 
 **Declaring an exception:** None.
 
-**More:** rules 25 and 26 on the :ref:`How We Work <gv-developer-workflow>` page.
+**More:** workflow rules 7.1 and 7.2 on the
+:ref:`How We Work <gv-developer-workflow>` page.
 
 
 .. _gv-developer-checks-repository-checks:
@@ -663,7 +665,10 @@ roadmap row.
 after it takes a new number, so a citation written against the old one still
 resolves, to whatever that number names now, and every other check passes. Items
 and rows are cited by number too, as ``§8 item 9`` and ``row 5 of §10`` are, so
-they are only ever appended.
+they are only ever appended. So are the rules of the
+:ref:`How We Work <gv-developer-workflow>` page, cited as ``workflow rule 2.4``:
+each rule on the base branch keeps its number, its agreement and a title like
+the one it had, and a retired rule stays retired.
 
 **What enforces it:** :bash:`.github/scripts/check_renumbering.py`, which
 ``ci-citations.yml`` runs on every pull request. It pairs each section of a

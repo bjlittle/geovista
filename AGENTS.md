@@ -8,7 +8,7 @@ GeoVista is a cartographic rendering and mesh analytics library powered by PyVis
 
 @docs/src/developer/workflow.md
 
-Follow its 👥 and 🤖 rules, never act on a 👩 one, and add a new workflow rule there (rule 25).
+Follow its 👥 and 🤖 rules, never act on a 👩 one, and add a new workflow rule there (rule 7.1).
 
 ## Architecture
 
@@ -170,7 +170,7 @@ Every Python file must begin with this header, and include `from __future__ impo
 - **Versioning**: `setuptools-scm` (no manual version file edits)
 - **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run -e docs python .github/scripts/changelog.py <PR> "changelog/a.rst,changelog/b.rst"` — the fragments are one **comma-separated** argument of repo-relative paths, and either space-separating them or dropping the `changelog/` prefix raises a bare `FileNotFoundError` on the concatenation. ⚠️ The docs render unreleased fragments on the changelog page, so a fragment's cross-reference must resolve: cite the documented path (`geovista.globe.Globe`, never the re-export `geovista.Globe`), and rerun the strict docs build after writing one (#2761).
 - **`agentic` label**: `ci-label.yml` adds it only for `agent*`/`ai*` branches, never the
-  `docs/`, `deps/`, `tests/` prefixes used here, so pass `--label agentic` (workflow rule 15).
+  `docs/`, `deps/`, `tests/` prefixes used here, so pass `--label agentic` (workflow rule 4.1).
 - **Python support**: SPEC 0 — drop a minor version three years after its release.
   Ten places declare it, so bump the classifiers, let `tests/test_python_support.py`
   name the rest, then `pixi lock` and re-run the `ci-locks.yml` exports. ⚠️ The

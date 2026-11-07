@@ -2034,3 +2034,46 @@ def test_a_lettered_row_moved_up_by_a_removal_is_told_to_keep_the_removed_row(gu
         "is now row 6b: a row before it was removed, so keep that row in place, "
         "marked as no longer applying"
     )
+
+
+#: The workflow page, whose rules keep their numbers for good.
+WORKFLOW = "docs/src/developer/workflow.md"
+#: A workflow page of two rules in one section.
+RULES = (
+    "# How We Work\n\n## 1. First\n\n"
+    "### 1.1 👥 Kept\n\n🤝 Agreed (2026-11-01, {user}`a`, {pull}`1`)\n\nText.\n\n"
+    "### 1.2 👥 Dropped\n\n🤝 Agreed (2026-11-02, {user}`a`, {pull}`2`)\n\nText.\n"
+)
+
+
+@pytest.fixture
+def ruled(repo) -> Path:
+    """Provide the repository with the workflow page on main, and work from it."""
+    git(repo, "switch", "--quiet", "main")
+    commit(repo, {WORKFLOW: RULES}, "rules")
+    git(repo, "switch", "--quiet", "--force-create", "work")
+    return repo
+
+
+def test_a_workflow_rule_deleted_fails(guard, ruled, capsys):
+    """A rule of the workflow page is never deleted (workflow rule 7.2)."""
+    commit(ruled, {WORKFLOW: RULES.split("### 1.2", maxsplit=1)[0]}, "drop")
+
+    code, out = run(guard, ruled, capsys=capsys)
+
+    assert code == 1
+    assert f"{WORKFLOW}: rule 1.2, 'Dropped', was removed." in out
+    assert "gv-developer-checks-spec-renumbering" in out
+
+
+def test_a_workflow_rule_retired_in_place_passes(guard, ruled, capsys):
+    """A rule retired in place, and a rule added after it, keep every number."""
+    retired = RULES.replace(
+        "🤝 Agreed (2026-11-02, {user}`a`, {pull}`2`)",
+        "🗄️ Retired (2026-11-09, {user}`a`, {pull}`3`; agreed 2026-11-02, "
+        "{pull}`2`). Replaced by workflow rule 1.3.",
+    )
+    added = "\n### 1.3 👥 New\n\n🤝 Agreed (2026-11-09, {user}`a`, {pull}`3`)\n"
+    commit(ruled, {WORKFLOW: retired + added}, "retire")
+
+    assert run(guard, ruled, capsys=capsys)[0] == 0
