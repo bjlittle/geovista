@@ -318,7 +318,16 @@ Out of scope: everything §4.8 lists.
 (positions-spec-8)=
 ## 8. Open Items
 
-Each carries the grammar of items spec §3.2. None is open today.
+Each carries the grammar of items spec §3.2.
+
+1. **❓ Open** (🔎 2026-11-06, {pull}`2889` · 🎯 row 2 of §9 · 🎫 {issue}`2890`) — **The
+   final review of row 1 left four gaps.** Three behaviours of row 1 work, but no test holds
+   them: `KDTree.query` broadcasting a missing point against a `zlevel` of another shape,
+   `GeoPlotter.view_poi` given one coordinate alone as a missing `pint` quantity, and a NaN
+   `zlevel` querying as it did before (§4.2). The fourth is the message refusing an infinite
+   value, which gives a flat index for an array of more than one dimension, where an index
+   for each dimension would be clearer. Owed by row 2 of §9, the next row to use the test of
+   §4.1.
 
 (positions-spec-9)=
 ## 9. Roadmap
