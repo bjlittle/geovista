@@ -23,6 +23,7 @@ from .common import (
     GV_MANIFOLD_CELL_IDS,
     ZLEVEL_SCALE,
     StrEnumPlus,
+    _refuse_missing_positions,
     _to_cartesian,
     distance,
     wrap,
@@ -204,6 +205,14 @@ class BBox:  # numpydoc ignore=PR01
             Specify whether the bounding-box faces are triangulated. Defaults to
             ``False``.
 
+        Raises
+        ------
+        ValueError
+            If `xs` and `ys` give different numbers of values, or fewer than 4 or
+            more than 5. Also if a corner is missing, because its x or y value is
+            masked or NaN, or if a value is infinite. The bounding-box is refused
+            before any of it is built.
+
         Notes
         -----
         .. versionadded:: 0.1.0
@@ -231,6 +240,11 @@ class BBox:  # numpydoc ignore=PR01
                 f"got {nx}."
             )
             raise ValueError(emsg)
+
+        # refuse a missing corner before the closing check reads it
+        _refuse_missing_positions(
+            xs, ys, x_name="xs", y_name="ys", shape="bounding-box"
+        )
 
         # ensure the specified bbox geometry is open
         if nx == 5:
@@ -1113,6 +1127,14 @@ def line(
     PolyData
         The geodesic line.
 
+    Raises
+    ------
+    ValueError
+        If `lons` and `lats` give different numbers of values, or fewer than 2, or
+        just 2 at the same point. Also if a position is missing, because its
+        longitude or latitude is masked or NaN, or if a value is infinite. The line
+        is refused before any geodesic is computed.
+
     Notes
     -----
     .. versionadded:: 0.1.0
@@ -1176,6 +1198,11 @@ def line(
             f"values, got '{n_lons}'."
         )
         raise ValueError(emsg)
+
+    # refuse a missing position before any geodesic is computed
+    _refuse_missing_positions(
+        lons, lats, x_name="lons", y_name="lats", shape="geodesic line"
+    )
 
     lons = wrap(lons)
 
