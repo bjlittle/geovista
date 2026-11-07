@@ -1563,8 +1563,8 @@ def wedge(
     Raises
     ------
     ValueError
-        If `lon1` or `lon2` is masked or NaN, or infinite, or the wedge they give is
-        not between 0 and 180 degrees wide.
+        If `lon1` or `lon2` is masked or NaN, or infinite, or they are 180 degrees or
+        more apart.
 
     Notes
     -----

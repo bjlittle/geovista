@@ -334,6 +334,17 @@ Each carries the grammar of items spec §3.2.
    coordinate, and that of an infinite height, now give the index in each dimension, such as
    `(1, 1)`, and keep `at index 1` for one dimension.
 
+2. **❓ Open** (🔎 2026-11-07, {pull}`2893` · 🎯 row 3 of §9 · 🎫 {issue}`2895`) — **The
+   final review of row 2 left four minor points.** `geodesic.wedge` given `None` for a
+   longitude says it is masked or NaN, where it raised a `TypeError`, since the test of §4.1
+   reads `None` as NaN. `units._angle` reads a masked quantity as NaN, with no NumPy warning,
+   for every caller, so row 5 cannot count on that warning to flag a masked angle given to
+   `npoints`. `_refuse_missing_positions` given two coordinates of one size but different
+   shapes raises NumPy's broadcast message, which a grid of positions would meet. And the
+   Raises sections of `line` and `BBox` leave out the refusal of a `pint` quantity given for
+   one coordinate alone, and that of an angle for a projected CRS. Owed by row 3 of §9, the
+   next row to use the test of §4.1.
+
 (positions-spec-9)=
 ## 9. Roadmap
 
