@@ -387,7 +387,8 @@ def _read_angle(
     places is taken as that number, so that a whole number of degrees given in
     radians reads as that number. The conversion leaves 30 degrees in radians as
     29.999999999999996 degrees, which would draw an extra line of a graticule, or
-    label one a degree down. The snap moves a position by a micrometre at most.
+    label one a degree down. The snap moves a position by a micrometre at most,
+    and never moves an infinite or NaN value.
 
     Parameters
     ----------
@@ -420,7 +421,10 @@ def _read_angle(
         raise ValueError(emsg) from err
 
     snapped = np.round(degrees, _GRID)
-    degrees = np.where(np.abs(degrees - snapped) <= _SNAP, snapped, degrees)
+    # an infinite value less itself is NaN, which warns, and is never near
+    with np.errstate(invalid="ignore"):
+        near = np.abs(degrees - snapped) <= _SNAP
+    degrees = np.where(near, snapped, degrees)
     result: NDArray[np.float64] = np.radians(degrees) if radians else degrees
     return _masked(float(result) if result.ndim == 0 else result, value)
 

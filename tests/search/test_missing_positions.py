@@ -184,6 +184,26 @@ def test_infinite_refused(lam_uk, name):
         KDTree(lam_uk).query(coordinates["lons"], coordinates["lats"])
 
 
+@pytest.mark.parametrize("unit", ["degree", "radian"])
+@pytest.mark.parametrize("sign", [1, -1], ids=["+inf", "-inf"])
+@pytest.mark.parametrize("name", ["lons", "lats"])
+def test_an_infinite_quantity_refused(lam_uk, name, sign, unit):
+    """Test an infinite quantity is refused, naming it, and raises no warning.
+
+    Holds positions spec §2 decision 2.
+
+    """
+    coordinates = {"lons": np.radians(LONS), "lats": np.radians(LATS)}
+    if unit == "degree":
+        coordinates = {"lons": np.array(LONS), "lats": np.array(LATS)}
+    coordinates[name][1] = sign * np.inf
+    with pytest.raises(ValueError, match=rf"'{name}' cannot be infinite"):
+        KDTree(lam_uk).query(
+            UREG.Quantity(coordinates["lons"], unit),
+            UREG.Quantity(coordinates["lats"], unit),
+        )
+
+
 #: A point-of-interest made missing in its first, second or both coordinates.
 MISSING_POI = pytest.mark.parametrize(
     ("x", "y", "named"),
@@ -241,3 +261,15 @@ def test_find_nearest_cell_refuses_infinite(lam_uk):
     """
     with pytest.raises(ValueError, match=r"'x' cannot be infinite"):
         find_nearest_cell(lam_uk, np.inf, 52.0)
+
+
+def test_find_nearest_cell_refuses_an_infinite_quantity(lam_uk):
+    """Test an infinite quantity of a point-of-interest is refused, naming it.
+
+    Holds positions spec §2 decision 2.
+
+    """
+    x = UREG.Quantity(-np.inf, "degree")
+    y = UREG.Quantity(52.0, "degree")
+    with pytest.raises(ValueError, match=r"'x' cannot be infinite"):
+        find_nearest_cell(lam_uk, x, y)
