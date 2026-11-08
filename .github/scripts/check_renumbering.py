@@ -22,6 +22,12 @@ a step of a procedure, is held so only once something cites it (#2806), on the
 base branch or now. A citation of an item or a row names its section as well, and
 goes stale with it.
 
+The rules of the workflow page, "How We Work", are cited by number too, as
+``workflow rule 2.4``, so each rule on the base branch is held to its number: one
+that goes, or whose number comes to name a rule agreed elsewhere, fails, and one
+retired stays retired. The page's reader is "workflow_rules.py", shared with the
+check of its form (workflow rule 7.2).
+
 The citations are read with the grammar of "docs/src/_ext/geovista_citations.py",
 which the conventions test and the documentation build share.
 
@@ -76,6 +82,9 @@ grammar = _load(
 
 #: The link a finding ends with, to this check's section.
 breadcrumb = _load(Path(__file__).parent / "breadcrumb.py", "breadcrumb")
+
+#: The reader of the workflow page, shared with the check of its form.
+workflow = _load(Path(__file__).parent / "workflow_rules.py", "workflow_rules")
 
 
 @dataclass(frozen=True)
@@ -1477,6 +1486,14 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
                 problems += [
                     f"{current.relative_to(root).as_posix()}: {problem}"
                     for problem in frozen(before, after, anchors, based)
+                ]
+            # a rule of the workflow page keeps its number for good
+            if (before := at(root, branched, workflow.PAGE)) is not None:
+                page = root / workflow.PAGE
+                after = page.read_text(encoding="utf-8") if page.is_file() else ""
+                problems += [
+                    f"{workflow.PAGE.as_posix()}: {problem}"
+                    for problem in workflow.held(before, after)
                 ]
             scope = f"the specifications changed since {args.base}"
         if args.fix:

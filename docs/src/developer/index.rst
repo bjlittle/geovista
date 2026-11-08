@@ -51,6 +51,17 @@ clarify the various steps involved in how to contribute to ``geovista``.
 
         Author & build guidelines.
 
+    .. grid-item-card:: How We Work
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: gv-developer-workflow
+        :link-type: ref
+        :img-top: ../_static/images/icons/contributing.svg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
+
+        The rules for people and agents.
+
     .. grid-item-card:: Packaging
         :class-title: custom-title
         :class-body: custom-body
@@ -107,3 +118,4 @@ clarify the various steps involved in how to contribute to ``geovista``.
     checks
     codecraft
     specs/index
+    workflow

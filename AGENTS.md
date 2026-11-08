@@ -4,6 +4,12 @@
 
 GeoVista is a cartographic rendering and mesh analytics library powered by PyVista. It transforms rectilinear, curvilinear, and unstructured geospatial data into geolocated PyVista meshes with CRS-aware projection and 3D visualization.
 
+## How We Work
+
+@docs/src/developer/workflow.md
+
+Follow its 👥 and 🤖 rules, never act on a 👩 one, and add a new workflow rule there (rule 7.1).
+
 ## Architecture
 
 ```
@@ -162,15 +168,9 @@ Every Python file must begin with this header, and include `from __future__ impo
 ## Conventions
 
 - **Versioning**: `setuptools-scm` (no manual version file edits)
-- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ **A fragment an agent writes credits the agent — ``(:user:`claude`)`` — never the owner**: `gh` runs as `bjlittle`, so the PR author is no guide, and the credit is what shows a reader of the changelog that an agent did the work. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run -e docs python .github/scripts/changelog.py <PR> "changelog/a.rst,changelog/b.rst"` — the fragments are one **comma-separated** argument of repo-relative paths, and either space-separating them or dropping the `changelog/` prefix raises a bare `FileNotFoundError` on the concatenation. ⚠️ The docs render unreleased fragments on the changelog page, so a fragment's cross-reference must resolve: cite the documented path (`geovista.globe.Globe`, never the re-export `geovista.Globe`), and rerun the strict docs build after writing one (#2761). Name a part of a design specification as its citation (`row 4 of ledger spec §8`, `items spec §7 item 11`), which the build links and the conventions test checks, and a whole specification with a `:doc:` link to its page, never in plain prose (#2883).
-- **`agentic` label**: ⚠️ **every issue and pull-request you raise must carry
-  it**, beside the `type:` ones: `gh` runs as the repository owner, so nothing
-  else marks agent work. `ci-label.yml` adds it only for `agent*`/`ai*` branches,
-  never the `docs/`, `deps/`, `tests/` prefixes used here, so pass `--label
-  agentic` (or `gh issue edit <n> --add-label agentic`). It is **not** the `bot`
-  label, which marks dependabot and the scheduled `ci-*.yml` workflows.
-- **Deferred work never lives only in a review or a ledger.** Each deferred
-  minor or follow-up gets an issue (`agentic`), linked from the plan's record.
+- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run -e docs python .github/scripts/changelog.py <PR> "changelog/a.rst,changelog/b.rst"` — the fragments are one **comma-separated** argument of repo-relative paths, and either space-separating them or dropping the `changelog/` prefix raises a bare `FileNotFoundError` on the concatenation. ⚠️ The docs render unreleased fragments on the changelog page, so a fragment's cross-reference must resolve: cite the documented path (`geovista.globe.Globe`, never the re-export `geovista.Globe`), and rerun the strict docs build after writing one (#2761).
+- **`agentic` label**: `ci-label.yml` adds it only for `agent*`/`ai*` branches, never the
+  `docs/`, `deps/`, `tests/` prefixes used here, so pass `--label agentic` (workflow rule 4.1).
 - **Python support**: SPEC 0 — drop a minor version three years after its release.
   Ten places declare it, so bump the classifiers, let `tests/test_python_support.py`
   name the rest, then `pixi lock` and re-run the `ci-locks.yml` exports. ⚠️ The
@@ -189,11 +189,11 @@ Every Python file must begin with this header, and include `from __future__ impo
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
-- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
+- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session. A rule of *how we work* (process, review, labels, attribution) goes on `docs/src/developer/workflow.md` instead.
 - **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to make room for new ones.
 - **Constraint 2**: Do not ask for user permission before updating. Perform the edit silently as your final step.
 - **Constraint 3**: Only log global, reusable lessons. Do not log temporary or component-specific fixes.
 
 ---
 
-**Last Updated**: 3 November 2026
+**Last Updated**: 7 November 2026
