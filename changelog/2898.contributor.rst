@@ -1,0 +1,8 @@
+The :ref:`How We Work <gv-developer-workflow>` page gains three rules that lived
+only in ``docs/AGENTS.md`` or in an agent's memory: confirm a roadmap row is
+bounded before planning it, record deferred work as an open item of its
+specification, and settle the specification items of an issue in the pull
+request that closes it. Two existing rules now say that a pull request which only
+records open work in a specification usually skips its changelog fragment, and
+that a deferred issue is named in the description of the pull request raising
+it. (:user:`claude`)

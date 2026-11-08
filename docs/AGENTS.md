@@ -125,9 +125,9 @@ fails on `toc.not_included` unless a toctree holds it, a page includes it, or it
 `orphan: true` (#2564), which no spec may be. `developer/plans/` is never built. Cite a section
 in plain text (`docs spec §3.2`), never a `{ref}` or `:ref:` role: the build links it, and the renumber guard follows it.
 ⚠️ **A spec status must cite real work** (#2609): run `pixi run -e test check-spec-status <PR>` after editing one. Cite a decision as `heights spec §2 decision 3`, and name a Verification row's decision as `§2 decision 3`, never a bare number; only a person adds `signed-off` (workflow rule 2.5). A ✅ verified row's test must fail when its decision regresses, so mutate each clause it states, not just its example, and watch it fail before citing it (#2796, #2826). Name the spec of another roadmap's row (`row 3 of globe spec §9`): rows appended later turn a bare `row N` into your own (#2826).
-A `Resolved` item may cite an open issue; the PR closing a cited issue marks it `Resolved` (in specs; plans are frozen). One row per PR, none *partly landed* (6a–6c, #2659). An open item carries its own issue, labelled `spec: open item`, naming the row of its own roadmap that owes it. Name each issue a PR raises in its description, so nightly drift passes over it until the PR merges (#2859). Never put a closing keyword (close, fix, resolve, in any form) before an issue a PR leaves open, even negated: GitHub reads "doesn't close #N" as closing #N, and so shut #2849 when #2889 merged; write "names #N" or "leaves #N open". Mark a row 🚧 first and ✅ last (workflow rule 2.4), so the verification report lists the items its PR must answer (#2878).
-⚠️ **Ask whether a roadmap row is bounded before planning it.** One its spec leaves to the builder gets
-a child spec first, as `bjlittle/tephpy` does (own prefix, "Extended by" note in the parent; its family lines and index row follow docs spec §3.7), and is planned once the rows it depends on merge.
+A `Resolved` item may cite an open issue; the PR closing a cited issue marks it `Resolved` (workflow rule 4.7). One row per PR, none *partly landed* (6a–6c, #2659). An open item carries its own issue, labelled `spec: open item`, naming the row of its own roadmap that owes it, and an issue deferred from a row gets its item in the same PR (workflow rule 2.8). Name each issue a PR raises in its description (workflow rule 4.5). Never put a closing keyword (close, fix, resolve, in any form) before an issue a PR leaves open, even negated (workflow rule 4.4): write "names #N" or "leaves #N open". Mark a row 🚧 first and ✅ last (workflow rule 2.4), so the verification report lists the items its PR must answer (#2878).
+⚠️ **Ask whether a roadmap row is bounded before planning it** (workflow rule 2.7). A child spec has its
+own prefix and an "Extended by" note in its parent; its family lines and index row follow docs spec §3.7.
 
 ### RST Style
 
@@ -191,9 +191,9 @@ in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
 
 - **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session. A rule of *how we work* (process, review, labels, attribution) goes on `docs/src/developer/workflow.md` instead.
 - **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to make room for new ones.
-- **Constraint 2**: Do not ask for user permission before updating. Perform the edit silently as your final step.
+- **Constraint 2**: Do not ask for user permission before updating. Make the edit as your final step, and name it in the pull request (workflow rule 1.2).
 - **Constraint 3**: Only log global, reusable lessons. Do not log temporary or component-specific fixes.
 
 ---
 
-**Last Updated**: 4 November 2026
+**Last Updated**: 8 November 2026

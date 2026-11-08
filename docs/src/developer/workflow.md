@@ -118,6 +118,27 @@ A `✅ verified` decision's test must fail when the decision regresses. Break
 each clause the decision states, not just its example, and watch the test fail
 before citing it as evidence.
 
+### 2.7 👥 Confirm a Roadmap Row Is Bounded Before Planning It
+
+🤝 Agreed (2026-10-26, {user}`bjlittle`, {pull}`2721`)
+
+Before a plan is written for a roadmap row, confirm with the maintainer that its
+specification fixes how the row behaves. A row that leaves design choices to the
+builder gets a child specification first, as `bjlittle/tephpy` does, and is
+planned once the rows it depends on have merged. Otherwise the plan makes those
+choices inside its tasks, where nobody reviews them as design.
+
+### 2.8 👥 Record Deferred Work as an Open Item of Its Specification
+
+🤝 Agreed (2026-11-08, {user}`bjlittle`, {pull}`2898`)
+
+An issue raised for work that a specification's row defers, such as a minor
+point of its review or an older defect found on the way, becomes an open item of
+that specification in the same pull request. The issue is labelled
+`spec: open item`, and the item is owed by a row that has not landed. When no
+row fits, the pull request adds one (items spec §3.4). {issue}`2894` was raised
+without its item, and {pull}`2896` added it afterwards.
+
 ## 3. Writing
 
 ### 3.1 🤖 Humanize Prose Before It Is Published
@@ -177,8 +198,10 @@ maintainer's handle.
 
 A pull request carries a fragment unless it is labelled `skip-changelog`. A
 change to the README alone usually skips it, unless its cause is upstream and
-would be news to readers elsewhere. An agent offers that choice, and does not
-make it silently.
+would be news to readers elsewhere. So does a pull request that only records
+open work in a specification, as {pull}`2892` and {pull}`2896` did, since
+nothing it records has shipped. An agent offers that choice, and does not make
+it silently.
 
 ### 4.4 👥 Close an Issue Only From the Pull Request That Fixes It
 
@@ -193,8 +216,10 @@ negated: GitHub reads "doesn't close" as closing, as {pull}`2889` found.
 🤝 Agreed (2026-10-09, {user}`bjlittle`, {pull}`2599`)
 
 A minor point left by a review, an older defect found on the way, or a follow-up
-is raised as an issue and linked from the plan's record and the pull request's
-description. It is never left only in a review thread.
+is raised as an issue and named in the description of the pull request that
+raises it, so the nightly drift check reads a `spec: open item` issue as in
+flight until that pull request merges ({pull}`2859`). It is never left only in a
+review thread or an agent's working notes.
 
 ### 4.6 🤖 Confirm a Push Before Reporting It
 
@@ -202,6 +227,16 @@ description. It is never left only in a review thread.
 
 The remote branch must show the local commit, checked with `git ls-remote`,
 before the work is called pushed.
+
+### 4.7 👥 Settle the Items of a Closed Issue in the Same Pull Request
+
+🤝 Agreed (2026-10-22, {user}`bjlittle`, {pull}`2692`)
+
+A pull request that closes an issue searches the specifications for each open
+item or row citing it, and marks it `🏁 Resolved` or `✅ landed`, dated that day
+and citing the pull request, so the nightly drift check finds nothing left to
+report once it merges. A plan that cites the issue is left alone, since it is
+frozen.
 
 ## 5. Review
 
