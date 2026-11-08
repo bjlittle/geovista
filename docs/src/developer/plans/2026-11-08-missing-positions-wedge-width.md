@@ -130,4 +130,4 @@ Confirm the push with `git ls-remote` (workflow rule 4.6), check `gh pr view 290
 
 ## Follow-ups
 
-None yet. Each issue this pull request raises is listed here before it merges.
+None. The final review left two minor points, which stand: see the pull request's description.
