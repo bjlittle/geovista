@@ -218,6 +218,24 @@ def test_cuts_scalars_in_the_shape_of_xs():
     np.testing.assert_allclose(scalars_of(actor), [1.0, 3.0, 4.0])
 
 
+def test_keeps_the_column_of_scalars():
+    """Test scalars given as a column are drawn as those of the points kept would be.
+
+    pyvista colours a column of scalars by their magnitude, so the drop must not
+    flatten it. Holds positions spec §2 decision 6.
+
+    """
+    xs = np.ma.masked_array(LONS, mask=[0, 1, 0, 0])
+    column = np.array([[-1.0], [-2.0], [-3.0], [-4.0]])
+    with pytest.warns(UserWarning, match=DROPPED):
+        actor = GeoPlotter().add_points(xs=xs, ys=LATS, scalars=column)
+    expected = GeoPlotter().add_points(
+        xs=[0.0, 20.0, 30.0], ys=[0.0, 10.0, 15.0], scalars=column[[0, 2, 3]]
+    )
+    np.testing.assert_allclose(scalars_of(actor), scalars_of(expected))
+    np.testing.assert_allclose(actor.mapper.scalar_range, expected.mapper.scalar_range)
+
+
 def test_cuts_colours():
     """Test a missing point is drawn without its colour.
 

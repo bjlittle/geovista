@@ -185,7 +185,7 @@ def _cut_scalars(scalars: ArrayLike, kept: np.ndarray) -> np.ndarray:
     Returns
     -------
     ndarray
-        The scalars of the points kept.
+        The scalars of the points kept, each row keeping its shape.
 
     Raises
     ------
@@ -200,14 +200,15 @@ def _cut_scalars(scalars: ArrayLike, kept: np.ndarray) -> np.ndarray:
     """
     values = np.asanyarray(scalars)
 
+    if values.ndim > 1 and len(values) == kept.size:
+        # one row for each point, such as a colour, or a column of values that
+        # pyvista colours by magnitude, so each row keeps its shape
+        rows: np.ndarray = values[kept]
+        return rows
+
     if values.size == kept.size:
         result: np.ndarray = values.ravel()[kept]
         return result
-
-    if values.ndim > 1 and len(values) == kept.size:
-        # one row for each point, such as a colour
-        rows: np.ndarray = values[kept]
-        return rows
 
     # refused before the points are cut, or they would pair with the points kept
     emsg = (

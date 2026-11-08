@@ -1015,6 +1015,33 @@ class Transform:  # numpydoc ignore=PR01
         result: np.ndarray = levels.ravel()[kept]
         return result
 
+    @staticmethod
+    def _attach_vectors(mesh: pv.PolyData, name: str, vectors: np.ndarray, /) -> None:
+        """Attach vectors to a point cloud, as its active vectors.
+
+        Parameters
+        ----------
+        mesh : PolyData
+            The point cloud, which may have no points.
+        name : str
+            The name of the vectors.
+        vectors : ndarray
+            The vectors, a row of three components for each point.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        if mesh.n_points:
+            mesh[name] = vectors
+        else:
+            # pyvista refuses an empty array of three components, so a cloud
+            # with no points takes its vectors from VTK instead
+            mesh.GetPointData().AddArray(pv.convert_array(vectors, name=name))
+
+        mesh.set_active_vectors(name)
+
     @classmethod
     def from_points(
         cls,
@@ -1308,8 +1335,7 @@ class Transform:  # numpydoc ignore=PR01
                 #              bug is fixed, see https://github.com/numpy/numpy/issues/14992
                 mesh_vectors = np.dot(post_rotate_matrix, mesh_vectors.T).T
 
-            mesh[vectors_name] = mesh_vectors
-            mesh.set_active_vectors(vectors_name)
+            cls._attach_vectors(mesh, vectors_name, mesh_vectors)
 
         # clean the mesh
         if clean:

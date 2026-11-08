@@ -287,6 +287,22 @@ def test_a_cloud_of_only_missing_points():
         assert result[name].size == 0
 
 
+def test_a_cloud_of_only_missing_points_keeps_its_vectors():
+    """Test a cloud whose every point is missing keeps its vectors, with no values.
+
+    Holds positions spec §2 decision 6.
+
+    """
+    emsg = r"geovista dropped every point of the point cloud \(2\)"
+    with pytest.warns(UserWarning, match=emsg):
+        result = Transform.from_points(
+            [np.nan, np.nan], [0.0, 10.0], vectors=([1.0, 2.0], [3.0, 4.0])
+        )
+    assert result.n_points == 0
+    assert result.active_vectors_name == NAME_VECTORS
+    assert result[NAME_VECTORS].shape == (0, 3)
+
+
 def test_refuses_data_of_another_count():
     """Test data that is not one value for each point given is refused, as before.
 
