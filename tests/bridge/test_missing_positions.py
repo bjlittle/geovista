@@ -5,9 +5,10 @@
 
 """Unit-tests of missing positions given to a point cloud.
 
-A position is missing when its x or y value is masked or NaN (positions spec §2
-decision 1), and :meth:`geovista.bridge.Transform.from_points` drops it, with its
-entry in every array given for each point (positions spec §2 decision 6).
+A position is missing when its x or y value is masked or NaN
+(positions spec §2 decision 1), and :meth:`geovista.bridge.Transform.from_points`
+drops it, with its entry in every array given for each point
+(positions spec §2 decision 6).
 
 """
 
