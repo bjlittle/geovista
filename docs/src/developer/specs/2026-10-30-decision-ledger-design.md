@@ -496,7 +496,7 @@ Each carries the grammar of items spec §3.2.
 | 6 | The globe, scene and heights specifications brought into the ledger | ✅ landed (2026-11-03, {pull}`2826`) |
 | 7 | Emojis for a roadmap row's states | ✅ landed (2026-11-04, {pull}`2874`) |
 | 8 | A row of the ledger names its decision by its citation (§2 decision 17): every specification's rows rewritten, a bare number refused, and the report reading a row's first cell as no place its decision is cited | ✅ landed (2026-11-05, {pull}`2882`) |
-| 9 | Each test file named as evidence linked to the line that cites its decision, at the commit or tag the documentation was built from (§2 decision 18) | 🚧 in progress ({pull}`2902`) |
+| 9 | Each test file named as evidence linked to the line that cites its decision, at the commit or tag the documentation was built from (§2 decision 18) | ✅ landed (2026-11-08, {pull}`2902`) |
 
 Statuses follow docs spec §3.6. Rows 2 to 9 each need row 1. Row 1 brings in the docs and
 citation specifications itself, as it retires a decision of the citation specification and
