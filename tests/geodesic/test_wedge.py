@@ -40,22 +40,32 @@ def test_refuses_no_width(lon1, lon2, width):
 
 @pytest.mark.parametrize(
     ("lon1", "lon2", "width"),
-    [(0, 180, "180"), (90, -90, "180"), (0, 360, "360")],
-    ids=["half", "reversed", "whole"],
+    [(0, 180, "180"), (90, -90, "180"), (0, 360, "360"), (170, -170, "340")],
+    ids=["half", "reversed", "whole", "antimeridian"],
 )
 def test_refuses_half_a_turn_or_more(lon1, lon2, width):
-    """Test a wedge 180 degrees or more wide is refused, as before."""
+    """Test a wedge 180 degrees or more wide is refused, as before.
+
+    The width is the plain difference of the longitudes, so a wedge given as 170
+    and -170 is 340 degrees wide, though it would cross the antimeridian.
+
+    """
     with pytest.raises(ValueError, match=WIDTH.format(re.escape(width))):
         wedge(lon1, lon2)
 
 
 @pytest.mark.parametrize(
     ("lon1", "lon2"),
-    [(10, 10.001), (0, 179.999), (30, -30)],
-    ids=["thin", "wide", "reversed"],
+    [(10, 10.001), (0, 179.999), (30, -30), (170, 190)],
+    ids=["thin", "wide", "reversed", "antimeridian"],
 )
 def test_builds_inside_the_interval(lon1, lon2):
-    """Test a wedge of any width inside the open interval builds, as before."""
+    """Test a wedge of any width inside the open interval builds, as before.
+
+    A wedge across the antimeridian builds when its longitudes are given as 170
+    and 190.
+
+    """
     result = wedge(lon1, lon2)
     assert isinstance(result, BBox)
     assert result.mesh.n_points > 0
