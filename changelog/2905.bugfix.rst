@@ -1,0 +1,5 @@
+Fixed :func:`geovista.geodesic.wedge` building a bounding-box for two equal
+longitudes, though the message of its width check asked for a width in the open
+interval (0, 180). It now refuses a wedge of no width with that message. This
+lands row 6 of positions spec §9.
+(:user:`claude`)

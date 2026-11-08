@@ -354,14 +354,17 @@ Each carries the grammar of items spec §3.2.
    corners in order whatever their shape, so a grid of them builds a box. The Raises
    sections of `line` and `BBox` now list both refusals.
 
-3. **❓ Open** (🔎 2026-11-07, {pull}`2893` · 🎯 row 6 of §9 · 🎫 {issue}`2894`) — **`geodesic.wedge`
+3. **🏁 Resolved** (2026-11-08, {pull}`2905` · 🔎 2026-11-07, {pull}`2893` · 🎫 {issue}`2894`) — **`geodesic.wedge`
    builds a bounding-box for two equal longitudes.** It refuses a wedge 180 degrees or more
    wide, but not one of no width. Its check, `if 0 < delta >= 180`, reads as
    `0 < delta and delta >= 180`, so `wedge(10, 10)` builds a bounding-box of 132,098 points,
    though the message of the check asks for a width in the open interval (0, 180). The final
    review of row 2 found it. The check is older than this specification and has nothing to
    do with a missing position, and fixing it would refuse calls that build today. Owed by
-   row 6 of §9, added for it, since no other row touches `wedge`.
+   row 6 of §9, added for it, since no other row touches `wedge`. Row 6 settled it. `wedge`
+   now refuses equal longitudes with the message of its check. A wedge of any width above 0
+   still builds, and the width of one across the antimeridian is still the plain difference
+   of its longitudes, so `wedge(170, -170)` is refused as 340 degrees wide.
 
 4. **❓ Open** (🔎 2026-11-08, {pull}`2899` · 🎯 row 5 of §9 · 🎫 {issue}`2901`) — **`Transform.from_points`
    names the `zlevel` after a drop when it refuses one given with `vectors`.** It refuses a
@@ -381,7 +384,7 @@ Each carries the grammar of items spec §3.2.
 | 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) | ✅ landed (2026-11-08, {pull}`2899`) |
 | 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | 📋 not started |
 | 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | 📋 not started |
-| 6 | Wedge width: `geodesic.wedge` refusing a wedge of no width, as the message of its check says (§8 item 3) | 🚧 in progress ({pull}`2905`) |
+| 6 | Wedge width: `geodesic.wedge` refusing a wedge of no width, as the message of its check says (§8 item 3) | ✅ landed (2026-11-08, {pull}`2905`) |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own, as
 {user}`bjlittle` chose on 2026-11-06. Row 1 brings the test of §4.1, which the others use,
