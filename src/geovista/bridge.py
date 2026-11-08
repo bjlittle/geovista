@@ -1646,8 +1646,9 @@ class Transform:  # numpydoc ignore=PR01
 
         A point is missing when its x or y value is masked or NaN. A face of a
         connectivity array that uses one is dropped, with a warning, while a face of
-        a shape leaves it out. The point stays in the mesh, untransformed. An
-        infinite x or y value is refused.
+        a shape leaves it out. The point stays in the mesh, on the first point
+        present, so data given for each point still fits. An infinite x or y value is
+        refused.
 
         Parameters
         ----------

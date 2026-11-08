@@ -225,4 +225,4 @@ Push, confirm it with `git ls-remote` (workflow rule 4.6), check `gh pr view 290
 
 ## Follow-ups
 
-None yet. Each issue this pull request raises is listed here before it merges.
+None. The final review left four minor points: the docstring of `from_unstructured` is corrected, and the other three stand, as the pull request's description says.
