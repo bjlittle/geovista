@@ -32,6 +32,7 @@ from .common import (
     ZLEVEL_SCALE,
     VectorLike,
     _missing_and_named,
+    _missing_positions,
     _named,
     _to_cartesian,
     _vectors_to_cartesian,
@@ -375,10 +376,10 @@ class Transform:  # numpydoc ignore=PR01
         return np.arange(npts, dtype=np.uint32).reshape(-1, 4)
 
     @staticmethod
-    def _drop_masked_faces(
+    def _drop_missing_faces(
         connectivity: np.ndarray, mask: np.ndarray, /
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Drop the faces of the connectivity that use a masked point.
+        """Drop the faces of the connectivity that use a missing point.
 
         Such a face would have a vertex with no position. Note that a warning is
         raised for the faces that are dropped.
@@ -413,7 +414,7 @@ class Transform:  # numpydoc ignore=PR01
             noun, verb, be = ("faces", "use", "are") if many else ("face", "uses", "is")
             wmsg = (
                 f"geovista connectivity defines {n_dropped:,} {noun} that {verb} "
-                f"a masked point, which {be} dropped."
+                f"a missing point, which {be} dropped."
             )
             # warn where the bridge method that called this one was called
             warnings.warn(wmsg, stacklevel=3)
@@ -422,14 +423,14 @@ class Transform:  # numpydoc ignore=PR01
         return connectivity, kept
 
     @staticmethod
-    def _transform_unmasked(
+    def _transform_present(
         xs: np.ndarray, ys: np.ndarray, crs: CRSLike, mask: np.ndarray | None, /
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Transform the points to WGS84, apart from those that are masked.
+        """Transform the points to WGS84, apart from those that are missing.
 
-        The values of a masked point mean nothing, and may lie outside the domain
-        of the `crs`. It is given the position of the first point that is not
-        masked, where it cannot stretch the bounds of the mesh.
+        The values of a missing point mean nothing, and may lie outside the domain
+        of the `crs`. It is given the position of the first point that is present,
+        where it cannot stretch the bounds of the mesh.
 
         Parameters
         ----------
@@ -695,9 +696,10 @@ class Transform:  # numpydoc ignore=PR01
         in the mesh for the native `crs`, which will then be projected to
         geographic longitude and latitude values.
 
-        Should `xs` and `ys` carry the same mask, a quad-face with a masked vertex
+        A quad-face with a missing vertex, one whose x or y value is masked or NaN,
         is dropped, with a warning, and `data` with a value for each quad-face
-        keeps only the values of the faces that remain.
+        keeps only the values of the faces that remain. An infinite x or y value is
+        refused.
 
         Parameters
         ----------
@@ -1593,6 +1595,11 @@ class Transform:  # numpydoc ignore=PR01
         as the mesh face `connectivity`, or in the same order as the points
         described by `xs` and `ys` (data can only be attached to points or cells).
 
+        A point is missing when its x or y value is masked or NaN. A face of a
+        connectivity array that uses one is dropped, with a warning, while a face of
+        a shape leaves it out. The point stays in the mesh, untransformed. An
+        infinite x or y value is refused.
+
         Parameters
         ----------
         xs : ArrayLike or pint.Quantity
@@ -1617,8 +1624,7 @@ class Transform:  # numpydoc ignore=PR01
             to determine the connectivity. Also, note that masked connectivity
             may be used to define a mesh consisting of different shaped faces. A
             face that is left with fewer than three vertices is dropped, with a
-            warning. So is a face of a connectivity array that uses a masked
-            point, should `xs` and `ys` carry the same mask.
+            warning.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh face or nodes. Should any
             face be dropped, data with a value for each face of the `connectivity`
@@ -1706,23 +1712,18 @@ class Transform:  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
+        # a point whose x or y value is masked or NaN has no position, so it is
+        # left out of every face and out of the transform, and an infinite value is
+        # refused at its index as given (positions spec §4.6)
+        missing = _missing_positions(xs, ys, x_name="xs", y_name="ys").ravel()
+        mask: np.ndarray | None = missing if np.any(missing) else None
+
         # flatten the points to 1D with shape (M,)
         xs, ys = xs.ravel(), ys.ravel()
 
         if connectivity is None:
             # default to the shape of the points
             connectivity = shape
-
-        # when xs and ys carry the same mask, its points have no position, so they
-        # are left out of every face and out of the transform. The masks are
-        # compared whole, so masks that differ anywhere mask no point at all
-        mask: np.ndarray | None = None
-        if (
-            np.ma.is_masked(xs)
-            and np.ma.is_masked(ys)
-            and np.array_equal(np.ma.getmaskarray(xs), np.ma.getmaskarray(ys))
-        ):
-            mask = np.ma.getmaskarray(xs).copy()
 
         connectivity_array: np.ndarray
         if isinstance(connectivity, tuple):
@@ -1770,9 +1771,9 @@ class Transform:  # numpydoc ignore=PR01
         kept = np.ones(n_given, dtype=bool)
 
         if mask is not None:
-            # a face that uses a masked point is dropped, which leaves the faces of
-            # a shape alone, as their masked points have left them already
-            connectivity_array, kept = cls._drop_masked_faces(connectivity_array, mask)
+            # a face that uses a missing point is dropped, which leaves the faces of
+            # a shape alone, as their missing points have left them already
+            connectivity_array, kept = cls._drop_missing_faces(connectivity_array, mask)
 
         if isinstance(connectivity_array, np.ma.MaskedArray) and np.ma.is_masked(
             connectivity_array
@@ -1824,8 +1825,8 @@ class Transform:  # numpydoc ignore=PR01
         if crs is None:
             crs = WGS84
 
-        # transform spatial points to WGS84, apart from the masked ones
-        xs, ys = cls._transform_unmasked(xs, ys, crs, mask)
+        # transform spatial points to WGS84, apart from the missing ones
+        xs, ys = cls._transform_present(xs, ys, crs, mask)
 
         globe = _resolve(globe)
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
