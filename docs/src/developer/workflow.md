@@ -130,11 +130,12 @@ choices inside its tasks, where nobody reviews them as design.
 
 ### 2.8 👥 Record Deferred Work as an Open Item of Its Specification
 
-🤝 Agreed (2026-11-08, {user}`bjlittle`, {pull}`2898`)
+🤝 Agreed (2026-11-02, {user}`bjlittle`, {pull}`2803`)
 
 An issue raised for work that a specification's row defers, such as a minor
 point of its review or an older defect found on the way, becomes an open item of
-that specification in the same pull request. The issue is labelled
+that specification in the same pull request (items spec §2 decision 1). The
+issue is labelled
 `spec: open item`, and the item is owed by a row that has not landed. When no
 row fits, the pull request adds one (items spec §3.4). {issue}`2894` was raised
 without its item, and {pull}`2896` added it afterwards.
@@ -194,14 +195,15 @@ maintainer's handle.
 
 ### 4.3 👥 Give a Pull Request a Changelog Fragment, or Skip It Openly
 
-🤝 Agreed (2026-10-05, {user}`bjlittle`, {pull}`2554`)
+🗄️ Retired (2026-11-08, {user}`bjlittle`, {pull}`2898`; agreed 2026-10-05,
+{pull}`2554`). It named only the README as a change that usually skips its
+fragment, and rule 4.8 replaces it, adding a pull request that only records open
+work in a specification.
 
 A pull request carries a fragment unless it is labelled `skip-changelog`. A
 change to the README alone usually skips it, unless its cause is upstream and
-would be news to readers elsewhere. So does a pull request that only records
-open work in a specification, as {pull}`2892` and {pull}`2896` did, since
-nothing it records has shipped. An agent offers that choice, and does not make
-it silently.
+would be news to readers elsewhere. An agent offers that choice, and does not
+make it silently.
 
 ### 4.4 👥 Close an Issue Only From the Pull Request That Fixes It
 
@@ -216,10 +218,10 @@ negated: GitHub reads "doesn't close" as closing, as {pull}`2889` found.
 🤝 Agreed (2026-10-09, {user}`bjlittle`, {pull}`2599`)
 
 A minor point left by a review, an older defect found on the way, or a follow-up
-is raised as an issue and named in the description of the pull request that
-raises it, so the nightly drift check reads a `spec: open item` issue as in
-flight until that pull request merges ({pull}`2859`). It is never left only in a
-review thread or an agent's working notes.
+is raised as an issue and linked from the plan's record and the pull request's
+description. The nightly drift check reads a `spec: open item` issue that an
+open pull request names as in flight, until that pull request merges
+({pull}`2859`). It is never left only in a review thread.
 
 ### 4.6 🤖 Confirm a Push Before Reporting It
 
@@ -233,10 +235,20 @@ before the work is called pushed.
 🤝 Agreed (2026-10-22, {user}`bjlittle`, {pull}`2692`)
 
 A pull request that closes an issue searches the specifications for each open
-item or row citing it, and marks it `🏁 Resolved` or `✅ landed`, dated that day
-and citing the pull request, so the nightly drift check finds nothing left to
-report once it merges. A plan that cites the issue is left alone, since it is
-frozen.
+item citing it, and marks it `🏁 Resolved`, dated that day and citing the pull
+request, so the nightly drift check finds nothing left to report once it merges.
+A plan that cites the issue is left alone, since it is frozen.
+
+### 4.8 👥 Give a Pull Request a Changelog Fragment, or Skip It Openly
+
+🤝 Agreed (2026-11-08, {user}`bjlittle`, {pull}`2898`)
+
+A pull request carries a fragment unless it is labelled `skip-changelog`. A
+change to the README alone usually skips it, unless its cause is upstream and
+would be news to readers elsewhere. So does a pull request that only records
+open work in a specification, as {pull}`2892` and {pull}`2896` did, since
+nothing it records has shipped. An agent offers that choice, and does not make
+it silently.
 
 ## 5. Review
 
@@ -291,3 +303,14 @@ page, so that `workflow rule 2.4` always names the same rule. A rule is never
 deleted, moved or renumbered. One that no longer holds is retired in place, its
 status becoming `🗄️ Retired` with why and what replaced it. A rule filed in the
 wrong section is retired there and added again where it belongs.
+
+### 7.3 👥 Retire a Rule Whose Meaning Changes
+
+🤝 Agreed (2026-11-08, {user}`bjlittle`, {pull}`2898`)
+
+A correction or a clarification that leaves a rule's meaning as it was is an
+edit, made in place under the rule's agreement. A change to what the rule asks
+or allows, such as a new case or a dropped condition, retires the rule in place
+and adds its replacement at the end of its section, with an agreement of its
+own. Decisions follow the same line under ledger spec §2 decision 3, which
+leaves to review whether an edit crosses it.
