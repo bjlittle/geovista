@@ -1,0 +1,6 @@
+Each test file a design specification's Verification table names as evidence
+now links to the first line in it that cites the decision it verifies, so a
+reader can follow a decision to the test that holds it. The links point into
+the commit the documentation was built from, or the tag of a release, so every
+version of the documentation shows its own tests (ledger spec §2 decision 18,
+row 9 of ledger spec §8). (:user:`claude`)

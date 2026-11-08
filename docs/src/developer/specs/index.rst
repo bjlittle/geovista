@@ -143,7 +143,10 @@ or a clarification that keeps a decision's meaning is an edit, not a retirement.
 **Verifying a decision.** When a test exercises the decision, cite the decision
 in the test's docstring or a comment, and make its row
 ``✅ verified (date, {pull}`1234`)``, naming the test file in the Evidence column.
-The conventions test checks that the file exists and cites the decision.
+The conventions test checks that the file exists and cites the decision. On the
+rendered page, each test file the Evidence column names links to the first line
+in it that cites the decision, at the commit or the release tag the
+documentation was built from (ledger spec §2 decision 18).
 
 **Signing off a decision.** Where no test can honestly show a decision, a
 reviewer signs it off. The row becomes

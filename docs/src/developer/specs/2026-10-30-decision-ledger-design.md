@@ -544,4 +544,4 @@ Each row follows §3.4.
 | §2 decision 15 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
 | §2 decision 16 | ✅ verified (2026-11-04, {pull}`2874`) | `tests/test_spec_conventions.py` |
 | §2 decision 17 | ✅ verified (2026-11-05, {pull}`2882`) | `tests/test_spec_conventions.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py`, `tests/test_verification_report.py` |
-| §2 decision 18 | ⏳ pending | |
+| §2 decision 18 | ✅ verified (2026-11-08, {pull}`2902`) | `tests/docs/test_geovista_ledger.py` |

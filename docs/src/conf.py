@@ -269,6 +269,18 @@ rev_parse = subprocess.run(
 )
 commit_sha = rev_parse.stdout.strip()
 
+# the evidence of each specification's Verification table links into the tag of
+# a release, or the commit of any other build (ledger spec §2 decision 18)
+geovista_ledger_source = importlib.import_module("geovista_ledger").source(
+    os.environ,
+    subprocess.run(
+        ["git", "rev-parse", "HEAD"],  # noqa: S607
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip(),
+)
+
 if on_rtd:
     # https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#including-content-based-on-tags
     # https://www.sphinx-doc.org/en/master/usage/configuration.html#conf-tags
