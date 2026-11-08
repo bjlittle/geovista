@@ -1,0 +1,5 @@
+Added tests that :meth:`geovista.bridge.Transform.from_points` and
+:meth:`geovista.geoplotter.GeoPlotterBase.add_points` refuse coordinates of
+different sizes as before, with no point dropped, a path that
+row 3 of positions spec §9 left untested.
+(:user:`claude`)
