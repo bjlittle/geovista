@@ -35,6 +35,7 @@ from .common import (
     ZLEVEL_SCALE,
     ZTRANSFORM_FACTOR,
     _current,
+    _missing_positions,
     _refuse_missing_poi,
     _to_cartesian,
     point_cloud,
@@ -166,6 +167,55 @@ def _lfric_mesh(
     mesh.set_active_scalars(name=None)
 
     return mesh
+
+
+def _cut_scalars(scalars: ArrayLike, kept: np.ndarray) -> np.ndarray:
+    """Keep the scalars of the points kept, of one value or one row for each point.
+
+    A point cloud drops a missing point, with its entry in every array given for
+    each point (positions spec §4.5).
+
+    Parameters
+    ----------
+    scalars : ArrayLike
+        The scalars: one value, or one row such as a colour, for each point given.
+    kept : ndarray of bool
+        ``True`` for each point given that is kept, in C order.
+
+    Returns
+    -------
+    ndarray
+        The scalars of the points kept, each row keeping its shape.
+
+    Raises
+    ------
+    ValueError
+        If `scalars` are not one value or one row for each point given, which
+        would be refused were no point missing.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    values = np.asanyarray(scalars)
+
+    if values.ndim > 1 and len(values) == kept.size:
+        # one row for each point, such as a colour, or a column of values that
+        # pyvista colours by magnitude, so each row keeps its shape
+        rows: np.ndarray = values[kept]
+        return rows
+
+    if values.size == kept.size:
+        result: np.ndarray = values.ravel()[kept]
+        return result
+
+    # refused before the points are cut, or they would pair with the points kept
+    emsg = (
+        "Require scalars with one value, or one row, for each of the "
+        f"{kept.size:,d} points given, got shape {values.shape}."
+    )
+    raise ValueError(emsg)
 
 
 if TYPE_CHECKING:
@@ -1457,7 +1507,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             Values used to color the points. Either, the string name of an array that is
             present on the `points` mesh or an array equal to the number of points.
             If both `color` (see `kwargs`) and `scalars` are ``None``, then the active
-            scalars on the `points` mesh are used.
+            scalars on the `points` mesh are used. An array given with `xs` and `ys`
+            loses the entry of each missing point, which
+            :meth:`~geovista.bridge.Transform.from_points` drops.
         crs : CRSLike, optional
             The Coordinate Reference System of the provided `points`, or `xs` and `ys`.
             May be anything accepted by :meth:`pyproj.crs.CRS.from_user_input`. Defaults
@@ -1560,6 +1612,15 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                     "'points' mesh was provided."
                 )
                 warn(wmsg, stacklevel=2)
+
+            if scalars is not None and np.ndim(scalars) > 0:
+                # the scalars of a missing point go with it, as from_points drops
+                # it and warns (positions spec §4.5), its points paired in order
+                px, py = map(np.ravel, _coordinates(xs, ys, crs))
+                if px.size == py.size:
+                    missing = _missing_positions(px, py, x_name="xs", y_name="ys")
+                    if np.any(missing):
+                        scalars = _cut_scalars(scalars, ~missing)
 
             mesh = Transform.from_points(
                 xs,

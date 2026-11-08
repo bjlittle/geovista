@@ -20,6 +20,7 @@ import pint
 import pytest
 
 from geovista.common import (
+    _missing_and_named,
     _missing_positions,
     _refuse_missing_poi,
     _refuse_missing_positions,
@@ -65,6 +66,11 @@ def test_present():
 def test_missing(xs, ys):
     """Test that a masked or NaN coordinate, alone or with the other, is missing."""
     np.testing.assert_array_equal(missing(xs, ys), SECOND)
+
+
+def test_none_is_missing():
+    """Test that a None coordinate is missing, as NumPy reads it as NaN."""
+    np.testing.assert_array_equal(missing([1.0, None, 3.0], [4.0, 5.0, 6.0]), SECOND)
 
 
 def test_nomask():
@@ -131,6 +137,33 @@ def test_shapes_that_do_not_pair():
     emsg = r"Cannot pair 'xs' of shape \(3,\) with 'ys' of shape \(2,\)\."
     with pytest.raises(ValueError, match=emsg):
         missing([1.0, 2.0, 3.0], [4.0, 5.0])
+
+
+@pytest.mark.parametrize(
+    ("xs", "ys", "expected", "names"),
+    [
+        (
+            np.ma.masked_array([1.0, 2.0, 3.0], mask=SECOND),
+            [4.0, 5.0, 6.0],
+            SECOND,
+            ["xs"],
+        ),
+        ([1.0, 2.0, 3.0], [4.0, np.nan, 6.0], SECOND, ["ys"]),
+        (
+            np.ma.masked_array([1.0, 2.0, 3.0], mask=SECOND),
+            [4.0, np.nan, 6.0],
+            SECOND,
+            ["xs", "ys"],
+        ),
+        ([1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [False] * 3, []),
+    ],
+    ids=["x", "y", "both", "present"],
+)
+def test_missing_and_named(xs, ys, expected, names):
+    """Test that the missing positions come with the coordinates that make them so."""
+    result, named = _missing_and_named(xs, ys, x_name="xs", y_name="ys")
+    np.testing.assert_array_equal(result, expected)
+    assert named == names
 
 
 @pytest.mark.parametrize(
@@ -219,6 +252,13 @@ def test_refuse_missing_positions_refuses_infinite():
     emsg = r"'lats' cannot be infinite, got inf at index 2\."
     with pytest.raises(ValueError, match=emsg):
         refuse(LONS, [0.0, 5.0, np.inf, 15.0])
+
+
+def test_refuse_missing_positions_names_shapes_that_do_not_pair():
+    """Test that coordinates of one size but different shapes are refused, named."""
+    emsg = r"Cannot pair 'lons' of shape \(2, 2\) with 'lats' of shape \(4,\)\."
+    with pytest.raises(ValueError, match=emsg):
+        refuse(np.zeros((2, 2)), np.zeros(4))
 
 
 @pytest.mark.parametrize("name", ["xs", "ys"])

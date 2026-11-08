@@ -131,6 +131,13 @@ def test_line_refuses_infinite(name):
         line(coordinates["lons"], coordinates["lats"])
 
 
+def test_line_names_shapes_that_do_not_pair():
+    """Test that coordinates of one size but different shapes are refused, named."""
+    emsg = r"Cannot pair 'lons' of shape \(2, 2\) with 'lats' of shape \(4,\)\."
+    with pytest.raises(ValueError, match=emsg):
+        line(np.array([[0.0, 10.0], [20.0, 30.0]]), [0.0, 5.0, 10.0, 15.0])
+
+
 @pytest.mark.parametrize(
     ("xs", "ys", "named"),
     [
@@ -200,6 +207,12 @@ def test_bbox_refuses_infinite(name):
     emsg = rf"'{name}' cannot be infinite, got inf at index 2\."
     with pytest.raises(ValueError, match=emsg):
         BBox(coordinates["xs"], coordinates["ys"])
+
+
+def test_bbox_pairs_a_grid_of_corners():
+    """Test that corners given as a grid pair in order, as they are counted."""
+    grid = BBox(np.array([[0.0, 10.0], [10.0, 0.0]]), YS)
+    np.testing.assert_allclose(grid.mesh.points, BBox(XS, YS).mesh.points)
 
 
 @pytest.mark.parametrize(

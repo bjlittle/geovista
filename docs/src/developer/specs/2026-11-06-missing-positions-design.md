@@ -154,7 +154,8 @@ value under a mask is read as a coordinate.
 One private helper in `geovista.common` decides it for every function. It takes the two
 coordinates as they arrive, after a `pint` quantity is read in its units and before any
 transform, and returns a boolean array of their shape that is `True` wherever either is
-masked or NaN. A masked array whose mask is `nomask` has no missing position.
+masked or NaN. A masked array whose mask is `nomask` has no missing position. A `None`,
+which NumPy reads as NaN, is missing too.
 
 The same helper refuses an infinite coordinate, before any position is built, with a
 `ValueError` naming the argument as the function calls it: `lons` or `lats`, `xs` or `ys`,
@@ -335,7 +336,7 @@ Each carries the grammar of items spec §3.2.
    coordinate, and that of an infinite height, now give the index in each dimension, such as
    `(1, 1)`, and keep `at index 1` for one dimension.
 
-2. **❓ Open** (🔎 2026-11-07, {pull}`2893` · 🎯 row 3 of §9 · 🎫 {issue}`2895`) — **The
+2. **🏁 Resolved** (2026-11-08, {pull}`2899` · 🔎 2026-11-07, {pull}`2893` · 🎫 {issue}`2895`) — **The
    final review of row 2 left four minor points.** `geodesic.wedge` given `None` for a
    longitude says it is masked or NaN, where it raised a `TypeError`, since the test of §4.1
    reads `None` as NaN. `units._angle` reads a masked quantity as NaN, with no NumPy warning,
@@ -344,7 +345,14 @@ Each carries the grammar of items spec §3.2.
    shapes raises NumPy's broadcast message, which a grid of positions would meet. And the
    Raises sections of `line` and `BBox` leave out the refusal of a `pint` quantity given for
    one coordinate alone, and that of an angle for a projected CRS. Owed by row 3 of §9, the
-   next row to use the test of §4.1.
+   next row to use the test of §4.1. Row 3 settled all four. A `None` is missing, as
+   {user}`bjlittle` chose on 2026-11-08, and §4.1 says so. The NaN that `_angle` gives a
+   masked quantity stands, since the values of `gridlines` and `wrap` place gridlines and
+   labels rather than positions (§4.8), and row 5 tests `npoints` by its result. Two
+   coordinates whose shapes do not pair are now refused with
+   "Cannot pair 'lons' of shape (2, 2) with 'lats' of shape (4,).", and `BBox` reads its
+   corners in order whatever their shape, so a grid of them builds a box. The Raises
+   sections of `line` and `BBox` now list both refusals.
 
 3. **❓ Open** (🔎 2026-11-07, {pull}`2893` · 🎯 row 6 of §9 · 🎫 {issue}`2894`) — **`geodesic.wedge`
    builds a bounding-box for two equal longitudes.** It refuses a wedge 180 degrees or more
@@ -355,6 +363,14 @@ Each carries the grammar of items spec §3.2.
    do with a missing position, and fixing it would refuse calls that build today. Owed by
    row 6 of §9, added for it, since no other row touches `wedge`.
 
+4. **❓ Open** (🔎 2026-11-08, {pull}`2899` · 🎯 row 5 of §9 · 🎫 {issue}`2901`) — **`Transform.from_points`
+   names the `zlevel` after a drop when it refuses one given with `vectors`.** It refuses a
+   `zlevel` array given with `vectors`, with "'zlevel' may not be multiple, has shape ...".
+   Once a point is dropped, that shape is the one after the drop, so a `(2, 1)` array on
+   points of shape `(2, 3)`, one of them missing, is named `(5,)`. The call is refused
+   either way. The final review of row 3 found it. Owed by row 5 of §9, since the refusal
+   is that of `_vectors_to_cartesian`, which row 5 changes with `vectors_to_cartesian`.
+
 (positions-spec-9)=
 ## 9. Roadmap
 
@@ -362,7 +378,7 @@ Each carries the grammar of items spec §3.2.
 |---|---|---|
 | 1 | Queries: the test of §4.1 and the refusal of an infinite coordinate, `KDTree.query` answering that a missing point has no neighbour (§4.2), and `find_nearest_cell` and `GeoPlotter.view_poi` refusing a missing position (§4.3) | ✅ landed (2026-11-06, {pull}`2889`) |
 | 2 | Geodesic shapes: `geodesic.line`, `BBox` and `wedge` refusing a missing position (§4.4) | ✅ landed (2026-11-07, {pull}`2893`) |
-| 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) | 📋 not started |
+| 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) | ✅ landed (2026-11-08, {pull}`2899`) |
 | 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | 📋 not started |
 | 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | 📋 not started |
 | 6 | Wedge width: `geodesic.wedge` refusing a wedge of no width, as the message of its check says (§8 item 3) | 📋 not started |
@@ -397,6 +413,6 @@ Each row follows ledger spec §3.4.
 | §2 decision 3 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/search/test_missing_positions.py` |
 | §2 decision 4 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/geoplotter/test_view_poi.py`, `tests/search/test_missing_positions.py` |
 | §2 decision 5 | ✅ verified (2026-11-07, {pull}`2893`) | `tests/geodesic/test_missing_positions.py` |
-| §2 decision 6 | ⏳ pending | row 3 of §9 |
+| §2 decision 6 | ✅ verified (2026-11-08, {pull}`2899`) | `tests/bridge/test_missing_positions.py`, `tests/geoplotter/test_add_points.py` |
 | §2 decision 7 | ⏳ pending | row 4 of §9 |
 | §2 decision 8 | ⏳ pending | row 5 of §9 |

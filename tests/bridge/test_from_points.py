@@ -321,3 +321,11 @@ class TestVectors:
         emsg = "each component of 'vectors' requires the shape of 'xs'"
         with pytest.raises(ValueError, match=emsg):
             _ = Transform.from_points(lons, lats, vectors=vectors)
+
+    @pytest.mark.parametrize("clean", [False, True])
+    def test_no_points(self, clean):
+        """Check a cloud given no points keeps its vectors, with no values."""
+        mesh = Transform.from_points([], [], vectors=([], []), clean=clean)
+        assert mesh.n_points == 0
+        assert mesh.active_vectors_name == NAME_VECTORS
+        assert mesh[NAME_VECTORS].shape == (0, 3)

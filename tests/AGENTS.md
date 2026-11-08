@@ -57,12 +57,11 @@ mixes static and browser checks, so marks per-test, keeping `-m "not browser"` u
 
 ### Naming and Preamble
 
-One file per public function or class, named `test_<function_or_class>.py`, with
-functions named `test_<scenario>` for the behaviour verified. Every file begins
-with the copyright header given in the root `AGENTS.md`, followed by
-`from __future__ import annotations` (both enforced by ruff). A name outside
-pytest's `python_files` default is collected by nothing and warns about nothing:
-`tests/themes/test.py` sat dead from #2259 until #2558 renamed it.
+One file per public function or class, named `test_<function_or_class>.py`, with functions
+named `test_<scenario>` for the behaviour verified. Every file begins with the copyright
+header given in the root `AGENTS.md`, followed by `from __future__ import annotations` (both
+enforced by ruff). A name outside pytest's `python_files` default is collected by nothing
+and warns about nothing: `tests/themes/test.py` sat dead from #2259 until #2558 renamed it.
 
 ⚠️ **`tests/plotting/__init__.py` rewrites global `pyvista` state at import** —
 the testing theme over `pv.global_theme`, plus `OFF_SCREEN` and
@@ -76,6 +75,8 @@ fails in a full run. Restore it in a fixture: `copy.deepcopy` round-trips.
 - ⚠️ **pyproj's wheels have no PROJ grids, and conda-forge's PROJ fetches them**, as
   activation sets `PROJ_NETWORK=ON`, so a datum test can pass here and fail `ci-tests-pypi`
   (#2718). Request `no_network`, or run `pixi run -e geovista env PROJ_NETWORK=OFF pytest`.
+- ⚠️ **PROJ maps a position outside a CRS's domain silently**, so the result cannot show that a
+  value never reached the transform: `mocker.spy` the transform and check its input (#2899).
 
 ### Image Tests
 
@@ -139,11 +140,10 @@ passes. The option, the second `strict` argument of the pixi task, turns each un
 prerequisite into a failure. pytest honours `pytest_addoption` only in the test-root
 `tests/conftest.py`, so it is registered there, not in `tests/docs/`, which consumes it.
 
-⚠️ **Only the first `Sphinx` application in a process builds cleanly.** docutils
-registers nodes, directives and roles in a *global* registry, so every later
-application re-registers them and sphinx warns once apiece — some 57 warnings
-that fail any `warningiserror=True` build for reasons of the harness alone.
-They are typed, so a generated `conf.py` can carry `suppress_warnings = ["app"]`
+⚠️ **Only the first `Sphinx` application in a process builds cleanly.** docutils registers nodes,
+directives and roles in a *global* registry, so every later application re-registers them and
+sphinx warns once apiece — some 57 warnings that fail any `warningiserror=True` build for reasons
+of the harness alone. They are typed, so a generated `conf.py` can carry `suppress_warnings = ["app"]`
 to be rid of them; the intersphinx inventory failure has no type and so cannot.
 
 ⚠️ **Register a path-loaded module in `sys.modules` before `exec_module`**, as a
