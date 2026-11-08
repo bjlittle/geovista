@@ -20,6 +20,7 @@ import numpy as np
 import pint
 import pytest
 
+from geovista import bridge
 from geovista.bridge import NAME_POINTS, NAME_VECTORS, Transform
 
 UREG = pint.UnitRegistry()
@@ -244,17 +245,20 @@ def test_cuts_vectors_in_another_crs():
     assert_same_cloud(result, expected)
 
 
-def test_drops_before_transforming():
+def test_drops_before_transforming(mocker):
     """Test a missing point is dropped before the others are transformed.
 
-    Its value under the mask lies outside the domain of the CRS, and is never read.
-    Holds positions spec §2 decision 6.
+    Its value under the mask lies outside the domain of the CRS, and is never read,
+    so only the points kept reach the transform. Holds positions spec §2 decision 6.
 
     """
     xs = masked([0.0, 1e40, 2e5, 3e5], 1)
     ys = [0.0, 1e5, 2e5, 3e5]
+    spy = mocker.spy(bridge, "transform_points")
     with pytest.warns(UserWarning, match=DROPPED.format(named="'xs' is")):
         result = Transform.from_points(xs, ys, crs="+proj=eqc")
+    assert spy.call_count == 1
+    np.testing.assert_array_equal(spy.call_args.kwargs["xs"], kept(xs.data))
     expected = Transform.from_points(kept(xs.data), kept(ys), crs="+proj=eqc")
     assert_same_cloud(result, expected)
     assert np.all(np.isfinite(result.points))
