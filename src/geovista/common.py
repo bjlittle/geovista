@@ -937,6 +937,68 @@ def _missing(values: ArrayLike, *, name: str) -> NDArray[np.bool_]:
     return result
 
 
+def _missing_and_named(
+    xs: ArrayLike, ys: ArrayLike, *, x_name: str, y_name: str
+) -> tuple[NDArray[np.bool_], list[str]]:
+    """Find the missing positions among some, and name the coordinates missing.
+
+    A position is missing when either of its coordinates is masked or NaN, and
+    an infinite coordinate is refused, as positions spec §4.1 decides. The names
+    word a refusal or, for a point cloud, the warning of a point dropped
+    (positions spec §4.5). Read any ``pint`` quantity first, and call this before
+    any position is built.
+
+    Parameters
+    ----------
+    xs : ArrayLike
+        The first coordinate of the positions, such as their longitudes.
+    ys : ArrayLike
+        The second coordinate of the positions, such as their latitudes.
+    x_name : str
+        The name of the argument `xs` was given as, to name it in a message.
+    y_name : str
+        The name of the argument `ys` was given as, to name it in a message.
+
+    Returns
+    -------
+    ndarray of bool
+        ``True`` where a position is missing, in the shape `xs` and `ys`
+        broadcast to.
+    list of str
+        The names of the coordinates masked or NaN anywhere, `x_name` before
+        `y_name`.
+
+    Raises
+    ------
+    ValueError
+        If a coordinate that is not masked is infinite, or `xs` and `ys` do not
+        broadcast together.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    x_missing = _missing(xs, name=x_name)
+    y_missing = _missing(ys, name=y_name)
+
+    try:
+        np.broadcast_shapes(x_missing.shape, y_missing.shape)
+    except ValueError as err:
+        emsg = (
+            f"Cannot pair {x_name!r} of shape {x_missing.shape} with {y_name!r} "
+            f"of shape {y_missing.shape}."
+        )
+        raise ValueError(emsg) from err
+
+    named = [
+        name
+        for name, flags in ((x_name, x_missing), (y_name, y_missing))
+        if np.any(flags)
+    ]
+    return x_missing | y_missing, named
+
+
 def _missing_positions(
     xs: ArrayLike, ys: ArrayLike, *, x_name: str, y_name: str
 ) -> NDArray[np.bool_]:
@@ -974,19 +1036,8 @@ def _missing_positions(
     .. versionadded:: 0.6.0
 
     """
-    x_missing = _missing(xs, name=x_name)
-    y_missing = _missing(ys, name=y_name)
-
-    try:
-        np.broadcast_shapes(x_missing.shape, y_missing.shape)
-    except ValueError as err:
-        emsg = (
-            f"Cannot pair {x_name!r} of shape {x_missing.shape} with {y_name!r} "
-            f"of shape {y_missing.shape}."
-        )
-        raise ValueError(emsg) from err
-
-    return x_missing | y_missing
+    missing, _ = _missing_and_named(xs, ys, x_name=x_name, y_name=y_name)
+    return missing
 
 
 def _refuse_missing_poi(
@@ -1056,24 +1107,18 @@ def _refuse_missing_positions(
     Raises
     ------
     ValueError
-        If a position is missing, or a coordinate that is not masked is infinite.
+        If a position is missing, or a coordinate that is not masked is infinite,
+        or `xs` and `ys` do not pair.
 
     Notes
     -----
     .. versionadded:: 0.6.0
 
     """
-    x_missing = _missing(xs, name=x_name)
-    y_missing = _missing(ys, name=y_name)
-    missing = x_missing | y_missing
+    missing, named = _missing_and_named(xs, ys, x_name=x_name, y_name=y_name)
     count = int(np.count_nonzero(missing))
 
     if count:
-        named = [
-            name
-            for name, flags in ((x_name, x_missing), (y_name, y_missing))
-            if np.any(flags)
-        ]
         verb = "is" if count == 1 else "are"
         emsg = (
             f"A {shape} needs every position given, but {count} of {missing.size} "

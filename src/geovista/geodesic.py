@@ -213,14 +213,17 @@ class BBox:  # numpydoc ignore=PR01
             If `xs` and `ys` give different numbers of values, or fewer than 4 or
             more than 5. Also if a corner is missing, because its x or y value is
             masked or NaN, or if a value is infinite. The bounding-box is refused
-            before any of it is built.
+            before any of it is built. Also if only one of `xs` and `ys` is a
+            ``pint`` quantity, or a quantity is not of the kind the axes of the
+            `crs` measure, such as an angle for a projected `crs`.
 
         Notes
         -----
         .. versionadded:: 0.1.0
 
         """
-        xs, ys = map(np.atleast_1d, _coordinates(xs, ys, crs))
+        # the corners are counted and paired in order, whatever their shape
+        xs, ys = map(np.ravel, _coordinates(xs, ys, crs))
         nx, ny = xs.size, ys.size
 
         if nx != ny:
@@ -1135,7 +1138,8 @@ def line(
         If `lons` and `lats` give different numbers of values, or fewer than 2, or
         just 2 at the same point. Also if a position is missing, because its
         longitude or latitude is masked or NaN, or if a value is infinite. The line
-        is refused before any geodesic is computed.
+        is refused before any geodesic is computed. Also if only one of `lons` and
+        `lats` is a ``pint`` quantity.
 
     Notes
     -----
