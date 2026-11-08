@@ -337,6 +337,20 @@ def test_refuses_a_zlevel_of_another_shape():
         Transform.from_points(nan(LONS, 1), LATS, zlevel=[1, 2, 3])
 
 
+def test_refuses_coordinates_of_another_size():
+    """Test coordinates of different sizes are refused as before, with no drop.
+
+    The points are paired only when the two have one size, so the transform
+    refuses them, and no point is dropped or warned of.
+
+    """
+    emsg = r"'xs' and 'ys' require same length, got 4 and 3 respectively\."
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        with pytest.raises(ValueError, match=emsg):
+            Transform.from_points(nan(LONS, 1), LATS[:3])
+
+
 def test_refuses_infinite():
     """Test an infinite coordinate is refused, naming it.
 

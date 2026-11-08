@@ -284,3 +284,17 @@ def test_refuses_scalars_of_another_count(kwargs, shape):
     )
     with pytest.raises(ValueError, match=emsg):
         GeoPlotter().add_points(xs=xs, ys=LATS, **kwargs)
+
+
+def test_refuses_coordinates_of_another_size():
+    """Test coordinates of different sizes are refused as before, with no drop.
+
+    Their scalars are left uncut, so the refusal is that of the transform.
+
+    """
+    xs = np.ma.masked_array(LONS, mask=[0, 1, 0, 0])
+    emsg = r"'xs' and 'ys' require same length, got 4 and 3 respectively\."
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        with pytest.raises(ValueError, match=emsg):
+            GeoPlotter().add_points(xs=xs, ys=LATS[:3], scalars=[1.0, 2.0, 3.0, 4.0])
