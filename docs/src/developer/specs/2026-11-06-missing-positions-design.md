@@ -382,7 +382,7 @@ Each carries the grammar of items spec §3.2.
 | 1 | Queries: the test of §4.1 and the refusal of an infinite coordinate, `KDTree.query` answering that a missing point has no neighbour (§4.2), and `find_nearest_cell` and `GeoPlotter.view_poi` refusing a missing position (§4.3) | ✅ landed (2026-11-06, {pull}`2889`) |
 | 2 | Geodesic shapes: `geodesic.line`, `BBox` and `wedge` refusing a missing position (§4.4) | ✅ landed (2026-11-07, {pull}`2893`) |
 | 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) | ✅ landed (2026-11-08, {pull}`2899`) |
-| 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | 📋 not started |
+| 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | 🚧 in progress ({pull}`2908`) |
 | 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | 📋 not started |
 | 6 | Wedge width: `geodesic.wedge` refusing a wedge of no width, as the message of its check says (§8 item 3) | ✅ landed (2026-11-08, {pull}`2905`) |
 
