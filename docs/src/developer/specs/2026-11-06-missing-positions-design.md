@@ -363,6 +363,14 @@ Each carries the grammar of items spec §3.2.
    do with a missing position, and fixing it would refuse calls that build today. Owed by
    row 6 of §9, added for it, since no other row touches `wedge`.
 
+4. **❓ Open** (🔎 2026-11-08, {pull}`2899` · 🎯 row 5 of §9 · 🎫 {issue}`2901`) — **`Transform.from_points`
+   names the `zlevel` after a drop when it refuses one given with `vectors`.** It refuses a
+   `zlevel` array given with `vectors`, with "'zlevel' may not be multiple, has shape ...".
+   Once a point is dropped, that shape is the one after the drop, so a `(2, 1)` array on
+   points of shape `(2, 3)`, one of them missing, is named `(5,)`. The call is refused
+   either way. The final review of row 3 found it. Owed by row 5 of §9, since the refusal
+   is that of `_vectors_to_cartesian`, which row 5 changes with `vectors_to_cartesian`.
+
 (positions-spec-9)=
 ## 9. Roadmap
 
