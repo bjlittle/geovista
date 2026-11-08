@@ -1567,8 +1567,8 @@ def wedge(
     Raises
     ------
     ValueError
-        If `lon1` or `lon2` is masked or NaN, or infinite, or they are 180 degrees or
-        more apart.
+        If `lon1` or `lon2` is masked or NaN, or infinite, or they are equal or 180
+        degrees or more apart.
 
     Notes
     -----
@@ -1606,7 +1606,7 @@ def wedge(
 
     delta = abs(lon1 - lon2)
 
-    if 0 < delta >= 180:
+    if not 0 < delta < 180:
         emsg = (
             "A geodesic wedge must have an absolute longitudinal difference "
             f"(degrees) in the open interval (0, 180), got '{delta}'."
