@@ -416,8 +416,8 @@ class Transform:  # numpydoc ignore=PR01
                 f"geovista connectivity defines {n_dropped:,} {noun} that {verb} "
                 f"a missing point, which {be} dropped."
             )
-            # warn where the bridge method that called this one was called
-            warnings.warn(wmsg, stacklevel=3)
+            # warn where from_unstructured, or the constructor, was called
+            warnings.warn(wmsg, stacklevel=4)
             connectivity = connectivity[kept]
 
         return connectivity, kept
@@ -668,6 +668,48 @@ class Transform:  # numpydoc ignore=PR01
         )
 
     @classmethod
+    def _connectivity_2d(cls, xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
+        """Create the connectivity of the quad-faces of a 2D mesh.
+
+        Parameters
+        ----------
+        xs : ndarray
+            The ``(M+1, N+1)`` or ``(M, N, 4)`` x-values of the mesh.
+        ys : ndarray
+            The y-values of the mesh, in the shape of `xs`.
+
+        Returns
+        -------
+        ndarray
+            The ``(M*N, 4)`` zero-based connectivity of the quad-faces.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        cls._verify_2d(xs, ys)
+        shape, ndim = xs.shape, xs.ndim
+
+        points_shape: tuple[int, int]
+        if ndim == 2:
+            # we have shape (M+1, N+1)
+            rows, cols = points_shape = shape
+            cells_shape = (rows - 1, cols - 1)
+        else:
+            # we have shape (M, N, 4)
+            rows, cols = cells_shape = shape[:-1]
+            points_shape = (rows + 1, cols + 1)
+
+        # generate connectivity (topology) map of indices into the geometry
+        connectivity: np.ndarray = (
+            cls._create_connectivity_m1n1(points_shape)
+            if ndim == 2
+            else cls._create_connectivity_mn4(cells_shape)
+        )
+        return connectivity
+
+    @classmethod
     def from_2d(
         cls,
         xs: ArrayLike | Quantity,
@@ -775,25 +817,7 @@ class Transform:  # numpydoc ignore=PR01
 
         """
         xs, ys = map(np.asanyarray, _coordinates(xs, ys, crs))
-        cls._verify_2d(xs, ys)
-        shape, ndim = xs.shape, xs.ndim
-
-        points_shape: tuple[int, int]
-        if ndim == 2:
-            # we have shape (M+1, N+1)
-            rows, cols = points_shape = shape
-            cells_shape = (rows - 1, cols - 1)
-        else:
-            # we have shape (M, N, 4)
-            rows, cols = cells_shape = shape[:-1]
-            points_shape = (rows + 1, cols + 1)
-
-        # generate connectivity (topology) map of indices into the geometry
-        connectivity = (
-            cls._create_connectivity_m1n1(points_shape)
-            if ndim == 2
-            else cls._create_connectivity_mn4(cells_shape)
-        )
+        connectivity = cls._connectivity_2d(xs, ys)
 
         return Transform.from_unstructured(
             xs,
@@ -1688,6 +1712,95 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
+        mesh, _ = cls._unstructured(
+            xs,
+            ys,
+            connectivity=connectivity,
+            data=data,
+            start_index=start_index,
+            name=name,
+            crs=crs,
+            rgb=rgb,
+            globe=globe,
+            zlevel=zlevel,
+            zscale=zscale,
+            height=height,
+            depth=depth,
+            vertical_units=vertical_units,
+            clean=clean,
+        )
+        return mesh
+
+    @classmethod
+    def _unstructured(
+        cls,
+        xs: ArrayLike | Quantity,
+        ys: ArrayLike | Quantity,
+        /,
+        *,
+        connectivity: ArrayLike | Shape | None = None,
+        data: ArrayLike | None = None,
+        start_index: int | None = None,
+        name: str | None = None,
+        crs: CRSLike | None = None,
+        rgb: bool | None = False,
+        globe: Globe | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
+        clean: bool | None = None,
+    ) -> tuple[pv.PolyData, np.ndarray]:
+        """Build a mesh from unstructured points, and the faces given that it kept.
+
+        This is the body of :meth:`from_unstructured`. The constructor builds through
+        it too, since it attaches data later, to the faces that remain.
+
+        Parameters
+        ----------
+        xs : ArrayLike or pint.Quantity
+            As for :meth:`from_unstructured`.
+        ys : ArrayLike or pint.Quantity
+            As for :meth:`from_unstructured`.
+        connectivity : ArrayLike or Shape, optional
+            As for :meth:`from_unstructured`.
+        data : ArrayLike, optional
+            As for :meth:`from_unstructured`.
+        start_index : int, optional
+            As for :meth:`from_unstructured`.
+        name : str, optional
+            As for :meth:`from_unstructured`.
+        crs : CRSLike, optional
+            As for :meth:`from_unstructured`.
+        rgb : bool, optional
+            As for :meth:`from_unstructured`.
+        globe : Globe, optional
+            As for :meth:`from_unstructured`.
+        zlevel : int, optional
+            As for :meth:`from_unstructured`.
+        zscale : float, optional
+            As for :meth:`from_unstructured`.
+        height : ArrayLike or pint.Quantity, optional
+            As for :meth:`from_unstructured`.
+        depth : ArrayLike or pint.Quantity, optional
+            As for :meth:`from_unstructured`.
+        vertical_units : str, optional
+            As for :meth:`from_unstructured`.
+        clean : bool, optional
+            As for :meth:`from_unstructured`.
+
+        Returns
+        -------
+        tuple of PolyData and ndarray
+            The mesh, and an ``(M,)`` boolean array that is ``True`` for each of the
+            ``M`` faces of the `connectivity` that the mesh kept.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
         if rgb is None:
             rgb = False
 
@@ -1792,7 +1905,8 @@ class Transform:  # numpydoc ignore=PR01
                     f"geovista masked connectivity defines {n_invalid:,} {noun} "
                     f"with fewer than three vertices, which {verb} dropped."
                 )
-                warnings.warn(wmsg, stacklevel=2)
+                # warn where from_unstructured, or the constructor, was called
+                warnings.warn(wmsg, stacklevel=3)
                 n_vertices = n_vertices[valid_faces_mask]
                 connectivity_array = connectivity_array[valid_faces_mask]
                 kept[kept] = valid_faces_mask
@@ -1872,7 +1986,7 @@ class Transform:  # numpydoc ignore=PR01
         if clean:
             mesh.clean(inplace=True)
 
-        return mesh
+        return mesh, kept
 
     @classmethod
     def to_structured_grid(
@@ -2107,35 +2221,29 @@ class Transform:  # numpydoc ignore=PR01
         xs, ys = map(np.asanyarray, _coordinates(xs, ys, crs))
         globe = _resolve(globe)
 
-        if connectivity is None:
-            if xs.ndim <= 1 or ys.ndim <= 1:
-                mesh = self.from_1d(
-                    xs,
-                    ys,
-                    crs=crs,
-                    globe=globe,
-                    zlevel=zlevel,
-                    zscale=zscale,
-                    height=height,
-                    depth=depth,
-                    vertical_units=vertical_units,
-                    clean=clean,
-                )
-            else:
-                mesh = self.from_2d(
-                    xs,
-                    ys,
-                    crs=crs,
-                    globe=globe,
-                    zlevel=zlevel,
-                    zscale=zscale,
-                    height=height,
-                    depth=depth,
-                    vertical_units=vertical_units,
-                    clean=clean,
-                )
+        # the faces given that the mesh kept, so that data given for each face is
+        # cut later, as from_unstructured cuts it; from_1d drops no face
+        kept: np.ndarray | None = None
+
+        if connectivity is None and (xs.ndim <= 1 or ys.ndim <= 1):
+            mesh = self.from_1d(
+                xs,
+                ys,
+                crs=crs,
+                globe=globe,
+                zlevel=zlevel,
+                zscale=zscale,
+                height=height,
+                depth=depth,
+                vertical_units=vertical_units,
+                clean=clean,
+            )
         else:
-            mesh = self.from_unstructured(
+            if connectivity is None:
+                # the quad-faces of the points, as from_2d builds them, which
+                # takes no start index
+                connectivity, start_index = self._connectivity_2d(xs, ys), None
+            mesh, kept = self._unstructured(
                 xs,
                 ys,
                 connectivity=connectivity,
@@ -2151,6 +2259,7 @@ class Transform:  # numpydoc ignore=PR01
             )
 
         self._mesh = mesh
+        self._kept = kept
         self._globe = globe
         self._n_points = mesh.n_points
         self._n_cells = mesh.n_cells
@@ -2163,7 +2272,9 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         data : ArrayLike, optional
-            Data to be optionally attached to the mesh face or nodes.
+            Data to be optionally attached to the mesh face or nodes. Should any
+            face be dropped, data with a value for each face given keeps only the
+            values of the faces that remain.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
@@ -2180,7 +2291,9 @@ class Transform:  # numpydoc ignore=PR01
 
         """
         if data is not None:
-            data = self._as_compatible_data(data, self._n_points, self._n_cells)
+            data = self._as_compatible_data(
+                data, self._n_points, self._n_cells, kept=self._kept
+            )
 
         mesh = pv.PolyData()
         mesh.copy_structure(self._mesh)

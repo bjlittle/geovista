@@ -20,7 +20,7 @@ import pint
 import pytest
 
 from geovista import bridge
-from geovista.bridge import NAME_CELLS, Transform
+from geovista.bridge import NAME_CELLS, NAME_POINTS, Transform
 from geovista.crs import WGS84
 from geovista.transform import transform_points
 
@@ -218,3 +218,35 @@ def test_keeps_present_points(xs):
         warnings.simplefilter("error")
         result = Transform.from_2d(xs, LATS)
     assert result.n_cells == 4
+
+
+@pytest.mark.parametrize(
+    ("xs", "ys"), [(nan(LONS, CORNER), LATS), alike(CORNER)], ids=["nan", "alike"]
+)
+def test_constructor_cuts_data_for_each_face(xs, ys):
+    """Test the constructor keeps the data of the faces that remain.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    with pytest.warns(UserWarning, match=ONE):
+        transform = Transform(xs, ys)
+    result = transform(data=[1.0, 2.0, 3.0, 4.0])
+    np.testing.assert_array_equal(result.cell_data[NAME_CELLS], [1.0, 2.0, 3.0])
+
+
+def test_constructor_keeps_data_for_each_point():
+    """Test data given for each point still fits, as the missing point stays."""
+    with pytest.warns(UserWarning, match=ONE):
+        transform = Transform(nan(LONS, CORNER), LATS)
+    result = transform(data=np.arange(9.0))
+    np.testing.assert_array_equal(result.point_data[NAME_POINTS], np.arange(9.0))
+
+
+def test_constructor_refuses_data_of_another_count():
+    """Test data neither for each point nor for each face is refused, as before."""
+    with pytest.warns(UserWarning, match=ONE):
+        transform = Transform(nan(LONS, CORNER), LATS)
+    emsg = r"Require mesh data with either '9' points or '3' cells, got '5' values\."
+    with pytest.raises(ValueError, match=emsg):
+        transform(data=np.arange(5.0))
