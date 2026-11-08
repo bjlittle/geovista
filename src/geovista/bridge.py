@@ -31,6 +31,8 @@ from .common import (
     GV_FIELD_ZSCALE,
     ZLEVEL_SCALE,
     VectorLike,
+    _missing_and_named,
+    _named,
     _to_cartesian,
     _vectors_to_cartesian,
     cast_UnstructuredGrid_to_PolyData,
@@ -808,6 +810,202 @@ class Transform:  # numpydoc ignore=PR01
             rgb=rgb,
         )
 
+    @staticmethod
+    def _warn_dropped(missing: np.ndarray, named: list[str], /) -> None:
+        """Warn that a point cloud drops its missing points, counting them.
+
+        Parameters
+        ----------
+        missing : ndarray of bool
+            ``True`` for each point given that is missing, at least one of them.
+        named : list of str
+            The names of the coordinates masked or NaN.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        count, total = int(np.count_nonzero(missing)), missing.size
+        where = f"where {_named(named)} masked or NaN"
+
+        if count == total:
+            wmsg = (
+                f"geovista dropped every point of the point cloud ({total:,}), "
+                f"{where}, so it has no points."
+            )
+        else:
+            wmsg = (
+                f"geovista dropped {count:,} of {total:,} points from the point "
+                f"cloud, {where}."
+            )
+
+        # the caller of from_points, through _drop_missing
+        warnings.warn(wmsg, stacklevel=4)
+
+    @classmethod
+    def _drop_missing(
+        cls,
+        xs: np.ndarray,
+        ys: np.ndarray,
+        /,
+        *,
+        data: ArrayLike | None,
+        heights: np.ndarray | None,
+        zlevel: int | ArrayLike | None,
+    ) -> tuple[
+        np.ndarray,
+        np.ndarray,
+        slice | np.ndarray,
+        ArrayLike | None,
+        np.ndarray | None,
+        int | ArrayLike | None,
+    ]:
+        """Drop the missing points of a cloud, with their entry in each array for them.
+
+        A point is missing when its x or y value is masked or NaN, and an infinite
+        value is refused (positions spec §4.1). The points are paired in order, as
+        the transform pairs them, so points of different sizes are left to the
+        transform to refuse. A cloud has no topology, so once a point is dropped,
+        the points and each array given for them are taken as one sequence, and
+        anything else is left to the checks that refuse it (positions spec §4.5).
+
+        Parameters
+        ----------
+        xs : ndarray
+            The x-values of the points, with any ``pint`` quantity read already.
+        ys : ndarray
+            The y-values of the points, with any ``pint`` quantity read already.
+        data : ArrayLike, optional
+            The data of the points.
+        heights : ndarray, optional
+            The heights of the points, one for each point given.
+        zlevel : int or ArrayLike, optional
+            The z-levels of the points.
+
+        Returns
+        -------
+        ndarray
+            The x-values of the points kept, or `xs` when none is missing.
+        ndarray
+            The y-values of the points kept, or `ys` when none is missing.
+        slice or ndarray of bool
+            ``True`` for each point given that is kept, in C order, or a slice of
+            every point when none is missing.
+        ArrayLike or None
+            The `data` of the points kept.
+        ndarray or None
+            The `heights` of the points kept.
+        int or ArrayLike or None
+            The `zlevel` of the points kept.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        every = slice(None)
+        if xs.size != ys.size:
+            return xs, ys, every, data, heights, zlevel
+
+        missing, named = _missing_and_named(
+            xs.ravel(), ys.ravel(), x_name="xs", y_name="ys"
+        )
+        if not np.any(missing):
+            return xs, ys, every, data, heights, zlevel
+
+        cls._warn_dropped(missing, named)
+        kept = ~missing
+        shape = xs.shape
+        # a list holding None reads as floats, and the values under a mask go
+        xs = np.asarray(np.ma.getdata(xs), dtype=float).ravel()[kept]
+        ys = np.asarray(np.ma.getdata(ys), dtype=float).ravel()[kept]
+        if heights is not None:
+            heights = heights[kept]
+
+        return (
+            xs,
+            ys,
+            kept,
+            cls._cut_points(data, missing.size, kept),
+            heights,
+            cls._cut_zlevel(zlevel, shape, kept),
+        )
+
+    @staticmethod
+    def _cut_points(
+        values: ArrayLike | None, n_points: int, kept: np.ndarray, /
+    ) -> ArrayLike | None:
+        """Keep the values of the points kept, given one value for each point.
+
+        Parameters
+        ----------
+        values : ArrayLike, optional
+            The values, which are cut only when there is one for each point given.
+        n_points : int
+            The number of points given.
+        kept : ndarray of bool
+            ``True`` for each point given that is kept, in C order.
+
+        Returns
+        -------
+        ArrayLike or None
+            The values of the points kept, raveled, or `values` as given.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        if values is None:
+            return None
+
+        array = np.asanyarray(values)
+        if array.size != n_points:
+            # left to the checks that refuse it
+            return values
+
+        result: np.ndarray = array.ravel()[kept]
+        return result
+
+    @staticmethod
+    def _cut_zlevel(
+        zlevel: int | ArrayLike | None, shape: tuple[int, ...], kept: np.ndarray, /
+    ) -> int | ArrayLike | None:
+        """Keep the z-levels of the points kept, from an array of them.
+
+        Parameters
+        ----------
+        zlevel : int or ArrayLike, optional
+            The z-levels, which are cut only when there is more than one, and they
+            broadcast to the `shape` of the points.
+        shape : tuple of int
+            The shape of the points given.
+        kept : ndarray of bool
+            ``True`` for each point given that is kept, in C order.
+
+        Returns
+        -------
+        int or ArrayLike or None
+            The z-levels of the points kept, raveled, or `zlevel` as given.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        if zlevel is None or np.size(zlevel) == 1:
+            return zlevel
+
+        try:
+            levels = np.broadcast_to(np.asanyarray(zlevel), shape)
+        except ValueError:
+            # left to the checks that refuse it
+            return zlevel
+
+        result: np.ndarray = levels.ravel()[kept]
+        return result
+
     @classmethod
     def from_points(
         cls,
@@ -841,11 +1039,15 @@ class Transform:  # numpydoc ignore=PR01
             Must have the same shape as the `ys`.
             A ``pint`` quantity, from any registry, carries its own units, and is read
             in those of the `crs`. Give `ys` as a quantity too.
+            A point whose `xs` or `ys` is masked or NaN is missing. It is dropped
+            with a warning, along with its entries in `data`, `vectors`, the heights
+            and a `zlevel` array (positions spec §4.5). An infinite value is refused.
         ys : ArrayLike or pint.Quantity
             A 1D, 2D or 3D array of point-cloud y-values, in canonical `crs` units.
             Must have the same shape as the `xs`.
             A ``pint`` quantity, from any registry, carries its own units, and is read
             in those of the `crs`. Give `xs` as a quantity too.
+            A missing point is dropped, as for `xs`.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh points defined by
             `xs` and `ys`.
@@ -931,6 +1133,13 @@ class Transform:  # numpydoc ignore=PR01
             # a cloud with heights carries no z-level (heights spec §4.3)
             zlevel = None
 
+        # a missing point is dropped before any point is transformed, with its
+        # entry in every array given for each point (positions spec §4.5)
+        given = xs.shape
+        xs, ys, kept, data, heights, zlevel = cls._drop_missing(
+            xs, ys, data=data, heights=heights, zlevel=zlevel
+        )
+
         if crs is None:
             crs = WGS84
 
@@ -993,16 +1202,17 @@ class Transform:  # numpydoc ignore=PR01
             # both are taken as one sequence, or a component of the right size
             # but another layout would land its values on the wrong points
             components = [np.asanyarray(component) for component in vectors]
-            if any(component.shape != shape for component in components):
+            if any(component.shape != given for component in components):
                 shapes = [component.shape for component in components]
                 emsg = (
                     "Cannot build vectors, each component of 'vectors' requires the "
-                    f"shape of 'xs' {shape}, got {shapes}."
+                    f"shape of 'xs' {given}, got {shapes}."
                 )
                 raise ValueError(emsg)
 
-            # unpack vector components to UVW, one for each point in sequence
-            components = [component.ravel() for component in components]
+            # unpack vector components to UVW, one for each point in sequence,
+            # without those of the points dropped
+            components = [component.ravel()[kept] for component in components]
             us, vs = components[:2]
             ws = components[2] if len(components) == 3 else np.zeros_like(us)
 
