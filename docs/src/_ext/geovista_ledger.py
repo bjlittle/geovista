@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from sphinx.application import Sphinx
+    from sphinx.environment import BuildEnvironment
 
 #: Where the repository's files are browsed on GitHub, by commit or tag.
 BLOB = "https://github.com/bjlittle/geovista/blob"
@@ -46,6 +47,10 @@ SPECS = Path("developer") / "specs"
 NAMES: geovista_citations.Namespace | None = None
 #: The prefix of each specification, keyed by its docname.
 OWNERS: dict[str, str] = {}
+
+#: The attribute of the environment recording where the last build's evidence
+#: links pointed, and the root their paths were read from.
+ENV_SOURCE = "geovista_ledger_source"
 
 #: The title of the section holding the ledger, as MyST renders it, numbered.
 TITLE = re.compile(rf"^(?:\d+(?:\.\d+)*\.?\s+)?{geovista_citations.VERIFICATION}$")
@@ -206,6 +211,48 @@ def _build_registry(app: Sphinx) -> None:
     )
 
 
+def _outdated(
+    app: Sphinx,
+    env: BuildEnvironment,
+    added: set[str],
+    changed: set[str],
+    _removed: set[str],
+) -> set[str]:
+    """Re-read every specification when its evidence links would point elsewhere.
+
+    The links are baked into each pickled doctree, and the source changes with
+    every commit, so a page an incremental build did not otherwise re-read would
+    go on linking into an earlier commit (ledger spec §2 decision 18). Only the
+    specifications carry a ledger, so only they are re-read, where an ``"env"``
+    rebuild of the setting would re-read every page after every commit.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        The application, read for where links point and the root of their paths.
+    env : sphinx.environment.BuildEnvironment
+        The environment, which records where the last build's links pointed.
+    added : set of str
+        Documents new since the last build.
+    changed : set of str
+        Documents Sphinx has already found out of date.
+    _removed : set of str
+        Documents gone since the last build. Unread.
+
+    Returns
+    -------
+    set of str
+        The specifications to re-read on top of those Sphinx found itself.
+
+    """
+    current = (app.config.geovista_ledger_source, app.config.geovista_ledger_root)
+    if getattr(env, ENV_SOURCE, None) == current:
+        return set()
+    setattr(env, ENV_SOURCE, current)
+    # on a first build every specification is already added, so this is empty
+    return (set(OWNERS) & set(env.found_docs)) - added - changed
+
+
 def setup(app: Sphinx) -> dict[str, object]:
     """Register the transform.
 
@@ -221,13 +268,15 @@ def setup(app: Sphinx) -> dict[str, object]:
 
     """
     # where evidence links point, and the root their paths are read from; a
-    # change to either rewrites no page that was read before it
+    # change to either re-reads the specifications alone, through _outdated
     app.add_config_value("geovista_ledger_source", None, "", types=frozenset({str}))
     app.add_config_value("geovista_ledger_root", None, "", types=frozenset({str}))
     app.connect("builder-inited", _build_registry)
+    app.connect("env-get-outdated", _outdated)
     app.add_transform(LedgerSummary)
     return {
         "version": "0.1.0",
+        "env_version": 1,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }

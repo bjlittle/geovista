@@ -104,8 +104,8 @@ After the table.
 """
 
 
-def build(src: Path, out: Path) -> tuple[Path, str]:
-    """Build ``src``, returning its HTML and its warnings."""
+def build(src: Path, out: Path, status: io.StringIO | None = None) -> tuple[Path, str]:
+    """Build ``src``, returning its HTML and its warnings, and writing its status."""
     from sphinx.application import Sphinx  # noqa: PLC0415
     from sphinx.util.docutils import docutils_namespace  # noqa: PLC0415
 
@@ -118,7 +118,7 @@ def build(src: Path, out: Path) -> tuple[Path, str]:
             str(out / "html"),
             str(out / "doctrees"),
             "html",
-            status=None,
+            status=status,
             warning=warning,
         )
         app.build()
@@ -253,6 +253,62 @@ def test_a_build_naming_no_source_links_no_evidence(tmp_path):
 
     assert "tests/test_demo.py" in page
     assert BASE not in page
+
+
+def rebuild(tmp_path: Path, old: str, new: str) -> tuple[str, str]:
+    """Edit the configuration and build again into the same output.
+
+    Returns the specification's page and the status of the second build, which
+    names each document it read.
+    """
+    conf = tmp_path / "repo" / "docs" / "src" / "conf.py"
+    conf.write_text(conf.read_text(encoding="utf-8").replace(old, new))
+    status = io.StringIO()
+    html, warning = build(conf.parent, tmp_path / "out", status)
+    assert warning == ""
+    page = html / "developer" / "specs" / "2026-01-01-demo-design.html"
+    return page.read_text(encoding="utf-8"), status.getvalue()
+
+
+@pytest.mark.usefixtures("ledger")
+def test_a_new_source_relinks_the_specifications_alone(tmp_path):
+    """A commit since the last build re-reads each specification, and no more.
+
+    Links baked into an unchanged page would otherwise point at the commit an
+    earlier build read, against ledger spec §2 decision 18 (Codex, #2902).
+    """
+    evidenced(tmp_path, source="https://example.org/blob/commit-a/")
+
+    page, status = rebuild(tmp_path, "commit-a", "commit-b")
+
+    assert "https://example.org/blob/commit-b/tests/test_demo.py#L5" in page
+    assert "commit-a" not in page
+    assert "0 added, 1 changed, 0 removed" in status
+
+
+@pytest.mark.usefixtures("ledger")
+def test_an_unchanged_source_reads_nothing_again(tmp_path):
+    """A build where nothing changed re-reads no specification."""
+    evidenced(tmp_path)
+
+    page, status = rebuild(tmp_path, "", "")
+
+    assert f"{BASE}tests/test_demo.py#L5" in page
+    assert "0 added, 0 changed, 0 removed" in status
+
+
+@pytest.mark.usefixtures("ledger")
+def test_a_new_root_relinks_the_specifications(tmp_path):
+    """Evidence read from another root takes that root's citing line."""
+    evidenced(tmp_path)
+    other = tmp_path / "other"
+    (other / "tests").mkdir(parents=True)
+    (other / "tests" / "test_demo.py").write_text("\n" + CITING, encoding="utf-8")
+    (other / "tests" / "test_silent.py").write_text('"""Cites nothing."""\n')
+
+    page, _ = rebuild(tmp_path, str(tmp_path / "repo"), str(other))
+
+    assert f"{BASE}tests/test_demo.py#L6" in page
 
 
 @pytest.mark.parametrize(
