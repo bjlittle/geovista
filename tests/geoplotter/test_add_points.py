@@ -243,3 +243,26 @@ def test_draws_present_points_as_before():
     drawn = actor.mapper.dataset
     assert drawn.n_points == 4
     np.testing.assert_allclose(scalars_of(actor), [1.0, 2.0, 3.0, 4.0])
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "shape"),
+    [
+        ({"scalars": [1.0, 2.0, 3.0]}, r"\(3,\)"),
+        ({"scalars": np.zeros((3, 3), dtype=np.uint8), "rgb": True}, r"\(3, 3\)"),
+    ],
+    ids=["values", "colours"],
+)
+def test_refuses_scalars_of_another_count(kwargs, shape):
+    """Test scalars that are not one for each point given are refused, as before.
+
+    Scalars short by the points dropped are not paired with the points kept.
+
+    """
+    xs = np.ma.masked_array(LONS, mask=[0, 1, 0, 0])
+    emsg = (
+        r"Require scalars with one value, or one row, for each of the 4 points "
+        rf"given, got shape {shape}\."
+    )
+    with pytest.raises(ValueError, match=emsg):
+        GeoPlotter().add_points(xs=xs, ys=LATS, **kwargs)

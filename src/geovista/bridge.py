@@ -867,8 +867,10 @@ class Transform:  # numpydoc ignore=PR01
         value is refused (positions spec §4.1). The points are paired in order, as
         the transform pairs them, so points of different sizes are left to the
         transform to refuse. A cloud has no topology, so once a point is dropped,
-        the points and each array given for them are taken as one sequence, and
-        anything else is left to the checks that refuse it (positions spec §4.5).
+        the points and each array given for them are taken as one sequence
+        (positions spec §4.5). An array of another count is refused before the
+        warning, as it is when no point is missing, and never paired with the
+        points kept.
 
         Parameters
         ----------
@@ -914,34 +916,29 @@ class Transform:  # numpydoc ignore=PR01
         if not np.any(missing):
             return xs, ys, every, data, heights, zlevel
 
-        cls._warn_dropped(missing, named)
         kept = ~missing
-        shape = xs.shape
+        data = cls._cut_points(data, missing.size, kept)
+        zlevel = cls._cut_zlevel(zlevel, xs.shape, kept)
+        cls._warn_dropped(missing, named)
+
         # a list holding None reads as floats, and the values under a mask go
         xs = np.asarray(np.ma.getdata(xs), dtype=float).ravel()[kept]
         ys = np.asarray(np.ma.getdata(ys), dtype=float).ravel()[kept]
         if heights is not None:
             heights = heights[kept]
 
-        return (
-            xs,
-            ys,
-            kept,
-            cls._cut_points(data, missing.size, kept),
-            heights,
-            cls._cut_zlevel(zlevel, shape, kept),
-        )
+        return xs, ys, kept, data, heights, zlevel
 
-    @staticmethod
+    @classmethod
     def _cut_points(
-        values: ArrayLike | None, n_points: int, kept: np.ndarray, /
-    ) -> ArrayLike | None:
+        cls, values: ArrayLike | None, n_points: int, kept: np.ndarray, /
+    ) -> np.ndarray | None:
         """Keep the values of the points kept, given one value for each point.
 
         Parameters
         ----------
         values : ArrayLike, optional
-            The values, which are cut only when there is one for each point given.
+            The values, one for each point given.
         n_points : int
             The number of points given.
         kept : ndarray of bool
@@ -949,8 +946,14 @@ class Transform:  # numpydoc ignore=PR01
 
         Returns
         -------
-        ArrayLike or None
-            The values of the points kept, raveled, or `values` as given.
+        ndarray or None
+            The values of the points kept, raveled, with any masked value as NaN.
+
+        Raises
+        ------
+        ValueError
+            If `values` are not one for each point given, as when no point is
+            missing.
 
         Notes
         -----
@@ -960,11 +963,8 @@ class Transform:  # numpydoc ignore=PR01
         if values is None:
             return None
 
-        array = np.asanyarray(values)
-        if array.size != n_points:
-            # left to the checks that refuse it
-            return values
-
+        # a point cloud has a cell for each point, so it is checked as one
+        array = cls._as_compatible_data(values, n_points, n_points)
         result: np.ndarray = array.ravel()[kept]
         return result
 
@@ -977,8 +977,7 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         zlevel : int or ArrayLike, optional
-            The z-levels, which are cut only when there is more than one, and they
-            broadcast to the `shape` of the points.
+            The z-levels, which are cut only when there is more than one.
         shape : tuple of int
             The shape of the points given.
         kept : ndarray of bool
@@ -988,6 +987,12 @@ class Transform:  # numpydoc ignore=PR01
         -------
         int or ArrayLike or None
             The z-levels of the points kept, raveled, or `zlevel` as given.
+
+        Raises
+        ------
+        ValueError
+            If `zlevel` does not broadcast to the `shape` of the points given, as
+            when no point is missing.
 
         Notes
         -----
@@ -999,9 +1004,13 @@ class Transform:  # numpydoc ignore=PR01
 
         try:
             levels = np.broadcast_to(np.asanyarray(zlevel), shape)
-        except ValueError:
-            # left to the checks that refuse it
-            return zlevel
+        except ValueError as err:
+            # the refusal of _to_cartesian, for the points given
+            emsg = (
+                f"Cannot broadcast zlevel with shape {np.atleast_1d(zlevel).shape} "
+                f"to longitude/latitude shape {shape}."
+            )
+            raise ValueError(emsg) from err
 
         result: np.ndarray = levels.ravel()[kept]
         return result

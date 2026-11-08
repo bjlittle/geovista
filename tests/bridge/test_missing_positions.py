@@ -23,6 +23,7 @@ import pytest
 
 from geovista import bridge
 from geovista.bridge import NAME_POINTS, NAME_VECTORS, Transform
+from geovista.common import GV_POINT_HEIGHT
 
 UREG = pint.UnitRegistry()
 
@@ -281,8 +282,34 @@ def test_a_cloud_of_only_missing_points():
             xs, [0.0, 5.0, 10.0], data=[1.0, 2.0, 3.0], height=[1.0, 2.0, 3.0]
         )
     assert result.n_points == 0
+    assert set(result.point_data) == {NAME_POINTS, GV_POINT_HEIGHT}
     for name in result.point_data:
         assert result[name].size == 0
+
+
+def test_refuses_data_of_another_count():
+    """Test data that is not one value for each point given is refused, as before.
+
+    Data short by the points dropped is not paired with the points kept.
+
+    """
+    emsg = r"Require mesh data with either '4' points or '4' cells, got '3' values\."
+    with pytest.raises(ValueError, match=emsg):
+        Transform.from_points(nan(LONS, 1), LATS, data=[1.0, 2.0, 3.0])
+
+
+def test_refuses_a_zlevel_of_another_shape():
+    """Test a z-level that does not broadcast to the points given is refused, as before.
+
+    A z-level short by the points dropped is not paired with the points kept.
+
+    """
+    emsg = (
+        r"Cannot broadcast zlevel with shape \(3,\) to longitude/latitude shape "
+        r"\(4,\)\."
+    )
+    with pytest.raises(ValueError, match=emsg):
+        Transform.from_points(nan(LONS, 1), LATS, zlevel=[1, 2, 3])
 
 
 def test_refuses_infinite():

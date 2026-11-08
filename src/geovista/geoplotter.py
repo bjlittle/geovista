@@ -169,7 +169,7 @@ def _lfric_mesh(
     return mesh
 
 
-def _cut_scalars(scalars: ArrayLike, kept: np.ndarray) -> ArrayLike:
+def _cut_scalars(scalars: ArrayLike, kept: np.ndarray) -> np.ndarray:
     """Keep the scalars of the points kept, of one value or one row for each point.
 
     A point cloud drops a missing point, with its entry in every array given for
@@ -178,15 +178,20 @@ def _cut_scalars(scalars: ArrayLike, kept: np.ndarray) -> ArrayLike:
     Parameters
     ----------
     scalars : ArrayLike
-        The scalars, which are cut only when there is one value, or one row such
-        as a colour, for each point given.
+        The scalars: one value, or one row such as a colour, for each point given.
     kept : ndarray of bool
         ``True`` for each point given that is kept, in C order.
 
     Returns
     -------
-    ArrayLike
-        The scalars of the points kept, or `scalars` as given.
+    ndarray
+        The scalars of the points kept.
+
+    Raises
+    ------
+    ValueError
+        If `scalars` are not one value or one row for each point given, which
+        would be refused were no point missing.
 
     Notes
     -----
@@ -204,8 +209,12 @@ def _cut_scalars(scalars: ArrayLike, kept: np.ndarray) -> ArrayLike:
         rows: np.ndarray = values[kept]
         return rows
 
-    # left to the checks that refuse it
-    return scalars
+    # refused before the points are cut, or they would pair with the points kept
+    emsg = (
+        "Require scalars with one value, or one row, for each of the "
+        f"{kept.size:,d} points given, got shape {values.shape}."
+    )
+    raise ValueError(emsg)
 
 
 if TYPE_CHECKING:
