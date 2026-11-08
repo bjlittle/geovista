@@ -49,7 +49,7 @@ def test_masked_bound_raises(axis, bounds, masked, count):
     bounds = np.ma.masked_array(bounds, mask=mask)
     xs, ys = (bounds, OTHER) if axis == "x" else (OTHER, bounds)
 
-    emsg = f"{axis}-axis array with no masked bounds, got '{count}'"
+    emsg = f"{axis}-axis array with no masked or NaN bounds, got '{count}'"
     with pytest.raises(ValueError, match=emsg):
         _ = Transform.from_1d(xs, ys)
 

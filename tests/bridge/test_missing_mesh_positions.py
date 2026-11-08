@@ -250,3 +250,65 @@ def test_constructor_refuses_data_of_another_count():
     emsg = r"Require mesh data with either '9' points or '3' cells, got '5' values\."
     with pytest.raises(ValueError, match=emsg):
         transform(data=np.arange(5.0))
+
+
+#: A masked bound, in the middle of its axis.
+MASKED_BOUND = np.ma.masked_array([0.0, 10.0, 20.0], mask=[0, 1, 0])
+
+#: The axis of bounds that the other is given with.
+BOUNDS = [0.0, 10.0, 20.0]
+
+#: The refusal of a missing bound, formatted with its axis.
+MISSING_BOUND = r"Require an {}-axis array with no masked or NaN bounds, got '1'\."
+
+
+@pytest.mark.parametrize(
+    ("xs", "ys", "axis"),
+    [
+        ([0.0, np.nan, 20.0], BOUNDS, "x"),
+        (BOUNDS, [0.0, np.nan, 20.0], "y"),
+        (MASKED_BOUND, BOUNDS, "x"),
+    ],
+    ids=["x-nan", "y-nan", "x-masked"],
+)
+def test_from_1d_refuses_a_missing_bound(xs, ys, axis):
+    """Test a NaN bound is refused as a masked one is, a gap in its axis.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    with pytest.raises(ValueError, match=MISSING_BOUND.format(axis)):
+        Transform.from_1d(xs, ys)
+
+
+def test_from_1d_refuses_an_infinite_bound():
+    """Test an infinite bound is refused, naming its axis."""
+    emsg = r"'xs' cannot be infinite, got inf at index 1\."
+    with pytest.raises(ValueError, match=emsg):
+        Transform.from_1d([0.0, np.inf, 20.0], BOUNDS)
+
+
+@pytest.mark.parametrize(
+    ("xs", "ys", "axis"),
+    [
+        (MASKED_BOUND, BOUNDS, "x"),
+        ([0.0, np.nan, 20.0], BOUNDS, "x"),
+        (BOUNDS, [0.0, np.nan, 20.0], "y"),
+    ],
+    ids=["x-masked", "x-nan", "y-nan"],
+)
+def test_to_structured_grid_refuses_a_missing_position(xs, ys, axis):
+    """Test a structured grid refuses a missing position, as it has a point at each.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    with pytest.raises(ValueError, match=MISSING_BOUND.format(axis)):
+        Transform.to_structured_grid(xs, ys, [0.0, 1000.0])
+
+
+def test_to_structured_grid_refuses_infinite():
+    """Test a structured grid refuses an infinite position, naming its axis."""
+    emsg = r"'ys' cannot be infinite, got inf at index 1\."
+    with pytest.raises(ValueError, match=emsg):
+        Transform.to_structured_grid(BOUNDS, [0.0, np.inf, 20.0], [0.0, 1000.0])

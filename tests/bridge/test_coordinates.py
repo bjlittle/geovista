@@ -210,7 +210,7 @@ def test_a_masked_bound_is_refused():
     """A masked bound keeps its mask, so it is refused as a gap in its axis."""
     xs = UREG.Quantity(np.ma.masked_array(XS, mask=[False, True, False]), "degree")
     ys = UREG.Quantity(YS, "degree")
-    with pytest.raises(ValueError, match="no masked bounds, got '1'"):
+    with pytest.raises(ValueError, match="no masked or NaN bounds, got '1'"):
         _ = Transform.from_1d(xs, ys)
 
 

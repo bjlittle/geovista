@@ -31,6 +31,7 @@ from .common import (
     GV_FIELD_ZSCALE,
     ZLEVEL_SCALE,
     VectorLike,
+    _missing,
     _missing_and_named,
     _missing_positions,
     _named,
@@ -186,6 +187,37 @@ class Transform:  # numpydoc ignore=PR01
         return data
 
     @staticmethod
+    def _refuse_missing_bounds(xs: ArrayLike, ys: ArrayLike, /) -> None:
+        """Refuse a missing bound, or an infinite one, in either axis.
+
+        A bound is missing when it is masked or NaN, which leaves a gap in its axis.
+
+        Parameters
+        ----------
+        xs : ArrayLike
+            The x-axis bounds, with any ``pint`` quantity read already.
+        ys : ArrayLike
+            The y-axis bounds, with any ``pint`` quantity read already.
+
+        Raises
+        ------
+        ValueError
+            If a bound is masked, NaN or infinite.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        for name, kind, values in (("xs", "x-axis", xs), ("ys", "y-axis", ys)):
+            if n_missing := np.count_nonzero(_missing(values, name=name)):
+                emsg = (
+                    f"Require an {kind} array with no masked or NaN bounds, "
+                    f"got '{n_missing:,d}'."
+                )
+                raise ValueError(emsg)
+
+    @staticmethod
     def _as_contiguous_1d(
         xs: ArrayLike, ys: ArrayLike
     ) -> tuple[np.ndarray, np.ndarray]:
@@ -193,8 +225,9 @@ class Transform:  # numpydoc ignore=PR01
 
         Verify and return a contiguous (N+1,) x-axis and (M+1,) y-axis
         bounds array, that will be then used afterwards to build a (M, N)
-        contiguous quad-mesh consisting of M*N faces. A masked bound is a gap
-        in its axis, so neither array may have one.
+        contiguous quad-mesh consisting of M*N faces. A masked or NaN bound is a
+        gap in its axis, so neither array may have one. An infinite bound is
+        refused too.
 
         Parameters
         ----------
@@ -243,16 +276,8 @@ class Transform:  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
-        # a masked bound is a gap in its axis, and would pass for contiguous below
-        if n_masked := np.ma.count_masked(xs):
-            emsg = (
-                f"Require an x-axis array with no masked bounds, got '{n_masked:,d}'."
-            )
-            raise ValueError(emsg)
-
-        if n_masked := np.ma.count_masked(ys):
-            emsg = f"Require a y-axis array with no masked bounds, got '{n_masked:,d}'."
-            raise ValueError(emsg)
+        # a missing bound is a gap in its axis, and would pass for contiguous below
+        Transform._refuse_missing_bounds(xs, ys)
 
         def _contiguous(bnds: np.ndarray, kind: str) -> np.ndarray:
             """Verify and construct a contiguous bounds array.
@@ -573,8 +598,8 @@ class Transform:  # numpydoc ignore=PR01
         The provided `xs` and `ys` will be projected from their `crs` to
         geographic longitude and latitude values.
 
-        Neither `xs` nor `ys` may have a masked value, as a masked boundary is a
-        gap in its axis.
+        A masked or NaN value in `xs` or `ys` is a gap in its axis, and is refused,
+        as is an infinite one.
 
         Parameters
         ----------
@@ -2049,12 +2074,21 @@ class Transform:  # numpydoc ignore=PR01
         StructuredGrid
             The spherical structured grid.
 
+        Raises
+        ------
+        ValueError
+            If a value of `xs` or `ys` is masked, NaN or infinite, as the grid has a
+            point at each.
+
         Notes
         -----
         .. versionadded:: 0.6.0
 
         """
         xs, ys = _coordinates(xs, ys, crs)
+
+        # the grid has a point at every value of xs and ys, so none may be missing
+        cls._refuse_missing_bounds(xs, ys)
 
         # the levels are heights, each a coordinate, so none may be missing
         heights = _heights(zs, None, vertical_units, crs=crs)
