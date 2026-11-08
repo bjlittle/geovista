@@ -4,7 +4,7 @@ and raising a ``TypeError`` for a ``None``. It now drops each such point before 
 transforms the rest, along with its entries in ``data``, ``vectors``, the heights
 and a ``zlevel`` array, and warns once, counting the points dropped. A cloud with
 no points, whether every point was missing or none was given, now keeps its
-``vectors``, where it raised a ``ValueError``.
+``vectors``, where it raised a ``ValueError``, and keeps its arrays when cleaned.
 :meth:`geovista.geoplotter.GeoPlotterBase.add_points` cuts its ``scalars`` by the
 same points. :class:`geovista.geodesic.BBox` now builds from corners given as a
 grid, taking them in order, where its mesh failed on an assertion. This lands

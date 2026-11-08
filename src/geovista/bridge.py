@@ -1123,7 +1123,8 @@ class Transform:  # numpydoc ignore=PR01
         clean : bool, optional
             Specify whether to merge duplicate points. See
             :meth:`pyvista.PolyDataFilters.clean`. Defaults to
-            :data:`BRIDGE_CLEAN`.
+            :data:`BRIDGE_CLEAN`. A cloud with no points is left as built,
+            with its arrays.
         vectors : VectorLike, optional
             A tuple of 2 or 3 arrays of the same shape as `xs` and `ys`.
             These give eastward (``U``), northward (``V``) and optionally
@@ -1337,8 +1338,9 @@ class Transform:  # numpydoc ignore=PR01
 
             cls._attach_vectors(mesh, vectors_name, mesh_vectors)
 
-        # clean the mesh
-        if clean:
+        # clean the mesh, unless it has no points to merge, since VTK then drops
+        # every array of the cloud
+        if clean and mesh.n_points:
             mesh.clean(inplace=True)
 
         return mesh

@@ -266,10 +266,11 @@ def test_drops_before_transforming(mocker):
     assert np.all(np.isfinite(result.points))
 
 
-def test_a_cloud_of_only_missing_points():
+@pytest.mark.parametrize("clean", [False, True])
+def test_a_cloud_of_only_missing_points(clean):
     """Test a cloud whose every point is missing is built with no points.
 
-    Holds positions spec §2 decision 6.
+    Cleaning it keeps its arrays. Holds positions spec §2 decision 6.
 
     """
     xs = np.ma.masked_array([0.0, 10.0, 20.0], mask=True)
@@ -279,7 +280,11 @@ def test_a_cloud_of_only_missing_points():
     )
     with pytest.warns(UserWarning, match=emsg):
         result = Transform.from_points(
-            xs, [0.0, 5.0, 10.0], data=[1.0, 2.0, 3.0], height=[1.0, 2.0, 3.0]
+            xs,
+            [0.0, 5.0, 10.0],
+            data=[1.0, 2.0, 3.0],
+            height=[1.0, 2.0, 3.0],
+            clean=clean,
         )
     assert result.n_points == 0
     assert set(result.point_data) == {NAME_POINTS, GV_POINT_HEIGHT}
@@ -287,16 +292,20 @@ def test_a_cloud_of_only_missing_points():
         assert result[name].size == 0
 
 
-def test_a_cloud_of_only_missing_points_keeps_its_vectors():
+@pytest.mark.parametrize("clean", [False, True])
+def test_a_cloud_of_only_missing_points_keeps_its_vectors(clean):
     """Test a cloud whose every point is missing keeps its vectors, with no values.
 
-    Holds positions spec §2 decision 6.
+    Cleaning it keeps them too. Holds positions spec §2 decision 6.
 
     """
     emsg = r"geovista dropped every point of the point cloud \(2\)"
     with pytest.warns(UserWarning, match=emsg):
         result = Transform.from_points(
-            [np.nan, np.nan], [0.0, 10.0], vectors=([1.0, 2.0], [3.0, 4.0])
+            [np.nan, np.nan],
+            [0.0, 10.0],
+            vectors=([1.0, 2.0], [3.0, 4.0]),
+            clean=clean,
         )
     assert result.n_points == 0
     assert result.active_vectors_name == NAME_VECTORS
