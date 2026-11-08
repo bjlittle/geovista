@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pint
 from pyproj import CRS
@@ -16,6 +18,13 @@ import pytest
 from geovista.crs import WGS84, from_wkt, has_wkt, to_wkt
 from geovista.geoplotter import GeoPlotter
 from geovista.globe import Globe
+
+#: The positions of points, the second of which is made missing.
+LONS = [0.0, 10.0, 20.0, 30.0]
+LATS = [0.0, 5.0, 10.0, 15.0]
+
+#: The warning of the point dropped.
+DROPPED = r"dropped 1 of 4 points from the point cloud, where 'xs' is masked or NaN"
 
 
 def test_style_fail():
@@ -172,3 +181,65 @@ def test_xs_ys_as_quantities():
     ys = ureg.Quantity(np.radians([0.0, 20.0]), "radian")
     drawn = p.add_points(xs=xs, ys=ys).mapper.dataset
     np.testing.assert_allclose(drawn.points, expected, rtol=1e-12)
+
+
+def scalars_of(actor):
+    """Return the scalars an actor draws its points with."""
+    return actor.mapper.dataset[actor.mapper.array_name]
+
+
+def test_drops_a_missing_point_and_its_scalar():
+    """Test a missing point is drawn without its scalar.
+
+    Holds positions spec §2 decision 6.
+
+    """
+    xs = np.ma.masked_array(LONS, mask=[0, 1, 0, 0])
+    with pytest.warns(UserWarning, match=DROPPED):
+        actor = GeoPlotter().add_points(xs=xs, ys=LATS, scalars=[1.0, 2.0, 3.0, 4.0])
+    drawn = actor.mapper.dataset
+    expected = GeoPlotter().add_points(xs=[0.0, 20.0, 30.0], ys=[0.0, 10.0, 15.0])
+    np.testing.assert_allclose(drawn.points, expected.mapper.dataset.points)
+    np.testing.assert_allclose(scalars_of(actor), [1.0, 3.0, 4.0])
+
+
+def test_cuts_scalars_in_the_shape_of_xs():
+    """Test points in a grid drop their scalars in the same order.
+
+    Holds positions spec §2 decision 6.
+
+    """
+    xs = np.ma.masked_array([[0.0, 10.0], [20.0, 30.0]], mask=[[0, 1], [0, 0]])
+    ys = np.array([[0.0, 5.0], [10.0, 15.0]])
+    scalars = np.array([[1.0, 2.0], [3.0, 4.0]])
+    with pytest.warns(UserWarning, match=DROPPED):
+        actor = GeoPlotter().add_points(xs=xs, ys=ys, scalars=scalars)
+    assert actor.mapper.dataset.n_points == 3
+    np.testing.assert_allclose(scalars_of(actor), [1.0, 3.0, 4.0])
+
+
+def test_cuts_colours():
+    """Test a missing point is drawn without its colour.
+
+    Holds positions spec §2 decision 6.
+
+    """
+    xs = np.ma.masked_array(LONS, mask=[0, 1, 0, 0])
+    colours = np.array(
+        [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0]], dtype=np.uint8
+    )
+    with pytest.warns(UserWarning, match=DROPPED):
+        actor = GeoPlotter().add_points(xs=xs, ys=LATS, scalars=colours, rgb=True)
+    drawn = actor.mapper.dataset
+    assert drawn.n_points == 3
+    np.testing.assert_array_equal(scalars_of(actor), colours[[0, 2, 3]])
+
+
+def test_draws_present_points_as_before():
+    """Test points that are all present are drawn with every scalar, unwarned."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        actor = GeoPlotter().add_points(xs=LONS, ys=LATS, scalars=[1.0, 2.0, 3.0, 4.0])
+    drawn = actor.mapper.dataset
+    assert drawn.n_points == 4
+    np.testing.assert_allclose(scalars_of(actor), [1.0, 2.0, 3.0, 4.0])
