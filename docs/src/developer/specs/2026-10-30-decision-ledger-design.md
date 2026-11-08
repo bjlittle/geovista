@@ -138,6 +138,12 @@ to record its decisions in the form they describe (§3.2).
     `3`, so the number cannot be taken for a row, an item or another decision that its
     Evidence cites, and the build links the cell to the decision it verifies. A bare number
     is refused with the citation to write. Row 8 of §8 brought it in.
+18. **🤝 Agreed** (2026-11-08, {user}`bjlittle`, {pull}`2902`) — **The build links each test
+    file a row names as evidence to the line that cites its decision.** The link points into
+    the commit the documentation was built from, or its tag for a release, so each version
+    of the documentation shows the test as it stood then, and the line stays the right one.
+    A path to no file is left as written, and a file that cites no decision links to its
+    top. Row 9 of §8 brings it in.
 
 (ledger-spec-3)=
 ## 3. Design
@@ -234,6 +240,14 @@ often than a file is moved. A verified row can gain evidence later, and a signed
 become verified when a test is written for it. The suite reads the table by its header,
 `Decision`, `Status` and `Evidence`, as it reads a roadmap by its header, so neither table's
 vocabulary is mistaken for the other's.
+
+The build links each test file the Evidence column names to the first line in it that cites
+the row's decision, so a reader lands on the test, not at the top of a file that may hold
+hundreds (§2 decision 18). The link names the commit the documentation was built from, or
+the tag of a release, so a released version keeps pointing at its own tests, and each line
+number is read from the same commit as its link. A local build with changes not yet
+committed links to its last commit, with line numbers read from the working tree, which can
+differ until the changes are committed.
 
 A summary line follows the table, counting each state, as in "✅ 3 · ✍️ 1 · ⏳ 1 · 🗄️ 1:
 4 of 5 decisions in force verified". The build writes it from the table, so nobody keeps it
@@ -412,6 +426,12 @@ its line on specifications.
 - **Immutable wording.** Retiring a decision to correct a typo would bury the history that
   matters under history that does not (§2 decision 3).
 - **A test function as evidence.** It is finer, but breaks each time a test is renamed.
+- **Evidence linked to the top of its file.** It is simpler, but
+  `tests/test_spec_conventions.py`, the evidence of more decisions than any other file, runs
+  to nearly 4,000 lines (§2 decision 18).
+- **Evidence linked into `main`.** It needs no commit, but as a file changes, the line
+  numbers of an older version's links come to name other lines, and a file that moves
+  breaks them.
 - **A bare number in a row's first cell**, the form until row 8 of §8. It is short, but
   beside an Evidence cell that cites a row, an item or another decision it reads as one of
   them, and it links nowhere (§2 decision 17).
@@ -476,8 +496,9 @@ Each carries the grammar of items spec §3.2.
 | 6 | The globe, scene and heights specifications brought into the ledger | ✅ landed (2026-11-03, {pull}`2826`) |
 | 7 | Emojis for a roadmap row's states | ✅ landed (2026-11-04, {pull}`2874`) |
 | 8 | A row of the ledger names its decision by its citation (§2 decision 17): every specification's rows rewritten, a bare number refused, and the report reading a row's first cell as no place its decision is cited | ✅ landed (2026-11-05, {pull}`2882`) |
+| 9 | Each test file named as evidence linked to the line that cites its decision, at the commit or tag the documentation was built from (§2 decision 18) | 🚧 in progress ({pull}`2902`) |
 
-Statuses follow docs spec §3.6. Rows 2 to 8 each need row 1. Row 1 brings in the docs and
+Statuses follow docs spec §3.6. Rows 2 to 9 each need row 1. Row 1 brings in the docs and
 citation specifications itself, as it retires a decision of the citation specification and
 adds notes to the docs specification. Rows 2 and 3 need nothing else, and can land in either
 order. Once row 2 has merged, `status references` becomes a required check, a repository
@@ -487,7 +508,7 @@ checked against GitHub by the nightly run. Row 6 brings in the three specificati
 because each extends the one before, and their decisions cite one another. Row 7 changes the
 vocabulary of docs spec §3.6 and every specification that uses it, so it lands on its own
 (§7 item 1). Row 8 rewrites the first cell of every specification's ledger, so it lands on
-its own too.
+its own too. Row 9 changes only how the build renders the Evidence column.
 
 (ledger-spec-9)=
 ## 9. References
@@ -523,3 +544,4 @@ Each row follows §3.4.
 | §2 decision 15 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that the specifications index and the repository checks page document the workflow of §3.11. |
 | §2 decision 16 | ✅ verified (2026-11-04, {pull}`2874`) | `tests/test_spec_conventions.py` |
 | §2 decision 17 | ✅ verified (2026-11-05, {pull}`2882`) | `tests/test_spec_conventions.py`, `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_citation_xrefs.py`, `tests/test_verification_report.py` |
+| §2 decision 18 | ⏳ pending | |
