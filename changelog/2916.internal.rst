@@ -1,0 +1,5 @@
+Stopped ``ci-spec-status`` cancelling its own runs when a pull request opens with
+labels, which left its ``status references`` check cancelled until the last run
+reported. The run in progress now finishes, and only a run still waiting for it
+is replaced.
+(:user:`claude`)
