@@ -352,7 +352,9 @@ def test_line_reads_plain_numbers_without_masked_arrays(mocker):
     It reads them once for each pair, so building a masked array for each end
     halved the speed of a line. This settles positions spec §8 item 5.
     """
-    # geodesic may import the helper by name, so it is watched in both modules
+    # Before row 7 geodesic imported _missing_as_nan by name, and a spy on common
+    # alone misses a call through that name. The mock goes in both modules, with
+    # create=True since geodesic no longer has the name, to catch a future import.
     spy = mocker.MagicMock(wraps=common._missing_as_nan)
     mocker.patch.object(common, "_missing_as_nan", spy)
     mocker.patch.object(geodesic, "_missing_as_nan", spy, create=True)

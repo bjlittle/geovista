@@ -346,11 +346,19 @@ def test_missing_pair_refuses_infinite(name, value):
         _missing_pair(coordinates["start_lon"], coordinates["start_lat"], **PAIR_NAMES)
 
 
-def test_missing_pair_reads_numpy_scalars_without_masked_arrays(mocker):
-    """Test two plain numbers are read without the general helper."""
+@pytest.mark.parametrize(
+    "scalar", [np.float64, np.float32, np.int64], ids=["float64", "float32", "int64"]
+)
+def test_missing_pair_reads_numpy_scalars_without_masked_arrays(mocker, scalar):
+    """Test two NumPy scalars are read without the general helper.
+
+    A ``np.float64`` is also a ``float``, but a ``np.float32`` and a ``np.int64``
+    are not, so they fail if the fast path takes only Python's own numbers.
+    """
     spy = mocker.spy(common, "_missing_as_nan")
-    result = _missing_pair(np.float64(10.0), np.float64(20.0), **PAIR_NAMES)
+    result = _missing_pair(scalar(10), scalar(20), **PAIR_NAMES)
     assert result == (10.0, 20.0)
+    assert all(type(value) is float for value in result)
     spy.assert_not_called()
 
 
