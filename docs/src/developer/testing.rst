@@ -1087,20 +1087,104 @@ in, and must not rely on another test having run first in the same process.
    than once; run the :guilabel:`download` task first to avoid that.
 
 
+.. _gv-developer-testing-benchmarks:
+.. _tippy-gv-developer-testing-benchmarks:
+
+:fa:`gauge-high` Benchmarks
+---------------------------
+
+:fa:`file-code` **Reference:**
+
+- :bash:`.github/workflows/ci-benchmarks.yml`
+- :bash:`benchmarks` :fa:`folder`
+- :bash:`pyproject.toml`
+
+The benchmarks measure the speed and the memory of ``geovista``'s computation,
+and live in the :bash:`benchmarks` root directory, apart from the unit tests,
+which never collect them. The benchmarks specification, bench spec §2, records
+why each choice was made.
+
+The `ci-benchmarks.yml`_ workflow runs them on every pull request and every push
+to ``main``, in two jobs:
+
+- ``codspeed benchmarks`` runs them under `CodSpeed`_ in simulation mode, which
+  counts the CPU instructions each one runs under Valgrind. A count does not move
+  with the load on a shared runner, so CodSpeed compares each pull request with
+  the result stored for its base commit, and comments on the pull request with
+  what changed.
+- ``memory ceilings`` runs them under `memray`_, through the `pytest-memray`_
+  plugin, and fails a benchmark whose peak memory passes its ceiling.
+
+Neither job is a required check. A regression is reported on the pull request
+that causes it, including one caused by a change to :toml:`pixi.lock`, and the
+maintainer decides whether it merges (bench spec §2 decision 4).
+
+To run them locally:
+
+.. code:: console
+
+   $ pixi run benchmarks
+   $ pixi run benchmarks-memory
+
+Without Valgrind, the :guilabel:`benchmarks` task measures wall time, which is
+enough to compare two branches on one machine. Both tasks run OpenMP on a single
+thread, as the workflow does.
+
+.. _gv-developer-testing-benchmarks-adding:
+.. _tippy-gv-developer-testing-benchmarks-adding:
+
+Adding a Benchmark
+~~~~~~~~~~~~~~~~~~
+
+A benchmark is a test in :bash:`benchmarks/test_<module>.py`, one module for
+each ``geovista`` module it measures. It hands the call it measures to the
+``benchmark`` fixture, and carries its memory ceiling:
+
+.. code:: python
+
+   @pytest.mark.limit_memory("24 MB")
+   def test_line(benchmark, line):
+       """Build a geodesic line through 2,000 vertices."""
+       result = benchmark(geodesic.line, *line)
+       assert result.n_points > line[0].size
+
+Build its input in a fixture of :bash:`benchmarks/conftest.py`, outside the
+measured call, and from a seeded generator where it is random. Download nothing,
+and render nothing.
+
+The ceiling is the benchmark's measured peak plus 20%, rounded up to a whole
+MiB (bench spec §2 decision 5). To measure it, give the benchmark a generous
+placeholder, such as ``limit_memory("1 GB")``, and run:
+
+.. code:: console
+
+   $ pixi run benchmarks-memory
+
+Read the benchmark's peak from the line after "Allocation results for" in the
+report, add 20%, and round up. ``pytest-memray`` reads ``MB`` as 1024² bytes, a
+MiB. A benchmark with no ceiling is refused when ``--memray`` is given, naming
+it. A change that rightly raises a peak raises its ceiling in the same pull
+request, where the review sees it.
+
+
 .. comment
 
    🔗 URL resources in alphabetical order:
 
 
 .. _Workflow Artifact: https://docs.github.com/en/actions/concepts/workflows-and-actions/workflow-artifacts
+.. _ci-benchmarks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-benchmarks.yml
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml
 .. _ci-spec-status.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-spec-status.yml
 .. _ci-tests.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests.yml
 .. _ci-tests-docs.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-docs.yml
 .. _ci-tests-lock.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-lock.yml
 .. _ci-tests-pypi.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests-pypi.yml
+.. _CodSpeed: https://codspeed.io/
 .. _codecov: https://app.codecov.io/gh/bjlittle/geovista
 .. _dependabot.yml: https://github.com/bjlittle/geovista/blob/main/.github/dependabot.yml
 .. _fixtures: https://docs.pytest.org/en/stable/how-to/fixtures.html#how-to-fixtures
+.. _memray: https://bloomberg.github.io/memray/
 .. _playwright: https://playwright.dev/python/
+.. _pytest-memray: https://pytest-memray.readthedocs.io/
 .. _pytest-xdist: https://pytest-xdist.readthedocs.io/

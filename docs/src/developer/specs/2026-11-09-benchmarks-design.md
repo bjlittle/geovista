@@ -61,9 +61,10 @@ request, report a regression on the pull request that causes it, and follow the 
    unsuffixed `test` environment.** `pytest-codspeed` and `pytest-memray` join the `test`
    feature, as `pyvista` keeps `pytest-codspeed` in its `test` group. The unsuffixed
    environments follow the newest Python, so the benchmarks move with it and
-   `tests/test_python_support.py` has nothing new to track. Neither plugin acts unless its
-   option, `--codspeed` or `--memray`, is passed. Chosen by {user}`bjlittle` on 2026-11-09,
-   over a `bench` environment of its own.
+   `tests/test_python_support.py` has nothing new to track. `pytest-codspeed` acts only
+   under `--codspeed`, and `pytest-memray` under `--memray` or on a test carrying one of its
+   markers, so the CodSpeed run passes `-p no:memray`. Chosen by {user}`bjlittle` on
+   2026-11-09, over a `bench` environment of its own.
 4. **🤝 Agreed** (2026-11-09, {user}`bjlittle`, {pull}`2923`) — **A regression is reported,
    never required to pass.** CodSpeed's gate, the "CodSpeed Performance Analysis" check,
    and its comment on the pull request show a regression, and the memory job fails on a
@@ -249,7 +250,7 @@ Two tasks join the `test` feature:
 
 | Task | Runs |
 |---|---|
-| `benchmarks` | `pytest benchmarks --codspeed` |
+| `benchmarks` | `pytest benchmarks --codspeed -p no:memray` |
 | `benchmarks-memory` | `pytest benchmarks --memray` |
 
 Run locally, without Valgrind, `--codspeed` measures wall time, which is enough to compare
