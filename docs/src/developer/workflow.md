@@ -72,8 +72,8 @@ the issue as its design.
 Before choosing a tool or a workflow, look at what `pyvista` has adopted, and
 follow it unless there is a reason not to, which is then written down where the
 choice is made. `geovista` is one of the few downstream packages that `pyvista`
-tests each of its pull requests against, and the plan is for it to move into the
-`pyvista` organisation, so sharing its tooling now leaves less to change then.
+tests each of its pull requests against, so the two projects already work
+closely, and sharing tooling keeps them easy to work across.
 Benchmarking is the first case: `pyvista` runs CodSpeed, added in
 [pyvista#9111](https://github.com/pyvista/pyvista/pull/9111), and `geovista`
 will do the same ({issue}`2920`).
