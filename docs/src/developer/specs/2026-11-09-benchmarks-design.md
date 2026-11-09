@@ -324,7 +324,7 @@ Each carries the grammar of items spec §3.2. None is open today.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | 📋 not started |
+| 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | 🚧 in progress ({pull}`2925`) |
 | 2 | The `bridge` and `transform` benchmarks (§4.3) | 📋 not started |
 | 3 | The `common`, `core`, `search` and `gridlines` benchmarks (§4.3) | 📋 not started |
 | 4 | Each benchmark's peak memory compared with the base commit's (§4.6) | 💡 candidate |
