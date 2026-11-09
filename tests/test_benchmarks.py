@@ -16,6 +16,7 @@ benchmarks' own settings never leak into this suite.
 
 from __future__ import annotations
 
+import ast
 from functools import cache
 from pathlib import Path
 import tomllib
@@ -169,3 +170,16 @@ def test_the_codspeed_task_runs_without_memray():
     """Run CodSpeed with memray disabled, and memray without CodSpeed's measuring."""
     assert _task(CODSPEED_TASK)["cmd"] == "pytest benchmarks --codspeed -p no:memray"
     assert _task(MEMORY_TASK)["cmd"] == "pytest benchmarks --memray"
+
+
+def test_every_benchmark_uses_the_fixture():
+    """Write every benchmark with the fixture (bench spec §2 decision 6)."""
+    names = []
+    for path in sorted(BENCHMARKS.glob("test_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
+                params = [arg.arg for arg in node.args.args]
+                assert "benchmark" in params, f"{path.name}::{node.name}"
+                names.append(node.name)
+    assert names
