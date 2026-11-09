@@ -1,0 +1,3 @@
+Added `CodSpeed <https://codspeed.io>`__ performance benchmarks under ``benchmarks/``,
+measured by the ``ci-benchmarks`` :fab:`github` Action on every pull-request and
+push to ``main``. (:user:`CodSpeedHQ`)
