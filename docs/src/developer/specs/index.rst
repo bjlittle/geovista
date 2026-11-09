@@ -25,6 +25,8 @@ a page, a specification or the API reference, it is a link to the section it nam
 
     * - Citation
       - Document
+    * - ``bench spec §…``
+      - :doc:`2026-11-09-benchmarks-design`
     * - ``checks spec §…``
       - :doc:`2026-10-23-repository-checks-design`
     * - ``crs spec §…``
@@ -262,3 +264,4 @@ lands.
     2026-10-30-decision-ledger-design
     2026-11-02-open-items-design
     2026-11-06-missing-positions-design
+    2026-11-09-benchmarks-design

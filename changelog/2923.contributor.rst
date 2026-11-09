@@ -1,0 +1,7 @@
+Added the :doc:`benchmarks specification
+</developer/specs/2026-11-09-benchmarks-design>`. It measures ``geovista``'s
+speed with CodSpeed, as ``pyvista`` does, on every pull request and every push to
+``main``, and gives each benchmark a memory ceiling checked by ``pytest-memray``.
+A regression is reported on the pull request that causes it, including one from
+a change of dependency, and never blocks a merge. Three roadmap rows build it.
+(:user:`claude`)
