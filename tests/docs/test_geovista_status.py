@@ -218,3 +218,39 @@ def test_the_extension_builds_its_emoji_by_name():
     source = (EXT / "geovista_status.py").read_text(encoding="utf-8")
 
     assert not [char for char in source if ord(char) > 0x2000 and char != "·"]
+
+
+#: The specifications, whose roadmaps the index's column sums.
+SPECS = Path(__file__).parents[2] / "docs" / "src" / "developer" / "specs"
+
+
+def test_the_index_shows_each_specification_status(html_root, status):
+    """On the real build, the index shows every specification's status.
+
+    Each row's cell is the sum of the roadmap its row links, in the order the
+    index lists them. Holds docs spec §2 decision 8.
+    """
+    citations = status.geovista_citations
+    index = (SPECS / "index.rst").read_text(encoding="utf-8")
+    linked = [line.split("`")[1] for line in index.splitlines() if ":doc:`" in line]
+    expected = [
+        citations.roadmap_status(
+            row.status
+            for row in citations.rows(
+                (SPECS / f"{name}.md").read_text(encoding="utf-8")
+            )
+        )
+        for name in linked
+    ]
+
+    found = [
+        table
+        for table in tables(html_root / "developer" / "specs" / "index.html")
+        if table and table[0][:2] == ["Citation", "Document"]
+    ]
+
+    assert len(found) == 1
+    (table,) = found
+    assert table[0] == ["Citation", "Document", "Status"]
+    assert [row[2] for row in table[1:]] == expected
+    assert NO_CELL not in expected
