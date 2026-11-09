@@ -201,7 +201,7 @@ def test_a_masked_point_drops_its_faces():
     lons = np.ma.masked_array(np.radians(UNSTRUCTURED_LONS), mask=mask)
     lats = np.ma.masked_array(np.radians(UNSTRUCTURED_LATS), mask=mask)
     xs, ys = UREG.Quantity(lons, "radian"), UREG.Quantity(lats, "radian")
-    with pytest.warns(UserWarning, match="1 face that uses a masked point"):
+    with pytest.warns(UserWarning, match="1 face that uses a missing point"):
         mesh = Transform.from_unstructured(xs, ys, connectivity=CONNECTIVITY)
     assert mesh.n_cells == 1
 
@@ -210,7 +210,7 @@ def test_a_masked_bound_is_refused():
     """A masked bound keeps its mask, so it is refused as a gap in its axis."""
     xs = UREG.Quantity(np.ma.masked_array(XS, mask=[False, True, False]), "degree")
     ys = UREG.Quantity(YS, "degree")
-    with pytest.raises(ValueError, match="no masked bounds, got '1'"):
+    with pytest.raises(ValueError, match="no masked or NaN bounds, got '1'"):
         _ = Transform.from_1d(xs, ys)
 
 

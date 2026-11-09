@@ -39,7 +39,7 @@ def test_faces_with_a_masked_node_are_dropped():
     """
     xs, ys = _nodes()
 
-    wmsg = "defines 4 faces that use a masked point, which are dropped"
+    wmsg = "defines 4 faces that use a missing point, which are dropped"
     with pytest.warns(UserWarning, match=wmsg):
         mesh = Transform.from_2d(xs, ys)
 
@@ -56,7 +56,7 @@ def test_face_with_a_masked_corner_is_dropped():
     xs = np.ma.masked_array(lons.reshape(1, 2, 4), mask=mask)
     ys = np.ma.masked_array(lats.reshape(1, 2, 4), mask=mask)
 
-    wmsg = "defines 1 face that uses a masked point, which is dropped"
+    wmsg = "defines 1 face that uses a missing point, which is dropped"
     with pytest.warns(UserWarning, match=wmsg):
         mesh = Transform.from_2d(xs, ys)
 
@@ -69,7 +69,7 @@ def test_masked_node_outside_the_domain():
     xs[2, 2] = ys[2, 2] = OFF_DISK
     xs[2, 2] = ys[2, 2] = np.ma.masked
 
-    with pytest.warns(UserWarning, match="use a masked point"):
+    with pytest.warns(UserWarning, match="use a missing point"):
         mesh = Transform.from_2d(xs, ys, crs=ORTHO)
 
     assert mesh.n_cells == 12
@@ -80,7 +80,7 @@ def test_cell_data_follows_the_faces_that_remain():
     xs, ys = _nodes()
     data = np.arange(16.0).reshape(4, 4)
 
-    with pytest.warns(UserWarning, match="use a masked point"):
+    with pytest.warns(UserWarning, match="use a missing point"):
         mesh = Transform.from_2d(xs, ys, data=data, name="cells")
 
     np.testing.assert_array_equal(mesh.cell_data["cells"], AROUND_THE_MIDDLE)
@@ -91,7 +91,7 @@ def test_point_data_stays_on_every_node():
     xs, ys = _nodes()
     data = np.arange(25.0)
 
-    with pytest.warns(UserWarning, match="use a masked point"):
+    with pytest.warns(UserWarning, match="use a missing point"):
         mesh = Transform.from_2d(xs, ys, data=data, name="nodes")
 
     np.testing.assert_array_equal(mesh.point_data["nodes"], data)

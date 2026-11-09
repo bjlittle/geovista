@@ -31,7 +31,9 @@ from .common import (
     GV_FIELD_ZSCALE,
     ZLEVEL_SCALE,
     VectorLike,
+    _missing,
     _missing_and_named,
+    _missing_positions,
     _named,
     _to_cartesian,
     _vectors_to_cartesian,
@@ -119,7 +121,6 @@ class Transform:  # numpydoc ignore=PR01
         /,
         *,
         rgb: bool = False,
-        kept: np.ndarray | None = None,
     ) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 
@@ -135,10 +136,6 @@ class Transform:  # numpydoc ignore=PR01
             The number of cells in the mesh.
         rgb : bool, default=False
             Whether the data is an ``RGB`` or ``RGBA`` image.
-        kept : ndarray, optional
-            A boolean array that is ``True`` for each face given that became a
-            cell of the mesh. Data that fits neither the points nor the cells, but
-            has a value for each face given, keeps only the values of the cells.
 
         Returns
         -------
@@ -161,14 +158,6 @@ class Transform:  # numpydoc ignore=PR01
             channels = data.shape[-1] if rgb else 1
             size = data.size // channels
 
-            if (
-                kept is not None
-                and size == kept.size
-                and size not in (n_points, n_cells)
-            ):
-                cells: np.ndarray = data.reshape(size, channels)[kept]
-                data, size = cells, len(cells)
-
             if size not in (n_points, n_cells):
                 emsg = (
                     f"Require mesh data with either '{n_points:,d}' points or "
@@ -184,6 +173,94 @@ class Transform:  # numpydoc ignore=PR01
 
         return data
 
+    @classmethod
+    def _associate(
+        cls,
+        data: ArrayLike,
+        n_points: int,
+        n_cells: int,
+        /,
+        *,
+        rgb: bool = False,
+        kept: np.ndarray | None = None,
+    ) -> tuple[np.ndarray, bool]:
+        """Verify data for the points or the cells of a mesh, and say which.
+
+        Data given for each face stays on the cells left of them once a face is
+        dropped, however many points the mesh has. Data that fits both the points
+        and the cells is for the points.
+
+        Parameters
+        ----------
+        data : ArrayLike
+            The intended data payload of the mesh.
+        n_points : int
+            The number of points in the mesh.
+        n_cells : int
+            The number of cells in the mesh.
+        rgb : bool, default=False
+            Whether the data is an ``RGB`` or ``RGBA`` image.
+        kept : ndarray, optional
+            An ``(M,)`` boolean array that is ``True`` for each of the ``M`` faces
+            given that became a cell of the mesh. Data that fits neither the points
+            nor the cells, but has a value for each face given, keeps those of the
+            cells.
+
+        Returns
+        -------
+        tuple of ndarray and bool
+            The verified data, and whether it is for the cells of the mesh.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        array = np.asanyarray(data)
+
+        # an image of too few dimensions is left for the verification to refuse
+        if kept is not None and not (rgb and array.ndim < 2):
+            channels = array.shape[-1] if rgb else 1
+            size = array.size // channels
+            if size == kept.size and size not in (n_points, n_cells):
+                cells = array.reshape(size, channels)[kept]
+                return cls._as_compatible_data(cells, n_points, n_cells, rgb=rgb), True
+
+        result = cls._as_compatible_data(array, n_points, n_cells, rgb=rgb)
+        size = len(result) if rgb else result.size
+        return result, size != n_points
+
+    @staticmethod
+    def _refuse_missing_bounds(xs: ArrayLike, ys: ArrayLike, /) -> None:
+        """Refuse a missing bound, or an infinite one, in either axis.
+
+        A bound is missing when it is masked or NaN, which leaves a gap in its axis.
+
+        Parameters
+        ----------
+        xs : ArrayLike
+            The x-axis bounds, with any ``pint`` quantity read already.
+        ys : ArrayLike
+            The y-axis bounds, with any ``pint`` quantity read already.
+
+        Raises
+        ------
+        ValueError
+            If a bound is masked, NaN or infinite.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        for name, kind, values in (("xs", "x-axis", xs), ("ys", "y-axis", ys)):
+            if n_missing := np.count_nonzero(_missing(values, name=name)):
+                emsg = (
+                    f"Require an {kind} array with no masked or NaN bounds, "
+                    f"got '{n_missing:,d}'."
+                )
+                raise ValueError(emsg)
+
     @staticmethod
     def _as_contiguous_1d(
         xs: ArrayLike, ys: ArrayLike
@@ -192,8 +269,9 @@ class Transform:  # numpydoc ignore=PR01
 
         Verify and return a contiguous (N+1,) x-axis and (M+1,) y-axis
         bounds array, that will be then used afterwards to build a (M, N)
-        contiguous quad-mesh consisting of M*N faces. A masked bound is a gap
-        in its axis, so neither array may have one.
+        contiguous quad-mesh consisting of M*N faces. A masked or NaN bound is a
+        gap in its axis, so neither array may have one. An infinite bound is
+        refused too.
 
         Parameters
         ----------
@@ -242,16 +320,8 @@ class Transform:  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
-        # a masked bound is a gap in its axis, and would pass for contiguous below
-        if n_masked := np.ma.count_masked(xs):
-            emsg = (
-                f"Require an x-axis array with no masked bounds, got '{n_masked:,d}'."
-            )
-            raise ValueError(emsg)
-
-        if n_masked := np.ma.count_masked(ys):
-            emsg = f"Require a y-axis array with no masked bounds, got '{n_masked:,d}'."
-            raise ValueError(emsg)
+        # a missing bound is a gap in its axis, and would pass for contiguous below
+        Transform._refuse_missing_bounds(xs, ys)
 
         def _contiguous(bnds: np.ndarray, kind: str) -> np.ndarray:
             """Verify and construct a contiguous bounds array.
@@ -375,10 +445,10 @@ class Transform:  # numpydoc ignore=PR01
         return np.arange(npts, dtype=np.uint32).reshape(-1, 4)
 
     @staticmethod
-    def _drop_masked_faces(
+    def _drop_missing_faces(
         connectivity: np.ndarray, mask: np.ndarray, /
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Drop the faces of the connectivity that use a masked point.
+        """Drop the faces of the connectivity that use a missing point.
 
         Such a face would have a vertex with no position. Note that a warning is
         raised for the faces that are dropped.
@@ -413,23 +483,23 @@ class Transform:  # numpydoc ignore=PR01
             noun, verb, be = ("faces", "use", "are") if many else ("face", "uses", "is")
             wmsg = (
                 f"geovista connectivity defines {n_dropped:,} {noun} that {verb} "
-                f"a masked point, which {be} dropped."
+                f"a missing point, which {be} dropped."
             )
-            # warn where the bridge method that called this one was called
-            warnings.warn(wmsg, stacklevel=3)
+            # warn where from_unstructured, or the constructor, was called
+            warnings.warn(wmsg, stacklevel=4)
             connectivity = connectivity[kept]
 
         return connectivity, kept
 
     @staticmethod
-    def _transform_unmasked(
+    def _transform_present(
         xs: np.ndarray, ys: np.ndarray, crs: CRSLike, mask: np.ndarray | None, /
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Transform the points to WGS84, apart from those that are masked.
+        """Transform the points to WGS84, apart from those that are missing.
 
-        The values of a masked point mean nothing, and may lie outside the domain
-        of the `crs`. It is given the position of the first point that is not
-        masked, where it cannot stretch the bounds of the mesh.
+        The values of a missing point mean nothing, and may lie outside the domain
+        of the `crs`. It is given the position of the first point that is present,
+        where it cannot stretch the bounds of the mesh.
 
         Parameters
         ----------
@@ -572,8 +642,8 @@ class Transform:  # numpydoc ignore=PR01
         The provided `xs` and `ys` will be projected from their `crs` to
         geographic longitude and latitude values.
 
-        Neither `xs` nor `ys` may have a masked value, as a masked boundary is a
-        gap in its axis.
+        A masked or NaN value in `xs` or `ys` is a gap in its axis, and is refused,
+        as is an infinite one.
 
         Parameters
         ----------
@@ -667,6 +737,48 @@ class Transform:  # numpydoc ignore=PR01
         )
 
     @classmethod
+    def _connectivity_2d(cls, xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
+        """Create the connectivity of the quad-faces of a 2D mesh.
+
+        Parameters
+        ----------
+        xs : ndarray
+            The ``(M+1, N+1)`` or ``(M, N, 4)`` x-values of the mesh.
+        ys : ndarray
+            The y-values of the mesh, in the shape of `xs`.
+
+        Returns
+        -------
+        ndarray
+            The ``(M*N, 4)`` zero-based connectivity of the quad-faces.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        cls._verify_2d(xs, ys)
+        shape, ndim = xs.shape, xs.ndim
+
+        points_shape: tuple[int, int]
+        if ndim == 2:
+            # we have shape (M+1, N+1)
+            rows, cols = points_shape = shape
+            cells_shape = (rows - 1, cols - 1)
+        else:
+            # we have shape (M, N, 4)
+            rows, cols = cells_shape = shape[:-1]
+            points_shape = (rows + 1, cols + 1)
+
+        # generate connectivity (topology) map of indices into the geometry
+        connectivity: np.ndarray = (
+            cls._create_connectivity_m1n1(points_shape)
+            if ndim == 2
+            else cls._create_connectivity_mn4(cells_shape)
+        )
+        return connectivity
+
+    @classmethod
     def from_2d(
         cls,
         xs: ArrayLike | Quantity,
@@ -695,9 +807,10 @@ class Transform:  # numpydoc ignore=PR01
         in the mesh for the native `crs`, which will then be projected to
         geographic longitude and latitude values.
 
-        Should `xs` and `ys` carry the same mask, a quad-face with a masked vertex
+        A quad-face with a missing vertex, one whose x or y value is masked or NaN,
         is dropped, with a warning, and `data` with a value for each quad-face
-        keeps only the values of the faces that remain.
+        keeps only the values of the faces that remain. An infinite x or y value is
+        refused.
 
         Parameters
         ----------
@@ -773,25 +886,7 @@ class Transform:  # numpydoc ignore=PR01
 
         """
         xs, ys = map(np.asanyarray, _coordinates(xs, ys, crs))
-        cls._verify_2d(xs, ys)
-        shape, ndim = xs.shape, xs.ndim
-
-        points_shape: tuple[int, int]
-        if ndim == 2:
-            # we have shape (M+1, N+1)
-            rows, cols = points_shape = shape
-            cells_shape = (rows - 1, cols - 1)
-        else:
-            # we have shape (M, N, 4)
-            rows, cols = cells_shape = shape[:-1]
-            points_shape = (rows + 1, cols + 1)
-
-        # generate connectivity (topology) map of indices into the geometry
-        connectivity = (
-            cls._create_connectivity_m1n1(points_shape)
-            if ndim == 2
-            else cls._create_connectivity_mn4(cells_shape)
-        )
+        connectivity = cls._connectivity_2d(xs, ys)
 
         return Transform.from_unstructured(
             xs,
@@ -1593,6 +1688,12 @@ class Transform:  # numpydoc ignore=PR01
         as the mesh face `connectivity`, or in the same order as the points
         described by `xs` and `ys` (data can only be attached to points or cells).
 
+        A point is missing when its x or y value is masked or NaN. A face of a
+        connectivity array that uses one is dropped, with a warning, while a face of
+        a shape leaves it out. The point stays in the mesh, on the first point
+        present, so data given for each point still fits. An infinite x or y value is
+        refused.
+
         Parameters
         ----------
         xs : ArrayLike or pint.Quantity
@@ -1617,8 +1718,7 @@ class Transform:  # numpydoc ignore=PR01
             to determine the connectivity. Also, note that masked connectivity
             may be used to define a mesh consisting of different shaped faces. A
             face that is left with fewer than three vertices is dropped, with a
-            warning. So is a face of a connectivity array that uses a masked
-            point, should `xs` and `ys` carry the same mask.
+            warning.
         data : ArrayLike, optional
             Data to be optionally attached to the mesh face or nodes. Should any
             face be dropped, data with a value for each face of the `connectivity`
@@ -1682,6 +1782,95 @@ class Transform:  # numpydoc ignore=PR01
         .. versionadded:: 0.1.0
 
         """
+        mesh, _ = cls._unstructured(
+            xs,
+            ys,
+            connectivity=connectivity,
+            data=data,
+            start_index=start_index,
+            name=name,
+            crs=crs,
+            rgb=rgb,
+            globe=globe,
+            zlevel=zlevel,
+            zscale=zscale,
+            height=height,
+            depth=depth,
+            vertical_units=vertical_units,
+            clean=clean,
+        )
+        return mesh
+
+    @classmethod
+    def _unstructured(
+        cls,
+        xs: ArrayLike | Quantity,
+        ys: ArrayLike | Quantity,
+        /,
+        *,
+        connectivity: ArrayLike | Shape | None = None,
+        data: ArrayLike | None = None,
+        start_index: int | None = None,
+        name: str | None = None,
+        crs: CRSLike | None = None,
+        rgb: bool | None = False,
+        globe: Globe | None = None,
+        zlevel: int | None = None,
+        zscale: float | None = None,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
+        clean: bool | None = None,
+    ) -> tuple[pv.PolyData, np.ndarray]:
+        """Build a mesh from unstructured points, and the faces given that it kept.
+
+        This is the body of :meth:`from_unstructured`. The constructor builds through
+        it too, since it attaches data later, to the faces that remain.
+
+        Parameters
+        ----------
+        xs : ArrayLike or pint.Quantity
+            As for :meth:`from_unstructured`.
+        ys : ArrayLike or pint.Quantity
+            As for :meth:`from_unstructured`.
+        connectivity : ArrayLike or Shape, optional
+            As for :meth:`from_unstructured`.
+        data : ArrayLike, optional
+            As for :meth:`from_unstructured`.
+        start_index : int, optional
+            As for :meth:`from_unstructured`.
+        name : str, optional
+            As for :meth:`from_unstructured`.
+        crs : CRSLike, optional
+            As for :meth:`from_unstructured`.
+        rgb : bool, optional
+            As for :meth:`from_unstructured`.
+        globe : Globe, optional
+            As for :meth:`from_unstructured`.
+        zlevel : int, optional
+            As for :meth:`from_unstructured`.
+        zscale : float, optional
+            As for :meth:`from_unstructured`.
+        height : ArrayLike or pint.Quantity, optional
+            As for :meth:`from_unstructured`.
+        depth : ArrayLike or pint.Quantity, optional
+            As for :meth:`from_unstructured`.
+        vertical_units : str, optional
+            As for :meth:`from_unstructured`.
+        clean : bool, optional
+            As for :meth:`from_unstructured`.
+
+        Returns
+        -------
+        tuple of PolyData and ndarray
+            The mesh, and an ``(M,)`` boolean array that is ``True`` for each of the
+            ``M`` faces of the `connectivity` that the mesh kept.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
         if rgb is None:
             rgb = False
 
@@ -1706,23 +1895,18 @@ class Transform:  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
+        # a point whose x or y value is masked or NaN has no position, so it is
+        # left out of every face and out of the transform, and an infinite value is
+        # refused at its index as given (positions spec §4.6)
+        missing = _missing_positions(xs, ys, x_name="xs", y_name="ys").ravel()
+        mask: np.ndarray | None = missing if np.any(missing) else None
+
         # flatten the points to 1D with shape (M,)
         xs, ys = xs.ravel(), ys.ravel()
 
         if connectivity is None:
             # default to the shape of the points
             connectivity = shape
-
-        # when xs and ys carry the same mask, its points have no position, so they
-        # are left out of every face and out of the transform. The masks are
-        # compared whole, so masks that differ anywhere mask no point at all
-        mask: np.ndarray | None = None
-        if (
-            np.ma.is_masked(xs)
-            and np.ma.is_masked(ys)
-            and np.array_equal(np.ma.getmaskarray(xs), np.ma.getmaskarray(ys))
-        ):
-            mask = np.ma.getmaskarray(xs).copy()
 
         connectivity_array: np.ndarray
         if isinstance(connectivity, tuple):
@@ -1770,9 +1954,9 @@ class Transform:  # numpydoc ignore=PR01
         kept = np.ones(n_given, dtype=bool)
 
         if mask is not None:
-            # a face that uses a masked point is dropped, which leaves the faces of
-            # a shape alone, as their masked points have left them already
-            connectivity_array, kept = cls._drop_masked_faces(connectivity_array, mask)
+            # a face that uses a missing point is dropped, which leaves the faces of
+            # a shape alone, as their missing points have left them already
+            connectivity_array, kept = cls._drop_missing_faces(connectivity_array, mask)
 
         if isinstance(connectivity_array, np.ma.MaskedArray) and np.ma.is_masked(
             connectivity_array
@@ -1791,7 +1975,8 @@ class Transform:  # numpydoc ignore=PR01
                     f"geovista masked connectivity defines {n_invalid:,} {noun} "
                     f"with fewer than three vertices, which {verb} dropped."
                 )
-                warnings.warn(wmsg, stacklevel=2)
+                # warn where from_unstructured, or the constructor, was called
+                warnings.warn(wmsg, stacklevel=3)
                 n_vertices = n_vertices[valid_faces_mask]
                 connectivity_array = connectivity_array[valid_faces_mask]
                 kept[kept] = valid_faces_mask
@@ -1824,8 +2009,8 @@ class Transform:  # numpydoc ignore=PR01
         if crs is None:
             crs = WGS84
 
-        # transform spatial points to WGS84, apart from the masked ones
-        xs, ys = cls._transform_unmasked(xs, ys, crs, mask)
+        # transform spatial points to WGS84, apart from the missing ones
+        xs, ys = cls._transform_present(xs, ys, crs, mask)
 
         globe = _resolve(globe)
         zscale = ZLEVEL_SCALE if zscale is None else float(zscale)
@@ -1854,24 +2039,25 @@ class Transform:  # numpydoc ignore=PR01
 
         # attach any optional data to the mesh
         if data is not None:
-            data = cls._as_compatible_data(
+            data, for_cells = cls._associate(
                 data, mesh.n_points, mesh.n_cells, rgb=rgb, kept=kept
             )
             if not name:
-                size = data.size // data.shape[-1] if rgb else data.size
-                name = NAME_POINTS if size == mesh.n_points else NAME_CELLS
+                name = NAME_CELLS if for_cells else NAME_POINTS
 
             # pyvista refuses an empty array of colours, so attach none when no
             # face is left to carry one
             if data.size or not rgb:
                 mesh.field_data[GV_FIELD_NAME] = np.array([name])
-                mesh[name] = data
+                # by its association, as pyvista puts data that fits both on
+                # the points
+                (mesh.cell_data if for_cells else mesh.point_data)[name] = data
 
         # clean the mesh
         if clean:
             mesh.clean(inplace=True)
 
-        return mesh
+        return mesh, kept
 
     @classmethod
     def to_structured_grid(
@@ -1934,12 +2120,21 @@ class Transform:  # numpydoc ignore=PR01
         StructuredGrid
             The spherical structured grid.
 
+        Raises
+        ------
+        ValueError
+            If a value of `xs` or `ys` is masked, NaN or infinite, as the grid has a
+            point at each.
+
         Notes
         -----
         .. versionadded:: 0.6.0
 
         """
         xs, ys = _coordinates(xs, ys, crs)
+
+        # the grid has a point at every value of xs and ys, so none may be missing
+        cls._refuse_missing_bounds(xs, ys)
 
         # the levels are heights, each a coordinate, so none may be missing
         heights = _heights(zs, None, vertical_units, crs=crs)
@@ -2096,7 +2291,8 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. See
             :meth:`pyvista.PolyDataFilters.clean`. Defaults to
-            :data:`BRIDGE_CLEAN`.
+            :data:`BRIDGE_CLEAN`. Each mesh is cleaned after its data is attached,
+            so the data follows its points and cells.
 
         Notes
         -----
@@ -2106,42 +2302,40 @@ class Transform:  # numpydoc ignore=PR01
         xs, ys = map(np.asanyarray, _coordinates(xs, ys, crs))
         globe = _resolve(globe)
 
-        if connectivity is None:
-            if xs.ndim <= 1 or ys.ndim <= 1:
-                mesh = self.from_1d(
-                    xs,
-                    ys,
-                    crs=crs,
-                    globe=globe,
-                    zlevel=zlevel,
-                    zscale=zscale,
-                    height=height,
-                    depth=depth,
-                    vertical_units=vertical_units,
-                    clean=clean,
-                )
-            else:
-                mesh = self.from_2d(
-                    xs,
-                    ys,
-                    crs=crs,
-                    globe=globe,
-                    zlevel=zlevel,
-                    zscale=zscale,
-                    height=height,
-                    depth=depth,
-                    vertical_units=vertical_units,
-                    clean=clean,
-                )
+        # the faces given that the mesh kept, so that data given for each face is
+        # cut later, as from_unstructured cuts it; from_1d drops no face
+        kept: np.ndarray | None = None
+
+        # each mesh is cleaned once its data is attached, as from_unstructured
+        # cleans it, so that the data follows its points and cells
+        self._clean = BRIDGE_CLEAN if clean is None else clean
+
+        if connectivity is None and (xs.ndim <= 1 or ys.ndim <= 1):
+            mesh = self.from_1d(
+                xs,
+                ys,
+                crs=crs,
+                globe=globe,
+                zlevel=zlevel,
+                zscale=zscale,
+                height=height,
+                depth=depth,
+                vertical_units=vertical_units,
+                clean=False,
+            )
         else:
-            mesh = self.from_unstructured(
+            if connectivity is None:
+                # the quad-faces of the points, as from_2d builds them, which
+                # takes no start index
+                connectivity, start_index = self._connectivity_2d(xs, ys), None
+            mesh, kept = self._unstructured(
                 xs,
                 ys,
                 connectivity=connectivity,
                 start_index=start_index,
                 crs=crs,
                 globe=globe,
-                clean=clean,
+                clean=False,
                 zlevel=zlevel,
                 zscale=zscale,
                 height=height,
@@ -2150,6 +2344,7 @@ class Transform:  # numpydoc ignore=PR01
             )
 
         self._mesh = mesh
+        self._kept = kept
         self._globe = globe
         self._n_points = mesh.n_points
         self._n_cells = mesh.n_cells
@@ -2162,7 +2357,11 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         data : ArrayLike, optional
-            Data to be optionally attached to the mesh face or nodes.
+            Data to be optionally attached to the mesh face or nodes, with a value
+            for each point given or each face given. Should any face be dropped,
+            data with a value for each face given keeps only the values of the
+            faces that remain. When the transform was built with `clean`, the mesh
+            is cleaned after the data is attached.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
@@ -2178,8 +2377,11 @@ class Transform:  # numpydoc ignore=PR01
         ..versionadded:: 0.1.0
 
         """
+        for_cells = False
         if data is not None:
-            data = self._as_compatible_data(data, self._n_points, self._n_cells)
+            data, for_cells = self._associate(
+                data, self._n_points, self._n_cells, kept=self._kept
+            )
 
         mesh = pv.PolyData()
         mesh.copy_structure(self._mesh)
@@ -2194,9 +2396,12 @@ class Transform:  # numpydoc ignore=PR01
 
         if data is not None:
             if not name:
-                name = NAME_POINTS if data.size == self._n_points else NAME_CELLS
+                name = NAME_CELLS if for_cells else NAME_POINTS
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
-            mesh[name] = data
+            (mesh.cell_data if for_cells else mesh.point_data)[name] = data
+
+        if self._clean:
+            mesh.clean(inplace=True)
 
         return mesh

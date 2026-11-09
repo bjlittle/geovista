@@ -167,7 +167,7 @@ Every Python file must begin with this header, and include `from __future__ impo
 
 ## Conventions
 
-- **Versioning**: `setuptools-scm` (no manual version file edits)
+- **Versioning and license**: `setuptools-scm` (no manual version file edits); BSD-3-Clause.
 - **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run -e docs python .github/scripts/changelog.py <PR> "changelog/a.rst,changelog/b.rst"` — the fragments are one **comma-separated** argument of repo-relative paths, and either space-separating them or dropping the `changelog/` prefix raises a bare `FileNotFoundError` on the concatenation. ⚠️ The docs render unreleased fragments on the changelog page, so a fragment's cross-reference must resolve: cite the documented path (`geovista.globe.Globe`, never the re-export `geovista.Globe`), and rerun the strict docs build after writing one (#2761).
 - **`agentic` label**: `ci-label.yml` adds it only for `agent*`/`ai*` branches, never the
   `docs/`, `deps/`, `tests/` prefixes used here, so pass `--label agentic` (workflow rule 4.1).
@@ -180,7 +180,7 @@ Every Python file must begin with this header, and include `from __future__ impo
   them leaves that one behind.
 - **Dependencies**: core deps in `requirements/pypi-core.txt`; optional groups in `requirements/pypi-optional-*.txt`. Pixi deps mirrored in `pyproject.toml`.
 - **CRS coordinates**: PROJ gives and takes geographic axes declared in radians in degrees. Reuse `geovista.transform._angles` for effective angular units, rather than the declared unit factor (#2841). `np.vstack` discards masks even when it returns a `MaskedArray`; fill missing mesh positions with NaN before arithmetic (#2844).
-- **License**: BSD-3-Clause
+- **Mesh data**: attach it by association, `mesh.point_data[name]` or `mesh.cell_data[name]`, never `mesh[name]`, which puts data that fits both on the points; and clean a mesh after its data is attached, as cleaning reorders cells, putting lines before polygons (#2908).
 
 ## Subdirectory Guides
 
@@ -196,4 +196,4 @@ Every Python file must begin with this header, and include `from __future__ impo
 
 ---
 
-**Last Updated**: 8 November 2026
+**Last Updated**: 9 November 2026

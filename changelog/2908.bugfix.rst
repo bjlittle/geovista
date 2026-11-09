@@ -1,0 +1,18 @@
+Fixed :class:`geovista.bridge.Transform` building faces at the value under a mask,
+or with a NaN vertex, for a point whose x or y value was NaN or masked alone, or
+that was masked in both while the masks differed elsewhere.
+:meth:`geovista.bridge.Transform.from_unstructured`,
+:meth:`geovista.bridge.Transform.from_2d` and the constructor now drop the faces
+that use such a point, with a warning, as they already did for a point masked
+alike, and the constructor now cuts data given for each face to the faces that
+remain. Data cut this way stays on the faces. It used to move to the points
+whenever as many faces remained as there were points. The constructor also
+cleans each mesh after attaching its data, as
+:meth:`geovista.bridge.Transform.from_unstructured` does, so it takes data for
+the points and faces given, and cleaning no longer moves the value of one face
+onto another. :meth:`geovista.bridge.Transform.from_1d` refuses a NaN bound as
+it refuses a masked one, and
+:meth:`geovista.bridge.Transform.to_structured_grid` refuses a masked or NaN
+position. Both refuse an infinite one too.
+This lands row 4 of positions spec §9.
+(:user:`claude`)

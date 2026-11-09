@@ -178,7 +178,7 @@ def test_face_with_too_few_points_that_uses_a_masked_point():
         np.arange(8).reshape(2, 4), mask=[[0, 0, 0, 0], [0, 0, 1, 1]]
     )
 
-    wmsg = "defines 1 face that uses a masked point, which is dropped"
+    wmsg = "defines 1 face that uses a missing point, which is dropped"
     with pytest.warns(UserWarning, match=wmsg):
         mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
 
@@ -186,7 +186,7 @@ def test_face_with_too_few_points_that_uses_a_masked_point():
 
 
 def test_face_that_uses_a_masked_point_outside_the_domain():
-    """A face that uses a masked point is dropped before the point can raise.
+    """A face that uses a missing point is dropped before the point can raise.
 
     The last point is masked over a value the projection cannot reach, as is
     the fourth, which no face uses.
@@ -199,7 +199,7 @@ def test_face_that_uses_a_masked_point_outside_the_domain():
     xs, ys = np.ma.masked_array(xs, mask=mask), np.ma.masked_array(ys, mask=mask)
     connectivity = [[0, 1, 2], [4, 5, 7]]
 
-    wmsg = "defines 1 face that uses a masked point, which is dropped"
+    wmsg = "defines 1 face that uses a missing point, which is dropped"
     with pytest.warns(UserWarning, match=wmsg):
         mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity, crs=ORTHO)
 
@@ -207,7 +207,7 @@ def test_face_that_uses_a_masked_point_outside_the_domain():
 
 
 def test_face_that_uses_a_masked_point_is_dropped():
-    """A face of a connectivity array that uses a masked point is dropped.
+    """A face of a connectivity array that uses a missing point is dropped.
 
     The point has no position, so the face would have a vertex with none. Before,
     the face was built from the value under the mask (#2621).
@@ -216,7 +216,7 @@ def test_face_that_uses_a_masked_point_is_dropped():
     xs, ys = np.ma.masked_array(LONS, mask=MASK), np.ma.masked_array(LATS, mask=MASK)
     connectivity = np.arange(8).reshape(2, 4)
 
-    wmsg = "defines 1 face that uses a masked point, which is dropped"
+    wmsg = "defines 1 face that uses a missing point, which is dropped"
     with pytest.warns(UserWarning, match=wmsg):
         mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
 
@@ -230,7 +230,7 @@ def test_every_face_uses_a_masked_point():
     xs, ys = np.ma.masked_array(LONS, mask=mask), np.ma.masked_array(LATS, mask=mask)
     connectivity = np.arange(8).reshape(2, 4)
 
-    wmsg = "defines 2 faces that use a masked point, which are dropped"
+    wmsg = "defines 2 faces that use a missing point, which are dropped"
     with pytest.warns(UserWarning, match=wmsg):
         mesh = Transform.from_unstructured(xs, ys, connectivity=connectivity)
 
@@ -244,7 +244,7 @@ def test_cell_data_follows_the_faces_that_remain():
     xs, ys = np.ma.masked_array(LONS, mask=mask), np.ma.masked_array(LATS, mask=mask)
     connectivity = np.arange(8).reshape(2, 4)
 
-    with pytest.warns(UserWarning, match="uses a masked point"):
+    with pytest.warns(UserWarning, match="uses a missing point"):
         mesh = Transform.from_unstructured(
             xs, ys, connectivity=connectivity, data=[10.0, 20.0], name="cells"
         )
@@ -258,7 +258,7 @@ def test_rgb_cell_data_follows_the_faces_that_remain():
     connectivity = np.arange(8).reshape(2, 4)
     data = np.array([[10, 20, 30], [40, 50, 60]], dtype=np.uint8)
 
-    with pytest.warns(UserWarning, match="uses a masked point"):
+    with pytest.warns(UserWarning, match="uses a missing point"):
         mesh = Transform.from_unstructured(
             xs, ys, connectivity=connectivity, data=data, name="cells", rgb=True
         )
@@ -280,7 +280,7 @@ def test_rgb_cell_data_when_every_face_is_dropped(channels):
     connectivity = np.arange(8).reshape(2, 4)
     data = np.ones((2, channels), dtype=np.uint8)
 
-    with pytest.warns(UserWarning, match="use a masked point"):
+    with pytest.warns(UserWarning, match="use a missing point"):
         mesh = Transform.from_unstructured(
             xs, ys, connectivity=connectivity, data=data, name="cells", rgb=True
         )
@@ -318,7 +318,7 @@ def test_data_that_fits_the_points_stays_on_the_points():
     connectivity = [[0, 1, 2], [0, 2, 3], [0, 1, 3], [1, 4, 2], [1, 2, 4]]
     data = [1.0, 2.0, 3.0, 4.0, 5.0]
 
-    with pytest.warns(UserWarning, match="defines 2 faces that use a masked point"):
+    with pytest.warns(UserWarning, match="defines 2 faces that use a missing point"):
         mesh = Transform.from_unstructured(
             xs, ys, connectivity=connectivity, start_index=0, data=data, name="values"
         )
@@ -328,11 +328,12 @@ def test_data_that_fits_the_points_stays_on_the_points():
 
 
 @pytest.mark.parametrize("masked", ["xs", "ys", "differently"])
-def test_points_masked_on_one_axis_stay(masked):
-    """Points stay unless `xs` and `ys` carry the same mask.
+def test_points_masked_on_one_axis_leave_their_faces(masked):
+    """Points masked in `xs` or `ys` alone leave their faces, as if masked alike.
 
-    The masks are compared whole, so a point masked in both stays when the masks
-    differ elsewhere, as point 7 does here with point 6 masked in `xs` alone.
+    Such a point is missing (positions spec §2 decision 1). Where the masks
+    differ, point 6 is masked in `xs` alone and point 7 in both, so the second
+    face is left with two vertices, and is dropped.
 
     """
     xs, ys = np.array(LONS), np.array(LATS)
@@ -344,9 +345,15 @@ def test_points_masked_on_one_axis_stay(masked):
         xs = np.ma.masked_array(xs, mask=[[0, 0, 0, 0], [0, 0, 1, 1]])
         ys = np.ma.masked_array(ys, mask=MASK)
 
-    mesh = Transform.from_unstructured(xs, ys)
+    if masked == "differently":
+        with pytest.warns(UserWarning, match="1 face with fewer than three vertices"):
+            mesh = Transform.from_unstructured(xs, ys)
+        expected = [4, 0, 1, 2, 3]
+    else:
+        mesh = Transform.from_unstructured(xs, ys)
+        expected = [4, 0, 1, 2, 3, 3, 4, 5, 6]
 
-    np.testing.assert_array_equal(mesh.faces, [4, 0, 1, 2, 3, 4, 4, 5, 6, 7])
+    np.testing.assert_array_equal(mesh.faces, expected)
 
 
 def test_masked_connectivity():

@@ -1,0 +1,455 @@
+# Copyright (c) 2021, GeoVista Contributors.
+#
+# This file is part of GeoVista and is distributed under the 3-Clause BSD license.
+# See the LICENSE file in the package root directory for licensing details.
+
+"""Unit-tests of missing positions given to a mesh.
+
+A position is missing when its x or y value is masked or NaN
+(positions spec §2 decision 1), and a mesh treats every missing point as the
+bridge treats a point that `xs` and `ys` mask alike (positions spec §2 decision 7).
+
+"""
+
+from __future__ import annotations
+
+import warnings
+
+import numpy as np
+import pint
+import pytest
+
+from geovista import bridge
+from geovista.bridge import NAME_CELLS, NAME_POINTS, Transform
+from geovista.crs import WGS84
+from geovista.transform import transform_points
+
+#: A registry of its own, as a caller's would be.
+UREG = pint.UnitRegistry()
+
+#: A grid of 3 by 3 points, the corners of 4 quads.
+LONS = np.tile([0.0, 10.0, 20.0], (3, 1))
+LATS = np.repeat([0.0, 10.0, 20.0], 3).reshape(3, 3)
+
+#: A point that only the fourth quad uses.
+CORNER = (2, 2)
+
+#: The 4 quads of the grid, as a connectivity array on its points raveled.
+QUADS = [[0, 1, 4, 3], [1, 2, 5, 4], [3, 4, 7, 6], [4, 5, 8, 7]]
+
+#: An orthographic projection, which cannot reach the far side of the globe.
+ORTHO = "+proj=ortho +lat_0=0 +lon_0=0"
+
+#: A coordinate in metres that lies far outside the disk of ``ORTHO``.
+OFF_DISK = 1e9
+
+#: The warning of one face dropped.
+ONE = "defines 1 face that uses a missing point, which is dropped"
+
+
+def masked(values, *indices: tuple[int, ...] | int):
+    """Return `values` as a masked array, masked at each of `indices`."""
+    result = np.ma.masked_array(values, dtype=float)
+    for index in indices:
+        result[index] = np.ma.masked
+    return result
+
+
+def nan(values, *indices: tuple[int, ...] | int):
+    """Return `values` as an array, with NaN at each of `indices`."""
+    result = np.array(values, dtype=float)
+    for index in indices:
+        result[index] = np.nan
+    return result
+
+
+def alike(*indices: tuple[int, ...] | int):
+    """Return the longitudes and latitudes, masked alike at each of `indices`."""
+    return masked(LONS, *indices), masked(LATS, *indices)
+
+
+def reference(build, *args: object, **kwargs: object):
+    """Build the mesh of a point masked alike, which warns of its faces dropped."""
+    with pytest.warns(UserWarning, match="uses? a missing point"):
+        return build(*args, **kwargs)
+
+
+def assert_same_mesh(result, expected):
+    """Assert that two meshes have the same faces and the same points."""
+    np.testing.assert_array_equal(result.faces, expected.faces)
+    np.testing.assert_allclose(result.points, expected.points)
+
+
+@pytest.mark.parametrize(
+    ("xs", "ys", "missing"),
+    [
+        (masked(LONS, CORNER), LATS, [CORNER]),
+        (LONS, masked(LATS, CORNER), [CORNER]),
+        (nan(LONS, CORNER), LATS, [CORNER]),
+        (LONS, nan(LATS, CORNER), [CORNER]),
+        (
+            UREG.Quantity(masked(LONS, CORNER), "degree"),
+            UREG.Quantity(LATS, "degree"),
+            [CORNER],
+        ),
+        (masked(LONS, CORNER), masked(LATS, (0, 0)), [CORNER, (0, 0)]),
+    ],
+    ids=["lon-masked", "lat-masked", "lon-nan", "lat-nan", "quantity", "masks-differ"],
+)
+def test_drops_the_faces_of_a_missing_point(xs, ys, missing):
+    """Test a face that uses a missing point is dropped, as for one masked alike.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    wmsg = (
+        ONE
+        if len(missing) == 1
+        else "defines 2 faces that use a missing point, which are dropped"
+    )
+    with pytest.warns(UserWarning, match=wmsg):
+        result = Transform.from_2d(xs, ys)
+    expected = reference(Transform.from_2d, *alike(*missing))
+    assert_same_mesh(result, expected)
+
+
+@pytest.mark.parametrize(
+    "build",
+    [
+        lambda xs, ys: Transform.from_unstructured(
+            np.ravel(xs), np.ravel(ys), connectivity=QUADS
+        ),
+        lambda xs, ys: Transform(xs, ys)(),
+    ],
+    ids=["from_unstructured", "constructor"],
+)
+def test_drops_through_every_entry_point(build):
+    """Test each way of building a mesh drops the faces of a missing point.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    with pytest.warns(UserWarning, match=ONE):
+        result = build(nan(LONS, CORNER), LATS)
+    expected = reference(build, *alike(CORNER))
+    assert_same_mesh(result, expected)
+
+
+def test_keeps_the_other_vertices_of_a_shape_face():
+    """Test a face of a shape keeps its other vertices, as for a point masked alike.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    xs = [0.0, 10.0, 20.0, 0.0, 10.0, 20.0, 10.0, 15.0]
+    ys = [0.0, 0.0, 0.0, 10.0, 10.0, 10.0, 20.0, 20.0]
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = Transform.from_unstructured(nan(xs, 2), ys, connectivity=(2, 4))
+        expected = Transform.from_unstructured(
+            masked(xs, 2), masked(ys, 2), connectivity=(2, 4)
+        )
+    assert [result.get_cell(i).n_points for i in range(result.n_cells)] == [3, 4]
+    assert_same_mesh(result, expected)
+
+
+def test_builds_no_faces_when_every_point_is_missing():
+    """Test a mesh whose every point is missing builds with no faces."""
+    wmsg = "defines 4 faces that use a missing point, which are dropped"
+    with pytest.warns(UserWarning, match=wmsg):
+        result = Transform.from_2d(np.full_like(LONS, np.nan), LATS)
+    assert result.n_cells == 0
+    assert result.n_points == 9
+
+
+def test_keeps_heights_for_each_point():
+    """Test heights given for each point still fit, as the missing point stays."""
+    with pytest.warns(UserWarning, match=ONE):
+        result = Transform.from_2d(nan(LONS, CORNER), LATS, height=np.arange(9.0))
+    assert result.n_cells == 3
+
+
+def test_cuts_colours_for_each_face():
+    """Test colours given for each face keep those of the faces that remain."""
+    colours = np.array(
+        [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0]], dtype=np.uint8
+    )
+    with pytest.warns(UserWarning, match=ONE):
+        result = Transform.from_2d(nan(LONS, CORNER), LATS, data=colours, rgb=True)
+    np.testing.assert_array_equal(result.cell_data[NAME_CELLS], colours[:3])
+
+
+@pytest.mark.parametrize("missing", ["masked", "nan"])
+def test_leaves_a_missing_point_out_of_the_transform(mocker, missing):
+    """Test a missing point never reaches the transform, whatever its other value.
+
+    Its y lies off the disk of the projection, which the transform would refuse.
+
+    """
+    points = transform_points(src_crs=WGS84, tgt_crs=ORTHO, xs=LONS, ys=LATS)
+    xs, ys = points[:, 0].reshape(3, 3), points[:, 1].reshape(3, 3)
+    ys[CORNER] = OFF_DISK
+    xs = masked(xs, CORNER) if missing == "masked" else nan(xs, CORNER)
+    spy = mocker.spy(bridge, "transform_points")
+
+    with pytest.warns(UserWarning, match=ONE):
+        result = Transform.from_2d(xs, ys, crs=ORTHO)
+
+    assert result.n_cells == 3
+    assert spy.call_args.kwargs["xs"].size == 8
+
+
+@pytest.mark.parametrize("name", ["xs", "ys"])
+def test_refuses_infinite(name):
+    """Test an infinite coordinate is refused, named at its index as given."""
+    xs, ys = LONS.copy(), LATS.copy()
+    (xs if name == "xs" else ys)[CORNER] = np.inf
+    emsg = rf"'{name}' cannot be infinite, got inf at index \(2, 2\)\."
+    with pytest.raises(ValueError, match=emsg):
+        Transform.from_2d(xs, ys)
+
+
+@pytest.mark.parametrize(
+    "xs", [LONS.tolist(), np.ma.masked_array(LONS)], ids=["list", "nomask"]
+)
+def test_keeps_present_points(xs):
+    """Test points that are all present build every face, unwarned."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = Transform.from_2d(xs, LATS)
+    assert result.n_cells == 4
+
+
+@pytest.mark.parametrize(
+    ("xs", "ys"), [(nan(LONS, CORNER), LATS), alike(CORNER)], ids=["nan", "alike"]
+)
+def test_constructor_cuts_data_for_each_face(xs, ys):
+    """Test the constructor keeps the data of the faces that remain.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    with pytest.warns(UserWarning, match=ONE):
+        transform = Transform(xs, ys)
+    result = transform(data=[1.0, 2.0, 3.0, 4.0])
+    np.testing.assert_array_equal(result.cell_data[NAME_CELLS], [1.0, 2.0, 3.0])
+
+
+def test_constructor_keeps_data_for_each_point():
+    """Test data given for each point still fits, as the missing point stays."""
+    with pytest.warns(UserWarning, match=ONE):
+        transform = Transform(nan(LONS, CORNER), LATS)
+    result = transform(data=np.arange(9.0))
+    np.testing.assert_array_equal(result.point_data[NAME_POINTS], np.arange(9.0))
+
+
+def test_constructor_refuses_data_of_another_count():
+    """Test data neither for each point nor for each face is refused, as before."""
+    with pytest.warns(UserWarning, match=ONE):
+        transform = Transform(nan(LONS, CORNER), LATS)
+    emsg = r"Require mesh data with either '9' points or '3' cells, got '5' values\."
+    with pytest.raises(ValueError, match=emsg):
+        transform(data=np.arange(5.0))
+
+
+def triangulated(n: int):
+    """Return a grid of `n` by `n` points raveled, and its quads split in two.
+
+    Each quad splits on the diagonal from its first point, so the last point of
+    the grid is used by the last two triangles alone.
+
+    """
+    lons, lats = np.meshgrid(np.arange(n) * 10.0, np.arange(n) * 10.0)
+    faces = []
+    for first in (row * n + col for row in range(n - 1) for col in range(n - 1)):
+        faces += [[first, first + 1, first + n + 1], [first, first + n + 1, first + n]]
+    return lons.ravel(), lats.ravel(), np.array(faces)
+
+
+#: Each way to make a point of the raveled coordinates missing.
+MISSING = pytest.mark.parametrize(
+    "missing",
+    [
+        lambda xs, ys, index: (nan(xs, index), ys),
+        lambda xs, ys, index: (masked(xs, index), masked(ys, index)),
+    ],
+    ids=["nan", "alike"],
+)
+
+#: Each way to build a mesh from unstructured points with data.
+BUILD = pytest.mark.parametrize(
+    "build",
+    [
+        lambda xs, ys, faces, **kwargs: Transform.from_unstructured(
+            xs, ys, connectivity=faces, **kwargs
+        ),
+        lambda xs, ys, faces, **kwargs: Transform(xs, ys, connectivity=faces)(**kwargs),
+    ],
+    ids=["from_unstructured", "constructor"],
+)
+
+#: The warning of the last two triangles of a grid dropped.
+TWO = "defines 2 faces that use a missing point, which are dropped"
+
+
+@MISSING
+@BUILD
+@pytest.mark.parametrize("name", [None, "values"])
+def test_keeps_data_for_each_face_on_the_cells(missing, build, name):
+    """Test data for each face stays on the cells, though as many as the points.
+
+    Two of the 18 faces use the missing point, which leaves 16 cells on 16 points.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    xs, ys, faces = triangulated(4)
+    with pytest.warns(UserWarning, match=TWO):
+        result = build(*missing(xs, ys, 15), faces, data=np.arange(18.0), name=name)
+    assert list(result.point_data.keys()) == []
+    np.testing.assert_array_equal(result.cell_data[name or NAME_CELLS], np.arange(16.0))
+
+
+def test_keeps_colours_for_each_face_on_the_cells():
+    """Test colours for each face stay on the cells, though as many as the points.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    xs, ys, faces = triangulated(4)
+    colours = np.arange(18 * 3, dtype=np.uint8).reshape(18, 3)
+    with pytest.warns(UserWarning, match=TWO):
+        result = Transform.from_unstructured(
+            nan(xs, 15), ys, connectivity=faces, data=colours, rgb=True
+        )
+    assert list(result.point_data.keys()) == []
+    np.testing.assert_array_equal(result.cell_data[NAME_CELLS], colours[:16])
+
+
+@MISSING
+@BUILD
+def test_keeps_data_for_each_point_on_the_points(missing, build):
+    """Test data for each point stays on the points, though as many as the cells."""
+    xs, ys, faces = triangulated(4)
+    with pytest.warns(UserWarning, match=TWO):
+        result = build(*missing(xs, ys, 15), faces, data=np.arange(16.0))
+    assert list(result.cell_data.keys()) == []
+    np.testing.assert_array_equal(result.point_data[NAME_POINTS], np.arange(16.0))
+
+
+@BUILD
+def test_keeps_data_for_as_many_points_as_faces_on_the_points(build):
+    """Test data for each point stays on the points, though it fits each face given."""
+    xs, ys, faces = triangulated(3)
+    faces = np.vstack([faces, [0, 1, 3]])
+    with pytest.warns(UserWarning, match=TWO):
+        result = build(nan(xs, 8), ys, faces, data=np.arange(9.0))
+    assert list(result.cell_data.keys()) == []
+    np.testing.assert_array_equal(result.point_data[NAME_POINTS], np.arange(9.0))
+
+
+@MISSING
+def test_constructor_keeps_data_for_each_face_on_the_cells_once_cleaned(missing):
+    """Test data for each face stays on the cells, once cleaning leaves as many points.
+
+    Two of the 8 faces use the missing corner, which cleaning removes, leaving 6
+    cells on 8 points.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    xs, ys, faces = triangulated(3)
+    with pytest.warns(UserWarning, match=TWO):
+        transform = Transform(*missing(xs, ys, 8), connectivity=faces, clean=True)
+    result = transform(data=np.arange(8.0))
+    assert result.n_points == 8
+    assert list(result.point_data.keys()) == []
+    np.testing.assert_array_equal(result.cell_data[NAME_CELLS], np.arange(6.0))
+
+
+@MISSING
+def test_constructor_keeps_data_for_each_point_once_cleaned(missing):
+    """Test data for each point given still fits once cleaning removes the missing one.
+
+    The constructor attaches it before cleaning, as from_unstructured does.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    xs, ys, faces = triangulated(3)
+    xs, ys = missing(xs, ys, 8)
+    data = np.arange(9.0)
+    with pytest.warns(UserWarning, match=TWO):
+        expected = Transform.from_unstructured(
+            xs, ys, connectivity=faces, data=data, clean=True
+        )
+    with pytest.warns(UserWarning, match=TWO):
+        transform = Transform(xs, ys, connectivity=faces, clean=True)
+    result = transform(data=data)
+    assert result.n_points == 8
+    assert_same_mesh(result, expected)
+    np.testing.assert_array_equal(
+        result.point_data[NAME_POINTS], expected.point_data[NAME_POINTS]
+    )
+
+
+#: A masked bound, in the middle of its axis.
+MASKED_BOUND = np.ma.masked_array([0.0, 10.0, 20.0], mask=[0, 1, 0])
+
+#: The axis of bounds that the other is given with.
+BOUNDS = [0.0, 10.0, 20.0]
+
+#: The refusal of a missing bound, formatted with its axis.
+MISSING_BOUND = r"Require an {}-axis array with no masked or NaN bounds, got '1'\."
+
+
+@pytest.mark.parametrize(
+    ("xs", "ys", "axis"),
+    [
+        ([0.0, np.nan, 20.0], BOUNDS, "x"),
+        (BOUNDS, [0.0, np.nan, 20.0], "y"),
+        (MASKED_BOUND, BOUNDS, "x"),
+    ],
+    ids=["x-nan", "y-nan", "x-masked"],
+)
+def test_from_1d_refuses_a_missing_bound(xs, ys, axis):
+    """Test a NaN bound is refused as a masked one is, a gap in its axis.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    with pytest.raises(ValueError, match=MISSING_BOUND.format(axis)):
+        Transform.from_1d(xs, ys)
+
+
+def test_from_1d_refuses_an_infinite_bound():
+    """Test an infinite bound is refused, naming its axis."""
+    emsg = r"'xs' cannot be infinite, got inf at index 1\."
+    with pytest.raises(ValueError, match=emsg):
+        Transform.from_1d([0.0, np.inf, 20.0], BOUNDS)
+
+
+@pytest.mark.parametrize(
+    ("xs", "ys", "axis"),
+    [
+        (MASKED_BOUND, BOUNDS, "x"),
+        ([0.0, np.nan, 20.0], BOUNDS, "x"),
+        (BOUNDS, [0.0, np.nan, 20.0], "y"),
+    ],
+    ids=["x-masked", "x-nan", "y-nan"],
+)
+def test_to_structured_grid_refuses_a_missing_position(xs, ys, axis):
+    """Test a structured grid refuses a missing position, as it has a point at each.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    with pytest.raises(ValueError, match=MISSING_BOUND.format(axis)):
+        Transform.to_structured_grid(xs, ys, [0.0, 1000.0])
+
+
+def test_to_structured_grid_refuses_infinite():
+    """Test a structured grid refuses an infinite position, naming its axis."""
+    emsg = r"'ys' cannot be infinite, got inf at index 1\."
+    with pytest.raises(ValueError, match=emsg):
+        Transform.to_structured_grid(BOUNDS, [0.0, np.inf, 20.0], [0.0, 1000.0])
