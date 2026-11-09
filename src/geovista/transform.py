@@ -603,7 +603,8 @@ def _transform_flat(
         # deprecation (numpy 1.25)
         xs, ys = xs[0], ys[0]
         if zs is not None:
-            zs = zs[0]
+            # a z under a mask is read as its value, as PROJ reads an array of them
+            zs = np.ma.getdata(zs)[0]
     if zs is None:
         txs, tys = transformer.transform(xs, ys, errcheck=bool(trap))
         tzs = None

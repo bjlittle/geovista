@@ -175,3 +175,20 @@ def test_transform_point_refuses_infinite(name):
     emsg = rf"'{name}' cannot be infinite, got inf\."
     with pytest.raises(ValueError, match=emsg):
         transform_point(WGS84, ORTHO, coordinates["x"], coordinates["y"])
+
+
+def test_reads_a_masked_z_alike_however_many_positions_remain():
+    """Test a masked z reads as it does among others, for one position left or given.
+
+    A z is data, so its value under a mask is read, as PROJ reads an array of them.
+
+    """
+    zs = np.ma.masked_array([1.0, 2.0], mask=[True, False])
+    expected = transform_points(WGS84, ORTHO, [0.0, 10.0], [0.0, 0.0], zs)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = transform_points(WGS84, ORTHO, [0.0, np.nan], [0.0, 0.0], zs)
+        alone = transform_points(WGS84, ORTHO, 0.0, 0.0, zs[:1])
+    np.testing.assert_allclose(result[0], expected[0])
+    assert np.all(np.isnan(result[1]))
+    np.testing.assert_allclose(alone[0], expected[0])
