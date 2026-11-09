@@ -172,6 +172,7 @@ logger = logging.getLogger("sphinx-geovista")
 extensions = [
     "geovista_citation_xrefs",
     "geovista_ledger",
+    "geovista_status",
     "intersphinx_resilience",
     "gallery_scenes",
     "numpydoc",

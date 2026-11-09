@@ -50,6 +50,10 @@ a page, a specification or the API reference, it is a link to the section it nam
     * - ``zlevel spec §…``
       - :doc:`2026-10-08-planar-zlevel-design`
 
+The Status column sums each specification's roadmap: 📋 not started, 🚧 how many of
+its rows have landed, or ✅ complete, with any 💡 candidates counted beside it. The
+build writes it, as docs spec §3.8 sets out.
+
 A specification that extends another sits beneath it, and the specifications
 of a family are listed root first, each child under its parent and siblings in
 the order of their prefixes. Every specification names its family in its own
