@@ -192,4 +192,4 @@ Push, confirm it with `git ls-remote` (workflow rule 4.6), check `gh pr view 291
 
 ## Follow-ups
 
-None yet.
+None. The final review found one Important point, fixed before merge: a table of the same header in docs spec §3.2 gained the column too, so the transform acts on the index alone, which `geovista_status_index` names (`test_a_table_on_another_page_is_left_alone`), narrowing Call 3. Its four minor points are in the pull request's description.
