@@ -24,7 +24,7 @@ from .common import (
     ZLEVEL_SCALE,
     StrEnumPlus,
     _missing,
-    _missing_as_nan,
+    _missing_pair,
     _named,
     _refuse_missing_positions,
     _to_cartesian,
@@ -1344,12 +1344,11 @@ def npoints(
     end_lat = _angle("end_lat", end_lat, radians=radians)
 
     # a missing end has neither coordinate, so every point is NaN
-    start_lon, start_lat = map(
-        float,
-        _missing_as_nan(start_lon, start_lat, x_name="start_lon", y_name="start_lat"),
+    start_lon, start_lat = _missing_pair(
+        start_lon, start_lat, x_name="start_lon", y_name="start_lat"
     )
-    end_lon, end_lat = map(
-        float, _missing_as_nan(end_lon, end_lat, x_name="end_lon", y_name="end_lat")
+    end_lon, end_lat = _missing_pair(
+        end_lon, end_lat, x_name="end_lon", y_name="end_lat"
     )
 
     if npts is None:
@@ -1462,16 +1461,16 @@ def npoints_by_idx(
     lons, lats = map(np.asanyarray, _lonlats(lons, lats, radians=bool(radians)))
 
     # only the two ends are read, as line reads its vertices a pair at a time
-    start_lonlat = _missing_as_nan(
+    start_lonlat = _missing_pair(
         lons[start_idx], lats[start_idx], x_name="lons", y_name="lats"
     )
-    end_lonlat = _missing_as_nan(
+    end_lonlat = _missing_pair(
         lons[end_idx], lats[end_idx], x_name="lons", y_name="lats"
     )
 
     return npoints(
-        *map(float, start_lonlat),
-        *map(float, end_lonlat),
+        *start_lonlat,
+        *end_lonlat,
         npts=npts,
         radians=radians,
         include_start=include_start,
