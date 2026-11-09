@@ -46,6 +46,7 @@ NO_CELL = "\N{EM DASH}"
 CONF = """
 extensions = ["geovista_status", "myst_parser"]
 suppress_warnings = ["app"]
+geovista_status_index = "index"
 """
 
 #: The index, whose table links two specifications and one row of plain text.
@@ -211,6 +212,23 @@ def test_a_table_of_another_header_is_left_alone(tmp_path):
     (table,) = tables(html / "index.html")
 
     assert table[0] == ["Name", "Document"]
+
+
+@pytest.mark.usefixtures("status")
+def test_a_table_on_another_page_is_left_alone(tmp_path):
+    """Only the index's own table gains the column, not one of its header elsewhere."""
+    src = tmp_path / "src"
+    project(src)
+    other = "Other\n=====\n\n.. list-table::\n    :header-rows: 1\n\n"
+    other += "    * - Citation\n      - Document\n    * - a\n      - b\n"
+    (src / "other.rst").write_text(other, encoding="utf-8")
+    index = (src / "index.rst").read_text(encoding="utf-8")
+    (src / "index.rst").write_text(index.replace("   two\n", "   two\n   other\n"))
+
+    html, _ = build(src, tmp_path)
+    (table,) = tables(html / "other.html")
+
+    assert table[0] == ["Citation", "Document"]
 
 
 def test_the_extension_builds_its_emoji_by_name():

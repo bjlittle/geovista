@@ -64,7 +64,10 @@ class SpecStatus(SphinxTransform):
     default_priority = 410
 
     def apply(self, **kwargs: object) -> None:  # noqa: ARG002
-        """Append a Status column to each table headed ``Citation``, ``Document``."""
+        """Append a Status column to the index's table of specifications."""
+        # only the index's table, as a page may quote its shape (docs spec §3.2)
+        if self.env.docname != self.config.geovista_status_index:
+            return
         for table in list(self.document.findall(nodes.table)):
             group = next(iter(table.findall(nodes.tgroup)), None)
             head = next(iter(table.findall(nodes.thead)), None)
@@ -117,6 +120,10 @@ def setup(app: Sphinx) -> dict[str, object]:
         The extension metadata.
 
     """
+    # the document whose table carries the column, the specifications index
+    app.add_config_value(
+        "geovista_status_index", "developer/specs/index", "env", types=frozenset({str})
+    )
     app.add_transform(SpecStatus)
     return {
         "version": "0.1.0",
