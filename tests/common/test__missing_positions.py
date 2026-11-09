@@ -21,6 +21,7 @@ import pytest
 
 from geovista.common import (
     _missing_and_named,
+    _missing_as_nan,
     _missing_positions,
     _refuse_missing_poi,
     _refuse_missing_positions,
@@ -269,3 +270,38 @@ def test_infinite_in_a_grid(name):
     emsg = rf"'{name}' cannot be infinite, got inf at index \(1, 1\)\."
     with pytest.raises(ValueError, match=emsg):
         missing(coordinates["xs"], coordinates["ys"])
+
+
+def test_missing_as_nan_pairs_the_coordinates():
+    """Test that a missing position is NaN in both coordinates."""
+    xs = [0.0, np.nan, 20.0]
+    ys = np.ma.masked_array([0.0, 10.0, 20.0], mask=[False, False, True])
+    x, y = _missing_as_nan(xs, ys, x_name="lons", y_name="lats")
+    np.testing.assert_array_equal(x, [0.0, np.nan, np.nan])
+    np.testing.assert_array_equal(y, [0.0, np.nan, np.nan])
+
+
+def test_missing_as_nan_leaves_the_arrays_given_alone():
+    """Test that the coordinates given are copied, never written to."""
+    xs = np.array([0.0, np.nan, 20.0])
+    ys = np.array([0.0, 10.0, 20.0])
+    x, y = _missing_as_nan(xs, ys, x_name="lons", y_name="lats")
+    assert not np.any(np.isnan(ys))
+    assert x is not xs
+    assert y is not ys
+
+
+def test_missing_as_nan_leaves_shapes_that_differ_unpaired():
+    """Test that coordinates of different shapes are each read alone."""
+    xs = [0.0, np.nan, 20.0]
+    ys = [0.0, 10.0]
+    x, y = _missing_as_nan(xs, ys, x_name="lons", y_name="lats")
+    np.testing.assert_array_equal(x, [0.0, np.nan, 20.0])
+    np.testing.assert_array_equal(y, ys)
+
+
+def test_missing_as_nan_refuses_infinite():
+    """Test that an infinite coordinate is refused, naming it."""
+    emsg = r"'lons' cannot be infinite, got inf at index 1\."
+    with pytest.raises(ValueError, match=emsg):
+        _missing_as_nan([0.0, np.inf], [0.0, 1.0], x_name="lons", y_name="lats")
