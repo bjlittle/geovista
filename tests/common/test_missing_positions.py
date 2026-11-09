@@ -142,3 +142,19 @@ def test_refuses_shapes_that_do_not_pair_as_before():
     emsg = "'lons' and 'lats' do not have same shape"
     with pytest.raises(ValueError, match=emsg):
         vectors_to_cartesian(masked(LONS, 1), LATS[:2], VECTORS)
+
+
+@pytest.mark.parametrize(
+    ("lons", "lats"),
+    [(np.nan, [30.0]), ([np.nan], 30.0), (np.ma.masked, [30.0]), (None, [30.0])],
+    ids=["nan-number", "nan-array", "masked-number", "none-number"],
+)
+def test_to_cartesian_pairs_a_number_with_an_array_of_one(lons, lats):
+    """Test a missing number beside an array of one gives NaN in every component.
+
+    Holds positions spec §2 decision 8.
+
+    """
+    result = to_cartesian(lons, lats)
+    assert result.shape == (1, 3)
+    assert np.all(np.isnan(result))

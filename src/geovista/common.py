@@ -1401,7 +1401,9 @@ def to_cartesian(
     # geovista.globe imports this module
     from .globe import _resolve  # noqa: PLC0415
 
-    lons, lats = _lonlats(lons, lats)
+    # promoted first, as _to_cartesian promotes them, so that a number pairs with
+    # an array of one
+    lons, lats = map(np.atleast_1d, _lonlats(lons, lats))
 
     # a missing position has neither coordinate, so every component is NaN
     lons, lats = _missing_as_nan(lons, lats, x_name="lons", y_name="lats")
