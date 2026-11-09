@@ -19,9 +19,11 @@ import numpy as np
 import pint
 import pytest
 
+from geovista import common
 from geovista.common import (
     _missing_and_named,
     _missing_as_nan,
+    _missing_pair,
     _missing_positions,
     _refuse_missing_poi,
     _refuse_missing_positions,
@@ -305,3 +307,58 @@ def test_missing_as_nan_refuses_infinite():
     emsg = r"'lons' cannot be infinite, got inf at index 1\."
     with pytest.raises(ValueError, match=emsg):
         _missing_as_nan([0.0, np.inf], [0.0, 1.0], x_name="lons", y_name="lats")
+
+
+#: The names one position is read with, as npoints reads its start.
+PAIR_NAMES = {"x_name": "start_lon", "y_name": "start_lat"}
+
+
+@pytest.mark.parametrize(
+    ("x", "y"),
+    [
+        (10.0, 20.0),
+        (10, 20),
+        (np.float64(10.0), np.float32(20.0)),
+        (np.nan, 20.0),
+        (10.0, np.nan),
+        (None, 20.0),
+        (10.0, np.ma.masked),
+    ],
+    ids=["floats", "ints", "numpy", "x-nan", "y-nan", "x-none", "y-masked"],
+)
+def test_missing_pair_agrees_with_missing_as_nan(x, y):
+    """Test one position reads as the general helper reads it, as floats."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = _missing_pair(x, y, **PAIR_NAMES)
+        expected = tuple(float(v) for v in _missing_as_nan(x, y, **PAIR_NAMES))
+    assert all(type(value) is float for value in result)
+    np.testing.assert_array_equal(result, expected)
+
+
+@pytest.mark.parametrize("value", [np.inf, -np.inf], ids=["inf", "-inf"])
+@pytest.mark.parametrize("name", ["start_lon", "start_lat"])
+def test_missing_pair_refuses_infinite(name, value):
+    """Test an infinite coordinate of one position is refused, naming it."""
+    coordinates = {"start_lon": 10.0, "start_lat": 20.0, name: value}
+    emsg = rf"'{name}' cannot be infinite, got {value}\."
+    with pytest.raises(ValueError, match=emsg):
+        _missing_pair(coordinates["start_lon"], coordinates["start_lat"], **PAIR_NAMES)
+
+
+def test_missing_pair_reads_numpy_scalars_without_masked_arrays(mocker):
+    """Test two plain numbers are read without the general helper."""
+    spy = mocker.spy(common, "_missing_as_nan")
+    result = _missing_pair(np.float64(10.0), np.float64(20.0), **PAIR_NAMES)
+    assert result == (10.0, 20.0)
+    spy.assert_not_called()
+
+
+def test_missing_pair_reads_a_masked_value_as_before(mocker):
+    """Test a masked value goes to the general helper, and gives NaN unwarned."""
+    spy = mocker.spy(common, "_missing_as_nan")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = _missing_pair(np.ma.masked, 20.0, **PAIR_NAMES)
+    assert np.all(np.isnan(result))
+    spy.assert_called_once()
