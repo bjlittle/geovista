@@ -24,6 +24,8 @@ from .common import (
     GV_FIELD_ZSCALE,
     GV_POINT_ZLEVEL,
     ZLEVEL_SCALE,
+    _missing,
+    _missing_positions,
     _retired,
     _to_cartesian,
     distance,
@@ -313,6 +315,10 @@ def transform_point(
 ) -> NDArray[Any]:
     """Transform the spatial point from the source to the target CRS.
 
+    The point is missing when its x or y value is masked or NaN, and gives NaN in
+    every component, without being transformed (positions spec §4.7). An infinite
+    x or y value is refused.
+
     Parameters
     ----------
     src_crs : CRSLike
@@ -356,6 +362,8 @@ def transform_point(
 
     """
     x, y = _coordinates(x, y, src_crs, x_name="x", y_name="y", crs_name="src_crs")
+    # an infinite coordinate is refused by the name the point was given with
+    _missing_positions(x, y, x_name="x", y_name="y")
     result = transform_points(
         src_crs=src_crs, tgt_crs=tgt_crs, xs=x, ys=y, zs=z, trap=trap
     )
@@ -374,6 +382,10 @@ def transform_points(
     trap: bool | None = True,
 ) -> NDArray[Any]:
     """Transform the spatial points from the source to the target CRS.
+
+    A position is missing when its x or y value is masked or NaN, and gives a row
+    of NaN, z included, without being transformed (positions spec §4.7). An
+    infinite x or y value is refused.
 
     Parameters
     ----------
@@ -421,6 +433,11 @@ def transform_points(
     """
     xs, ys = map(np.atleast_1d, _coordinates(xs, ys, src_crs, crs_name="src_crs"))
 
+    # a missing position is read on the values given, so an infinite one is
+    # named at its index as given (positions spec §4.1)
+    x_missing = _missing(xs, name="xs")
+    y_missing = _missing(ys, name="ys")
+
     if zs is not None:
         zs = np.atleast_1d(zs)
 
@@ -462,6 +479,76 @@ def transform_points(
                 f"got {xs.size:,} and {zs.size:,} respectively."
             )
             raise ValueError(emsg)
+
+    # a missing position has neither coordinate, so it is left out of the
+    # transform and given a row of NaN, z included (positions spec §4.7)
+    missing = x_missing.ravel() | y_missing.ravel()
+
+    if not np.any(missing):
+        result = _transform_flat(src_crs, tgt_crs, xs, ys, zs, trap=bool(trap))
+    else:
+        result = np.full((missing.size, 3), np.nan)
+        present = ~missing
+        if np.any(present):
+            present_xs, present_ys = (
+                np.ma.filled(np.ma.asanyarray(values, dtype=float), np.nan)[present]
+                for values in (xs, ys)
+            )
+            result[present] = _transform_flat(
+                src_crs,
+                tgt_crs,
+                present_xs,
+                present_ys,
+                None if zs is None else np.asanyarray(zs)[present],
+                trap=bool(trap),
+            )
+
+    if xndim == 2:
+        shape.append(3)
+        result = result.reshape(tuple(shape))
+
+    return result
+
+
+def _transform_flat(
+    src_crs: pyproj.CRS,
+    tgt_crs: pyproj.CRS,
+    xs: NDArray[Any],
+    ys: NDArray[Any],
+    zs: NDArray[Any] | None,
+    *,
+    trap: bool,
+) -> NDArray[Any]:
+    """Transform the spatial points of 1D arrays from the source to the target CRS.
+
+    The body of :func:`transform_points`, given only the positions present.
+
+    Parameters
+    ----------
+    src_crs : :class:`~pyproj.crs.CRS`
+        The source CRS of the points.
+    tgt_crs : :class:`~pyproj.crs.CRS`
+        The target CRS of the transform.
+    xs : :class:`~numpy.ndarray`
+        The ``(N,)`` x-values of the points, in canonical `src_crs` units.
+    ys : :class:`~numpy.ndarray`
+        The ``(N,)`` y-values of the points, in canonical `src_crs` units.
+    zs : :class:`~numpy.ndarray`, optional
+        The ``(N,)`` z-values of the points, in canonical `src_crs` units.
+    trap : bool
+        Raise an exception if an error occurs during the transform. Otherwise,
+        ``inf`` will be returned for erroneous points.
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        The ``(N, 3)`` transformed points, in the canonical units of `tgt_crs`.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
 
     def combine(
         xs: ArrayLike, ys: ArrayLike, zs: ArrayLike | None = None
@@ -508,28 +595,22 @@ def transform_points(
         return np.vstack([xs, ys, zs]).T
 
     if src_crs == tgt_crs:
-        result = combine(xs, ys, zs)
+        return combine(xs, ys, zs)
+
+    transformer = _transformer(src_crs, tgt_crs, xs, ys)
+    if xs.size == 1:
+        # unpack to avoid "conversion of an array with ndim > 0 to a scalar"
+        # deprecation (numpy 1.25)
+        xs, ys = xs[0], ys[0]
+        if zs is not None:
+            zs = zs[0]
+    if zs is None:
+        txs, tys = transformer.transform(xs, ys, errcheck=bool(trap))
+        tzs = None
     else:
-        transformer = _transformer(src_crs, tgt_crs, xs, ys)
-        if xs.size == 1:
-            # unpack to avoid "conversion of an array with ndim > 0 to a scalar"
-            # deprecation (numpy 1.25)
-            xs, ys = xs[0], ys[0]
-            if zs is not None:
-                zs = zs[0]
-        if zs is None:
-            txs, tys = transformer.transform(xs, ys, errcheck=bool(trap))
-            tzs = None
-        else:
-            txs, tys, tzs = transformer.transform(xs, ys, zs, errcheck=bool(trap))
+        txs, tys, tzs = transformer.transform(xs, ys, zs, errcheck=bool(trap))
 
-        result = combine(txs, tys, tzs)
-
-    if xndim == 2:
-        shape.append(3)
-        result = result.reshape(tuple(shape))
-
-    return result
+    return combine(txs, tys, tzs)
 
 
 def _transformer(

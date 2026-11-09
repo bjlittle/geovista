@@ -23,7 +23,8 @@ def test_shape_fail(mocker, bad):
     """Test trap for unexpected result shape."""
     src_crs = mocker.sentinel.src_crs
     tgt_crs = mocker.sentinel.tgt_crs
-    x, y, z = mocker.sentinel.x, mocker.sentinel.y, mocker.sentinel.z
+    # the point is read for a missing or infinite value, so it is given as numbers
+    x, y, z = 10.0, 20.0, mocker.sentinel.z
     trap = mocker.sentinel.trap
     _ = mocker.patch("geovista.transform.transform_points", return_value=bad)
     emsg = "Cannot transform point, got unexpected shape"
