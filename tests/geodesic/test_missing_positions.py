@@ -6,19 +6,21 @@
 """Unit-tests of missing positions given to the shapes of :mod:`geovista.geodesic`.
 
 A position is missing when its longitude or latitude is masked or NaN
-(positions spec §2 decision 1).
+(positions spec §2 decision 1). A shape refuses one, and the points along a
+geodesic carry it through as NaN (positions spec §2 decision 8).
 
 """
 
 from __future__ import annotations
 
 from typing import NoReturn
+import warnings
 
 import numpy as np
 import pint
 import pytest
 
-from geovista.geodesic import BBox, line, wedge
+from geovista.geodesic import BBox, line, npoints, npoints_by_idx, wedge
 
 UREG = pint.UnitRegistry()
 
@@ -260,3 +262,84 @@ def test_wedge_refuses_infinite(name):
     longitudes[name] = np.inf
     with pytest.raises(ValueError, match=rf"'{name}' cannot be infinite, got inf\."):
         wedge(longitudes["lon1"], longitudes["lon2"])
+
+
+#: The ends of a geodesic, by the names npoints gives them.
+ENDS = {"start_lon": -10.0, "start_lat": 20.0, "end_lon": 10.0, "end_lat": 30.0}
+
+#: Four positions, between two of which npoints_by_idx finds points.
+PATH_LONS = [0.0, 10.0, 20.0, 30.0]
+PATH_LATS = [0.0, 5.0, 10.0, 15.0]
+
+
+@pytest.mark.parametrize(
+    "value", [np.ma.masked, np.nan, None], ids=["masked", "nan", "none"]
+)
+@pytest.mark.parametrize("name", list(ENDS))
+def test_npoints_gives_nan_for_a_missing_end(name, value):
+    """Test a missing end gives NaN at every point, with no warning.
+
+    Holds positions spec §2 decision 1 and positions spec §2 decision 8.
+
+    """
+    ends = {**ENDS, name: value}
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        glons, glats = npoints(**ends, npts=3, include_start=True, include_end=True)
+    assert np.all(np.isnan(glons))
+    assert np.all(np.isnan(glats))
+
+
+@pytest.mark.parametrize("name", list(ENDS))
+def test_npoints_refuses_infinite(name):
+    """Test an infinite end is refused, naming it.
+
+    Holds positions spec §2 decision 2.
+
+    """
+    ends = {**ENDS, name: np.inf}
+    with pytest.raises(ValueError, match=rf"'{name}' cannot be infinite, got inf\."):
+        npoints(**ends)
+
+
+@pytest.mark.parametrize(
+    ("lons", "lats"),
+    [
+        (masked(PATH_LONS, 1), PATH_LATS),
+        (PATH_LONS, nan(PATH_LATS, 1)),
+        (
+            UREG.Quantity(masked(PATH_LONS, 1), "degree"),
+            UREG.Quantity(PATH_LATS, "degree"),
+        ),
+    ],
+    ids=["lon-masked", "lat-nan", "quantity"],
+)
+def test_npoints_by_idx_gives_nan_for_a_missing_end(lons, lats):
+    """Test a missing end gives NaN at every point, with no warning.
+
+    Holds positions spec §2 decision 8.
+
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        glons, glats = npoints_by_idx(lons, lats, 0, 1, npts=3)
+    assert np.all(np.isnan(glons))
+    assert np.all(np.isnan(glats))
+
+
+def test_npoints_by_idx_reads_only_its_two_positions():
+    """Test a missing or infinite position not between the ends is never read."""
+    lons = [0.0, 10.0, np.nan, np.inf]
+    glons, glats = npoints_by_idx(lons, PATH_LATS, 0, 1, npts=3)
+    expected_lons, expected_lats = npoints(0.0, 0.0, 10.0, 5.0, npts=3)
+    np.testing.assert_allclose(glons, expected_lons)
+    np.testing.assert_allclose(glats, expected_lats)
+
+
+@pytest.mark.parametrize("name", ["lons", "lats"])
+def test_npoints_by_idx_refuses_infinite(name):
+    """Test an infinite end is refused, naming the coordinate it is in."""
+    coordinates = {"lons": list(PATH_LONS), "lats": list(PATH_LATS)}
+    coordinates[name][1] = np.inf
+    with pytest.raises(ValueError, match=rf"'{name}' cannot be infinite, got inf\."):
+        npoints_by_idx(coordinates["lons"], coordinates["lats"], 0, 1)

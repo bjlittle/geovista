@@ -24,6 +24,7 @@ from .common import (
     ZLEVEL_SCALE,
     StrEnumPlus,
     _missing,
+    _missing_as_nan,
     _named,
     _refuse_missing_positions,
     _to_cartesian,
@@ -1273,6 +1274,9 @@ def npoints(
     intermediate longitude and latitude `npts` points along the geodesic line
     that spans between the start and end points.
 
+    An end whose longitude or latitude is masked or NaN is missing, and gives NaN
+    at every point (positions spec §4.7). An infinite one is refused.
+
     Note that longitudes (degrees) will be wrapped to the half-closed interval
     ``[-180, 180)``.
 
@@ -1339,6 +1343,15 @@ def npoints(
     end_lon = _angle("end_lon", end_lon, radians=radians)
     end_lat = _angle("end_lat", end_lat, radians=radians)
 
+    # a missing end has neither coordinate, so every point is NaN
+    start_lon, start_lat = map(
+        float,
+        _missing_as_nan(start_lon, start_lat, x_name="start_lon", y_name="start_lat"),
+    )
+    end_lon, end_lat = map(
+        float, _missing_as_nan(end_lon, end_lat, x_name="end_lon", y_name="end_lat")
+    )
+
     if npts is None:
         npts = GEODESIC_NPTS
 
@@ -1381,6 +1394,10 @@ def npoints_by_idx(
     Given a single start-point index and end-point index, calculate the equally
     spaced intermediate longitude and latitude `npts` points along the geodesic
     line that spans between the start and end points.
+
+    An end whose longitude or latitude is masked or NaN is missing, and gives NaN
+    at every point (positions spec §4.7). An infinite one is refused. Only the two
+    ends are read.
 
     Note that longitudes (degrees) will be wrapped to the half-closed interval
     ``[-180, 180)``.
@@ -1443,12 +1460,18 @@ def npoints_by_idx(
 
     # a quantity is read in the unit the flag names, as a plain number is given
     lons, lats = map(np.asanyarray, _lonlats(lons, lats, radians=bool(radians)))
-    start_lonlat = lons[start_idx], lats[start_idx]
-    end_lonlat = lons[end_idx], lats[end_idx]
+
+    # only the two ends are read, as line reads its vertices a pair at a time
+    start_lonlat = _missing_as_nan(
+        lons[start_idx], lats[start_idx], x_name="lons", y_name="lats"
+    )
+    end_lonlat = _missing_as_nan(
+        lons[end_idx], lats[end_idx], x_name="lons", y_name="lats"
+    )
 
     return npoints(
-        *start_lonlat,
-        *end_lonlat,
+        *map(float, start_lonlat),
+        *map(float, end_lonlat),
         npts=npts,
         radians=radians,
         include_start=include_start,
