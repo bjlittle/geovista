@@ -281,4 +281,6 @@ Push, confirm it with `git ls-remote` (workflow rule 4.6), check `gh pr view 291
 
 ## Follow-ups
 
-None yet.
+- {issue}`2913`: `geodesic.line` builds about twice as slowly, since `npoints_by_idx` and `npoints` read each end through masked arrays. It is positions spec §8 item 5, owed by row 7, added for it.
+
+The final review left four minor points. The masked `zs` of one position was re-graded to Important and fixed (`test_reads_a_masked_z_alike_however_many_positions_remain`). The speed of `line` is {issue}`2913`. The other two stand, as the pull request's description says: `transform_points` returns a plain array once a position is missing, as its docstring promises, and an infinite value that `trap=False` gives is refused when given back, as §2 decision 2 decides.
