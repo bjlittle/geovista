@@ -311,8 +311,8 @@ report, add 20%, and round up to a whole MiB.
 In scope are the two plugins, `benchmarks/` and its conftest, the benchmarks of §4.3 with
 their ceilings, the two tasks, `ci-benchmarks.yml`, the `MANIFEST.in` entry, the README's
 badge, the developer guide's section, and their tests. Out of scope are rendering, wall time on a shared runner, and making either
-check required (§4.6, §2 decision 4). So is fixing a regression the benchmarks find, such as
-{issue}`2913`, which row 7 of positions spec §9 owes.
+check required (§4.6, §2 decision 4). So is fixing a regression the benchmarks find, as
+{pull}`2922` fixed {issue}`2913`, landing row 7 of positions spec §9.
 
 (bench-spec-8)=
 ## 8. Open Items
@@ -330,8 +330,8 @@ Each carries the grammar of items spec §3.2. None is open today.
 | 4 | Each benchmark's peak memory compared with the base commit's (§4.6) | 💡 candidate |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own. Rows 2 and 3
-need row 1, and not each other. Row 1 starts with `geodesic`, so the fix of {issue}`2913`
-can be measured once it lands.
+need row 1, and not each other. Row 1 starts with `geodesic`, whose `line` benchmark covers
+the path {issue}`2913` slowed and {pull}`2922` restored, so a return of that cost is caught.
 
 Row 4 is wanted when a regression in memory is found that stayed under its ceiling. That
 cannot be observed mechanically, so the row is **revisited by hand**, when such a
