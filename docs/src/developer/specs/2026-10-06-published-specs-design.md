@@ -492,7 +492,7 @@ reads roadmaps with, and that test holds the column to every roadmap.
 | 4 | Rendered-output gate | ✅ landed (2026-10-27, {pull}`2738`) |
 | 5 | GitHub reference roles and hardcoded-link detection | 💡 candidate |
 | 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
-| 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | 🚧 in progress ({pull}`2917`) |
+| 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | ✅ landed (2026-11-09, {pull}`2917`) |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
@@ -571,7 +571,7 @@ observed:
 ## 6. Testing
 
 `tests/test_spec_conventions.py` holds §3.1 to
-§3.7, and the roadmap triggers of §4.
+§3.8, and the roadmap triggers of §4.
 
 It sits in `tests/` rather than `tests/docs/` because it reads source files and needs no
 built artefact, which puts it beside `tests/test_ci_typing.py`. That is the right
@@ -588,6 +588,10 @@ each status reference against GitHub as §3.6 describes. It is a
 script rather than a test, so a network outage fails a workflow and not the suite.
 `tests/test_status_references.py` runs its rules against a fixed record of the work, and
 asserts that the parser it borrows still finds the references in the real specifications.
+
+`tests/docs/test_geovista_status.py` holds the Status column of §3.8, in a small build and
+on the real index, and `tests/test_spec_conventions.py` holds each specification's status
+to its own count of the roadmap.
 
 (docs-spec-7)=
 ## 7. Scope
@@ -690,4 +694,4 @@ Each row follows ledger spec §3.4.
 | §2 decision 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py` |
 | §2 decision 6 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that each `candidate` row of §4 names a trigger the conventions test asserts, or says that it is revisited by hand. |
 | §2 decision 7 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
-| §2 decision 8 | ⏳ pending | row 7 of §4 |
+| §2 decision 8 | ✅ verified (2026-11-09, {pull}`2917`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_status.py`, `tests/test_spec_conventions.py` |
