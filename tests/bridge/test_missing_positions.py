@@ -370,3 +370,23 @@ def test_keeps_present_points(xs):
         result = Transform.from_points(xs, LATS)
     assert result.n_points == 4
     np.testing.assert_allclose(result.points, Transform.from_points(LONS, LATS).points)
+
+
+@pytest.mark.parametrize("missing", [False, True], ids=["none-missing", "one-missing"])
+def test_refuses_a_zlevel_with_vectors_in_the_shape_given(missing):
+    """Test a zlevel array given with vectors is refused in the shape given.
+
+    It is refused before any point is dropped, so with no warning, which settles
+    positions spec §8 item 4.
+
+    """
+    xs = np.array([[0.0, 10.0, 20.0], [30.0, 40.0, 50.0]])
+    ys = np.array([[0.0, 5.0, 10.0], [15.0, 20.0, 25.0]])
+    if missing:
+        ys[1, 0] = np.nan
+    vectors = (np.ones((2, 3)), np.ones((2, 3)))
+    emsg = r"'zlevel' may not be multiple, has shape \(2, 1\)\."
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        with pytest.raises(ValueError, match=emsg):
+            Transform.from_points(xs, ys, zlevel=[[1], [2]], vectors=vectors)

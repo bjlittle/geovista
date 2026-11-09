@@ -35,6 +35,7 @@ from .common import (
     _missing_and_named,
     _missing_positions,
     _named,
+    _refuse_multiple_zlevel,
     _to_cartesian,
     _vectors_to_cartesian,
     cast_UnstructuredGrid_to_PolyData,
@@ -1264,6 +1265,11 @@ class Transform:  # numpydoc ignore=PR01
             heights = _for_points(heights, xs.size, 0)
             # a cloud with heights carries no z-level (heights spec §4.3)
             zlevel = None
+
+        # vectors carry no z-level array, which is refused as given, before any
+        # point is dropped (positions spec §8 item 4)
+        if vectors is not None:
+            _refuse_multiple_zlevel(zlevel)
 
         # a missing point is dropped before any point is transformed, with its
         # entry in every array given for each point (positions spec §4.5)

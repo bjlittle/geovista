@@ -1575,6 +1575,39 @@ def vectors_to_cartesian(
     )
 
 
+def _refuse_multiple_zlevel(zlevel: float | ArrayLike | None) -> None:
+    """Refuse a z-level of more than one value, which vectors cannot carry.
+
+    :meth:`~geovista.bridge.Transform.from_points` refuses one given with its
+    vectors before it drops any missing point, so the shape named is the one given
+    (positions spec §8 item 4).
+
+    Parameters
+    ----------
+    zlevel : float or ArrayLike, optional
+        The z-axis level.
+
+    Raises
+    ------
+    ValueError
+        If `zlevel` holds more than one value.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if zlevel is None:
+        return
+
+    levels = np.atleast_1d(zlevel)
+
+    if levels.size > 1:
+        # TODO @pp-mo: remove multiple zlevel, when removed from "from_points".
+        msg = f"'zlevel' may not be multiple, has shape {levels.shape}."
+        raise ValueError(msg)
+
+
 def _vectors_to_cartesian(
     lons: ArrayLike,
     lats: ArrayLike,
@@ -1630,10 +1663,7 @@ def _vectors_to_cartesian(
         np.array([0.0]) if zlevel is None else np.atleast_1d(zlevel).astype(float)
     )
 
-    if zlevel_array.size > 1:
-        # TODO @pp-mo: remove multiple zlevel, when removed from "from_points".
-        msg = f"'zlevel' may not be multiple, has shape {zlevel_array.shape}."
-        raise ValueError(msg)
+    _refuse_multiple_zlevel(zlevel_array)
 
     radii = radius + radius * zlevel_array * zscale
 
