@@ -84,6 +84,11 @@ than a plan.
    that produced it.** A roadmap row that has landed, and an open item that has been
    settled, each carry the date and the pull request or issue that did it, from a closed
    vocabulary. See §3.6.
+8. **🤝 Agreed** (2026-11-09, {user}`bjlittle`, {pull}`2914`) — **The index shows each
+   specification's status, worked out from its roadmap.** A reader looking for work still
+   to do had to open each specification, or remember which ones had some. The namespace
+   table gains a Status column, which the build writes from each roadmap, so nobody edits it
+   by hand and it cannot fall behind. See §3.8.
 
 (docs-spec-3)=
 ## 3. Architecture
@@ -440,6 +445,36 @@ So a new specification makes four edits besides its own text: its **Lineage**,
 in the table; and its toctree entry. Item 8 of §3.5 checks the first three against each
 other, so a family drawn wrongly in any one of them fails the suite.
 
+(docs-spec-3-8)=
+### 3.8 Status in the Index
+
+A roadmap says what has landed, row by row, but a reader looking across the collection for
+work still to do had to open each specification, or remember which ones had some. The
+namespace table of §3.2 carries a third column, Status, which sums each specification's
+roadmap into one cell:
+
+| Cell | When |
+|---|---|
+| `📋 not started` | no row has landed or begun |
+| `🚧 N of M rows` | a row has landed or begun, and another has not landed |
+| `✅ complete` | every row has landed |
+
+The count sets the rows that have landed against every row that is not a 💡 candidate, so
+a row in progress has not landed yet. A candidate waits on a trigger (§4), so nobody can
+take it up yet, and it neither holds a specification back from complete nor counts as work
+to do. While any candidate remains, the cell names how many after the status, as in
+`✅ complete · 💡 1` or `🚧 2 of 6 rows · 💡 4`. A specification whose every row is a
+candidate reads `💡 N`, and one without a roadmap reads `—`.
+
+Open items stay out of the cell. Each is owed by a row that has not landed
+(items spec §3.4), so a specification with an open item already shows that row as
+outstanding, and its own page lists the items.
+
+The build writes the column, so a new specification makes no edit for it (§3.7), and a row
+that lands moves the index with it. The other two columns stay hand-written. An extension
+reads the roadmap of the document each row links, with the parser the conventions test
+reads roadmaps with, and that test holds the column to every roadmap.
+
 (docs-spec-4)=
 ## 4. Roadmap
 
@@ -457,6 +492,7 @@ other, so a family drawn wrongly in any one of them fails the suite.
 | 4 | Rendered-output gate | ✅ landed (2026-10-27, {pull}`2738`) |
 | 5 | GitHub reference roles and hardcoded-link detection | 💡 candidate |
 | 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
+| 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | 📋 not started |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
@@ -557,8 +593,8 @@ asserts that the parser it borrows still finds the references in the real specif
 ## 7. Scope
 
 In scope: where specifications and plans live, how a reader reaches them, how a section is
-addressed, how a citation is written, what a roadmap row commits to, and how a
-specification records its family and is titled.
+addressed, how a citation is written, what a roadmap row commits to, how a
+specification records its family and is titled, and what the index shows of its roadmap.
 
 Out of scope: what any individual specification says; the structure of the developer guide
 beyond one card and one toctree entry; the Diátaxis quadrants, which are for users where
@@ -654,3 +690,4 @@ Each row follows ledger spec §3.4.
 | §2 decision 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py` |
 | §2 decision 6 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that each `candidate` row of §4 names a trigger the conventions test asserts, or says that it is revisited by hand. |
 | §2 decision 7 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
+| §2 decision 8 | ⏳ pending | row 7 of §4 |
