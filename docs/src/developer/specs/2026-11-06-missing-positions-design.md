@@ -384,11 +384,11 @@ Each carries the grammar of items spec §3.2.
    builds about twice as slowly as before row 5.** Row 5 makes `npoints` and `npoints_by_idx`
    read each end through the test of §4.1, and `line` calls `npoints_by_idx` once for each
    pair of its vertices, so each pair costs about 100 µs more: a line of 2,000 vertices took
-   0.16 s and now takes 0.36 s. No position is read wrong. The final review of row 5 found
-   it. Owed by row 7 of §9, added for it, since every other row has landed. Row 7 settled it.
-   `npoints` and `npoints_by_idx` read an end given as two plain numbers without building
-   masked arrays, and the line of 2,000 vertices now takes 0.14 s, a little faster than
-   before row 5.
+   0.16 s before row 5 and 0.36 s after it. No position is read wrong. The final review of
+   row 5 found it. Owed by row 7 of §9, added for it, since every other row has landed. Row 7
+   settled it. `npoints` and `npoints_by_idx` read an end given as two plain numbers without
+   building masked arrays, and the line of 2,000 vertices builds in 0.14 s, as fast as before
+   row 5.
 
 (positions-spec-9)=
 ## 9. Roadmap

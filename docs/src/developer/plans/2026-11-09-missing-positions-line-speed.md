@@ -148,4 +148,4 @@ Push, confirm it with `git ls-remote` (workflow rule 4.6), check `gh pr view 292
 
 ## Follow-ups
 
-None. The final review found nothing critical or important, and its four minor points are in the pull request's description.
+None. The final review found nothing critical or important, and {user}`bjlittle` asked for its four minor points to be made in this pull request: `np.float32` and `np.int64` cases for the spy test of Task 1, why the spy test of Task 2 patches both modules, and two fixes to the wording of §8 item 5.
