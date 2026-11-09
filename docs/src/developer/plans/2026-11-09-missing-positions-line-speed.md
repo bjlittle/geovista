@@ -148,4 +148,4 @@ Push, confirm it with `git ls-remote` (workflow rule 4.6), check `gh pr view 292
 
 ## Follow-ups
 
-None yet.
+None. The final review found nothing critical or important, and its four minor points are in the pull request's description.
