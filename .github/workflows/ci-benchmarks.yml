@@ -1,0 +1,69 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/actions/setup-python
+#   - https://github.com/CodSpeedHQ/action (v5.6.3)
+
+name: ci-benchmarks
+
+on:
+  pull_request:
+
+  push:
+    branches:
+      - "main"
+      - "v*x"
+      - "!pixi-auto-update"
+      - "!pre-commit-ci-update-config"
+      - "!dependabot/*"
+
+  # required by codspeed to backtest performance on demand
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+permissions: {}
+
+env:
+  # "pykdtree" queries with openmp threads, whose synchronisation the cpu
+  # simulation cannot measure consistently, so run single threaded
+  OMP_NUM_THREADS: 1
+  PY_COLORS: "1"
+  SHELLOPTS: "errexit:pipefail"
+
+jobs:
+  benchmarks:
+    name: "codspeed benchmarks"
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: read
+      # required for the codspeed oidc authentication
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          # "setuptools-scm" derives the version from the history, which the
+          # editable install of "geovista" needs.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.14"
+
+      - name: "pip install"
+        run: |
+          pip install --no-cache-dir -e .[test] pytest-codspeed
+
+      - name: "run benchmarks"
+        uses: CodSpeedHQ/action@af75f77f17a054769abefaa42fe8dc2975469b5f
+        with:
+          mode: simulation
+          run: pytest benchmarks --codspeed
