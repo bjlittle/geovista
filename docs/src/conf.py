@@ -1005,15 +1005,6 @@ def geovista_builder_inited(app: Sphinx) -> None:
     plot_inline = _bool_eval(arg=app.builder.config.plot_inline)
     plot_tutorial = _bool_eval(arg=app.builder.config.plot_tutorial)
 
-    # overwrite the myst-nb sphinx configuration option that controls the
-    # notebook execution mode. this option has been pre-parsed by the sphinx
-    # state machine from this file (conf.py) or set by the default myst-nb app
-    # configuration. for further details see
-    # https://www.sphinx-doc.org/en/master/extdev/event_callbacks.html
-    if not plot_tutorial:
-        # https://myst-nb.readthedocs.io/en/latest/configuration.html#execution
-        app.config["nb_execution_mode"] = "off"
-
     # sanitise the config option from str to bool
     app.builder.config.plot_docstring = plot_docstring
 
@@ -1041,6 +1032,23 @@ def geovista_carousel(
         generate_carousel(app, fname)
 
 
+def geovista_execution_mode(
+    app: Sphinx,  # noqa: ARG001
+    config: Config,
+) -> None:
+    """Configure the myst-nb notebook execution mode from ``plot_tutorial``.
+
+    Turning execution off is a change to a value whose change re-reads every
+    document, so it is made as the configuration is read. Sphinx compares the
+    configuration with the last build's before ``builder-inited``, so a change made
+    there was stored with the environment, then read as changed on every later run,
+    and no build was ever incremental (#2904).
+    """
+    if not _bool_eval(arg=config.plot_tutorial):
+        # https://myst-nb.readthedocs.io/en/latest/configuration.html#execution
+        config["nb_execution_mode"] = "off"
+
+
 def geovista_plot_inline(
     app: Sphinx,  # noqa: ARG001
     config: Config,
@@ -1063,6 +1071,8 @@ def setup(app: Sphinx) -> None:
     app.connect("builder-inited", geovista_builder_inited, priority=10)
     # register callback to configure the pyvista plot directive
     app.connect("config-inited", geovista_plot_inline)
+    # register callback to configure the myst-nb notebook execution mode
+    app.connect("config-inited", geovista_execution_mode)
     # register callback for the autoapi event
     app.connect("autoapi-skip-member", geovista_skip_member)
     # register callback to generate gallery carousel

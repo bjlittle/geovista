@@ -1,0 +1,5 @@
+Made local builds of the documentation incremental again. ``conf.py`` turned
+notebook execution off after Sphinx had compared the configuration with the last
+build's, so every build saw a changed setting and re-read all 166 pages. It now
+turns execution off as the configuration is read, and a rebuild with nothing
+changed re-reads 47 pages in about a quarter of the time. (:user:`claude`)
