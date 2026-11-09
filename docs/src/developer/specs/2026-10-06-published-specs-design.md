@@ -460,9 +460,9 @@ roadmap into one cell:
 | `✅ complete` | every row has landed |
 
 The count sets the rows that have landed against every row that is not a 💡 candidate, so
-a row in progress has not landed yet. A candidate waits on a trigger (§4), so nobody can
-take it up yet, and it neither holds a specification back from complete nor counts as work
-to do. While any candidate remains, the cell names how many after the status, as in
+a row in progress has not landed yet, and a roadmap whose only row is in progress reads
+`🚧 0 of 1 row`. A candidate waits on a trigger (§4), so nobody can take it up yet, and it
+neither holds a specification back from complete nor counts as work to do. While any candidate remains, the cell names how many after the status, as in
 `✅ complete · 💡 1` or `🚧 2 of 6 rows · 💡 4`. A specification whose every row is a
 candidate reads `💡 N`, and one without a roadmap reads `—`.
 
@@ -473,7 +473,8 @@ outstanding, and its own page lists the items.
 The build writes the column, so a new specification makes no edit for it (§3.7), and a row
 that lands moves the index with it. The other two columns stay hand-written. An extension
 reads the roadmap of the document each row links, with the parser the conventions test
-reads roadmaps with, and that test holds the column to every roadmap.
+reads roadmaps with. That test holds each status to its own count of the roadmap, and a
+build test holds the column (§6).
 
 (docs-spec-4)=
 ## 4. Roadmap
@@ -492,7 +493,7 @@ reads roadmaps with, and that test holds the column to every roadmap.
 | 4 | Rendered-output gate | ✅ landed (2026-10-27, {pull}`2738`) |
 | 5 | GitHub reference roles and hardcoded-link detection | 💡 candidate |
 | 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
-| 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | 📋 not started |
+| 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | ✅ landed (2026-11-09, {pull}`2917`) |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
@@ -571,7 +572,7 @@ observed:
 ## 6. Testing
 
 `tests/test_spec_conventions.py` holds §3.1 to
-§3.7, and the roadmap triggers of §4.
+§3.8, and the roadmap triggers of §4.
 
 It sits in `tests/` rather than `tests/docs/` because it reads source files and needs no
 built artefact, which puts it beside `tests/test_ci_typing.py`. That is the right
@@ -588,6 +589,10 @@ each status reference against GitHub as §3.6 describes. It is a
 script rather than a test, so a network outage fails a workflow and not the suite.
 `tests/test_status_references.py` runs its rules against a fixed record of the work, and
 asserts that the parser it borrows still finds the references in the real specifications.
+
+`tests/docs/test_geovista_status.py` holds the Status column of §3.8, in a small build and
+on the real index, and `tests/test_spec_conventions.py` holds each specification's status
+to its own count of the roadmap.
 
 (docs-spec-7)=
 ## 7. Scope
@@ -690,4 +695,4 @@ Each row follows ledger spec §3.4.
 | §2 decision 5 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/docs/test_geovista_citations.py` |
 | §2 decision 6 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that each `candidate` row of §4 names a trigger the conventions test asserts, or says that it is revisited by hand. |
 | §2 decision 7 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
-| §2 decision 8 | ⏳ pending | row 7 of §4 |
+| §2 decision 8 | ✅ verified (2026-11-09, {pull}`2917`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_status.py`, `tests/test_spec_conventions.py` |

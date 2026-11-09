@@ -1,0 +1,7 @@
+The specifications index now shows each specification's status, worked out from
+its roadmap: 📋 not started, 🚧 how many of its rows have landed, or ✅ complete,
+with any 💡 candidates counted beside it. A reader can see which specifications
+have work left without opening each one, and nobody keeps the column up to date
+by hand.
+This lands row 7 of docs spec §4.
+(:user:`claude`)

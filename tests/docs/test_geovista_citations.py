@@ -824,3 +824,75 @@ def test_a_flush_line_after_an_items_code_ends_its_list(tmp_path, citations):
     assert "demo-spec-3-item-2" not in names.anchors
     assert [d.title for d in citations.decisions(decided)] == ["Alpha."]
     assert [i.title for i in citations.items(itemed)] == ["Alpha."]
+
+
+#: The cells a specification's status reads, spelled by name (docs spec §3.8).
+NOT_STARTED_CELL = "\N{CLIPBOARD} not started"
+COMPLETE_CELL = "\N{WHITE HEAVY CHECK MARK} complete"
+PROGRESS = "\N{CONSTRUCTION SIGN}"
+CANDIDATES = " \N{MIDDLE DOT} \N{ELECTRIC LIGHT BULB}"
+
+
+def landed(citations: ModuleType) -> str:
+    """Return a landed row's Status cell, as a roadmap writes one."""
+    return f"{citations.LANDED} (2026-11-09, {{pull}}`2917`)"
+
+
+@pytest.mark.parametrize(
+    ("counts", "expected"),
+    [
+        ({"not_started": 2}, NOT_STARTED_CELL),
+        ({"landed": 1, "not_started": 1}, f"{PROGRESS} 1 of 2 rows"),
+        ({"landed": 2}, COMPLETE_CELL),
+        ({"landed": 1, "candidate": 1}, f"{COMPLETE_CELL}{CANDIDATES} 1"),
+        (
+            {"landed": 2, "not_started": 4, "candidate": 4},
+            f"{PROGRESS} 2 of 6 rows{CANDIDATES} 4",
+        ),
+        ({"candidate": 2}, "\N{ELECTRIC LIGHT BULB} 2"),
+        ({}, "\N{EM DASH}"),
+    ],
+    ids=[
+        "not-started",
+        "in-progress",
+        "complete",
+        "complete-with-candidates",
+        "in-progress-with-candidates",
+        "only-candidates",
+        "no-roadmap",
+    ],
+)
+def test_roadmap_status_sums_each_state(citations, counts, expected):
+    """A specification's status sums its roadmap into one cell.
+
+    Holds docs spec §2 decision 8.
+    """
+    cells = {
+        "landed": landed(citations),
+        "not_started": citations.NOT_STARTED,
+        "candidate": citations.CANDIDATE,
+    }
+    statuses = [cells[state] for state, count in counts.items() for _ in range(count)]
+
+    assert citations.roadmap_status(statuses) == expected
+
+
+def test_roadmap_status_counts_a_row_in_progress_as_not_landed(citations):
+    """A row in progress has begun, but has not landed yet, and one row is a row."""
+    statuses = [f"{citations.IN_PROGRESS} ({{pull}}`2917`)"]
+
+    assert citations.roadmap_status(statuses) == f"{PROGRESS} 0 of 1 row"
+
+
+def test_roadmap_status_reads_a_variation_selector(citations):
+    """A state is read with or without its variation selector."""
+    statuses = ["\N{WHITE HEAVY CHECK MARK}\N{VARIATION SELECTOR-16} landed"]
+
+    assert citations.roadmap_status(statuses) == COMPLETE_CELL
+
+
+def test_roadmap_status_counts_an_unknown_state_as_not_landed(citations):
+    """A cell opening with no state has not landed, which the conventions refuse."""
+    statuses = [landed(citations), "landed"]
+
+    assert citations.roadmap_status(statuses) == f"{PROGRESS} 1 of 2 rows"

@@ -3875,3 +3875,36 @@ def test_unitemed_names_specifications_still_waiting(specs):
     assert not [
         name for name, row in UNITEMED.items() if rows[str(row)].startswith(LANDED)
     ]
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_every_status_sums_its_roadmap(spec):
+    """Status in the index (docs spec §3.8).
+
+    Each specification's status is the grammar's sum of its roadmap, which this
+    test counts again from its own reading of the table, and every specification
+    has a roadmap to sum. Holds docs spec §2 decision 8.
+    """
+    text = spec.read_text(encoding="utf-8")
+    statuses = list(roadmap_rows(text).values())
+    candidates = sum(status.startswith(CANDIDATE) for status in statuses)
+    rows = [status for status in statuses if not status.startswith(CANDIDATE)]
+    landed = sum(status.startswith(LANDED) for status in rows)
+    begun = landed + sum(status.startswith(IN_PROGRESS) for status in rows)
+    bulb = f"\N{ELECTRIC LIGHT BULB} {candidates}"
+    if not rows:
+        expected = bulb
+    elif landed == len(rows):
+        expected = "\N{WHITE HEAVY CHECK MARK} complete"
+    elif begun:
+        noun = "row" if len(rows) == 1 else "rows"
+        expected = f"\N{CONSTRUCTION SIGN} {landed} of {len(rows)} {noun}"
+    else:
+        expected = NOT_STARTED
+    if rows and candidates:
+        expected += f" \N{MIDDLE DOT} {bulb}"
+
+    found = [row.status for row in citations.rows(text)]
+
+    assert statuses, f"{spec.name} has no roadmap"
+    assert citations.roadmap_status(found) == expected
