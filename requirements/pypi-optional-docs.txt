@@ -4,7 +4,7 @@ myst-nb <1.5
 numpydoc <1.12
 sphinx <9.3
 sphinx_design <0.8
-sphinx-autoapi >=3.8.0,<3.9
+sphinx-autoapi >=3.8.0,<3.10
 sphinx-book-theme >=1.4.0,<1.5
 sphinx-changelog >=1.6.0,<1.7
 towncrier <26.10
@@ -22,6 +22,6 @@ pydata-sphinx-theme >=0.20.0,<0.21  # pinned by sphinx-book-theme
 ipywidgets <8.2
 jupyter-server-proxy <4.7
 nest-asyncio2 <1.8
-trame-pyvista <0.3
+trame-pyvista <0.4
 sphinx-vtk-xref <0.5
 wurlitzer <3.2
