@@ -1040,6 +1040,60 @@ def _missing_positions(
     return missing
 
 
+def _missing_as_nan(
+    xs: ArrayLike, ys: ArrayLike, *, x_name: str, y_name: str
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Read two coordinates as floats, with NaN in both at each missing position.
+
+    A position is missing when either of its coordinates is masked or NaN, and
+    an infinite coordinate is refused, as positions spec §4.1 decides. A missing
+    position gives NaN in every component of a conversion (positions spec §4.7),
+    so it has neither coordinate here. Coordinates of different shapes are each
+    read alone, and left for their caller to refuse. Read any ``pint`` quantity
+    first.
+
+    Parameters
+    ----------
+    xs : ArrayLike
+        The first coordinate of the positions, such as their longitudes.
+    ys : ArrayLike
+        The second coordinate of the positions, such as their latitudes.
+    x_name : str
+        The name of the argument `xs` was given as, to name it in a message.
+    y_name : str
+        The name of the argument `ys` was given as, to name it in a message.
+
+    Returns
+    -------
+    tuple of ndarray
+        New arrays of the first and the second coordinates, never those given,
+        with NaN in both wherever either is missing, when their shapes match.
+
+    Raises
+    ------
+    ValueError
+        If a coordinate that is not masked is infinite.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    x_missing = _missing(xs, name=x_name)
+    y_missing = _missing(ys, name=y_name)
+
+    # copied, so that the arrays given are never written to
+    x = np.array(np.ma.filled(np.ma.asanyarray(xs, dtype=float), np.nan))
+    y = np.array(np.ma.filled(np.ma.asanyarray(ys, dtype=float), np.nan))
+
+    if x.shape == y.shape:
+        missing = x_missing | y_missing
+        x[missing] = np.nan
+        y[missing] = np.nan
+
+    return x, y
+
+
 def _refuse_missing_poi(
     x: ArrayLike, y: ArrayLike, *, x_name: str, y_name: str
 ) -> None:
@@ -1305,6 +1359,10 @@ def to_cartesian(
 ) -> np.ndarray:
     """Convert geographic longitudes and latitudes to cartesian ``xyz`` points.
 
+    A position is missing when its longitude or latitude is masked or NaN, and
+    gives NaN in every component (positions spec §4.7). An infinite longitude or
+    latitude is refused.
+
     Parameters
     ----------
     lons : :data:`~numpy.typing.ArrayLike` or pint.Quantity
@@ -1333,8 +1391,7 @@ def to_cartesian(
     Returns
     -------
     :class:`~numpy.ndarray`
-        The ``xyz`` spherical cartesian points. A masked longitude or latitude is
-        read as NaN, so the point it gives is missing too.
+        The ``xyz`` spherical cartesian points.
 
     Notes
     -----
@@ -1344,12 +1401,16 @@ def to_cartesian(
     # geovista.globe imports this module
     from .globe import _resolve  # noqa: PLC0415
 
-    lons, lats = _lonlats(lons, lats)
+    # promoted first, as _to_cartesian promotes them, so that a number pairs with
+    # an array of one
+    lons, lats = map(np.atleast_1d, _lonlats(lons, lats))
 
-    # a masked coordinate is missing, so it is NaN rather than its masked value
+    # a missing position has neither coordinate, so every component is NaN
+    lons, lats = _missing_as_nan(lons, lats, x_name="lons", y_name="lats")
+
     return _to_cartesian(
-        nan_mask(lons),
-        nan_mask(lats),
+        lons,
+        lats,
         radius=_resolve(globe).render_radius,
         zlevel=zlevel,
         zscale=zscale,
@@ -1455,6 +1516,10 @@ def vectors_to_cartesian(
 ) -> Vector3DLike:
     """Transform geographic-oriented vector components ``uvw`` to cartesian ``xyz``.
 
+    A position is missing when its longitude or latitude is masked or NaN, and
+    gives NaN in every component of its vector (positions spec §4.7). An infinite
+    longitude or latitude is refused.
+
     Parameters
     ----------
     lons : ArrayLike or pint.Quantity
@@ -1499,6 +1564,9 @@ def vectors_to_cartesian(
 
     lons, lats = _lonlats(lons, lats)
 
+    # a missing position has neither coordinate, so every component is NaN
+    lons, lats = _missing_as_nan(lons, lats, x_name="lons", y_name="lats")
+
     return _vectors_to_cartesian(
         lons,
         lats,
@@ -1507,6 +1575,39 @@ def vectors_to_cartesian(
         zlevel=zlevel,
         zscale=zscale,
     )
+
+
+def _refuse_multiple_zlevel(zlevel: float | ArrayLike | None) -> None:
+    """Refuse a z-level of more than one value, which vectors cannot carry.
+
+    :meth:`~geovista.bridge.Transform.from_points` refuses one given with its
+    vectors before it drops any missing point, so the shape named is the one given
+    (positions spec §8 item 4).
+
+    Parameters
+    ----------
+    zlevel : float or ArrayLike, optional
+        The z-axis level.
+
+    Raises
+    ------
+    ValueError
+        If `zlevel` holds more than one value.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if zlevel is None:
+        return
+
+    levels = np.atleast_1d(zlevel)
+
+    if levels.size > 1:
+        # TODO @pp-mo: remove multiple zlevel, when removed from "from_points".
+        msg = f"'zlevel' may not be multiple, has shape {levels.shape}."
+        raise ValueError(msg)
 
 
 def _vectors_to_cartesian(
@@ -1564,10 +1665,7 @@ def _vectors_to_cartesian(
         np.array([0.0]) if zlevel is None else np.atleast_1d(zlevel).astype(float)
     )
 
-    if zlevel_array.size > 1:
-        # TODO @pp-mo: remove multiple zlevel, when removed from "from_points".
-        msg = f"'zlevel' may not be multiple, has shape {zlevel_array.shape}."
-        raise ValueError(msg)
+    _refuse_multiple_zlevel(zlevel_array)
 
     radii = radius + radius * zlevel_array * zscale
 
