@@ -1,0 +1,15 @@
+Fixed :func:`geovista.transform.transform_points` transforming the value under a
+mask, or raising beyond the domain of the target CRS, for a position whose x or y
+value was masked, and :func:`geovista.common.vectors_to_cartesian` computing the
+vector at that value. Both now give NaN for a missing position, in every
+component, as do :func:`geovista.common.to_cartesian`, whose z came from the
+latitude alone, :func:`geovista.transform.transform_point`,
+:func:`geovista.geodesic.npoints` and :func:`geovista.geodesic.npoints_by_idx`.
+Each refuses an infinite coordinate, naming it.
+:func:`~geovista.transform.transform_point` and :func:`~geovista.geodesic.npoints`
+read ``None`` as missing, where they raised a ``TypeError``, and a masked end of
+``npoints`` no longer warns. :meth:`geovista.bridge.Transform.from_points`
+refuses a ``zlevel`` array given with ``vectors`` before it drops any point, so it
+names the shape that was given.
+This lands row 5 of positions spec §9.
+(:user:`claude`)

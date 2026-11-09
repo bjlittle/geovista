@@ -201,7 +201,11 @@ def test_leaves_a_missing_point_out_of_the_transform(mocker, missing):
 
 @pytest.mark.parametrize("name", ["xs", "ys"])
 def test_refuses_infinite(name):
-    """Test an infinite coordinate is refused, named at its index as given."""
+    """Test an infinite coordinate is refused, named at its index as given.
+
+    Holds positions spec §2 decision 2.
+
+    """
     xs, ys = LONS.copy(), LATS.copy()
     (xs if name == "xs" else ys)[CORNER] = np.inf
     emsg = rf"'{name}' cannot be infinite, got inf at index \(2, 2\)\."
@@ -423,7 +427,11 @@ def test_from_1d_refuses_a_missing_bound(xs, ys, axis):
 
 
 def test_from_1d_refuses_an_infinite_bound():
-    """Test an infinite bound is refused, naming its axis."""
+    """Test an infinite bound is refused, naming its axis.
+
+    Holds positions spec §2 decision 2.
+
+    """
     emsg = r"'xs' cannot be infinite, got inf at index 1\."
     with pytest.raises(ValueError, match=emsg):
         Transform.from_1d([0.0, np.inf, 20.0], BOUNDS)
@@ -449,7 +457,11 @@ def test_to_structured_grid_refuses_a_missing_position(xs, ys, axis):
 
 
 def test_to_structured_grid_refuses_infinite():
-    """Test a structured grid refuses an infinite position, naming its axis."""
+    """Test a structured grid refuses an infinite position, naming its axis.
+
+    Holds positions spec §2 decision 2.
+
+    """
     emsg = r"'ys' cannot be infinite, got inf at index 1\."
     with pytest.raises(ValueError, match=emsg):
         Transform.to_structured_grid(BOUNDS, [0.0, np.inf, 20.0], [0.0, 1000.0])

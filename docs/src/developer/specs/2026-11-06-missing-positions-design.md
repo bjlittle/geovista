@@ -227,7 +227,10 @@ missing (§4.8).
 transform, as §3.3 leaves a masked point out, so a value under a mask outside the domain of
 the target CRS raises nothing. `vectors_to_cartesian` returns NaN for each component of a
 vector at a missing position. `to_cartesian`, `transform_point`, `geodesic.npoints` and
-`npoints_by_idx` already return NaN, and row 5 of §9 tests them for it.
+`npoints_by_idx` already return NaN, and row 5 of §9 tests them for it. Every component of a
+missing position's result is NaN, as {user}`bjlittle` chose on 2026-11-09: x, y and z,
+including a z given as `zs`. So `to_cartesian` gives NaN for z too, which it took from the
+latitude alone before row 5.
 
 (positions-spec-4-8)=
 ### 4.8 What This Design Leaves Alone
@@ -366,13 +369,16 @@ Each carries the grammar of items spec §3.2.
    still builds, and the width of one across the antimeridian is still the plain difference
    of its longitudes, so `wedge(170, -170)` is refused as 340 degrees wide.
 
-4. **❓ Open** (🔎 2026-11-08, {pull}`2899` · 🎯 row 5 of §9 · 🎫 {issue}`2901`) — **`Transform.from_points`
+4. **🏁 Resolved** (2026-11-09, {pull}`2912` · 🔎 2026-11-08, {pull}`2899` · 🎫 {issue}`2901`) — **`Transform.from_points`
    names the `zlevel` after a drop when it refuses one given with `vectors`.** It refuses a
    `zlevel` array given with `vectors`, with "'zlevel' may not be multiple, has shape ...".
    Once a point is dropped, that shape is the one after the drop, so a `(2, 1)` array on
    points of shape `(2, 3)`, one of them missing, is named `(5,)`. The call is refused
    either way. The final review of row 3 found it. Owed by row 5 of §9, since the refusal
    is that of `_vectors_to_cartesian`, which row 5 changes with `vectors_to_cartesian`.
+   Row 5 settled it. `from_points` now refuses a `zlevel` array given with `vectors` before
+   it drops a point, so the message names the shape given, `(2, 1)`, and no warning of a
+   point dropped comes before it.
 
 (positions-spec-9)=
 ## 9. Roadmap
@@ -383,7 +389,7 @@ Each carries the grammar of items spec §3.2.
 | 2 | Geodesic shapes: `geodesic.line`, `BBox` and `wedge` refusing a missing position (§4.4) | ✅ landed (2026-11-07, {pull}`2893`) |
 | 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) | ✅ landed (2026-11-08, {pull}`2899`) |
 | 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | ✅ landed (2026-11-09, {pull}`2908`) |
-| 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | 🚧 in progress ({pull}`2912`) |
+| 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | ✅ landed (2026-11-09, {pull}`2912`) |
 | 6 | Wedge width: `geodesic.wedge` refusing a wedge of no width, as the message of its check says (§8 item 3) | ✅ landed (2026-11-08, {pull}`2905`) |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own, as
@@ -411,11 +417,11 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| §2 decision 1 | ⏳ pending | rows 1 to 5 of §9 |
-| §2 decision 2 | ⏳ pending | rows 1 to 5 of §9 |
+| §2 decision 1 | ✅ verified (2026-11-09, {pull}`2912`) | `tests/common/test__missing_positions.py`, `tests/search/test_missing_positions.py`, `tests/geodesic/test_missing_positions.py`, `tests/bridge/test_missing_positions.py`, `tests/bridge/test_missing_mesh_positions.py`, `tests/common/test_missing_positions.py`, `tests/transform/test_missing_positions.py` |
+| §2 decision 2 | ✅ verified (2026-11-09, {pull}`2912`) | `tests/common/test__missing_positions.py`, `tests/search/test_missing_positions.py`, `tests/geoplotter/test_view_poi.py`, `tests/geodesic/test_missing_positions.py`, `tests/bridge/test_missing_positions.py`, `tests/bridge/test_missing_mesh_positions.py`, `tests/common/test_missing_positions.py`, `tests/transform/test_missing_positions.py` |
 | §2 decision 3 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/search/test_missing_positions.py` |
 | §2 decision 4 | ✅ verified (2026-11-06, {pull}`2889`) | `tests/geoplotter/test_view_poi.py`, `tests/search/test_missing_positions.py` |
 | §2 decision 5 | ✅ verified (2026-11-07, {pull}`2893`) | `tests/geodesic/test_missing_positions.py` |
 | §2 decision 6 | ✅ verified (2026-11-08, {pull}`2899`) | `tests/bridge/test_missing_positions.py`, `tests/geoplotter/test_add_points.py` |
 | §2 decision 7 | ✅ verified (2026-11-09, {pull}`2908`) | `tests/bridge/test_missing_mesh_positions.py` |
-| §2 decision 8 | ⏳ pending | row 5 of §9 |
+| §2 decision 8 | ✅ verified (2026-11-09, {pull}`2912`) | `tests/common/test_missing_positions.py`, `tests/transform/test_missing_positions.py`, `tests/geodesic/test_missing_positions.py` |
