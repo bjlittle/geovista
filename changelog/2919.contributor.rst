@@ -1,0 +1,4 @@
+The :ref:`How We Work <gv-developer-workflow>` page gains a rule to check what
+``pyvista`` has adopted before choosing a tool or a workflow, and to follow it
+unless there is a reason not to, written down where the choice is made.
+(:user:`claude`)

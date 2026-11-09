@@ -65,6 +65,19 @@ A change with design choices worth recording gets a specification first. Work
 whose issue already says what to build goes straight to implementation, with
 the issue as its design.
 
+### 1.5 👥 Follow pyvista's Prior Art
+
+🤝 Agreed (2026-11-09, {user}`bjlittle`, {pull}`2919`)
+
+Before choosing a tool or a workflow, look at what `pyvista` has adopted, and
+follow it unless there is a reason not to, which is then written down where the
+choice is made. `geovista` is one of the few downstream packages that `pyvista`
+tests each of its pull requests against, so the two projects already work
+closely, and sharing tooling keeps them easy to work across.
+Benchmarking is the first case: `pyvista` runs CodSpeed, added in
+[pyvista#9111](https://github.com/pyvista/pyvista/pull/9111), and `geovista`
+will do the same ({issue}`2920`).
+
 ## 2. Specifications and Plans
 
 ### 2.1 👥 Land a Specification in Its Own Pull Request
