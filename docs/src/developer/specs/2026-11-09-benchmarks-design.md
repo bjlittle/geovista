@@ -86,13 +86,15 @@ request, report a regression on the pull request that causes it, and follow the 
 6. **🤝 Agreed** (2026-11-09, {user}`bjlittle`, {pull}`2923`) — **The benchmarks live in
    `benchmarks/`, written with the `benchmark` fixture.** That is `pyvista`'s layout, and
    the fixture is one that `pytest-benchmark` provides too, so the same files run under
-   either tool. The unit suite never collects them: `testpaths` names `tests` alone, as
-   `pyvista`'s does.
+   either tool. The unit suite never collects them, since `testpaths` already names `tests`
+   alone, as `pyvista`'s does.
 7. **🤝 Agreed** (2026-11-09, {user}`bjlittle`, {pull}`2923`) — **A benchmark measures
    computation, on data it builds itself.** Its input is made outside the measured call,
    from a seeded generator, and nothing is downloaded, so the job needs neither the network
    nor the pooch cache. VTK runs on one thread, so an instruction count never depends on how
-   work was split, as `pyvista`'s `benchmarks/conftest.py` does. Nothing is rendered (§4.6).
+   work was split, as `pyvista`'s `benchmarks/conftest.py` does, and so does OpenMP, since
+   pykdtree queries on OpenMP threads, whose synchronisation the simulation cannot measure
+   consistently, as {pull}`2924` found. Nothing is rendered (§4.6).
 8. **🤝 Agreed** (2026-11-09, {user}`bjlittle`, {pull}`2923`) — **A change of dependency is
    measured by the pull request that makes it.** Every job installs its environment with
    `--frozen`, from the `pixi.lock` of the commit it measures. A pull request that changes
@@ -107,9 +109,8 @@ request, report a regression on the pull request that causes it, and follow the 
 
 There are no benchmarks, and none of `asv`, `pytest-benchmark`, `pytest-codspeed`, CodSpeed
 or memray appears in `pyproject.toml`, `requirements/` or `.github/`. The unit suite is run
-by `pytest` from the repository root, which today collects `tests` alone. `pyproject.toml`
-sets no `testpaths`, so a test module under a new `benchmarks/` directory would be collected
-by `tests-unit` too, until §2 decision 6 sets one.
+by `pytest` from the repository root, and `pyproject.toml` sets `testpaths = "tests"`, so a
+module under a new `benchmarks/` directory is collected only when it is named.
 
 `pytest`'s configuration turns every warning into an error (`filterwarnings = "error"`) and
 refuses an unknown marker (`--strict-markers`). Both apply to the benchmarks, which share it.
@@ -140,6 +141,27 @@ refuses an unknown marker (`--strict-markers`). Both apply to the benchmarks, wh
 `geovista`'s `pixi.lock` already pins every dependency exactly, which is what `pyvista`'s two
 pins do for its two largest, so it needs no pins of its own (§2 decision 8).
 
+(bench-spec-3-3)=
+### 3.3 The CodSpeed Wizard's Pull Request
+
+{user}`bjlittle` installed the CodSpeed GitHub App on 2026-11-09, and its set-up wizard
+opened {pull}`2924`. It adds 21 benchmarks in `benchmarks/test_bench.py`, on a synthetic
+2° global grid, and a `ci-benchmarks.yml` that installs `.[test]` and `pytest-codspeed` with
+`pip` on Python 3.14 and runs `pytest benchmarks --codspeed` in simulation mode. Its first
+run passed, gate and all, so simulation runs on our own runner, authenticated by OIDC.
+
+Four of its choices are taken into this design: `OMP_NUM_THREADS=1` (§2 decision 7), the
+`id-token: write` permission CodSpeed's OIDC needs, pruning `benchmarks` from the sdist so
+`check-manifest` passes, and the README's CodSpeed badge (§4.4). So are its benchmarks of
+`from_cartesian`, `slice_cells`, `combine`, `npoints` and the gridlines, and its three
+projections (§4.3).
+
+Three are not. `pip` resolves the newest release of every dependency on each run, so an
+upstream release would shift the result of whichever pull request ran next, and be blamed
+on it (§2 decision 8). It has no memory ceilings (§2 decision 5). Its `geodesic.line`
+benchmark runs through five vertices, too few to show the cost {issue}`2913` found in each
+pair.
+
 (bench-spec-4)=
 ## 4. Design
 
@@ -167,7 +189,7 @@ def test_line(benchmark, meridian):
     benchmark(line, *meridian)
 ```
 
-`pyproject.toml` gains `testpaths = ["tests"]`. The conftest refuses, under `--memray`, a
+The conftest refuses, under `--memray`, a
 benchmark that carries no `limit_memory` mark, naming it, so a benchmark cannot be added
 without its ceiling.
 
@@ -188,11 +210,13 @@ once a session.
 
 | Module | Benchmarks |
 |---|---|
-| `geodesic` | `line` through the line's 2,000 vertices; `BBox.enclosed` on the global grid; `wedge` from 0° to 90° of longitude |
+| `geodesic` | `line` through the line's 2,000 vertices; `npoints` for 10,000 points; `BBox.enclosed` on the global grid; `wedge` from 0° to 90° of longitude |
 | `bridge` | `Transform.from_1d`, `from_2d` and `from_unstructured` on the global grid; `from_points` on the point cloud |
-| `transform` | `transform_mesh` from the global grid to Robinson; `transform_points` on the point cloud |
-| `core` | `slice_mesh` of the global grid at the antimeridian; `resize` of the global grid |
+| `transform` | `transform_mesh` from the global grid, and `transform_points` on the point cloud, each to Robinson, Mollweide and Plate Carrée |
+| `common` | `from_cartesian` of the global grid's mesh |
+| `core` | `slice_mesh` of the global grid at the antimeridian; `slice_cells` at 45.5° east; `combine` of four copies of the global grid's mesh; `resize` of the global grid |
 | `search` | building a `KDTree` from the point cloud; querying it with 10,000 of its points; `find_nearest_cell` |
+| `gridlines` | `create_meridians` and `create_parallels` with their defaults |
 
 Each name is the benchmark's test, as `test_from_1d`, so CodSpeed's report reads as the API
 it measures. These paths take `geovista` into pyproj's `Transformer`, VTK's filters, NumPy
@@ -202,18 +226,21 @@ and pykdtree, which is where a dependency's regression would show (§2 decision 
 ### 4.4 The Workflow
 
 `.github/workflows/ci-benchmarks.yml` runs on `push` to `main`, on `pull_request` and on
-`workflow_dispatch`, with `contents: read` as its only permission. Each action is pinned to
-a commit, as `zizmor` requires. It has two jobs, each installing the `test` environment with
-`prefix-dev/setup-pixi` and `--frozen`:
+`workflow_dispatch`. A run of a pull request is cancelled by a newer one, and a run of `main`
+never is, so every commit of `main` stores the result that later pull requests are compared
+with, as `pyvista`'s workflow does. Each action is pinned to a commit, as `zizmor` requires,
+and `OMP_NUM_THREADS` is `1` throughout (§2 decision 7). It has two jobs, each installing
+the `test` environment with `prefix-dev/setup-pixi` and `--frozen`:
 
 - **`codspeed`** runs `CodSpeedHQ/action` with `mode: simulation`, and the command
-  `pixi run --frozen -e test benchmarks`.
+  `pixi run --frozen -e test benchmarks`. It has `contents: read` and `id-token: write`,
+  which CodSpeed's OIDC authentication needs, and no other permission.
 - **`memory`** runs `pixi run --frozen -e test benchmarks-memory`, outside Valgrind, since
-  memray and Valgrind both intercept `malloc`.
+  memray and Valgrind both intercept `malloc`. Its only permission is `contents: read`.
 
-Neither job's check joins the required checks of `main` (§2 decision 4). Before row 1 of §9
-lands, {user}`bjlittle` installs the CodSpeed GitHub App and enables `bjlittle/geovista` on
-it, which an agent cannot do.
+Neither job's check joins the required checks of `main` (§2 decision 4). `MANIFEST.in`
+prunes `benchmarks`, so `check-manifest` passes, and the README's Health row gains
+CodSpeed's badge, beside Codecov's.
 
 (bench-spec-4-5)=
 ### 4.5 The Tasks and the Guide
@@ -281,9 +308,9 @@ report, add 20%, and round up to a whole MiB.
 (bench-spec-7)=
 ## 7. Scope
 
-In scope are the two plugins, `testpaths`, `benchmarks/` and its conftest, the benchmarks of
-§4.3 with their ceilings, the two tasks, `ci-benchmarks.yml`, the developer guide's section,
-and their tests. Out of scope are rendering, wall time on a shared runner, and making either
+In scope are the two plugins, `benchmarks/` and its conftest, the benchmarks of §4.3 with
+their ceilings, the two tasks, `ci-benchmarks.yml`, the `MANIFEST.in` entry, the README's
+badge, the developer guide's section, and their tests. Out of scope are rendering, wall time on a shared runner, and making either
 check required (§4.6, §2 decision 4). So is fixing a regression the benchmarks find, such as
 {issue}`2913`, which row 7 of positions spec §9 owes.
 
@@ -297,9 +324,9 @@ Each carries the grammar of items spec §3.2. None is open today.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The plugins and `testpaths` (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | 📋 not started |
+| 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | 📋 not started |
 | 2 | The `bridge` and `transform` benchmarks (§4.3) | 📋 not started |
-| 3 | The `core` and `search` benchmarks (§4.3) | 📋 not started |
+| 3 | The `common`, `core`, `search` and `gridlines` benchmarks (§4.3) | 📋 not started |
 | 4 | Each benchmark's peak memory compared with the base commit's (§4.6) | 💡 candidate |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own. Rows 2 and 3
@@ -316,6 +343,7 @@ and compare them, which `pytest-memray` does not do itself.
 
 - {issue}`2913`, the slowdown that prompted this specification, and {issue}`2920`, which
   tracks it.
+- {pull}`2924`, opened by CodSpeed's set-up wizard (§3.3).
 - workflow rule 1.5, which points benchmarking at `pyvista`'s set-up.
 - pyvista/pyvista#9111, which added CodSpeed to `pyvista`:
   <https://github.com/pyvista/pyvista/pull/9111>
