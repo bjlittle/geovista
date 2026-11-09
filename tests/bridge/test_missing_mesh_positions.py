@@ -252,6 +252,147 @@ def test_constructor_refuses_data_of_another_count():
         transform(data=np.arange(5.0))
 
 
+def triangulated(n: int):
+    """Return a grid of `n` by `n` points raveled, and its quads split in two.
+
+    Each quad splits on the diagonal from its first point, so the last point of
+    the grid is used by the last two triangles alone.
+
+    """
+    lons, lats = np.meshgrid(np.arange(n) * 10.0, np.arange(n) * 10.0)
+    faces = []
+    for first in (row * n + col for row in range(n - 1) for col in range(n - 1)):
+        faces += [[first, first + 1, first + n + 1], [first, first + n + 1, first + n]]
+    return lons.ravel(), lats.ravel(), np.array(faces)
+
+
+#: Each way to make a point of the raveled coordinates missing.
+MISSING = pytest.mark.parametrize(
+    "missing",
+    [
+        lambda xs, ys, index: (nan(xs, index), ys),
+        lambda xs, ys, index: (masked(xs, index), masked(ys, index)),
+    ],
+    ids=["nan", "alike"],
+)
+
+#: Each way to build a mesh from unstructured points with data.
+BUILD = pytest.mark.parametrize(
+    "build",
+    [
+        lambda xs, ys, faces, **kwargs: Transform.from_unstructured(
+            xs, ys, connectivity=faces, **kwargs
+        ),
+        lambda xs, ys, faces, **kwargs: Transform(xs, ys, connectivity=faces)(**kwargs),
+    ],
+    ids=["from_unstructured", "constructor"],
+)
+
+#: The warning of the last two triangles of a grid dropped.
+TWO = "defines 2 faces that use a missing point, which are dropped"
+
+
+@MISSING
+@BUILD
+@pytest.mark.parametrize("name", [None, "values"])
+def test_keeps_data_for_each_face_on_the_cells(missing, build, name):
+    """Test data for each face stays on the cells, though as many as the points.
+
+    Two of the 18 faces use the missing point, which leaves 16 cells on 16 points.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    xs, ys, faces = triangulated(4)
+    with pytest.warns(UserWarning, match=TWO):
+        result = build(*missing(xs, ys, 15), faces, data=np.arange(18.0), name=name)
+    assert list(result.point_data.keys()) == []
+    np.testing.assert_array_equal(result.cell_data[name or NAME_CELLS], np.arange(16.0))
+
+
+def test_keeps_colours_for_each_face_on_the_cells():
+    """Test colours for each face stay on the cells, though as many as the points.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    xs, ys, faces = triangulated(4)
+    colours = np.arange(18 * 3, dtype=np.uint8).reshape(18, 3)
+    with pytest.warns(UserWarning, match=TWO):
+        result = Transform.from_unstructured(
+            nan(xs, 15), ys, connectivity=faces, data=colours, rgb=True
+        )
+    assert list(result.point_data.keys()) == []
+    np.testing.assert_array_equal(result.cell_data[NAME_CELLS], colours[:16])
+
+
+@MISSING
+@BUILD
+def test_keeps_data_for_each_point_on_the_points(missing, build):
+    """Test data for each point stays on the points, though as many as the cells."""
+    xs, ys, faces = triangulated(4)
+    with pytest.warns(UserWarning, match=TWO):
+        result = build(*missing(xs, ys, 15), faces, data=np.arange(16.0))
+    assert list(result.cell_data.keys()) == []
+    np.testing.assert_array_equal(result.point_data[NAME_POINTS], np.arange(16.0))
+
+
+@BUILD
+def test_keeps_data_for_as_many_points_as_faces_on_the_points(build):
+    """Test data for each point stays on the points, though it fits each face given."""
+    xs, ys, faces = triangulated(3)
+    faces = np.vstack([faces, [0, 1, 3]])
+    with pytest.warns(UserWarning, match=TWO):
+        result = build(nan(xs, 8), ys, faces, data=np.arange(9.0))
+    assert list(result.cell_data.keys()) == []
+    np.testing.assert_array_equal(result.point_data[NAME_POINTS], np.arange(9.0))
+
+
+@MISSING
+def test_constructor_keeps_data_for_each_face_on_the_cells_once_cleaned(missing):
+    """Test data for each face stays on the cells, once cleaning leaves as many points.
+
+    Two of the 8 faces use the missing corner, which cleaning removes, leaving 6
+    cells on 8 points.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    xs, ys, faces = triangulated(3)
+    with pytest.warns(UserWarning, match=TWO):
+        transform = Transform(*missing(xs, ys, 8), connectivity=faces, clean=True)
+    result = transform(data=np.arange(8.0))
+    assert result.n_points == 8
+    assert list(result.point_data.keys()) == []
+    np.testing.assert_array_equal(result.cell_data[NAME_CELLS], np.arange(6.0))
+
+
+@MISSING
+def test_constructor_keeps_data_for_each_point_once_cleaned(missing):
+    """Test data for each point given still fits once cleaning removes the missing one.
+
+    The constructor attaches it before cleaning, as from_unstructured does.
+
+    Holds positions spec §2 decision 7.
+
+    """
+    xs, ys, faces = triangulated(3)
+    xs, ys = missing(xs, ys, 8)
+    data = np.arange(9.0)
+    with pytest.warns(UserWarning, match=TWO):
+        expected = Transform.from_unstructured(
+            xs, ys, connectivity=faces, data=data, clean=True
+        )
+    with pytest.warns(UserWarning, match=TWO):
+        transform = Transform(xs, ys, connectivity=faces, clean=True)
+    result = transform(data=data)
+    assert result.n_points == 8
+    assert_same_mesh(result, expected)
+    np.testing.assert_array_equal(
+        result.point_data[NAME_POINTS], expected.point_data[NAME_POINTS]
+    )
+
+
 #: A masked bound, in the middle of its axis.
 MASKED_BOUND = np.ma.masked_array([0.0, 10.0, 20.0], mask=[0, 1, 0])
 

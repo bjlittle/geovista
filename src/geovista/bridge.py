@@ -121,7 +121,6 @@ class Transform:  # numpydoc ignore=PR01
         /,
         *,
         rgb: bool = False,
-        kept: np.ndarray | None = None,
     ) -> np.ndarray:
         """Ensure data is compatible with the number of mesh points or cells.
 
@@ -137,10 +136,6 @@ class Transform:  # numpydoc ignore=PR01
             The number of cells in the mesh.
         rgb : bool, default=False
             Whether the data is an ``RGB`` or ``RGBA`` image.
-        kept : ndarray, optional
-            A boolean array that is ``True`` for each face given that became a
-            cell of the mesh. Data that fits neither the points nor the cells, but
-            has a value for each face given, keeps only the values of the cells.
 
         Returns
         -------
@@ -163,14 +158,6 @@ class Transform:  # numpydoc ignore=PR01
             channels = data.shape[-1] if rgb else 1
             size = data.size // channels
 
-            if (
-                kept is not None
-                and size == kept.size
-                and size not in (n_points, n_cells)
-            ):
-                cells: np.ndarray = data.reshape(size, channels)[kept]
-                data, size = cells, len(cells)
-
             if size not in (n_points, n_cells):
                 emsg = (
                     f"Require mesh data with either '{n_points:,d}' points or "
@@ -185,6 +172,63 @@ class Transform:  # numpydoc ignore=PR01
                 data = data.reshape(size, channels)
 
         return data
+
+    @classmethod
+    def _associate(
+        cls,
+        data: ArrayLike,
+        n_points: int,
+        n_cells: int,
+        /,
+        *,
+        rgb: bool = False,
+        kept: np.ndarray | None = None,
+    ) -> tuple[np.ndarray, bool]:
+        """Verify data for the points or the cells of a mesh, and say which.
+
+        Data given for each face stays on the cells left of them once a face is
+        dropped, however many points the mesh has. Data that fits both the points
+        and the cells is for the points.
+
+        Parameters
+        ----------
+        data : ArrayLike
+            The intended data payload of the mesh.
+        n_points : int
+            The number of points in the mesh.
+        n_cells : int
+            The number of cells in the mesh.
+        rgb : bool, default=False
+            Whether the data is an ``RGB`` or ``RGBA`` image.
+        kept : ndarray, optional
+            An ``(M,)`` boolean array that is ``True`` for each of the ``M`` faces
+            given that became a cell of the mesh. Data that fits neither the points
+            nor the cells, but has a value for each face given, keeps those of the
+            cells.
+
+        Returns
+        -------
+        tuple of ndarray and bool
+            The verified data, and whether it is for the cells of the mesh.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        array = np.asanyarray(data)
+
+        # an image of too few dimensions is left for the verification to refuse
+        if kept is not None and not (rgb and array.ndim < 2):
+            channels = array.shape[-1] if rgb else 1
+            size = array.size // channels
+            if size == kept.size and size not in (n_points, n_cells):
+                cells = array.reshape(size, channels)[kept]
+                return cls._as_compatible_data(cells, n_points, n_cells, rgb=rgb), True
+
+        result = cls._as_compatible_data(array, n_points, n_cells, rgb=rgb)
+        size = len(result) if rgb else result.size
+        return result, size != n_points
 
     @staticmethod
     def _refuse_missing_bounds(xs: ArrayLike, ys: ArrayLike, /) -> None:
@@ -1995,18 +2039,19 @@ class Transform:  # numpydoc ignore=PR01
 
         # attach any optional data to the mesh
         if data is not None:
-            data = cls._as_compatible_data(
+            data, for_cells = cls._associate(
                 data, mesh.n_points, mesh.n_cells, rgb=rgb, kept=kept
             )
             if not name:
-                size = data.size // data.shape[-1] if rgb else data.size
-                name = NAME_POINTS if size == mesh.n_points else NAME_CELLS
+                name = NAME_CELLS if for_cells else NAME_POINTS
 
             # pyvista refuses an empty array of colours, so attach none when no
             # face is left to carry one
             if data.size or not rgb:
                 mesh.field_data[GV_FIELD_NAME] = np.array([name])
-                mesh[name] = data
+                # by its association, as pyvista puts data that fits both on
+                # the points
+                (mesh.cell_data if for_cells else mesh.point_data)[name] = data
 
         # clean the mesh
         if clean:
@@ -2246,7 +2291,8 @@ class Transform:  # numpydoc ignore=PR01
             Specify whether to merge duplicate points, remove unused points,
             and/or remove degenerate cells in the resultant mesh. See
             :meth:`pyvista.PolyDataFilters.clean`. Defaults to
-            :data:`BRIDGE_CLEAN`.
+            :data:`BRIDGE_CLEAN`. Each mesh is cleaned after its data is attached,
+            so the data follows its points and cells.
 
         Notes
         -----
@@ -2260,6 +2306,10 @@ class Transform:  # numpydoc ignore=PR01
         # cut later, as from_unstructured cuts it; from_1d drops no face
         kept: np.ndarray | None = None
 
+        # each mesh is cleaned once its data is attached, as from_unstructured
+        # cleans it, so that the data follows its points and cells
+        self._clean = BRIDGE_CLEAN if clean is None else clean
+
         if connectivity is None and (xs.ndim <= 1 or ys.ndim <= 1):
             mesh = self.from_1d(
                 xs,
@@ -2271,7 +2321,7 @@ class Transform:  # numpydoc ignore=PR01
                 height=height,
                 depth=depth,
                 vertical_units=vertical_units,
-                clean=clean,
+                clean=False,
             )
         else:
             if connectivity is None:
@@ -2285,7 +2335,7 @@ class Transform:  # numpydoc ignore=PR01
                 start_index=start_index,
                 crs=crs,
                 globe=globe,
-                clean=clean,
+                clean=False,
                 zlevel=zlevel,
                 zscale=zscale,
                 height=height,
@@ -2307,9 +2357,11 @@ class Transform:  # numpydoc ignore=PR01
         Parameters
         ----------
         data : ArrayLike, optional
-            Data to be optionally attached to the mesh face or nodes. Should any
-            face be dropped, data with a value for each face given keeps only the
-            values of the faces that remain.
+            Data to be optionally attached to the mesh face or nodes, with a value
+            for each point given or each face given. Should any face be dropped,
+            data with a value for each face given keeps only the values of the
+            faces that remain. When the transform was built with `clean`, the mesh
+            is cleaned after the data is attached.
         name : str, optional
             The name of the optional data array to be attached to the mesh. If
             `data` is provided but with no `name`, defaults to either
@@ -2325,8 +2377,9 @@ class Transform:  # numpydoc ignore=PR01
         ..versionadded:: 0.1.0
 
         """
+        for_cells = False
         if data is not None:
-            data = self._as_compatible_data(
+            data, for_cells = self._associate(
                 data, self._n_points, self._n_cells, kept=self._kept
             )
 
@@ -2343,9 +2396,12 @@ class Transform:  # numpydoc ignore=PR01
 
         if data is not None:
             if not name:
-                name = NAME_POINTS if data.size == self._n_points else NAME_CELLS
+                name = NAME_CELLS if for_cells else NAME_POINTS
 
             mesh.field_data[GV_FIELD_NAME] = np.array([name])
-            mesh[name] = data
+            (mesh.cell_data if for_cells else mesh.point_data)[name] = data
+
+        if self._clean:
+            mesh.clean(inplace=True)
 
         return mesh
