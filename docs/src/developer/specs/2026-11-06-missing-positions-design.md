@@ -398,7 +398,7 @@ Each carries the grammar of items spec §3.2.
 | 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | ✅ landed (2026-11-09, {pull}`2908`) |
 | 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | ✅ landed (2026-11-09, {pull}`2912`) |
 | 6 | Wedge width: `geodesic.wedge` refusing a wedge of no width, as the message of its check says (§8 item 3) | ✅ landed (2026-11-08, {pull}`2905`) |
-| 7 | Line speed: `npoints` and `npoints_by_idx` testing plain numbers for a missing position without building masked arrays, so `geodesic.line` builds as fast as before row 5 (§8 item 5) | 📋 not started |
+| 7 | Line speed: `npoints` and `npoints_by_idx` testing plain numbers for a missing position without building masked arrays, so `geodesic.line` builds as fast as before row 5 (§8 item 5) | 🚧 in progress ({pull}`2922`) |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own, as
 {user}`bjlittle` chose on 2026-11-06. Row 1 brings the test of §4.1, which the others use,
