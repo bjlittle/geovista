@@ -117,6 +117,15 @@ VERIFIED = "\N{WHITE HEAVY CHECK MARK} verified"
 SIGNED_OFF = f"\N{WRITING HAND}{VS16} signed off"
 LEDGER_RETIRED = f"\N{FILE CABINET}{VS16} retired"
 
+#: The states of a roadmap row (docs spec §3.6), built by name.
+LANDED = "\N{WHITE HEAVY CHECK MARK} landed"
+IN_PROGRESS = "\N{CONSTRUCTION SIGN} in progress"
+NOT_STARTED = "\N{CLIPBOARD} not started"
+CANDIDATE = "\N{ELECTRIC LIGHT BULB} candidate"
+
+#: Every state a roadmap row may open with.
+ROADMAP_STATES = (LANDED, IN_PROGRESS, NOT_STARTED, CANDIDATE)
+
 #: The states of an open item (items spec §3.2), built by name.
 OPEN = "\N{BLACK QUESTION MARK ORNAMENT} Open"
 DEFERRED = f"\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}{VS16} Deferred"
@@ -1033,6 +1042,47 @@ def summary(statuses: Iterable[str]) -> str:
     return (
         f"{tally}: {verified + signed} of {total - retired} decisions in force verified"
     )
+
+
+def roadmap_status(statuses: Iterable[str]) -> str:
+    """Sum the rows of a roadmap into one status, as the specifications index reads it.
+
+    The rows that have landed are set against every row that is not a candidate,
+    so a row in progress has not landed yet, and the candidates are counted after
+    the status while any remain (docs spec §3.8). A cell opening with no state of a
+    row counts as one that has not landed.
+
+    Parameters
+    ----------
+    statuses : iterable of str
+        The Status cells of the roadmap's rows, each opening with its state.
+
+    Returns
+    -------
+    str
+        The status: not started, N of M rows in progress, or complete, each with
+        its state's emoji and followed by the count of candidates while any
+        remain; the count of candidates alone when every row is one, and an em
+        dash when there is no row.
+
+    """
+    states = [state_of(status.strip(), ROADMAP_STATES) for status in statuses]
+    candidates = states.count(CANDIDATE)
+    rows = [state for state in states if state != CANDIDATE]
+    landed = rows.count(LANDED)
+    bulb = CANDIDATE.split(maxsplit=1)[0]
+
+    if not rows:
+        return f"{bulb} {candidates}" if candidates else "\N{EM DASH}"
+
+    if landed == len(rows):
+        status = f"{LANDED.split(maxsplit=1)[0]} complete"
+    elif landed or IN_PROGRESS in rows:
+        status = f"{IN_PROGRESS.split(maxsplit=1)[0]} {landed} of {len(rows)} rows"
+    else:
+        status = NOT_STARTED
+
+    return f"{status} \N{MIDDLE DOT} {bulb} {candidates}" if candidates else status
 
 
 def specifications(specs: Path = SPECS) -> list[Path]:
