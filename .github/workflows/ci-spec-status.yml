@@ -21,7 +21,11 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # a later run waits for the one in progress, and replaces any run still
+  # waiting, which is dropped before its jobs start: a burst of label events,
+  # as when a pull request opens with labels, then leaves no cancelled check
+  # on it (#2915)
+  cancel-in-progress: false
 
 defaults:
   run:
