@@ -1,0 +1,4 @@
+The last step of ``ci-linkcheck`` now reads lychee's exit code from the
+environment, since zizmor v1.32.0 flags expanding it into the shell as a
+template injection.
+(:user:`claude`)

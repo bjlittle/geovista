@@ -76,5 +76,9 @@ jobs:
 
       - name: "exit action"
         if: ${{ fromJSON(steps.lychee.outputs.exit_code) != 0 }}
-        run:
-          exit ${{ fromJSON(steps.lychee.outputs.exit_code) }}
+        # read from the environment, as an expression expanded into the shell is
+        # a template injection to zizmor (#2918)
+        env:
+          EXIT_CODE: ${{ steps.lychee.outputs.exit_code }}
+        run: |
+          exit "${EXIT_CODE}"
