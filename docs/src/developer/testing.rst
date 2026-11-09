@@ -870,6 +870,22 @@ e.g.,
    |                                        |    $ pixi run check-spec-renumbering fix                         |
    |                                        |                                                                  |
    +----------------------------------------+------------------------------------------------------------------+
+   | :guilabel:`benchmarks`                 | Perform the benchmarks under CodSpeed, without memray. See       |
+   |                                        | :ref:`tippy-gv-developer-testing-benchmarks` e.g.,               |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run benchmarks                                         |
+   |                                        |                                                                  |
+   +----------------------------------------+------------------------------------------------------------------+
+   | :guilabel:`benchmarks-memory`          | Perform the benchmarks under memray, holding each to its memory  |
+   |                                        | ceiling e.g.,                                                    |
+   |                                        |                                                                  |
+   |                                        | .. code:: console                                                |
+   |                                        |                                                                  |
+   |                                        |    $ pixi run benchmarks-memory                                  |
+   |                                        |                                                                  |
+   +----------------------------------------+------------------------------------------------------------------+
    | :guilabel:`tests-clean`                | Purge both the documentation and unit test image caches,         |
    |                                        | along with any images generated from previous test sessions      |
    |                                        | e.g.,                                                            |

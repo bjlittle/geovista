@@ -498,6 +498,25 @@ The following tasks are defined for each of our features:
    |                |                                | :ref:`tippy-gv-developer-checks-spec-renumbering`.                                    |
    |                |                                |                                                                                       |
    |                +--------------------------------+---------------------------------------------------------------------------------------+
+   |                | ``benchmarks``                 | Perform the benchmarks under CodSpeed, without memray e.g.,                           |
+   |                |                                |                                                                                       |
+   |                |                                | .. code:: console                                                                     |
+   |                |                                |                                                                                       |
+   |                |                                |    $ pixi run benchmarks                                                              |
+   |                |                                |                                                                                       |
+   |                |                                | Run locally, it measures wall time. In CI, CodSpeed counts instructions under         |
+   |                |                                | Valgrind instead. See :ref:`tippy-gv-developer-testing-benchmarks`.                   |
+   |                |                                |                                                                                       |
+   |                +--------------------------------+---------------------------------------------------------------------------------------+
+   |                | ``benchmarks-memory``          | Perform the benchmarks under memray, holding each to its memory ceiling e.g.,         |
+   |                |                                |                                                                                       |
+   |                |                                | .. code:: console                                                                     |
+   |                |                                |                                                                                       |
+   |                |                                |    $ pixi run benchmarks-memory                                                       |
+   |                |                                |                                                                                       |
+   |                |                                | See :ref:`tippy-gv-developer-testing-benchmarks`.                                     |
+   |                |                                |                                                                                       |
+   |                +--------------------------------+---------------------------------------------------------------------------------------+
    |                | ``tests-clean``                | Purge both the documentation and unit test image caches, along with any images        |
    |                |                                | generated from previous test sessions e.g.,                                           |
    |                |                                |                                                                                       |
