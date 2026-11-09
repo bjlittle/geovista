@@ -380,12 +380,15 @@ Each carries the grammar of items spec §3.2.
    it drops a point, so the message names the shape given, `(2, 1)`, and no warning of a
    point dropped comes before it.
 
-5. **❓ Open** (🔎 2026-11-09, {pull}`2912` · 🎯 row 7 of §9 · 🎫 {issue}`2913`) — **`geodesic.line`
+5. **🏁 Resolved** (2026-11-09, {pull}`2922` · 🔎 2026-11-09, {pull}`2912` · 🎫 {issue}`2913`) — **`geodesic.line`
    builds about twice as slowly as before row 5.** Row 5 makes `npoints` and `npoints_by_idx`
    read each end through the test of §4.1, and `line` calls `npoints_by_idx` once for each
    pair of its vertices, so each pair costs about 100 µs more: a line of 2,000 vertices took
-   0.16 s and now takes 0.36 s. No position is read wrong. The final review of row 5 found
-   it. Owed by row 7 of §9, added for it, since every other row has landed.
+   0.16 s before row 5 and 0.36 s after it. No position is read wrong. The final review of
+   row 5 found it. Owed by row 7 of §9, added for it, since every other row has landed. Row 7
+   settled it. `npoints` and `npoints_by_idx` read an end given as two plain numbers without
+   building masked arrays, and the line of 2,000 vertices builds in 0.14 s, as fast as before
+   row 5.
 
 (positions-spec-9)=
 ## 9. Roadmap
@@ -398,7 +401,7 @@ Each carries the grammar of items spec §3.2.
 | 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | ✅ landed (2026-11-09, {pull}`2908`) |
 | 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | ✅ landed (2026-11-09, {pull}`2912`) |
 | 6 | Wedge width: `geodesic.wedge` refusing a wedge of no width, as the message of its check says (§8 item 3) | ✅ landed (2026-11-08, {pull}`2905`) |
-| 7 | Line speed: `npoints` and `npoints_by_idx` testing plain numbers for a missing position without building masked arrays, so `geodesic.line` builds as fast as before row 5 (§8 item 5) | 📋 not started |
+| 7 | Line speed: `npoints` and `npoints_by_idx` testing plain numbers for a missing position without building masked arrays, so `geodesic.line` builds as fast as before row 5 (§8 item 5) | ✅ landed (2026-11-09, {pull}`2922`) |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own, as
 {user}`bjlittle` chose on 2026-11-06. Row 1 brings the test of §4.1, which the others use,

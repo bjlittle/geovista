@@ -17,6 +17,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import StrEnum
 import importlib
+import math
 import pkgutil
 import sys
 from typing import TYPE_CHECKING, Literal
@@ -1092,6 +1093,59 @@ def _missing_as_nan(
         y[missing] = np.nan
 
     return x, y
+
+
+def _missing_pair(
+    x: ArrayLike, y: ArrayLike, *, x_name: str, y_name: str
+) -> tuple[float, float]:
+    """Read one position given as two values, with NaN in both if it is missing.
+
+    The fast form of :func:`_missing_as_nan` for one position, which
+    :func:`geovista.geodesic.line` reads once for each pair of its vertices
+    (positions spec §8 item 5). Two plain real numbers are read without building
+    an array, and any other value, such as a masked one or ``None``, is read by
+    :func:`_missing_as_nan`.
+
+    Parameters
+    ----------
+    x : ArrayLike
+        The first coordinate of the position, such as its longitude.
+    y : ArrayLike
+        The second coordinate of the position, such as its latitude.
+    x_name : str
+        The name of the argument `x` was given as, to name it in a message.
+    y_name : str
+        The name of the argument `y` was given as, to name it in a message.
+
+    Returns
+    -------
+    tuple of float
+        The first and the second coordinate, both NaN when either is missing.
+
+    Raises
+    ------
+    ValueError
+        If a coordinate that is not masked is infinite.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    plain = (int, float, np.integer, np.floating)
+    if not (isinstance(x, plain) and isinstance(y, plain)):
+        first, second = _missing_as_nan(x, y, x_name=x_name, y_name=y_name)
+        return float(first), float(second)
+
+    pair = float(x), float(y)
+    for name, value in zip((x_name, y_name), pair, strict=True):
+        if math.isinf(value):
+            emsg = f"{name!r} cannot be infinite, got {value}."
+            raise ValueError(emsg)
+
+    if math.isnan(pair[0]) or math.isnan(pair[1]):
+        return math.nan, math.nan
+    return pair
 
 
 def _refuse_missing_poi(

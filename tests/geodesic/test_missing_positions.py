@@ -20,6 +20,7 @@ import numpy as np
 import pint
 import pytest
 
+from geovista import common, geodesic
 from geovista.geodesic import BBox, line, npoints, npoints_by_idx, wedge
 
 UREG = pint.UnitRegistry()
@@ -343,3 +344,22 @@ def test_npoints_by_idx_refuses_infinite(name):
     coordinates[name][1] = np.inf
     with pytest.raises(ValueError, match=rf"'{name}' cannot be infinite, got inf\."):
         npoints_by_idx(coordinates["lons"], coordinates["lats"], 0, 1)
+
+
+def test_line_reads_plain_numbers_without_masked_arrays(mocker):
+    """Test a line reads the ends of each pair of its vertices without masked arrays.
+
+    It reads them once for each pair, so building a masked array for each end
+    halved the speed of a line. This settles positions spec §8 item 5.
+    """
+    # Before row 7 geodesic imported _missing_as_nan by name, and a spy on common
+    # alone misses a call through that name. The mock goes in both modules, with
+    # create=True since geodesic no longer has the name, to catch a future import.
+    spy = mocker.MagicMock(wraps=common._missing_as_nan)
+    mocker.patch.object(common, "_missing_as_nan", spy)
+    mocker.patch.object(geodesic, "_missing_as_nan", spy, create=True)
+
+    mesh = line(np.linspace(-170, 170, 20), np.zeros(20))
+
+    assert mesh.n_points > 0
+    spy.assert_not_called()
