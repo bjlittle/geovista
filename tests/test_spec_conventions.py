@@ -3897,7 +3897,8 @@ def test_every_status_sums_its_roadmap(spec):
     elif landed == len(rows):
         expected = "\N{WHITE HEAVY CHECK MARK} complete"
     elif begun:
-        expected = f"\N{CONSTRUCTION SIGN} {landed} of {len(rows)} rows"
+        noun = "row" if len(rows) == 1 else "rows"
+        expected = f"\N{CONSTRUCTION SIGN} {landed} of {len(rows)} {noun}"
     else:
         expected = NOT_STARTED
     if rows and candidates:

@@ -878,10 +878,10 @@ def test_roadmap_status_sums_each_state(citations, counts, expected):
 
 
 def test_roadmap_status_counts_a_row_in_progress_as_not_landed(citations):
-    """A row in progress has begun, but has not landed yet."""
+    """A row in progress has begun, but has not landed yet, and one row is a row."""
     statuses = [f"{citations.IN_PROGRESS} ({{pull}}`2917`)"]
 
-    assert citations.roadmap_status(statuses) == f"{PROGRESS} 0 of 1 rows"
+    assert citations.roadmap_status(statuses) == f"{PROGRESS} 0 of 1 row"
 
 
 def test_roadmap_status_reads_a_variation_selector(citations):

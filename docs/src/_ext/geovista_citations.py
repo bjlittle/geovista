@@ -1078,7 +1078,8 @@ def roadmap_status(statuses: Iterable[str]) -> str:
     if landed == len(rows):
         status = f"{LANDED.split(maxsplit=1)[0]} complete"
     elif landed or IN_PROGRESS in rows:
-        status = f"{IN_PROGRESS.split(maxsplit=1)[0]} {landed} of {len(rows)} rows"
+        noun = "row" if len(rows) == 1 else "rows"
+        status = f"{IN_PROGRESS.split(maxsplit=1)[0]} {landed} of {len(rows)} {noun}"
     else:
         status = NOT_STARTED
 

@@ -460,9 +460,9 @@ roadmap into one cell:
 | `✅ complete` | every row has landed |
 
 The count sets the rows that have landed against every row that is not a 💡 candidate, so
-a row in progress has not landed yet. A candidate waits on a trigger (§4), so nobody can
-take it up yet, and it neither holds a specification back from complete nor counts as work
-to do. While any candidate remains, the cell names how many after the status, as in
+a row in progress has not landed yet, and a roadmap whose only row is in progress reads
+`🚧 0 of 1 row`. A candidate waits on a trigger (§4), so nobody can take it up yet, and it
+neither holds a specification back from complete nor counts as work to do. While any candidate remains, the cell names how many after the status, as in
 `✅ complete · 💡 1` or `🚧 2 of 6 rows · 💡 4`. A specification whose every row is a
 candidate reads `💡 N`, and one without a roadmap reads `—`.
 
@@ -473,7 +473,8 @@ outstanding, and its own page lists the items.
 The build writes the column, so a new specification makes no edit for it (§3.7), and a row
 that lands moves the index with it. The other two columns stay hand-written. An extension
 reads the roadmap of the document each row links, with the parser the conventions test
-reads roadmaps with, and that test holds the column to every roadmap.
+reads roadmaps with. That test holds each status to its own count of the roadmap, and a
+build test holds the column (§6).
 
 (docs-spec-4)=
 ## 4. Roadmap
