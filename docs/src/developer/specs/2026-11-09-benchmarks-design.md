@@ -318,7 +318,16 @@ check required (§4.6, §2 decision 4). So is fixing a regression the benchmarks
 (bench-spec-8)=
 ## 8. Open Items
 
-Each carries the grammar of items spec §3.2. None is open today.
+Each carries the grammar of items spec §3.2.
+
+1. **❓ Open** (🔎 2026-11-10, {pull}`2925` · 🎯 row 2 of §9 · 🎫 {issue}`2926`) —
+   **The conftest and its tests have small gaps.** The final review of row 1 found
+   five: the refusal of §4.2 names a benchmark by its name, not its node id, sees
+   tests outside `benchmarks/` and ignores memray's ini setting; the test of
+   §2 decision 6 misses a benchmark in a class or an `async def`; the test of
+   §2 decision 2 accepts a `types:` filter on `pull_request`; VTK's single thread
+   has no test; and the example of §4.2 is out of date. None changes what row 1
+   measures, and row 2 touches the same code.
 
 (bench-spec-9)=
 ## 9. Roadmap
@@ -364,7 +373,7 @@ Each row follows ledger spec §3.4.
 | §2 decision 1 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
 | §2 decision 2 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
 | §2 decision 3 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
-| §2 decision 4 | ⏳ pending | row 1 of §9 |
+| §2 decision 4 | ✍️ signed off (2026-11-10, {user}`bjlittle`, {pull}`2925`) | Checked in review that neither `codspeed benchmarks` nor `memory ceilings`, nor CodSpeed's `CodSpeed Performance Analysis`, is among the required checks of `main`. |
 | §2 decision 5 | ⏳ pending | rows 1 to 3 of §9 |
 | §2 decision 6 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
 | §2 decision 7 | ⏳ pending | rows 1 to 3 of §9 |

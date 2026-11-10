@@ -178,7 +178,7 @@ Every Python file must begin with this header, and include `from __future__ impo
   test, wheel and PyPI matrices span every version, while the unsuffixed pixi
   environments, the docs workflows and the coverage report track the **newest**
   alone and `mypy`'s `python_version` the **oldest**, so a bump missing any of them leaves that one behind.
-- **Dependencies**: core deps in `requirements/pypi-core.txt`; optional groups in `requirements/pypi-optional-*.txt`. Pixi deps mirrored in `pyproject.toml`.
+- **Dependencies**: core deps in `requirements/pypi-core.txt`; optional groups in `requirements/pypi-optional-*.txt`. Pixi deps mirrored in `pyproject.toml`, each capped below its next major version, or its next minor before 1.0 (`>=5.0.4,<6`, `>=0.3.1,<0.4`).
 - **CRS coordinates**: PROJ gives and takes geographic axes declared in radians in degrees. Reuse `geovista.transform._angles` for effective angular units, rather than the declared unit factor (#2841). `np.vstack` discards masks even when it returns a `MaskedArray`; fill missing mesh positions with NaN before arithmetic (#2844).
 - **Mesh data**: attach it by association, `mesh.point_data[name]` or `mesh.cell_data[name]`, never `mesh[name]`, which puts data that fits both on the points; and clean a mesh after its data is attached, as cleaning reorders cells, putting lines before polygons (#2908).
 
