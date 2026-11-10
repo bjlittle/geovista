@@ -469,28 +469,66 @@ def _uses_benchmark(node: ast.AST) -> bool:
     return isinstance(node, ast.Name) and node.id == "benchmark"
 
 
-def measured_elsewhere(root: Path) -> list[str]:
-    """Return where a benchmark measures more than one call of a named function.
+def _imports(tree: ast.Module) -> dict[str, str]:
+    """Map each name a module binds by import to the dotted name it stands for.
 
-    A benchmark hands ``benchmark`` a function by its name or attribute, and its
-    inputs, which Python makes before the call is measured. A lambda, a
-    ``functools.partial``, a function defined in the test, the decorator form or
-    ``benchmark.pedantic`` measure code of the benchmark's own, which may build
-    its inputs while it is timed.
+    ``import numpy as np`` binds ``np`` to ``numpy``, ``import numpy.random``
+    binds ``numpy``, and ``from numpy.random import default_rng as make`` binds
+    ``make`` to ``numpy.random.default_rng``.
+
+    """
+    imported = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.asname:
+                    imported[alias.asname] = alias.name
+                else:
+                    root = alias.name.split(".")[0]
+                    imported[root] = root
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            for alias in node.names:
+                imported[alias.asname or alias.name] = f"{node.module}.{alias.name}"
+    return imported
+
+
+def _origin(node: ast.AST, imported: dict[str, str]) -> str | None:
+    """Return the dotted name ``node`` stands for, if it is reached by an import."""
+    if isinstance(node, ast.Name):
+        return imported.get(node.id)
+    if isinstance(node, ast.Attribute):
+        owner = _origin(node.value, imported)
+        return f"{owner}.{node.attr}" if owner else None
+    return None
+
+
+def _root(node: ast.AST) -> str | None:
+    """Return the name an attribute chain starts from, as ``bbox`` of ``bbox.a``."""
+    while isinstance(node, ast.Attribute):
+        node = node.value
+    return node.id if isinstance(node, ast.Name) else None
+
+
+def measured_elsewhere(root: Path) -> list[str]:
+    """Return where a benchmark measures code of its own, not the library's.
+
+    A benchmark hands ``benchmark`` a function it imported, or a method of an
+    imported name or of a fixture, and its inputs, which Python makes before the
+    call is measured. Anything else, a lambda, a ``functools.partial``, a
+    function defined in the benchmarks at any level, the decorator form or
+    ``benchmark.pedantic``, measures code of the benchmark's own, which may
+    build its inputs while it is timed.
 
     """
     found = []
     for path in sorted(root.rglob("test_*.py")):
         where = path.relative_to(root).as_posix()
-        for test in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported = _imports(tree)
+        for test in ast.walk(tree):
             if not isinstance(test, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
-            local = {
-                node.name
-                for node in ast.walk(test)
-                if node is not test
-                and isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-            }
+            params = {arg.arg for arg in test.args.args + test.args.kwonlyargs}
             found.extend(
                 f"{where}:{decorator.lineno}"
                 for decorator in test.decorator_list
@@ -506,9 +544,12 @@ def measured_elsewhere(root: Path) -> list[str]:
                 ):
                     continue
                 target = node.args[0] if node.args else None
-                named = isinstance(target, ast.Attribute) or (
-                    isinstance(target, ast.Name) and target.id not in local
-                )
+                if isinstance(target, ast.Name):
+                    named = target.id in imported
+                elif isinstance(target, ast.Attribute):
+                    named = _root(target) in imported.keys() | params
+                else:
+                    named = False
                 if not named:
                     found.append(f"{where}:{node.lineno}")
     return sorted(set(found), key=lambda item: int(item.rsplit(":", 1)[1]))
@@ -517,28 +558,31 @@ def measured_elsewhere(root: Path) -> list[str]:
 def unseeded(root: Path) -> list[str]:
     """Return where a module under ``root`` draws from an unseeded generator.
 
-    That is a ``default_rng`` given no seed or ``None``, any other function of
-    ``numpy.random``, whose state is global, or the standard library's ``random``.
+    That is a ``numpy.random.default_rng`` given no seed or ``None``, any other
+    function of ``numpy.random``, whose state is global, or the standard
+    library's ``random``, however each was imported.
 
     """
     found = []
     for path in sorted(root.rglob("*.py")):
         where = path.relative_to(root).as_posix()
-        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                names = [alias.name for alias in node.names]
-                module = getattr(node, "module", None)
-                if module in GLOBAL_RANDOM or GLOBAL_RANDOM & set(names):
-                    found.append(f"{where}:{node.lineno}")
-                continue
-            if not isinstance(node, ast.Call) or not isinstance(
-                node.func, ast.Attribute
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported = _imports(tree)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import) and any(
+                alias.name.split(".")[0] in GLOBAL_RANDOM for alias in node.names
             ):
+                found.append(f"{where}:{node.lineno}")
                 continue
-            owner = node.func.value
-            if not (isinstance(owner, ast.Attribute) and owner.attr == "random"):
+            if isinstance(node, ast.ImportFrom) and node.module in GLOBAL_RANDOM:
+                found.append(f"{where}:{node.lineno}")
                 continue
-            if node.func.attr != "default_rng":
+            if not isinstance(node, ast.Call):
+                continue
+            origin = _origin(node.func, imported) or ""
+            if not origin.startswith("numpy.random."):
+                continue
+            if origin != "numpy.random.default_rng":
                 found.append(f"{where}:{node.lineno}")
                 continue
             seeds = [*node.args, *(keyword.value for keyword in node.keywords)]
@@ -590,6 +634,15 @@ def test_every_input_is_built_outside_the_measured_call(tmp_path):
         "    @benchmark\n    def run():\n        return len(np.arange(10))\n"
     )
     assert measured_elsewhere(tmp_path) == ["test_x.py:4"]
+    (tmp_path / "test_x.py").write_text(
+        "import numpy as np\nfrom geovista.core import combine\n\n"
+        "def run():\n    return len(np.arange(10))\n\n"
+        "RUN = lambda: len(np.arange(10))\n\n"
+        "def test_module(benchmark):\n    benchmark(run)\n\n"
+        "def test_assigned(benchmark):\n    benchmark(RUN)\n\n"
+        "def test_imported(benchmark, meshes):\n    benchmark(combine, *meshes)\n"
+    )
+    assert measured_elsewhere(tmp_path) == ["test_x.py:10", "test_x.py:13"]
 
 
 def test_every_generator_is_seeded(tmp_path):
@@ -609,6 +662,27 @@ def test_every_generator_is_seeded(tmp_path):
         "conftest.py:5",
         "conftest.py:6",
         "conftest.py:7",
+    ]
+    (tmp_path / "conftest.py").write_text(
+        "import numpy.random as rnd\n"
+        "from numpy import random as nr\n"
+        "from numpy.random import default_rng\n"
+        "from numpy.random import default_rng as make\n"
+        "from numpy.random import uniform\n\n"
+        "A = default_rng()\n"
+        "B = make(None)\n"
+        "C = rnd.default_rng()\n"
+        "D = nr.normal(0, 1, 5)\n"
+        "E = uniform(0, 1, 5)\n"
+        "F = default_rng(0)\n"
+        "G = rnd.default_rng(seed=1)\n"
+    )
+    assert unseeded(tmp_path) == [
+        "conftest.py:7",
+        "conftest.py:8",
+        "conftest.py:9",
+        "conftest.py:10",
+        "conftest.py:11",
     ]
 
 
