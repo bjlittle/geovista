@@ -1,0 +1,7 @@
+Fixed :func:`geovista.core.slice_mesh`, :func:`geovista.core.slice_cells` and
+:func:`geovista.transform.transform_mesh` writing the ``gvOriginalCellIds`` and
+``gvOriginalPointIds`` arrays onto the mesh they were given.
+:class:`geovista.core.MeridianSlice` now traces each cell and point on a shallow
+copy of that mesh, and attaches each id to the cells or the points by name, so the
+mesh given is left as it was. What each function returns is unchanged.
+(:user:`claude`)
