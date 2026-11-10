@@ -260,6 +260,24 @@ def cloud() -> tuple[np.ndarray, np.ndarray]:
 
 
 @pytest.fixture(scope="session")
+def cloud_mesh(cloud: tuple[np.ndarray, np.ndarray]) -> pv.PolyData:
+    """Return the cloud of 100,000 positions as a mesh of points.
+
+    Parameters
+    ----------
+    cloud : tuple of numpy.ndarray
+        The longitudes and the latitudes.
+
+    Returns
+    -------
+    pyvista.PolyData
+        The points, which a benchmark reads but never changes.
+
+    """
+    return gv.Transform.from_points(*cloud)
+
+
+@pytest.fixture(scope="session")
 def line() -> tuple[np.ndarray, np.ndarray]:
     """Return the longitudes and latitudes of a line through 2,000 vertices.
 
