@@ -721,7 +721,7 @@ env = { OMP_NUM_THREADS = "1" }
 [tool.pixi.feature.test.tasks.benchmarks-memory]
 cmd = "pytest benchmarks --memray --trace-python-allocators --most-allocations=0"
 description = "Perform the benchmarks under memray, holding each to its memory ceiling"
-env = { OMP_NUM_THREADS = "1", OPENBLAS_CORETYPE = "Haswell" }
+env = { OMP_NUM_THREADS = "1" }
 
 [tool.pixi.feature.test.tasks.check-spec-renumbering]
 args = [{ "arg" = "option", "default" = "" }]

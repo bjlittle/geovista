@@ -152,11 +152,12 @@ def test_openblas_is_warmed_before_any_benchmark(bench, monkeypatch):
     """Charge OpenBLAS's one-off buffers to no benchmark (bench spec §2 decision 5).
 
     The first matrix product in a process makes OpenBLAS set up its buffers,
-    128 MiB of them under the ``Haswell``, ``Zen`` and ``Sandybridge`` kernels,
-    so whichever benchmark makes it would breach its ceiling on some runners.
+    128 MiB of them under every kernel older than ``SkylakeX``, so whichever
+    benchmark makes it would breach its ceiling on some runners. ``Prescott``,
+    the oldest x86-64 kernel, is one of them, and runs on any x86-64 CPU.
 
     """
-    monkeypatch.setenv("OPENBLAS_CORETYPE", "Haswell")
+    monkeypatch.setenv("OPENBLAS_CORETYPE", "Prescott")
     monkeypatch.setenv("OMP_NUM_THREADS", "1")
     bench.makepyfile(
         test_first="""
@@ -272,9 +273,16 @@ def test_the_tasks_run_openmp_on_one_thread(name):
     assert _task(name)["env"]["OMP_NUM_THREADS"] == "1"
 
 
-def test_the_memory_task_pins_the_openblas_kernel():
-    """Measure a ceiling with the one kernel CI checks it with (bench spec §4.5)."""
-    assert _task(MEMORY_TASK)["env"]["OPENBLAS_CORETYPE"] == "Haswell"
+@pytest.mark.parametrize("name", [CODSPEED_TASK, MEMORY_TASK])
+def test_no_task_forces_an_openblas_kernel(name):
+    """Leave OpenBLAS to choose its kernel for the CPU it runs on.
+
+    A forced kernel can use instructions an older CPU lacks, and crash there
+    (#2935). The warm-up of the conftest makes a benchmark's peak the same
+    under every kernel, so none needs forcing.
+
+    """
+    assert "OPENBLAS_CORETYPE" not in _task(name).get("env", {})
 
 
 def test_the_codspeed_task_runs_without_memray():

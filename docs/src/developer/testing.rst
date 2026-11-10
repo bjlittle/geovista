@@ -1138,9 +1138,10 @@ To run them locally:
 
 Without Valgrind, the :guilabel:`benchmarks` task measures wall time, which is
 enough to compare two branches on one machine. Both tasks run OpenMP on a single
-thread, as the workflow does. The :guilabel:`benchmarks-memory` task also runs
-OpenBLAS's ``Haswell`` kernel, so a ceiling measured on one machine holds on any
-runner: the buffers OpenBLAS sets up depend on the kernel it picks for the CPU.
+thread, as the workflow does. OpenBLAS picks its kernel for the CPU, and the
+buffers it sets up on the first matrix product depend on that kernel, so
+:bash:`benchmarks/conftest.py` makes that product before any benchmark runs. A
+ceiling measured on one machine then holds on any runner.
 
 .. _gv-developer-testing-benchmarks-adding:
 .. _tippy-gv-developer-testing-benchmarks-adding:
