@@ -181,13 +181,13 @@ provide the `benchmark` fixture.
 The benchmarks are modules named `test_<module>.py` under `benchmarks/`, one for each
 `geovista` module they measure, with a `conftest.py` that builds the inputs and pins VTK to
 one thread (§2 decision 7). Each benchmark is a test that hands the call it measures to the
-fixture, as `benchmark(line, lons, lats)`, and carries its ceiling:
+fixture, as `benchmark(geodesic.line, *line)`, and carries its ceiling:
 
 ```python
-@pytest.mark.limit_memory("12 MB")
-def test_line(benchmark, meridian):
+@pytest.mark.limit_memory("22 MB")
+def test_line(benchmark, line):
     """Build a geodesic line through 2,000 vertices (bench spec §2 decision 7)."""
-    benchmark(line, *meridian)
+    benchmark(geodesic.line, *line)
 ```
 
 The conftest refuses, under `--memray`, a
@@ -251,7 +251,7 @@ Two tasks join the `test` feature:
 | Task | Runs |
 |---|---|
 | `benchmarks` | `pytest benchmarks --codspeed -p no:memray` |
-| `benchmarks-memory` | `pytest benchmarks --memray --trace-python-allocators` |
+| `benchmarks-memory` | `pytest benchmarks --memray --trace-python-allocators --most-allocations=0` |
 
 Run locally, without Valgrind, `--codspeed` measures wall time, which is enough to compare
 two branches on one machine. Each task gets its row on the `packaging` and `testing` pages,
@@ -320,14 +320,25 @@ check required (§4.6, §2 decision 4). So is fixing a regression the benchmarks
 
 Each carries the grammar of items spec §3.2.
 
-1. **❓ Open** (🔎 2026-11-10, {pull}`2925` · 🎯 row 2 of §9 · 🎫 {issue}`2926`) —
-   **The conftest and its tests have small gaps.** The final review of row 1 found
-   five: the refusal of §4.2 names a benchmark by its name, not its node id, sees
-   tests outside `benchmarks/` and ignores memray's ini setting; the test of
-   §2 decision 6 misses a benchmark in a class or an `async def`; the test of
-   §2 decision 2 accepts a `types:` filter on `pull_request`; VTK's single thread
-   has no test; and the example of §4.2 is out of date. None changes what row 1
-   measures, and row 2 touches the same code.
+1. **🏁 Resolved** (2026-11-10, {pull}`2927` · 🔎 2026-11-10, {pull}`2925` ·
+   🎫 {issue}`2926`) — **The conftest and its tests have small gaps.** The final
+   review of row 1 found five, and row 2 settled them. The refusal of §4.2 names a
+   benchmark by its node id and keeps to `benchmarks/`. It reads memray's switch as
+   pytest-memray does, which never reads its own `memray` ini key, as `--memray`
+   defaults to false, so the ini setting needed nothing more. The test of
+   §2 decision 6 reads methods and coroutines, the test of §2 decision 2 refuses a
+   `types:` filter, VTK's single thread is tested under the threaded backend, as
+   conda-forge's VTK defaults to its sequential one, and the example of §4.2 is
+   current.
+
+2. **❓ Open** (🔎 2026-11-10, {pull}`2927` · 🎯 row 3 of §9 · 🎫 {issue}`2928`) —
+   **The tests and fixtures have small gaps.** The final review of row 2 found
+   three: the test of VTK's single thread passes on a single core whatever the
+   conftest does; the reader of the fixture test misses subdirectories and
+   keyword-only parameters, and names a method without its class; and the sizes
+   of the grid and the cloud are repeated in three modules, with the projections
+   paired to their ids by position. None changes what row 2 measures, and row 3
+   touches the same code.
 
 (bench-spec-9)=
 ## 9. Roadmap
@@ -335,7 +346,7 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | ✅ landed (2026-11-10, {pull}`2925`) |
-| 2 | The `bridge` and `transform` benchmarks (§4.3) | 📋 not started |
+| 2 | The `bridge` and `transform` benchmarks (§4.3) | ✅ landed (2026-11-10, {pull}`2927`) |
 | 3 | The `common`, `core`, `search` and `gridlines` benchmarks (§4.3) | 📋 not started |
 | 4 | Each benchmark's peak memory compared with the base commit's (§4.6) | 💡 candidate |
 

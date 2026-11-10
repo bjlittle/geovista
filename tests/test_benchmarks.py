@@ -127,13 +127,72 @@ def bench(pytester: pytest.Pytester) -> pytest.Pytester:
 
 def test_memray_refuses_a_benchmark_without_a_ceiling(bench):
     """Refuse, naming each, a benchmark with no ceiling (bench spec §2 decision 5)."""
-    bench.makepyfile(test_bare=BARE)
+    bench.makepyfile(test_bare=BARE, test_more=BARE)
     result = bench.runpytest_subprocess(*PLAIN, "--memray")
     assert result.ret == pytest.ExitCode.USAGE_ERROR
     text = result.stderr.str()
     assert "bench spec §2 decision 5" in text
-    for name in ("test_bare", "test_x[a]", "test_x[b]"):
-        assert name in text
+    for module in ("test_bare.py", "test_more.py"):
+        for name in ("test_bare", "test_x[a]", "test_x[b]"):
+            assert f"{module}::{name}" in text
+
+
+def test_the_refusal_keeps_to_the_benchmarks(pytester):
+    """Refuse no unit test run beside the benchmarks."""
+    bench = pytester.mkdir("bench")
+    (bench / "conftest.py").write_text(CONFTEST.read_text(encoding="utf-8"))
+    (bench / "test_ceiled.py").write_text(CEILED)
+    unit = pytester.mkdir("unit")
+    (unit / "test_unit.py").write_text("def test_unit():\n    assert True\n")
+    result = pytester.runpytest_subprocess(*PLAIN, "--memray", "bench", "unit")
+    result.assert_outcomes(passed=2)
+
+
+def test_grid_mesh_owns_its_data(bench):
+    """Give each benchmark a mesh whose data it may change without harm."""
+    bench.makepyfile(
+        test_owns="""
+import numpy as np
+
+def test_owns(grid_mesh, grid_data):
+    assert not np.shares_memory(grid_mesh.cell_data["data"], grid_data)
+"""
+    )
+    result = bench.runpytest_subprocess(*PLAIN)
+    result.assert_outcomes(passed=1)
+
+
+def test_the_benchmarks_load_without_memray(bench, monkeypatch):
+    """Load the conftest where pytest-memray is absent (bench spec §2 decision 6)."""
+    absent = bench.mkdir("absent") / "pytest_memray"
+    absent.mkdir()
+    (absent / "__init__.py").write_text('raise ImportError("no pytest-memray")\n')
+    monkeypatch.setenv("PYTHONPATH", str(absent.parent))
+    bench.makepyfile(test_ceiled=CEILED)
+    result = bench.runpytest_subprocess(*PLAIN, "-p", "no:memray", "--strict-markers")
+    result.assert_outcomes(passed=1)
+
+
+def test_vtk_runs_on_one_thread(bench, monkeypatch):
+    """Run VTK on one thread, for a steady count (bench spec §2 decision 7).
+
+    conda-forge's VTK defaults to its sequential backend, which runs on one
+    thread whatever the conftest asks, so the benchmarks run on the threaded
+    backend that pip's VTK defaults to, where only the conftest keeps it to one.
+
+    """
+    monkeypatch.setenv("VTK_SMP_BACKEND_IN_USE", "STDThread")
+    bench.makepyfile(
+        test_threads="""
+from vtkmodules.vtkCommonCore import vtkSMPTools
+
+def test_threads():
+    assert vtkSMPTools.GetBackend() == "STDThread"
+    assert vtkSMPTools.GetEstimatedNumberOfThreads() == 1
+"""
+    )
+    result = bench.runpytest_subprocess(*PLAIN)
+    result.assert_outcomes(passed=1)
 
 
 def test_memray_accepts_a_benchmark_with_a_ceiling(bench):
@@ -192,7 +251,9 @@ def test_the_tasks_run_openmp_on_one_thread(name):
 def test_the_codspeed_task_runs_without_memray():
     """Run CodSpeed with memray disabled, and memray without CodSpeed's measuring."""
     assert _task(CODSPEED_TASK)["cmd"] == "pytest benchmarks --codspeed -p no:memray"
-    expected = "pytest benchmarks --memray --trace-python-allocators"
+    expected = (
+        "pytest benchmarks --memray --trace-python-allocators --most-allocations=0"
+    )
     assert _task(MEMORY_TASK)["cmd"] == expected
 
 
@@ -217,17 +278,46 @@ def test_a_benchmark_alone_keeps_within_its_ceiling():
     assert result.returncode == 0, result.stdout[-2000:]
 
 
+def benchmark_functions(root: Path) -> list[tuple[str, bool]]:
+    """Return each test function under ``root``, with whether it takes the fixture.
+
+    Every function named ``test_*`` is read, at any depth of its module, so a
+    method of a ``Test`` class and an ``async def`` count too.
+
+    """
+    functions = []
+    for path in sorted(root.glob("test_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            kinds = (ast.FunctionDef, ast.AsyncFunctionDef)
+            if isinstance(node, kinds) and node.name.startswith("test_"):
+                params = [arg.arg for arg in node.args.args]
+                functions.append((f"{path.name}::{node.name}", "benchmark" in params))
+    return sorted(functions)
+
+
 def test_every_benchmark_uses_the_fixture():
     """Write every benchmark with the fixture (bench spec §2 decision 6)."""
-    names = []
-    for path in sorted(BENCHMARKS.glob("test_*.py")):
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        for node in tree.body:
-            if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
-                params = [arg.arg for arg in node.args.args]
-                assert "benchmark" in params, f"{path.name}::{node.name}"
-                names.append(node.name)
-    assert names
+    functions = benchmark_functions(BENCHMARKS)
+    assert functions
+    assert [name for name, uses in functions if not uses] == []
+
+
+def test_a_benchmark_in_a_class_is_read(tmp_path):
+    """Read a benchmark written as a method, or as a coroutine."""
+    (tmp_path / "test_mod.py").write_text(
+        "class TestX:\n    def test_y(self):\n        pass\n\n"
+        "async def test_z():\n    pass\n"
+    )
+    assert benchmark_functions(tmp_path) == [
+        ("test_mod.py::test_y", False),
+        ("test_mod.py::test_z", False),
+    ]
+
+
+def test_pull_requests_are_measured_of_every_type():
+    """Measure a pull request whatever its activity (bench spec §2 decision 2)."""
+    assert "types" not in (_workflow()[True]["pull_request"] or {})
 
 
 def test_codspeed_runs_in_simulation():

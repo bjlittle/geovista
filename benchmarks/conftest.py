@@ -20,6 +20,7 @@ the CodSpeed run, which disables memray, still accepts it under
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -28,6 +29,7 @@ import pyvista as pv
 from vtkmodules.vtkCommonCore import vtkSMPTools
 
 import geovista as gv
+from geovista.common import from_cartesian
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -41,11 +43,17 @@ vtkSMPTools.Initialize(1)
 #: The marker of pytest-memray carrying a benchmark's memory ceiling.
 CEILING = "limit_memory"
 
+#: The directory of the benchmarks, whose items alone are held to a ceiling.
+ROOT = Path(__file__).parent
+
 #: The cell size of the global grid, in degrees.
 GRID_STEP = 1.0
 
 #: The number of vertices of the line, as in issue 2913.
 LINE_VERTICES = 2_000
+
+#: The number of points of the cloud.
+CLOUD_POINTS = 100_000
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -81,23 +89,142 @@ def pytest_collection_modifyitems(
         Naming each benchmark that carries no ceiling (bench spec §2 decision 5).
 
     """
-    if not config.getoption("memray", default=False):
+    # memray may be disabled, as the CodSpeed run has it; otherwise its switch is
+    # read as pytest-memray reads it, so the two can never disagree
+    if not config.pluginmanager.hasplugin("memray"):
         return
-    bare = [item.name for item in items if item.get_closest_marker(CEILING) is None]
-    if bare:
+    # imported here, so that the benchmarks load where pytest-memray is absent
+    from pytest_memray.utils import value_or_ini  # noqa: PLC0415
+
+    if not value_or_ini(config, "memray"):
+        return
+    if names := bare(items, ROOT):
         emsg = (
             "bench spec §2 decision 5: every benchmark carries a memory ceiling, "
             "its measured peak plus 20%, rounded up to a whole MiB, as "
-            '@pytest.mark.limit_memory("N MB"). None on: ' + ", ".join(bare)
+            '@pytest.mark.limit_memory("N MB"). None on: ' + ", ".join(names)
         )
         raise pytest.UsageError(emsg)
 
 
+def bare(items: Iterable[pytest.Item], root: Path) -> list[str]:
+    """Return the node id of each benchmark under ``root`` carrying no ceiling.
+
+    Parameters
+    ----------
+    items : iterable of pytest.Item
+        The collected items, which may include tests outside ``root``.
+    root : Path
+        The directory of the benchmarks.
+
+    Returns
+    -------
+    list of str
+        The node ids, in the order collected.
+
+    """
+    return [
+        item.nodeid
+        for item in items
+        if item.path.is_relative_to(root) and item.get_closest_marker(CEILING) is None
+    ]
+
+
+@pytest.fixture(scope="session")
+def grid_bounds() -> tuple[np.ndarray, np.ndarray]:
+    """Return the 1-D cell bounds of the global grid, 1° cells, 360 by 180.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        The 361 longitudes and the 181 latitudes.
+
+    """
+    lons = np.arange(-180, 180 + GRID_STEP, GRID_STEP)
+    lats = np.arange(-90, 90 + GRID_STEP, GRID_STEP)
+    return lons, lats
+
+
+@pytest.fixture(scope="session")
+def grid_bounds_2d(
+    grid_bounds: tuple[np.ndarray, np.ndarray],
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return the 2-D cell bounds of the global grid, as a curvilinear grid has them.
+
+    Parameters
+    ----------
+    grid_bounds : tuple of numpy.ndarray
+        The 1-D cell bounds.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        The longitudes and the latitudes, each of shape (181, 361).
+
+    """
+    lons, lats = np.meshgrid(*grid_bounds)
+    return lons, lats
+
+
+@pytest.fixture(scope="session")
+def grid_data(grid_bounds: tuple[np.ndarray, np.ndarray]) -> np.ndarray:
+    """Return the seeded data of each cell of the global grid.
+
+    Parameters
+    ----------
+    grid_bounds : tuple of numpy.ndarray
+        The 1-D cell bounds.
+
+    Returns
+    -------
+    numpy.ndarray
+        The 64,800 values.
+
+    """
+    lons, lats = grid_bounds
+    rng = np.random.default_rng(0)
+    return rng.random((lats.size - 1) * (lons.size - 1))
+
+
+@pytest.fixture(scope="session")
+def grid_nodes(
+    grid_bounds: tuple[np.ndarray, np.ndarray], grid_data: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return the global grid as a reader of UGRID gives it: nodes and faces.
+
+    Parameters
+    ----------
+    grid_bounds : tuple of numpy.ndarray
+        The 1-D cell bounds.
+    grid_data : numpy.ndarray
+        The data of each cell.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        The longitude and the latitude of each node, and the four nodes of
+        each face.
+
+    """
+    mesh = gv.Transform.from_1d(*grid_bounds, data=grid_data)
+    xyz = from_cartesian(mesh)
+    return xyz[:, 0], xyz[:, 1], mesh.regular_faces
+
+
 @pytest.fixture
-def grid_mesh() -> pv.PolyData:
+def grid_mesh(
+    grid_bounds: tuple[np.ndarray, np.ndarray], grid_data: np.ndarray
+) -> pv.PolyData:
     """Return a global mesh of 1° cells, 360 by 180, carrying seeded cell data.
 
     The mesh is built afresh for each benchmark, which may change it.
+
+    Parameters
+    ----------
+    grid_bounds : tuple of numpy.ndarray
+        The 1-D cell bounds.
+    grid_data : numpy.ndarray
+        The data of each cell.
 
     Returns
     -------
@@ -105,11 +232,26 @@ def grid_mesh() -> pv.PolyData:
         The mesh, its cell data named ``"data"``.
 
     """
-    lons = np.arange(-180, 180 + GRID_STEP, GRID_STEP)
-    lats = np.arange(-90, 90 + GRID_STEP, GRID_STEP)
+    # a copy, as the mesh shares the array it is given, and a benchmark may
+    # change the mesh's data where the session's would see it
+    return gv.Transform.from_1d(*grid_bounds, data=grid_data.copy(), name="data")
+
+
+@pytest.fixture(scope="session")
+def cloud() -> tuple[np.ndarray, np.ndarray]:
+    """Return 100,000 seeded positions, spread evenly over the sphere.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        The longitudes, uniform in [-180°, 180°), and the latitudes, the
+        arcsine of a uniform value, so that equal areas hold equal numbers.
+
+    """
     rng = np.random.default_rng(0)
-    data = rng.random((lats.size - 1) * (lons.size - 1))
-    return gv.Transform.from_1d(lons, lats, data=data, name="data")
+    lons = rng.uniform(-180, 180, CLOUD_POINTS)
+    lats = np.degrees(np.arcsin(rng.uniform(-1, 1, CLOUD_POINTS)))
+    return lons, lats
 
 
 @pytest.fixture(scope="session")
