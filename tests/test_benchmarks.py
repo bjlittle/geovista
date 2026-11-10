@@ -218,7 +218,9 @@ def test_the_tasks_run_openmp_on_one_thread(name):
 def test_the_codspeed_task_runs_without_memray():
     """Run CodSpeed with memray disabled, and memray without CodSpeed's measuring."""
     assert _task(CODSPEED_TASK)["cmd"] == "pytest benchmarks --codspeed -p no:memray"
-    expected = "pytest benchmarks --memray --trace-python-allocators"
+    expected = (
+        "pytest benchmarks --memray --trace-python-allocators --most-allocations=0"
+    )
     assert _task(MEMORY_TASK)["cmd"] == expected
 
 

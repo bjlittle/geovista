@@ -30,6 +30,7 @@ import pyvista as pv
 from vtkmodules.vtkCommonCore import vtkSMPTools
 
 import geovista as gv
+from geovista.common import from_cartesian
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -51,6 +52,9 @@ GRID_STEP = 1.0
 
 #: The number of vertices of the line, as in issue 2913.
 LINE_VERTICES = 2_000
+
+#: The number of points of the cloud.
+CLOUD_POINTS = 100_000
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -124,11 +128,101 @@ def bare(items: Iterable[pytest.Item], root: Path) -> list[str]:
     ]
 
 
+@pytest.fixture(scope="session")
+def grid_bounds() -> tuple[np.ndarray, np.ndarray]:
+    """Return the 1-D cell bounds of the global grid, 1° cells, 360 by 180.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        The 361 longitudes and the 181 latitudes.
+
+    """
+    lons = np.arange(-180, 180 + GRID_STEP, GRID_STEP)
+    lats = np.arange(-90, 90 + GRID_STEP, GRID_STEP)
+    return lons, lats
+
+
+@pytest.fixture(scope="session")
+def grid_bounds_2d(
+    grid_bounds: tuple[np.ndarray, np.ndarray],
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return the 2-D cell bounds of the global grid, as a curvilinear grid has them.
+
+    Parameters
+    ----------
+    grid_bounds : tuple of numpy.ndarray
+        The 1-D cell bounds.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        The longitudes and the latitudes, each of shape (181, 361).
+
+    """
+    lons, lats = np.meshgrid(*grid_bounds)
+    return lons, lats
+
+
+@pytest.fixture(scope="session")
+def grid_data(grid_bounds: tuple[np.ndarray, np.ndarray]) -> np.ndarray:
+    """Return the seeded data of each cell of the global grid.
+
+    Parameters
+    ----------
+    grid_bounds : tuple of numpy.ndarray
+        The 1-D cell bounds.
+
+    Returns
+    -------
+    numpy.ndarray
+        The 64,800 values.
+
+    """
+    lons, lats = grid_bounds
+    rng = np.random.default_rng(0)
+    return rng.random((lats.size - 1) * (lons.size - 1))
+
+
+@pytest.fixture(scope="session")
+def grid_nodes(
+    grid_bounds: tuple[np.ndarray, np.ndarray], grid_data: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return the global grid as a reader of UGRID gives it: nodes and faces.
+
+    Parameters
+    ----------
+    grid_bounds : tuple of numpy.ndarray
+        The 1-D cell bounds.
+    grid_data : numpy.ndarray
+        The data of each cell.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        The longitude and the latitude of each node, and the four nodes of
+        each face.
+
+    """
+    mesh = gv.Transform.from_1d(*grid_bounds, data=grid_data)
+    xyz = from_cartesian(mesh)
+    return xyz[:, 0], xyz[:, 1], mesh.regular_faces
+
+
 @pytest.fixture
-def grid_mesh() -> pv.PolyData:
+def grid_mesh(
+    grid_bounds: tuple[np.ndarray, np.ndarray], grid_data: np.ndarray
+) -> pv.PolyData:
     """Return a global mesh of 1° cells, 360 by 180, carrying seeded cell data.
 
     The mesh is built afresh for each benchmark, which may change it.
+
+    Parameters
+    ----------
+    grid_bounds : tuple of numpy.ndarray
+        The 1-D cell bounds.
+    grid_data : numpy.ndarray
+        The data of each cell.
 
     Returns
     -------
@@ -136,11 +230,24 @@ def grid_mesh() -> pv.PolyData:
         The mesh, its cell data named ``"data"``.
 
     """
-    lons = np.arange(-180, 180 + GRID_STEP, GRID_STEP)
-    lats = np.arange(-90, 90 + GRID_STEP, GRID_STEP)
+    return gv.Transform.from_1d(*grid_bounds, data=grid_data, name="data")
+
+
+@pytest.fixture(scope="session")
+def cloud() -> tuple[np.ndarray, np.ndarray]:
+    """Return 100,000 seeded positions, spread evenly over the sphere.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        The longitudes, uniform in [-180°, 180°), and the latitudes, the
+        arcsine of a uniform value, so that equal areas hold equal numbers.
+
+    """
     rng = np.random.default_rng(0)
-    data = rng.random((lats.size - 1) * (lons.size - 1))
-    return gv.Transform.from_1d(lons, lats, data=data, name="data")
+    lons = rng.uniform(-180, 180, CLOUD_POINTS)
+    lats = np.degrees(np.arcsin(rng.uniform(-1, 1, CLOUD_POINTS)))
+    return lons, lats
 
 
 @pytest.fixture(scope="session")
