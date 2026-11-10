@@ -31,9 +31,8 @@ def test_npoints(benchmark):
 
 
 @pytest.mark.limit_memory("51 MB")
-def test_bbox_enclosed(benchmark, grid_mesh):
+def test_bbox_enclosed(benchmark, bbox, grid_mesh):
     """Extract the cells of the global grid in a box (bench spec §2 decision 7)."""
-    bbox = BBox([-30, 30, 30, -30], [-20, -20, 40, 40])
     result = benchmark(bbox.enclosed, grid_mesh)
     assert result.n_cells > 0
 

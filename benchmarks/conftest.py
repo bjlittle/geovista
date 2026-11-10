@@ -30,6 +30,8 @@ from vtkmodules.vtkCommonCore import vtkSMPTools
 
 import geovista as gv
 from geovista.common import from_cartesian
+from geovista.geodesic import BBox
+from geovista.search import KDTree
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -59,6 +61,9 @@ LINE_VERTICES = 2_000
 
 #: The number of points of the cloud.
 CLOUD_POINTS = 100_000
+
+#: The number of copies of the global grid a benchmark joins.
+GRID_COPIES = 4
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -275,6 +280,58 @@ def cloud_mesh(cloud: tuple[np.ndarray, np.ndarray]) -> pv.PolyData:
 
     """
     return gv.Transform.from_points(*cloud)
+
+
+@pytest.fixture
+def grid_meshes(grid_mesh: pv.PolyData) -> list[pv.PolyData]:
+    """Return four copies of the global grid's mesh, for a benchmark to join.
+
+    Parameters
+    ----------
+    grid_mesh : pyvista.PolyData
+        The global grid's mesh.
+
+    Returns
+    -------
+    list of pyvista.PolyData
+        The copies, built here so that a benchmark's memory ceiling holds the
+        join alone.
+
+    """
+    return [grid_mesh.copy() for _ in range(GRID_COPIES)]
+
+
+@pytest.fixture(scope="session")
+def cloud_tree(cloud_mesh: pv.PolyData) -> KDTree:
+    """Return a kd-tree over the cloud, which a query reads but never changes.
+
+    Parameters
+    ----------
+    cloud_mesh : pyvista.PolyData
+        The cloud as a mesh of points.
+
+    Returns
+    -------
+    KDTree
+        The tree, built here so that a benchmark's memory ceiling holds the
+        query alone.
+
+    """
+    return KDTree(cloud_mesh)
+
+
+@pytest.fixture(scope="session")
+def bbox() -> BBox:
+    """Return a geodesic box from 30° west to 30° east, and 20° south to 40° north.
+
+    Returns
+    -------
+    BBox
+        The box, built here so that a benchmark's memory ceiling holds the
+        extraction alone.
+
+    """
+    return BBox([-30, 30, 30, -30], [-20, -20, 40, 40])
 
 
 @pytest.fixture(scope="session")

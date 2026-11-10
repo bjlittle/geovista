@@ -200,9 +200,12 @@ The inputs are made by the conftest, never downloaded:
 
 | Input | Shape | Used By |
 |---|---|---|
-| a global grid | 1° cell bounds, 360 by 180 cells, as 1-D and as 2-D curvilinear coordinates | the bridge, `transform_mesh`, `slice_mesh`, `BBox.enclosed` |
+| a global grid | 1° cell bounds, 360 by 180 cells, as 1-D and as 2-D curvilinear coordinates, and as a mesh | the bridge, `transform_mesh`, `from_cartesian`, `slice_mesh`, `slice_cells`, `resize`, `find_nearest_cell`, `BBox.enclosed` |
+| four copies of the grid's mesh | made for each benchmark | `combine` |
 | a mesh of quads | the global grid's cells given by their corners, as `from_unstructured` takes them | the bridge |
-| a point cloud | 100,000 seeded positions on the sphere | `from_points`, `transform_points`, `KDTree` |
+| a point cloud | 100,000 seeded positions on the sphere, as positions and as a mesh of points | `from_points`, `transform_points`, `KDTree` |
+| a kd-tree | over the cloud's mesh | `KDTree.query` |
+| a geodesic box | 30° west to 30° east, 20° south to 40° north | `BBox.enclosed` |
 | a line | 2,000 vertices, as in {issue}`2913` | `geodesic.line` |
 
 A fixture whose object a benchmark changes is scoped to the function. The rest are built
@@ -337,10 +340,11 @@ Each carries the grammar of items spec §3.2.
 
 2. **🏁 Resolved** (2026-11-10, {pull}`2936` · 🔎 2026-11-10, {pull}`2927` ·
    🎫 {issue}`2928`) — **The tests and fixtures have small gaps.** The final review
-   of row 2 found three, and row 3 settled them. The test of VTK's single thread
-   allows four threads, so it fails without the conftest on a single core too; the
-   reader of the fixture test reads every module at any depth and keyword-only
-   parameters, and names a method by its class; and the benchmarks read their sizes
+   of row 2 found three, and row 3 settled them. VTK's threaded backend caps its
+   thread count at the CPU's, so on a single core no run can show the pin; a test
+   reads the conftest for `vtkSMPTools.Initialize(1)` at import instead. The reader
+   of the fixture test reads every module at any depth and keyword-only
+   parameters, and names a method by its class. The benchmarks read their sizes
    from the fixtures, each projection named with `pytest.param`.
 
 (bench-spec-9)=
@@ -388,7 +392,7 @@ Each row follows ledger spec §3.4.
 | §2 decision 2 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
 | §2 decision 3 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
 | §2 decision 4 | ✍️ signed off (2026-11-10, {user}`bjlittle`, {pull}`2925`) | Checked in review that neither `codspeed benchmarks` nor `memory ceilings`, nor CodSpeed's `CodSpeed Performance Analysis`, is among the required checks of `main`. |
-| §2 decision 5 | ✍️ signed off (2026-11-10, {user}`bjlittle`, {pull}`2936`) | Checked in review that every benchmark's ceiling is its measured peak, with Python's allocators traced, plus 20%, rounded up to a whole MiB, against the peaks tabled in {pull}`2925`, {pull}`2927` and {pull}`2936`. `tests/test_benchmarks.py` refuses a benchmark that carries no ceiling. |
+| §2 decision 5 | ✍️ signed off (2026-11-10, {user}`bjlittle`, {pull}`2936`) | Each benchmark's measured peak, with Python's allocators traced, and its ceiling are tabled in {pull}`2925`, {pull}`2927` and {pull}`2936`. `tests/test_benchmarks.py` refuses a benchmark that carries no ceiling, but no test can show that a ceiling is its peak plus 20%. |
 | §2 decision 6 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
 | §2 decision 7 | ✅ verified (2026-11-10, {pull}`2936`) | `tests/test_benchmarks.py` |
 | §2 decision 8 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |

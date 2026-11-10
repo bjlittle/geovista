@@ -23,12 +23,11 @@ def test_kdtree(benchmark, cloud_mesh):
     assert result.n_points == cloud_mesh.n_points
 
 
-@pytest.mark.limit_memory("3 MB")
-def test_kdtree_query(benchmark, cloud, cloud_mesh):
+@pytest.mark.limit_memory("1 MB")
+def test_kdtree_query(benchmark, cloud, cloud_tree):
     """Find 10,000 of the cloud's points in its tree (bench spec §2 decision 7)."""
-    tree = KDTree(cloud_mesh)
     lons, lats = cloud[0][:QUERIES], cloud[1][:QUERIES]
-    _, indices = benchmark(tree.query, lons, lats)
+    _, indices = benchmark(cloud_tree.query, lons, lats)
     np.testing.assert_array_equal(indices, np.arange(QUERIES))
 
 

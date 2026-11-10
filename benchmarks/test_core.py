@@ -12,9 +12,6 @@ import pytest
 
 from geovista.core import combine, resize, slice_cells, slice_mesh
 
-#: The number of copies of the global grid the ``combine`` benchmark joins.
-COPIES = 4
-
 
 @pytest.mark.limit_memory("28 MB")
 def test_slice_mesh(benchmark, grid_mesh, grid_data):
@@ -30,12 +27,11 @@ def test_slice_cells(benchmark, grid_mesh, grid_data):
     assert result.n_cells >= grid_data.size
 
 
-@pytest.mark.limit_memory("76 MB")
-def test_combine(benchmark, grid_mesh, grid_data):
+@pytest.mark.limit_memory("54 MB")
+def test_combine(benchmark, grid_meshes, grid_data):
     """Join four copies of the global grid (bench spec §2 decision 7)."""
-    meshes = [grid_mesh.copy() for _ in range(COPIES)]
-    result = benchmark(combine, *meshes)
-    assert result.n_cells == COPIES * grid_data.size
+    result = benchmark(combine, *grid_meshes)
+    assert result.n_cells == len(grid_meshes) * grid_data.size
 
 
 @pytest.mark.limit_memory("12 MB")
