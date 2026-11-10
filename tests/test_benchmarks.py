@@ -148,6 +148,31 @@ def test_the_refusal_keeps_to_the_benchmarks(pytester):
     result.assert_outcomes(passed=2)
 
 
+def test_openblas_is_warmed_before_any_benchmark(bench, monkeypatch):
+    """Charge OpenBLAS's one-off buffers to no benchmark (bench spec §2 decision 5).
+
+    The first matrix product in a process makes OpenBLAS set up its buffers,
+    128 MiB of them under every kernel older than ``SkylakeX``, so whichever
+    benchmark makes it would breach its ceiling on some runners. ``Prescott``,
+    the oldest x86-64 kernel, is one of them, and runs on any x86-64 CPU.
+
+    """
+    monkeypatch.setenv("OPENBLAS_CORETYPE", "Prescott")
+    monkeypatch.setenv("OMP_NUM_THREADS", "1")
+    bench.makepyfile(
+        test_first="""
+import numpy as np
+import pytest
+
+@pytest.mark.limit_memory("8 MB")
+def test_first(benchmark):
+    benchmark(np.matmul, np.eye(3), np.eye(3))
+"""
+    )
+    result = bench.runpytest_subprocess(*PLAIN, "--memray", "--trace-python-allocators")
+    result.assert_outcomes(passed=1)
+
+
 def test_grid_mesh_owns_its_data(bench):
     """Give each benchmark a mesh whose data it may change without harm."""
     bench.makepyfile(
@@ -246,6 +271,18 @@ def test_the_unit_suite_never_collects_the_benchmarks():
 def test_the_tasks_run_openmp_on_one_thread(name):
     """Run OpenMP on one thread for a steady count (bench spec §2 decision 7)."""
     assert _task(name)["env"]["OMP_NUM_THREADS"] == "1"
+
+
+@pytest.mark.parametrize("name", [CODSPEED_TASK, MEMORY_TASK])
+def test_no_task_forces_an_openblas_kernel(name):
+    """Leave OpenBLAS to choose its kernel for the CPU it runs on.
+
+    A forced kernel can use instructions an older CPU lacks, and crash there
+    (#2935). The warm-up of the conftest makes a benchmark's peak the same
+    under every kernel, so none needs forcing.
+
+    """
+    assert "OPENBLAS_CORETYPE" not in _task(name).get("env", {})
 
 
 def test_the_codspeed_task_runs_without_memray():

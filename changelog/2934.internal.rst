@@ -1,0 +1,3 @@
+A benchmark's memory ceiling now holds on any CI runner: OpenBLAS's one-off
+buffers, 128 MiB under every kernel older than ``SkylakeX``, are set up before
+any benchmark runs. (:user:`claude`)
