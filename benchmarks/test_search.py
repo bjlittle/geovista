@@ -25,7 +25,7 @@ def test_kdtree(benchmark, cloud_mesh):
 
 @pytest.mark.limit_memory("3 MB")
 def test_kdtree_query(benchmark, cloud, cloud_mesh):
-    """Find each of 10,000 of the cloud's points in its tree (§2 decision 7)."""
+    """Find 10,000 of the cloud's points in its tree (bench spec §2 decision 7)."""
     tree = KDTree(cloud_mesh)
     lons, lats = cloud[0][:QUERIES], cloud[1][:QUERIES]
     _, indices = benchmark(tree.query, lons, lats)
@@ -34,6 +34,6 @@ def test_kdtree_query(benchmark, cloud, cloud_mesh):
 
 @pytest.mark.limit_memory("6 MB")
 def test_find_nearest_cell(benchmark, grid_mesh):
-    """Find the global grid's cell nearest 12.3° east, 45.6° north (§2 decision 7)."""
+    """Find the grid's cell nearest 12.3°E, 45.6°N (bench spec §2 decision 7)."""
     result = benchmark(find_nearest_cell, grid_mesh, 12.3, 45.6)
     assert np.size(result) == 1

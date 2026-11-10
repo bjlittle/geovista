@@ -543,7 +543,7 @@ def test_nothing_is_downloaded(tmp_path):
 
 
 def test_no_benchmark_renders(tmp_path):
-    """Draw nothing, as a scene measures VTK more than geovista (§2 decision 7)."""
+    """Draw nothing, as a scene measures VTK (bench spec §2 decision 7)."""
     assert rendering(BENCHMARKS) == []
     (tmp_path / "test_x.py").write_text(
         "from geovista import GeoPlotter\n\ndef test_x(benchmark):\n"

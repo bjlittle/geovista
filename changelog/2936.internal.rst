@@ -1,0 +1,5 @@
+``geovista`` now benchmarks :func:`~geovista.common.from_cartesian`, slicing,
+combining and resizing meshes in :mod:`geovista.core`, the
+:class:`~geovista.search.KDTree` and :func:`~geovista.search.find_nearest_cell`,
+and the graticule of :mod:`geovista.gridlines`. With this last row, bench spec §9
+is complete. (:user:`claude`)
