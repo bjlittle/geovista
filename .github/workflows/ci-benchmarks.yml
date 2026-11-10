@@ -24,9 +24,11 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
   # a run of "main" stores the result each later pull request is compared with,
-  # so only a run of a pull request is ever cancelled
+  # so only a run of a pull request is ever cancelled. a newer run cancels a
+  # pending one of its group whatever "cancel-in-progress" says, so each commit
+  # of "main" is a group of its own
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 defaults:

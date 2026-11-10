@@ -251,7 +251,7 @@ Two tasks join the `test` feature:
 | Task | Runs |
 |---|---|
 | `benchmarks` | `pytest benchmarks --codspeed -p no:memray` |
-| `benchmarks-memory` | `pytest benchmarks --memray` |
+| `benchmarks-memory` | `pytest benchmarks --memray --trace-python-allocators` |
 
 Run locally, without Valgrind, `--codspeed` measures wall time, which is enough to compare
 two branches on one machine. Each task gets its row on the `packaging` and `testing` pages,

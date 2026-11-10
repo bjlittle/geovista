@@ -16,14 +16,14 @@ from geovista.geodesic import BBox, npoints, wedge
 NPTS = 10_000
 
 
-@pytest.mark.limit_memory("24 MB")
+@pytest.mark.limit_memory("22 MB")
 def test_line(benchmark, line):
     """Build a geodesic line through 2,000 vertices (bench spec §2 decision 7)."""
     result = benchmark(geodesic.line, *line)
     assert result.n_points > line[0].size
 
 
-@pytest.mark.limit_memory("1 MB")
+@pytest.mark.limit_memory("3 MB")
 def test_npoints(benchmark):
     """Compute 10,000 points along one geodesic (bench spec §2 decision 7)."""
     lons, _ = benchmark(npoints, -120.0, -45.0, 150.0, 60.0, npts=NPTS)

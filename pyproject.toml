@@ -719,7 +719,7 @@ description = "Perform the benchmarks under CodSpeed, measuring wall time when r
 env = { OMP_NUM_THREADS = "1" }
 
 [tool.pixi.feature.test.tasks.benchmarks-memory]
-cmd = "pytest benchmarks --memray"
+cmd = "pytest benchmarks --memray --trace-python-allocators"
 description = "Perform the benchmarks under memray, holding each to its memory ceiling"
 env = { OMP_NUM_THREADS = "1" }
 

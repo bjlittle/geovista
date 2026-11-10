@@ -1119,6 +1119,16 @@ Neither job is a required check. A regression is reported on the pull request
 that causes it, including one caused by a change to :toml:`pixi.lock`, and the
 maintainer decides whether it merges (bench spec §2 decision 4).
 
+CodSpeed reports in two places on a pull request. Its comment lists each
+benchmark that got faster or slower than on the base commit, by how much, and
+links each to its page on CodSpeed, where a flame graph shows which calls the
+difference lies in. Its check, ``CodSpeed Performance Analysis``, fails when a
+benchmark slows past CodSpeed's threshold. A failing check never blocks the
+merge. Look into the cause, and if the slowdown is the price of the change, as
+it was in :pull:`2912`, say so in the pull request, so the maintainer can weigh
+it. A new benchmark is listed as new, and is compared from the next commit of
+``main`` on.
+
 To run them locally:
 
 .. code:: console
@@ -1142,7 +1152,7 @@ each ``geovista`` module it measures. It hands the call it measures to the
 
 .. code:: python
 
-   @pytest.mark.limit_memory("24 MB")
+   @pytest.mark.limit_memory("22 MB")
    def test_line(benchmark, line):
        """Build a geodesic line through 2,000 vertices."""
        result = benchmark(geodesic.line, *line)
@@ -1160,11 +1170,17 @@ placeholder, such as ``limit_memory("1 GB")``, and run:
 
    $ pixi run benchmarks-memory
 
-Read the benchmark's peak from the line after "Allocation results for" in the
-report, add 20%, and round up. ``pytest-memray`` reads ``MB`` as 1024² bytes, a
-MiB. A benchmark with no ceiling is refused when ``--memray`` is given, naming
-it. A change that rightly raises a peak raises its ceiling in the same pull
-request, where the review sees it.
+Read the benchmark's peak from the "📦 Total memory allocated" line under its
+"Allocation results for" heading in the report, add 20%, and round up.
+``pytest-memray`` reads ``MB`` as 1024² bytes, a MiB. A benchmark with no ceiling
+is refused when ``--memray`` is given, naming it. A change that rightly raises a
+peak raises its ceiling in the same pull request, where the review sees it.
+
+The task passes ``--trace-python-allocators``, so memray counts the objects
+Python allocates. Without it, memray sees the arenas Python's own allocator
+takes from the system a mebibyte at a time, and a benchmark's peak then depends
+on the arenas the benchmarks before it left free: one run alone could breach a
+ceiling it keeps in the full run.
 
 
 .. comment

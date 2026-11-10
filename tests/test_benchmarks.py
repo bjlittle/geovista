@@ -19,6 +19,9 @@ from __future__ import annotations
 import ast
 from functools import cache
 from pathlib import Path
+import shlex
+import subprocess
+import sys
 import tomllib
 from typing import Any
 
@@ -189,7 +192,29 @@ def test_the_tasks_run_openmp_on_one_thread(name):
 def test_the_codspeed_task_runs_without_memray():
     """Run CodSpeed with memray disabled, and memray without CodSpeed's measuring."""
     assert _task(CODSPEED_TASK)["cmd"] == "pytest benchmarks --codspeed -p no:memray"
-    assert _task(MEMORY_TASK)["cmd"] == "pytest benchmarks --memray"
+    expected = "pytest benchmarks --memray --trace-python-allocators"
+    assert _task(MEMORY_TASK)["cmd"] == expected
+
+
+def test_a_benchmark_alone_keeps_within_its_ceiling():
+    """Hold a benchmark run alone to the ceiling it keeps in the full run.
+
+    Without Python's allocators traced, memray sees whole pymalloc arenas, so a
+    benchmark's peak depends on the arenas the benchmarks before it left free,
+    and ``test_npoints`` alone breaches a ceiling it keeps in the full run.
+
+    """
+    command = shlex.split(_task(MEMORY_TASK)["cmd"])
+    assert command[:2] == ["pytest", "benchmarks"]
+    node = "benchmarks/test_geodesic.py::test_npoints"
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-m", "pytest", node, *command[2:], *PLAIN],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout[-2000:]
 
 
 def test_every_benchmark_uses_the_fixture():
@@ -223,6 +248,13 @@ def test_every_pull_request_and_push_to_main_is_measured():
 def test_a_run_of_main_is_never_cancelled():
     """Cancel a run of a pull request alone (bench spec §4.4)."""
     concurrency = _workflow()["concurrency"]
+    # a pending run is cancelled by a newer one in its group whatever
+    # "cancel-in-progress" says, so each commit of main has a group of its own
+    group = (
+        "${{ github.workflow }}-${{ github.event_name == 'pull_request' "
+        "&& github.ref || github.sha }}"
+    )
+    assert concurrency["group"] == group
     expected = "${{ github.event_name == 'pull_request' }}"
     assert concurrency["cancel-in-progress"] == expected
 
