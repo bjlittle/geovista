@@ -1,0 +1,5 @@
+``geovista`` now benchmarks building meshes and point clouds with
+:class:`~geovista.bridge.Transform`, and projecting them with
+:func:`~geovista.transform.transform_mesh` and
+:func:`~geovista.transform.transform_points`, as row 2 of bench spec §9 sets
+out. (:user:`claude`)

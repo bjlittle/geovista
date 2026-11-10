@@ -320,14 +320,16 @@ check required (§4.6, §2 decision 4). So is fixing a regression the benchmarks
 
 Each carries the grammar of items spec §3.2.
 
-1. **❓ Open** (🔎 2026-11-10, {pull}`2925` · 🎯 row 2 of §9 · 🎫 {issue}`2926`) —
-   **The conftest and its tests have small gaps.** The final review of row 1 found
-   five: the refusal of §4.2 names a benchmark by its name, not its node id, sees
-   tests outside `benchmarks/` and ignores memray's ini setting; the test of
-   §2 decision 6 misses a benchmark in a class or an `async def`; the test of
-   §2 decision 2 accepts a `types:` filter on `pull_request`; VTK's single thread
-   has no test; and the example of §4.2 is out of date. None changes what row 1
-   measures, and row 2 touches the same code.
+1. **🏁 Resolved** (2026-11-10, {pull}`2927` · 🔎 2026-11-10, {pull}`2925` ·
+   🎫 {issue}`2926`) — **The conftest and its tests have small gaps.** The final
+   review of row 1 found five, and row 2 settled them. The refusal of §4.2 names a
+   benchmark by its node id and keeps to `benchmarks/`. It reads memray's switch as
+   pytest-memray does, which never reads its own `memray` ini key, as `--memray`
+   defaults to false, so the ini setting needed nothing more. The test of
+   §2 decision 6 reads methods and coroutines, the test of §2 decision 2 refuses a
+   `types:` filter, VTK's single thread is tested under the threaded backend, as
+   conda-forge's VTK defaults to its sequential one, and the example of §4.2 is
+   current.
 
 (bench-spec-9)=
 ## 9. Roadmap
@@ -335,7 +337,7 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | ✅ landed (2026-11-10, {pull}`2925`) |
-| 2 | The `bridge` and `transform` benchmarks (§4.3) | 🚧 in progress ({pull}`2927`) |
+| 2 | The `bridge` and `transform` benchmarks (§4.3) | ✅ landed (2026-11-10, {pull}`2927`) |
 | 3 | The `common`, `core`, `search` and `gridlines` benchmarks (§4.3) | 📋 not started |
 | 4 | Each benchmark's peak memory compared with the base commit's (§4.6) | 💡 candidate |
 
