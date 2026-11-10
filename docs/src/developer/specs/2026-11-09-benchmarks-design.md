@@ -331,6 +331,15 @@ Each carries the grammar of items spec §3.2.
    conda-forge's VTK defaults to its sequential one, and the example of §4.2 is
    current.
 
+2. **❓ Open** (🔎 2026-11-10, {pull}`2927` · 🎯 row 3 of §9 · 🎫 {issue}`2928`) —
+   **The tests and fixtures have small gaps.** The final review of row 2 found
+   three: the test of VTK's single thread passes on a single core whatever the
+   conftest does; the reader of the fixture test misses subdirectories and
+   keyword-only parameters, and names a method without its class; and the sizes
+   of the grid and the cloud are repeated in three modules, with the projections
+   paired to their ids by position. None changes what row 2 measures, and row 3
+   touches the same code.
+
 (bench-spec-9)=
 ## 9. Roadmap
 

@@ -148,6 +148,31 @@ def test_the_refusal_keeps_to_the_benchmarks(pytester):
     result.assert_outcomes(passed=2)
 
 
+def test_grid_mesh_owns_its_data(bench):
+    """Give each benchmark a mesh whose data it may change without harm."""
+    bench.makepyfile(
+        test_owns="""
+import numpy as np
+
+def test_owns(grid_mesh, grid_data):
+    assert not np.shares_memory(grid_mesh.cell_data["data"], grid_data)
+"""
+    )
+    result = bench.runpytest_subprocess(*PLAIN)
+    result.assert_outcomes(passed=1)
+
+
+def test_the_benchmarks_load_without_memray(bench, monkeypatch):
+    """Load the conftest where pytest-memray is absent (bench spec §2 decision 6)."""
+    absent = bench.mkdir("absent") / "pytest_memray"
+    absent.mkdir()
+    (absent / "__init__.py").write_text('raise ImportError("no pytest-memray")\n')
+    monkeypatch.setenv("PYTHONPATH", str(absent.parent))
+    bench.makepyfile(test_ceiled=CEILED)
+    result = bench.runpytest_subprocess(*PLAIN, "-p", "no:memray", "--strict-markers")
+    result.assert_outcomes(passed=1)
+
+
 def test_vtk_runs_on_one_thread(bench, monkeypatch):
     """Run VTK on one thread, for a steady count (bench spec §2 decision 7).
 

@@ -25,7 +25,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
-from pytest_memray.utils import value_or_ini
 import pyvista as pv
 from vtkmodules.vtkCommonCore import vtkSMPTools
 
@@ -94,6 +93,9 @@ def pytest_collection_modifyitems(
     # read as pytest-memray reads it, so the two can never disagree
     if not config.pluginmanager.hasplugin("memray"):
         return
+    # imported here, so that the benchmarks load where pytest-memray is absent
+    from pytest_memray.utils import value_or_ini  # noqa: PLC0415
+
     if not value_or_ini(config, "memray"):
         return
     if names := bare(items, ROOT):
@@ -230,7 +232,9 @@ def grid_mesh(
         The mesh, its cell data named ``"data"``.
 
     """
-    return gv.Transform.from_1d(*grid_bounds, data=grid_data, name="data")
+    # a copy, as the mesh shares the array it is given, and a benchmark may
+    # change the mesh's data where the session's would see it
+    return gv.Transform.from_1d(*grid_bounds, data=grid_data.copy(), name="data")
 
 
 @pytest.fixture(scope="session")
