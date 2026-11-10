@@ -148,13 +148,21 @@ def test_the_refusal_keeps_to_the_benchmarks(pytester):
     result.assert_outcomes(passed=2)
 
 
-def test_vtk_runs_on_one_thread(bench):
-    """Run VTK on one thread, for a steady count (bench spec §2 decision 7)."""
+def test_vtk_runs_on_one_thread(bench, monkeypatch):
+    """Run VTK on one thread, for a steady count (bench spec §2 decision 7).
+
+    conda-forge's VTK defaults to its sequential backend, which runs on one
+    thread whatever the conftest asks, so the benchmarks run on the threaded
+    backend that pip's VTK defaults to, where only the conftest keeps it to one.
+
+    """
+    monkeypatch.setenv("VTK_SMP_BACKEND_IN_USE", "STDThread")
     bench.makepyfile(
         test_threads="""
 from vtkmodules.vtkCommonCore import vtkSMPTools
 
 def test_threads():
+    assert vtkSMPTools.GetBackend() == "STDThread"
     assert vtkSMPTools.GetEstimatedNumberOfThreads() == 1
 """
     )
