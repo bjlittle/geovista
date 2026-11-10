@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import ast
 from functools import cache
+import os
 from pathlib import Path
 import shlex
 import subprocess
@@ -202,8 +203,11 @@ def test_vtk_runs_on_one_thread(bench, monkeypatch):
     """Run VTK on one thread, for a steady count (bench spec §2 decision 7).
 
     conda-forge's VTK defaults to its sequential backend, which runs on one
-    thread whatever the conftest asks, so the benchmarks run on the threaded
-    backend that pip's VTK defaults to, where only the conftest keeps it to one.
+    thread whatever the conftest asks, so this test runs on the threaded backend
+    that pip's VTK defaults to, where only the conftest keeps it to one. That
+    backend caps its count at the CPU's, so on a single core this passes
+    whatever the conftest does, and ``test_vtk_is_pinned_at_import`` reads the
+    conftest instead.
 
     """
     monkeypatch.setenv("VTK_SMP_BACKEND_IN_USE", "STDThread")
@@ -318,18 +322,27 @@ def test_a_benchmark_alone_keeps_within_its_ceiling():
 def benchmark_functions(root: Path) -> list[tuple[str, bool]]:
     """Return each test function under ``root``, with whether it takes the fixture.
 
-    Every function named ``test_*`` is read, at any depth of its module, so a
-    method of a ``Test`` class and an ``async def`` count too.
+    Every module named ``test_*.py`` at any depth is read, and every function
+    named ``test_*`` in it, a method of a ``Test`` class and an ``async def``
+    included. Each is named as pytest names it, by its module's path and its
+    classes, and the fixture counts whether passed by position or by keyword.
 
     """
-    functions = []
-    for path in sorted(root.glob("test_*.py")):
+
+    def visit(nodes: list[ast.stmt], where: str, found: list[tuple[str, bool]]) -> None:
+        for node in nodes:
+            if isinstance(node, ast.ClassDef):
+                visit(node.body, f"{where}::{node.name}", found)
+            elif isinstance(
+                node, (ast.FunctionDef, ast.AsyncFunctionDef)
+            ) and node.name.startswith("test_"):
+                params = [arg.arg for arg in node.args.args + node.args.kwonlyargs]
+                found.append((f"{where}::{node.name}", "benchmark" in params))
+
+    functions: list[tuple[str, bool]] = []
+    for path in root.rglob("test_*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"))
-        for node in ast.walk(tree):
-            kinds = (ast.FunctionDef, ast.AsyncFunctionDef)
-            if isinstance(node, kinds) and node.name.startswith("test_"):
-                params = [arg.arg for arg in node.args.args]
-                functions.append((f"{path.name}::{node.name}", "benchmark" in params))
+        visit(tree.body, path.relative_to(root).as_posix(), functions)
     return sorted(functions)
 
 
@@ -341,13 +354,18 @@ def test_every_benchmark_uses_the_fixture():
 
 
 def test_a_benchmark_in_a_class_is_read(tmp_path):
-    """Read a benchmark written as a method, or as a coroutine."""
+    """Read a benchmark as pytest collects it, wherever and however written."""
     (tmp_path / "test_mod.py").write_text(
         "class TestX:\n    def test_y(self):\n        pass\n\n"
         "async def test_z():\n    pass\n"
     )
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "test_sub.py").write_text(
+        "def test_k(*, benchmark):\n    pass\n"
+    )
     assert benchmark_functions(tmp_path) == [
-        ("test_mod.py::test_y", False),
+        ("sub/test_sub.py::test_k", True),
+        ("test_mod.py::TestX::test_y", False),
         ("test_mod.py::test_z", False),
     ]
 
@@ -422,3 +440,315 @@ def test_the_jobs_ask_only_what_they_need():
         "id-token": "write",
     }
     assert jobs["memory"]["permissions"] == {"contents": "read"}
+
+
+#: The names a benchmark would use to draw, which none may (bench spec §2 decision 7).
+RENDERING = frozenset(
+    {
+        "BackgroundPlotter",
+        "GeoBackgroundPlotter",
+        "GeoPlotter",
+        "Plotter",
+        "Renderer",
+        "add_mesh",
+        "plot",
+        "render",
+        "screenshot",
+        "show",
+    }
+)
+
+#: The modules whose random state is global, and so never seeded by a benchmark.
+GLOBAL_RANDOM = frozenset({"random"})
+
+
+def _uses_benchmark(node: ast.AST) -> bool:
+    """Tell whether ``node`` is the ``benchmark`` fixture, or an attribute of it."""
+    if isinstance(node, ast.Attribute):
+        return _uses_benchmark(node.value)
+    return isinstance(node, ast.Name) and node.id == "benchmark"
+
+
+def _imports(tree: ast.Module) -> dict[str, str]:
+    """Map each name a module binds by import to the dotted name it stands for.
+
+    ``import numpy as np`` binds ``np`` to ``numpy``, ``import numpy.random``
+    binds ``numpy``, and ``from numpy.random import default_rng as make`` binds
+    ``make`` to ``numpy.random.default_rng``.
+
+    """
+    imported = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.asname:
+                    imported[alias.asname] = alias.name
+                else:
+                    root = alias.name.split(".")[0]
+                    imported[root] = root
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            for alias in node.names:
+                imported[alias.asname or alias.name] = f"{node.module}.{alias.name}"
+    return imported
+
+
+def _origin(node: ast.AST, imported: dict[str, str]) -> str | None:
+    """Return the dotted name ``node`` stands for, if it is reached by an import."""
+    if isinstance(node, ast.Name):
+        return imported.get(node.id)
+    if isinstance(node, ast.Attribute):
+        owner = _origin(node.value, imported)
+        return f"{owner}.{node.attr}" if owner else None
+    return None
+
+
+def _root(node: ast.AST) -> str | None:
+    """Return the name an attribute chain starts from, as ``bbox`` of ``bbox.a``."""
+    while isinstance(node, ast.Attribute):
+        node = node.value
+    return node.id if isinstance(node, ast.Name) else None
+
+
+def measured_elsewhere(root: Path) -> list[str]:
+    """Return where a benchmark measures code of its own, not the library's.
+
+    A benchmark hands ``benchmark`` a function it imported, or a method of an
+    imported name or of a fixture, and its inputs, which Python makes before the
+    call is measured. Anything else, a lambda, a ``functools.partial``, a
+    function defined in the benchmarks at any level, the decorator form or
+    ``benchmark.pedantic``, measures code of the benchmark's own, which may
+    build its inputs while it is timed.
+
+    """
+    found = []
+    for path in sorted(root.rglob("test_*.py")):
+        where = path.relative_to(root).as_posix()
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported = _imports(tree)
+        for test in ast.walk(tree):
+            if not isinstance(test, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            params = {arg.arg for arg in test.args.args + test.args.kwonlyargs}
+            found.extend(
+                f"{where}:{decorator.lineno}"
+                for decorator in test.decorator_list
+                if _uses_benchmark(decorator)
+            )
+            for node in ast.walk(test):
+                if isinstance(node, ast.Attribute) and _uses_benchmark(node):
+                    found.append(f"{where}:{node.lineno}")
+                if not (
+                    isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Name)
+                    and node.func.id == "benchmark"
+                ):
+                    continue
+                target = node.args[0] if node.args else None
+                if isinstance(target, ast.Name):
+                    named = target.id in imported
+                elif isinstance(target, ast.Attribute):
+                    named = _root(target) in imported.keys() | params
+                else:
+                    named = False
+                if not named:
+                    found.append(f"{where}:{node.lineno}")
+    return sorted(set(found), key=lambda item: int(item.rsplit(":", 1)[1]))
+
+
+def unseeded(root: Path) -> list[str]:
+    """Return where a module under ``root`` draws from an unseeded generator.
+
+    That is a ``numpy.random.default_rng`` given no seed or ``None``, any other
+    function of ``numpy.random``, whose state is global, or the standard
+    library's ``random``, however each was imported.
+
+    """
+    found = []
+    for path in sorted(root.rglob("*.py")):
+        where = path.relative_to(root).as_posix()
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        imported = _imports(tree)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import) and any(
+                alias.name.split(".")[0] in GLOBAL_RANDOM for alias in node.names
+            ):
+                found.append(f"{where}:{node.lineno}")
+                continue
+            if isinstance(node, ast.ImportFrom) and node.module in GLOBAL_RANDOM:
+                found.append(f"{where}:{node.lineno}")
+                continue
+            if not isinstance(node, ast.Call):
+                continue
+            origin = _origin(node.func, imported) or ""
+            if not origin.startswith("numpy.random."):
+                continue
+            if origin != "numpy.random.default_rng":
+                found.append(f"{where}:{node.lineno}")
+                continue
+            seeds = [*node.args, *(keyword.value for keyword in node.keywords)]
+            if not seeds or any(
+                isinstance(seed, ast.Constant) and seed.value is None for seed in seeds
+            ):
+                found.append(f"{where}:{node.lineno}")
+    return found
+
+
+def rendering(root: Path) -> list[str]:
+    """Return where a module under ``root`` names a way to draw."""
+    found = []
+    for path in sorted(root.rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            name = node.attr if isinstance(node, ast.Attribute) else None
+            name = node.id if isinstance(node, ast.Name) else name
+            name = node.name if isinstance(node, ast.alias) else name
+            if name in RENDERING:
+                found.append(f"{path.relative_to(root).as_posix()}:{node.lineno}")
+    return found
+
+
+def test_every_input_is_built_outside_the_measured_call(tmp_path):
+    """Measure one named call, its inputs made before (bench spec §2 decision 7)."""
+    assert measured_elsewhere(BENCHMARKS) == []
+    (tmp_path / "test_x.py").write_text(
+        "import functools\nimport numpy as np\n\n"
+        "def test_lambda(benchmark):\n"
+        "    benchmark(lambda: len(np.arange(10)))\n\n"
+        "def test_local(benchmark):\n"
+        "    def run():\n        return len(np.arange(10))\n"
+        "    benchmark(run)\n\n"
+        "def test_partial(benchmark):\n"
+        "    benchmark(functools.partial(len, [1]))\n\n"
+        "def test_pedantic(benchmark):\n"
+        "    benchmark.pedantic(len, args=([1],))\n\n"
+        "def test_named(benchmark, grid):\n"
+        "    benchmark(np.sum, grid)\n"
+    )
+    assert measured_elsewhere(tmp_path) == [
+        "test_x.py:5",
+        "test_x.py:10",
+        "test_x.py:13",
+        "test_x.py:16",
+    ]
+    (tmp_path / "test_x.py").write_text(
+        "import numpy as np\n\ndef test_decorated(benchmark):\n"
+        "    @benchmark\n    def run():\n        return len(np.arange(10))\n"
+    )
+    assert measured_elsewhere(tmp_path) == ["test_x.py:4"]
+    (tmp_path / "test_x.py").write_text(
+        "import numpy as np\nfrom geovista.core import combine\n\n"
+        "def run():\n    return len(np.arange(10))\n\n"
+        "RUN = lambda: len(np.arange(10))\n\n"
+        "def test_module(benchmark):\n    benchmark(run)\n\n"
+        "def test_assigned(benchmark):\n    benchmark(RUN)\n\n"
+        "def test_imported(benchmark, meshes):\n    benchmark(combine, *meshes)\n"
+    )
+    assert measured_elsewhere(tmp_path) == ["test_x.py:10", "test_x.py:13"]
+
+
+def test_every_generator_is_seeded(tmp_path):
+    """Draw every random input from a seeded generator (bench spec §2 decision 7)."""
+    assert unseeded(BENCHMARKS) == []
+    (tmp_path / "conftest.py").write_text(
+        "import random\nimport numpy as np\n\n"
+        "A = np.random.default_rng()\n"
+        "B = np.random.default_rng(None)\n"
+        "C = np.random.default_rng(seed=None)\n"
+        "D = np.random.uniform(0, 1, 5)\n"
+        "E = np.random.default_rng(0)\n"
+    )
+    assert unseeded(tmp_path) == [
+        "conftest.py:1",
+        "conftest.py:4",
+        "conftest.py:5",
+        "conftest.py:6",
+        "conftest.py:7",
+    ]
+    (tmp_path / "conftest.py").write_text(
+        "import numpy.random as rnd\n"
+        "from numpy import random as nr\n"
+        "from numpy.random import default_rng\n"
+        "from numpy.random import default_rng as make\n"
+        "from numpy.random import uniform\n\n"
+        "A = default_rng()\n"
+        "B = make(None)\n"
+        "C = rnd.default_rng()\n"
+        "D = nr.normal(0, 1, 5)\n"
+        "E = uniform(0, 1, 5)\n"
+        "F = default_rng(0)\n"
+        "G = rnd.default_rng(seed=1)\n"
+    )
+    assert unseeded(tmp_path) == [
+        "conftest.py:7",
+        "conftest.py:8",
+        "conftest.py:9",
+        "conftest.py:10",
+        "conftest.py:11",
+    ]
+
+
+def test_nothing_is_downloaded(tmp_path):
+    """Run the benchmarks offline, from an empty cache (bench spec §2 decision 7).
+
+    geovista fetches into ``GEOVISTA_CACHEDIR``, PROJ is kept off the network,
+    and every other HTTP fetch is sent to a proxy that cannot be reached, so a
+    download of any kind fails the run or leaves the cache behind.
+
+    """
+    cache = tmp_path / "cache"
+    cache.mkdir()
+    unreachable = "http://127.0.0.1:9"
+    env = {
+        **os.environ,
+        "GEOVISTA_CACHEDIR": str(cache),
+        "PROJ_NETWORK": "OFF",
+        "HTTP_PROXY": unreachable,
+        "HTTPS_PROXY": unreachable,
+        "http_proxy": unreachable,
+        "https_proxy": unreachable,
+    }
+    env.pop("NO_PROXY", None)
+    env.pop("no_proxy", None)
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-m", "pytest", "benchmarks", "-p", "no:memray", *PLAIN],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout[-2000:]
+    assert [path.name for path in cache.rglob("*")] == []
+
+
+def test_no_benchmark_renders(tmp_path):
+    """Draw nothing, as a scene measures VTK (bench spec §2 decision 7)."""
+    assert rendering(BENCHMARKS) == []
+    (tmp_path / "test_x.py").write_text(
+        "import pyvista as pv\nfrom geovista import GeoPlotter\n\n"
+        "def test_x(benchmark, mesh):\n"
+        "    renderer = pv.Renderer()\n"
+        "    benchmark(renderer.add_mesh, mesh)\n"
+    )
+    assert rendering(tmp_path) == ["test_x.py:2", "test_x.py:5", "test_x.py:6"]
+
+
+def test_vtk_is_pinned_at_import():
+    """Pin VTK to one thread as the conftest loads (bench spec §2 decision 7).
+
+    VTK's threaded backend caps its thread count at the CPU's, so on a single
+    core ``test_vtk_runs_on_one_thread`` passes whatever the conftest does. This
+    reads the conftest instead, which holds on any host.
+
+    """
+    tree = ast.parse(CONFTEST.read_text(encoding="utf-8"))
+    pinned = [
+        node
+        for node in tree.body
+        if isinstance(node, ast.Expr)
+        and isinstance(node.value, ast.Call)
+        and isinstance(node.value.func, ast.Attribute)
+        and node.value.func.attr == "Initialize"
+        and getattr(node.value.func.value, "id", None) == "vtkSMPTools"
+        and [getattr(arg, "value", None) for arg in node.value.args] == [1]
+    ]
+    assert pinned
