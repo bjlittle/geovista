@@ -325,7 +325,7 @@ Each carries the grammar of items spec §3.2. None is open today.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | 🚧 in progress ({pull}`2925`) |
+| 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | ✅ landed (2026-11-10, {pull}`2925`) |
 | 2 | The `bridge` and `transform` benchmarks (§4.3) | 📋 not started |
 | 3 | The `common`, `core`, `search` and `gridlines` benchmarks (§4.3) | 📋 not started |
 | 4 | Each benchmark's peak memory compared with the base commit's (§4.6) | 💡 candidate |
@@ -361,11 +361,11 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| §2 decision 1 | ⏳ pending | row 1 of §9 |
-| §2 decision 2 | ⏳ pending | row 1 of §9 |
-| §2 decision 3 | ⏳ pending | row 1 of §9 |
+| §2 decision 1 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| §2 decision 2 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| §2 decision 3 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
 | §2 decision 4 | ⏳ pending | row 1 of §9 |
 | §2 decision 5 | ⏳ pending | rows 1 to 3 of §9 |
-| §2 decision 6 | ⏳ pending | row 1 of §9 |
+| §2 decision 6 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
 | §2 decision 7 | ⏳ pending | rows 1 to 3 of §9 |
-| §2 decision 8 | ⏳ pending | row 1 of §9 |
+| §2 decision 8 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
