@@ -1138,7 +1138,9 @@ To run them locally:
 
 Without Valgrind, the :guilabel:`benchmarks` task measures wall time, which is
 enough to compare two branches on one machine. Both tasks run OpenMP on a single
-thread, as the workflow does.
+thread, as the workflow does. The :guilabel:`benchmarks-memory` task also runs
+OpenBLAS's ``Haswell`` kernel, so a ceiling measured on one machine holds on any
+runner: the buffers OpenBLAS sets up depend on the kernel it picks for the CPU.
 
 .. _gv-developer-testing-benchmarks-adding:
 .. _tippy-gv-developer-testing-benchmarks-adding:

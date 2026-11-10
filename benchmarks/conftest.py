@@ -40,6 +40,11 @@ pv.OFF_SCREEN = True
 # its work was split (bench spec §2 decision 7)
 vtkSMPTools.Initialize(1)
 
+# make the process's first matrix product here, so that the buffers OpenBLAS
+# sets up on it, 128 MiB under some of its kernels, are charged to no
+# benchmark's memory ceiling (bench spec §2 decision 5)
+np.eye(3) @ np.eye(3)
+
 #: The marker of pytest-memray carrying a benchmark's memory ceiling.
 CEILING = "limit_memory"
 

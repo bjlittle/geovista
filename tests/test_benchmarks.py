@@ -148,6 +148,30 @@ def test_the_refusal_keeps_to_the_benchmarks(pytester):
     result.assert_outcomes(passed=2)
 
 
+def test_openblas_is_warmed_before_any_benchmark(bench, monkeypatch):
+    """Charge OpenBLAS's one-off buffers to no benchmark (bench spec §2 decision 5).
+
+    The first matrix product in a process makes OpenBLAS set up its buffers,
+    128 MiB of them under the ``Haswell``, ``Zen`` and ``Sandybridge`` kernels,
+    so whichever benchmark makes it would breach its ceiling on some runners.
+
+    """
+    monkeypatch.setenv("OPENBLAS_CORETYPE", "Haswell")
+    monkeypatch.setenv("OMP_NUM_THREADS", "1")
+    bench.makepyfile(
+        test_first="""
+import numpy as np
+import pytest
+
+@pytest.mark.limit_memory("8 MB")
+def test_first(benchmark):
+    benchmark(np.matmul, np.eye(3), np.eye(3))
+"""
+    )
+    result = bench.runpytest_subprocess(*PLAIN, "--memray", "--trace-python-allocators")
+    result.assert_outcomes(passed=1)
+
+
 def test_grid_mesh_owns_its_data(bench):
     """Give each benchmark a mesh whose data it may change without harm."""
     bench.makepyfile(
@@ -246,6 +270,11 @@ def test_the_unit_suite_never_collects_the_benchmarks():
 def test_the_tasks_run_openmp_on_one_thread(name):
     """Run OpenMP on one thread for a steady count (bench spec §2 decision 7)."""
     assert _task(name)["env"]["OMP_NUM_THREADS"] == "1"
+
+
+def test_the_memory_task_pins_the_openblas_kernel():
+    """Measure a ceiling with the one kernel CI checks it with (bench spec §4.5)."""
+    assert _task(MEMORY_TASK)["env"]["OPENBLAS_CORETYPE"] == "Haswell"
 
 
 def test_the_codspeed_task_runs_without_memray():

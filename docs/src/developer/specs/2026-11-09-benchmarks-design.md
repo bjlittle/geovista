@@ -180,7 +180,9 @@ provide the `benchmark` fixture.
 
 The benchmarks are modules named `test_<module>.py` under `benchmarks/`, one for each
 `geovista` module they measure, with a `conftest.py` that builds the inputs and pins VTK to
-one thread (§2 decision 7). Each benchmark is a test that hands the call it measures to the
+one thread (§2 decision 7). It also makes the process's first matrix product, so that the
+buffers OpenBLAS sets up on it, 128 MiB under some of its kernels, are charged to no
+benchmark ({issue}`2933`). Each benchmark is a test that hands the call it measures to the
 fixture, as `benchmark(geodesic.line, *line)`, and carries its ceiling:
 
 ```python
@@ -254,7 +256,9 @@ Two tasks join the `test` feature:
 | `benchmarks-memory` | `pytest benchmarks --memray --trace-python-allocators --most-allocations=0` |
 
 Run locally, without Valgrind, `--codspeed` measures wall time, which is enough to compare
-two branches on one machine. Each task gets its row on the `packaging` and `testing` pages,
+two branches on one machine. Both run OpenMP on one thread, and `benchmarks-memory` runs
+OpenBLAS's `Haswell` kernel, which every GitHub x86 runner supports, so that a ceiling is
+measured and checked on the same kernel ({issue}`2933`). Each task gets its row on the `packaging` and `testing` pages,
 as `tests/test_pixi_tasks.py` requires. A "Benchmarks" section of the developer guide's
 testing page says how to run them, how to add a benchmark, how to read CodSpeed's comment,
 and how to set a ceiling: run `benchmarks-memory`, read the benchmark's peak from memray's
