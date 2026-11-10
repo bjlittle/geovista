@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import ast
 from functools import cache
+import os
 from pathlib import Path
 import shlex
 import subprocess
@@ -439,3 +440,109 @@ def test_the_jobs_ask_only_what_they_need():
         "id-token": "write",
     }
     assert jobs["memory"]["permissions"] == {"contents": "read"}
+
+
+#: The names a benchmark would use to draw, which none may (bench spec §2 decision 7).
+RENDERING = frozenset({"GeoPlotter", "Plotter", "plot", "screenshot", "show"})
+
+
+def benchmark_calls(root: Path) -> list[tuple[str, ast.Call]]:
+    """Return each ``benchmark(...)`` call under ``root``, with its module's path."""
+    return [
+        (path.relative_to(root).as_posix(), node)
+        for path in sorted(root.rglob("test_*.py"))
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "benchmark"
+    ]
+
+
+def built_in_the_call(root: Path) -> list[str]:
+    """Return where a ``benchmark(...)`` call builds an argument inside itself."""
+    found = []
+    for where, call in benchmark_calls(root):
+        args = [
+            arg.value if isinstance(arg, ast.Starred) else arg for arg in call.args[1:]
+        ] + [keyword.value for keyword in call.keywords]
+        if any(isinstance(arg, ast.Call) for arg in args):
+            found.append(f"{where}:{call.lineno}")
+    return found
+
+
+def unseeded(root: Path) -> list[str]:
+    """Return where a ``default_rng`` is made without a seed, under ``root``."""
+    found = []
+    for path in sorted(root.rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            name = (
+                func.attr
+                if isinstance(func, ast.Attribute)
+                else getattr(func, "id", "")
+            )
+            if name == "default_rng" and not (node.args or node.keywords):
+                found.append(f"{path.relative_to(root).as_posix()}:{node.lineno}")
+    return found
+
+
+def rendering(root: Path) -> list[str]:
+    """Return where a module under ``root`` names a way to draw."""
+    found = []
+    for path in sorted(root.rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            name = node.attr if isinstance(node, ast.Attribute) else None
+            name = node.id if isinstance(node, ast.Name) else name
+            name = node.name if isinstance(node, ast.alias) else name
+            if name in RENDERING:
+                found.append(f"{path.relative_to(root).as_posix()}:{node.lineno}")
+    return found
+
+
+def test_every_input_is_built_outside_the_measured_call(tmp_path):
+    """Measure the call alone, its inputs made before (bench spec §2 decision 7)."""
+    assert benchmark_calls(BENCHMARKS)
+    assert built_in_the_call(BENCHMARKS) == []
+    (tmp_path / "test_x.py").write_text(
+        "import numpy as np\n\ndef test_x(benchmark):\n"
+        "    benchmark(len, np.arange(10))\n"
+    )
+    assert built_in_the_call(tmp_path) == ["test_x.py:4"]
+
+
+def test_every_generator_is_seeded(tmp_path):
+    """Draw every random input from a seeded generator (bench spec §2 decision 7)."""
+    assert unseeded(BENCHMARKS) == []
+    (tmp_path / "conftest.py").write_text(
+        "import numpy as np\n\nRNG = np.random.default_rng()\n"
+    )
+    assert unseeded(tmp_path) == ["conftest.py:3"]
+
+
+def test_nothing_is_downloaded(tmp_path):
+    """Run the benchmarks from an empty cache, offline (bench spec §2 decision 7)."""
+    cache = tmp_path / "cache"
+    cache.mkdir()
+    env = {**os.environ, "GEOVISTA_CACHEDIR": str(cache), "PROJ_NETWORK": "OFF"}
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-m", "pytest", "benchmarks", "-p", "no:memray", *PLAIN],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout[-2000:]
+    assert [path.name for path in cache.rglob("*")] == []
+
+
+def test_no_benchmark_renders(tmp_path):
+    """Draw nothing, as a scene measures VTK more than geovista (§2 decision 7)."""
+    assert rendering(BENCHMARKS) == []
+    (tmp_path / "test_x.py").write_text(
+        "from geovista import GeoPlotter\n\ndef test_x(benchmark):\n"
+        "    benchmark(GeoPlotter)\n"
+    )
+    assert rendering(tmp_path) == ["test_x.py:1", "test_x.py:4"]
