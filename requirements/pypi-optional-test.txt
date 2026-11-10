@@ -4,7 +4,7 @@ playwright <1.65
 pytest <9.3
 pytest-codspeed <5.1
 pytest-cov <7.2
-pytest-memray <1.10
+pytest-memray <1.12
 pytest-mock <3.18
 pytest-pretty <1.4
 pytest-pyvista <0.4
