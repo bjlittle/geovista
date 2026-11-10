@@ -465,7 +465,9 @@ def built_in_the_call(root: Path) -> list[str]:
         args = [
             arg.value if isinstance(arg, ast.Starred) else arg for arg in call.args[1:]
         ] + [keyword.value for keyword in call.keywords]
-        if any(isinstance(arg, ast.Call) for arg in args):
+        # a call anywhere in an argument, as in a comprehension, runs when it is
+        # measured
+        if any(isinstance(node, ast.Call) for arg in args for node in ast.walk(arg)):
             found.append(f"{where}:{call.lineno}")
     return found
 
@@ -507,9 +509,11 @@ def test_every_input_is_built_outside_the_measured_call(tmp_path):
     assert built_in_the_call(BENCHMARKS) == []
     (tmp_path / "test_x.py").write_text(
         "import numpy as np\n\ndef test_x(benchmark):\n"
-        "    benchmark(len, np.arange(10))\n"
+        "    benchmark(len, np.arange(10))\n\n"
+        "def test_y(benchmark, xs):\n"
+        "    benchmark(max, *[x.copy() for x in xs])\n"
     )
-    assert built_in_the_call(tmp_path) == ["test_x.py:4"]
+    assert built_in_the_call(tmp_path) == ["test_x.py:4", "test_x.py:7"]
 
 
 def test_every_generator_is_seeded(tmp_path):
