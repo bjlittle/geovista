@@ -696,7 +696,9 @@ codecov = ">=2.1.13,<3"
 # required by "tests/test_readme_examples.py", which reads the readme as commonmark
 markdown-it-py = ">=3.0.0,<5"
 pytest = ">=8.4.0,<10"
+pytest-codspeed = ">=5.0.4,<6"
 pytest-cov = ">=6.1.1,<8"
+pytest-memray = ">=1.9.0,<2"
 pytest-mock = ">=3.14.1,<4"
 pytest-pretty = ">=1.3.0,<2"
 pytest-pyvista = ">=0.3.1,<0.4"
@@ -710,6 +712,16 @@ towncrier = ">=24.8.0,<27"
 # the conda-forge "playwright" is the node package, which provides the cli but
 # no python bindings, so this must come from pypi
 playwright = ">=1.63.0,<2"
+
+[tool.pixi.feature.test.tasks.benchmarks]
+cmd = "pytest benchmarks --codspeed -p no:memray"
+description = "Perform the benchmarks under CodSpeed, measuring wall time when run locally"
+env = { OMP_NUM_THREADS = "1" }
+
+[tool.pixi.feature.test.tasks.benchmarks-memory]
+cmd = "pytest benchmarks --memray --trace-python-allocators"
+description = "Perform the benchmarks under memray, holding each to its memory ceiling"
+env = { OMP_NUM_THREADS = "1" }
 
 [tool.pixi.feature.test.tasks.check-spec-renumbering]
 args = [{ "arg" = "option", "default" = "" }]

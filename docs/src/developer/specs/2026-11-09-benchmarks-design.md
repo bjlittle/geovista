@@ -61,9 +61,10 @@ request, report a regression on the pull request that causes it, and follow the 
    unsuffixed `test` environment.** `pytest-codspeed` and `pytest-memray` join the `test`
    feature, as `pyvista` keeps `pytest-codspeed` in its `test` group. The unsuffixed
    environments follow the newest Python, so the benchmarks move with it and
-   `tests/test_python_support.py` has nothing new to track. Neither plugin acts unless its
-   option, `--codspeed` or `--memray`, is passed. Chosen by {user}`bjlittle` on 2026-11-09,
-   over a `bench` environment of its own.
+   `tests/test_python_support.py` has nothing new to track. `pytest-codspeed` acts only
+   under `--codspeed`, and `pytest-memray` under `--memray` or on a test carrying one of its
+   markers, so the CodSpeed run passes `-p no:memray`. Chosen by {user}`bjlittle` on
+   2026-11-09, over a `bench` environment of its own.
 4. **🤝 Agreed** (2026-11-09, {user}`bjlittle`, {pull}`2923`) — **A regression is reported,
    never required to pass.** CodSpeed's gate, the "CodSpeed Performance Analysis" check,
    and its comment on the pull request show a regression, and the memory job fails on a
@@ -249,8 +250,8 @@ Two tasks join the `test` feature:
 
 | Task | Runs |
 |---|---|
-| `benchmarks` | `pytest benchmarks --codspeed` |
-| `benchmarks-memory` | `pytest benchmarks --memray` |
+| `benchmarks` | `pytest benchmarks --codspeed -p no:memray` |
+| `benchmarks-memory` | `pytest benchmarks --memray --trace-python-allocators` |
 
 Run locally, without Valgrind, `--codspeed` measures wall time, which is enough to compare
 two branches on one machine. Each task gets its row on the `packaging` and `testing` pages,
@@ -317,14 +318,23 @@ check required (§4.6, §2 decision 4). So is fixing a regression the benchmarks
 (bench-spec-8)=
 ## 8. Open Items
 
-Each carries the grammar of items spec §3.2. None is open today.
+Each carries the grammar of items spec §3.2.
+
+1. **❓ Open** (🔎 2026-11-10, {pull}`2925` · 🎯 row 2 of §9 · 🎫 {issue}`2926`) —
+   **The conftest and its tests have small gaps.** The final review of row 1 found
+   five: the refusal of §4.2 names a benchmark by its name, not its node id, sees
+   tests outside `benchmarks/` and ignores memray's ini setting; the test of
+   §2 decision 6 misses a benchmark in a class or an `async def`; the test of
+   §2 decision 2 accepts a `types:` filter on `pull_request`; VTK's single thread
+   has no test; and the example of §4.2 is out of date. None changes what row 1
+   measures, and row 2 touches the same code.
 
 (bench-spec-9)=
 ## 9. Roadmap
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | 📋 not started |
+| 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | ✅ landed (2026-11-10, {pull}`2925`) |
 | 2 | The `bridge` and `transform` benchmarks (§4.3) | 📋 not started |
 | 3 | The `common`, `core`, `search` and `gridlines` benchmarks (§4.3) | 📋 not started |
 | 4 | Each benchmark's peak memory compared with the base commit's (§4.6) | 💡 candidate |
@@ -360,11 +370,11 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| §2 decision 1 | ⏳ pending | row 1 of §9 |
-| §2 decision 2 | ⏳ pending | row 1 of §9 |
-| §2 decision 3 | ⏳ pending | row 1 of §9 |
-| §2 decision 4 | ⏳ pending | row 1 of §9 |
+| §2 decision 1 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| §2 decision 2 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| §2 decision 3 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
+| §2 decision 4 | ✍️ signed off (2026-11-10, {user}`bjlittle`, {pull}`2925`) | Checked in review that neither `codspeed benchmarks` nor `memory ceilings`, nor CodSpeed's `CodSpeed Performance Analysis`, is among the required checks of `main`. |
 | §2 decision 5 | ⏳ pending | rows 1 to 3 of §9 |
-| §2 decision 6 | ⏳ pending | row 1 of §9 |
+| §2 decision 6 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |
 | §2 decision 7 | ⏳ pending | rows 1 to 3 of §9 |
-| §2 decision 8 | ⏳ pending | row 1 of §9 |
+| §2 decision 8 | ✅ verified (2026-11-10, {pull}`2925`) | `tests/test_benchmarks.py` |

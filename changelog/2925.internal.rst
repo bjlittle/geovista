@@ -1,0 +1,4 @@
+``geovista`` now benchmarks its ``geodesic`` module on every pull request and
+every push to ``main``. CodSpeed counts the instructions each benchmark runs, and
+``pytest-memray`` holds each one to a memory ceiling, as row 1 of bench spec §9
+sets out. See :ref:`tippy-gv-developer-testing-benchmarks`. (:user:`claude`)

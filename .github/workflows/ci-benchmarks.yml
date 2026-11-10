@@ -1,0 +1,100 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/CodSpeedHQ/action (v5.6.3)
+#   - https://github.com/prefix-dev/setup-pixi
+
+# bench spec §4.4 -- the benchmarks run under CodSpeed, counting instructions
+# in simulation, and under memray, holding each to its memory ceiling. neither
+# job is a required check of "main" (bench spec §2 decision 4).
+
+name: ci-benchmarks
+
+on:
+  pull_request:
+
+  push:
+    branches:
+      - "main"
+      - "v*x"
+      - "!pixi-auto-update"
+      - "!pre-commit-ci-update-config"
+      - "!dependabot/*"
+
+  # required by codspeed to backtest performance on demand
+  workflow_dispatch:
+
+concurrency:
+  # a run of "main" stores the result each later pull request is compared with,
+  # so only a run of a pull request is ever cancelled. a newer run cancels a
+  # pending one of its group whatever "cancel-in-progress" says, so each commit
+  # of "main" is a group of its own
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+env:
+  # "pykdtree" queries on openmp threads, whose synchronisation the simulation
+  # cannot measure consistently (bench spec §2 decision 7)
+  OMP_NUM_THREADS: 1
+  PY_COLORS: "1"
+  SHELLOPTS: "errexit:pipefail"
+
+permissions: {}
+
+jobs:
+  codspeed:
+    name: "codspeed benchmarks"
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: read
+      # required by the codspeed oidc authentication
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          # "setuptools-scm" derives the version from the history, which the
+          # editable install of "geovista" needs.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e
+        with:
+          environments: "test"
+          frozen: true
+
+      - name: "benchmarks"
+        uses: CodSpeedHQ/action@af75f77f17a054769abefaa42fe8dc2975469b5f
+        with:
+          mode: simulation
+          run: pixi run --frozen -e test benchmarks
+
+  memory:
+    name: "memory ceilings"
+    runs-on: "ubuntu-latest"
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          # "setuptools-scm" derives the version from the history, which the
+          # editable install of "geovista" needs.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e
+        with:
+          environments: "test"
+          frozen: true
+
+      - name: "memory ceilings"
+        run: |
+          pixi run --frozen -e test benchmarks-memory

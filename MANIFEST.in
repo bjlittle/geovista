@@ -1,4 +1,5 @@
 prune .github
+prune benchmarks
 prune changelog
 prune docs
 prune joss
