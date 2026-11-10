@@ -166,14 +166,20 @@ class MeridianSlice:  # numpydoc ignore=PR01
             raise ValueError(emsg)
 
         self._info = mesh.active_scalars_info
-        mesh[GV_CELL_IDS] = np.arange(mesh.n_cells)
-        mesh[GV_POINT_IDS] = np.arange(mesh.n_points)
+        # trace each cell and point to the mesh given on a shallow copy, which
+        # shares its arrays but not their registry, so the mesh given is never
+        # changed (#2937); each id is attached by its association, as one that
+        # fits both would otherwise land on the points
+        mesh = mesh.copy(deep=False)
+        mesh.cell_data[GV_CELL_IDS] = np.arange(mesh.n_cells)
+        mesh.point_data[GV_POINT_IDS] = np.arange(mesh.n_points)
         mesh.set_active_scalars(name=None)
         mesh.set_active_scalars(
             self._info.name, preference=_preference(self._info.association)
         )
         self.mesh = mesh
-        """The mesh to be sliced along the meridian."""
+        """The mesh to be sliced along the meridian, a shallow copy of the one given,
+        carrying the id of each cell and point."""
         self.radius = float(distance(mesh))
         """The radius of the mesh."""
         self.meridian = wrap(meridian)[0]
@@ -821,7 +827,8 @@ def slice_cells(
     slicer = MeridianSlice(mesh, meridian=meridian)
     mesh_whole = slicer.extract(split_cells=False)
     mesh_split = slicer.extract(split_cells=True)
-    result: pv.PolyData = mesh.copy(deep=True)
+    # the slicer's own mesh, which carries the ids that trace the slice
+    result: pv.PolyData = slicer.mesh.copy(deep=True)
 
     meshes = []
     remeshed_ids = np.array([], dtype=int)

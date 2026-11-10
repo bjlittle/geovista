@@ -957,3 +957,12 @@ def test_radius_is_gone():
     """The radius keyword is refused."""
     with pytest.raises(TypeError, match="radius"):
         transform_mesh(_surface(), PLANAR, radius=2.0)
+
+
+def test_the_given_mesh_is_unchanged():
+    """Test projecting a mesh adds no arrays to the mesh given (#2937)."""
+    mesh = gv.Transform.from_1d(np.arange(-180, 181, 10.0), np.arange(-90, 91, 10.0))
+    mesh.cell_data["data"] = np.arange(mesh.n_cells)
+    expected = (sorted(mesh.cell_data), sorted(mesh.point_data))
+    _ = transform_mesh(mesh, "+proj=robin")
+    assert (sorted(mesh.cell_data), sorted(mesh.point_data)) == expected

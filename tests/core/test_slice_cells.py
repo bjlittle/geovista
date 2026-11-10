@@ -119,3 +119,13 @@ def test_the_cut_leaves_no_array_of_its_own():
     mesh = Transform.from_1d([140, 160, 200, 220], [-20, 0, 20])
     result = slice_cells(mesh, antimeridian=True)
     assert not [name for name in result.point_data if "Radius" in name]
+
+
+def test_the_given_mesh_is_unchanged():
+    """Test slicing cells adds no arrays to the mesh given (#2937)."""
+    mesh = Transform.from_1d(np.arange(-180, 181, 10.0), np.arange(-90, 91, 10.0))
+    mesh.cell_data["data"] = np.arange(mesh.n_cells)
+    expected = (sorted(mesh.cell_data), sorted(mesh.point_data))
+    result = slice_cells(mesh, meridian=45.5)
+    assert (sorted(mesh.cell_data), sorted(mesh.point_data)) == expected
+    assert result.n_cells > mesh.n_cells
