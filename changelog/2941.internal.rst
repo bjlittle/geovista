@@ -1,0 +1,5 @@
+Recorded in ``docs/AGENTS.md`` that ``conf.py`` changes a configuration value in
+``config-inited``, never ``builder-inited``. Sphinx compares the configuration
+with the last build's between the two events, so a value changed later reads as
+changed on every run and every page is read again, as :issue:`2904` found.
+(:user:`claude`)
