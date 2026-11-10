@@ -288,6 +288,16 @@ When a review keeps finding edge cases in the same logic, fix a real regression
 or a more principled rule, then name the line past which cases are accepted, and
 raise further variations for discussion.
 
+### 5.4 👥 Report a Finding in Its Thread, and Leave the Issue to the Author
+
+🤝 Agreed (2026-11-10, {user}`bjlittle`, {pull}`2939`)
+
+A reviewer, a person or an agent, reports each finding inline on the pull request
+it was found in, and raises no issue for it. The pull request's author decides
+whether the finding is fixed there or deferred, and raises the issue for deferred
+work under rule 4.5. An issue raised during a review splits a finding from its
+thread, as {issue}`2935` and {issue}`2938` did.
+
 ## 6. Other Projects
 
 ### 6.1 🤖 Disclose an Agent's Hand in Another Project's Issue

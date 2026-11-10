@@ -1,0 +1,3 @@
+The :ref:`How We Work <gv-developer-workflow>` page gains a rule that a
+reviewer reports each finding inline on the pull request, and leaves it to the
+pull request's author to decide whether it becomes an issue. (:user:`claude`)
