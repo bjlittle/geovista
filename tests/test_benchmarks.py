@@ -202,11 +202,14 @@ def test_vtk_runs_on_one_thread(bench, monkeypatch):
     """Run VTK on one thread, for a steady count (bench spec §2 decision 7).
 
     conda-forge's VTK defaults to its sequential backend, which runs on one
-    thread whatever the conftest asks, so the benchmarks run on the threaded
-    backend that pip's VTK defaults to, where only the conftest keeps it to one.
+    thread whatever the conftest asks, so this test runs on the threaded backend
+    that pip's VTK defaults to, where only the conftest keeps it to one. It
+    allows that backend four threads, so that a single-core host, where it would
+    estimate one anyway, fails without the conftest too.
 
     """
     monkeypatch.setenv("VTK_SMP_BACKEND_IN_USE", "STDThread")
+    monkeypatch.setenv("VTK_SMP_MAX_THREADS", "4")
     bench.makepyfile(
         test_threads="""
 from vtkmodules.vtkCommonCore import vtkSMPTools
@@ -318,18 +321,27 @@ def test_a_benchmark_alone_keeps_within_its_ceiling():
 def benchmark_functions(root: Path) -> list[tuple[str, bool]]:
     """Return each test function under ``root``, with whether it takes the fixture.
 
-    Every function named ``test_*`` is read, at any depth of its module, so a
-    method of a ``Test`` class and an ``async def`` count too.
+    Every module named ``test_*.py`` at any depth is read, and every function
+    named ``test_*`` in it, a method of a ``Test`` class and an ``async def``
+    included. Each is named as pytest names it, by its module's path and its
+    classes, and the fixture counts whether passed by position or by keyword.
 
     """
-    functions = []
-    for path in sorted(root.glob("test_*.py")):
+
+    def visit(nodes: list[ast.stmt], where: str, found: list[tuple[str, bool]]) -> None:
+        for node in nodes:
+            if isinstance(node, ast.ClassDef):
+                visit(node.body, f"{where}::{node.name}", found)
+            elif isinstance(
+                node, (ast.FunctionDef, ast.AsyncFunctionDef)
+            ) and node.name.startswith("test_"):
+                params = [arg.arg for arg in node.args.args + node.args.kwonlyargs]
+                found.append((f"{where}::{node.name}", "benchmark" in params))
+
+    functions: list[tuple[str, bool]] = []
+    for path in root.rglob("test_*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"))
-        for node in ast.walk(tree):
-            kinds = (ast.FunctionDef, ast.AsyncFunctionDef)
-            if isinstance(node, kinds) and node.name.startswith("test_"):
-                params = [arg.arg for arg in node.args.args]
-                functions.append((f"{path.name}::{node.name}", "benchmark" in params))
+        visit(tree.body, path.relative_to(root).as_posix(), functions)
     return sorted(functions)
 
 
@@ -341,13 +353,18 @@ def test_every_benchmark_uses_the_fixture():
 
 
 def test_a_benchmark_in_a_class_is_read(tmp_path):
-    """Read a benchmark written as a method, or as a coroutine."""
+    """Read a benchmark as pytest collects it, wherever and however written."""
     (tmp_path / "test_mod.py").write_text(
         "class TestX:\n    def test_y(self):\n        pass\n\n"
         "async def test_z():\n    pass\n"
     )
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "test_sub.py").write_text(
+        "def test_k(*, benchmark):\n    pass\n"
+    )
     assert benchmark_functions(tmp_path) == [
-        ("test_mod.py::test_y", False),
+        ("sub/test_sub.py::test_k", True),
+        ("test_mod.py::TestX::test_y", False),
         ("test_mod.py::test_z", False),
     ]
 
