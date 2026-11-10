@@ -20,10 +20,12 @@ the CodSpeed run, which disables memray, still accepts it under
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from pytest_memray.utils import value_or_ini
 import pyvista as pv
 from vtkmodules.vtkCommonCore import vtkSMPTools
 
@@ -40,6 +42,9 @@ vtkSMPTools.Initialize(1)
 
 #: The marker of pytest-memray carrying a benchmark's memory ceiling.
 CEILING = "limit_memory"
+
+#: The directory of the benchmarks, whose items alone are held to a ceiling.
+ROOT = Path(__file__).parent
 
 #: The cell size of the global grid, in degrees.
 GRID_STEP = 1.0
@@ -81,16 +86,42 @@ def pytest_collection_modifyitems(
         Naming each benchmark that carries no ceiling (bench spec §2 decision 5).
 
     """
-    if not config.getoption("memray", default=False):
+    # memray may be disabled, as the CodSpeed run has it; otherwise its switch is
+    # read as pytest-memray reads it, so the two can never disagree
+    if not config.pluginmanager.hasplugin("memray"):
         return
-    bare = [item.name for item in items if item.get_closest_marker(CEILING) is None]
-    if bare:
+    if not value_or_ini(config, "memray"):
+        return
+    if names := bare(items, ROOT):
         emsg = (
             "bench spec §2 decision 5: every benchmark carries a memory ceiling, "
             "its measured peak plus 20%, rounded up to a whole MiB, as "
-            '@pytest.mark.limit_memory("N MB"). None on: ' + ", ".join(bare)
+            '@pytest.mark.limit_memory("N MB"). None on: ' + ", ".join(names)
         )
         raise pytest.UsageError(emsg)
+
+
+def bare(items: Iterable[pytest.Item], root: Path) -> list[str]:
+    """Return the node id of each benchmark under ``root`` carrying no ceiling.
+
+    Parameters
+    ----------
+    items : iterable of pytest.Item
+        The collected items, which may include tests outside ``root``.
+    root : Path
+        The directory of the benchmarks.
+
+    Returns
+    -------
+    list of str
+        The node ids, in the order collected.
+
+    """
+    return [
+        item.nodeid
+        for item in items
+        if item.path.is_relative_to(root) and item.get_closest_marker(CEILING) is None
+    ]
 
 
 @pytest.fixture

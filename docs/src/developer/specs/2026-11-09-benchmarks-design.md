@@ -181,13 +181,13 @@ provide the `benchmark` fixture.
 The benchmarks are modules named `test_<module>.py` under `benchmarks/`, one for each
 `geovista` module they measure, with a `conftest.py` that builds the inputs and pins VTK to
 one thread (§2 decision 7). Each benchmark is a test that hands the call it measures to the
-fixture, as `benchmark(line, lons, lats)`, and carries its ceiling:
+fixture, as `benchmark(geodesic.line, *line)`, and carries its ceiling:
 
 ```python
-@pytest.mark.limit_memory("12 MB")
-def test_line(benchmark, meridian):
+@pytest.mark.limit_memory("22 MB")
+def test_line(benchmark, line):
     """Build a geodesic line through 2,000 vertices (bench spec §2 decision 7)."""
-    benchmark(line, *meridian)
+    benchmark(geodesic.line, *line)
 ```
 
 The conftest refuses, under `--memray`, a

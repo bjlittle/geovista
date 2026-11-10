@@ -127,13 +127,39 @@ def bench(pytester: pytest.Pytester) -> pytest.Pytester:
 
 def test_memray_refuses_a_benchmark_without_a_ceiling(bench):
     """Refuse, naming each, a benchmark with no ceiling (bench spec §2 decision 5)."""
-    bench.makepyfile(test_bare=BARE)
+    bench.makepyfile(test_bare=BARE, test_more=BARE)
     result = bench.runpytest_subprocess(*PLAIN, "--memray")
     assert result.ret == pytest.ExitCode.USAGE_ERROR
     text = result.stderr.str()
     assert "bench spec §2 decision 5" in text
-    for name in ("test_bare", "test_x[a]", "test_x[b]"):
-        assert name in text
+    for module in ("test_bare.py", "test_more.py"):
+        for name in ("test_bare", "test_x[a]", "test_x[b]"):
+            assert f"{module}::{name}" in text
+
+
+def test_the_refusal_keeps_to_the_benchmarks(pytester):
+    """Refuse no unit test run beside the benchmarks."""
+    bench = pytester.mkdir("bench")
+    (bench / "conftest.py").write_text(CONFTEST.read_text(encoding="utf-8"))
+    (bench / "test_ceiled.py").write_text(CEILED)
+    unit = pytester.mkdir("unit")
+    (unit / "test_unit.py").write_text("def test_unit():\n    assert True\n")
+    result = pytester.runpytest_subprocess(*PLAIN, "--memray", "bench", "unit")
+    result.assert_outcomes(passed=2)
+
+
+def test_vtk_runs_on_one_thread(bench):
+    """Run VTK on one thread, for a steady count (bench spec §2 decision 7)."""
+    bench.makepyfile(
+        test_threads="""
+from vtkmodules.vtkCommonCore import vtkSMPTools
+
+def test_threads():
+    assert vtkSMPTools.GetEstimatedNumberOfThreads() == 1
+"""
+    )
+    result = bench.runpytest_subprocess(*PLAIN)
+    result.assert_outcomes(passed=1)
 
 
 def test_memray_accepts_a_benchmark_with_a_ceiling(bench):
@@ -217,17 +243,46 @@ def test_a_benchmark_alone_keeps_within_its_ceiling():
     assert result.returncode == 0, result.stdout[-2000:]
 
 
+def benchmark_functions(root: Path) -> list[tuple[str, bool]]:
+    """Return each test function under ``root``, with whether it takes the fixture.
+
+    Every function named ``test_*`` is read, at any depth of its module, so a
+    method of a ``Test`` class and an ``async def`` count too.
+
+    """
+    functions = []
+    for path in sorted(root.glob("test_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            kinds = (ast.FunctionDef, ast.AsyncFunctionDef)
+            if isinstance(node, kinds) and node.name.startswith("test_"):
+                params = [arg.arg for arg in node.args.args]
+                functions.append((f"{path.name}::{node.name}", "benchmark" in params))
+    return sorted(functions)
+
+
 def test_every_benchmark_uses_the_fixture():
     """Write every benchmark with the fixture (bench spec §2 decision 6)."""
-    names = []
-    for path in sorted(BENCHMARKS.glob("test_*.py")):
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        for node in tree.body:
-            if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
-                params = [arg.arg for arg in node.args.args]
-                assert "benchmark" in params, f"{path.name}::{node.name}"
-                names.append(node.name)
-    assert names
+    functions = benchmark_functions(BENCHMARKS)
+    assert functions
+    assert [name for name, uses in functions if not uses] == []
+
+
+def test_a_benchmark_in_a_class_is_read(tmp_path):
+    """Read a benchmark written as a method, or as a coroutine."""
+    (tmp_path / "test_mod.py").write_text(
+        "class TestX:\n    def test_y(self):\n        pass\n\n"
+        "async def test_z():\n    pass\n"
+    )
+    assert benchmark_functions(tmp_path) == [
+        ("test_mod.py::test_y", False),
+        ("test_mod.py::test_z", False),
+    ]
+
+
+def test_pull_requests_are_measured_of_every_type():
+    """Measure a pull request whatever its activity (bench spec §2 decision 2)."""
+    assert "types" not in (_workflow()[True]["pull_request"] or {})
 
 
 def test_codspeed_runs_in_simulation():
