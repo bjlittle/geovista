@@ -34,6 +34,10 @@ Each has a pixi task of the same name, run from the repo root as
 `PYVISTA_OFF_SCREEN`/`PYDEVD_DISABLE_FILE_VALIDATION`, passing
 `--fail-on-warning --keep-going --show-traceback`; ⚠️ RTD bypasses it, and parallel
 gallery workers see only the env, so `conf.py` must export what they need (#2585).
+⚠️ **Change a config value in `config-inited`, never `builder-inited`:** Sphinx compares the
+config with the last build's between the two, so a later change is stored, read back as changed,
+and re-reads every page on every run (#2904). `version` names the commit, so the first build after
+a commit always re-reads everything.
 
 ## Sphinx Extensions
 
@@ -163,29 +167,25 @@ missing extension drop every tooltip while the build still exited 0. Check
 conda-forge before adding one, and again before keeping one.
 
 ⚠️ **`src/_static/sidebar_toggle.js` is a workaround, not a feature.** `sphinx-book-theme`
-renders a second `.primary-toggle`/`.secondary-toggle` pair and hides
-`pydata-sphinx-theme`'s, but both themes bind with `document.querySelector(...)` — the
-*first* match, i.e. the hidden one — so the visible buttons are inert and both sidebars
-are unreachable on a phone. The shim forwards clicks to the bound button of each pair,
-self-retires when only one remains, and closes the primary dialog at
-`(min-width: 992px)`, where it inherits the sidebar's collapsed state and sits open but
-invisible over a page it blocks.
+renders a second `.primary-toggle`/`.secondary-toggle` pair and hides `pydata-sphinx-theme`'s,
+but both bind the *first* `document.querySelector(...)` match, the hidden one, so both sidebars
+are unreachable on a phone. The shim forwards clicks to each pair's bound button, self-retires
+when only one remains, and closes the primary dialog at `(min-width: 992px)`, where it inherits
+the sidebar's collapsed state and sits open but invisible over a page it blocks.
 
 The two halves retire separately. The duplicate buttons are sphinx-book-theme
-[#988](https://github.com/executablebooks/sphinx-book-theme/issues/988), fixed on `main`
-by [#987](https://github.com/executablebooks/sphinx-book-theme/pull/987) but unreleased as
-of `1.4.0`; the breakpoint stranding is *not* fixed by it (verified against a DOM without
-the redundant navbar), is [#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012),
-and so outlives it. Re-check both on every theme bump.
+[#988](https://github.com/executablebooks/sphinx-book-theme/issues/988), fixed on `main` by
+[#987](https://github.com/executablebooks/sphinx-book-theme/pull/987) but unreleased as of `1.4.0`;
+the breakpoint stranding is *not* fixed by it (verified against a DOM without the redundant
+navbar), is [#1012](https://github.com/executablebooks/sphinx-book-theme/issues/1012), and so
+outlives it. Re-check both on every theme bump.
 
 Theme chrome is covered by `tests/docs` (playwright) via the `browser` job in
 `ci-tests-docs.yml` — the image tests compare pyvista scenes, not page furniture. Run
-`pixi run -e geovista tests-docs-browser`; `tests/AGENTS.md` has the gotchas, including
-why CI must pass `--browser-strict`. The suite needs a *local* build, never a Read the
-Docs URL — RTD's addons re-inject the page after `load`.
-Developer-facing docs live in `docs/src/developer/`: the theme shim and tooltips
-in `documentation.rst` (:fa:`palette` Theme, :fa:`comments` Tooltips), the suite
-in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
+`pixi run -e geovista tests-docs-browser`; `tests/AGENTS.md` has the gotchas, including why CI
+must pass `--browser-strict`. It needs a *local* build: RTD's addons re-inject a page after `load`.
+Keep in step `docs/src/developer/documentation.rst` (:fa:`palette` Theme, :fa:`comments`
+Tooltips) and `testing.rst` (:fa:`window-maximize` Browser Tests), which document them.
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 
@@ -196,4 +196,4 @@ in `testing.rst` (:fa:`window-maximize` Browser Tests). Keep them in step.
 
 ---
 
-**Last Updated**: 8 November 2026
+**Last Updated**: 10 November 2026
