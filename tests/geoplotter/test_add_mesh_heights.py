@@ -1,0 +1,260 @@
+# Copyright (c) 2021, GeoVista Contributors.
+#
+# This file is part of GeoVista and is distributed under the 3-Clause BSD license.
+# See the LICENSE file in the package root directory for licensing details.
+
+"""Unit-tests for heights in the scene, through :meth:`GeoPlotter.add_mesh`."""
+
+from __future__ import annotations
+
+import numpy as np
+import pint
+from pyproj import CRS
+import pytest
+import pyvista as pv
+
+from geovista.bridge import Transform
+from geovista.common import GV_POINT_HEIGHT
+from geovista.crs import WGS84, to_wkt
+from geovista.geoplotter import GeoPlotter
+from geovista.globe import Globe
+
+#: A render radius of 1, and the Earth's radius.
+RADII = [1.0, 6378137.0]
+
+#: The Earth's radius of the default globe, in metres.
+R = 6378137.0
+
+#: The cell bounds of a small grid, and its points in the order the bridge builds.
+XS, YS = [0.0, 10.0, 20.0], [0.0, 10.0]
+
+#: A height for each point, above and below sea level, at it, and one missing.
+HEIGHTS = np.array([1000.0, -4000.0, np.nan, 250.0, 0.0, -10.0])
+
+#: A globe that exaggerates heights above and below sea level by their own factors.
+EXAGGERATED = {"exaggeration": 20, "exaggeration_below": 100}
+
+
+def _mapped(heights: np.ndarray, globe: Globe) -> np.ndarray:
+    """Return V(h), worked out with numpy alone, with a missing height as 0."""
+    heights = np.asarray(heights, dtype=np.float64)
+    mapped = np.where(
+        heights >= 0,
+        globe.exaggeration * heights,
+        globe.exaggeration_below * heights,
+    )
+    return np.where(np.isnan(heights), 0.0, mapped)
+
+
+def _radii(heights: np.ndarray, globe: Globe) -> np.ndarray:
+    """Return s (R + V(h)), worked out with numpy alone."""
+    radius = globe.radius.m_as("m")
+    return globe.render_radius * (1.0 + _mapped(heights, globe) / radius)
+
+
+def _norms(mesh: pv.DataSet) -> np.ndarray:
+    """Return the distance of each point of a mesh from the centre."""
+    return np.linalg.norm(np.asarray(mesh.points, dtype=np.float64), axis=1)
+
+
+def _drawn(plotter: GeoPlotter, mesh: pv.DataSet, **kwargs: object) -> pv.DataSet:
+    """Return the mesh the scene draws."""
+    return plotter.add_mesh(mesh, **kwargs).mapper.dataset
+
+
+def _grid(**kwargs: object) -> pv.PolyData:
+    """Return the small grid, built at the default globe."""
+    return Transform.from_1d(XS, YS, **kwargs)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_drawn_at_the_scenes_globe_by_the_formula(radius):
+    """Heights given to add_mesh place each point at the scene's globe.
+
+    Holds heights spec §2 decision 4.
+    """
+    p = GeoPlotter(globe=Globe(render_radius=radius, **EXAGGERATED))
+    drawn = _drawn(p, _grid(), height=HEIGHTS)
+    np.testing.assert_array_equal(drawn.gv.height.m_as("m"), HEIGHTS)
+    np.testing.assert_allclose(_norms(drawn), _radii(HEIGHTS, p.globe), rtol=1e-12)
+    assert Globe.from_mesh(drawn) == p.globe
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_depth_is_a_negative_height(radius):
+    """A depth draws the points its negation as a height draws."""
+    p = GeoPlotter(globe=Globe(render_radius=radius, **EXAGGERATED))
+    by_depth = _drawn(p, _grid(), depth=-HEIGHTS)
+    by_height = _drawn(p, _grid(), height=HEIGHTS)
+    np.testing.assert_array_equal(by_depth.points, by_height.points)
+    np.testing.assert_array_equal(by_depth.gv.depth.m_as("m"), -HEIGHTS)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_vertical_units(radius):
+    """Plain heights in the unit named, or a quantity, read back in metres."""
+    p = GeoPlotter(globe=Globe(render_radius=radius))
+    km = _drawn(p, _grid(), height=HEIGHTS / 1000.0, vertical_units="km")
+    np.testing.assert_allclose(km.gv.height.m_as("m"), HEIGHTS, rtol=1e-12)
+    ureg = pint.UnitRegistry()
+    feet = _drawn(p, _grid(), height=ureg.Quantity(HEIGHTS / 0.3048, "ft"))
+    np.testing.assert_allclose(feet.gv.height.m_as("m"), HEIGHTS, rtol=1e-12)
+    np.testing.assert_allclose(_norms(feet), _radii(HEIGHTS, p.globe), rtol=1e-12)
+
+
+@pytest.mark.parametrize("radius", RADII)
+@pytest.mark.parametrize(
+    ("crs", "unit"),
+    [("+proj=eqc", 1.0), ("+proj=eqc +units=km", 1000.0)],
+    ids=["metres", "kilometres"],
+)
+def test_on_a_map_by_the_formula(crs, unit, radius):
+    """On a map a point given a height lies at V(h), in the unit of the map."""
+    p = GeoPlotter(crs=crs, globe=Globe(render_radius=radius, **EXAGGERATED))
+    drawn = _drawn(p, _grid(), height=HEIGHTS)
+    heights = drawn.gv.height.m_as("m")
+    np.testing.assert_array_equal(np.sort(heights), np.sort(HEIGHTS))
+    np.testing.assert_allclose(
+        drawn.points[:, 2], _mapped(heights, p.globe) / unit, rtol=1e-6, atol=1e-6
+    )
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_a_mesh_without_a_globe_or_crs(radius):
+    """A mesh that records nothing is placed at the scene's globe by its heights."""
+    p = GeoPlotter(globe=Globe(render_radius=radius))
+    with pytest.warns(UserWarning, match="no coordinate reference system"):
+        drawn = _drawn(p, pv.Sphere(radius=0.5), height=1000.0)
+    np.testing.assert_allclose(
+        _norms(drawn), float(_radii(np.array([1000.0]), p.globe)[0]), rtol=1e-6
+    )
+
+
+def test_the_mesh_given_is_unchanged():
+    """Heights are written to the mesh drawn, never to the mesh given."""
+    mesh = _grid(data=np.arange(2.0))
+    points = mesh.points.copy()
+    point_keys, field_keys = list(mesh.point_data), list(mesh.field_data)
+    p = GeoPlotter(globe=Globe(render_radius=2.0, exaggeration=20))
+    _drawn(p, mesh, height=HEIGHTS)
+    np.testing.assert_array_equal(mesh.points, points)
+    assert list(mesh.point_data) == point_keys
+    assert list(mesh.field_data) == field_keys
+    assert GV_POINT_HEIGHT not in mesh.point_data
+
+
+@pytest.mark.parametrize("data", [None, np.arange(2.0)], ids=["no data", "cells"])
+def test_heights_are_never_the_active_scalars(data):
+    """The heights drawn never become the active scalars of the mesh drawn."""
+    mesh = _grid(data=data)
+    expected = mesh.active_scalars_name
+    drawn = _drawn(GeoPlotter(), mesh, height=HEIGHTS)
+    assert drawn.active_scalars_name == expected
+    assert drawn.active_scalars_name != GV_POINT_HEIGHT
+
+
+def test_a_masked_height_is_drawn_at_sea_level():
+    """A masked height reads back as NaN, and its point is drawn at sea level."""
+    heights = np.ma.masked_array(np.nan_to_num(HEIGHTS), mask=[1, 0, 0, 0, 1, 0])
+    p = GeoPlotter(globe=Globe(**EXAGGERATED))
+    drawn = _drawn(p, _grid(), height=heights)
+    expected = np.where(np.ma.getmaskarray(heights), np.nan, heights.data)
+    np.testing.assert_array_equal(drawn.gv.height.m_as("m"), expected)
+    np.testing.assert_allclose(_norms(drawn), _radii(expected, p.globe), rtol=1e-12)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_texture_cut_points_lie_at_their_heights(radius):
+    """The points the texture's seam cut adds lie at their heights too."""
+    xs, ys = np.arange(-165.0, 196.0, 30.0), np.arange(-90.0, 91.0, 30.0)
+    mesh = Transform.from_1d(xs, ys)
+    texture = pv.Texture(np.zeros((4, 8, 3), dtype=np.uint8))
+    p = GeoPlotter(globe=Globe(render_radius=radius, exaggeration=100))
+    drawn = _drawn(p, mesh, height=1000.0, texture=texture)
+    assert drawn.n_points > mesh.n_points
+    np.testing.assert_allclose(
+        _norms(drawn), float(_radii(np.array([1000.0]), p.globe)[0]), rtol=1e-6
+    )
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_a_structured_grid_takes_heights(radius):
+    """A dataset that is not cast takes heights, and is placed by them."""
+    lons, lats = np.meshgrid(np.radians([0.0, 10.0, 20.0]), np.radians([0.0, 10.0]))
+    x, y, z = np.cos(lats) * np.cos(lons), np.cos(lats) * np.sin(lons), np.sin(lats)
+    grid = pv.StructuredGrid(x[..., None], y[..., None], z[..., None])
+    to_wkt(grid, WGS84)
+    p = GeoPlotter(globe=Globe(render_radius=radius, **EXAGGERATED))
+    drawn = _drawn(p, grid, height=HEIGHTS)
+    np.testing.assert_allclose(
+        _norms(drawn), _radii(drawn.gv.height.m_as("m"), p.globe), rtol=1e-6
+    )
+
+
+def _ellipsoidal() -> pv.PolyData:
+    """Return the small grid, recording a CRS whose height is above the ellipsoid."""
+    mesh = _grid()
+    to_wkt(mesh, CRS("EPSG:4979"))
+    return mesh
+
+
+@pytest.mark.parametrize(
+    ("mesh", "kwargs", "match"),
+    [
+        (
+            _grid(height=1.0),
+            {"height": 2.0},
+            r"carries heights of its own, and heights are given once, got 'height'",
+        ),
+        (
+            _grid(height=1.0),
+            {"depth": 2.0},
+            r"carries heights of its own, and heights are given once, got 'depth'",
+        ),
+        (_grid(), {"height": 1.0, "depth": 1.0}, r"not both"),
+        (_grid(), {"height": 1.0, "zlevel": 1}, r"never given together"),
+        (
+            Transform.from_points([0.0, 10.0], [0.0, 10.0], zlevel=1),
+            {"height": 1.0},
+            r"point cloud given carries z-levels other than 0",
+        ),
+        (_grid(), {"height": [1.0, 2.0]}, r"each of the 2 cells"),
+        (_grid(), {"height": [1.0, np.inf, 0, 0, 0, 0]}, r"cannot be infinite"),
+        (_grid(), {"height": [1.0, 2.0, 3.0]}, r"one for the whole mesh, got 3"),
+        (_grid(), {"height": 1.0, "vertical_units": "hPa"}, r"hPa"),
+        (
+            _grid(),
+            {"height": pint.UnitRegistry().Quantity(1.0, "m"), "vertical_units": "m"},
+            r"takes no vertical_units",
+        ),
+        (_grid(), {"vertical_units": "m"}, r"neither was given"),
+        (_ellipsoidal(), {"height": 1.0}, r"Ellipsoidal height"),
+    ],
+    ids=[
+        "carried height",
+        "carried depth",
+        "height and depth",
+        "zlevel",
+        "cloud levels",
+        "cells",
+        "infinite",
+        "size",
+        "not a length",
+        "units with a quantity",
+        "units alone",
+        "ellipsoidal",
+    ],
+)
+def test_refuses(mesh, kwargs, match):
+    """Each refusal names what was given.
+
+    Holds heights spec §2 decision 5.
+    """
+    with pytest.raises(ValueError, match=match):
+        GeoPlotter().add_mesh(mesh, **kwargs)
+
+
+def test_refuses_heights_for_what_is_not_a_dataset():
+    """Heights are given for the points of a mesh, which a block has not."""
+    with pytest.raises(TypeError, match=r"got 'depth' with a MultiBlock"):
+        GeoPlotter().add_mesh(pv.MultiBlock([_grid()]), depth=1.0)
