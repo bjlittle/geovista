@@ -427,6 +427,11 @@ Each carries the status grammar of docs spec §3.6.
    scene's, a point cloud given heights through `add_points` on a map, and a seam cut on a
    map whose central meridian is not 0. Each wants a test at both radii (§6). Row 3
    rebuilds every layer from its heights, and so runs each path again.
+6. **❓ Open** (🔎 2026-11-11, {pull}`2942` · 🎯 row 3 of §9 · 🎫 {issue}`2948`) — **The
+   CRS read twice in `add_mesh`.** The check of heights against an ellipsoidal height
+   reads a mesh's CRS on every call, so a mesh drawn without heights reads it twice, about
+   142 µs a read. The same code has two tidy-ups from the review of {pull}`2942`. Row 3
+   reworks this path, as it rebuilds every layer from its heights.
 
 (heights-spec-9)=
 ## 9. Roadmap

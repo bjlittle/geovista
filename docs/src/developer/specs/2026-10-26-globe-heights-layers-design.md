@@ -630,6 +630,11 @@ Each carries the status grammar of docs spec §3.6.
     returns NaN and infinity for them, with NumPy's warnings, and `transform_mesh` stores
     the same in `gvZLevel` on a map. Row 5 removes `zlevel` and `zscale`, and the defect
     with them.
+13. **❓ Open** (🔎 2026-11-11, {pull}`2942` · 🎯 row 5 of §9 · 🎫 {issue}`2947`) — **A lifted
+    surface given heights.** A surface lifted by a z-level keeps its lift only in the radius
+    of its points, so a scene given heights for it places it by them and drops the lift
+    without a word. Heights spec §2 decision 6 says a height and a z-level are never given
+    together. Once row 5 removes `zlevel`, no surface can be lifted this way.
 
 (globe-spec-9)=
 ## 9. Roadmap
