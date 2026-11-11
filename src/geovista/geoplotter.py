@@ -314,14 +314,18 @@ def _carries_levels(mesh: pv.DataSet, /) -> bool:
     if projected(mesh):
         if GV_POINT_ZLEVEL not in mesh.point_data:
             return False
-        # the levels were read from the radius of each point, so carry its
-        # rounding, scaled up by the zscale; float32 points bound it
-        zscale = (
+        zscale = abs(
             float(mesh.field_data[GV_FIELD_ZSCALE][0])
             if GV_FIELD_ZSCALE in mesh.field_data
             else ZLEVEL_SCALE
         )
-        atol = 16 * np.finfo(np.float32).eps / zscale
+        if zscale == 0:
+            # a zscale of 0 lifts no point, whatever its level
+            return False
+        # the levels were read from the radius of each point, so carry the
+        # rounding of the points, which keep their precision on a map, over
+        # the zscale
+        atol = 16 * np.finfo(np.asarray(mesh.points).dtype).eps / zscale
         levels = np.asarray(mesh.point_data[GV_POINT_ZLEVEL], dtype=np.float64)
         return not np.allclose(levels, 0.0, rtol=0, atol=atol)
 

@@ -277,6 +277,34 @@ def test_a_cloud_on_a_map_at_level_0_takes_heights(radius):
     )
 
 
+def _mapped_cloud(dtype: type = np.float64, **kwargs: object) -> pv.PolyData:
+    """Return a point cloud, with its points in the dtype, transformed to a map."""
+    cloud = Transform.from_points([0.0, 10.0, 20.0], [0.0, 10.0, 5.0], **kwargs)
+    cloud.points = cloud.points.astype(dtype)
+    # a zscale of 0 reads its levels as 0 / 0 when the cloud is transformed
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return transform_mesh(cloud, "+proj=eqc")
+
+
+@pytest.mark.parametrize(
+    ("dtype", "zscale"),
+    [(np.float64, -1e-4), (np.float64, 0.0), (np.float32, None)],
+    ids=["negative zscale", "zero zscale", "float32"],
+)
+def test_a_cloud_on_a_map_at_level_0_takes_heights_whatever_its_scale(dtype, zscale):
+    """A level-0 cloud on a map takes heights, as it does on the sphere."""
+    cloud = _mapped_cloud(dtype, zlevel=0, zscale=zscale)
+    drawn = _drawn(GeoPlotter(crs="+proj=eqc"), cloud, height=1000.0)
+    np.testing.assert_allclose(drawn.points[:, 2], 1000.0, rtol=1e-6)
+
+
+@pytest.mark.parametrize("zlevel", [0.01, 1])
+def test_a_cloud_on_a_map_keeps_its_level_refused(zlevel):
+    """A cloud lifted on the sphere is refused heights on a map, as on the sphere."""
+    with pytest.raises(ValueError, match=r"carries z-levels other than 0"):
+        GeoPlotter(crs="+proj=eqc").add_mesh(_mapped_cloud(zlevel=zlevel), height=1.0)
+
+
 def test_refuses_heights_for_a_flat_mesh_without_a_crs():
     """A flat mesh with no CRS has no place for its heights, so is refused."""
     with pytest.raises(ValueError, match=r"no coordinate reference system"):
