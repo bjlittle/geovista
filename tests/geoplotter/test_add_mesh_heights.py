@@ -261,6 +261,28 @@ def test_refuses_heights_for_what_is_not_a_dataset():
         GeoPlotter().add_mesh(pv.MultiBlock([_grid()]), depth=1.0)
 
 
+@pytest.mark.parametrize("radius", RADII)
+def test_a_cloud_on_a_map_at_level_0_takes_heights(radius):
+    """A cloud transformed to a map, at a z-level of 0, is placed by its heights."""
+    globe = Globe(render_radius=radius, **EXAGGERATED)
+    cloud = transform_mesh(
+        Transform.from_points([0.0, 10.0, 20.0], [0.0, 5.0, 10.0], globe=globe),
+        "+proj=eqc",
+    )
+    heights = np.array([1000.0, -4000.0, 0.0])
+    p = GeoPlotter(crs="+proj=eqc", globe=globe)
+    drawn = _drawn(p, cloud, height=heights)
+    np.testing.assert_allclose(
+        drawn.points[:, 2], _mapped(heights, globe), rtol=1e-6, atol=1e-6
+    )
+
+
+def test_refuses_heights_for_a_flat_mesh_without_a_crs():
+    """A flat mesh with no CRS has no place for its heights, so is refused."""
+    with pytest.raises(ValueError, match=r"no coordinate reference system"):
+        GeoPlotter().add_mesh(pv.Plane(), height=1000.0)
+
+
 #: How a recorded globe differs from the scene's, one field each.
 OTHERS = {
     "earth radius": {"radius": 6371000.0},

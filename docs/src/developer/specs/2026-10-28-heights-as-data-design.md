@@ -164,11 +164,11 @@ asks of a public value with a unit. `mesh.gv.depth` returns their negation, or `
 point 4,000 m below sea level has a depth of 4,000 m, a point on land a negative depth, and
 a missing height a depth of NaN. Both are computed from `gvHeight` when read, and both are
 read-only, down to the arrays inside them. Reading either imports `pint`, as reading a
-globe's radius does, while heights given as plain numbers never do. Heights say where the points are drawn, so changing the
-numbers without moving the points would make the two disagree, as scene spec §4.6 says of
-the globe. Heights are given where a mesh is built or added to a scene instead (§4.2).
-Like the points themselves, they stay out of the equality of `mesh.gv`, which compares no
-geometry (scene spec §4.6).
+globe's radius does, while heights given as plain numbers never do. Heights say where the
+points are drawn, so changing the numbers without moving the points would make the two
+disagree, as scene spec §4.6 says of the globe. Heights are given where a mesh is built or
+added to a scene instead (§4.2). Like the points themselves, they stay out of the equality
+of `mesh.gv`, which compares no geometry (scene spec §4.6).
 
 Every function that returns a mesh made from one it was given keeps its heights,
 interpolated at any point a cut adds. `combine` keeps them whatever its `data`, and gives a

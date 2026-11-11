@@ -247,6 +247,11 @@ def _place_by_heights(mesh: pv.DataSet, globe: Globe, /) -> None:
     globe : Globe
         The globe to place its points on.
 
+    Raises
+    ------
+    ValueError
+        If the mesh lies flat with no CRS, as its heights cannot be placed.
+
     Notes
     -----
     .. versionadded:: 0.6.0
@@ -260,10 +265,17 @@ def _place_by_heights(mesh: pv.DataSet, globe: Globe, /) -> None:
 
     if projected(mesh):
         crs = from_wkt(mesh)
-        if crs is not None:
-            points = np.array(mesh.points)
-            points[:, 2] = _heights_z(globe, heights, crs)
-            mesh.points = points
+        if crs is None:
+            # heights recorded but never placed would disagree with the points
+            emsg = (
+                "Heights place each point, but the mesh lies flat with no "
+                "coordinate reference system (CRS), so geovista cannot tell "
+                "where its points are. Attach a CRS with geovista.crs.to_wkt."
+            )
+            raise ValueError(emsg)
+        points = np.array(mesh.points)
+        points[:, 2] = _heights_z(globe, heights, crs)
+        mesh.points = points
     else:
         # from_cartesian reads only the points, which every dataset has
         lonlat = from_cartesian(typing.cast("pv.PolyData", mesh))
@@ -300,9 +312,18 @@ def _carries_levels(mesh: pv.DataSet, /) -> bool:
         return False
 
     if projected(mesh):
-        return GV_POINT_ZLEVEL in mesh.point_data and bool(
-            np.any(np.asarray(mesh.point_data[GV_POINT_ZLEVEL]) != 0)
+        if GV_POINT_ZLEVEL not in mesh.point_data:
+            return False
+        # the levels were read from the radius of each point, so carry its
+        # rounding, scaled up by the zscale; float32 points bound it
+        zscale = (
+            float(mesh.field_data[GV_FIELD_ZSCALE][0])
+            if GV_FIELD_ZSCALE in mesh.field_data
+            else ZLEVEL_SCALE
         )
+        atol = 16 * np.finfo(np.float32).eps / zscale
+        levels = np.asarray(mesh.point_data[GV_POINT_ZLEVEL], dtype=np.float64)
+        return not np.allclose(levels, 0.0, rtol=0, atol=atol)
 
     globe = Globe.from_mesh(mesh)
 
@@ -1149,9 +1170,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         TypeError
             If the mesh is not a dataset.
         ValueError
-            If the mesh carries heights of its own, is a point
-            cloud whose points carry z-levels other than 0, or the heights fit
-            neither its points nor the whole mesh.
+            If the mesh carries heights of its own, lies flat with no CRS, is a
+            point cloud whose points carry z-levels other than 0, or the heights
+            fit neither its points nor the whole mesh.
 
         Notes
         -----
@@ -1177,6 +1198,15 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             emsg = (
                 "A height and a z-level are never given together, and the point "
                 "cloud given carries z-levels other than 0."
+            )
+            raise ValueError(emsg)
+
+        if projected(mesh) and from_wkt(mesh) is None:
+            emsg = (
+                f"Heights place each point, but the mesh given with {keyword!r} "
+                "lies flat with no coordinate reference system (CRS), so "
+                "geovista cannot tell where its points are. Attach a CRS with "
+                "geovista.crs.to_wkt."
             )
             raise ValueError(emsg)
 
