@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pint
 import pytest
 import pyvista as pv
 
@@ -27,10 +28,25 @@ def _with_heights(heights: list[float]) -> pv.PolyData:
 def test_height_reads_back():
     """The heights a mesh carries read back as float64."""
     mesh = _with_heights([100.0, -4000.0, np.nan])
-    result = mesh.gv.height
+    result = mesh.gv.height.m_as("m")
     assert result.dtype == np.float64
     np.testing.assert_array_equal(result[:3], [100.0, -4000.0, np.nan])
     np.testing.assert_array_equal(result[3:], 0.0)
+
+
+@pytest.mark.parametrize(("name", "sign"), [("height", 1.0), ("depth", -1.0)])
+def test_a_quantity_in_metres(name, sign):
+    """Heights and depths read back as quantities of the application registry.
+
+    Holds scene spec §2 decision 8.
+    """
+    mesh = _with_heights([100.0, -4000.0])
+    result = getattr(mesh.gv, name)
+    assert isinstance(result, pint.Quantity)
+    assert result._REGISTRY is pint.application_registry.get()
+    assert result.units == pint.application_registry.get().m
+    assert result.magnitude.dtype == np.float64
+    np.testing.assert_array_equal(result.magnitude[:2], [sign * 100.0, sign * -4000.0])
 
 
 def test_none_without_heights():
@@ -46,7 +62,7 @@ def test_depth_is_the_negation():
     Holds heights spec §2 decision 2.
     """
     mesh = _with_heights([100.0, -4000.0, np.nan])
-    np.testing.assert_array_equal(mesh.gv.depth[:3], [-100.0, 4000.0, np.nan])
+    np.testing.assert_array_equal(mesh.gv.depth.m_as("m")[:3], [-100.0, 4000.0, np.nan])
 
 
 @pytest.mark.parametrize("name", ["height", "depth"])
@@ -59,11 +75,14 @@ def test_cannot_be_set(name):
 
 @pytest.mark.parametrize("name", ["height", "depth"])
 def test_cannot_be_written(name):
-    """The arrays returned cannot be written, so the mesh never changes."""
+    """The quantities returned cannot be written, so the mesh never changes."""
     mesh = _with_heights([100.0])
     expected = np.array(mesh.point_data[GV_POINT_HEIGHT])
+    result = getattr(mesh.gv, name)
     with pytest.raises(ValueError, match="read-only"):
-        getattr(mesh.gv, name)[0] = 1.0
+        result[0] = 1.0 * result.units
+    with pytest.raises(ValueError, match="read-only"):
+        result.magnitude[0] = 1.0
     np.testing.assert_array_equal(mesh.point_data[GV_POINT_HEIGHT], expected)
 
 

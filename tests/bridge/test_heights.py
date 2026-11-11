@@ -127,7 +127,7 @@ def test_reads_back_in_metres(builder, given, metres):
     Holds heights spec §2 decision 11.
     """
     build, *_ = builder
-    np.testing.assert_allclose(build(**given).gv.height, metres)
+    np.testing.assert_allclose(build(**given).gv.height.m_as("m"), metres)
 
 
 @pytest.mark.parametrize("radius", RADII)
@@ -155,7 +155,7 @@ def test_depth_gives_the_negated_height(builder):
     depths = _heights(lons.size)
     mesh = build(depth=depths)
     np.testing.assert_array_equal(mesh.points, build(height=-depths).points)
-    np.testing.assert_array_equal(mesh.gv.depth, depths)
+    np.testing.assert_array_equal(mesh.gv.depth.m_as("m"), depths)
 
 
 def test_missing_heights_at_sea_level(builder):
@@ -168,7 +168,7 @@ def test_missing_heights_at_sea_level(builder):
     heights[0] = np.ma.masked
     heights[1] = np.nan
     mesh = build(height=heights)
-    np.testing.assert_array_equal(mesh.gv.height[:2], np.nan)
+    np.testing.assert_array_equal(mesh.gv.height.m_as("m")[:2], np.nan)
     np.testing.assert_allclose(np.linalg.norm(mesh.points[:2], axis=1), 1.0)
 
 
@@ -226,7 +226,9 @@ def test_the_factory_carries_heights(radius):
     heights = _heights(6)
     expected = Transform.from_1d(XS, YS, height=heights, globe=globe)
     mesh = Transform(XS, YS, height=heights, globe=globe)(data=[1.0, 2.0])
-    np.testing.assert_array_equal(mesh.gv.height, expected.gv.height)
+    np.testing.assert_array_equal(
+        mesh.gv.height.m_as("m"), expected.gv.height.m_as("m")
+    )
     np.testing.assert_array_equal(mesh.points, expected.points)
     assert mesh.active_scalars_name == NAME_CELLS
 
@@ -246,7 +248,7 @@ def test_threshold_keeps_the_sea_at_its_depths(at_heights):
 
     assert sea.n_cells == 9
     assert sea.n_points == 16
-    heights = sea.gv.height
+    heights = sea.gv.height.m_as("m")
     assert not np.any(np.isnan(heights))
     np.testing.assert_array_equal(np.sort(heights), np.sort(-depths[:, 1:].ravel()))
     radii = np.linalg.norm(sea.points, axis=1)

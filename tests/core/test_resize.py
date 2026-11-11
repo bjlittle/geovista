@@ -406,7 +406,7 @@ def test_heights_placed_by_the_formula(radius, at_heights):
         atol=1e-9 * radius,
     )
     assert Globe.from_mesh(result) == globe
-    assert_array_equal(result.gv.height, HEIGHTS)
+    assert_array_equal(result.gv.height.m_as("m"), HEIGHTS)
 
 
 def test_a_new_mapping_moves_by_the_formula():

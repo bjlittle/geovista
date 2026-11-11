@@ -18,7 +18,6 @@ from geovista.bridge import Transform
 
 mesh = Transform.from_1d([0, 10], [0, 10], height=[[1.0, 2.0], [3.0, 4.0]])
 cloud = Transform.from_points([0, 10], [0, 10], depth=[5.0, 6.0])
-mesh.gv.height, mesh.gv.depth, cloud.gv.height, cloud.gv.depth
 
 # geovista.units binds pint lazily, so only a pint that has run counts
 pint = sys.modules.get("pint")
@@ -29,6 +28,9 @@ assert not loaded, loaded
 """
 
 
-def test_plain_heights_import_no_pint():
-    """Test that heights given as plain numbers never import pint."""
+def test_building_with_plain_heights_imports_no_pint():
+    """Test that building with heights given as plain numbers imports no pint.
+
+    Reading the heights back does, as they are quantities.
+    """
     subprocess.run([sys.executable, "-c", PLAIN], check=True)  # noqa: S603

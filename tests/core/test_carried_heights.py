@@ -132,7 +132,7 @@ def test_slice_cells_places_cuts_at_their_heights(heights, at_heights):
     result = slice_cells(mesh, meridian=15)
     assert result.n_points > mesh.n_points
     lonlat = from_cartesian(result)
-    expected = at_heights(lonlat[:, 0], lonlat[:, 1], result.gv.height, globe)
+    expected = at_heights(lonlat[:, 0], lonlat[:, 1], result.gv.height.m_as("m"), globe)
     np.testing.assert_allclose(
         np.linalg.norm(result.points, axis=1),
         np.linalg.norm(expected, axis=1),

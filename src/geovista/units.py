@@ -349,6 +349,33 @@ def as_quantity(metres: float) -> Quantity:
     return quantity
 
 
+def _as_lengths(metres: NDArray[np.float64], /) -> Quantity:
+    """Return lengths in metres as a quantity in ``pint``'s application registry.
+
+    The quantity keeps the array it is given, so an array that cannot be
+    written makes a quantity that cannot be written.
+
+    Parameters
+    ----------
+    metres : ndarray
+        The lengths, in metres.
+
+    Returns
+    -------
+    pint.Quantity
+        The lengths in metres, whose magnitude is `metres`.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    import pint  # noqa: PLC0415
+
+    quantity: pint.Quantity = pint.application_registry.Quantity(metres, "m")
+    return quantity
+
+
 def _masked(
     values: float | NDArray[np.float64], quantity: Quantity
 ) -> float | NDArray[np.float64]:
