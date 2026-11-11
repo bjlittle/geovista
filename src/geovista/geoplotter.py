@@ -290,7 +290,8 @@ def _carries_levels(mesh: pv.DataSet, /) -> bool:
     On the sphere a cloud keeps its levels in the radius of each point, so a
     point off the render radius of the globe it records carries a level, to
     the precision its points are stored in. On a map it keeps them in
-    ``gvZLevel``.
+    ``gvZLevel``, read to the rounding of its points over the magnitude of its
+    zscale. A zscale of 0 lifts no point, so such a cloud carries no level.
 
     Parameters
     ----------
@@ -925,9 +926,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             level: in metres, in the unit `vertical_units` names, or a ``pint``
             quantity of length from any registry. A masked or NaN height is
             missing, and its point is drawn at sea level. The heights are written
-            to the mesh drawn, never to the `mesh` given, and its points are
-            placed by them at the scene's globe. A `mesh` that carries heights
-            takes none.
+            to a copy, which is placed by them at the scene's globe and drawn, so
+            the `mesh` given is unchanged. Heights given for a `mesh` that already
+            carries them are refused.
         depth : ArrayLike or pint.Quantity, optional
             The depth of each point, or one for the whole mesh, positive
             downward, in the same forms as a `height`. Give a `height` or a
@@ -1776,8 +1777,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             level: in metres, in the unit `vertical_units` names, or a ``pint``
             quantity of length from any registry. The points are placed by them
             at the scene's globe. A missing point given with `xs` and `ys` is
-            dropped with its height. A `points` mesh that carries heights takes
-            none.
+            dropped with its height. Heights given for a `points` mesh that
+            already carries them are refused.
         depth : ArrayLike or pint.Quantity, optional
             The depth of each point, or one for every point, positive downward,
             in the same forms as a `height`. Give a `height` or a `depth`, not

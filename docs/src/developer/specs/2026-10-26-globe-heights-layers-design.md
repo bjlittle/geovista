@@ -624,6 +624,12 @@ Each carries the status grammar of docs spec §3.6.
     points off one radius, make more cuts miss. Heights spec §6 asks every heights test to
     hold at both radii, while the tests of a cut at the seam run at a render radius of 1
     alone. Found in the review of {pull}`2777`, it belongs with item 4.
+12. **❓ Open** (🔎 2026-11-11, {pull}`2942` · 🎯 row 5 of §9 · 🎫 {issue}`2946`) — **A point
+    cloud with a zscale of 0.** Its points all lie at the render radius, since a zscale of 0
+    lifts no point, but reading its levels back divides by the zscale. `from_cartesian`
+    returns NaN and infinity for them, with NumPy's warnings, and `transform_mesh` stores
+    the same in `gvZLevel` on a map. Row 5 removes `zlevel` and `zscale`, and the defect
+    with them.
 
 (globe-spec-9)=
 ## 9. Roadmap

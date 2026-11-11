@@ -421,6 +421,12 @@ Each carries the status grammar of docs spec §3.6.
    scene spec §2 decision 8 means, so it would retire that decision and agree a new one
    (ledger spec §3.3), not edit it. {user}`bjlittle` chose quantities on 2026-11-10, so no
    decision is retired, and §4.1 says so.
+5. **❓ Open** (🔎 2026-11-11, {pull}`2942` · 🎯 row 3 of §9 · 🎫 {issue}`2945`) — **Heights
+   in the scene that no test pins.** Three paths place heights exactly in the probes of the
+   final review of {pull}`2942`, but have no test: a mesh in a projected CRS other than the
+   scene's, a point cloud given heights through `add_points` on a map, and a seam cut on a
+   map whose central meridian is not 0. Each wants a test at both radii (§6). Row 3
+   rebuilds every layer from its heights, and so runs each path again.
 
 (heights-spec-9)=
 ## 9. Roadmap
