@@ -32,7 +32,10 @@ def _points(zs: list[float]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 @pytest.mark.parametrize("radius", RADII)
 def test_levels_at_their_heights(radius, at_heights):
-    """Each level lies at its height, however unevenly the levels are spaced."""
+    """Each level lies at its height, however unevenly the levels are spaced.
+
+    Holds heights spec §2 decision 4.
+    """
     globe = Globe(render_radius=radius, exaggeration=20)
     grid = Transform.to_structured_grid(XS, YS, ZS, globe=globe)
     lons, lats, heights = _points(ZS)

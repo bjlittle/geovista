@@ -556,5 +556,5 @@ Each row follows ledger spec §3.4.
 | §2 decision 5 | ✅ verified (2026-10-28, {pull}`2766`) | `tests/common/test_current_fields.py` |
 | §2 decision 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize.py`, `tests/common/test_sanitize_legacy.py` |
 | §2 decision 7 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/common/test_sanitize_legacy.py` |
-| §2 decision 8 | ⏳ pending | row 2 of heights spec §9 |
+| §2 decision 8 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/accessor/test_heights.py`, `tests/globe/test_Globe.py` |
 | §2 decision 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_GeoVistaAccessor.py` |

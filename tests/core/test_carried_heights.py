@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import inspect
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -22,6 +23,7 @@ from geovista.core import (
     MeridianSlice,
     add_texture_coords,
     combine,
+    resize,
     slice_cells,
     slice_lines,
     slice_mesh,
@@ -29,6 +31,7 @@ from geovista.core import (
 from geovista.filters import remesh
 from geovista.geodesic import BBox, line
 from geovista.globe import Globe, _record_heights
+from geovista.transform import transform_mesh
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -232,3 +235,13 @@ def test_an_edge_between_heights_keeps_them(span, lat):
     )
     # the point on the edge to the missing height has none
     assert np.all(np.isnan(heights[~on_edge]))
+
+
+@pytest.mark.parametrize("function", [resize, transform_mesh])
+def test_positioning_takes_no_heights(function):
+    """Resize and transform_mesh position a mesh by the heights it carries.
+
+    Holds heights spec §2 decision 4.
+    """
+    parameters = inspect.signature(function).parameters
+    assert not {"height", "depth", "vertical_units"} & set(parameters)

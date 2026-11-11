@@ -428,7 +428,7 @@ Each carries the status grammar of docs spec §3.6.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Heights on a mesh: `gvHeight`, `height=`, `depth=` and `vertical_units=` on the bridge, `to_structured_grid` reading its `zs` as heights, positions from heights on the globe and on a map through the bridge, `resize` and `transform_mesh`, `mesh.gv.height` and `mesh.gv.depth`, missing heights, heights through the filters and `combine`, and the refusals of §4.4 | ✅ landed (2026-10-30, {pull}`2777`) |
-| 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | 🚧 in progress ({pull}`2942`) |
+| 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | ✅ landed (2026-11-11, {pull}`2942`) |
 | 3 | A scene whose globe can be replaced, rebuilding every layer from its heights | 📋 not started |
 | 4 | Heights from a raster band in `Transform.from_tiff`, before row 5 of globe spec §9 | 📋 not started |
 | 5 | A surface below sea level seen past the base layer, landing with row 4 of globe spec §9 | 📋 not started |
@@ -465,10 +465,10 @@ Each row follows ledger spec §3.4.
 | §2 decision 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_carried_heights.py`, `tests/globe/test_vertical.py` |
 | §2 decision 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_heights.py`, `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
 | §2 decision 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/globe/test_vertical.py` |
-| §2 decision 4 | ⏳ pending | rows 1 to 2 of §9 |
-| §2 decision 5 | ⏳ pending | rows 1 to 2 of §9 |
+| §2 decision 4 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/bridge/test_heights.py`, `tests/bridge/test_to_structured_grid.py`, `tests/core/test_carried_heights.py`, `tests/geoplotter/test_add_mesh_heights.py`, `tests/geoplotter/test_add_points.py` |
+| §2 decision 5 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/bridge/test_heights.py`, `tests/geoplotter/test_add_mesh_heights.py`, `tests/geoplotter/test_add_points.py` |
 | §2 decision 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_resize.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
-| §2 decision 7 | ⏳ pending | row 2 of §9 |
+| §2 decision 7 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/geoplotter/test_GeoPlotterBase.py`, `tests/geoplotter/test_add_mesh_heights.py` |
 | §2 decision 8 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/common/test_from_cartesian.py` |
 | §2 decision 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
 | §2 decision 10 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |

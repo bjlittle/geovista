@@ -103,6 +103,7 @@ def test_stored_as_gvheight(builder):
     """Heights are stored in one float64 point array, named exactly gvHeight.
 
     Holds heights spec §2 decision 1.
+    Holds heights spec §2 decision 4.
     """
     build, lons, *_ = builder
     heights = _heights(lons.size)
@@ -257,7 +258,10 @@ def test_threshold_keeps_the_sea_at_its_depths(at_heights):
 
 
 def test_height_with_depth(builder):
-    """A height and a depth are never given together."""
+    """A height and a depth are never given together.
+
+    Holds heights spec §2 decision 5.
+    """
     build, lons, *_ = builder
     with pytest.raises(ValueError, match=r"height.*depth"):
         build(height=_heights(lons.size), depth=1.0)

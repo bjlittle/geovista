@@ -69,7 +69,10 @@ def test_gpu_opacity_unavailable(mocker, key, value):
 
 @pytest.mark.parametrize("radius", [1.0, 6378137.0])
 def test_at_the_scenes_globe(radius):
-    """The base layer is lowered beneath the scene's globe, and records it."""
+    """The base layer is lowered beneath the scene's globe, and records it.
+
+    Holds globe spec §2 decision 7.
+    """
     p = GeoPlotter(globe=Globe(render_radius=radius))
     drawn = p.add_base_layer().mapper.dataset
     np.testing.assert_allclose(
