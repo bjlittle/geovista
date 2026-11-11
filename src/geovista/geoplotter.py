@@ -18,6 +18,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from functools import lru_cache
 import os
+import typing
 from typing import TYPE_CHECKING, Any
 from warnings import warn
 
@@ -29,6 +30,7 @@ from .bridge import Transform
 from .common import (
     GV_FIELD_ZSCALE,
     GV_POINT_IDS,
+    GV_POINT_ZLEVEL,
     GV_REMESH_POINT_IDS,
     LRU_CACHE_SIZE,
     REMESH_SEAM,
@@ -38,6 +40,7 @@ from .common import (
     _missing_positions,
     _refuse_missing_poi,
     _to_cartesian,
+    from_cartesian,
     point_cloud,
     to_cartesian,
     to_lonlat,
@@ -57,7 +60,17 @@ from .crs import (
 )
 from .geodesic import BBox
 from .geometry import coastlines
-from .globe import Globe, _resolve, _written
+from .globe import (
+    Globe,
+    _carried_heights,
+    _for_points,
+    _heights,
+    _on_globe,
+    _record_heights,
+    _refuse_zlevel,
+    _resolve,
+    _written,
+)
 from .gridlines import (
     GRATICULE_ZLEVEL,
     GraticuleGrid,
@@ -76,6 +89,7 @@ from .transform import (
     _apply_datum,
     _carry_levels,
     _coordinates,
+    _heights_z,
     _point_levels,
     _slice_seam,
     transform_mesh,
@@ -216,6 +230,119 @@ def _cut_scalars(scalars: ArrayLike, kept: np.ndarray) -> np.ndarray:
         f"{kept.size:,d} points given, got shape {values.shape}."
     )
     raise ValueError(emsg)
+
+
+def _place_by_heights(mesh: pv.DataSet, globe: Globe, /) -> None:
+    """Place the points of a mesh at their heights on a globe, in place.
+
+    On the sphere each point keeps its direction, and lies at a radius of
+    ``s (R + V(h))``. On a map each point keeps its ``x`` and ``y``, and lies at
+    ``z = V(h)`` in the units of the CRS (heights spec §4.3). The mesh records
+    the globe.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh, which carries heights.
+    globe : Globe
+        The globe to place its points on.
+
+    Raises
+    ------
+    ValueError
+        If the mesh lies flat with no CRS, as its heights cannot be placed.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    heights = _carried_heights(mesh)
+
+    if heights is None:
+        # nothing to place by
+        return
+
+    if projected(mesh):
+        crs = from_wkt(mesh)
+        if crs is None:
+            # heights recorded but never placed would disagree with the points
+            emsg = (
+                "Heights place each point, but the mesh lies flat with no "
+                "coordinate reference system (CRS), so geovista cannot tell "
+                "where its points are. Attach a CRS with geovista.crs.to_wkt."
+            )
+            raise ValueError(emsg)
+        points = np.array(mesh.points)
+        points[:, 2] = _heights_z(globe, heights, crs)
+        mesh.points = points
+    else:
+        # from_cartesian reads only the points, which every dataset has
+        lonlat = from_cartesian(typing.cast("pv.PolyData", mesh))
+        mesh.points = _on_globe(globe, lonlat[:, 0], lonlat[:, 1], heights)
+
+    globe.to_mesh(mesh)
+
+
+def _carries_levels(mesh: pv.DataSet, /) -> bool:
+    """Determine whether the points of a point cloud carry z-levels other than 0.
+
+    On the sphere a cloud keeps its levels in the radius of each point, so a
+    point off the render radius of the globe it records carries a level, to
+    the precision its points are stored in. On a map it keeps them in
+    ``gvZLevel``, read to the rounding of its points over the magnitude of its
+    zscale. A zscale of 0 lifts no point, so such a cloud carries no level.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        The mesh.
+
+    Returns
+    -------
+    bool
+        Whether the mesh is a point cloud whose points carry z-levels other
+        than 0.
+
+    Notes
+    -----
+    .. versionadded:: 0.6.0
+
+    """
+    if not isinstance(mesh, pv.PolyData) or not point_cloud(mesh):
+        return False
+
+    if projected(mesh):
+        if GV_POINT_ZLEVEL not in mesh.point_data:
+            return False
+        zscale = abs(
+            float(mesh.field_data[GV_FIELD_ZSCALE][0])
+            if GV_FIELD_ZSCALE in mesh.field_data
+            else ZLEVEL_SCALE
+        )
+        if zscale == 0:
+            # a zscale of 0 lifts no point, whatever its level
+            return False
+        # the levels were read from the radius of each point, so carry the
+        # rounding of the points, which keep their precision on a map, over
+        # the zscale
+        atol = 16 * np.finfo(np.asarray(mesh.points).dtype).eps / zscale
+        levels = np.asarray(mesh.point_data[GV_POINT_ZLEVEL], dtype=np.float64)
+        return not np.allclose(levels, 0.0, rtol=0, atol=atol)
+
+    globe = Globe.from_mesh(mesh)
+
+    if GV_FIELD_ZSCALE not in mesh.field_data or globe is None:
+        return False
+
+    points = np.asarray(mesh.points)
+    rtol = 16 * np.finfo(points.dtype).eps
+    return not np.allclose(
+        np.linalg.norm(points.astype(np.float64), axis=1),
+        globe.render_radius,
+        rtol=rtol,
+        atol=0,
+    )
 
 
 if TYPE_CHECKING:
@@ -777,6 +904,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         mesh: Any,
         /,
         *,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         rtol: float | None = None,
@@ -791,6 +921,21 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         ----------
         mesh : PolyData
             The mesh to add to the plotter.
+        height : ArrayLike or pint.Quantity, optional
+            The height of each point, or one for the whole mesh, above mean sea
+            level: in metres, in the unit `vertical_units` names, or a ``pint``
+            quantity of length from any registry. A masked or NaN height is
+            missing, and its point is drawn at sea level. The heights are written
+            to a copy, which is placed by them at the scene's globe and drawn, so
+            the `mesh` given is unchanged. Heights given for a `mesh` that already
+            carries them are refused.
+        depth : ArrayLike or pint.Quantity, optional
+            The depth of each point, or one for the whole mesh, positive
+            downward, in the same forms as a `height`. Give a `height` or a
+            `depth`, not both.
+        vertical_units : str, optional
+            The CF unit of a `height` or `depth` given as plain numbers.
+            Defaults to metres.
         zlevel : int or ArrayLike, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             render radius of the scene's globe/vertical by a proportional amount
@@ -832,6 +977,23 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         if isinstance(mesh, pv.UnstructuredGrid):
             mesh = cast(mesh)
+
+        heights = _heights(
+            height,
+            depth,
+            vertical_units,
+            crs=from_wkt(mesh) if isinstance(mesh, pv.DataSet) else None,
+        )
+
+        if heights is not None or (
+            isinstance(mesh, pv.DataSet) and _carried_heights(mesh) is not None
+        ):
+            # a height and a z-level are never given together (heights spec §4.4)
+            _refuse_zlevel(zlevel)
+
+        if heights is not None:
+            keyword = "height" if depth is None else "depth"
+            mesh = self._with_heights(mesh, heights, keyword)
 
         if isinstance(mesh, pv.PolyData):
             if zlevel is None:
@@ -988,14 +1150,98 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         return result
 
+    def _with_heights(
+        self, mesh: Any, heights: float | np.ndarray, keyword: str, /
+    ) -> pv.DataSet:
+        """Return a copy of the mesh with its heights, placed at the scene's globe.
+
+        Parameters
+        ----------
+        mesh : Any
+            The mesh given to the scene.
+        heights : float or ndarray
+            The heights given, in metres, NaN where one is missing.
+        keyword : str
+            The keyword the heights were given by, ``height`` or ``depth``.
+
+        Returns
+        -------
+        pyvista.DataSet
+            A copy of the mesh, which records the heights and the scene's globe,
+            with its points placed by them.
+
+        Raises
+        ------
+        TypeError
+            If the mesh is not a dataset.
+        ValueError
+            If the mesh carries heights of its own, lies flat with no CRS, is a
+            point cloud whose points carry z-levels other than 0, or the heights
+            fit neither its points nor the whole mesh.
+
+        Notes
+        -----
+        .. versionadded:: 0.6.0
+
+        """
+        if not isinstance(mesh, pv.DataSet):
+            emsg = (
+                f"Heights are given for the points of a mesh, got {keyword!r} "
+                f"with a {type(mesh).__name__}."
+            )
+            raise TypeError(emsg)
+
+        # heights are given once (heights spec §2 decision 5)
+        if _carried_heights(mesh) is not None:
+            emsg = (
+                "The mesh given carries heights of its own, and heights are "
+                f"given once, got {keyword!r}."
+            )
+            raise ValueError(emsg)
+
+        if _carries_levels(mesh):
+            emsg = (
+                "A height and a z-level are never given together, and the point "
+                "cloud given carries z-levels other than 0."
+            )
+            raise ValueError(emsg)
+
+        if projected(mesh) and from_wkt(mesh) is None:
+            emsg = (
+                f"Heights place each point, but the mesh given with {keyword!r} "
+                "lies flat with no coordinate reference system (CRS), so "
+                "geovista cannot tell where its points are. Attach a CRS with "
+                "geovista.crs.to_wkt."
+            )
+            raise ValueError(emsg)
+
+        values = _for_points(heights, mesh.n_points, mesh.n_cells)
+
+        # the heights are written to the mesh drawn, never to the mesh given
+        drawn: pv.DataSet = mesh.copy()
+        _record_heights(drawn, values)
+
+        # a point cloud with heights carries no z-level (heights spec §4.3)
+        if GV_FIELD_ZSCALE in drawn.field_data:
+            del drawn.field_data[GV_FIELD_ZSCALE]
+        if GV_POINT_ZLEVEL in drawn.point_data:
+            del drawn.point_data[GV_POINT_ZLEVEL]
+
+        # positions are built from heights when a mesh is added, before any seam
+        # is cut or the mesh is transformed (heights spec §2 decision 7)
+        _place_by_heights(drawn, self.globe)
+
+        return drawn
+
     def _at_scene_globe(self, mesh: pv.DataSet) -> pv.DataSet:
         """Return the mesh as drawn at the globe of the scene.
 
         A mesh that records another globe, in its four fields or a ``gvRadius``,
-        is drawn as a copy that records the scene's, with its points scaled by
-        the ratio of the two render radii on the globe, and unmoved on a map. A
-        mesh that records the scene's globe, or records none, is drawn where its
-        points are, even when they lie at one radius.
+        is drawn as a copy that records the scene's. A mesh with heights is built
+        from them at the scene's globe, on the globe and on a map. Any other has
+        its points scaled by the ratio of the two render radii on the globe, and
+        unmoved on a map. A mesh that records the scene's globe, or records none,
+        is drawn where its points are, even when they lie at one radius.
 
         Parameters
         ----------
@@ -1024,7 +1270,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         mesh = mesh.copy()
 
-        if not projected(mesh):
+        if _carried_heights(mesh) is not None:
+            # a mesh with heights is built from them at the scene's globe, on
+            # the globe and on a map (heights spec §4.3)
+            _place_by_heights(mesh, self.globe)
+        elif not projected(mesh):
             mesh.points = mesh.points * (
                 self.globe.render_radius / recorded.render_radius
             )
@@ -1478,6 +1728,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         scalars: str | ArrayLike | None = None,
         crs: CRSLike | None = None,
         style: str | None = None,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         **kwargs: Any,
@@ -1519,6 +1772,20 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             or ``points_gaussian``. The ``points_gaussian`` option may be controlled
             with the ``emissive`` and ``render_points_as_spheres`` options in
             `kwargs`.
+        height : ArrayLike or pint.Quantity, optional
+            The height of each point, or one for every point, above mean sea
+            level: in metres, in the unit `vertical_units` names, or a ``pint``
+            quantity of length from any registry. The points are placed by them
+            at the scene's globe. A missing point given with `xs` and `ys` is
+            dropped with its height. Heights given for a `points` mesh that
+            already carries them are refused.
+        depth : ArrayLike or pint.Quantity, optional
+            The depth of each point, or one for every point, positive downward,
+            in the same forms as a `height`. Give a `height` or a `depth`, not
+            both.
+        vertical_units : str, optional
+            The CF unit of a `height` or `depth` given as plain numbers.
+            Defaults to metres.
         zlevel : int or ArrayLike, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             render radius of the scene's globe by a proportional amount i.e.,
@@ -1556,6 +1823,17 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
+        # the heights given, passed on only when given
+        heights: dict[str, Any] = {
+            name: value
+            for name, value in (
+                ("height", height),
+                ("depth", depth),
+                ("vertical_units", vertical_units),
+            )
+            if value is not None
+        }
+
         if points is None and xs is None and ys is None:
             emsg = (
                 "Require either 'points' or both 'xs' and 'ys' to be specified, "
@@ -1582,6 +1860,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 points = pv.wrap(points)
 
             mesh = points
+
+            if "height" in heights or "depth" in heights:
+                # a points mesh is given no z-level, so one given with heights
+                # is refused rather than dropped (heights spec §4.4)
+                _refuse_zlevel(zlevel)
 
             if crs is not None:
                 if has_wkt(mesh):
@@ -1622,6 +1905,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                     if np.any(missing):
                         scalars = _cut_scalars(scalars, ~missing)
 
+            # the points are built at their heights, and a missing point is
+            # dropped with its height (positions spec §4.5)
             mesh = Transform.from_points(
                 xs,
                 ys,
@@ -1629,13 +1914,15 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 globe=self.globe,
                 zlevel=zlevel,
                 zscale=zscale,
+                **heights,
             )
+            heights = {}
 
         # defensive kwarg pop
         if "texture" in kwargs:
             _ = kwargs.pop("texture")
 
-        return self.add_mesh(mesh, style=style, scalars=scalars, **kwargs)
+        return self.add_mesh(mesh, style=style, scalars=scalars, **heights, **kwargs)
 
     def view_poi(
         self,

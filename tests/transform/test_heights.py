@@ -110,7 +110,7 @@ def test_round_trip(kind):
     projected = transform_mesh(mesh, "+proj=eqc", slice_connectivity=False)
     result = transform_mesh(projected, WGS84)
     np.testing.assert_allclose(result.points, mesh.points, rtol=1e-9, atol=1e-3)
-    np.testing.assert_array_equal(result.gv.height, HEIGHTS)
+    np.testing.assert_array_equal(result.gv.height.m_as("m"), HEIGHTS)
 
 
 def test_the_seam_cut_keeps_heights():
@@ -126,7 +126,7 @@ def test_the_seam_cut_keeps_heights():
 def test_missing_heights_on_a_map():
     """A missing height is drawn at sea level, as is a point the cut adds by one."""
     mesh = _global(lambda points: np.where(np.isclose(points[:, 1], 0), np.nan, 1.0))
-    missing = int(np.sum(np.isnan(mesh.gv.height)))
+    missing = int(np.sum(np.isnan(mesh.gv.height.m_as("m"))))
     result = transform_mesh(mesh, CUT)
     heights = result[GV_POINT_HEIGHT]
     nan = np.isnan(heights)

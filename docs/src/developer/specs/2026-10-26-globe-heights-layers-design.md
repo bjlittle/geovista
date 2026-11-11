@@ -624,6 +624,17 @@ Each carries the status grammar of docs spec §3.6.
     points off one radius, make more cuts miss. Heights spec §6 asks every heights test to
     hold at both radii, while the tests of a cut at the seam run at a render radius of 1
     alone. Found in the review of {pull}`2777`, it belongs with item 4.
+12. **❓ Open** (🔎 2026-11-11, {pull}`2942` · 🎯 row 5 of §9 · 🎫 {issue}`2946`) — **A point
+    cloud with a zscale of 0.** Its points all lie at the render radius, since a zscale of 0
+    lifts no point, but reading its levels back divides by the zscale. `from_cartesian`
+    returns NaN and infinity for them, with NumPy's warnings, and `transform_mesh` stores
+    the same in `gvZLevel` on a map. Row 5 removes `zlevel` and `zscale`, and the defect
+    with them.
+13. **❓ Open** (🔎 2026-11-11, {pull}`2942` · 🎯 row 5 of §9 · 🎫 {issue}`2947`) — **A lifted
+    surface given heights.** A surface lifted by a z-level keeps its lift only in the radius
+    of its points, so a scene given heights for it places it by them and drops the lift
+    without a word. Heights spec §2 decision 6 says a height and a z-level are never given
+    together. Once row 5 removes `zlevel`, no surface can be lifted this way.
 
 (globe-spec-9)=
 ## 9. Roadmap
@@ -632,7 +643,7 @@ Each carries the status grammar of docs spec §3.6.
 |---|---|---|
 | 1 | Units: `geovista.units`, with `pint` and `pint-cf` | ✅ landed (2026-10-27, {pull}`2754`) |
 | 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6, by rows 1 and 2 of scene spec §9 | ✅ landed (2026-10-28, {pull}`2766`) |
-| 3 | Heights as data: `height` and `depth`, the vertical mapping, positions on the globe and on a map, refusals, and `to_structured_grid` reading its levels as heights, by rows 1 and 2 of heights spec §9 | 📋 not started |
+| 3 | Heights as data: `height` and `depth`, the vertical mapping, positions on the globe and on a map, refusals, and `to_structured_grid` reading its levels as heights, by rows 1 and 2 of heights spec §9 | ✅ landed (2026-11-11, {pull}`2942`) |
 | 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, the lift, and the measures of §3.5 as tests | 📋 not started |
 | 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | 📋 not started |
 | 6 | A vertical scale for the viewer | 💡 candidate: a scene with heights that a scientist shows |
@@ -678,4 +689,4 @@ Each row follows ledger spec §3.4.
 | §2 decision 4 | 🗄️ retired (2026-10-27, {pull}`2757`) | replaced by §2 decision 7 |
 | §2 decision 5 | ⏳ pending | row 5 of §9 |
 | §2 decision 6 | ✍️ signed off (2026-11-03, {user}`bjlittle`, {pull}`2826`) | Checked in review that §3.5 records its measurement with its method, environment, commit and date, and §3.2 and §3.6 theirs with their commit and date. |
-| §2 decision 7 | ⏳ pending | row 3 of §9 |
+| §2 decision 7 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/geoplotter/test_add_base_layer.py`, `tests/geoplotter/test_add_coastlines.py`, `tests/geoplotter/test_add_mesh_heights.py` |

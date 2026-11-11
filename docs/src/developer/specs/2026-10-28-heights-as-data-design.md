@@ -158,15 +158,17 @@ level, one for each point. `geovista` sets it with `set_array`, so it never beco
 active scalars (§3.3), and `threshold()` and `add_mesh` go on reading the data. A mesh
 without `gvHeight` is at sea level. A NaN in it is a missing height (§4.3).
 
-`mesh.gv.height` returns the heights, as a float64 array that cannot be written, or `None`
-for a mesh without them. `mesh.gv.depth` returns their negation, or `None`: a point 4,000 m
-below sea level has a depth of 4,000, a point on land a negative depth, and a missing
-height a depth of NaN. Both are computed from `gvHeight` when read, and both are read-only,
-down to the arrays they return. Heights say where the points are drawn, so changing the
-numbers without moving the points would make the two disagree, as scene spec §4.6 says of
-the globe. Heights are given where a mesh is built or added to a scene instead (§4.2).
-Like the points themselves, they stay out of the equality of `mesh.gv`, which compares no
-geometry (scene spec §4.6).
+`mesh.gv.height` returns the heights, as a `pint` quantity in metres whose float64
+magnitude cannot be written, or `None` for a mesh without them, as scene spec §2 decision 8
+asks of a public value with a unit. `mesh.gv.depth` returns their negation, or `None`: a
+point 4,000 m below sea level has a depth of 4,000 m, a point on land a negative depth, and
+a missing height a depth of NaN. Both are computed from `gvHeight` when read, and both are
+read-only, down to the arrays inside them. Reading either imports `pint`, as reading a
+globe's radius does, while heights given as plain numbers never do. Heights say where the
+points are drawn, so changing the numbers without moving the points would make the two
+disagree, as scene spec §4.6 says of the globe. Heights are given where a mesh is built or
+added to a scene instead (§4.2). Like the points themselves, they stay out of the equality
+of `mesh.gv`, which compares no geometry (scene spec §4.6).
 
 Every function that returns a mesh made from one it was given keeps its heights,
 interpolated at any point a cut adds. `combine` keeps them whatever its `data`, and gives a
@@ -410,14 +412,26 @@ Each carries the status grammar of docs spec §3.6.
    ocean floor drawn at its depth cannot be seen from outside the globe. Until
    row 4 of globe spec §9, a user drops the base layer or gives it an opacity. That row
    owns it, with the base layer's lowering (globe spec §4.5).
-4. **❓ Open** (🔎 2026-11-03, {pull}`2826` · 🎯 row 2 of §9 · 🎫 {issue}`2838`) — **Heights
-   read back without their unit.** `mesh.gv.height` and `mesh.gv.depth` return plain float64
-   arrays in metres, while scene spec §2 decision 8 makes a public value with a unit a
-   `pint` quantity, and crs spec §4.9 counts heights and depths among them. Either they
-   return quantities, or this specification records an exception for arrays read back, such
-   as one that keeps `pint` unloaded. An exception would change what
+4. **🏁 Resolved** (2026-11-11, {pull}`2942` · 🔎 2026-11-03, {pull}`2826` · 🎫 {issue}`2838`) —
+   **Heights read back without their unit.** `mesh.gv.height` and `mesh.gv.depth` returned
+   plain float64 arrays in metres, while scene spec §2 decision 8 makes a public value with a
+   unit a `pint` quantity, and crs spec §4.9 counts heights and depths among them. Either
+   they return quantities, or this specification records an exception for arrays read back,
+   such as one that keeps `pint` unloaded. An exception would change what
    scene spec §2 decision 8 means, so it would retire that decision and agree a new one
-   (ledger spec §3.3), not edit it. It is settled before 0.6 releases the API.
+   (ledger spec §3.3), not edit it. {user}`bjlittle` chose quantities on 2026-11-10, so no
+   decision is retired, and §4.1 says so.
+5. **❓ Open** (🔎 2026-11-11, {pull}`2942` · 🎯 row 3 of §9 · 🎫 {issue}`2945`) — **Heights
+   in the scene that no test pins.** Three paths place heights exactly in the probes of the
+   final review of {pull}`2942`, but have no test: a mesh in a projected CRS other than the
+   scene's, a point cloud given heights through `add_points` on a map, and a seam cut on a
+   map whose central meridian is not 0. Each wants a test at both radii (§6). Row 3
+   rebuilds every layer from its heights, and so runs each path again.
+6. **❓ Open** (🔎 2026-11-11, {pull}`2942` · 🎯 row 3 of §9 · 🎫 {issue}`2948`) — **The
+   CRS read twice in `add_mesh`.** The check of heights against an ellipsoidal height
+   reads a mesh's CRS on every call, so a mesh drawn without heights reads it twice, about
+   142 µs a read. The same code has two tidy-ups from the review of {pull}`2942`. Row 3
+   reworks this path, as it rebuilds every layer from its heights.
 
 (heights-spec-9)=
 ## 9. Roadmap
@@ -425,7 +439,7 @@ Each carries the status grammar of docs spec §3.6.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Heights on a mesh: `gvHeight`, `height=`, `depth=` and `vertical_units=` on the bridge, `to_structured_grid` reading its `zs` as heights, positions from heights on the globe and on a map through the bridge, `resize` and `transform_mesh`, `mesh.gv.height` and `mesh.gv.depth`, missing heights, heights through the filters and `combine`, and the refusals of §4.4 | ✅ landed (2026-10-30, {pull}`2777`) |
-| 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | 📋 not started |
+| 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | ✅ landed (2026-11-11, {pull}`2942`) |
 | 3 | A scene whose globe can be replaced, rebuilding every layer from its heights | 📋 not started |
 | 4 | Heights from a raster band in `Transform.from_tiff`, before row 5 of globe spec §9 | 📋 not started |
 | 5 | A surface below sea level seen past the base layer, landing with row 4 of globe spec §9 | 📋 not started |
@@ -462,10 +476,10 @@ Each row follows ledger spec §3.4.
 | §2 decision 1 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_carried_heights.py`, `tests/globe/test_vertical.py` |
 | §2 decision 2 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/accessor/test_heights.py`, `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
 | §2 decision 3 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/globe/test_vertical.py` |
-| §2 decision 4 | ⏳ pending | rows 1 to 2 of §9 |
-| §2 decision 5 | ⏳ pending | rows 1 to 2 of §9 |
+| §2 decision 4 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/bridge/test_heights.py`, `tests/bridge/test_to_structured_grid.py`, `tests/core/test_carried_heights.py`, `tests/geoplotter/test_add_mesh_heights.py`, `tests/geoplotter/test_add_points.py` |
+| §2 decision 5 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/bridge/test_heights.py`, `tests/geoplotter/test_add_mesh_heights.py`, `tests/geoplotter/test_add_points.py` |
 | §2 decision 6 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/core/test_resize.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |
-| §2 decision 7 | ⏳ pending | row 2 of §9 |
+| §2 decision 7 | ✅ verified (2026-11-11, {pull}`2942`) | `tests/geoplotter/test_GeoPlotterBase.py`, `tests/geoplotter/test_add_mesh_heights.py` |
 | §2 decision 8 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/common/test_from_cartesian.py` |
 | §2 decision 9 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py` |
 | §2 decision 10 | ✅ verified (2026-11-03, {pull}`2826`) | `tests/bridge/test_heights.py`, `tests/globe/test_heights.py`, `tests/transform/test_heights.py` |

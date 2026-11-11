@@ -22,10 +22,10 @@ from typing import TYPE_CHECKING, NoReturn
 import pyvista as pv
 
 if TYPE_CHECKING:
-    import numpy as np
     from pyproj.crs import CRS
 
     from .globe import Globe
+    from .units import Quantity
 
 __all__ = ["GeoVistaAccessor"]
 
@@ -183,15 +183,16 @@ class GeoVistaAccessor:
         raise AttributeError(emsg)
 
     @property
-    def height(self) -> np.ndarray | None:
+    def height(self) -> Quantity | None:
         """The height of each point of the mesh.
 
         Returns
         -------
-        ndarray or None
+        pint.Quantity or None
             The heights, in metres above mean sea level, NaN where one is
-            missing, as a float64 array that cannot be written. ``None`` for a
-            mesh without heights, which is at sea level.
+            missing, as a quantity in ``pint``'s application registry whose
+            float64 magnitude cannot be written. ``None`` for a mesh without
+            heights, which is at sea level. The first read imports ``pint``.
 
         Notes
         -----
@@ -199,13 +200,14 @@ class GeoVistaAccessor:
 
         """
         from .globe import _carried_heights  # noqa: PLC0415
+        from .units import _as_lengths  # noqa: PLC0415
 
         heights = _carried_heights(self._mesh)
         if heights is None:
             return None
         result = heights.copy()
         result.setflags(write=False)
-        return result
+        return _as_lengths(result)
 
     @height.setter
     def height(self, _value: object) -> NoReturn:
@@ -230,27 +232,32 @@ class GeoVistaAccessor:
         raise AttributeError(emsg)
 
     @property
-    def depth(self) -> np.ndarray | None:
+    def depth(self) -> Quantity | None:
         """The depth of each point of the mesh, the negation of its height.
 
         Returns
         -------
-        ndarray or None
+        pint.Quantity or None
             The depths, in metres below mean sea level, so that a point on land
-            has a negative depth, NaN where one is missing, as a float64 array
-            that cannot be written. ``None`` for a mesh without heights.
+            has a negative depth, NaN where one is missing, as a quantity in
+            ``pint``'s application registry whose float64 magnitude cannot be
+            written. ``None`` for a mesh without heights. The first read
+            imports ``pint``.
 
         Notes
         -----
         .. versionadded:: 0.6.0
 
         """
-        heights = self.height
+        from .globe import _carried_heights  # noqa: PLC0415
+        from .units import _as_lengths  # noqa: PLC0415
+
+        heights = _carried_heights(self._mesh)
         if heights is None:
             return None
         result = -heights
         result.setflags(write=False)
-        return result
+        return _as_lengths(result)
 
     @depth.setter
     def depth(self, _value: object) -> NoReturn:

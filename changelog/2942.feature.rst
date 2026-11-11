@@ -1,0 +1,10 @@
+:meth:`geovista.geoplotter.GeoPlotterBase.add_mesh` and
+:meth:`geovista.geoplotter.GeoPlotterBase.add_points` take ``height=``,
+``depth=`` and ``vertical_units=``, as heights spec §4.2 lists, and place each
+point by its height at the scene's globe, on the globe or on a map. The heights
+are written to the copy drawn, so the mesh given is left unchanged, and a mesh
+that already carries heights takes no more. A mesh with heights built at another
+globe is now drawn from its heights at the scene's globe, where it used to keep
+its own exaggeration. :attr:`geovista.accessor.GeoVistaAccessor.height` and
+:attr:`geovista.accessor.GeoVistaAccessor.depth` now return ``pint`` quantities
+in metres. (:user:`claude`)

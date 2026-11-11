@@ -17,7 +17,10 @@ from geovista.globe import Globe
 
 @pytest.mark.parametrize("radius", [1.0, 6378137.0])
 def test_a_lifted_layer_keeps_its_lift(radius):
-    """The coastlines are lifted above the scene's globe, and record it."""
+    """The coastlines are lifted above the scene's globe, and record it.
+
+    Holds globe spec §2 decision 7.
+    """
     p = GeoPlotter(globe=Globe(render_radius=radius))
     drawn = p.add_coastlines().mapper.dataset
     np.testing.assert_allclose(

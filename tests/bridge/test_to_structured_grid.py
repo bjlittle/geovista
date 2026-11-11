@@ -32,11 +32,14 @@ def _points(zs: list[float]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 @pytest.mark.parametrize("radius", RADII)
 def test_levels_at_their_heights(radius, at_heights):
-    """Each level lies at its height, however unevenly the levels are spaced."""
+    """Each level lies at its height, however unevenly the levels are spaced.
+
+    Holds heights spec §2 decision 4.
+    """
     globe = Globe(render_radius=radius, exaggeration=20)
     grid = Transform.to_structured_grid(XS, YS, ZS, globe=globe)
     lons, lats, heights = _points(ZS)
-    np.testing.assert_array_equal(grid.gv.height, heights)
+    np.testing.assert_array_equal(grid.gv.height.m_as("m"), heights)
     np.testing.assert_allclose(
         grid.points,
         at_heights(lons, lats, heights, globe),
@@ -51,11 +54,13 @@ def test_levels_in_another_unit():
     Holds heights spec §2 decision 11.
     """
     grid = Transform.to_structured_grid(XS, YS, [0, 1, 3], vertical_units="km")
-    np.testing.assert_array_equal(np.unique(grid.gv.height), [0.0, 1000.0, 3000.0])
+    np.testing.assert_array_equal(
+        np.unique(grid.gv.height.m_as("m")), [0.0, 1000.0, 3000.0]
+    )
 
     feet = pint.UnitRegistry().Quantity([0, 1000, 3000], "foot")
     grid = Transform.to_structured_grid(XS, YS, feet)
-    np.testing.assert_allclose(np.unique(grid.gv.height), [0.0, 304.8, 914.4])
+    np.testing.assert_allclose(np.unique(grid.gv.height.m_as("m")), [0.0, 304.8, 914.4])
 
 
 def test_a_grid_of_depths_passes_their_negation(at_heights):

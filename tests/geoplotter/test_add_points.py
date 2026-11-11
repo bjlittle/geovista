@@ -15,6 +15,7 @@ from pyproj import CRS
 from pyproj.exceptions import CRSError
 import pytest
 
+from geovista.bridge import Transform
 from geovista.crs import WGS84, from_wkt, has_wkt, to_wkt
 from geovista.geoplotter import GeoPlotter
 from geovista.globe import Globe
@@ -298,3 +299,90 @@ def test_refuses_coordinates_of_another_size():
         warnings.simplefilter("error")
         with pytest.raises(ValueError, match=emsg):
             GeoPlotter().add_points(xs=xs, ys=LATS[:3], scalars=[1.0, 2.0, 3.0, 4.0])
+
+
+#: A height for each of the points, above and below sea level.
+HEIGHTS = np.array([1000.0, -4000.0, 250.0, 0.0])
+
+#: The Earth's radius of the default globe, in metres.
+R = 6378137.0
+
+
+def _radii(heights: np.ndarray, globe: Globe) -> np.ndarray:
+    """Return s (R + V(h)), worked out with numpy alone."""
+    heights = np.asarray(heights, dtype=np.float64)
+    mapped = np.where(
+        heights >= 0,
+        globe.exaggeration * heights,
+        globe.exaggeration_below * heights,
+    )
+    return globe.render_radius * (1.0 + mapped / R)
+
+
+@pytest.mark.parametrize("radius", [1.0, 6378137.0])
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"height": HEIGHTS},
+        {"depth": -HEIGHTS},
+        {"height": HEIGHTS / 1000.0, "vertical_units": "km"},
+    ],
+    ids=["height", "depth", "kilometres"],
+)
+def test_heights_with_xs_ys(kwargs, radius):
+    """Points given heights are placed by them at the scene's globe.
+
+    Holds heights spec §2 decision 4.
+    """
+    p = GeoPlotter(globe=Globe(render_radius=radius, exaggeration=20))
+    drawn = p.add_points(xs=LONS, ys=LATS, **kwargs).mapper.dataset
+    np.testing.assert_allclose(drawn.gv.height.m_as("m"), HEIGHTS, rtol=1e-12)
+    np.testing.assert_allclose(
+        np.linalg.norm(drawn.points, axis=1), _radii(HEIGHTS, p.globe), rtol=1e-12
+    )
+
+
+def test_heights_drop_with_a_missing_point():
+    """A missing point is dropped with its height."""
+    xs = np.ma.masked_array(LONS, mask=[0, 1, 0, 0])
+    with pytest.warns(UserWarning, match=DROPPED):
+        drawn = GeoPlotter().add_points(xs=xs, ys=LATS, height=HEIGHTS).mapper.dataset
+    assert drawn.n_points == 3
+    np.testing.assert_array_equal(drawn.gv.height.m_as("m"), HEIGHTS[[0, 2, 3]])
+
+
+@pytest.mark.parametrize("radius", [1.0, 6378137.0])
+def test_heights_with_points(radius):
+    """A cloud given as points takes heights, placed at the scene's globe."""
+    cloud = Transform.from_points(LONS, LATS)
+    p = GeoPlotter(globe=Globe(render_radius=radius, exaggeration=20))
+    drawn = p.add_points(points=cloud, height=HEIGHTS).mapper.dataset
+    np.testing.assert_allclose(
+        np.linalg.norm(drawn.points, axis=1), _radii(HEIGHTS, p.globe), rtol=1e-12
+    )
+    assert cloud.gv.height is None
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"height": HEIGHTS}, r"carries heights of its own, .* got 'height'"),
+        ({"depth": HEIGHTS}, r"carries heights of its own, .* got 'depth'"),
+    ],
+    ids=["height", "depth"],
+)
+def test_refuses_heights_for_points_that_carry_them(kwargs, match):
+    """Points that carry heights take no more.
+
+    Holds heights spec §2 decision 5.
+    """
+    cloud = Transform.from_points(LONS, LATS, height=HEIGHTS)
+    with pytest.raises(ValueError, match=match):
+        GeoPlotter().add_points(points=cloud, **kwargs)
+
+
+def test_refuses_heights_for_points_with_a_zlevel():
+    """Points given as a mesh take no z-level with heights."""
+    cloud = Transform.from_points(LONS, LATS)
+    with pytest.raises(ValueError, match=r"never given together"):
+        GeoPlotter().add_points(points=cloud, height=HEIGHTS, zlevel=1)
