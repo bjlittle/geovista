@@ -272,8 +272,13 @@ def _place_by_heights(mesh: pv.DataSet, globe: Globe, /) -> None:
     globe.to_mesh(mesh)
 
 
-def _cloud_levels(mesh: pv.DataSet, /) -> np.ndarray | None:
-    """Return the z-levels the points of a point cloud carry.
+def _carries_levels(mesh: pv.DataSet, /) -> bool:
+    """Determine whether the points of a point cloud carry z-levels other than 0.
+
+    On the sphere a cloud keeps its levels in the radius of each point, so a
+    point off the render radius of the globe it records carries a level, to
+    the precision its points are stored in. On a map it keeps them in
+    ``gvZLevel``.
 
     Parameters
     ----------
@@ -282,9 +287,9 @@ def _cloud_levels(mesh: pv.DataSet, /) -> np.ndarray | None:
 
     Returns
     -------
-    ndarray or None
-        The z-level of each point of a point cloud, or ``None`` for a mesh that
-        is not one, or a cloud that carries no z-level.
+    bool
+        Whether the mesh is a point cloud whose points carry z-levels other
+        than 0.
 
     Notes
     -----
@@ -292,19 +297,26 @@ def _cloud_levels(mesh: pv.DataSet, /) -> np.ndarray | None:
 
     """
     if not isinstance(mesh, pv.PolyData) or not point_cloud(mesh):
-        return None
+        return False
 
     if projected(mesh):
-        if GV_POINT_ZLEVEL not in mesh.point_data:
-            return None
-        levels: np.ndarray = np.asarray(mesh.point_data[GV_POINT_ZLEVEL])
-        return levels
+        return GV_POINT_ZLEVEL in mesh.point_data and bool(
+            np.any(np.asarray(mesh.point_data[GV_POINT_ZLEVEL]) != 0)
+        )
 
-    if GV_FIELD_ZSCALE not in mesh.field_data:
-        return None
+    globe = Globe.from_mesh(mesh)
 
-    result: np.ndarray = from_cartesian(mesh)[:, 2]
-    return result
+    if GV_FIELD_ZSCALE not in mesh.field_data or globe is None:
+        return False
+
+    points = np.asarray(mesh.points)
+    rtol = 16 * np.finfo(points.dtype).eps
+    return not np.allclose(
+        np.linalg.norm(points.astype(np.float64), axis=1),
+        globe.render_radius,
+        rtol=rtol,
+        atol=0,
+    )
 
 
 if TYPE_CHECKING:
@@ -1161,8 +1173,7 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
-        levels = _cloud_levels(mesh)
-        if levels is not None and np.any(levels != 0):
+        if _carries_levels(mesh):
             emsg = (
                 "A height and a z-level are never given together, and the point "
                 "cloud given carries z-levels other than 0."
@@ -1682,6 +1693,9 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         scalars: str | ArrayLike | None = None,
         crs: CRSLike | None = None,
         style: str | None = None,
+        height: ArrayLike | Quantity | None = None,
+        depth: ArrayLike | Quantity | None = None,
+        vertical_units: str | None = None,
         zlevel: int | ArrayLike | None = None,
         zscale: float | None = None,
         **kwargs: Any,
@@ -1723,6 +1737,20 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             or ``points_gaussian``. The ``points_gaussian`` option may be controlled
             with the ``emissive`` and ``render_points_as_spheres`` options in
             `kwargs`.
+        height : ArrayLike or pint.Quantity, optional
+            The height of each point, or one for every point, above mean sea
+            level: in metres, in the unit `vertical_units` names, or a ``pint``
+            quantity of length from any registry. The points are placed by them
+            at the scene's globe. A missing point given with `xs` and `ys` is
+            dropped with its height. A `points` mesh that carries heights takes
+            none.
+        depth : ArrayLike or pint.Quantity, optional
+            The depth of each point, or one for every point, positive downward,
+            in the same forms as a `height`. Give a `height` or a `depth`, not
+            both.
+        vertical_units : str, optional
+            The CF unit of a `height` or `depth` given as plain numbers.
+            Defaults to metres.
         zlevel : int or ArrayLike, optional
             The z-axis level. Used in combination with the `zscale` to offset the
             render radius of the scene's globe by a proportional amount i.e.,
@@ -1760,6 +1788,17 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
             )
             raise ValueError(emsg)
 
+        # the heights given, passed on only when given
+        heights: dict[str, Any] = {
+            name: value
+            for name, value in (
+                ("height", height),
+                ("depth", depth),
+                ("vertical_units", vertical_units),
+            )
+            if value is not None
+        }
+
         if points is None and xs is None and ys is None:
             emsg = (
                 "Require either 'points' or both 'xs' and 'ys' to be specified, "
@@ -1786,6 +1825,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 points = pv.wrap(points)
 
             mesh = points
+
+            if "height" in heights or "depth" in heights:
+                # a points mesh is given no z-level, so one given with heights
+                # is refused rather than dropped (heights spec §4.4)
+                _refuse_zlevel(zlevel)
 
             if crs is not None:
                 if has_wkt(mesh):
@@ -1826,6 +1870,8 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                     if np.any(missing):
                         scalars = _cut_scalars(scalars, ~missing)
 
+            # the points are built at their heights, and a missing point is
+            # dropped with its height (positions spec §4.5)
             mesh = Transform.from_points(
                 xs,
                 ys,
@@ -1833,13 +1879,15 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
                 globe=self.globe,
                 zlevel=zlevel,
                 zscale=zscale,
+                **heights,
             )
+            heights = {}
 
         # defensive kwarg pop
         if "texture" in kwargs:
             _ = kwargs.pop("texture")
 
-        return self.add_mesh(mesh, style=style, scalars=scalars, **kwargs)
+        return self.add_mesh(mesh, style=style, scalars=scalars, **heights, **kwargs)
 
     def view_poi(
         self,
