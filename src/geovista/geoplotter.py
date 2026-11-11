@@ -1191,10 +1191,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
         """Return the mesh as drawn at the globe of the scene.
 
         A mesh that records another globe, in its four fields or a ``gvRadius``,
-        is drawn as a copy that records the scene's, with its points scaled by
-        the ratio of the two render radii on the globe, and unmoved on a map. A
-        mesh that records the scene's globe, or records none, is drawn where its
-        points are, even when they lie at one radius.
+        is drawn as a copy that records the scene's. A mesh with heights is built
+        from them at the scene's globe, on the globe and on a map. Any other has
+        its points scaled by the ratio of the two render radii on the globe, and
+        unmoved on a map. A mesh that records the scene's globe, or records none,
+        is drawn where its points are, even when they lie at one radius.
 
         Parameters
         ----------
@@ -1223,7 +1224,11 @@ class GeoPlotterBase(_PlotterBase):  # numpydoc ignore=PR01
 
         mesh = mesh.copy()
 
-        if not projected(mesh):
+        if _carried_heights(mesh) is not None:
+            # a mesh with heights is built from them at the scene's globe, on
+            # the globe and on a map (heights spec §4.3)
+            _place_by_heights(mesh, self.globe)
+        elif not projected(mesh):
             mesh.points = mesh.points * (
                 self.globe.render_radius / recorded.render_radius
             )

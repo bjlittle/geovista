@@ -14,10 +14,11 @@ import pytest
 import pyvista as pv
 
 from geovista.bridge import Transform
-from geovista.common import GV_POINT_HEIGHT
+from geovista.common import _GV_GLOBE_FIELDS, GV_POINT_HEIGHT
 from geovista.crs import WGS84, to_wkt
 from geovista.geoplotter import GeoPlotter
 from geovista.globe import Globe
+from geovista.transform import transform_mesh
 
 #: A render radius of 1, and the Earth's radius.
 RADII = [1.0, 6378137.0]
@@ -258,3 +259,67 @@ def test_refuses_heights_for_what_is_not_a_dataset():
     """Heights are given for the points of a mesh, which a block has not."""
     with pytest.raises(TypeError, match=r"got 'depth' with a MultiBlock"):
         GeoPlotter().add_mesh(pv.MultiBlock([_grid()]), depth=1.0)
+
+
+#: How a recorded globe differs from the scene's, one field each.
+OTHERS = {
+    "earth radius": {"radius": 6371000.0},
+    "render radius": {"render_radius": 2.0},
+    "exaggeration": {"exaggeration": 100},
+    "exaggeration below": {"exaggeration_below": 5},
+}
+
+
+@pytest.mark.parametrize("radius", RADII)
+@pytest.mark.parametrize("other", OTHERS.values(), ids=OTHERS.keys())
+def test_another_globe_on_the_sphere(other, radius):
+    """A mesh with heights at another globe is drawn from them at the scene's.
+
+    Holds heights spec §2 decision 7.
+    Holds globe spec §2 decision 7.
+    """
+    scene = {"render_radius": radius, **EXAGGERATED}
+    recorded = Globe(**{**scene, **other})
+    mesh = _grid(height=HEIGHTS, globe=recorded)
+    p = GeoPlotter(globe=Globe(**scene))
+    drawn = _drawn(p, mesh)
+    np.testing.assert_allclose(_norms(drawn), _radii(HEIGHTS, p.globe), rtol=1e-12)
+    assert Globe.from_mesh(drawn) == p.globe
+    np.testing.assert_array_equal(drawn.gv.height.m_as("m"), HEIGHTS)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_another_globe_on_a_map(radius):
+    """On a map, a mesh with heights at another globe lies at the scene's V(h)."""
+    recorded = Globe(render_radius=radius, exaggeration=100)
+    mesh = transform_mesh(_grid(height=HEIGHTS, globe=recorded), "+proj=eqc")
+    p = GeoPlotter(crs="+proj=eqc", globe=Globe(render_radius=radius))
+    drawn = _drawn(p, mesh)
+    np.testing.assert_allclose(
+        drawn.points[:, 2], _mapped(HEIGHTS, p.globe), rtol=1e-6, atol=1e-6
+    )
+    np.testing.assert_array_equal(drawn.points[:, :2], mesh.points[:, :2])
+    assert Globe.from_mesh(drawn) == p.globe
+
+
+@pytest.mark.parametrize("radius", RADII)
+@pytest.mark.parametrize("records", ["the scene's", "none"])
+def test_the_scenes_globe_or_none_is_drawn_as_it_lies(records, radius):
+    """A mesh with heights at the scene's globe, or at none, keeps its points."""
+    globe = Globe(render_radius=radius, **EXAGGERATED)
+    if records == "none":
+        mesh = _grid(height=HEIGHTS, globe=Globe(render_radius=radius, exaggeration=7))
+        for field in _GV_GLOBE_FIELDS:
+            del mesh.field_data[field]
+    else:
+        mesh = _grid(height=HEIGHTS, globe=globe)
+    drawn = _drawn(GeoPlotter(globe=globe), mesh)
+    np.testing.assert_array_equal(drawn.points, mesh.points)
+
+
+@pytest.mark.parametrize("radius", RADII)
+def test_without_heights_the_ratio_stands(radius):
+    """A mesh without heights at another globe is scaled by the render radii."""
+    mesh = _grid(globe=Globe(render_radius=2.0 * radius))
+    drawn = _drawn(GeoPlotter(globe=Globe(render_radius=radius)), mesh)
+    np.testing.assert_allclose(_norms(drawn), radius, rtol=1e-12)
