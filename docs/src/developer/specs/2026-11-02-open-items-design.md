@@ -525,6 +525,17 @@ Each carries the status grammar of §3.2.
     after it, and the suite would pass. A check could read a scope's *landing with* and
     fail when one row has landed and the other has not, or when they landed in different
     pull requests. {pull}`2879` adds that check, as item 7 of §3.7.
+15. **❓ Open** (🔎 2026-11-12, {pull}`2956` · 🎯 row 8 of §8 · 🎫 {issue}`2955`) — **The order
+    between rows is not checked.** A row can depend on another, in its own specification or
+    another's, and the specifications say so in prose: lands with, lands before, lands with
+    or after, is planned once another has landed, waits on. Item 7 of §3.7 checks the first
+    alone, and nothing reads the graph they make across the specifications. The layers
+    specification met the cost: row 5 of heights spec §9 was to land with
+    row 4 of globe spec §9 with no design of its own, so that row could not land until
+    someone designed it, and only a reviewer reading the whole chain found it. A check could
+    read every roadmap's ordering phrases into one graph, fail on a cycle and on a
+    `not started` row that must land with or after a `candidate`, and report a row that
+    must land with another that still owes open items.
 
 (items-spec-8)=
 ## 8. Roadmap
@@ -538,11 +549,13 @@ Each carries the status grammar of §3.2.
 | 5 | The globe, scene, heights and ledger specifications' items brought in | ✅ landed (2026-11-03, {pull}`2826`) |
 | 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | ✅ landed (2026-11-04, {pull}`2878`) |
 | 7 | A row landing with another specification's row checked to land with it, §7 item 14 | ✅ landed (2026-11-05, {pull}`2879`) |
+| 8 | The order between rows checked across the specifications, §7 item 15 | 📋 not started |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
 after it. Rows 3 to 5 each raise the issues their specifications' items lack, and need
 {user}`bjlittle`'s judgement on the row that owes each item (§3.10). Row 7 follows row 6, as
-the check that settling §7 item 11 called for (§3.4).
+the check that settling §7 item 11 called for (§3.4). Row 8 extends row 7's
+check to every ordering phrase.
 
 (items-spec-9)=
 ## 9. References
