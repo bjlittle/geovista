@@ -16,7 +16,7 @@
   `zlevel` and `zscale`
 - **Lineage:** [crs spec](2026-10-23-globe-first-crs-design.md) › **globe spec**
 - **Children:** [heights spec](2026-10-28-heights-as-data-design.md),
-  [scene spec](2026-10-27-globe-scene-design.md)
+  [layers spec](2026-11-12-layers-design.md), [scene spec](2026-10-27-globe-scene-design.md)
 - **Extends:** crs spec §4.1 and crs spec §4.9, and brings forward from crs spec §9 the
   heights in physical units and the replacement of `zlevel` that it gave to the
   design of region solids and the vertical. It inherits that specification's
@@ -407,6 +407,12 @@ display reduces it, and stays an explicit opt-in
 (globe-spec-4-5)=
 ### 4.5 Layers
 
+> **Extended by a child specification.** [`2026-11-12-layers-design.md`](2026-11-12-layers-design.md), `layers spec §…`,
+> specifies the order of layers as named tiers, clips every layer at its horizon, gives
+> layers below sea level a tier beneath the base layer, and says what happens below the
+> surface and on the web. It inherits this document's decisions (§2) and testing (§6),
+> except that a place becomes a named tier.
+
 Each layer of a scene has a place in an order: the base layer at the bottom, then data
 surfaces in the order they are added unless given a place of their own, then lines such as
 coastlines and the graticule, then labels. The order says which layer shows where two
@@ -568,33 +574,37 @@ Each carries the status grammar of docs spec §3.6.
    vertical scale shown to the viewer.** Its form, a ruler beside the globe or a scale bar
    on the map, and how it marks the vertical mapping: two scales for two factors, and ticks
    that follow the mapping where it is not a straight line. Row 6 of §9 owns it.
-2. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 4 of §9 · 🎫 {issue}`2829`) — **A warped
-   base layer.** The base layer is lowered by the sag of the surfaces above it. When it is
-   terrain, warped by its own heights, that lowering moves terrain that may be visible where
-   no surface covers it. Whether to lower it only beneath the surfaces, or accept the offset
-   and record it, needs measuring with the LFRic orography.
-3. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 4 of §9 · 🎫 {issue}`2830`) — **Data
-   surfaces at one height on different meshes.** They fall back on order and depth bias,
-   which leaves a sliver at the limb for a coarse mesh. Whether that is ever seen in
-   practice, and what to do if it is.
+2. **🏁 Resolved** (2026-11-12, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2829`) —
+   **A warped base layer.** The base layer is lowered by the sag of the surfaces above it. When
+   it is terrain, warped by its own heights, that lowering moves terrain that may be visible
+   where no surface covers it. Measured with the LFRic orography (layers spec §3.4): lowered
+   everywhere, it bleeds least and moves terrain up to 12 km under a 5° surface; lowered only
+   beneath, it bleeds more, the more so at the Earth's radius. It is lowered everywhere, and
+   refinement for display, which shrinks the lowering to 174 m, is the fix (layers spec §4.7).
+3. **🏁 Resolved** (2026-11-12, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2830`) —
+   **Data surfaces at one height on different meshes.** They fall back on order and depth
+   bias, which leaves a sliver at the limb for a coarse mesh. It is seen at a grazing view,
+   4,762 pixels for a 5° surface over C48, and refinement for display brings it to 12
+   (layers spec §4.7).
 4. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 10 of §9 · 🎫 {issue}`2831`) — **The
    physical render radius.** §3.5 found layering the same at the Earth's radius. Picking,
    clipping planes and interaction at that scale are not yet measured, before the default
    could change.
-5. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 4 of §9 · 🎫 {issue}`2832`) — **The ideal
-   of the coastline measure.** It over-counts at the limb, so the limb's visibility is
-   understated. A tighter ideal would let the limb be tested too.
+5. **🏁 Resolved** (2026-11-12, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2832`) —
+   **The ideal of the coastline measure.** It over-counts at the limb, so the limb's
+   visibility is understated. Clipped at the true horizon, the ideal counts no coastline
+   past it, and the clipped layerings show all of it (layers spec §3.3, layers spec §6).
 6. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 7 of §9 · 🎫 {issue}`2728`) — **Heights
    given for each cell.** They are refused (§4.3). Averaging them onto the vertices lowers
    every peak and raises every valley without a word. Drawing each cell flat at its own
    height is honest but stepped. Users will want cell-centred heights to work as they are,
    and the issue holds the options for that conversation.
-7. **❓ Open** (🔎 2026-10-26, {pull}`2732` · 🎯 row 4 of §9 · 🎫 {issue}`2833`) — **A biased
-   surface at the limb.** A surface a place above another is drawn 256 units nearer the
-   viewer. A bias of 256 on lines pulled the far side's coastlines over the horizon (§3.5),
-   and no surface was measured with one. Whether a surface's far side shows past the
-   horizon, and if it does, whether to shrink the bias or apply it only where surfaces
-   overlap, needs measuring before row 4 is planned.
+7. **🏁 Resolved** (2026-11-12, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2833`) —
+   **A biased surface at the limb.** A surface a place above another is drawn 256 units
+   nearer the viewer. Its far side does show past the horizon, up to 1,724 pixels at 256
+   (layers spec §3.2). Neither shrinking the bias nor applying it only where surfaces
+   overlap: every layer is clipped at its horizon, which removes the far side at any bias
+   (layers spec §2 decision 5).
 8. **❓ Open** (🔎 2026-10-27, {pull}`2757` · 🎯 row 9 of §9 · 🎫 {issue}`2834`) — **Bands, and
    functions of height.** A vertical mapping in bands, such as a stratosphere compressed
    further than the troposphere beneath it, or one that follows a function of height. Either
@@ -644,7 +654,7 @@ Each carries the status grammar of docs spec §3.6.
 | 1 | Units: `geovista.units`, with `pint` and `pint-cf` | ✅ landed (2026-10-27, {pull}`2754`) |
 | 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6, by rows 1 and 2 of scene spec §9 | ✅ landed (2026-10-28, {pull}`2766`) |
 | 3 | Heights as data: `height` and `depth`, the vertical mapping, positions on the globe and on a map, refusals, and `to_structured_grid` reading its levels as heights, by rows 1 and 2 of heights spec §9 | ✅ landed (2026-11-11, {pull}`2942`) |
-| 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, the lift, and the measures of §3.5 as tests | 📋 not started |
+| 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, the lift, and the measures of §3.5 as tests, by rows 1 to 4 of layers spec §9 | 📋 not started |
 | 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | 📋 not started |
 | 6 | A vertical scale for the viewer | 💡 candidate: a scene with heights that a scientist shows |
 | 7 | Heights given for each cell | 💡 candidate: a user asks for it, which no check can observe |

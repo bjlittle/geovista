@@ -409,9 +409,10 @@ Each carries the status grammar of docs spec §3.6.
    of the points ({issue}`2770`).
 3. **❓ Open** (🔎 2026-10-29, {pull}`2771` · 🎯 row 5 of §9 · 🎫 {issue}`2836`) — **A surface
    below sea level, under the base layer.** The base layer is opaque at sea level, so an
-   ocean floor drawn at its depth cannot be seen from outside the globe. Until
-   row 4 of globe spec §9, a user drops the base layer or gives it an opacity. That row
-   owns it, with the base layer's lowering (globe spec §4.5).
+   ocean floor drawn at its depth cannot be seen from outside the globe. A user drops the
+   base layer or gives it an opacity. Layers spec §4.3 then clips nothing, and the
+   subsurface tier keeps the floor beneath the sea surface (layers spec §4.1), so row 5
+   lands with row 2 of layers spec §9, which builds both.
 4. **🏁 Resolved** (2026-11-11, {pull}`2942` · 🔎 2026-11-03, {pull}`2826` · 🎫 {issue}`2838`) —
    **Heights read back without their unit.** `mesh.gv.height` and `mesh.gv.depth` returned
    plain float64 arrays in metres, while scene spec §2 decision 8 makes a public value with a
@@ -442,7 +443,7 @@ Each carries the status grammar of docs spec §3.6.
 | 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | ✅ landed (2026-11-11, {pull}`2942`) |
 | 3 | A scene whose globe can be replaced, rebuilding every layer from its heights | 📋 not started |
 | 4 | Heights from a raster band in `Transform.from_tiff`, before row 5 of globe spec §9 | 📋 not started |
-| 5 | A surface below sea level seen past the base layer, landing with row 4 of globe spec §9 | 📋 not started |
+| 5 | A surface below sea level seen past a base layer given an opacity, or none, in the subsurface tier, landing with row 2 of layers spec §9 | 📋 not started |
 
 Statuses follow docs spec §3.6. Row 2 is planned once row 1 has landed. Until it lands, a
 scene scales a mesh with heights that records another globe by the ratio of render radii,
@@ -454,7 +455,8 @@ released.
 Rows 3 to 5 each wait on a row of globe spec §9. Row 3 lands with or after
 row 3 of globe spec §9, which fixes a scene's globe when the scene is made. Row 4 lands
 before row 5 of globe spec §9, which migrates the gallery. Row 5 lands with
-row 4 of globe spec §9, which lowers the base layer.
+row 2 of layers spec §9, which builds the subsurface tier and the clip that a base layer
+given an opacity switches off.
 
 (heights-spec-10)=
 ## 10. References
