@@ -1,0 +1,4 @@
+The :ref:`How We Work <gv-developer-workflow>` page gains two rules: a design
+choice that can be measured is measured with a throwaway spike before it is
+agreed, and a design or finding about what a scene looks like is shown with a
+render or a diagram beside the words. (:user:`claude`)
