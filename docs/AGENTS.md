@@ -61,16 +61,16 @@ Key extensions configured in `src/conf.py`:
 the `_inventory/*.inv` it writes. Without one, an outage there falls through to
 `intersphinx_resilience`, which saves the build by disabling `nitpicky`. See issue #2517.
 
-⚠️ **An extension's default asset URLs are a network dependency too**, and they
-bite at *read* time, so no build log ever shows them. `sphinx-tippy` defaulted
-`tippy_js` to two floating-major `unpkg` URLs on 148 of 173 pages until #2549
-vendored the bundles under `src/_static/js/` (not `_static/tippy/`, which the
-extension owns, nor `_static/vendor/`, the theme's), each beside its upstream MIT
-notice as `<bundle>.LICENSE.txt`. Audit with `grep -rho '<script[^>]*src="https[^"]*"'
-_build/html` — though that sees the *loader*, not what it then fetches: the
-`sphinx-iconify` script on 171 pages resolved each icon against `api.iconify.design`
-from inside the bundle, so vendoring it would have cleaned the grep and fixed
-nothing. #2559 dropped it for SVGs under `_static/icons/`, gated by `test_assets.py`.
+⚠️ **An extension's default asset URLs are a network dependency too**, biting at *read* time,
+so no build log shows them. #2549 vendored `sphinx-tippy`'s floating `unpkg` bundles under
+`src/_static/js/` (not `_static/tippy/` or `_static/vendor/`), each beside its MIT notice as
+`<bundle>.LICENSE.txt`. Auditing `grep -rho '<script[^>]*src="https[^"]*"' _build/html` sees
+only the *loader*: `sphinx-iconify` fetched each icon from `api.iconify.design` inside its
+bundle, so #2559 swapped it for SVGs under `_static/icons/`, gated by `test_assets.py`.
+⚠️ **Read the Docs caps a build's HTML at 1,024 MB** (a warning since 2026-10-01). The `.vtksz`
+scenes dominate it, as trame inlines textures as raw RGB and points as float64, so
+`_ext/scene_footprint.py` shrinks them at `build-finished` (#2960). Measure with every `plot_*`
+on, as RTD builds, and `du` the output: a `html-noplot` build has no scenes.
 
 ⚠️ **`tippy_skip_urls` matches the raw `href`, which comes in two shapes.**
 `re.match` sees the href as written: bare between sibling pages (`clouds.html`)
@@ -196,4 +196,4 @@ Tooltips) and `testing.rst` (:fa:`window-maximize` Browser Tests), which documen
 
 ---
 
-**Last Updated**: 10 November 2026
+**Last Updated**: 13 November 2026

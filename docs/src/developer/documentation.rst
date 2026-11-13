@@ -110,6 +110,7 @@ static images and interactive scenes can be resource hungry and time consuming.
 :fa:`file-code` **Reference:**
 
 - :bash:`docs/src/_ext/gallery_scenes.py`
+- :bash:`docs/src/_ext/scene_footprint.py`
 - :bash:`docs/src/conf.py`
 
 The `sphinx-gallery`_ examples run in parallel, with up to four worker
@@ -144,6 +145,16 @@ little over the image, and use the name the image tests use, e.g.,
 ``grid.reykjanes_contour``. A unit test rejects a name that matches no example.
 The change also applies to an incremental build, which runs again each example
 that has been added to or removed from ``STATIC`` since the last build.
+
+Once the build has finished, :bash:`docs/src/_ext/scene_footprint.py` rewrites
+every ``.vtksz`` scene it exported, gallery and docstring plots alike. The
+exporter writes a texture as raw pixels and every point as float64, so each
+scene with the base layer's 7,020 x 3,510 texture carried about 39 MB of it,
+and a full build came to 1.7 GB, over the 1,024 MB that Read the Docs allows
+for the HTML of a build. The extension resamples a texture wider than
+``MAX_WIDTH``, 2,048 pixels, to that width, and stores points as float32, which
+took the scenes from 1,693 MB to 535 MB. A static image keeps the full
+texture, since only the exported scene is rewritten.
 
 
 .. _gv-developer-documentation-parallel:

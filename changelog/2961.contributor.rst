@@ -1,0 +1,5 @@
+The documentation build now shrinks each interactive ``.vtksz`` scene it
+exports, resampling a texture wider than 2,048 pixels to that width and storing
+points as float32. A full build's scenes drop from 1,693 MB to 535 MB, under the
+size limit Read the Docs sets for a build's HTML. See :issue:`2960`.
+(:user:`claude`)
