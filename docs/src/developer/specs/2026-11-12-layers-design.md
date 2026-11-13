@@ -46,42 +46,42 @@ below the surface and on the web.
 
 These were decided with {user}`bjlittle` while the design was written.
 
-1. **🤝 Agreed** (2026-11-12, {user}`bjlittle`, {pull}`2954`) — **Layering is designed for a
+1. **🤝 Agreed** (2026-11-14, {user}`bjlittle`, {pull}`2954`) — **Layering is designed for a
    camera outside the globe, and keeps a camera inside working.** The default camera is
    outside, looking at the globe, or above a map, looking down. A camera beneath the surface
    or inside the Earth, as an oceanographer looking at the ocean may want, must still work:
    below the surface the scene switches off the lowering, the bias and the clip, and depth
    alone decides (§4.4). Designing that view is §8 item 5.
-2. **🤝 Agreed** (2026-11-12, {user}`bjlittle`, {pull}`2954`) — **No refinement by default.**
+2. **🤝 Agreed** (2026-11-14, {user}`bjlittle`, {pull}`2954`) — **No refinement by default.**
    crs spec §2 decision 8 stands: a data mesh's cells are never refined by default. On the
    globe the default is the hybrid of globe spec §4.5 with the horizon clip of §2 decision 5.
    Refinement for display, the opt-in of row 13 of crs spec §10, is what fixes the scenes the
    default handles less well (§4.7).
-3. **🤝 Agreed** (2026-11-12, {user}`bjlittle`, {pull}`2954`) — **The order is given by named
+3. **🤝 Agreed** (2026-11-14, {user}`bjlittle`, {pull}`2954`) — **The order is given by named
    tiers, not by a number.** A `zorder` would be familiar to matplotlib and cartopy users,
    but on the globe it cannot mean what it means there: depth still decides, so a mountain in
    front hides a layer of any order. A tier's name says what it is for. The built-in tiers,
    bottom to top, are `"subsurface"`, `"base"`, `"data"`, `"lines"` and `"labels"`. A layer
    names its tier with `tier=`, and within a tier layers keep the order they were added,
    unless `above=` or `below=` places one next to another of that tier.
-4. **🤝 Agreed** (2026-11-12, {user}`bjlittle`, {pull}`2954`) — **A user can add and alias
+4. **🤝 Agreed** (2026-11-14, {user}`bjlittle`, {pull}`2954`) — **A user can add and alias
    tiers.** `add_tier(name, above=..., below=...)` inserts a tier next to another, and
    `GeoPlotter(tiers=[...])` gives the whole order at once. `alias_tier(alias, tier)` gives a
    tier a second name. A name that is neither a tier nor an alias is refused, and the scene
    always reports a tier by its own name, never by an alias.
-5. **🤝 Agreed** (2026-11-12, {user}`bjlittle`, {pull}`2954`) — **Every layer is clipped at
+5. **🤝 Agreed** (2026-11-14, {user}`bjlittle`, {pull}`2954`) — **Every layer is clipped at
    its own horizon.** Depth bias pulls a layer towards the viewer, and with it any part of
    the layer behind the globe. Clipping each layer at the horizon it can be seen over removes
    that part, so no bias can pull it into view. The plane follows the camera, and is worked
    out from the layer's highest point, so a layer above sea level keeps what peeks over the
    horizon. It applies while an opaque base layer hides the far side, and a scene without one
    is not clipped (§4.3).
-6. **🤝 Agreed** (2026-11-12, {user}`bjlittle`, {pull}`2954`) — **Layers below sea level have
+6. **🤝 Agreed** (2026-11-14, {user}`bjlittle`, {pull}`2954`) — **Layers below sea level have
    a tier below the base layer.** Lowering the base layer draws the sea surface beneath any
    shallow ocean data, which then shows through it. A layer in a tier below `"base"` is
    pushed away from the viewer instead, and a layer given depths joins `"subsurface"` by
    default.
-7. **🤝 Agreed** (2026-11-12, {user}`bjlittle`, {pull}`2954`) — **On the web, the bias is
+7. **🤝 Agreed** (2026-11-14, {user}`bjlittle`, {pull}`2954`) — **On the web, the bias is
    restored and the clip is left out for now.** The interactive scenes of the documentation,
    and trame's client-side rendering in a notebook, lose the bias in export, which is a gap
    in trame's serializer that vtk.js does not share. The bias is written back, upstream and
@@ -528,22 +528,22 @@ Out of scope:
 
 Each carries the status grammar of docs spec §3.6.
 
-1. **❓ Open** (🔎 2026-11-12, {pull}`2954` · 🎯 row 2 of §9 · 🎫 {issue}`2949`) — **Labels.**
+1. **❓ Open** (🔎 2026-11-14, {pull}`2954` · 🎯 row 2 of §9 · 🎫 {issue}`2949`) — **Labels.**
    Labels take the top tier. Whether a label is clipped with its point, drawn at its point's
    depth, or always shown, was not measured.
-2. **❓ Open** (🔎 2026-11-12, {pull}`2954` · 🎯 row 5 of §9 · 🎫 {issue}`2950`) — **A clip on
+2. **❓ Open** (🔎 2026-11-14, {pull}`2954` · 🎯 row 5 of §9 · 🎫 {issue}`2950`) — **A clip on
    the web.** No clip follows the camera in a browser (§4.8). Either geovista's documentation
    ships a viewer with a few lines of vtk.js that move each layer's plane, or trame's viewer
    gains a hook for it upstream.
-3. **❓ Open** (🔎 2026-11-12, {pull}`2954` · 🎯 row 6 of §9 · 🎫 {issue}`2951`) — **Data
+3. **❓ Open** (🔎 2026-11-14, {pull}`2954` · 🎯 row 6 of §9 · 🎫 {issue}`2951`) — **Data
    draped over terrain.** Data at sea level over a warped base layer lies beneath the terrain
    where it rises, and the bias of its tier draws it over low ground anyway. Draping it, at
    the terrain's heights, is a design of its own.
-4. **❓ Open** (🔎 2026-11-12, {pull}`2954` · 🎯 row 7 of §9 · 🎫 {issue}`2952`) — **trame
+4. **❓ Open** (🔎 2026-11-14, {pull}`2954` · 🎯 row 7 of §9 · 🎫 {issue}`2952`) — **trame
    drops the bias.** trame's serializer does not write a mapper's relative offsets (§3.8).
    Until upstream does, geovista's documentation build writes them (§4.8), and that interim
    code goes once it does.
-5. **❓ Open** (🔎 2026-11-12, {pull}`2954` · 🎯 row 8 of §9 · 🎫 {issue}`2953`) — **The view
+5. **❓ Open** (🔎 2026-11-14, {pull}`2954` · 🎯 row 8 of §9 · 🎫 {issue}`2953`) — **The view
    from below the surface.** Below the surface the scene switches its layering off
    (§4.4), so layers that meet at one height fight. An oceanographer inside the ocean,
    looking up or out, needs a layering of its own, with the base layer, the tiers and the

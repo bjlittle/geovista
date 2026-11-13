@@ -89,7 +89,7 @@ than a plan.
    to do had to open each specification, or remember which ones had some. The namespace
    table gains a Status column, which the build writes from each roadmap, so nobody edits it
    by hand and it cannot fall behind. See §3.8.
-9. **🤝 Agreed** (2026-11-12, {user}`bjlittle`, {pull}`2954`) — **A specification may carry
+9. **🤝 Agreed** (2026-11-14, {user}`bjlittle`, {pull}`2954`) — **A specification may carry
    figures.** `geovista` draws scenes, and a render of one says what a paragraph about it
    cannot. A specification may show renders and diagrams beside its text, each with alt
    text and a caption, kept beside it in the repository. See §3.9.

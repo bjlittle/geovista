@@ -574,14 +574,14 @@ Each carries the status grammar of docs spec §3.6.
    vertical scale shown to the viewer.** Its form, a ruler beside the globe or a scale bar
    on the map, and how it marks the vertical mapping: two scales for two factors, and ticks
    that follow the mapping where it is not a straight line. Row 6 of §9 owns it.
-2. **🏁 Resolved** (2026-11-12, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2829`) —
+2. **🏁 Resolved** (2026-11-14, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2829`) —
    **A warped base layer.** The base layer is lowered by the sag of the surfaces above it. When
    it is terrain, warped by its own heights, that lowering moves terrain that may be visible
    where no surface covers it. Measured with the LFRic orography (layers spec §3.4): lowered
    everywhere, it bleeds least and moves terrain up to 12 km under a 5° surface; lowered only
    beneath, it bleeds more, the more so at the Earth's radius. It is lowered everywhere, and
    refinement for display, which shrinks the lowering to 174 m, is the fix (layers spec §4.7).
-3. **🏁 Resolved** (2026-11-12, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2830`) —
+3. **🏁 Resolved** (2026-11-14, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2830`) —
    **Data surfaces at one height on different meshes.** They fall back on order and depth
    bias, which leaves a sliver at the limb for a coarse mesh. It is seen at a grazing view,
    4,762 pixels for a 5° surface over C48, and refinement for display brings it to 12
@@ -590,7 +590,7 @@ Each carries the status grammar of docs spec §3.6.
    physical render radius.** §3.5 found layering the same at the Earth's radius. Picking,
    clipping planes and interaction at that scale are not yet measured, before the default
    could change.
-5. **🏁 Resolved** (2026-11-12, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2832`) —
+5. **🏁 Resolved** (2026-11-14, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2832`) —
    **The ideal of the coastline measure.** It over-counts at the limb, so the limb's
    visibility is understated. Clipped at the true horizon, the ideal counts no coastline
    past it, and the clipped layerings show all of it (layers spec §3.3, layers spec §6).
@@ -599,7 +599,7 @@ Each carries the status grammar of docs spec §3.6.
    every peak and raises every valley without a word. Drawing each cell flat at its own
    height is honest but stepped. Users will want cell-centred heights to work as they are,
    and the issue holds the options for that conversation.
-7. **🏁 Resolved** (2026-11-12, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2833`) —
+7. **🏁 Resolved** (2026-11-14, {pull}`2954` · 🔎 2026-10-26, {pull}`2732` · 🎫 {issue}`2833`) —
    **A biased surface at the limb.** A surface a place above another is drawn 256 units
    nearer the viewer. Its far side does show past the horizon, up to 1,724 pixels at 256
    (layers spec §3.2). Neither shrinking the bias nor applying it only where surfaces
