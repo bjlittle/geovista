@@ -36,7 +36,6 @@ import zipfile
 
 import numpy as np
 from PIL import Image
-from sphinx.util import logging
 
 if TYPE_CHECKING:
     from sphinx.application import Sphinx
@@ -48,8 +47,6 @@ MAX_WIDTH: int = 2048
 
 #: The type code ``trame`` appends to an array's hash, by its numpy type.
 _CODES = {np.dtype(np.uint8): "B", np.dtype(np.float32): "f"}
-
-LOGGER = logging.getLogger(__name__)
 
 
 def _key(data: np.ndarray) -> str:
@@ -199,6 +196,9 @@ def build_finished(app: Sphinx, exception: Exception | None) -> None:
 
     Notes
     -----
+    Only the build's own log needs ``sphinx``, which is imported here, so that
+    :func:`shrink` runs in an environment without it, as the tests do.
+
     .. versionadded:: 0.6.0
 
     """
@@ -211,7 +211,9 @@ def build_finished(app: Sphinx, exception: Exception | None) -> None:
         total_after += after
         count += 1
     if count:
-        LOGGER.info(
+        from sphinx.util import logging  # noqa: PLC0415
+
+        logging.getLogger(__name__).info(
             "scene_footprint: %d scenes, %.0f MB -> %.0f MB",
             count,
             total_before / 1e6,

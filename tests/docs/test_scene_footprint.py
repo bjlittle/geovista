@@ -286,8 +286,14 @@ def test_setup_connects_build_finished_and_is_parallel_safe(footprint, mocker):
     assert meta["parallel_write_safe"] is True
 
 
-def test_build_finished_shrinks_every_scene(footprint, tmp_path, mocker):
+def test_build_finished_shrinks_every_scene(
+    footprint, tmp_path, mocker, require: Callable[[str], NoReturn]
+):
     """Every scene under the output, at any depth, is shrunk."""
+    try:
+        import sphinx  # noqa: F401, PLC0415
+    except ImportError:
+        require("sphinx is not installed")
     nested = tmp_path / "_images" / "generated" / "gallery"
     nested.mkdir(parents=True)
     paths = [_scene(tmp_path / "_images" / "a.vtksz"), _scene(nested / "b.vtksz")]
