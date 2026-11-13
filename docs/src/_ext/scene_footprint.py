@@ -18,8 +18,10 @@ image keeps the full texture, since only the exported scene is rewritten.
 
 Notes
 -----
-Once ``trame`` writes a texture as a compressed image, the textures can keep
-their full resolution, and only the points need rewriting.
+The texture resampling is a workaround for ``trame-vtk`` writing a texture as
+raw RGB (Kitware/trame-vtk#128). Once it can write a compressed image, the
+textures keep their full resolution, and only the points need rewriting: issue
+#2963 retires the resampling.
 
 .. versionadded:: 0.6.0
 

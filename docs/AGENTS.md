@@ -69,8 +69,8 @@ only the *loader*: `sphinx-iconify` fetched each icon from `api.iconify.design` 
 bundle, so #2559 swapped it for SVGs under `_static/icons/`, gated by `test_assets.py`.
 ⚠️ **Read the Docs caps a build's HTML at 1,024 MB** (a warning since 2026-10-01). The `.vtksz`
 scenes dominate it, as trame inlines textures as raw RGB and points as float64, so
-`_ext/scene_footprint.py` shrinks them at `build-finished` (#2960). Measure with every `plot_*`
-on, as RTD builds, and `du` the output: a `html-noplot` build has no scenes.
+`_ext/scene_footprint.py` shrinks them at `build-finished` (#2960); #2963 retires its texture half.
+Measure with every `plot_*` on, as RTD builds, and `du` the output: `html-noplot` has no scenes.
 
 ⚠️ **`tippy_skip_urls` matches the raw `href`, which comes in two shapes.**
 `re.match` sees the href as written: bare between sibling pages (`clouds.html`)
