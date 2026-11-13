@@ -250,6 +250,66 @@ def test_points_are_stored_as_float32(footprint, tmp_path):
     np.testing.assert_allclose(stored, points, rtol=1e-6)
 
 
+def test_an_array_shared_with_the_points_is_kept(footprint, tmp_path):
+    """A field sharing the points' array keeps it, as trame shares arrays by content."""
+    points = np.random.default_rng(4).random((100, 3))
+    path = _scene(tmp_path / "scene.vtksz", width=64, height=32, points=points)
+    index = _read(path)
+    (mesh,) = _nodes(index, "vtkPolyData")
+    shared = mesh["properties"]["points"]["hash"]
+    mesh["properties"]["fields"] = [
+        {
+            "hash": shared,
+            "vtkClass": "vtkDataArray",
+            "name": "Normals",
+            "dataType": "Float64Array",
+            "numberOfComponents": 3,
+            "size": points.size,
+            "location": "pointData",
+            "registration": "setNormals",
+        }
+    ]
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("index.json", json.dumps(index))
+    footprint.shrink(path)
+    index = _read(path)
+    (mesh,) = _nodes(index, "vtkPolyData")
+    assert mesh["properties"]["points"]["dataType"] == "Float32Array"
+    (normals,) = mesh["properties"]["fields"]
+    assert normals["hash"] == shared
+    np.testing.assert_array_equal(
+        _decoded(index, shared, np.float64).reshape(-1, 3), points
+    )
+
+
+def test_a_texture_shared_with_another_field_is_kept(footprint, tmp_path):
+    """A texture's array that another field shares stays for that field."""
+    path = _scene(tmp_path / "scene.vtksz", width=4096, height=2048)
+    index = _read(path)
+    (image,) = _nodes(index, "vtkImageData")
+    shared = image["properties"]["fields"][0]["hash"]
+    (mesh,) = _nodes(index, "vtkPolyData")
+    mesh["properties"]["fields"] = [
+        {
+            "hash": shared,
+            "vtkClass": "vtkDataArray",
+            "name": "colours",
+            "dataType": "Uint8Array",
+            "numberOfComponents": 3,
+            "size": 4096 * 2048 * 3,
+            "location": "pointData",
+            "registration": "setScalars",
+        }
+    ]
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("index.json", json.dumps(index))
+    footprint.shrink(path)
+    index = _read(path)
+    (image,) = _nodes(index, "vtkImageData")
+    assert image["properties"]["fields"][0]["hash"] != shared
+    assert shared in index["hashes"]
+
+
 def test_float32_points_are_kept(footprint, tmp_path):
     """Points already in float32 are left as they are."""
     points = np.random.default_rng(2).random((10, 3)).astype(np.float32)
@@ -340,3 +400,35 @@ def test_a_scene_pyvista_exports(
     assert node["properties"]["extent"][1] == footprint.MAX_WIDTH - 1
     for mesh in _nodes(index, "vtkPolyData"):
         assert mesh["properties"]["points"]["dataType"] == "Float32Array"
+
+
+@pytest.mark.image
+def test_an_exported_scene_keeps_every_array_it_refers_to(
+    footprint, tmp_path, require: Callable[[str], NoReturn]
+):
+    """Normals that trame shares with the points still load once the points shrink."""
+    try:
+        import pyvista as pv  # noqa: PLC0415
+        import trame_pyvista  # noqa: F401, PLC0415
+    except ImportError:
+        require("pyvista and trame-pyvista are not installed")
+    mesh = pv.Sphere(radius=1, theta_resolution=20, phi_resolution=20)
+    mesh.points = mesh.points.astype(np.float64)
+    mesh.point_data["Normals"] = mesh.points.copy()
+    p = pv.Plotter(off_screen=True)
+    p.add_mesh(mesh, smooth_shading=True)
+    path = tmp_path / "scene.vtksz"
+    p.trame.export_vtksz(filename=str(path))
+    p.close()
+    referenced = {
+        node["hash"]
+        for node in _nodes(_read(path), "vtkPolyData")
+        for node in [node["properties"]["points"], *node["properties"]["fields"]]
+    }
+    assert len(referenced) < 1 + len(mesh.point_data), "trame no longer shares"
+    footprint.shrink(path)
+    index = _read(path)
+    for poly in _nodes(index, "vtkPolyData"):
+        assert poly["properties"]["points"]["dataType"] == "Float32Array"
+        for field in [poly["properties"]["points"], *poly["properties"]["fields"]]:
+            assert field["hash"] in index["hashes"], field["name"]

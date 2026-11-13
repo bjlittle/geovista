@@ -173,8 +173,16 @@ def shrink(path: Path) -> tuple[int, int]:
             changed |= _points(points, hashes, done)
     if not changed:
         return before, before
+    # trame shares an array between fields with the same contents, so a replaced
+    # array may still be another field's, such as normals equal to the points.
+    referenced = {
+        node["hash"]
+        for node in _nodes(index.get("scene", {}))
+        if isinstance(node.get("hash"), str)
+    }
     for old in done:
-        hashes.pop(old, None)
+        if old not in referenced:
+            hashes.pop(old, None)
     members["index.json"] = json.dumps(index).encode("utf-8")
     partial = path.with_suffix(".vtksz.partial")
     with zipfile.ZipFile(partial, "w", zipfile.ZIP_DEFLATED) as archive:
