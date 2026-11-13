@@ -146,12 +146,12 @@ sphinx warns once apiece — some 57 warnings that fail any `warningiserror=True
 of the harness alone. They are typed, so a generated `conf.py` can carry `suppress_warnings = ["app"]`
 to be rid of them; the intersphinx inventory failure has no type and so cannot.
 
-⚠️ **Register a path-loaded module in `sys.modules` before `exec_module`**, as a
-`@dataclass` under `from __future__ import annotations` resolves through it, else
-`AttributeError: 'NoneType' object has no attribute '__dict__'`. `docs/src/_ext` is no
-package, so this is how its modules reach a test. ⚠️ **But reuse a copy already
-registered from the same file**: each load is a new module, whose dataclasses never
-equal the last's, and an import by name gets whichever registered last (#2736).
+⚠️ **Register a path-loaded module in `sys.modules` before `exec_module`** (`docs/src/_ext` is no
+package), as a `@dataclass` under `from __future__ import annotations` resolves through it, else
+`'NoneType' object has no attribute '__dict__'`. ⚠️ **But reuse a copy already registered from the
+same file**: each load is a new module, whose dataclasses never equal the last's, and an import by
+name gets the last registered (#2736). ⚠️ **The `test` envs have no `sphinx`**: an `_ext` module
+imports it where used, and a test reaching it guards on `require`, or CI fails at collection (#2961).
 
 ⚠️ **The default `html-noplot` build has no carousel.** `plot_gallery=False`
 leaves `geovista_carousel` nothing to render, so its tests skip. Only
@@ -196,4 +196,4 @@ use `html.parser.HTMLParser`, and `markdown_it.MarkdownIt("commonmark")` for Mar
 
 ---
 
-**Last Updated**: 8 November 2026
+**Last Updated**: 13 November 2026

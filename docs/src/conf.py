@@ -178,6 +178,7 @@ extensions = [
     "numpydoc",
     "parallel_build",
     "readingtime",
+    "scene_footprint",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "autoapi.extension",
