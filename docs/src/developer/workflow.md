@@ -153,6 +153,17 @@ issue is labelled
 row fits, the pull request adds one (items spec §3.4). {issue}`2894` was raised
 without its item, and {pull}`2896` added it afterwards.
 
+### 2.9 👥 Spike Before Settling a Design Choice
+
+🤝 Agreed (2026-11-12, {user}`bjlittle`, {pull}`2957`)
+
+When a choice in a specification can be measured, measure it before agreeing it:
+a throwaway spike, run before the design is written, and recorded in it with its
+method and environment (globe spec §2 decision 6). When in doubt, run another
+spike before guessing. The spikes behind {pull}`2954` overturned two assumptions of
+the design they extended: a depth bias pulled the globe's far side into view, and
+lowering the base layer let shallow ocean data show through the sea surface.
+
 ## 3. Writing
 
 ### 3.1 🤖 Humanize Prose Before It Is Published
@@ -186,6 +197,16 @@ holds in changelog fragments too.
 
 The {ref}`title style <gv-developer-documentation-title-style>` applies to every
 hand-written title.
+
+### 3.5 👥 Show a Scene With a Render
+
+🤝 Agreed (2026-11-12, {user}`bjlittle`, {pull}`2957`)
+
+`geovista` draws scenes, so a design or a finding about what a scene looks like is
+shown as well as told: a render or a diagram beside the words, in a specification,
+a pull request, a review or a reply to the maintainer. Its code is throwaway, and
+is attached to the pull request it supports, so that it can be drawn again. Words
+such as sag or a sliver at the limb meant little until {pull}`2954` showed them.
 
 ## 4. Pull Requests
 
