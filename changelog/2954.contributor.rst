@@ -1,0 +1,6 @@
+Published the
+:doc:`layers of a scene specification </developer/specs/2026-11-12-layers-design>`,
+which orders a scene's layers by named tiers, clips each layer at its horizon
+behind an opaque base layer, gives layers below sea level a tier beneath the base
+layer, and restores on the web the depth bias that an exported scene loses. It is
+the first specification to carry figures. (:user:`claude`)

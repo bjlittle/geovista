@@ -35,6 +35,8 @@ a page, a specification or the API reference, it is a link to the section it nam
       - :doc:`2026-10-26-globe-heights-layers-design`
     * - |indent| └─ ``heights spec §…``
       - :doc:`2026-10-28-heights-as-data-design`
+    * - |indent| └─ ``layers spec §…``
+      - :doc:`2026-11-12-layers-design`
     * - |indent| └─ ``scene spec §…``
       - :doc:`2026-10-27-globe-scene-design`
     * - ``docs spec §…``
@@ -265,3 +267,4 @@ lands.
     2026-11-02-open-items-design
     2026-11-06-missing-positions-design
     2026-11-09-benchmarks-design
+    2026-11-12-layers-design

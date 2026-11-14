@@ -89,6 +89,10 @@ than a plan.
    to do had to open each specification, or remember which ones had some. The namespace
    table gains a Status column, which the build writes from each roadmap, so nobody edits it
    by hand and it cannot fall behind. See §3.8.
+9. **🤝 Agreed** (2026-11-14, {user}`bjlittle`, {pull}`2954`) — **A specification may carry
+   figures.** `geovista` draws scenes, and a render of one says what a paragraph about it
+   cannot. A specification may show renders and diagrams beside its text, each with alt
+   text and a caption, kept beside it in the repository. See §3.9.
 
 (docs-spec-3)=
 ## 3. Architecture
@@ -476,6 +480,22 @@ reads the roadmap of the document each row links, with the parser the convention
 reads roadmaps with. That test holds each status to its own count of the roadmap, and a
 build test holds the column (§6).
 
+(docs-spec-3-9)=
+### 3.9 Figures
+
+A specification's figures are PNG files in `figures/<stem>/` beside it, where `<stem>` is
+the specification's file name without `.md`, and are shown with MyST's `figure` directive.
+Each has `:alt:` text that says what the figure shows, for a reader who cannot see it, and a
+caption that names it. A render of a scene says in the text, as its section's method does,
+the commit, renderer and date it was drawn at. The code that drew it is throwaway, and is
+attached to the pull request that adds the figure, so that the figure can be drawn again.
+
+Figures live in the repository, so they are kept small: a render in flat, unlit colours is a
+few kilobytes, and one that is lit or textured is drawn only where the shading is the point.
+No figure is larger than 150 KB. Row 8 of §4 adds the check: every file in a specification's
+folder of figures is shown by it, every figure it shows exists and has `:alt:` text, and no
+file passes the limit.
+
 (docs-spec-4)=
 ## 4. Roadmap
 
@@ -494,6 +514,7 @@ build test holds the column (§6).
 | 5 | GitHub reference roles and hardcoded-link detection | 💡 candidate |
 | 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
 | 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | ✅ landed (2026-11-09, {pull}`2917`) |
+| 8 | Figures: the check of §3.9 in `tests/test_spec_conventions.py` | 📋 not started |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
@@ -696,3 +717,4 @@ Each row follows ledger spec §3.4.
 | §2 decision 6 | ✍️ signed off (2026-10-31, {user}`bjlittle`, {pull}`2786`) | Checked in review that each `candidate` row of §4 names a trigger the conventions test asserts, or says that it is revisited by hand. |
 | §2 decision 7 | ✅ verified (2026-10-31, {pull}`2786`) | `tests/test_spec_conventions.py`, `tests/test_status_references.py` |
 | §2 decision 8 | ✅ verified (2026-11-09, {pull}`2917`) | `tests/docs/test_geovista_citations.py`, `tests/docs/test_geovista_status.py`, `tests/test_spec_conventions.py` |
+| §2 decision 9 | ⏳ pending | row 8 of §4 |
