@@ -41,7 +41,7 @@ dependencies:
 - sphinxcontrib-bibtex >=2.6.0,<3
 - sphinxcontrib-mermaid >=1.0.0,<3
 - towncrier >=24.8.0,<27
-- trame-pyvista >=0.1.1,<0.3
+- trame-pyvista >=0.1.1,<0.4
 - wurlitzer >=3.1.1,<4
 - pip >=25.1.1,<26
 - python 3.14.*
@@ -49,7 +49,9 @@ dependencies:
 - codecov >=2.1.13,<3
 - markdown-it-py >=3.0.0,<5
 - pytest >=8.4.0,<10
+- pytest-codspeed >=5.0.4,<6
 - pytest-cov >=6.1.1,<8
+- pytest-memray >=1.9.0,<2
 - pytest-mock >=3.14.1,<4
 - pytest-pretty >=1.3.0,<2
 - pytest-pyvista >=0.3.1,<0.4
