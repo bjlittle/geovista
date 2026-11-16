@@ -248,9 +248,11 @@ floors = { features = ["devs", "py313", "test"], solve-strategy = "lowest-direct
 floors-docs = { features = ["devs", "docs", "py313"], solve-strategy = "lowest-direct" }
 ```
 
-Both are locked in `pixi.lock`. A changed specifier invalidates the lock, so `pixi lock`
-re-solves them whenever a floor moves, and the weekly `pixi update` of `ci-locks.yml`
-moves their transitive dependencies while the direct ones stay at their floors.
+Both are locked in `pixi.lock`. A floor raised above the version locked invalidates the
+lock, so `pixi lock` re-solves it. A floor lowered does not, since the version locked still
+satisfies it, so lowering one is followed by `pixi update --environment floors <package>`,
+as {pull}`2974` found. The weekly `pixi update` of `ci-locks.yml` moves their transitive
+dependencies while the direct ones stay at their floors.
 
 When two floors cannot be resolved together, `lowest-direct` lifts one above its floor
 rather than failing, as `uv` does. A pair broken that way still passes, and the lock shows
@@ -425,14 +427,22 @@ without extras, and the feedstock (§4.6).
 (floors-spec-8)=
 ## 8. Open Items
 
-None yet. Each will carry the grammar of items spec §3.2.
+Each carries the grammar of items spec §3.2.
+
+1. **❓ Open** (🔎 2026-11-16, {pull}`2974` · 🎯 row 6 of §9 · 🎫 {issue}`2975`) —
+   **A lowered floor is not re-solved by `pixi lock`.** The version locked still
+   satisfies a lowered floor, so the `floors` environment stays where it was until
+   `pixi update --environment floors <package>` runs, and `tests floors` stays green
+   above the new floor meanwhile. §4.1 documents the step, but nothing checks that it
+   was taken. The report of row 6 would show it, as a direct dependency locked above
+   its floor that the solve did not lift.
 
 (floors-spec-9)=
 ## 9. Roadmap
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The `floors` environment and the Python support test's account of it (§4.1), its job in `ci-tests.yml` (§4.3), each floor it disproves raised (§4.2), and its pages (§4.5) | 📋 not started |
+| 1 | The `floors` environment and the Python support test's account of it (§4.1), its job in `ci-tests.yml` (§4.3), each floor it disproves raised (§4.2), and its pages (§4.5) | ✅ landed (2026-11-16, {pull}`2974`) |
 | 2 | A floor on every `pip` requirement and the Dependency Floors check (§4.4), and their pages (§4.5) | 📋 not started |
 | 3 | The composite action and the `pypi` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) | 📋 not started |
 | 4 | The `test-floors` job of `ci-wheels.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) | 📋 not started |
@@ -471,14 +481,14 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| §2 decision 1 | ⏳ pending | |
-| §2 decision 2 | ⏳ pending | |
-| §2 decision 3 | ⏳ pending | |
+| §2 decision 1 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
+| §2 decision 2 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_floors.py` |
+| §2 decision 3 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 4 | ⏳ pending | |
 | §2 decision 5 | ⏳ pending | |
 | §2 decision 6 | ⏳ pending | |
 | §2 decision 7 | ⏳ pending | |
 | §2 decision 8 | ⏳ pending | |
-| §2 decision 9 | ⏳ pending | |
+| §2 decision 9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 10 | ⏳ pending | |
 | §2 decision 11 | ⏳ pending | |

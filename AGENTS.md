@@ -61,13 +61,13 @@ which resolves strictly from `pixi.lock` — so `pixi run --frozen -e <env>`
 locally is CI's environment, *if* `<env>` is CI's: the test jobs run
 `test-py313`/`test-py314`, whose lock can differ from `geovista`'s (rasterio
 1.5.1 against 1.5.2, #2599). After editing a dependency, run `pixi lock`
-*first*, or `--frozen` silently keeps running the previous environment. ⚠️ Without `--frozen`, any `pixi run`/`pixi list` re-solves a lock it finds stale and rewrites `pixi.lock` (twice in #2969's session), so pass it everywhere and `git checkout -- pixi.lock` if one slips through.
+*first*, or `--frozen` silently keeps running the previous environment. ⚠️ Pass `--frozen` everywhere: a local pixi older than CI's (setup-pixi installs the latest, 0.84.2 on 2026-11-16) reads the lock as stale, so a bare `pixi run`/`pixi list` re-solves all of it and rewrites `pixi.lock`. Run `pixi self-update`, and `git checkout -- pixi.lock` if one slips through.
 
-⚠️ **But `pixi lock` alone will not raise a version ceiling.** It only
+⚠️ **But `pixi lock` alone will not raise a version ceiling, nor follow a lowered floor.** It only
 re-solves when the lock is *invalid*, and an already-locked version still
 satisfies a widened max-pin — so bumping a ceiling and running `pixi lock`
 leaves the old version in place, and the suite then silently tests nothing new.
-Use `pixi update <pkg>`, confirm with `pixi list -e <env> <pkg>`, and apply the
+Use `pixi update <pkg>` (`--environment floors` for a lowered floor, #2974), confirm with `pixi list -e <env> <pkg>`, and apply the
 same bump to `requirements/pypi-*.txt`, which `pixi` neither reads nor updates.
 The reverse is gated: `tests/test_dependency_ceilings.py` fails a dependabot PR
 whose pip ceiling outruns the pixi one, so mirror the bump on that same PR.
@@ -177,7 +177,7 @@ Every Python file must begin with this header, and include `from __future__ impo
   name the rest, then `pixi lock` and re-run the `ci-locks.yml` exports. ⚠️ The
   test, wheel and PyPI matrices span every version, while the unsuffixed pixi
   environments, the docs workflows and the coverage report track the **newest**
-  alone and `mypy`'s `python_version` the **oldest**, so a bump missing any of them leaves that one behind.
+  alone, and `mypy`'s `python_version` and the `floors` environment the **oldest**, so a bump missing any of them leaves that one behind.
 - **Dependencies**: core deps in `requirements/pypi-core.txt`; optional groups in `requirements/pypi-optional-*.txt`. Pixi deps mirrored in `pyproject.toml`, each capped below its next major version, or its next minor before 1.0 (`>=5.0.4,<6`, `>=0.3.1,<0.4`).
 - **CRS coordinates**: PROJ gives and takes geographic axes declared in radians in degrees. Reuse `geovista.transform._angles` for effective angular units, rather than the declared unit factor (#2841). `np.vstack` discards masks even when it returns a `MaskedArray`; fill missing mesh positions with NaN before arithmetic (#2844).
 - **Mesh data**: attach it by association, `mesh.point_data[name]` or `mesh.cell_data[name]`, never `mesh[name]`, which puts data that fits both on the points; and clean a mesh after its data is attached, as cleaning reorders cells, putting lines before polygons (#2908).

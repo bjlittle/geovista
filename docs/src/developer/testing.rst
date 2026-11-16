@@ -70,6 +70,20 @@ The following testing workflows are available:
    |           |                                                                                                               |
    |           | A `codecov`_ report is generated only for the **latest** supported distribution of ``python``.                |
    |           |                                                                                                               |
+   |           | The ``tests floors`` job runs the same tests, without the image tests, in the locked                          |
+   |           | :guilabel:`floors` environment, which solves each direct dependency at its floor on the                       |
+   |           | **oldest** supported distribution of ``python`` (floors spec §4.1). Its check is required                     |
+   |           | on ``main``, so the pull request that breaks a floor is the one that raises it                                |
+   |           | (floors spec §2 decision 11). To run it locally:                                                              |
+   |           |                                                                                                               |
+   |           | .. code:: console                                                                                             |
+   |           |                                                                                                               |
+   |           |    $ pixi run --frozen -e floors tests-unit "not image"                                                       |
+   |           |                                                                                                               |
+   |           | When it fails on a bot's pull request, raise the floor where the fix can merge: on the                        |
+   |           | branch of a dependabot pull request, as for a ceiling, and in a pull request merged                           |
+   |           | ahead of the weekly lock pull request, whose branch `ci-locks.yml`_ rewrites each week.                       |
+   |           |                                                                                                               |
    |           | Also see the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`tests-unit` task.             |
    |           |                                                                                                               |
    |           | .. note::                                                                                                     |
@@ -805,7 +819,7 @@ actually see.
 
    The testing ``pixi`` :term:`tasks <Task>` are available in the :guilabel:`test`,
    :guilabel:`geovista` and :guilabel:`py3xx` variant of those ``pixi`` environments
-   e.g., :guilabel:`geovista-py313`. See :ref:`tippy-gv-developer-packaging`
+   e.g., :guilabel:`geovista-py313`, and in the :guilabel:`floors` environment. See :ref:`tippy-gv-developer-packaging`
    for further details.
 
 Testing may be performed using the convenience of

@@ -113,6 +113,51 @@ jobs:
           path: ${{ github.workspace }}/ci-test-coverage*
 
 
+  # the suite at the dependency floors, solved by the locked "floors"
+  # environment; a job of its own, outside the matrix, so that a red floor never
+  # stops the coverage report (floors spec §4.3)
+  floors:
+    name: "tests floors"
+    runs-on: "ubuntu-22.04"
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+
+      - name: "setup pixi"
+        uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e
+        with:
+          environments: "floors"
+          frozen: true
+          activate-environment: true
+
+      - name: "cartopy cache"
+        uses: $/.github/workflows/composite/cartopy-cache
+        with:
+          cache_period: ${{ env.CACHE_PERIOD }}
+
+      - name: "geovista cache"
+        uses: $/.github/workflows/composite/geovista-cache
+        with:
+          cache_period: ${{ env.CACHE_PERIOD }}
+
+      - name: "tests floors"
+        env:
+          PY_COLORS: "1"
+        run: |
+          xvfb-run -a geovista --report
+          xvfb-run -a pixi run --frozen -e floors pytest -m "not image" --numprocesses logical --dist worksteal
+
+
   coverage:
     needs: [tests]
     name: "upload coverage"

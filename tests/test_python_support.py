@@ -15,6 +15,11 @@ together, so a version bump that reaches six of them and misses the seventh
 leaves the repository advertising one thing and testing another, with both
 halves perfectly valid on their own terms.
 
+A third kind of environment is named for neither a version nor what it holds:
+a floors environment, which resolves each direct dependency at its floor, on
+the oldest supported version and in no solve-group, so that the minimum
+versions declared are tested too (floors spec §4.1).
+
 These tests take the classifiers as the statement of intent and hold the rest
 to it. They read the source tree as text and need neither a built artefact, a
 network nor any particular interpreter, so unlike the matrix they police they
@@ -64,6 +69,13 @@ EXPRESSION = "${{"
 #: The solve-group of the unsuffixed environments, which are named for what
 #: they hold rather than for a version, and so track the newest supported one.
 PRIMARY = "default"
+
+#: The environment resolving each direct dependency at its floor, on the oldest
+#: supported version and in no solve-group (floors spec §4.1). One carrying
+#: another tier is named for it, as "floors-docs" is.
+FLOORS = "floors"
+#: The solve strategy of a floors environment (floors spec §2 decision 1).
+LOWEST = "lowest-direct"
 
 #: The workflows whose matrix must carry every supported version, because they
 #: are what makes the support claim true.
@@ -179,6 +191,28 @@ def _newest() -> str:
     """Return the "pyXYZ" feature pinning the newest supported version."""
     pinned = {name: version for name, version in _features().items() if version}
     return max(pinned, key=lambda name: _order(pinned[name]))
+
+
+def _oldest() -> str:
+    """Return the "pyXYZ" feature pinning the oldest supported version."""
+    pinned = {name: version for name, version in _features().items() if version}
+    return min(pinned, key=lambda name: _order(pinned[name]))
+
+
+def _floors(name: str) -> bool:
+    """Say whether the environment is a floors environment, from its name.
+
+    A floors environment is named for neither a version nor what it holds, but
+    for the corner it resolves: "floors", or "floors-<tier>" for one carrying
+    another tier (floors spec §4.1).
+
+    """
+    return name == FLOORS or name.startswith(f"{FLOORS}-")
+
+
+def _floored() -> list[str]:
+    """Return the names of the floors environments."""
+    return sorted(name for name in _environments() if _floors(name))
 
 
 def _prefixes() -> dict[str, set[str]]:
@@ -371,13 +405,86 @@ def test_each_versioned_environment_agrees_with_its_name():
 
 
 def test_every_unversioned_environment_is_in_the_primary_solve_group():
-    """Named for what it holds, so only its group decides the version it gets."""
-    unversioned = sorted(name for name in _environments() if _named(name) is None)
+    """Named for what it holds, so only its group decides the version it gets.
+
+    A floors environment is passed over, since it solves alone, on the oldest
+    version (floors spec §4.1).
+    """
+    unversioned = sorted(
+        name for name in _environments() if _named(name) is None and not _floors(name)
+    )
     assert unversioned, "no environment is named for what it holds"
 
     adrift = {name: _group(name) for name in unversioned if _group(name) != PRIMARY}
 
     assert not adrift, f"environments outside the {PRIMARY!r} solve-group: {adrift}"
+
+
+def test_there_is_a_floors_environment():
+    """The floors tests below read every floors environment, and so need one."""
+    assert FLOORS in _environments(), f"no {FLOORS!r} environment in {PYPROJECT.name}"
+
+
+def test_a_floors_environment_solves_at_its_lowest():
+    """Each direct dependency resolves to the lowest release its floor admits.
+
+    Holds floors spec §2 decision 1.
+    """
+    strategies = {
+        name: _environments()[name].get("solve-strategy") for name in _floored()
+    }
+    wrong = {name: value for name, value in strategies.items() if value != LOWEST}
+
+    assert not wrong, f"floors environments not solved {LOWEST!r}: {wrong}"
+
+
+def test_a_floors_environment_carries_the_oldest_version():
+    """Floors resolved against a newer version are not the corner supported.
+
+    So a SPEC 0 bump that leaves a floors environment on the old version fails
+    here. Holds floors spec §2 decision 9.
+    """
+    oldest = _oldest()
+    wrong = {
+        name: sorted(_pinned(name)) for name in _floored() if _pinned(name) != {oldest}
+    }
+
+    assert not wrong, f"floors environments not on the oldest {oldest!r}: {wrong}"
+
+
+def test_a_floors_environment_solves_alone():
+    """A group shared with environments solved at their newest solves them together.
+
+    Holds floors spec §2 decision 9.
+    """
+    grouped = {
+        name: _environments()[name]["solve-group"]
+        for name in _floored()
+        if "solve-group" in _environments()[name]
+    }
+
+    assert not grouped, f"floors environments in a solve-group: {grouped}"
+
+
+def test_floors_carries_the_test_environments_features():
+    """The suite runs at the floors as it runs in the test environments.
+
+    Holds floors spec §2 decision 3.
+    """
+
+    def held(name: str) -> set[str]:
+        return set(_environments()[name].get("features", [])) - _pinned(name)
+
+    assert held(FLOORS) == held("test")
+
+
+def test_a_floors_environment_carries_the_core_dependencies():
+    """Without the default feature, no core floor would be resolved at all."""
+    dropped = sorted(
+        name for name in _floored() if _environments()[name].get("no-default-feature")
+    )
+
+    assert not dropped, f"floors environments without the core dependencies: {dropped}"
 
 
 def test_the_exported_environment_pins_the_newest_version():
