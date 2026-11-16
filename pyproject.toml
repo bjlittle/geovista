@@ -537,6 +537,14 @@ geovista-py314 = { features = [
 py314 = { features = ["py314"], solve-group = "py314" }
 test-py314 = { features = ["devs", "py314", "test"], solve-group = "py314" }
 
+# solved alone, each direct dependency at its floor, on the oldest supported python
+# (floors spec §4.1)
+floors = { features = [
+  "devs",
+  "py313",
+  "test",
+], solve-strategy = "lowest-direct" }
+
 [tool.pixi.dependencies]
 cartopy = ">=0.26"
 click = ">=8.2.1,<9"
@@ -577,7 +585,7 @@ geovista = { path = ".", editable = true }
 # conda-forge builds "pyarrow" against older aws-c libraries than vtk and hdf5
 # use, so solving it there downgrades both and drops mesa; the wheel bundles its
 # own arrow libraries
-pyarrow = ">=13.0.0,<27"
+pyarrow = ">=18.0.0,<27"
 
 [tool.pixi.feature.docs.dependencies]
 ipykernel = ">=6.29.5,<8"
