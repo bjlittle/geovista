@@ -43,6 +43,10 @@ ENVIRONMENTS = re.compile(r"^environments:\n(.*?)^packages:", re.DOTALL | re.MUL
 STRATEGY = r"^      strategy: lowest-version-direct$"
 #: The shell operators that would let another command decide a line's status.
 SHELL = frozenset(";|&")
+#: The wrapper a command of the floors job may run under, for its display.
+WRAPPER = ("xvfb-run", "-a")
+#: The options of "pixi run" that take the environment as their value.
+ENVIRONMENT = frozenset({"-e", "--environment"})
 
 
 @cache
@@ -65,21 +69,56 @@ def _job(name: str = FLOORS) -> dict[str, Any]:
     return jobs[name]
 
 
-def _commands(step: dict[str, Any]) -> list[str]:
-    """Return each line of shell the step runs, stripped."""
+def _commands(step: dict[str, Any]) -> list[list[str]]:
+    """Return the tokens of each command the step runs.
+
+    Each line is split as the shell reads it, so a comment is no command, and a
+    line holding only one is passed over.
+
+    """
+    lines = str(step.get("run", "")).splitlines()
+    return [tokens for line in lines if (tokens := shlex.split(line, comments=True))]
+
+
+def _lines(name: str = FLOORS) -> list[list[str]]:
+    """Return the tokens of each command the named job runs."""
     return [
-        line.strip() for line in str(step.get("run", "")).splitlines() if line.strip()
+        tokens for step in _job(name).get("steps", []) for tokens in _commands(step)
     ]
 
 
-def _lines(name: str = FLOORS) -> list[str]:
-    """Return each line of shell the named job runs, stripped."""
-    return [line for step in _job(name).get("steps", []) for line in _commands(step)]
+def _unwrapped(tokens: list[str]) -> list[str]:
+    """Return the command with the wrapper, if it runs under it, taken off."""
+    if tuple(tokens[: len(WRAPPER)]) == WRAPPER:
+        return tokens[len(WRAPPER) :]
+    return tokens
+
+
+def _program(tokens: list[str]) -> list[str]:
+    """Return what a command runs through pixi, with its arguments, if it does.
+
+    The command may run under the wrapper, then is "pixi run" and its options.
+    Anything else, such as an echo of that command, runs nothing through pixi,
+    and returns an empty list.
+
+    """
+    tokens = _unwrapped(tokens)
+    if tokens[:2] != ["pixi", "run"]:
+        return []
+    rest, index = tokens[2:], 0
+    while index < len(rest) and rest[index].startswith("-"):
+        index += 2 if rest[index] in ENVIRONMENT else 1
+    return rest[index:]
+
+
+def _runs_pytest(tokens: list[str]) -> bool:
+    """Say whether the command runs pytest through pixi."""
+    return _program(tokens)[:1] == ["pytest"]
 
 
 def _suite(name: str = FLOORS) -> list[str]:
-    """Return the tokens of the one line of the named job that runs pytest."""
-    suites = [shlex.split(line) for line in _lines(name) if " pytest " in f" {line} "]
+    """Return the tokens of the one command of the named job that runs pytest."""
+    suites = [tokens for tokens in _lines(name) if _runs_pytest(tokens)]
     assert len(suites) == 1, f"the {name!r} job runs pytest {len(suites)} times"
     return suites[0]
 
@@ -143,7 +182,7 @@ def test_the_floors_job_runs_the_floors_environment():
 
     Holds floors spec §2 decision 2.
     """
-    runs = [shlex.split(line) for line in _lines() if "pixi run" in line]
+    runs = [tokens for tokens in _lines() if _unwrapped(tokens)[:2] == ["pixi", "run"]]
     assert runs, f"the {FLOORS!r} job runs nothing through pixi"
 
     wrong = [
@@ -174,17 +213,21 @@ def test_the_suite_decides_the_job():
 
     The workflow runs ``bash -l {0}``, which drops ``errexit``, so a step's
     status is that of its last command, and pytest must be that command, alone
-    on its line, with nothing to swallow its status. Follows floors spec §4.3.
+    on its line, with nothing to swallow its status. A commented or an echoed
+    pytest runs nothing, so it is no suite. Follows floors spec §4.3.
     """
-    (step,) = [
+    steps = [
         step
         for step in _job()["steps"]
-        if any(" pytest " in f" {line} " for line in _commands(step))
+        if any(_runs_pytest(tokens) for tokens in _commands(step))
     ]
-    last = _commands(step)[-1]
+    assert len(steps) == 1, f"the {FLOORS!r} job runs pytest in {len(steps)} steps"
 
-    assert " pytest " in f" {last} ", f"{last!r} runs after the suite"
-    assert not set(last) & SHELL, f"the suite's status may be swallowed: {last!r}"
+    last = _commands(steps[0])[-1]
+    assert _runs_pytest(last), f"{shlex.join(last)!r} runs after the suite"
+
+    swallowed = [token for token in last if set(token) & SHELL]
+    assert not swallowed, f"the suite's status may be swallowed by {swallowed}"
 
 
 def test_the_floors_job_stands_outside_the_tests_matrix():
