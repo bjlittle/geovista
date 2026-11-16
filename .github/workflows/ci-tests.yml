@@ -120,9 +120,6 @@ jobs:
     name: "tests floors"
     runs-on: "ubuntu-22.04"
 
-    env:
-      ALLOW_PLOTTING: true
-
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
