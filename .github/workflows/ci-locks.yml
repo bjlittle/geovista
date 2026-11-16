@@ -138,6 +138,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GUIDE: "https://geovista.readthedocs.io/en/latest/developer/packaging.html#gv-developer-packaging-continuous-integration"
         run: |
           title="chore: pixi lock update failure"
           {
@@ -149,6 +150,8 @@ jobs:
               grep -m 10 -e "Error" -e "─▶" update.err || true
               echo '```'
             fi
+            echo
+            echo "The packaging guide describes this workflow: ${GUIDE}"
           } > report.md
           number=$(gh issue list --repo "${REPO}" --state open --search "in:title \"${title}\"" --json number,title --jq "map(select(.title == \"${title}\")) | .[0].number // empty")
           if [ -n "${number}" ]; then

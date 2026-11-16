@@ -50,6 +50,12 @@ ERROR = (
 )
 #: The run the report links.
 RUN_URL = "https://github.com/bjlittle/geovista/actions/runs/1234"
+#: The section of the packaging guide describing the workflow, which the report
+#: links so that its reader lands on what a failure means.
+GUIDE = (
+    "https://geovista.readthedocs.io/en/latest/developer/packaging.html"
+    "#gv-developer-packaging-continuous-integration"
+)
 
 pytestmark = pytest.mark.skipif(
     shutil.which("bash") is None, reason="the workflow's steps run under bash"
@@ -84,14 +90,26 @@ def _stub(bin_dir: Path, name: str, body: str) -> None:
 
 
 def _run(step: str, cwd: Path, env: dict[str, str]) -> subprocess.CompletedProcess:
-    """Run the step's shell as the workflow does, with errexit and pipefail."""
+    """Run the step's shell as the workflow does, with errexit and pipefail.
+
+    The step's own environment is applied as Actions applies it, save for the
+    values holding an expression, which only a running job resolves, and which
+    the caller supplies instead.
+    """
+    body = _step(step)
     script = cwd / "step.sh"
-    script.write_text(str(_step(step)["run"]), encoding="utf-8")
+    script.write_text(str(body["run"]), encoding="utf-8")
+    literal = {
+        name: str(value)
+        for name, value in (body.get("env") or {}).items()
+        if "${{" not in str(value)
+    }
     return subprocess.run(  # noqa: S603
         [shutil.which("bash") or "bash", "-e", "-o", "pipefail", str(script)],
         cwd=cwd,
         env={
             **os.environ,
+            **literal,
             **env,
             "PATH": f"{cwd / 'bin'}{os.pathsep}{os.environ['PATH']}",
         },
@@ -172,3 +190,4 @@ def test_the_report_opens_an_issue_or_comments_on_the_open_one(
     body = (runner / "report.md").read_text(encoding="utf-8")
     assert RUN_URL in body
     assert ERROR in body, "the report does not quote pixi's error"
+    assert GUIDE in body, "the report does not link the packaging guide"
