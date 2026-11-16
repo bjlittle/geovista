@@ -229,6 +229,34 @@ inheritance relationship between its environments:
       docs --> geovista
       test --> geovista
 
+One environment belongs to no solve-group at all. The :guilabel:`floors`
+environment resolves each **direct** dependency at the **lowest** release its
+floor admits, and each transitive dependency at its newest, against the
+**oldest** supported distribution of ``python``. It is how the minimum versions
+declared in the :bash:`pyproject.toml` manifest are tested, by the
+``tests floors`` check of the
+:ref:`tippy-gv-developer-testing-continuous-integration` (floors spec §4.1).
+
+.. table:: Pixi Floors Environment
+   :align: center
+   :widths: 2 2 6
+
+   +--------------------+-----------------------------+-----------------------------------------------+
+   | Environment        | Features                    | Description                                   |
+   +====================+=============================+===============================================+
+   | :guilabel:`floors` | ``{default}``, ``{devs}``,  | As per the :guilabel:`test-py3xx` environment |
+   |                    | ``{py3xx}``, ``{test}``     | for the **oldest** ``{py3xx}`` feature, with  |
+   |                    |                             | each direct dependency solved at its floor.   |
+   +--------------------+-----------------------------+-----------------------------------------------+
+
+It declares :toml:`solve-strategy = "lowest-direct"` and no solve-group, since a
+group shared with environments solved at their newest would solve it with them.
+It is locked in :bash:`pixi.lock` like any other, so ``pixi lock`` re-solves it
+whenever a floor moves, while the weekly ``pixi update`` of the `ci-locks.yml`_
+workflow moves only its transitive dependencies. Where two floors cannot be
+resolved together, the solve lifts one above its floor rather than failing, and
+the lock shows the version it was lifted to.
+
 
 :fa:`gears` Pixi Features
 -------------------------
