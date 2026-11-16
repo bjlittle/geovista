@@ -15,7 +15,7 @@ from geovista.common import RADIUS, distance
 from geovista.globe import Globe
 
 
-@pytest.mark.parametrize("origin", [np.empty((2, 2)), range(4)])
+@pytest.mark.parametrize("origin", [np.zeros((2, 2)), range(4)])
 def test_origin_fail(lfric, origin):
     """Test trap of invalid origin."""
     emsg = r"Require an \(x, y, z\) cartesian point"
