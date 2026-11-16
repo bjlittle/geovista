@@ -222,6 +222,10 @@ ignore = [
 
 
 [tool.ruff]
+# tests/ruff.toml extends these settings for the tests. An option it also sets,
+# such as lint.flake8-tidy-imports.banned-api, replaces the one here rather than
+# merging with it, so a ban added here must be added there too.
+#
 # Exclude the following, in addition to the standard set of exclusions.
 # See https://docs.astral.sh/ruff/settings/#exclude for defaults.
 extend-exclude = ["docs/src/generated"]

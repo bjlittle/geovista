@@ -1,0 +1,5 @@
+The tests may no longer call ``numpy.empty`` or ``numpy.empty_like``, whose
+memory is uninitialised, after five tests failed whenever it held an infinity.
+A new ``tests/ruff.toml`` adds both to ruff's banned API for the tests alone,
+since the library writes every element of the arrays it builds this way before
+reading them. (:user:`claude`)
