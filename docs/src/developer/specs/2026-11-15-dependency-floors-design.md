@@ -58,7 +58,7 @@ sides and at a release.
 (floors-spec-2)=
 ## 2. Decisions
 
-1. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **`pixi` resolves the
+1. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **`pixi` resolves the
    floors itself, with `solve-strategy = "lowest-direct"`.** An environment so marked
    resolves each direct dependency to the lowest release its specifier admits, among the
    builds for its platform and Python, and each transitive one to the highest. That is the
@@ -67,7 +67,7 @@ sides and at a release.
    netcdf4 1.7.4 (§3.3), an answer tephpy's generator gets by querying the channel. Chosen
    by {user}`bjlittle` on 2026-11-15, over porting tephpy's pin generator, attribution,
    upward scan and issue filing (§5).
-2. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **The `floors` environment
+2. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **The `floors` environment
    is locked, and runs on every pull request.** It joins `pixi.lock` like any other, and a
    job of `ci-tests.yml` runs it with `--frozen`. Its result changes only when a commit
    changes something: code calling an API newer than a floor, a floor moved, or the weekly
@@ -75,7 +75,7 @@ sides and at a release.
    request that made it, so nothing needs attributing. Chosen by {user}`bjlittle` on
    2026-11-15, over a fresh solve each week, which needs no lock entry but goes red for
    reasons no pull request caused, and over both.
-3. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **`floors` carries `devs`
+3. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **`floors` carries `devs`
    and `test`, as the test environments do.** The suite runs as it does there, with no
    test learning to skip, and every `devs` floor is installed, rasterio, pandas, pyarrow
    and h3 among them. The
@@ -84,51 +84,51 @@ sides and at a release.
    2026-11-15, over `test` alone, which would double as an environment without extras but
    cost six tests their coverage ({issue}`2967` covers that case), and over splitting an
    `exam` feature out of `devs` to mirror the `pip` extra.
-4. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **The documentation is
+4. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **The documentation is
    built at its floors each week, from a locked `floors-docs` environment.** `floors-docs`
    carries `devs` and `docs`, and builds `html-noplot` from `main` with the documentation
    build's own strictness. A failure opens an issue. Being locked, it goes red only after
    a merge, never on a hiccup of the channel. Chosen by {user}`bjlittle` on 2026-11-15,
    over a build on every pull request, a second Sphinx build each time whose cost is
    unmeasured, and over leaving the `docs` floors unexercised.
-5. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **Every `pip` requirement
+5. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **Every `pip` requirement
    carries a floor, equal to its `pixi` floor.** A check holds the two equal (§4.4), so a
    dependabot pull request that raises a `pip` floor, as {pull}`2219` did, fails on that
    pull request, as one whose `pip` ceiling outruns the `pixi` one fails the Dependency
    Ceilings check. Chosen by {user}`bjlittle` on 2026-11-15, over floors on
    `requirements/pypi-core.txt` alone, and over keeping the `pip` side without floors, as
    {pull}`2226` left it.
-6. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **A person reads a
+6. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **A person reads a
    failure.** Nothing attributes it to a package, scans for a version that passes, or
    opens a pull request to raise a floor. The author of a pull request reads its red check,
    and the maintainer reads a weekly or release failure from its run. Attribution would be
    added only if failures prove hard to read. Chosen by {user}`bjlittle` on 2026-11-15,
    with §2 decision 1.
-7. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **A release reaches PyPI
+7. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **A release reaches PyPI
    only once its wheel installs and passes at its floors.** On a tag, a job of
    `ci-wheels.yml` installs the built wheel with its `test` and `exam` extras under
    `--resolution lowest-direct` and runs the suite, and `publish-artifacts-pypi` needs it.
    The floors a user is promised are the wheel's `Requires-Dist` lines, and nothing
    resolves them before a release today (§3.2). Chosen by {user}`bjlittle` on 2026-11-15,
    over a step of a release checklist, and over no gate.
-8. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **The `pip` floors are
+8. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **The `pip` floors are
    exercised each week too.** A job installs `.[test,exam]` under `uv`'s
    `--resolution lowest-direct` on Python 3.13 and runs the suite, beside the build of
    §2 decision 4. The `pip` side cannot be locked as the `pixi` side is, so the schedule
    gives the early warning and §2 decision 7 the guarantee.
-9. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **A floors environment
+9. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **A floors environment
    carries the oldest supported Python, and solves alone.** Floors resolved against the
    newest Python would not be the corner of what `geovista` supports. Each carries the
    oldest version feature and no solve-group, since a group shared with environments
    resolved at their highest would solve them together. Its name carries no version, as
    `floors` and `floors-docs`, so a SPEC 0 bump changes the feature it carries and not the
    jobs that name it.
-10. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **The image tests are
+10. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **The image tests are
     left out at the floors.** Their baselines are rendered under the `pyvista` and VTK
     that the lock pins, so a difference at a floor `pyvista` would measure the lock's
     distance from the floor rather than a defect in it. Each job at the floors runs what
     the `tests not image` legs of `ci-tests.yml` run.
-11. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`PRNUM`) — **The `tests floors`
+11. **🤝 Agreed** (2026-11-15, {user}`bjlittle`, {pull}`2969`) — **The `tests floors`
     check is required on `main`.** A red floor cannot merge, so the pull request that
     breaks a floor is the one that raises it, which §2 decision 2 relies on. On a
     dependabot pull request the floor is raised on its own branch, as a ceiling already is.

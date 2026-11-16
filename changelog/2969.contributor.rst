@@ -1,0 +1,7 @@
+Added the :doc:`dependency floors specification
+</developer/specs/2026-11-15-dependency-floors-design>`. It tests ``geovista`` at
+the minimum versions it declares for its dependencies, using ``pixi``'s
+``lowest-direct`` solve strategy: on every pull request, in a weekly build of the
+documentation and install from PyPI, and on the built wheel before a release is
+published to PyPI. Every ``pip`` requirement gains a floor equal to ``pixi``'s.
+Five roadmap rows build it. (:user:`claude`)
