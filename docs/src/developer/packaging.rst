@@ -251,9 +251,11 @@ declared in the :bash:`pyproject.toml` manifest are tested, by the
 
 It declares :toml:`solve-strategy = "lowest-direct"` and no solve-group, since a
 group shared with environments solved at their newest would solve it with them.
-It is locked in :bash:`pixi.lock` like any other, so ``pixi lock`` re-solves it
-whenever a floor moves, while the weekly ``pixi update`` of the `ci-locks.yml`_
-workflow moves only its transitive dependencies. Where two floors cannot be
+It is locked in :bash:`pixi.lock` like any other. Raising a floor above the
+version locked makes ``pixi lock`` re-solve it, but lowering one does not, since
+the version locked still satisfies the floor, so follow a lowered floor with
+:bash:`pixi update --environment floors <package>`. The weekly ``pixi update`` of
+the `ci-locks.yml`_ workflow moves only its transitive dependencies. Where two floors cannot be
 resolved together, the solve lifts one above its floor rather than failing, and
 the lock shows the version it was lifted to.
 

@@ -248,9 +248,11 @@ floors = { features = ["devs", "py313", "test"], solve-strategy = "lowest-direct
 floors-docs = { features = ["devs", "docs", "py313"], solve-strategy = "lowest-direct" }
 ```
 
-Both are locked in `pixi.lock`. A changed specifier invalidates the lock, so `pixi lock`
-re-solves them whenever a floor moves, and the weekly `pixi update` of `ci-locks.yml`
-moves their transitive dependencies while the direct ones stay at their floors.
+Both are locked in `pixi.lock`. A floor raised above the version locked invalidates the
+lock, so `pixi lock` re-solves it. A floor lowered does not, since the version locked still
+satisfies it, so lowering one is followed by `pixi update --environment floors <package>`,
+as {pull}`2974` found. The weekly `pixi update` of `ci-locks.yml` moves their transitive
+dependencies while the direct ones stay at their floors.
 
 When two floors cannot be resolved together, `lowest-direct` lifts one above its floor
 rather than failing, as `uv` does. A pair broken that way still passes, and the lock shows
@@ -471,14 +473,14 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| §2 decision 1 | ⏳ pending | |
-| §2 decision 2 | ⏳ pending | |
-| §2 decision 3 | ⏳ pending | |
+| §2 decision 1 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
+| §2 decision 2 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_floors.py` |
+| §2 decision 3 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 4 | ⏳ pending | |
 | §2 decision 5 | ⏳ pending | |
 | §2 decision 6 | ⏳ pending | |
 | §2 decision 7 | ⏳ pending | |
 | §2 decision 8 | ⏳ pending | |
-| §2 decision 9 | ⏳ pending | |
+| §2 decision 9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 10 | ⏳ pending | |
 | §2 decision 11 | ⏳ pending | |
