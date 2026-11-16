@@ -27,7 +27,7 @@ from geovista.transform import transform_points
 )
 def test_crs_fail(src_crs, tgt_crs):
     """Test trap of invalid source and/or target CRSs."""
-    data = np.empty(1)
+    data = np.zeros(1)
     emsg = "Invalid projection"
     with pytest.raises(CRSError, match=emsg):
         _ = transform_points(src_crs=src_crs, tgt_crs=tgt_crs, xs=data, ys=data)
@@ -69,8 +69,8 @@ def test_xy_size_fail(xs, ys):
 
 def test_z_dimension_fail():
     """Test trap of non-compliant zs dimensionality."""
-    data = np.empty(1)
-    zs = np.empty(1).reshape(1, 1, 1)
+    data = np.zeros(1)
+    zs = np.zeros(1).reshape(1, 1, 1)
     emsg = "Cannot transform points, 'zs' must be 1D or 2D"
     with pytest.raises(ValueError, match=emsg):
         _ = transform_points(src_crs=WGS84, tgt_crs=WGS84, xs=data, ys=data, zs=zs)
@@ -78,8 +78,8 @@ def test_z_dimension_fail():
 
 def test_z_size_fail():
     """Test trap of unequal number of z-axis samples."""
-    data = np.empty(1)
-    zs = np.empty(2)
+    data = np.zeros(1)
+    zs = np.zeros(2)
     emsg = "Cannot transform points, 'xs' and 'zs' require same length"
     with pytest.raises(ValueError, match=emsg):
         _ = transform_points(src_crs=WGS84, tgt_crs=WGS84, xs=data, ys=data, zs=zs)

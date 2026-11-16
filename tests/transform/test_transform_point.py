@@ -17,7 +17,7 @@ from geovista.transform import transform_point
 
 @pytest.mark.parametrize(
     "bad",
-    [np.array([]), np.empty(()), np.empty((3,)), np.empty((3, 1)), np.empty((2, 3))],
+    [np.array([]), np.zeros(()), np.zeros((3,)), np.zeros((3, 1)), np.zeros((2, 3))],
 )
 def test_shape_fail(mocker, bad):
     """Test trap for unexpected result shape."""

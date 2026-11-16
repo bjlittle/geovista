@@ -1,0 +1,4 @@
+Seven tests built their inputs with ``np.empty``, whose memory is uninitialised.
+In five of them it could hold an infinity, which ``transform_points`` refuses
+before the error each test expects, so they failed now and then. All seven now
+use ``np.zeros``. (:user:`claude`)
