@@ -32,7 +32,7 @@ LOCK = ROOT / "pixi.lock"
 #: The floors environment, and the job running the suite in it.
 FLOORS = "floors"
 #: The check the job reports, required on "main" (floors spec §2 decision 11).
-CHECK = "tests floors"
+NAME = "tests floors"
 #: The job whose matrix the coverage upload waits on.
 TESTS = "tests"
 #: The job uploading the coverage report.
@@ -166,7 +166,7 @@ def test_the_floors_check_names_no_version():
 
     Holds floors spec §2 decision 11.
     """
-    assert _job().get("name") == CHECK
+    assert _job().get("name") == NAME
 
 
 def test_the_floors_job_can_fail():
