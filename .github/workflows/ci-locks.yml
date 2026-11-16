@@ -34,6 +34,10 @@ jobs:
 
     environment: development
 
+    # the report of a failed run opens an issue, or comments on the open one
+    permissions:
+      issues: write
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -59,9 +63,13 @@ jobs:
       # The reader runs in an assignment, not as the condition of an `if`, which is
       # what makes `errexit` cover it: a command failing as an `if` condition is
       # exempt, so a missing interpreter would read as "nothing moved" and pass.
+      #
+      # pixi's messages go to the log and to "update.err" too, so that a failed
+      # update can quote the error naming the environment it could not solve; with
+      # "pipefail", the update's own status still decides the step.
       - name: "refresh pixi manifest"
         run: |
-          pixi update --json > update.json
+          pixi update --json 2>&1 > update.json | tee update.err
           moved=$(python -c "import json; print(len(json.load(open('update.json'))['environment']))" < /dev/null)
           if [ "${moved}" -gt 0 ]; then
             pixi exec pixi-diff-to-markdown < update.json > diff.md
@@ -119,3 +127,32 @@ jobs:
           echo "- **URL** ${CPR_PR_URL}" >> ${GITHUB_STEP_SUMMARY}
           echo "- **Operation** [${CPR_PR_OPERATION}]" >> ${GITHUB_STEP_SUMMARY}
           echo "- **SHA** ${CPR_PR_HEAD_SHA}" >> ${GITHUB_STEP_SUMMARY}
+
+      # A failed update leaves every environment's lock behind, so a failed run of
+      # the schedule reports itself: an issue, or a comment on the open one, so that
+      # weeks of the same failure make one issue (#2977). A run started by hand is
+      # watched by whoever started it.
+      - name: "report failure"
+        if: ${{ failure() && github.event_name == 'schedule' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="chore: pixi lock update failure"
+          {
+            echo "The weekly \`pixi update\` failed, so no environment's lock moved."
+            echo "Please investigate the run ${RUN_URL}"
+            if [ -s update.err ]; then
+              echo
+              echo '```'
+              grep -m 10 -e "Error" -e "─▶" update.err || true
+              echo '```'
+            fi
+          } > report.md
+          number=$(gh issue list --repo "${REPO}" --state open --search "in:title \"${title}\"" --json number,title --jq "map(select(.title == \"${title}\")) | .[0].number // empty")
+          if [ -n "${number}" ]; then
+            gh issue comment "${number}" --repo "${REPO}" --body-file report.md
+          else
+            gh issue create --repo "${REPO}" --title "${title}" --body-file report.md --label bot --label "new: issue"
+          fi
