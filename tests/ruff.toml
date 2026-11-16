@@ -1,0 +1,8 @@
+# Ruff settings for the tests, on top of those in the root pyproject.toml. An option
+# set here replaces the root one rather than merging with it, so a ban added to the
+# root banned-api must be repeated below.
+extend = "../pyproject.toml"
+
+[lint.flake8-tidy-imports.banned-api]
+"numpy.empty".msg = "A test may not read uninitialised memory (#2968): use numpy.zeros, numpy.full or explicit values."
+"numpy.empty_like".msg = "A test may not read uninitialised memory (#2968): use numpy.zeros_like, numpy.full_like or explicit values."
