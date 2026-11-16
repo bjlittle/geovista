@@ -819,7 +819,7 @@ actually see.
 
    The testing ``pixi`` :term:`tasks <Task>` are available in the :guilabel:`test`,
    :guilabel:`geovista` and :guilabel:`py3xx` variant of those ``pixi`` environments
-   e.g., :guilabel:`geovista-py313`. See :ref:`tippy-gv-developer-packaging`
+   e.g., :guilabel:`geovista-py313`, and in the :guilabel:`floors` environment. See :ref:`tippy-gv-developer-packaging`
    for further details.
 
 Testing may be performed using the convenience of

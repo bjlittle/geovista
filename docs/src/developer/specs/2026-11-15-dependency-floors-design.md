@@ -427,7 +427,15 @@ without extras, and the feedstock (§4.6).
 (floors-spec-8)=
 ## 8. Open Items
 
-None yet. Each will carry the grammar of items spec §3.2.
+Each carries the grammar of items spec §3.2.
+
+1. **❓ Open** (🔎 2026-11-16, {pull}`2974` · 🎯 row 6 of §9 · 🎫 {issue}`2975`) —
+   **A lowered floor is not re-solved by `pixi lock`.** The version locked still
+   satisfies a lowered floor, so the `floors` environment stays where it was until
+   `pixi update --environment floors <package>` runs, and `tests floors` stays green
+   above the new floor meanwhile. §4.1 documents the step, but nothing checks that it
+   was taken. The report of row 6 would show it, as a direct dependency locked above
+   its floor that the solve did not lift.
 
 (floors-spec-9)=
 ## 9. Roadmap

@@ -232,10 +232,10 @@ inheritance relationship between its environments:
 One environment belongs to no solve-group at all. The :guilabel:`floors`
 environment resolves each **direct** dependency at the **lowest** release its
 floor admits, and each transitive dependency at its newest, against the
-**oldest** supported distribution of ``python``. It is how the minimum versions
-declared in the :bash:`pyproject.toml` manifest are tested, by the
-``tests floors`` check of the
-:ref:`tippy-gv-developer-testing-continuous-integration` (floors spec §4.1).
+**oldest** supported distribution of ``python``. The ``tests floors`` check of
+the :ref:`tippy-gv-developer-testing-continuous-integration` runs the suite in
+it, which tests the minimum versions of the ``pixi`` dependencies that the
+suite needs (floors spec §4.1).
 
 .. table:: Pixi Floors Environment
    :align: center
@@ -254,10 +254,10 @@ group shared with environments solved at their newest would solve it with them.
 It is locked in :bash:`pixi.lock` like any other. Raising a floor above the
 version locked makes ``pixi lock`` re-solve it, but lowering one does not, since
 the version locked still satisfies the floor, so follow a lowered floor with
-:bash:`pixi update --environment floors <package>`. The weekly ``pixi update`` of
-the `ci-locks.yml`_ workflow moves only its transitive dependencies. Where two floors cannot be
-resolved together, the solve lifts one above its floor rather than failing, and
-the lock shows the version it was lifted to.
+:bash:`pixi update --environment floors <package>`. The weekly ``pixi update``
+of the `ci-locks.yml`_ workflow moves only its transitive dependencies. Where two
+floors cannot be resolved together, the solve lifts one above its floor rather
+than failing, and the lock shows the version it was lifted to.
 
 
 :fa:`gears` Pixi Features
