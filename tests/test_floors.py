@@ -37,10 +37,12 @@ NAME = "tests floors"
 TESTS = "tests"
 #: The job uploading the coverage report.
 COVERAGE = "coverage"
-#: How every "pixi run" of the floors job begins.
-RUN = f"pixi run --frozen -e {FLOORS}"
 #: The environments a lock declares, up to its first package.
 ENVIRONMENTS = re.compile(r"^environments:\n(.*?)^packages:", re.DOTALL | re.MULTILINE)
+#: How the lock records an environment solved at its lowest (floors spec §2 decision 1).
+STRATEGY = r"^      strategy: lowest-version-direct$"
+#: The shell operators that would let another command decide a line's status.
+SHELL = frozenset(";|&")
 
 
 @cache
@@ -63,14 +65,23 @@ def _job(name: str = FLOORS) -> dict[str, Any]:
     return jobs[name]
 
 
-def _lines() -> list[str]:
-    """Return each line of shell the floors job runs, stripped."""
+def _commands(step: dict[str, Any]) -> list[str]:
+    """Return each line of shell the step runs, stripped."""
     return [
-        line.strip()
-        for step in _job().get("steps", [])
-        for line in str(step.get("run", "")).splitlines()
-        if line.strip()
+        line.strip() for line in str(step.get("run", "")).splitlines() if line.strip()
     ]
+
+
+def _lines(name: str = FLOORS) -> list[str]:
+    """Return each line of shell the named job runs, stripped."""
+    return [line for step in _job(name).get("steps", []) for line in _commands(step)]
+
+
+def _suite(name: str = FLOORS) -> list[str]:
+    """Return the tokens of the one line of the named job that runs pytest."""
+    suites = [shlex.split(line) for line in _lines(name) if " pytest " in f" {line} "]
+    assert len(suites) == 1, f"the {name!r} job runs pytest {len(suites)} times"
+    return suites[0]
 
 
 def _option(tokens: list[str], flag: str) -> str | None:
@@ -95,6 +106,9 @@ def test_the_floors_job_runs_on_every_pull_request():
 
     assert "if" not in _job(), f"the {FLOORS!r} job runs only if {_job()['if']!r}"
 
+    gated = [step.get("name") for step in _job()["steps"] if "if" in step]
+    assert not gated, f"steps of the {FLOORS!r} job run only on a condition: {gated}"
+
 
 def test_the_floors_environment_is_locked():
     """Its result changes only when a commit changes something.
@@ -117,34 +131,60 @@ def test_the_floors_environment_is_locked():
         assert install.get("environments") == FLOORS
         assert install.get("frozen") is True
 
+    block = re.search(rf"^  {FLOORS}:\n((?:    .*\n)+)", found[1], re.MULTILINE)
+    assert block, f"{LOCK.name} declares {FLOORS!r} with no body"
+    assert re.search(STRATEGY, block[1], re.MULTILINE), (
+        f"{LOCK.name} does not solve {FLOORS!r} at its lowest"
+    )
+
 
 def test_the_floors_job_runs_the_floors_environment():
     """A run in another environment would test the lock's newest releases.
 
     Holds floors spec §2 decision 2.
     """
-    runs = [line for line in _lines() if "pixi run" in line]
+    runs = [shlex.split(line) for line in _lines() if "pixi run" in line]
     assert runs, f"the {FLOORS!r} job runs nothing through pixi"
 
     wrong = [
-        line for line in runs if not line.removeprefix("xvfb-run -a ").startswith(RUN)
+        " ".join(tokens)
+        for tokens in runs
+        if "--frozen" not in tokens
+        or (_option(tokens, "-e") or _option(tokens, "--environment")) != FLOORS
     ]
 
-    assert not wrong, f"runs not in the {FLOORS!r} environment: {wrong}"
+    assert not wrong, f"runs not frozen in the {FLOORS!r} environment: {wrong}"
 
 
 def test_the_floors_job_leaves_out_the_image_tests():
     """It runs what the "tests not image" legs of the tests matrix run.
 
-    Holds floors spec §2 decision 10.
+    Its workers and their distribution are read from the tests job, so a change
+    there reaches the floors too. Holds floors spec §2 decision 10.
     """
-    suites = [shlex.split(line) for line in _lines() if " pytest " in f" {line} "]
-    assert len(suites) == 1, f"the {FLOORS!r} job runs pytest {len(suites)} times"
+    tokens, legs = _suite(), _suite(TESTS)
 
-    (tokens,) = suites
     assert _option(tokens, "-m") == "not image"
-    assert _option(tokens, "--numprocesses") == "logical"
-    assert _option(tokens, "--dist") == "worksteal"
+    for flag in ("--numprocesses", "--dist"):
+        assert _option(tokens, flag) == _option(legs, flag), flag
+
+
+def test_the_suite_decides_the_job():
+    """The job's result is the suite's, whatever the shell does after it.
+
+    The workflow runs ``bash -l {0}``, which drops ``errexit``, so a step's
+    status is that of its last command, and pytest must be that command, alone
+    on its line, with nothing to swallow its status. Follows floors spec §4.3.
+    """
+    (step,) = [
+        step
+        for step in _job()["steps"]
+        if any(" pytest " in f" {line} " for line in _commands(step))
+    ]
+    last = _commands(step)[-1]
+
+    assert " pytest " in f" {last} ", f"{last!r} runs after the suite"
+    assert not set(last) & SHELL, f"the suite's status may be swallowed: {last!r}"
 
 
 def test_the_floors_job_stands_outside_the_tests_matrix():
@@ -170,5 +210,10 @@ def test_the_floors_check_names_no_version():
 
 
 def test_the_floors_job_can_fail():
-    """A job allowed to fail would let a broken floor merge."""
+    """A job or a step allowed to fail would let a broken floor merge."""
     assert "continue-on-error" not in _job(), f"the {FLOORS!r} job may fail silently"
+
+    lenient = [
+        step.get("name") for step in _job()["steps"] if "continue-on-error" in step
+    ]
+    assert not lenient, f"steps of the {FLOORS!r} job may fail silently: {lenient}"
