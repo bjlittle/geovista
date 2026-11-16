@@ -61,7 +61,7 @@ which resolves strictly from `pixi.lock` — so `pixi run --frozen -e <env>`
 locally is CI's environment, *if* `<env>` is CI's: the test jobs run
 `test-py313`/`test-py314`, whose lock can differ from `geovista`'s (rasterio
 1.5.1 against 1.5.2, #2599). After editing a dependency, run `pixi lock`
-*first*, or `--frozen` silently keeps running the previous environment.
+*first*, or `--frozen` silently keeps running the previous environment. ⚠️ Without `--frozen`, any `pixi run`/`pixi list` re-solves a lock it finds stale and rewrites `pixi.lock` (twice in #2969's session), so pass it everywhere and `git checkout -- pixi.lock` if one slips through.
 
 ⚠️ **But `pixi lock` alone will not raise a version ceiling.** It only
 re-solves when the lock is *invalid*, and an already-locked version still
@@ -169,7 +169,7 @@ Every Python file must begin with this header, and include `from __future__ impo
 ## Conventions
 
 - **Versioning and license**: `setuptools-scm` (no manual version file edits); BSD-3-Clause.
-- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run -e docs python .github/scripts/changelog.py <PR> "changelog/a.rst,changelog/b.rst"` — the fragments are one **comma-separated** argument of repo-relative paths, and either space-separating them or dropping the `changelog/` prefix raises a bare `FileNotFoundError` on the concatenation. ⚠️ The docs render unreleased fragments on the changelog page, so a fragment's cross-reference must resolve: cite the documented path (`geovista.globe.Globe`, never the re-export `geovista.Globe`), and rerun the strict docs build after writing one (#2761).
+- **Changelog**: towncrier fragments in `changelog/` — one `.rst` file per PR per change type, named `{PR_NUMBER}.{TYPE}.rst`. Use the `changelog-fragment` skill or see `pyproject.toml` `[tool.towncrier]` for valid types. ⚠️ `ci-changelog.yml` requires one *touched* file to be named for **your** PR, so a PR that only edits pre-existing fragments fails it until you add the `skip-changelog` label. Run the same check locally with `pixi run --frozen -e docs python .github/scripts/changelog.py <PR> "changelog/a.rst,changelog/b.rst"` — the fragments are one **comma-separated** argument of repo-relative paths, and either space-separating them or dropping the `changelog/` prefix raises a bare `FileNotFoundError` on the concatenation. ⚠️ The docs render unreleased fragments on the changelog page, so a fragment's cross-reference must resolve: cite the documented path (`geovista.globe.Globe`, never the re-export `geovista.Globe`), and rerun the strict docs build after writing one (#2761).
 - **`agentic` label**: `ci-label.yml` adds it only for `agent*`/`ai*` branches, never the
   `docs/`, `deps/`, `tests/` prefixes used here, so pass `--label agentic` (workflow rule 4.1).
 - **Python support**: SPEC 0 — drop a minor version three years after its release.
@@ -196,4 +196,4 @@ Every Python file must begin with this header, and include `from __future__ impo
 
 ---
 
-**Last Updated**: 10 November 2026
+**Last Updated**: 16 November 2026
