@@ -442,7 +442,7 @@ Each carries the grammar of items spec §3.2.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The `floors` environment and the Python support test's account of it (§4.1), its job in `ci-tests.yml` (§4.3), each floor it disproves raised (§4.2), and its pages (§4.5) | 🚧 in progress ({pull}`2974`) |
+| 1 | The `floors` environment and the Python support test's account of it (§4.1), its job in `ci-tests.yml` (§4.3), each floor it disproves raised (§4.2), and its pages (§4.5) | ✅ landed (2026-11-16, {pull}`2974`) |
 | 2 | A floor on every `pip` requirement and the Dependency Floors check (§4.4), and their pages (§4.5) | 📋 not started |
 | 3 | The composite action and the `pypi` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) | 📋 not started |
 | 4 | The `test-floors` job of `ci-wheels.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) | 📋 not started |
