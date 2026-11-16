@@ -1,5 +1,5 @@
 Added a ``floors`` environment, which resolves each direct dependency at the lowest
 release its floor admits on the oldest supported Python, and a ``tests floors``
-check that runs the suite in it on every pull request, landing row 1 of
-floors spec §9. The ``pyarrow`` floor rises to 18.0.0, its first release with a
-wheel for Python 3.13. (:user:`claude`)
+check that runs the suite in it on every pull request, landing
+row 1 of floors spec §9. The ``pyarrow`` floor rises to 18.0.0, its first release
+with a wheel for Python 3.13. (:user:`claude`)
