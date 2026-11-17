@@ -4309,3 +4309,301 @@ def test_every_status_sums_its_roadmap(spec):
 
     assert statuses, f"{spec.name} has no roadmap"
     assert citations.roadmap_status(found) == expected
+
+
+#: Orderings between roadmap rows (order spec §4.5): an ordering's opener, built by
+#: name, as the grammar builds it, and the header of a roadmap.
+LINKED = citations.ORDERING
+ROADMAP_HEADER = "| # | Scope | Status |\n|---|---|---|\n"
+
+#: A bare row of an ordering's own roadmap (order spec §2 decision 4).
+BARE_ROW = re.compile(r"row\s+(?P<row>\d+[a-z]?)")
+
+
+def ordering_target(
+    said: citations.Ordering,
+    row: Row,
+    rows: Iterable[Row],
+    owner: str | None,
+    names: Namespace,
+) -> tuple[str | None, str | None]:
+    """Read what an ordering names: the anchor of a row or a release, or a fault.
+
+    A bare row names a row of the same roadmap. A row of another specification is
+    cited in full, and whether its anchor exists is the resolution rule's. A range
+    is refused, and only ``before`` takes a release (order spec §4.1, §4.4).
+    """
+    target = said.target
+    named = f'"{said.relation} {target}"'
+    bare = BARE_ROW.fullmatch(target)
+    found = next(
+        (
+            c
+            for c in citations.scan(target, names.signed, owner)
+            if c.start == 0 and c.end == len(target) and c.slug is not None
+        ),
+        None,
+    )
+    label = LABEL.match(found.slug) if found is not None else None
+    key, fault = None, None
+    if citations.RELEASE.fullmatch(target):
+        if said.relation == "before":
+            key = f"release {target}"
+        else:
+            fault = f"{named}: only before takes a release"
+    elif target.startswith("rows ") or (found is not None and found.ends):
+        fault = f"{named}: name one row"
+    elif bare is not None and owner is not None:
+        if any(r.section == row.section and r.row == bare["row"] for r in rows):
+            key = row_anchor(owner, row.section, bare["row"])
+        else:
+            fault = f"{named}: row {bare['row']} does not exist"
+    elif label is not None and label["row"] is not None:
+        key = found.slug
+    else:
+        fault = f"{named} names no row"
+    return key, fault
+
+
+def ordering_form(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each ordering of a roadmap that is not well formed (order spec §4.5).
+
+    Item 1: each clause after a ``· 🔗`` opens with one of the four relations and
+    names one row, or a release after ``before``. Item 2: a bare row is a row of
+    the same roadmap.
+    """
+    owner = names.owners.get(path)
+    rows = citations.rows(text)
+    problems = []
+    for row in rows:
+        for clause in citations.split_scope(row.scope)[1]:
+            at = f"{where(path, row.line)}: row {row.row}"
+            said = citations.ordering(clause)
+            if said is None:
+                problems.append(
+                    f'{at}: "{clause}" is no ordering: write after, before, with or '
+                    "with or after, then one row"
+                )
+                continue
+            _, fault = ordering_target(said, row, rows, owner, names)
+            if fault is not None:
+                problems.append(f"{at}: {fault}")
+    return problems
+
+
+def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
+    """Find an ordering written twice, item 3 of order spec §4.5.
+
+    Each ordering is read as an edge: ``after`` X on Y and ``before`` Y on X are
+    X before Y, ``with`` is the pair either way round, ``with or after`` keeps its
+    direction, and a release is the row's own. Two equal edges are one ordering
+    written twice, on one row or on both of its rows.
+    """
+    seen: set[tuple[str, ...]] = set()
+    problems = []
+    for path, text in texts.items():
+        owner = names.owners.get(path)
+        rows = citations.rows(text)
+        for row in rows:
+            mine = row_anchor(owner, row.section, row.row) if owner else row.row
+            for clause in citations.split_scope(row.scope)[1]:
+                said = citations.ordering(clause)
+                if said is None:
+                    continue
+                key, _ = ordering_target(said, row, rows, owner, names)
+                if key is None:
+                    continue
+                edge: tuple[str, ...]
+                if said.relation == "with":
+                    edge = ("with", *sorted((mine, key)))
+                elif said.relation == "before":
+                    edge = ("after", mine, key)
+                elif said.relation == "after":
+                    edge = ("after", key, mine)
+                else:
+                    edge = (said.relation, key, mine)
+                if edge in seen:
+                    problems.append(
+                        f'{where(path, row.line)}: row {row.row}: "{clause}" is '
+                        "written twice: write an ordering once, on the row its reason "
+                        "belongs to"
+                    )
+                seen.add(edge)
+    return problems
+
+
+def ordered(
+    tmp_path: Path,
+    mine: Iterable[tuple[str, str]],
+    theirs: Iterable[tuple[str, str]] = (("Theirs", NOT_STARTED),),
+    header: str = ROADMAP_HEADER,
+) -> tuple[dict[Path, str], Namespace]:
+    """Write a demo and an other specification, each a roadmap in its second section.
+
+    Each row is its scope and its status, numbered from 1 in the order given. A
+    header of more than three columns fills each extra one with ``0``.
+    """
+    extra = " 0 |" * (header.split("\n", maxsplit=1)[0].count("|") - 4)
+
+    def roadmap(slug: str, rows: Iterable[tuple[str, str]]) -> str:
+        table = "".join(
+            f"| {n} | {scope} |{extra} {status} |\n"
+            for n, (scope, status) in enumerate(rows, start=1)
+        )
+        opening = f"({slug}-1)=\n## 1. Purpose\n\n({slug}-2)=\n## 2. Roadmap\n\n"
+        return f"{opening}{header}{table}"
+
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
+        + roadmap("other-spec", theirs),
+        encoding="utf-8",
+    )
+    path, _ = demo(tmp_path, roadmap("demo-spec", mine))
+    texts = {p: p.read_text(encoding="utf-8") for p in (path, other)}
+    return texts, namespace([path, other])
+
+
+def form_faults(
+    tmp_path: Path, *mine: tuple[str, str], header: str = ROADMAP_HEADER
+) -> list[str]:
+    """Read the ordering faults of the demo specification's roadmap."""
+    texts, names = ordered(tmp_path, mine, header=header)
+    path = next(p for p in texts if p.name.startswith("2026-01-01"))
+    return ordering_form(path, texts[path], names)
+
+
+def test_ordering_form_passes_each_relation_and_a_release(tmp_path):
+    """Each relation, a row of another specification and a release are well formed."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        (f"Two{LINKED} after row 1", NOT_STARTED),
+        (f"Three{LINKED} with or after row 2{LINKED} before 0.6", NOT_STARTED),
+        (f"Four{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
+        (f"Five{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED),
+    )
+
+    assert faults == []
+
+
+def test_ordering_form_finds_a_word_outside_the_relations(tmp_path):
+    """Item 1 of order spec §4.5: a clause opening with another word, or no row."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        (f"Two{LINKED} needs row 1", NOT_STARTED),
+        (f"Three{LINKED} after", NOT_STARTED),
+        (f"Four{LINKED} after the regions design", NOT_STARTED),
+    )
+
+    assert len(faults) == 3
+    assert "row 2" in faults[0]
+    assert '"needs row 1"' in faults[0]
+    assert "row 3" in faults[1]
+    assert '"after"' in faults[1]
+    assert "row 4" in faults[2]
+    assert '"after the regions design"' in faults[2]
+
+
+def test_ordering_form_finds_a_row_that_does_not_exist(tmp_path):
+    """Item 2 of order spec §4.5: a bare row names a row of its own roadmap."""
+    faults = form_faults(
+        tmp_path, ("One", NOT_STARTED), (f"Two{LINKED} after row 7", NOT_STARTED)
+    )
+
+    (fault,) = faults
+    assert "row 2" in fault
+    assert "row 7" in fault
+    assert "does not exist" in fault
+
+
+def test_ordering_form_refuses_a_range(tmp_path):
+    """An ordering names one row, bare or cited."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        ("Two", NOT_STARTED),
+        (f"Three{LINKED} after rows 1 to 2", NOT_STARTED),
+        (f"Four{LINKED} after rows 1 to 1 of other spec {SECTION}2", NOT_STARTED),
+    )
+
+    assert len(faults) == 2
+    assert all("one row" in fault for fault in faults)
+
+
+def test_ordering_form_refuses_a_release_on_another_relation(tmp_path):
+    """Only before takes a release (order spec §4.4)."""
+    faults = form_faults(
+        tmp_path,
+        (f"One{LINKED} with 0.6", NOT_STARTED),
+        (f"Two{LINKED} after 0.6", NOT_STARTED),
+    )
+
+    assert len(faults) == 2
+    assert all("only before takes a release" in fault for fault in faults)
+
+
+def test_ordering_form_reads_the_scope_of_a_wider_table(tmp_path):
+    """A roadmap of four columns is read by its header, as typing spec §4 is."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        (f"Two{LINKED} after row 7", NOT_STARTED),
+        header="| # | Scope | Lines | Status |\n|---|---|---|---|\n",
+    )
+
+    (fault,) = faults
+    assert "row 7" in fault
+
+
+def test_orderings_twice_finds_an_ordering_repeated_on_one_row(tmp_path):
+    """Item 3 of order spec §4.5: the same ordering twice on one row."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1{LINKED} after row 1", NOT_STARTED),
+        ],
+    )
+
+    (fault,) = orderings_twice(texts, names)
+    assert "row 2" in fault
+    assert "twice" in fault
+
+
+def test_orderings_twice_finds_both_directions_across_specifications(tmp_path):
+    """One ordering written on both its rows, in two specifications."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"Mine{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} after row 1 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    (fault,) = orderings_twice(texts, names)
+    assert "twice" in fault
+
+
+def test_orderings_twice_reads_with_in_either_direction(tmp_path):
+    """A with written on both rows is one ordering, whichever row writes it."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"Mine{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} with row 1 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    assert len(orderings_twice(texts, names)) == 1
+
+
+def test_orderings_twice_passes_distinct_orderings(tmp_path):
+    """Two rows each after a third are two orderings, and a release is its own."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            (f"Three{LINKED} after row 1{LINKED} before 0.6", NOT_STARTED),
+        ],
+    )
+
+    assert orderings_twice(texts, names) == []

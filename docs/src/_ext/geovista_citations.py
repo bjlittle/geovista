@@ -157,8 +157,8 @@ OPENER = re.compile(rf"[^\S\n]*\N{{MIDDLE DOT}}[^\S\n]+{LINK}{VS16}?")
 #: is read before ``with`` (order spec §4.2).
 RELATIONS = ("with or after", "after", "before", "with")
 
-#: A release of ``geovista`` an ordering may name: two or three numbers (order
-#: spec §4.4).
+#: A release of ``geovista`` an ordering may name: two or three numbers
+#: (order spec §4.4).
 RELEASE = re.compile(r"\d+\.\d+(?:\.\d+)?")
 
 
@@ -183,8 +183,8 @@ class Ordering:
 def split_scope(scope: str) -> tuple[str, list[str]]:
     """Split a Scope cell into its scope and the clause of each ordering.
 
-    The first ``· 🔗`` ends the scope and each opens one clause (order spec
-    §4.1). An opener quoted in code is the scope's text.
+    The first ``· 🔗`` ends the scope and each opens one clause
+    (order spec §4.1). An opener quoted in code is the scope's text.
 
     Parameters
     ----------
