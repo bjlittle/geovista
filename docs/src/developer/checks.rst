@@ -314,7 +314,9 @@ names the work that produced it. A specification in the ledger numbers its
 decisions state first, with their provenance, and ends with a Verification table
 of one row per decision. An Open Items section numbers its entries the same way,
 each carrying the parts its state needs, in order, and naming a row of its own
-roadmap that owes it. A specification's figures sit in its own folder under
+roadmap that owes it. A row's order against another row is written in its
+Scope cell, as ``· 🔗 after row 1``, in one of four relations, once, and never
+in prose. A specification's figures sit in its own folder under
 ``figures/``, each shown with alt text and a caption, and each a PNG of 150 KB or
 less.
 
@@ -407,11 +409,19 @@ cell as a plain number, ``1``, or with a letter, ``1a``, for a row split in two.
 A citation names a row by that cell, so ``**1**``, ``~~1~~`` or ``1.`` names
 nothing (items spec §3.1). When it says *row N lands with …, which has not
 landed*, *… which has landed without it* or *… which landed in another pull
-request*, land the two rows in one pull request: a row scoped *landing with*
-another lands with it (items spec §3.4). When it says ``'not started' is not a
+request*, land the two rows in one pull request: a row whose scope carries
+``· 🔗 with`` another lands with it (items spec §3.4). When it says ``'not started' is not a
 status: write 📋 not started``, or the same for ``in progress`` or ``candidate``,
 give the state its emoji: ``🚧 in progress``, ``📋 not started`` or
 ``💡 candidate``, as ledger spec §2 decision 16 agreed.
+
+For an ordering between rows, when it says *… is no ordering*, *… names no
+row*, *… name one row* or *… only before takes a release*, write one of
+``after``, ``before``, ``with`` or ``with or after`` and one row, or ``before``
+and a release. When it says *… is written twice*, keep the ordering on the row
+its reason belongs to and delete the other. When it says *… orders rows in
+prose* or *… in its scope*, move the ordering into its row's Scope cell after
+a ``· 🔗``, and leave only the reason in the prose (order spec §4.1).
 
 **Declaring an exception:** None for the conventions. A specification not yet
 brought into the ledger is named in ``UNLEDGERED``, beside the row of
@@ -421,7 +431,7 @@ outlive its work. ``UNITEMED`` named, the same way, each specification whose ope
 items were not yet in the grammar of items spec §3.2. Row 4 of items spec §8
 emptied it, and a test keeps it empty.
 
-**More:** docs spec §3.5, items spec §3.7.
+**More:** docs spec §3.5, items spec §3.7, order spec §4.5.
 
 
 .. _gv-developer-checks-projection-coverage:

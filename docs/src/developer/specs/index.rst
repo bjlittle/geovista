@@ -255,6 +255,52 @@ pull request or by hand once it merges. Graduating carries the issue to the
 new row instead, which cites it, and the issue keeps its label until that row
 lands.
 
+.. _gv-developer-specs-order:
+.. _tippy-gv-developer-specs-order:
+
+Ordering Roadmap Rows
+---------------------
+
+When a row depends on another, its Scope cell says so after the scope. Each
+ordering opens with ``· 🔗``, and a row may carry several:
+
+.. code:: markdown
+
+   | # | Scope | Status |
+   |---|---|---|
+   | 1 | Tiers on a map | 📋 not started |
+   | 2 | Tiers on the globe · 🔗 after row 1 | 📋 not started |
+   | 3 | The lift · 🔗 after row 2 · 🔗 with row 2 of heights spec §9 | 📋 not started |
+
+An ordering states one of four relations, and names one row:
+
+.. list-table::
+    :header-rows: 1
+    :widths: 25 75
+
+    * - Relation
+      - The row lands
+    * - ``after``
+      - in a later pull request than the row it names
+    * - ``before``
+      - in an earlier pull request
+    * - ``with``
+      - in the same pull request
+    * - ``with or after``
+      - in the same pull request, or a later one
+
+A bare ``row 1`` is a row of the same roadmap, and a row of another
+specification is cited in full, as ``row 2 of layers spec §9``. Write each
+ordering once, on the row its reason belongs to: the row that waits, or the
+earlier row for ``before``. A ``with`` between two specifications goes on the
+row whose work the other row does. A release takes ``before`` alone, as
+``· 🔗 before 0.6``.
+
+The reasons stay in the paragraph under the table, and the ordering never
+does: the conventions test refuses one written in prose, such as *row 3 needs
+row 1*, and points you at the cell. order spec §4.1 sets out the form, and
+order spec §4.5 what the test refuses.
+
 .. toctree::
     :hidden:
 
