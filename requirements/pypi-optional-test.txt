@@ -1,6 +1,6 @@
 codecov <2.2
 markdown-it-py <4.3
-playwright <1.65
+playwright <1.66
 pytest <9.3
 pytest-codspeed <5.1
 pytest-cov <7.2
