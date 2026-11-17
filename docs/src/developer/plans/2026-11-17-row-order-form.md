@@ -486,3 +486,5 @@ guard would not catch it unless row 1 adds them.
   are the sources of every UMBRELLA flag above. Order spec §4.3 says nothing about which side of
   an umbrella pair writes the `with`. The texts write it on the umbrella or the owing row
   (globe 2/3/4, crs 2, heights 5, citation 5), except order spec row 2 (#59).
+
+A Codex review then found two more, each fixed with a test that failed first: a `before` naming its own roadmap's row in full (`row 2 of §9`, `row 2 of layers spec §9`) passed where the bare form was refused, so the same roadmap is read from the resolved anchor; and emphasis or a link around the word or the row hid an ordering from the guard, which now reads the inline markdown's text with code left out (`plain`).
