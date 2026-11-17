@@ -896,3 +896,75 @@ def test_roadmap_status_counts_an_unknown_state_as_not_landed(citations):
     statuses = [landed(citations), "landed"]
 
     assert citations.roadmap_status(statuses) == f"{PROGRESS} 1 of 2 rows"
+
+
+#: An ordering's opener in a Scope cell (order spec §4.1), built by name.
+LINKED = " \N{MIDDLE DOT} \N{LINK SYMBOL}"
+
+
+def test_split_scope_returns_the_scope_alone_without_orderings(citations):
+    """A scope with no ordering is its own text, and has no clause."""
+    assert citations.split_scope("The lift") == ("The lift", [])
+
+
+def test_split_scope_splits_each_ordering(citations):
+    """The first opener ends the scope, and each opens one ordering."""
+    scope = f"The lift{LINKED} after row 2{LINKED} with row 2 of layers spec {SECTION}9"
+
+    assert citations.split_scope(scope) == (
+        "The lift",
+        ["after row 2", f"with row 2 of layers spec {SECTION}9"],
+    )
+
+
+def test_split_scope_skips_code(citations):
+    """An opener quoted in code is the scope's text."""
+    scope = f"Show `{LINKED.strip()} after row 1` in a cell"
+
+    assert citations.split_scope(scope) == (scope, [])
+
+
+def test_split_scope_reads_a_variation_selector(citations):
+    """The emoji reads with its variation selector as without."""
+    scope = f"The lift{LINKED}\N{VARIATION SELECTOR-16} after row 1"
+
+    assert citations.split_scope(scope) == ("The lift", ["after row 1"])
+
+
+@pytest.mark.parametrize(
+    ("clause", "relation", "target"),
+    [
+        ("after row 1", "after", "row 1"),
+        (
+            f"before row 5 of globe spec {SECTION}9",
+            "before",
+            f"row 5 of globe spec {SECTION}9",
+        ),
+        ("with row 2", "with", "row 2"),
+        (
+            f"with or after row 3 of globe spec {SECTION}9",
+            "with or after",
+            f"row 3 of globe spec {SECTION}9",
+        ),
+        ("before 0.6", "before", "0.6"),
+    ],
+    ids=["after", "before", "with", "with-or-after", "release"],
+)
+def test_ordering_reads_each_relation(citations, clause, relation, target):
+    """Each of the four relations is read with its target."""
+    assert citations.ordering(clause) == citations.Ordering(relation, target)
+
+
+@pytest.mark.parametrize("clause", ["needs row 1", "after", "afterwards row 1", ""])
+def test_ordering_refuses_another_word(citations, clause):
+    """A clause opening with no relation, or naming no target, is no ordering."""
+    assert citations.ordering(clause) is None
+
+
+@pytest.mark.parametrize(
+    ("version", "matched"),
+    [("0.6", True), ("0.6.1", True), ("0", False), ("v0.6", False), ("0.6.1.2", False)],
+)
+def test_release_reads_two_or_three_numbers(citations, version, matched):
+    """A release is a version of two or three numbers (order spec §4.4)."""
+    assert (citations.RELEASE.fullmatch(version) is not None) is matched
