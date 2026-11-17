@@ -4781,3 +4781,46 @@ def test_ordering_in_prose_reads_only_under_a_roadmap(tmp_path):
 
     assert ordering_in_prose(path, elsewhere) == []
     assert prose_faults(tmp_path / "later", after="Row 2 needs row 1.") == []
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_every_ordering_is_well_formed(spec, names):
+    """Each ordering opens with a relation and names one row, or a release.
+
+    Holds order spec §2 decision 1, order spec §2 decision 2,
+    order spec §2 decision 3, order spec §2 decision 4 and order spec §2 decision 6.
+    """
+    problems = ordering_form(spec, spec.read_text(encoding="utf-8"), names)
+
+    assert not problems, "\n".join(problems)
+
+
+def test_no_ordering_is_written_twice(specs, names):
+    """An ordering is written once, on the row its reason belongs to.
+
+    Holds order spec §2 decision 5.
+    """
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    problems = orderings_twice(texts, names)
+
+    assert not problems, "\n".join(problems)
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_no_ordering_is_written_in_prose(spec):
+    """An ordering between rows is written in its row's Scope cell, never in prose.
+
+    Holds order spec §2 decision 11.
+    """
+    problems = ordering_in_prose(spec, spec.read_text(encoding="utf-8"))
+
+    assert not problems, "\n".join(problems)
+
+
+def test_the_collection_writes_orderings(specs):
+    """A rule that finds no ordering passes by never having looked."""
+    assert any(
+        citations.split_scope(row.scope)[1]
+        for spec in specs
+        for row in citations.rows(spec.read_text(encoding="utf-8"))
+    )

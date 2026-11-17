@@ -440,23 +440,20 @@ Each carries the status grammar of docs spec §3.6.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Heights on a mesh: `gvHeight`, `height=`, `depth=` and `vertical_units=` on the bridge, `to_structured_grid` reading its `zs` as heights, positions from heights on the globe and on a map through the bridge, `resize` and `transform_mesh`, `mesh.gv.height` and `mesh.gv.depth`, missing heights, heights through the filters and `combine`, and the refusals of §4.4 | ✅ landed (2026-10-30, {pull}`2777`) |
-| 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights | ✅ landed (2026-11-11, {pull}`2942`) |
-| 3 | A scene whose globe can be replaced, rebuilding every layer from its heights | 📋 not started |
-| 4 | Heights from a raster band in `Transform.from_tiff`, before row 5 of globe spec §9 | 📋 not started |
-| 5 | A surface below sea level seen past a base layer given an opacity, or none, in the subsurface tier, landing with row 2 of layers spec §9 | 📋 not started |
+| 2 | Heights in the scene: `height=`, `depth=` and `vertical_units=` on `GeoPlotter.add_mesh` and `GeoPlotter.add_points`, and a mesh that records another globe drawn from its heights · 🔗 after row 1 | ✅ landed (2026-11-11, {pull}`2942`) |
+| 3 | A scene whose globe can be replaced, rebuilding every layer from its heights · 🔗 with or after row 3 of globe spec §9 | 📋 not started |
+| 4 | Heights from a raster band in `Transform.from_tiff` · 🔗 before row 5 of globe spec §9 | 📋 not started |
+| 5 | A surface below sea level seen past a base layer given an opacity, or none, in the subsurface tier · 🔗 with row 2 of layers spec §9 | 📋 not started |
 
-Statuses follow docs spec §3.6. Row 2 is planned once row 1 has landed. Until it lands, a
-scene scales a mesh with heights that records another globe by the ratio of render radii,
-as row 2 of scene spec §9 left it. Neither row 1 nor row 2 breaks a release, since the
+Statuses follow docs spec §3.6. Until row 2 landed, a scene scaled a mesh with heights
+that records another globe by the ratio of render radii, as row 2 of scene spec §9 left
+it. Neither row 1 nor row 2 breaks a release, since the
 `zlevel` and `zscale` that `to_structured_grid` loses have never been released, and neither
-changes an example in the README. Row 3 of globe spec §9 lands with row 2, before 0.6 is
-released.
+changes an example in the README.
 
-Rows 3 to 5 each wait on a row of globe spec §9. Row 3 lands with or after
-row 3 of globe spec §9, which fixes a scene's globe when the scene is made. Row 4 lands
-before row 5 of globe spec §9, which migrates the gallery. Row 5 lands with
-row 2 of layers spec §9, which builds the subsurface tier and the clip that a base layer
-given an opacity switches off.
+Row 3 of globe spec §9 fixes a scene's globe when the scene is made, and
+row 5 of globe spec §9 migrates the gallery. Row 2 of layers spec §9 builds the subsurface
+tier and the clip that a base layer given an opacity switches off.
 
 (heights-spec-10)=
 ## 10. References

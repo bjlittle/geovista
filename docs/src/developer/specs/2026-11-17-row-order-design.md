@@ -193,6 +193,11 @@ heights spec §9 writes row 4 *before row 5 of globe spec §9*, whose gallery mi
 must precede. The check reads each ordering in both directions, so `· 🔗 before row 5` on
 row 4 and `· 🔗 after row 4` on row 5 are the same ordering, and writing both is a fault.
 
+A `with` between rows of two specifications waits on both, so it is written on the row
+whose work the other row does: row 5 of heights spec §9 writes
+`· 🔗 with row 2 of layers spec §9`, which builds its tier, and row 8 of items spec §8
+writes `· 🔗 with row 2 of order spec §9`, which builds its check.
+
 (order-spec-4-4)=
 ### 4.4 An Ordering Against a Release
 
@@ -213,11 +218,12 @@ fails on each of these, naming the row and the ordering:
 2. **A row that does not exist**, in its own roadmap or the one it cites.
 3. **An ordering written twice**, on both rows or twice on one.
 4. **An ordering written in prose.** Under a roadmap, or in a scope before its first
-   `· 🔗`, an ordering word of §4.2's last column, or *waits on*, followed by a cited row
-   fails, naming the cell form it should take. A word followed by something that is not a
-   row, such as a renderer, an issue or a release in words, passes, and code is skipped,
-   so a specification can still quote the old forms. This stops a new specification
-   writing its orderings where nothing reads them.
+   `· 🔗`, an ordering word of §4.2's last column, *waits on*, *follows* or *builds on*,
+   followed by a cited row, fails, naming the cell form it should take. A word followed by
+   something that is not a row, such as a renderer, an issue or a release in words,
+   passes, and code is skipped, so a specification can still quote the old forms. This
+   stops a new specification writing its orderings where nothing reads them. The guard
+   reads a paragraph whole, since prose wraps between the words and the row.
 5. **A cycle**, in one specification or across several: row 2 after row 1, and row 1 after
    row 2, or `with` and `before` between the same two rows.
 6. **A `not started` row ordered `after`, `with` or `with or after` a `candidate`**, which
@@ -328,7 +334,7 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The form: the grammar of §4.1 to §4.4 in `geovista_citations`, items 1 to 4 of §4.5, every ordering of today moved into its cell with `landing_together` reading `🔗 with` and the renumber guard pairing rows without their orderings (§3.3, §4.7), and the developer guide's account of the form (§4.8) | 🚧 in progress ({pull}`2990`) |
-| 2 | The graph: items 5 to 7 of §4.5, `landing_together` folded into them (§4.7), the report of §4.6, and their pages (§4.8) · 🔗 after row 1 · 🔗 with row 8 of items spec §8 | 📋 not started |
+| 2 | The graph: items 5 to 7 of §4.5, `landing_together` folded into them (§4.7), the report of §4.6, and their pages (§4.8) · 🔗 after row 1 | 📋 not started |
 
 Statuses follow docs spec §3.6. Row 1 keeps every check reading what it moves, so it is
 safe to land alone. Row 2 is row 8 of items spec §8,

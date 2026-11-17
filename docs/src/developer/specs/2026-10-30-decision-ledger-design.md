@@ -489,21 +489,21 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The ledger: decision anchors and citations, the grammar of §3.2 and §3.3, the Verification section and its summary, the suite of §3.6, the parent's notes, the documentation of §3.11, this specification's own Verification table, and the docs and citation specifications brought in, retiring "Sections only" | ✅ landed (2026-10-31, {pull}`2786`) |
-| 2 | What GitHub answers (§3.7): the pull request each entry cites, each sign-off's label, the trigger on labels, and a job that always reports, after which `status references` becomes a required check | ✅ landed (2026-10-31, {pull}`2789`) |
-| 3 | The verification report (§3.8) | ✅ landed (2026-10-31, {pull}`2792`) |
-| 4 | The typing, zlevel and checks specifications brought into the ledger | ✅ landed (2026-11-01, {pull}`2796`) |
-| 5 | The crs specification brought into the ledger | ✅ landed (2026-11-02, {pull}`2799`) |
-| 6 | The globe, scene and heights specifications brought into the ledger | ✅ landed (2026-11-03, {pull}`2826`) |
-| 7 | Emojis for a roadmap row's states | ✅ landed (2026-11-04, {pull}`2874`) |
-| 8 | A row of the ledger names its decision by its citation (§2 decision 17): every specification's rows rewritten, a bare number refused, and the report reading a row's first cell as no place its decision is cited | ✅ landed (2026-11-05, {pull}`2882`) |
-| 9 | Each test file named as evidence linked to the line that cites its decision, at the commit or tag the documentation was built from (§2 decision 18) | ✅ landed (2026-11-08, {pull}`2902`) |
+| 2 | What GitHub answers (§3.7): the pull request each entry cites, each sign-off's label, the trigger on labels, and a job that always reports, after which `status references` becomes a required check · 🔗 after row 1 | ✅ landed (2026-10-31, {pull}`2789`) |
+| 3 | The verification report (§3.8) · 🔗 after row 1 | ✅ landed (2026-10-31, {pull}`2792`) |
+| 4 | The typing, zlevel and checks specifications brought into the ledger · 🔗 after row 1 | ✅ landed (2026-11-01, {pull}`2796`) |
+| 5 | The crs specification brought into the ledger · 🔗 after row 1 | ✅ landed (2026-11-02, {pull}`2799`) |
+| 6 | The globe, scene and heights specifications brought into the ledger · 🔗 after row 1 | ✅ landed (2026-11-03, {pull}`2826`) |
+| 7 | Emojis for a roadmap row's states · 🔗 after row 1 | ✅ landed (2026-11-04, {pull}`2874`) |
+| 8 | A row of the ledger names its decision by its citation (§2 decision 17): every specification's rows rewritten, a bare number refused, and the report reading a row's first cell as no place its decision is cited · 🔗 after row 1 | ✅ landed (2026-11-05, {pull}`2882`) |
+| 9 | Each test file named as evidence linked to the line that cites its decision, at the commit or tag the documentation was built from (§2 decision 18) · 🔗 after row 1 | ✅ landed (2026-11-08, {pull}`2902`) |
 
-Statuses follow docs spec §3.6. Rows 2 to 9 each need row 1. Row 1 brings in the docs and
+Statuses follow docs spec §3.6. Row 1 brings in the docs and
 citation specifications itself, as it retires a decision of the citation specification and
 adds notes to the docs specification. Rows 2 and 3 need nothing else, and can land in either
-order. Once row 2 has merged, `status references` becomes a required check, a repository
-setting {user}`bjlittle` changes (§3.7). Rows 4 to 6 can land in any order after row 1, but
-best after that change: a sign-off they record before it is held by review alone, and is
+order. `status references` became a required check when {pull}`2789` merged, a repository
+setting {user}`bjlittle` changes (§3.7). Rows 4 to 6 can land in any order, but best once
+it is required: a sign-off they record before it is held by review alone, and is
 checked against GitHub by the nightly run. Row 6 brings in the three specifications together
 because each extends the one before, and their decisions cite one another. Row 7 changes the
 vocabulary of docs spec §3.6 and every specification that uses it, so it lands on its own

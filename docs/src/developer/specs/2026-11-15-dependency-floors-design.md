@@ -443,18 +443,17 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The `floors` environment and the Python support test's account of it (§4.1), its job in `ci-tests.yml` (§4.3), each floor it disproves raised (§4.2), and its pages (§4.5) | ✅ landed (2026-11-16, {pull}`2974`) |
-| 2 | A floor on every `pip` requirement and the Dependency Floors check (§4.4), and their pages (§4.5) | ✅ landed (2026-11-17, {pull}`2985`) |
-| 3 | The composite action and the `pypi` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) | 📋 not started |
-| 4 | The `test-floors` job of `ci-wheels.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) | 📋 not started |
-| 5 | The `floors-docs` environment (§4.1) and the `docs` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and their pages (§4.5) | 📋 not started |
+| 2 | A floor on every `pip` requirement and the Dependency Floors check (§4.4), and their pages (§4.5) · 🔗 after row 1 | ✅ landed (2026-11-17, {pull}`2985`) |
+| 3 | The composite action and the `pypi` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 2 | 📋 not started |
+| 4 | The `test-floors` job of `ci-wheels.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) · 🔗 after row 3 | 📋 not started |
+| 5 | The `floors-docs` environment (§4.1) and the `docs` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and their pages (§4.5) · 🔗 after row 1 | 📋 not started |
 | 6 | A report of each floor beside the version its environment locks (§4.6) | 💡 candidate |
 | 7 | The browser tests at the `docs` floors (§4.6) | 💡 candidate |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own. Row 1 waits
-on {issue}`2968`. Row 2 needs row 1, so that the floors it copies to `pip` have been shown
-to hold. Row 3 needs row 2, since `uv`'s lowest resolution means nothing until every line
-has a floor, and row 4 needs row 3, whose composite action it calls. Row 5 needs row 1
-alone. Whichever of rows 3 and 5 lands first creates `ci-floors.yml`.
+on {issue}`2968`. The floors row 2 copies to `pip` are those row 1 has shown to hold.
+`uv`'s lowest resolution, which row 3 runs, means nothing until every line has a floor,
+and row 4 calls the composite action of row 3. Whichever of rows 3 and 5 lands first creates `ci-floors.yml`.
 
 Row 6 is wanted once a floor is found to have been lifted by the solve, and row 7 once a
 floor of the theme or of an extension is found to break the chrome. Neither can be
