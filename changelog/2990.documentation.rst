@@ -1,0 +1,6 @@
+A design specification now writes the order between its roadmap rows in the
+row's Scope cell, as ``· 🔗 after row 1``, in one of four relations, and the
+conventions test holds the form and refuses an ordering written in prose. Every
+ordering the specifications held in prose has moved into its cell.
+This lands row 1 of order spec §9.
+(:user:`claude`)

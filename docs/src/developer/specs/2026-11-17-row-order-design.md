@@ -333,7 +333,7 @@ Each carries the grammar of items spec §3.2.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The form: the grammar of §4.1 to §4.4 in `geovista_citations`, items 1 to 4 of §4.5, every ordering of today moved into its cell with `landing_together` reading `🔗 with` and the renumber guard pairing rows without their orderings (§3.3, §4.7), and the developer guide's account of the form (§4.8) | 🚧 in progress ({pull}`2990`) |
+| 1 | The form: the grammar of §4.1 to §4.4 in `geovista_citations`, items 1 to 4 of §4.5, every ordering of today moved into its cell with `landing_together` reading `🔗 with` and the renumber guard pairing rows without their orderings (§3.3, §4.7), and the developer guide's account of the form (§4.8) | ✅ landed (2026-11-17, {pull}`2990`) |
 | 2 | The graph: items 5 to 7 of §4.5, `landing_together` folded into them (§4.7), the report of §4.6, and their pages (§4.8) · 🔗 after row 1 | 📋 not started |
 
 Statuses follow docs spec §3.6. Row 1 keeps every check reading what it moves, so it is
@@ -356,14 +356,14 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| §2 decision 1 | ⏳ pending | |
-| §2 decision 2 | ⏳ pending | |
-| §2 decision 3 | ⏳ pending | |
-| §2 decision 4 | ⏳ pending | |
-| §2 decision 5 | ⏳ pending | |
-| §2 decision 6 | ⏳ pending | |
+| §2 decision 1 | ✅ verified (2026-11-17, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 2 | ✅ verified (2026-11-17, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 3 | ✅ verified (2026-11-17, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 4 | ✅ verified (2026-11-17, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 5 | ✅ verified (2026-11-17, {pull}`2990`) | `tests/test_spec_conventions.py` |
+| §2 decision 6 | ✅ verified (2026-11-17, {pull}`2990`) | `tests/test_spec_conventions.py` |
 | §2 decision 7 | ⏳ pending | |
 | §2 decision 8 | ⏳ pending | |
 | §2 decision 9 | ⏳ pending | |
 | §2 decision 10 | ⏳ pending | |
-| §2 decision 11 | ⏳ pending | |
+| §2 decision 11 | ✅ verified (2026-11-17, {pull}`2990`) | `tests/test_spec_conventions.py` |
