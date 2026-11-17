@@ -10,9 +10,12 @@ from __future__ import annotations
 from contextlib import suppress
 import importlib.util
 from pathlib import Path
-from typing import TYPE_CHECKING
+import tomllib
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
 import pyproj
 import pytest
 import pyvista as pv
@@ -45,6 +48,15 @@ BREADCRUMB_PATH = Path(__file__).parents[1] / ".github" / "scripts" / "breadcrum
 #: The option requiring, rather than skipping, each prerequisite of the
 #: "tests/docs" browser tests.
 BROWSER_STRICT = "--browser-strict"
+
+#: The manifest declaring the pixi dependency tables.
+PYPROJECT = Path(__file__).parents[1] / "pyproject.toml"
+#: The pip requirements, which "dependabot" keeps current.
+REQUIREMENTS = sorted((Path(__file__).parents[1] / "requirements").glob("pypi-*.txt"))
+#: The pixi tables of a feature, or of the workspace, that declare dependencies.
+TABLES = ("dependencies", "pypi-dependencies")
+#: The pip name of a package that conda-forge distributes under another name.
+RENAMED = {"h3": "h3-py"}
 
 
 def pytest_addoption(parser):
@@ -102,6 +114,65 @@ def breadcrumb() -> ModuleType:
 
     """
     return BREADCRUMB
+
+
+@pytest.fixture(scope="session")
+def pixi_specs() -> dict[str, dict[str, str]]:
+    """Map each pixi dependency to its version spec, keyed by the declaring table.
+
+    A dependency declared as a table, such as one with an ``extras`` key, keeps
+    its version under ``version``. One with none at all is given an empty spec.
+
+    Returns
+    -------
+    dict of str to dict of str to str
+        Each canonical package name, to the spec of each table declaring it.
+
+    """
+    pixi = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))["tool"]["pixi"]
+    tables: dict[str, dict[str, Any]] = {
+        name: pixi[name] for name in TABLES if name in pixi
+    }
+    for feature, body in pixi.get("feature", {}).items():
+        for name in TABLES:
+            if name in body:
+                tables[f"feature.{feature}.{name}"] = body[name]
+
+    declared: dict[str, dict[str, str]] = {}
+    for table, dependencies in tables.items():
+        for package, spec in dependencies.items():
+            version = spec.get("version", "") if isinstance(spec, dict) else spec
+            declared.setdefault(canonicalize_name(package), {})[table] = version
+    return declared
+
+
+@pytest.fixture(scope="session")
+def pip_specs() -> dict[str, dict[str, str]]:
+    """Map each pip requirement to its version spec, keyed by the declaring file.
+
+    A line naming another file, or the package itself with extras, as
+    "pypi-optional-all.txt" does, declares no dependency of its own. A package
+    conda-forge distributes under another name is keyed by that name.
+
+    Returns
+    -------
+    dict of str to dict of str to str
+        Each canonical package name, to the spec of each file declaring it.
+
+    """
+    declared: dict[str, dict[str, str]] = {}
+    for path in REQUIREMENTS:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            text = line.partition("#")[0].strip()
+            if not text or text.startswith("-"):
+                continue
+            requirement = Requirement(text)
+            package = canonicalize_name(requirement.name)
+            if package == "geovista":
+                continue
+            package = RENAMED.get(package, package)
+            declared.setdefault(package, {})[path.name] = str(requirement.specifier)
+    return declared
 
 
 @pytest.hookimpl(wrapper=True)
