@@ -150,8 +150,9 @@ DOT = " \N{MIDDLE DOT} "
 LINK = "\N{LINK SYMBOL}"
 ORDERING = f"{DOT}{LINK}"
 
-#: An ordering's opener, read with or without the variation selector.
-OPENER = re.compile(rf"[^\S\n]*\N{{MIDDLE DOT}}[^\S\n]+{LINK}{VS16}?")
+#: An ordering's opener, read with or without the variation selector, and with a
+#: space on each side of the dot and after the emoji.
+OPENER = re.compile(rf"[^\S\n]*\N{{MIDDLE DOT}}[^\S\n]+{LINK}{VS16}?[^\S\n]+")
 
 #: The relations an ordering may state, longest first, so that ``with or after``
 #: is read before ``with`` (order spec §4.2).

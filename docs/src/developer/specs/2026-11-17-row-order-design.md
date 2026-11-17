@@ -330,6 +330,12 @@ renderer; the order of a plan's tasks; and the plans, which are frozen.
 
 Each carries the grammar of items spec §3.2.
 
+1. **❓ Open** (🔎 2026-11-17, {pull}`2990` · 🎯 row 2 of §9 · 🎫 {issue}`2991`) — **The
+   prose guard's advice is wrong for a row ordered against something else.** It refuses
+   *Once rows 1 and 2 have landed, the issue closes* as an ordering, and says to write it in
+   the row's Scope cell, which cannot say when an issue closes. The message should name
+   rewording as the other way out. The final review of row 1 found it.
+
 (order-spec-9)=
 ## 9. Roadmap
 
@@ -339,8 +345,8 @@ Each carries the grammar of items spec §3.2.
 | 2 | The graph: items 5 to 7 of §4.5, `landing_together` folded into them (§4.7), the report of §4.6, and their pages (§4.8) · 🔗 after row 1 | 📋 not started |
 
 Statuses follow docs spec §3.6. Row 1 keeps every check reading what it moves, so it is
-safe to land alone. Row 2 is row 8 of items spec §8,
-which owes items spec §7 item 15, so the two land in one pull request.
+safe to land alone. Row 2 is the check that row 8 of items spec §8 owes for
+items spec §7 item 15.
 
 (order-spec-10)=
 ## 10. References

@@ -626,9 +626,9 @@ Every geometric result is checked against a reference that is independent of
 - **the round trip**, by saving a mesh that carries everything this design puts on one to
   binary legacy `.vtk`, `.vtp`, `.vtu` and `.vtkhdf`, and reading it back. Its CRS, globe,
   heights, record, points and cells must be equal, bit for bit, and no display offset may
-  be present. The test starts from the CRS, which a mesh already carries, and lands with
-  row 2 of globe spec §9, the first row to put something new on a mesh. Each later row that
-  adds to a mesh, here or in the globe spec, adds to the test.
+  be present. The test starts from the CRS, which a mesh already carries, and landed with
+  row 1 of scene spec §9 ({pull}`2761`), the first row to put something new on a mesh. Each
+  later row that adds to a mesh, here or in the globe spec, adds to the test.
 
 A **coverage test** records the outcome of every PROJ method and every `cartopy` class on
 a global mesh, measured as §3.1 describes, and only lets the set

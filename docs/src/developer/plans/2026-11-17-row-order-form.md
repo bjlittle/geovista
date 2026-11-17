@@ -275,7 +275,11 @@ Push, confirm it with `git ls-remote` (workflow rule 4.6), raise the issue of Ca
 
 ## Follow-ups
 
-None yet.
+{user}`bjlittle` approved the plan with Calls 5, 6 and 7 as proposed. Executing it, `landing_together`'s rewrite first put its `return` inside the loop over specifications, which no test caught, so `test_landing_together_reads_every_specification` was added and shown to fail with it. A wrapped paragraph under a roadmap is read whole by the guard, and the renumber guard already paired a rescoped row, so its new test is a regression test.
+
+The final review found two Important points, both fixed with a test that failed first: a mistyped opener on a `with` (`·🔗`, `• 🔗`) hid its ordering from every check, so the guard refuses a 🔗 outside an opener; and §2 decision 5 was verified on "written once" alone, so a `before` within one roadmap is refused too. Which row a `with` across specifications belongs on stays held by review. Of its seven minor points, {user}`bjlittle` chose to fix six here: a row ordered against itself, an opener without its space after the emoji, the past tense (*landed with*), the `row N does not exist` message missing from the checks page, overlong lines, and order spec §9's prose restating its `with`. The seventh, the guard's advice for a row ordered against something else, is {issue}`2991`, order spec §8 item 1, owed by row 2.
+
+Call 10's disagreement was fixed here, at {user}`bjlittle`'s choice: crs spec §6 now says the round trip landed with row 1 of scene spec §9 ({pull}`2761`).
 
 ## Appendix A: The Orderings, Sentence by Sentence
 

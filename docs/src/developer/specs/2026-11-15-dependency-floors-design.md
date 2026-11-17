@@ -450,10 +450,11 @@ Each carries the grammar of items spec §3.2.
 | 6 | A report of each floor beside the version its environment locks (§4.6) | 💡 candidate |
 | 7 | The browser tests at the `docs` floors (§4.6) | 💡 candidate |
 
-Statuses follow docs spec §3.6. Each row lands in a pull request of its own. Row 1 waits
-on {issue}`2968`. The floors row 2 copies to `pip` are those row 1 has shown to hold.
-`uv`'s lowest resolution, which row 3 runs, means nothing until every line has a floor,
-and row 4 calls the composite action of row 3. Whichever of rows 3 and 5 lands first creates `ci-floors.yml`.
+Statuses follow docs spec §3.6. Each row lands in a pull request of its own. Row 1 waits on
+{issue}`2968`. The floors row 2 copies to `pip` are those row 1 has shown to hold. `uv`'s
+lowest resolution, which row 3 runs, means nothing until every line has a floor, and row 4
+calls the composite action of row 3. Whichever of rows 3 and 5 lands first creates
+`ci-floors.yml`.
 
 Row 6 is wanted once a floor is found to have been lifted by the solve, and row 7 once a
 floor of the theme or of an extension is found to break the chrome. Neither can be

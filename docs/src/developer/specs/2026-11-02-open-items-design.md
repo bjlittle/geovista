@@ -236,11 +236,11 @@ as docs spec §2 decision 6 requires of every row.
 
 When the work belongs to another specification's row, the item stays where it was written,
 and is owed by a row of its own roadmap whose scope names the other:
-row 5 of heights spec §9 carries `· 🔗 with row 2 of layers spec §9` in its scope, and
-the two land in one pull request, as row 6 of ledger spec §8 and row 5 of §8 did in {pull}`2826`. When
-the work lies outside every roadmap, a `💡 candidate` row waits for it, as
-row 15 of crs spec §10 waits on the regions design. 🎯 never names another specification's row, so the landing gate of §3.5 reads one
-roadmap (§7 item 11).
+row 5 of heights spec §9 carries `· 🔗 with row 2 of layers spec §9` in its scope, and the
+two land in one pull request, as row 6 of ledger spec §8 and row 5 of §8 did in
+{pull}`2826`. When the work lies outside every roadmap, a `💡 candidate` row waits for it, as
+row 15 of crs spec §10 waits on the regions design. 🎯 never names another specification's
+row, so the landing gate of §3.5 reads one roadmap (§7 item 11).
 
 (items-spec-3-5)=
 ### 3.5 Landing a Row
@@ -557,10 +557,10 @@ Each carries the status grammar of §3.2.
 | 7 | A row landing with another specification's row checked to land with it, §7 item 14 · 🔗 after row 6 | ✅ landed (2026-11-05, {pull}`2879`) |
 | 8 | The order between rows checked across the specifications, §7 item 15 · 🔗 with row 2 of order spec §9 | 📋 not started |
 
-Statuses follow docs spec §3.6. Rows 2 to 5 can land in any order. Rows 3 to 5 each raise the issues their specifications' items lack, and need
-{user}`bjlittle`'s judgement on the row that owes each item (§3.10). Row 7 is the check that
-settling §7 item 11 called for (§3.4). Row 8 extends row 7's
-check to every ordering phrase.
+Statuses follow docs spec §3.6. Rows 2 to 5 can land in any order. Rows 3 to 5 each raise
+the issues their specifications' items lack, and need {user}`bjlittle`'s judgement on the
+row that owes each item (§3.10). Row 7 is the check that settling §7 item 11 called for
+(§3.4). Row 8 extends row 7's check to every ordering phrase.
 
 (items-spec-9)=
 ## 9. References

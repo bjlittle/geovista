@@ -4410,7 +4410,9 @@ def ordering_form(path: Path, text: str, names: Namespace) -> list[str]:
                     "with or after, then one row"
                 )
                 continue
-            _, fault = ordering_target(said, row, rows, owner, names)
+            key, fault = ordering_target(said, row, rows, owner, names)
+            if owner is not None and key == row_anchor(owner, row.section, row.row):
+                fault = f'"{clause}" orders row {row.row} against itself'
             bare = BARE_ROW.fullmatch(said.target)
             if fault is None and said.relation == "before" and bare is not None:
                 fault = (
@@ -4464,9 +4466,11 @@ def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
 
 
 #: An ordering written in words, before a row: the words of order spec §4.2's last
-#: column, *waits on*, and *follows* and *builds on* (order spec §4.5 item 4).
+#: column and their past tense, *waits on*, and *follows* and *builds on*
+#: (order spec §4.5 item 4).
 ORDER_WORDS = re.compile(
-    r"\b(?:lands?\s+with\s+or\s+after|lands?\s+with|landing\s+with|lands?\s+before"
+    r"\b(?:landed\s+(?:with\s+or\s+after|with|before|after)"
+    r"|lands?\s+with\s+or\s+after|lands?\s+with|landing\s+with|lands?\s+before"
     r"|lands?\s+after|before|after|needs?|once|waits?\s+on|follows?|builds?\s+on)"
     r"\s+rows?\s+\d+[a-z]?",
     flags=re.IGNORECASE,
@@ -4861,6 +4865,34 @@ def test_ordering_form_refuses_before_within_a_roadmap(tmp_path):
     assert "row 1" in fault
     assert "after row 1" in fault
     assert "row 2" in fault
+
+
+def test_ordering_in_prose_finds_an_opener_without_its_space(tmp_path):
+    """The emoji is followed by a space, as the dot is preceded and followed by one."""
+    faults = prose_faults(tmp_path, scope=f"Two{LINKED}after row 1")
+
+    assert any("opener" in fault for fault in faults)
+
+
+@pytest.mark.parametrize("words", ["landed with", "landed before", "landed after"])
+def test_ordering_in_prose_finds_the_past_tense(tmp_path, words):
+    """History under a roadmap orders rows too, as "Row 2 landed with row 1"."""
+    (fault,) = prose_faults(tmp_path, below=f"Row 2 {words} row 1.")
+
+    assert f"{words} row 1" in fault
+
+
+def test_ordering_form_refuses_a_row_ordered_against_itself(tmp_path):
+    """A row cannot land after, before or with itself."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        (f"Two{LINKED} after row 2", NOT_STARTED),
+        (f"Three{LINKED} with row 3 of demo spec {SECTION}2", NOT_STARTED),
+    )
+
+    assert len(faults) == 2
+    assert all("itself" in fault for fault in faults)
 
 
 def test_the_collection_writes_orderings(specs):
