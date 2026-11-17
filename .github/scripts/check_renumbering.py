@@ -350,10 +350,14 @@ def roadmap_rows(text: str) -> dict[str, Section]:
 
     The rows are those :func:`grammar.rows` reads, under the header
     :func:`grammar.roadmap_header` recognises, so the guard holds exactly the rows
-    a citation can name.
+    a citation can name. A row is titled by its scope alone, without its
+    orderings, so that many rows gaining one read as the rows they were
+    (order spec §3.3).
     """
     return {
-        row.row: Section(row.row, row.scope, row.scope) for row in grammar.rows(text)
+        row.row: Section(row.row, scope, scope)
+        for row in grammar.rows(text)
+        for scope in [grammar.split_scope(row.scope)[0]]
     }
 
 

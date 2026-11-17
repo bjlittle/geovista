@@ -3654,9 +3654,6 @@ def item_graduated(path: Path, text: str, names: Namespace) -> list[str]:
     return problems
 
 
-#: A row's scope naming the row it lands with (items spec §3.4).
-LANDING_WITH = re.compile(r"\blanding with\s+(?P<rest>.*)$", flags=re.IGNORECASE)
-
 #: A pull request a status cites: by role, in this repository, or by link, in any.
 PULL_ROLE = re.compile(r"\{pull\}`(?P<number>\d+)`")
 PULL_LINK = re.compile(
@@ -3682,65 +3679,66 @@ def landing_together(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     """Find a row landing with another that landed apart from it, items spec §7 item 14.
 
     A row owed an item whose work is another specification's row names that row
-    in its scope, *landing with* it (items spec §3.4), and the two land in one pull
-    request. So both have landed, by the same pull request, which each names, or
-    neither has. A row lands with one other, so a range is refused. A scope that
-    speaks of landing with a row without citing one, or quotes the words in code,
-    holds no check.
+    in its Scope cell, ``· 🔗 with`` it (items spec §3.4, order spec §4.1), and
+    the two land in one pull request. So both have landed, by the same pull
+    request, which each names, or neither has. A row lands with one other, so a
+    range is refused. An ordering that cites no row, or one quoted in code, holds
+    no check.
     """
     owners = {prefix: path for path, prefix in names.owners.items()}
     problems = []
     for path, text in texts.items():
         owner = names.owners.get(path)
         for row in citations.rows(text):
-            # code is blanked first, as scan() expects, so quoted words declare nothing
-            said = LANDING_WITH.search(citations.prose(row.scope)[0])
-            if said is None:
-                continue
-            found = next(
-                (
-                    c
-                    for c in citations.scan(said["rest"], names.signed, owner)
-                    if c.start == 0 and c.slug is not None
-                ),
-                None,
-            )
-            label = LABEL.match(found.slug) if found is not None else None
-            if label is None or label["row"] is None:
-                continue
-            if found.ends:
-                problems.append(
-                    f"{where(path, row.line)}: row {row.row} lands with {found.text}: "
-                    "cite one row"
+            # split_scope blanks code first, so a quoted ordering declares nothing
+            for clause in citations.split_scope(row.scope)[1]:
+                said = citations.ordering(clause)
+                if said is None or said.relation != "with":
+                    continue
+                found = next(
+                    (
+                        c
+                        for c in citations.scan(said.target, names.signed, owner)
+                        if c.start == 0 and c.slug is not None
+                    ),
+                    None,
                 )
-                continue
-            other_path = owners.get(label["prefix"])
-            other = next(
-                (
-                    r
-                    for r in citations.rows(texts.get(other_path, ""))
-                    if row_anchor(label["prefix"], r.section, r.row) == found.slug
-                ),
-                None,
-            )
-            at = f"{where(path, row.line)}: row {row.row} lands with {found.text}"
-            if other is None:
-                problems.append(f"{at}, which does not exist")
-                continue
-            mine, theirs = (
-                row.status.startswith(LANDED),
-                other.status.startswith(LANDED),
-            )
-            if mine and not theirs:
-                problems.append(f"{at}, which has not landed")
-            elif theirs and not mine:
-                problems.append(f"{at}, which has landed without it")
-            elif mine and not (_pulls(row.status) or _pulls(other.status)):
-                problems.append(
-                    f"{at}, but neither names the pull request they landed in"
+                label = LABEL.match(found.slug) if found is not None else None
+                if label is None or label["row"] is None:
+                    continue
+                if found.ends:
+                    problems.append(
+                        f"{where(path, row.line)}: row {row.row} lands with "
+                        f"{found.text}: cite one row"
+                    )
+                    continue
+                other_path = owners.get(label["prefix"])
+                other = next(
+                    (
+                        r
+                        for r in citations.rows(texts.get(other_path, ""))
+                        if row_anchor(label["prefix"], r.section, r.row) == found.slug
+                    ),
+                    None,
                 )
-            elif mine and _pulls(row.status) != _pulls(other.status):
-                problems.append(f"{at}, which landed in another pull request")
+                at = f"{where(path, row.line)}: row {row.row} lands with {found.text}"
+                if other is None:
+                    problems.append(f"{at}, which does not exist")
+                    continue
+                mine, theirs = (
+                    row.status.startswith(LANDED),
+                    other.status.startswith(LANDED),
+                )
+                if mine and not theirs:
+                    problems.append(f"{at}, which has not landed")
+                elif theirs and not mine:
+                    problems.append(f"{at}, which has landed without it")
+                elif mine and not (_pulls(row.status) or _pulls(other.status)):
+                    problems.append(
+                        f"{at}, but neither names the pull request they landed in"
+                    )
+                elif mine and _pulls(row.status) != _pulls(other.status):
+                    problems.append(f"{at}, which landed in another pull request")
     return problems
 
 
@@ -4053,7 +4051,7 @@ def landing(
     tmp_path: Path, mine: str, theirs: str, scope: str | None = None
 ) -> tuple[dict[Path, str], Namespace]:
     """Write a row landing with another specification's row, with their statuses."""
-    scope = scope or f"Mine, landing with row 1 of other spec {SECTION}2"
+    scope = scope or f"Mine{citations.ORDERING} with row 1 of other spec {SECTION}2"
     header = "| # | Scope | Status |\n|---|---|---|\n"
     other = tmp_path / "2026-01-02-other-design.md"
     other.write_text(
@@ -4137,7 +4135,7 @@ def test_landing_together_knows_a_pull_request_by_any_reference(tmp_path):
 
 def test_landing_together_refuses_a_range(tmp_path):
     """A row lands with one other row, so a range of them is refused."""
-    scope = f"Mine, landing with rows 1 and 2 of other spec {SECTION}2"
+    scope = f"Mine{citations.ORDERING} with rows 1 and 2 of other spec {SECTION}2"
 
     texts, names = landing(tmp_path, NOT_STARTED, NOT_STARTED, scope)
 
@@ -4148,7 +4146,8 @@ def test_landing_together_refuses_a_range(tmp_path):
 
 def test_landing_together_reads_no_declaration_in_code(tmp_path):
     """Quoted in code, the words are an example, and declare nothing."""
-    scope = f"Mine, as `landing with row 1 of other spec {SECTION}2` reads"
+    quoted = f"{citations.ORDERING.strip()} with row 1 of other spec {SECTION}2"
+    scope = f"Mine, as `{quoted}` reads"
     landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
 
     texts, names = landing(tmp_path, landed, NOT_STARTED, scope)
@@ -4158,12 +4157,38 @@ def test_landing_together_reads_no_declaration_in_code(tmp_path):
 
 def test_landing_together_reads_only_a_cited_row(tmp_path):
     """A scope that only speaks of landing with another row holds no check."""
-    scope = "A row landing with another specification's row, checked"
+    scope = f"Mine{citations.ORDERING} with another specification's row"
     texts, names = landing(
         tmp_path, f"{LANDED} (2026-01-01, {{pull}}`7`)", NOT_STARTED, scope
     )
 
     assert landing_together(texts, names) == []
+
+
+def test_landing_together_reads_only_the_cell_form(tmp_path):
+    """A scope still saying *landing with* in words holds no check of its own.
+
+    The prose guard refuses it (order spec §4.5 item 4), so the words are read once.
+    """
+    scope = f"Mine, landing with row 1 of other spec {SECTION}2"
+    landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
+
+    texts, names = landing(tmp_path, landed, NOT_STARTED, scope)
+
+    assert landing_together(texts, names) == []
+
+
+def test_landing_together_reads_every_specification(tmp_path):
+    """A row declared in the last specification read is checked too."""
+    landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
+    texts, names = ordered(
+        tmp_path,
+        [("Mine", NOT_STARTED)],
+        [(f"Theirs{citations.ORDERING} with row 1 of demo spec {SECTION}2", landed)],
+    )
+
+    assert list(texts)[-1].name.startswith("2026-01-02")
+    assert len(landing_together(texts, names)) == 1
 
 
 def test_every_row_landing_with_another_lands_with_it(specs):
