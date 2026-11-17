@@ -41,7 +41,7 @@ import re
 import sys
 import tokenize
 import tomllib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from markdown_it import MarkdownIt
 import pytest
@@ -2166,6 +2166,347 @@ def test_the_index_names_every_prefix(names):
     }
 
     assert namespace_table(index) == declared
+
+
+#: The largest a figure may be, in bytes: 150 KB (docs spec §3.9).
+FIGURE_LIMIT = 150_000
+
+#: The eight bytes every PNG file opens with.
+PNG = b"\x89PNG\r\n\x1a\n"
+
+#: The directives whose body is not markdown, so a figure inside one is quoted.
+NOT_MARKDOWN = frozenset(
+    {
+        "code",
+        "code-block",
+        "code-cell",
+        "eval-rst",
+        "literalinclude",
+        "math",
+        "mermaid",
+        "sourcecode",
+    }
+)
+
+#: A directive, from the info string of its fence: its name and its argument.
+DIRECTIVE = re.compile(r"\{(?P<name>[^}\s]+)\}(?:\s+(?P<argument>.*))?")
+
+#: An option of a directive written as a field, as ``:alt: A globe.``.
+FIELD = re.compile(r":(?P<key>[\w-]+):(?:\s+(?P<value>.*))?")
+
+
+class Figure(NamedTuple):
+    """A figure a specification shows: its line, target, alt text and caption."""
+
+    line: int
+    target: str
+    alt: str
+    caption: str
+
+
+def located(path: Path) -> str:
+    """Name a file, relative to the repository when inside it."""
+    name = path.relative_to(REPO) if path.is_relative_to(REPO) else path
+    return name.as_posix()
+
+
+def directive_options(body: str) -> tuple[dict[str, str], str]:
+    """Split the body of a directive into its options and its content.
+
+    MyST takes the options either as ``:key: value`` lines opening the body, or
+    as a YAML block between two ``---`` lines. The block is read as flat
+    ``key: value`` lines, which is all a figure's options are.
+    """
+    lines = body.split("\n")
+    found: dict[str, str] = {}
+    if (
+        lines
+        and lines[0].strip() == "---"
+        and "---" in (line.strip() for line in lines[1:])
+    ):
+        end = next(i for i, line in enumerate(lines[1:], 1) if line.strip() == "---")
+        for line in lines[1:end]:
+            key, _, value = line.partition(":")
+            found[key.strip()] = value.strip().strip("\"'")
+        rest = lines[end + 1 :]
+    else:
+        rest = lines
+        while rest and (match := FIELD.fullmatch(rest[0].strip())):
+            found[match["key"]] = (match["value"] or "").strip()
+            rest = rest[1:]
+    return found, "\n".join(rest)
+
+
+def shown(text: str, offset: int = 0) -> list[Figure]:
+    """Read every figure a document shows, with the line its fence opens on.
+
+    The document is parsed as CommonMark, as MyST parses it, and a figure is a
+    fence whose info string is the ``figure`` directive. A figure inside another
+    directive is read from that directive's body, and one inside code, or inside
+    a directive whose body is not markdown, is a quotation and is not shown.
+    """
+    found = []
+    for token in MarkdownIt("commonmark").parse(text):
+        if token.type != "fence" or token.map is None:
+            continue
+        match = DIRECTIVE.fullmatch(token.info.strip())
+        if match is None:
+            continue
+        line = offset + token.map[0] + 1
+        if match["name"] == "figure":
+            options, content = directive_options(token.content)
+            caption = content.strip().split("\n\n")[0].strip()
+            target = (match["argument"] or "").strip()
+            found.append(Figure(line, target, options.get("alt", ""), caption))
+        elif match["name"] not in NOT_MARKDOWN:
+            found.extend(shown(token.content, offset=line))
+    return found
+
+
+def figure_faults(path: Path, text: str) -> list[str]:
+    """Find each fault of the figures a specification shows (docs spec §3.9).
+
+    A figure is named relative to the specification, in its own folder
+    ``figures/<stem>/``, exists, and has alt text and a caption. Every file in
+    that folder, at any depth, is shown by a figure, is a PNG by its name and its
+    signature, and is no larger than :data:`FIGURE_LIMIT`.
+    """
+    own = f"figures/{path.stem}/"
+    folder = path.parent / own
+    faults = []
+    seen = set()
+    for item in shown(text):
+        at = f"{where(path, item.line)}: {item.target}"
+        name = item.target.removeprefix(own)
+        if not item.target.startswith(own) or not name or ".." in name.split("/"):
+            faults.append(f"{at}: outside its own folder")
+            continue
+        file = folder / name
+        seen.add(file)
+        if not file.is_file():
+            faults.append(f"{at}: does not exist")
+            continue
+        if not item.alt.strip():
+            faults.append(f"{at}: has no alt text")
+        if not item.caption:
+            faults.append(f"{at}: has no caption")
+    files = sorted(file for file in folder.rglob("*") if file.is_file())
+    for file in files:
+        if file not in seen:
+            faults.append(f"{located(file)}: shown by no figure")
+        with file.open("rb") as stream:
+            signature = stream.read(len(PNG))
+        if file.suffix != ".png" or signature != PNG:
+            faults.append(f"{located(file)}: is not a PNG")
+        if file.stat().st_size > FIGURE_LIMIT:
+            faults.append(f"{located(file)}: is larger than {FIGURE_LIMIT:,} bytes")
+    return faults
+
+
+def stray_figures(specs: Path = SPECS) -> list[str]:
+    """Find each entry of ``figures/`` that is no specification's folder."""
+    folder = specs / "figures"
+    stems = {spec.stem for spec in specifications(specs)}
+    faults = []
+    for entry in sorted(folder.iterdir()) if folder.is_dir() else []:
+        if not entry.is_dir():
+            faults.append(f"{located(entry)}: is not a folder")
+        elif entry.name not in stems:
+            faults.append(f"{located(entry)}: names no specification")
+    return faults
+
+
+#: Where a demo specification keeps its figures.
+DEMO_FIGURES = "figures/2026-01-01-demo-design"
+
+
+def png(size: int = 64) -> bytes:
+    """Build the bytes of a PNG file, its signature and then padding."""
+    return PNG + bytes(size - len(PNG))
+
+
+def figure(
+    target: str,
+    *,
+    alt: str | None = "A demo.",
+    caption: str = "The demo.",
+    fence: str = "```",
+) -> str:
+    """Write a figure as MyST shows one, with its alt text and caption."""
+    options = "" if alt is None else f":alt: {alt}".rstrip() + "\n"
+    return f"{fence}{{figure}} {target}\n{options}\n{caption}\n{fence}\n"
+
+
+def figured(tmp_path: Path, body: str, files: Mapping[str, bytes]) -> Path:
+    """Write a specification showing figures, and the files of its folder."""
+    path, _ = demo(tmp_path, DEMO + "\n" + body)
+    for name, content in files.items():
+        file = tmp_path / DEMO_FIGURES / name
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_bytes(content)
+    return path
+
+
+def faults_of(path: Path) -> list[str]:
+    """Read a specification's figure faults."""
+    return figure_faults(path, path.read_text(encoding="utf-8"))
+
+
+def test_figure_faults_passes_a_figure_kept_as_section_3_9_says(tmp_path):
+    """A PNG in its own folder, shown with alt text and a caption, is no fault."""
+    path = figured(tmp_path, figure(f"{DEMO_FIGURES}/a.png"), {"a.png": png()})
+
+    assert faults_of(path) == []
+
+
+def test_figure_faults_finds_a_file_no_figure_shows(tmp_path):
+    """A file in the folder that nothing shows, at any depth, is a fault."""
+    path = figured(
+        tmp_path,
+        figure(f"{DEMO_FIGURES}/a.png"),
+        {"a.png": png(), "b.png": png(), "deeper/c.png": png()},
+    )
+
+    faults = faults_of(path)
+
+    assert len(faults) == 2
+    assert all("shown by no figure" in fault for fault in faults)
+    assert any(fault.endswith("b.png: shown by no figure") for fault in faults)
+    assert any("deeper/c.png" in fault for fault in faults)
+
+
+def test_figure_faults_finds_a_figure_that_does_not_exist(tmp_path):
+    """A figure shown that its folder does not hold is a fault."""
+    body = figure(f"{DEMO_FIGURES}/a.png") + "\n" + figure(f"{DEMO_FIGURES}/gone.png")
+    path = figured(tmp_path, body, {"a.png": png()})
+
+    (fault,) = faults_of(path)
+
+    assert "gone.png: does not exist" in fault
+
+
+def test_figure_faults_finds_a_figure_without_alt_text_or_a_caption(tmp_path):
+    """Each figure has alt text, which is not empty, and a caption."""
+    body = "\n".join(
+        [
+            figure(f"{DEMO_FIGURES}/a.png", alt=None),
+            figure(f"{DEMO_FIGURES}/b.png", alt=""),
+            figure(f"{DEMO_FIGURES}/c.png", caption=""),
+        ]
+    )
+    path = figured(
+        tmp_path, body, {name: png() for name in ("a.png", "b.png", "c.png")}
+    )
+
+    faults = faults_of(path)
+
+    assert len(faults) == 3
+    assert "a.png: has no alt text" in faults[0]
+    assert "b.png: has no alt text" in faults[1]
+    assert "c.png: has no caption" in faults[2]
+
+
+def test_figure_faults_finds_a_figure_outside_its_own_folder(tmp_path):
+    """A figure is named relative to its specification, in its own folder."""
+    other = "figures/2026-01-02-other-design/a.png"
+    body = "\n".join(
+        [
+            figure(other),
+            figure(f"/developer/specs/{DEMO_FIGURES}/a.png"),
+            figure(f"{DEMO_FIGURES}/../2026-01-02-other-design/a.png"),
+        ]
+    )
+    path = figured(tmp_path, body, {})
+    (tmp_path / other).parent.mkdir(parents=True)
+    (tmp_path / other).write_bytes(png())
+
+    faults = faults_of(path)
+
+    assert len(faults) == 3
+    assert all("outside its own folder" in fault for fault in faults)
+
+
+def test_figure_faults_finds_a_file_that_is_not_a_png(tmp_path):
+    """A figure is a PNG, by its name and by its signature."""
+    body = figure(f"{DEMO_FIGURES}/a.jpg") + "\n" + figure(f"{DEMO_FIGURES}/b.png")
+    path = figured(tmp_path, body, {"a.jpg": png(), "b.png": b"\xff\xd8\xff" * 8})
+
+    faults = faults_of(path)
+
+    assert len(faults) == 2
+    assert all("is not a PNG" in fault for fault in faults)
+
+
+def test_figure_faults_finds_a_file_over_the_limit(tmp_path):
+    """No figure is larger than 150 KB, read as 150,000 bytes."""
+    body = figure(f"{DEMO_FIGURES}/at.png") + "\n" + figure(f"{DEMO_FIGURES}/over.png")
+    files = {"at.png": png(FIGURE_LIMIT), "over.png": png(FIGURE_LIMIT + 1)}
+    path = figured(tmp_path, body, files)
+
+    (fault,) = faults_of(path)
+
+    assert FIGURE_LIMIT == 150_000
+    assert "over.png: is larger than 150,000 bytes" in fault
+
+
+def test_shown_reads_options_in_either_form():
+    """MyST takes a directive's options as ``:key:`` lines or a YAML block."""
+    lines = figure("figures/x/a.png")
+    block = (
+        "```{figure} figures/x/b.png\n"
+        "---\nalt: A demo.\nwidth: 50%\n---\n\nThe demo.\n```\n"
+    )
+
+    assert shown(lines + "\n" + block) == [
+        Figure(1, "figures/x/a.png", "A demo.", "The demo."),
+        Figure(7, "figures/x/b.png", "A demo.", "The demo."),
+    ]
+
+
+def test_shown_reads_a_nested_figure_and_skips_a_quoted_one():
+    """A figure inside a directive is shown, and one inside code is quoted."""
+    nested = "````{note}\n" + figure("figures/x/a.png") + "````\n"
+    quoted = "````markdown\n" + figure("figures/x/b.png") + "````\n"
+    block = "````{code-block} markdown\n" + figure("figures/x/c.png") + "````\n"
+
+    found = shown(f"{nested}\n{quoted}\n{block}")
+
+    assert [(item.line, item.target) for item in found] == [(2, "figures/x/a.png")]
+
+
+def test_stray_figures_finds_a_folder_naming_no_specification(tmp_path):
+    """Everything in ``figures/`` is a folder named for a specification."""
+    figured(tmp_path, figure(f"{DEMO_FIGURES}/a.png"), {"a.png": png()})
+    (tmp_path / "figures" / "2026-01-02-renamed-design").mkdir()
+    (tmp_path / "figures" / "loose.png").write_bytes(png())
+
+    faults = stray_figures(tmp_path)
+
+    assert len(faults) == 2
+    assert any("2026-01-02-renamed-design: names no specification" in f for f in faults)
+    assert any("loose.png: is not a folder" in f for f in faults)
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_every_specification_keeps_its_figures(spec):
+    """Figures (item 11): each figure is kept as docs spec §3.9 says.
+
+    Holds docs spec §2 decision 9.
+    """
+    assert figure_faults(spec, spec.read_text(encoding="utf-8")) == []
+
+
+def test_no_folder_of_figures_is_stray():
+    """Figures (item 11): ``figures/`` holds a folder per specification alone.
+
+    Holds docs spec §2 decision 9.
+    """
+    assert stray_figures() == []
+
+
+def test_the_collection_shows_figures(specs):
+    """A gate that finds no figure passes by never having looked."""
+    assert any(shown(spec.read_text(encoding="utf-8")) for spec in specs)
 
 
 #: The check of the rendered output that row 4 of docs spec §4 pairs with the
