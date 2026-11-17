@@ -306,6 +306,11 @@ The suite asserts:
     the same issue, and every citation of an item or a row names one that exists. A
     specification not yet brought in is listed, with the row that brings it in, until that
     row lands.
+11. **Figures.** Every figure a specification shows is named relative to it, sits in its own
+    folder `figures/<stem>/`, exists, and has alt text and a caption. Every file in that
+    folder is shown by a figure, is a PNG by its name and its signature, and is no larger
+    than 150,000 bytes. `figures/` holds nothing but one folder per specification, so the
+    folder of a renamed specification is caught. §3.9 sets out why.
 
 It also holds the publication of §3.1 in place: no specification
 carries `orphan: true`, the index's toctree lists every specification, and its namespace
@@ -492,9 +497,14 @@ attached to the pull request that adds the figure, so that the figure can be dra
 
 Figures live in the repository, so they are kept small: a render in flat, unlit colours is a
 few kilobytes, and one that is lit or textured is drawn only where the shading is the point.
-No figure is larger than 150 KB. Row 8 of §4 adds the check: every file in a specification's
-folder of figures is shown by it, every figure it shows exists and has `:alt:` text, and no
-file passes the limit.
+No figure is larger than 150 KB, read as 150,000 bytes.
+
+Row 8 of §4 adds the check, item 11 of §3.5. Each figure a specification shows is named
+relative to it, as `figures/<stem>/<file>.png`, exists, and has `:alt:` text and a caption.
+Each file in its folder is shown by it, is a PNG by its name and its signature, and is
+within the limit. Everything in `figures/` is a folder named for a specification, so a
+specification renamed without its folder fails the check instead of leaving figures that
+nothing shows.
 
 (docs-spec-4)=
 ## 4. Roadmap
@@ -593,7 +603,7 @@ observed:
 ## 6. Testing
 
 `tests/test_spec_conventions.py` holds §3.1 to
-§3.8, and the roadmap triggers of §4.
+§3.9, and the roadmap triggers of §4.
 
 It sits in `tests/` rather than `tests/docs/` because it reads source files and needs no
 built artefact, which puts it beside `tests/test_ci_typing.py`. That is the right

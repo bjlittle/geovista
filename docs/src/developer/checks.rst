@@ -274,7 +274,9 @@ names the work that produced it. A specification in the ledger numbers its
 decisions state first, with their provenance, and ends with a Verification table
 of one row per decision. An Open Items section numbers its entries the same way,
 each carrying the parts its state needs, in order, and naming a row of its own
-roadmap that owes it.
+roadmap that owes it. A specification's figures sit in its own folder under
+``figures/``, each shown with alt text and a caption, and each a PNG of 150 KB or
+less.
 
 **Why:** The repository cites the specifications by section, in code comments,
 tests and documentation, so a reader following a citation has to land on the
