@@ -443,7 +443,7 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The `floors` environment and the Python support test's account of it (§4.1), its job in `ci-tests.yml` (§4.3), each floor it disproves raised (§4.2), and its pages (§4.5) | ✅ landed (2026-11-16, {pull}`2974`) |
-| 2 | A floor on every `pip` requirement and the Dependency Floors check (§4.4), and their pages (§4.5) | 📋 not started |
+| 2 | A floor on every `pip` requirement and the Dependency Floors check (§4.4), and their pages (§4.5) | ✅ landed (2026-11-17, {pull}`2985`) |
 | 3 | The composite action and the `pypi` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) | 📋 not started |
 | 4 | The `test-floors` job of `ci-wheels.yml` (§4.3), each floor it disproves raised (§4.2), and its page (§4.5) | 📋 not started |
 | 5 | The `floors-docs` environment (§4.1) and the `docs` job of `ci-floors.yml` (§4.3), each floor it disproves raised (§4.2), and their pages (§4.5) | 📋 not started |
@@ -485,10 +485,10 @@ Each row follows ledger spec §3.4.
 | §2 decision 2 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_floors.py` |
 | §2 decision 3 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 4 | ⏳ pending | |
-| §2 decision 5 | ⏳ pending | |
+| §2 decision 5 | ✅ verified (2026-11-17, {pull}`2985`) | `tests/test_dependency_floors.py` |
 | §2 decision 6 | ⏳ pending | |
 | §2 decision 7 | ⏳ pending | |
 | §2 decision 8 | ⏳ pending | |
 | §2 decision 9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 10 | ⏳ pending | |
-| §2 decision 11 | ⏳ pending | |
+| §2 decision 11 | ✍️ signed off (2026-11-17, {user}`bjlittle`, {pull}`2985`) | Checked in review that `tests floors` is a required status check of the branch protection of `main`, added once row 1 landed. |

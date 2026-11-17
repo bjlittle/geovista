@@ -22,85 +22,21 @@ equal. These tests read the source tree as text, and so never skip.
 
 from __future__ import annotations
 
-from functools import cache
-from pathlib import Path
-import tomllib
-from typing import Any
-
-from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
-from packaging.utils import canonicalize_name
 from packaging.version import Version
 
 #: The section of the repository checks page that documents this check.
 CHECK = "dependency-ceilings"
 
-#: The repository root, holding the manifest and the requirements.
-ROOT = Path(__file__).parents[1]
-#: The manifest declaring the pixi dependency tables.
-PYPROJECT = ROOT / "pyproject.toml"
-#: The pip requirements, which "dependabot" keeps current.
-REQUIREMENTS = sorted((ROOT / "requirements").glob("pypi-*.txt"))
-
-#: The pixi tables of a feature, or of the workspace, that declare dependencies.
-TABLES = ("dependencies", "pypi-dependencies")
-
-#: The pip name of a package that conda-forge distributes under another name.
-RENAMED = {"h3": "h3-py"}
+#: The declarations of each side, as the fixtures "pip_specs" and "pixi_specs"
+#: of "tests/conftest.py" read them: each package to its spec in each place.
+Specs = dict[str, dict[str, str]]
 
 #: How to bring a pixi ceiling into line, ending each failure.
 REMEDY = (
     "Raise the pixi ceiling in pyproject.toml to match, then run "
     '"pixi update <package>", since "pixi lock" alone keeps the locked version.'
 )
-
-
-@cache
-def _pixi() -> dict[str, dict[str, str]]:
-    """Map each pixi dependency to its version spec, keyed by the declaring table.
-
-    A dependency declared as a table, such as one with an ``extras`` key, keeps
-    its version under ``version``. One with none at all is given an empty spec.
-
-    """
-    pixi = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))["tool"]["pixi"]
-    tables: dict[str, dict[str, Any]] = {
-        name: pixi[name] for name in TABLES if name in pixi
-    }
-    for feature, body in pixi.get("feature", {}).items():
-        for name in TABLES:
-            if name in body:
-                tables[f"feature.{feature}.{name}"] = body[name]
-
-    declared: dict[str, dict[str, str]] = {}
-    for table, dependencies in tables.items():
-        for package, spec in dependencies.items():
-            version = spec.get("version", "") if isinstance(spec, dict) else spec
-            declared.setdefault(canonicalize_name(package), {})[table] = version
-    return declared
-
-
-@cache
-def _pip() -> dict[str, dict[str, str]]:
-    """Map each pip requirement to its version spec, keyed by the declaring file.
-
-    A line naming another file, or the package itself with extras, as
-    "pypi-optional-all.txt" does, declares no dependency of its own.
-
-    """
-    declared: dict[str, dict[str, str]] = {}
-    for path in REQUIREMENTS:
-        for line in path.read_text(encoding="utf-8").splitlines():
-            text = line.partition("#")[0].strip()
-            if not text or text.startswith("-"):
-                continue
-            requirement = Requirement(text)
-            package = canonicalize_name(requirement.name)
-            if package == "geovista":
-                continue
-            package = RENAMED.get(package, package)
-            declared.setdefault(package, {})[path.name] = str(requirement.specifier)
-    return declared
 
 
 def _ceiling(spec: str) -> Version | None:
@@ -125,7 +61,7 @@ def _ceiling(spec: str) -> Version | None:
     return min(bounds) if bounds else None
 
 
-def _unreadable() -> dict[str, str]:
+def _unreadable(pip: Specs, pixi: Specs) -> dict[str, str]:
     """Return each compared spec whose ceiling cannot be read.
 
     Only a package declared on both sides is compared, so the conda syntax of a
@@ -133,9 +69,9 @@ def _unreadable() -> dict[str, str]:
 
     """
     unreadable: dict[str, str] = {}
-    for side in (_pip(), _pixi()):
+    for side in (pip, pixi):
         for package, specs in side.items():
-            if package not in _pip() or package not in _pixi():
+            if package not in pip or package not in pixi:
                 continue
             for where, spec in specs.items():
                 try:
@@ -145,39 +81,40 @@ def _unreadable() -> dict[str, str]:
     return unreadable
 
 
-def test_the_requirements_declare_dependencies():
+def test_the_requirements_declare_dependencies(pip_specs):
     """Every comparison below derives from them, so none survives an empty set."""
-    assert _pip(), f"no dependencies read from {[path.name for path in REQUIREMENTS]}"
+    assert pip_specs, "no dependencies read from requirements/pypi-*.txt"
 
 
-def test_every_ceiling_is_one_the_gate_can_read():
+def test_every_ceiling_is_one_the_gate_can_read(pip_specs, pixi_specs):
     """A ceiling the gate cannot read is one it would wave through unchecked."""
-    unreadable = _unreadable()
+    unreadable = _unreadable(pip_specs, pixi_specs)
 
     assert not unreadable, f"ceilings this check cannot compare: {unreadable}"
 
 
-def test_every_pip_requirement_is_a_pixi_dependency():
+def test_every_pip_requirement_is_a_pixi_dependency(pip_specs, pixi_specs):
     """Without one, no environment that CI tests in installs the package at all."""
     missing = {
         package: sorted(files)
-        for package, files in _pip().items()
-        if package not in _pixi()
+        for package, files in pip_specs.items()
+        if package not in pixi_specs
     }
 
     assert not missing, (
         f"pip requirements with no pixi dependency: {missing}. Add each to the "
-        "pixi table of its feature, or to RENAMED if conda-forge names it otherwise."
+        "pixi table of its feature, or to RENAMED in tests/conftest.py if "
+        "conda-forge names it otherwise."
     )
 
 
-def test_every_pixi_ceiling_admits_the_pip_ceiling():
+def test_every_pixi_ceiling_admits_the_pip_ceiling(pip_specs, pixi_specs):
     """Otherwise the lock never reaches a release a ``pip`` user may install."""
     behind: dict[str, dict[str, str]] = {}
-    for package, files in _pip().items():
+    for package, files in pip_specs.items():
         for file, spec in files.items():
             ceiling = _ceiling(spec)
-            for table, pinned in _pixi().get(package, {}).items():
+            for table, pinned in pixi_specs.get(package, {}).items():
                 bound = _ceiling(pinned)
                 if bound is not None and (ceiling is None or bound < ceiling):
                     behind[package] = {file: spec, table: pinned}

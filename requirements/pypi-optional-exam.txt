@@ -1,4 +1,4 @@
-h3 <4.6
-pandas <3.2
-pyarrow <26.1
-rasterio <1.6
+h3 >=4.2.2,<4.6
+pandas >=2.2.3,<3.2
+pyarrow >=18.0.0,<26.1
+rasterio >=1.4.3,<1.6

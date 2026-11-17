@@ -692,6 +692,13 @@ versions of our dependencies and automatically increment them using maximum
 capping pins via a :fa:`code-pull-request` ``pull-request`` in response to the
 latest available package updates within the ``PyPI`` ecosystem.
 
+Every requirement also carries a floor, as in ``numpy >=2.2.6,<2.6``, equal to the
+floor of its ``pixi`` declaration, which the
+:ref:`Dependency Floors <gv-developer-checks-dependency-floors>` check holds
+(floors spec §4.4). A floor moves on both sides in one commit, followed by
+``pixi lock``. Lowering one also needs ``pixi update --environment floors
+<package>``, since ``pixi lock`` keeps the version already locked.
+
 .. attention::
    :class: dropdown
 

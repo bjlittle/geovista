@@ -1,0 +1,5 @@
+Every ``pip`` requirement now declares a floor, equal to its ``pixi`` floor, so
+``pip install geovista`` no longer accepts a release older than the ones the
+``tests floors`` check runs against. Before this, 58 of the 71 requirement lines
+had no floor. The new Dependency Floors check, ``tests/test_dependency_floors.py``,
+keeps the two sides equal (floors spec §4.4). (:user:`claude`)
