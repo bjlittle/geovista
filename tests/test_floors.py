@@ -10,7 +10,8 @@ its floor admits, and the ``tests floors`` job of ``ci-tests.yml`` runs the suit
 in it on every pull request (floors spec §4.3). A job that quietly stopped doing
 so would stay green while testing nothing at the floors, so these tests read the
 workflow and the lock as text and hold the job to what the specification says.
-They also hold the workspace to a pixi able to solve that environment.
+They also hold the workspace to a pixi able to solve that environment and to
+read its lock.
 
 """
 
@@ -35,6 +36,10 @@ LOCK = ROOT / "pixi.lock"
 PYPROJECT = ROOT / "pyproject.toml"
 #: The first pixi with a solve strategy, which a floors environment declares.
 STRATEGY_PIXI = (0, 59, 0)
+#: The oldest pixi measured to read the lock without rewriting it (#2976), where
+#: 0.81.0 read its virtual packages as stale. Raise it with "requires-pixi" when
+#: a newer pixi writes a lock that this one misreads.
+LOCK_PIXI = (0, 84, 2)
 #: A floor on the pixi version, as "requires-pixi" declares it.
 REQUIRES = re.compile(r">=(\d+)\.(\d+)\.(\d+)")
 #: The floors environment, and the job running the suite in it.
@@ -273,8 +278,9 @@ def test_the_floors_job_can_fail():
 def test_the_workspace_requires_a_pixi_that_can_solve_the_floors():
     """An older pixi stops with an error, rather than misreading the lock (#2976).
 
-    The floor is a plain minimum, and admits no pixi without ``solve-strategy``,
-    which the floors environment declares (floors spec §2 decision 1).
+    The floor is a plain minimum. It admits no pixi without ``solve-strategy``,
+    which the floors environment declares (floors spec §2 decision 1), and none
+    older than the oldest measured to read the lock.
     """
     workspace = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))["tool"]["pixi"]
     declared = workspace["workspace"].get("requires-pixi")
@@ -282,4 +288,11 @@ def test_the_workspace_requires_a_pixi_that_can_solve_the_floors():
 
     floor = REQUIRES.fullmatch(declared)
     assert floor, f"requires-pixi {declared!r} is not a plain minimum"
-    assert tuple(int(part) for part in floor.groups()) >= STRATEGY_PIXI
+
+    minimum = tuple(int(part) for part in floor.groups())
+    assert minimum >= STRATEGY_PIXI, (
+        f"requires-pixi {declared!r} admits a pixi without solve-strategy"
+    )
+    assert minimum >= LOCK_PIXI, (
+        f"requires-pixi {declared!r} admits a pixi that misreads {LOCK.name}"
+    )
