@@ -1,3 +1,4 @@
-Inline pull request comments from AI agents now name the agent that wrote them,
-including replies that verify a review fix. This is recorded in workflow rule 5.5.
+Posts and comments from AI agents on GitHub now name the agent that wrote them.
+This includes pull request descriptions, reviews and comments, issues and comments,
+and discussion posts and replies (workflow rule 5.5).
 (:user:`claude`)

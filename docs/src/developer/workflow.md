@@ -319,13 +319,18 @@ whether the finding is fixed there or deferred, and raises the issue for deferre
 work under rule 4.5. An issue raised during a review splits a finding from its
 thread, as {issue}`2935` and {issue}`2938` did.
 
-### 5.5 🤖 Attribute Every Inline Review Comment
+### 5.5 🤖 Attribute Agent Posts and Comments on GitHub
 
 🤝 Agreed (2026-11-17, {user}`bjlittle`, {pull}`2986`)
 
-Every inline comment an agent posts on a pull request carries clear attribution
-naming the agent, including replies that verify a fix; e.g., Codex ends each with
-"🤖 Reviewed by Codex" so the reader can identify who wrote it when GitHub shows
+Every post or comment an agent writes on GitHub carries clear attribution
+naming the agent. This includes pull request descriptions, reviews and comments,
+issue bodies and comments, discussion posts and replies, and replies
+that verify a review fix.
+
+The attribution can name the activity; e.g., Codex ends a review comment with
+"🤖 Reviewed by Codex", and an issue or discussion post with
+"🤖 Written by Codex". Readers can then identify who wrote it when GitHub shows
 the repository owner's account.
 
 ## 6. Other Projects
