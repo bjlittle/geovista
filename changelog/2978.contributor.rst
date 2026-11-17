@@ -1,0 +1,4 @@
+A failed weekly run of ``ci-locks.yml`` now opens an issue, or comments on the open
+one, quoting the ``pixi`` error that names the environment it could not solve. It
+used to fail silently, which in September left every environment's lock four
+weeks behind. (:user:`claude`)

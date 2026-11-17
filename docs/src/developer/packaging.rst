@@ -637,6 +637,10 @@ The following packaging workflows are available:
    |             | manifest and the latest package versions available from the ``conda`` and ``PyPI``  |
    |             | ecosystems.                                                                         |
    |             |                                                                                     |
+   |             | A failed run of the schedule opens an issue, or comments on the open one, quoting   |
+   |             | the ``pixi`` error that names the environment it could not solve, since no          |
+   |             | environment's lock moves until it is fixed.                                         |
+   |             |                                                                                     |
    |             | Only the **latest** ``python`` variant of the :guilabel:`geovista-py3xx`            |
    |             | environment e.g., :guilabel:`geovista-py314`, will be exported to a ``conda``       |
    |             | explicit specification file (:bash:`.txt`) and also converted to an equivalent      |
