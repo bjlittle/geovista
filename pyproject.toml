@@ -499,6 +499,10 @@ showcontent = true
 [tool.pixi.workspace]
 channels = ["conda-forge"]
 platforms = ["linux-64"]
+# an older pixi read the lock written by ci's 0.84.2 as stale, and silently
+# rewrote it; 0.84.2 is the oldest measured to read it, so an older one now stops
+# with an error naming this floor (#2976). ci and read the docs install the latest
+requires-pixi = ">=0.84.2"
 
 [tool.pixi.environments]
 default = { features = ["py314"], solve-group = "default" }

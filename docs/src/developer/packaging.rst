@@ -35,7 +35,11 @@
 
 - :bash:`pyproject.toml`
 
-Package management is orchestrated and performed by `pixi`_.
+Package management is orchestrated and performed by `pixi`_. It needs ``pixi``
+0.84.2 or later, as :toml:`requires-pixi` in the :toml:`[tool.pixi.workspace]`
+table declares, since an older one misreads the :bash:`pixi.lock` file. An older
+``pixi`` stops with an error naming that version, and :bash:`pixi self-update`
+installs a newer one.
 
 Our ``pixi`` :term:`environments <Environment>`, :term:`features <Feature>`,
 and :term:`tasks <Task>` are defined within the :bash:`pyproject.toml` manifest.

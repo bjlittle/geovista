@@ -61,7 +61,7 @@ which resolves strictly from `pixi.lock` — so `pixi run --frozen -e <env>`
 locally is CI's environment, *if* `<env>` is CI's: the test jobs run
 `test-py313`/`test-py314`, whose lock can differ from `geovista`'s (rasterio
 1.5.1 against 1.5.2, #2599). After editing a dependency, run `pixi lock`
-*first*, or `--frozen` silently keeps running the previous environment. ⚠️ Pass `--frozen` everywhere: a local pixi older than CI's (setup-pixi installs the latest, 0.84.2 on 2026-11-16) reads the lock as stale, so a bare `pixi run`/`pixi list` re-solves all of it and rewrites `pixi.lock`. Run `pixi self-update`, and `git checkout -- pixi.lock` if one slips through.
+*first*, or `--frozen` silently keeps running the previous environment. ⚠️ Pass `--frozen` everywhere: a local pixi older than CI's (setup-pixi installs the latest) can read the lock as stale and rewrite it. `requires-pixi` (`>=0.84.2`, #2976) stops one too old to read today's lock; raise it when a newer CI pixi writes a lock an older one misreads, and `git checkout -- pixi.lock` if one slips through.
 
 ⚠️ **But `pixi lock` alone will not raise a version ceiling, nor follow a lowered floor.** It only
 re-solves when the lock is *invalid*, and an already-locked version still

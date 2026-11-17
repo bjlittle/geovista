@@ -212,6 +212,9 @@ Now install ``geovista`` and all its dependencies:
 
             $ pixi shell --environment geovista
 
+        |icon-info| This needs ``pixi`` 0.84.2 or later, which
+        :bash:`pixi self-update` installs.
+
     .. tab-item:: |icon-uv| uv
         :sync: uv
 

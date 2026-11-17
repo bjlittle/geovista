@@ -10,6 +10,7 @@ its floor admits, and the ``tests floors`` job of ``ci-tests.yml`` runs the suit
 in it on every pull request (floors spec §4.3). A job that quietly stopped doing
 so would stay green while testing nothing at the floors, so these tests read the
 workflow and the lock as text and hold the job to what the specification says.
+They also hold the workspace to a pixi able to solve that environment.
 
 """
 
@@ -19,6 +20,7 @@ from functools import cache
 from pathlib import Path
 import re
 import shlex
+import tomllib
 from typing import Any
 
 import yaml
@@ -29,6 +31,12 @@ ROOT = Path(__file__).parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "ci-tests.yml"
 #: The lock, in which the floors environment is resolved.
 LOCK = ROOT / "pixi.lock"
+#: The manifest, declaring the pixi the workspace requires.
+PYPROJECT = ROOT / "pyproject.toml"
+#: The first pixi with a solve strategy, which a floors environment declares.
+STRATEGY_PIXI = (0, 59, 0)
+#: A floor on the pixi version, as "requires-pixi" declares it.
+REQUIRES = re.compile(r">=(\d+)\.(\d+)\.(\d+)")
 #: The floors environment, and the job running the suite in it.
 FLOORS = "floors"
 #: The check the job reports, required on "main" (floors spec §2 decision 11).
@@ -260,3 +268,18 @@ def test_the_floors_job_can_fail():
         step.get("name") for step in _job()["steps"] if "continue-on-error" in step
     ]
     assert not lenient, f"steps of the {FLOORS!r} job may fail silently: {lenient}"
+
+
+def test_the_workspace_requires_a_pixi_that_can_solve_the_floors():
+    """An older pixi stops with an error, rather than misreading the lock (#2976).
+
+    The floor is a plain minimum, and admits no pixi without ``solve-strategy``,
+    which the floors environment declares (floors spec §2 decision 1).
+    """
+    workspace = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))["tool"]["pixi"]
+    declared = workspace["workspace"].get("requires-pixi")
+    assert declared, f"{PYPROJECT.name} declares no requires-pixi"
+
+    floor = REQUIRES.fullmatch(declared)
+    assert floor, f"requires-pixi {declared!r} is not a plain minimum"
+    assert tuple(int(part) for part in floor.groups()) >= STRATEGY_PIXI
