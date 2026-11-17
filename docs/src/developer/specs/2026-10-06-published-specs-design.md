@@ -514,7 +514,7 @@ file passes the limit.
 | 5 | GitHub reference roles and hardcoded-link detection | 💡 candidate |
 | 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
 | 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | ✅ landed (2026-11-09, {pull}`2917`) |
-| 8 | Figures: the check of §3.9 in `tests/test_spec_conventions.py` | 📋 not started |
+| 8 | Figures: the check of §3.9 in `tests/test_spec_conventions.py` | 🚧 in progress ({pull}`2980`) |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
