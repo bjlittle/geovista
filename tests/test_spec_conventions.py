@@ -4432,6 +4432,57 @@ def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     return problems
 
 
+#: An ordering written in words, before a row: the words of order spec §4.2's last
+#: column, *waits on*, and *follows* and *builds on* (order spec §4.5 item 4).
+ORDER_WORDS = re.compile(
+    r"\b(?:lands?\s+with\s+or\s+after|lands?\s+with|landing\s+with|lands?\s+before"
+    r"|lands?\s+after|before|after|needs?|once|waits?\s+on|follows?|builds?\s+on)"
+    r"\s+rows?\s+\d+[a-z]?",
+    flags=re.IGNORECASE,
+)
+
+
+def ordering_in_prose(path: Path, text: str) -> list[str]:
+    """Find an ordering written in prose, item 4 of order spec §4.5.
+
+    The guard reads each scope before its first ``· 🔗``, and each paragraph under
+    a roadmap up to the next heading, whole, since prose wraps between the words
+    and the row. Code is blanked first, so quoted words order nothing.
+    """
+    remedy = f'write it in its row\'s Scope cell, as "{LINKED.strip()} after row 1"'
+    problems = []
+    for row in citations.rows(text):
+        scope = citations.prose(citations.split_scope(row.scope)[0])[0]
+        problems.extend(
+            f'{where(path, row.line)}: row {row.row}: "{m[0]}" orders rows in its '
+            f"scope: {remedy}"
+            for m in ORDER_WORDS.finditer(scope)
+        )
+    under, table = False, []
+    paragraph: list[tuple[int, str]] = []
+    for number, line in [*read_lines(text), (0, "")]:
+        if line.startswith("|"):
+            table.append(line)
+            continue
+        if table:
+            under = roadmap_header(citations.cells(table[0]))
+            table = []
+        if HEADING.match(line):
+            under = False
+        if under and line.strip():
+            paragraph.append((number, citations.prose(line)[0]))
+            continue
+        joined = "\n".join(text for _, text in paragraph)
+        for match in ORDER_WORDS.finditer(joined):
+            at = paragraph[joined.count("\n", 0, match.start())][0]
+            words = " ".join(match[0].split())
+            problems.append(
+                f'{where(path, at)}: "{words}" orders rows in prose: {remedy}'
+            )
+        paragraph = []
+    return problems
+
+
 def ordered(
     tmp_path: Path,
     mine: Iterable[tuple[str, str]],
@@ -4453,6 +4504,7 @@ def ordered(
         opening = f"({slug}-1)=\n## 1. Purpose\n\n({slug}-2)=\n## 2. Roadmap\n\n"
         return f"{opening}{header}{table}"
 
+    tmp_path.mkdir(parents=True, exist_ok=True)
     other = tmp_path / "2026-01-02-other-design.md"
     other.write_text(
         f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
@@ -4607,3 +4659,100 @@ def test_orderings_twice_passes_distinct_orderings(tmp_path):
     )
 
     assert orderings_twice(texts, names) == []
+
+
+def prose_faults(
+    tmp_path: Path, below: str = "", scope: str = "Two", after: str = ""
+) -> list[str]:
+    """Read the prose faults of a roadmap, with text below it and after a heading."""
+    texts, _ = ordered(tmp_path, [("One", NOT_STARTED), (scope, NOT_STARTED)])
+    path = next(p for p in texts if p.name.startswith("2026-01-01"))
+    text = f"{texts[path]}\n{below}\n\n(demo-spec-3)=\n## 3. Later\n\n{after}\n"
+    return ordering_in_prose(path, text)
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "lands with or after",
+        "lands with",
+        "landing with",
+        "lands before",
+        "lands after",
+        "before",
+        "after",
+        "needs",
+        "need",
+        "once",
+        "is planned once",
+        "waits on",
+        "wait on",
+        "follows",
+        "builds on",
+    ],
+)
+def test_ordering_in_prose_finds_each_word_under_a_roadmap(tmp_path, words):
+    """Item 4 of order spec §4.5: an ordering word and a row, under a roadmap."""
+    (fault,) = prose_faults(tmp_path, below=f"Row 2 {words} row 1.")
+
+    assert f"{words.split()[-1]} row 1" in fault
+
+
+def test_ordering_in_prose_finds_one_in_a_scope_before_its_orderings(tmp_path):
+    """A scope states its orderings after its opener, never before."""
+    cited = f"row 1 of other spec {SECTION}2"
+    before = prose_faults(tmp_path, scope=f"Two, landing with {cited}")
+    after = prose_faults(tmp_path / "after", scope=f"Two{LINKED} with {cited}")
+
+    assert len(before) == 1
+    assert "row 2" in before[0]
+    assert after == []
+
+
+def test_ordering_in_prose_finds_a_bare_before(tmp_path):
+    """A measurement written as an ordering reads as one, until it is reworded."""
+    (fault,) = prose_faults(tmp_path, below="It builds as fast as before row 5.")
+
+    assert "before row 5" in fault
+
+
+def test_ordering_in_prose_finds_one_wrapped_across_lines(tmp_path):
+    """Prose wraps, so the words and the row are read across a line break."""
+    faults = prose_faults(tmp_path, below="Statuses follow.\nRow 2 lands with\nrow 1.")
+
+    (fault,) = faults
+    assert "lands with" in fault
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "Row 2 needs a renderer in CI.",
+        "Row 2 is planned after {issue}`2756`.",
+        "Row 2 waits on the regions design.",
+        "Rows 1 and 2 land before 0.6 is released.",
+        "Rows 2 and 3 need nothing else.",
+    ],
+)
+def test_ordering_in_prose_passes_a_word_naming_no_row(tmp_path, words):
+    """An order against something that is not a row stays in the prose."""
+    assert prose_faults(tmp_path, below=words) == []
+
+
+def test_ordering_in_prose_skips_code(tmp_path):
+    """The words quoted in code, inline or fenced, are no ordering."""
+    below = "Write `lands with row 1` here.\n\n```text\nRow 2 needs row 1.\n```"
+
+    assert prose_faults(tmp_path, below=below) == []
+
+
+def test_ordering_in_prose_reads_only_under_a_roadmap(tmp_path):
+    """The guard reads up to the next heading, and nowhere else."""
+    texts, _ = ordered(tmp_path, [("One", NOT_STARTED)])
+    path = next(p for p in texts if p.name.startswith("2026-01-01"))
+    elsewhere = texts[path].replace(
+        "## 1. Purpose\n", "## 1. Purpose\n\nRow 2 needs row 1.\n"
+    )
+
+    assert ordering_in_prose(path, elsewhere) == []
+    assert prose_faults(tmp_path / "later", after="Row 2 needs row 1.") == []
