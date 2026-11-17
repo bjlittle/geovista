@@ -41,9 +41,6 @@ jobs:
     name: "${{ matrix.session }} ${{ matrix.marker }} (${{ matrix.version }})"
     runs-on: "${{ matrix.os }}"
 
-    env:
-      ALLOW_PLOTTING: true
-
     strategy:
       fail-fast: false
       matrix:
