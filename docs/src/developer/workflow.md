@@ -208,6 +208,23 @@ a pull request, a review or a reply to the maintainer. Its code is throwaway, an
 is attached to the pull request it supports, so that it can be drawn again. Words
 such as sag or a sliver at the limb meant little until {pull}`2954` showed them.
 
+### 3.6 🤖 Attribute Agent Posts and Comments on GitHub
+
+🤝 Agreed (2026-11-17, {user}`bjlittle`, {pull}`2986`)
+
+Every post or comment an agent writes on GitHub carries clear attribution
+naming the agent. This includes pull request descriptions, reviews and comments,
+issue bodies and comments, and discussion posts and replies, including a reply
+that verifies a review fix.
+
+The attribution can name the activity; e.g., Codex ends a review comment with
+"🤖 Reviewed by Codex", and an issue or discussion post with
+"🤖 Written by Codex".
+
+The `agentic` label of workflow rule 4.1 marks a whole issue or pull request.
+A review or reply on a person's pull request needs its own attribution, as does
+a discussion post.
+
 ## 4. Pull Requests
 
 ### 4.1 🤖 Label Agent Work `agentic`
@@ -318,20 +335,6 @@ it was found in, and raises no issue for it. The pull request's author decides
 whether the finding is fixed there or deferred, and raises the issue for deferred
 work under rule 4.5. An issue raised during a review splits a finding from its
 thread, as {issue}`2935` and {issue}`2938` did.
-
-### 5.5 🤖 Attribute Agent Posts and Comments on GitHub
-
-🤝 Agreed (2026-11-17, {user}`bjlittle`, {pull}`2986`)
-
-Every post or comment an agent writes on GitHub carries clear attribution
-naming the agent. This includes pull request descriptions, reviews and comments,
-issue bodies and comments, discussion posts and replies, and replies
-that verify a review fix.
-
-The attribution can name the activity; e.g., Codex ends a review comment with
-"🤖 Reviewed by Codex", and an issue or discussion post with
-"🤖 Written by Codex". Readers can then identify who wrote it when GitHub shows
-the repository owner's account.
 
 ## 6. Other Projects
 
