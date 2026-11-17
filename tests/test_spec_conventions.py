@@ -4413,11 +4413,19 @@ def ordering_form(path: Path, text: str, names: Namespace) -> list[str]:
             key, fault = ordering_target(said, row, rows, owner, names)
             if owner is not None and key == row_anchor(owner, row.section, row.row):
                 fault = f'"{clause}" orders row {row.row} against itself'
-            bare = BARE_ROW.fullmatch(said.target)
-            if fault is None and said.relation == "before" and bare is not None:
+            # the same roadmap is read from the anchor, however the row is named
+            own = f"{owner}-{row.section.replace('.', '-')}-row-"
+            if (
+                fault is None
+                and said.relation == "before"
+                and owner is not None
+                and key is not None
+                and key.startswith(own)
+            ):
                 fault = (
                     f'"{clause}": within one roadmap, the later row writes it, as '
-                    f'"after row {row.row}" on row {bare["row"]} (order spec §4.3)'
+                    f'"after row {row.row}" on row {key.removeprefix(own)} '
+                    "(order spec §4.3)"
                 )
             if fault is not None:
                 problems.append(f"{at}: {fault}")
@@ -4477,12 +4485,30 @@ ORDER_WORDS = re.compile(
 )
 
 
+def plain(text: str) -> str:
+    """Read inline markdown as its text: emphasis and links read, code left out.
+
+    Each line break is kept, so a match is placed on the line it starts on.
+    """
+    parsed = MarkdownIt("commonmark").parseInline(text)
+    found = []
+    for token in (parsed[0].children if parsed else None) or []:
+        if token.type == "text":
+            found.append(token.content)
+        elif token.type in {"softbreak", "hardbreak"}:
+            found.append("\n")
+        elif token.type == "code_inline":
+            found.append(" ")
+    return "".join(found)
+
+
 def ordering_in_prose(path: Path, text: str) -> list[str]:
     """Find an ordering written in prose, item 4 of order spec §4.5.
 
     The guard reads each scope before its first ``· 🔗``, and each paragraph under
     a roadmap up to the next heading, whole, since prose wraps between the words
-    and the row. Code is blanked first, so quoted words order nothing.
+    and the row. It reads the markdown's text, so emphasis and links hide nothing,
+    and code is left out, so quoted words order nothing.
     """
     remedy = f'write it in its row\'s Scope cell, as "{LINKED.strip()} after row 1"'
     problems = []
@@ -4498,7 +4524,7 @@ def ordering_in_prose(path: Path, text: str) -> list[str]:
         problems.extend(
             f'{where(path, row.line)}: row {row.row}: "{m[0]}" orders rows in its '
             f"scope: {remedy}"
-            for m in ORDER_WORDS.finditer(scope)
+            for m in ORDER_WORDS.finditer(plain(citations.split_scope(row.scope)[0]))
         )
     under, table = False, []
     paragraph: list[tuple[int, str]] = []
@@ -4512,9 +4538,9 @@ def ordering_in_prose(path: Path, text: str) -> list[str]:
         if HEADING.match(line):
             under = False
         if under and line.strip():
-            paragraph.append((number, citations.prose(line)[0]))
+            paragraph.append((number, line))
             continue
-        joined = "\n".join(text for _, text in paragraph)
+        joined = plain("\n".join(text for _, text in paragraph))
         for match in ORDER_WORDS.finditer(joined):
             at = paragraph[joined.count("\n", 0, match.start())][0]
             words = " ".join(match[0].split())
@@ -4853,11 +4879,16 @@ def test_ordering_in_prose_finds_a_malformed_opener(tmp_path, opener):
     assert "opener" in fault
 
 
-def test_ordering_form_refuses_before_within_a_roadmap(tmp_path):
-    """Within one roadmap, the later row writes after (order spec §4.3)."""
+@pytest.mark.parametrize(
+    "target",
+    ["row 2", f"row 2 of {SECTION}2", f"row 2 of demo spec {SECTION}2"],
+    ids=["bare", "own-section", "cited-in-full"],
+)
+def test_ordering_form_refuses_before_within_a_roadmap(tmp_path, target):
+    """Within one roadmap, the later row writes after, however the row is named."""
     faults = form_faults(
         tmp_path,
-        (f"One{LINKED} before row 2", NOT_STARTED),
+        (f"One{LINKED} before {target}", NOT_STARTED),
         ("Two", NOT_STARTED),
     )
 
@@ -4865,6 +4896,32 @@ def test_ordering_form_refuses_before_within_a_roadmap(tmp_path):
     assert "row 1" in fault
     assert "after row 1" in fault
     assert "row 2" in fault
+
+
+@pytest.mark.parametrize(
+    "below",
+    [
+        "Row 2 **needs** row 1.",
+        "Row 2 needs **row 1**.",
+        "Row 2 _needs_ row 1.",
+        "Row 2 needs [row 1](#roadmap).",
+    ],
+    ids=["strong-word", "strong-row", "emphasis", "link"],
+)
+def test_ordering_in_prose_reads_through_markdown(tmp_path, below):
+    """Emphasis and links are prose, so an ordering inside them is read."""
+    (fault,) = prose_faults(tmp_path, below=below)
+
+    assert "needs row 1" in fault
+
+
+def test_ordering_in_prose_reads_through_markdown_in_a_scope(tmp_path):
+    """A scope's emphasis hides no ordering either."""
+    scope = f"Two, **landing with** row 1 of other spec {SECTION}2"
+
+    (fault,) = prose_faults(tmp_path, scope=scope)
+
+    assert "landing with row 1" in fault
 
 
 def test_ordering_in_prose_finds_an_opener_without_its_space(tmp_path):
