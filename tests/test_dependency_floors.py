@@ -217,11 +217,20 @@ def test_a_floor_the_check_cannot_read_is_reported(pip, pixi, where):
 
 
 def test_a_pixi_only_dependency_is_not_compared():
-    """Demonstrates the fourth clause of floors spec §4.4."""
-    pixi = {"python": {"feature.py313.dependencies": "3.13.*"}}
+    """Demonstrates the fourth clause of floors spec §4.4, beside a compared package.
 
-    assert _unreadable({}, pixi) == {}
-    assert _disagreements({}, pixi) == {}
+    ``python`` has a floor this check cannot read, and ``setuptools`` one with no
+    ``pip`` counterpart to equal, so reading either would report it.
+    """
+    pip = {"numpy": {"pypi-core.txt": ">=2.2.6,<2.6"}}
+    pixi = {
+        "numpy": {"dependencies": ">=2.2.6,<3"},
+        "python": {"feature.py313.dependencies": "3.13.*"},
+        "setuptools": {"dependencies": ">=80.9.0,<81"},
+    }
+
+    assert _unreadable(pip, pixi) == {}
+    assert _disagreements(pip, pixi) == {}
 
 
 def test_a_pixi_declaration_without_a_floor_is_reported():

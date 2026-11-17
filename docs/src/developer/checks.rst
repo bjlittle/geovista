@@ -260,9 +260,10 @@ the unit tests, including those on a ``dependabot`` pull request. A floor it
 cannot read, written with ``>``, ``==``, ``~=`` or a wildcard, is reported
 rather than passed over.
 
-**When it fails:** The message names each package, with its floor in every file
-and table that declares it. Put back a floor that a ``dependabot`` pull request
-moved, on that pull request. To raise a floor, raise it on both sides in one
+**When it fails:** The message names each package, and the files and tables
+where its floor is missing or unreadable. Where its floors differ, it gives the
+floor in each. Put back a floor that a ``dependabot`` pull request moved, on that
+pull request. To raise a floor, raise it on both sides in one
 commit and run ``pixi lock``. Lowering one also needs ``pixi update
 --environment floors <package>``, since ``pixi lock`` keeps the version already
 locked.
