@@ -17,7 +17,7 @@
   happens to it when that row lands
 - **Lineage:** [docs spec](2026-10-06-published-specs-design.md) ›
   [ledger spec](2026-10-30-decision-ledger-design.md) › **items spec**
-- **Children:** none
+- **Children:** [order spec](2026-11-17-row-order-design.md)
 - **Extends:** docs spec §3.6, whose open items gain an issue, a row that owes them, the
   state ⏭️ Deferred in a new sense, and the state 🎓 Graduated, and ledger spec §3.8, whose
   report gains each specification's roadmap and open items. It cites items and rows in the
@@ -217,6 +217,12 @@ confirms first.
 
 (items-spec-3-4)=
 ### 3.4 The Row That Owes an Item
+
+> **Extended by a child specification.**
+> [`2026-11-17-row-order-design.md`](2026-11-17-row-order-design.md),
+> `order spec §…`, gives a row *landing with* another the form `· 🔗 with`, one of four
+> relations a row may state in its scope, and checks the order between rows across the
+> specifications (items spec §7 item 15).
 
 🎯 names a row of the item's own specification that has not landed. An item is written in
 the specification whose work owes it, which is not always the one being delivered when it

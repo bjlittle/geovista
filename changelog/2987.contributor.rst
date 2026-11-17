@@ -1,0 +1,6 @@
+Published the
+:doc:`roadmap row order specification </developer/specs/2026-11-17-row-order-design>`,
+which gives the order between roadmap rows one form: an ordering follows a row's
+scope as ``· 🔗 after row 1``, in one of four relations, so a check can read every
+roadmap's order into one graph and refuse a cycle, a row that can never land, or a
+status the order contradicts. (:user:`claude`)
