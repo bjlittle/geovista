@@ -327,7 +327,7 @@ Each carries the grammar of items spec §3.2.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | The form: the grammar of §4.1 to §4.4 in `geovista_citations`, items 1 to 4 of §4.5, every ordering of today moved into its cell with `landing_together` reading `🔗 with` and the renumber guard pairing rows without their orderings (§3.3, §4.7), and the developer guide's account of the form (§4.8) | 📋 not started |
+| 1 | The form: the grammar of §4.1 to §4.4 in `geovista_citations`, items 1 to 4 of §4.5, every ordering of today moved into its cell with `landing_together` reading `🔗 with` and the renumber guard pairing rows without their orderings (§3.3, §4.7), and the developer guide's account of the form (§4.8) | 🚧 in progress ({pull}`2990`) |
 | 2 | The graph: items 5 to 7 of §4.5, `landing_together` folded into them (§4.7), the report of §4.6, and their pages (§4.8) · 🔗 after row 1 · 🔗 with row 8 of items spec §8 | 📋 not started |
 
 Statuses follow docs spec §3.6. Row 1 keeps every check reading what it moves, so it is
