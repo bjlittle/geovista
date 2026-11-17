@@ -1,0 +1,4 @@
+Working on ``geovista`` from source now needs ``pixi`` 0.84.2 or later, declared
+as ``requires-pixi``. An older ``pixi`` misread the lock as stale and silently
+rewrote it; it now stops with an error naming the version it needs, which
+``pixi self-update`` installs. (:user:`claude`)
