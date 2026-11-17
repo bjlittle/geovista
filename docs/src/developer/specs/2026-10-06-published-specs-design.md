@@ -526,6 +526,7 @@ nothing shows.
 | 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | ✅ landed (2026-11-09, {pull}`2917`) |
 | 8 | Figures: the check of §3.9 in `tests/test_spec_conventions.py` | ✅ landed (2026-11-17, {pull}`2980`) |
 | 9 | Figures read as MyST reads them, for the forms of item 6 of §8 | 📋 not started |
+| 10 | The specifications index for a large collection: the settled specifications apart from those still moving, or a page for each family | 💡 candidate: the collection reaches 25 specifications |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
@@ -573,6 +574,13 @@ observed:
   put the same characters in the same places. A threshold over a token that ambiguous would
   fire on noise, and one tuned not to would fire on nothing. If this row is still open when
   it should not be, that is because someone did not re-read this table.
+- **Row 10** carries the growth of the collection. The index lists every specification in
+  one table, which reads well while there are few and will not once there are many, and
+  three are already complete. `bjlittle/tephpy` had twenty when §9 surveyed
+  it. What to build is left open, since it depends on what readers then fail to find:
+  completed specifications set apart as settled reference, a page for each family, or
+  both. *Asserted:* the test fails when the collection reaches twenty-five specifications,
+  and whoever adds that one builds the row or raises the ceiling here, with the reason.
 
 (docs-spec-5)=
 ## 5. Alternatives Considered

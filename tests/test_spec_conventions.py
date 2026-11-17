@@ -2624,6 +2624,29 @@ def test_row_4_pairs_the_transform_with_its_output_gate():
     )
 
 
+#: The size of the collection at which row 10 of docs spec §4 fires.
+INDEX_CEILING = 25
+
+
+def test_row_10_fires_when_the_collection_reaches_its_ceiling(specs):
+    """Triggers (item 6): the specifications index outgrows its one table.
+
+    Row 10 of docs spec §4 is a candidate until the collection reaches
+    :data:`INDEX_CEILING`, when whoever adds that specification either builds the
+    row or raises the ceiling on the record, as rows 2 to 4 once raised theirs.
+    """
+    text = (SPECS / "2026-10-06-published-specs-design.md").read_text(encoding="utf-8")
+
+    assert roadmap_rows(text)["10"].startswith(CANDIDATE), (
+        "row 10 of docs spec §4 is no longer a candidate: retire this trigger"
+    )
+    assert len(specs) < INDEX_CEILING, (
+        f"the collection holds {len(specs)} specifications: row 10 of docs spec §4 "
+        "fires, so reorganise the specifications index as it describes, or raise "
+        f"INDEX_CEILING from {INDEX_CEILING} and record why in docs spec §4"
+    )
+
+
 #: Ledger (item 9 of docs spec §3.5): the states of ledger spec §3.2, §3.3, §3.4, from
 #: the grammar, which builds them by name.
 AGREED = citations.AGREED
