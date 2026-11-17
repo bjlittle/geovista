@@ -4411,6 +4411,12 @@ def ordering_form(path: Path, text: str, names: Namespace) -> list[str]:
                 )
                 continue
             _, fault = ordering_target(said, row, rows, owner, names)
+            bare = BARE_ROW.fullmatch(said.target)
+            if fault is None and said.relation == "before" and bare is not None:
+                fault = (
+                    f'"{clause}": within one roadmap, the later row writes it, as '
+                    f'"after row {row.row}" on row {bare["row"]} (order spec §4.3)'
+                )
             if fault is not None:
                 problems.append(f"{at}: {fault}")
     return problems
@@ -4478,6 +4484,13 @@ def ordering_in_prose(path: Path, text: str) -> list[str]:
     problems = []
     for row in citations.rows(text):
         scope = citations.prose(citations.split_scope(row.scope)[0])[0]
+        if citations.LINK in scope:
+            opener = LINKED.strip()
+            problems.append(
+                f"{where(path, row.line)}: row {row.row}: a {citations.LINK} outside "
+                f'an opener: open each ordering with "{opener}", a space either '
+                "side of the dot (order spec §4.1)"
+            )
         problems.extend(
             f'{where(path, row.line)}: row {row.row}: "{m[0]}" orders rows in its '
             f"scope: {remedy}"
@@ -4815,6 +4828,39 @@ def test_no_ordering_is_written_in_prose(spec):
     problems = ordering_in_prose(spec, spec.read_text(encoding="utf-8"))
 
     assert not problems, "\n".join(problems)
+
+
+@pytest.mark.parametrize(
+    "opener",
+    [
+        " \N{MIDDLE DOT}\N{LINK SYMBOL}",
+        " \N{LINK SYMBOL}",
+        " \N{BULLET} \N{LINK SYMBOL}",
+    ],
+    ids=["no-space", "no-dot", "bullet"],
+)
+def test_ordering_in_prose_finds_a_malformed_opener(tmp_path, opener):
+    """A typo in the opener leaves its ordering in the scope, where nothing reads it."""
+    scope = f"Two{opener} with row 1 of other spec {SECTION}2"
+
+    (fault,) = prose_faults(tmp_path, scope=scope)
+
+    assert "row 2" in fault
+    assert "opener" in fault
+
+
+def test_ordering_form_refuses_before_within_a_roadmap(tmp_path):
+    """Within one roadmap, the later row writes after (order spec §4.3)."""
+    faults = form_faults(
+        tmp_path,
+        (f"One{LINKED} before row 2", NOT_STARTED),
+        ("Two", NOT_STARTED),
+    )
+
+    (fault,) = faults
+    assert "row 1" in fault
+    assert "after row 1" in fault
+    assert "row 2" in fault
 
 
 def test_the_collection_writes_orderings(specs):

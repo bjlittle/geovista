@@ -416,12 +416,15 @@ give the state its emoji: ``🚧 in progress``, ``📋 not started`` or
 ``💡 candidate``, as ledger spec §2 decision 16 agreed.
 
 For an ordering between rows, when it says *… is no ordering*, *… names no
-row*, *… name one row* or *… only before takes a release*, write one of
-``after``, ``before``, ``with`` or ``with or after`` and one row, or ``before``
-and a release. When it says *… is written twice*, keep the ordering on the row
-its reason belongs to and delete the other. When it says *… orders rows in
-prose* or *… in its scope*, move the ordering into its row's Scope cell after
-a ``· 🔗``, and leave only the reason in the prose (order spec §4.1).
+row*, *… name one row*, *… row N does not exist* or *… only before takes a
+release*, write one of ``after``, ``before``, ``with`` or ``with or after`` and
+one row of the roadmap, or ``before`` and a release. When it says *… within one
+roadmap, the later row writes it*, write ``after`` on the later row instead.
+When it says *… is written twice*, keep the ordering on the row its reason
+belongs to and delete the other. When it says *… orders rows in prose* or
+*… in its scope*, move the ordering into its row's Scope cell after a
+``· 🔗``, and leave only the reason in the prose. When it says *… outside an
+opener*, put a space either side of the dot (order spec §4.1).
 
 **Declaring an exception:** None for the conventions. A specification not yet
 brought into the ledger is named in ``UNLEDGERED``, beside the row of

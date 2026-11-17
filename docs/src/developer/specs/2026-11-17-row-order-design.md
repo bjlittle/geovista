@@ -214,7 +214,8 @@ The conventions test reads every ordering of every roadmap into one graph of row
 fails on each of these, naming the row and the ordering:
 
 1. **A word outside the four relations**, or `· 🔗` followed by something that is neither a
-   relation and a row nor `before` and a version.
+   relation and a row nor `before` and a version, or `before` a row of its own roadmap,
+   which the later row writes as `after` (§4.3).
 2. **A row that does not exist**, in its own roadmap or the one it cites.
 3. **An ordering written twice**, on both rows or twice on one.
 4. **An ordering written in prose.** Under a roadmap, or in a scope before its first
@@ -223,7 +224,8 @@ fails on each of these, naming the row and the ordering:
    something that is not a row, such as a renderer, an issue or a release in words,
    passes, and code is skipped, so a specification can still quote the old forms. This
    stops a new specification writing its orderings where nothing reads them. The guard
-   reads a paragraph whole, since prose wraps between the words and the row.
+   reads a paragraph whole, since prose wraps between the words and the row, and refuses
+   a 🔗 left in a scope by an opener mistyped, which would hide its ordering.
 5. **A cycle**, in one specification or across several: row 2 after row 1, and row 1 after
    row 2, or `with` and `before` between the same two rows.
 6. **A `not started` row ordered `after`, `with` or `with or after` a `candidate`**, which
