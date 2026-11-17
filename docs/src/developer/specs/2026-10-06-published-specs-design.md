@@ -308,7 +308,7 @@ The suite asserts:
     row lands.
 11. **Figures.** Every figure a specification shows is named relative to it, sits in its own
     folder `figures/<stem>/`, exists, and has alt text and a caption. Every file in that
-    folder is shown by a figure, is a PNG by its name and its signature, and is no larger
+    folder, at any depth, is shown by a figure, is a PNG by its name and its signature, and is no larger
     than 150,000 bytes. `figures/` holds nothing but one folder per specification, so the
     folder of a renamed specification is caught. §3.9 sets out why.
 
@@ -501,7 +501,7 @@ No figure is larger than 150 KB, read as 150,000 bytes.
 
 Row 8 of §4 adds the check, item 11 of §3.5. Each figure a specification shows is named
 relative to it, as `figures/<stem>/<file>.png`, exists, and has `:alt:` text and a caption.
-Each file in its folder is shown by it, is a PNG by its name and its signature, and is
+Each file in its folder, at any depth, is shown by it, is a PNG by its name and its signature, and is
 within the limit. Everything in `figures/` is a folder named for a specification, so a
 specification renamed without its folder fails the check instead of leaving figures that
 nothing shows.
@@ -525,6 +525,7 @@ nothing shows.
 | 6 | Families: the Lineage and Children banner lines, the index grouped by family, and titles by topic | ✅ landed (2026-10-30, {pull}`2778`) |
 | 7 | Status in the index: the Status column of the namespace table, which the build writes from each roadmap (§3.8) | ✅ landed (2026-11-09, {pull}`2917`) |
 | 8 | Figures: the check of §3.9 in `tests/test_spec_conventions.py` | ✅ landed (2026-11-17, {pull}`2980`) |
+| 9 | Figures read as MyST reads them, for the forms of item 6 of §8 | 📋 not started |
 
 `candidate` and `not started` are different states, which is why
 §3.6 separates them. A `not started` row is wanted and unscheduled.
@@ -682,6 +683,13 @@ that was taken from one that was dropped.
    thing. A wrong prefix is the one mistake the transform cannot catch, since both anchors
    exist and either resolves, while what row 2 buys grows with the number of citations.
    Rows 2 to 4 now share the scale trigger of §4, decided while planning change 1.
+6. **❓ Open** (🔎 2026-11-17, {pull}`2980` · 🎯 row 9 of §4 · 🎫 {issue}`2983`) — **The
+   figures check reads some valid MyST differently from MyST.** It reads a YAML block of
+   options as flat `key: value` lines, so an `alt` whose value is on the next line, or a
+   block fenced with four dashes, reads as no alt text. It takes the first block of a
+   figure's body as its caption, even a list item or a comment. It stops at a figure's
+   first fault, and its message for a file shown with another directive doesn't name
+   `{figure}`. No specification writes a figure in these forms yet.
 
 (docs-spec-9)=
 ## 9. References

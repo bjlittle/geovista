@@ -106,10 +106,15 @@ GAP = citations.GAP
 MEMBER = citations.MEMBER
 
 
+def located(path: Path) -> str:
+    """Name a file, relative to the repository when inside it."""
+    name = path.relative_to(REPO) if path.is_relative_to(REPO) else path
+    return name.as_posix()
+
+
 def where(path: Path, number: int) -> str:
     """Locate a line as ``path:line``, relative to the repository when inside it."""
-    name = path.relative_to(REPO) if path.is_relative_to(REPO) else path
-    return f"{name.as_posix()}:{number}"
+    return f"{located(path)}:{number}"
 
 
 @pytest.fixture(scope="module")
@@ -2204,12 +2209,6 @@ class Figure(NamedTuple):
     caption: str
 
 
-def located(path: Path) -> str:
-    """Name a file, relative to the repository when inside it."""
-    name = path.relative_to(REPO) if path.is_relative_to(REPO) else path
-    return name.as_posix()
-
-
 def directive_options(body: str) -> tuple[dict[str, str], str]:
     """Split the body of a directive into its options and its content.
 
@@ -2232,7 +2231,7 @@ def directive_options(body: str) -> tuple[dict[str, str], str]:
     else:
         rest = lines
         while rest and (match := FIELD.fullmatch(rest[0].strip())):
-            found[match["key"]] = (match["value"] or "").strip()
+            found[match["key"]] = (match["value"] or "").strip().strip("\"'")
             rest = rest[1:]
     return found, "\n".join(rest)
 
@@ -2279,7 +2278,7 @@ def figure_faults(path: Path, text: str) -> list[str]:
         at = f"{where(path, item.line)}: {item.target}"
         name = item.target.removeprefix(own)
         if not item.target.startswith(own) or not name or ".." in name.split("/"):
-            faults.append(f"{at}: outside its own folder")
+            faults.append(f"{at}: not named as {own}<file>")
             continue
         file = folder / name
         seen.add(file)
@@ -2392,18 +2391,19 @@ def test_figure_faults_finds_a_figure_without_alt_text_or_a_caption(tmp_path):
             figure(f"{DEMO_FIGURES}/a.png", alt=None),
             figure(f"{DEMO_FIGURES}/b.png", alt=""),
             figure(f"{DEMO_FIGURES}/c.png", caption=""),
+            figure(f"{DEMO_FIGURES}/d.png", alt='""'),
         ]
     )
-    path = figured(
-        tmp_path, body, {name: png() for name in ("a.png", "b.png", "c.png")}
-    )
+    names = ("a.png", "b.png", "c.png", "d.png")
+    path = figured(tmp_path, body, {name: png() for name in names})
 
     faults = faults_of(path)
 
-    assert len(faults) == 3
+    assert len(faults) == 4
     assert "a.png: has no alt text" in faults[0]
     assert "b.png: has no alt text" in faults[1]
     assert "c.png: has no caption" in faults[2]
+    assert "d.png: has no alt text" in faults[3]
 
 
 def test_figure_faults_finds_a_figure_outside_its_own_folder(tmp_path):
@@ -2414,6 +2414,7 @@ def test_figure_faults_finds_a_figure_outside_its_own_folder(tmp_path):
             figure(other),
             figure(f"/developer/specs/{DEMO_FIGURES}/a.png"),
             figure(f"{DEMO_FIGURES}/../2026-01-02-other-design/a.png"),
+            figure(f"./{DEMO_FIGURES}/a.png"),
         ]
     )
     path = figured(tmp_path, body, {})
@@ -2422,8 +2423,10 @@ def test_figure_faults_finds_a_figure_outside_its_own_folder(tmp_path):
 
     faults = faults_of(path)
 
-    assert len(faults) == 3
-    assert all("outside its own folder" in fault for fault in faults)
+    assert len(faults) == 4
+    assert all(
+        fault.endswith(f"not named as {DEMO_FIGURES}/<file>") for fault in faults
+    )
 
 
 def test_figure_faults_finds_a_file_that_is_not_a_png(tmp_path):

@@ -152,4 +152,6 @@ Push, confirm it with `git ls-remote` (workflow rule 4.6), check `gh pr view 298
 
 ## Follow-ups
 
-None yet.
+The final review found nothing Critical or Important, and each Review Focus point held. Of its eight minor points, {user}`bjlittle` chose to fix four before merge: an empty `:alt: ""` passed, a target written `./figures/<stem>/…` was reported "outside its own folder" (every such fault now reads "not named as `figures/<stem>/<file>`"), `where` repeated `located`, and `docs/AGENTS.md` and §3.5 item 11 were narrower than the code (any fence, any depth). The other four are {issue}`2983`, item 6 of docs spec §8, owed by a new row 9 of §4, `📋 not started`, at {user}`bjlittle`'s choice, so the docs spec reads `🚧 7 of 8 rows · 💡 1` rather than complete.
+
+Three calls of the plan changed in execution, none of them visibly: `Figure` is a `NamedTuple`, not a frozen dataclass, `FIGURES` was dropped since `stray_figures` derives the folder, and a fault of a file in a folder names the file rather than a line of the specification.
