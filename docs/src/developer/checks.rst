@@ -269,8 +269,8 @@ locked.
 
 **Declaring an exception:** None.
 
-**More:** :ref:`Dependabot <gv-developer-codecraft-dependabot>`, and floors spec
-§4.4.
+**More:** :ref:`Dependabot <gv-developer-codecraft-dependabot>`, and
+floors spec §4.4.
 
 
 .. _gv-developer-checks-parallel-safe-extensions:

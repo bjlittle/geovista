@@ -8,9 +8,9 @@
 GeoVista declares each dependency twice, for ``pip`` in "requirements/pypi-*.txt"
 and for ``pixi`` in the dependency tables of "pyproject.toml". CI resolves the
 ``pixi`` floors in the ``floors`` environment, so a ``pip`` floor that differs
-from its ``pixi`` one promises users releases that no job installs (floors spec
-§4.4). ``dependabot`` moves the ``pip`` side alone: its grouped bump in #2219
-raised floors to the newest release, and #2226 then dropped most of them.
+from its ``pixi`` one promises users releases that no job installs
+(floors spec §4.4). ``dependabot`` moves the ``pip`` side alone: its grouped bump
+in #2219 raised floors to the newest release, and #2226 then dropped most of them.
 
 A floor is compared as a version, so ``0.4`` and ``0.4.0`` agree. Only a package
 declared on both sides is compared, as a ``pixi`` declaration with no ``pip``
@@ -153,7 +153,7 @@ def test_every_floor_is_one_the_check_can_read(pip_specs, pixi_specs):
 
 
 def test_every_floor_is_the_same_on_both_sides(pip_specs, pixi_specs):
-    """The floor CI resolves is the floor a user is promised (§2 decision 5)."""
+    """CI resolves the floor a user is promised (floors spec §2 decision 5)."""
     disagreements = _disagreements(pip_specs, pixi_specs)
 
     assert not disagreements, f"floors that differ: {disagreements}. {REMEDY}"

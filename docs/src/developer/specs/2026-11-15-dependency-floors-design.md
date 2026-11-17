@@ -485,10 +485,10 @@ Each row follows ledger spec §3.4.
 | §2 decision 2 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_floors.py` |
 | §2 decision 3 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 4 | ⏳ pending | |
-| §2 decision 5 | ⏳ pending | |
+| §2 decision 5 | ✅ verified (2026-11-17, {pull}`2985`) | `tests/test_dependency_floors.py` |
 | §2 decision 6 | ⏳ pending | |
 | §2 decision 7 | ⏳ pending | |
 | §2 decision 8 | ⏳ pending | |
 | §2 decision 9 | ✅ verified (2026-11-16, {pull}`2974`) | `tests/test_python_support.py` |
 | §2 decision 10 | ⏳ pending | |
-| §2 decision 11 | ⏳ pending | |
+| §2 decision 11 | ✍️ signed off (2026-11-17, {user}`bjlittle`, {pull}`2985`) | Checked in review that `tests floors` is a required status check of the branch protection of `main`, added once row 1 landed. |
