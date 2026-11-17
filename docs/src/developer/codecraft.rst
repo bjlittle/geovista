@@ -77,6 +77,12 @@ and ``semver`` (default) for our ``pixi`` package dependencies.
     ``pull-request``, then run ``pixi update <package>`` so that the lock
     reaches the new release.
 
+    ``dependabot`` can also move a ``pip`` floor, as its grouped bump in
+    :pull:`2219` did. The
+    :ref:`Dependency Floors <gv-developer-checks-dependency-floors>` check then
+    fails on that :fa:`code-pull-request` ``pull-request``, and the floor is put
+    back there, to match its ``pixi`` floor.
+
 
 .. _gv-developer-codecraft-generative-ai:
 .. _tippy-gv-developer-codecraft-generative-ai:
