@@ -1,0 +1,4 @@
+The ``tests`` job of ``ci-tests.yml``, ``ci-tests-pypi.yml`` and ``ci-tests-lock.yml``
+no longer set ``ALLOW_PLOTTING``. ``pyvista`` reads it only to decide whether to warn
+that no X server is running, and skips that warning when ``DISPLAY`` is set, which
+``xvfb-run`` does in every one of these jobs. (:user:`claude`)

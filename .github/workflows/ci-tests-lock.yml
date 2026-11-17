@@ -34,7 +34,6 @@ jobs:
     runs-on: "${{ matrix.os }}"
 
     env:
-      ALLOW_PLOTTING: true
       PY_COLORS: "1"
 
     strategy:
