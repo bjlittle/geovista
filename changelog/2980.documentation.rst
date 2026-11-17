@@ -1,0 +1,6 @@
+The conventions test now checks the figures of the design specifications. Each
+figure sits in its specification's own folder, is a PNG of 150 KB or less, and is
+shown with alt text and a caption, and a figure file that nothing shows fails the
+test, as does a folder left behind by a renamed specification.
+This lands row 8 of docs spec §4.
+(:user:`claude`)
