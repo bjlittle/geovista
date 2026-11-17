@@ -321,13 +321,12 @@ thread, as {issue}`2935` and {issue}`2938` did.
 
 ### 5.5 🤖 Attribute Every Inline Review Comment
 
-🤝 Agreed (2026-11-17, {user}`bjlittle`, {pull}`2985`)
+🤝 Agreed (2026-11-17, {user}`bjlittle`, {pull}`2986`)
 
 Every inline comment an agent posts on a pull request carries clear attribution
 naming the agent, including replies that verify a fix; e.g., Codex ends each with
 "🤖 Reviewed by Codex" so the reader can identify who wrote it when GitHub shows
-the repository owner's account. Requested in the review conversation following
-{pull}`2985`.
+the repository owner's account.
 
 ## 6. Other Projects
 

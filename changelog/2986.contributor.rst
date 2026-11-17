@@ -1,0 +1,3 @@
+Inline pull request comments from AI agents now name the agent that wrote them,
+including replies that verify a review fix. This is recorded in workflow rule 5.5.
+(:user:`claude`)
