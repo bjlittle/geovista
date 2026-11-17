@@ -319,6 +319,16 @@ whether the finding is fixed there or deferred, and raises the issue for deferre
 work under rule 4.5. An issue raised during a review splits a finding from its
 thread, as {issue}`2935` and {issue}`2938` did.
 
+### 5.5 🤖 Attribute Every Inline Review Comment
+
+🤝 Agreed (2026-11-17, {user}`bjlittle`, {pull}`2985`)
+
+Every inline comment an agent posts on a pull request carries clear attribution
+naming the agent, including replies that verify a fix; e.g., Codex ends each with
+"🤖 Reviewed by Codex" so the reader can identify who wrote it when GitHub shows
+the repository owner's account. Requested in the review conversation following
+{pull}`2985`.
+
 ## 6. Other Projects
 
 ### 6.1 🤖 Disclose an Agent's Hand in Another Project's Issue
