@@ -2269,6 +2269,11 @@ def figure_faults(path: Path, text: str) -> list[str]:
     ``figures/<stem>/``, exists, and has alt text and a caption. Every file in
     that folder, at any depth, is shown by a figure, is a PNG by its name and its
     signature, and is no larger than :data:`FIGURE_LIMIT`.
+
+    A target is read only in that form: what follows the folder is a relative
+    path with no empty, ``.`` or ``..`` part. An absolute remainder, as after
+    ``figures/<stem>//``, would otherwise replace the folder when joined to it,
+    and check a file outside it.
     """
     own = f"figures/{path.stem}/"
     folder = path.parent / own
@@ -2276,11 +2281,11 @@ def figure_faults(path: Path, text: str) -> list[str]:
     seen = set()
     for item in shown(text):
         at = f"{where(path, item.line)}: {item.target}"
-        name = item.target.removeprefix(own)
-        if not item.target.startswith(own) or not name or ".." in name.split("/"):
+        parts = item.target.removeprefix(own).split("/")
+        if not item.target.startswith(own) or {"", ".", ".."} & set(parts):
             faults.append(f"{at}: not named as {own}<file>")
             continue
-        file = folder / name
+        file = folder.joinpath(*parts)
         seen.add(file)
         if not file.is_file():
             faults.append(f"{at}: does not exist")
@@ -2420,6 +2425,35 @@ def test_figure_faults_finds_a_figure_outside_its_own_folder(tmp_path):
     path = figured(tmp_path, body, {})
     (tmp_path / other).parent.mkdir(parents=True)
     (tmp_path / other).write_bytes(png())
+
+    faults = faults_of(path)
+
+    assert len(faults) == 4
+    assert all(
+        fault.endswith(f"not named as {DEMO_FIGURES}/<file>") for fault in faults
+    )
+
+
+def test_figure_faults_reads_a_target_only_in_its_own_form(tmp_path):
+    """A target that only normalises to a file in its folder is not named as one.
+
+    An absolute remainder after the folder would otherwise check a file outside
+    it, which escapes the PNG and size checks too, and an empty or ``.`` part
+    names a file in the folder in some other form.
+    """
+    outside = tmp_path / "outside.png"
+    outside.write_bytes(bytes(FIGURE_LIMIT + 9))
+    body = "\n".join(
+        [
+            figure(f"{DEMO_FIGURES}/{outside.as_posix()}"),
+            figure(f"{DEMO_FIGURES}/./a.png"),
+            figure(f"{DEMO_FIGURES}/sub//b.png"),
+            figure(f"{DEMO_FIGURES}/sub/"),
+            figure(f"{DEMO_FIGURES}/a.png"),
+            figure(f"{DEMO_FIGURES}/sub/b.png"),
+        ]
+    )
+    path = figured(tmp_path, body, {"a.png": png(), "sub/b.png": png()})
 
     faults = faults_of(path)
 
