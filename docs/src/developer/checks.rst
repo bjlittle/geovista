@@ -44,6 +44,8 @@ Where It Failed
       - none
     * - :ref:`Dependency Ceilings <gv-developer-checks-dependency-ceilings>`
       - none
+    * - :ref:`Dependency Floors <gv-developer-checks-dependency-floors>`
+      - none
     * - :ref:`Parallel-Safe Extensions <gv-developer-checks-parallel-safe-extensions>`
       - none
     * - :ref:`Specification Conventions <gv-developer-checks-spec-conventions>`
@@ -226,12 +228,49 @@ the unit tests, including those on a ``dependabot`` pull request.
 ``pixi`` ceiling to match, on the same pull request, then run ``pixi update
 <package>`` and confirm the new version with ``pixi list``. ``pixi lock`` alone
 keeps the version already locked. A package conda-forge distributes under
-another name, such as ``h3-py`` for ``h3``, goes in ``RENAMED``. That is a
-mapping, not an exception.
+another name, such as ``h3-py`` for ``h3``, goes in ``RENAMED`` in
+:bash:`tests/conftest.py`. That is a mapping, not an exception.
 
 **Declaring an exception:** None.
 
 **More:** :ref:`Dependabot <gv-developer-codecraft-dependabot>`.
+
+
+.. _gv-developer-checks-dependency-floors:
+.. _tippy-gv-developer-checks-dependency-floors:
+
+Dependency Floors
+-----------------
+
+**The rule:** Every requirement in :bash:`requirements/pypi-*.txt` declares a
+floor, equal to the floor of each ``pixi`` declaration of the same package in
+``pyproject.toml``. Floors are compared as versions, so ``0.4`` and ``0.4.0``
+agree. A ``pixi`` dependency with no ``pip`` counterpart, such as ``python``,
+needs no ``pip`` floor.
+
+**Why:** The ``tests floors`` check runs the suite on every pull request in the
+``floors`` environment, which resolves the ``pixi`` floors. A ``pip`` floor that
+differs promises users releases that no job installs, and a line without one
+admits every release on PyPI. ``dependabot`` edits only the ``pip`` side, and has
+moved floors before: its grouped bump in :pull:`2219` raised several to the
+newest release, and :pull:`2226` then dropped most of them.
+
+**What enforces it:** :bash:`tests/test_dependency_floors.py`, in every run of
+the unit tests, including those on a ``dependabot`` pull request. A floor it
+cannot read, written with ``>``, ``==``, ``~=`` or a wildcard, is reported
+rather than passed over.
+
+**When it fails:** The message names each package, with its floor in every file
+and table that declares it. Put back a floor that a ``dependabot`` pull request
+moved, on that pull request. To raise a floor, raise it on both sides in one
+commit and run ``pixi lock``. Lowering one also needs ``pixi update
+--environment floors <package>``, since ``pixi lock`` keeps the version already
+locked.
+
+**Declaring an exception:** None.
+
+**More:** :ref:`Dependabot <gv-developer-codecraft-dependabot>`, and floors spec
+§4.4.
 
 
 .. _gv-developer-checks-parallel-safe-extensions:
