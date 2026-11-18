@@ -236,11 +236,11 @@ as docs spec §2 decision 6 requires of every row.
 
 When the work belongs to another specification's row, the item stays where it was written,
 and is owed by a row of its own roadmap whose scope names the other:
-row 5 of heights spec §9 is scoped *landing with row 4 of globe spec §9*, and the two land
-in one pull request, as row 6 of ledger spec §8 and row 5 of §8 did in {pull}`2826`. When
-the work lies outside every roadmap, a `💡 candidate` row waits for it, as
-row 15 of crs spec §10 waits on the regions design. 🎯 never names another specification's row, so the landing gate of §3.5 reads one
-roadmap (§7 item 11).
+row 5 of heights spec §9 carries `· 🔗 with row 2 of layers spec §9` in its scope, and the
+two land in one pull request, as row 6 of ledger spec §8 and row 5 of §8 did in
+{pull}`2826`. When the work lies outside every roadmap, a `💡 candidate` row waits for it, as
+row 15 of crs spec §10 waits on the regions design. 🎯 never names another specification's
+row, so the landing gate of §3.5 reads one roadmap (§7 item 11).
 
 (items-spec-3-5)=
 ### 3.5 Landing a Row
@@ -549,19 +549,18 @@ Each carries the status grammar of §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The items: citations of items and rows with their anchors (delivering row 5 of citation spec §9), the entry of §3.2, the suite of §3.7, the label, what GitHub answers (§3.8), the parents' notes, the documentation of §3.12, this specification's own Verification table and items, and the docs, zlevel, checks and citation specifications brought in | ✅ landed (2026-11-02, {pull}`2807`) |
-| 2 | The report's roadmap and open items (§3.9) | ✅ landed (2026-11-03, {pull}`2846`) |
-| 3 | The typing specification's items brought in, with the `candidate` rows they wait on | ✅ landed (2026-11-04, {pull}`2850`) |
-| 4 | The crs specification's items brought in | ✅ landed (2026-11-04, {pull}`2873`) |
-| 5 | The globe, scene, heights and ledger specifications' items brought in | ✅ landed (2026-11-03, {pull}`2826`) |
+| 2 | The report's roadmap and open items (§3.9) · 🔗 after row 1 | ✅ landed (2026-11-03, {pull}`2846`) |
+| 3 | The typing specification's items brought in, with the `candidate` rows they wait on · 🔗 after row 1 | ✅ landed (2026-11-04, {pull}`2850`) |
+| 4 | The crs specification's items brought in · 🔗 after row 1 | ✅ landed (2026-11-04, {pull}`2873`) |
+| 5 | The globe, scene, heights and ledger specifications' items brought in · 🔗 after row 1 | ✅ landed (2026-11-03, {pull}`2826`) |
 | 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | ✅ landed (2026-11-04, {pull}`2878`) |
-| 7 | A row landing with another specification's row checked to land with it, §7 item 14 | ✅ landed (2026-11-05, {pull}`2879`) |
-| 8 | The order between rows checked across the specifications, §7 item 15 | 📋 not started |
+| 7 | A row landing with another specification's row checked to land with it, §7 item 14 · 🔗 after row 6 | ✅ landed (2026-11-05, {pull}`2879`) |
+| 8 | The order between rows checked across the specifications, §7 item 15 · 🔗 with row 2 of order spec §9 | 📋 not started |
 
-Statuses follow docs spec §3.6. Rows 2 to 5 each need row 1, and can land in any order
-after it. Rows 3 to 5 each raise the issues their specifications' items lack, and need
-{user}`bjlittle`'s judgement on the row that owes each item (§3.10). Row 7 follows row 6, as
-the check that settling §7 item 11 called for (§3.4). Row 8 extends row 7's
-check to every ordering phrase.
+Statuses follow docs spec §3.6. Rows 2 to 5 can land in any order. Rows 3 to 5 each raise
+the issues their specifications' items lack, and need {user}`bjlittle`'s judgement on the
+row that owes each item (§3.10). Row 7 is the check that settling §7 item 11 called for
+(§3.4). Row 8 extends row 7's check to every ordering phrase.
 
 (items-spec-9)=
 ## 9. References

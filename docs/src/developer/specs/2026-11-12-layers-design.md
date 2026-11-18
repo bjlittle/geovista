@@ -555,19 +555,18 @@ Each carries the status grammar of docs spec §3.6.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Tiers: the built-in tiers, `tier=`, `above=` and `below=`, `add_tier`, `alias_tier`, `GeoPlotter(tiers=...)`, `GeoPlotter.tiers` and `GeoPlotter.tier_aliases`, the defaults of each method, the refusals, and the bias by rank on a map | 📋 not started |
-| 2 | The globe: the bias by rank, the base layer lowered by its actor, the horizon clip of each layer following the camera, the camera below the surface, labels (§8 item 1), and §3's measures as tests | 📋 not started |
-| 3 | The lift, on the globe and on a map | 📋 not started |
-| 4 | The web: the bias written into each `.vtksz` of the documentation build, and the issue and pull request upstream | 📋 not started |
+| 2 | The globe: the bias by rank, the base layer lowered by its actor, the horizon clip of each layer following the camera, the camera below the surface, labels (§8 item 1), and §3's measures as tests · 🔗 after row 1 | 📋 not started |
+| 3 | The lift, on the globe and on a map · 🔗 after row 2 | 📋 not started |
+| 4 | The web: the bias written into each `.vtksz` of the documentation build, and the issue and pull request upstream · 🔗 after row 3 | 📋 not started |
 | 5 | A clip on the web | 💡 candidate: trame's viewer offers a hook, or geovista ships a viewer |
 | 6 | Data draped over terrain | 💡 candidate: a user asks for it, which no check can observe |
 | 7 | The interim bias of row 4 removed | 💡 candidate: trame writes the bias |
 | 8 | The view from below the surface | 💡 candidate: a scientist shows a scene from below the surface |
 
-Statuses follow docs spec §3.6. Rows 1 to 4 come in order, each planned once the rows before it
-have landed, and together they are row 4 of globe spec §9, which lands with row 4 here. Row 1
+Statuses follow docs spec §3.6. Together, rows 1 to 4 are row 4 of globe spec §9. Row 1
 brings the bias to the map alone: on the globe it arrives in row 2 with the clip, so that no
-release pulls the far side into view. Row 5 of heights spec §9 lands with row 2. Row 2 needs
-a renderer in CI, which the image tests already have.
+release pulls the far side into view. Row 2 needs a renderer in CI, which the image tests
+already have.
 
 Each row sets to 0 the built-in offset that its own mechanism replaces: row 1 the coastlines'
 lift on a map, and row 2 the base layer's and the lines' z-levels on the globe, so that no

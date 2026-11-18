@@ -396,16 +396,16 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Queries: the test of §4.1 and the refusal of an infinite coordinate, `KDTree.query` answering that a missing point has no neighbour (§4.2), and `find_nearest_cell` and `GeoPlotter.view_poi` refusing a missing position (§4.3) | ✅ landed (2026-11-06, {pull}`2889`) |
-| 2 | Geodesic shapes: `geodesic.line`, `BBox` and `wedge` refusing a missing position (§4.4) | ✅ landed (2026-11-07, {pull}`2893`) |
-| 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) | ✅ landed (2026-11-08, {pull}`2899`) |
-| 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) | ✅ landed (2026-11-09, {pull}`2908`) |
-| 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) | ✅ landed (2026-11-09, {pull}`2912`) |
+| 2 | Geodesic shapes: `geodesic.line`, `BBox` and `wedge` refusing a missing position (§4.4) · 🔗 after row 1 | ✅ landed (2026-11-07, {pull}`2893`) |
+| 3 | Point clouds: `Transform.from_points` and `GeoPlotter.add_points` dropping a missing point, and its entries in every array given for each point, with a warning (§4.5) · 🔗 after row 1 | ✅ landed (2026-11-08, {pull}`2899`) |
+| 4 | Meshes: `Transform.from_unstructured`, `from_2d` and the `Transform` constructor reading the test of §4.1, `from_1d` refusing a NaN bound, and `to_structured_grid` refusing a missing position (§4.6) · 🔗 after row 1 | ✅ landed (2026-11-09, {pull}`2908`) |
+| 5 | Conversions: `transform_points` and `vectors_to_cartesian` returning NaN for a missing position (§4.7) · 🔗 after row 1 | ✅ landed (2026-11-09, {pull}`2912`) |
 | 6 | Wedge width: `geodesic.wedge` refusing a wedge of no width, as the message of its check says (§8 item 3) | ✅ landed (2026-11-08, {pull}`2905`) |
-| 7 | Line speed: `npoints` and `npoints_by_idx` testing plain numbers for a missing position without building masked arrays, so `geodesic.line` builds as fast as before row 5 (§8 item 5) | ✅ landed (2026-11-09, {pull}`2922`) |
+| 7 | Line speed: `npoints` and `npoints_by_idx` testing plain numbers for a missing position without building masked arrays, so `geodesic.line` builds as fast as it did before {pull}`2912` (§8 item 5) · 🔗 after row 5 | ✅ landed (2026-11-09, {pull}`2922`) |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own, as
-{user}`bjlittle` chose on 2026-11-06. Row 1 brings the test of §4.1, which the others use,
-so rows 2 to 5 each need row 1, row 6 needs none, and row 7 needs row 5. {issue}`2849` closes when rows 1 and 2 have landed.
+{user}`bjlittle` chose on 2026-11-06. Row 1 brings the test of §4.1, which rows 2 to 5 use,
+and row 6 does not. {issue}`2849` closes when rows 1 and 2 have landed.
 
 Row 4 changes the mesh built from a NaN coordinate: the faces that use its point are
 dropped, with a warning, where today they are built with a NaN vertex.

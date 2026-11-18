@@ -652,10 +652,10 @@ Each carries the status grammar of docs spec §3.6.
 | # | Scope | Status |
 |---|---|---|
 | 1 | Units: `geovista.units`, with `pint` and `pint-cf` | ✅ landed (2026-10-27, {pull}`2754`) |
-| 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6, by rows 1 and 2 of scene spec §9 | ✅ landed (2026-10-28, {pull}`2766`) |
-| 3 | Heights as data: `height` and `depth`, the vertical mapping, positions on the globe and on a map, refusals, and `to_structured_grid` reading its levels as heights, by rows 1 and 2 of heights spec §9 | ✅ landed (2026-11-11, {pull}`2942`) |
-| 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, the lift, and the measures of §3.5 as tests, by rows 1 to 4 of layers spec §9 | 📋 not started |
-| 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification | 📋 not started |
+| 2 | The globe on the scene: the globe model, `GeoPlotter(globe=...)`, every built-in layer at its radius, and the round trip of crs spec §6, by rows 1 and 2 of scene spec §9 · 🔗 after row 1 · 🔗 with row 2 of scene spec §9 | ✅ landed (2026-10-28, {pull}`2766`) |
+| 3 | Heights as data: `height` and `depth`, the vertical mapping, positions on the globe and on a map, refusals, and `to_structured_grid` reading its levels as heights, by rows 1 and 2 of heights spec §9 · 🔗 after row 2 · 🔗 with row 2 of heights spec §9 · 🔗 before 0.6 | ✅ landed (2026-11-11, {pull}`2942`) |
+| 4 | Layers: the order, the base layer's lowering, the lines' depth bias, depth bias on a map, the lift, and the measures of §3.5 as tests, by rows 1 to 4 of layers spec §9 · 🔗 after row 3 · 🔗 with row 4 of layers spec §9 | 📋 not started |
+| 5 | Removing `zlevel` and `zscale`, migrating the gallery and tests, and retiring the planar z-levels specification · 🔗 after row 4 | 📋 not started |
 | 6 | A vertical scale for the viewer | 💡 candidate: a scene with heights that a scientist shows |
 | 7 | Heights given for each cell | 💡 candidate: a user asks for it, which no check can observe |
 | 8 | Heights against another vertical datum | 💡 candidate: a user asks for it, which no check can observe |
@@ -663,10 +663,9 @@ Each carries the status grammar of docs spec §3.6.
 | 10 | The render radius at the Earth's radius: picking, clipping planes and interaction measured, with `remesh` at that radius ({issue}`2779`) | 📋 not started |
 
 Statuses follow docs spec §3.6. Each row that changes the public API updates the README's
-examples in the same pull request ({issue}`2756`). Rows 1 to 5 come in order, and each
-is planned once the rows before it have landed. Row 4 needs a renderer in CI, which the
+examples in the same pull request ({issue}`2756`). Row 4 needs a renderer in CI, which the
 image tests already have. Row 5 is breaking, and carries a `breaking` fragment beside its
-own. Row 2 of the parent's roadmap lands with row 5 here. Rows 6 to 9 are candidates: row 6
+own. Rows 6 to 9 are candidates: row 6
 waits on a scene with heights that a scientist shows, and rows 7 to 9 each wait on a user
 asking for them. Row 10 is not started. It measures picking, clipping planes and
 interaction at the Earth's render radius, and `remesh` there ({issue}`2779`), before the

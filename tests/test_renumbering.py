@@ -1265,6 +1265,33 @@ def test_a_row_rescoped_in_place_passes(guard):
     assert frozen(guard, base, head) == []
 
 
+def test_a_row_gaining_an_ordering_pairs_with_itself(guard):
+    """A short scope gaining orderings keeps its row (order spec §3.3)."""
+    link = "\N{MIDDLE DOT} \N{LINK SYMBOL}"
+    globe = f"row 3 of globe spec {SECTION}9"
+    base = roadmap(("1", "Model"), ("2", "Lift"), ("3", "Web"))
+    head = roadmap(
+        ("1", "Model"),
+        ("2", f"Lift {link} with or after {globe}"),
+        ("3", f"Web {link} after row 2 {link} before 0.6"),
+    )
+
+    assert frozen(guard, base, head) == []
+
+
+def test_roadmap_rows_titles_a_row_by_its_scope_alone(guard):
+    """A row's title is its scope, less its orderings."""
+    text = spec(
+        (
+            "9",
+            "Roadmap",
+            roadmap(("1", "Lift \N{MIDDLE DOT} \N{LINK SYMBOL} after row 2")),
+        )
+    )
+
+    assert guard.roadmap_rows(text)["1"].title == "Lift"
+
+
 def test_a_section_sharing_its_title_pairs_with_the_one_whose_text_it_has(guard):
     """Two subsections titled alike: delete the first, and the second moves up."""
     first = "Covers the first design and nothing of the second."

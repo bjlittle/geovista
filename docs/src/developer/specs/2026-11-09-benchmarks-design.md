@@ -353,12 +353,12 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The plugins (§4.1), `benchmarks/` and its conftest with the `geodesic` benchmarks (§4.2, §4.3), the workflow (§4.4), and the tasks and the guide (§4.5) | ✅ landed (2026-11-10, {pull}`2925`) |
-| 2 | The `bridge` and `transform` benchmarks (§4.3) | ✅ landed (2026-11-10, {pull}`2927`) |
-| 3 | The `common`, `core`, `search` and `gridlines` benchmarks (§4.3) | ✅ landed (2026-11-10, {pull}`2936`) |
+| 2 | The `bridge` and `transform` benchmarks (§4.3) · 🔗 after row 1 | ✅ landed (2026-11-10, {pull}`2927`) |
+| 3 | The `common`, `core`, `search` and `gridlines` benchmarks (§4.3) · 🔗 after row 1 | ✅ landed (2026-11-10, {pull}`2936`) |
 | 4 | Each benchmark's peak memory compared with the base commit's (§4.6) | 💡 candidate |
 
 Statuses follow docs spec §3.6. Each row lands in a pull request of its own. Rows 2 and 3
-need row 1, and not each other. Row 1 starts with `geodesic`, whose `line` benchmark covers
+do not need each other. Row 1 starts with `geodesic`, whose `line` benchmark covers
 the path {issue}`2913` slowed and {pull}`2922` restored, so a return of that cost is caught.
 
 Row 4 is wanted when a regression in memory is found that stayed under its ceiling. That

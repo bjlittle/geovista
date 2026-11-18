@@ -3654,9 +3654,6 @@ def item_graduated(path: Path, text: str, names: Namespace) -> list[str]:
     return problems
 
 
-#: A row's scope naming the row it lands with (items spec §3.4).
-LANDING_WITH = re.compile(r"\blanding with\s+(?P<rest>.*)$", flags=re.IGNORECASE)
-
 #: A pull request a status cites: by role, in this repository, or by link, in any.
 PULL_ROLE = re.compile(r"\{pull\}`(?P<number>\d+)`")
 PULL_LINK = re.compile(
@@ -3682,65 +3679,66 @@ def landing_together(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     """Find a row landing with another that landed apart from it, items spec §7 item 14.
 
     A row owed an item whose work is another specification's row names that row
-    in its scope, *landing with* it (items spec §3.4), and the two land in one pull
-    request. So both have landed, by the same pull request, which each names, or
-    neither has. A row lands with one other, so a range is refused. A scope that
-    speaks of landing with a row without citing one, or quotes the words in code,
-    holds no check.
+    in its Scope cell, ``· 🔗 with`` it (items spec §3.4, order spec §4.1), and
+    the two land in one pull request. So both have landed, by the same pull
+    request, which each names, or neither has. A row lands with one other, so a
+    range is refused. An ordering that cites no row, or one quoted in code, holds
+    no check.
     """
     owners = {prefix: path for path, prefix in names.owners.items()}
     problems = []
     for path, text in texts.items():
         owner = names.owners.get(path)
         for row in citations.rows(text):
-            # code is blanked first, as scan() expects, so quoted words declare nothing
-            said = LANDING_WITH.search(citations.prose(row.scope)[0])
-            if said is None:
-                continue
-            found = next(
-                (
-                    c
-                    for c in citations.scan(said["rest"], names.signed, owner)
-                    if c.start == 0 and c.slug is not None
-                ),
-                None,
-            )
-            label = LABEL.match(found.slug) if found is not None else None
-            if label is None or label["row"] is None:
-                continue
-            if found.ends:
-                problems.append(
-                    f"{where(path, row.line)}: row {row.row} lands with {found.text}: "
-                    "cite one row"
+            # split_scope blanks code first, so a quoted ordering declares nothing
+            for clause in citations.split_scope(row.scope)[1]:
+                said = citations.ordering(clause)
+                if said is None or said.relation != "with":
+                    continue
+                found = next(
+                    (
+                        c
+                        for c in citations.scan(said.target, names.signed, owner)
+                        if c.start == 0 and c.slug is not None
+                    ),
+                    None,
                 )
-                continue
-            other_path = owners.get(label["prefix"])
-            other = next(
-                (
-                    r
-                    for r in citations.rows(texts.get(other_path, ""))
-                    if row_anchor(label["prefix"], r.section, r.row) == found.slug
-                ),
-                None,
-            )
-            at = f"{where(path, row.line)}: row {row.row} lands with {found.text}"
-            if other is None:
-                problems.append(f"{at}, which does not exist")
-                continue
-            mine, theirs = (
-                row.status.startswith(LANDED),
-                other.status.startswith(LANDED),
-            )
-            if mine and not theirs:
-                problems.append(f"{at}, which has not landed")
-            elif theirs and not mine:
-                problems.append(f"{at}, which has landed without it")
-            elif mine and not (_pulls(row.status) or _pulls(other.status)):
-                problems.append(
-                    f"{at}, but neither names the pull request they landed in"
+                label = LABEL.match(found.slug) if found is not None else None
+                if label is None or label["row"] is None:
+                    continue
+                if found.ends:
+                    problems.append(
+                        f"{where(path, row.line)}: row {row.row} lands with "
+                        f"{found.text}: cite one row"
+                    )
+                    continue
+                other_path = owners.get(label["prefix"])
+                other = next(
+                    (
+                        r
+                        for r in citations.rows(texts.get(other_path, ""))
+                        if row_anchor(label["prefix"], r.section, r.row) == found.slug
+                    ),
+                    None,
                 )
-            elif mine and _pulls(row.status) != _pulls(other.status):
-                problems.append(f"{at}, which landed in another pull request")
+                at = f"{where(path, row.line)}: row {row.row} lands with {found.text}"
+                if other is None:
+                    problems.append(f"{at}, which does not exist")
+                    continue
+                mine, theirs = (
+                    row.status.startswith(LANDED),
+                    other.status.startswith(LANDED),
+                )
+                if mine and not theirs:
+                    problems.append(f"{at}, which has not landed")
+                elif theirs and not mine:
+                    problems.append(f"{at}, which has landed without it")
+                elif mine and not (_pulls(row.status) or _pulls(other.status)):
+                    problems.append(
+                        f"{at}, but neither names the pull request they landed in"
+                    )
+                elif mine and _pulls(row.status) != _pulls(other.status):
+                    problems.append(f"{at}, which landed in another pull request")
     return problems
 
 
@@ -4053,7 +4051,7 @@ def landing(
     tmp_path: Path, mine: str, theirs: str, scope: str | None = None
 ) -> tuple[dict[Path, str], Namespace]:
     """Write a row landing with another specification's row, with their statuses."""
-    scope = scope or f"Mine, landing with row 1 of other spec {SECTION}2"
+    scope = scope or f"Mine{citations.ORDERING} with row 1 of other spec {SECTION}2"
     header = "| # | Scope | Status |\n|---|---|---|\n"
     other = tmp_path / "2026-01-02-other-design.md"
     other.write_text(
@@ -4137,7 +4135,7 @@ def test_landing_together_knows_a_pull_request_by_any_reference(tmp_path):
 
 def test_landing_together_refuses_a_range(tmp_path):
     """A row lands with one other row, so a range of them is refused."""
-    scope = f"Mine, landing with rows 1 and 2 of other spec {SECTION}2"
+    scope = f"Mine{citations.ORDERING} with rows 1 and 2 of other spec {SECTION}2"
 
     texts, names = landing(tmp_path, NOT_STARTED, NOT_STARTED, scope)
 
@@ -4148,7 +4146,8 @@ def test_landing_together_refuses_a_range(tmp_path):
 
 def test_landing_together_reads_no_declaration_in_code(tmp_path):
     """Quoted in code, the words are an example, and declare nothing."""
-    scope = f"Mine, as `landing with row 1 of other spec {SECTION}2` reads"
+    quoted = f"{citations.ORDERING.strip()} with row 1 of other spec {SECTION}2"
+    scope = f"Mine, as `{quoted}` reads"
     landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
 
     texts, names = landing(tmp_path, landed, NOT_STARTED, scope)
@@ -4158,12 +4157,38 @@ def test_landing_together_reads_no_declaration_in_code(tmp_path):
 
 def test_landing_together_reads_only_a_cited_row(tmp_path):
     """A scope that only speaks of landing with another row holds no check."""
-    scope = "A row landing with another specification's row, checked"
+    scope = f"Mine{citations.ORDERING} with another specification's row"
     texts, names = landing(
         tmp_path, f"{LANDED} (2026-01-01, {{pull}}`7`)", NOT_STARTED, scope
     )
 
     assert landing_together(texts, names) == []
+
+
+def test_landing_together_reads_only_the_cell_form(tmp_path):
+    """A scope still saying *landing with* in words holds no check of its own.
+
+    The prose guard refuses it (order spec §4.5 item 4), so the words are read once.
+    """
+    scope = f"Mine, landing with row 1 of other spec {SECTION}2"
+    landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
+
+    texts, names = landing(tmp_path, landed, NOT_STARTED, scope)
+
+    assert landing_together(texts, names) == []
+
+
+def test_landing_together_reads_every_specification(tmp_path):
+    """A row declared in the last specification read is checked too."""
+    landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
+    texts, names = ordered(
+        tmp_path,
+        [("Mine", NOT_STARTED)],
+        [(f"Theirs{citations.ORDERING} with row 1 of demo spec {SECTION}2", landed)],
+    )
+
+    assert list(texts)[-1].name.startswith("2026-01-02")
+    assert len(landing_together(texts, names)) == 1
 
 
 def test_every_row_landing_with_another_lands_with_it(specs):
@@ -4309,3 +4334,628 @@ def test_every_status_sums_its_roadmap(spec):
 
     assert statuses, f"{spec.name} has no roadmap"
     assert citations.roadmap_status(found) == expected
+
+
+#: Orderings between roadmap rows (order spec §4.5): an ordering's opener, built by
+#: name, as the grammar builds it, and the header of a roadmap.
+LINKED = citations.ORDERING
+ROADMAP_HEADER = "| # | Scope | Status |\n|---|---|---|\n"
+
+#: A bare row of an ordering's own roadmap (order spec §2 decision 4).
+BARE_ROW = re.compile(r"row\s+(?P<row>\d+[a-z]?)")
+
+
+def ordering_target(
+    said: citations.Ordering,
+    row: Row,
+    rows: Iterable[Row],
+    owner: str | None,
+    names: Namespace,
+) -> tuple[str | None, str | None]:
+    """Read what an ordering names: the anchor of a row or a release, or a fault.
+
+    A bare row names a row of the same roadmap. A row of another specification is
+    cited in full, and whether its anchor exists is the resolution rule's. A range
+    is refused, and only ``before`` takes a release (order spec §4.1, §4.4).
+    """
+    target = said.target
+    named = f'"{said.relation} {target}"'
+    bare = BARE_ROW.fullmatch(target)
+    found = next(
+        (
+            c
+            for c in citations.scan(target, names.signed, owner)
+            if c.start == 0 and c.end == len(target) and c.slug is not None
+        ),
+        None,
+    )
+    label = LABEL.match(found.slug) if found is not None else None
+    key, fault = None, None
+    if citations.RELEASE.fullmatch(target):
+        if said.relation == "before":
+            key = f"release {target}"
+        else:
+            fault = f"{named}: only before takes a release"
+    elif target.startswith("rows ") or (found is not None and found.ends):
+        fault = f"{named}: name one row"
+    elif bare is not None and owner is not None:
+        if any(r.section == row.section and r.row == bare["row"] for r in rows):
+            key = row_anchor(owner, row.section, bare["row"])
+        else:
+            fault = f"{named}: row {bare['row']} does not exist"
+    elif label is not None and label["row"] is not None:
+        key = found.slug
+    else:
+        fault = f"{named} names no row"
+    return key, fault
+
+
+def ordering_form(path: Path, text: str, names: Namespace) -> list[str]:
+    """Find each ordering of a roadmap that is not well formed (order spec §4.5).
+
+    Item 1: each clause after a ``· 🔗`` opens with one of the four relations and
+    names one row, or a release after ``before``. Item 2: a bare row is a row of
+    the same roadmap.
+    """
+    owner = names.owners.get(path)
+    rows = citations.rows(text)
+    problems = []
+    for row in rows:
+        for clause in citations.split_scope(row.scope)[1]:
+            at = f"{where(path, row.line)}: row {row.row}"
+            said = citations.ordering(clause)
+            if said is None:
+                problems.append(
+                    f'{at}: "{clause}" is no ordering: write after, before, with or '
+                    "with or after, then one row"
+                )
+                continue
+            key, fault = ordering_target(said, row, rows, owner, names)
+            if owner is not None and key == row_anchor(owner, row.section, row.row):
+                fault = f'"{clause}" orders row {row.row} against itself'
+            # the same roadmap is read from the anchor, however the row is named
+            own = f"{owner}-{row.section.replace('.', '-')}-row-"
+            if (
+                fault is None
+                and said.relation == "before"
+                and owner is not None
+                and key is not None
+                and key.startswith(own)
+            ):
+                fault = (
+                    f'"{clause}": within one roadmap, the later row writes it, as '
+                    f'"after row {row.row}" on row {key.removeprefix(own)} '
+                    "(order spec §4.3)"
+                )
+            if fault is not None:
+                problems.append(f"{at}: {fault}")
+    return problems
+
+
+def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
+    """Find an ordering written twice, item 3 of order spec §4.5.
+
+    Each ordering is read as an edge: ``after`` X on Y and ``before`` Y on X are
+    X before Y, ``with`` is the pair either way round, ``with or after`` keeps its
+    direction, and a release is the row's own. Two equal edges are one ordering
+    written twice, on one row or on both of its rows.
+    """
+    seen: set[tuple[str, ...]] = set()
+    problems = []
+    for path, text in texts.items():
+        owner = names.owners.get(path)
+        rows = citations.rows(text)
+        for row in rows:
+            mine = row_anchor(owner, row.section, row.row) if owner else row.row
+            for clause in citations.split_scope(row.scope)[1]:
+                said = citations.ordering(clause)
+                if said is None:
+                    continue
+                key, _ = ordering_target(said, row, rows, owner, names)
+                if key is None:
+                    continue
+                edge: tuple[str, ...]
+                if said.relation == "with":
+                    edge = ("with", *sorted((mine, key)))
+                elif said.relation == "before":
+                    edge = ("after", mine, key)
+                elif said.relation == "after":
+                    edge = ("after", key, mine)
+                else:
+                    edge = (said.relation, key, mine)
+                if edge in seen:
+                    problems.append(
+                        f'{where(path, row.line)}: row {row.row}: "{clause}" is '
+                        "written twice: write an ordering once, on the row its reason "
+                        "belongs to"
+                    )
+                seen.add(edge)
+    return problems
+
+
+#: An ordering written in words, before a row: the words of order spec §4.2's last
+#: column and their past tense, *waits on*, and *follows* and *builds on*
+#: (order spec §4.5 item 4).
+ORDER_WORDS = re.compile(
+    r"\b(?:landed\s+(?:with\s+or\s+after|with|before|after)"
+    r"|lands?\s+with\s+or\s+after|lands?\s+with|landing\s+with|lands?\s+before"
+    r"|lands?\s+after|before|after|needs?|once|waits?\s+on|follows?|builds?\s+on)"
+    r"\s+rows?\s+\d+[a-z]?",
+    flags=re.IGNORECASE,
+)
+
+
+def plain(text: str) -> str:
+    """Read inline markdown as its text: emphasis and links read, code left out.
+
+    Each line break is kept, so a match is placed on the line it starts on.
+    """
+    parsed = MarkdownIt("commonmark").parseInline(text)
+    found = []
+    for token in (parsed[0].children if parsed else None) or []:
+        if token.type == "text":
+            found.append(token.content)
+        elif token.type in {"softbreak", "hardbreak"}:
+            found.append("\n")
+        elif token.type == "code_inline":
+            found.append(" ")
+    return "".join(found)
+
+
+def ordering_in_prose(path: Path, text: str) -> list[str]:
+    """Find an ordering written in prose, item 4 of order spec §4.5.
+
+    The guard reads each scope before its first ``· 🔗``, and each paragraph under
+    a roadmap up to the next heading, whole, since prose wraps between the words
+    and the row. It reads the markdown's text, so emphasis and links hide nothing,
+    and code is left out, so quoted words order nothing.
+    """
+    remedy = f'write it in its row\'s Scope cell, as "{LINKED.strip()} after row 1"'
+    problems = []
+    for row in citations.rows(text):
+        scope = citations.prose(citations.split_scope(row.scope)[0])[0]
+        if citations.LINK in scope:
+            opener = LINKED.strip()
+            problems.append(
+                f"{where(path, row.line)}: row {row.row}: a {citations.LINK} outside "
+                f'an opener: open each ordering with "{opener}", a space either '
+                "side of the dot (order spec §4.1)"
+            )
+        problems.extend(
+            f'{where(path, row.line)}: row {row.row}: "{m[0]}" orders rows in its '
+            f"scope: {remedy}"
+            for m in ORDER_WORDS.finditer(plain(citations.split_scope(row.scope)[0]))
+        )
+    under, table = False, []
+    paragraph: list[tuple[int, str]] = []
+    for number, line in [*read_lines(text), (0, "")]:
+        if line.startswith("|"):
+            table.append(line)
+            continue
+        if table:
+            under = roadmap_header(citations.cells(table[0]))
+            table = []
+        if HEADING.match(line):
+            under = False
+        if under and line.strip():
+            paragraph.append((number, line))
+            continue
+        joined = plain("\n".join(text for _, text in paragraph))
+        for match in ORDER_WORDS.finditer(joined):
+            at = paragraph[joined.count("\n", 0, match.start())][0]
+            words = " ".join(match[0].split())
+            problems.append(
+                f'{where(path, at)}: "{words}" orders rows in prose: {remedy}'
+            )
+        paragraph = []
+    return problems
+
+
+def ordered(
+    tmp_path: Path,
+    mine: Iterable[tuple[str, str]],
+    theirs: Iterable[tuple[str, str]] = (("Theirs", NOT_STARTED),),
+    header: str = ROADMAP_HEADER,
+) -> tuple[dict[Path, str], Namespace]:
+    """Write a demo and an other specification, each a roadmap in its second section.
+
+    Each row is its scope and its status, numbered from 1 in the order given. A
+    header of more than three columns fills each extra one with ``0``.
+    """
+    extra = " 0 |" * (header.split("\n", maxsplit=1)[0].count("|") - 4)
+
+    def roadmap(slug: str, rows: Iterable[tuple[str, str]]) -> str:
+        table = "".join(
+            f"| {n} | {scope} |{extra} {status} |\n"
+            for n, (scope, status) in enumerate(rows, start=1)
+        )
+        opening = f"({slug}-1)=\n## 1. Purpose\n\n({slug}-2)=\n## 2. Roadmap\n\n"
+        return f"{opening}{header}{table}"
+
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
+        + roadmap("other-spec", theirs),
+        encoding="utf-8",
+    )
+    path, _ = demo(tmp_path, roadmap("demo-spec", mine))
+    texts = {p: p.read_text(encoding="utf-8") for p in (path, other)}
+    return texts, namespace([path, other])
+
+
+def form_faults(
+    tmp_path: Path, *mine: tuple[str, str], header: str = ROADMAP_HEADER
+) -> list[str]:
+    """Read the ordering faults of the demo specification's roadmap."""
+    texts, names = ordered(tmp_path, mine, header=header)
+    path = next(p for p in texts if p.name.startswith("2026-01-01"))
+    return ordering_form(path, texts[path], names)
+
+
+def test_ordering_form_passes_each_relation_and_a_release(tmp_path):
+    """Each relation, a row of another specification and a release are well formed."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        (f"Two{LINKED} after row 1", NOT_STARTED),
+        (f"Three{LINKED} with or after row 2{LINKED} before 0.6", NOT_STARTED),
+        (f"Four{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
+        (f"Five{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED),
+    )
+
+    assert faults == []
+
+
+def test_ordering_form_finds_a_word_outside_the_relations(tmp_path):
+    """Item 1 of order spec §4.5: a clause opening with another word, or no row."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        (f"Two{LINKED} needs row 1", NOT_STARTED),
+        (f"Three{LINKED} after", NOT_STARTED),
+        (f"Four{LINKED} after the regions design", NOT_STARTED),
+    )
+
+    assert len(faults) == 3
+    assert "row 2" in faults[0]
+    assert '"needs row 1"' in faults[0]
+    assert "row 3" in faults[1]
+    assert '"after"' in faults[1]
+    assert "row 4" in faults[2]
+    assert '"after the regions design"' in faults[2]
+
+
+def test_ordering_form_finds_a_row_that_does_not_exist(tmp_path):
+    """Item 2 of order spec §4.5: a bare row names a row of its own roadmap."""
+    faults = form_faults(
+        tmp_path, ("One", NOT_STARTED), (f"Two{LINKED} after row 7", NOT_STARTED)
+    )
+
+    (fault,) = faults
+    assert "row 2" in fault
+    assert "row 7" in fault
+    assert "does not exist" in fault
+
+
+def test_ordering_form_refuses_a_range(tmp_path):
+    """An ordering names one row, bare or cited."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        ("Two", NOT_STARTED),
+        (f"Three{LINKED} after rows 1 to 2", NOT_STARTED),
+        (f"Four{LINKED} after rows 1 to 1 of other spec {SECTION}2", NOT_STARTED),
+    )
+
+    assert len(faults) == 2
+    assert all("one row" in fault for fault in faults)
+
+
+def test_ordering_form_refuses_a_release_on_another_relation(tmp_path):
+    """Only before takes a release (order spec §4.4)."""
+    faults = form_faults(
+        tmp_path,
+        (f"One{LINKED} with 0.6", NOT_STARTED),
+        (f"Two{LINKED} after 0.6", NOT_STARTED),
+    )
+
+    assert len(faults) == 2
+    assert all("only before takes a release" in fault for fault in faults)
+
+
+def test_ordering_form_reads_the_scope_of_a_wider_table(tmp_path):
+    """A roadmap of four columns is read by its header, as typing spec §4 is."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        (f"Two{LINKED} after row 7", NOT_STARTED),
+        header="| # | Scope | Lines | Status |\n|---|---|---|---|\n",
+    )
+
+    (fault,) = faults
+    assert "row 7" in fault
+
+
+def test_orderings_twice_finds_an_ordering_repeated_on_one_row(tmp_path):
+    """Item 3 of order spec §4.5: the same ordering twice on one row."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1{LINKED} after row 1", NOT_STARTED),
+        ],
+    )
+
+    (fault,) = orderings_twice(texts, names)
+    assert "row 2" in fault
+    assert "twice" in fault
+
+
+def test_orderings_twice_finds_both_directions_across_specifications(tmp_path):
+    """One ordering written on both its rows, in two specifications."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"Mine{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} after row 1 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    (fault,) = orderings_twice(texts, names)
+    assert "twice" in fault
+
+
+def test_orderings_twice_reads_with_in_either_direction(tmp_path):
+    """A with written on both rows is one ordering, whichever row writes it."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"Mine{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} with row 1 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    assert len(orderings_twice(texts, names)) == 1
+
+
+def test_orderings_twice_passes_distinct_orderings(tmp_path):
+    """Two rows each after a third are two orderings, and a release is its own."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            (f"Three{LINKED} after row 1{LINKED} before 0.6", NOT_STARTED),
+        ],
+    )
+
+    assert orderings_twice(texts, names) == []
+
+
+def prose_faults(
+    tmp_path: Path, below: str = "", scope: str = "Two", after: str = ""
+) -> list[str]:
+    """Read the prose faults of a roadmap, with text below it and after a heading."""
+    texts, _ = ordered(tmp_path, [("One", NOT_STARTED), (scope, NOT_STARTED)])
+    path = next(p for p in texts if p.name.startswith("2026-01-01"))
+    text = f"{texts[path]}\n{below}\n\n(demo-spec-3)=\n## 3. Later\n\n{after}\n"
+    return ordering_in_prose(path, text)
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "lands with or after",
+        "lands with",
+        "landing with",
+        "lands before",
+        "lands after",
+        "before",
+        "after",
+        "needs",
+        "need",
+        "once",
+        "is planned once",
+        "waits on",
+        "wait on",
+        "follows",
+        "builds on",
+    ],
+)
+def test_ordering_in_prose_finds_each_word_under_a_roadmap(tmp_path, words):
+    """Item 4 of order spec §4.5: an ordering word and a row, under a roadmap."""
+    (fault,) = prose_faults(tmp_path, below=f"Row 2 {words} row 1.")
+
+    assert f"{words.split()[-1]} row 1" in fault
+
+
+def test_ordering_in_prose_finds_one_in_a_scope_before_its_orderings(tmp_path):
+    """A scope states its orderings after its opener, never before."""
+    cited = f"row 1 of other spec {SECTION}2"
+    before = prose_faults(tmp_path, scope=f"Two, landing with {cited}")
+    after = prose_faults(tmp_path / "after", scope=f"Two{LINKED} with {cited}")
+
+    assert len(before) == 1
+    assert "row 2" in before[0]
+    assert after == []
+
+
+def test_ordering_in_prose_finds_a_bare_before(tmp_path):
+    """A measurement written as an ordering reads as one, until it is reworded."""
+    (fault,) = prose_faults(tmp_path, below="It builds as fast as before row 5.")
+
+    assert "before row 5" in fault
+
+
+def test_ordering_in_prose_finds_one_wrapped_across_lines(tmp_path):
+    """Prose wraps, so the words and the row are read across a line break."""
+    faults = prose_faults(tmp_path, below="Statuses follow.\nRow 2 lands with\nrow 1.")
+
+    (fault,) = faults
+    assert "lands with" in fault
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "Row 2 needs a renderer in CI.",
+        "Row 2 is planned after {issue}`2756`.",
+        "Row 2 waits on the regions design.",
+        "Rows 1 and 2 land before 0.6 is released.",
+        "Rows 2 and 3 need nothing else.",
+    ],
+)
+def test_ordering_in_prose_passes_a_word_naming_no_row(tmp_path, words):
+    """An order against something that is not a row stays in the prose."""
+    assert prose_faults(tmp_path, below=words) == []
+
+
+def test_ordering_in_prose_skips_code(tmp_path):
+    """The words quoted in code, inline or fenced, are no ordering."""
+    below = "Write `lands with row 1` here.\n\n```text\nRow 2 needs row 1.\n```"
+
+    assert prose_faults(tmp_path, below=below) == []
+
+
+def test_ordering_in_prose_reads_only_under_a_roadmap(tmp_path):
+    """The guard reads up to the next heading, and nowhere else."""
+    texts, _ = ordered(tmp_path, [("One", NOT_STARTED)])
+    path = next(p for p in texts if p.name.startswith("2026-01-01"))
+    elsewhere = texts[path].replace(
+        "## 1. Purpose\n", "## 1. Purpose\n\nRow 2 needs row 1.\n"
+    )
+
+    assert ordering_in_prose(path, elsewhere) == []
+    assert prose_faults(tmp_path / "later", after="Row 2 needs row 1.") == []
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_every_ordering_is_well_formed(spec, names):
+    """Each ordering opens with a relation and names one row, or a release.
+
+    Holds order spec §2 decision 1, order spec §2 decision 2,
+    order spec §2 decision 3, order spec §2 decision 4 and order spec §2 decision 6.
+    """
+    problems = ordering_form(spec, spec.read_text(encoding="utf-8"), names)
+
+    assert not problems, "\n".join(problems)
+
+
+def test_no_ordering_is_written_twice(specs, names):
+    """An ordering is written once, on the row its reason belongs to.
+
+    Holds order spec §2 decision 5.
+    """
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    problems = orderings_twice(texts, names)
+
+    assert not problems, "\n".join(problems)
+
+
+@pytest.mark.parametrize("spec", specifications(), ids=lambda path: path.name)
+def test_no_ordering_is_written_in_prose(spec):
+    """An ordering between rows is written in its row's Scope cell, never in prose.
+
+    Holds order spec §2 decision 11.
+    """
+    problems = ordering_in_prose(spec, spec.read_text(encoding="utf-8"))
+
+    assert not problems, "\n".join(problems)
+
+
+@pytest.mark.parametrize(
+    "opener",
+    [
+        " \N{MIDDLE DOT}\N{LINK SYMBOL}",
+        " \N{LINK SYMBOL}",
+        " \N{BULLET} \N{LINK SYMBOL}",
+    ],
+    ids=["no-space", "no-dot", "bullet"],
+)
+def test_ordering_in_prose_finds_a_malformed_opener(tmp_path, opener):
+    """A typo in the opener leaves its ordering in the scope, where nothing reads it."""
+    scope = f"Two{opener} with row 1 of other spec {SECTION}2"
+
+    (fault,) = prose_faults(tmp_path, scope=scope)
+
+    assert "row 2" in fault
+    assert "opener" in fault
+
+
+@pytest.mark.parametrize(
+    "target",
+    ["row 2", f"row 2 of {SECTION}2", f"row 2 of demo spec {SECTION}2"],
+    ids=["bare", "own-section", "cited-in-full"],
+)
+def test_ordering_form_refuses_before_within_a_roadmap(tmp_path, target):
+    """Within one roadmap, the later row writes after, however the row is named."""
+    faults = form_faults(
+        tmp_path,
+        (f"One{LINKED} before {target}", NOT_STARTED),
+        ("Two", NOT_STARTED),
+    )
+
+    (fault,) = faults
+    assert "row 1" in fault
+    assert "after row 1" in fault
+    assert "row 2" in fault
+
+
+@pytest.mark.parametrize(
+    "below",
+    [
+        "Row 2 **needs** row 1.",
+        "Row 2 needs **row 1**.",
+        "Row 2 _needs_ row 1.",
+        "Row 2 needs [row 1](#roadmap).",
+    ],
+    ids=["strong-word", "strong-row", "emphasis", "link"],
+)
+def test_ordering_in_prose_reads_through_markdown(tmp_path, below):
+    """Emphasis and links are prose, so an ordering inside them is read."""
+    (fault,) = prose_faults(tmp_path, below=below)
+
+    assert "needs row 1" in fault
+
+
+def test_ordering_in_prose_reads_through_markdown_in_a_scope(tmp_path):
+    """A scope's emphasis hides no ordering either."""
+    scope = f"Two, **landing with** row 1 of other spec {SECTION}2"
+
+    (fault,) = prose_faults(tmp_path, scope=scope)
+
+    assert "landing with row 1" in fault
+
+
+def test_ordering_in_prose_finds_an_opener_without_its_space(tmp_path):
+    """The emoji is followed by a space, as the dot is preceded and followed by one."""
+    faults = prose_faults(tmp_path, scope=f"Two{LINKED}after row 1")
+
+    assert any("opener" in fault for fault in faults)
+
+
+@pytest.mark.parametrize("words", ["landed with", "landed before", "landed after"])
+def test_ordering_in_prose_finds_the_past_tense(tmp_path, words):
+    """History under a roadmap orders rows too, as "Row 2 landed with row 1"."""
+    (fault,) = prose_faults(tmp_path, below=f"Row 2 {words} row 1.")
+
+    assert f"{words} row 1" in fault
+
+
+def test_ordering_form_refuses_a_row_ordered_against_itself(tmp_path):
+    """A row cannot land after, before or with itself."""
+    faults = form_faults(
+        tmp_path,
+        ("One", NOT_STARTED),
+        (f"Two{LINKED} after row 2", NOT_STARTED),
+        (f"Three{LINKED} with row 3 of demo spec {SECTION}2", NOT_STARTED),
+    )
+
+    assert len(faults) == 2
+    assert all("itself" in fault for fault in faults)
+
+
+def test_the_collection_writes_orderings(specs):
+    """A rule that finds no ordering passes by never having looked."""
+    assert any(
+        citations.split_scope(row.scope)[1]
+        for spec in specs
+        for row in citations.rows(spec.read_text(encoding="utf-8"))
+    )

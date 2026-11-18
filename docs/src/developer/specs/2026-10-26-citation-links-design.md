@@ -431,21 +431,19 @@ today.
 | # | Scope | Status |
 |---|---|---|
 | 1 | One grammar: `docs/src/_ext/geovista_citations.py`, imported by the conventions test | ✅ landed (2026-10-26, {pull}`2735`) |
-| 2 | The transform and the output check, which land together; the ceiling test retires | ✅ landed (2026-10-27, {pull}`2738`) |
-| 3 | The renumber guard, its fix, its nightly audit, and the rules for items and rows | ✅ landed (2026-10-27, {pull}`2740`) |
-| 4 | Collapsing the roles; the agreement assertion retires; the changelog guidelines | ✅ landed (2026-10-27, {pull}`2745`) |
-| 5 | Items and rows as citations in their own right | ✅ landed (2026-11-02, {pull}`2807`) |
+| 2 | The transform and the output check, which land together; the ceiling test retires · 🔗 after row 1 | ✅ landed (2026-10-27, {pull}`2738`) |
+| 3 | The renumber guard, its fix, its nightly audit, and the rules for items and rows · 🔗 after row 1 | ✅ landed (2026-10-27, {pull}`2740`) |
+| 4 | Collapsing the roles; the agreement assertion retires; the changelog guidelines · 🔗 after row 1 · 🔗 after row 2 | ✅ landed (2026-10-27, {pull}`2745`) |
+| 5 | Items and rows as citations in their own right · 🔗 with row 1 of items spec §8 | ✅ landed (2026-11-02, {pull}`2807`) |
 
 Statuses follow docs spec §3.6, and {issue}`2566` tracks rows 1 to 4.
-Rows 2 to 4 each build on row 1. Row 2 follows it, because the next change to cite a
-specification from code fails the ceiling test until row 2 lands. Row 3 needs only row 1, so
-it can come before or after row 2. Row 4 needs row 2.
+Row 2 was urgent, because the next change to cite a specification from code failed the
+ceiling test until it landed. Rows 2 and 3 may land in either order.
 
 Row 5's trigger was asserted by the conventions test from row 1 on. It counted, outside the
 specifications, the citations followed by `item N` or `items N`, and those preceded by
 `row N of` or `rows N to M of`, reading across line breaks, and failed past twenty, a little
-over three times the six of §3.1. Row 5 landed before it fired, with
-row 1 of items spec §8, and the test retired with it.
+over three times the six of §3.1. Row 5 landed before it fired, and the test retired with it.
 
 (citation-spec-10)=
 ## 10. References

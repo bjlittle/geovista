@@ -145,6 +145,91 @@ PARTS = (FOUND, OWED, MOVED, TICKET)
 #: What separates the parts of an item's provenance.
 DOT = " \N{MIDDLE DOT} "
 
+#: The mark of an ordering between roadmap rows, and what opens one in a Scope
+#: cell (order spec §4.1).
+LINK = "\N{LINK SYMBOL}"
+ORDERING = f"{DOT}{LINK}"
+
+#: An ordering's opener, read with or without the variation selector, and with a
+#: space on each side of the dot and after the emoji.
+OPENER = re.compile(rf"[^\S\n]*\N{{MIDDLE DOT}}[^\S\n]+{LINK}{VS16}?[^\S\n]+")
+
+#: The relations an ordering may state, longest first, so that ``with or after``
+#: is read before ``with`` (order spec §4.2).
+RELATIONS = ("with or after", "after", "before", "with")
+
+#: A release of ``geovista`` an ordering may name: two or three numbers
+#: (order spec §4.4).
+RELEASE = re.compile(r"\d+\.\d+(?:\.\d+)?")
+
+
+@dataclass(frozen=True)
+class Ordering:
+    """One ordering of a roadmap row, as its Scope cell states it.
+
+    Attributes
+    ----------
+    relation : str
+        One of :data:`RELATIONS`.
+    target : str
+        What follows the relation: a row, as ``row 2`` or a citation of another
+        specification's row, or a release, as ``0.6``.
+
+    """
+
+    relation: str
+    target: str
+
+
+def split_scope(scope: str) -> tuple[str, list[str]]:
+    """Split a Scope cell into its scope and the clause of each ordering.
+
+    The first ``· 🔗`` ends the scope and each opens one clause
+    (order spec §4.1). An opener quoted in code is the scope's text.
+
+    Parameters
+    ----------
+    scope : str
+        The Scope cell of a roadmap row.
+
+    Returns
+    -------
+    tuple of (str, list of str)
+        The scope, and each ordering's clause, both stripped.
+
+    """
+    blanked = prose(scope)[0]
+    starts = [(m.start(), m.end()) for m in OPENER.finditer(blanked)]
+    if not starts:
+        return scope.strip(), []
+    clauses = [
+        scope[end : (starts[i + 1][0] if i + 1 < len(starts) else len(scope))].strip()
+        for i, (_, end) in enumerate(starts)
+    ]
+    return scope[: starts[0][0]].strip(), clauses
+
+
+def ordering(clause: str) -> Ordering | None:
+    """Read an ordering's clause, or ``None`` if it opens with no relation.
+
+    Parameters
+    ----------
+    clause : str
+        What follows an ordering's opener, as ``after row 2``.
+
+    Returns
+    -------
+    Ordering or None
+        The relation and its target, or ``None`` when the clause opens with a
+        word outside :data:`RELATIONS` or names no target.
+
+    """
+    for relation in RELATIONS:
+        rest = clause.removeprefix(relation)
+        if rest != clause and rest[:1].isspace() and rest.strip():
+            return Ordering(relation, rest.strip())
+    return None
+
 
 def _closing(
     text: str,
