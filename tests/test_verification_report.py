@@ -640,3 +640,200 @@ def test_an_item_the_suite_refuses_for_its_moves_makes_no_finding(
 
     assert "| 6: Moved wrongly. |" in out
     assert f"{SECTION}5 item 6 " not in findings
+
+
+#: An ordering's opener, built rather than written, and a row in progress.
+LINKED = f"{DOT}\N{LINK SYMBOL}"
+IN_PROGRESS = "\N{CONSTRUCTION SIGN} in progress"
+NOT_STARTED = "\N{CLIPBOARD} not started"
+
+
+def landing_together(
+    tmp_path: Path,
+    mine: tuple[str, str],
+    theirs: tuple[str, str],
+    owed: str = "",
+    mine_owes: str = "",
+    more: tuple[tuple[str, str], ...] = (),
+) -> Path:
+    """Write a demo and an other specification, each a roadmap of one row.
+
+    Each row is its scope and its status, ``owed`` the open items of the other
+    specification, owed by its row, and ``mine_owes`` the demo's. ``more`` adds
+    rows to the other roadmap, numbered from 2.
+    """
+    s = SECTION
+    for slug, rows, items in (
+        ("demo", (mine,), mine_owes),
+        ("other", (theirs, *more), owed),
+    ):
+        number = "01" if slug == "demo" else "02"
+        table = "".join(
+            f"| {n} | {scope} | {state} |\n"
+            for n, (scope, state) in enumerate(rows, start=1)
+        )
+        write(
+            tmp_path,
+            f"docs/src/developer/specs/2026-01-{number}-{slug}-design.md",
+            f"# {slug.title()} Specification\n\n"
+            f"- **Citation prefix:** `{slug} spec {s}{ELLIPSIS}`\n\n"
+            f"({slug}-spec-2)=\n## 2. Roadmap\n\n"
+            f"| # | Scope | Status |\n|---|---|---|\n{table}\n"
+            f"({slug}-spec-3)=\n## 3. Open Items\n\n{items}",
+        )
+    return tmp_path
+
+
+def together(script, root: Path, prefix: str = "demo-spec") -> list[str]:
+    """Read one specification's findings of rows landing together."""
+    specs = script.grammar.specifications(root / script.SPECS)
+    names = script.grammar.namespace(specs)
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    reported = next(spec for spec in specs if names.owners[spec] == prefix)
+    return script._together_findings(reported, texts, names)
+
+
+def test_together_findings_names_the_items_a_partner_owes(script, tmp_path):
+    """A row in progress lands with a row owing an item: its PR must answer it.
+
+    Holds order spec §2 decision 8.
+    """
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        (f"Mine{LINKED} with row 1 of other spec {s}2", IN_PROGRESS),
+        ("Theirs", NOT_STARTED),
+        item(1, OPEN, f"row 1 of {s}2", 0, "Owed."),
+    )
+
+    expected = (
+        f"row 1 of demo spec {s}2 is in progress and lands with row 1 of other "
+        f"spec {s}2, which owes other spec {s}3 item 1: its pull request must "
+        "answer it."
+    )
+
+    assert together(script, root) == [expected]
+
+
+def test_together_findings_reads_a_with_written_on_the_partner(script, tmp_path):
+    """A with is the pair either way round, whichever row writes it."""
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        ("Mine", IN_PROGRESS),
+        (f"Theirs{LINKED} with row 1 of demo spec {s}2", NOT_STARTED),
+        item(1, OPEN, f"row 1 of {s}2", 0, "Owed.")
+        + item(2, DEFERRED, f"row 1 of {s}2", 1, "Moved."),
+    )
+
+    (finding,) = together(script, root)
+    assert f"other spec {s}3 item 1 and other spec {s}3 item 2" in finding
+    assert finding.endswith("its pull request must answer them.")
+
+
+def test_together_findings_reads_either_row_of_the_pair(script, tmp_path):
+    """The row in progress may be either of a with's pair, as its anchors sort."""
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        (f"Mine{LINKED} with row 1 of other spec {s}2", NOT_STARTED),
+        ("Theirs", IN_PROGRESS),
+        mine_owes=item(1, OPEN, f"row 1 of {s}2", 0, "Owed."),
+    )
+
+    (finding,) = together(script, root, "other-spec")
+    assert finding.startswith(f"row 1 of other spec {s}2 is in progress")
+    assert f"which owes demo spec {s}3 item 1" in finding
+
+
+def test_together_findings_follows_a_chain_of_with(script, tmp_path):
+    """A row landing with one that lands with a third lands with the third too."""
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        (f"Mine{LINKED} with row 1 of other spec {s}2", IN_PROGRESS),
+        (f"Theirs{LINKED} with row 2", NOT_STARTED),
+        item(1, OPEN, f"row 2 of {s}2", 0, "Owed."),
+        more=(("Third", NOT_STARTED),),
+    )
+
+    expected = (
+        f"row 1 of demo spec {s}2 is in progress and lands with row 2 of other "
+        f"spec {s}2, which owes other spec {s}3 item 1: its pull request must "
+        "answer it."
+    )
+
+    assert together(script, root) == [expected]
+
+
+def test_together_findings_reads_a_loop_of_with_or_after(script, tmp_path):
+    """Rows with or after each other are forced into one pull request as well."""
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        (f"Mine{LINKED} with or after row 1 of other spec {s}2", IN_PROGRESS),
+        (f"Theirs{LINKED} with or after row 1 of demo spec {s}2", NOT_STARTED),
+        item(1, OPEN, f"row 1 of {s}2", 0, "Owed."),
+    )
+
+    (finding,) = together(script, root)
+    assert f"lands with row 1 of other spec {s}2" in finding
+
+
+def test_together_findings_reads_no_after(script, tmp_path):
+    """A row after another lands in a later pull request, so owes it nothing."""
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        (f"Mine{LINKED} after row 1 of other spec {s}2", IN_PROGRESS),
+        ("Theirs", NOT_STARTED),
+        item(1, OPEN, f"row 1 of {s}2", 0, "Owed."),
+    )
+
+    assert together(script, root) == []
+
+
+def test_together_findings_names_only_a_row_owing_items(script, tmp_path):
+    """Review Focus 5 of its plan: a partner owing nothing open makes no finding."""
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        (f"Mine{LINKED} with row 1 of other spec {s}2", IN_PROGRESS),
+        ("Theirs", NOT_STARTED),
+        item(1, RESOLVED, f"row 1 of {s}2", 0, "Settled."),
+    )
+
+    assert together(script, root) == []
+
+
+def test_together_findings_reads_only_a_row_in_progress(script, tmp_path):
+    """A row not yet begun is delivered by no pull request, so nothing is owed yet."""
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        (f"Mine{LINKED} with row 1 of other spec {s}2", NOT_STARTED),
+        ("Theirs", NOT_STARTED),
+        item(1, OPEN, f"row 1 of {s}2", 0, "Owed."),
+    )
+
+    assert together(script, root) == []
+
+
+def test_report_lists_rows_landing_together(script, tmp_path, capsys):
+    """The report's findings carry the rows a row in progress lands with.
+
+    Holds order spec §2 decision 8.
+    """
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        (f"Mine{LINKED} with row 1 of other spec {s}2", IN_PROGRESS),
+        ("Theirs", NOT_STARTED),
+        item(1, OPEN, f"row 1 of {s}2", 0, "Owed."),
+    )
+
+    code, out = run(script, root, capsys, "demo")
+    findings = out[out.index("## Findings") :]
+
+    assert code == 0
+    assert "lands with row 1 of other spec" in findings

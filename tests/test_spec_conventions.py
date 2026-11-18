@@ -47,7 +47,7 @@ from markdown_it import MarkdownIt
 import pytest
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, Mapping
+    from collections.abc import Iterable, Iterator, Mapping, Sequence
     from types import ModuleType
 
 #: The section of the repository checks page that documents this check.
@@ -3675,73 +3675,6 @@ def _pulls(status: str) -> set[tuple[str, int]]:
     }
 
 
-def landing_together(texts: Mapping[Path, str], names: Namespace) -> list[str]:
-    """Find a row landing with another that landed apart from it, items spec §7 item 14.
-
-    A row owed an item whose work is another specification's row names that row
-    in its Scope cell, ``· 🔗 with`` it (items spec §3.4, order spec §4.1), and
-    the two land in one pull request. So both have landed, by the same pull
-    request, which each names, or neither has. A row lands with one other, so a
-    range is refused. An ordering that cites no row, or one quoted in code, holds
-    no check.
-    """
-    owners = {prefix: path for path, prefix in names.owners.items()}
-    problems = []
-    for path, text in texts.items():
-        owner = names.owners.get(path)
-        for row in citations.rows(text):
-            # split_scope blanks code first, so a quoted ordering declares nothing
-            for clause in citations.split_scope(row.scope)[1]:
-                said = citations.ordering(clause)
-                if said is None or said.relation != "with":
-                    continue
-                found = next(
-                    (
-                        c
-                        for c in citations.scan(said.target, names.signed, owner)
-                        if c.start == 0 and c.slug is not None
-                    ),
-                    None,
-                )
-                label = LABEL.match(found.slug) if found is not None else None
-                if label is None or label["row"] is None:
-                    continue
-                if found.ends:
-                    problems.append(
-                        f"{where(path, row.line)}: row {row.row} lands with "
-                        f"{found.text}: cite one row"
-                    )
-                    continue
-                other_path = owners.get(label["prefix"])
-                other = next(
-                    (
-                        r
-                        for r in citations.rows(texts.get(other_path, ""))
-                        if row_anchor(label["prefix"], r.section, r.row) == found.slug
-                    ),
-                    None,
-                )
-                at = f"{where(path, row.line)}: row {row.row} lands with {found.text}"
-                if other is None:
-                    problems.append(f"{at}, which does not exist")
-                    continue
-                mine, theirs = (
-                    row.status.startswith(LANDED),
-                    other.status.startswith(LANDED),
-                )
-                if mine and not theirs:
-                    problems.append(f"{at}, which has not landed")
-                elif theirs and not mine:
-                    problems.append(f"{at}, which has landed without it")
-                elif mine and not (_pulls(row.status) or _pulls(other.status)):
-                    problems.append(
-                        f"{at}, but neither names the pull request they landed in"
-                    )
-                elif mine and _pulls(row.status) != _pulls(other.status):
-                    problems.append(f"{at}, which landed in another pull request")
-    return problems
-
-
 def item_issues(texts: Mapping[Path, str]) -> list[str]:
     """Find an issue cited by two items, item 5 of items spec §3.7.
 
@@ -4047,158 +3980,6 @@ def test_item_graduated_names_a_row_that_had_not_landed(tmp_path):
     assert faults(item_graduated(path, text, names)) == [expected]
 
 
-def landing(
-    tmp_path: Path, mine: str, theirs: str, scope: str | None = None
-) -> tuple[dict[Path, str], Namespace]:
-    """Write a row landing with another specification's row, with their statuses."""
-    scope = scope or f"Mine{citations.ORDERING} with row 1 of other spec {SECTION}2"
-    header = "| # | Scope | Status |\n|---|---|---|\n"
-    other = tmp_path / "2026-01-02-other-design.md"
-    other.write_text(
-        f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
-        f"(other-spec-1)=\n## 1. Purpose\n\n(other-spec-2)=\n## 2. Roadmap\n\n"
-        f"{header}| 1 | Theirs | {theirs} |\n",
-        encoding="utf-8",
-    )
-    path, _ = demo(
-        tmp_path,
-        f"(demo-spec-1)=\n## 1. Purpose\n\n(demo-spec-2)=\n## 2. Roadmap\n\n"
-        f"{header}| 1 | {scope} | {mine} |\n",
-    )
-    texts = {p: p.read_text(encoding="utf-8") for p in (path, other)}
-    return texts, namespace([path, other])
-
-
-def test_landing_together_passes_rows_landed_together_or_not_at_all(tmp_path):
-    """Items spec §7 item 14: two rows land in one pull request, or neither has."""
-    together = f"{LANDED} (2026-01-01, {{pull}}`7`)"
-
-    for mine, theirs in (
-        (NOT_STARTED, NOT_STARTED),
-        (f"{IN_PROGRESS} ({{pull}}`7`)", NOT_STARTED),
-        (together, together),
-    ):
-        texts, names = landing(tmp_path, mine, theirs)
-        assert landing_together(texts, names) == [], (mine, theirs)
-
-
-def test_landing_together_finds_a_row_landed_alone_or_apart(tmp_path):
-    """Items spec §7 item 14: one landed without the other, or by another PR."""
-    alone = f"{LANDED} (2026-01-01, {{pull}}`7`)"
-    apart = f"{LANDED} (2026-01-02, {{pull}}`8`)"
-    cited = f"row 1 of other spec {SECTION}2"
-
-    texts, names = landing(tmp_path, alone, NOT_STARTED)
-    assert faults(landing_together(texts, names)) == [
-        f"row 1 lands with {cited}, which has not landed"
-    ]
-    texts, names = landing(tmp_path, NOT_STARTED, alone)
-    assert faults(landing_together(texts, names)) == [
-        f"row 1 lands with {cited}, which has landed without it"
-    ]
-    texts, names = landing(tmp_path, alone, apart)
-    assert faults(landing_together(texts, names)) == [
-        f"row 1 lands with {cited}, which landed in another pull request"
-    ]
-
-
-def test_landing_together_knows_a_pull_request_by_any_reference(tmp_path):
-    """A pull request is the same however it is cited, and one must be cited.
-
-    A link to another repository's pull request is as good as a role, and two
-    rows citing no pull request have no landing to share.
-    """
-    cited = f"row 1 of other spec {SECTION}2"
-    seven = f"{LANDED} (2026-01-01, [PR7](https://github.com/o/r/pull/7))"
-    eight = f"{LANDED} (2026-01-02, [PR8](https://github.com/o/r/pull/8))"
-    issue = f"{LANDED} (2026-01-01, {{issue}}`7`)"
-
-    texts, names = landing(tmp_path, seven, eight)
-    assert faults(landing_together(texts, names)) == [
-        f"row 1 lands with {cited}, which landed in another pull request"
-    ]
-    texts, names = landing(tmp_path, seven, seven)
-    assert landing_together(texts, names) == []
-    role = f"{LANDED} (2026-01-01, {{pull}}`7`)"
-    for spelling in (
-        "[PR7](https://github.com/BJLittle/GeoVista/pull/7)",
-        "[PR7](https://github.com/bjlittle/geovista/pull/07)",
-        "{pull}`07`",
-    ):
-        texts, names = landing(tmp_path, role, f"{LANDED} (2026-01-01, {spelling})")
-        assert landing_together(texts, names) == [], spelling
-    texts, names = landing(tmp_path, issue, issue)
-    assert faults(landing_together(texts, names)) == [
-        f"row 1 lands with {cited}, but neither names the pull request they landed in"
-    ]
-
-
-def test_landing_together_refuses_a_range(tmp_path):
-    """A row lands with one other row, so a range of them is refused."""
-    scope = f"Mine{citations.ORDERING} with rows 1 and 2 of other spec {SECTION}2"
-
-    texts, names = landing(tmp_path, NOT_STARTED, NOT_STARTED, scope)
-
-    assert faults(landing_together(texts, names)) == [
-        f"row 1 lands with rows 1 and 2 of other spec {SECTION}2: cite one row"
-    ]
-
-
-def test_landing_together_reads_no_declaration_in_code(tmp_path):
-    """Quoted in code, the words are an example, and declare nothing."""
-    quoted = f"{citations.ORDERING.strip()} with row 1 of other spec {SECTION}2"
-    scope = f"Mine, as `{quoted}` reads"
-    landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
-
-    texts, names = landing(tmp_path, landed, NOT_STARTED, scope)
-
-    assert landing_together(texts, names) == []
-
-
-def test_landing_together_reads_only_a_cited_row(tmp_path):
-    """A scope that only speaks of landing with another row holds no check."""
-    scope = f"Mine{citations.ORDERING} with another specification's row"
-    texts, names = landing(
-        tmp_path, f"{LANDED} (2026-01-01, {{pull}}`7`)", NOT_STARTED, scope
-    )
-
-    assert landing_together(texts, names) == []
-
-
-def test_landing_together_reads_only_the_cell_form(tmp_path):
-    """A scope still saying *landing with* in words holds no check of its own.
-
-    The prose guard refuses it (order spec §4.5 item 4), so the words are read once.
-    """
-    scope = f"Mine, landing with row 1 of other spec {SECTION}2"
-    landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
-
-    texts, names = landing(tmp_path, landed, NOT_STARTED, scope)
-
-    assert landing_together(texts, names) == []
-
-
-def test_landing_together_reads_every_specification(tmp_path):
-    """A row declared in the last specification read is checked too."""
-    landed = f"{LANDED} (2026-01-01, {{pull}}`7`)"
-    texts, names = ordered(
-        tmp_path,
-        [("Mine", NOT_STARTED)],
-        [(f"Theirs{citations.ORDERING} with row 1 of demo spec {SECTION}2", landed)],
-    )
-
-    assert list(texts)[-1].name.startswith("2026-01-02")
-    assert len(landing_together(texts, names)) == 1
-
-
-def test_every_row_landing_with_another_lands_with_it(specs):
-    """Items spec §7 item 14, across the collection."""
-    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
-    problems = landing_together(texts, namespace(specs))
-
-    assert not problems, "\n".join(problems)
-
-
 def test_item_issues_finds_two_items_citing_one_issue(tmp_path):
     """Items spec §3.7 item 5: one issue per item, across the collection.
 
@@ -4432,44 +4213,397 @@ def ordering_form(path: Path, text: str, names: Namespace) -> list[str]:
     return problems
 
 
-def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
-    """Find an ordering written twice, item 3 of order spec §4.5.
+class Edge(NamedTuple):
+    """One ordering between two rows, read as an edge of the graph of every roadmap.
 
-    Each ordering is read as an edge: ``after`` X on Y and ``before`` Y on X are
-    X before Y, ``with`` is the pair either way round, ``with or after`` keeps its
-    direction, and a release is the row's own. Two equal edges are one ordering
-    written twice, on one row or on both of its rows.
+    Attributes
+    ----------
+    kind : str
+        ``after``, ``with`` or ``with or after``: ``before`` is ``after`` read
+        from the other row.
+    first : str
+        The anchor of the row landing first, or of the first of a ``with`` pair
+        in order of anchor.
+    second : str
+        The anchor of the other row.
+    path : Path
+        The specification that writes it.
+    row : Row
+        The row that writes it.
+    clause : str
+        The clause that writes it, as ``after row 1``.
+
     """
-    seen: set[tuple[str, ...]] = set()
-    problems = []
+
+    kind: str
+    first: str
+    second: str
+    path: Path
+    row: Row
+    clause: str
+
+
+def ordering_edges(
+    texts: Mapping[Path, str], names: Namespace, *, releases: bool = False
+) -> list[Edge]:
+    """Read every ordering of every roadmap as an edge, once (order spec §4.5).
+
+    ``after`` X on Y and ``before`` Y on X are both X landing before Y, ``with``
+    is its pair in order of anchor, and ``with or after`` keeps its direction. A
+    release is no edge of the graph (order spec §4.4), so it is read only when
+    ``releases`` asks, as the row landing before ``release 0.6``. An ordering
+    that names no row, or its own row, is the form rule's to refuse.
+    """
+    edges = []
     for path, text in texts.items():
         owner = names.owners.get(path)
+        if owner is None:
+            continue
         rows = citations.rows(text)
         for row in rows:
-            mine = row_anchor(owner, row.section, row.row) if owner else row.row
+            mine = row_anchor(owner, row.section, row.row)
             for clause in citations.split_scope(row.scope)[1]:
                 said = citations.ordering(clause)
                 if said is None:
                     continue
                 key, _ = ordering_target(said, row, rows, owner, names)
-                if key is None:
+                if (
+                    key is None
+                    or key == mine
+                    or (key.startswith("release ") and not releases)
+                ):
                     continue
-                edge: tuple[str, ...]
                 if said.relation == "with":
-                    edge = ("with", *sorted((mine, key)))
+                    first, second = sorted((mine, key))
                 elif said.relation == "before":
-                    edge = ("after", mine, key)
-                elif said.relation == "after":
-                    edge = ("after", key, mine)
+                    first, second = mine, key
                 else:
-                    edge = (said.relation, key, mine)
-                if edge in seen:
-                    problems.append(
-                        f'{where(path, row.line)}: row {row.row}: "{clause}" is '
-                        "written twice: write an ordering once, on the row its reason "
-                        "belongs to"
-                    )
-                seen.add(edge)
+                    first, second = key, mine
+                kind = "after" if said.relation == "before" else said.relation
+                edges.append(Edge(kind, first, second, path, row, clause))
+    return edges
+
+
+def landed_on(status: str) -> tuple[date | None, set[tuple[str, int]]] | None:
+    """Read a landed row's date and the pull requests it cites, or ``None``.
+
+    A status in any other state has not landed. A landed status with no date the
+    calendar holds reads as ``None`` for its date, which the status rule refuses
+    (docs spec §3.6), so no order is read from it.
+    """
+    if citations.state_of(status, ROW_STATES) != LANDED:
+        return None
+    found = DATE.search(status)
+    day = None
+    if found is not None:
+        with contextlib.suppress(ValueError):
+            day = date.fromisoformat(found[0])
+    return day, _pulls(status)
+
+
+def row_statuses(texts: Mapping[Path, str], names: Namespace) -> dict[str, str]:
+    """Read the status of every row of every roadmap, by its anchor."""
+    return {
+        row_anchor(owner, row.section, row.row): row.status
+        for path, text in texts.items()
+        if (owner := names.owners.get(path)) is not None
+        for row in citations.rows(text)
+    }
+
+
+def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
+    """Find an ordering written twice, item 3 of order spec §4.5.
+
+    Two equal edges are one ordering written twice, on one row or on both of its
+    rows (:func:`ordering_edges`), and a release written twice on one row is too.
+    """
+    seen: set[tuple[str, str, str]] = set()
+    problems = []
+    for edge in ordering_edges(texts, names, releases=True):
+        key = (edge.kind, edge.first, edge.second)
+        if key in seen:
+            at = f"{where(edge.path, edge.row.line)}: row {edge.row.row}"
+            problems.append(
+                f'{at}: "{edge.clause}" is written twice: write an ordering once, '
+                "on the row its reason belongs to"
+            )
+        seen.add(key)
+    return problems
+
+
+def named(anchor: str) -> str:
+    """Cite a row by its anchor, as ``row 2 of layers spec §9``."""
+    label = LABEL.match(anchor)
+    prefix = label["prefix"].replace("-", " ")
+    return f"row {label['row']} of {prefix} {SECTION}{label['num'].replace('-', '.')}"
+
+
+def listed(things: Sequence[str]) -> str:
+    """Join things as prose: ``a``, ``a and b``, ``a, b and c``."""
+    return " and ".join([", ".join(things[:-1]), things[-1]] if things[1:] else things)
+
+
+def strongly_connected(graph: Mapping[str, Iterable[str]]) -> dict[str, int]:
+    """Find the strongly connected parts of a graph, by Tarjan's algorithm.
+
+    Each node is mapped to its part, and two nodes share one exactly when each
+    reaches the other.
+    """
+    index: dict[str, int] = {}
+    low: dict[str, int] = {}
+    part: dict[str, int] = {}
+    stack: list[str] = []
+
+    def visit(node: str) -> None:
+        index[node] = low[node] = len(index)
+        stack.append(node)
+        for nxt in graph.get(node, ()):
+            if nxt not in index:
+                visit(nxt)
+                low[node] = min(low[node], low[nxt])
+            elif nxt not in part:
+                low[node] = min(low[node], index[nxt])
+        if low[node] == index[node]:
+            number = len(set(part.values()))
+            while True:
+                top = stack.pop()
+                part[top] = number
+                if top == node:
+                    break
+
+    for node in graph:
+        if node not in index:
+            visit(node)
+    return part
+
+
+def no_later_than(edges: Iterable[Edge]) -> dict[str, list[str]]:
+    """Read edges as a graph of rows, each landing no later than those it points to.
+
+    ``with`` points both ways, as its rows land in one pull request.
+    """
+    graph: dict[str, list[str]] = {}
+    for edge in edges:
+        graph.setdefault(edge.first, []).append(edge.second)
+        graph.setdefault(edge.second, [])
+        if edge.kind == "with":
+            graph[edge.second].append(edge.first)
+    return graph
+
+
+def landing_together(edges: Iterable[Edge]) -> dict[str, list[str]]:
+    """Find, for each row, the rows its orderings force into its pull request.
+
+    Rows that each land no later than the other land together: the members of a
+    strongly connected part of :func:`no_later_than`, as a chain of ``with`` or a
+    loop of ``with or after`` makes. Each row is mapped to the others of its part,
+    in the order they are first read, and a row alone in its part is left out.
+    """
+    graph = no_later_than(edges)
+    part = strongly_connected(graph)
+    groups: dict[int, list[str]] = {}
+    for node in graph:
+        groups.setdefault(part[node], []).append(node)
+    return {
+        node: [other for other in groups[part[node]] if other != node]
+        for node in graph
+        if len(groups[part[node]]) > 1
+    }
+
+
+def order_cycles(texts: Mapping[Path, str], names: Namespace) -> list[str]:
+    """Find a cycle of orderings, item 5 of order spec §4.5.
+
+    Each ordering is read as its first row landing no later than its second,
+    ``with`` both ways. Rows that each reach the other must then land together,
+    so an ``after`` between two of them can never hold: the rows form a cycle,
+    reported once, where its first ``after`` is written. A loop of ``with`` and
+    ``with or after`` alone is no cycle, as one pull request lands it.
+    """
+    edges = ordering_edges(texts, names)
+    graph = no_later_than(edges)
+    part = strongly_connected(graph)
+    problems, reported = [], set()
+    for edge in edges:
+        number = part[edge.first]
+        if edge.kind != "after" or part[edge.second] != number or number in reported:
+            continue
+        reported.add(number)
+        rows = [named(node) for node in graph if part[node] == number]
+        problems.append(
+            f'{where(edge.path, edge.row.line)}: row {edge.row.row}: "{edge.clause}" '
+            f"closes a cycle through {listed(rows)}, which no order of landing "
+            "can meet (order spec §4.5 item 5)"
+        )
+    return problems
+
+
+def order_candidates(texts: Mapping[Path, str], names: Namespace) -> list[str]:
+    """Find a row not started that waits on a candidate, item 6 of order spec §4.5.
+
+    A row ``after``, ``with`` or ``with or after`` a candidate can never land
+    while the candidate waits on its trigger (items spec §7 item 15).
+    """
+    states = {
+        anchor: citations.state_of(status, ROW_STATES)
+        for anchor, status in row_statuses(texts, names).items()
+    }
+    problems = []
+    for edge in ordering_edges(texts, names):
+        pairs = [(edge.first, edge.second)]
+        if edge.kind == "with":
+            pairs.append((edge.second, edge.first))
+        for candidate, waiting in pairs:
+            if (
+                states.get(candidate) == CANDIDATE
+                and states.get(waiting) == NOT_STARTED
+            ):
+                problems.append(
+                    f"{where(edge.path, edge.row.line)}: row {edge.row.row}: "
+                    f'"{edge.clause}": {named(waiting)} is not started, and waits on '
+                    f"{named(candidate)}, a candidate, which may never land: make "
+                    "it a candidate too, or order it otherwise "
+                    "(order spec §4.5 item 6)"
+                )
+    return problems
+
+
+def _with_fault(edge: Edge, statuses: Mapping[str, str], names: Namespace) -> str:
+    """Say how a row ``with`` another landed apart from it, if it did.
+
+    Both have landed, sharing a pull request, which one of them names, or neither
+    has. Said from the row that writes it, as it was before order spec §4.7
+    folded this rule in (items spec §7 item 14).
+    """
+    owner = names.owners[edge.path]
+    mine = row_anchor(owner, edge.row.section, edge.row.row)
+    theirs = edge.second if edge.first == mine else edge.first
+    target = citations.ordering(edge.clause).target
+    at = f"row {edge.row.row} lands with {target}"
+    me, them = landed_on(statuses[mine]), landed_on(statuses[theirs])
+    if me is not None and them is None:
+        return f"{at}, which has not landed"
+    if them is not None and me is None:
+        return f"{at}, which has landed without it"
+    if me is None or them is None:
+        return ""
+    if not (me[1] or them[1]):
+        return f"{at}, but neither names the pull request they landed in"
+    if not me[1] & them[1]:
+        return f"{at}, which landed in another pull request"
+    return ""
+
+
+def _begun_too_soon(edge: Edge, statuses: Mapping[str, str]) -> str:
+    """Say how a row ``after`` or ``with or after`` another began first, if it did.
+
+    After: the row is in progress or landed only once the other has landed. With
+    or after: it has landed only once the other has, and is in progress only once
+    the other is too, or has landed.
+    """
+    first, second = named(edge.first), named(edge.second)
+    lands = f"which it lands {edge.kind}"
+    earlier = citations.state_of(statuses[edge.first], ROW_STATES)
+    later = citations.state_of(statuses[edge.second], ROW_STATES)
+    if earlier == LANDED:
+        return ""
+    if edge.kind == "after" and later in {IN_PROGRESS, LANDED}:
+        word = later.split(" ", 1)[1]
+        return f"{second} is {word}, but {first}, {lands}, has not landed"
+    if edge.kind == "with or after" and later == LANDED:
+        return f"{second} has landed, but {first}, {lands}, has not"
+    if edge.kind == "with or after" and later == IN_PROGRESS != earlier:
+        return f"{second} is in progress, but {first}, {lands}, has not begun"
+    return ""
+
+
+def _landed_out_of_order(edge: Edge, statuses: Mapping[str, str]) -> str:
+    """Say how two landed rows, one ``after`` or ``with or after``, landed wrongly.
+
+    The later lands on the other's date or after, and a row ``after`` another in
+    another pull request. Rows landed on one day pass on their dates alone, since
+    the order within a day is GitHub's to say.
+    """
+    before, after = landed_on(statuses[edge.first]), landed_on(statuses[edge.second])
+    if before is None or after is None:
+        return ""
+    first, second = named(edge.first), named(edge.second)
+    lands = f"which it lands {edge.kind}"
+    if before[0] is not None and after[0] is not None and before[0] > after[0]:
+        return (
+            f"{second} landed on {after[0].isoformat()}, before {first}, {lands}, "
+            f"landed on {before[0].isoformat()}"
+        )
+    if edge.kind == "after" and before[1] & after[1]:
+        return (
+            f"{second} landed in the same pull request as {first}, {lands}: "
+            "rows landing together are written with"
+        )
+    return ""
+
+
+def _loops_landed_apart(edges: list[Edge], statuses: Mapping[str, str]) -> list[str]:
+    """Find a loop whose rows have all landed, but in no one pull request.
+
+    The rows of a loop land together (:func:`landing_together`), so once they have
+    all landed, one pull request names every one. A loop of ``with`` alone is
+    held pair by pair, and one holding an ``after`` is a cycle, so only a loop
+    closed by a ``with or after`` is read whole, once, where its first ``with or
+    after`` is written. One row landed while another has not is a fault of some
+    pair along the loop already.
+    """
+    together = landing_together(edges)
+    order = [*statuses, *no_later_than(edges)]
+    problems, seen = [], set()
+    for edge in edges:
+        if edge.kind != "with or after" or edge.second not in together.get(
+            edge.first, ()
+        ):
+            continue
+        group = frozenset([edge.first, *together[edge.first]])
+        rows = list(dict.fromkeys(row for row in order if row in group))
+        if group in seen:
+            continue
+        seen.add(group)
+        inside = [e for e in edges if e.first in group and e.second in group]
+        landed = [landed_on(statuses.get(row, "")) for row in rows]
+        if any(e.kind == "after" for e in inside) or None in landed:
+            continue
+        if set.intersection(*(pulls for _, pulls in landed)):
+            continue
+        names_ = listed([named(row) for row in rows])
+        problems.append(
+            f'{where(edge.path, edge.row.line)}: row {edge.row.row}: "{edge.clause}": '
+            f"{names_} land together, as their orderings loop, but in no one pull "
+            "request: land them in one, and name it in each"
+        )
+    return problems
+
+
+def order_statuses(texts: Mapping[Path, str], names: Namespace) -> list[str]:
+    """Find a status that contradicts an ordering, item 7 of order spec §4.5.
+
+    Each ordering between two rows that exist is read as its relation asks: a row
+    ``after`` another, or ``before`` it read from that row, lands later and in
+    another pull request; a row ``with`` another, in the same one; and one ``with
+    or after`` another, in the same one or later. An ordering naming a row that
+    does not exist is the resolution rule's to refuse.
+    """
+    statuses = row_statuses(texts, names)
+    edges = ordering_edges(texts, names)
+    problems = _loops_landed_apart(edges, statuses)
+    for edge in edges:
+        if edge.first not in statuses or edge.second not in statuses:
+            continue
+        at = where(edge.path, edge.row.line)
+        if edge.kind == "with":
+            fault = _with_fault(edge, statuses, names)
+            if fault:
+                problems.append(f"{at}: {fault}")
+            continue
+        fault = _begun_too_soon(edge, statuses) or _landed_out_of_order(edge, statuses)
+        if fault:
+            problems.append(f'{at}: row {edge.row.row}: "{edge.clause}": {fault}')
     return problems
 
 
@@ -4510,7 +4644,10 @@ def ordering_in_prose(path: Path, text: str) -> list[str]:
     and the row. It reads the markdown's text, so emphasis and links hide nothing,
     and code is left out, so quoted words order nothing.
     """
-    remedy = f'write it in its row\'s Scope cell, as "{LINKED.strip()} after row 1"'
+    remedy = (
+        f'write it in its row\'s Scope cell, as "{LINKED.strip()} after row 1", or '
+        "reword it if it orders a row against something that is not a row"
+    )
     problems = []
     for row in citations.rows(text):
         scope = citations.prose(citations.split_scope(row.scope)[0])[0]
@@ -4715,6 +4852,16 @@ def test_orderings_twice_reads_with_in_either_direction(tmp_path):
     assert len(orderings_twice(texts, names)) == 1
 
 
+def test_orderings_twice_finds_a_release_repeated_on_one_row(tmp_path):
+    """A release is no edge of the graph, but is still written once."""
+    texts, names = ordered(
+        tmp_path, [(f"One{LINKED} before 0.6{LINKED} before 0.6", NOT_STARTED)]
+    )
+
+    (fault,) = orderings_twice(texts, names)
+    assert "twice" in fault
+
+
 def test_orderings_twice_passes_distinct_orderings(tmp_path):
     """Two rows each after a third are two orderings, and a release is its own."""
     texts, names = ordered(
@@ -4727,6 +4874,512 @@ def test_orderings_twice_passes_distinct_orderings(tmp_path):
     )
 
     assert orderings_twice(texts, names) == []
+
+
+def demo_row(row: int) -> str:
+    """Spell the anchor of a row of the demo specification's roadmap."""
+    return row_anchor("demo-spec", "2", str(row))
+
+
+def other_row(row: int) -> str:
+    """Spell the anchor of a row of the other specification's roadmap."""
+    return row_anchor("other-spec", "2", str(row))
+
+
+def test_ordering_edges_reads_each_relation_as_an_edge(tmp_path):
+    """Each relation is one edge, its first row landing first, and a release none.
+
+    ``after`` and ``before`` are the same edge read from either row, ``with`` is
+    its pair in order of anchor, and ``with or after`` keeps its direction.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1{LINKED} before 0.6", NOT_STARTED),
+            (f"Three{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Four{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Five{LINKED} with or after row 1 of other spec {SECTION}2", NOT_STARTED),
+        ],
+    )
+
+    edges = [
+        (edge.kind, edge.first, edge.second) for edge in ordering_edges(texts, names)
+    ]
+
+    assert edges == [
+        ("after", demo_row(1), demo_row(2)),
+        ("after", demo_row(3), other_row(1)),
+        ("with", *sorted((demo_row(4), other_row(1)))),
+        ("with or after", other_row(1), demo_row(5)),
+    ]
+
+
+def test_ordering_edges_records_where_each_is_written(tmp_path):
+    """An edge carries the row and clause that write it, for its faults to name."""
+    texts, names = ordered(
+        tmp_path, [("One", NOT_STARTED), (f"Two{LINKED} after row 1", NOT_STARTED)]
+    )
+
+    (edge,) = ordering_edges(texts, names)
+
+    assert edge.path.name.startswith("2026-01-01")
+    assert edge.row.row == "2"
+    assert edge.clause == "after row 1"
+
+
+def test_landed_on_reads_a_date_and_its_pull_requests():
+    """A landed row's date and pull requests; any other state has not landed."""
+    assert landed_on(f"{LANDED} (2026-11-03, {{pull}}`7`)") == (
+        date(2026, 11, 3),
+        {("bjlittle/geovista", 7)},
+    )
+    assert landed_on(NOT_STARTED) is None
+    assert landed_on(f"{IN_PROGRESS} ({{pull}}`7`)") is None
+
+
+def test_row_statuses_reads_every_roadmap_by_anchor(tmp_path):
+    """Each row's status, keyed by its anchor, in every specification."""
+    texts, names = ordered(
+        tmp_path, [("One", NOT_STARTED), ("Two", CANDIDATE)], [("Theirs", LANDED)]
+    )
+
+    assert row_statuses(texts, names) == {
+        demo_row(1): NOT_STARTED,
+        demo_row(2): CANDIDATE,
+        other_row(1): LANDED,
+    }
+
+
+def test_order_cycles_finds_a_cycle_in_one_roadmap(tmp_path):
+    """Item 5 of order spec §4.5: rows 1 to 3, each after the one before, and 1 after 3.
+
+    One cycle is one fault, naming each of its rows.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} after row 3", NOT_STARTED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            (f"Three{LINKED} after row 2", NOT_STARTED),
+        ],
+    )
+
+    (fault,) = order_cycles(texts, names)
+    assert "cycle" in fault
+    for row in (1, 2, 3):
+        assert f"row {row} of demo spec {SECTION}2" in fault
+
+
+def test_order_cycles_finds_a_cycle_across_specifications(tmp_path):
+    """Review Focus 1 of its plan: one row after another, each in its own spec."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"Mine{LINKED} after row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} after row 1 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    (fault,) = order_cycles(texts, names)
+    assert f"row 1 of demo spec {SECTION}2" in fault
+    assert f"row 1 of other spec {SECTION}2" in fault
+
+
+def test_order_cycles_finds_with_against_before(tmp_path):
+    """Review Focus 2 of its plan: with and before between one pair contradict."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            (
+                (
+                    f"Mine{LINKED} with row 1 of other spec {SECTION}2"
+                    f"{LINKED} before row 1 of other spec {SECTION}2"
+                ),
+                NOT_STARTED,
+            )
+        ],
+    )
+
+    (fault,) = order_cycles(texts, names)
+    assert "cycle" in fault
+
+
+def test_order_cycles_finds_with_against_before_on_the_other_row(tmp_path):
+    """The same contradiction, its before written on the row sorting second."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"Mine{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} before row 1 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    (fault,) = order_cycles(texts, names)
+    assert "cycle" in fault
+
+
+def test_order_cycles_passes_a_loop_of_with(tmp_path):
+    """A loop of with, through three rows of two specifications, lands in one PR.
+
+    So does one closed by a with or after, which may land in that pull request too.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Two{LINKED} with row 1{LINKED} with or after row 1", NOT_STARTED),
+        ],
+        [(f"Theirs{LINKED} with row 2 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    assert order_cycles(texts, names) == []
+
+
+def test_order_cycles_passes_an_order_without_a_loop(tmp_path):
+    """Rows ordered one after another, and two after a third, hold no cycle."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            (f"Three{LINKED} after row 1{LINKED} after row 2", NOT_STARTED),
+        ],
+    )
+
+    assert order_cycles(texts, names) == []
+
+
+@pytest.mark.parametrize("relation", ["after", "with", "with or after"])
+def test_order_candidates_finds_a_row_waiting_on_a_candidate(tmp_path, relation):
+    """Item 6 of order spec §4.5: a row not started waits on a candidate's trigger.
+
+    The fault names the row not started, whose ordering can never be met.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", f"{CANDIDATE}: a trigger"),
+            (f"Two{LINKED} {relation} row 1", NOT_STARTED),
+        ],
+    )
+
+    (fault,) = order_candidates(texts, names)
+    assert f"row 2 of demo spec {SECTION}2" in fault
+    assert "candidate" in fault
+
+
+def test_order_candidates_reads_a_with_written_on_the_candidate(tmp_path):
+    """A with is the pair either way round, so the candidate may write it."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"One{LINKED} with row 1 of other spec {SECTION}2", f"{CANDIDATE}: soon")],
+    )
+
+    (fault,) = order_candidates(texts, names)
+    assert f"row 1 of other spec {SECTION}2" in fault
+
+
+def test_order_candidates_reads_a_candidate_on_either_side_of_a_with(tmp_path):
+    """The candidate may sort second of a with's pair, as well as first."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"One{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [("Theirs", f"{CANDIDATE}: soon")],
+    )
+
+    (fault,) = order_candidates(texts, names)
+    assert f"row 1 of demo spec {SECTION}2 is not started" in fault
+
+
+def test_order_candidates_passes_a_candidate_waiting_on_a_row(tmp_path):
+    """A candidate after a row not started waits on its own trigger, and that row."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1", f"{CANDIDATE}: a trigger"),
+        ],
+    )
+
+    assert order_candidates(texts, names) == []
+
+
+def landed(day: str, pull: int) -> str:
+    """Spell a landed status, on a day of January 2026, by one pull request."""
+    return f"{LANDED} (2026-01-{day}, {{pull}}`{pull}`)"
+
+
+def in_order(
+    tmp_path: Path, first: str, second: str, relation: str = "after"
+) -> tuple[dict[Path, str], Namespace]:
+    """Write row 2 of the demo specification ordered against its row 1."""
+    return ordered(
+        tmp_path, [("One", first), (f"Two{LINKED} {relation} row 1", second)]
+    )
+
+
+def test_order_statuses_passes_rows_landed_in_order(tmp_path):
+    """Item 7 of order spec §4.5: a row after another lands later, by its own PR."""
+    texts, names = in_order(tmp_path, landed("01", 7), landed("02", 8))
+
+    assert order_statuses(texts, names) == []
+
+
+def test_order_statuses_passes_rows_landed_the_same_day(tmp_path):
+    """Review Focus 3 of its plan: the order within a day is GitHub's to say."""
+    texts, names = in_order(tmp_path, landed("01", 7), landed("01", 8))
+
+    assert order_statuses(texts, names) == []
+
+
+def test_order_statuses_passes_a_row_begun_after_its_predecessor_landed(tmp_path):
+    """A row may be in progress, or not started, once the row before it lands."""
+    for second in (f"{IN_PROGRESS} ({{pull}}`8`)", NOT_STARTED):
+        texts, names = in_order(tmp_path, landed("01", 7), second)
+        assert order_statuses(texts, names) == [], second
+
+
+def test_order_statuses_finds_a_row_landed_before_its_predecessor(tmp_path):
+    """A row after another, landed on an earlier day."""
+    texts, names = in_order(tmp_path, landed("02", 8), landed("01", 7))
+
+    (fault,) = order_statuses(texts, names)
+    assert f"row 2 of demo spec {SECTION}2 landed on 2026-01-01" in fault
+    assert "2026-01-02" in fault
+
+
+def test_order_statuses_finds_rows_landed_by_one_pull_request(tmp_path):
+    """A row after another lands in another pull request: one PR lands a with."""
+    texts, names = in_order(tmp_path, landed("01", 7), landed("01", 7))
+
+    (fault,) = order_statuses(texts, names)
+    assert "same pull request" in fault
+
+
+@pytest.mark.parametrize("state", ["in progress", "landed"])
+def test_order_statuses_finds_a_row_begun_before_its_predecessor(tmp_path, state):
+    """Review Focus 4 of its plan: workflow rule 2.7 plans a row once its rows land.
+
+    So a row after one not started is neither in progress nor landed.
+    """
+    second = landed("01", 7) if state == "landed" else f"{IN_PROGRESS} ({{pull}}`7`)"
+    texts, names = in_order(tmp_path, NOT_STARTED, second)
+
+    (fault,) = order_statuses(texts, names)
+    assert f"row 2 of demo spec {SECTION}2 is {state}" in fault
+    assert f"row 1 of demo spec {SECTION}2" in fault
+
+
+def test_order_statuses_finds_a_row_landed_before_the_row_it_precedes(tmp_path):
+    """A row before another has landed by the time the other lands."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"Mine{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [("Theirs", landed("01", 7))],
+    )
+
+    (fault,) = order_statuses(texts, names)
+    assert f"row 1 of other spec {SECTION}2 is landed" in fault
+    assert "row 1 of demo spec" in fault
+
+
+def test_order_statuses_passes_with_or_after_in_one_pull_request(tmp_path):
+    """With or after lands in the same pull request, or once the other has landed."""
+    for first, second in (
+        (landed("01", 7), landed("01", 7)),
+        (landed("01", 7), landed("02", 8)),
+        (f"{IN_PROGRESS} ({{pull}}`7`)", f"{IN_PROGRESS} ({{pull}}`7`)"),
+        (NOT_STARTED, NOT_STARTED),
+    ):
+        texts, names = in_order(tmp_path, first, second, "with or after")
+        assert order_statuses(texts, names) == [], (first, second)
+
+
+def test_order_statuses_finds_with_or_after_landed_first(tmp_path):
+    """With or after never lands before its row, nor begins before it has."""
+    for first, second, said in (
+        (NOT_STARTED, landed("01", 7), "has landed"),
+        (landed("02", 8), landed("01", 7), "landed on 2026-01-01"),
+        (NOT_STARTED, f"{IN_PROGRESS} ({{pull}}`7`)", "is in progress"),
+    ):
+        texts, names = in_order(tmp_path, first, second, "with or after")
+        (fault,) = order_statuses(texts, names)
+        assert f"row 2 of demo spec {SECTION}2 {said}" in fault, (first, second)
+
+
+def test_order_statuses_finds_a_loop_landed_by_two_pull_requests(tmp_path):
+    """Rows with or after each other land in one PR, even on one day.
+
+    A loop forces its rows into one pull request, which the same-day allowance
+    for rows with no loop between them cannot relax.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} with or after row 2", landed("01", 7)),
+            (f"Two{LINKED} with or after row 1", landed("01", 8)),
+        ],
+    )
+
+    (fault,) = order_statuses(texts, names)
+    assert f"row 1 of demo spec {SECTION}2 and row 2 of demo spec {SECTION}2" in fault
+    assert "one pull request" in fault
+
+
+def test_order_statuses_finds_a_loop_through_with_landed_apart(tmp_path):
+    """A loop holds every row of it to one PR, not just each pair along it."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} with or after row 3", landed("01", 7)),
+            (f"Two{LINKED} with row 1", landed("01", 7)),
+            (f"Three{LINKED} with or after row 2", landed("01", 8)),
+        ],
+    )
+
+    (fault,) = order_statuses(texts, names)
+    assert f"row 3 of demo spec {SECTION}2" in fault
+    assert "one pull request" in fault
+
+
+def test_order_statuses_passes_a_loop_landed_together(tmp_path):
+    """A loop landed by one pull request holds."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} with or after row 2", landed("01", 7)),
+            (f"Two{LINKED} with or after row 1", landed("01", 7)),
+        ],
+    )
+
+    assert order_statuses(texts, names) == []
+
+
+def test_landing_together_groups_the_rows_a_loop_forces_into_one_pr(tmp_path):
+    """A chain of with and a loop of with or after are each one group; after is not."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} with row 1", NOT_STARTED),
+            (f"Three{LINKED} with row 2", NOT_STARTED),
+            (f"Four{LINKED} with or after row 5", NOT_STARTED),
+            (f"Five{LINKED} with or after row 4{LINKED} after row 3", NOT_STARTED),
+        ],
+    )
+
+    groups = landing_together(ordering_edges(texts, names))
+
+    assert groups[demo_row(1)] == [demo_row(2), demo_row(3)]
+    assert groups[demo_row(3)] == [demo_row(1), demo_row(2)]
+    assert groups[demo_row(4)] == [demo_row(5)]
+    assert demo_row(6) not in groups
+
+
+def landing(
+    tmp_path: Path, mine: str, theirs: str, scope: str | None = None
+) -> tuple[dict[Path, str], Namespace]:
+    """Write a row landing with another specification's row, with their statuses."""
+    scope = scope or f"Mine{LINKED} with row 1 of other spec {SECTION}2"
+    return ordered(tmp_path, [(scope, mine)], [("Theirs", theirs)])
+
+
+def test_order_statuses_passes_rows_landed_together_or_not_at_all(tmp_path):
+    """Two rows with each other land in one pull request, or neither has.
+
+    Held, before order spec §4.7 folded it in, by items spec §7 item 14.
+    """
+    together = landed("01", 7)
+
+    for mine, theirs in (
+        (NOT_STARTED, NOT_STARTED),
+        (f"{IN_PROGRESS} ({{pull}}`7`)", NOT_STARTED),
+        (together, together),
+    ):
+        texts, names = landing(tmp_path, mine, theirs)
+        assert order_statuses(texts, names) == [], (mine, theirs)
+
+
+def test_order_statuses_finds_a_row_landed_alone_or_apart(tmp_path):
+    """One landed without the other, or by another pull request."""
+    alone = landed("01", 7)
+    apart = landed("02", 8)
+    cited = f"row 1 of other spec {SECTION}2"
+
+    texts, names = landing(tmp_path, alone, NOT_STARTED)
+    assert faults(order_statuses(texts, names)) == [
+        f"row 1 lands with {cited}, which has not landed"
+    ]
+    texts, names = landing(tmp_path, NOT_STARTED, alone)
+    assert faults(order_statuses(texts, names)) == [
+        f"row 1 lands with {cited}, which has landed without it"
+    ]
+    texts, names = landing(tmp_path, alone, apart)
+    assert faults(order_statuses(texts, names)) == [
+        f"row 1 lands with {cited}, which landed in another pull request"
+    ]
+
+
+def test_order_statuses_knows_a_pull_request_by_any_reference(tmp_path):
+    """A pull request is the same however it is cited, and one must be cited.
+
+    A link to another repository's pull request is as good as a role, and two
+    rows citing no pull request have no landing to share.
+    """
+    cited = f"row 1 of other spec {SECTION}2"
+    seven = f"{LANDED} (2026-01-01, [PR7](https://github.com/o/r/pull/7))"
+    eight = f"{LANDED} (2026-01-02, [PR8](https://github.com/o/r/pull/8))"
+    issue = f"{LANDED} (2026-01-01, {{issue}}`7`)"
+
+    texts, names = landing(tmp_path, seven, eight)
+    assert faults(order_statuses(texts, names)) == [
+        f"row 1 lands with {cited}, which landed in another pull request"
+    ]
+    texts, names = landing(tmp_path, seven, seven)
+    assert order_statuses(texts, names) == []
+    role = landed("01", 7)
+    for spelling in (
+        "[PR7](https://github.com/BJLittle/GeoVista/pull/7)",
+        "[PR7](https://github.com/bjlittle/geovista/pull/07)",
+        "{pull}`07`",
+    ):
+        texts, names = landing(tmp_path, role, f"{LANDED} (2026-01-01, {spelling})")
+        assert order_statuses(texts, names) == [], spelling
+    texts, names = landing(tmp_path, issue, issue)
+    assert faults(order_statuses(texts, names)) == [
+        f"row 1 lands with {cited}, but neither names the pull request they landed in"
+    ]
+
+
+def test_order_statuses_reads_no_ordering_in_code(tmp_path):
+    """Quoted in code, the words are an example, and order nothing."""
+    quoted = f"{LINKED.strip()} with row 1 of other spec {SECTION}2"
+    scope = f"Mine, as `{quoted}` reads"
+
+    texts, names = landing(tmp_path, landed("01", 7), NOT_STARTED, scope)
+
+    assert order_statuses(texts, names) == []
+
+
+def test_order_statuses_reads_only_the_cell_form(tmp_path):
+    """A scope still saying *landing with* in words holds no check of its own.
+
+    The prose guard refuses it (order spec §4.5 item 4), so the words are read once.
+    """
+    scope = f"Mine, landing with row 1 of other spec {SECTION}2"
+
+    texts, names = landing(tmp_path, landed("01", 7), NOT_STARTED, scope)
+
+    assert order_statuses(texts, names) == []
+
+
+def test_order_statuses_reads_every_specification(tmp_path):
+    """A row ordered in the last specification read is checked too."""
+    texts, names = ordered(
+        tmp_path,
+        [("Mine", NOT_STARTED)],
+        [(f"Theirs{LINKED} with row 1 of demo spec {SECTION}2", landed("01", 7))],
+    )
+
+    assert list(texts)[-1].name.startswith("2026-01-02")
+    assert len(order_statuses(texts, names)) == 1
 
 
 def prose_faults(
@@ -4950,6 +5603,51 @@ def test_ordering_form_refuses_a_row_ordered_against_itself(tmp_path):
 
     assert len(faults) == 2
     assert all("itself" in fault for fault in faults)
+
+
+def test_ordering_in_prose_names_rewording(tmp_path):
+    """Order spec §8 item 1: words ordering a row against no row are reworded.
+
+    *Once rows 1 and 2 have landed, the issue closes* says when an issue closes,
+    which no Scope cell can, so the advice names both ways out.
+    """
+    for scope, below in (("Two, once row 1 lands", ""), ("Two", "Row 2 needs row 1.")):
+        (fault,) = prose_faults(tmp_path, below=below, scope=scope)
+        assert "Scope cell" in fault
+        assert "reword" in fault
+
+
+def test_no_order_cycles(specs, names):
+    """No rows of any roadmap are ordered in a cycle.
+
+    Holds order spec §2 decision 7.
+    """
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    problems = order_cycles(texts, names)
+
+    assert not problems, "\n".join(problems)
+
+
+def test_no_row_waits_on_a_candidate(specs, names):
+    """No row not started is ordered after, with or with or after a candidate.
+
+    Holds order spec §2 decision 7.
+    """
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    problems = order_candidates(texts, names)
+
+    assert not problems, "\n".join(problems)
+
+
+def test_every_status_agrees_with_its_orderings(specs, names):
+    """Every status holds the orderings of its row, with landing together among them.
+
+    Holds order spec §2 decision 7 and order spec §2 decision 9.
+    """
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    problems = order_statuses(texts, names)
+
+    assert not problems, "\n".join(problems)
 
 
 def test_the_collection_writes_orderings(specs):

@@ -287,6 +287,8 @@ specification it asserts that:
    that exists.
 7. A row whose scope says it lands *with* another row, citing that one row, as §3.4 has
    it, has landed by the same pull request as that row, which both name, or neither has.
+   Item 7 of order spec §4.5 now holds this rule, as one case of a status that contradicts
+   an ordering (order spec §4.7).
 
 The second assertion is the landing gate of §3.5, since landing a row is changing its
 status. A specification not yet brought in is named in a list the test keeps, beside the row
@@ -531,8 +533,8 @@ Each carries the status grammar of §3.2.
     after it, and the suite would pass. A check could read a scope's *landing with* and
     fail when one row has landed and the other has not, or when they landed in different
     pull requests. {pull}`2879` adds that check, as item 7 of §3.7.
-15. **❓ Open** (🔎 2026-11-12, {pull}`2956` · 🎯 row 8 of §8 · 🎫 {issue}`2955`) — **The order
-    between rows is not checked.** A row can depend on another, in its own specification or
+15. **🏁 Resolved** (2026-11-18, {pull}`2994` · 🔎 2026-11-12, {pull}`2956` ·
+    🎫 {issue}`2955`) — **The order between rows is not checked.** A row can depend on another, in its own specification or
     another's, and the specifications say so in prose: lands with, lands before, lands with
     or after, is planned once another has landed, waits on. Item 7 of §3.7 checks the first
     alone, and nothing reads the graph they make across the specifications. The layers
@@ -541,7 +543,8 @@ Each carries the status grammar of §3.2.
     someone designed it, and only a reviewer reading the whole chain found it. A check could
     read every roadmap's ordering phrases into one graph, fail on a cycle and on a
     `not started` row that must land with or after a `candidate`, and report a row that
-    must land with another that still owes open items.
+    must land with another that still owes open items. {pull}`2994` adds that check, as
+    items 5 to 7 of order spec §4.5, with the report of order spec §4.6.
 
 (items-spec-8)=
 ## 8. Roadmap
@@ -555,7 +558,7 @@ Each carries the status grammar of §3.2.
 | 5 | The globe, scene, heights and ledger specifications' items brought in · 🔗 after row 1 | ✅ landed (2026-11-03, {pull}`2826`) |
 | 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | ✅ landed (2026-11-04, {pull}`2878`) |
 | 7 | A row landing with another specification's row checked to land with it, §7 item 14 · 🔗 after row 6 | ✅ landed (2026-11-05, {pull}`2879`) |
-| 8 | The order between rows checked across the specifications, §7 item 15 · 🔗 with row 2 of order spec §9 | 📋 not started |
+| 8 | The order between rows checked across the specifications, §7 item 15 · 🔗 with row 2 of order spec §9 | ✅ landed (2026-11-18, {pull}`2994`) |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 can land in any order. Rows 3 to 5 each raise
 the issues their specifications' items lack, and need {user}`bjlittle`'s judgement on the

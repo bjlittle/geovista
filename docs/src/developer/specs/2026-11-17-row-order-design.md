@@ -162,8 +162,8 @@ An ordering follows the scope of its row, opened by a middle dot, a space and �
 The first `· 🔗` ends the scope, and each after it opens one more ordering, so a scope that
 is itself a list of commas reads as it did. A bare `row N` names a row of the same roadmap,
 and a row of another specification is cited in full, in the grammar every citation uses,
-so the build links it and the renumber guard follows it. A range is refused, as
-`landing_together` refuses one today: each ordering names one row.
+so the build links it and the renumber guard follows it. A range is refused: each
+ordering names one row.
 
 🔗 is U+1F517, which needs no variation selector. The grammar reads it with one as
 without, as it reads the roadmap states (ledger spec §2 decision 16).
@@ -235,7 +235,9 @@ fails on each of these, naming the row and the ordering:
    request. A row `before` another has landed by the time the other lands, likewise. A row
    `with` another lands in the same pull request, and one `with or after` another in the
    same one or once the other has landed. Rows landed on the same day pass on their dates
-   alone, since the order within a day is GitHub's to say.
+   alone, since the order within a day is GitHub's to say, unless their orderings loop: rows
+   that each land no later than the other, as a loop of `with or after` has them, land in
+   one pull request.
 
 Form, items 1 to 4, comes with row 1 of §9, and the graph, items 5 to 7, with row 2.
 
@@ -245,7 +247,9 @@ Form, items 1 to 4, comes with row 1 of §9, and the graph, items 5 to 7, with r
 A row `with` another lands in one pull request with it, and that pull request answers the
 open items both rows owe (items spec §3.5). The verification report each pull request gets
 (ledger spec §3.8, items spec §3.9) lists, for each row `in progress`, the rows that land
-with it and the items each owes. `in progress` is how the report already knows a row is
+with it and the items each owes. Those are the rows its orderings force into its pull
+request: each row it is `with`, each row those are `with` in turn, and each row a loop of
+`with or after` joins to it. `in progress` is how the report already knows a row is
 being delivered, as it does for the row's own items, so it needs no pull request to read. The check does not fail on them: until that pull request is
 opened, a row owing items is the ordinary state of the roadmap.
 
@@ -330,11 +334,13 @@ renderer; the order of a plan's tasks; and the plans, which are frozen.
 
 Each carries the grammar of items spec §3.2.
 
-1. **❓ Open** (🔎 2026-11-17, {pull}`2990` · 🎯 row 2 of §9 · 🎫 {issue}`2991`) — **The
-   prose guard's advice is wrong for a row ordered against something else.** It refuses
+1. **🏁 Resolved** (2026-11-18, {pull}`2994` · 🔎 2026-11-17, {pull}`2990` ·
+   🎫 {issue}`2991`) — **The prose guard's advice is wrong for a row ordered against
+   something else.** It refuses
    *Once rows 1 and 2 have landed, the issue closes* as an ordering, and says to write it in
    the row's Scope cell, which cannot say when an issue closes. The message should name
-   rewording as the other way out. The final review of row 1 found it.
+   rewording as the other way out. The final review of row 1 found it. {pull}`2994` adds
+   rewording to the message.
 
 (order-spec-9)=
 ## 9. Roadmap
@@ -342,7 +348,7 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The form: the grammar of §4.1 to §4.4 in `geovista_citations`, items 1 to 4 of §4.5, every ordering of today moved into its cell with `landing_together` reading `🔗 with` and the renumber guard pairing rows without their orderings (§3.3, §4.7), and the developer guide's account of the form (§4.8) | ✅ landed (2026-11-18, {pull}`2990`) |
-| 2 | The graph: items 5 to 7 of §4.5, `landing_together` folded into them (§4.7), the report of §4.6, and their pages (§4.8) · 🔗 after row 1 | 📋 not started |
+| 2 | The graph: items 5 to 7 of §4.5, `landing_together` folded into them (§4.7), the report of §4.6, and their pages (§4.8) · 🔗 after row 1 | ✅ landed (2026-11-18, {pull}`2994`) |
 
 Statuses follow docs spec §3.6. Row 1 keeps every check reading what it moves, so it is
 safe to land alone. Row 2 is the check that row 8 of items spec §8 owes for
@@ -370,8 +376,8 @@ Each row follows ledger spec §3.4.
 | §2 decision 4 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
 | §2 decision 5 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
 | §2 decision 6 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
-| §2 decision 7 | ⏳ pending | |
-| §2 decision 8 | ⏳ pending | |
-| §2 decision 9 | ⏳ pending | |
-| §2 decision 10 | ⏳ pending | |
+| §2 decision 7 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_spec_conventions.py` |
+| §2 decision 8 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_verification_report.py` |
+| §2 decision 9 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_spec_conventions.py` |
+| §2 decision 10 | ✍️ signed off (2026-11-18, {user}`bjlittle`, {pull}`2994`) | Checked in review that the specifications index shows how to write an ordering and what the check refuses, that the Repository Checks page names each fault of §4.5 with its remedy, and that `docs/AGENTS.md` carries the rule. |
 | §2 decision 11 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
