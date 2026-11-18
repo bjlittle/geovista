@@ -653,15 +653,16 @@ def landing_together(
     mine: tuple[str, str],
     theirs: tuple[str, str],
     owed: str = "",
+    mine_owes: str = "",
 ) -> Path:
     """Write a demo and an other specification, each a roadmap of one row.
 
-    Each row is its scope and its status, and ``owed`` the open items of the
-    other specification, owed by its row.
+    Each row is its scope and its status, ``owed`` the open items of the other
+    specification, owed by its row, and ``mine_owes`` the demo's.
     """
     s = SECTION
     for slug, (scope, state), items in (
-        ("demo", mine, ""),
+        ("demo", mine, mine_owes),
         ("other", theirs, owed),
     ):
         number = "01" if slug == "demo" else "02"
@@ -678,13 +679,13 @@ def landing_together(
     return tmp_path
 
 
-def together(script, root: Path) -> list[str]:
-    """Read the demo specification's findings of rows landing together."""
+def together(script, root: Path, prefix: str = "demo-spec") -> list[str]:
+    """Read one specification's findings of rows landing together."""
     specs = script.grammar.specifications(root / script.SPECS)
     names = script.grammar.namespace(specs)
     texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
-    demo = next(spec for spec in specs if names.owners[spec] == "demo-spec")
-    return script._together_findings(demo, texts, names)
+    reported = next(spec for spec in specs if names.owners[spec] == prefix)
+    return script._together_findings(reported, texts, names)
 
 
 def test_together_findings_names_the_items_a_partner_owes(script, tmp_path):
@@ -722,6 +723,21 @@ def test_together_findings_reads_a_with_written_on_the_partner(script, tmp_path)
 
     (finding,) = together(script, root)
     assert f"other spec {s}3 item 1 and other spec {s}3 item 2" in finding
+
+
+def test_together_findings_reads_either_row_of_the_pair(script, tmp_path):
+    """The row in progress may be either of a with's pair, as its anchors sort."""
+    s = SECTION
+    root = landing_together(
+        tmp_path,
+        (f"Mine{LINKED} with row 1 of other spec {s}2", NOT_STARTED),
+        ("Theirs", IN_PROGRESS),
+        mine_owes=item(1, OPEN, f"row 1 of {s}2", 0, "Owed."),
+    )
+
+    (finding,) = together(script, root, "other-spec")
+    assert finding.startswith(f"row 1 of other spec {s}2 is in progress")
+    assert f"which owes demo spec {s}3 item 1" in finding
 
 
 def test_together_findings_names_only_a_row_owing_items(script, tmp_path):
