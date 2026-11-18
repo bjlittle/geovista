@@ -19,7 +19,7 @@
 - **Lineage:** [docs spec](2026-10-06-published-specs-design.md) ›
   [ledger spec](2026-10-30-decision-ledger-design.md) ›
   [items spec](2026-11-02-open-items-design.md) › **order spec**
-- **Children:** none
+- **Children:** [diagram spec](2026-11-18-row-order-diagrams-design.md)
 - **Extends:** items spec §3.4, whose row *landing with* another becomes one relation of
   four, and items spec §7 item 15, which it designs before row 8 of items spec §8 builds it
 - **Published:** in the specifications index
@@ -209,6 +209,11 @@ CI's shallow clones do not fetch.
 
 (order-spec-4-5)=
 ### 4.5 The Check
+
+> **Extended by a child specification.**
+> [`2026-11-18-row-order-diagrams-design.md`](2026-11-18-row-order-diagrams-design.md),
+> `diagram spec §…`, draws the graph this check reads: under each roadmap, as the open
+> work on the specifications index, and on each pull request that changes a specification.
 
 The conventions test reads every ordering of every roadmap into one graph of rows, and
 fails on each of these, naming the row and the ordering:
