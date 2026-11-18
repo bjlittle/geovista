@@ -226,10 +226,11 @@ def _together_findings(
                 continue
             owed = _owed(theirs, by_prefix, texts, names)
             if owed:
+                them = "them" if len(owed) > 1 else "it"
                 found.append(
                     f"{conventions.named(mine)} is in progress and lands with "
                     f"{conventions.named(theirs)}, which owes "
-                    f"{conventions.listed(owed)}: its pull request must answer them."
+                    f"{conventions.listed(owed)}: its pull request must answer {them}."
                 )
     return found
 
@@ -415,7 +416,7 @@ def report(
 
     """
     cited = citations_of(texts, names)
-    roadmaps = {spec: spec.read_text(encoding="utf-8") for spec in names.owners}
+    roadmaps = {spec: texts[spec] for spec in names.owners if spec in texts}
     out = ["# Verification Report", ""]
     findings: list[str] = []
     for spec in specs:

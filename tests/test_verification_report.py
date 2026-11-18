@@ -704,7 +704,7 @@ def test_together_findings_names_the_items_a_partner_owes(script, tmp_path):
     expected = (
         f"row 1 of demo spec {s}2 is in progress and lands with row 1 of other "
         f"spec {s}2, which owes other spec {s}3 item 1: its pull request must "
-        "answer them."
+        "answer it."
     )
 
     assert together(script, root) == [expected]
@@ -723,6 +723,7 @@ def test_together_findings_reads_a_with_written_on_the_partner(script, tmp_path)
 
     (finding,) = together(script, root)
     assert f"other spec {s}3 item 1 and other spec {s}3 item 2" in finding
+    assert finding.endswith("its pull request must answer them.")
 
 
 def test_together_findings_reads_either_row_of_the_pair(script, tmp_path):
