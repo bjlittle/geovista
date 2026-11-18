@@ -529,21 +529,36 @@ def ready_rows(edges: Sequence[Edge], statuses: Mapping[str, str]) -> set[str]:
     return found
 
 
+#: What a label escapes, and how: Mermaid reads ``#`` as opening an entity, a
+#: quote as closing the label, and its sanitiser strips anything in angle
+#: brackets as a tag. ``#`` goes first, as each entity opens with one.
+MERMAID_ENTITIES = (("#", "#35;"), ('"', "#quot;"), ("<", "#lt;"), (">", "#gt;"))
+
 #: A role, as ``{issue}`7```, which a label reads as its target.
 LABEL_ROLE = re.compile(r"\{(?P<role>[\w:-]+)\}`(?P<target>[^`]*)`")
 
 
 def _label_text(scope: str) -> str:
-    """Read a scope as plain text: roles as their target, markdown as its text."""
+    """Read a scope as plain text: roles as their target, markdown as its text.
+
+    An issue or pull request of this repository reads as ``#N``, and any other
+    role as its target. Code and raw HTML keep their text, and a line break
+    reads as a space.
+    """
     scope = LABEL_ROLE.sub(
-        lambda m: f"#{m['target']}" if m["role"] in {"issue", "pull"} else m["target"],
+        lambda m: (
+            f"#{m['target']}"
+            if m["role"] in {"issue", "pull"} and m["target"].isdigit()
+            else m["target"]
+        ),
         scope,
     )
     parsed = MarkdownIt("commonmark").parseInline(scope)
+    pieces = {"text", "code_inline", "html_inline"}
     text = "".join(
-        token.content
+        token.content if token.type in pieces else " "
         for token in (parsed[0].children if parsed else None) or []
-        if token.type in {"text", "code_inline", "softbreak"}
+        if token.type in pieces or token.type in {"softbreak", "hardbreak"}
     )
     return " ".join(text.split())
 
@@ -554,8 +569,8 @@ def row_labels(
     """Label every row of every roadmap for a diagram (diagram spec §4.2).
 
     A label is the row's number and its scope, without its orderings, read as
-    plain text, cut at ``width`` characters, and escaped for Mermaid, which reads
-    ``#`` as opening an entity and ``"`` as closing the label.
+    plain text, cut at ``width`` characters, and escaped for Mermaid
+    (:data:`MERMAID_ENTITIES`).
 
     Parameters
     ----------
@@ -581,7 +596,9 @@ def row_labels(
             scope = _label_text(split_scope(row.scope)[0])
             if len(scope) > width:
                 scope = scope[:width].rstrip() + "\N{HORIZONTAL ELLIPSIS}"
-            label = f"{row.row}: {scope}".replace("#", "#35;").replace('"', "#quot;")
+            label = f"{row.row}: {scope}"
+            for char, entity in MERMAID_ENTITIES:
+                label = label.replace(char, entity)
             labels[row_anchor(owner, row.section, row.row)] = label
     return labels
 

@@ -1505,3 +1505,135 @@ def test_roadmap_view_draws_nothing_without_an_ordering(tmp_path, citations):
         citations.ordering_edges(texts, names),
         citations.row_statuses(texts, names),
     ) == ([], set())
+
+
+def test_diagram_reads_ready_from_every_edge_it_is_given(tmp_path, citations):
+    """A row drawn small still waits on a row its own roadmap holds, undrawn.
+
+    Holds diagram spec §2 decision 9: only a row truly freed shows as ready.
+    """
+    texts, names = roadmaps(
+        tmp_path,
+        citations,
+        [(f"One{LINKED} before row 1 of other spec {SECTION}2", LANDED)],
+        [(f"Theirs{LINKED} after row 2", NOT_STARTED), ("Second", NOT_STARTED)],
+    )
+    edges = citations.ordering_edges(texts, names)
+    statuses = citations.row_statuses(texts, names)
+    rows, small = citations.roadmap_view("demo-spec", edges, statuses)
+
+    text = citations.diagram(
+        rows, edges, statuses, citations.row_labels(texts, names), small=small
+    )
+
+    assert other_row(2) not in rows
+    assert f"  class {ident(other_row(1))} todo_small\n" in text
+
+
+def test_row_labels_keeps_angle_brackets(tmp_path, citations):
+    """Code, an entity or raw HTML holding angle brackets keeps them in the label.
+
+    Mermaid's sanitiser would strip them as tags, so they are escaped.
+    """
+    found = labels(
+        tmp_path,
+        citations,
+        "Read `docs/<name>.md`",
+        "An &lt;entity&gt;",
+        "Brackets <angle>",
+    )
+
+    assert found == [
+        "1: Read docs/#lt;name#gt;.md",
+        "2: An #lt;entity#gt;",
+        "3: Brackets #lt;angle#gt;",
+    ]
+
+
+def test_row_labels_reads_a_pull_request_in_another_repository(tmp_path, citations):
+    """A role naming another repository's work reads as written, without a hash."""
+    (found,) = labels(tmp_path, citations, "See {pull}`bjlittle/geovista-data#12`")
+
+    assert found == "1: See bjlittle/geovista-data#35;12"
+
+
+def test_row_labels_cuts_at_a_space_without_one_before_the_ellipsis(
+    tmp_path, citations
+):
+    """A cut landing on a space leaves no space before the ellipsis."""
+    (found,) = labels(tmp_path, citations, "x" * 39 + " " + "y" * 30)
+
+    assert found == "1: " + "x" * 39 + "\N{HORIZONTAL ELLIPSIS}"
+
+
+def test_label_text_reads_a_line_break_as_a_space(citations):
+    """Words either side of a line break stay apart."""
+    assert citations._label_text("one\ntwo") == "one two"
+
+
+def test_diagram_draws_an_ordering_written_twice_once(tmp_path, citations):
+    """A with written on both its rows is one arrow (orderings_twice refuses it)."""
+    text = drawn(
+        tmp_path,
+        citations,
+        [(f"Mine{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} with row 1 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    assert text.count(" <==> ") == 1
+
+
+def test_diagram_escapes_a_quote_in_a_link(tmp_path, citations):
+    """A quote cannot end a link early."""
+    text = drawn(
+        tmp_path,
+        citations,
+        [("One", NOT_STARTED)],
+        links={demo_row(1): 'a"b.html'},
+    )
+
+    assert f'  click {ident(demo_row(1))} href "a%22b.html"\n' in text
+
+
+def test_roadmap_view_draws_other_rows_in_reading_order(tmp_path, citations):
+    """Another specification's rows follow the roadmap's own, as they are written."""
+    texts, names = roadmaps(
+        tmp_path,
+        citations,
+        [
+            (f"One{LINKED} with row 2 of other spec {SECTION}2", NOT_STARTED),
+            (f"Two{LINKED} after row 1 of other spec {SECTION}2", NOT_STARTED),
+        ],
+        [("First", LANDED), ("Second", NOT_STARTED)],
+    )
+
+    rows, _ = citations.roadmap_view(
+        "demo-spec",
+        citations.ordering_edges(texts, names),
+        citations.row_statuses(texts, names),
+    )
+
+    assert rows == [demo_row(1), demo_row(2), other_row(1), other_row(2)]
+
+
+def test_diagram_draws_nothing_for_a_row_that_does_not_exist(tmp_path, citations):
+    """Review Focus 4 of its plan: an ordering naming no row draws no box or arrow."""
+    texts, names = roadmaps(
+        tmp_path,
+        citations,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 9 of other spec {SECTION}2", NOT_STARTED),
+        ],
+    )
+    edges = citations.ordering_edges(texts, names)
+    statuses = citations.row_statuses(texts, names)
+    rows, small = citations.roadmap_view("demo-spec", edges, statuses)
+
+    text = citations.diagram(
+        rows, edges, statuses, citations.row_labels(texts, names), small=small
+    )
+
+    assert rows == [demo_row(1), demo_row(2)]
+    assert "row_9" not in text
+    assert "-->" not in text
