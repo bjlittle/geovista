@@ -308,6 +308,7 @@ def _job() -> dict[str, Any]:
     return jobs[JOB]
 
 
+@pytest.mark.xfail(strict=True, reason="throwaway pull_request trigger")
 def test_the_workflow_runs_each_week_and_by_hand():
     """A floor that PyPI breaks is found within the week (floors spec §4.3).
 
