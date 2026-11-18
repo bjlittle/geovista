@@ -4432,44 +4432,121 @@ def ordering_form(path: Path, text: str, names: Namespace) -> list[str]:
     return problems
 
 
-def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
-    """Find an ordering written twice, item 3 of order spec §4.5.
+class Edge(NamedTuple):
+    """One ordering between two rows, read as an edge of the graph of every roadmap.
 
-    Each ordering is read as an edge: ``after`` X on Y and ``before`` Y on X are
-    X before Y, ``with`` is the pair either way round, ``with or after`` keeps its
-    direction, and a release is the row's own. Two equal edges are one ordering
-    written twice, on one row or on both of its rows.
+    Attributes
+    ----------
+    kind : str
+        ``after``, ``with`` or ``with or after``: ``before`` is ``after`` read
+        from the other row.
+    first : str
+        The anchor of the row landing first, or of the first of a ``with`` pair
+        in order of anchor.
+    second : str
+        The anchor of the other row.
+    path : Path
+        The specification that writes it.
+    row : Row
+        The row that writes it.
+    clause : str
+        The clause that writes it, as ``after row 1``.
+
     """
-    seen: set[tuple[str, ...]] = set()
-    problems = []
+
+    kind: str
+    first: str
+    second: str
+    path: Path
+    row: Row
+    clause: str
+
+
+def ordering_edges(
+    texts: Mapping[Path, str], names: Namespace, *, releases: bool = False
+) -> list[Edge]:
+    """Read every ordering of every roadmap as an edge, once (order spec §4.5).
+
+    ``after`` X on Y and ``before`` Y on X are both X landing before Y, ``with``
+    is its pair in order of anchor, and ``with or after`` keeps its direction. A
+    release is no edge of the graph (order spec §4.4), so it is read only when
+    ``releases`` asks, as the row landing before ``release 0.6``. An ordering
+    that names no row, or its own row, is the form rule's to refuse.
+    """
+    edges = []
     for path, text in texts.items():
         owner = names.owners.get(path)
+        if owner is None:
+            continue
         rows = citations.rows(text)
         for row in rows:
-            mine = row_anchor(owner, row.section, row.row) if owner else row.row
+            mine = row_anchor(owner, row.section, row.row)
             for clause in citations.split_scope(row.scope)[1]:
                 said = citations.ordering(clause)
                 if said is None:
                     continue
                 key, _ = ordering_target(said, row, rows, owner, names)
-                if key is None:
+                if (
+                    key is None
+                    or key == mine
+                    or (key.startswith("release ") and not releases)
+                ):
                     continue
-                edge: tuple[str, ...]
                 if said.relation == "with":
-                    edge = ("with", *sorted((mine, key)))
+                    first, second = sorted((mine, key))
                 elif said.relation == "before":
-                    edge = ("after", mine, key)
-                elif said.relation == "after":
-                    edge = ("after", key, mine)
+                    first, second = mine, key
                 else:
-                    edge = (said.relation, key, mine)
-                if edge in seen:
-                    problems.append(
-                        f'{where(path, row.line)}: row {row.row}: "{clause}" is '
-                        "written twice: write an ordering once, on the row its reason "
-                        "belongs to"
-                    )
-                seen.add(edge)
+                    first, second = key, mine
+                kind = "after" if said.relation == "before" else said.relation
+                edges.append(Edge(kind, first, second, path, row, clause))
+    return edges
+
+
+def landed_on(status: str) -> tuple[date | None, set[tuple[str, int]]] | None:
+    """Read a landed row's date and the pull requests it cites, or ``None``.
+
+    A status in any other state has not landed. A landed status with no date the
+    calendar holds reads as ``None`` for its date, which the status rule refuses
+    (docs spec §3.6), so no order is read from it.
+    """
+    if citations.state_of(status, ROW_STATES) != LANDED:
+        return None
+    found = DATE.search(status)
+    day = None
+    if found is not None:
+        with contextlib.suppress(ValueError):
+            day = date.fromisoformat(found[0])
+    return day, _pulls(status)
+
+
+def row_statuses(texts: Mapping[Path, str], names: Namespace) -> dict[str, str]:
+    """Read the status of every row of every roadmap, by its anchor."""
+    return {
+        row_anchor(owner, row.section, row.row): row.status
+        for path, text in texts.items()
+        if (owner := names.owners.get(path)) is not None
+        for row in citations.rows(text)
+    }
+
+
+def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
+    """Find an ordering written twice, item 3 of order spec §4.5.
+
+    Two equal edges are one ordering written twice, on one row or on both of its
+    rows (:func:`ordering_edges`), and a release written twice on one row is too.
+    """
+    seen: set[tuple[str, str, str]] = set()
+    problems = []
+    for edge in ordering_edges(texts, names, releases=True):
+        key = (edge.kind, edge.first, edge.second)
+        if key in seen:
+            at = f"{where(edge.path, edge.row.line)}: row {edge.row.row}"
+            problems.append(
+                f'{at}: "{edge.clause}" is written twice: write an ordering once, '
+                "on the row its reason belongs to"
+            )
+        seen.add(key)
     return problems
 
 
@@ -4715,6 +4792,16 @@ def test_orderings_twice_reads_with_in_either_direction(tmp_path):
     assert len(orderings_twice(texts, names)) == 1
 
 
+def test_orderings_twice_finds_a_release_repeated_on_one_row(tmp_path):
+    """A release is no edge of the graph, but is still written once."""
+    texts, names = ordered(
+        tmp_path, [(f"One{LINKED} before 0.6{LINKED} before 0.6", NOT_STARTED)]
+    )
+
+    (fault,) = orderings_twice(texts, names)
+    assert "twice" in fault
+
+
 def test_orderings_twice_passes_distinct_orderings(tmp_path):
     """Two rows each after a third are two orderings, and a release is its own."""
     texts, names = ordered(
@@ -4727,6 +4814,81 @@ def test_orderings_twice_passes_distinct_orderings(tmp_path):
     )
 
     assert orderings_twice(texts, names) == []
+
+
+def demo_row(row: int) -> str:
+    """Spell the anchor of a row of the demo specification's roadmap."""
+    return row_anchor("demo-spec", "2", str(row))
+
+
+def other_row(row: int) -> str:
+    """Spell the anchor of a row of the other specification's roadmap."""
+    return row_anchor("other-spec", "2", str(row))
+
+
+def test_ordering_edges_reads_each_relation_as_an_edge(tmp_path):
+    """Each relation is one edge, its first row landing first, and a release none.
+
+    ``after`` and ``before`` are the same edge read from either row, ``with`` is
+    its pair in order of anchor, and ``with or after`` keeps its direction.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1{LINKED} before 0.6", NOT_STARTED),
+            (f"Three{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Four{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Five{LINKED} with or after row 1 of other spec {SECTION}2", NOT_STARTED),
+        ],
+    )
+
+    edges = [
+        (edge.kind, edge.first, edge.second) for edge in ordering_edges(texts, names)
+    ]
+
+    assert edges == [
+        ("after", demo_row(1), demo_row(2)),
+        ("after", demo_row(3), other_row(1)),
+        ("with", *sorted((demo_row(4), other_row(1)))),
+        ("with or after", other_row(1), demo_row(5)),
+    ]
+
+
+def test_ordering_edges_records_where_each_is_written(tmp_path):
+    """An edge carries the row and clause that write it, for its faults to name."""
+    texts, names = ordered(
+        tmp_path, [("One", NOT_STARTED), (f"Two{LINKED} after row 1", NOT_STARTED)]
+    )
+
+    (edge,) = ordering_edges(texts, names)
+
+    assert edge.path.name.startswith("2026-01-01")
+    assert edge.row.row == "2"
+    assert edge.clause == "after row 1"
+
+
+def test_landed_on_reads_a_date_and_its_pull_requests():
+    """A landed row's date and pull requests; any other state has not landed."""
+    assert landed_on(f"{LANDED} (2026-11-03, {{pull}}`7`)") == (
+        date(2026, 11, 3),
+        {("bjlittle/geovista", 7)},
+    )
+    assert landed_on(NOT_STARTED) is None
+    assert landed_on(f"{IN_PROGRESS} ({{pull}}`7`)") is None
+
+
+def test_row_statuses_reads_every_roadmap_by_anchor(tmp_path):
+    """Each row's status, keyed by its anchor, in every specification."""
+    texts, names = ordered(
+        tmp_path, [("One", NOT_STARTED), ("Two", CANDIDATE)], [("Theirs", LANDED)]
+    )
+
+    assert row_statuses(texts, names) == {
+        demo_row(1): NOT_STARTED,
+        demo_row(2): CANDIDATE,
+        other_row(1): LANDED,
+    }
 
 
 def prose_faults(
