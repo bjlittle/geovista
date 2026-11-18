@@ -276,6 +276,28 @@ def test_the_action_leaves_out_the_image_tests():
     assert marker == "not image"
 
 
+def test_the_action_runs_the_suite_as_the_floors_job_does():
+    """The whole suite runs, as the ``tests floors`` job of ``ci-tests.yml`` runs it.
+
+    Row 1 of floors spec §9 defines what the ``tests not image`` legs run, so a
+    suite narrowed to some of its tests, or only collected, fails here.
+    """
+    ci_tests = yaml.safe_load(CI_TESTS.read_text(encoding="utf-8"))
+    floors = _step(ci_tests["jobs"]["floors"]["steps"], "tests floors")
+    (expected,) = [
+        _unwrapped(tokens)[_unwrapped(tokens).index("pytest") :]
+        for tokens in _commands(floors)
+        if "pytest" in tokens
+    ]
+    (command,) = [
+        _unwrapped(tokens)
+        for tokens in _commands(_step(_steps(), TESTS))
+        if _unwrapped(tokens)[:1] == ["pytest"]
+    ]
+
+    assert command == expected
+
+
 def test_the_suite_decides_the_step():
     """The step passes or fails as the suite does, and nothing follows it."""
     step = _step(_steps(), TESTS)
@@ -322,6 +344,11 @@ def test_the_workflow_runs_each_week_and_by_hand():
     _minute, _hour, day, month, weekday = str(entry["cron"]).split()
     assert (day, month) == ("*", "*"), entry
     assert re.fullmatch(r"[0-6]", weekday), entry
+    job = _job()
+    assert "if" not in job, "the job does not run on every trigger"
+    for step in job.get("steps", []):
+        if str(step.get("uses", "")).endswith(f".github/workflows/composite/{FLOORS}"):
+            assert "if" not in step, "the action does not run on every trigger"
 
 
 def test_the_workflow_grants_nothing_by_default():
