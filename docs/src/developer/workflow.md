@@ -239,7 +239,9 @@ dependabot and the scheduled workflows. The same applies in
 
 ### 4.2 🤖 Credit the Agent in Its Changelog Fragments
 
-🤝 Agreed (2026-08-11, {user}`bjlittle`, {pull}`2425`)
+🗄️ Retired (2026-11-18, {user}`bjlittle`, {pull}`2995`; agreed 2026-08-11,
+{pull}`2425`). It named one agent's handle for every agent, so the fragment of
+{pull}`2986`, which Codex wrote, credited Claude. Rule 4.9 replaces it.
 
 A changelog fragment an agent writes ends ``(:user:`claude`)``, never with the
 maintainer's handle.
@@ -300,6 +302,15 @@ would be news to readers elsewhere. So does a pull request that only records
 open work in a specification, as {pull}`2892` and {pull}`2896` did, since
 nothing it records has shipped. An agent offers that choice, and does not make
 it silently.
+
+### 4.9 🤖 Credit the Agent That Wrote a Changelog Fragment
+
+🤝 Agreed (2026-11-18, {user}`bjlittle`, {pull}`2995`)
+
+A changelog fragment an agent writes ends by crediting that agent's own GitHub
+account, as ``(:user:`claude`)`` or ``(:user:`codex`)``, never the maintainer's
+handle. The credit names the agent that did the work, as rule 3.6 asks of its
+posts on GitHub, and keeps the `:user:` form that the changelog check requires.
 
 ## 5. Review
 
