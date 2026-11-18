@@ -1127,3 +1127,139 @@ def test_row_citation_names_a_row_by_its_anchor(citations):
     assert citations.row_citation("ledger-spec-3-8-row-2") == (
         f"row 2 of ledger spec {SECTION}3.8"
     )
+
+
+def ready(tmp_path, citations, mine, theirs=(("Theirs", LANDED),)) -> set[str]:
+    """Read which rows of two roadmaps are ready to start."""
+    texts, names = roadmaps(tmp_path, citations, mine, theirs)
+    return citations.ready_rows(
+        citations.ordering_edges(texts, names), citations.row_statuses(texts, names)
+    )
+
+
+def test_ready_rows_finds_a_row_whose_rows_before_it_have_landed(tmp_path, citations):
+    """A row not started, after rows that have all landed, can start.
+
+    Holds diagram spec §2 decision 5.
+    """
+    found = ready(
+        tmp_path,
+        citations,
+        [
+            ("One", LANDED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            (f"Three{LINKED} after row 2", NOT_STARTED),
+        ],
+    )
+
+    assert found == {demo_row(2)}
+
+
+def test_ready_rows_reads_with_or_after_and_before(tmp_path, citations):
+    """A with or after, or a before written on the row landing first, waits too."""
+    mine = [
+        ("One", LANDED),
+        (f"Two{LINKED} with or after row 1", NOT_STARTED),
+        (f"Three{LINKED} before row 1 of other spec {SECTION}2", LANDED),
+    ]
+    theirs = [("Theirs", NOT_STARTED)]
+
+    assert ready(tmp_path, citations, mine, theirs) == {demo_row(2), other_row(1)}
+
+    mine = [(scope, NOT_STARTED) for scope, _ in mine]
+    found = ready(tmp_path / "waiting", citations, mine, theirs)
+    assert demo_row(2) not in found
+    assert other_row(1) not in found
+
+
+def test_ready_rows_reads_the_rows_landing_together(tmp_path, citations):
+    """A row with another that still waits is not ready (diagram spec §3.4).
+
+    Holds diagram spec §2 decision 5.
+    """
+    found = ready(
+        tmp_path,
+        citations,
+        [(f"Mine{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} after row 2", NOT_STARTED), ("Before", NOT_STARTED)],
+    )
+
+    assert found == {other_row(2)}
+
+
+@pytest.mark.parametrize("state", [IN_PROGRESS, f"{CANDIDATE}: a trigger"])
+def test_ready_rows_holds_back_a_row_landing_with_one_begun_or_waiting(
+    tmp_path, citations, state
+):
+    """A row landing with one in progress, or with a candidate, is not ready.
+
+    It can land only in that row's pull request (diagram spec §4.3).
+    """
+    found = ready(
+        tmp_path,
+        citations,
+        [(f"Mine{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [("Theirs", state)],
+    )
+
+    assert found == set()
+
+
+def test_ready_rows_needs_a_row_not_started(tmp_path, citations):
+    """Only a row not started is ready, and one with no ordering waits on nothing."""
+    found = ready(
+        tmp_path,
+        citations,
+        [
+            ("One", IN_PROGRESS),
+            ("Two", LANDED),
+            ("Three", f"{CANDIDATE}: a trigger"),
+            ("Four", NOT_STARTED),
+        ],
+    )
+
+    assert found == {demo_row(4)}
+
+
+def labels(tmp_path, citations, *scopes: str, width: int = 40) -> list[str]:
+    """Read the label of each row of the demo roadmap, in order."""
+    texts, names = roadmaps(
+        tmp_path, citations, [(scope, NOT_STARTED) for scope in scopes]
+    )
+    found = citations.row_labels(texts, names, width=width)
+    return [found[demo_row(n)] for n in range(1, len(scopes) + 1)]
+
+
+def test_row_labels_opens_with_the_row_and_its_scope(tmp_path, citations):
+    """A label is the row's number and its scope, its orderings left to the arrows."""
+    found = labels(
+        tmp_path, citations, "One", f"Tiers on the globe{LINKED} after row 1"
+    )
+
+    assert found == ["1: One", "2: Tiers on the globe"]
+
+
+def test_row_labels_cuts_a_long_scope(tmp_path, citations):
+    """A scope longer than the width is cut, and says so."""
+    (found,) = labels(tmp_path, citations, "a" * 60)
+
+    assert found == "1: " + "a" * 40 + "\N{HORIZONTAL ELLIPSIS}"
+
+
+def test_row_labels_escapes_what_mermaid_reads(tmp_path, citations):
+    """Review Focus 1 of its plan: a quote, a hash or a role cannot break a diagram.
+
+    A role reads as its target, an issue or pull request as ``#N``, and code and
+    emphasis read as their text.
+    """
+    found = labels(
+        tmp_path,
+        citations,
+        'The work of {issue}`7`, with "quotes"',
+        "**Bold**, `snake_case` and _em_",
+    )
+
+    assert found == [
+        "1: The work of #35;7, with #quot;quotes#quot;",
+        "2: Bold, snake_case and em",
+    ]

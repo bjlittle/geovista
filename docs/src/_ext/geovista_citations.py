@@ -40,7 +40,7 @@ from typing import TYPE_CHECKING, NamedTuple
 from markdown_it import MarkdownIt
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Iterator, Mapping
+    from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 
     from markdown_it.rules_block import StateBlock
 
@@ -478,6 +478,105 @@ def landing_together(edges: Iterable[Edge]) -> dict[str, list[str]]:
         for node in graph
         if len(groups[part[node]]) > 1
     }
+
+
+def ready_rows(edges: Sequence[Edge], statuses: Mapping[str, str]) -> set[str]:
+    """Find the rows ready to start (diagram spec §4.3).
+
+    A row is ready when it is not started, no row landing together with it is a
+    candidate or in progress, and every row it, or a row landing together with
+    it, lands after or with or after has landed. A row landing with a row in
+    progress can land only in that row's pull request, so it is not ready.
+
+    Parameters
+    ----------
+    edges : sequence of Edge
+        Every ordering, as :func:`ordering_edges` reads them.
+    statuses : mapping of str to str
+        Every row's status, by its anchor, as :func:`row_statuses` reads them.
+
+    Returns
+    -------
+    set of str
+        The anchors of the rows ready to start.
+
+    """
+    together = landing_together(edges)
+    states = {
+        anchor: state_of(status, ROADMAP_STATES) for anchor, status in statuses.items()
+    }
+    found = set()
+    for anchor, state in states.items():
+        if state != NOT_STARTED:
+            continue
+        group = {anchor, *together.get(anchor, ())}
+        if any(states.get(row) in {CANDIDATE, IN_PROGRESS} for row in group):
+            continue
+        waits = {
+            edge.first
+            for edge in edges
+            if edge.second in group and edge.first not in group and edge.kind != "with"
+        }
+        if all(states.get(row) == LANDED for row in waits):
+            found.add(anchor)
+    return found
+
+
+#: A role, as ``{issue}`7```, which a label reads as its target.
+LABEL_ROLE = re.compile(r"\{(?P<role>[\w:-]+)\}`(?P<target>[^`]*)`")
+
+
+def _label_text(scope: str) -> str:
+    """Read a scope as plain text: roles as their target, markdown as its text."""
+    scope = LABEL_ROLE.sub(
+        lambda m: f"#{m['target']}" if m["role"] in {"issue", "pull"} else m["target"],
+        scope,
+    )
+    parsed = MarkdownIt("commonmark").parseInline(scope)
+    text = "".join(
+        token.content
+        for token in (parsed[0].children if parsed else None) or []
+        if token.type in {"text", "code_inline", "softbreak"}
+    )
+    return " ".join(text.split())
+
+
+def row_labels(
+    texts: Mapping[Path, str], names: Namespace, width: int = 40
+) -> dict[str, str]:
+    """Label every row of every roadmap for a diagram (diagram spec §4.2).
+
+    A label is the row's number and its scope, without its orderings, read as
+    plain text, cut at ``width`` characters, and escaped for Mermaid, which reads
+    ``#`` as opening an entity and ``"`` as closing the label.
+
+    Parameters
+    ----------
+    texts : mapping of Path to str
+        The specifications.
+    names : Namespace
+        The namespace they are read in.
+    width : int, default=40
+        The longest scope a label keeps.
+
+    Returns
+    -------
+    dict of str to str
+        Each row's label, by its anchor.
+
+    """
+    labels = {}
+    for path, text in texts.items():
+        owner = names.owners.get(path)
+        if owner is None:
+            continue
+        for row in rows(text):
+            scope = _label_text(split_scope(row.scope)[0])
+            if len(scope) > width:
+                scope = scope[:width].rstrip() + "\N{HORIZONTAL ELLIPSIS}"
+            label = f"{row.row}: {scope}".replace("#", "#35;").replace('"', "#quot;")
+            labels[row_anchor(owner, row.section, row.row)] = label
+    return labels
 
 
 def _closing(
