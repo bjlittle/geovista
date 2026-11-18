@@ -330,11 +330,13 @@ renderer; the order of a plan's tasks; and the plans, which are frozen.
 
 Each carries the grammar of items spec §3.2.
 
-1. **❓ Open** (🔎 2026-11-17, {pull}`2990` · 🎯 row 2 of §9 · 🎫 {issue}`2991`) — **The
-   prose guard's advice is wrong for a row ordered against something else.** It refuses
+1. **🏁 Resolved** (2026-11-18, {pull}`2994` · 🔎 2026-11-17, {pull}`2990` ·
+   🎫 {issue}`2991`) — **The prose guard's advice is wrong for a row ordered against
+   something else.** It refuses
    *Once rows 1 and 2 have landed, the issue closes* as an ordering, and says to write it in
    the row's Scope cell, which cannot say when an issue closes. The message should name
-   rewording as the other way out. The final review of row 1 found it.
+   rewording as the other way out. The final review of row 1 found it. {pull}`2994` adds
+   rewording to the message.
 
 (order-spec-9)=
 ## 9. Roadmap
@@ -342,7 +344,7 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | The form: the grammar of §4.1 to §4.4 in `geovista_citations`, items 1 to 4 of §4.5, every ordering of today moved into its cell with `landing_together` reading `🔗 with` and the renumber guard pairing rows without their orderings (§3.3, §4.7), and the developer guide's account of the form (§4.8) | ✅ landed (2026-11-18, {pull}`2990`) |
-| 2 | The graph: items 5 to 7 of §4.5, `landing_together` folded into them (§4.7), the report of §4.6, and their pages (§4.8) · 🔗 after row 1 | 🚧 in progress ({pull}`2994`) |
+| 2 | The graph: items 5 to 7 of §4.5, `landing_together` folded into them (§4.7), the report of §4.6, and their pages (§4.8) · 🔗 after row 1 | ✅ landed (2026-11-18, {pull}`2994`) |
 
 Statuses follow docs spec §3.6. Row 1 keeps every check reading what it moves, so it is
 safe to land alone. Row 2 is the check that row 8 of items spec §8 owes for
@@ -370,8 +372,8 @@ Each row follows ledger spec §3.4.
 | §2 decision 4 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
 | §2 decision 5 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
 | §2 decision 6 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
-| §2 decision 7 | ⏳ pending | |
-| §2 decision 8 | ⏳ pending | |
-| §2 decision 9 | ⏳ pending | |
-| §2 decision 10 | ⏳ pending | |
+| §2 decision 7 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_spec_conventions.py` |
+| §2 decision 8 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_verification_report.py` |
+| §2 decision 9 | ✅ verified (2026-11-18, {pull}`2994`) | `tests/test_spec_conventions.py` |
+| §2 decision 10 | ✍️ signed off (2026-11-18, {user}`bjlittle`, {pull}`2994`) | Checked in review that the specifications index shows how to write an ordering and what the check refuses, that the Repository Checks page names each fault of §4.5 with its remedy, and that `docs/AGENTS.md` carries the rule. |
 | §2 decision 11 | ✅ verified (2026-11-18, {pull}`2990`) | `tests/test_spec_conventions.py` |
