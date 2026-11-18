@@ -330,7 +330,7 @@ Each carries the grammar of items spec §3.2.
 
 | # | Scope | Status |
 |---|---|---|
-| 1 | One reading of the graph: the reading of order spec §4.5 moved into `geovista_citations`, with the conventions test reading through it, and the text of a diagram (§4.1 to §4.3) | 📋 not started |
+| 1 | One reading of the graph: the reading of order spec §4.5 moved into `geovista_citations`, with the conventions test reading through it, and the text of a diagram (§4.1 to §4.3) | 🚧 in progress ({pull}`2999`) |
 | 2 | The diagram under each roadmap and the open work on the index, drawn by the build, with their key and links, and the developer guide's account (§4.4 to §4.6, §4.8) · 🔗 after row 1 | 📋 not started |
 | 3 | The report's diagrams, and the job that runs the report on each pull request (§4.7) · 🔗 after row 1 | 📋 not started |
 
