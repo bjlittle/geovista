@@ -14,7 +14,8 @@ that owes it and how often it has moved (items spec §3.9). It flags what does
 not agree: a verified row whose test no longer cites its decision, and a
 decision in force that nothing anywhere cites (ledger spec §3.8). It also flags
 an item on its last move, which must settle or graduate when its row lands, and
-an item owed by a row in progress, which that row's pull request must answer.
+an item owed by a row in progress, which that row's pull request must answer,
+and the items owed by each row a row in progress lands with (order spec §4.6).
 
 It is a view of the ledger on demand, never a gate: it exits 0 whatever it finds,
 and 2 only when it cannot read a specification, or a prefix names none. The
@@ -200,6 +201,65 @@ def _item_findings(path: Path, text: str, prefix: str, names: Namespace) -> list
     return found
 
 
+def _together_findings(
+    path: Path, texts: Mapping[Path, str], names: Namespace
+) -> list[str]:
+    """Find a row in progress landing with a row that owes open items.
+
+    A row ``with`` another lands in one pull request with it, which answers the
+    open items both rows owe (order spec §4.6). Each ordering is read as the
+    conventions test reads it, and an item as the report reads its own row's,
+    so only one still open or deferred is owed. The rows a row in progress lands
+    with that owe nothing make no finding.
+    """
+    owner = names.owners[path]
+    statuses = conventions.row_statuses(texts, names)
+    by_prefix = {prefix: spec for spec, prefix in names.owners.items()}
+    found = []
+    for edge in conventions.ordering_edges(texts, names):
+        if edge.kind != "with":
+            continue
+        for mine, theirs in ((edge.first, edge.second), (edge.second, edge.first)):
+            label = grammar.LABEL.match(mine)
+            state = grammar.state_of(statuses.get(mine, ""), conventions.ROW_STATES)
+            if label["prefix"] != owner or state != conventions.IN_PROGRESS:
+                continue
+            owed = _owed(theirs, by_prefix, texts, names)
+            if owed:
+                found.append(
+                    f"{conventions.named(mine)} is in progress and lands with "
+                    f"{conventions.named(theirs)}, which owes "
+                    f"{conventions.listed(owed)}: its pull request must answer them."
+                )
+    return found
+
+
+def _owed(
+    anchor: str,
+    by_prefix: Mapping[str, Path],
+    texts: Mapping[Path, str],
+    names: Namespace,
+) -> list[str]:
+    """Name the open items a row owes, still open or deferred, as cited."""
+    prefix = grammar.LABEL.match(anchor)["prefix"]
+    spec = by_prefix.get(prefix)
+    if spec is None or spec not in texts:
+        return []
+    text = texts[spec]
+    section = _items_section(text)
+    owed = []
+    for item in grammar.items(text):
+        if item.owed is None or item.state not in MOVES:
+            continue
+        row = conventions.own_row(spec, text, item.owed, names)
+        if isinstance(row, str):
+            continue
+        if grammar.row_anchor(prefix, row.section, row.row) == anchor:
+            name = prefix.replace("-", " ")
+            owed.append(f"{name} {grammar.SECTION}{section} item {item.number}")
+    return owed
+
+
 @dataclass(frozen=True)
 class Cited:
     """A place a decision is cited."""
@@ -355,6 +415,7 @@ def report(
 
     """
     cited = citations_of(texts, names)
+    roadmaps = {spec: spec.read_text(encoding="utf-8") for spec in names.owners}
     out = ["# Verification Report", ""]
     findings: list[str] = []
     for spec in specs:
@@ -394,6 +455,7 @@ def report(
         out += ["### Open Items", ""]
         out += _open_items(text)
         findings += _item_findings(spec, text, prefix, names)
+        findings += _together_findings(spec, roadmaps, names)
     out += ["## Findings", ""]
     out += [f"- {finding}" for finding in findings] or ["No findings."]
     return "\n".join(out) + "\n"
