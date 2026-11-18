@@ -309,8 +309,9 @@ or later, in a pull request of its own, while two rows ``with`` each other land
 in the same one.
 
 A row ``with`` another lands in one pull request with it, and that pull request
-answers the open items both rows owe. So the verification report lists, for each
-row in progress, the rows it lands with and the items they still owe.
+answers the open items both rows owe. So for each row in progress, the
+verification report lists any row it lands with that still owes open items, and
+names those items.
 order spec §4.1 sets out the form, order spec §4.5 what the test refuses, and
 order spec §4.6 what the report shows.
 

@@ -2,9 +2,9 @@ The conventions test now reads the orderings of every roadmap together, as one
 graph, and refuses a cycle, a ``📋 not started`` row waiting on a
 ``💡 candidate``, and a status the order contradicts, such as a row in progress
 after one that has not landed. Its check of rows landing together becomes one case
-of that last rule. For each row in progress, the verification report lists the
-rows it lands with and the open items they still owe, which its pull request must
-answer. When the test finds an ordering in prose, its message also suggests
+of that last rule. For each row in progress, the verification report lists any
+row it lands with that still owes open items, and names those items, which its
+pull request must answer. When the test finds an ordering in prose, its message also suggests
 rewording the sentence. This lands row 2 of order spec §9 and
 row 8 of items spec §8.
 (:user:`claude`)

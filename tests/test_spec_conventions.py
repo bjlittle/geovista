@@ -4935,6 +4935,18 @@ def test_order_cycles_finds_with_against_before(tmp_path):
     assert "cycle" in fault
 
 
+def test_order_cycles_finds_with_against_before_on_the_other_row(tmp_path):
+    """The same contradiction, its before written on the row sorting second."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"Mine{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} before row 1 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    (fault,) = order_cycles(texts, names)
+    assert "cycle" in fault
+
+
 def test_order_cycles_passes_a_loop_of_with(tmp_path):
     """A loop of with, through three rows of two specifications, lands in one PR.
 
@@ -4994,6 +5006,18 @@ def test_order_candidates_reads_a_with_written_on_the_candidate(tmp_path):
 
     (fault,) = order_candidates(texts, names)
     assert f"row 1 of other spec {SECTION}2" in fault
+
+
+def test_order_candidates_reads_a_candidate_on_either_side_of_a_with(tmp_path):
+    """The candidate may sort second of a with's pair, as well as first."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"One{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [("Theirs", f"{CANDIDATE}: soon")],
+    )
+
+    (fault,) = order_candidates(texts, names)
+    assert f"row 1 of demo spec {SECTION}2 is not started" in fault
 
 
 def test_order_candidates_passes_a_candidate_waiting_on_a_row(tmp_path):
