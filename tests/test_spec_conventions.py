@@ -47,7 +47,7 @@ from markdown_it import MarkdownIt
 import pytest
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, Mapping
+    from collections.abc import Iterable, Iterator, Mapping, Sequence
     from types import ModuleType
 
 #: The section of the repository checks page that documents this check.
@@ -4550,6 +4550,114 @@ def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     return problems
 
 
+def named(anchor: str) -> str:
+    """Cite a row by its anchor, as ``row 2 of layers spec §9``."""
+    label = LABEL.match(anchor)
+    prefix = label["prefix"].replace("-", " ")
+    return f"row {label['row']} of {prefix} {SECTION}{label['num'].replace('-', '.')}"
+
+
+def listed(things: Sequence[str]) -> str:
+    """Join things as prose: ``a``, ``a and b``, ``a, b and c``."""
+    return " and ".join([", ".join(things[:-1]), things[-1]] if things[1:] else things)
+
+
+def strongly_connected(graph: Mapping[str, Iterable[str]]) -> dict[str, int]:
+    """Find the strongly connected parts of a graph, by Tarjan's algorithm.
+
+    Each node is mapped to its part, and two nodes share one exactly when each
+    reaches the other.
+    """
+    index: dict[str, int] = {}
+    low: dict[str, int] = {}
+    part: dict[str, int] = {}
+    stack: list[str] = []
+
+    def visit(node: str) -> None:
+        index[node] = low[node] = len(index)
+        stack.append(node)
+        for nxt in graph.get(node, ()):
+            if nxt not in index:
+                visit(nxt)
+                low[node] = min(low[node], low[nxt])
+            elif nxt not in part:
+                low[node] = min(low[node], index[nxt])
+        if low[node] == index[node]:
+            number = len(set(part.values()))
+            while True:
+                top = stack.pop()
+                part[top] = number
+                if top == node:
+                    break
+
+    for node in graph:
+        if node not in index:
+            visit(node)
+    return part
+
+
+def order_cycles(texts: Mapping[Path, str], names: Namespace) -> list[str]:
+    """Find a cycle of orderings, item 5 of order spec §4.5.
+
+    Each ordering is read as its first row landing no later than its second,
+    ``with`` both ways. Rows that each reach the other must then land together,
+    so an ``after`` between two of them can never hold: the rows form a cycle,
+    reported once, where its first ``after`` is written. A loop of ``with`` and
+    ``with or after`` alone is no cycle, as one pull request lands it.
+    """
+    edges = ordering_edges(texts, names)
+    graph: dict[str, list[str]] = {}
+    for edge in edges:
+        graph.setdefault(edge.first, []).append(edge.second)
+        graph.setdefault(edge.second, [])
+        if edge.kind == "with":
+            graph[edge.second].append(edge.first)
+    part = strongly_connected(graph)
+    problems, reported = [], set()
+    for edge in edges:
+        number = part[edge.first]
+        if edge.kind != "after" or part[edge.second] != number or number in reported:
+            continue
+        reported.add(number)
+        rows = [named(node) for node in graph if part[node] == number]
+        problems.append(
+            f'{where(edge.path, edge.row.line)}: row {edge.row.row}: "{edge.clause}" '
+            f"closes a cycle through {listed(rows)}, which no order of landing "
+            "can meet (order spec §4.5 item 5)"
+        )
+    return problems
+
+
+def order_candidates(texts: Mapping[Path, str], names: Namespace) -> list[str]:
+    """Find a row not started that waits on a candidate, item 6 of order spec §4.5.
+
+    A row ``after``, ``with`` or ``with or after`` a candidate can never land
+    while the candidate waits on its trigger (items spec §7 item 15).
+    """
+    states = {
+        anchor: citations.state_of(status, ROW_STATES)
+        for anchor, status in row_statuses(texts, names).items()
+    }
+    problems = []
+    for edge in ordering_edges(texts, names):
+        pairs = [(edge.first, edge.second)]
+        if edge.kind == "with":
+            pairs.append((edge.second, edge.first))
+        for candidate, waiting in pairs:
+            if (
+                states.get(candidate) == CANDIDATE
+                and states.get(waiting) == NOT_STARTED
+            ):
+                problems.append(
+                    f"{where(edge.path, edge.row.line)}: row {edge.row.row}: "
+                    f'"{edge.clause}": {named(waiting)} is not started, and waits on '
+                    f"{named(candidate)}, a candidate, which may never land: make "
+                    "it a candidate too, or order it otherwise "
+                    "(order spec §4.5 item 6)"
+                )
+    return problems
+
+
 #: An ordering written in words, before a row: the words of order spec §4.2's last
 #: column and their past tense, *waits on*, and *follows* and *builds on*
 #: (order spec §4.5 item 4).
@@ -4889,6 +4997,132 @@ def test_row_statuses_reads_every_roadmap_by_anchor(tmp_path):
         demo_row(2): CANDIDATE,
         other_row(1): LANDED,
     }
+
+
+def test_order_cycles_finds_a_cycle_in_one_roadmap(tmp_path):
+    """Item 5 of order spec §4.5: rows 1 to 3, each after the one before, and 1 after 3.
+
+    One cycle is one fault, naming each of its rows.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} after row 3", NOT_STARTED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            (f"Three{LINKED} after row 2", NOT_STARTED),
+        ],
+    )
+
+    (fault,) = order_cycles(texts, names)
+    assert "cycle" in fault
+    for row in (1, 2, 3):
+        assert f"row {row} of demo spec {SECTION}2" in fault
+
+
+def test_order_cycles_finds_a_cycle_across_specifications(tmp_path):
+    """Review Focus 1 of its plan: one row after another, each in its own spec."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"Mine{LINKED} after row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [(f"Theirs{LINKED} after row 1 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    (fault,) = order_cycles(texts, names)
+    assert f"row 1 of demo spec {SECTION}2" in fault
+    assert f"row 1 of other spec {SECTION}2" in fault
+
+
+def test_order_cycles_finds_with_against_before(tmp_path):
+    """Review Focus 2 of its plan: with and before between one pair contradict."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            (
+                (
+                    f"Mine{LINKED} with row 1 of other spec {SECTION}2"
+                    f"{LINKED} before row 1 of other spec {SECTION}2"
+                ),
+                NOT_STARTED,
+            )
+        ],
+    )
+
+    (fault,) = order_cycles(texts, names)
+    assert "cycle" in fault
+
+
+def test_order_cycles_passes_a_loop_of_with(tmp_path):
+    """A loop of with, through three rows of two specifications, lands in one PR.
+
+    So does one closed by a with or after, which may land in that pull request too.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Two{LINKED} with row 1{LINKED} with or after row 1", NOT_STARTED),
+        ],
+        [(f"Theirs{LINKED} with row 2 of demo spec {SECTION}2", NOT_STARTED)],
+    )
+
+    assert order_cycles(texts, names) == []
+
+
+def test_order_cycles_passes_an_order_without_a_loop(tmp_path):
+    """Rows ordered one after another, and two after a third, hold no cycle."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            (f"Three{LINKED} after row 1{LINKED} after row 2", NOT_STARTED),
+        ],
+    )
+
+    assert order_cycles(texts, names) == []
+
+
+@pytest.mark.parametrize("relation", ["after", "with", "with or after"])
+def test_order_candidates_finds_a_row_waiting_on_a_candidate(tmp_path, relation):
+    """Item 6 of order spec §4.5: a row not started waits on a candidate's trigger.
+
+    The fault names the row not started, whose ordering can never be met.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", f"{CANDIDATE}: a trigger"),
+            (f"Two{LINKED} {relation} row 1", NOT_STARTED),
+        ],
+    )
+
+    (fault,) = order_candidates(texts, names)
+    assert f"row 2 of demo spec {SECTION}2" in fault
+    assert "candidate" in fault
+
+
+def test_order_candidates_reads_a_with_written_on_the_candidate(tmp_path):
+    """A with is the pair either way round, so the candidate may write it."""
+    texts, names = ordered(
+        tmp_path,
+        [(f"One{LINKED} with row 1 of other spec {SECTION}2", f"{CANDIDATE}: soon")],
+    )
+
+    (fault,) = order_candidates(texts, names)
+    assert f"row 1 of other spec {SECTION}2" in fault
+
+
+def test_order_candidates_passes_a_candidate_waiting_on_a_row(tmp_path):
+    """A candidate after a row not started waits on its own trigger, and that row."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1", f"{CANDIDATE}: a trigger"),
+        ],
+    )
+
+    assert order_candidates(texts, names) == []
 
 
 def prose_faults(
