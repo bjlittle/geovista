@@ -6,6 +6,9 @@
 name: ci-floors
 
 on:
+  # throwaway: watch the job on its own pull request, reverted before it lands
+  pull_request:
+
   schedule:
     # every monday @ 01h33
     - cron: "33 1 * * 1"
