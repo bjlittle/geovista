@@ -1,0 +1,6 @@
+Published the
+:doc:`roadmap row order diagrams specification </developer/specs/2026-11-18-row-order-diagrams-design>`,
+which draws the order between roadmap rows. The build will draw each specification's rows
+and orderings under its roadmap table, and the open work of every roadmap on the
+specifications index, with the rows ready to start in green. Each pull request's job
+summary will show the diagrams of the specifications it changes. (:user:`claude`)

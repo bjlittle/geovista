@@ -49,6 +49,8 @@ a page, a specification or the API reference, it is a link to the section it nam
       - :doc:`2026-11-02-open-items-design`
     * - |indent| |indent| └─ ``order spec §…``
       - :doc:`2026-11-17-row-order-design`
+    * - |indent| |indent| |indent| └─ ``diagram spec §…``
+      - :doc:`2026-11-18-row-order-diagrams-design`
     * - ``floors spec §…``
       - :doc:`2026-11-15-dependency-floors-design`
     * - ``positions spec §…``
@@ -334,3 +336,4 @@ order spec §4.6 what the report shows.
     2026-11-12-layers-design
     2026-11-15-dependency-floors-design
     2026-11-17-row-order-design
+    2026-11-18-row-order-diagrams-design
