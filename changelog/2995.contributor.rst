@@ -1,0 +1,3 @@
+A changelog fragment written by an AI agent now credits that agent by its own
+GitHub account (workflow rule 4.9). Before, every agent's fragment credited
+Claude. (:user:`claude`)
