@@ -437,7 +437,10 @@ landing in one pull request are ``with`` each other. When it says *row N lands
 with …, which has not landed*, *… which has landed without it*, *… which landed
 in another pull request* or *… but neither names the pull request they landed
 in*, land the two rows in one pull request, and name it in both statuses
-(order spec §4.5).
+(order spec §4.5). When it says *… land together, as their orderings loop, but
+in no one pull request*, the rows each land no later than the other, so one pull
+request lands them all: correct the statuses, or the ordering that closes the
+loop.
 
 **Declaring an exception:** None for the conventions. A specification not yet
 brought into the ledger is named in ``UNLEDGERED``, beside the row of

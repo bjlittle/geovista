@@ -4377,6 +4377,40 @@ def strongly_connected(graph: Mapping[str, Iterable[str]]) -> dict[str, int]:
     return part
 
 
+def no_later_than(edges: Iterable[Edge]) -> dict[str, list[str]]:
+    """Read edges as a graph of rows, each landing no later than those it points to.
+
+    ``with`` points both ways, as its rows land in one pull request.
+    """
+    graph: dict[str, list[str]] = {}
+    for edge in edges:
+        graph.setdefault(edge.first, []).append(edge.second)
+        graph.setdefault(edge.second, [])
+        if edge.kind == "with":
+            graph[edge.second].append(edge.first)
+    return graph
+
+
+def landing_together(edges: Iterable[Edge]) -> dict[str, list[str]]:
+    """Find, for each row, the rows its orderings force into its pull request.
+
+    Rows that each land no later than the other land together: the members of a
+    strongly connected part of :func:`no_later_than`, as a chain of ``with`` or a
+    loop of ``with or after`` makes. Each row is mapped to the others of its part,
+    in the order they are first read, and a row alone in its part is left out.
+    """
+    graph = no_later_than(edges)
+    part = strongly_connected(graph)
+    groups: dict[int, list[str]] = {}
+    for node in graph:
+        groups.setdefault(part[node], []).append(node)
+    return {
+        node: [other for other in groups[part[node]] if other != node]
+        for node in graph
+        if len(groups[part[node]]) > 1
+    }
+
+
 def order_cycles(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     """Find a cycle of orderings, item 5 of order spec §4.5.
 
@@ -4387,12 +4421,7 @@ def order_cycles(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     ``with or after`` alone is no cycle, as one pull request lands it.
     """
     edges = ordering_edges(texts, names)
-    graph: dict[str, list[str]] = {}
-    for edge in edges:
-        graph.setdefault(edge.first, []).append(edge.second)
-        graph.setdefault(edge.second, [])
-        if edge.kind == "with":
-            graph[edge.second].append(edge.first)
+    graph = no_later_than(edges)
     part = strongly_connected(graph)
     problems, reported = [], set()
     for edge in edges:
@@ -4513,6 +4542,44 @@ def _landed_out_of_order(edge: Edge, statuses: Mapping[str, str]) -> str:
     return ""
 
 
+def _loops_landed_apart(edges: list[Edge], statuses: Mapping[str, str]) -> list[str]:
+    """Find a loop whose rows have all landed, but in no one pull request.
+
+    The rows of a loop land together (:func:`landing_together`), so once they have
+    all landed, one pull request names every one. A loop of ``with`` alone is
+    held pair by pair, and one holding an ``after`` is a cycle, so only a loop
+    closed by a ``with or after`` is read whole, once, where its first ``with or
+    after`` is written. One row landed while another has not is a fault of some
+    pair along the loop already.
+    """
+    together = landing_together(edges)
+    order = [*statuses, *no_later_than(edges)]
+    problems, seen = [], set()
+    for edge in edges:
+        if edge.kind != "with or after" or edge.second not in together.get(
+            edge.first, ()
+        ):
+            continue
+        group = frozenset([edge.first, *together[edge.first]])
+        rows = list(dict.fromkeys(row for row in order if row in group))
+        if group in seen:
+            continue
+        seen.add(group)
+        inside = [e for e in edges if e.first in group and e.second in group]
+        landed = [landed_on(statuses.get(row, "")) for row in rows]
+        if any(e.kind == "after" for e in inside) or None in landed:
+            continue
+        if set.intersection(*(pulls for _, pulls in landed)):
+            continue
+        names_ = listed([named(row) for row in rows])
+        problems.append(
+            f'{where(edge.path, edge.row.line)}: row {edge.row.row}: "{edge.clause}": '
+            f"{names_} land together, as their orderings loop, but in no one pull "
+            "request: land them in one, and name it in each"
+        )
+    return problems
+
+
 def order_statuses(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     """Find a status that contradicts an ordering, item 7 of order spec §4.5.
 
@@ -4523,8 +4590,9 @@ def order_statuses(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     does not exist is the resolution rule's to refuse.
     """
     statuses = row_statuses(texts, names)
-    problems = []
-    for edge in ordering_edges(texts, names):
+    edges = ordering_edges(texts, names)
+    problems = _loops_landed_apart(edges, statuses)
+    for edge in edges:
         if edge.first not in statuses or edge.second not in statuses:
             continue
         at = where(edge.path, edge.row.line)
@@ -5134,6 +5202,75 @@ def test_order_statuses_finds_with_or_after_landed_first(tmp_path):
         texts, names = in_order(tmp_path, first, second, "with or after")
         (fault,) = order_statuses(texts, names)
         assert f"row 2 of demo spec {SECTION}2 {said}" in fault, (first, second)
+
+
+def test_order_statuses_finds_a_loop_landed_by_two_pull_requests(tmp_path):
+    """Rows with or after each other land in one PR, even on one day.
+
+    A loop forces its rows into one pull request, which the same-day allowance
+    for rows with no loop between them cannot relax.
+    """
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} with or after row 2", landed("01", 7)),
+            (f"Two{LINKED} with or after row 1", landed("01", 8)),
+        ],
+    )
+
+    (fault,) = order_statuses(texts, names)
+    assert f"row 1 of demo spec {SECTION}2 and row 2 of demo spec {SECTION}2" in fault
+    assert "one pull request" in fault
+
+
+def test_order_statuses_finds_a_loop_through_with_landed_apart(tmp_path):
+    """A loop holds every row of it to one PR, not just each pair along it."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} with or after row 3", landed("01", 7)),
+            (f"Two{LINKED} with row 1", landed("01", 7)),
+            (f"Three{LINKED} with or after row 2", landed("01", 8)),
+        ],
+    )
+
+    (fault,) = order_statuses(texts, names)
+    assert f"row 3 of demo spec {SECTION}2" in fault
+    assert "one pull request" in fault
+
+
+def test_order_statuses_passes_a_loop_landed_together(tmp_path):
+    """A loop landed by one pull request holds."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            (f"One{LINKED} with or after row 2", landed("01", 7)),
+            (f"Two{LINKED} with or after row 1", landed("01", 7)),
+        ],
+    )
+
+    assert order_statuses(texts, names) == []
+
+
+def test_landing_together_groups_the_rows_a_loop_forces_into_one_pr(tmp_path):
+    """A chain of with and a loop of with or after are each one group; after is not."""
+    texts, names = ordered(
+        tmp_path,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} with row 1", NOT_STARTED),
+            (f"Three{LINKED} with row 2", NOT_STARTED),
+            (f"Four{LINKED} with or after row 5", NOT_STARTED),
+            (f"Five{LINKED} with or after row 4{LINKED} after row 3", NOT_STARTED),
+        ],
+    )
+
+    groups = landing_together(ordering_edges(texts, names))
+
+    assert groups[demo_row(1)] == [demo_row(2), demo_row(3)]
+    assert groups[demo_row(3)] == [demo_row(1), demo_row(2)]
+    assert groups[demo_row(4)] == [demo_row(5)]
+    assert demo_row(6) not in groups
 
 
 def landing(

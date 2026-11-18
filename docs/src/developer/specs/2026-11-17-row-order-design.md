@@ -235,7 +235,9 @@ fails on each of these, naming the row and the ordering:
    request. A row `before` another has landed by the time the other lands, likewise. A row
    `with` another lands in the same pull request, and one `with or after` another in the
    same one or once the other has landed. Rows landed on the same day pass on their dates
-   alone, since the order within a day is GitHub's to say.
+   alone, since the order within a day is GitHub's to say, unless their orderings loop: rows
+   that each land no later than the other, as a loop of `with or after` has them, land in
+   one pull request.
 
 Form, items 1 to 4, comes with row 1 of §9, and the graph, items 5 to 7, with row 2.
 
@@ -245,7 +247,9 @@ Form, items 1 to 4, comes with row 1 of §9, and the graph, items 5 to 7, with r
 A row `with` another lands in one pull request with it, and that pull request answers the
 open items both rows owe (items spec §3.5). The verification report each pull request gets
 (ledger spec §3.8, items spec §3.9) lists, for each row `in progress`, the rows that land
-with it and the items each owes. `in progress` is how the report already knows a row is
+with it and the items each owes. Those are the rows its orderings force into its pull
+request: each row it is `with`, each row those are `with` in turn, and each row a loop of
+`with or after` joins to it. `in progress` is how the report already knows a row is
 being delivered, as it does for the row's own items, so it needs no pull request to read. The check does not fail on them: until that pull request is
 opened, a row owing items is the ordinary state of the roadmap.
 

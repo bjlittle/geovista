@@ -207,23 +207,23 @@ def _together_findings(
     """Find a row in progress landing with a row that owes open items.
 
     A row ``with`` another lands in one pull request with it, which answers the
-    open items both rows owe (order spec §4.6). Each ordering is read as the
-    conventions test reads it, and an item as the report reads its own row's,
-    so only one still open or deferred is owed. The rows a row in progress lands
-    with that owe nothing make no finding.
+    open items both rows owe (order spec §4.6). So does every row its orderings
+    force into that pull request: a chain of ``with``, or a loop of ``with or
+    after``, read as the conventions test reads them. An item is read as the
+    report reads its own row's, so only one still open or deferred is owed. The
+    rows a row in progress lands with that owe nothing make no finding.
     """
     owner = names.owners[path]
     statuses = conventions.row_statuses(texts, names)
     by_prefix = {prefix: spec for spec, prefix in names.owners.items()}
+    together = conventions.landing_together(conventions.ordering_edges(texts, names))
     found = []
-    for edge in conventions.ordering_edges(texts, names):
-        if edge.kind != "with":
+    for mine, partners in together.items():
+        label = grammar.LABEL.match(mine)
+        state = grammar.state_of(statuses.get(mine, ""), conventions.ROW_STATES)
+        if label["prefix"] != owner or state != conventions.IN_PROGRESS:
             continue
-        for mine, theirs in ((edge.first, edge.second), (edge.second, edge.first)):
-            label = grammar.LABEL.match(mine)
-            state = grammar.state_of(statuses.get(mine, ""), conventions.ROW_STATES)
-            if label["prefix"] != owner or state != conventions.IN_PROGRESS:
-                continue
+        for theirs in partners:
             owed = _owed(theirs, by_prefix, texts, names)
             if owed:
                 them = "them" if len(owed) > 1 else "it"
