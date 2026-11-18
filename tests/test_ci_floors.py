@@ -21,6 +21,7 @@ they read.
 
 from __future__ import annotations
 
+from functools import cache
 from pathlib import Path
 import re
 import shlex
@@ -63,6 +64,24 @@ EXTRAS = "[test,exam]"
 WHEEL = "dist/geovista-0.6.0-py3-none-any.whl"
 #: A line of the freeze.
 PINNED = "numpy==2.2.6"
+#: The workflow running the jobs at the floors each week.
+WORKFLOW = ROOT / ".github" / "workflows" / "ci-floors.yml"
+#: The job installing the checkout at its pip floors.
+JOB = "pypi"
+#: The step reporting a failed run.
+REPORT = "report failure"
+#: When the report runs: a failed run of the schedule, not one started by hand.
+WHEN = "${{ failure() && github.event_name == 'schedule' }}"
+#: The title of the issue the report opens.
+TITLE = "chore: pypi floors failure"
+#: The run the report links.
+RUN_URL = "https://github.com/bjlittle/geovista/actions/runs/1234"
+#: The section of the testing guide describing the workflow, which the report
+#: links so that its reader lands on what a failure means.
+GUIDE = (
+    "https://geovista.readthedocs.io/en/latest/developer/testing.html"
+    "#gv-developer-testing-continuous-integration"
+)
 
 pytestmark = pytest.mark.skipif(
     shutil.which("bash") is None, reason="the actions' steps run under bash"
@@ -266,3 +285,114 @@ def test_the_suite_decides_the_step():
     assert _unwrapped(commands[-1])[:1] == ["pytest"], commands[-1]
     for line in str(step["run"]).splitlines():
         assert not set(line) & set(";|&"), line
+
+
+@cache
+def _workflow() -> dict[Any, Any]:
+    """Return the parsed workflow, read once."""
+    assert WORKFLOW.is_file(), f"no workflow {WORKFLOW.name!r}"
+    return yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
+
+
+def _triggers() -> dict[str, Any]:
+    """Return the workflow's triggers, which PyYAML keys by ``True`` for "on"."""
+    workflow = _workflow()
+    triggers = workflow.get("on", workflow.get(True))
+    return triggers if isinstance(triggers, dict) else {}
+
+
+def _job() -> dict[str, Any]:
+    """Return the job installing the checkout at its pip floors."""
+    jobs = _workflow().get("jobs", {})
+    assert JOB in jobs, f"no {JOB!r} job in {WORKFLOW.name}"
+    return jobs[JOB]
+
+
+def test_the_workflow_runs_each_week_and_by_hand():
+    """A floor that PyPI breaks is found within the week (floors spec §4.3).
+
+    The job runs on no pull request, so a pull request is never failed by a
+    release it did not make. A trigger left from watching the job on its own
+    pull request fails here.
+    """
+    triggers = _triggers()
+
+    assert set(triggers) == {"schedule", "workflow_dispatch"}, set(triggers)
+    (entry,) = triggers["schedule"]
+    _minute, _hour, day, month, weekday = str(entry["cron"]).split()
+    assert (day, month) == ("*", "*"), entry
+    assert re.fullmatch(r"[0-6]", weekday), entry
+
+
+def test_the_workflow_grants_nothing_by_default():
+    """A job is granted only what it asks for."""
+    assert _workflow().get("permissions") == {}
+
+
+def test_the_pypi_job_may_read_and_report_and_nothing_more():
+    """The job's token reads the checkout and writes the report, and no more."""
+    assert _job().get("permissions") == {"contents": "read", "issues": "write"}
+
+
+def test_the_pypi_job_runs_the_action_against_the_checkout():
+    """Row 4 of floors spec §9 runs the same action against a built wheel."""
+    steps = _job().get("steps", [])
+    checkouts = [
+        index
+        for index, step in enumerate(steps)
+        if str(step.get("uses", "")).startswith("actions/checkout@")
+    ]
+    runs = [
+        index
+        for index, step in enumerate(steps)
+        if str(step.get("uses", "")).endswith(f".github/workflows/composite/{FLOORS}")
+    ]
+
+    assert len(checkouts) == 1, checkouts
+    assert len(runs) == 1, runs
+    assert checkouts[0] < runs[0], "the action runs before the checkout"
+    given = steps[runs[0]].get("with", {})
+    assert given.get("target") == "."
+    assert given.get("cache_period") == "${{ env.CACHE_PERIOD }}"
+
+
+def test_the_report_runs_on_a_failed_weekly_run_alone():
+    """A run started by hand is watched by whoever started it."""
+    steps = _job().get("steps", [])
+    report = _step(steps, REPORT)
+
+    assert " ".join(str(report.get("if", "")).split()) == WHEN
+    assert steps[-1] is report, f"{REPORT!r} is not the job's last step"
+
+
+@pytest.mark.parametrize(("open_issue", "verb"), [("", "create"), ("42", "comment")])
+def test_the_report_opens_an_issue_or_comments_on_the_open_one(
+    tmp_path, stub, run_step, open_issue, verb
+):
+    """Weeks of the same failure make one issue with comments, not many issues."""
+    log = tmp_path / "gh.log"
+    stub(
+        "gh",
+        f'printf "%s\\n" "$*" >> "{log}"\n'
+        f'if [ "$1 $2" = "issue list" ]; then echo "{open_issue}"; fi',
+    )
+    env = {"REPO": "bjlittle/geovista", "RUN_URL": RUN_URL}
+
+    result = run_step(_step(_job().get("steps", []), REPORT), env)
+
+    assert result.returncode == 0, result.stderr
+    calls = _calls(log)
+    assert calls[0].startswith("issue list"), calls
+    assert TITLE in calls[0]
+    (written,) = [call for call in calls[1:] if call.startswith("issue ")]
+    assert written.startswith(f"issue {verb}"), written
+    if verb == "create":
+        assert TITLE in written
+        assert "--label bot" in written
+    else:
+        assert written.startswith("issue comment 42")
+
+    body = (tmp_path / "report.md").read_text(encoding="utf-8")
+    assert RUN_URL in body
+    assert GUIDE in body, "the report does not link the testing guide"
+    assert "pixi lock" in body, "the report does not say how to raise a floor"
