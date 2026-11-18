@@ -1,5 +1,5 @@
 codecov >=2.1.13,<2.2
-markdown-it-py >=3.0.0,<4.3
+markdown-it-py >=3.0.0,<4.4
 playwright >=1.63.0,<1.66
 pytest >=8.4.0,<9.3
 pytest-codspeed >=5.0.4,<5.1
