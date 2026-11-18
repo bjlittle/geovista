@@ -555,7 +555,7 @@ Each carries the status grammar of §3.2.
 | 5 | The globe, scene, heights and ledger specifications' items brought in · 🔗 after row 1 | ✅ landed (2026-11-03, {pull}`2826`) |
 | 6 | Hardening: the open items found while landing rows 1 and 5, §7 items 3 to 12 | ✅ landed (2026-11-04, {pull}`2878`) |
 | 7 | A row landing with another specification's row checked to land with it, §7 item 14 · 🔗 after row 6 | ✅ landed (2026-11-05, {pull}`2879`) |
-| 8 | The order between rows checked across the specifications, §7 item 15 · 🔗 with row 2 of order spec §9 | 📋 not started |
+| 8 | The order between rows checked across the specifications, §7 item 15 · 🔗 with row 2 of order spec §9 | 🚧 in progress ({pull}`2994`) |
 
 Statuses follow docs spec §3.6. Rows 2 to 5 can land in any order. Rows 3 to 5 each raise
 the issues their specifications' items lack, and need {user}`bjlittle`'s judgement on the
