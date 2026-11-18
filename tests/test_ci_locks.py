@@ -19,10 +19,8 @@ on the ``PATH``, so they check what the steps do rather than how they read.
 from __future__ import annotations
 
 from functools import cache
-import os
 from pathlib import Path
 import shutil
-import subprocess
 from typing import Any
 
 import pytest
@@ -82,66 +80,21 @@ def _step(name: str) -> dict[str, Any]:
     return steps[0]
 
 
-def _stub(bin_dir: Path, name: str, body: str) -> None:
-    """Write an executable stand-in for a command."""
-    path = bin_dir / name
-    path.write_text(f"#!/usr/bin/env bash\n{body}\n", encoding="utf-8")
-    path.chmod(0o755)
-
-
-def _run(step: str, cwd: Path, env: dict[str, str]) -> subprocess.CompletedProcess:
-    """Run the step's shell as the workflow does, with errexit and pipefail.
-
-    The step's own environment is applied as Actions applies it, save for the
-    values holding an expression, which only a running job resolves, and which
-    the caller supplies instead.
-    """
-    body = _step(step)
-    script = cwd / "step.sh"
-    script.write_text(str(body["run"]), encoding="utf-8")
-    literal = {
-        name: str(value)
-        for name, value in (body.get("env") or {}).items()
-        if "${{" not in str(value)
-    }
-    return subprocess.run(  # noqa: S603
-        [shutil.which("bash") or "bash", "-e", "-o", "pipefail", str(script)],
-        cwd=cwd,
-        env={
-            **os.environ,
-            **literal,
-            **env,
-            "PATH": f"{cwd / 'bin'}{os.pathsep}{os.environ['PATH']}",
-        },
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-
-@pytest.fixture
-def runner(tmp_path: Path) -> Path:
-    """Return a directory to run a step in, with a "bin" for its stand-ins."""
-    (tmp_path / "bin").mkdir()
-    return tmp_path
-
-
-def test_a_failed_update_keeps_pixis_error(runner):
+def test_a_failed_update_keeps_pixis_error(tmp_path, stub, run_step):
     """The update still fails the step, and its error is kept for the report.
 
     The stand-in reports nothing moved before failing, so that only the update's
     own status can fail the step.
     """
-    _stub(
-        runner / "bin",
+    stub(
         "pixi",
         f'echo \'{{"environment": {{}}}}\'\necho "{ERROR}" >&2\nexit 1',
     )
 
-    result = _run(UPDATE, runner, {})
+    result = run_step(_step(UPDATE), {})
 
     assert result.returncode != 0, "a failed update passed its step"
-    assert ERROR in (runner / "update.err").read_text(encoding="utf-8")
+    assert ERROR in (tmp_path / "update.err").read_text(encoding="utf-8")
     assert ERROR in result.stdout + result.stderr, "the error left the step's log"
 
 
@@ -160,20 +113,19 @@ def test_the_report_may_open_an_issue_and_nothing_more():
 
 @pytest.mark.parametrize(("open_issue", "verb"), [("", "create"), ("42", "comment")])
 def test_the_report_opens_an_issue_or_comments_on_the_open_one(
-    runner, open_issue, verb
+    tmp_path, stub, run_step, open_issue, verb
 ):
     """Four stalled weeks make one issue with three comments, not four issues."""
-    log = runner / "gh.log"
-    _stub(
-        runner / "bin",
+    log = tmp_path / "gh.log"
+    stub(
         "gh",
         f'printf "%s\\n" "$*" >> "{log}"\n'
         f'if [ "$1 $2" = "issue list" ]; then echo "{open_issue}"; fi',
     )
-    (runner / "update.err").write_text(f"{ERROR}\n  ├─▶ failed\n", encoding="utf-8")
+    (tmp_path / "update.err").write_text(f"{ERROR}\n  ├─▶ failed\n", encoding="utf-8")
     env = {"REPO": "bjlittle/geovista", "RUN_URL": RUN_URL}
 
-    result = _run(REPORT, runner, env)
+    result = run_step(_step(REPORT), env)
 
     assert result.returncode == 0, result.stderr
     calls = log.read_text(encoding="utf-8").splitlines()
@@ -187,7 +139,7 @@ def test_the_report_opens_an_issue_or_comments_on_the_open_one(
     else:
         assert written.startswith("issue comment 42")
 
-    body = (runner / "report.md").read_text(encoding="utf-8")
+    body = (tmp_path / "report.md").read_text(encoding="utf-8")
     assert RUN_URL in body
     assert ERROR in body, "the report does not quote pixi's error"
     assert GUIDE in body, "the report does not link the packaging guide"
