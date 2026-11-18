@@ -1,0 +1,6 @@
+The reading of the order between roadmap rows moved from the conventions test
+into the shared citation grammar, which the conventions test, the documentation
+build and the verification report all load. The grammar can now write a
+Mermaid diagram of the rows and their orderings, with its key, and say which
+rows are ready to start. This lands row 1 of diagram spec §9.
+(:user:`claude`)
