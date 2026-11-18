@@ -1,0 +1,68 @@
+# Reference:
+#   - https://github.com/astral-sh/setup-uv
+#   - https://docs.astral.sh/uv/concepts/resolution/#resolution-strategy
+
+name: "floors-pypi"
+description: "install a target at its pip floors with uv, and test it"
+
+inputs:
+  target:
+    description: "what to install: '.' for the checkout, or the path of a wheel"
+    required: true
+  cache_period:
+    description: "geovista and cartopy assets cache timestamp"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    # The floors are those of the oldest supported Python, the one the
+    # "floors" pixi environment pins (floors spec §2 decision 9).
+    - name: "setup uv"
+      uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+      with:
+        python-version: "3.13"
+        activate-environment: true
+        enable-cache: false
+
+    # Each direct requirement resolves at its floor (floors spec §2 decision 8).
+    # The one retry is for a fault of the index, not of a floor.
+    - name: "uv install"
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+      run: |
+        uv pip install --resolution lowest-direct "${TARGET}[test,exam]" || uv pip install --resolution lowest-direct "${TARGET}[test,exam]"
+
+    - name: "uv freeze"
+      shell: bash
+      run: |
+        freeze="$(uv pip freeze)"
+        echo "${freeze}"
+        {
+          echo '### pip floors'
+          echo
+          echo '```text'
+          echo "${freeze}"
+          echo '```'
+        } >> "${GITHUB_STEP_SUMMARY}"
+
+    - name: "cartopy cache"
+      uses: $/.github/workflows/composite/cartopy-cache
+      with:
+        cache_period: ${{ inputs.cache_period }}
+        pixi: "false"
+
+    - name: "geovista cache"
+      uses: $/.github/workflows/composite/geovista-cache
+      with:
+        cache_period: ${{ inputs.cache_period }}
+        pixi: "false"
+
+    # No image test runs at the floors (floors spec §2 decision 10), and the
+    # suite is the step's last command, so that it decides the step.
+    - name: "tests floors pypi"
+      shell: bash
+      run: |
+        xvfb-run -a geovista --report
+        xvfb-run -a pytest -m "not image" --numprocesses logical --dist worksteal
