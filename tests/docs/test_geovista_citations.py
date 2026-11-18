@@ -14,6 +14,7 @@ rather than write it, and cite a ``demo spec`` that no document declares.
 
 from __future__ import annotations
 
+from datetime import date
 import importlib.util
 from pathlib import Path
 import sys
@@ -22,6 +23,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from types import ModuleType
 
 #: The grammar, beside the extensions that will import it.
@@ -968,3 +970,160 @@ def test_ordering_refuses_another_word(citations, clause):
 def test_release_reads_two_or_three_numbers(citations, version, matched):
     """A release is a version of two or three numbers (order spec §4.4)."""
     assert (citations.RELEASE.fullmatch(version) is not None) is matched
+
+
+#: The states of a roadmap row and an ordering's opener, built rather than written.
+LANDED = "\N{WHITE HEAVY CHECK MARK} landed"
+IN_PROGRESS = "\N{CONSTRUCTION SIGN} in progress"
+NOT_STARTED = "\N{CLIPBOARD} not started"
+CANDIDATE = "\N{ELECTRIC LIGHT BULB} candidate"
+LINKED = " \N{MIDDLE DOT} \N{LINK SYMBOL}"
+
+
+def roadmaps(
+    tmp_path: Path,
+    citations: ModuleType,
+    mine: Sequence[tuple[str, str]],
+    theirs: Sequence[tuple[str, str]] = (("Theirs", NOT_STARTED),),
+) -> tuple[dict[Path, str], Any]:
+    """Write a demo and an other specification, each a roadmap in its second section.
+
+    Each row is its scope and its status, numbered from 1 in the order given.
+    """
+
+    def roadmap(slug: str, rows: Sequence[tuple[str, str]]) -> str:
+        table = "".join(
+            f"| {n} | {scope} | {status} |\n"
+            for n, (scope, status) in enumerate(rows, start=1)
+        )
+        return (
+            f"({slug}-1)=\n## 1. Purpose\n\n({slug}-2)=\n## 2. Roadmap\n\n"
+            f"| # | Scope | Status |\n|---|---|---|\n{table}"
+        )
+
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    other = tmp_path / "2026-01-02-other-design.md"
+    other.write_text(
+        f"- **Citation prefix:** `other spec {SECTION}{ELLIPSIS}`\n\n"
+        + roadmap("other-spec", theirs),
+        encoding="utf-8",
+    )
+    path, _ = demo(tmp_path, roadmap("demo-spec", mine), citations)
+    texts = {p: p.read_text(encoding="utf-8") for p in (path, other)}
+    return texts, citations.namespace([path, other])
+
+
+def demo_row(row: int | str) -> str:
+    """Spell the anchor of a row of the demo specification's roadmap."""
+    return f"demo-spec-2-row-{row}"
+
+
+def other_row(row: int | str) -> str:
+    """Spell the anchor of a row of the other specification's roadmap."""
+    return f"other-spec-2-row-{row}"
+
+
+def test_ordering_edges_reads_each_relation_as_an_edge(tmp_path, citations):
+    """Each relation is one edge, its first row landing first, and a release none.
+
+    ``after`` and ``before`` are the same edge read from either row, ``with`` is
+    its pair in order of anchor, and ``with or after`` keeps its direction.
+    """
+    texts, names = roadmaps(
+        tmp_path,
+        citations,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1{LINKED} before 0.6", NOT_STARTED),
+            (f"Three{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Four{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Five{LINKED} with or after row 1 of other spec {SECTION}2", NOT_STARTED),
+        ],
+    )
+
+    edges = [
+        (edge.kind, edge.first, edge.second)
+        for edge in citations.ordering_edges(texts, names)
+    ]
+
+    assert edges == [
+        ("after", demo_row(1), demo_row(2)),
+        ("after", demo_row(3), other_row(1)),
+        ("with", *sorted((demo_row(4), other_row(1)))),
+        ("with or after", other_row(1), demo_row(5)),
+    ]
+
+
+def test_ordering_edges_records_where_each_is_written(tmp_path, citations):
+    """An edge carries the row and clause that write it, for its faults to name."""
+    texts, names = roadmaps(
+        tmp_path,
+        citations,
+        [("One", NOT_STARTED), (f"Two{LINKED} after row 1", NOT_STARTED)],
+    )
+
+    (edge,) = citations.ordering_edges(texts, names)
+
+    assert edge.path.name.startswith("2026-01-01")
+    assert edge.row.row == "2"
+    assert edge.clause == "after row 1"
+
+
+def test_landed_on_reads_a_date_and_its_pull_requests(citations):
+    """A landed row's date and pull requests; any other state has not landed."""
+    assert citations.landed_on(f"{LANDED} (2026-11-03, {{pull}}`7`)") == (
+        date(2026, 11, 3),
+        {("bjlittle/geovista", 7)},
+    )
+    assert citations.landed_on(NOT_STARTED) is None
+    assert citations.landed_on(f"{IN_PROGRESS} ({{pull}}`7`)") is None
+
+
+def test_row_statuses_reads_every_roadmap_by_anchor(tmp_path, citations):
+    """Each row's status, keyed by its anchor, in every specification."""
+    texts, names = roadmaps(
+        tmp_path,
+        citations,
+        [("One", NOT_STARTED), ("Two", CANDIDATE)],
+        [("Theirs", LANDED)],
+    )
+
+    assert citations.row_statuses(texts, names) == {
+        demo_row(1): NOT_STARTED,
+        demo_row(2): CANDIDATE,
+        other_row(1): LANDED,
+    }
+
+
+def test_landing_together_groups_the_rows_a_loop_forces_into_one_pr(
+    tmp_path, citations
+):
+    """A chain of with and a loop of with or after are each one group; after is not."""
+    texts, names = roadmaps(
+        tmp_path,
+        citations,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} with row 1", NOT_STARTED),
+            (f"Three{LINKED} with row 2", NOT_STARTED),
+            (f"Four{LINKED} with or after row 5", NOT_STARTED),
+            (f"Five{LINKED} with or after row 4{LINKED} after row 3", NOT_STARTED),
+        ],
+    )
+
+    groups = citations.landing_together(citations.ordering_edges(texts, names))
+
+    assert groups[demo_row(1)] == [demo_row(2), demo_row(3)]
+    assert groups[demo_row(3)] == [demo_row(1), demo_row(2)]
+    assert groups[demo_row(4)] == [demo_row(5)]
+    assert demo_row(6) not in groups
+
+
+def test_row_citation_names_a_row_by_its_anchor(citations):
+    """A row's anchor reads back as the citation that names it."""
+    assert citations.row_citation("crs-spec-10-row-6a") == (
+        f"row 6a of crs spec {SECTION}10"
+    )
+    assert citations.row_citation("ledger-spec-3-8-row-2") == (
+        f"row 2 of ledger spec {SECTION}3.8"
+    )

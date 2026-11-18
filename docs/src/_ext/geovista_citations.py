@@ -29,16 +29,18 @@ sign rather than write it.
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass
+from datetime import date
 import functools
 from pathlib import Path
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from markdown_it import MarkdownIt
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Iterator
+    from collections.abc import Callable, Iterable, Iterator, Mapping
 
     from markdown_it.rules_block import StateBlock
 
@@ -229,6 +231,253 @@ def ordering(clause: str) -> Ordering | None:
         if rest != clause and rest[:1].isspace() and rest.strip():
             return Ordering(relation, rest.strip())
     return None
+
+
+#: A date, as a status writes one.
+DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+
+
+#: A pull request a status cites: by role, in this repository, or by link, in any.
+PULL_ROLE = re.compile(r"\{pull\}`(?P<number>\d+)`")
+PULL_LINK = re.compile(
+    r"\]\(https://github\.com/(?P<repository>[\w.-]+/[\w.-]+)/pull/(?P<number>\d+)\)"
+)
+
+
+def pulls(status: str) -> set[tuple[str, int]]:
+    """Read the pull requests a status cites, as repository and number.
+
+    GitHub reads a repository's name in any case and a number with leading zeros,
+    so each is read as GitHub reads it, and one pull request is one identity.
+    """
+    return {
+        ("bjlittle/geovista", int(m["number"])) for m in PULL_ROLE.finditer(status)
+    } | {
+        (m["repository"].casefold(), int(m["number"]))
+        for m in PULL_LINK.finditer(status)
+    }
+
+
+#: A bare row of an ordering's own roadmap (order spec §2 decision 4).
+BARE_ROW = re.compile(r"row\s+(?P<row>\d+[a-z]?)")
+
+
+def ordering_target(
+    said: Ordering,
+    row: Row,
+    rows: Iterable[Row],
+    owner: str | None,
+    names: Namespace,
+) -> tuple[str | None, str | None]:
+    """Read what an ordering names: the anchor of a row or a release, or a fault.
+
+    A bare row names a row of the same roadmap. A row of another specification is
+    cited in full, and whether its anchor exists is the resolution rule's. A range
+    is refused, and only ``before`` takes a release (order spec §4.1, §4.4).
+    """
+    target = said.target
+    named = f'"{said.relation} {target}"'
+    bare = BARE_ROW.fullmatch(target)
+    found = next(
+        (
+            c
+            for c in scan(target, names.signed, owner)
+            if c.start == 0 and c.end == len(target) and c.slug is not None
+        ),
+        None,
+    )
+    label = LABEL.match(found.slug) if found is not None else None
+    key, fault = None, None
+    if RELEASE.fullmatch(target):
+        if said.relation == "before":
+            key = f"release {target}"
+        else:
+            fault = f"{named}: only before takes a release"
+    elif target.startswith("rows ") or (found is not None and found.ends):
+        fault = f"{named}: name one row"
+    elif bare is not None and owner is not None:
+        if any(r.section == row.section and r.row == bare["row"] for r in rows):
+            key = row_anchor(owner, row.section, bare["row"])
+        else:
+            fault = f"{named}: row {bare['row']} does not exist"
+    elif label is not None and label["row"] is not None:
+        key = found.slug
+    else:
+        fault = f"{named} names no row"
+    return key, fault
+
+
+class Edge(NamedTuple):
+    """One ordering between two rows, read as an edge of the graph of every roadmap.
+
+    Attributes
+    ----------
+    kind : str
+        ``after``, ``with`` or ``with or after``: ``before`` is ``after`` read
+        from the other row.
+    first : str
+        The anchor of the row landing first, or of the first of a ``with`` pair
+        in order of anchor.
+    second : str
+        The anchor of the other row.
+    path : Path
+        The specification that writes it.
+    row : Row
+        The row that writes it.
+    clause : str
+        The clause that writes it, as ``after row 1``.
+
+    """
+
+    kind: str
+    first: str
+    second: str
+    path: Path
+    row: Row
+    clause: str
+
+
+def ordering_edges(
+    texts: Mapping[Path, str], names: Namespace, *, releases: bool = False
+) -> list[Edge]:
+    """Read every ordering of every roadmap as an edge, once (order spec §4.5).
+
+    ``after`` X on Y and ``before`` Y on X are both X landing before Y, ``with``
+    is its pair in order of anchor, and ``with or after`` keeps its direction. A
+    release is no edge of the graph (order spec §4.4), so it is read only when
+    ``releases`` asks, as the row landing before ``release 0.6``. An ordering
+    that names no row, or its own row, is the form rule's to refuse.
+    """
+    edges = []
+    for path, text in texts.items():
+        owner = names.owners.get(path)
+        if owner is None:
+            continue
+        roadmap = rows(text)
+        for row in roadmap:
+            mine = row_anchor(owner, row.section, row.row)
+            for clause in split_scope(row.scope)[1]:
+                said = ordering(clause)
+                if said is None:
+                    continue
+                key, _ = ordering_target(said, row, roadmap, owner, names)
+                if (
+                    key is None
+                    or key == mine
+                    or (key.startswith("release ") and not releases)
+                ):
+                    continue
+                if said.relation == "with":
+                    first, second = sorted((mine, key))
+                elif said.relation == "before":
+                    first, second = mine, key
+                else:
+                    first, second = key, mine
+                kind = "after" if said.relation == "before" else said.relation
+                edges.append(Edge(kind, first, second, path, row, clause))
+    return edges
+
+
+def landed_on(status: str) -> tuple[date | None, set[tuple[str, int]]] | None:
+    """Read a landed row's date and the pull requests it cites, or ``None``.
+
+    A status in any other state has not landed. A landed status with no date the
+    calendar holds reads as ``None`` for its date, which the status rule refuses
+    (docs spec §3.6), so no order is read from it.
+    """
+    if state_of(status, ROADMAP_STATES) != LANDED:
+        return None
+    found = DATE.search(status)
+    day = None
+    if found is not None:
+        with contextlib.suppress(ValueError):
+            day = date.fromisoformat(found[0])
+    return day, pulls(status)
+
+
+def row_statuses(texts: Mapping[Path, str], names: Namespace) -> dict[str, str]:
+    """Read the status of every row of every roadmap, by its anchor."""
+    return {
+        row_anchor(owner, row.section, row.row): row.status
+        for path, text in texts.items()
+        if (owner := names.owners.get(path)) is not None
+        for row in rows(text)
+    }
+
+
+def row_citation(anchor: str) -> str:
+    """Cite a row by its anchor, as ``row 2 of layers spec §9``."""
+    label = LABEL.match(anchor)
+    prefix = label["prefix"].replace("-", " ")
+    return f"row {label['row']} of {prefix} {SECTION}{label['num'].replace('-', '.')}"
+
+
+def strongly_connected(graph: Mapping[str, Iterable[str]]) -> dict[str, int]:
+    """Find the strongly connected parts of a graph, by Tarjan's algorithm.
+
+    Each node is mapped to its part, and two nodes share one exactly when each
+    reaches the other.
+    """
+    index: dict[str, int] = {}
+    low: dict[str, int] = {}
+    part: dict[str, int] = {}
+    stack: list[str] = []
+
+    def visit(node: str) -> None:
+        index[node] = low[node] = len(index)
+        stack.append(node)
+        for nxt in graph.get(node, ()):
+            if nxt not in index:
+                visit(nxt)
+                low[node] = min(low[node], low[nxt])
+            elif nxt not in part:
+                low[node] = min(low[node], index[nxt])
+        if low[node] == index[node]:
+            number = len(set(part.values()))
+            while True:
+                top = stack.pop()
+                part[top] = number
+                if top == node:
+                    break
+
+    for node in graph:
+        if node not in index:
+            visit(node)
+    return part
+
+
+def no_later_than(edges: Iterable[Edge]) -> dict[str, list[str]]:
+    """Read edges as a graph of rows, each landing no later than those it points to.
+
+    ``with`` points both ways, as its rows land in one pull request.
+    """
+    graph: dict[str, list[str]] = {}
+    for edge in edges:
+        graph.setdefault(edge.first, []).append(edge.second)
+        graph.setdefault(edge.second, [])
+        if edge.kind == "with":
+            graph[edge.second].append(edge.first)
+    return graph
+
+
+def landing_together(edges: Iterable[Edge]) -> dict[str, list[str]]:
+    """Find, for each row, the rows its orderings force into its pull request.
+
+    Rows that each land no later than the other land together: the members of a
+    strongly connected part of :func:`no_later_than`, as a chain of ``with`` or a
+    loop of ``with or after`` makes. Each row is mapped to the others of its part,
+    in the order they are first read, and a row alone in its part is left out.
+    """
+    graph = no_later_than(edges)
+    part = strongly_connected(graph)
+    groups: dict[int, list[str]] = {}
+    for node in graph:
+        groups.setdefault(part[node], []).append(node)
+    return {
+        node: [other for other in groups[part[node]] if other != node]
+        for node in graph
+        if len(groups[part[node]]) > 1
+    }
 
 
 def _closing(
