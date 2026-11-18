@@ -162,8 +162,8 @@ An ordering follows the scope of its row, opened by a middle dot, a space and �
 The first `· 🔗` ends the scope, and each after it opens one more ordering, so a scope that
 is itself a list of commas reads as it did. A bare `row N` names a row of the same roadmap,
 and a row of another specification is cited in full, in the grammar every citation uses,
-so the build links it and the renumber guard follows it. A range is refused, as
-`landing_together` refuses one today: each ordering names one row.
+so the build links it and the renumber guard follows it. A range is refused: each
+ordering names one row.
 
 🔗 is U+1F517, which needs no variation selector. The grammar reads it with one as
 without, as it reads the roadmap states (ledger spec §2 decision 16).

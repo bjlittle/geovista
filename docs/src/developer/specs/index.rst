@@ -298,8 +298,21 @@ row whose work the other row does. A release takes ``before`` alone, as
 
 The reasons stay in the paragraph under the table, and the ordering never
 does: the conventions test refuses one written in prose, such as *row 3 needs
-row 1*, and points you at the cell. order spec §4.1 sets out the form, and
-order spec §4.5 what the test refuses.
+row 1*, and points you at the cell.
+
+The test also reads the orderings of every roadmap together, as one graph, and
+refuses a cycle, such as row 2 after row 1 and row 1 after row 2, or a ``with``
+and a ``before`` between the same two rows; a ``📋 not started`` row waiting on
+a ``💡 candidate``, which may never land; and a status the order contradicts. A
+row starts only once the rows it comes after have landed, and lands on their day
+or later, in a pull request of its own, while two rows ``with`` each other land
+in the same one.
+
+A row ``with`` another lands in one pull request with it, and that pull request
+answers the open items both rows owe. So the verification report lists, for each
+row in progress, the rows it lands with and the items they still owe.
+order spec §4.1 sets out the form, order spec §4.5 what the test refuses, and
+order spec §4.6 what the report shows.
 
 .. toctree::
     :hidden:

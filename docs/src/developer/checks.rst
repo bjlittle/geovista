@@ -316,7 +316,8 @@ of one row per decision. An Open Items section numbers its entries the same way,
 each carrying the parts its state needs, in order, and naming a row of its own
 roadmap that owes it. A row's order against another row is written in its
 Scope cell, as ``· 🔗 after row 1``, in one of four relations, once, and never
-in prose. A specification's figures sit in its own folder under
+in prose, and the orderings of every roadmap hold together: no cycle, no row
+waiting on a candidate, and no status they contradict. A specification's figures sit in its own folder under
 ``figures/``, each shown with alt text and a caption, and each a PNG of 150 KB or
 less.
 
@@ -407,10 +408,7 @@ For an open item, it names the item, and says one of these:
 For a roadmap row, it says ``row '…' is not numbered as a row``: write its first
 cell as a plain number, ``1``, or with a letter, ``1a``, for a row split in two.
 A citation names a row by that cell, so ``**1**``, ``~~1~~`` or ``1.`` names
-nothing (items spec §3.1). When it says *row N lands with …, which has not
-landed*, *… which has landed without it* or *… which landed in another pull
-request*, land the two rows in one pull request: a row whose scope carries
-``· 🔗 with`` another lands with it (items spec §3.4). When it says ``'not started' is not a
+nothing (items spec §3.1). When it says ``'not started' is not a
 status: write 📋 not started``, or the same for ``in progress`` or ``candidate``,
 give the state its emoji: ``🚧 in progress``, ``📋 not started`` or
 ``💡 candidate``, as ledger spec §2 decision 16 agreed.
@@ -423,8 +421,23 @@ roadmap, the later row writes it*, write ``after`` on the later row instead.
 When it says *… is written twice*, keep the ordering on the row its reason
 belongs to and delete the other. When it says *… orders rows in prose* or
 *… in its scope*, move the ordering into its row's Scope cell after a
-``· 🔗``, and leave only the reason in the prose. When it says *… outside an
-opener*, put a space either side of the dot (order spec §4.1).
+``· 🔗``, and leave only the reason in the prose, or reword it if it orders a
+row against something that is not a row, such as an issue. When it says
+*… outside an opener*, put a space either side of the dot (order spec §4.1).
+
+When it says *… closes a cycle through …*, no order of landing meets the
+orderings between the rows it names: find the one that is wrong, and reverse or
+delete it. When it says *… is not started, and waits on …, a candidate*, make
+the waiting row a candidate too, with a trigger of its own, or order it against
+another row. When it says *… is in progress* or *… is landed, but …, which it
+lands after, has not landed*, *… has landed, but …*, *… is in progress, but …
+has not begun*, *… landed on …, before …* or *… landed in the same pull request
+as …*, correct the status, or the ordering if it no longer holds: two rows
+landing in one pull request are ``with`` each other. When it says *row N lands
+with …, which has not landed*, *… which has landed without it*, *… which landed
+in another pull request* or *… but neither names the pull request they landed
+in*, land the two rows in one pull request, and name it in both statuses
+(order spec §4.5).
 
 **Declaring an exception:** None for the conventions. A specification not yet
 brought into the ledger is named in ``UNLEDGERED``, beside the row of

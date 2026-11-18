@@ -287,6 +287,8 @@ specification it asserts that:
    that exists.
 7. A row whose scope says it lands *with* another row, citing that one row, as §3.4 has
    it, has landed by the same pull request as that row, which both name, or neither has.
+   Item 7 of order spec §4.5 now holds this rule, as one case of a status that contradicts
+   an ordering (order spec §4.7).
 
 The second assertion is the landing gate of §3.5, since landing a row is changing its
 status. A specification not yet brought in is named in a list the test keeps, beside the row

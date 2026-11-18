@@ -4576,7 +4576,10 @@ def ordering_in_prose(path: Path, text: str) -> list[str]:
     and the row. It reads the markdown's text, so emphasis and links hide nothing,
     and code is left out, so quoted words order nothing.
     """
-    remedy = f'write it in its row\'s Scope cell, as "{LINKED.strip()} after row 1"'
+    remedy = (
+        f'write it in its row\'s Scope cell, as "{LINKED.strip()} after row 1", or '
+        "reword it if it orders a row against something that is not a row"
+    )
     problems = []
     for row in citations.rows(text):
         scope = citations.prose(citations.split_scope(row.scope)[0])[0]
@@ -5439,6 +5442,51 @@ def test_ordering_form_refuses_a_row_ordered_against_itself(tmp_path):
 
     assert len(faults) == 2
     assert all("itself" in fault for fault in faults)
+
+
+def test_ordering_in_prose_names_rewording(tmp_path):
+    """Order spec §8 item 1: words ordering a row against no row are reworded.
+
+    *Once rows 1 and 2 have landed, the issue closes* says when an issue closes,
+    which no Scope cell can, so the advice names both ways out.
+    """
+    for scope, below in (("Two, once row 1 lands", ""), ("Two", "Row 2 needs row 1.")):
+        (fault,) = prose_faults(tmp_path, below=below, scope=scope)
+        assert "Scope cell" in fault
+        assert "reword" in fault
+
+
+def test_no_order_cycles(specs, names):
+    """No rows of any roadmap are ordered in a cycle.
+
+    Holds order spec §2 decision 7.
+    """
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    problems = order_cycles(texts, names)
+
+    assert not problems, "\n".join(problems)
+
+
+def test_no_row_waits_on_a_candidate(specs, names):
+    """No row not started is ordered after, with or with or after a candidate.
+
+    Holds order spec §2 decision 7.
+    """
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    problems = order_candidates(texts, names)
+
+    assert not problems, "\n".join(problems)
+
+
+def test_every_status_agrees_with_its_orderings(specs, names):
+    """Every status holds the orderings of its row, with landing together among them.
+
+    Holds order spec §2 decision 7 and order spec §2 decision 9.
+    """
+    texts = {spec: spec.read_text(encoding="utf-8") for spec in specs}
+    problems = order_statuses(texts, names)
+
+    assert not problems, "\n".join(problems)
 
 
 def test_the_collection_writes_orderings(specs):
