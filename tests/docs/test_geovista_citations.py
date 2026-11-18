@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Collection, Mapping, Sequence
     from types import ModuleType
 
 #: The grammar, beside the extensions that will import it.
@@ -1263,3 +1263,245 @@ def test_row_labels_escapes_what_mermaid_reads(tmp_path, citations):
         "1: The work of #35;7, with #quot;quotes#quot;",
         "2: Bold, snake_case and em",
     ]
+
+
+def drawn(
+    tmp_path,
+    citations,
+    mine,
+    theirs=(("Theirs", LANDED),),
+    *,
+    rows: Sequence[str] | None = None,
+    small: Collection[str] = (),
+    links: Mapping[str, str] | None = None,
+) -> str:
+    """Draw every row of two roadmaps, or the ``rows`` given."""
+    texts, names = roadmaps(tmp_path, citations, mine, theirs)
+    statuses = citations.row_statuses(texts, names)
+    return citations.diagram(
+        list(statuses) if rows is None else rows,
+        citations.ordering_edges(texts, names),
+        statuses,
+        citations.row_labels(texts, names),
+        small=small,
+        links=links,
+    )
+
+
+def ident(anchor: str) -> str:
+    """Spell the id a diagram gives a row's box."""
+    return anchor.replace("-", "_")
+
+
+def test_diagram_draws_each_state_in_its_colour(tmp_path, citations):
+    """Each state has its class, and a row ready to start is drawn ready.
+
+    Holds diagram spec §2 decision 5.
+    """
+    text = drawn(
+        tmp_path,
+        citations,
+        [
+            ("One", LANDED),
+            ("Two", IN_PROGRESS),
+            (f"Three{LINKED} after row 2", NOT_STARTED),
+            ("Four", f"{CANDIDATE}: a trigger"),
+            ("Five", NOT_STARTED),
+        ],
+    )
+
+    assert text.startswith("flowchart LR\n")
+    for row, name in (
+        (1, "landed"),
+        (2, "progress"),
+        (3, "todo"),
+        (4, "candidate"),
+        (5, "ready"),
+    ):
+        assert f"  class {ident(demo_row(row))} {name}\n" in text
+
+
+def test_diagram_draws_each_relation_as_its_arrow(tmp_path, citations):
+    """After and before share an arrow from the row landing first; each other differs.
+
+    Holds diagram spec §2 decision 6.
+    """
+    text = drawn(
+        tmp_path,
+        citations,
+        [
+            ("One", NOT_STARTED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            (f"Three{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Four{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Five{LINKED} with or after row 1 of other spec {SECTION}2", NOT_STARTED),
+        ],
+    )
+
+    for first, arrow, second in (
+        (demo_row(1), "-->", demo_row(2)),
+        (demo_row(3), "-->", other_row(1)),
+        (demo_row(4), "<==>", other_row(1)),
+        (other_row(1), "-.->", demo_row(5)),
+    ):
+        assert f"  {ident(first)} {arrow} {ident(second)}\n" in text
+
+
+def test_diagram_boxes_each_specification(tmp_path, citations):
+    """Each specification's rows sit in a box of its own, in the order first drawn."""
+    text = drawn(tmp_path, citations, [("One", NOT_STARTED)])
+
+    demo_box = text.index('  subgraph demo_spec["demo spec"]\n')
+    other_box = text.index('  subgraph other_spec["other spec"]\n')
+    assert demo_box < other_box
+    assert f'    {ident(demo_row(1))}["1: One"]\n  end\n' in text
+
+
+def test_diagram_draws_a_small_row_in_its_own_colour(tmp_path, citations):
+    """Another specification's row is small, in its own state's colour.
+
+    Holds diagram spec §2 decision 9.
+    """
+    landed = drawn(tmp_path, citations, [("One", NOT_STARTED)], small={other_row(1)})
+    ready = drawn(
+        tmp_path / "ready",
+        citations,
+        [("One", NOT_STARTED)],
+        [("Theirs", NOT_STARTED)],
+        small={other_row(1)},
+    )
+
+    assert f"  class {ident(other_row(1))} landed_small\n" in landed
+    assert f"  class {ident(other_row(1))} ready_small\n" in ready
+
+
+def test_diagram_links_each_row_given_a_link(tmp_path, citations):
+    """A row links where it is told to, and a diagram without links links nothing.
+
+    Holds diagram spec §2 decision 7.
+    """
+    mine = [("One", NOT_STARTED)]
+    linked = drawn(tmp_path, citations, mine, links={demo_row(1): "demo.html#row-1"})
+    plain = drawn(tmp_path / "plain", citations, mine)
+
+    assert f'  click {ident(demo_row(1))} href "demo.html#row-1"\n' in linked
+    assert "click" not in plain
+
+
+def test_diagram_draws_no_edge_to_an_undeclared_row(tmp_path, citations):
+    """Review Focus 4 of its plan: an arrow joins two rows the diagram draws."""
+    text = drawn(
+        tmp_path,
+        citations,
+        [("One", NOT_STARTED), (f"Two{LINKED} after row 1", NOT_STARTED)],
+        rows=[demo_row(1)],
+    )
+
+    assert "-->" not in text
+    assert ident(demo_row(2)) not in text
+
+
+def test_diagram_reads_a_lettered_row(tmp_path, citations):
+    """Review Focus 5 of its plan: a row numbered with a letter keeps it."""
+    path, names = demo(
+        tmp_path,
+        "(demo-spec-1)=\n## 1. Purpose\n\n(demo-spec-2)=\n## 2. Roadmap\n\n"
+        f"| # | Scope | Status |\n|---|---|---|\n| 6a | Split | {NOT_STARTED} |\n",
+        citations,
+    )
+    texts = {path: path.read_text(encoding="utf-8")}
+
+    text = citations.diagram(
+        [demo_row("6a")],
+        [],
+        citations.row_statuses(texts, names),
+        citations.row_labels(texts, names),
+    )
+
+    assert '    demo_spec_2_row_6a["6a: Split"]\n' in text
+
+
+def test_every_class_sets_its_fill_and_text_colour(tmp_path, citations):
+    """Each class sets its fill and its text, so it reads on either theme."""
+    text = drawn(tmp_path, citations, [("One", NOT_STARTED)])
+    classes = [line for line in text.splitlines() if line.startswith("  classDef ")]
+
+    assert len(classes) == 10
+    for line in classes:
+        assert "fill:" in line, line
+        assert "color:" in line, line
+
+
+def test_diagram_key_names_each_relation_and_state(tmp_path, citations):
+    """The key draws each arrow and each colour, in a Scope cell's words.
+
+    Holds diagram spec §2 decision 6.
+    """
+    key = citations.diagram_key()
+    text = drawn(tmp_path, citations, [("One", NOT_STARTED)])
+
+    assert key.startswith("flowchart LR\n")
+    for words in (
+        "after",
+        "before",
+        "with",
+        "with or after",
+        "landed",
+        "in progress",
+        "not started",
+        "candidate",
+        "ready",
+    ):
+        assert words in key, words
+    for arrow in (" -->", " <==>", " -.->"):
+        assert arrow in key, arrow
+    # the states sit in one row, joined by links Mermaid draws invisibly
+    assert (
+        "  key_landed ~~~ key_progress ~~~ key_todo ~~~ key_candidate ~~~ key_ready\n"
+        in key
+    )
+    classes = [line for line in text.splitlines() if line.startswith("  classDef ")]
+    assert all(line in key.splitlines() for line in classes)
+
+
+def test_roadmap_view_draws_every_row_and_the_rows_it_orders_against(
+    tmp_path, citations
+):
+    """Review Focus 2 of its plan: every row of the roadmap, ordered or not.
+
+    Another specification's row is drawn only when ordered against, and small.
+    """
+    texts, names = roadmaps(
+        tmp_path,
+        citations,
+        [
+            (f"One{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            ("Three", NOT_STARTED),
+        ],
+        [("Theirs", NOT_STARTED), ("Unrelated", NOT_STARTED)],
+    )
+
+    found = citations.roadmap_view(
+        "demo-spec",
+        citations.ordering_edges(texts, names),
+        citations.row_statuses(texts, names),
+    )
+
+    assert found == (
+        [demo_row(1), demo_row(2), demo_row(3), other_row(1)],
+        {other_row(1)},
+    )
+
+
+def test_roadmap_view_draws_nothing_without_an_ordering(tmp_path, citations):
+    """A roadmap no ordering touches draws no diagram."""
+    texts, names = roadmaps(
+        tmp_path, citations, [("One", NOT_STARTED), ("Two", NOT_STARTED)]
+    )
+
+    assert citations.roadmap_view(
+        "demo-spec",
+        citations.ordering_edges(texts, names),
+        citations.row_statuses(texts, names),
+    ) == ([], set())

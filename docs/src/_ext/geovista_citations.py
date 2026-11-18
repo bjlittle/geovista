@@ -40,7 +40,14 @@ from typing import TYPE_CHECKING, NamedTuple
 from markdown_it import MarkdownIt
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
+    from collections.abc import (
+        Callable,
+        Collection,
+        Iterable,
+        Iterator,
+        Mapping,
+        Sequence,
+    )
 
     from markdown_it.rules_block import StateBlock
 
@@ -577,6 +584,189 @@ def row_labels(
             label = f"{row.row}: {scope}".replace("#", "#35;").replace('"', "#quot;")
             labels[row_anchor(owner, row.section, row.row)] = label
     return labels
+
+
+#: How a diagram draws each state of a row, as a Mermaid class: each sets its
+#: fill and its text, so it reads on a dark page as on a light one
+#: (diagram spec §4.2).
+DIAGRAM_CLASSES = {
+    "landed": "fill:#eeeeee,stroke:#bbbbbb,color:#666666",
+    "progress": "fill:#ffe8a3,stroke:#c99a00,color:#000000",
+    "todo": "fill:#ffffff,stroke:#555555,color:#000000",
+    "candidate": "fill:#ffffff,stroke:#999999,stroke-dasharray:4 3,color:#555555",
+    "ready": "fill:#d9f2d9,stroke:#2e8b2e,stroke-width:3px,color:#000000",
+}
+
+#: The class of each state of a roadmap row.
+STATE_CLASSES = {
+    LANDED: "landed",
+    IN_PROGRESS: "progress",
+    NOT_STARTED: "todo",
+    CANDIDATE: "candidate",
+}
+
+#: The arrow each relation is drawn with, from the row landing first.
+ARROWS = {"after": "-->", "with": "<==>", "with or after": "-.->"}
+
+#: The size another specification's row is drawn at.
+SMALL = "font-size:11px"
+
+
+def _ident(anchor: str) -> str:
+    """Spell the id of a box: its anchor, with ``-`` read as ``_`` for Mermaid."""
+    return anchor.replace("-", "_")
+
+
+def _classes() -> list[str]:
+    """Write the class of each state, then each again for another's small row."""
+    return [f"  classDef {name} {style}" for name, style in DIAGRAM_CLASSES.items()] + [
+        f"  classDef {name}_small {style},{SMALL}"
+        for name, style in DIAGRAM_CLASSES.items()
+    ]
+
+
+def roadmap_view(
+    owner: str, edges: Sequence[Edge], statuses: Mapping[str, str]
+) -> tuple[list[str], set[str]]:
+    """Choose the rows a specification's diagram draws (diagram spec §4.4).
+
+    Every row of its roadmap, then each row of another specification that one of
+    its rows orders against or is ordered against by, which is drawn small. A
+    roadmap no ordering touches draws nothing.
+
+    Parameters
+    ----------
+    owner : str
+        The specification's prefix, as ``layers-spec``.
+    edges : sequence of Edge
+        Every ordering.
+    statuses : mapping of str to str
+        Every row's status, by its anchor, in reading order.
+
+    Returns
+    -------
+    tuple of (list of str, set of str)
+        The rows to draw, in reading order, and those drawn small.
+
+    """
+    mine = [anchor for anchor in statuses if LABEL.match(anchor)["prefix"] == owner]
+    own = set(mine)
+    touching = [edge for edge in edges if edge.first in own or edge.second in own]
+    if not touching:
+        return [], set()
+    ends = {edge.first for edge in touching} | {edge.second for edge in touching}
+    others = [anchor for anchor in statuses if anchor in ends and anchor not in own]
+    return mine + others, set(others)
+
+
+def diagram(
+    rows: Sequence[str],
+    edges: Sequence[Edge],
+    statuses: Mapping[str, str],
+    labels: Mapping[str, str],
+    *,
+    small: Collection[str] = (),
+    links: Mapping[str, str] | None = None,
+) -> str:
+    """Write a diagram of rows and the orderings between them (diagram spec §4.2).
+
+    Each row is a box, in a box of its specification, coloured by its state, or
+    as ready (:func:`ready_rows`), and each ordering between two of the rows is
+    an arrow from the row landing first. An ordering naming a row not drawn draws
+    nothing.
+
+    Parameters
+    ----------
+    rows : sequence of str
+        The anchors of the rows to draw, in order.
+    edges : sequence of Edge
+        Every ordering, which ready is read from.
+    statuses : mapping of str to str
+        Every row's status, by its anchor.
+    labels : mapping of str to str
+        Each row's label, as :func:`row_labels` writes them.
+    small : collection of str, optional
+        The rows of other specifications, drawn small.
+    links : mapping of str to str, optional
+        Where each row links, by its anchor.
+
+    Returns
+    -------
+    str
+        The text of a Mermaid flowchart.
+
+    """
+    ready = ready_rows(edges, statuses)
+    lines = ["flowchart LR"]
+    boxes: dict[str, list[str]] = {}
+    for anchor in rows:
+        boxes.setdefault(LABEL.match(anchor)["prefix"], []).append(anchor)
+    for prefix, members in boxes.items():
+        lines.append(f'  subgraph {_ident(prefix)}["{prefix.replace("-", " ")}"]')
+        lines += [
+            f'    {_ident(anchor)}["{labels.get(anchor, LABEL.match(anchor)["row"])}"]'
+            for anchor in members
+        ]
+        lines.append("  end")
+    drawn = set(rows)
+    arrows = [
+        f"  {_ident(edge.first)} {ARROWS[edge.kind]} {_ident(edge.second)}"
+        for edge in edges
+        if edge.first in drawn and edge.second in drawn
+    ]
+    lines += list(dict.fromkeys(arrows))
+    lines += _classes()
+    for anchor in rows:
+        state = state_of(statuses.get(anchor, ""), ROADMAP_STATES)
+        name = "ready" if anchor in ready else STATE_CLASSES.get(state, "todo")
+        suffix = "_small" if anchor in small else ""
+        lines.append(f"  class {_ident(anchor)} {name}{suffix}")
+    for anchor in rows:
+        if links and anchor in links:
+            href = links[anchor].replace('"', "%22")
+            lines.append(f'  click {_ident(anchor)} href "{href}"')
+    return "\n".join(lines) + "\n"
+
+
+def diagram_key() -> str:
+    """Write the key drawn beneath every diagram (diagram spec §4.2).
+
+    One box for each state and for ready, and one arrow for each relation,
+    labelled in the words a Scope cell writes, with ``before`` drawn as ``after``
+    from the other row.
+
+    Returns
+    -------
+    str
+        The text of a Mermaid flowchart.
+
+    """
+    states = {
+        "landed": "landed",
+        "progress": "in progress",
+        "todo": "not started",
+        "candidate": "candidate",
+        "ready": "ready to start",
+    }
+    lines = ["flowchart LR"]
+    lines += [f'  key_{name}["{words}"]' for name, words in states.items()]
+    # an invisible link sets the states in one row
+    lines.append("  " + " ~~~ ".join(f"key_{name}" for name in states))
+    for name, relation, words in (
+        ("after", "after", "after, or before written on the other row"),
+        ("with", "with", "with"),
+        ("or", "with or after", "with or after"),
+    ):
+        lines.append(
+            f'  key_{name}_1["row"] {ARROWS[relation]}|"{words}"| key_{name}_2["row"]'
+        )
+    lines += _classes()
+    lines += [f"  class key_{name} {name}" for name in states]
+    plain = ",".join(
+        f"key_{name}_{n}" for name in ("after", "with", "or") for n in (1, 2)
+    )
+    lines.append(f"  class {plain} todo")
+    return "\n".join(lines) + "\n"
 
 
 def _closing(
