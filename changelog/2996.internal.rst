@@ -1,0 +1,6 @@
+Added the weekly ``ci-floors.yml`` workflow, whose ``floors pypi`` job installs
+``.[test,exam]`` from PyPI with ``uv`` under ``--resolution lowest-direct`` on the
+oldest supported Python, and runs the tests without the image tests, landing
+row 3 of floors spec §9. A failing scheduled run opens an issue, or comments on the
+open one. Every ``pip`` floor passed on its first run, so none was raised.
+(:user:`claude`)

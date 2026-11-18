@@ -38,6 +38,8 @@ infrastructure.
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-lock.yml
 .. |ci-pypi| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-pypi.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-tests-pypi.yml
+.. |ci-floors| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-floors.yml/badge.svg
+    :target: https://github.com/bjlittle/geovista/actions/workflows/ci-floors.yml
 .. |ci-spec| image:: https://github.com/bjlittle/geovista/actions/workflows/ci-spec-status.yml/badge.svg
     :target: https://github.com/bjlittle/geovista/actions/workflows/ci-spec-status.yml
 
@@ -62,108 +64,127 @@ The following testing workflows are available:
    :widths: 1 3
    :align: center
 
-   +-----------+---------------------------------------------------------------------------------------------------------------+
-   | Workflow  | Description                                                                                                   |
-   +===========+===============================================================================================================+
-   | |ci-test| | The `ci-tests.yml`_ :fab:`github` Action executes both the :ref:`tippy-gv-developer-testing-image-tests`      |
-   |           | and :ref:`tippy-gv-developer-testing-unit-tests` for each `SPEC 0`_ supported distribution of ``python``.     |
-   |           |                                                                                                               |
-   |           | A `codecov`_ report is generated only for the **latest** supported distribution of ``python``.                |
-   |           |                                                                                                               |
-   |           | The ``tests floors`` job runs the same tests, without the image tests, in the locked                          |
-   |           | :guilabel:`floors` environment, which solves each direct dependency at its floor on the                       |
-   |           | **oldest** supported distribution of ``python`` (floors spec §4.1). Its check is required                     |
-   |           | on ``main``, so the pull request that breaks a floor is the one that raises it                                |
-   |           | (floors spec §2 decision 11). To run it locally:                                                              |
-   |           |                                                                                                               |
-   |           | .. code:: console                                                                                             |
-   |           |                                                                                                               |
-   |           |    $ pixi run --frozen -e floors tests-unit "not image"                                                       |
-   |           |                                                                                                               |
-   |           | When it fails on a bot's pull request, raise the floor where the fix can merge: on the                        |
-   |           | branch of a dependabot pull request, as for a ceiling, and in a pull request merged                           |
-   |           | ahead of the weekly lock pull request, whose branch `ci-locks.yml`_ rewrites each week.                       |
-   |           |                                                                                                               |
-   |           | Also see the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`tests-unit` task.             |
-   |           |                                                                                                               |
-   |           | .. note::                                                                                                     |
-   |           |    :class: dropdown                                                                                           |
-   |           |                                                                                                               |
-   |           |    Failed :ref:`tippy-gv-developer-testing-image-tests` are captured via the ``pytest-pyvista`` plugin option |
-   |           |    ``--failed_image_dir`` (see :ref:`tippy-gv-developer-testing-image-tests-generation`), and uploaded and    |
-   |           |    archived as a :fab:`github` `Workflow Artifact`_ for the CI job. The failed unit test images may then be   |
-   |           |    downloaded for analysis and investigation.                                                                 |
-   +-----------+---------------------------------------------------------------------------------------------------------------+
-   | |ci-docs| | The `ci-tests-docs.yml`_ :fab:`github` Action executes both the documentation image tests and the             |
-   |           | :ref:`tippy-gv-developer-testing-browser-tests` for the **latest** `SPEC 0`_ supported distribution of        |
-   |           | ``python``.                                                                                                   |
-   |           |                                                                                                               |
-   |           | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` :guilabel:`tests-docs`       |
-   |           | task, and the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`tests-docs-browser` task.    |
-   |           |                                                                                                               |
-   |           | .. note::                                                                                                     |
-   |           |    :class: dropdown                                                                                           |
-   |           |                                                                                                               |
-   |           |    The :ref:`tippy-gv-developer-testing-browser-tests` require a built documentation site, so this job        |
-   |           |    builds the :guilabel:`html-gallery` target: the cheapest build that renders the gallery, and therefore     |
-   |           |    the only one carrying the carousel that the browser tests cover. It is run with the ``--browser-strict``   |
-   |           |    option, so that a prerequisite which this job deliberately provides, but which quietly goes missing,       |
-   |           |    fails rather than skips, which would leave the job green over lost coverage.                               |
-   |           |                                                                                                               |
-   |           |    When this job fails, it uploads the output of ``Xvfb`` as a :fab:`github` `Workflow Artifact`_.            |
-   |           |    :bash:`xvfb-run` discards that output unless given ``-e``, so the job keeps it, and runs ``Xvfb`` with     |
-   |           |    ``-audit 2`` to log each client that connects to or disconnects from the display.                          |
-   +-----------+---------------------------------------------------------------------------------------------------------------+
-   | |ci-lock| | The `ci-tests-lock.yml`_ ``cron`` based :fab:`github` Action regularly schedules the execution of both the    |
-   |           | :ref:`tippy-gv-developer-testing-image-tests` and :ref:`tippy-gv-developer-testing-unit-tests` for the        |
-   |           | **latest** `SPEC 0`_ supported distribution of ``python``.                                                    |
-   |           |                                                                                                               |
-   |           | Prior to running the tests ``pixi`` performs an **ephemeral** refresh of the :bash:`pixi.lock` file based on  |
-   |           | the :bash:`pyproject.toml` manifest and the **latest** package versions available from the ``conda`` and      |
-   |           | ``PyPI`` ecosystems.                                                                                          |
-   |           |                                                                                                               |
-   |           | The purpose of this :fab:`github` Action is to preemptively test against the **latest** resolved ``python``   |
-   |           | variant of the :guilabel:`geovista-py3xx` environment to uncover and highlight any issues prior to            |
-   |           | refreshing the :bash:`pixi.lock` file with the scheduled `ci-locks.yml`_ :fab:`github` Action. See the        |
-   |           | packaging :ref:`tippy-gv-developer-packaging-continuous-integration` section for further details.             |
-   |           |                                                                                                               |
-   |           | Any subsequent test failures will result in a bespoke :fab:`github` Issue being raised for contributors to    |
-   |           | investigate referencing the :fab:`github` Action ``run-id`` of the failed job.                                |
-   +-----------+---------------------------------------------------------------------------------------------------------------+
-   | |ci-pypi| | The `ci-tests-pypi.yml`_ ``cron`` based :fab:`github` Action regularly schedules the execution of both the    |
-   |           | :ref:`tippy-gv-developer-testing-image-tests` and :ref:`tippy-gv-developer-testing-unit-tests` for the        |
-   |           | **latest** `SPEC 0`_ supported distribution of ``python``.                                                    |
-   |           |                                                                                                               |
-   |           | Prior to running the tests ``pip`` installs the **latest** package dependencies from the ``PyPI`` ecosystem.  |
-   |           | See the packaging :ref:`tippy-gv-developer-packaging-python-package-index` section for further details.       |
-   |           |                                                                                                               |
-   |           | The purpose of this :fab:`github` Action is to preemptively test against the **latest** resolved ``PyPI``     |
-   |           | environment to uncover and highlight any issues prior to the scheduled :fab:`github` `dependabot.yml`_        |
-   |           | orchestrated refresh of our ``PyPI`` package dependencies.                                                    |
-   |           |                                                                                                               |
-   |           | Any subsequent test failures will result in a bespoke :fab:`github` Issue being raised for contributors to    |
-   |           | investigate referencing the :fab:`github` Action ``run-id`` of the failed job.                                |
-   |           |                                                                                                               |
-   |           | .. attention::                                                                                                |
-   |           |    :class: dropdown                                                                                           |
-   |           |                                                                                                               |
-   |           |    `pyvista`_ performs a :fab:`github` ``pull-request`` integration test against the ``main`` branch of       |
-   |           |    ``geovista`` using the ``PyPI`` ecosystem. This :fab:`github` Action provides a critical early warning     |
-   |           |    of potential upstream issues that should be resolved as a priority.                                        |
-   |           |                                                                                                               |
-   +-----------+---------------------------------------------------------------------------------------------------------------+
-   | |ci-spec| | The `ci-spec-status.yml`_ :fab:`github` Action checks the work that each design specification status cites,   |
-   |           | by asking :fab:`github` about each pull request and issue it references. See :ref:`tippy-gv-developer-specs`. |
-   |           |                                                                                                               |
-   |           | On a ``pull-request`` that changes a specification, it checks that a ``landed`` roadmap row cites merged      |
-   |           | pull requests on its date, and that a **Resolved** or **Abandoned** item cites real work. A status may cite   |
-   |           | the ``pull-request`` itself while it is still open.                                                           |
-   |           |                                                                                                               |
-   |           | Each night it also reports a status the work has moved past, such as an ``in progress`` row whose pull        |
-   |           | request has merged. A finding raises a bespoke :fab:`github` Issue for contributors to investigate.           |
-   |           |                                                                                                               |
-   |           | Also see the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`check-spec-status` task.      |
-   +-----------+---------------------------------------------------------------------------------------------------------------+
+   +-------------+---------------------------------------------------------------------------------------------------------------+
+   | Workflow    | Description                                                                                                   |
+   +=============+===============================================================================================================+
+   | |ci-test|   | The `ci-tests.yml`_ :fab:`github` Action executes both the :ref:`tippy-gv-developer-testing-image-tests`      |
+   |             | and :ref:`tippy-gv-developer-testing-unit-tests` for each `SPEC 0`_ supported distribution of ``python``.     |
+   |             |                                                                                                               |
+   |             | A `codecov`_ report is generated only for the **latest** supported distribution of ``python``.                |
+   |             |                                                                                                               |
+   |             | The ``tests floors`` job runs the same tests, without the image tests, in the locked                          |
+   |             | :guilabel:`floors` environment, which solves each direct dependency at its floor on the                       |
+   |             | **oldest** supported distribution of ``python`` (floors spec §4.1). Its check is required                     |
+   |             | on ``main``, so the pull request that breaks a floor is the one that raises it                                |
+   |             | (floors spec §2 decision 11). To run it locally:                                                              |
+   |             |                                                                                                               |
+   |             | .. code:: console                                                                                             |
+   |             |                                                                                                               |
+   |             |    $ pixi run --frozen -e floors tests-unit "not image"                                                       |
+   |             |                                                                                                               |
+   |             | When it fails on a bot's pull request, raise the floor where the fix can merge: on the                        |
+   |             | branch of a dependabot pull request, as for a ceiling, and in a pull request merged                           |
+   |             | ahead of the weekly lock pull request, whose branch `ci-locks.yml`_ rewrites each week.                       |
+   |             |                                                                                                               |
+   |             | Also see the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`tests-unit` task.             |
+   |             |                                                                                                               |
+   |             | .. note::                                                                                                     |
+   |             |    :class: dropdown                                                                                           |
+   |             |                                                                                                               |
+   |             |    Failed :ref:`tippy-gv-developer-testing-image-tests` are captured via the ``pytest-pyvista`` plugin option |
+   |             |    ``--failed_image_dir`` (see :ref:`tippy-gv-developer-testing-image-tests-generation`), and uploaded and    |
+   |             |    archived as a :fab:`github` `Workflow Artifact`_ for the CI job. The failed unit test images may then be   |
+   |             |    downloaded for analysis and investigation.                                                                 |
+   +-------------+---------------------------------------------------------------------------------------------------------------+
+   | |ci-docs|   | The `ci-tests-docs.yml`_ :fab:`github` Action executes both the documentation image tests and the             |
+   |             | :ref:`tippy-gv-developer-testing-browser-tests` for the **latest** `SPEC 0`_ supported distribution of        |
+   |             | ``python``.                                                                                                   |
+   |             |                                                                                                               |
+   |             | Also see the documentation :ref:`tippy-gv-developer-documentation-pixi-workflow` :guilabel:`tests-docs`       |
+   |             | task, and the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`tests-docs-browser` task.    |
+   |             |                                                                                                               |
+   |             | .. note::                                                                                                     |
+   |             |    :class: dropdown                                                                                           |
+   |             |                                                                                                               |
+   |             |    The :ref:`tippy-gv-developer-testing-browser-tests` require a built documentation site, so this job        |
+   |             |    builds the :guilabel:`html-gallery` target: the cheapest build that renders the gallery, and therefore     |
+   |             |    the only one carrying the carousel that the browser tests cover. It is run with the ``--browser-strict``   |
+   |             |    option, so that a prerequisite which this job deliberately provides, but which quietly goes missing,       |
+   |             |    fails rather than skips, which would leave the job green over lost coverage.                               |
+   |             |                                                                                                               |
+   |             |    When this job fails, it uploads the output of ``Xvfb`` as a :fab:`github` `Workflow Artifact`_.            |
+   |             |    :bash:`xvfb-run` discards that output unless given ``-e``, so the job keeps it, and runs ``Xvfb`` with     |
+   |             |    ``-audit 2`` to log each client that connects to or disconnects from the display.                          |
+   +-------------+---------------------------------------------------------------------------------------------------------------+
+   | |ci-lock|   | The `ci-tests-lock.yml`_ ``cron`` based :fab:`github` Action regularly schedules the execution of both the    |
+   |             | :ref:`tippy-gv-developer-testing-image-tests` and :ref:`tippy-gv-developer-testing-unit-tests` for the        |
+   |             | **latest** `SPEC 0`_ supported distribution of ``python``.                                                    |
+   |             |                                                                                                               |
+   |             | Prior to running the tests ``pixi`` performs an **ephemeral** refresh of the :bash:`pixi.lock` file based on  |
+   |             | the :bash:`pyproject.toml` manifest and the **latest** package versions available from the ``conda`` and      |
+   |             | ``PyPI`` ecosystems.                                                                                          |
+   |             |                                                                                                               |
+   |             | The purpose of this :fab:`github` Action is to preemptively test against the **latest** resolved ``python``   |
+   |             | variant of the :guilabel:`geovista-py3xx` environment to uncover and highlight any issues prior to            |
+   |             | refreshing the :bash:`pixi.lock` file with the scheduled `ci-locks.yml`_ :fab:`github` Action. See the        |
+   |             | packaging :ref:`tippy-gv-developer-packaging-continuous-integration` section for further details.             |
+   |             |                                                                                                               |
+   |             | Any subsequent test failures will result in a bespoke :fab:`github` Issue being raised for contributors to    |
+   |             | investigate referencing the :fab:`github` Action ``run-id`` of the failed job.                                |
+   +-------------+---------------------------------------------------------------------------------------------------------------+
+   | |ci-pypi|   | The `ci-tests-pypi.yml`_ ``cron`` based :fab:`github` Action regularly schedules the execution of both the    |
+   |             | :ref:`tippy-gv-developer-testing-image-tests` and :ref:`tippy-gv-developer-testing-unit-tests` for the        |
+   |             | **latest** `SPEC 0`_ supported distribution of ``python``.                                                    |
+   |             |                                                                                                               |
+   |             | Prior to running the tests ``pip`` installs the **latest** package dependencies from the ``PyPI`` ecosystem.  |
+   |             | See the packaging :ref:`tippy-gv-developer-packaging-python-package-index` section for further details.       |
+   |             |                                                                                                               |
+   |             | The purpose of this :fab:`github` Action is to preemptively test against the **latest** resolved ``PyPI``     |
+   |             | environment to uncover and highlight any issues prior to the scheduled :fab:`github` `dependabot.yml`_        |
+   |             | orchestrated refresh of our ``PyPI`` package dependencies.                                                    |
+   |             |                                                                                                               |
+   |             | Any subsequent test failures will result in a bespoke :fab:`github` Issue being raised for contributors to    |
+   |             | investigate referencing the :fab:`github` Action ``run-id`` of the failed job.                                |
+   |             |                                                                                                               |
+   |             | .. attention::                                                                                                |
+   |             |    :class: dropdown                                                                                           |
+   |             |                                                                                                               |
+   |             |    `pyvista`_ performs a :fab:`github` ``pull-request`` integration test against the ``main`` branch of       |
+   |             |    ``geovista`` using the ``PyPI`` ecosystem. This :fab:`github` Action provides a critical early warning     |
+   |             |    of potential upstream issues that should be resolved as a priority.                                        |
+   |             |                                                                                                               |
+   +-------------+---------------------------------------------------------------------------------------------------------------+
+   | |ci-floors| | The `ci-floors.yml`_ ``cron`` based :fab:`github` Action tests the ``pip`` floors each week. Its              |
+   |             | ``floors pypi`` job installs ``.[test,exam]`` with ``uv`` under ``--resolution lowest-direct``, so that       |
+   |             | each direct dependency is at its floor, on the **oldest** `SPEC 0`_ supported distribution of                 |
+   |             | ``python``. It then runs the tests without the image tests (floors spec §4.3), and writes the versions        |
+   |             | it installed to the job summary.                                                                              |
+   |             |                                                                                                               |
+   |             | The ``pip`` side cannot be locked as the :guilabel:`floors` environment is, so a release on ``PyPI``          |
+   |             | can break a ``pip`` floor between runs. A failing scheduled run opens a :fab:`github` Issue titled            |
+   |             | ``chore: pypi floors failure``, or comments on the open one. The issue means that a ``pip`` floor no          |
+   |             | longer installs from ``PyPI``, or no longer passes the tests there. Raise the floor that fails on both        |
+   |             | sides, in its :bash:`requirements/pypi-*.txt` file and its ``pixi`` table, in one commit, then run            |
+   |             | ``pixi lock`` (floors spec §4.2).                                                                             |
+   |             |                                                                                                               |
+   |             | To run it by hand:                                                                                            |
+   |             |                                                                                                               |
+   |             | .. code:: console                                                                                             |
+   |             |                                                                                                               |
+   |             |    $ gh workflow run ci-floors.yml                                                                            |
+   +-------------+---------------------------------------------------------------------------------------------------------------+
+   | |ci-spec|   | The `ci-spec-status.yml`_ :fab:`github` Action checks the work that each design specification status cites,   |
+   |             | by asking :fab:`github` about each pull request and issue it references. See :ref:`tippy-gv-developer-specs`. |
+   |             |                                                                                                               |
+   |             | On a ``pull-request`` that changes a specification, it checks that a ``landed`` roadmap row cites merged      |
+   |             | pull requests on its date, and that a **Resolved** or **Abandoned** item cites real work. A status may cite   |
+   |             | the ``pull-request`` itself while it is still open.                                                           |
+   |             |                                                                                                               |
+   |             | Each night it also reports a status the work has moved past, such as an ``in progress`` row whose pull        |
+   |             | request has merged. A finding raises a bespoke :fab:`github` Issue for contributors to investigate.           |
+   |             |                                                                                                               |
+   |             | Also see the testing :ref:`tippy-gv-developer-testing-pixi-workflow` :guilabel:`check-spec-status` task.      |
+   +-------------+---------------------------------------------------------------------------------------------------------------+
 
 
 .. _gv-developer-testing-image-tests:
@@ -1207,6 +1228,7 @@ ceiling it keeps in the full run.
 
 .. _Workflow Artifact: https://docs.github.com/en/actions/concepts/workflows-and-actions/workflow-artifacts
 .. _ci-benchmarks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-benchmarks.yml
+.. _ci-floors.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-floors.yml
 .. _ci-locks.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-locks.yml
 .. _ci-spec-status.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-spec-status.yml
 .. _ci-tests.yml: https://github.com/bjlittle/geovista/blob/main/.github/workflows/ci-tests.yml
