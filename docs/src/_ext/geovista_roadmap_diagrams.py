@@ -17,9 +17,11 @@ the build, so nobody writes or keeps one up to date:
 - in the specifications index, where ``.. roadmap-open-work::`` stands, the open
   work of every roadmap (diagram spec §4.5).
 
-Each row links to its row in its roadmap table (diagram spec §4.6). A row's colour
-and whether it is ready read every roadmap, so every page drawing a diagram
-depends on every specification, and is read again when one is added or removed.
+Each row links to its row in its roadmap table (diagram spec §4.6), whose anchor
+``geovista_citation_xrefs`` names. A row's colour and whether it is ready read
+every roadmap, so every page drawing a diagram depends on every specification.
+One added or removed changes the anchors, on which that extension reads every
+page again.
 
 """
 
@@ -101,50 +103,6 @@ def _note(env: BuildEnvironment) -> None:
     env.note_dependency(geovista_citations.__file__)
     for path in GRAPH["paths"]:
         env.note_dependency(path)
-
-
-def _outdated(
-    app: Sphinx,
-    env: BuildEnvironment,
-    added: set[str],
-    _changed: set[str],
-    removed: set[str],
-) -> set[str]:
-    """Read again each page drawing a diagram when a specification comes or goes.
-
-    A page depends on each specification it read, but one added since can order
-    against its rows, and one removed may have. A folder is no dependency sphinx
-    can time, as it reads a dependency that is no file as changed on every build,
-    so the pages drawing a diagram, those depending on this module, are named here.
-
-    Parameters
-    ----------
-    app : sphinx.application.Sphinx
-        The application, read for the folder of the specifications.
-    env : sphinx.environment.BuildEnvironment
-        The environment, read for each page's dependencies.
-    added : set of str
-        The documents added since the last build.
-    _changed : set of str
-        The documents changed since the last build, which sphinx reads anyway.
-    removed : set of str
-        The documents removed since the last build.
-
-    Returns
-    -------
-    set of str
-        The pages drawing a diagram, or none.
-
-    """
-    folder = app.config.geovista_roadmap_specs.strip("/") + "/"
-    if not any(docname.startswith(folder) for docname in added | removed):
-        return set()
-    module = Path(__file__).name
-    return {
-        docname
-        for docname, paths in env.dependencies.items()
-        if docname not in removed and any(Path(path).name == module for path in paths)
-    }
 
 
 def _drawn(
@@ -260,12 +218,14 @@ def setup(app: Sphinx) -> dict[str, object]:
 
     """
     app.setup_extension("sphinxcontrib.mermaid")
+    # it names each row a link points to, and reads every page again when a
+    # specification comes or goes, whose rows a diagram may then draw
+    app.setup_extension("geovista_citation_xrefs")
     # the folder of the specifications, relative to the source directory
     app.add_config_value(
         "geovista_roadmap_specs", "developer/specs", "env", types=frozenset({str})
     )
     app.connect("builder-inited", _read_graph)
-    app.connect("env-get-outdated", _outdated)
     app.add_transform(RoadmapDiagram)
     app.add_directive("roadmap-open-work", OpenWork)
     return {

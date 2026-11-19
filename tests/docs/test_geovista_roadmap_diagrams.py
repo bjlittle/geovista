@@ -458,6 +458,26 @@ def test_an_edit_reads_again_only_the_pages_that_draw_a_diagram(tmp_path):
     assert updated(status) == "0 added, 5 changed, 0 removed"
 
 
+@pytest.mark.usefixtures("diagrams")
+def test_the_extension_brings_the_rows_it_links_to(tmp_path):
+    """A row's link lands, though the configuration names only this extension.
+
+    It sets up ``geovista_citation_xrefs``, which names each row its link points
+    to, and reads every page again when a specification comes or goes.
+    """
+    src = project(tmp_path / "src")
+    conf = (src / "conf.py").read_text("utf-8")
+    (src / "conf.py").write_text(
+        conf.replace('    "geovista_citation_xrefs",\n', ""), encoding="utf-8"
+    )
+
+    html_dir, _ = build(src, tmp_path)
+
+    assert 'id="other-spec-3-row-1"' in spec_page(
+        html_dir, "2026-01-02-other-design"
+    ).read_text("utf-8")
+
+
 def test_a_parallel_build_draws_as_a_serial_build(diagrams, tmp_path):  # noqa: ARG001
     """Review Focus 5 of its plan: two workers draw every page as one does."""
     serial, _ = build(project(tmp_path / "serial" / "src"), tmp_path / "serial")
