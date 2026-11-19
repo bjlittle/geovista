@@ -331,7 +331,7 @@ Each carries the grammar of items spec §3.2.
 | # | Scope | Status |
 |---|---|---|
 | 1 | One reading of the graph: the reading of order spec §4.5 moved into `geovista_citations`, with the conventions test reading through it, and the text of a diagram (§4.1 to §4.3) | ✅ landed (2026-11-19, {pull}`2999`) |
-| 2 | The diagram under each roadmap and the open work on the index, drawn by the build, with their key and links, and the developer guide's account (§4.4 to §4.6, §4.8) · 🔗 after row 1 | 🚧 in progress ({pull}`3001`) |
+| 2 | The diagram under each roadmap and the open work on the index, drawn by the build, with their key and links, and the developer guide's account (§4.4 to §4.6, §4.8) · 🔗 after row 1 | ✅ landed (2026-11-19, {pull}`3001`) |
 | 3 | The report's diagrams, and the job that runs the report on each pull request (§4.7) · 🔗 after row 1 | 📋 not started |
 
 Statuses follow docs spec §3.6. Row 1 changes no page and no report, so it is safe to land
@@ -354,12 +354,12 @@ Each row follows ledger spec §3.4.
 
 | Decision | Status | Evidence |
 |---|---|---|
-| §2 decision 1 | ⏳ pending | |
-| §2 decision 2 | ⏳ pending | |
-| §2 decision 3 | ⏳ pending | |
-| §2 decision 4 | ⏳ pending | |
+| §2 decision 1 | ✅ verified (2026-11-19, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 2 | ✅ verified (2026-11-19, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 3 | ✅ verified (2026-11-19, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
+| §2 decision 4 | ✅ verified (2026-11-19, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
 | §2 decision 5 | ✅ verified (2026-11-19, {pull}`2999`) | `tests/docs/test_geovista_citations.py` |
 | §2 decision 6 | ⏳ pending | |
-| §2 decision 7 | ⏳ pending | |
+| §2 decision 7 | ✅ verified (2026-11-19, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |
 | §2 decision 8 | ⏳ pending | |
-| §2 decision 9 | ⏳ pending | |
+| §2 decision 9 | ✅ verified (2026-11-19, {pull}`3001`) | `tests/docs/test_geovista_roadmap_diagrams.py` |

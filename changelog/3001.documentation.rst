@@ -1,0 +1,8 @@
+Each design specification whose roadmap rows are ordered now shows them as a
+diagram under its roadmap table, with a key beneath it. Each row is coloured by
+its status, the rows ready to start are green, and each box links to its row.
+The specifications index gains an Open Work section that draws every roadmap's
+work still to do. The build draws them all, from the same reading of the
+orderings that the conventions test checks, so nothing is written for them.
+This lands row 2 of diagram spec §9.
+(:user:`claude`)
