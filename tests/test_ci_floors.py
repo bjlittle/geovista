@@ -467,3 +467,6 @@ def test_the_report_opens_an_issue_or_comments_on_the_open_one(
     assert RUN_URL in body
     assert GUIDE in body, "the report does not link the testing guide"
     assert "pixi lock" in body, "the report does not say how to raise a floor"
+    for step in (INSTALL, TESTS):
+        # A floor fails one of these steps, and a fault elsewhere fails any other
+        assert f"`{step}`" in body, f"the report does not name the {step!r} step"

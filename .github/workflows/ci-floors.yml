@@ -70,8 +70,9 @@ jobs:
         run: |
           title="chore: pypi floors failure"
           {
-            echo "The weekly \`floors pypi\` job failed, so a \`pip\` floor no longer installs from PyPI, or no longer passes the tests there."
-            echo "Please investigate the run ${RUN_URL}"
+            echo "The weekly \`floors pypi\` job failed. Please investigate the run ${RUN_URL}"
+            echo
+            echo "The likely cause is a \`pip\` floor that no longer installs from PyPI, or no longer passes the tests there, which fails the \`uv install\` or \`tests floors pypi\` step. A failure at any other step more likely comes from the runner or the network, so run the job again first."
             echo
             echo "Raise the floor that fails on both sides, in its \`requirements/pypi-*.txt\` file and its \`pixi\` table, in one commit, then run \`pixi lock\`."
             echo
