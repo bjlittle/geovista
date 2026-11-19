@@ -160,12 +160,13 @@ The following testing workflows are available:
    |             | ``python``. It then runs the tests without the image tests (floors spec §4.3), and writes the versions        |
    |             | it installed to the job summary.                                                                              |
    |             |                                                                                                               |
-   |             | The ``pip`` side cannot be locked as the :guilabel:`floors` environment is, so a release on ``PyPI``          |
-   |             | can break a ``pip`` floor between runs. A failing scheduled run opens a :fab:`github` Issue titled            |
-   |             | ``chore: pypi floors failure``, or comments on the open one. The issue means that a ``pip`` floor no          |
-   |             | longer installs from ``PyPI``, or no longer passes the tests there. Raise the floor that fails on both        |
-   |             | sides, in its :bash:`requirements/pypi-*.txt` file and its ``pixi`` table, in one commit, then run            |
-   |             | ``pixi lock`` (floors spec §4.2).                                                                             |
+   |             | The ``pip`` side cannot be locked as the :guilabel:`floors` environment is, so a release on ``PyPI`` can      |
+   |             | break a ``pip`` floor between runs. A failing scheduled run opens a :fab:`github` Issue titled                |
+   |             | ``chore: pypi floors failure``, or comments on the open one. The likely cause is a ``pip`` floor that no      |
+   |             | longer installs from ``PyPI``, or no longer passes the tests there, which fails the ``uv install`` or         |
+   |             | ``tests floors pypi`` step. A failure at any other step more likely comes from the runner or the network, so  |
+   |             | run the job again first. Raise the floor that fails on both sides, in its :bash:`requirements/pypi-*.txt`     |
+   |             | file and its ``pixi`` table, in one commit, then run ``pixi lock`` (floors spec §4.2).                        |
    |             |                                                                                                               |
    |             | To run it by hand:                                                                                            |
    |             |                                                                                                               |
