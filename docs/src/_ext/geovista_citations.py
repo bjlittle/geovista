@@ -529,38 +529,56 @@ def ready_rows(edges: Sequence[Edge], statuses: Mapping[str, str]) -> set[str]:
     return found
 
 
-#: What a label escapes, and how: Mermaid reads ``#`` as opening an entity, a
-#: quote as closing the label, and its sanitiser strips anything in angle
-#: brackets as a tag. ``#`` goes first, as each entity opens with one.
-MERMAID_ENTITIES = (("#", "#35;"), ('"', "#quot;"), ("<", "#lt;"), (">", "#gt;"))
+#: What a label escapes, and how: Mermaid reads ``#`` as opening an entity and
+#: ``&`` as opening an HTML one, a quote as closing the label, and its sanitiser
+#: strips anything in angle brackets as a tag. ``#`` goes first, as each entity
+#: opens with one.
+MERMAID_ENTITIES = (
+    ("#", "#35;"),
+    ("&", "#38;"),
+    ('"', "#quot;"),
+    ("<", "#lt;"),
+    (">", "#gt;"),
+)
 
-#: A role, as ``{issue}`7```, which a label reads as its target.
-LABEL_ROLE = re.compile(r"\{(?P<role>[\w:-]+)\}`(?P<target>[^`]*)`")
+#: A role's name, ending the text before its target, as ``{issue}`` before ```7```.
+ROLE_OPEN = re.compile(r"\{(?P<role>[\w:-]+)\}$")
+
+
+def _role_target(role: str, target: str) -> str:
+    """Read a role as its target: an issue or pull request of this repository as #N."""
+    if role in {"issue", "pull"} and target.isdigit():
+        return f"#{target}"
+    return target
 
 
 def _label_text(scope: str) -> str:
     """Read a scope as plain text: roles as their target, markdown as its text.
 
-    An issue or pull request of this repository reads as ``#N``, and any other
-    role as its target. Code and raw HTML keep their text, and a line break
-    reads as a space.
+    The markdown is parsed first, so a role is read only where it is written as
+    one, its name ending the text before its code, and a code span, holding a
+    role or not, keeps its text as written. An issue or pull request of this
+    repository reads as ``#N``, and any other role as its target. Raw HTML keeps
+    its text, and a line break reads as a space.
     """
-    scope = LABEL_ROLE.sub(
-        lambda m: (
-            f"#{m['target']}"
-            if m["role"] in {"issue", "pull"} and m["target"].isdigit()
-            else m["target"]
-        ),
-        scope,
-    )
     parsed = MarkdownIt("commonmark").parseInline(scope)
-    pieces = {"text", "code_inline", "html_inline"}
-    text = "".join(
-        token.content if token.type in pieces else " "
-        for token in (parsed[0].children if parsed else None) or []
-        if token.type in pieces or token.type in {"softbreak", "hardbreak"}
-    )
-    return " ".join(text.split())
+    tokens = (parsed[0].children if parsed else None) or []
+    pieces = []
+    skip = False
+    for token, after in zip(tokens, [*tokens[1:], None], strict=True):
+        if skip:
+            skip = False
+            continue
+        opened = ROLE_OPEN.search(token.content) if token.type == "text" else None
+        if opened is not None and after is not None and after.type == "code_inline":
+            pieces.append(token.content[: opened.start()])
+            pieces.append(_role_target(opened["role"], after.content))
+            skip = True
+        elif token.type in {"text", "code_inline", "html_inline"}:
+            pieces.append(token.content)
+        elif token.type in {"softbreak", "hardbreak"}:
+            pieces.append(" ")
+    return " ".join("".join(pieces).split())
 
 
 def row_labels(

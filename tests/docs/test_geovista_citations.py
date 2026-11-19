@@ -1637,3 +1637,18 @@ def test_diagram_draws_nothing_for_a_row_that_does_not_exist(tmp_path, citations
     assert rows == [demo_row(1), demo_row(2)]
     assert "row_9" not in text
     assert "-->" not in text
+
+
+def test_label_text_keeps_role_syntax_inside_code(citations):
+    """A role quoted in code is code, kept as written; one outside is read."""
+    assert citations._label_text("Use `` {pull}`7` `` literally") == (
+        "Use {pull}`7` literally"
+    )
+    assert citations._label_text("See {pull}`7` and `{issue}`") == "See #7 and {issue}"
+
+
+def test_row_labels_keeps_a_literal_entity_in_code(tmp_path, citations):
+    """An entity spelled out in code stays spelled out, as Mermaid would decode it."""
+    found = labels(tmp_path, citations, "Code `&lt;name&gt;` and `&quot;`")
+
+    assert found == ["1: Code #38;lt;name#38;gt; and #38;quot;"]
