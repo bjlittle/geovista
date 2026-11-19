@@ -83,8 +83,8 @@ def specification(slug: str, *roadmaps: list[tuple[str, str]]) -> str:
     return text
 
 
-#: The specifications of the project: demo orders against other, and lone
-#: orders nothing.
+#: The specifications of the project: demo orders against other, lone orders
+#: nothing, and past's rows have all landed, one after the other.
 PROJECT = {
     "2026-01-01-demo-design.md": specification(
         "demo",
@@ -98,6 +98,9 @@ PROJECT = {
         "other", [("Theirs", NOT_STARTED), ("Unrelated", NOT_STARTED)]
     ),
     "2026-01-03-lone-design.md": specification("lone", [("Alone", NOT_STARTED)]),
+    "2026-01-04-past-design.md": specification(
+        "past", [("Then", LANDED), (f"Later{LINKED} after row 1", LANDED)]
+    ),
 }
 
 #: The specifications index, which draws the open work.
@@ -159,10 +162,18 @@ def project(src: Path, specs: dict[str, str] | None = None, page: str = "") -> P
 
 def build(src: Path, out: Path, *, parallel: int = 0) -> tuple[Path, str]:
     """Build ``src``, returning its HTML and its warnings."""
+    return built_with_status(src, out, parallel=parallel)[:2]
+
+
+def built_with_status(
+    src: Path, out: Path, *, parallel: int = 0
+) -> tuple[Path, str, str]:
+    """Build ``src``, returning its HTML, its warnings and what it said it read."""
     from sphinx.application import Sphinx  # noqa: PLC0415
     from sphinx.util.docutils import docutils_namespace  # noqa: PLC0415
 
     warning = io.StringIO()
+    status = io.StringIO()
     with pytest.MonkeyPatch.context() as patch, docutils_namespace():
         patch.syspath_prepend(str(EXT))
         app = Sphinx(
@@ -171,12 +182,20 @@ def build(src: Path, out: Path, *, parallel: int = 0) -> tuple[Path, str]:
             str(out / "html"),
             str(out / "doctrees"),
             "html",
-            status=None,
+            status=status,
             warning=warning,
             parallel=parallel,
         )
         app.build()
-    return out / "html", warning.getvalue()
+    return out / "html", warning.getvalue(), status.getvalue()
+
+
+def updated(status: str) -> str:
+    """Read what an incremental build found to update, as sphinx reports it."""
+    plain = re.sub(r"\x1b\[[0-9;]*m", "", status)
+    found = re.search(r"updating environment: (?:\[[^]]*\] )?(.*?) removed", plain)
+    assert found is not None, plain
+    return found[1] + " removed"
 
 
 def blocks(page: Path) -> list[str]:
@@ -322,7 +341,11 @@ def test_the_index_draws_the_open_work(diagrams, built):
     """
     src, html_dir, _ = built
 
-    assert blocks(html_dir / "developer" / "specs" / "index.html") == [
+    drawn = blocks(html_dir / "developer" / "specs" / "index.html")
+
+    # past's rows are history, which only its own diagram draws
+    assert "past_spec" not in drawn[0]
+    assert drawn == [
         expected(diagrams, src, None).strip(),
         (diagrams.FRONT_MATTER + diagrams.geovista_citations.diagram_key()).strip(),
     ]
@@ -379,7 +402,7 @@ def test_an_incremental_build_redraws_after_a_specification_is_added(
     src = project(tmp_path / "src")
     build(src, tmp_path)
     folder = src / "developer" / "specs"
-    (folder / "2026-01-04-new-design.md").write_text(
+    (folder / "2026-01-05-new-design.md").write_text(
         specification(
             "new", [(f"Later{LINKED} after row 2 of demo spec {SECTION}3", NOT_STARTED)]
         ),
@@ -388,8 +411,8 @@ def test_an_incremental_build_redraws_after_a_specification_is_added(
     index = (folder / "index.rst").read_text("utf-8")
     (folder / "index.rst").write_text(
         index.replace(
-            "2026-01-03-lone-design\n",
-            "2026-01-03-lone-design\n   2026-01-04-new-design\n",
+            "2026-01-04-past-design\n",
+            "2026-01-04-past-design\n   2026-01-05-new-design\n",
         ),
         encoding="utf-8",
     )
@@ -399,6 +422,40 @@ def test_an_incremental_build_redraws_after_a_specification_is_added(
 
     assert "new_spec_3_row_1" in drawn
     assert drawn == expected(diagrams, src, "2026-01-01-demo-design").strip()
+
+
+@pytest.mark.usefixtures("diagrams")
+def test_an_unchanged_build_reads_nothing_again(tmp_path):
+    """A build after one that changed nothing re-reads no page.
+
+    A dependency sphinx cannot read as a file, as a folder, marks its page changed
+    on every build, so each specification would be read again every time.
+    """
+    src = project(tmp_path / "src")
+    build(src, tmp_path)
+
+    _, _, status = built_with_status(src, tmp_path)
+
+    assert updated(status) == "0 added, 0 changed, 0 removed"
+
+
+@pytest.mark.usefixtures("diagrams")
+def test_an_edit_reads_again_only_the_pages_that_draw_a_diagram(tmp_path):
+    """Another roadmap's row lands: each page drawing a diagram is read again.
+
+    The root page draws none, so it is left alone.
+    """
+    src = project(tmp_path / "src")
+    build(src, tmp_path)
+    other = src / "developer" / "specs" / "2026-01-02-other-design.md"
+    other.write_text(
+        specification("other", [("Theirs", LANDED), ("Unrelated", NOT_STARTED)]),
+        encoding="utf-8",
+    )
+
+    _, _, status = built_with_status(src, tmp_path)
+
+    assert updated(status) == "0 added, 5 changed, 0 removed"
 
 
 def test_a_parallel_build_draws_as_a_serial_build(diagrams, tmp_path):  # noqa: ARG001

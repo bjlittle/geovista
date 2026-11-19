@@ -19,8 +19,7 @@ the build, so nobody writes or keeps one up to date:
 
 Each row links to its row in its roadmap table (diagram spec §4.6). A row's colour
 and whether it is ready read every roadmap, so every page drawing a diagram
-depends on every specification, and on their folder, whose time changes when one
-is added or removed.
+depends on every specification, and is read again when one is added or removed.
 
 """
 
@@ -43,8 +42,8 @@ if TYPE_CHECKING:
 
 #: The graph of every roadmap, read once a build starts (:func:`_read_graph`):
 #: its edges, statuses and labels, each specification's docname by its prefix and
-#: prefix by its docname, the specifications' paths and their folder, and the
-#: builder that links are made relative by.
+#: prefix by its docname, the specifications' paths, and the builder that links
+#: are made relative by.
 GRAPH: dict[str, Any] = {}
 
 #: The class of the container holding a diagram and its key.
@@ -92,7 +91,6 @@ def _read_graph(app: Sphinx) -> None:
         docnames=docnames,
         owners={docname: prefix for prefix, docname in docnames.items()},
         paths=[str(spec) for spec in specs],
-        folder=str(folder),
         builder=app.builder,
     )
 
@@ -101,9 +99,52 @@ def _note(env: BuildEnvironment) -> None:
     """Note what a diagram reads: this module, the grammar and every roadmap."""
     env.note_dependency(__file__)
     env.note_dependency(geovista_citations.__file__)
-    env.note_dependency(GRAPH["folder"])
     for path in GRAPH["paths"]:
         env.note_dependency(path)
+
+
+def _outdated(
+    app: Sphinx,
+    env: BuildEnvironment,
+    added: set[str],
+    _changed: set[str],
+    removed: set[str],
+) -> set[str]:
+    """Read again each page drawing a diagram when a specification comes or goes.
+
+    A page depends on each specification it read, but one added since can order
+    against its rows, and one removed may have. A folder is no dependency sphinx
+    can time, as it reads a dependency that is no file as changed on every build,
+    so the pages drawing a diagram, those depending on this module, are named here.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        The application, read for the folder of the specifications.
+    env : sphinx.environment.BuildEnvironment
+        The environment, read for each page's dependencies.
+    added : set of str
+        The documents added since the last build.
+    _changed : set of str
+        The documents changed since the last build, which sphinx reads anyway.
+    removed : set of str
+        The documents removed since the last build.
+
+    Returns
+    -------
+    set of str
+        The pages drawing a diagram, or none.
+
+    """
+    folder = app.config.geovista_roadmap_specs.strip("/") + "/"
+    if not any(docname.startswith(folder) for docname in added | removed):
+        return set()
+    module = Path(__file__).name
+    return {
+        docname
+        for docname, paths in env.dependencies.items()
+        if docname not in removed and any(Path(path).name == module for path in paths)
+    }
 
 
 def _drawn(
@@ -224,6 +265,7 @@ def setup(app: Sphinx) -> dict[str, object]:
         "geovista_roadmap_specs", "developer/specs", "env", types=frozenset({str})
     )
     app.connect("builder-inited", _read_graph)
+    app.connect("env-get-outdated", _outdated)
     app.add_transform(RoadmapDiagram)
     app.add_directive("roadmap-open-work", OpenWork)
     return {
