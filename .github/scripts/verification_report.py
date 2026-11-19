@@ -185,7 +185,7 @@ def _item_findings(path: Path, text: str, prefix: str, names: Namespace) -> list
         if item.owed is None or len(item.moves) not in MOVES.get(item.state, ()):
             continue
         row = conventions.own_row(path, text, item.owed, names)
-        if isinstance(row, str) or row.status.startswith(conventions.LANDED):
+        if isinstance(row, str) or row.status.startswith(grammar.LANDED):
             continue
         name = f"{prefix} {grammar.SECTION}{section} item {item.number}"
         if len(item.moves) == 2:
@@ -193,7 +193,7 @@ def _item_findings(path: Path, text: str, prefix: str, names: Namespace) -> list
                 f"{name} is on its last move: when {item.owed} lands, it must "
                 "settle or graduate."
             )
-        if row.status.startswith(conventions.IN_PROGRESS):
+        if row.status.startswith(grammar.IN_PROGRESS):
             found.append(
                 f"{name} is owed by {item.owed}, which is in progress: its pull "
                 "request must answer it."
@@ -214,22 +214,22 @@ def _together_findings(
     rows a row in progress lands with that owe nothing make no finding.
     """
     owner = names.owners[path]
-    statuses = conventions.row_statuses(texts, names)
+    statuses = grammar.row_statuses(texts, names)
     by_prefix = {prefix: spec for spec, prefix in names.owners.items()}
-    together = conventions.landing_together(conventions.ordering_edges(texts, names))
+    together = grammar.landing_together(grammar.ordering_edges(texts, names))
     found = []
     for mine, partners in together.items():
         label = grammar.LABEL.match(mine)
-        state = grammar.state_of(statuses.get(mine, ""), conventions.ROW_STATES)
-        if label["prefix"] != owner or state != conventions.IN_PROGRESS:
+        state = grammar.state_of(statuses.get(mine, ""), grammar.ROADMAP_STATES)
+        if label["prefix"] != owner or state != grammar.IN_PROGRESS:
             continue
         for theirs in partners:
             owed = _owed(theirs, by_prefix, texts, names)
             if owed:
                 them = "them" if len(owed) > 1 else "it"
                 found.append(
-                    f"{conventions.named(mine)} is in progress and lands with "
-                    f"{conventions.named(theirs)}, which owes "
+                    f"{grammar.row_citation(mine)} is in progress and lands with "
+                    f"{grammar.row_citation(theirs)}, which owes "
                     f"{conventions.listed(owed)}: its pull request must answer {them}."
                 )
     return found

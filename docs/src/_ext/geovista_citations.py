@@ -29,16 +29,25 @@ sign rather than write it.
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass
+from datetime import date
 import functools
 from pathlib import Path
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from markdown_it import MarkdownIt
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Iterator
+    from collections.abc import (
+        Callable,
+        Collection,
+        Iterable,
+        Iterator,
+        Mapping,
+        Sequence,
+    )
 
     from markdown_it.rules_block import StateBlock
 
@@ -229,6 +238,570 @@ def ordering(clause: str) -> Ordering | None:
         if rest != clause and rest[:1].isspace() and rest.strip():
             return Ordering(relation, rest.strip())
     return None
+
+
+#: A date, as a status writes one.
+DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+
+
+#: A pull request a status cites: by role, in this repository, or by link, in any.
+PULL_ROLE = re.compile(r"\{pull\}`(?P<number>\d+)`")
+PULL_LINK = re.compile(
+    r"\]\(https://github\.com/(?P<repository>[\w.-]+/[\w.-]+)/pull/(?P<number>\d+)\)"
+)
+
+
+def pulls(status: str) -> set[tuple[str, int]]:
+    """Read the pull requests a status cites, as repository and number.
+
+    GitHub reads a repository's name in any case and a number with leading zeros,
+    so each is read as GitHub reads it, and one pull request is one identity.
+    """
+    return {
+        ("bjlittle/geovista", int(m["number"])) for m in PULL_ROLE.finditer(status)
+    } | {
+        (m["repository"].casefold(), int(m["number"]))
+        for m in PULL_LINK.finditer(status)
+    }
+
+
+#: A bare row of an ordering's own roadmap (order spec §2 decision 4).
+BARE_ROW = re.compile(r"row\s+(?P<row>\d+[a-z]?)")
+
+
+def ordering_target(
+    said: Ordering,
+    row: Row,
+    rows: Iterable[Row],
+    owner: str | None,
+    names: Namespace,
+) -> tuple[str | None, str | None]:
+    """Read what an ordering names: the anchor of a row or a release, or a fault.
+
+    A bare row names a row of the same roadmap. A row of another specification is
+    cited in full, and whether its anchor exists is the resolution rule's. A range
+    is refused, and only ``before`` takes a release (order spec §4.1, §4.4).
+    """
+    target = said.target
+    named = f'"{said.relation} {target}"'
+    bare = BARE_ROW.fullmatch(target)
+    found = next(
+        (
+            c
+            for c in scan(target, names.signed, owner)
+            if c.start == 0 and c.end == len(target) and c.slug is not None
+        ),
+        None,
+    )
+    label = LABEL.match(found.slug) if found is not None else None
+    key, fault = None, None
+    if RELEASE.fullmatch(target):
+        if said.relation == "before":
+            key = f"release {target}"
+        else:
+            fault = f"{named}: only before takes a release"
+    elif target.startswith("rows ") or (found is not None and found.ends):
+        fault = f"{named}: name one row"
+    elif bare is not None and owner is not None:
+        if any(r.section == row.section and r.row == bare["row"] for r in rows):
+            key = row_anchor(owner, row.section, bare["row"])
+        else:
+            fault = f"{named}: row {bare['row']} does not exist"
+    elif label is not None and label["row"] is not None:
+        key = found.slug
+    else:
+        fault = f"{named} names no row"
+    return key, fault
+
+
+class Edge(NamedTuple):
+    """One ordering between two rows, read as an edge of the graph of every roadmap.
+
+    Attributes
+    ----------
+    kind : str
+        ``after``, ``with`` or ``with or after``: ``before`` is ``after`` read
+        from the other row.
+    first : str
+        The anchor of the row landing first, or of the first of a ``with`` pair
+        in order of anchor.
+    second : str
+        The anchor of the other row.
+    path : Path
+        The specification that writes it.
+    row : Row
+        The row that writes it.
+    clause : str
+        The clause that writes it, as ``after row 1``.
+
+    """
+
+    kind: str
+    first: str
+    second: str
+    path: Path
+    row: Row
+    clause: str
+
+
+def ordering_edges(
+    texts: Mapping[Path, str], names: Namespace, *, releases: bool = False
+) -> list[Edge]:
+    """Read every ordering of every roadmap as an edge, once (order spec §4.5).
+
+    ``after`` X on Y and ``before`` Y on X are both X landing before Y, ``with``
+    is its pair in order of anchor, and ``with or after`` keeps its direction. A
+    release is no edge of the graph (order spec §4.4), so it is read only when
+    ``releases`` asks, as the row landing before ``release 0.6``. An ordering
+    that names no row, or its own row, is the form rule's to refuse.
+    """
+    edges = []
+    for path, text in texts.items():
+        owner = names.owners.get(path)
+        if owner is None:
+            continue
+        roadmap = rows(text)
+        for row in roadmap:
+            mine = row_anchor(owner, row.section, row.row)
+            for clause in split_scope(row.scope)[1]:
+                said = ordering(clause)
+                if said is None:
+                    continue
+                key, _ = ordering_target(said, row, roadmap, owner, names)
+                if (
+                    key is None
+                    or key == mine
+                    or (key.startswith("release ") and not releases)
+                ):
+                    continue
+                if said.relation == "with":
+                    first, second = sorted((mine, key))
+                elif said.relation == "before":
+                    first, second = mine, key
+                else:
+                    first, second = key, mine
+                kind = "after" if said.relation == "before" else said.relation
+                edges.append(Edge(kind, first, second, path, row, clause))
+    return edges
+
+
+def landed_on(status: str) -> tuple[date | None, set[tuple[str, int]]] | None:
+    """Read a landed row's date and the pull requests it cites, or ``None``.
+
+    A status in any other state has not landed. A landed status with no date the
+    calendar holds reads as ``None`` for its date, which the status rule refuses
+    (docs spec §3.6), so no order is read from it.
+    """
+    if state_of(status, ROADMAP_STATES) != LANDED:
+        return None
+    found = DATE.search(status)
+    day = None
+    if found is not None:
+        with contextlib.suppress(ValueError):
+            day = date.fromisoformat(found[0])
+    return day, pulls(status)
+
+
+def row_statuses(texts: Mapping[Path, str], names: Namespace) -> dict[str, str]:
+    """Read the status of every row of every roadmap, by its anchor."""
+    return {
+        row_anchor(owner, row.section, row.row): row.status
+        for path, text in texts.items()
+        if (owner := names.owners.get(path)) is not None
+        for row in rows(text)
+    }
+
+
+def row_citation(anchor: str) -> str:
+    """Cite a row by its anchor, as ``row 2 of layers spec §9``."""
+    label = LABEL.match(anchor)
+    prefix = label["prefix"].replace("-", " ")
+    return f"row {label['row']} of {prefix} {SECTION}{label['num'].replace('-', '.')}"
+
+
+def strongly_connected(graph: Mapping[str, Iterable[str]]) -> dict[str, int]:
+    """Find the strongly connected parts of a graph, by Tarjan's algorithm.
+
+    Each node is mapped to its part, and two nodes share one exactly when each
+    reaches the other.
+    """
+    index: dict[str, int] = {}
+    low: dict[str, int] = {}
+    part: dict[str, int] = {}
+    stack: list[str] = []
+
+    def visit(node: str) -> None:
+        index[node] = low[node] = len(index)
+        stack.append(node)
+        for nxt in graph.get(node, ()):
+            if nxt not in index:
+                visit(nxt)
+                low[node] = min(low[node], low[nxt])
+            elif nxt not in part:
+                low[node] = min(low[node], index[nxt])
+        if low[node] == index[node]:
+            number = len(set(part.values()))
+            while True:
+                top = stack.pop()
+                part[top] = number
+                if top == node:
+                    break
+
+    for node in graph:
+        if node not in index:
+            visit(node)
+    return part
+
+
+def no_later_than(edges: Iterable[Edge]) -> dict[str, list[str]]:
+    """Read edges as a graph of rows, each landing no later than those it points to.
+
+    ``with`` points both ways, as its rows land in one pull request.
+    """
+    graph: dict[str, list[str]] = {}
+    for edge in edges:
+        graph.setdefault(edge.first, []).append(edge.second)
+        graph.setdefault(edge.second, [])
+        if edge.kind == "with":
+            graph[edge.second].append(edge.first)
+    return graph
+
+
+def landing_together(edges: Iterable[Edge]) -> dict[str, list[str]]:
+    """Find, for each row, the rows its orderings force into its pull request.
+
+    Rows that each land no later than the other land together: the members of a
+    strongly connected part of :func:`no_later_than`, as a chain of ``with`` or a
+    loop of ``with or after`` makes. Each row is mapped to the others of its part,
+    in the order they are first read, and a row alone in its part is left out.
+    """
+    graph = no_later_than(edges)
+    part = strongly_connected(graph)
+    groups: dict[int, list[str]] = {}
+    for node in graph:
+        groups.setdefault(part[node], []).append(node)
+    return {
+        node: [other for other in groups[part[node]] if other != node]
+        for node in graph
+        if len(groups[part[node]]) > 1
+    }
+
+
+def ready_rows(edges: Sequence[Edge], statuses: Mapping[str, str]) -> set[str]:
+    """Find the rows ready to start (diagram spec §4.3).
+
+    A row is ready when it is not started, no row landing together with it is a
+    candidate or in progress, and every row it, or a row landing together with
+    it, lands after or with or after has landed. A row landing with a row in
+    progress can land only in that row's pull request, so it is not ready.
+
+    Parameters
+    ----------
+    edges : sequence of Edge
+        Every ordering, as :func:`ordering_edges` reads them.
+    statuses : mapping of str to str
+        Every row's status, by its anchor, as :func:`row_statuses` reads them.
+
+    Returns
+    -------
+    set of str
+        The anchors of the rows ready to start.
+
+    """
+    together = landing_together(edges)
+    states = {
+        anchor: state_of(status, ROADMAP_STATES) for anchor, status in statuses.items()
+    }
+    found = set()
+    for anchor, state in states.items():
+        if state != NOT_STARTED:
+            continue
+        group = {anchor, *together.get(anchor, ())}
+        if any(states.get(row) in {CANDIDATE, IN_PROGRESS} for row in group):
+            continue
+        waits = {
+            edge.first
+            for edge in edges
+            if edge.second in group and edge.first not in group and edge.kind != "with"
+        }
+        if all(states.get(row) == LANDED for row in waits):
+            found.add(anchor)
+    return found
+
+
+#: What a label escapes, and how: Mermaid reads ``#`` as opening an entity and
+#: ``&`` as opening an HTML one, a quote as closing the label, and its sanitiser
+#: strips anything in angle brackets as a tag. ``#`` goes first, as each entity
+#: opens with one.
+MERMAID_ENTITIES = (
+    ("#", "#35;"),
+    ("&", "#38;"),
+    ('"', "#quot;"),
+    ("<", "#lt;"),
+    (">", "#gt;"),
+)
+
+#: A role's name, ending the text before its target, as ``{issue}`` before ```7```.
+ROLE_OPEN = re.compile(r"\{(?P<role>[\w:-]+)\}$")
+
+
+def _role_target(role: str, target: str) -> str:
+    """Read a role as its target: an issue or pull request of this repository as #N."""
+    if role in {"issue", "pull"} and target.isdigit():
+        return f"#{target}"
+    return target
+
+
+def _label_text(scope: str) -> str:
+    """Read a scope as plain text: roles as their target, markdown as its text.
+
+    The markdown is parsed first, so a role is read only where it is written as
+    one, its name ending the text before its code, and a code span, holding a
+    role or not, keeps its text as written. An issue or pull request of this
+    repository reads as ``#N``, and any other role as its target. Raw HTML keeps
+    its text, and a line break reads as a space.
+    """
+    parsed = MarkdownIt("commonmark").parseInline(scope)
+    tokens = (parsed[0].children if parsed else None) or []
+    pieces = []
+    skip = False
+    for token, after in zip(tokens, [*tokens[1:], None], strict=True):
+        if skip:
+            skip = False
+            continue
+        opened = ROLE_OPEN.search(token.content) if token.type == "text" else None
+        if opened is not None and after is not None and after.type == "code_inline":
+            pieces.append(token.content[: opened.start()])
+            pieces.append(_role_target(opened["role"], after.content))
+            skip = True
+        elif token.type in {"text", "code_inline", "html_inline"}:
+            pieces.append(token.content)
+        elif token.type in {"softbreak", "hardbreak"}:
+            pieces.append(" ")
+    return " ".join("".join(pieces).split())
+
+
+def row_labels(
+    texts: Mapping[Path, str], names: Namespace, width: int = 40
+) -> dict[str, str]:
+    """Label every row of every roadmap for a diagram (diagram spec §4.2).
+
+    A label is the row's number and its scope, without its orderings, read as
+    plain text, cut at ``width`` characters, and escaped for Mermaid
+    (:data:`MERMAID_ENTITIES`).
+
+    Parameters
+    ----------
+    texts : mapping of Path to str
+        The specifications.
+    names : Namespace
+        The namespace they are read in.
+    width : int, default=40
+        The longest scope a label keeps.
+
+    Returns
+    -------
+    dict of str to str
+        Each row's label, by its anchor.
+
+    """
+    labels = {}
+    for path, text in texts.items():
+        owner = names.owners.get(path)
+        if owner is None:
+            continue
+        for row in rows(text):
+            scope = _label_text(split_scope(row.scope)[0])
+            if len(scope) > width:
+                scope = scope[:width].rstrip() + "\N{HORIZONTAL ELLIPSIS}"
+            label = f"{row.row}: {scope}"
+            for char, entity in MERMAID_ENTITIES:
+                label = label.replace(char, entity)
+            labels[row_anchor(owner, row.section, row.row)] = label
+    return labels
+
+
+#: How a diagram draws each state of a row, as a Mermaid class: each sets its
+#: fill and its text, so it reads on a dark page as on a light one
+#: (diagram spec §4.2).
+DIAGRAM_CLASSES = {
+    "landed": "fill:#eeeeee,stroke:#bbbbbb,color:#666666",
+    "progress": "fill:#ffe8a3,stroke:#c99a00,color:#000000",
+    "todo": "fill:#ffffff,stroke:#555555,color:#000000",
+    "candidate": "fill:#ffffff,stroke:#999999,stroke-dasharray:4 3,color:#555555",
+    "ready": "fill:#d9f2d9,stroke:#2e8b2e,stroke-width:3px,color:#000000",
+}
+
+#: The class of each state of a roadmap row.
+STATE_CLASSES = {
+    LANDED: "landed",
+    IN_PROGRESS: "progress",
+    NOT_STARTED: "todo",
+    CANDIDATE: "candidate",
+}
+
+#: The arrow each relation is drawn with, from the row landing first.
+ARROWS = {"after": "-->", "with": "<==>", "with or after": "-.->"}
+
+#: The size another specification's row is drawn at.
+SMALL = "font-size:11px"
+
+
+def _ident(anchor: str) -> str:
+    """Spell the id of a box: its anchor, with ``-`` read as ``_`` for Mermaid."""
+    return anchor.replace("-", "_")
+
+
+def _classes() -> list[str]:
+    """Write the class of each state, then each again for another's small row."""
+    return [f"  classDef {name} {style}" for name, style in DIAGRAM_CLASSES.items()] + [
+        f"  classDef {name}_small {style},{SMALL}"
+        for name, style in DIAGRAM_CLASSES.items()
+    ]
+
+
+def roadmap_view(
+    owner: str, edges: Sequence[Edge], statuses: Mapping[str, str]
+) -> tuple[list[str], set[str]]:
+    """Choose the rows a specification's diagram draws (diagram spec §4.4).
+
+    Every row of its roadmap, then each row of another specification that one of
+    its rows orders against or is ordered against by, which is drawn small. A
+    roadmap no ordering touches draws nothing.
+
+    Parameters
+    ----------
+    owner : str
+        The specification's prefix, as ``layers-spec``.
+    edges : sequence of Edge
+        Every ordering.
+    statuses : mapping of str to str
+        Every row's status, by its anchor, in reading order.
+
+    Returns
+    -------
+    tuple of (list of str, set of str)
+        The rows to draw, in reading order, and those drawn small.
+
+    """
+    mine = [anchor for anchor in statuses if LABEL.match(anchor)["prefix"] == owner]
+    own = set(mine)
+    touching = [edge for edge in edges if edge.first in own or edge.second in own]
+    if not touching:
+        return [], set()
+    ends = {edge.first for edge in touching} | {edge.second for edge in touching}
+    others = [anchor for anchor in statuses if anchor in ends and anchor not in own]
+    return mine + others, set(others)
+
+
+def diagram(
+    rows: Sequence[str],
+    edges: Sequence[Edge],
+    statuses: Mapping[str, str],
+    labels: Mapping[str, str],
+    *,
+    small: Collection[str] = (),
+    links: Mapping[str, str] | None = None,
+) -> str:
+    """Write a diagram of rows and the orderings between them (diagram spec §4.2).
+
+    Each row is a box, in a box of its specification, coloured by its state, or
+    as ready (:func:`ready_rows`), and each ordering between two of the rows is
+    an arrow from the row landing first. An ordering naming a row not drawn draws
+    nothing.
+
+    Parameters
+    ----------
+    rows : sequence of str
+        The anchors of the rows to draw, in order.
+    edges : sequence of Edge
+        Every ordering, which ready is read from.
+    statuses : mapping of str to str
+        Every row's status, by its anchor.
+    labels : mapping of str to str
+        Each row's label, as :func:`row_labels` writes them.
+    small : collection of str, optional
+        The rows of other specifications, drawn small.
+    links : mapping of str to str, optional
+        Where each row links, by its anchor.
+
+    Returns
+    -------
+    str
+        The text of a Mermaid flowchart.
+
+    """
+    ready = ready_rows(edges, statuses)
+    lines = ["flowchart LR"]
+    boxes: dict[str, list[str]] = {}
+    for anchor in rows:
+        boxes.setdefault(LABEL.match(anchor)["prefix"], []).append(anchor)
+    for prefix, members in boxes.items():
+        lines.append(f'  subgraph {_ident(prefix)}["{prefix.replace("-", " ")}"]')
+        lines += [
+            f'    {_ident(anchor)}["{labels.get(anchor, LABEL.match(anchor)["row"])}"]'
+            for anchor in members
+        ]
+        lines.append("  end")
+    drawn = set(rows)
+    arrows = [
+        f"  {_ident(edge.first)} {ARROWS[edge.kind]} {_ident(edge.second)}"
+        for edge in edges
+        if edge.first in drawn and edge.second in drawn
+    ]
+    lines += list(dict.fromkeys(arrows))
+    lines += _classes()
+    for anchor in rows:
+        state = state_of(statuses.get(anchor, ""), ROADMAP_STATES)
+        name = "ready" if anchor in ready else STATE_CLASSES.get(state, "todo")
+        suffix = "_small" if anchor in small else ""
+        lines.append(f"  class {_ident(anchor)} {name}{suffix}")
+    for anchor in rows:
+        if links and anchor in links:
+            href = links[anchor].replace('"', "%22")
+            lines.append(f'  click {_ident(anchor)} href "{href}"')
+    return "\n".join(lines) + "\n"
+
+
+def diagram_key() -> str:
+    """Write the key drawn beneath every diagram (diagram spec §4.2).
+
+    One box for each state and for ready, and one arrow for each relation,
+    labelled in the words a Scope cell writes, with ``before`` drawn as ``after``
+    from the other row.
+
+    Returns
+    -------
+    str
+        The text of a Mermaid flowchart.
+
+    """
+    states = {
+        "landed": "landed",
+        "progress": "in progress",
+        "todo": "not started",
+        "candidate": "candidate",
+        "ready": "ready to start",
+    }
+    lines = ["flowchart LR"]
+    lines += [f'  key_{name}["{words}"]' for name, words in states.items()]
+    # an invisible link sets the states in one row
+    lines.append("  " + " ~~~ ".join(f"key_{name}" for name in states))
+    for name, relation, words in (
+        ("after", "after", "after, or before written on the other row"),
+        ("with", "with", "with"),
+        ("or", "with or after", "with or after"),
+    ):
+        lines.append(
+            f'  key_{name}_1["row"] {ARROWS[relation]}|"{words}"| key_{name}_2["row"]'
+        )
+    lines += _classes()
+    lines += [f"  class key_{name} {name}" for name in states]
+    plain = ",".join(
+        f"key_{name}_{n}" for name in ("after", "with", "or") for n in (1, 2)
+    )
+    lines.append(f"  class {plain} todo")
+    return "\n".join(lines) + "\n"
 
 
 def _closing(

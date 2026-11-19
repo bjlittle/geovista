@@ -1318,7 +1318,7 @@ ROW_STATES = (LANDED, IN_PROGRESS, NOT_STARTED, CANDIDATE)
 BARE_STATES = {state.split(" ", 1)[1]: state for state in ROW_STATES}
 ITEM_STATES = ("Resolved", "Abandoned", "Deferred", "Open")
 TERMINAL = frozenset({LANDED, "Resolved", "Abandoned"})
-DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+DATE = citations.DATE
 #: A role naming work in this repository, or a link to an issue or pull request in
 #: another.
 REFERENCE = re.compile(
@@ -3342,6 +3342,21 @@ DOT = citations.DOT
 items = citations.items
 Item = citations.Item
 Row = citations.Row
+
+#: The reading of the graph of orderings, in the grammar since diagram spec §4.1.
+BARE_ROW = citations.BARE_ROW
+PULL_ROLE = citations.PULL_ROLE
+PULL_LINK = citations.PULL_LINK
+_pulls = citations.pulls
+ordering_target = citations.ordering_target
+Edge = citations.Edge
+ordering_edges = citations.ordering_edges
+landed_on = citations.landed_on
+row_statuses = citations.row_statuses
+named = citations.row_citation
+strongly_connected = citations.strongly_connected
+no_later_than = citations.no_later_than
+landing_together = citations.landing_together
 row_anchor = citations.row_anchor
 
 #: The specifications whose open items are not yet in the grammar of
@@ -3652,27 +3667,6 @@ def item_graduated(path: Path, text: str, names: Namespace) -> list[str]:
             f"{at}: item {item.number} graduates to {item.graduated}, which {why}"
         )
     return problems
-
-
-#: A pull request a status cites: by role, in this repository, or by link, in any.
-PULL_ROLE = re.compile(r"\{pull\}`(?P<number>\d+)`")
-PULL_LINK = re.compile(
-    r"\]\(https://github\.com/(?P<repository>[\w.-]+/[\w.-]+)/pull/(?P<number>\d+)\)"
-)
-
-
-def _pulls(status: str) -> set[tuple[str, int]]:
-    """Read the pull requests a status cites, as repository and number.
-
-    GitHub reads a repository's name in any case and a number with leading zeros,
-    so each is read as GitHub reads it, and one pull request is one identity.
-    """
-    return {
-        ("bjlittle/geovista", int(m["number"])) for m in PULL_ROLE.finditer(status)
-    } | {
-        (m["repository"].casefold(), int(m["number"]))
-        for m in PULL_LINK.finditer(status)
-    }
 
 
 def item_issues(texts: Mapping[Path, str]) -> list[str]:
@@ -4122,54 +4116,6 @@ def test_every_status_sums_its_roadmap(spec):
 LINKED = citations.ORDERING
 ROADMAP_HEADER = "| # | Scope | Status |\n|---|---|---|\n"
 
-#: A bare row of an ordering's own roadmap (order spec §2 decision 4).
-BARE_ROW = re.compile(r"row\s+(?P<row>\d+[a-z]?)")
-
-
-def ordering_target(
-    said: citations.Ordering,
-    row: Row,
-    rows: Iterable[Row],
-    owner: str | None,
-    names: Namespace,
-) -> tuple[str | None, str | None]:
-    """Read what an ordering names: the anchor of a row or a release, or a fault.
-
-    A bare row names a row of the same roadmap. A row of another specification is
-    cited in full, and whether its anchor exists is the resolution rule's. A range
-    is refused, and only ``before`` takes a release (order spec §4.1, §4.4).
-    """
-    target = said.target
-    named = f'"{said.relation} {target}"'
-    bare = BARE_ROW.fullmatch(target)
-    found = next(
-        (
-            c
-            for c in citations.scan(target, names.signed, owner)
-            if c.start == 0 and c.end == len(target) and c.slug is not None
-        ),
-        None,
-    )
-    label = LABEL.match(found.slug) if found is not None else None
-    key, fault = None, None
-    if citations.RELEASE.fullmatch(target):
-        if said.relation == "before":
-            key = f"release {target}"
-        else:
-            fault = f"{named}: only before takes a release"
-    elif target.startswith("rows ") or (found is not None and found.ends):
-        fault = f"{named}: name one row"
-    elif bare is not None and owner is not None:
-        if any(r.section == row.section and r.row == bare["row"] for r in rows):
-            key = row_anchor(owner, row.section, bare["row"])
-        else:
-            fault = f"{named}: row {bare['row']} does not exist"
-    elif label is not None and label["row"] is not None:
-        key = found.slug
-    else:
-        fault = f"{named} names no row"
-    return key, fault
-
 
 def ordering_form(path: Path, text: str, names: Namespace) -> list[str]:
     """Find each ordering of a roadmap that is not well formed (order spec §4.5).
@@ -4213,104 +4159,6 @@ def ordering_form(path: Path, text: str, names: Namespace) -> list[str]:
     return problems
 
 
-class Edge(NamedTuple):
-    """One ordering between two rows, read as an edge of the graph of every roadmap.
-
-    Attributes
-    ----------
-    kind : str
-        ``after``, ``with`` or ``with or after``: ``before`` is ``after`` read
-        from the other row.
-    first : str
-        The anchor of the row landing first, or of the first of a ``with`` pair
-        in order of anchor.
-    second : str
-        The anchor of the other row.
-    path : Path
-        The specification that writes it.
-    row : Row
-        The row that writes it.
-    clause : str
-        The clause that writes it, as ``after row 1``.
-
-    """
-
-    kind: str
-    first: str
-    second: str
-    path: Path
-    row: Row
-    clause: str
-
-
-def ordering_edges(
-    texts: Mapping[Path, str], names: Namespace, *, releases: bool = False
-) -> list[Edge]:
-    """Read every ordering of every roadmap as an edge, once (order spec §4.5).
-
-    ``after`` X on Y and ``before`` Y on X are both X landing before Y, ``with``
-    is its pair in order of anchor, and ``with or after`` keeps its direction. A
-    release is no edge of the graph (order spec §4.4), so it is read only when
-    ``releases`` asks, as the row landing before ``release 0.6``. An ordering
-    that names no row, or its own row, is the form rule's to refuse.
-    """
-    edges = []
-    for path, text in texts.items():
-        owner = names.owners.get(path)
-        if owner is None:
-            continue
-        rows = citations.rows(text)
-        for row in rows:
-            mine = row_anchor(owner, row.section, row.row)
-            for clause in citations.split_scope(row.scope)[1]:
-                said = citations.ordering(clause)
-                if said is None:
-                    continue
-                key, _ = ordering_target(said, row, rows, owner, names)
-                if (
-                    key is None
-                    or key == mine
-                    or (key.startswith("release ") and not releases)
-                ):
-                    continue
-                if said.relation == "with":
-                    first, second = sorted((mine, key))
-                elif said.relation == "before":
-                    first, second = mine, key
-                else:
-                    first, second = key, mine
-                kind = "after" if said.relation == "before" else said.relation
-                edges.append(Edge(kind, first, second, path, row, clause))
-    return edges
-
-
-def landed_on(status: str) -> tuple[date | None, set[tuple[str, int]]] | None:
-    """Read a landed row's date and the pull requests it cites, or ``None``.
-
-    A status in any other state has not landed. A landed status with no date the
-    calendar holds reads as ``None`` for its date, which the status rule refuses
-    (docs spec §3.6), so no order is read from it.
-    """
-    if citations.state_of(status, ROW_STATES) != LANDED:
-        return None
-    found = DATE.search(status)
-    day = None
-    if found is not None:
-        with contextlib.suppress(ValueError):
-            day = date.fromisoformat(found[0])
-    return day, _pulls(status)
-
-
-def row_statuses(texts: Mapping[Path, str], names: Namespace) -> dict[str, str]:
-    """Read the status of every row of every roadmap, by its anchor."""
-    return {
-        row_anchor(owner, row.section, row.row): row.status
-        for path, text in texts.items()
-        if (owner := names.owners.get(path)) is not None
-        for row in citations.rows(text)
-    }
-
-
 def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     """Find an ordering written twice, item 3 of order spec §4.5.
 
@@ -4331,84 +4179,9 @@ def orderings_twice(texts: Mapping[Path, str], names: Namespace) -> list[str]:
     return problems
 
 
-def named(anchor: str) -> str:
-    """Cite a row by its anchor, as ``row 2 of layers spec §9``."""
-    label = LABEL.match(anchor)
-    prefix = label["prefix"].replace("-", " ")
-    return f"row {label['row']} of {prefix} {SECTION}{label['num'].replace('-', '.')}"
-
-
 def listed(things: Sequence[str]) -> str:
     """Join things as prose: ``a``, ``a and b``, ``a, b and c``."""
     return " and ".join([", ".join(things[:-1]), things[-1]] if things[1:] else things)
-
-
-def strongly_connected(graph: Mapping[str, Iterable[str]]) -> dict[str, int]:
-    """Find the strongly connected parts of a graph, by Tarjan's algorithm.
-
-    Each node is mapped to its part, and two nodes share one exactly when each
-    reaches the other.
-    """
-    index: dict[str, int] = {}
-    low: dict[str, int] = {}
-    part: dict[str, int] = {}
-    stack: list[str] = []
-
-    def visit(node: str) -> None:
-        index[node] = low[node] = len(index)
-        stack.append(node)
-        for nxt in graph.get(node, ()):
-            if nxt not in index:
-                visit(nxt)
-                low[node] = min(low[node], low[nxt])
-            elif nxt not in part:
-                low[node] = min(low[node], index[nxt])
-        if low[node] == index[node]:
-            number = len(set(part.values()))
-            while True:
-                top = stack.pop()
-                part[top] = number
-                if top == node:
-                    break
-
-    for node in graph:
-        if node not in index:
-            visit(node)
-    return part
-
-
-def no_later_than(edges: Iterable[Edge]) -> dict[str, list[str]]:
-    """Read edges as a graph of rows, each landing no later than those it points to.
-
-    ``with`` points both ways, as its rows land in one pull request.
-    """
-    graph: dict[str, list[str]] = {}
-    for edge in edges:
-        graph.setdefault(edge.first, []).append(edge.second)
-        graph.setdefault(edge.second, [])
-        if edge.kind == "with":
-            graph[edge.second].append(edge.first)
-    return graph
-
-
-def landing_together(edges: Iterable[Edge]) -> dict[str, list[str]]:
-    """Find, for each row, the rows its orderings force into its pull request.
-
-    Rows that each land no later than the other land together: the members of a
-    strongly connected part of :func:`no_later_than`, as a chain of ``with`` or a
-    loop of ``with or after`` makes. Each row is mapped to the others of its part,
-    in the order they are first read, and a row alone in its part is left out.
-    """
-    graph = no_later_than(edges)
-    part = strongly_connected(graph)
-    groups: dict[int, list[str]] = {}
-    for node in graph:
-        groups.setdefault(part[node], []).append(node)
-    return {
-        node: [other for other in groups[part[node]] if other != node]
-        for node in graph
-        if len(groups[part[node]]) > 1
-    }
 
 
 def order_cycles(texts: Mapping[Path, str], names: Namespace) -> list[str]:
@@ -4886,71 +4659,6 @@ def other_row(row: int) -> str:
     return row_anchor("other-spec", "2", str(row))
 
 
-def test_ordering_edges_reads_each_relation_as_an_edge(tmp_path):
-    """Each relation is one edge, its first row landing first, and a release none.
-
-    ``after`` and ``before`` are the same edge read from either row, ``with`` is
-    its pair in order of anchor, and ``with or after`` keeps its direction.
-    """
-    texts, names = ordered(
-        tmp_path,
-        [
-            ("One", NOT_STARTED),
-            (f"Two{LINKED} after row 1{LINKED} before 0.6", NOT_STARTED),
-            (f"Three{LINKED} before row 1 of other spec {SECTION}2", NOT_STARTED),
-            (f"Four{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED),
-            (f"Five{LINKED} with or after row 1 of other spec {SECTION}2", NOT_STARTED),
-        ],
-    )
-
-    edges = [
-        (edge.kind, edge.first, edge.second) for edge in ordering_edges(texts, names)
-    ]
-
-    assert edges == [
-        ("after", demo_row(1), demo_row(2)),
-        ("after", demo_row(3), other_row(1)),
-        ("with", *sorted((demo_row(4), other_row(1)))),
-        ("with or after", other_row(1), demo_row(5)),
-    ]
-
-
-def test_ordering_edges_records_where_each_is_written(tmp_path):
-    """An edge carries the row and clause that write it, for its faults to name."""
-    texts, names = ordered(
-        tmp_path, [("One", NOT_STARTED), (f"Two{LINKED} after row 1", NOT_STARTED)]
-    )
-
-    (edge,) = ordering_edges(texts, names)
-
-    assert edge.path.name.startswith("2026-01-01")
-    assert edge.row.row == "2"
-    assert edge.clause == "after row 1"
-
-
-def test_landed_on_reads_a_date_and_its_pull_requests():
-    """A landed row's date and pull requests; any other state has not landed."""
-    assert landed_on(f"{LANDED} (2026-11-03, {{pull}}`7`)") == (
-        date(2026, 11, 3),
-        {("bjlittle/geovista", 7)},
-    )
-    assert landed_on(NOT_STARTED) is None
-    assert landed_on(f"{IN_PROGRESS} ({{pull}}`7`)") is None
-
-
-def test_row_statuses_reads_every_roadmap_by_anchor(tmp_path):
-    """Each row's status, keyed by its anchor, in every specification."""
-    texts, names = ordered(
-        tmp_path, [("One", NOT_STARTED), ("Two", CANDIDATE)], [("Theirs", LANDED)]
-    )
-
-    assert row_statuses(texts, names) == {
-        demo_row(1): NOT_STARTED,
-        demo_row(2): CANDIDATE,
-        other_row(1): LANDED,
-    }
-
-
 def test_order_cycles_finds_a_cycle_in_one_roadmap(tmp_path):
     """Item 5 of order spec §4.5: rows 1 to 3, each after the one before, and 1 after 3.
 
@@ -5250,27 +4958,6 @@ def test_order_statuses_passes_a_loop_landed_together(tmp_path):
     )
 
     assert order_statuses(texts, names) == []
-
-
-def test_landing_together_groups_the_rows_a_loop_forces_into_one_pr(tmp_path):
-    """A chain of with and a loop of with or after are each one group; after is not."""
-    texts, names = ordered(
-        tmp_path,
-        [
-            ("One", NOT_STARTED),
-            (f"Two{LINKED} with row 1", NOT_STARTED),
-            (f"Three{LINKED} with row 2", NOT_STARTED),
-            (f"Four{LINKED} with or after row 5", NOT_STARTED),
-            (f"Five{LINKED} with or after row 4{LINKED} after row 3", NOT_STARTED),
-        ],
-    )
-
-    groups = landing_together(ordering_edges(texts, names))
-
-    assert groups[demo_row(1)] == [demo_row(2), demo_row(3)]
-    assert groups[demo_row(3)] == [demo_row(1), demo_row(2)]
-    assert groups[demo_row(4)] == [demo_row(5)]
-    assert demo_row(6) not in groups
 
 
 def landing(
