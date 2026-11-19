@@ -173,6 +173,7 @@ extensions = [
     "geovista_citation_xrefs",
     "geovista_ledger",
     "geovista_status",
+    "geovista_roadmap_diagrams",
     "intersphinx_resilience",
     "gallery_scenes",
     "numpydoc",
