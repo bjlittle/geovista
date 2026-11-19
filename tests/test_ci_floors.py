@@ -38,6 +38,10 @@ ROOT = Path(__file__).parents[1]
 COMPOSITE = ROOT / ".github" / "workflows" / "composite"
 #: The composite actions restoring the data, which take the ``pixi`` input.
 CACHES = ("cartopy-cache", "geovista-cache")
+#: The steps of ``geovista-cache`` that run ``geovista``.
+GEOVISTA_STEPS = ("get geovista-data version", "refresh geovista cache")
+#: A pixi environment a caller names, as ``ci-tests-lock.yml`` does.
+NAMED = "test-py313"
 #: The composite action installing a target at its pip floors and testing it.
 FLOORS = "floors-pypi"
 #: The step of the action creating the uv environment.
@@ -144,6 +148,40 @@ def test_a_cache_action_runs_its_command_through_pixi_unless_told_not_to(
         assert first == {command}, calls
 
 
+@pytest.mark.parametrize("step", GEOVISTA_STEPS)
+@pytest.mark.parametrize("pixi", ["true", "false"])
+def test_the_geovista_cache_runs_in_the_pixi_environment_it_is_given(
+    tmp_path, stub, run_step, step, pixi
+):
+    """``ci-tests-lock.yml`` names its environment, and the ``pixi`` input keeps it.
+
+    With ``pixi`` false, the command runs from the ``PATH`` whatever the
+    environment named.
+    """
+    body = _step(_action("geovista-cache")["runs"]["steps"], step)
+    log = tmp_path / "calls.log"
+    for word in ("pixi", "geovista"):
+        stub(word, f'printf "%s\\n" "{word} $*" >> "{log}"')
+    env = {
+        "INPUTS_PIXI": pixi,
+        "INPUTS_PIXI_ENVIRONMENT": NAMED,
+        "GITHUB_OUTPUT": str(tmp_path / "output"),
+    }
+
+    result = run_step(body, env)
+
+    assert result.returncode == 0, result.stderr
+    given = (body.get("env") or {}).get("INPUTS_PIXI_ENVIRONMENT")
+    assert given == "${{ inputs.pixi_environment }}"
+    calls = _calls(log)
+    assert calls, f"{step!r} ran nothing"
+    prefix = f"pixi run --frozen --environment {NAMED} geovista "
+    if pixi == "false":
+        prefix = "geovista "
+    for call in calls:
+        assert call.startswith(prefix), calls
+
+
 def _floors_python() -> str:
     """Return the minor Python version the ``floors`` environment pins."""
     pixi = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))["tool"]["pixi"]
@@ -240,8 +278,13 @@ def test_the_freeze_is_written_to_the_summary(tmp_path, stub, run_step):
 
 
 def test_the_action_restores_the_data_without_pixi():
-    """The data is that of the other test jobs, restored from the uv environment."""
+    """The data is that of the other test jobs, restored from the uv environment.
+
+    The cache actions run ``geovista`` and ``cartopy_feature_download`` from the
+    ``PATH``, so they come after the install that puts them there.
+    """
     steps = _steps()
+    install = steps.index(_step(steps, INSTALL))
     tests = steps.index(_step(steps, TESTS))
 
     for name, action in RESTORES.items():
@@ -253,6 +296,7 @@ def test_the_action_restores_the_data_without_pixi():
             "cache_period": "${{ inputs.cache_period }}",
             "pixi": "false",
         }
+        assert install < steps.index(step), f"{name!r} runs before {INSTALL!r}"
         assert steps.index(step) < tests, f"{name!r} runs after the tests"
 
 
