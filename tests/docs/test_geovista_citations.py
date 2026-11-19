@@ -1652,3 +1652,65 @@ def test_row_labels_keeps_a_literal_entity_in_code(tmp_path, citations):
     found = labels(tmp_path, citations, "Code `&lt;name&gt;` and `&quot;`")
 
     assert found == ["1: Code #38;lt;name#38;gt; and #38;quot;"]
+
+
+def open_rows(tmp_path, citations, mine, theirs=(("Theirs", LANDED),)) -> list[str]:
+    """Read the open work of two roadmaps."""
+    texts, names = roadmaps(tmp_path, citations, mine, theirs)
+    return citations.open_work(
+        citations.ordering_edges(texts, names), citations.row_statuses(texts, names)
+    )
+
+
+def test_open_work_draws_each_ordered_row_not_landed(tmp_path, citations):
+    """Every ordered row not landed, and each landed row one of them waits on.
+
+    A row with no ordering is left to its own specification's diagram.
+    """
+    found = open_rows(
+        tmp_path,
+        citations,
+        [
+            ("One", LANDED),
+            (f"Two{LINKED} after row 1", NOT_STARTED),
+            (f"Three{LINKED} after row 2", IN_PROGRESS),
+            ("Four", NOT_STARTED),
+        ],
+    )
+
+    assert found == [demo_row(1), demo_row(2), demo_row(3)]
+
+
+def test_open_work_draws_a_landed_row_landing_with_one_open(tmp_path, citations):
+    """A landed row with one still open is drawn beside it, whichever writes it."""
+    found = open_rows(
+        tmp_path,
+        citations,
+        [(f"Mine{LINKED} with row 1 of other spec {SECTION}2", NOT_STARTED)],
+        [("Theirs", LANDED)],
+    )
+
+    assert found == [demo_row(1), other_row(1)]
+
+
+def test_open_work_leaves_out_landed_history(tmp_path, citations):
+    """Rows that have all landed are history, and draw nothing."""
+    found = open_rows(
+        tmp_path,
+        citations,
+        [("One", LANDED), (f"Two{LINKED} after row 1", LANDED)],
+    )
+
+    assert found == []
+
+
+def test_open_work_reads_every_specification_in_reading_order(tmp_path, citations):
+    """The rows of each specification follow one another, as they are written."""
+    found = open_rows(
+        tmp_path,
+        citations,
+        [(f"Mine{LINKED} after row 2 of other spec {SECTION}2", NOT_STARTED)],
+        [("First", NOT_STARTED), ("Second", NOT_STARTED)],
+    )
+
+    assert found == [demo_row(1), other_row(2)]

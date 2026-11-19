@@ -694,6 +694,45 @@ def roadmap_view(
     return mine + others, set(others)
 
 
+def open_work(edges: Sequence[Edge], statuses: Mapping[str, str]) -> list[str]:
+    """Choose the rows the open work of every roadmap draws (diagram spec §4.5).
+
+    Every row that has an ordering and has not landed, then each landed row one
+    of them waits on or lands with. A row with no ordering is drawn in its own
+    specification's diagram alone, and rows that have all landed are history.
+
+    Parameters
+    ----------
+    edges : sequence of Edge
+        Every ordering.
+    statuses : mapping of str to str
+        Every row's status, by its anchor, in reading order.
+
+    Returns
+    -------
+    list of str
+        The rows to draw, in reading order.
+
+    """
+
+    def landed(anchor: str) -> bool:
+        return state_of(statuses.get(anchor, ""), ROADMAP_STATES) == LANDED
+
+    ordered = {edge.first for edge in edges} | {edge.second for edge in edges}
+    waited = {
+        edge.first for edge in edges if landed(edge.first) and not landed(edge.second)
+    } | {
+        edge.second
+        for edge in edges
+        if edge.kind == "with" and landed(edge.second) and not landed(edge.first)
+    }
+    return [
+        anchor
+        for anchor in statuses
+        if anchor in ordered and (not landed(anchor) or anchor in waited)
+    ]
+
+
 def diagram(
     rows: Sequence[str],
     edges: Sequence[Edge],
